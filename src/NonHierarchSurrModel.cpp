@@ -525,11 +525,11 @@ derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
   size_t i, num_steps = model_resp_maps_rekey.size();
   if (sameModelInstance) {
 
-    // Seems sufficient to do this once and not reassign the i-th key to the
+    // Seems sufficient to do this once and not reassign the i-th key on the
     // servers in order to communicate the resolution level
     // (ApplicationInterface::send_evaluation() includes full variables object
-    // from beforeSynchCorePRPQueue, which synchronizes inactive state)
-    // > otherwise need to move it inside loop and split apart synchronize again
+    // from beforeSynchCorePRPQueue, which synchronizes inactive state).
+    // Otherwise need to move it inside loop and split synchronize apart again.
     component_parallel_mode(num_steps); // step index to id (0 is reserved)
 
     rekey_synch(truthModel, block, modelIdMaps, model_resp_maps_rekey);
