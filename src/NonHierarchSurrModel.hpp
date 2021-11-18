@@ -184,7 +184,7 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// initialize truthModelKey and unorderedModelKeys to default values
+  /// initialize truthModelKey and surrModelKeys to default values
   void assign_default_keys();
 
   /// assign the resolution level for the model form indicated by the key
@@ -235,18 +235,11 @@ private:
   /// unordered set of model approximations
   ModelArray unorderedModels;
 
-  //////////////////////////////////////////////////////////////////////////////
-  /// W.r.t. active keys, also need to manage active resolutions for each
-  /// model instance.  As a first cut, just need to carry them along
-  /// (as tunable hyper-parameters rather than dimensions of the hierarchy).
-  //////////////////////////////////////////////////////////////////////////////
-  /// key defining active resolution level for truthModel.  Note: model form
-  /// component is maintained for consistency but is redundant in this case.
+  /// key defining active model form / resolution level for the truth model
   Pecos::ActiveKey truthModelKey;
-  /// keys defining active resolution levels for unorderedModels.  Note: model
-  /// form components are maintained for consistency but are redundant since
-  /// order across unorderedModel{s,Keys} is consistent.
-  std::vector<Pecos::ActiveKey> unorderedModelKeys;
+  /// keys defining model forms / resolution levels for the active set of
+  /// approximations
+  std::vector<Pecos::ActiveKey> surrModelKeys;
 
   /// flag indicating that the {low,high}FidelityKey correspond to the
   /// same model instance, requiring modifications to updating and evaluation
@@ -259,8 +252,8 @@ private:
   /// tie breaker for type of model hierarchy when forms and levels are present
   bool mfPrecedence;
 
-  /// store aggregate model key that is active in component_parallel_mode()
-  Pecos::ActiveKey componentParallelKey;
+  // store aggregate model key that is active in component_parallel_mode()
+  //Pecos::ActiveKey componentParallelKey;
   /// size of MPI buffer containing responseMode and an aggregated activeKey
   int modeKeyBufferSize;
 
@@ -270,7 +263,7 @@ private:
 
   /// map from evaluation ids of truthModel/unorderedModels to
   /// NonHierarchSurrModel ids
-  IntIntMapArray modelIdMap;
+  IntIntMapArray modelIdMaps;
   /// maps of responses retrieved in derived_synchronize_nowait() that
   /// could not be returned since corresponding response portions were
   /// still pending, blocking response aggregation
@@ -293,8 +286,8 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& dr_target2)
 {
   // forward along to subordinate models:
-  size_t i, num_approx_models = unorderedModels.size();
-  for (i=0; i<num_approx_models; ++i)
+  size_t i, num_unord = unorderedModels.size();
+  for (i=0; i<num_unord; ++i)
     unorderedModels[i].nested_variable_mappings(c_index1, di_index1, ds_index1,
 					      dr_index1, c_target2, di_target2,
 					      ds_target2, dr_target2);
@@ -332,18 +325,18 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
 {
   unsigned short hf_form = truthModelKey.retrieve_model_form();
 
-  size_t i, num_approx = unorderedModelKeys.size();
+  size_t i, num_approx = surrModelKeys.size();
   if (hf_form == USHRT_MAX || num_approx == 0)
     sameModelInstance = sameInterfaceInstance = false;
   else {
     sameModelInstance = true;
     for (i=0; i<num_approx; ++i)
-      if (unorderedModelKeys[i].retrieve_model_form() != hf_form)
+      if (surrModelKeys[i].retrieve_model_form() != hf_form)
 	{ sameModelInstance = false; break; }
   }
 
   if (sameModelInstance) sameInterfaceInstance = true;
-  else {
+  else { // approximations are separate models
     const String& hf_id = truthModel.interface_id();
     sameInterfaceInstance = true;
     for (i=0; i<num_approx; ++i)
@@ -391,7 +384,7 @@ inline bool NonHierarchSurrModel::multilevel() const
 inline Model& NonHierarchSurrModel::surrogate_model(size_t i)
 {
   if (i == _NPOS) {
-    //unsigned short lf_form = unorderedModelKeys[0].retrieve_model_form();
+    //unsigned short lf_form = surrModelKeys[0].retrieve_model_form();
     //i = (lf_form == USHRT_MAX) // empty key or undefined model form
     //  ? 0 : lf_form;
     Cerr << "Error: model form must be specified in NonHierarchSurrModel::"
@@ -410,7 +403,7 @@ inline Model& NonHierarchSurrModel::surrogate_model(size_t i)
 inline const Model& NonHierarchSurrModel::surrogate_model(size_t i) const
 {
   if (i == _NPOS) {
-    //unsigned short lf_form = unorderedModelKeys[0].retrieve_model_form();
+    //unsigned short lf_form = surrModelKeys[0].retrieve_model_form();
     //i = (lf_form == USHRT_MAX) // empty key or undefined model form
     //  ? 0 : lf_form;
     Cerr << "Error: model index must be specified in NonHierarchSurrModel::"
@@ -447,8 +440,8 @@ inline void NonHierarchSurrModel::assign_key(const Pecos::ActiveKey& key)
 
 inline void NonHierarchSurrModel::assign_key(size_t i)
 {
-  if      (i  < unorderedModels.size()) assign_key(unorderedModelKeys[i]);
-  else if (i != _NPOS)                  assign_key(truthModelKey);
+  if      (i  < surrModelKeys.size()) assign_key(surrModelKeys[i]);
+  else if (i != _NPOS)                assign_key(truthModelKey);
 }
 
 
@@ -457,19 +450,27 @@ inline void NonHierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
   // assign activeKey
   SurrogateModel::active_model_key(key);
 
-  // update truthModelKey and unorderedModelKeys
+  // update truthModelKey and surrModelKeys
   // TO DO: support group comprised only of approximations (no truth);
   //        implement extra logic as in HierarchSurrModel::extract_model_keys()
-  key.extract_keys(truthModelKey, unorderedModelKeys);
+  key.extract_keys(truthModelKey, surrModelKeys);
 
   // assign same{Model,Interface}Instance
   check_model_interface_instance();
 
-  // Unconditional for now (no sameModelInstance)
-  size_t i, num_approx = unorderedModelKeys.size();
-  for (i=0; i<num_approx; ++i)
-    assign_key(unorderedModelKeys[i]);
-  assign_key(truthModelKey);
+  // assign extracted keys
+  if (sameModelInstance) {
+    switch (responseMode) {
+    case BYPASS_SURROGATE:  assign_key(truthModelKey);  break;
+  //case AGGREGATED_MODELS: break; // defer setting active solution levels
+    }
+  }
+  else { // approximations are separate models
+    size_t i, num_approx = surrModelKeys.size();
+    for (i=0; i<num_approx; ++i)
+      assign_key(surrModelKeys[i]);
+    assign_key(truthModelKey);
+  }
 
   // Pull inactive variable change up into top-level currentVariables,
   // so that data flows correctly within Model recursions?  No, current
@@ -482,8 +483,8 @@ inline void NonHierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
 
 inline void NonHierarchSurrModel::clear_model_keys()
 {
-  size_t i, num_approx = unorderedModels.size();
-  for (i=0; i<num_approx; ++i)
+  size_t i, num_unord = unorderedModels.size();
+  for (i=0; i<num_unord; ++i)
     unorderedModels[i].clear_model_keys();
   truthModel.clear_model_keys();
 }
@@ -501,13 +502,13 @@ inline bool NonHierarchSurrModel::test_asv(const ShortArray& asv)
 
 inline void NonHierarchSurrModel::resize_maps()
 {
-  size_t num_models = 1;
+  size_t num_steps = 1;
   if (responseMode == AGGREGATED_MODELS)
-    num_models += unorderedModels.size();
-  if (modelIdMap.size() != num_models)
-    modelIdMap.resize(num_models);
-  if (cachedRespMaps.size() != num_models)
-    cachedRespMaps.resize(num_models);
+    num_steps += surrModelKeys.size();
+  if (modelIdMaps.size() != num_steps)
+    modelIdMaps.resize(num_steps);
+  if (cachedRespMaps.size() != num_steps)
+    cachedRespMaps.resize(num_steps);
 }
 
 
@@ -534,8 +535,8 @@ inline size_t NonHierarchSurrModel::count_id_maps(const IntIntMapArray& id_maps)
 inline void NonHierarchSurrModel::
 derived_subordinate_models(ModelList& ml, bool recurse_flag)
 {
-  size_t i, num_approx = unorderedModels.size();
-  for (i=0; i<num_approx; ++i) {
+  size_t i, num_unord = unorderedModels.size();
+  for (i=0; i<num_unord; ++i) {
     ml.push_back(unorderedModels[i]);
     if (recurse_flag)
       unorderedModels[i].derived_subordinate_models(ml, true);
@@ -557,8 +558,8 @@ inline void NonHierarchSurrModel::resize_from_subordinate_model(size_t depth)
 
   // bottom-up data flow, so recurse first
   if (approx_resize) {
-    size_t i, num_approx = unorderedModels.size();
-    for (i=0; i<num_approx; ++i) {
+    size_t i, num_unord = unorderedModels.size();
+    for (i=0; i<num_unord; ++i) {
       Model& model_i = unorderedModels[i];
       if (depth == SZ_MAX)
 	model_i.resize_from_subordinate_model(depth);// retain special val (inf)
@@ -595,8 +596,8 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 {
   primaryRespFnWts = wts;
   if (recurse_flag) {
-    size_t i, num_approx = unorderedModels.size();
-    for (i=0; i<num_approx; ++i)
+    size_t i, num_unord = unorderedModels.size();
+    for (i=0; i<num_unord; ++i)
       unorderedModels[i].primary_response_fn_weights(wts, recurse_flag);
     truthModel.primary_response_fn_weights(wts, recurse_flag);
   }
@@ -612,7 +613,7 @@ inline void NonHierarchSurrModel::surrogate_response_mode(short mode)
   // any given time, this call does not need to be matched on serve_run() procs.
   resize_response();
 
-  /// allocate modelIdMap and cachedRespMaps arrays based on responseMode
+  /// allocate modelIdMaps and cachedRespMaps arrays based on responseMode
   resize_maps();
 
   // don't pass to approx models since point of a surrogate bypass is to get
@@ -637,8 +638,8 @@ estimate_partition_bounds(int max_eval_concurrency)
   IntIntPair min_max_i,
     min_max = truthModel.estimate_partition_bounds(max_eval_concurrency);
 
-  size_t i, num_approx = unorderedModels.size();
-  for (i=0; i<num_approx; ++i) {
+  size_t i, num_unord = unorderedModels.size();
+  for (i=0; i<num_unord; ++i) {
     Model& model_i = unorderedModels[i];
     probDescDB.set_db_model_nodes(model_i.model_id());
     min_max_i = model_i.estimate_partition_bounds(max_eval_concurrency);
@@ -654,8 +655,8 @@ estimate_partition_bounds(int max_eval_concurrency)
 
 inline void NonHierarchSurrModel::derived_init_serial()
 {
-  size_t i, num_approx_models = unorderedModels.size();
-  for (i=0; i<num_approx_models; ++i)
+  size_t i, num_unord_models = unorderedModels.size();
+  for (i=0; i<num_unord_models; ++i)
     unorderedModels[i].init_serial();
   truthModel.init_serial();
 }
@@ -685,8 +686,8 @@ inline void NonHierarchSurrModel::inactive_view(short view, bool recurse_flag)
   currentVariables.inactive_view(view);
   userDefinedConstraints.inactive_view(view);
   if (recurse_flag) {
-    size_t i, num_approx = unorderedModels.size();
-    for (i=0; i<num_approx; ++i)
+    size_t i, num_unord = unorderedModels.size();
+    for (i=0; i<num_unord; ++i)
       unorderedModels[i].inactive_view(view, recurse_flag);
     truthModel.inactive_view(view, recurse_flag);
   }
@@ -702,8 +703,8 @@ inline bool NonHierarchSurrModel::evaluation_cache(bool recurse_flag) const
   if (recurse_flag) {
     if (truthModel.evaluation_cache(recurse_flag))
       return true;
-    size_t i, num_approx = unorderedModels.size();
-    for (i=0; i<num_approx; ++i)
+    size_t i, num_unord = unorderedModels.size();
+    for (i=0; i<num_unord; ++i)
       if (unorderedModels[i].evaluation_cache(recurse_flag))
 	return true;
     return false;
@@ -718,8 +719,8 @@ inline bool NonHierarchSurrModel::restart_file(bool recurse_flag) const
   if (recurse_flag) {
     if (truthModel.restart_file(recurse_flag))
       return true;
-    size_t i, num_approx = unorderedModels.size();
-    for (i=0; i<num_approx; ++i)
+    size_t i, num_unord = unorderedModels.size();
+    for (i=0; i<num_unord; ++i)
       if (unorderedModels[i].restart_file(recurse_flag))
 	return true;
     return false;
@@ -744,8 +745,8 @@ inline void NonHierarchSurrModel::set_evaluation_reference()
 
 inline void NonHierarchSurrModel::fine_grained_evaluation_counters()
 {
-  size_t i, num_approx = unorderedModels.size();
-  for (i=0; i<num_approx; ++i)
+  size_t i, num_unord = unorderedModels.size();
+  for (i=0; i<num_unord; ++i)
     unorderedModels[i].fine_grained_evaluation_counters();
   truthModel.fine_grained_evaluation_counters();
 }
@@ -755,8 +756,8 @@ inline void NonHierarchSurrModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
                          bool relative_count) const
 {
-  size_t i, num_approx = unorderedModels.size();
-  for (i=0; i<num_approx; ++i)
+  size_t i, num_unord = unorderedModels.size();
+  for (i=0; i<num_unord; ++i)
     unorderedModels[i].print_evaluation_summary(s, minimal_header,
 						relative_count);
   // emulate low to high ordering as in HierarchSurrModel
@@ -769,8 +770,8 @@ inline void NonHierarchSurrModel::warm_start_flag(const bool flag)
   // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
   warmStartFlag = flag; // for completeness
 
-  size_t i, num_approx = unorderedModels.size();
-  for (i=0; i<num_approx; ++i)
+  size_t i, num_unord = unorderedModels.size();
+  for (i=0; i<num_unord; ++i)
     unorderedModels[i].warm_start_flag(flag);
   truthModel.warm_start_flag(flag);
 }

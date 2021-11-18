@@ -6455,7 +6455,7 @@ KEYWORD model {N_mom3(start,0,stop)}
     |
     ( non_hierarchical ALIAS model_ensemble {N_mom(lit,surrogateType_non_hierarchical)}
       truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,actualModelPointer)}
-      unordered_model_fidelities ALIAS approximation_models STRINGLIST {N_mom(strL,ensembleModelPointers)}
+      [ unordered_model_fidelities ALIAS approximation_models STRINGLIST {N_mom(strL,ensembleModelPointers)} ]
      )
    )
   |
@@ -6999,6 +6999,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
     [ weights ALIAS calibration_weights ALIAS least_squares_weights REALLIST LEN calibration_terms {N_rem(RealDL,primaryRespFnWeights)} ]
     [ 
       ( calibration_data {N_rem(true,calibrationDataFlag)}
+        [ data_directory STRING {N_rem(str,dataPathPrefix)} ]
         [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
         [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]
         [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,varianceType)} ]

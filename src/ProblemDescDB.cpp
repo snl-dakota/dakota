@@ -2158,6 +2158,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"workDir", P_INT workDir}
     },
     { /* responses */
+      {"data_directory", P_RES dataPathPrefix},
       {"fd_gradient_step_type", P_RES fdGradStepType},
       {"fd_hessian_step_type", P_RES fdHessStepType},
       {"gradient_type", P_RES gradientType},

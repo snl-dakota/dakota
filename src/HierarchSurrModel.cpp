@@ -822,39 +822,65 @@ void HierarchSurrModel::
 derived_synchronize_sequential(IntResponseMap& hf_resp_map_rekey,
                                IntResponseMap& lf_resp_map_rekey, bool block)
 {
-  // --------------------------
-  // synchronize HF model evals
-  // --------------------------
-  if (!truthIdMap.empty()) { // synchronize HF evals
+  /*
+  if (sameModelInstance) {
+    // The following approach should be identical in behavior to the original
+    // approach in the else block below, but allows the results of a single
+    // synchronize() to be processed together, reducing the caching of
+    // unmatched responses at the Model base class level).
+
+    // Seems sufficient to do this once and not reassign surrModelKey on
+    // the servers in order to communicate the resolution level
+    // (ApplicationInterface::send_evaluation() includes full variables object
+    // from beforeSynchCorePRPQueue, which synchronizes inactive state).
+    // Otherwise can revert to original approach in else block below.
     component_parallel_mode(TRUTH_MODEL_MODE);
-    rekey_synch(truth_model(), block, truthIdMap, hf_resp_map_rekey);
+
+    IntResponseMapArray resp_maps_rekey(2);
+    IntIntMapArray      id_maps(2);
+    resp_maps_rekey[0] = hf_resp_map_rekey;  id_maps[0] = truthIdMap;
+    resp_maps_rekey[1] = lf_resp_map_rekey;  id_maps[1] =  surrIdMap;
+    rekey_synch(truth_model(), block, id_maps, resp_maps_rekey);
   }
+  else {
+  */
+    // --------------------------
+    // synchronize HF model evals
+    // --------------------------
+    if (!truthIdMap.empty()) { // synchronize HF evals
+      component_parallel_mode(TRUTH_MODEL_MODE);
+      rekey_synch(truth_model(), block, truthIdMap, hf_resp_map_rekey);
+      // Note: for sameModelInstance, unmatched Model::responseMap are moved to
+      //       Model::cachedResponseMap for return on next synchronize()
+    }
+
+    // --------------------------
+    // synchronize LF model evals
+    // --------------------------
+    if (!surrIdMap.empty()) { // synchronize LF evals
+      component_parallel_mode(SURROGATE_MODEL_MODE);
+      // Interface::rawResponseMap should _not_ be corrected directly since
+      // rawResponseMap, beforeSynchCorePRPQueue, and data_pairs all share a
+      // responseRep -> modifying rawResponseMap affects data_pairs.
+      bool deep_copy = (responseMode == AUTO_CORRECTED_SURROGATE);
+      rekey_synch(surrogate_model(), block, surrIdMap, lf_resp_map_rekey,
+		  deep_copy);
+    }
+  //}
+
   // add cached truth evals from:
   // (a) recovered HF asynch evals that could not be returned since LF
   //     eval portions were still pending, or
   // (b) synchronous HF evals performed within evaluate_nowait()
   hf_resp_map_rekey.insert(cachedTruthRespMap.begin(),
-                           cachedTruthRespMap.end());
+			   cachedTruthRespMap.end());
   cachedTruthRespMap.clear();
-
-  // --------------------------
-  // synchronize LF model evals
-  // --------------------------
-  if (!surrIdMap.empty()) { // synchronize LF evals
-    component_parallel_mode(SURROGATE_MODEL_MODE);
-    // Interface::rawResponseMap should _not_ be corrected directly since
-    // rawResponseMap, beforeSynchCorePRPQueue, and data_pairs all share a
-    // responseRep -> modifying rawResponseMap affects data_pairs.
-    bool deep_copy = (responseMode == AUTO_CORRECTED_SURROGATE);
-    rekey_synch(surrogate_model(), block, surrIdMap, lf_resp_map_rekey,
-		deep_copy);
-  }
   // add cached approx evals from:
   // (a) recovered LF asynch evals that could not be returned since HF
   //     eval portions were still pending, or
   // (b) synchronous LF evals performed within evaluate_nowait()
   lf_resp_map_rekey.insert(cachedApproxRespMap.begin(),
-                           cachedApproxRespMap.end());
+			   cachedApproxRespMap.end());
   cachedApproxRespMap.clear();
 }
 
@@ -1476,11 +1502,15 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 
       active_model_key(activeKey); // updates {truth,surr}ModelKey
       if (componentParallelMode == SURROGATE_MODEL_MODE) {
+	if (sameModelInstance) assign_surrogate_key(); // may have been deferred
+
 	// serve active LF model:
 	surrogate_model().serve_run(pl_iter, max_eval_concurrency);
 	// Note: ignores erroneous BYPASS_SURROGATE
       }
       else if (componentParallelMode == TRUTH_MODEL_MODE) {
+	if (sameModelInstance) assign_truth_key(); // may have been deferred
+
 	// serve active HF model, employing correct iterator concurrency:
 	Model& hf_model = truth_model();
 	switch (responseMode) {

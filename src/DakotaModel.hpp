@@ -1313,24 +1313,41 @@ protected:
   /// Return the model flag for the EvaluationsDB state
   EvaluationsDBState evaluations_db_state(const Model &model);
 
+  /// Store the response portion of an interface evaluation.
+  /// Called from rekey_response_map()
+  void asynch_eval_store(const Interface &interface, const int &id,
+			 const Response &response);
+  /// Exists to support storage of interface evaluations.
+  /// No-op so that rekey_response_map<Model> can be generated.
+  void asynch_eval_store(const Model &model, const int &id,
+			 const Response &response);
 
-  /// Store the response portion of an interface evaluation. Called from rekey_response_map 
-  void asynch_eval_store(const Interface &interface, const int &id, const Response &response);
-  /// Exists to support storage of interface evaluations. No-op so that
-  ///  rekey_response_map<Model> can be generated.
-  void asynch_eval_store(const Model &model, const int &id, const Response &response);
-
+  /// rekey returned jobs matched in array of id_maps into array of
+  /// resp_maps_rekey; unmatched jobs can be cached within the meta_object
+  template <typename MetaType>
+  void rekey_response_map(MetaType& meta_object, const IntResponseMap& resp_map,
+			  IntIntMapArray& id_maps,
+			  IntResponseMapArray& resp_maps_rekey,
+			  bool deep_copy_resp  = false);
   /// rekey returned jobs matched in id_map into resp_map_rekey;
-  /// unmatched jobs are cached within the meta_object
+  /// unmatched jobs can be cached within the meta_object
   template <typename MetaType>
   void rekey_response_map(MetaType& meta_object, const IntResponseMap& resp_map,
 			  IntIntMap& id_map, IntResponseMap& resp_map_rekey,
-			  bool deep_copy_resp = false);
+			  bool deep_copy_resp  = false);
+
+  /// synchronize via meta_object and rekey returned jobs matched in array of
+  /// id_maps into array of resp_maps_rekey; unmatched jobs are cached within
+  /// the meta_object
+  template <typename MetaType>
+  void rekey_synch(MetaType& meta_object, bool block, IntIntMapArray& id_maps,
+		   IntResponseMapArray& resp_maps_rekey,
+		   bool deep_copy = false);
   /// synchronize via meta_object and rekey returned jobs matched in id_map
   /// into resp_map_rekey; unmatched jobs are cached within the meta_object
   template <typename MetaType>
   void rekey_synch(MetaType& meta_object, bool block, IntIntMap& id_map,
-		   IntResponseMap& resp_map_rekey, bool deep_copy_resp = false);
+		   IntResponseMap& resp_map_rekey, bool deep_copy = false);
 
   //
   //- Heading: Data
@@ -3818,6 +3835,55 @@ rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
   }
 }
 */
+
+
+template <typename MetaType> void Model::
+rekey_response_map(MetaType& meta_object, const IntResponseMap& resp_map,
+		   IntIntMapArray& id_maps,
+		   IntResponseMapArray& resp_maps_rekey, bool deep_copy_resp)
+{
+  // rekey the resp_map evals matched in id_map, else move to cache
+  IntIntMIter id_it; IntRespMCIter r_cit = resp_map.begin();
+  bool found;  size_t i, num_maps = id_maps.size();
+  resp_maps_rekey.clear();  resp_maps_rekey.resize(num_maps);
+  while (r_cit != resp_map.end()) {
+    int raw_id = r_cit->first;
+    found = false;
+    for (i=0; i<num_maps; ++i) {
+      IntIntMap& id_map = id_maps[i];
+      id_it = id_map.find(raw_id); // Note: no iterator hint API
+      if (id_it != id_map.end()) {
+	found = true;
+	resp_maps_rekey[i][id_it->second] = (deep_copy_resp) ?
+	  r_cit->second.copy() : r_cit->second;
+	if (evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
+	  asynch_eval_store(meta_object, id_it->first, r_cit->second);
+	id_map.erase(id_it);
+      }
+      if (found) break;
+    }
+    // insert unmatched resp_map jobs into cache (may be from another Model
+    // using a shared Interface instance).  Neither deep copy nor rekey are
+    // performed until id is matched above (on a subsequent pass).
+    ++r_cit; // advance prior to invalidation from erase() under cache_unmatched
+    if (!found)
+      // Approach 3: resolve level clarity by passing a meta-object in a
+      // template.  Consistency: use meta-object to synchronize and cache,
+      // requiring renaming of Interface fns and adding nowait variant.
+      meta_object.cache_unmatched_response(raw_id);// same level as synchronize
+  }
+}
+
+
+template <typename MetaType> void Model::
+rekey_synch(MetaType& meta_object, bool block, IntIntMapArray& id_maps,
+	    IntResponseMapArray& resp_maps_rekey, bool deep_copy)
+{
+  const IntResponseMap& resp_map = (block) ? meta_object.synchronize() :
+    meta_object.synchronize_nowait();
+  rekey_response_map(meta_object, resp_map, id_maps, resp_maps_rekey,
+		     deep_copy);
+}
 
 
 template <typename MetaType> void Model::

@@ -243,6 +243,8 @@ public:
 
   // Field Data specification
 
+  /// path to prepend to any data file names
+  String dataPathPrefix;
   /// number of entries in each field
   IntVector fieldLengths;
   /// number of coordinates per field
