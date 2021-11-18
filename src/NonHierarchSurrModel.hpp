@@ -263,7 +263,7 @@ private:
 
   /// map from evaluation ids of truthModel/unorderedModels to
   /// NonHierarchSurrModel ids
-  IntIntMapArray modelIdMap;
+  IntIntMapArray modelIdMaps;
   /// maps of responses retrieved in derived_synchronize_nowait() that
   /// could not be returned since corresponding response portions were
   /// still pending, blocking response aggregation
@@ -502,13 +502,13 @@ inline bool NonHierarchSurrModel::test_asv(const ShortArray& asv)
 
 inline void NonHierarchSurrModel::resize_maps()
 {
-  size_t num_models = 1;
+  size_t num_steps = 1;
   if (responseMode == AGGREGATED_MODELS)
-    num_models += unorderedModels.size();
-  if (modelIdMap.size() != num_models)
-    modelIdMap.resize(num_models);
-  if (cachedRespMaps.size() != num_models)
-    cachedRespMaps.resize(num_models);
+    num_steps += surrModelKeys.size();
+  if (modelIdMaps.size() != num_steps)
+    modelIdMaps.resize(num_steps);
+  if (cachedRespMaps.size() != num_steps)
+    cachedRespMaps.resize(num_steps);
 }
 
 
@@ -613,7 +613,7 @@ inline void NonHierarchSurrModel::surrogate_response_mode(short mode)
   // any given time, this call does not need to be matched on serve_run() procs.
   resize_response();
 
-  /// allocate modelIdMap and cachedRespMaps arrays based on responseMode
+  /// allocate modelIdMaps and cachedRespMaps arrays based on responseMode
   resize_maps();
 
   // don't pass to approx models since point of a surrogate bypass is to get

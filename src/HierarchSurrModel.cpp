@@ -828,6 +828,8 @@ derived_synchronize_sequential(IntResponseMap& hf_resp_map_rekey,
   if (!truthIdMap.empty()) { // synchronize HF evals
     component_parallel_mode(TRUTH_MODEL_MODE);
     rekey_synch(truth_model(), block, truthIdMap, hf_resp_map_rekey);
+    // Note: for sameModelInstance, unmatched Model::responseMap are moved to
+    //       Model::cachedResponseMap for return on next synchronize()
   }
   // add cached truth evals from:
   // (a) recovered HF asynch evals that could not be returned since LF

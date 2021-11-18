@@ -303,7 +303,7 @@ void NonHierarchSurrModel::build_approximation()
   }
 
   // set NonHierarchSurrModel parallelism mode to HF model
-  component_parallel_mode(num_models);
+  component_parallel_mode(num_approx+1);
 
   // update HF model with current variable values/bounds/labels
   update_model(hf_model);
@@ -375,9 +375,9 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
     // define eval reqmts, with unorderedModels followed by truthModel at end
     Short2DArray indiv_asv;
     asv_split(set.request_vector(), indiv_asv);
-    size_t i, num_models = indiv_asv.size();
+    size_t i, num_steps = indiv_asv.size();
     ActiveSet set_i(set); // copy DVV
-    for (i=0; i<num_models; ++i) {
+    for (i=0; i<num_steps; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       if (test_asv(asv_i)) {
 	Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
@@ -431,11 +431,11 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     // define eval reqmts, with unorderedModels followed by truthModel at end
     Short2DArray indiv_asv;
     asv_split(set.request_vector(), indiv_asv);
-    size_t i, num_models = indiv_asv.size(), num_unord = unorderedModels.size();
+    size_t i, num_steps = indiv_asv.size(), num_unord = unorderedModels.size();
     ActiveSet set_i(set); // copy DVV
 
     // first pass for nonblocking models
-    for (i=0; i<num_models; ++i) {
+    for (i=0; i<num_steps; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
       if (model_i.asynch_flag() && test_asv(asv_i)) {
@@ -443,11 +443,11 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 	else                   update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate_nowait(set_i);
-	modelIdMap[i][model_i.evaluation_id()] = surrModelEvalCntr;
+	modelIdMaps[i][model_i.evaluation_id()] = surrModelEvalCntr;
       }
     }
     // second pass for blocking models
-    for (i=0; i<num_models; ++i) {
+    for (i=0; i<num_steps; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
       if (!model_i.asynch_flag() && test_asv(asv_i)) {
@@ -471,7 +471,7 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     if (sameModelInstance) assign_key(truthModelKey);
     else                   update_model(truthModel);
     truthModel.evaluate_nowait(set); // no need to test for blocking eval
-    modelIdMap[0][truthModel.evaluation_id()] = surrModelEvalCntr;
+    modelIdMaps[0][truthModel.evaluation_id()] = surrModelEvalCntr;
     break;
   }
 }
@@ -488,8 +488,8 @@ const IntResponseMap& NonHierarchSurrModel::derived_synchronize()
   surrResponseMap.clear();
 
   if (sameModelInstance || sameInterfaceInstance ||
-      count_id_maps(modelIdMap) <= 1) { // 1 queue: blocking synch
-    IntResponseMapArray model_resp_map_rekey(modelIdMap.size());
+      count_id_maps(modelIdMaps) <= 1) { // 1 queue: blocking synch
+    IntResponseMapArray model_resp_map_rekey(modelIdMaps.size()); // num_steps
     derived_synchronize_sequential(model_resp_map_rekey, true);
     derived_synchronize_combine(model_resp_map_rekey, surrResponseMap, true);
   }
@@ -510,7 +510,7 @@ const IntResponseMap& NonHierarchSurrModel::derived_synchronize_nowait()
 {
   surrResponseMap.clear();
 
-  IntResponseMapArray model_resp_map_rekey(modelIdMap.size());
+  IntResponseMapArray model_resp_map_rekey(modelIdMaps.size());
   derived_synchronize_sequential(model_resp_map_rekey, false);
   derived_synchronize_combine(model_resp_map_rekey, surrResponseMap, false);
 
@@ -522,24 +522,45 @@ void NonHierarchSurrModel::
 derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
 			       bool block)
 {
-  size_t i, num_models = model_resp_maps_rekey.size();
-  for (i=0; i<num_models; ++i) {
-    Model& model = (i < unorderedModels.size()) ?
-      unorderedModels[i] : truthModel;
-    IntIntMap& model_id_map = modelIdMap[i];
-    IntResponseMap& model_resp_map = model_resp_maps_rekey[i];
-    if (!model_id_map.empty()) { // synchronize evals for i-th Model
-      component_parallel_mode(i+1); // index to id (0 is reserved)
-      rekey_synch(model, block, model_id_map, model_resp_map);
+  size_t i, num_steps = model_resp_maps_rekey.size();
+  if (sameModelInstance) {
+
+    // Seems sufficient to do this once and not reassign the i-th key to the
+    // servers in order to communicate the resolution level
+    // (ApplicationInterface::send_evaluation() includes full variables object
+    // from beforeSynchCorePRPQueue, which synchronizes inactive state)
+    // > otherwise need to move it inside loop and split apart synchronize again
+    component_parallel_mode(num_steps); // step index to id (0 is reserved)
+
+    rekey_synch(truthModel, block, modelIdMaps, model_resp_maps_rekey);
+
+    for (i=0; i<num_steps; ++i) {
+      // add cached evals from:
+      // (a) recovered asynch evals that could not be returned since other model
+      //     eval portions were still pending, or
+      // (b) synchronous model evals performed within evaluate_nowait()
+      IntResponseMap& cached_map_i = cachedRespMaps[i];
+      model_resp_maps_rekey[i].insert(cached_map_i.begin(), cached_map_i.end());
+      cached_map_i.clear(); // clear map
     }
-    // add cached evals from:
-    // (a) recovered asynch evals that could not be returned since other model
-    //     eval portions were still pending, or
-    // (b) synchronous model evals performed within evaluate_nowait()
-    IntResponseMap& cached_resp_map = cachedRespMaps[i];
-    model_resp_map.insert(cached_resp_map.begin(), cached_resp_map.end());
-    cached_resp_map.clear(); // clear map but leave outer array
   }
+  else
+    for (i=0; i<num_steps; ++i) {
+      Model& model = (i < unorderedModels.size()) ?
+	unorderedModels[i] : truthModel;
+      IntIntMap&        model_id_map = modelIdMaps[i];
+      IntResponseMap& model_resp_map = model_resp_maps_rekey[i];
+      if (!model_id_map.empty()) { // synchronize evals for i-th Model
+	component_parallel_mode(i+1); // step index to id (0 is reserved)
+	// Note: unmatched Model::responseMap are moved to Model::
+	//       cachedResponseMap for return on next synchronize()
+	rekey_synch(model, block, model_id_map, model_resp_map);
+      }
+      // add cached evals (see possible sources above)
+      IntResponseMap& cached_resp_map = cachedRespMaps[i];
+      model_resp_map.insert(cached_resp_map.begin(), cached_resp_map.end());
+      cached_resp_map.clear(); // clear map but leave outer array
+    }
 }
 
 
@@ -548,7 +569,7 @@ void NonHierarchSurrModel::derived_synchronize_competing()
   // in this case, we don't want to starve either LF or HF scheduling by
   // blocking on one or the other --> leverage derived_synchronize_nowait()
   IntResponseMap aggregated_map; // accumulate surrResponseMap returns
-  while (test_id_maps(modelIdMap)) {
+  while (test_id_maps(modelIdMaps)) {
     // partial_map is a reference to surrResponseMap, returned by _nowait()
     const IntResponseMap& partial_map = derived_synchronize_nowait();
     if (!partial_map.empty())
@@ -576,9 +597,9 @@ derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
     // > cachedRespMaps have been inserted into model_resp_maps
     // > rekey_synch() has migrated from indiv model ids to surrModelEvalCntr
 
-    size_t i, num_models = model_resp_maps.size();  IntRespMCIter r_cit;
+    size_t i, num_steps = model_resp_maps.size();  IntRespMCIter r_cit;
     if (block) { // all model evaluation contributions are available
-      for (i=0; i<num_models; ++i) {
+      for (i=0; i<num_steps; ++i) {
 	const IntResponseMap& resp_map = model_resp_maps[i];
 	for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
 	  insert_response(r_cit->second, i,
@@ -588,17 +609,17 @@ derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
     else { // manage partial results across set of models
 
       // assemble set of aggregate ids which still have pending contributions
-      // (only pending jobs remain in modelIdMap after nonblocking synch)
+      // (only pending jobs remain in modelIdMaps after nonblocking synch)
       IntSet pending_ids;  IntIntMCIter id_it;
-      for (i=0; i<num_models; ++i) {
-	const IntIntMap& id_map_i = modelIdMap[i];
+      for (i=0; i<num_steps; ++i) {
+	const IntIntMap& id_map_i = modelIdMaps[i];
 	for (id_it=id_map_i.begin(); id_it!=id_map_i.end(); ++id_it)
 	  pending_ids.insert(id_it->second); // duplicates ignored
       }
 
       // process completed job sets or reinsert partial results into cache
       // Approach 1: repeated pending id lookups on innermost loop
-      //for (i=0; i<num_models; ++i) {
+      //for (i=0; i<num_steps; ++i) {
       //  const IntResponseMap&        resp_map = model_resp_maps[i];
       //  const IntResponseMap& cached_resp_map =  cachedRespMaps[i];
       //  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
@@ -612,7 +633,7 @@ derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
       //}
       // Approach 2: one pending id traversal for each resp map traversal
       int eval_id, pending_id;  ISIter p_it;
-      for (i=0; i<num_models; ++i) {
+      for (i=0; i<num_steps; ++i) {
 	const IntResponseMap&  resp_map = model_resp_maps[i];
         IntResponseMap& cached_resp_map =  cachedRespMaps[i];
 	p_it = pending_ids.begin();
@@ -705,9 +726,9 @@ void NonHierarchSurrModel::component_parallel_mode(short model_id)
     //case     TRUTH_MODEL_MODE:  stop_model(old_truth[1]);  break;
     //}
 
-    // for either a model form or a resolution level update (sameModelInstance
-    // or not), serve_run() for the subordinate truth/approx model must be
-    // ended to process the update in NonHierarchSurrModel::serve_run()
+    // for either model form or resolution level update (sameModelInstance or
+    // not), serve_run() for the subordinate truth/approx model must be ended
+    // to process the key assignment below in NonHierarchSurrModel::serve_run()
     /* if (!sameModelInstance) */ stop_model(componentParallelMode);
 
     // -----------------------
@@ -759,7 +780,9 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       active_model_key(activeKey);
 
       size_t m_index = componentParallelMode - 1; // id to index
-      assign_key(m_index); // propagate resolution level
+      // propagate resolution level to server (redundant since send_evaluation()
+      // sends all of variables object, including inactive state)
+      //assign_key(m_index);
       Model& model = (m_index < unorderedModels.size()) ?
 	unorderedModels[m_index] : truthModel;
       model.serve_run(pl_iter, max_eval_concurrency);
