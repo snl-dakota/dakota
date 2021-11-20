@@ -863,6 +863,17 @@ void Interface::cache_unmatched_response(int raw_id)
 }
 
 
+void Interface::cache_unmatched_responses()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->cache_unmatched_responses();
+  else { // base definition; not virtual
+    cachedResponseMap.insert(rawResponseMap.begin(), rawResponseMap.end());
+    rawResponseMap.clear();
+  }
+}
+
+
 void Interface::serve_evaluations()
 {
   if (interfaceRep) // envelope fwd to letter

@@ -4375,6 +4375,19 @@ void Model::cache_unmatched_response(int raw_id)
 }
 
 
+void Model::cache_unmatched_responses()
+{
+  if (modelRep)
+    modelRep->cache_unmatched_responses();
+  else {
+    // cache all remaining entries in responseMap, as they were not successfuly
+    // migrated to another bookkeeping construct (e.g. in rekey_response_map())
+    cachedResponseMap.insert(responseMap.begin(), responseMap.end());
+    responseMap.clear();
+  }
+}
+
+
 /** SimulationModels and HierarchSurrModels redefine this virtual function.
     A default value of "synchronous" prevents asynch local operations for:
 \li NestedModels: a subIterator can support message passing parallelism,
