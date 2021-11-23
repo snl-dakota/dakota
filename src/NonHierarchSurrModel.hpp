@@ -16,7 +16,7 @@
 #ifndef NON_HIERARCH_SURR_MODEL_H
 #define NON_HIERARCH_SURR_MODEL_H
 
-#include "SurrogateModel.hpp"
+#include "EnsembleSurrModel.hpp"
 #include "ParallelLibrary.hpp"
 #include "DataModel.hpp"
 
@@ -24,20 +24,14 @@ namespace Dakota {
 
 
 /// Derived model class within the surrogate model branch for managing
-/// hierarchical surrogates (models of varying fidelity).
+/// unordered surrogate models of varying fidelity.
 
-/** The NonHierarchSurrModel class manages hierarchical models of varying
-    fidelity.  The class contains an ordered array of model forms
-    (fidelity ordered from low to high), where each model form may
-    also contain a set of solution levels (space/time discretization,
-    convergence tolerances, etc.).  At run time, one of these
-    combinations is activated as the low fidelity model and used to
-    perform approximate function evaluations, while another of these
-    combinations is activated as the high fidelity model and used to
-    provide truth evaluations for computing corrections to the low
-    fidelity results. */
+/** The NonHierarchSurrModel class manages a set of models of varying
+    fidelity.  The class contains an unordered array of approximation 
+    models, where each model form may also contain a set of solution 
+    levels (space/time discretization, convergence tolerances, etc.). */
 
-class NonHierarchSurrModel: public SurrogateModel
+class NonHierarchSurrModel: public EnsembleSurrModel
 {
 public:
 
@@ -54,8 +48,6 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  size_t qoi() const;
-
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
@@ -67,23 +59,21 @@ protected:
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
 				const ShortArray& dr_target2);
-  const SizetArray& nested_acv1_indices() const;
-  const ShortArray& nested_acv2_targets() const;
-  short query_distribution_parameter_derivatives() const;
-
-  void check_submodel_compatibility(const Model& sub_model);
 
   void derived_evaluate(const ActiveSet& set);
   void derived_evaluate_nowait(const ActiveSet& set);
-  const IntResponseMap& derived_synchronize();
-  const IntResponseMap& derived_synchronize_nowait();
 
-  bool multifidelity() const;
-  bool multilevel() const;
-  //bool multilevel_multifidelity() const;
+  void derived_synchronize_sequential(
+    IntResponseMapArray& model_resp_maps_rekey, bool block);
+  void derived_synchronize_combine(IntResponseMapArray& model_resp_maps,
+    IntResponseMap& combined_resp_map);
+  void derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
+    IntResponseMap& combined_resp_map);
 
-  bool multifidelity_precedence() const;
-  void multifidelity_precedence(bool mf_prec, bool update_default = false);
+  size_t num_approximation_models() const;
+  void assign_default_keys();
+  void resize_maps();
+  void resize_response(bool use_virtual_counts = true);
 
   /// return the indexed approximate model from unorderedModels
   Model& surrogate_model(size_t i = _NPOS);
@@ -115,13 +105,6 @@ protected:
   void primary_response_fn_weights(const RealVector& wts,
                                    bool recurse_flag = true);
 
-  /// set responseMode and pass any bypass request on to the high
-  /// fidelity model for any lower-level surrogate recursions
-  void surrogate_response_mode(short mode);
-
-  /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
-  void surrogate_function_indices(const SizetSet& surr_fn_indices);
-
   // use the high fidelity model to compute the truth values needed for
   // correction of approximate model results
   //void build_approximation();
@@ -149,24 +132,16 @@ protected:
   /// Service the low and high fidelity model job requests received from the
   /// master; completes when termination message received from stop_servers().
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
-  /// Executed by the master to terminate the low and high fidelity model
-  /// server operations when iteration on the NonHierarchSurrModel is complete
-  void stop_servers();
 
   /// update the Model's inactive view based on higher level (nested)
   /// context and optionally recurse into
   void inactive_view(short view, bool recurse_flag = true);
 
-  // return active orderedModels interface identifier?
-  //const String& interface_id() const;
   /// if recurse_flag, return true if orderedModels evaluation cache usage
   bool evaluation_cache(bool recurse_flag = true) const;
   /// if recurse_flag, return true if orderedModels restart file usage
   bool restart_file(bool recurse_flag = true) const;
 
-  /// set the evaluation counter reference points for the NonHierarchSurrModel
-  /// (request forwarded to the low and high fidelity models)
-  void set_evaluation_reference();
   /// request fine-grained evaluation reporting within the low and high
   /// fidelity models
   void fine_grained_evaluation_counters();
@@ -184,47 +159,20 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// initialize truthModelKey and surrModelKeys to default values
-  void assign_default_keys();
-
   /// assign the resolution level for the model form indicated by the key
   void assign_key(const Pecos::ActiveKey& key);
   /// assign the resolution level for the i-th model key
   void assign_key(size_t i);
 
-  /// utility for propagating new key values
-  void key_updates(unsigned short model_index, unsigned short soln_lev_index);
-
   /// update sameInterfaceInstance based on interface ids for models
   /// identified by current {low,high}FidelityKey
   void check_model_interface_instance();
-
-  /// called from derived_synchronize() and derived_synchronize_nowait() to
-  /// extract and rekey response maps using blocking or nonblocking
-  /// synchronization on the LF and HF models
-  void derived_synchronize_sequential(
-    IntResponseMapArray& model_resp_maps_rekey, bool block);
-  /// called from derived_synchronize() for case of distinct models/interfaces
-  /// with competing LF/HF job queues
-  void derived_synchronize_competing();
-  /// combine the HF and LF response maps into a combined response map
-  void derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
-    IntResponseMap& combined_resp_map, bool block);
-
-  /// resize currentResponse based on responseMode
-  void resize_response(bool use_virtual_counts = true);
 
   /// stop the servers for the model instance identified by the passed id
   void stop_model(short model_id);
 
   /// check whether incoming ASV has any active content
   bool test_asv(const ShortArray& asv);
-  /// size id_maps and cached_resp_maps arrays according to responseMode
-  void resize_maps();
-  /// check whether there are any non-empty maps
-  bool test_id_maps(const IntIntMapArray& id_maps);
-  /// count number of non-empty maps
-  size_t count_id_maps(const IntIntMapArray& id_maps);
 
   //
   //- Heading: Data members
@@ -235,39 +183,9 @@ private:
   /// unordered set of model approximations
   ModelArray unorderedModels;
 
-  /// key defining active model form / resolution level for the truth model
-  Pecos::ActiveKey truthModelKey;
   /// keys defining model forms / resolution levels for the active set of
   /// approximations
   std::vector<Pecos::ActiveKey> surrModelKeys;
-
-  /// flag indicating that the {low,high}FidelityKey correspond to the
-  /// same model instance, requiring modifications to updating and evaluation
-  /// scheduling processes
-  bool sameModelInstance;
-  /// flag indicating that the models identified by {low,high}FidelityKey
-  /// employ the same interface instance, requiring modifications to evaluation
-  /// scheduling processes
-  bool sameInterfaceInstance;
-  /// tie breaker for type of model hierarchy when forms and levels are present
-  bool mfPrecedence;
-
-  // store aggregate model key that is active in component_parallel_mode()
-  //Pecos::ActiveKey componentParallelKey;
-  /// size of MPI buffer containing responseMode and an aggregated activeKey
-  int modeKeyBufferSize;
-
-  // map of reference truth (high fidelity) responses computed in
-  // build_approximation() and used for calculating corrections
-  //std::map<Pecos::ActiveKey, Response> truthResponseRef;
-
-  /// map from evaluation ids of truthModel/unorderedModels to
-  /// NonHierarchSurrModel ids
-  IntIntMapArray modelIdMaps;
-  /// maps of responses retrieved in derived_synchronize_nowait() that
-  /// could not be returned since corresponding response portions were
-  /// still pending, blocking response aggregation
-  IntResponseMapArray cachedRespMaps;
 };
 
 
@@ -297,30 +215,6 @@ nested_variable_mappings(const SizetArray& c_index1,
 }
 
 
-inline const SizetArray& NonHierarchSurrModel::nested_acv1_indices() const
-{ return truthModel.nested_acv1_indices(); }
-
-
-inline const ShortArray& NonHierarchSurrModel::nested_acv2_targets() const
-{ return truthModel.nested_acv2_targets(); }
-
-
-inline short NonHierarchSurrModel::
-query_distribution_parameter_derivatives() const
-{ return truthModel.query_distribution_parameter_derivatives(); }
-
-
-inline size_t NonHierarchSurrModel::qoi() const
-{
-  switch (responseMode) {
-  // Note: resize_response() aggregates {truth,surrogate}_model().num_fns(),
-  //       such that code below is a bit more general that currResp num_fns/2
-  case AGGREGATED_MODELS:  return truthModel.qoi();  break;
-  default:                 return response_size();      break;
-  }
-}
-
-
 inline void NonHierarchSurrModel::check_model_interface_instance()
 {
   unsigned short hf_form = truthModelKey.retrieve_model_form();
@@ -344,41 +238,6 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
 	{ sameInterfaceInstance = false; break; }
   }
 }
-
-
-inline bool NonHierarchSurrModel::multifidelity_precedence() const
-{ return mfPrecedence; }
-
-
-inline void NonHierarchSurrModel::
-multifidelity_precedence(bool mf_prec, bool update_default)
-{
-  mfPrecedence = mf_prec;
-  if (update_default) assign_default_keys();
-}
-
-
-inline bool NonHierarchSurrModel::multifidelity() const
-{
-  // This function is used when we don't want to alter logic at run-time based
-  // on a deactivated key (as for same{Model,Interface}Instance)
-  // > we rely on mfPrecedence passed from NonDExpansion::configure_sequence()
-  //   based on the ML/MF algorithm selection; otherwise defaults to true
-
-  return ( !unorderedModels.empty() && // truth + at least 1 approx
-	   ( mfPrecedence || truthModel.solution_levels() <= 1 ) );
-}
-
-
-inline bool NonHierarchSurrModel::multilevel() const
-{
-  return ( truthModel.solution_levels() > 1 &&
-	   ( !mfPrecedence || unorderedModels.empty() ) );
-}
-
-
-//inline bool HierarchSurrModel::multilevel_multifidelity() const
-//{ return ( unorderedModels.size() && truthModel.solution_levels() > 1 ); }
 
 
 inline Model& NonHierarchSurrModel::surrogate_model(size_t i)
@@ -417,6 +276,10 @@ inline const Model& NonHierarchSurrModel::surrogate_model(size_t i) const
   }
   return unorderedModels[i];
 }
+
+
+inline size_t NonHierarchSurrModel::num_approximation_models() const
+{ return unorderedModels.size(); }
 
 
 inline Model& NonHierarchSurrModel::truth_model()
@@ -490,16 +353,6 @@ inline void NonHierarchSurrModel::clear_model_keys()
 }
 
 
-inline bool NonHierarchSurrModel::test_asv(const ShortArray& asv)
-{
-  size_t i, num_fns = asv.size();
-  for (i=0; i<num_fns; ++i)
-    if (asv[i])
-      return true;
-  return false;
-}
-
-
 inline void NonHierarchSurrModel::resize_maps()
 {
   size_t num_steps = 1;
@@ -512,23 +365,13 @@ inline void NonHierarchSurrModel::resize_maps()
 }
 
 
-inline bool NonHierarchSurrModel::test_id_maps(const IntIntMapArray& id_maps)
+inline bool NonHierarchSurrModel::test_asv(const ShortArray& asv)
 {
-  size_t i, num_map = id_maps.size();
-  for (i=0; i<num_map; ++i)
-    if (!id_maps[i].empty())
+  size_t i, num_fns = asv.size();
+  for (i=0; i<num_fns; ++i)
+    if (asv[i])
       return true;
   return false;
-}
-
-
-inline size_t NonHierarchSurrModel::count_id_maps(const IntIntMapArray& id_maps)
-{
-  size_t i, num_map = id_maps.size(), cntr = 0;
-  for (i=0; i<num_map; ++i)
-    if (!id_maps[i].empty())
-      ++cntr;
-  return cntr;
 }
 
 
@@ -604,30 +447,6 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-inline void NonHierarchSurrModel::surrogate_response_mode(short mode)
-{
-  responseMode = mode;
-
-  // if necessary, resize the response for entering/exiting an aggregated mode.
-  // Since parallel job scheduling only involves either the LF or HF model at
-  // any given time, this call does not need to be matched on serve_run() procs.
-  resize_response();
-
-  /// allocate modelIdMaps and cachedRespMaps arrays based on responseMode
-  resize_maps();
-
-  // don't pass to approx models since point of a surrogate bypass is to get
-  // a surrogate-free truth evaluation
-  if (mode == BYPASS_SURROGATE) // recurse in this case
-    truthModel.surrogate_response_mode(mode);
-}
-
-
-inline void NonHierarchSurrModel::
-surrogate_function_indices(const SizetSet& surr_fn_indices)
-{ surrogateFnIndices = surr_fn_indices; }
-
-
 inline IntIntPair NonHierarchSurrModel::
 estimate_partition_bounds(int max_eval_concurrency)
 {
@@ -662,10 +481,6 @@ inline void NonHierarchSurrModel::derived_init_serial()
 }
 
 
-inline void NonHierarchSurrModel::stop_servers()
-{ component_parallel_mode(0); }
-
-
 inline void NonHierarchSurrModel::stop_model(short model_id)
 {
   if (model_id) {
@@ -692,10 +507,6 @@ inline void NonHierarchSurrModel::inactive_view(short view, bool recurse_flag)
     truthModel.inactive_view(view, recurse_flag);
   }
 }
-
-
-//inline const String& NonHierarchSurrModel::interface_id() const
-//{ return orderedModels[]->interface_id(); }
 
 
 inline bool NonHierarchSurrModel::evaluation_cache(bool recurse_flag) const
@@ -727,19 +538,6 @@ inline bool NonHierarchSurrModel::restart_file(bool recurse_flag) const
   }
   else
     return false;
-}
-
-
-inline void NonHierarchSurrModel::set_evaluation_reference()
-{
-  //surrogate_model().set_evaluation_reference();
-
-  // don't recurse this, since the eval reference is for the top level iteration
-  //if (responseMode == BYPASS_SURROGATE)
-  //  truth_model().set_evaluation_reference();
-
-  // may want to add this in time
-  //surrModelEvalRef = surrModelEvalCntr;
 }
 
 

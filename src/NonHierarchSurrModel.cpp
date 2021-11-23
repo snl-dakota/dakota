@@ -23,19 +23,8 @@ extern Model dummy_model; // defined in DakotaModel.cpp
 
 
 NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db),
-  //corrOrder(problem_db.get_short("model.surrogate.correction_order")),
-  //correctionMode(SINGLE_CORRECTION),
-  sameModelInstance(false), sameInterfaceInstance(false),
-  mfPrecedence(true), modeKeyBufferSize(0)
+  EnsembleSurrModel(problem_db)
 {
-  // NonHierarchical surrogate models pass through numerical derivatives
-  supportsEstimDerivs = false;
-  // initialize ignoreBounds even though it's irrelevant for pass through
-  ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
-  // initialize centralHess even though it's irrelevant for pass through
-  centralHess = problem_db.get_bool("responses.central_hess");
-
   const String& truth_model_ptr
     = problem_db.get_string("model.surrogate.actual_model_pointer");
   const StringArray& unordered_model_ptrs
@@ -94,17 +83,6 @@ void NonHierarchSurrModel::assign_default_keys()
   }
 
   check_model_interface_instance();
-}
-
-
-void NonHierarchSurrModel::check_submodel_compatibility(const Model& sub_model)
-{
-  bool err1 = check_active_variables(sub_model),
-       err2 = check_inactive_variables(sub_model),
-       err3 = check_response_qoi(sub_model);
-
-  if (err1 || err2 || err3)
-    abort_handler(MODEL_ERROR);
 }
 
 
@@ -281,71 +259,6 @@ bool NonHierarchSurrModel::finalize_mapping()
 }
 
 
-/*
-void NonHierarchSurrModel::build_approximation()
-{
-  Cout << "\n>>>>> Building hierarchical approximation.\n";
-
-  // perform the eval for the low fidelity model
-  // NOTE: For SBO, the low fidelity eval is performed externally and its
-  // response is passed into compute_correction.
-  // -->> move LF model out and restructure if(!approxBuilds)
-  //ActiveSet temp_set = lf_model.current_response().active_set();
-  //temp_set.request_values(1);
-  //if (sameModelInstance) assign_surrogate_key();
-  //lf_model.evaluate(temp_set);
-  //const Response& lo_fi_response = lf_model.current_response();
-
-  Model& hf_model = truth_model();
-  if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
-    hf_model.eval_tag_prefix(eval_tag);
-  }
-
-  // set NonHierarchSurrModel parallelism mode to HF model
-  component_parallel_mode(num_approx+1);
-
-  // update HF model with current variable values/bounds/labels
-  update_model(hf_model);
-
-  // store inactive variable values for use in determining whether an
-  // automatic rebuild of an approximation is required
-  // (reference{C,D}{L,U}Bnds are not needed in the hierarchical case)
-  const Variables& hf_vars = hf_model.current_variables();
-  copy_data(hf_vars.inactive_continuous_variables(),    referenceICVars);
-  copy_data(hf_vars.inactive_discrete_int_variables(),  referenceIDIVars);
-  referenceIDSVars = hf_vars.inactive_discrete_string_variables();
-  copy_data(hf_vars.inactive_discrete_real_variables(), referenceIDRVars);
-
-  // compute the response for the high fidelity model
-  ShortArray total_asv, hf_asv, lf_asv;
-  std::map<Pecos::ActiveKey, DiscrepancyCorrection>::iterator dc_it
-    = deltaCorr.find(activeKey);
-  if (dc_it!=deltaCorr.end() && dc_it->second.initialized())
-    total_asv.assign(numFns, dc_it->second.data_order());
-  else
-    total_asv.assign(numFns, 1); // default: values only if no deriv correction
-  asv_split(total_asv, hf_asv, lf_asv, true);
-
-  if ( truthResponseRef.find(truthModelKey) == truthResponseRef.end() )
-    truthResponseRef[truthModelKey] = currentResponse.copy();
-  ActiveSet hf_set = currentResponse.active_set(); // copy
-  hf_set.request_vector(hf_asv);
-  if (sameModelInstance) assign_truth_key();
-  hf_model.evaluate(hf_set);
-  truthResponseRef[truthModelKey].update(hf_model.current_response());
-
-  // could compute the correction to LF model here, but rely on an external
-  // call for consistency with DataFitSurr and to facilitate SBO logic.  In
-  // particular, lo_fi_response involves find_center(), hard conv check, etc.
-  //deltaCorr[activeKey].compute(..., truthResponseRef, lo_fi_response);
-
-  Cout << "\n<<<<< NonHierarchical approximation build completed.\n";
-  ++approxBuilds;
-}
-*/
-
-
 /** Compute the response synchronously using LF model, HF model, or
     both (mixed case).  For the LF model portion, compute the high
     fidelity response if needed with build_approximation(), and, if
@@ -477,52 +390,11 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 }
 
 
-/** Blocking retrieval of asynchronous evaluations from LF model, HF
-    model, or both (mixed case).  For the LF model portion, apply
-    correction (if active) to each response in the array.
-    derived_synchronize() is designed for the general case where
-    derived_evaluate_nowait() may be inconsistent in its use of low
-    fidelity evaluations, high fidelity evaluations, or both. */
-const IntResponseMap& NonHierarchSurrModel::derived_synchronize()
-{
-  surrResponseMap.clear();
-
-  if (sameModelInstance || sameInterfaceInstance ||
-      count_id_maps(modelIdMaps) <= 1) { // 1 queue: blocking synch
-    IntResponseMapArray model_resp_map_rekey(modelIdMaps.size()); // num_steps
-    derived_synchronize_sequential(model_resp_map_rekey, true);
-    derived_synchronize_combine(model_resp_map_rekey, surrResponseMap, true);
-  }
-  else                               // competing queues: nonblocking synch
-    derived_synchronize_competing();
-
-  return surrResponseMap;
-}
-
-
-/** Nonblocking retrieval of asynchronous evaluations from LF model,
-    HF model, or both (mixed case).  For the LF model portion, apply
-    correction (if active) to each response in the map.
-    derived_synchronize_nowait() is designed for the general case
-    where derived_evaluate_nowait() may be inconsistent in its use of
-    actual evals, approx evals, or both. */
-const IntResponseMap& NonHierarchSurrModel::derived_synchronize_nowait()
-{
-  surrResponseMap.clear();
-
-  IntResponseMapArray model_resp_map_rekey(modelIdMaps.size());
-  derived_synchronize_sequential(model_resp_map_rekey, false);
-  derived_synchronize_combine(model_resp_map_rekey, surrResponseMap, false);
-
-  return surrResponseMap;
-}
-
-
 void NonHierarchSurrModel::
 derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
 			       bool block)
 {
-  size_t i, num_steps = model_resp_maps_rekey.size();
+  size_t i, num_steps = modelIdMaps.size();
   if (sameModelInstance) {
 
     // Seems sufficient to do this once and not reassign the i-th key on the
@@ -533,63 +405,69 @@ derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
     component_parallel_mode(num_steps); // step index to id (0 is reserved)
 
     rekey_synch(truthModel, block, modelIdMaps, model_resp_maps_rekey);
-
-    for (i=0; i<num_steps; ++i) {
-      // add cached evals from:
-      // (a) recovered asynch evals that could not be returned since other model
-      //     eval portions were still pending, or
-      // (b) synchronous model evals performed within evaluate_nowait()
-      IntResponseMap& cached_map_i = cachedRespMaps[i];
-      model_resp_maps_rekey[i].insert(cached_map_i.begin(), cached_map_i.end());
-      cached_map_i.clear(); // clear map
-    }
   }
   else
     for (i=0; i<num_steps; ++i) {
       Model& model = (i < unorderedModels.size()) ?
 	unorderedModels[i] : truthModel;
-      IntIntMap&        model_id_map = modelIdMaps[i];
-      IntResponseMap& model_resp_map = model_resp_maps_rekey[i];
+      IntIntMap& model_id_map = modelIdMaps[i];
       if (!model_id_map.empty()) { // synchronize evals for i-th Model
 	component_parallel_mode(i+1); // step index to id (0 is reserved)
 	// Note: unmatched Model::responseMap are moved to Model::
 	//       cachedResponseMap for return on next synchronize()
-	rekey_synch(model, block, model_id_map, model_resp_map);
+	rekey_synch(model, block, model_id_map, model_resp_maps_rekey[i]);
       }
-      // add cached evals (see possible sources above)
-      IntResponseMap& cached_resp_map = cachedRespMaps[i];
-      model_resp_map.insert(cached_resp_map.begin(), cached_resp_map.end());
-      cached_resp_map.clear(); // clear map but leave outer array
     }
-}
 
-
-void NonHierarchSurrModel::derived_synchronize_competing()
-{
-  // in this case, we don't want to starve either LF or HF scheduling by
-  // blocking on one or the other --> leverage derived_synchronize_nowait()
-  IntResponseMap aggregated_map; // accumulate surrResponseMap returns
-  while (test_id_maps(modelIdMaps)) {
-    // partial_map is a reference to surrResponseMap, returned by _nowait()
-    const IntResponseMap& partial_map = derived_synchronize_nowait();
-    if (!partial_map.empty())
-      aggregated_map.insert(partial_map.begin(), partial_map.end());
+  for (i=0; i<num_steps; ++i) {
+    // add cached evals from:
+    // (a) recovered asynch evals that could not be returned since other model
+    //     eval portions were still pending, or
+    // (b) synchronous model evals performed within evaluate_nowait()
+    IntResponseMap& cached_map_i = cachedRespMaps[i];
+    model_resp_maps_rekey[i].insert(cached_map_i.begin(), cached_map_i.end());
+    cached_map_i.clear(); // clear map
   }
-
-  // Note: cached response maps and any LF/HF aggregations are managed
-  // within derived_synchronize_nowait()
-
-  std::swap(surrResponseMap, aggregated_map);
 }
 
 
 void NonHierarchSurrModel::
-derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
-                            IntResponseMap& combined_resp_map, bool block)
+derived_synchronize_combine(IntResponseMapArray& model_resp_maps,
+                            IntResponseMap& combined_resp_map)
 {
-  // -----------------------------------
-  // perform IntResponseMap aggregations
-  // -----------------------------------
+  // --------------------------------------------
+  // perform blocking IntResponseMap aggregations
+  // --------------------------------------------
+
+  switch (responseMode) {
+  case AGGREGATED_MODELS: {
+    // loop over model_resp_maps and insert() into offset position.  Notes:
+    // > cachedRespMaps have been inserted into model_resp_maps
+    // > rekey_synch() has migrated from indiv model ids to surrModelEvalCntr
+    size_t i, num_steps = model_resp_maps.size();  IntRespMCIter r_cit;
+    for (i=0; i<num_steps; ++i) {
+      const IntResponseMap& resp_map = model_resp_maps[i];
+      for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
+	insert_response(r_cit->second, i,
+			combined_resp_map[r_cit->first]); // already rekeyed
+    }
+    break;
+  }
+  case BYPASS_SURROGATE:
+    combined_resp_map = model_resp_maps[0]; // one truth model
+    //std::swap(combined_resp_map, model_resp_maps[0]); // can't swap w/ const
+    break;
+  }
+}
+
+
+void NonHierarchSurrModel::
+derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
+				   IntResponseMap& combined_resp_map)
+{
+  // ------------------------------------------------
+  // perform non-blocking IntResponseMap aggregations
+  // ------------------------------------------------
 
   switch (responseMode) {
   case AGGREGATED_MODELS: {
@@ -598,61 +476,50 @@ derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
     // > rekey_synch() has migrated from indiv model ids to surrModelEvalCntr
 
     size_t i, num_steps = model_resp_maps.size();  IntRespMCIter r_cit;
-    if (block) { // all model evaluation contributions are available
-      for (i=0; i<num_steps; ++i) {
-	const IntResponseMap& resp_map = model_resp_maps[i];
-	for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
-	  insert_response(r_cit->second, i,
-			  combined_resp_map[r_cit->first]); // already rekeyed
-      }
+    // assemble set of aggregate ids which still have pending contributions
+    // (only pending jobs remain in modelIdMaps after nonblocking synch)
+    IntSet pending_ids;  IntIntMCIter id_it;
+    for (i=0; i<num_steps; ++i) {
+      const IntIntMap& id_map_i = modelIdMaps[i];
+      for (id_it=id_map_i.begin(); id_it!=id_map_i.end(); ++id_it)
+	pending_ids.insert(id_it->second); // duplicates ignored
     }
-    else { // manage partial results across set of models
 
-      // assemble set of aggregate ids which still have pending contributions
-      // (only pending jobs remain in modelIdMaps after nonblocking synch)
-      IntSet pending_ids;  IntIntMCIter id_it;
-      for (i=0; i<num_steps; ++i) {
-	const IntIntMap& id_map_i = modelIdMaps[i];
-	for (id_it=id_map_i.begin(); id_it!=id_map_i.end(); ++id_it)
-	  pending_ids.insert(id_it->second); // duplicates ignored
-      }
-
-      // process completed job sets or reinsert partial results into cache
-      // Approach 1: repeated pending id lookups on innermost loop
-      //for (i=0; i<num_steps; ++i) {
-      //  const IntResponseMap&        resp_map = model_resp_maps[i];
-      //  const IntResponseMap& cached_resp_map =  cachedRespMaps[i];
-      //  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
-      //    eval_id = r_cit->first; // already rekeyed to NonHier response id
-      //    // test for completion of each aggregate key
-      //    if (pending_ids.find(eval_id) == pending_ids.end()) // no pending
-      //      insert_response(r_cit->second, i, combined_resp_map[eval_id]);
-      //    else // return to i-th model cache
-      //      cached_map_i[eval_id] = r_cit->second;
-      //  }
-      //}
-      // Approach 2: one pending id traversal for each resp map traversal
-      int eval_id, pending_id;  ISIter p_it;
-      for (i=0; i<num_steps; ++i) {
-	const IntResponseMap&  resp_map = model_resp_maps[i];
-        IntResponseMap& cached_resp_map =  cachedRespMaps[i];
-	p_it = pending_ids.begin();
-	pending_id = (p_it == pending_ids.end()) ? INT_MAX : *p_it;
-	for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
-	  eval_id = r_cit->first; // already rekeyed to NonHier response id
-	  while (eval_id > pending_id) {
-	    ++p_it;
-	    pending_id = (p_it == pending_ids.end()) ? INT_MAX : *p_it;
-	  }
-	  if (eval_id < pending_id)
-	    insert_response(r_cit->second, i, combined_resp_map[eval_id]);
-	  else // eval_id has pending contributions; return to i-th model cache
-	    cached_resp_map[eval_id] = r_cit->second;
+    // process completed job sets or reinsert partial results into cache
+    // Approach 1: repeated pending id lookups on innermost loop
+    //for (i=0; i<num_steps; ++i) {
+    //  const IntResponseMap&        resp_map = model_resp_maps[i];
+    //  const IntResponseMap& cached_resp_map =  cachedRespMaps[i];
+    //  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
+    //    eval_id = r_cit->first; // already rekeyed to NonHier response id
+    //    // test for completion of each aggregate key
+    //    if (pending_ids.find(eval_id) == pending_ids.end()) // no pending
+    //      insert_response(r_cit->second, i, combined_resp_map[eval_id]);
+    //    else // return to i-th model cache
+    //      cached_map_i[eval_id] = r_cit->second;
+    //  }
+    //}
+    // Approach 2: one pending id traversal for each resp map traversal
+    int eval_id, pending_id;  ISIter p_it;
+    for (i=0; i<num_steps; ++i) {
+      const IntResponseMap&  resp_map = model_resp_maps[i];
+      IntResponseMap& cached_resp_map =  cachedRespMaps[i];
+      p_it = pending_ids.begin();
+      pending_id = (p_it == pending_ids.end()) ? INT_MAX : *p_it;
+      for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
+	eval_id = r_cit->first; // already rekeyed to NonHier response id
+	while (eval_id > pending_id) {
+	  ++p_it;
+	  pending_id = (p_it == pending_ids.end()) ? INT_MAX : *p_it;
 	}
+	if (eval_id < pending_id)
+	  insert_response(r_cit->second, i, combined_resp_map[eval_id]);
+	else // eval_id has pending contributions; return to i-th model cache
+	  cached_resp_map[eval_id] = r_cit->second;
       }
-      // Approach 3: use array of r_cit's to advance each resp map in
-      // coordination with single pending id advancement (overkill)
     }
+    // Approach 3: use array of r_cit's to advance each resp map in
+    // coordination with single pending id advancement (overkill)
     break;
   }
   case BYPASS_SURROGATE:

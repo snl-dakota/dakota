@@ -771,8 +771,7 @@ const IntResponseMap& DataTransformModel::filter_submodel_responses()
   const IntResponseMap& sm_resp_map = subModel.synchronize();
   // Not using BOOST_FOREACH due to potential for iterator invalidation in 
   // erase in cache_unmatched_response (shouldn't be a concern with map?)
-  IntRespMCIter sm_r_it = sm_resp_map.begin();
-  IntRespMCIter sm_r_end = sm_resp_map.end();
+  IntRespMCIter sm_r_it = sm_resp_map.begin(), sm_r_end = sm_resp_map.end();
   while (sm_r_it != sm_r_end) {
     int sm_id = sm_r_it->first;
     IntIntMIter id_it = recastIdMap.find(sm_id);
@@ -795,8 +794,7 @@ cache_submodel_responses(const IntResponseMap& sm_resp_map, bool deep_copy)
 {
   // Not using BOOST_FOREACH due to potential for iterator invalidation in 
   // erase in cache_unmatched_response (shouldn't be a concern with map?)
-  IntRespMCIter sm_r_it = sm_resp_map.begin();
-  IntRespMCIter sm_r_end = sm_resp_map.end();
+  IntRespMCIter sm_r_it = sm_resp_map.begin(), sm_r_end = sm_resp_map.end();
   while (sm_r_it != sm_r_end) {
     int sm_id = sm_r_it->first;
     IntIntMIter id_it = recastIdMap.find(sm_id);
