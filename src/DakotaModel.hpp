@@ -3767,27 +3767,36 @@ rekey_response_map(MetaType& meta_object, IntIntMapArray& id_maps,
 {
   // rekey the IntResponseMap evals matched in id_maps, else move to cache
   IntResponseMap& orig_resp_map = meta_object.response_map();
-  IntIntMIter id_it; IntRespMIter r_it = orig_resp_map.begin();
-  size_t i, num_maps = id_maps.size(), orig_eval_id;
+  IntRespMIter r_it = orig_resp_map.begin();
+  size_t i, num_maps = id_maps.size(), resp_eval_id;
+  std::vector<IntIntMIter> id_iters(num_maps);  IntIntMIter id_ite;
+  for (i=0; i<num_maps; ++i)
+    id_iters[i] = id_maps[i].begin();
   resp_maps_rekey.clear();  resp_maps_rekey.resize(num_maps);
 
-  for (i=0; i<num_maps; ++i) {
-    IntIntMap&      id_map = id_maps[i];  id_it = id_map.begin();
-    IntResponseMap& resp_map_rekey = resp_maps_rekey[i];
-    while (id_it!=id_map.end()) {
-      orig_eval_id = id_it->first;
-      r_it = orig_resp_map.find(orig_eval_id);
-      if (r_it != orig_resp_map.end()) {
+  // Single traversal of orig_resp_map and all id_maps
+  bool found, active_id_maps = true;
+  while (r_it != orig_resp_map.end() && active_id_maps) {
+    resp_eval_id = r_it->first;
+    found = active_id_maps = false;
+    for (i=0; i<num_maps; ++i) {
+      IntIntMap&   id_map = id_maps[i];
+      IntIntMIter& id_it  = id_iters[i];  id_ite = id_map.end();
+      while (id_it != id_ite && id_it->first <  resp_eval_id) ++id_it;
+      if    (id_it != id_ite && id_it->first == resp_eval_id) {
+	// process match and increment both iterators
 	Response& resp = r_it->second;
-	resp_map_rekey[id_it->second] = (deep_copy) ? resp.copy() : resp;
+	resp_maps_rekey[i][id_it->second] = (deep_copy) ? resp.copy() : resp;
 	if (evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
-	  asynch_eval_store(meta_object, orig_eval_id, resp);
-	id_map.erase(id_it++); // postfix increment avoids id_it invalidation
-	orig_resp_map.erase(r_it);
+	  asynch_eval_store(meta_object, id_it->first, resp);
+	id_map.erase(id_it++);      // postfix increment
+	orig_resp_map.erase(r_it++);// postfix increment 
+	found = true;
       }
-      else
-	++id_it;
+      //if (found) break;// interferes with active_id_maps and only defers ++it
+      if (id_it != id_ite) active_id_maps = true;
     }
+    if (!found) ++r_it; // else already advanced
   }
 
   // insert unmatched resp_map jobs into cache (may be from another Model
@@ -3815,24 +3824,26 @@ rekey_response_map(MetaType& meta_object, IntIntMap& id_map,
   // rekey the IntResponseMap evals matched in id_map, else move to cache
   IntResponseMap& orig_resp_map = meta_object.response_map();
   IntRespMIter r_it = orig_resp_map.begin();
-  IntIntMIter id_it = id_map.begin();
-  size_t i, orig_eval_id;
+  IntIntMIter id_it =        id_map.begin();
+  size_t i, orig_eval_id, resp_eval_id;
   resp_map_rekey.clear();
 
-  while (id_it!=id_map.end()) {
+  // Single traversal of orig_resp_map and id_map
+  while (id_it != id_map.end() && r_it != orig_resp_map.end()) {
     orig_eval_id = id_it->first;
-    r_it = orig_resp_map.find(orig_eval_id);
-    if (r_it != orig_resp_map.end()) {
+    resp_eval_id =  r_it->first;
+    if      (orig_eval_id < resp_eval_id) ++id_it;
+    else if (orig_eval_id > resp_eval_id)  ++r_it;
+    else { // equal: process match and increment both iterators
       Response& resp = r_it->second;
       resp_map_rekey[id_it->second] = (deep_copy) ? resp.copy() : resp;
       if (evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
 	asynch_eval_store(meta_object, orig_eval_id, resp);
-      id_map.erase(id_it++); // postfix increment avoids id_it invalidation
-      orig_resp_map.erase(r_it);
+      id_map.erase(id_it++);      // postfix increment avoids iter invalidation
+      orig_resp_map.erase(r_it++);// postfix increment avoids iter invalidation
     }
-    else
-      ++id_it;
   }
+
   // insert unmatched resp_map jobs into cache (may be from another Model
   // using a shared Interface instance).  Neither deep copy nor rekey are
   // performed until id is matched above (on a subsequent pass).
