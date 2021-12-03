@@ -52,9 +52,9 @@ model,
 #	  use_derivatives			#s15
 	  correction additive first_order	#s0,#s3,#s6,#s9
 # 	surrogate local taylor_series		#s1,#s4,#s7,#s10
-#	  actual_model_pointer = 'TRUTH'	#s1,#s4,#s7,#s10
+#	  truth_model_pointer = 'TRUTH'	#s1,#s4,#s7,#s10
 # 	surrogate multipoint tana		#s12,#s13
-#	  actual_model_pointer = 'TRUTH'	#s12,#s13
+#	  truth_model_pointer = 'TRUTH'	#s12,#s13
 
 variables,
 	continuous_design = 2

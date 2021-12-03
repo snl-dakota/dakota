@@ -21,7 +21,7 @@ method
 model,                                         
         id_model = 'SURR'    			 
         surrogate global,			 
-	  actual_model_pointer = 'TRUTH'
+	  truth_model_pointer = 'TRUTH'
           reuse_samples all
 	  gaussian_process		     #s0,#s1
 	    surfpack		     	     #s0,#s1

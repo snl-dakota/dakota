@@ -21,7 +21,7 @@ Examples::
 model
   active_subspace
     id_model = 'SUBSPACE'
-    actual_model_pointer = 'FULLSPACE'
+    truth_model_pointer = 'FULLSPACE'
     initial_samples  100
    build_surrogate
      refinement_samples 10

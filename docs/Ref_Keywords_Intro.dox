@@ -50,7 +50,7 @@ It can be difficult to capture the complex
 relationships that can occur when specifications are nested within
 multiple groupings. 
 For example, in the \c model block, the \c
-actual_model_pointer specification is a required specification within
+truth_model_pointer specification is a required specification within
 the \c multipoint and \c local required group specifications, which
 are separated from each other and from other required group
 specifications (\c global and \c hierarchical) by logical OR's. The

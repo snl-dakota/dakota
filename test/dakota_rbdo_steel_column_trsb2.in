@@ -33,7 +33,7 @@ model,
 	surrogate local taylor_series
 	  variables_pointer = 'OPTIM_V'
 	  responses_pointer = 'OPTIM_R_SURR'
-	  actual_model_pointer = 'OPTIM_TRUTH'
+	  truth_model_pointer = 'OPTIM_TRUTH'
 
 variables,
 	id_variables = 'OPTIM_V'
