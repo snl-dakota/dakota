@@ -1163,7 +1163,7 @@ const Interface& ProblemDescDB::get_interface()
   //     model.surrogate.derivative_usage
   // > SurfpackApproximation: model.surrogate.polynomial_order,
   //     model.surrogate.kriging_correlations
-  // > TaylorApproximation: model.surrogate.actual_model_pointer,
+  // > TaylorApproximation: model.surrogate.truth_model_pointer,
   //     responses.hessian_type
   // > OrthogPolyApproximation: method.nond.expansion_{terms,order}
 
@@ -2128,7 +2128,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"rf.propagation_model_pointer", P_MOD propagationModelPointer},
       {"rf_data_file", P_MOD rfDataFileName},
       {"simulation.solution_level_control", P_MOD solutionLevelControl},
-      {"surrogate.actual_model_pointer", P_MOD actualModelPointer},
+      {"surrogate.truth_model_pointer", P_MOD truthModelPointer},
       {"surrogate.challenge_points_file", P_MOD importChallengePtsFile},
       {"surrogate.decomp_cell_type", P_MOD decompCellType},
       {"surrogate.export_approx_points_file", P_MOD exportApproxPtsFile},

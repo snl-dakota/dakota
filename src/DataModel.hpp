@@ -140,9 +140,8 @@ public:
   /// polynomial,kriging), or hierarchical
   String surrogateType;
   /// pointer to the model specification for constructing the truth model
-  /// used in constructing surrogates (from the \c actual_model_pointer
-  /// specification in \ref ModelSurrL and \ref ModelSurrMP)
-  String actualModelPointer;
+  /// used in constructing surrogates
+  String truthModelPointer;
   /// an ordered (low to high) or unordered (peer) set of model pointers
   /// corresponding to a ensemble of modeling fidelities (from the \c
   /// ordered_model_fidelities specification in \ref ModelSurrH or the

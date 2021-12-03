@@ -7447,7 +7447,6 @@ static IntVector
 	MP_(refineSamples);
 
 static String
-	MP_(actualModelPointer),
         MP_(advancedOptionsFilename),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
@@ -7467,6 +7466,7 @@ static String
 	MP_(rfDataFileName),
 	MP_(solutionLevelControl),
 	MP_(subMethodPointer),
+	MP_(truthModelPointer),
 	MP_(variablesPointer);
 
 static StringArray

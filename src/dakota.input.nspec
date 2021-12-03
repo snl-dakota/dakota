@@ -6342,7 +6342,7 @@ KEYWORD model {N_mom3(start,0,stop)}
            ]
          )
         |
-        actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
+        truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
        ]
       [ reuse_points ALIAS reuse_samples {0}
         all {N_mom(lit,approxPointReuse_all)}
@@ -6429,12 +6429,12 @@ KEYWORD model {N_mom3(start,0,stop)}
       tana {N_mom(lit,surrogateType_multipoint_tana)}
       |
       qmea {N_mom(lit,surrogateType_multipoint_qmea)}
-      actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
+      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
      )
     |
     ( local {N_mom(lit,surrogateType_local_taylor)}
       taylor_series {0}
-      actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
+      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
      )
     |
     ( hierarchical {N_mom(lit,surrogateType_hierarchical)}
@@ -6454,7 +6454,7 @@ KEYWORD model {N_mom3(start,0,stop)}
      )
     |
     ( non_hierarchical ALIAS model_ensemble {N_mom(lit,surrogateType_non_hierarchical)}
-      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
       [ unordered_model_fidelities ALIAS approximation_models STRINGLIST {N_mom(strL,ensembleModelPointers)} ]
      )
    )
@@ -6480,7 +6480,7 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( active_subspace ALIAS subspace {N_mom(lit,modelType_active_subspace)}
-    actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+    truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
     [ initial_samples INTEGER {N_mom(int,initialSamples)} ]
     [ sample_type {0}
       lhs {N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}
@@ -6522,7 +6522,7 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( adapted_basis {N_mom(lit,modelType_adapted_basis)}
-    ( actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+    ( truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
       sparse_grid_level INTEGER {N_mom(ushint,adaptedBasisSparseGridLev)}
       |
       ( expansion_order INTEGER {N_mom(ushint,adaptedBasisExpOrder)}

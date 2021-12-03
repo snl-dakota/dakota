@@ -73,7 +73,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   const String& dace_method_pointer
     = problem_db.get_string("model.dace_method_pointer");
   const String& actual_model_pointer
-    = problem_db.get_string("model.surrogate.actual_model_pointer");
+    = problem_db.get_string("model.surrogate.truth_model_pointer");
   bool dace_construct = !dace_method_pointer.empty(),
       model_construct = (dace_construct || !actual_model_pointer.empty());
   size_t method_index = _NPOS, model_index = _NPOS;
@@ -148,7 +148,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     Cerr << "Error: to build a data fit surrogate model, either a global "
 	 << "approximation\n       must be specified with reuse_points or "
 	 << "dace_method_pointer, or a\n       local/multipoint approximation "
-	 << "must be specified with an actual_model_pointer." << std::endl;
+	 << "must be specified with a truth_model_pointer." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 

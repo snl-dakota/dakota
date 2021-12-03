@@ -4174,8 +4174,8 @@
 		      <!-- TODO: soft convergence limit / tolerance, challenge points -->
 		    </keyword>
 		  </keyword>
-		  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
-                    <alias name="truth_model_pointer"/>
+		  <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"  >
+                    <alias name="actual_model_pointer"/>
                     <param type="STRING" in_taglist="model" />
 		  </keyword>
 		</oneOf>
@@ -4298,17 +4298,18 @@
                 <keyword  id="tana" name="tana" code="{N_mom(lit,surrogateType_multipoint_tana)}" label="Two-point adaptive nonlinear approximation "   />
                 <keyword  id="qmea" name="qmea" code="{N_mom(lit,surrogateType_multipoint_qmea)}" label="Quadratic multipoint exponential approximation "   />
               </oneOf>
-              <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
-                <alias name="truth_model_pointer"/>
+
+	      <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"  >
+                <alias name="actual_model_pointer"/>
                 <param type="STRING" in_taglist="model" />
-              </keyword>
+	      </keyword>
             </keyword>
             <keyword  id="local" name="local" code="{N_mom(lit,surrogateType_local_taylor)}" label="Local Approximation"  complexity="1">
               <keyword  id="taylor_series" name="taylor_series" code="{0}" label="Taylor Series Local Approximation "   />
-        	<keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
-                  <alias name="truth_model_pointer"/>
-            	  <param type="STRING" in_taglist="model" />
-          	</keyword>
+	        <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"  >
+                  <alias name="actual_model_pointer"/>
+                  <param type="STRING" in_taglist="model" />
+		</keyword>
               </keyword>
             <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical Approximation"  >
               <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (Ordered by Fidelity)"   >
@@ -4330,7 +4331,7 @@
             </keyword>
             <keyword  id="non_hierarchical" name="non_hierarchical" code="{N_mom(lit,surrogateType_non_hierarchical)}" label="Nonhierarchical Approximation"  >
 	      <alias name="model_ensemble"/>
-              <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Truth Model Pointer"   >
+              <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"   >
 		<alias name="actual_model_pointer"/>
             	<param type="STRING" in_taglist="model" />
               </keyword>
@@ -4385,8 +4386,9 @@
         <keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="Active Subspace"  complexity="1">
           <alias name="subspace"/>
 
-	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
-	    <param type="STRING" in_taglist="model" />
+	  <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"  >
+            <alias name="actual_model_pointer"/>
+            <param type="STRING" in_taglist="model" />
 	  </keyword>
 	  <keyword  id="initial_samples" name="initial_samples" code="{N_mom(int,initialSamples)}" label="Initial Samples"  minOccurs="0" default="model-dependent">
 	    <param type="INTEGER" />
@@ -4445,8 +4447,9 @@
 	  </keyword>
 	</keyword>
 	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="Adapted Basis"  >
-	  <keyword id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
-	    <param type="STRING" in_taglist="model" />
+	  <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"  >
+            <alias name="actual_model_pointer"/>
+            <param type="STRING" in_taglist="model" />
 	  <oneOf label="Expansion Basis Control">
 	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(ushint,adaptedBasisSparseGridLev)}" label="Adapted Basis Sparse Grid Level" >
 	      <param type="INTEGER" />
