@@ -226,6 +226,9 @@ void NonDNonHierarchSampling::
 mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 		       RealMatrix& eval_ratios)
 {
+  if (eval_ratios.empty())
+    eval_ratios.shapeUninitialized(numFunctions, numApprox);
+
   size_t qoi, approx, num_am1 = numApprox - 1;
   Real cost_L, cost_H = cost[numApprox]; // HF cost
   // standard approach for well-ordered models
@@ -256,6 +259,9 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 				 SizetArray& model_sequence,
 				 RealMatrix& eval_ratios)
 {
+  if (eval_ratios.empty())
+    eval_ratios.shapeUninitialized(numFunctions, numApprox);
+
   size_t qoi, approx, num_am1 = numApprox - 1;
   Real cost_L, cost_H = cost[numApprox]; // HF cost
 
