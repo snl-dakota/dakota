@@ -108,7 +108,7 @@ private:
   void control_variate_mc();
 
   /// perform a shared increment of LF and HF samples for purposes of
-  /// computing/updating the evaluation ratio and the MSE ratio
+  /// computing/updating the evaluation and estimator variance ratios
   void shared_increment(const Pecos::ActiveKey& agg_key,size_t iter,size_t lev);
 
   /// core parameter set definition and evaluation for LF sample increment
@@ -156,10 +156,10 @@ private:
 			   RealVector& eval_ratios);
 
   /// compute ratios of MC and CVMC mean squared errors across the QoI vector
-  void compute_MSE_ratios(const RealVector& eval_ratios,
-			  const RealVector& var_H, const RealVector& rho2_LH,
-			  size_t iter, const SizetArray& N_hf,
-			  RealVector& mse_ratios);
+  void compute_estvar_ratios(const RealVector& eval_ratios,
+			     const RealVector& var_H, const RealVector& rho2_LH,
+			     size_t iter, const SizetArray& N_hf,
+			     RealVector& estvar_ratios);
 
   /// compute control variate parameters for CVMC and estimate raw moments
   void cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,

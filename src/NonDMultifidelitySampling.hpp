@@ -54,10 +54,10 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  //void pre_run();
   void core_run();
   //void post_run(std::ostream& s);
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   void print_variance_reduction(std::ostream& s);
 
   //
@@ -68,13 +68,15 @@ protected:
   void multifidelity_mc_offline_pilot();
   void multifidelity_mc_pilot_projection();
 
-  void mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
-			SizetArray& model_sequence, RealMatrix& eval_ratios,
-			bool for_warm_start = false);
-  void mfmc_numerical_solution(const RealMatrix& rho2_LH,
+  void mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
+			const RealVector& cost,  SizetArray& model_sequence,
+			RealMatrix& eval_ratios, RealVector& hf_targets);
+                      //bool for_warm_start = false);
+  void mfmc_numerical_solution(const RealMatrix& var_L,
+			       const RealMatrix& rho2_LH,
 			       const RealVector& cost,
 			       SizetArray& model_sequence,
-			       RealMatrix& eval_ratios);
+			       RealMatrix& eval_ratios, Real& avg_hf_target);
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
@@ -95,8 +97,8 @@ protected:
   void update_hf_targets(const RealMatrix& rho2_LH,
 			 const SizetArray& model_sequence,
 			 const RealMatrix& eval_ratios, const RealVector& var_H,
-			 const RealVector& mse_iter0,   RealVector& mse_ratios,
-			 RealVector& hf_targets);
+			 const RealVector& estvar_iter0,
+			 RealVector& estvar_ratios, RealVector& hf_targets);
   //void update_hf_targets(const SizetArray& N_H, RealVector& hf_targets);
 
   void update_projected_samples(const RealVector& hf_targets,
@@ -104,15 +106,15 @@ protected:
 				SizetArray& N_H_projected,
 				Sizet2DArray& N_L_projected);
 
-  void compute_mse_ratios(const RealMatrix& rho2_LH,
-			  const SizetArray& model_sequence,
-			  const RealMatrix& eval_ratios,
-			  RealVector& mse_ratios);
-  void compute_mse_ratios(const RealMatrix& rho2_LH, const SizetArray& N_H,
-			  const RealVector& hf_targets,
-			  const SizetArray& model_sequence,
-			  const RealMatrix& eval_ratios,
-			  RealVector& mse_ratios);
+  void compute_estvar_ratios(const RealMatrix& rho2_LH,
+			     const SizetArray& model_sequence,
+			     const RealMatrix& eval_ratios,
+			     RealVector& estvar_ratios);
+
+  void mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
+			       const RealVector& hf_targets,
+			       const SizetArray& model_sequence,
+			       const RealMatrix& eval_ratios);
 
 private:
 
@@ -147,9 +149,15 @@ private:
 			      const RealVector& sum_H, const RealMatrix& sum_LL,
 			      const RealMatrix& sum_LH,const RealVector& sum_HH,
 			      const Sizet2DArray& num_L,const SizetArray& num_H,
-			      const Sizet2DArray& num_LH, RealVector& var_H,
-			      RealMatrix& rho2_LH);
-  
+			      const Sizet2DArray& num_LH, RealMatrix& var_L,
+			      RealVector& var_H, RealMatrix& rho2_LH);
+  void correlation_sq_to_covariance(const RealMatrix& rho2_LH,
+				    const RealMatrix& var_L,
+				    const RealVector& var_H,
+				    RealMatrix& cov_LH);
+  void matrix_to_diagonal_array(const RealMatrix& var_L,
+				RealSymMatrixArray& cov_LL);
+
   void mf_raw_moments(IntRealMatrixMap& sum_L_baseline,
 		      IntRealMatrixMap& sum_L_shared,
 		      IntRealMatrixMap& sum_L_refined,
@@ -164,35 +172,12 @@ private:
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
 
-  /// objective helper function shared by NPSOL/OPT++ static evaluators
-  Real objective_function(const RealVector& r_and_N);
-  /// static function used by NPSOL for the objective function
-  static void npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
-					double* grad_f, int& nstate);
-  /// static function used by OPT++ for the objective function
-  static void optpp_objective_evaluator(int n, const RealVector& x,
-					double& f, int& result_mode);
-  /// static function used by NPSOL for the nonlinear constraints, if present
-  static void npsol_constraint_evaluator(int& mode, int& ncnln, int& n,
-					 int& nrowj, int* needc, double* x,
-					 double* c, double* cjac, int& nstate);
-  /// static function used by OPT++ for the nonlinear constraints, if present
-  static void optpp_constraint_evaluator(int mode, int n, const RealVector& x,
-					 RealVector& g, RealMatrix& grad_g,
-					 int& result_mode);
-
   //
   //- Heading: Data
   //
 
-  /// ratio of MFMC estimator variance to mseIter0, one per QoI
-  RealVector mseRatios;
-
-  /// SQP or NIP
-  unsigned short optSubProblemSolver;
-
-  /// pointer to NonDACV instance used in static member functions
-  static NonDMultifidelitySampling* mfmcInstance;
+  /// ratio of MFMC estimator variance to estVarIter0, one per QoI
+  RealVector estVarRatios;
 };
 
 
@@ -206,6 +191,41 @@ initialize_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   for (int i=1; i<=4; ++i) {
     mat_pr.first = i; // moment number
     sum_LL.insert(mat_pr).first->second.shape(numFunctions, numApprox);
+  }
+}
+
+
+inline void NonDMultifidelitySampling::
+correlation_sq_to_covariance(const RealMatrix& rho2_LH, const RealMatrix& var_L,
+			     const RealVector& var_H, RealMatrix& cov_LH)
+{
+  if (cov_LH.empty()) cov_LH.shapeUninitialized(numFunctions, numApprox);
+
+  size_t qoi, approx;  Real var_H_q, cov_LH_aq;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    var_H_q = var_H[qoi];
+    for (approx=0; approx<numApprox; ++approx)
+      cov_LH(qoi,approx)
+	= std::sqrt(rho2_LH(qoi,approx) * var_L(qoi,approx) * var_H_q);
+  }
+}
+
+
+inline void NonDMultifidelitySampling::
+matrix_to_diagonal_array(const RealMatrix& var_L, RealSymMatrixArray& cov_LL)
+{
+  size_t qoi, approx;
+  if (cov_LL.empty()) {
+    cov_LL.resize(numFunctions);
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      cov_LL[qoi].shapeUninitialized(numApprox);
+  }
+
+  Real cov_LH_aq;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    RealSymMatrix& cov_LL_q = cov_LL[qoi];
+    for (approx=0; approx<numApprox; ++approx)
+      cov_LL_q(approx,approx) = var_L(qoi,approx);
   }
 }
 

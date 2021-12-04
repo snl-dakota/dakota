@@ -70,9 +70,6 @@ void NonDControlVariateSampling::core_run()
     model form and discretization level. */
 void NonDControlVariateSampling::control_variate_mc()
 {
-  // Performs pilot + LF increment and then iterates with additional shared
-  // increment + LF increment batches until prescribed MSE reduction is obtained
-
   size_t qoi, num_steps, form, lev, fixed_index;  short seq_type;
   configure_sequence(num_steps, fixed_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
@@ -123,7 +120,7 @@ void NonDControlVariateSampling::control_variate_mc()
 
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
-  RealVector eval_ratios, mse_iter0, mse_ratios, mu_hat, hf_targets,
+  RealVector eval_ratios, estvar_iter0, estvar_ratios, mu_hat, hf_targets,
     sum_HH(numFunctions), var_H(numFunctions, false),
     rho2_LH(numFunctions, false);
 
@@ -135,9 +132,9 @@ void NonDControlVariateSampling::control_variate_mc()
 
   while (numSamples && mlmfIter <= maxIterations) {
 
-    // --------------------------------------------------------------------
-    // Evaluate shared increment and update correlations, {eval,MSE}_ratios
-    // --------------------------------------------------------------------
+    // -----------------------------------------------------------------------
+    // Evaluate shared increment and update correlations, {eval,estvar}_ratios
+    // -----------------------------------------------------------------------
     shared_increment(active_key, mlmfIter, 0);
     accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 		       sum_HH, mu_hat, N_lf, N_hf);
@@ -148,29 +145,30 @@ void NonDControlVariateSampling::control_variate_mc()
     // over QoI.  This includes updating var_H and rho2_LH.
     compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
 			cost_ratio, N_hf, var_H, rho2_LH, eval_ratios);
-    // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
+    // estvar_iter0 only uses HF pilot since sum_L_shared / N_shared minus
     // sum_L_refined / N_refined is zero for CV prior to sample refinement.
-    // (This differs from MLMC MSE^0 which uses pilot for all levels.)
-    if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_hf, mse_iter0);
+    // (This differs from MLMC estvar^0 which uses pilot for all levels.)
+    if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_hf, estvar_iter0);
     // Compute the ratio of MC and CVMC mean squared errors (for convergence).
     // This ratio incorporates the anticipated variance reduction from the
     // upcoming application of eval_ratios.
-    compute_MSE_ratios(eval_ratios, var_H, rho2_LH, mlmfIter, N_hf, mse_ratios);
+    compute_estvar_ratios(eval_ratios, var_H, rho2_LH, mlmfIter, N_hf,
+			  estvar_ratios);
 
-    // ------------------------------------------------------------------------
-    // Compute shared increment targeting specified budget and/or MSE reduction
-    // ------------------------------------------------------------------------
+    // -----------------------------------------------------------------------
+    // Compute shared increment targeting specified budget || estvar reduction
+    // -----------------------------------------------------------------------
     if (maxFunctionEvals != SZ_MAX) {
       Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
       allocate_budget(eval_ratios, cost_ratio, hf_targets);
     }
     else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: support both
-      // N_hf = mse_ratio * var_H / convTol / mse_iter0
-      // Note: don't simplify further since mse_iter0 is fixed based on pilot
+      // N_hf = estvar_ratio * var_H / convTol / estvar_iter0
+      // Note: don't simplify further since estvar_iter0 is fixed based on pilot
       Cout << "Scaling profile for convergenceTol = " << convergenceTol;
-      hf_targets = mse_ratios;
+      hf_targets = estvar_ratios;
       for (qoi=0; qoi<numFunctions; ++qoi)
-	hf_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
+	hf_targets[qoi] *= var_H[qoi] / estvar_iter0[qoi] / convergenceTol;
     }
     // numSamples is relative to N_H, but the approx_increments() below are
     // computed relative to hf_targets (independent of sunk cost for pilot)
@@ -508,7 +506,7 @@ compute_eval_ratios(const RealVector& sum_L_shared, const RealVector& sum_H,
     // > the sample increment optimizes the total computational budget and is
     //   not treated as a worst case accuracy reqmt --> use the QoI average
     // > refinement based only on QoI mean statistics
-    // Given use of 1/r in MSE_ratio, one approach would average 1/r, but
+    // Given use of 1/r in estvar_ratio, one approach would average 1/r, but
     // this does not seem to behave as well in limited numerical experience.
     //if (rho_sq > Pecos::SMALL_NUMBER) {
     //  avg_inv_eval_ratio += std::sqrt((1. - rho_sq)/(cost_ratio * rho_sq));
@@ -534,39 +532,40 @@ compute_eval_ratios(const RealVector& sum_L_shared, const RealVector& sum_H,
 
 
 void NonDControlVariateSampling::
-compute_MSE_ratios(const RealVector& eval_ratios, const RealVector& var_H,
-		   const RealVector& rho2_LH, size_t iter,
-		   const SizetArray& N_hf, RealVector& mse_ratios)
+compute_estvar_ratios(const RealVector& eval_ratios, const RealVector& var_H,
+		      const RealVector& rho2_LH, size_t iter,
+		      const SizetArray& N_hf, RealVector& estvar_ratios)
 {
-  //Real curr_mc_mse, curr_cvmc_mse, curr_mse_ratio, avg_mse_ratio = 0.;
-  if (mse_ratios.empty()) mse_ratios.sizeUninitialized(numFunctions);
+  //Real curr_mc_estvar,curr_cvmc_estvar,curr_estvar_ratio,avg_estvar_ratio=0.;
+  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    // Compute ratio of MSE for high fidelity MC and multifidelity CVMC
-    // > Estimator Var for MC = sigma_hf^2 / N_hf = MSE (neglect HF bias)
+    // Compute ratio of estvar for high fidelity MC and multifidelity CVMC
+    // > Estimator Var for MC = sigma_hf^2 / N_hf
     // > Estimator Var for CV = (1+r/w) [1-rho^2(1-1/r)] sigma_hf^2 / p
     //   where p = (1+r/w)N_hf -> Var = [1-rho^2(1-1/r)] sigma_hf^2 / N_hf
-    // MSE ratio = Var_CV / Var_MC = [1-rho^2(1-1/r)]
-    mse_ratios[qoi] = 1. - rho2_LH[qoi] * (1. - 1. / eval_ratios[qoi]);//Ng 2014
+    // estvar ratio = Var_CV / Var_MC = [1-rho^2(1-1/r)]
+    estvar_ratios[qoi]
+      = 1. - rho2_LH[qoi] * (1. - 1. / eval_ratios[qoi]); // Ng 2014
     Cout << "QoI " << qoi+1 << ": CV variance reduction factor = "
-	 << mse_ratios[qoi] << " for eval ratio " << eval_ratios[qoi] << '\n';
-    //curr_mc_mse   = var_H[qoi] / N_hf[qoi];
-    //curr_cvmc_mse = curr_mc_mse * curr_mse_ratio;
+	 << estvar_ratios[qoi] << " for eval ratio " << eval_ratios[qoi]<< '\n';
+    //curr_mc_estvar   = var_H[qoi] / N_hf[qoi];
+    //curr_cvmc_estvar = curr_mc_estvar * curr_estvar_ratio;
     //Cout << "QoI " << qoi+1 << ": Mean square error estimated to reduce from "
-    //     << curr_mc_mse << " (MC) to " << curr_cvmc_mse
+    //     << curr_mc_estvar << " (MC) to " << curr_cvmc_estvar
     //     << " (CV) following upcoming LF increment\n";
 
-    //if (iter == 0) // initialize reference based on pilot
-    //  { mcMSEIter0[qoi] = curr_mc_mse; avg_mse_ratio += curr_mse_ratio; }
+    //if (iter == 0) { // initialize reference based on pilot
+    //  mcEstVarIter0[qoi] = curr_mc_estvar;
+    //  avg_estvar_ratio += curr_estvar_ratio;
+    //}
     //else           // measure convergence to target based on pilot reference
-    //  avg_mse_ratio += curr_cvmc_mse / mcMSEIter0[qoi];
+    //  avg_estvar_ratio += curr_cvmc_estvar / mcEstVarIter0[qoi];
   }
 
-  /*
-  avg_mse_ratio /= numFunctions;
-  Cout << "Average MSE reduction factor since pilot MC = " << avg_mse_ratio
-       << " targeting convergence tol = " << convergenceTol << '\n';
-  return avg_mse_ratio;
-  */
+  //avg_estvar_ratio /= numFunctions;
+  //Cout << "Average reduction factor since pilot MC = " << avg_estvar_ratio
+  //     << " targeting convergence tol = " << convergenceTol << '\n';
+  //return avg_estvar_ratio;
 }
 
 
