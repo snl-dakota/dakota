@@ -110,12 +110,18 @@ protected:
 			  size_t num_Q1, size_t num_Q2, size_t num_Q1Q2,
 			  Real& cov_Q1Q2);
   
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const SizetArray& model_sequence,
+			  const RealMatrix& eval_ratios,
+			  RealVector& estvar_ratios);
+
   void mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 			      RealMatrix& eval_ratios);
   void mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 					const RealVector& cost,
 					SizetArray& model_sequence,
 					RealMatrix& eval_ratios);
+
   void nonhierarch_numerical_solution(const RealVector& cost,
 				      const SizetArray& model_sequence,
 				      RealVector& avg_eval_ratios,
@@ -182,6 +188,8 @@ protected:
   size_t secondaryIndex;
   /// relative costs of models within sequence of steps
   RealVector sequenceCost;
+  /// tracks ordering of correlations among approximations and truth
+  SizetArray modelSequence;
 
   /// variances for HF truth (length numFunctions)
   RealVector varH;
@@ -193,6 +201,8 @@ protected:
   /// covariances among all LF approximations (the C matrix in ACV); organized
   /// as a numFunctions array of symmetic numApprox x numApprox matrices
   RealSymMatrixArray covLL;
+  /// squared Pearson correlations among approximations and truth
+  RealMatrix rho2LH;
 
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;

@@ -106,11 +106,6 @@ protected:
 				SizetArray& N_H_projected,
 				Sizet2DArray& N_L_projected);
 
-  void compute_estvar_ratios(const RealMatrix& rho2_LH,
-			     const SizetArray& model_sequence,
-			     const RealMatrix& eval_ratios,
-			     RealVector& estvar_ratios);
-
   void mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
 			       const RealVector& hf_targets,
 			       const SizetArray& model_sequence,

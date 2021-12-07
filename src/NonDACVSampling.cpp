@@ -365,7 +365,6 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 
   // Set initial guess based either on MFMC analytic solution (iter == 0)
   // or warm started from previous solution (iter >= 1)
-  SizetArray model_sequence;
   if (mlmfIter == 0) {
     // estVarIter0 only uses HF pilot since sum_L_shared / N_shared minus
     // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
@@ -380,13 +379,13 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       return;
     }
     else { // compute initial estimate of r* from MFMC
-      RealMatrix rho2_LH, eval_ratios;
-      covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
+      RealMatrix eval_ratios;
+      covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
 
-      if (ordered_model_sequence(rho2_LH)) // for all QoI across Approx sequence
-	mfmc_analytic_solution(rho2_LH, cost, eval_ratios);
+      if (ordered_model_sequence(rho2LH)) // for all QoI across all Approx
+	mfmc_analytic_solution(rho2LH, cost, eval_ratios);
       else
-	mfmc_reordered_analytic_solution(rho2_LH, cost, model_sequence,
+	mfmc_reordered_analytic_solution(rho2LH, cost, modelSequence,
 					 eval_ratios);
       average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
       if (outputLevel >= NORMAL_OUTPUT)
@@ -409,10 +408,9 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     }
   }
   else { // update model_sequence after shared sample increment
-    RealMatrix rho2_LH;  RealVector avg_rho2_LH;
-    covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
-    average(rho2_LH, 0, avg_rho2_LH);
-    ordered_model_sequence(avg_rho2_LH, model_sequence);
+    covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
+    RealVector avg_rho2_LH;  average(rho2LH, 0, avg_rho2_LH);
+    ordered_model_sequence(avg_rho2_LH, modelSequence);
 
     // warm start from previous eval_ratios solution
     // > no scaling needed from prev soln (as in NonDLocalReliability) since
@@ -421,7 +419,7 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
   }
 
   // Base class implementation of numerical solve (shared with unordered MFMC):
-  nonhierarch_numerical_solution(cost, model_sequence, avg_eval_ratios,
+  nonhierarch_numerical_solution(cost, modelSequence, avg_eval_ratios,
 				 avg_hf_target, avg_estvar, avg_estvar_ratio);
 
   if (outputLevel >= NORMAL_OUTPUT) {

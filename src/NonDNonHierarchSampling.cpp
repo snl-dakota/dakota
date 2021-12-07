@@ -223,6 +223,97 @@ ensemble_sample_increment(size_t iter, size_t step)
 
 
 void NonDNonHierarchSampling::
+mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& model_sequence,
+		   const RealMatrix& eval_ratios, RealVector& estvar_ratios)
+{
+  // Compute ratio of EstVar for single-fidelity MC and MFMC
+  // > Estimator Var for MC = var_H / N_H
+  // > Estimator Var for MFMC = (1 - R^2) var_H / N_H
+  // > EstVar ratio = EstVar_MFMC / EstVar_MC = (1 - R^2)
+
+  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+
+  // Peherstorfer paper: ratios derived for N_H = m1* = the optimal # of HF
+  // samples, not the actual # (when optimal is hidden by pilot):
+  // > Estimator Var for MFMC = var_H (1-rho_LH(am1)^2) p / (N_H^2 cost_H)
+  //   where budget p = cost^T eval_ratios N_H,  am1 = most-correlated approx
+  //   --> EstVar = var_H (1-rho_LH(am1)^2) cost^T eval_ratios / (N_H cost_H)
+  //   --> EstVar ratio = EstVar_MFMC / EstVar_MC
+  //                    = (1-rho_LH(am1)^2) cost^T eval_ratios / cost_H
+  // For this expression, final MFMC estimator variance should use m1*
+  // (ignoring pilot) and not the actual N_H (which includes pilot).  This
+  // avoids a bug where MFMC est var doesn't change until m1* emerges from
+  // pilot.  We can't take credit for N_H > pilot since r* is applied to m1*,
+  // not N_H (see update_hf_targets() -> approx_increment() -> lf_targets).
+  /*
+  Real inner_prod, cost_H = sequenceCost[numApprox];
+  size_t qoi, approx, num_am1 = numApprox - 1;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    inner_prod = cost_H; // include cost_H * w_H
+    for (approx=0; approx<numApprox; ++approx)
+      inner_prod += sequenceCost[approx] * eval_ratios(qoi, approx);
+    estvar_ratios[qoi] = (1. - rho2_LH(qoi, num_am1)) * inner_prod / cost_H;
+  }
+  if (outputLevel >= NORMAL_OUTPUT) {
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      for (approx=0; approx<numApprox; ++approx)
+	Cout << "  QoI " << qoi+1 << " Approx " << approx+1
+	   //<< ": cost_ratio = " << cost_H / cost_L
+	     << ": rho2_LH = "    <<     rho2_LH(qoi,approx)
+	     << " eval_ratio = "  << eval_ratios(qoi,approx) << '\n';
+      Cout << "QoI " << qoi+1 << ": Peherstorfer variance reduction factor = "
+	   << estvar_ratios[qoi] << '\n';
+    }
+    Cout << std::endl;
+  }
+  */
+
+  // Appendix B of JCP paper on ACV:
+  // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
+  // > Reorder differences since eval ratios/correlations ordered from LF to HF
+  //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
+  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i;
+  switch (optSubProblemForm) {
+
+  // eval_ratios per qoi,approx with no model re-sequencing
+  case ANALYTIC_SOLUTION:
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      R_sq = 0.;  r_i = eval_ratios(qoi, 0);
+      for (approx=0; approx<numApprox; ++approx) {
+	r_ip1 = (approx+1 < numApprox) ? eval_ratios(qoi, approx+1) : 1.;
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
+	r_i = r_ip1;
+      }
+      estvar_ratios[qoi] = (1. - R_sq);
+    }
+    break;
+
+  // eval_ratios & model_sequence based on avg_rho2_LH: remain consistent here
+  //case REORDERED_ANALYTIC_SOLUTION:
+
+  // *** TO DO: numerical objective_function() now uses this fn; do we want
+  // ***        upstream averaging of rho2_LH in this case ????
+
+  default: {
+    RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
+    bool ordered = model_sequence.empty();
+    approx = (ordered) ? 0 : model_sequence[0];
+    r_i = eval_ratios(0, approx);  R_sq = 0.;
+    for (i=0; i<numApprox; ++i) {
+      approx_ip1 = (ordered) ? i+1 : model_sequence[i+1];
+      r_ip1 = (approx_ip1 < numApprox) ? eval_ratios(0, approx_ip1) : 1.;
+      // Note: monotonicity in reordered r_i is enforced in mfmc_eval_ratios()
+      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx];
+      r_i = r_ip1;  approx = approx_ip1;
+    }
+    estvar_ratios = (1. - R_sq); // assign scalar to vector components
+    break;
+  }
+  }
+}
+
+
+void NonDNonHierarchSampling::
 mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 		       RealMatrix& eval_ratios)
 {
@@ -327,8 +418,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
   //   used for eval_ratio(i) > eval_ratio(i+1), but omit for now (restricts
   //   optimizer search space = most appropriate when sequencing models)
 
-  // *** TO DO ***: honor the model_sequence     (for mlmfIter == 0)
-  // *** TO DO ***: recompute the model_sequence (for mlmfIter >  1)
+  // *** TO DO ***: honor the model_sequence
 
   size_t num_cdv, num_lin_con = 0, num_nln_con = 0, approx, max_iter = 100000;
   Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
@@ -482,7 +572,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
     if (maxFunctionEvals != SZ_MAX) {
       // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L
       // > can also under-relax the budget allocation to enable additional N_H
-      //   increments + associated shared sample sets to refine rho2_LH et al.
+      //   increments + associated shared sample sets to refine shared stats.
       Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
       avg_hf_target = allocate_budget(avg_eval_ratios, cost);
     }
@@ -534,30 +624,59 @@ nonhierarch_numerical_solution(const RealVector& cost,
 
 Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
 {
-  RealSymMatrix F, CF_inv;
-  switch (optSubProblemForm) {
-  case N_VECTOR_LINEAR_CONSTRAINT: {
-    RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
-    r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
-    compute_F_matrix(r, F);
+  RealVector estvar_ratios(numFunctions, false);  size_t qoi;
+  switch (varMinSubMethod) {
+  // The ACV implementation below also works for MFMC, but since MFMC has
+  // diagonal F, it can be evaluated without per-QoI matrix inversion:
+  // > R_sq = a^T [ C o F ]^{-1} a = \Sum_i R_sq_i (sum across set of approx_i)
+  // > R_sq_i = F_ii^2 \bar{c}_ii^2 / (F_ii C_ii) for i = approximation number
+  //          = F_ii CovLH_i^2 / (VarH_i VarL_i) = F_ii rho2LH_i where
+  //   F_ii   = (r_i - r_{i+1}) / (r_i r_{i+1}).
+  case SUBMETHOD_MFMC:
+    switch (optSubProblemForm) {
+    case N_VECTOR_LINEAR_CONSTRAINT: {
+      RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
+      r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
+      mfmc_estvar_ratios(rho2LH, modelSequence, r,       estvar_ratios);
+      break;
+    }
+    default: // use leading numApprox terms of r_and_N
+      mfmc_estvar_ratios(rho2LH, modelSequence, r_and_N, estvar_ratios);
+      break;
+    }
     break;
-  }
-  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    compute_F_matrix(r_and_N, F); // admits r as leading numApprox terms
-    break;
-  }
-  //Cout << "Objective evaluator: F =\n" << F << std::endl;
+  // ACV cases have off-diagonal terms in F and use matrix algebra
+  default: {
+    RealSymMatrix F, CF_inv;  RealVector A;  Real R_sq;
+    switch (optSubProblemForm) {
+    case N_VECTOR_LINEAR_CONSTRAINT: {
+      RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
+      r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
+      compute_F_matrix(r, F);
+      break;
+    }
+    case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+    case R_AND_N_NONLINEAR_CONSTRAINT:
+      compute_F_matrix(r_and_N, F); // admits r as leading numApprox terms
+      break;
+    }
+    //Cout << "Objective evaluator: F =\n" << F << std::endl;
 
-  RealVector A, R_sq(numFunctions, false);  size_t qoi;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    invert_CF(covLL[qoi], F, CF_inv);
-    //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
-    compute_A_vector(F, covLH, qoi, A);     // defer c-bar scaling
-    //Cout << "Objective eval: A =\n" << A << std::endl;
-    compute_Rsq(CF_inv, A, varH[qoi], R_sq[qoi]); // apply scaling^2
-    //Cout << "Objective eval: varH[" << qoi << "] = " << varH[qoi]
-    //     << " Rsq[" << qoi << "] =\n" << R_sq[qoi] << std::endl;
+    // Note: matrix ops performed for each QoI and then averaged at bottom.
+    //       While r_i is averaged such that there is only one F, we use
+    //       per-QoI covLL (C matrix) and covLH (c vector).
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      invert_CF(covLL[qoi], F, CF_inv);
+      //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
+      compute_A_vector(F, covLH, qoi, A);     // defer c-bar scaling
+      //Cout << "Objective eval: A =\n" << A << std::endl;
+      compute_Rsq(CF_inv, A, varH[qoi], R_sq); // apply scaling^2
+      //Cout << "Objective eval: varH[" << qoi << "] = " << varH[qoi]
+      //     << " Rsq[" << qoi << "] =\n" << R_sq[qoi] << std::endl;
+      estvar_ratios[qoi] = 1. - R_sq;
+    }
+    break;
+  }
   }
 
   // form estimator variances to pick up dependence on N
@@ -565,13 +684,13 @@ Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
     for (qoi=0; qoi<numFunctions; ++qoi)
-      est_var[qoi] = varH[qoi] / numH[qoi] * (1. - R_sq[qoi]);
+      est_var[qoi] = varH[qoi] / numH[qoi] * estvar_ratios[qoi];
     break;
   case N_VECTOR_LINEAR_CONSTRAINT:
   case R_AND_N_NONLINEAR_CONSTRAINT: {  // N is a scalar optimization variable
     Real N = r_and_N[numApprox];
     for (qoi=0; qoi<numFunctions; ++qoi)
-      est_var[qoi] = varH[qoi] / N         * (1. - R_sq[qoi]);
+      est_var[qoi] = varH[qoi] / N         * estvar_ratios[qoi];
     break;
   }
   }
@@ -581,9 +700,9 @@ Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
     std::log(avg_est_var) :
     std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "objective_function: "
-         << "design vars:\n" << r_and_N << "R squared:\n" << R_sq
-	 << "obj = log(average((1.-Rsq)varH/N)) = " << obj_fn << '\n';
+    Cout << "objective_function(): design vars:\n" << r_and_N
+	 << "EstVar ratios:\n" << estvar_ratios
+	 << "obj = log(average((1. - Rsq) varH / N)) = " << obj_fn << '\n';
   return obj_fn; // maximize R_sq; use log to flatten contours
 }
 
