@@ -35,14 +35,14 @@ NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDNonHierarchSampling(problem_db, model)
 {
-  varMinSubMethod = problem_db.get_ushort("method.sub_method");
+  mlmfSubMethod = problem_db.get_ushort("method.sub_method");
   // truthFixedByPilot is a user-specified option for fixing the number of HF
   // samples (those from the pilot).  In this case, equivHF budget is allocated
   // by optimizing r* for fixed N.
   optSubProblemForm = (truthFixedByPilot && solutionMode != OFFLINE_PILOT) ?
     R_ONLY_LINEAR_CONSTRAINT : N_VECTOR_LINEAR_CONSTRAINT;
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "ACV sub-method selection = " << varMinSubMethod
+    Cout << "ACV sub-method selection = " << mlmfSubMethod
 	 << " sub-method formulation = "  << optSubProblemForm
 	 << " sub-problem solver = "      << optSubProblemSolver << std::endl;
 }
@@ -58,14 +58,14 @@ NonDACVSampling::~NonDACVSampling()
 void NonDACVSampling::core_run()
 {
   /*
-  switch (varMinSubMethod) {
+  switch (mlmfSubMethod) {
   case SUBMETHOD_ACV_IS:  case SUBMETHOD_ACV_MF:
     approximate_control_variate(); break;
   //case SUBMETHOD_ACV_KL:
     //for (k) for (l) approximate_control_variate(...); ???
   }
   */
-  if (varMinSubMethod == SUBMETHOD_ACV_KL) {
+  if (mlmfSubMethod == SUBMETHOD_ACV_KL) {
     Cerr << "Error: ACV KL not yet implemented." << std::endl;
     abort_handler(METHOD_ERROR);
   }
@@ -282,7 +282,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   size_t start, approx;
   for (approx=numApprox; approx>0; --approx) {
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
-    start = (varMinSubMethod == SUBMETHOD_ACV_IS) ? approx - 1 : 0;
+    start = (mlmfSubMethod == SUBMETHOD_ACV_IS) ? approx - 1 : 0;
     if (approx_increment(avg_eval_ratios, N_L_refined, avg_hf_target,
 			 mlmfIter, start, approx)) {
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined
@@ -361,7 +361,7 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
   // Can happen if shared pilot rolls up to exceed budget spec.
   Real budget           = (Real)maxFunctionEvals;
   bool budget_exhausted = (equivHFEvals >= budget);
-  if (budget_exhausted) budget = equivHFEvals;
+  if  (budget_exhausted) budget = equivHFEvals;
 
   // Set initial guess based either on MFMC analytic solution (iter == 0)
   // or warm started from previous solution (iter >= 1)
@@ -387,6 +387,10 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       else
 	mfmc_reordered_analytic_solution(rho2LH, cost, modelSequence,
 					 eval_ratios);
+      // Another option: M-model r_i profile from set of 2-model analytic CVMCs
+      // > lacks recursive pairing (as for ACV) and removes need for sequencing
+      //   --> good option if we end up solving ACV without embedded sequencing
+
       average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "Initial guess from analytic MFMC (average eval ratios):\n"

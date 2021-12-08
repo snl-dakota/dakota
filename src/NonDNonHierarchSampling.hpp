@@ -164,7 +164,7 @@ protected:
   Iterator varianceMinimizer;
   /// variance minimization algorithm selection: SUBMETHOD_MFMC or
   /// SUBMETHOD_ACV_{IS,MF,KL}
-  unsigned short varMinSubMethod;
+  unsigned short mlmfSubMethod;
 
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
@@ -513,7 +513,7 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
   size_t i, j;
   if (F.empty()) F.shapeUninitialized(numApprox);
 
-  switch (varMinSubMethod) {
+  switch (mlmfSubMethod) {
   case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
     size_t num_am1 = numApprox - 1;  Real r_i, r_ip1;
     for (i=0; i<num_am1; ++i) {
@@ -546,13 +546,13 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
   }
   //case SUBMETHOD_ACV_KL: // TO DO: Eq. 42
   default:
-    Cerr << "Error: bad sub-method name (" << varMinSubMethod
+    Cerr << "Error: bad sub-method name (" << mlmfSubMethod
 	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;
     abort_handler(METHOD_ERROR); break;
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "F matrix for sub-method " << varMinSubMethod << ":\n" << F
+    Cout << "F matrix for sub-method " << mlmfSubMethod << ":\n" << F
 	 << std::endl;
 }
 

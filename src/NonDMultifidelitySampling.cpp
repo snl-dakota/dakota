@@ -42,7 +42,7 @@ NonDMultifidelitySampling::
 NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
   NonDNonHierarchSampling(problem_db, model)
 {
-  varMinSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
+  mlmfSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
 }
 
 

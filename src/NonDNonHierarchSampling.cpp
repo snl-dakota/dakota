@@ -384,6 +384,7 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
     prev_rho2 = rho2;
   }
   // Reverse loop order and enforce monotonicity in reordered r_i
+  // Note: r_i == prev_ri essentially drops the model
   prev_ri = 1.;
   for (i=numApprox-1; i>=0; --i) {
     r_i = std::max(r_unconstrained[i], prev_ri);
@@ -406,28 +407,37 @@ nonhierarch_numerical_solution(const RealVector& cost,
   // --------------------------------------
   // Formulate the optimization sub-problem
   // --------------------------------------
-  // Notes on optimization:
-  // > When budget C and numH are fixed for this iteration --> design vars
-  //   are eval_ratios for 1:numApprox.  eval_ratio lower bounds are set to 1
-  //   for now, but could also reflect the pilot sample investment (C and c
-  //   can use different pilot sample sizes).
-  //   >> if numH is also a design variable, then lower bounds should be 1.
-  //   >> when an optimal ratio is 1, this model drops from apply_control(),
-  //      although it may still influence the other model weightings.
-  // > a linear inequality is used for the cost constraint and can also be
-  //   used for eval_ratio(i) > eval_ratio(i+1), but omit for now (restricts
-  //   optimizer search space = most appropriate when sequencing models)
 
   // *** TO DO ***: honor the model_sequence
+  // *** TO DO: review mfmc_estvar_ratios() as MFMC/ACV-MF may now differ from
+  //            reordered analytic --> just pass a different modelSequence ?
+
+  // > MFMC analytic requires ordered rho2LH to avoid FPE (modelSequence defn)
+  //   followed by ordered r_i for {pyramid sampling, R_sq contribution > 0}
+  // > MFMC numerical needs ordered r_i to retain pyramid sampling/recursion
+  //   >> estvar objective requires an ordering fixed a priori --> makes sense
+  //      to optimize w.r.t. this ordering constraint, similar to std::max()
+  //      use in mfmc_reordered_analytic_solution()
+  // > ACV-MF use of min() in F_ij supports mis-ordering in that C_ij * F_ij
+  //   produces same contribution to R_sq independent of i,j order
+  //   >> Rather than constraining N_i > N_{i+1} based on a priori ordering,
+  //      retain N_i > N and then either (a) compute modelSequence for sampling
+  //      or (b) modify approx_increments() to use index set rather than range
+  //   >> No need for a priori model sequence, only for post-proc of opt result
+  // > ACV-IS is unconstrained in model order --> retain N_i > N
 
   size_t num_cdv, num_lin_con = 0, num_nln_con = 0, approx, max_iter = 100000;
   Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
     avg_N_H = average(numH), conv_tol = 1.e-8; // tight convergence
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
-    num_cdv = numApprox;      num_lin_con = 1;  break;
+    num_cdv = numApprox;
+    num_lin_con = (mlmfSubMethod == SUBMETHOD_MFMC) ? numApprox + 1 : 1;
+    break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
-    num_cdv = numApprox + 1;  num_nln_con = 1;  break;
+    num_cdv = numApprox + 1;  num_nln_con = 1;
+    if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con = numApprox;
+    break;
   case N_VECTOR_LINEAR_CONSTRAINT:
     num_lin_con = num_cdv = numApprox + 1;      break;
   }
@@ -447,12 +457,37 @@ nonhierarch_numerical_solution(const RealVector& cost,
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   \Sum_i w_i   r_i <= equivHF * w / N - w
     //   \Sum_i w_i/w r_i <= equivHF / N - 1
-    lin_ineq_lb[0] = -DBL_MAX;        // no lower bound
+    lin_ineq_lb    = -DBL_MAX;        // no lower bounds
     lin_ineq_ub[0] = (avg_N_H > 1.) ? // protect N_H==0 for offline pilot
       budget / avg_N_H - 1. : // normal case
       budget - 1.;            // bound N_H at 1 (TO DO: need to perform sample)
     for (approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
+    if (mlmfSubMethod == SUBMETHOD_MFMC)// N_i increasing w/ decreasing fidelity
+      for (approx=1; approx<=numApprox; ++approx) {
+	lin_ineq_coeffs(approx, approx-1) = -1.;
+	lin_ineq_coeffs(approx, approx)   =  1.;
+      }
+    break;
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    copy_data_partial(avg_eval_ratios, x0, 0);          // r_i
+    x0[numApprox] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
+    // Could allow optimal profile to emerge from pilot by allowing N* less than
+    // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
+    // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
+    x_lb = 1.; // r_i
+    if (solutionMode != OFFLINE_PILOT)
+      x_lb[numApprox] = avg_N_H;//std::floor(avg_N_H + .5); // pilot <= N*
+
+    nln_ineq_lb[0] = -DBL_MAX; // no low bnd
+    nln_ineq_ub[0] = budget;
+    if (mlmfSubMethod == SUBMETHOD_MFMC) {// N_i increasing w/ decreasing fidel
+      lin_ineq_lb = -DBL_MAX; // no lower bnds
+      for (approx=0; approx<numApprox; ++approx) { // N_approx >= N_{approx+1}
+	lin_ineq_coeffs(approx, approx)   = -1.;
+	lin_ineq_coeffs(approx, approx+1) =  1.;
+      }
+    }
     break;
   case N_VECTOR_LINEAR_CONSTRAINT: {
     copy_data_partial(avg_eval_ratios, x0, 0);  x0[numApprox] = 1.;
@@ -470,28 +505,20 @@ nonhierarch_numerical_solution(const RealVector& cost,
     for (approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0, approx) = cost[approx] / cost_H;
     lin_ineq_coeffs(0, numApprox) = 1.;
-    // linear inequality constraints on N_i > N prevent numerical exceptions:
-    // N_i >= N transformed to N_i > N using RATIO_NUDGE
-    for (approx=1; approx<=numApprox; ++approx) {
-      lin_ineq_coeffs(approx, approx-1) = -1.;
-      lin_ineq_coeffs(approx,numApprox) =  1. + RATIO_NUDGE;// N_i > N (r_i > 1)
-      //lin_ineq_coeffs(approx,approx)  =  1.;// enforce N_i >= N_{i+1}
-    }
+    // linear inequality constraints on sample counts:
+    if (mlmfSubMethod == SUBMETHOD_MFMC)// N_i increasing w/ decreasing fidelity
+      for (approx=1; approx<=numApprox; ++approx) {
+	lin_ineq_coeffs(approx, approx-1) = -1.;
+	lin_ineq_coeffs(approx, approx)   =  1.;
+      }
+    else //  N_i >  N (aka r_i > 1) prevents numerical exceptions
+         // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
+      for (approx=1; approx<=numApprox; ++approx) {
+	lin_ineq_coeffs(approx, approx-1) = -1.;
+	lin_ineq_coeffs(approx,numApprox) =  1. + RATIO_NUDGE; // N_i > N
+      }
     break;
   }
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    copy_data_partial(avg_eval_ratios, x0, 0);          // r_i
-    x0[numApprox] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
-    // Could allow optimal profile to emerge from pilot by allowing N* less than
-    // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
-    // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
-    x_lb = 1.; // r_i
-    if (solutionMode != OFFLINE_PILOT)
-      x_lb[numApprox] = avg_N_H;//std::floor(avg_N_H + .5); // pilot <= N*
-
-    nln_ineq_lb[0] = -DBL_MAX; // no low bnd
-    nln_ineq_ub[0] = budget;
-    break;
   }
 
   if (varianceMinimizer.is_null())
@@ -625,7 +652,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
 Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
 {
   RealVector estvar_ratios(numFunctions, false);  size_t qoi;
-  switch (varMinSubMethod) {
+  switch (mlmfSubMethod) {
   // The ACV implementation below also works for MFMC, but since MFMC has
   // diagonal F, it can be evaluated without per-QoI matrix inversion:
   // > R_sq = a^T [ C o F ]^{-1} a = \Sum_i R_sq_i (sum across set of approx_i)
