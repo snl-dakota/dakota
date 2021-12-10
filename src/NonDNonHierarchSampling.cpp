@@ -398,6 +398,30 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 
 
 void NonDNonHierarchSampling::
+cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
+			RealMatrix& eval_ratios)
+{
+  if (eval_ratios.empty())
+    eval_ratios.shapeUninitialized(numFunctions, numApprox);
+
+  // Compute an ensemble of two-model CVMC solutions:
+  size_t qoi, approx;
+  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
+  for (approx=0; approx<numApprox; ++approx) {
+    cost_ratio = cost_H / cost[approx];
+    const Real* rho2_LH_a =     rho2_LH[approx];
+    Real*   eval_ratios_a = eval_ratios[approx];
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      rho_sq = rho2_LH_a[qoi];
+      eval_ratios_a[qoi] = (rho_sq < 1.) ? // prevent div by 0, sqrt(negative)
+	std::sqrt(cost_ratio * rho_sq / (1. - rho_sq)) :
+	(Real)maxFunctionEvals / average(numH);
+    }
+  }
+}
+
+
+void NonDNonHierarchSampling::
 nonhierarch_numerical_solution(const RealVector& cost,
 			       const SizetArray& model_sequence,
 			       RealVector& avg_eval_ratios,
@@ -674,7 +698,7 @@ Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
     break;
   // ACV cases have off-diagonal terms in F and use matrix algebra
   default: {
-    RealSymMatrix F, CF_inv;  RealVector A;  Real R_sq;
+    RealSymMatrix F;
     switch (optSubProblemForm) {
     case N_VECTOR_LINEAR_CONSTRAINT: {
       RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
@@ -688,20 +712,7 @@ Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
       break;
     }
     //Cout << "Objective evaluator: F =\n" << F << std::endl;
-
-    // Note: matrix ops performed for each QoI and then averaged at bottom.
-    //       While r_i is averaged such that there is only one F, we use
-    //       per-QoI covLL (C matrix) and covLH (c vector).
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      invert_CF(covLL[qoi], F, CF_inv);
-      //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
-      compute_A_vector(F, covLH, qoi, A);     // defer c-bar scaling
-      //Cout << "Objective eval: A =\n" << A << std::endl;
-      compute_Rsq(CF_inv, A, varH[qoi], R_sq); // apply scaling^2
-      //Cout << "Objective eval: varH[" << qoi << "] = " << varH[qoi]
-      //     << " Rsq[" << qoi << "] =\n" << R_sq[qoi] << std::endl;
-      estvar_ratios[qoi] = 1. - R_sq;
-    }
+    acv_estvar_ratios(F, estvar_ratios);
     break;
   }
   }

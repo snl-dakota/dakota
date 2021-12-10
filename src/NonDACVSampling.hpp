@@ -142,6 +142,13 @@ private:
 			  const RealSymMatrixArray& sum_LL,
 			  const Sizet2DArray& num_L, RealMatrix& var_L);
 
+  Real acv_estimator_variance(const RealVector& avg_eval_ratios,
+			      Real avg_hf_target);
+  Real acv_estimator_variance(const RealMatrix& eval_ratios, Real avg_N_H,
+			      const RealVector& cost,
+			      RealVector& avg_eval_ratios, Real& avg_hf_target,
+			      bool rescaling_required);
+
   void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
 		       IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
 		       IntRealSymMatrixArrayMap& sum_LL,
@@ -250,6 +257,40 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
       rho2_LH(qoi,approx) = cov_LH_aq / var_L(qoi,approx) * cov_LH_aq / var_H_q;
     }
   }
+}
+
+
+inline Real NonDACVSampling::
+acv_estimator_variance(const RealVector& avg_eval_ratios, Real avg_hf_target)
+{
+  RealSymMatrix F;  RealVector estvar_ratios, estvar(numFunctions, false);
+  compute_F_matrix(avg_eval_ratios, F);
+  acv_estvar_ratios(F, estvar_ratios);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    estvar[qoi] = varH[qoi] / avg_hf_target * estvar_ratios[qoi];
+  // Note: matrix ops performed for each QoI and then averaged.
+  //       While r_i is averaged such that there is only one F,
+  //       we use per-QoI covLL (C matrix) and covLH (c vector).
+  return average(estvar);
+}
+
+
+inline Real NonDACVSampling::
+acv_estimator_variance(const RealMatrix& eval_ratios, Real avg_N_H,
+		       const RealVector& cost, RealVector& avg_eval_ratios,
+		       Real& avg_hf_target, bool rescaling_required)
+{
+  average(eval_ratios, 0, avg_eval_ratios);
+  // scale to enforce budget constraint.  Since the profile does not emerge
+  // from pilot in ACV, don't select an infeasible initial guess:
+  // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
+  // > if N* > N_pilot, use initial = r*,N*
+  avg_hf_target = allocate_budget(avg_eval_ratios, cost); // r* --> N*
+  if (avg_N_H > avg_hf_target) // replace N* with N_pilot & rescale r* to budget
+    { avg_hf_target = avg_N_H;  rescaling_required = true; }
+  if (rescaling_required) // either from pilot over-est or from passing true
+    scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_hf_target);
+  return acv_estimator_variance(avg_eval_ratios, avg_hf_target);
 }
 
 

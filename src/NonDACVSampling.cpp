@@ -379,42 +379,50 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       return;
     }
     else { // compute initial estimate of r* from MFMC
-      RealMatrix eval_ratios;
       covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
+      Real avg_N_H = average(numH);
 
+      // Run a competition among analytic approaches for best initial guess:
+      // > Option 1 is analytic MFMC: differs from ACV due to recursive pairing
+      Real estvar1, estvar2, avg_hf_target1, avg_hf_target2;
+      RealMatrix     eval_ratios1,     eval_ratios2;
+      RealVector avg_eval_ratios1, avg_eval_ratios2;
       if (ordered_model_sequence(rho2LH)) // for all QoI across all Approx
-	mfmc_analytic_solution(rho2LH, cost, eval_ratios);
+	mfmc_analytic_solution(rho2LH, cost, eval_ratios1);
       else
 	mfmc_reordered_analytic_solution(rho2LH, cost, modelSequence,
-					 eval_ratios);
-      // Another option: M-model r_i profile from set of 2-model analytic CVMCs
-      // > lacks recursive pairing (as for ACV) and removes need for sequencing
-      //   --> good option if we end up solving ACV without embedded sequencing
+					 eval_ratios1);
+      estvar1 = acv_estimator_variance(eval_ratios1, avg_N_H, cost,
+				       avg_eval_ratios1, avg_hf_target1, false);
 
-      average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
-      if (outputLevel >= NORMAL_OUTPUT)
-        Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
-	     << avg_eval_ratios << std::endl;
+      // > Option 2 is ensemble of independent two-model CVMCs, rescaled to an
+      //   aggregate budget.  This is more ACV-like in the sense that it is not
+      //   recursive, but it neglects the covariance C among approximations.
+      //   It is also insensitive to model sequencing.  Rescaling is required.
+      cvmc_ensemble_solutions(rho2LH, cost, eval_ratios2);
+      estvar2 = acv_estimator_variance(eval_ratios2, avg_N_H, cost,
+				       avg_eval_ratios2, avg_hf_target2, true);
 
-      // scale to enforce budget constraint.  Since the profile does not emerge
-      // from pilot in ACV, don't select an infeasible initial guess:
-      // > if N* < N_pilot, scale back r* for use initial = scaled_r*,N_pilot
-      // > if N* > N_pilot, use initial = r*,N*
-      Real avg_N_H = average(numH);
-      avg_hf_target = allocate_budget(avg_eval_ratios, cost);
-      if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
-	scale_to_budget_with_pilot(budget, avg_eval_ratios, cost, avg_N_H);
-	avg_hf_target = avg_N_H;
-	if (outputLevel >= NORMAL_OUTPUT)
-	  Cout << "MFMC initial guess rescaled to budget:\n" << avg_eval_ratios
-	       << std::endl;
+      bool mfmc_init = (estvar1 <= estvar2);
+      if (mfmc_init)
+	{ avg_eval_ratios = avg_eval_ratios1;  avg_hf_target = avg_hf_target1; }
+      else
+	{ avg_eval_ratios = avg_eval_ratios2;  avg_hf_target = avg_hf_target2; }
+      if (outputLevel >= NORMAL_OUTPUT) {
+	Cout << "ACV initial guess from ";
+	if (mfmc_init) Cout << "analytic MFMC ";
+	else           Cout << "ensemble of two-model CVMC ";
+	Cout << "(average eval ratios):\n" << avg_eval_ratios << std::endl;
       }
+      // *** TO DO: consider running nonhierarch_numerical_solution() for both
+      // ***        (multi-start from two different promising candidates), as
+      // ***        well as enumerating SQP,NIP,...
     }
   }
   else { // update model_sequence after shared sample increment
-    covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
-    RealVector avg_rho2_LH;  average(rho2LH, 0, avg_rho2_LH);
-    ordered_model_sequence(avg_rho2_LH, modelSequence);
+    //covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
+    //RealVector avg_rho2_LH;  average(rho2LH, 0, avg_rho2_LH);
+    //ordered_model_sequence(avg_rho2_LH, modelSequence);
 
     // warm start from previous eval_ratios solution
     // > no scaling needed from prev soln (as in NonDLocalReliability) since

@@ -828,11 +828,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
       // > if N* > N_pilot, use initial = r*,N*
       avg_hf_target = allocate_budget(avg_eval_ratios, cost);
       if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
-	scale_to_budget_with_pilot(budget, avg_eval_ratios, cost, avg_N_H);
+	scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_N_H);
 	avg_hf_target = avg_N_H;
-	if (outputLevel >= NORMAL_OUTPUT)
-	  Cout << "MFMC initial guess rescaled to budget:\n" << avg_eval_ratios
-	       << std::endl;
       }
     }
   }
