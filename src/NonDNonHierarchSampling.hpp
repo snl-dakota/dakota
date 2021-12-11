@@ -73,6 +73,9 @@ protected:
 
   void shared_increment(size_t iter);
   void shared_approx_increment(size_t iter);
+  bool approx_increment(size_t iter, const SizetArray& approx_sequence,
+			size_t start, size_t end);
+  void ensemble_sample_increment(size_t iter, size_t step);
 
   // manage response mode and active model key from {group,form,lev} triplet.
   // seq_type defines the active dimension for a model sequence.
@@ -88,14 +91,12 @@ protected:
 			 Sizet2DArray& num_LH);
   void finalize_counts(Sizet2DArray& N_L);
 
-  void ensemble_sample_increment(size_t iter, size_t step);
-
   void increment_samples(SizetArray& N_l, size_t num_samples);
 
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t start, size_t end);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
-				 const SizetArray& model_sequence,
+				 const SizetArray& approx_sequence,
 				 size_t start, size_t end);
 
   void compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q);
@@ -111,7 +112,7 @@ protected:
 			  Real& cov_Q1Q2);
   
   void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
-			  const SizetArray& model_sequence,
+			  const SizetArray& approx_sequence,
 			  const RealMatrix& eval_ratios,
 			  RealVector& estvar_ratios);
 
@@ -119,12 +120,12 @@ protected:
 			      RealMatrix& eval_ratios);
   void mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 					const RealVector& cost,
-					SizetArray& model_sequence,
+					SizetArray& approx_sequence,
 					RealMatrix& eval_ratios);
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
 			       const RealVector& cost, RealMatrix& eval_ratios);
   void nonhierarch_numerical_solution(const RealVector& cost,
-				      const SizetArray& model_sequence,
+				      const SizetArray& approx_sequence,
 				      RealVector& avg_eval_ratios,
 				      Real& avg_hf_target, Real& avg_estvar,
 				      Real& avg_estvar_ratio);
@@ -134,11 +135,12 @@ protected:
   void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
 				  const RealVector& cost, Real avg_N_H);
 
-  /// define model_sequence in increasing metric order
-  bool ordered_model_sequence(const RealVector& metric,
-			      SizetArray& model_sequence);
+  /// define approx_sequence in increasing metric order
+  bool ordered_approx_sequence(const RealVector& metric,
+			       SizetArray& approx_sequence,
+			       bool descending_keys = false);
   /// determine whether metric is in increasing order for all columns
-  bool ordered_model_sequence(const RealMatrix& metric);
+  bool ordered_approx_sequence(const RealMatrix& metric);
 
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);
@@ -191,8 +193,9 @@ protected:
   size_t secondaryIndex;
   /// relative costs of models within sequence of steps
   RealVector sequenceCost;
-  /// tracks ordering of correlations among approximations and truth
-  SizetArray modelSequence;
+  /// tracks ordering of a metric (correlations, eval ratios) across set of
+  /// approximations
+  SizetArray approxSequence;
 
   /// variances for HF truth (length numFunctions)
   RealVector varH;
@@ -322,10 +325,10 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 
 inline void NonDNonHierarchSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
-			  const SizetArray& model_sequence,
+			  const SizetArray& approx_sequence,
 			  size_t start, size_t end)
 {
-  if (model_sequence.empty())
+  if (approx_sequence.empty())
     increment_equivalent_cost(new_samp, cost, start, end);
   else {
     size_t i, len = cost.length(), hf_index = len-1, approx;
@@ -333,7 +336,7 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     if (end == len) // truth is always last
       { equivHFEvals += new_samp; --end; }
     for (i=start; i<end; ++i) {
-      approx = model_sequence[i];
+      approx = approx_sequence[i];
       equivHFEvals += (Real)new_samp * cost[approx] / cost_ref;
     }
   }
@@ -388,28 +391,45 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 
 
 inline bool NonDNonHierarchSampling::
-ordered_model_sequence(const RealVector& metric, SizetArray& model_sequence)
+ordered_approx_sequence(const RealVector& metric, SizetArray& approx_sequence,
+		       bool descending_keys)
 {
   size_t i, len = metric.length(), metric_order;  bool ordered = true;
-  std::map<Real, size_t> metric_map; std::map<Real, size_t>::iterator it;
-  for (i=0; i<len; ++i)
-    metric_map[metric[i]] = i; // increasing order (e.g. correlation)
-  if (metric_map.size() != len) { // unexpected redundancy
-    Cerr << "Error: redundant correlation in MFMC model ordering." << std::endl;
-    abort_handler(METHOD_ERROR);
+  std::map<Real, size_t>::iterator it;
+  approx_sequence.resize(len);
+  if (descending_keys) {
+    std::map<Real, size_t, std::greater<Real> > descending_map;
+    for (i=0; i<len; ++i)
+      descending_map[metric[i]] = i; // keys arranged in decreasing order
+    if (descending_map.size() != len) { // unexpected redundancy
+      Cerr << "Error: redundant metric in model sequencing." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    for (i=0, it=descending_map.begin(); it!=descending_map.end(); ++it, ++i) {
+      approx_sequence[i] = metric_order = it->second;
+      if (i != metric_order) ordered = false;
+    }
   }
-  ordered = true;  model_sequence.resize(len);
-  for (i=0, it=metric_map.begin(); it!=metric_map.end(); ++it, ++i) {
-    model_sequence[i] = metric_order = it->second;
-    if (i != metric_order) ordered = false;
+  else {
+    std::map<Real, size_t> ascending_map; // default ascending keys
+    for (i=0; i<len; ++i)
+      ascending_map[metric[i]] = i; // keys arranged in increasing order
+    if (ascending_map.size() != len) { // unexpected redundancy
+      Cerr << "Error: redundant metric in model sequencing." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    for (i=0, it=ascending_map.begin(); it!=ascending_map.end(); ++it, ++i) {
+      approx_sequence[i] = metric_order = it->second;
+      if (i != metric_order) ordered = false;
+    }
   }
-  if (ordered) model_sequence.clear();
+  if (ordered) approx_sequence.clear();
   return ordered;
 }
 
 
 inline bool NonDNonHierarchSampling::
-ordered_model_sequence(const RealMatrix& metric)
+ordered_approx_sequence(const RealMatrix& metric)//, bool descending_keys)
 {
   size_t r, c, nr = metric.numRows(), nc = metric.numCols(), metric_order;
   std::map<Real, size_t> metric_map; std::map<Real, size_t>::iterator it;

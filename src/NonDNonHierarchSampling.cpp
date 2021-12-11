@@ -204,6 +204,35 @@ void NonDNonHierarchSampling::shared_approx_increment(size_t iter)
 }
 
 
+bool NonDNonHierarchSampling::
+approx_increment(size_t iter, const SizetArray& approx_sequence,
+		 size_t start, size_t end)
+{
+  if (numSamples && start < end) {
+    Cout << "\nApprox sample increment = " << numSamples << " for approximation"
+	 << " sequence [" << start+1 << ", " << end << ']' << std::endl;
+
+    bool ordered = approx_sequence.empty();
+    size_t i, approx, start_qoi;
+
+    activeSet.request_values(0);
+    for (size_t i=start; i<end; ++i) { // [start,end)
+      approx = (ordered) ? i : approx_sequence[i];
+      start_qoi = approx * numFunctions;
+      activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
+    }
+
+    ensemble_sample_increment(iter, start); // NON-BLOCK
+    return true;
+  }
+  else {
+    Cout << "\nNo approx sample increment for approximation sequence ["
+	 << start+1 << ", " << end << ']' << std::endl;
+    return false;
+  }
+}
+
+
 void NonDNonHierarchSampling::
 ensemble_sample_increment(size_t iter, size_t step)
 {
@@ -223,7 +252,7 @@ ensemble_sample_increment(size_t iter, size_t step)
 
 
 void NonDNonHierarchSampling::
-mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& model_sequence,
+mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
 		   const RealMatrix& eval_ratios, RealVector& estvar_ratios)
 {
   // Compute ratio of EstVar for single-fidelity MC and MFMC
@@ -272,41 +301,58 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& model_sequence,
   // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
   // > Reorder differences since eval ratios/correlations ordered from LF to HF
   //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
-  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i;
+  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i, ip1;
   switch (optSubProblemForm) {
 
   // eval_ratios per qoi,approx with no model re-sequencing
   case ANALYTIC_SOLUTION:
     for (qoi=0; qoi<numFunctions; ++qoi) {
       R_sq = 0.;  r_i = eval_ratios(qoi, 0);
-      for (approx=0; approx<numApprox; ++approx) {
-	r_ip1 = (approx+1 < numApprox) ? eval_ratios(qoi, approx+1) : 1.;
+      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+	r_ip1 = eval_ratios(qoi, ip1);
 	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
 	r_i = r_ip1;
       }
+      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, approx);
       estvar_ratios[qoi] = (1. - R_sq);
     }
     break;
 
-  // eval_ratios & model_sequence based on avg_rho2_LH: remain consistent here
-  //case REORDERED_ANALYTIC_SOLUTION:
-
-  // *** TO DO: numerical objective_function() now uses this fn; do we want
-  // ***        upstream averaging of rho2_LH in this case ????
-
-  default: {
+  // eval_ratios & approx_sequence based on avg_rho2_LH: remain consistent here
+  case REORDERED_ANALYTIC_SOLUTION: {
     RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
-    bool ordered = model_sequence.empty();
-    approx = (ordered) ? 0 : model_sequence[0];
+    bool ordered = approx_sequence.empty();
+    approx = (ordered) ? 0 : approx_sequence[0];
     r_i = eval_ratios(0, approx);  R_sq = 0.;
-    for (i=0; i<numApprox; ++i) {
-      approx_ip1 = (ordered) ? i+1 : model_sequence[i+1];
-      r_ip1 = (approx_ip1 < numApprox) ? eval_ratios(0, approx_ip1) : 1.;
+    for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+      approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
+      r_ip1 = eval_ratios(0, approx_ip1);
       // Note: monotonicity in reordered r_i is enforced in mfmc_eval_ratios()
+      // and in linear constraints for nonhierarch_numerical_solution()
       R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx];
       r_i = r_ip1;  approx = approx_ip1;
     }
+    R_sq += (r_i - 1.) / r_i * avg_rho2_LH[approx];
     estvar_ratios = (1. - R_sq); // assign scalar to vector components
+    break;
+  }
+
+  // Note: objective_function() now calls this fn for MFMC numerical solution.
+  // ANALYTIC_SOLUTION corresponds to the ordered case of this implementation.
+  default: {
+    bool ordered = approx_sequence.empty();
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      approx = (ordered) ? 0 : approx_sequence[0];
+      R_sq = 0.;  r_i = eval_ratios(qoi, approx);
+      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+	approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
+	r_ip1 = eval_ratios(qoi, approx_ip1);
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
+	r_i = r_ip1;  approx = approx_ip1;
+      }
+      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, approx);
+      estvar_ratios[qoi] = (1. - R_sq);
+    }
     break;
   }
   }
@@ -347,7 +393,7 @@ mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 void NonDNonHierarchSampling::
 mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 				 const RealVector& cost,
-				 SizetArray& model_sequence,
+				 SizetArray& approx_sequence,
 				 RealMatrix& eval_ratios)
 {
   if (eval_ratios.empty())
@@ -358,23 +404,23 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 
   // employ a single model reordering that is shared across the QoI
   RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
-  bool ordered = ordered_model_sequence(avg_rho2_LH, model_sequence);
+  bool ordered = ordered_approx_sequence(avg_rho2_LH, approx_sequence);
   // Note: even if avg_rho2_LH is now ordered, rho2_LH is not for all QoI, so
   // stick with this alternate formulation, at least for this MFMC iteration.
   if (ordered)
     Cout << "MFMC: averaged correlations are well-ordered.\n" << std::endl;
   else
     Cout << "MFMC: reordered approximation model sequence (low to high):\n"
-	 << model_sequence << std::endl;
+	 << approx_sequence << std::endl;
 
   // precompute a factor based on most-correlated model
-  size_t most_corr = (ordered) ? num_am1 : model_sequence[num_am1];  int i;
+  size_t most_corr = (ordered) ? num_am1 : approx_sequence[num_am1];  int i;
   Real rho2, prev_rho2, rho2_diff, r_i, prev_ri,
     factor = cost_H / (1. - avg_rho2_LH[most_corr]);// most correlated
-  // Compute averaged eval_ratios using averaged rho2 for model_sequence
+  // Compute averaged eval_ratios using averaged rho2 for approx_sequence
   RealVector r_unconstrained(numApprox, false);
   for (i=0; i<numApprox; ++i) {
-    approx = (ordered) ? i : model_sequence[i];
+    approx = (ordered) ? i : approx_sequence[i];
     cost_L = cost[approx];
     // NOTE: indexing is inverted from Peherstorfer: HF = 1, MF = 2, LF = 3
     // > i+1 becomes i-1 and most correlated is rho2_LH(qoi, most_corr)
@@ -388,7 +434,7 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
   prev_ri = 1.;
   for (i=numApprox-1; i>=0; --i) {
     r_i = std::max(r_unconstrained[i], prev_ri);
-    approx = (ordered) ? i : model_sequence[i];
+    approx = (ordered) ? i : approx_sequence[i];
     Real* eval_ratios_a = eval_ratios[approx];
     for (qoi=0; qoi<numFunctions; ++qoi)
       eval_ratios_a[qoi] = r_i; // eval_ratios shared across QoI
@@ -423,7 +469,7 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 
 void NonDNonHierarchSampling::
 nonhierarch_numerical_solution(const RealVector& cost,
-			       const SizetArray& model_sequence,
+			       const SizetArray& approx_sequence,
 			       RealVector& avg_eval_ratios,
 			       Real& avg_hf_target, Real& avg_estvar,
 			       Real& avg_estvar_ratio)
@@ -432,11 +478,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
   // Formulate the optimization sub-problem
   // --------------------------------------
 
-  // *** TO DO ***: honor the model_sequence
-  // *** TO DO: review mfmc_estvar_ratios() as MFMC/ACV-MF may now differ from
-  //            reordered analytic --> just pass a different modelSequence ?
-
-  // > MFMC analytic requires ordered rho2LH to avoid FPE (modelSequence defn)
+  // > MFMC analytic requires ordered rho2LH to avoid FPE (approxSequence defn)
   //   followed by ordered r_i for {pyramid sampling, R_sq contribution > 0}
   // > MFMC numerical needs ordered r_i to retain pyramid sampling/recursion
   //   >> estvar objective requires an ordering fixed a priori --> makes sense
@@ -445,14 +487,15 @@ nonhierarch_numerical_solution(const RealVector& cost,
   // > ACV-MF use of min() in F_ij supports mis-ordering in that C_ij * F_ij
   //   produces same contribution to R_sq independent of i,j order
   //   >> Rather than constraining N_i > N_{i+1} based on a priori ordering,
-  //      retain N_i > N and then either (a) compute modelSequence for sampling
-  //      or (b) modify approx_increments() to use index set rather than range
+  //      retain N_i > N and then compute an approx sequence for sampling
   //   >> No need for a priori model sequence, only for post-proc of opt result
   // > ACV-IS is unconstrained in model order --> retain N_i > N
 
-  size_t num_cdv, num_lin_con = 0, num_nln_con = 0, approx, max_iter = 100000;
+  size_t i, num_cdv, num_lin_con = 0, num_nln_con = 0,
+    approx, approx_im1, approx_ip1, max_iter = 100000;
   Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
     avg_N_H = average(numH), conv_tol = 1.e-8; // tight convergence
+  bool ordered = approx_sequence.empty();
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
     num_cdv = numApprox;
@@ -488,9 +531,11 @@ nonhierarch_numerical_solution(const RealVector& cost,
     for (approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
     if (mlmfSubMethod == SUBMETHOD_MFMC)// N_i increasing w/ decreasing fidelity
-      for (approx=1; approx<=numApprox; ++approx) {
-	lin_ineq_coeffs(approx, approx-1) = -1.;
-	lin_ineq_coeffs(approx, approx)   =  1.;
+      for (i=1; i<=numApprox; ++i) {
+	approx     = (ordered) ? i   : approx_sequence[i];
+	approx_im1 = (ordered) ? i-1 : approx_sequence[i-1];
+	lin_ineq_coeffs(i, approx_im1) = -1.;
+	lin_ineq_coeffs(i, approx)     =  1.;
       }
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
@@ -507,9 +552,11 @@ nonhierarch_numerical_solution(const RealVector& cost,
     nln_ineq_ub[0] = budget;
     if (mlmfSubMethod == SUBMETHOD_MFMC) {// N_i increasing w/ decreasing fidel
       lin_ineq_lb = -DBL_MAX; // no lower bnds
-      for (approx=0; approx<numApprox; ++approx) { // N_approx >= N_{approx+1}
-	lin_ineq_coeffs(approx, approx)   = -1.;
-	lin_ineq_coeffs(approx, approx+1) =  1.;
+      for (i=0; i<numApprox; ++i) { // N_approx >= N_{approx+1}
+	approx     = (ordered) ? i   : approx_sequence[i];
+	approx_ip1 = (ordered) ? i+1 : approx_sequence[i+1];
+	lin_ineq_coeffs(i, approx)     = -1.;
+	lin_ineq_coeffs(i, approx_ip1) =  1.;
       }
     }
     break;
@@ -531,15 +578,17 @@ nonhierarch_numerical_solution(const RealVector& cost,
     lin_ineq_coeffs(0, numApprox) = 1.;
     // linear inequality constraints on sample counts:
     if (mlmfSubMethod == SUBMETHOD_MFMC)// N_i increasing w/ decreasing fidelity
-      for (approx=1; approx<=numApprox; ++approx) {
-	lin_ineq_coeffs(approx, approx-1) = -1.;
-	lin_ineq_coeffs(approx, approx)   =  1.;
+      for (i=1; i<=numApprox; ++i) {
+	approx     = (ordered) ? i   : approx_sequence[i];
+	approx_im1 = (ordered) ? i-1 : approx_sequence[i-1];
+	lin_ineq_coeffs(i, approx_im1) = -1.;
+	lin_ineq_coeffs(i, approx)     =  1.;
       }
     else //  N_i >  N (aka r_i > 1) prevents numerical exceptions
          // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
       for (approx=1; approx<=numApprox; ++approx) {
-	lin_ineq_coeffs(approx, approx-1) = -1.;
-	lin_ineq_coeffs(approx,numApprox) =  1. + RATIO_NUDGE; // N_i > N
+	lin_ineq_coeffs(approx,  approx-1) = -1.;
+	lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
       }
     break;
   }
@@ -653,7 +702,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
   numSamples = (truthFixedByPilot) ? 0 :
     one_sided_delta(avg_N_H, avg_hf_target);
 
-  //if (finished) { // metrics not needed unless print_variance_reduction()
+  //if (!numSamples) { // metrics not needed unless print_variance_reduction()
 
   // All cases employ a projected MC estvar to match the projected ACV estvar
   // from N* (where N* may include a numSamples increment not yet performed)
@@ -688,11 +737,11 @@ Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
     case N_VECTOR_LINEAR_CONSTRAINT: {
       RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
       r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
-      mfmc_estvar_ratios(rho2LH, modelSequence, r,       estvar_ratios);
+      mfmc_estvar_ratios(rho2LH, approxSequence, r,       estvar_ratios);
       break;
     }
     default: // use leading numApprox terms of r_and_N
-      mfmc_estvar_ratios(rho2LH, modelSequence, r_and_N, estvar_ratios);
+      mfmc_estvar_ratios(rho2LH, approxSequence, r_and_N, estvar_ratios);
       break;
     }
     break;

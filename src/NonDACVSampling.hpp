@@ -68,9 +68,6 @@ protected:
   void approximate_control_variate_offline_pilot();
   void approximate_control_variate_pilot_projection();
 
-  bool approx_increment(const RealVector& avg_eval_ratios,
-			const Sizet2DArray& N_L_refined, Real hf_target,
-			size_t iter, size_t start, size_t end);
   void approx_increments(IntRealMatrixMap& sum_L_baselineH,
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
@@ -79,6 +76,10 @@ protected:
 			 const SizetSymMatrixArray& N_LL,
 			 const Sizet2DArray& N_LH,
 			 const RealVector& avg_eval_ratios, Real avg_hf_target);
+  bool acv_approx_increment(const RealVector& avg_eval_ratios,
+			    const Sizet2DArray& N_L_refined, Real hf_target,
+			    size_t iter, const SizetArray& approx_sequence,
+			    size_t start, size_t end);
 
   void compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 		      RealVector& avg_eval_ratios, Real& avg_hf_target,
@@ -122,6 +123,7 @@ private:
   // approx_increment() cases:
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
 			   Sizet2DArray& num_L_refined,
+			   const SizetArray& approx_sequence,
 			   size_t approx_start, size_t approx_end);
 
   void compute_LH_covariance(const RealMatrix& sum_L_shared,

@@ -69,13 +69,13 @@ protected:
   void multifidelity_mc_pilot_projection();
 
   void mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
-			const RealVector& cost,  SizetArray& model_sequence,
+			const RealVector& cost,  SizetArray& approx_sequence,
 			RealMatrix& eval_ratios, RealVector& hf_targets);
                       //bool for_warm_start = false);
   void mfmc_numerical_solution(const RealMatrix& var_L,
 			       const RealMatrix& rho2_LH,
 			       const RealVector& cost,
-			       SizetArray& model_sequence,
+			       SizetArray& approx_sequence,
 			       RealMatrix& eval_ratios, Real& avg_hf_target);
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
@@ -83,19 +83,19 @@ protected:
 			 IntRealMatrixMap& sum_LH,
 			 const Sizet2DArray& N_L_baseline,
 			 const Sizet2DArray& N_LH,
-			 const SizetArray& model_sequence,
+			 const SizetArray& approx_sequence,
 			 const RealMatrix& eval_ratios,
 			 const RealVector& hf_targets);
-  bool approx_increment(const RealMatrix& eval_ratios,
-			const Sizet2DArray& N_L_refined,
-			const RealVector& hf_targets, size_t iter,
-			const SizetArray& model_sequence,
-			size_t start, size_t end);
+  bool mfmc_approx_increment(const RealMatrix& eval_ratios,
+			     const Sizet2DArray& N_L_refined,
+			     const RealVector& hf_targets, size_t iter,
+			     const SizetArray& approx_sequence,
+			     size_t start, size_t end);
 
   void update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
 			 RealVector& hf_targets);
   void update_hf_targets(const RealMatrix& rho2_LH,
-			 const SizetArray& model_sequence,
+			 const SizetArray& approx_sequence,
 			 const RealMatrix& eval_ratios, const RealVector& var_H,
 			 const RealVector& estvar_iter0,
 			 RealVector& estvar_ratios, RealVector& hf_targets);
@@ -108,7 +108,7 @@ protected:
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
 			       const RealVector& hf_targets,
-			       const SizetArray& model_sequence,
+			       const SizetArray& approx_sequence,
 			       const RealMatrix& eval_ratios);
 
 private:
@@ -137,7 +137,7 @@ private:
 			  IntRealMatrixMap& sum_L_refined,
 			  Sizet2DArray& num_L_shared,
 			  Sizet2DArray& num_L_refined,
-			  const SizetArray& model_sequence,
+			  const SizetArray& approx_sequence,
 			  size_t sequence_start, size_t sequence_end);
 
   void compute_LH_correlation(const RealMatrix& sum_L_shared,

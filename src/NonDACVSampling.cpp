@@ -277,18 +277,27 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // maxIterations == 0 is no longer reserved for the pilot only case.
   // See notes in NonDMultifidelitySampling::multifidelity_mc().
 
+  // define approx_sequence in decreasing r_i order, directionally consistent
+  // with default approx indexing for well-ordered models
+  // > approx 0 is lowest fidelity --> lowest corr,cost --> highest r_i
+  // > 
+  SizetArray approx_sequence;  bool descending = true;
+  ordered_approx_sequence(avg_eval_ratios, approx_sequence, descending);
+
   IntRealMatrixMap sum_L_refined = sum_L_baselineH;//baselineL;
   Sizet2DArray       N_L_refined =   N_L_baselineH;//baselineL;
-  size_t start, approx;
-  for (approx=numApprox; approx>0; --approx) {
+  size_t start, end;
+  for (end=numApprox; end>0; --end) {
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
-    start = (mlmfSubMethod == SUBMETHOD_ACV_IS) ? approx - 1 : 0;
-    if (approx_increment(avg_eval_ratios, N_L_refined, avg_hf_target,
-			 mlmfIter, start, approx)) {
+    start = (mlmfSubMethod == SUBMETHOD_ACV_IS) ? end - 1 : 0;
+    if (acv_approx_increment(avg_eval_ratios, N_L_refined, avg_hf_target,
+			     mlmfIter, approx_sequence, start, end)) {
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined
       // ACV_MF samples on [0, approx)       --> sum_L_refined
-      accumulate_acv_sums(sum_L_refined, N_L_refined, start, approx);
-      increment_equivalent_cost(numSamples, sequenceCost, start, approx);
+      accumulate_acv_sums(sum_L_refined, N_L_refined, approx_sequence,
+			  start, end);
+      increment_equivalent_cost(numSamples, sequenceCost, approx_sequence,
+				start, end);
     }
   }
 
@@ -307,9 +316,10 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
 
 
 bool NonDACVSampling::
-approx_increment(const RealVector& avg_eval_ratios,
-		 const Sizet2DArray& N_L_refined, Real hf_target,
-		 size_t iter, size_t start, size_t end)
+acv_approx_increment(const RealVector& avg_eval_ratios,
+		     const Sizet2DArray& N_L_refined, Real hf_target,
+		     size_t iter, const SizetArray& approx_sequence,
+		     size_t start, size_t end)
 {
   // Update LF samples based on evaluation ratio
   //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
@@ -318,33 +328,18 @@ approx_increment(const RealVector& avg_eval_ratios,
   //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
-  // > eval_ratios have been scaled if needed to satisfy specified budget
-  //   (maxFunctionEvals) in
-  size_t qoi, approx = end - 1;
-  Real lf_target = avg_eval_ratios[approx] * hf_target;
-  // Choose avg, RMS, max? (trade-off: possible overshoot vs. more iteration)
-  numSamples = one_sided_delta(average(N_L_refined[approx]), lf_target);
 
-  if (numSamples && start < end) {
-    Cout << "\nACV sample increment = " << numSamples
-	 << " for approximations [" << start+1 << ", " << end << ']';
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << " computed from average delta between target " << lf_target
-	   << " and current average count " << average(N_L_refined[approx]);
-    Cout << std::endl;
-    size_t start_qoi = start * numFunctions, end_qoi = end * numFunctions;
-    activeSet.request_values(0);
-    //activeSet.request_values(0, 0, start_qoi);
-    activeSet.request_values(1, start_qoi, end_qoi);
-    //activeSet.request_values(0, end_qoi, iteratedModel.response_size());
-    ensemble_sample_increment(iter, start); // NON-BLOCK
-    return true;
-  }
-  else {
-    Cout << "\nNo ACV approx sample increment for approximations ["
-	 << start+1 << ", " << end << ']' << std::endl;
-    return false;
-  }
+  bool ordered = approx_sequence.empty();
+  size_t approx = (ordered) ? end-1 : approx_sequence[end-1];
+  Real lf_target = avg_eval_ratios[approx] * hf_target,
+       lf_curr   = average(N_L_refined[approx]);
+  // Choose avg, RMS, max? (trade-off: possible overshoot vs. more iteration)
+  numSamples = one_sided_delta(lf_curr, lf_target);
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Approx samples computed from delta between target " << lf_target
+	 << " and current average count " << lf_curr << std::endl;
+
+  return approx_increment(iter, approx_sequence, start, end);
 }
 
 
@@ -387,10 +382,10 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       Real estvar1, estvar2, avg_hf_target1, avg_hf_target2;
       RealMatrix     eval_ratios1,     eval_ratios2;
       RealVector avg_eval_ratios1, avg_eval_ratios2;
-      if (ordered_model_sequence(rho2LH)) // for all QoI across all Approx
+      if (ordered_approx_sequence(rho2LH)) // for all QoI across all Approx
 	mfmc_analytic_solution(rho2LH, cost, eval_ratios1);
       else
-	mfmc_reordered_analytic_solution(rho2LH, cost, modelSequence,
+	mfmc_reordered_analytic_solution(rho2LH, cost, approxSequence,
 					 eval_ratios1);
       estvar1 = acv_estimator_variance(eval_ratios1, avg_N_H, cost,
 				       avg_eval_ratios1, avg_hf_target1, false);
@@ -405,9 +400,9 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 
       bool mfmc_init = (estvar1 <= estvar2);
       if (mfmc_init)
-	{ avg_eval_ratios = avg_eval_ratios1;  avg_hf_target = avg_hf_target1; }
+	{ avg_eval_ratios = avg_eval_ratios1; avg_hf_target = avg_hf_target1; }
       else
-	{ avg_eval_ratios = avg_eval_ratios2;  avg_hf_target = avg_hf_target2; }
+	{ avg_eval_ratios = avg_eval_ratios2; avg_hf_target = avg_hf_target2; }
       if (outputLevel >= NORMAL_OUTPUT) {
 	Cout << "ACV initial guess from ";
 	if (mfmc_init) Cout << "analytic MFMC ";
@@ -419,10 +414,10 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       // ***        well as enumerating SQP,NIP,...
     }
   }
-  else { // update model_sequence after shared sample increment
+  else { // update approx_sequence after shared sample increment
     //covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
     //RealVector avg_rho2_LH;  average(rho2LH, 0, avg_rho2_LH);
-    //ordered_model_sequence(avg_rho2_LH, modelSequence);
+    //ordered_approx_sequence(avg_rho2_LH, approxSequence);
 
     // warm start from previous eval_ratios solution
     // > no scaling needed from prev soln (as in NonDLocalReliability) since
@@ -430,8 +425,11 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     //   active on constraint bound (excepting integer sample rounding)
   }
 
+  // any rho2_LH re-ordering from MFMC initial guess can be ignored
+  // (later gets replaced with r_i ordering for approx_increments() sampling)
+  approxSequence.clear();
   // Base class implementation of numerical solve (shared with unordered MFMC):
-  nonhierarch_numerical_solution(cost, modelSequence, avg_eval_ratios,
+  nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
 				 avg_hf_target, avg_estvar, avg_estvar_ratio);
 
   if (outputLevel >= NORMAL_OUTPUT) {
@@ -699,16 +697,16 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 void NonDACVSampling::
 accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
 		    Sizet2DArray& num_L_refined,
-		    size_t approx_start, size_t approx_end)
+		    const SizetArray& approx_sequence,
+		    size_t sequence_start, size_t sequence_end)
 {
   // uses one set of allResponses with QoI aggregation across all Models,
   // led by the approx Model responses of interest
 
   using std::isfinite;
-  Real lf_fn, lf_prod;
-  int lr_ord, active_ord;
-  size_t qoi, lf_index, approx;
-  IntRespMCIter r_it; IntRMMIter lr_it;
+  int lr_ord, active_ord;  size_t s, qoi, lf_index, approx;
+  Real lf_fn, lf_prod;  IntRespMCIter r_it;  IntRMMIter lr_it;
+  bool ordered = approx_sequence.empty();
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const Response&   resp    = r_it->second;
@@ -717,7 +715,8 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      for (approx=approx_start; approx<approx_end; ++approx) {
+      for (s=sequence_start; s<sequence_end; ++s) {
+	approx = (ordered) ? s : approx_sequence[s];
 	lf_index = approx * numFunctions + qoi;
 	lf_fn = fn_vals[lf_index];
 
