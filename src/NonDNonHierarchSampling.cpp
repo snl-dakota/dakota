@@ -310,10 +310,10 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
       R_sq = 0.;  r_i = eval_ratios(qoi, 0);
       for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
 	r_ip1 = eval_ratios(qoi, ip1);
-	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, i);
 	r_i = r_ip1;
       }
-      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, approx);
+      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, numApprox-1);
       estvar_ratios[qoi] = (1. - R_sq);
     }
     break;
