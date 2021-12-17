@@ -665,13 +665,17 @@ nonhierarch_numerical_solution(const RealVector& cost,
       lin_ineq_coeffs(0, approx) = cost[approx] / cost_H;
     lin_ineq_coeffs(0, numApprox) = 1.;
     // linear inequality constraints on sample counts:
-    if (mlmfSubMethod == SUBMETHOD_MFMC)// N_i increasing w/ decreasing fidelity
-      for (i=1; i<=numApprox; ++i) {
-	approx     = (ordered) ? i   : approx_sequence[i];
-	approx_im1 = (ordered) ? i-1 : approx_sequence[i-1];
+    if (mlmfSubMethod == SUBMETHOD_MFMC) {//N_i increases w/ decreasing fidelity
+      approx_im1 = (ordered) ? 0 : approx_sequence[0];
+      for (i=1; i<numApprox; ++i) {
+	approx = (ordered) ? i : approx_sequence[i];
 	lin_ineq_coeffs(i, approx_im1) = -1.;
 	lin_ineq_coeffs(i, approx)     =  1.;
+	approx_im1 = approx;
       }
+      lin_ineq_coeffs(numApprox,    approx) = -1.;
+      lin_ineq_coeffs(numApprox, numApprox) =  1. + RATIO_NUDGE; // N_im1 > N
+    }
     else //  N_i >  N (aka r_i > 1) prevents numerical exceptions
          // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
       for (approx=1; approx<=numApprox; ++approx) {

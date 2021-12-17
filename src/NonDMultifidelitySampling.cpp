@@ -964,9 +964,7 @@ mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
 	if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1
 	       << ": control variate beta = " << std::setw(9) << beta << '\n';
-	// For MFMC, shared accumulators and counts telescope
-	//N_shared = (approx == numApprox-1) ? N_H_q : N_L[approx+1][qoi];
-	// Uses telescoping {sum,N}_L_shared from pyramid sampling:
+	// For MFMC, shared accumulators and counts telescope pairwise
 	apply_control(sum_L_sh_m(qoi,approx),  N_L_shared[approx][qoi],
 		      sum_L_ref_m(qoi,approx), N_L_refined[approx][qoi],
 		      beta, H_raw_mq);
