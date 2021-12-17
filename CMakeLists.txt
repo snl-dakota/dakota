@@ -28,7 +28,7 @@ include(DakotaCxxOptions)
 dakota_cxx_standard()
 
 # Developer convenience options first so take precedence over default options
-if(DevDebug)
+if(DevDebugShared OR DevDebugStatic OR DevDebug)  # DevDebug is deprecated
   include(DakotaDebug)
   include(DakotaDev)
 elseif (DevDistro)
