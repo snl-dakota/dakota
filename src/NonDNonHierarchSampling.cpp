@@ -360,8 +360,76 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
 
 
 void NonDNonHierarchSampling::
+mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
+		   const RealVector& avg_eval_ratios, RealVector& estvar_ratios)
+{
+  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+
+  // Appendix B of JCP paper on ACV:
+  // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
+  // > Reorder differences since eval ratios/correlations ordered from LF to HF
+  //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
+  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i, ip1;
+  switch (optSubProblemForm) {
+
+  // eval_ratios per qoi,approx with no model re-sequencing
+  case ANALYTIC_SOLUTION:
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      R_sq = 0.;  r_i = avg_eval_ratios[0];
+      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+	r_ip1 = avg_eval_ratios[ip1];
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, i);
+	r_i = r_ip1;
+      }
+      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, numApprox-1);
+      estvar_ratios[qoi] = (1. - R_sq);
+    }
+    break;
+
+  // eval_ratios & approx_sequence based on avg_rho2_LH: remain consistent here
+  case REORDERED_ANALYTIC_SOLUTION: {
+    RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
+    bool ordered = approx_sequence.empty();
+    approx = (ordered) ? 0 : approx_sequence[0];
+    r_i = avg_eval_ratios[approx];  R_sq = 0.;
+    for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+      approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
+      r_ip1 = avg_eval_ratios[approx_ip1];
+      // Note: monotonicity in reordered r_i is enforced in mfmc_eval_ratios()
+      // and in linear constraints for nonhierarch_numerical_solution()
+      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx];
+      r_i = r_ip1;  approx = approx_ip1;
+    }
+    R_sq += (r_i - 1.) / r_i * avg_rho2_LH[approx];
+    estvar_ratios = (1. - R_sq); // assign scalar to vector components
+    break;
+  }
+
+  // Note: objective_function() now calls this fn for MFMC numerical solution.
+  // ANALYTIC_SOLUTION corresponds to the ordered case of this implementation.
+  default: {
+    bool ordered = approx_sequence.empty();
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      approx = (ordered) ? 0 : approx_sequence[0];
+      R_sq = 0.;  r_i = avg_eval_ratios[approx];
+      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+	approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
+	r_ip1 = avg_eval_ratios[approx_ip1];
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
+	r_i = r_ip1;  approx = approx_ip1;
+      }
+      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, approx);
+      estvar_ratios[qoi] = (1. - R_sq);
+    }
+    break;
+  }
+  }
+}
+
+
+void NonDNonHierarchSampling::
 mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
-		       RealMatrix& eval_ratios)
+		       RealMatrix& eval_ratios, bool monotonic_r)
 {
   if (eval_ratios.empty())
     eval_ratios.shapeUninitialized(numFunctions, numApprox);
@@ -387,6 +455,20 @@ mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
       for (qoi=0; qoi<numFunctions; ++qoi)
 	eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L * rho2_LH_a[qoi]);
   }
+
+  // Note: one_sided_delta(numH, hf_targets, 1) enforces monotonicity a bit
+  // further downstream.  It averages +/- differences so it's not one-sided
+  // per QoI --> to recover the same behavior, we must use avg_eval_ratios.
+  // For now, monotonic_r defaults false since it should be redundant.
+  if (monotonic_r) {
+    RealVector avg_eval_ratios;  average(eval_ratios, 0, avg_eval_ratios);
+    Real r_i, prev_ri = 1.;
+    for (int i=numApprox-1; i>=0; --i) {
+      r_i = std::max(avg_eval_ratios[i], prev_ri);
+      inflate(r_i, numFunctions, eval_ratios[i]);
+      prev_ri = r_i;
+    }
+  }
 }
 
 
@@ -394,7 +476,7 @@ void NonDNonHierarchSampling::
 mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 				 const RealVector& cost,
 				 SizetArray& approx_sequence,
-				 RealMatrix& eval_ratios)
+				 RealMatrix& eval_ratios, bool monotonic_r)
 {
   if (eval_ratios.empty())
     eval_ratios.shapeUninitialized(numFunctions, numApprox);
@@ -414,31 +496,37 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 	 << approx_sequence << std::endl;
 
   // precompute a factor based on most-correlated model
-  size_t most_corr = (ordered) ? num_am1 : approx_sequence[num_am1];  int i;
+  size_t most_corr = (ordered) ? num_am1 : approx_sequence[num_am1];
   Real rho2, prev_rho2, rho2_diff, r_i, prev_ri,
     factor = cost_H / (1. - avg_rho2_LH[most_corr]);// most correlated
   // Compute averaged eval_ratios using averaged rho2 for approx_sequence
-  RealVector r_unconstrained(numApprox, false);
-  for (i=0; i<numApprox; ++i) {
+  RealVector r_unconstrained;
+  if (monotonic_r) r_unconstrained.sizeUninitialized(numApprox);
+  for (int i=0; i<numApprox; ++i) {
     approx = (ordered) ? i : approx_sequence[i];
     cost_L = cost[approx];
     // NOTE: indexing is inverted from Peherstorfer: HF = 1, MF = 2, LF = 3
     // > i+1 becomes i-1 and most correlated is rho2_LH(qoi, most_corr)
     rho2_diff = rho2  = avg_rho2_LH[approx];
     if (i) rho2_diff -= prev_rho2;
-    r_unconstrained[i] = std::sqrt(factor / cost_L * rho2_diff);
+    r_i = std::sqrt(factor / cost_L * rho2_diff);
+    if (monotonic_r) r_unconstrained[approx] = r_i;
+    else             inflate(r_i, numFunctions, eval_ratios[approx]);
     prev_rho2 = rho2;
   }
+
   // Reverse loop order and enforce monotonicity in reordered r_i
-  // Note: r_i == prev_ri essentially drops the model
-  prev_ri = 1.;
-  for (i=numApprox-1; i>=0; --i) {
-    r_i = std::max(r_unconstrained[i], prev_ri);
-    approx = (ordered) ? i : approx_sequence[i];
-    Real* eval_ratios_a = eval_ratios[approx];
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      eval_ratios_a[qoi] = r_i; // eval_ratios shared across QoI
-    prev_ri = r_i;
+  // > max() is applied bottom-up from the base of the pyramid (samples
+  //   performed bottom up, so precedence also applied in this direction),
+  //   where assigning r_i = prev_ri effectively drops the CV for model i
+  if (monotonic_r) {
+    prev_ri = 1.;
+    for (int i=numApprox-1; i>=0; --i) {
+      approx = (ordered) ? i : approx_sequence[i];
+      r_i = std::max(r_unconstrained[approx], prev_ri);
+      inflate(r_i, numFunctions, eval_ratios[approx]);
+      prev_ri = r_i;
+    }
   }
 }
 
@@ -737,10 +825,12 @@ Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
     case N_VECTOR_LINEAR_CONSTRAINT: {
       RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
       r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
+      // Compiler can resolve overload with (inherited) vector type:
       mfmc_estvar_ratios(rho2LH, approxSequence, r,       estvar_ratios);
       break;
     }
     default: // use leading numApprox terms of r_and_N
+      // Compiler can resolve overload with (inherited) vector type:
       mfmc_estvar_ratios(rho2LH, approxSequence, r_and_N, estvar_ratios);
       break;
     }
@@ -939,6 +1029,8 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
       << " pilot samples): " << std::setw(wpp7) << average(estVarIter0);
 
   String type = (solutionMode == PILOT_PROJECTION) ? "Projected" : "    Final";
+  //String method = method_enum_to_string(methodName); // string too verbose
+  String method = (methodName == MULTIFIDELITY_SAMPLING) ? " MFMC" : "  ACV";
   // Ordering of averages:
   // > recomputing final MC estvar, rather than dividing the two averages, gives
   //   a result that is consistent with average(estVarIter0) when N* = pilot.
@@ -949,9 +1041,9 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   s << "\n  " << type << "   MC (" << std::setw(4)
     << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
     << std::setw(wpp7) << average(final_mc_estvar) // avgEstVar / avgEstVarRatio
-    << "\n  " << type << "  ACV (sample profile):     "
+    << "\n  " << type << method << " (sample profile):     "
     << std::setw(wpp7) << avgEstVar
-    << "\n  " << type << "  ACV ratio (1 - R^2):      "
+    << "\n  " << type << method << " ratio (1 - R^2):      "
     << std::setw(wpp7) << avgEstVarRatio << '\n';
 }
 

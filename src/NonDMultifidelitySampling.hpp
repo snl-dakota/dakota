@@ -213,7 +213,7 @@ matrix_to_diagonal_array(const RealMatrix& var_L, RealSymMatrixArray& cov_LL)
   if (cov_LL.empty()) {
     cov_LL.resize(numFunctions);
     for (qoi=0; qoi<numFunctions; ++qoi)
-      cov_LL[qoi].shapeUninitialized(numApprox);
+      cov_LL[qoi].shape(numApprox); // init to 0 for off-diagonal entries
   }
 
   Real cov_LH_aq;

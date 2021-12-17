@@ -384,20 +384,23 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       RealVector avg_eval_ratios1, avg_eval_ratios2;
       if (ordered_approx_sequence(rho2LH)) // for all QoI across all Approx
 	mfmc_analytic_solution(rho2LH, cost, eval_ratios1);
-      else
+      else // compute reordered MFMC for averaged rho; monotonic r not reqd
 	mfmc_reordered_analytic_solution(rho2LH, cost, approxSequence,
-					 eval_ratios1);
+					 eval_ratios1, false);
       estvar1 = acv_estimator_variance(eval_ratios1, avg_N_H, cost,
-				       avg_eval_ratios1, avg_hf_target1, false);
+				       avg_eval_ratios1, avg_hf_target1);
 
       // > Option 2 is ensemble of independent two-model CVMCs, rescaled to an
       //   aggregate budget.  This is more ACV-like in the sense that it is not
       //   recursive, but it neglects the covariance C among approximations.
-      //   It is also insensitive to model sequencing.  Rescaling is required.
+      //   It is also insensitive to model sequencing.
       cvmc_ensemble_solutions(rho2LH, cost, eval_ratios2);
       estvar2 = acv_estimator_variance(eval_ratios2, avg_N_H, cost,
-				       avg_eval_ratios2, avg_hf_target2, true);
+				       avg_eval_ratios2, avg_hf_target2);
 
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "ACV initial guess candidates:\n  analytic MFMC estvar = "
+	     << estvar1 << "\n  ensemble CVMC estvar = " << estvar2 << '\n';
       bool mfmc_init = (estvar1 <= estvar2);
       if (mfmc_init)
 	{ avg_eval_ratios = avg_eval_ratios1; avg_hf_target = avg_hf_target1; }
@@ -409,9 +412,8 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 	else           Cout << "ensemble of two-model CVMC ";
 	Cout << "(average eval ratios):\n" << avg_eval_ratios << std::endl;
       }
-      // *** TO DO: consider running nonhierarch_numerical_solution() for both
-      // ***        (multi-start from two different promising candidates), as
-      // ***        well as enumerating SQP,NIP,...
+      // TO DO: consider computing numerical soln for both (multi-start from
+      //        2 promising candidates), as well as enumerating SQP,NIP,...
     }
   }
   else { // update approx_sequence after shared sample increment

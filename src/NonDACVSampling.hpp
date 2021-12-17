@@ -148,8 +148,7 @@ private:
 			      Real avg_hf_target);
   Real acv_estimator_variance(const RealMatrix& eval_ratios, Real avg_N_H,
 			      const RealVector& cost,
-			      RealVector& avg_eval_ratios, Real& avg_hf_target,
-			      bool rescaling_required);
+			      RealVector& avg_eval_ratios, Real& avg_hf_target);
 
   void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
 		       IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
@@ -280,7 +279,7 @@ acv_estimator_variance(const RealVector& avg_eval_ratios, Real avg_hf_target)
 inline Real NonDACVSampling::
 acv_estimator_variance(const RealMatrix& eval_ratios, Real avg_N_H,
 		       const RealVector& cost, RealVector& avg_eval_ratios,
-		       Real& avg_hf_target, bool rescaling_required)
+		       Real& avg_hf_target)
 {
   average(eval_ratios, 0, avg_eval_ratios);
   // scale to enforce budget constraint.  Since the profile does not emerge
@@ -288,10 +287,10 @@ acv_estimator_variance(const RealMatrix& eval_ratios, Real avg_N_H,
   // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
   // > if N* > N_pilot, use initial = r*,N*
   avg_hf_target = allocate_budget(avg_eval_ratios, cost); // r* --> N*
-  if (avg_N_H > avg_hf_target) // replace N* with N_pilot & rescale r* to budget
-    { avg_hf_target = avg_N_H;  rescaling_required = true; }
-  if (rescaling_required) // either from pilot over-est or from passing true
+  if (avg_N_H > avg_hf_target) {// replace N* with N_pilot, rescale r* to budget
+    avg_hf_target = avg_N_H;  
     scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_hf_target);
+  }
   return acv_estimator_variance(avg_eval_ratios, avg_hf_target);
 }
 

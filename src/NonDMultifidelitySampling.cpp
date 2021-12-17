@@ -759,12 +759,12 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     approx_sequence.clear();
     mfmc_analytic_solution(rho2_LH, cost, eval_ratios);
     break;
-  case REORDERED_ANALYTIC_SOLUTION:
+  case REORDERED_ANALYTIC_SOLUTION: // inactive (future user override?)
     Cout << "MFMC: model sequence provided is out of order with respect to "
 	 << "Low-High\n      correlation for at least one QoI.  Switching to "
 	 << "alternate analytic solution.\n";
     mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
-				     eval_ratios);
+				     eval_ratios, true); // monotonic r for seq
     break;
   default: { // any of several numerical optimization formulations
     Cout << "MFMC: model sequence provided is out of order with respect to "
@@ -810,9 +810,11 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     else { // compute initial estimate of r* from analytic MFMC
 
       // generate an initial guess using reordered approach (we know ordered
-      // analytic can't be used or we wouldn't be using the numerical option)
+      // analytic can't be used or we wouldn't be using the numerical option).
+      // Enforce that r increases monotonically across the approx_sequence for
+      // consistency with linear constraints in the numerical soln to follow.
       mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
-				       eval_ratios);
+				       eval_ratios, true);// monotonic r for seq
       average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "Initial guess from analytic MFMC (average eval ratios):\n"

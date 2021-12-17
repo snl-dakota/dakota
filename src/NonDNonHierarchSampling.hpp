@@ -115,13 +115,19 @@ protected:
 			  const SizetArray& approx_sequence,
 			  const RealMatrix& eval_ratios,
 			  RealVector& estvar_ratios);
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const SizetArray& approx_sequence,
+			  const RealVector& avg_eval_ratios,
+			  RealVector& estvar_ratios);
 
   void mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
-			      RealMatrix& eval_ratios);
+			      RealMatrix& eval_ratios,
+			      bool monotonic_r = false);
   void mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 					const RealVector& cost,
 					SizetArray& approx_sequence,
-					RealMatrix& eval_ratios);
+					RealMatrix& eval_ratios,
+					bool monotonic_r);
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
 			       const RealVector& cost, RealMatrix& eval_ratios);
   void nonhierarch_numerical_solution(const RealVector& cost,
@@ -147,6 +153,8 @@ protected:
 
   /// promote vector of averaged values to full matrix
   void inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios);
+  /// promote scalar to column vector
+  void inflate(Real r_i, size_t num_rows, Real* eval_ratios_col);
 
   void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
   void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
@@ -689,6 +697,15 @@ inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios)
     for (qoi=0; qoi<numFunctions; ++qoi)
       eval_ratios_a[qoi] = r_i;
   }
+}
+
+
+inline void NonDNonHierarchSampling::
+inflate(Real r_i, size_t num_rows, Real* eval_ratios_col)
+{
+  // inflate scalar to column vector
+  for (size_t row=0; row<num_rows; ++row)
+    eval_ratios_col[row] = r_i;
 }
 
 } // namespace Dakota
