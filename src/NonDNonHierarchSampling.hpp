@@ -22,6 +22,9 @@
 
 namespace Dakota {
 
+// needs to be greater than FDSS to avoid potential FPE from N > N_i
+// (especially for bounds-respecting central diff at N = pilot). Careful
+// control of NPSOL is needed: {Central,Fwd} FDSS are now assigned.
 #define RATIO_NUDGE 1.e-4
 
 // special values for optSubProblemForm

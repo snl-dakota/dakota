@@ -687,16 +687,17 @@ nonhierarch_numerical_solution(const RealVector& cost,
   }
 
   if (varianceMinimizer.is_null())
-    switch (optSubProblemSolver) { // *** TO DO: need to pass in?
+    switch (optSubProblemSolver) {
     case SUBMETHOD_SQP: {
       int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) ?
 	2 : 0; // 0 neither, 1 obj, 2 constr, 3 both
+      Real fdss = 1.e-6;
 #ifdef HAVE_NPSOL
       varianceMinimizer.assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb,
         x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
         lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
         npsol_objective_evaluator, npsol_constraint_evaluator, deriv_level,
-        conv_tol, max_iter));
+	conv_tol, max_iter, fdss));
 #endif
       break;
     }
