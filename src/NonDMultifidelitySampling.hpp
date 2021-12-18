@@ -57,7 +57,7 @@ protected:
   //void pre_run();
   void core_run();
   //void post_run(std::ostream& s);
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   void print_variance_reduction(std::ostream& s);
 
   //
@@ -68,27 +68,37 @@ protected:
   void multifidelity_mc_offline_pilot();
   void multifidelity_mc_pilot_projection();
 
+  void mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
+			const RealVector& cost,  SizetArray& approx_sequence,
+			RealMatrix& eval_ratios, RealVector& hf_targets);
+                      //bool for_warm_start = false);
+  void mfmc_numerical_solution(const RealMatrix& var_L,
+			       const RealMatrix& rho2_LH,
+			       const RealVector& cost,
+			       SizetArray& approx_sequence,
+			       RealMatrix& eval_ratios, Real& avg_hf_target);
+
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
 			 IntRealMatrixMap& sum_LH,
 			 const Sizet2DArray& N_L_baseline,
 			 const Sizet2DArray& N_LH,
-			 const SizetArray& model_sequence,
+			 const SizetArray& approx_sequence,
 			 const RealMatrix& eval_ratios,
 			 const RealVector& hf_targets);
-  bool approx_increment(const RealMatrix& eval_ratios,
-			const Sizet2DArray& N_L_refined,
-			const RealVector& hf_targets, size_t iter,
-			const SizetArray& model_sequence,
-			size_t start, size_t end);
+  bool mfmc_approx_increment(const RealMatrix& eval_ratios,
+			     const Sizet2DArray& N_L_refined,
+			     const RealVector& hf_targets, size_t iter,
+			     const SizetArray& approx_sequence,
+			     size_t start, size_t end);
 
   void update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
 			 RealVector& hf_targets);
   void update_hf_targets(const RealMatrix& rho2_LH,
-			 const SizetArray& model_sequence,
+			 const SizetArray& approx_sequence,
 			 const RealMatrix& eval_ratios, const RealVector& var_H,
-			 const RealVector& mse_iter0,   RealVector& mse_ratios,
-			 RealVector& hf_targets);
+			 const RealVector& estvar_iter0,
+			 RealVector& estvar_ratios, RealVector& hf_targets);
   //void update_hf_targets(const SizetArray& N_H, RealVector& hf_targets);
 
   void update_projected_samples(const RealVector& hf_targets,
@@ -96,15 +106,10 @@ protected:
 				SizetArray& N_H_projected,
 				Sizet2DArray& N_L_projected);
 
-  void compute_mse_ratios(const RealMatrix& rho2_LH,
-			  const SizetArray& model_sequence,
-			  const RealMatrix& eval_ratios,
-			  RealVector& mse_ratios);
-  void compute_mse_ratios(const RealMatrix& rho2_LH, const SizetArray& N_H,
-			  const RealVector& hf_targets,
-			  const SizetArray& model_sequence,
-			  const RealMatrix& eval_ratios,
-			  RealVector& mse_ratios);
+  void mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
+			       const RealVector& hf_targets,
+			       const SizetArray& approx_sequence,
+			       const RealMatrix& eval_ratios);
 
 private:
 
@@ -132,16 +137,22 @@ private:
 			  IntRealMatrixMap& sum_L_refined,
 			  Sizet2DArray& num_L_shared,
 			  Sizet2DArray& num_L_refined,
-			  const SizetArray& model_sequence,
+			  const SizetArray& approx_sequence,
 			  size_t sequence_start, size_t sequence_end);
 
   void compute_LH_correlation(const RealMatrix& sum_L_shared,
 			      const RealVector& sum_H, const RealMatrix& sum_LL,
 			      const RealMatrix& sum_LH,const RealVector& sum_HH,
 			      const Sizet2DArray& num_L,const SizetArray& num_H,
-			      const Sizet2DArray& num_LH, RealVector& var_H,
-			      RealMatrix& rho2_LH);
-  
+			      const Sizet2DArray& num_LH, RealMatrix& var_L,
+			      RealVector& var_H, RealMatrix& rho2_LH);
+  void correlation_sq_to_covariance(const RealMatrix& rho2_LH,
+				    const RealMatrix& var_L,
+				    const RealVector& var_H,
+				    RealMatrix& cov_LH);
+  void matrix_to_diagonal_array(const RealMatrix& var_L,
+				RealSymMatrixArray& cov_LL);
+
   void mf_raw_moments(IntRealMatrixMap& sum_L_baseline,
 		      IntRealMatrixMap& sum_L_shared,
 		      IntRealMatrixMap& sum_L_refined,
@@ -160,8 +171,8 @@ private:
   //- Heading: Data
   //
 
-  /// ratio of MFMC estimator variance to mseIter0, one per QoI
-  RealVector mseRatios;
+  /// ratio of MFMC estimator variance to estVarIter0, one per QoI
+  RealVector estVarRatios;
 };
 
 
@@ -175,6 +186,41 @@ initialize_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   for (int i=1; i<=4; ++i) {
     mat_pr.first = i; // moment number
     sum_LL.insert(mat_pr).first->second.shape(numFunctions, numApprox);
+  }
+}
+
+
+inline void NonDMultifidelitySampling::
+correlation_sq_to_covariance(const RealMatrix& rho2_LH, const RealMatrix& var_L,
+			     const RealVector& var_H, RealMatrix& cov_LH)
+{
+  if (cov_LH.empty()) cov_LH.shapeUninitialized(numFunctions, numApprox);
+
+  size_t qoi, approx;  Real var_H_q, cov_LH_aq;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    var_H_q = var_H[qoi];
+    for (approx=0; approx<numApprox; ++approx)
+      cov_LH(qoi,approx)
+	= std::sqrt(rho2_LH(qoi,approx) * var_L(qoi,approx) * var_H_q);
+  }
+}
+
+
+inline void NonDMultifidelitySampling::
+matrix_to_diagonal_array(const RealMatrix& var_L, RealSymMatrixArray& cov_LL)
+{
+  size_t qoi, approx;
+  if (cov_LL.empty()) {
+    cov_LL.resize(numFunctions);
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      cov_LL[qoi].shape(numApprox); // init to 0 for off-diagonal entries
+  }
+
+  Real cov_LH_aq;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    RealSymMatrix& cov_LL_q = cov_LL[qoi];
+    for (approx=0; approx<numApprox; ++approx)
+      cov_LL_q(approx,approx) = var_L(qoi,approx);
   }
 }
 

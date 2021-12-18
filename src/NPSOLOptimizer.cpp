@@ -130,7 +130,7 @@ NPSOLOptimizer(const RealVector& initial_point,
 				      double*, int&),
 	       void (*user_con_eval) (int&, int&, int&, int&, int*,
 				      double*, double*, double*, int&),
-	       int derivative_level, Real conv_tol, size_t max_iter,
+	       int derivative_level, Real conv_tol, size_t max_iter, Real fdss,
 	       Real fn_precision, Real feas_tol, Real lin_feas_tol,
 	       Real nonlin_feas_tol):
   // use SOLBase default ctor
@@ -167,6 +167,11 @@ NPSOLOptimizer(const RealVector& initial_point,
   send_sol_option(  "Derivative Level            = " +
 		  std::to_string(derivative_level));
 
+  if (fdss > 0.) {
+    String fdss_str(std::to_string(fdss));
+    send_sol_option("Difference Interval         = " + fdss_str);
+    send_sol_option("Central Difference Interval = " + fdss_str);
+  }
   if (max_iter > 0)
     send_sol_option("Major Iteration Limit       = " +
 		    std::to_string(max_iter));

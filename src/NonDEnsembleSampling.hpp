@@ -227,7 +227,7 @@ inline void NonDEnsembleSampling::
 compute_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
 			      RealVector& mc_est_var)
 {
-  // Defines initial MSE for use as a fixed reference (MC variance from
+  // Defines initial estvar for use as a fixed reference (MC variance from
   // iteration 0 pilot sample) for comparing against convergenceTol
   mc_est_var.sizeUninitialized(numFunctions);
   size_t qoi, N_l_q;
@@ -242,8 +242,7 @@ inline void NonDEnsembleSampling::
 project_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
 			      size_t new_samp, RealVector& mc_est_var)
 {
-  // Defines initial MSE for use as a fixed reference (MC variance from
-  // iteration 0 pilot sample) for comparing against convergenceTol
+  // Defines projected estvar for use as a consistent reference
   mc_est_var.sizeUninitialized(numFunctions);
   size_t qoi, N_l_q;
   for (qoi=0; qoi<numFunctions; ++qoi) {
