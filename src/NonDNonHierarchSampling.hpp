@@ -406,29 +406,21 @@ ordered_approx_sequence(const RealVector& metric, SizetArray& approx_sequence,
 		       bool descending_keys)
 {
   size_t i, len = metric.length(), metric_order;  bool ordered = true;
-  std::map<Real, size_t>::iterator it;
+  std::multimap<Real, size_t>::iterator it;
   approx_sequence.resize(len);
   if (descending_keys) {
-    std::map<Real, size_t, std::greater<Real> > descending_map;
-    for (i=0; i<len; ++i)
-      descending_map[metric[i]] = i; // keys arranged in decreasing order
-    if (descending_map.size() != len) { // unexpected redundancy
-      Cerr << "Error: redundant metric in model sequencing." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
+    std::multimap<Real, size_t, std::greater<Real> > descending_map;
+    for (i=0; i<len; ++i) // keys arranged in decreasing order
+      descending_map.insert(std::pair<Real, size_t>(metric[i], i));
     for (i=0, it=descending_map.begin(); it!=descending_map.end(); ++it, ++i) {
       approx_sequence[i] = metric_order = it->second;
       if (i != metric_order) ordered = false;
     }
   }
   else {
-    std::map<Real, size_t> ascending_map; // default ascending keys
-    for (i=0; i<len; ++i)
-      ascending_map[metric[i]] = i; // keys arranged in increasing order
-    if (ascending_map.size() != len) { // unexpected redundancy
-      Cerr << "Error: redundant metric in model sequencing." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
+    std::multimap<Real, size_t> ascending_map; // default ascending keys
+    for (i=0; i<len; ++i) // keys arranged in increasing order
+      ascending_map.insert(std::pair<Real, size_t>(metric[i], i));
     for (i=0, it=ascending_map.begin(); it!=ascending_map.end(); ++it, ++i) {
       approx_sequence[i] = metric_order = it->second;
       if (i != metric_order) ordered = false;
@@ -443,16 +435,13 @@ inline bool NonDNonHierarchSampling::
 ordered_approx_sequence(const RealMatrix& metric)//, bool descending_keys)
 {
   size_t r, c, nr = metric.numRows(), nc = metric.numCols(), metric_order;
-  std::map<Real, size_t> metric_map; std::map<Real, size_t>::iterator it;
+  std::multimap<Real, size_t> metric_map;
+  std::multimap<Real, size_t>::iterator it;
   bool ordered = true;
   for (r=0; r<nr; ++r) {  // numFunctions
     metric_map.clear();
     for (c=0; c<nc; ++c) // numApprox
-      metric_map[metric(r,c)] = c; // order by increasing corr
-    if (metric_map.size() != nc) { // unexpected redundancy
-      Cerr << "Error: redundant metric in model ordering." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
+      metric_map.insert(std::pair<Real, size_t>(metric(r,c), c));
     for (c=0, it=metric_map.begin(); it!=metric_map.end(); ++it, ++c)
       if (c != it->second) { ordered = false; break; }
     if (!ordered) break;
