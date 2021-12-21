@@ -265,6 +265,45 @@ class dakotaInterfacingTestCase(unittest.TestCase):
             p, r = di.interfacing._read_parameters_stream(stream=pio, 
                            batch=True, results_file="results.out")
 
+    def test_type_inference(self):
+        """With infer_types set to False, verify variables are all strings"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", infer_types=True)
+        self.assertIsInstance(p["x1"], float)
+        self.assertIsInstance(p["x2"], float)
+        self.assertIsInstance(p["dussv_1"], str)
+
+    def test_no_type_inference(self):
+        """With infer_types set to False, verify variables are all strings"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", infer_types=False)
+        self.assertIsInstance(p["x1"], str)
+        self.assertIsInstance(p["x2"], str)
+        self.assertIsInstance(p["dussv_1"], str)
+
+    def test_types_list(self):
+        """With infer_types set to False, verify variables are all strings"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", types=[str]*3)
+        self.assertIsInstance(p["x1"], str)
+        self.assertIsInstance(p["x2"], str)
+        self.assertIsInstance(p["dussv_1"], str)
+
+    def test_types_list_wrong_length(self):
+        """With infer_types set to False, verify variables are all strings"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        with self.assertRaises(di.BadTypesOverride):
+            di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", types=[str]*2)
+
+    def test_types_list(self):
+        """With infer_types set to False, verify variables are all strings"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        types = {"x1": str, "x2": str, "dussv_1": str}
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", types=types)
+        self.assertIsInstance(p["x1"], str)
+        self.assertIsInstance(p["x2"], str)
+        self.assertIsInstance(p["dussv_1"], str)
+
     def test_dprepro(self):
         """Verify that templates are substituted correctly"""
  

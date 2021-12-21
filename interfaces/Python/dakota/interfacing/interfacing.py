@@ -40,6 +40,9 @@ class BatchWriteError(Exception):
 class ResultsUpdateError(Exception):
     pass
 
+class BadTypesOverride(Exception):
+    pass
+
 # Constant used to specify an unnamed results file
 UNNAMED = True
 
@@ -68,26 +71,56 @@ class Parameters(object):
     """
 
     def __init__(self,aprepro_format=None, variables=None, an_comps=None, 
-            eval_id=None):
+            eval_id=None, infer_types=True, types=None):
         self.aprepro_format = aprepro_format
         self._variables = copy.deepcopy(variables)
         self.an_comps = list(an_comps)
         self.eval_id = str(eval_id)
         self.eval_num = int(eval_id.split(":")[-1])
+        if isinstance(types, list):
+            self._set_types_from_list(types)
+        elif isinstance(types, dict):
+            self._set_types_from_dict(infer_types, types)
+        elif infer_types:
+            self._infer_types()
+        self._batch = False
+
+    def _set_types_from_list(self, types):
+        if len(types) != len(self._variables):
+            raise BadTypesOverride("Length of types list is %d but number of variables is %d" %(len(types), len(self._variables)))
+        for t, (k, v) in zip(types, self._variables.items()):
+            self._variables[k] = t(v)
+
+    def _set_types_from_dict(self, infer_types, types):
+        for k, v in self._variables.items():
+            if k in types:
+                self._variables[k] = types[k](v)
+            elif infer_types:
+                self._variables[k] = self._infer_single_type(v)
+
+    def _infer_types(self):
         # Convert variables to the appropriate type. The possible types
         # are int, float, and string. The variables are already strings.
         # TODO: Consider a user option to override this behavior and keep
         # everything as a string, or provide access to the original strings
         for k, v in self._variables.items():
+            self._variables[k] = self._infer_single_type(v)
+
+    def _infer_single_type(self, v):
+        # string variables often contain underscores and might be mistaken for
+        # floats or ints
+        converted = v
+        if '_' not in v:    
             try:
-                self._variables[k] = int(v)
+                converted = int(v)
             except ValueError:
                 try:
-                    self._variables[k] = float(v)
+                    converted = float(v)
                 except ValueError:
                     pass
                 pass
-        self._batch = False
+        return converted    
+
 
     @property
     def descriptors(self):
@@ -675,7 +708,7 @@ def _extract_block(stream, numRE, dataRE, handle):
         handle(tag,value)
 
 
-def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None):
+def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, infer_types=True, types=None):
     """Extract the parameters data from the stream."""
 
     # determine format (dakota or aprepro) by examining the first line
@@ -726,17 +759,17 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None):
     m = useRE["eval_id"].match(stream.readline())
     eval_id = m.group("value")
     
-    return (Parameters(aprepro_format, variables, an_comps, eval_id),
+    return (Parameters(aprepro_format, variables, an_comps, eval_id, infer_types, types),
             Results(aprepro_format, responses, deriv_vars, eval_id, ignore_asv,
                 results_file))
 
 def _read_parameters_stream(stream=None, ignore_asv=False, batch=False, 
-    results_file=None):
+    results_file=None, infer_types=True, types=None):
     """Extract all evaluations from stream"""
     param_sets = [] # list of Parameters objects
     results_sets = [] # list of Results objects
     while True:
-        p, r = _read_eval_from_stream(stream, ignore_asv, results_file)
+        p, r = _read_eval_from_stream(stream, ignore_asv, results_file, infer_types, types)
         if p and r: # p and r == None indicates end of stream
             param_sets.append(p)
             results_sets.append(r)
@@ -751,7 +784,7 @@ def _read_parameters_stream(stream=None, ignore_asv=False, batch=False,
         return param_sets[0], results_sets[0]
 
 def read_parameters_file(parameters_file=None, results_file=None, 
-        ignore_asv=False, batch=False):
+        ignore_asv=False, batch=False, infer_types=True, types=None):
     """Read and parse the Dakota parameters file.
     
     Keyword Args:
@@ -763,7 +796,13 @@ def read_parameters_file(parameters_file=None, results_file=None,
             and a stream must be specified in the call to Results.write().
         ignore_asv: If True, ignore the active set vector when setting
             responses on the returned Results object.
-        batch: Set to True when performing batch evaluations.  
+        batch: Set to True when performing batch evaluations.
+        infer_types: If True, variable types will be guessed. Otherwise, they
+            will remain strings. Settings provided using the `types` argument
+            override type inference.
+        types: A dict or list of type overrides. If a list, the length
+            must equal the number of variables. If a dict, variables will be
+            matched by descriptor. Extra keys will be ignored.
 
     Returns:
         Two cases:
@@ -799,7 +838,7 @@ def read_parameters_file(parameters_file=None, results_file=None,
 
     ### Open and parse the parameters file
     with open(parameters_file, "r", encoding='utf8') as ifp:
-        return _read_parameters_stream(ifp, ignore_asv, batch, results_file)
+        return _read_parameters_stream(ifp, ignore_asv, batch, results_file, infer_types, types)
 
 
 def dprepro(template, parameters=None, results=None, include=None,
