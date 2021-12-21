@@ -841,7 +841,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 
   // Base class implementation of numerical solve (shared with ACV):
   nonhierarch_numerical_solution(cost, approx_sequence, avg_eval_ratios,
-				 avg_hf_target, avgEstVar, avgEstVarRatio);
+				 avg_hf_target, numSamples, avgEstVar,
+				 avgEstVarRatio);
   // MFMC normally uses a matrix of eval ratios, but numerical opt flattens
   // to a vector of design vars
   inflate(avg_eval_ratios, eval_ratios);
