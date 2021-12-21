@@ -23,6 +23,8 @@
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
+#define MULTISTART_ACV
+
 static const char rcsId[]="@(#) $Id: NonDACVSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 namespace Dakota {
@@ -379,7 +381,7 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 
       // Run a competition among analytic approaches for best initial guess:
       // > Option 1 is analytic MFMC: differs from ACV due to recursive pairing
-      Real estvar1, estvar2, avg_hf_target1, avg_hf_target2;
+      Real avg_estvar1, avg_estvar2, avg_hf_target1, avg_hf_target2;
       RealMatrix     eval_ratios1,     eval_ratios2;
       RealVector avg_eval_ratios1, avg_eval_ratios2;
       if (ordered_approx_sequence(rho2LH)) // for all QoI across all Approx
@@ -387,33 +389,60 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       else // compute reordered MFMC for averaged rho; monotonic r not reqd
 	mfmc_reordered_analytic_solution(rho2LH, cost, approxSequence,
 					 eval_ratios1, false);
-      estvar1 = acv_estimator_variance(eval_ratios1, avg_N_H, cost,
-				       avg_eval_ratios1, avg_hf_target1);
 
       // > Option 2 is ensemble of independent two-model CVMCs, rescaled to an
       //   aggregate budget.  This is more ACV-like in the sense that it is not
       //   recursive, but it neglects the covariance C among approximations.
       //   It is also insensitive to model sequencing.
       cvmc_ensemble_solutions(rho2LH, cost, eval_ratios2);
-      estvar2 = acv_estimator_variance(eval_ratios2, avg_N_H, cost,
-				       avg_eval_ratios2, avg_hf_target2);
 
-      if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "ACV initial guess candidates:\n  analytic MFMC estvar = "
-	     << estvar1 << "\n  ensemble CVMC estvar = " << estvar2 << '\n';
-      bool mfmc_init = (estvar1 <= estvar2);
+      // any rho2_LH re-ordering from MFMC initial guess can be ignored (later
+      // gets replaced with r_i ordering for approx_increments() sampling)
+      approxSequence.clear();
+#ifdef MULTISTART_ACV
+      // Run numerical solns from both starting points (first mlmfIter only)
+      Real avg_estvar_ratio1, avg_estvar_ratio2;
+      nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios1,
+				     avg_hf_target1, avg_estvar1,
+				     avg_estvar_ratio1);
+      nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios2,
+				     avg_hf_target2, avg_estvar2,
+				     avg_estvar_ratio2);
+      bool mfmc_init = (avg_estvar1 <= avg_estvar2);
+      Cout << "ACV best solution from ";
+      if (mfmc_init) {
+	Cout << "analytic MFMC." << std::endl;
+	avg_eval_ratios = avg_eval_ratios1;  avg_hf_target = avg_hf_target1;
+	avg_estvar = avg_estvar1;      avg_estvar_ratio = avg_estvar_ratio1;
+      }
+      else {
+	Cout << "ensemble of two-model CVMC." << std::endl;
+	avg_eval_ratios = avg_eval_ratios2;  avg_hf_target = avg_hf_target2;
+	avg_estvar = avg_estvar2;      avg_estvar_ratio = avg_estvar_ratio2;
+      }
+#else
+      // Run one numerical soln from best of two starting points
+      avg_estvar1 = acv_estimator_variance(eval_ratios1, avg_N_H, cost,
+					   avg_eval_ratios1, avg_hf_target1);
+      avg_estvar2 = acv_estimator_variance(eval_ratios2, avg_N_H, cost,
+					   avg_eval_ratios2, avg_hf_target2);
+      bool mfmc_init = (avg_estvar1 <= avg_estvar2);
       if (mfmc_init)
 	{ avg_eval_ratios = avg_eval_ratios1; avg_hf_target = avg_hf_target1; }
       else
 	{ avg_eval_ratios = avg_eval_ratios2; avg_hf_target = avg_hf_target2; }
       if (outputLevel >= NORMAL_OUTPUT) {
-	Cout << "ACV initial guess from ";
+	Cout << "ACV initial guess candidates:\n  analytic MFMC estvar = "
+	     << avg_estvar1 << "\n  ensemble CVMC estvar = " << avg_estvar2
+	     << "\nACV initial guess from ";
 	if (mfmc_init) Cout << "analytic MFMC ";
 	else           Cout << "ensemble of two-model CVMC ";
 	Cout << "(average eval ratios):\n" << avg_eval_ratios << std::endl;
       }
-      // TO DO: consider computing numerical soln for both (multi-start from
-      //        2 promising candidates), as well as enumerating SQP,NIP,...
+      // Single solve initiated from lowest estvar
+      nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
+				     avg_hf_target,avg_estvar,avg_estvar_ratio);
+#endif
     }
   }
   else { // update approx_sequence after shared sample increment
@@ -425,14 +454,10 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     // > no scaling needed from prev soln (as in NonDLocalReliability) since
     //   updated avg_N_H now includes allocation from previous solution and is
     //   active on constraint bound (excepting integer sample rounding)
+    approxSequence.clear();
+    nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
+				   avg_hf_target, avg_estvar, avg_estvar_ratio);
   }
-
-  // any rho2_LH re-ordering from MFMC initial guess can be ignored
-  // (later gets replaced with r_i ordering for approx_increments() sampling)
-  approxSequence.clear();
-  // Base class implementation of numerical solve (shared with unordered MFMC):
-  nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
-				 avg_hf_target, avg_estvar, avg_estvar_ratio);
 
   if (outputLevel >= NORMAL_OUTPUT) {
     for (size_t approx=0; approx<numApprox; ++approx)
