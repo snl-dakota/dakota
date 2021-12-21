@@ -23,8 +23,6 @@
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
-#define MULTISTART_ACV
-
 static const char rcsId[]="@(#) $Id: NonDACVSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 namespace Dakota {
@@ -35,7 +33,7 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, Model& model):
-  NonDNonHierarchSampling(problem_db, model)
+  NonDNonHierarchSampling(problem_db, model), multiStartACV(true)
 {
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
   // truthFixedByPilot is a user-specified option for fixing the number of HF
@@ -399,57 +397,58 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       // any rho2_LH re-ordering from MFMC initial guess can be ignored (later
       // gets replaced with r_i ordering for approx_increments() sampling)
       approxSequence.clear();
-#ifdef MULTISTART_ACV
-      // Run numerical solns from both starting points (first mlmfIter only)
-      average(eval_ratios1, 0, avg_eval_ratios1);
-      average(eval_ratios2, 0, avg_eval_ratios2);
-      scale_to_target(avg_N_H, cost, avg_eval_ratios1, avg_hf_target1);
-      scale_to_target(avg_N_H, cost, avg_eval_ratios2, avg_hf_target2);
-      Real avg_estvar_ratio1, avg_estvar_ratio2;  int num_samp1, num_samp2;
-      nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios1,
-				     avg_hf_target1, num_samp1, avg_estvar1,
-				     avg_estvar_ratio1);
-      nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios2,
-				     avg_hf_target2, num_samp2, avg_estvar2,
-				     avg_estvar_ratio2);
-      bool mfmc_init = (avg_estvar1 <= avg_estvar2);
-      Cout << "\nACV best solution from ";
-      if (mfmc_init) {
-	Cout << "analytic MFMC." << std::endl;
-	avg_eval_ratios  = avg_eval_ratios1;  avg_hf_target = avg_hf_target1;
-	numSamples       = num_samp1;         avg_estvar    = avg_estvar1;
-	avg_estvar_ratio = avg_estvar_ratio1;
+      if (multiStartACV) {
+	// Run numerical solns from both starting points (first mlmfIter only)
+	average(eval_ratios1, 0, avg_eval_ratios1);
+	average(eval_ratios2, 0, avg_eval_ratios2);
+	scale_to_target(avg_N_H, cost, avg_eval_ratios1, avg_hf_target1);
+	scale_to_target(avg_N_H, cost, avg_eval_ratios2, avg_hf_target2);
+	Real avg_estvar_ratio1, avg_estvar_ratio2;  int num_samp1, num_samp2;
+	nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios1,
+				       avg_hf_target1, num_samp1, avg_estvar1,
+				       avg_estvar_ratio1);
+	nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios2,
+				       avg_hf_target2, num_samp2, avg_estvar2,
+				       avg_estvar_ratio2);
+	bool mfmc_init = (avg_estvar1 <= avg_estvar2);
+	Cout << "\nACV best solution from ";
+	if (mfmc_init) {
+	  Cout << "analytic MFMC." << std::endl;
+	  avg_eval_ratios  = avg_eval_ratios1;  avg_hf_target = avg_hf_target1;
+	  numSamples       = num_samp1;         avg_estvar    = avg_estvar1;
+	  avg_estvar_ratio = avg_estvar_ratio1;
+	}
+	else {
+	  Cout << "ensemble of two-model CVMC." << std::endl;
+	  avg_eval_ratios  = avg_eval_ratios2;  avg_hf_target = avg_hf_target2;
+	  numSamples       = num_samp2;         avg_estvar    = avg_estvar2;
+	  avg_estvar_ratio = avg_estvar_ratio2;
+	}
       }
       else {
-	Cout << "ensemble of two-model CVMC." << std::endl;
-	avg_eval_ratios  = avg_eval_ratios2;  avg_hf_target = avg_hf_target2;
-	numSamples       = num_samp2;         avg_estvar    = avg_estvar2;
-	avg_estvar_ratio = avg_estvar_ratio2;
+	// Run one numerical soln from best of two starting points
+	avg_estvar1 = acv_estimator_variance(eval_ratios1, avg_N_H, cost,
+					     avg_eval_ratios1, avg_hf_target1);
+	avg_estvar2 = acv_estimator_variance(eval_ratios2, avg_N_H, cost,
+					     avg_eval_ratios2, avg_hf_target2);
+	bool mfmc_init = (avg_estvar1 <= avg_estvar2);
+	if (mfmc_init)
+	  { avg_eval_ratios = avg_eval_ratios1; avg_hf_target = avg_hf_target1;}
+	else
+	  { avg_eval_ratios = avg_eval_ratios2; avg_hf_target = avg_hf_target2;}
+	if (outputLevel >= NORMAL_OUTPUT) {
+	  Cout << "ACV initial guess candidates:\n  analytic MFMC estvar = "
+	       << avg_estvar1 << "\n  ensemble CVMC estvar = " << avg_estvar2
+	       << "\nACV initial guess from ";
+	  if (mfmc_init) Cout << "analytic MFMC ";
+	  else           Cout << "ensemble of two-model CVMC ";
+	  Cout << "(average eval ratios):\n" << avg_eval_ratios << std::endl;
+	}
+	// Single solve initiated from lowest estvar
+	nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
+				       avg_hf_target, numSamples, avg_estvar,
+				       avg_estvar_ratio);
       }
-#else
-      // Run one numerical soln from best of two starting points
-      avg_estvar1 = acv_estimator_variance(eval_ratios1, avg_N_H, cost,
-					   avg_eval_ratios1, avg_hf_target1);
-      avg_estvar2 = acv_estimator_variance(eval_ratios2, avg_N_H, cost,
-					   avg_eval_ratios2, avg_hf_target2);
-      bool mfmc_init = (avg_estvar1 <= avg_estvar2);
-      if (mfmc_init)
-	{ avg_eval_ratios = avg_eval_ratios1; avg_hf_target = avg_hf_target1; }
-      else
-	{ avg_eval_ratios = avg_eval_ratios2; avg_hf_target = avg_hf_target2; }
-      if (outputLevel >= NORMAL_OUTPUT) {
-	Cout << "ACV initial guess candidates:\n  analytic MFMC estvar = "
-	     << avg_estvar1 << "\n  ensemble CVMC estvar = " << avg_estvar2
-	     << "\nACV initial guess from ";
-	if (mfmc_init) Cout << "analytic MFMC ";
-	else           Cout << "ensemble of two-model CVMC ";
-	Cout << "(average eval ratios):\n" << avg_eval_ratios << std::endl;
-      }
-      // Single solve initiated from lowest estvar
-      nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
-				     avg_hf_target, numSamples, avg_estvar,
-				     avg_estvar_ratio);
-#endif
     }
   }
   else { // update approx_sequence after shared sample increment

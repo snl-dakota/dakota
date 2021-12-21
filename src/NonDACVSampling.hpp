@@ -182,6 +182,9 @@ private:
   //
   //- Heading: Data
   //
+
+  /// option for performing multiple ACV optimizations and taking the best
+  bool multiStartACV;
 };
 
 
