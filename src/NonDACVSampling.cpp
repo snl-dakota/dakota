@@ -401,24 +401,30 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       approxSequence.clear();
 #ifdef MULTISTART_ACV
       // Run numerical solns from both starting points (first mlmfIter only)
-      Real avg_estvar_ratio1, avg_estvar_ratio2;
+      average(eval_ratios1, 0, avg_eval_ratios1);
+      average(eval_ratios2, 0, avg_eval_ratios2);
+      scale_to_target(avg_N_H, cost, avg_eval_ratios1, avg_hf_target1);
+      scale_to_target(avg_N_H, cost, avg_eval_ratios2, avg_hf_target2);
+      Real avg_estvar_ratio1, avg_estvar_ratio2;  int num_samp1, num_samp2;
       nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios1,
-				     avg_hf_target1, avg_estvar1,
+				     avg_hf_target1, num_samp1, avg_estvar1,
 				     avg_estvar_ratio1);
       nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios2,
-				     avg_hf_target2, avg_estvar2,
+				     avg_hf_target2, num_samp2, avg_estvar2,
 				     avg_estvar_ratio2);
       bool mfmc_init = (avg_estvar1 <= avg_estvar2);
-      Cout << "ACV best solution from ";
+      Cout << "\nACV best solution from ";
       if (mfmc_init) {
 	Cout << "analytic MFMC." << std::endl;
-	avg_eval_ratios = avg_eval_ratios1;  avg_hf_target = avg_hf_target1;
-	avg_estvar = avg_estvar1;      avg_estvar_ratio = avg_estvar_ratio1;
+	avg_eval_ratios  = avg_eval_ratios1;  avg_hf_target = avg_hf_target1;
+	numSamples       = num_samp1;         avg_estvar    = avg_estvar1;
+	avg_estvar_ratio = avg_estvar_ratio1;
       }
       else {
 	Cout << "ensemble of two-model CVMC." << std::endl;
-	avg_eval_ratios = avg_eval_ratios2;  avg_hf_target = avg_hf_target2;
-	avg_estvar = avg_estvar2;      avg_estvar_ratio = avg_estvar_ratio2;
+	avg_eval_ratios  = avg_eval_ratios2;  avg_hf_target = avg_hf_target2;
+	numSamples       = num_samp2;         avg_estvar    = avg_estvar2;
+	avg_estvar_ratio = avg_estvar_ratio2;
       }
 #else
       // Run one numerical soln from best of two starting points
@@ -441,7 +447,8 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       }
       // Single solve initiated from lowest estvar
       nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
-				     avg_hf_target,avg_estvar,avg_estvar_ratio);
+				     avg_hf_target, numSamples, avg_estvar,
+				     avg_estvar_ratio);
 #endif
     }
   }
@@ -455,8 +462,18 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     //   updated avg_N_H now includes allocation from previous solution and is
     //   active on constraint bound (excepting integer sample rounding)
     approxSequence.clear();
+
+    // Should not be required so long as previous solution is feasible:
+    //Real avg_N_H = average(numH);
+    //Cout << "Before: avg_eval_ratios =:\n" << avg_eval_ratios
+    // 	   << "avg_hf_target = " << avg_hf_target << std::endl;
+    //scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target);
+    //Cout << "After:  avg_eval_ratios =:\n" << avg_eval_ratios
+    // 	   << "avg_hf_target = " << avg_hf_target << std::endl;
+
     nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
-				   avg_hf_target, avg_estvar, avg_estvar_ratio);
+				   avg_hf_target, numSamples, avg_estvar,
+				   avg_estvar_ratio);
   }
 
   if (outputLevel >= NORMAL_OUTPUT) {

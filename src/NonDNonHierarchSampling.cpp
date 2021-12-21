@@ -559,8 +559,8 @@ void NonDNonHierarchSampling::
 nonhierarch_numerical_solution(const RealVector& cost,
 			       const SizetArray& approx_sequence,
 			       RealVector& avg_eval_ratios,
-			       Real& avg_hf_target, Real& avg_estvar,
-			       Real& avg_estvar_ratio)
+			       Real& avg_hf_target, int& num_samples,
+			       Real& avg_estvar, Real& avg_estvar_ratio)
 {
   // --------------------------------------
   // Formulate the optimization sub-problem
@@ -750,7 +750,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
 
   // Objective recovery from optimizer provides std::log(average(nh_estvar))
   // (a QoI-vector prior to averaging would require recomputation from r*,N*)
-  // Note: this value corresponds to N* (_after_ numSamples applied)
+  // Note: this value corresponds to N* (_after_ num_samples applied)
   avg_estvar = std::exp(fn_star(0)); // var_H / N_H (1 - R^2)
 
   switch (optSubProblemForm) {
@@ -792,15 +792,15 @@ nonhierarch_numerical_solution(const RealVector& cost,
     avg_eval_ratios.scale(1. / avg_hf_target); // r*_i = N*_i / N*
 
   // compute sample increment for HF from current to target:
-  numSamples = (truthFixedByPilot) ? 0 :
+  num_samples = (truthFixedByPilot) ? 0 :
     one_sided_delta(avg_N_H, avg_hf_target);
 
-  //if (!numSamples) { // metrics not needed unless print_variance_reduction()
+  //if (!num_samples) { // metrics not needed unless print_variance_reduction()
 
   // All cases employ a projected MC estvar to match the projected ACV estvar
-  // from N* (where N* may include a numSamples increment not yet performed)
+  // from N* (where N* may include a num_samples increment not yet performed)
   RealVector mc_estvar;
-  project_mc_estimator_variance(varH, numH, numSamples, mc_estvar);
+  project_mc_estimator_variance(varH, numH, num_samples, mc_estvar);
   Real avg_mc_estvar = average(mc_estvar);
 
   // Report ratio of averages rather that average of ratios (see notes in
