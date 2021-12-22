@@ -735,29 +735,32 @@ the reduced basis.
 
 \subsection{Surrogate-Based Global Minimization}\label{adv_meth:sbm:sbgm}
 
-Surrogate-based global minimization differs from the surrogate-based
-local minimization approach discussed in the previous section in
-several ways: it is not a trust-region approach; initially there is
-one global surrogate constructed over a set of sample points and the
-optimizer operates on that surrogate (as opposed to adaptively
-selecting points and re-building a surrogate in each trust region);
-and there is no guarantee of convergence.
+In surrogate-based global minimization, the optimization method
+operates over the whole domain on a global surrogate constructed over
+a (static or adaptively augmented) set of truth model sample
+points. There are no trust regions and no convergence guarantees for
+the original optimization problem, though optimizers can be reasonably
+expected to converge as expected on the approximate (surrogate)
+problem.
 
-The \texttt{surrogate\_based\_global} method was developed to address
-two needs.  The first is the case where a user wishes to use existing
-function evaluations or a fixed sample size (perhaps based on
-computational cost and allocation of resources) to build a surrogate
-once and optimize on it.  In this case (a single global optimization
-on a surrogate model), the set of surrogate building points is
-determined in advance as opposed to the trust-region local surrogate
-optimization in which the number of ``true'' function evaluations
-depends on the location and size of the trust region, the goodness of
-the surrogate within the trust-region, and problem characteristics.
+In the first, and perhaps most common, global surrogate use case, a
+user wishes to use existing function evaluations or a fixed sample
+size (perhaps based on computational cost and allocation of resources)
+to build a surrogate once and optimize on it.  For this single global
+optimization on a surrogate model), the set of surrogate build points
+is determined in advance. Contrast this with trust-region local
+methods in which the number of ``true'' function evaluations depends
+on the location and size of the trust region, the goodness of the
+surrogate within it, and overall problem characteristics. Any Dakota
+optimizer can be used with a (build-once) global surrogate by
+specifying the \dakotakw{id_model} of a global surrogate model with
+the optimizer's \dakotakw{model_pointer} keyword.
 
-In the second \texttt{surrogate\_based\_global} use case, we want to
-update the surrogate, but globally.  That is, we add points to the
-sample set used to create the surrogate, rebuild the surrogate, and
-then perform another global optimization on the new surrogate.  Thus,
+The more tailored, adaptive \dakotakw{surrogate_based_global} method
+supports the second use case: globally updating the surrogate during
+optimization. This method iteratively adds points to the sample set
+used to create the surrogate, rebuilds the surrogate, and then
+performs global optimization on the new surrogate.  Thus,
 surrogate-based global optimization can be used in an iterative
 scheme.  In one iteration, minimizers of the surrogate model are
 found, and a selected subset of these are passed to the next
