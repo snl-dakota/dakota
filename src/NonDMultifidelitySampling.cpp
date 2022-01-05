@@ -461,7 +461,8 @@ mfmc_approx_increment(const RealMatrix& eval_ratios,
 }
 
 
-/** This version used by MFMC following shared_increment() */
+/** Multi-moment map-based, fine-grained counter version used by MFMC
+    following shared_increment() */
 void NonDMultifidelitySampling::
 accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		   IntRealMatrixMap& sum_LL, // each L with itself
@@ -484,6 +485,7 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
     const RealVector& fn_vals = resp.function_values();
     //const ShortArray& asv   = resp.active_set_request_vector();
 
+    /*
     if (outputLevel >= DEBUG_OUTPUT) { // sample dump for MATLAB checking
       size_t index = 0;
       for (approx=0; approx<=numApprox; ++approx)
@@ -491,6 +493,7 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 	  Cout << fn_vals[index] << ' ';
       Cout << '\n';
     }
+    */
 
     hf_index = numApprox * numFunctions;
     for (qoi=0; qoi<numFunctions; ++qoi, ++hf_index) {
@@ -512,7 +515,7 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 	  hf_prod *= hf_fn;  ++active_ord;
 	}
       }
-	
+
       for (approx=0; approx<numApprox; ++approx) {
 	lf_index = approx * numFunctions + qoi;
 	lf_fn = fn_vals[lf_index];
@@ -527,9 +530,9 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 	  lb_ord = (lb_it == sum_L_baseline.end()) ? 0 : lb_it->first;
 	  ll_ord = (ll_it == sum_LL.end())         ? 0 : ll_it->first;
 	  lh_ord = (lh_it == sum_LH.end())         ? 0 : lh_it->first;
-	  lf_prod = lf_fn;  active_ord = 1;
+	  lf_prod = lf_fn;  hf_prod = hf_fn;  active_ord = 1;
 	  while (lb_ord || ll_ord || lh_ord) {
-     
+
 	    // Low baseline
 	    if (lb_ord == active_ord) { // support general key sequence
 	      lb_it->second(qoi,approx) += lf_prod;  ++lb_it;
@@ -542,16 +545,13 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 	    }
 	    // Low-High
 	    if (lh_ord == active_ord) {
-	      if (hf_is_finite) {
-		hf_prod = hf_fn;
-		for (m=1; m<active_ord; ++m)
-		  hf_prod *= hf_fn;
+	      if (hf_is_finite)
 		lh_it->second(qoi,approx) += lf_prod * hf_prod;
-	      }
 	      ++lh_it; lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
 	    }
 
 	    lf_prod *= lf_fn;  ++active_ord;
+	    if (hf_is_finite)  hf_prod *= hf_fn;
 	  }
 	}
       }
@@ -560,7 +560,107 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 }
 
 
-/** This version used by MFMC following shared_increment() */
+/** Multi-moment map-based, coarse-grained counter version used by
+    MFMC following shared_increment() */
+void NonDMultifidelitySampling::
+accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
+		   IntRealMatrixMap& sum_LL, // each L with itself
+		   IntRealMatrixMap& sum_LH, // each L with H
+		   RealVector& sum_HH, SizetArray& num_shared)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+
+  using std::isfinite;
+  Real lf_fn, hf_fn, lf_prod, hf_prod;
+  IntRespMCIter r_it; IntRVMIter h_it; IntRMMIter lb_it, ll_it, lh_it;
+  int lb_ord, h_ord, ll_ord, lh_ord, active_ord, m;
+  size_t qoi, approx, lf_index, hf_index;
+  bool all_finite;
+
+  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    const Response&   resp    = r_it->second;
+    const RealVector& fn_vals = resp.function_values();
+    //const ShortArray& asv   = resp.active_set_request_vector();
+
+    /*
+    if (outputLevel >= DEBUG_OUTPUT) { // sample dump for MATLAB checking
+      size_t index = 0;
+      for (approx=0; approx<=numApprox; ++approx)
+	for (qoi=0; qoi<numFunctions; ++qoi, ++index)
+	  Cout << fn_vals[index] << ' ';
+      Cout << '\n';
+    }
+    */
+
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+
+      // *** TO DO: has this retreated too far? -> pairwise instead of ensemble?
+      // *** To match up each low with high for the same sample counts, each Low
+      //     would need its own High accumulation (or masking + re-accumulation)
+      all_finite = true;
+      for (approx=0; approx<=numApprox; ++approx)
+	if (!isfinite(fn_vals[approx * numFunctions + qoi])) // NaN or +/-Inf
+	  all_finite = false;
+      if (all_finite) {
+	++num_shared[qoi];
+
+	// High accumulations:
+	hf_index = numApprox * numFunctions + qoi;
+	hf_fn = fn_vals[hf_index];
+	// High-High:
+	sum_HH[qoi] += hf_fn * hf_fn; // a single vector for ord 1
+	// High:
+	h_it = sum_H.begin();  h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
+	hf_prod = hf_fn;       active_ord = 1;
+	while (h_ord) {
+	  if (h_ord == active_ord) { // support general key sequence
+	    h_it->second[qoi] += hf_prod;
+	    ++h_it; h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
+	  }
+	  hf_prod *= hf_fn;  ++active_ord;
+	}
+
+	for (approx=0; approx<numApprox; ++approx) {
+	  // Low accumulations:
+	  lf_index = approx * numFunctions + qoi;
+	  lf_fn = fn_vals[lf_index];
+
+	  lb_it = sum_L_baseline.begin();
+	  ll_it = sum_LL.begin();  lh_it = sum_LH.begin();
+	  lb_ord = (lb_it == sum_L_baseline.end()) ? 0 : lb_it->first;
+	  ll_ord = (ll_it == sum_LL.end())         ? 0 : ll_it->first;
+	  lh_ord = (lh_it == sum_LH.end())         ? 0 : lh_it->first;
+	  lf_prod = lf_fn;  hf_prod = hf_fn;  active_ord = 1;
+	  while (lb_ord || ll_ord || lh_ord) {
+
+	    // Low baseline
+	    if (lb_ord == active_ord) { // support general key sequence
+	      lb_it->second(qoi,approx) += lf_prod;  ++lb_it;
+	      lb_ord = (lb_it == sum_L_baseline.end()) ? 0 : lb_it->first;
+	    }
+	    // Low-Low
+	    if (ll_ord == active_ord) { // support general key sequence
+	      ll_it->second(qoi,approx) += lf_prod * lf_prod;  ++ll_it;
+	      ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
+	    }
+	    // Low-High
+	    if (lh_ord == active_ord) { // support general key sequence
+	      lh_it->second(qoi,approx) += lf_prod * hf_prod;
+	      ++lh_it; lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
+	    }
+
+	    lf_prod *= lf_fn;  hf_prod *= hf_fn;  ++active_ord;
+	  }
+	}
+      }
+    }
+  }
+}
+
+
+/** Single moment, fine-grained counter version used by offline-pilot
+    and pilot-projection MFMC following shared_increment() */
 void NonDMultifidelitySampling::
 accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 		   RealMatrix& sum_LL, RealMatrix& sum_LH,
@@ -579,6 +679,7 @@ accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
     const RealVector& fn_vals = resp.function_values();
     //const ShortArray& asv   = resp.active_set_request_vector();
 
+    /*
     if (outputLevel >= DEBUG_OUTPUT) { // sample dump for MATLAB checking
       size_t index = 0;
       for (approx=0; approx<=numApprox; ++approx)
@@ -586,6 +687,7 @@ accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 	  Cout << fn_vals[index] << ' ';
       Cout << '\n';
     }
+    */
 
     hf_index = numApprox * numFunctions;
     for (qoi=0; qoi<numFunctions; ++qoi, ++hf_index) {
@@ -597,7 +699,7 @@ accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 	sum_H[qoi]  += hf_fn;         // High
 	sum_HH[qoi] += hf_fn * hf_fn; // High-High
       }
-	
+
       for (approx=0; approx<numApprox; ++approx) {
 	lf_index = approx * numFunctions + qoi;
 	lf_fn = fn_vals[lf_index];
@@ -611,6 +713,67 @@ accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 	    ++num_LH[approx][qoi];
 	    sum_LH(qoi,approx) += lf_fn * hf_fn;// Low-High
 	  }
+	}
+      }
+    }
+  }
+}
+
+
+/** Single moment, coarse-grained counter version used by offline-pilot
+    and pilot-projection MFMC following shared_increment() */
+void NonDMultifidelitySampling::
+accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
+		   RealMatrix& sum_LL, RealMatrix& sum_LH,
+		   RealVector& sum_HH, SizetArray& num_shared)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+
+  using std::isfinite;
+  Real lf_fn, hf_fn;  size_t qoi, approx, lf_index, hf_index;
+  IntRespMCIter r_it; bool all_finite;
+
+  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    const Response&   resp    = r_it->second;
+    const RealVector& fn_vals = resp.function_values();
+    //const ShortArray& asv   = resp.active_set_request_vector();
+
+    /*
+    if (outputLevel >= DEBUG_OUTPUT) { // sample dump for MATLAB checking
+      size_t index = 0;
+      for (approx=0; approx<=numApprox; ++approx)
+	for (qoi=0; qoi<numFunctions; ++qoi, ++index)
+	  Cout << fn_vals[index] << ' ';
+      Cout << '\n';
+    }
+    */
+
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+
+      // *** TO DO: has this retreated too far? -> pairwise instead of ensemble?
+      // *** To match up each low with high for the same sample counts, each Low
+      //     would need its own High accumulation (or masking + re-accumulation)
+      all_finite = true;
+      for (approx=0; approx<=numApprox; ++approx)
+	if (!isfinite(fn_vals[approx * numFunctions + qoi])) // NaN or +/-Inf
+	  all_finite = false;
+      if (all_finite) {
+	++num_shared[qoi];
+	// High accumulations:
+	hf_index = numApprox * numFunctions + qoi;
+	hf_fn = fn_vals[hf_index];
+	sum_H[qoi]  += hf_fn;         // High
+	sum_HH[qoi] += hf_fn * hf_fn; // High-High
+
+	for (approx=0; approx<numApprox; ++approx) {
+	  lf_index = approx * numFunctions + qoi;
+	  lf_fn = fn_vals[lf_index];
+	  // Low accumulations:
+	  sum_L_baseline(qoi,approx) += lf_fn; // Low
+	  sum_LL(qoi,approx) += lf_fn * lf_fn; // Low-Low
+	  // Low-High accumulation:
+	  sum_LH(qoi,approx) += lf_fn * hf_fn;
 	}
       }
     }
@@ -716,6 +879,9 @@ compute_LH_correlation(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 			  N_LH_a[qoi], var_L_a[qoi], var_H[qoi],
 			  rho2_LH_a[qoi]);
   }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "rho2_LH in compute_LH_correlation():\n" << rho2_LH << std::endl;
 }
 
 

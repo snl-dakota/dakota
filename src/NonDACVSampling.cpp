@@ -486,7 +486,7 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 }
 
 
-/** This version used by ACV following shared_increment() */
+/** Multi-moment map-based version used by ACV following shared_increment() */
 void NonDACVSampling::
 accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		    IntRealSymMatrixArrayMap& sum_LL, // L w/ itself + other L
@@ -595,7 +595,8 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 }
 
 
-/** This version used by ACV following shared_increment() */
+/** Single moment version used by offline-pilot and pilot-projection ACV
+    following shared_increment() */
 void NonDACVSampling::
 accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 		    RealSymMatrixArray& sum_LL, // L w/ itself + other L
@@ -805,6 +806,9 @@ compute_LH_covariance(const RealMatrix& sum_L_shared, const RealVector& sum_H,
       compute_covariance(sum_L_shared_a[qoi], sum_H[qoi], sum_LH_a[qoi],
 			 N_L_a[qoi], N_H[qoi], N_LH_a[qoi], cov_LH_a[qoi]);
   }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "cov_LH in compute_LH_covariance():\n" << cov_LH << std::endl;
 }
 
 
@@ -836,6 +840,9 @@ compute_LL_covariance(const RealMatrix& sum_L_shared,
 			   cov_LL_q(approx,approx2));
     }
   }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "cov_LL in compute_LL_covariance():\n" << cov_LL << std::endl;
 }
 
 

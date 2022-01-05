@@ -246,7 +246,7 @@ ensemble_sample_increment(size_t iter, size_t step)
       export_all_samples("cv_", iteratedModel.surrogate_model(i), iter, step);
   }
 
-  // compute allResponses from allVariables using hierarchical model
+  // compute allResponses from allVariables using non-hierarchical model
   evaluate_parameter_sets(iteratedModel, true, false);
 }
 

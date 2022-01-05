@@ -128,10 +128,17 @@ private:
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
 			  Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			  Sizet2DArray& num_LH);
+  void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
+			  IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
+			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
+			  SizetArray& num_shared);
   void accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 			  RealMatrix& sum_LL, RealMatrix& sum_LH,
 			  RealVector& sum_HH, Sizet2DArray& num_L_baseline,
 			  SizetArray& num_H,  Sizet2DArray& num_LH);
+  void accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
+			  RealMatrix& sum_LL, RealMatrix& sum_LH,
+			  RealVector& sum_HH, SizetArray& num_shared);
   // approx_increment() case:
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 			  IntRealMatrixMap& sum_L_refined,
