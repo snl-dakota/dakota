@@ -71,10 +71,7 @@ protected:
   void approx_increments(IntRealMatrixMap& sum_L_baselineH,
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
-			 IntRealMatrixMap& sum_LH,
-			 const Sizet2DArray& N_L_baselineH,
-			 const SizetSymMatrixArray& N_LL,
-			 const Sizet2DArray& N_LH,
+			 IntRealMatrixMap& sum_LH, const SizetArray& N_shared,
 			 const RealVector& avg_eval_ratios, Real avg_hf_target);
   bool acv_approx_increment(const RealVector& avg_eval_ratios,
 			    const Sizet2DArray& N_L_refined, Real hf_target,
@@ -96,8 +93,7 @@ private:
 			   IntRealSymMatrixArrayMap& sum_LL,
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH);
 
-  void initialize_acv_counts(Sizet2DArray& num_L_baseline, SizetArray&  num_H,
-			     SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH);
+  void initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL);
 
   //void initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
   //				  IntRealMatrixMap& cov_LH,
@@ -108,32 +104,26 @@ private:
 			   IntRealVectorMap& sum_H,
 			   IntRealSymMatrixArrayMap& sum_LL,
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH,
-			   Sizet2DArray& num_L_baseline,  SizetArray& num_H,
-			   SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH);
+			   SizetArray& N_shared);
   void accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 			   RealSymMatrixArray& sum_LL, RealMatrix& sum_LH,
-			   RealVector& sum_HH, Sizet2DArray& num_L_baseline,
-			   SizetArray& num_H,  SizetSymMatrixArray& num_LL,
-			   Sizet2DArray& num_LH);
+			   RealVector& sum_HH, SizetArray& N_shared);
   // shared_approx_increment() case:
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
 			   IntRealSymMatrixArrayMap& sum_LL,
-			   Sizet2DArray& num_L_baseline,
-			   SizetSymMatrixArray& num_LL);
+			   Sizet2DArray& N_L_shared);
   // approx_increment() cases:
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
-			   Sizet2DArray& num_L_refined,
+			   Sizet2DArray& N_L_refined,
 			   const SizetArray& approx_sequence,
 			   size_t approx_start, size_t approx_end);
 
   void compute_LH_covariance(const RealMatrix& sum_L_shared,
-			     const RealVector& sum_H,  const RealMatrix& sum_LH,
-			     const Sizet2DArray& num_L, const SizetArray& num_H,
-			     const Sizet2DArray& num_LH, RealMatrix& cov_LH);
+			     const RealVector& sum_H, const RealMatrix& sum_LH,
+			     const SizetArray& N_shared, RealMatrix& cov_LH);
   void compute_LL_covariance(const RealMatrix& sum_L_shared,
 			     const RealSymMatrixArray& sum_LL,
-			     const Sizet2DArray& num_L,
-			     const SizetSymMatrixArray& num_LL,
+			     const SizetArray& N_shared,
 			     RealSymMatrixArray& cov_LL);
   void covariance_to_correlation_sq(const RealMatrix& cov_LH,
 				    const RealMatrix& var_L,
@@ -142,7 +132,7 @@ private:
 
   void compute_L_variance(const RealMatrix& sum_L,
 			  const RealSymMatrixArray& sum_LL,
-			  const Sizet2DArray& num_L, RealMatrix& var_L);
+			  const SizetArray& num_L, RealMatrix& var_L);
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target);
@@ -158,20 +148,15 @@ private:
 		       IntRealSymMatrixArrayMap& sum_LL,
 		       IntRealMatrixMap& sum_LH,
 		       const RealVector& avg_eval_ratios,
-		       const Sizet2DArray& num_L_shared,
-		       const Sizet2DArray& num_L_refined,
-		       const SizetArray& num_H,
-		       const SizetSymMatrixArray& num_LL,
-		       const Sizet2DArray& num_LH, RealMatrix& H_raw_mom);
+		       const SizetArray& N_shared,
+		       const Sizet2DArray& N_L_refined, RealMatrix& H_raw_mom);
 
   void compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 			   const RealMatrix& cov_LH, size_t qoi,
 			   RealVector& beta);
   void compute_acv_control(RealMatrix& sum_L, Real sum_H_q,
 			   RealSymMatrix& sum_LL_q, RealMatrix& sum_LH,
-			   const Sizet2DArray& num_L, size_t num_H_q,
-			   const SizetSymMatrix& num_LL_q,
-			   const Sizet2DArray& num_LH, const RealSymMatrix& F,
+			   size_t N_shared_q, const RealSymMatrix& F,
 			   size_t qoi, RealVector& beta);
 
   void update_projected_samples(Real avg_hf_target,
@@ -206,6 +191,17 @@ initialize_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 
 
 inline void NonDACVSampling::
+initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL)
+{
+  num_H.assign(numFunctions, 0);
+  num_LL.resize(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    num_LL[qoi].shape(numApprox);
+}
+
+
+/*
+inline void NonDACVSampling::
 initialize_acv_counts(Sizet2DArray& num_L_baseline,  SizetArray& num_H,
 		      SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH)
 {
@@ -216,7 +212,6 @@ initialize_acv_counts(Sizet2DArray& num_L_baseline,  SizetArray& num_H,
 }
 
 
-/*
 inline void NonDACVSampling::
 initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
 			   IntRealMatrixMap& cov_LH, IntRealVectorMap& var_H)
@@ -238,15 +233,17 @@ initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
 
 inline void NonDACVSampling::
 compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
-		   const Sizet2DArray& num_L, RealMatrix& var_L)
+		   const SizetArray& num_L, RealMatrix& var_L)
 {
   if (var_L.empty()) var_L.shapeUninitialized(numFunctions, numApprox);
 
-  size_t qoi, approx;
-  for (qoi=0; qoi<numFunctions; ++qoi)
+  size_t qoi, approx, num_L_q;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    num_L_q = num_L[qoi];
     for (approx=0; approx<numApprox; ++approx)
       compute_variance(sum_L(qoi,approx), sum_LL[qoi](approx,approx),
-		       num_L[approx][qoi], var_L(qoi,approx));
+		       num_L_q, var_L(qoi,approx));
+  }
 }
 
 
@@ -328,6 +325,33 @@ compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 
 inline void NonDACVSampling::
 compute_acv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
+		    RealMatrix& sum_LH, size_t N_shared_q,
+		    const RealSymMatrix& F, size_t qoi, RealVector& beta)
+{
+  // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
+  // > cov_LH is sized for all qoi but only 1 row is used
+  size_t approx, approx2;  Real sum_L_aq;
+  RealSymMatrix cov_LL(numApprox); RealMatrix cov_LH(numFunctions, numApprox);
+
+  for (approx=0; approx<numApprox; ++approx) {
+    sum_L_aq = sum_L(qoi,approx);
+    compute_covariance(sum_L_aq, sum_H_q, sum_LH(qoi,approx), N_shared_q,
+		       cov_LH(qoi,approx));
+    compute_variance(sum_L_aq, sum_LL_q(approx,approx), N_shared_q,
+		     cov_LL(approx,approx));
+    for (approx2=0; approx2<approx; ++approx2)
+      compute_covariance(sum_L_aq, sum_L(qoi,approx2), sum_LL_q(approx,approx2),
+			 N_shared_q, cov_LL(approx,approx2));
+  }
+
+  // forward to overload:
+  compute_acv_control(cov_LL, F, cov_LH, qoi, beta);
+}
+
+
+/*
+inline void NonDACVSampling::
+compute_acv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
 		    RealMatrix& sum_LH, const Sizet2DArray& num_L,
 		    size_t num_H_q, const SizetSymMatrix& num_LL_q,
 		    const Sizet2DArray& num_LH, const RealSymMatrix& F,
@@ -353,6 +377,7 @@ compute_acv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
   // forward to overload:
   compute_acv_control(cov_LL, F, cov_LH, qoi, beta);
 }
+*/
 
 } // namespace Dakota
 
