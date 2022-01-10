@@ -107,12 +107,10 @@ protected:
 			const SizetArray& num_Q,       RealVector& var_Q);
 
   void compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1,
-			   Real sum_Q1Q2, Real sum_Q2Q2, size_t num_Q1,
-			   size_t num_Q2, size_t num_Q1Q2, Real& var_Q1,
-			   Real& var_Q2,  Real& rho2_Q1Q2);
+			   Real sum_Q1Q2, Real sum_Q2Q2, size_t N_shared,
+			   Real& var_Q1,  Real& var_Q2,  Real& rho2_Q1Q2);
   void compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2,
-			  size_t num_Q1, size_t num_Q2, size_t num_Q1Q2,
-			  Real& cov_Q1Q2);
+			  size_t N_shared, Real& cov_Q1Q2);
   
   void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
 			  const SizetArray& approx_sequence,
@@ -154,6 +152,8 @@ protected:
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);
 
+  /// promote 1D array to 2D array
+  void inflate(const SizetArray& N_1D, Sizet2DArray& N_2D);
   /// promote vector of averaged values to full matrix
   void inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios);
   /// promote scalar to column vector
@@ -456,7 +456,7 @@ compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
 {
   Real bessel_corr_Q = (Real)num_Q / (Real)(num_Q - 1); // num_QQ same as num_Q
 
-  // unbiased mean estimator X-bar = 1/N * sum
+  // unbiased mean estimator
   Real mu_Q = sum_Q / num_Q;
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
@@ -480,36 +480,94 @@ compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
 
 inline void NonDNonHierarchSampling::
 compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
+		    Real sum_Q2Q2, size_t N_shared, Real& var_Q1,
+		    Real& var_Q2, Real& rho2_Q1Q2)
+{
+  // unbiased mean estimator
+  Real mu_Q1 = sum_Q1 / N_shared, mu_Q2 = sum_Q2 / N_shared,
+    bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
+  // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
+  // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel [RawMom_XY - X-bar Y-bar]
+  var_Q1 = (sum_Q1Q1 / N_shared - mu_Q1 * mu_Q1);       // * bessel_corr,
+  var_Q2 = (sum_Q2Q2 / N_shared - mu_Q2 * mu_Q2);       // * bessel_corr;
+  Real cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2);// * bessel_corr;
+
+  rho2_Q1Q2 = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // bessel corrs cancel
+  var_Q1   *= bessel_corr; // now apply correction where required
+  var_Q2   *= bessel_corr; // now apply correction where required
+
+  //Cout << "compute_correlation: rho2_Q1Q2 = " << rho2_Q1Q2;
+}
+
+
+inline void NonDNonHierarchSampling::
+compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
+		   Real& cov_Q1Q2)
+{
+  Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
+
+  // unbiased mean X-bar = 1/N * sum
+  Real mu_Q1 = sum_Q1 / N_shared,  mu_Q2 = sum_Q2 / N_shared;
+  // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
+  // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel [RawMom_XY - X-bar Y-bar]
+  cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2) * bessel_corr;
+
+  //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
+  //     << " sum_Q1Q2 = " << sum_Q1Q2 << " num_shared = " << num_shared
+  //     << " cov_Q1Q2 = " << cov_Q1Q2 << std::endl;
+}
+
+
+/*
+inline void NonDNonHierarchSampling::
+compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
 		    Real sum_Q2Q2, size_t num_Q1, size_t num_Q2,
 		    size_t num_Q1Q2, Real& var_Q1, Real& var_Q2,
 		    Real& rho2_Q1Q2)
 {
+  // This approach has been deactivated.  While desirable to support
+  // fine-grained fault tolerance, the derivation for unbiased covariance
+  // via Bessel correction assumes that means, variances, and covariance
+  // are computed from the same sample:
+  // >> "Bessel's correction is only necessary when the population mean is
+  //    unknown, and one is estimating both population mean and population
+  //    variance from a given sample, using the sample mean to estimate the
+  //    population mean. In that case there are n degrees of freedom in a sample
+  //    of n points, and simultaneous estimation of mean and variance means one
+  //    degree of freedom goes to the sample mean and the remaining n − 1
+  //    degrees of freedom (the residuals) go to the sample variance. However,
+  //    if the population mean is known, then the deviations of the observations
+  //    from the population mean have n degrees of freedom (because the mean is
+  //    not being estimated – the deviations are not residuals but errors) and
+  //    Bessel's correction is not applicable."
+  //
+  // While it is likely possible to derive an unbiased estimation of covariance
+  // using more resolved means (N_Q1 and/or N_Q2 > N_Q1Q2, with correction that
+  // would fall somewhere in between Bessel correction and no correction given
+  // a known mean), this complexity would cascade to higher moments and is not
+  // currently justified.
+  // >> One viable alternative would be to define consistent and finite
+  //    sample sets PAIRWISE, but this would require migrating away from
+  //    a single pass through the accumulators.  It also would result in
+  //    covariance matrices that contain terms of variable accuracy.
+
+  // The separate Bessel corrections below are insufficent since the outer
+  // covariance sum is over N_Q1Q2 while the inner simplification to
+  // N X-bar Y-bar requires N_Q1 and N_Q2 (these moments do not use N_Q1Q2
+  // and we do not accumulate the required sums over N_Q1Q2).
   Real bessel_corr_Q1   = (Real)num_Q1   / (Real)(num_Q1   - 1),
-       bessel_corr_Q2   = (Real)num_Q2   / (Real)(num_Q2   - 1);
-     //bessel_corr_Q1Q2 = (Real)num_Q1Q2 / (Real)(num_Q1Q2 - 1);
+       bessel_corr_Q2   = (Real)num_Q2   / (Real)(num_Q2   - 1),
+       bessel_corr_Q1Q2 = (Real)num_Q1Q2 / (Real)(num_Q1Q2 - 1);
 
-  // unbiased mean estimator X-bar = 1/N * sum
+  // unbiased mean X-bar = 1/N * sum
   Real mu_Q1 = sum_Q1 / num_Q1, mu_Q2 = sum_Q2 / num_Q2;
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  var_Q1 = (sum_Q1Q1 / num_Q1   - mu_Q1 * mu_Q1);// * bessel_corr_Q1,
-  var_Q2 = (sum_Q2Q2 / num_Q2   - mu_Q2 * mu_Q2);// * bessel_corr_Q2;
-  Real cov_Q1Q2 = (sum_Q1Q2 / num_Q1Q2 - mu_Q1 * mu_Q2);// * bessel_corr_Q1Q2; // *** TO DO: review Bessel correction derivation for fault tolerance --> not the same N to pull out over N-1
+  // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
+  // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel [RawMom_XY - X-bar Y-bar]
+  var_Q1 = (sum_Q1Q1 / num_Q1   - mu_Q1 * mu_Q1) * bessel_corr_Q1,
+  var_Q2 = (sum_Q2Q2 / num_Q2   - mu_Q2 * mu_Q2) * bessel_corr_Q2;
+  Real cov_Q1Q2 = (sum_Q1Q2 / num_Q1Q2 - mu_Q1 * mu_Q2) * bessel_corr_Q1Q2;
 
-  //beta  = cov_Q1Q2 / var_Q1;
-  rho2_Q1Q2 = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // bessel corrs cancel
-  var_Q1   *= bessel_corr_Q1; // now apply correction where required
-  var_Q2   *= bessel_corr_Q2; // now apply correction where required
-  //Cout << "compute_correlation: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
-  //     << " sum_Q1Q2 = " << sum_Q1Q2  << " num_Q1 = " << num_Q1 <<" num_Q2 = "
-  //     << num_Q2 << " num_Q1Q2 = " << num_Q1Q2 << std::endl;
-
-  //Cout << "compute_correlation: rho2_Q1Q2 w/o bessel = " << rho2_Q1Q2;
-  //var_Q1   *= bessel_corr_Q1;
-  //cov_Q1Q2 *= bessel_corr_Q1Q2;
-  //Real rho2_Q1Q2_incl = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // incl bessel
-  //Cout << " rho2_Q1Q2 w/ bessel = " << rho2_Q1Q2_incl << " ratio = "
-  //     << rho2_Q1Q2/rho2_Q1Q2_incl << std::endl;
+  rho2_Q1Q2 = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2;
 }
 
 
@@ -517,21 +575,24 @@ inline void NonDNonHierarchSampling::
 compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t num_Q1,
 		   size_t num_Q2, size_t num_Q1Q2, Real& cov_Q1Q2)
 {
+  // This approach is deprecated (see compute_correlation above)
+
   Real //bessel_corr_Q1 = (Real)num_Q1   / (Real)(num_Q1   - 1),
        //bessel_corr_Q2 = (Real)num_Q2   / (Real)(num_Q2   - 1),
        bessel_corr_Q1Q2 = (Real)num_Q1Q2 / (Real)(num_Q1Q2 - 1);
 
-  // unbiased mean estimator X-bar = 1/N * sum
+  // unbiased mean X-bar = 1/N * sum
   Real mu_Q1 = sum_Q1 / num_Q1,  mu_Q2 = sum_Q2 / num_Q2;
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  cov_Q1Q2 = (sum_Q1Q2 / num_Q1Q2 - mu_Q1 * mu_Q2) * bessel_corr_Q1Q2; // *** TO DO: review Bessel correction derivation for fault tolerance --> not the same N to pull out over N-1
+  // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
+  // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel [RawMom_XY - X-bar Y-bar]
+  cov_Q1Q2 = (sum_Q1Q2 / num_Q1Q2 - mu_Q1 * mu_Q2) * bessel_corr_Q1Q2;
 
   //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
   //     << " sum_Q1Q2 = " << sum_Q1Q2 << " num_Q1 = " << num_Q1 << " num_Q2 = "
   //     << num_Q2 << " num_Q1Q2 = " << num_Q1Q2 << " cov_Q1Q2 = " << cov_Q1Q2
   //     << std::endl;
 }
+*/
 
 
 inline void NonDNonHierarchSampling::
@@ -675,6 +736,15 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
   //     << " sum_L_refined = " << sum_L_refined
   //     << " num_L_shared = "  << num_L_shared
   //     << " num_L_refined = " << num_L_refined << std::endl; 
+}
+
+
+inline void NonDNonHierarchSampling::
+inflate(const SizetArray& N_1D, Sizet2DArray& N_2D)
+{
+  N_2D.resize(numApprox);
+  for (size_t approx=0; approx<numApprox; ++approx)
+    N_2D[approx] = N_1D;
 }
 
 

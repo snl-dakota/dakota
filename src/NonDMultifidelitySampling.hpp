@@ -79,10 +79,8 @@ protected:
 			       RealMatrix& eval_ratios, Real& avg_hf_target);
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
-			 IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
-			 IntRealMatrixMap& sum_LH,
-			 const Sizet2DArray& N_L_baseline,
-			 const Sizet2DArray& N_LH,
+			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
+			 IntRealMatrixMap& sum_LH, const SizetArray& N_H,
 			 const SizetArray& approx_sequence,
 			 const RealMatrix& eval_ratios,
 			 const RealVector& hf_targets);
@@ -126,19 +124,21 @@ private:
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
 			  IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
-			  Sizet2DArray& num_L_baseline, SizetArray& num_H,
-			  Sizet2DArray& num_LH);
+			  SizetArray& N_shared);
+  void accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
+			  RealMatrix& sum_LL, RealMatrix& sum_LH,
+			  RealVector& sum_HH, SizetArray& N_shared);
+  /*
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
 			  IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
-			  SizetArray& num_shared);
+			  Sizet2DArray& num_L_baseline, SizetArray& num_H,
+			  Sizet2DArray& num_LH);
   void accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 			  RealMatrix& sum_LL, RealMatrix& sum_LH,
 			  RealVector& sum_HH, Sizet2DArray& num_L_baseline,
 			  SizetArray& num_H,  Sizet2DArray& num_LH);
-  void accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
-			  RealMatrix& sum_LL, RealMatrix& sum_LH,
-			  RealVector& sum_HH, SizetArray& num_shared);
+  */
   // approx_increment() case:
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 			  IntRealMatrixMap& sum_L_refined,
@@ -150,8 +150,7 @@ private:
   void compute_LH_correlation(const RealMatrix& sum_L_shared,
 			      const RealVector& sum_H, const RealMatrix& sum_LL,
 			      const RealMatrix& sum_LH,const RealVector& sum_HH,
-			      const Sizet2DArray& num_L,const SizetArray& num_H,
-			      const Sizet2DArray& num_LH, RealMatrix& var_L,
+			      const SizetArray& N_shared, RealMatrix& var_L,
 			      RealVector& var_H, RealMatrix& rho2_LH);
   void correlation_sq_to_covariance(const RealMatrix& rho2_LH,
 				    const RealMatrix& var_L,
@@ -165,14 +164,12 @@ private:
 		      IntRealMatrixMap& sum_L_refined,
 		      IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
 		      IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
-		      const Sizet2DArray& num_L_baseline,
 		      const Sizet2DArray& num_L_shared,
 		      const Sizet2DArray& num_L_refined,
-		      const SizetArray& num_H, const Sizet2DArray& num_LH,
-		      RealMatrix& H_raw_mom);
+		      const SizetArray& num_H, RealMatrix& H_raw_mom);
 
-  void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
+  //void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+  //			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
 
   //
   //- Heading: Data
@@ -242,6 +239,7 @@ matrix_to_diagonal_array(const RealMatrix& var_L, RealSymMatrixArray& cov_LL)
 //}
 
 
+/* Not active.  See notes in NonDNonHierarchSampling::compute_correlation()
 inline void NonDMultifidelitySampling::
 compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 		   size_t num_L, size_t num_H, size_t num_LH, Real& beta)
@@ -266,6 +264,7 @@ compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   //Cout << "compute_mf_control: num_L = " << num_L << " num_H = " << num_H
   //     << " num_LH = " << num_LH << " beta = " << beta;
 }
+*/
 
 } // namespace Dakota
 

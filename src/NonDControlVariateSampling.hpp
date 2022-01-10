@@ -63,14 +63,6 @@ protected:
 		    const RealVector& eval_ratios, const SizetArray& N_lf,
 		    const RealVector& hf_targets, size_t iter, size_t lev);
 
-  /// compute scalar control variate parameters
-  void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-			  size_t N_shared, Real& beta);
-  /// compute matrix control variate parameters
-  void compute_mf_control(const RealMatrix& sum_L,  const RealMatrix& sum_H,
-			  const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-			  const SizetArray& N_shared, size_t lev,
-			  RealVector& beta);
 
   /// compute scalar variance and correlation parameters for control variates
   void compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
@@ -169,11 +161,6 @@ private:
 		      const SizetArray& N_refined, const RealVector& rho2_LH,
 		      RealMatrix& H_raw_mom);
 
-  /// compute vector control variate parameters
-  void compute_mf_control(const RealVector& sum_L, const RealVector& sum_H,
-			  const RealVector& sum_LL, const RealVector& sum_LH,
-			  const SizetArray& N_shared, RealVector& beta);
-
   /*
   /// compute vector variance and correlation parameters for control variates
   void compute_mf_correlation(const RealVector& sum_L, const RealVector& sum_H,
@@ -215,46 +202,6 @@ increment_mf_equivalent_cost(size_t new_N_hf, size_t new_N_lf, Real cost_ratio)
 inline void NonDControlVariateSampling::
 increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio)
 { equivHFEvals += (Real)new_N_lf / cost_ratio; }
-
-
-inline void NonDControlVariateSampling::
-compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-		   size_t N_shared, Real& beta)
-{
-  // unbiased mean estimator X-bar = 1/N * sum
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  Real  mu_L =  sum_L  / N_shared; //, mu_H = sum_H / N_shared,
-  //   var_L = (sum_LL / N_shared - mu_L * mu_L) * bessel_corr,
-  //  cov_LH = (sum_LH / N_shared - mu_L * mu_H) * bessel_corr;
-
-  // beta^* = rho_LH sigma_H / sigma_L
-  //        = cov_LH / var_L  (since rho_LH = cov_LH / sigma_H / sigma_L)
-  // Cancel shared terms within cov_LH / var_L:
-  beta = (sum_LH - mu_L * sum_H) / (sum_LL - mu_L * sum_L);
-}
-
-
-inline void NonDControlVariateSampling::
-compute_mf_control(const RealVector& sum_L, const RealVector& sum_H,
-		   const RealVector& sum_LL, const RealVector& sum_LH,
-		   const SizetArray& N_shared, RealVector& beta)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
-		       N_shared[qoi], beta[qoi]);
-}
-
-
-inline void NonDControlVariateSampling::
-compute_mf_control(const RealMatrix& sum_L,  const RealMatrix& sum_H,
-		   const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-		   const SizetArray& N_shared, size_t lev, RealVector& beta)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_control(sum_L(qoi,lev), sum_H(qoi,lev), sum_LL(qoi,lev),
-		       sum_LH(qoi,lev), N_shared[qoi], beta[qoi]);
-}
 
 
 inline void NonDControlVariateSampling::
