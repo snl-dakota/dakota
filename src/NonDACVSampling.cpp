@@ -511,7 +511,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
       if (all_finite) {
 	++N_shared[qoi];
 	// High accumulations:
-	hf_index = numApprox * numFunctions;
+	hf_index = numApprox * numFunctions + qoi;
 	hf_fn = fn_vals[hf_index];
 	// High-High:
 	sum_HH[qoi] += hf_fn * hf_fn; // a single vector for ord 1
@@ -606,7 +606,7 @@ accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
       if (all_finite) {
 	++N_shared[qoi];
 	// High accumulations:
-	hf_index = numApprox * numFunctions;
+	hf_index = numApprox * numFunctions + qoi;
 	hf_fn = fn_vals[hf_index];
 	sum_H[qoi]  += hf_fn;         // High
 	sum_HH[qoi] += hf_fn * hf_fn; // High-High
