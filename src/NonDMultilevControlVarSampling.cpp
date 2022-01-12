@@ -282,45 +282,50 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 	 << delta_N_hf << std::endl;
   }
 
-  // All CV lf_increment() calls now follow convergence of ML iteration:
-  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-    configure_indices(group, lf_form, lev, seq_type);
+  switch (pilotMgmtMode) {
+  case ONLINE_PILOT: case OFFLINE_PILOT: {
+    // All CV lf_increment() calls now follow convergence of ML iteration:
+    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
+      configure_indices(group, lf_form, lev, seq_type);
 
-    // execute additional LF sample increment
-    if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
-		     mlmfIter, lev)) {
-      accumulate_mlmf_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
-      //raw_N_lf[lev] += numSamples;
-      increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
-				   hf_ref_cost);
-      if (outputLevel == DEBUG_OUTPUT)
-	Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_L_refined[1]
-	     << sum_L_refined[2];
-    }
-  }
-
-  // Iteration complete.  Now roll up raw moments from CVMC and MLMC estimators.
-  RealMatrix Y_mlmc_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
-  for (lev=0; lev<num_cv_lev; ++lev) {
-    cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf[lev],
-		   sum_L_refined, N_lf[lev], rho2_LH, lev, Y_cvmc_mom);
-    Y_mlmc_mom += Y_cvmc_mom;
-  }
-  if (num_hf_lev > num_cv_lev) {
-    RealMatrix &sum_H1 = sum_H[1], &sum_H2 = sum_H[2],
-               &sum_H3 = sum_H[3], &sum_H4 = sum_H[4];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      for (lev=num_cv_lev; lev<num_hf_lev; ++lev) {
-	size_t Nlq = N_hf[lev][qoi];
-	Y_mlmc_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
-	Y_mlmc_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
-	Y_mlmc_mom(qoi,2) += sum_H3(qoi,lev) / Nlq;
-	Y_mlmc_mom(qoi,3) += sum_H4(qoi,lev) / Nlq;
+      // execute additional LF sample increment
+      if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
+		       mlmfIter, lev)) {
+	accumulate_mlmf_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
+	//raw_N_lf[lev] += numSamples;
+	increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
+				     hf_ref_cost);
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_L_refined[1]
+	       << sum_L_refined[2];
       }
     }
+
+    // Iteration complete; now roll up raw moments from CVMC and MLMC estimators
+    RealMatrix Y_mlmc_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
+    for (lev=0; lev<num_cv_lev; ++lev) {
+      cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf[lev],
+		     sum_L_refined, N_lf[lev], rho2_LH, lev, Y_cvmc_mom);
+      Y_mlmc_mom += Y_cvmc_mom;
+    }
+    if (num_hf_lev > num_cv_lev) {
+      RealMatrix &sum_H1 = sum_H[1], &sum_H2 = sum_H[2],
+	         &sum_H3 = sum_H[3], &sum_H4 = sum_H[4];
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	for (lev=num_cv_lev; lev<num_hf_lev; ++lev) {
+	  size_t Nlq = N_hf[lev][qoi];
+	  Y_mlmc_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
+	  Y_mlmc_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
+	  Y_mlmc_mom(qoi,2) += sum_H3(qoi,lev) / Nlq;
+	  Y_mlmc_mom(qoi,3) += sum_H4(qoi,lev) / Nlq;
+	}
+      }
+    }
+    // Convert uncentered raw moment estimates to final moments (central or std)
+    convert_moments(Y_mlmc_mom, momentStats);
+    break;
   }
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mlmc_mom, momentStats);
+  }
 }
 
 
@@ -531,52 +536,57 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	 << delta_N_hf << std::endl;
   }
 
-  // All CV lf_increment() calls now follow convergence of ML iteration:
-  // > Avoids early mis-estimation of LF increments
-  // > Parallel scheduling benefits from one final large batch of refinements
-  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-    configure_indices(group, lf_form, lev, seq_type);
+  switch (pilotMgmtMode) {
+  case ONLINE_PILOT: case OFFLINE_PILOT: {
+    // All CV lf_increment() calls now follow convergence of ML iteration:
+    // > Avoids early mis-estimation of LF increments
+    // > Parallel scheduling benefits from one final large batch of refinements
+    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
+      configure_indices(group, lf_form, lev, seq_type);
 
-    // now execute additional LF sample increment
-    if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
-		     mlmfIter, lev)) {
-      accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
-			    N_lf[lev]);
-      //raw_N_lf[lev] += numSamples;
-      increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
-				   hf_ref_cost);
-      if (outputLevel == DEBUG_OUTPUT)
-	Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_Ll_refined[1]
-	     << sum_Ll_refined[2];
-    }
-  }
-
-  // Iteration complete. Now roll up raw moments from CVMC and MLMC estimators.
-  RealMatrix Y_mlmc_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
-  for (lev=0; lev<num_cv_lev; ++lev) {
-    cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
-		   sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
-		   sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
-		   N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
-		   rho_dot2_LH, lev, Y_cvmc_mom);
-    Y_mlmc_mom += Y_cvmc_mom;
-  }
-  if (num_hf_lev > num_cv_lev) {
-    // MLMC without CV: sum_H = HF Q sums for lev = 0 and HF Y sums for lev > 0
-    RealMatrix &sum_H1 = sum_Hl[1], &sum_H2 = sum_Hl[2],
-               &sum_H3 = sum_Hl[3], &sum_H4 = sum_Hl[4];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      for (lev=num_cv_lev; lev<num_hf_lev; ++lev) {
-	size_t Nlq = N_hf[lev][qoi];
-	Y_mlmc_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
-	Y_mlmc_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
-	Y_mlmc_mom(qoi,2) += sum_H3(qoi,lev) / Nlq;
-	Y_mlmc_mom(qoi,3) += sum_H4(qoi,lev) / Nlq;
+      // now execute additional LF sample increment
+      if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
+		       mlmfIter, lev)) {
+	accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
+			      N_lf[lev]);
+	//raw_N_lf[lev] += numSamples;
+	increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
+				     hf_ref_cost);
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_Ll_refined[1]
+	       << sum_Ll_refined[2];
       }
     }
+
+    // Iteration complete; Now roll up raw moments from CVMC and MLMC estimators
+    RealMatrix Y_mlmc_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
+    for (lev=0; lev<num_cv_lev; ++lev) {
+      cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
+		     sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
+		     sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
+		     N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
+		     rho_dot2_LH, lev, Y_cvmc_mom);
+      Y_mlmc_mom += Y_cvmc_mom;
+    }
+    if (num_hf_lev > num_cv_lev) {
+      // MLMC without CV: sum_H = HF Q sums for lev 0 and HF Y sums for lev > 0
+      RealMatrix &sum_H1 = sum_Hl[1], &sum_H2 = sum_Hl[2],
+	         &sum_H3 = sum_Hl[3], &sum_H4 = sum_Hl[4];
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	for (lev=num_cv_lev; lev<num_hf_lev; ++lev) {
+	  size_t Nlq = N_hf[lev][qoi];
+	  Y_mlmc_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
+	  Y_mlmc_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
+	  Y_mlmc_mom(qoi,2) += sum_H3(qoi,lev) / Nlq;
+	  Y_mlmc_mom(qoi,3) += sum_H4(qoi,lev) / Nlq;
+	}
+      }
+    }
+    // Convert uncentered raw moment estimates to final moments (central or std)
+    convert_moments(Y_mlmc_mom, momentStats);
+    break;
   }
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mlmc_mom, momentStats);
+  }
 }
 
 

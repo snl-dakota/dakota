@@ -33,7 +33,7 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDControlVariateSampling::
 NonDControlVariateSampling(ProblemDescDB& problem_db, Model& model):
-  NonDHierarchSampling(problem_db, model), finalCVRefinement(true)
+  NonDHierarchSampling(problem_db, model)//, finalCVRefinement(true)
 {
   // For now...
   size_t num_mf = NLev.size();
@@ -42,6 +42,9 @@ NonDControlVariateSampling(ProblemDescDB& problem_db, Model& model):
 	 << "model in ordered sequence and ignores the rest." << std::endl;
     //abort_handler(METHOD_ERROR);
   }
+
+  if (pilotMgmtMode == PILOT_PROJECTION)
+    maxIterations = 0; //finalCVRefinement = false;
 }
 
 
@@ -173,7 +176,8 @@ void NonDControlVariateSampling::control_variate_mc()
     // numSamples is relative to N_H, but the approx_increments() below are
     // computed relative to hf_targets (independent of sunk cost for pilot)
     Cout << ": average HF target = " << average(hf_targets) << std::endl;
-    numSamples = one_sided_delta(N_hf, hf_targets, 1); //avg
+    numSamples = //(pilotMgmtMode == PILOT_PROJECTION) ? 0 :
+      one_sided_delta(N_hf, hf_targets, 1); // average
     //numSamples = std::min(num_samp_budget, num_samp_ctol);
 
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
@@ -187,22 +191,26 @@ void NonDControlVariateSampling::control_variate_mc()
   // after N_hf has converged, which simplifies maxFnEvals / convTol logic
   // (no need to further interrogate these throttles below)
 
-  // maxIterations == 0 is specially reserved for the pilot only case.  Unlike
-  // all other throttle values, it does not follow the HF iteration with LF
-  // increments.  See notes in NonDMultifidelitySampling::multifidelity_mc().
-  if (maxIterations &&
-      lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
-    accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
-    //raw_N_lf += numSamples; lf_sample_incr = numSamples;
-    increment_mf_equivalent_cost(numSamples, cost_ratio);
-  }
+  switch (pilotMgmtMode) {
+  case ONLINE_PILOT: case OFFLINE_PILOT: {
+    // maxIterations == 0 is specially reserved for the pilot only case.  Unlike
+    // all other throttle values, it does not follow the HF iteration with LF
+    // increments.
+    if (lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
+      accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
+      //raw_N_lf += numSamples; lf_sample_incr = numSamples;
+      increment_mf_equivalent_cost(numSamples, cost_ratio);
+    }
 
-  // Compute/apply control variate parameter to estimate uncentered raw moments
-  RealMatrix H_raw_mom(numFunctions, 4);
-  cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined, N_lf,
-		 rho2_LH, H_raw_mom);
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(H_raw_mom, momentStats);
+    // Compute/apply control variate params to estimate uncentered raw moments
+    RealMatrix H_raw_mom(numFunctions, 4);
+    cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined,
+		   N_lf, rho2_LH, H_raw_mom);
+    // Convert uncentered raw moment estimates to final moments (central or std)
+    convert_moments(H_raw_mom, momentStats);
+    break;
+  }
+  }
 }
 
 
@@ -456,7 +464,7 @@ bool NonDControlVariateSampling::lf_increment(size_t iter, size_t lev)
   // can be hardwired to false (not currently part of input spec).
   // Note: termination based on delta_N_hf=0 has final ML and CV increments
   //       of zero, which is consistent with finalCVRefinement=true.
-  if (iter < maxIterations || finalCVRefinement) {
+  if (iter < maxIterations) { //|| finalCVRefinement) {
     // compute allResponses from allVariables using hierarchical model
     evaluate_parameter_sets(iteratedModel, true, false);
     return true;

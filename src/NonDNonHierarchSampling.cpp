@@ -43,10 +43,7 @@ NonDNonHierarchSampling* NonDNonHierarchSampling::nonHierSampInstance(NULL);
     probDescDB can be queried for settings from the method specification. */
 NonDNonHierarchSampling::
 NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
-  NonDEnsembleSampling(problem_db, model),
-  solutionMode(
-    problem_db.get_short("method.nond.ensemble_sampling_solution_mode")),
-  optSubProblemForm(0),
+  NonDEnsembleSampling(problem_db, model), optSubProblemForm(0),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot"))
 {
   // default solver to OPT++ NIP based on numerical experience
@@ -633,7 +630,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
     x_lb = 1.; // r_i
-    if (solutionMode != OFFLINE_PILOT)
+    if (pilotMgmtMode != OFFLINE_PILOT)
       x_lb[numApprox] = avg_N_H;//std::floor(avg_N_H + .5); // pilot <= N*
 
     nln_ineq_lb[0] = -DBL_MAX; // no low bnd
@@ -652,7 +649,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
     copy_data_partial(avg_eval_ratios, x0, 0);  x0[numApprox] = 1.;
     if (mlmfIter) x0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
     else          x0.scale(avg_hf_target);
-    x_lb = (solutionMode == OFFLINE_PILOT) ? 1. :
+    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? 1. :
       (Real)pilotSamples[numApprox]; // *** TO DO ***: update to avg_N_H?
 
     // linear inequality constraint on budget:
@@ -1029,11 +1026,11 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:";
 
-  if (solutionMode != OFFLINE_PILOT)
+  if (pilotMgmtMode != OFFLINE_PILOT)
     s << "\n      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
       << " pilot samples): " << std::setw(wpp7) << average(estVarIter0);
 
-  String type = (solutionMode == PILOT_PROJECTION) ? "Projected" : "    Final";
+  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   //String method = method_enum_to_string(methodName); // string too verbose
   String method = (methodName == MULTIFIDELITY_SAMPLING) ? " MFMC" : "  ACV";
   // Ordering of averages:
@@ -1050,28 +1047,6 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
     << std::setw(wpp7) << avgEstVar
     << "\n  " << type << method << " ratio (1 - R^2):      "
     << std::setw(wpp7) << avgEstVarRatio << '\n';
-}
-
-
-void NonDNonHierarchSampling::
-print_results(std::ostream& s, short results_state)
-{
-  switch (solutionMode) {
-  case PILOT_PROJECTION:
-    print_multilevel_evaluation_summary(s, NLev, "Projected");
-    //s << "<<<<< Equivalent number of high fidelity evaluations: "
-    //  << equivHFEvals << '\n';
-    print_variance_reduction(s);
-
-    //s << "\nStatistics based on multilevel sample set:\n";
-    //print_moments(s, "response function",
-    //		  iteratedModel.truth_model().response_labels());
-    //archive_moments();
-    //archive_equiv_hf_evals(equivHFEvals);
-    break;
-  default:
-    NonDEnsembleSampling::print_results(s, results_state); break;
-  }
 }
 
 } // namespace Dakota

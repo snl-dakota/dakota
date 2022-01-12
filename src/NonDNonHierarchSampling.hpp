@@ -67,7 +67,7 @@ protected:
   void pre_run();
   //void core_run();
   //void post_run(std::ostream& s);
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   void print_variance_reduction(std::ostream& s);
 
   //
@@ -185,9 +185,6 @@ protected:
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
 
-  /// enumeration for solution modes: ONLINE_PILOT (default), OFFLINE_PILOT,
-  /// PILOT_PROJECTION
-  short solutionMode;
   /// formulation for optimization sub-problem that minimizes R^2 subject
   /// to different variable sets and different linear/nonlinear constraints
   short optSubProblemForm;

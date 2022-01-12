@@ -57,7 +57,7 @@ void NonDMultifidelitySampling::core_run()
 {
   //sequence_models(); // enforce correlation condition (*** AFTER PILOT ***)
 
-  switch (solutionMode) {
+  switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated MFMC (default)
     multifidelity_mc();                  break;
   case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
@@ -369,7 +369,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   // > NonDControlVarSampling::finalCVRefinement (can be hard-wired false)
   // > maxFunctionEvals could be used as a second throttle (e.g., set equal to
   //   pilot) with additional checks embedded below
-  // > use a special pilot-only solutionMode (now implemented)
+  // > use a special pilot-only mode (now implemented in pilotMgmtMode)
 
   // Notes on approximation sequencing for MFMC:
   // > approx must be ordered on increasing rho2_LH to enable r_i calculation
@@ -1168,7 +1168,7 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     size_t wpp7 = write_precision + 7;
     s << "<<<<< Variance for mean estimator:\n";
 
-    if (solutionMode != OFFLINE_PILOT)
+    if (pilotMgmtMode != OFFLINE_PILOT)
       s << "      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
 	<< " pilot samples): " << std::setw(wpp7) << average(estVarIter0)<<'\n';
 
@@ -1180,7 +1180,7 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     }
     Real avg_mfmc_est_var = average(mfmc_est_var),
          avg_mc_est_var   = average(mc_est_var);
-    String type = (solutionMode == PILOT_PROJECTION) ? "Projected":"    Final";
+    String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
     s << "  " << type << "   MC (" << std::setw(4)
       << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
       << std::setw(wpp7) << avg_mc_est_var

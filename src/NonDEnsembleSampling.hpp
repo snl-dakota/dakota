@@ -148,6 +148,9 @@ protected:
   /// store the pilot_samples input specification, prior to run-time
   /// invocation of load_pilot_sample()
   SizetArray pilotSamples;
+  /// enumeration for pilot management modes: ONLINE_PILOT (default),
+  /// OFFLINE_PILOT, PILOT_PROJECTION
+  short pilotMgmtMode;
 
   /// user specification for seed_sequence
   SizetArray randomSeedSeqSpec;

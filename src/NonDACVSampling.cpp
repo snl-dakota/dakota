@@ -39,7 +39,7 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   // truthFixedByPilot is a user-specified option for fixing the number of HF
   // samples (those from the pilot).  In this case, equivHF budget is allocated
   // by optimizing r* for fixed N.
-  optSubProblemForm = (truthFixedByPilot && solutionMode != OFFLINE_PILOT) ?
+  optSubProblemForm = (truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT) ?
     R_ONLY_LINEAR_CONSTRAINT : N_VECTOR_LINEAR_CONSTRAINT;
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "ACV sub-method selection = " << mlmfSubMethod
@@ -70,7 +70,7 @@ void NonDACVSampling::core_run()
     abort_handler(METHOD_ERROR);
   }
 
-  switch (solutionMode) {
+  switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated ACV (default)
     approximate_control_variate();                  break;
   case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation

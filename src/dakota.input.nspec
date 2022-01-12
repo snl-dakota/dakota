@@ -2891,6 +2891,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ solution_mode {0}
+      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      |
+      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      |
+      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+     ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
       |

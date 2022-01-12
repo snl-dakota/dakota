@@ -35,6 +35,8 @@ NonDEnsembleSampling::
 NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   //pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
+  pilotMgmtMode(
+    problem_db.get_short("method.nond.ensemble_sampling_solution_mode")),
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
@@ -196,19 +198,34 @@ void NonDEnsembleSampling::post_run(std::ostream& s)
 
 void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
 {
-  if (statsFlag) {
-    print_multilevel_evaluation_summary(s, NLev);
-    s << "<<<<< Equivalent number of high fidelity evaluations: "
-      << equivHFEvals << '\n';
-    print_variance_reduction(s);
+  if (statsFlag)
+    switch (pilotMgmtMode) {
+    case PILOT_PROJECTION:
+      print_multilevel_evaluation_summary(s, NLev, "Projected");
+      //s << "<<<<< Equivalent number of high fidelity evaluations: "
+      //  << equivHFEvals << '\n';
+      print_variance_reduction(s);
 
-    s << "\nStatistics based on multilevel sample set:\n";
-  //print_statistics(s);
-    print_moments(s, "response function",
-		  iteratedModel.truth_model().response_labels());
-    archive_moments();
-    archive_equiv_hf_evals(equivHFEvals); 
-  }
+      //s << "\nStatistics based on multilevel sample set:\n";
+      //print_moments(s, "response function",
+      //	      iteratedModel.truth_model().response_labels());
+      //archive_moments();
+      //archive_equiv_hf_evals(equivHFEvals);
+      break;
+    default:
+      print_multilevel_evaluation_summary(s, NLev);
+      s << "<<<<< Equivalent number of high fidelity evaluations: "
+	<< equivHFEvals << '\n';
+      print_variance_reduction(s);
+
+      s << "\nStatistics based on multilevel sample set:\n";
+      //print_statistics(s);
+      print_moments(s, "response function",
+		    iteratedModel.truth_model().response_labels());
+      archive_moments();
+      archive_equiv_hf_evals(equivHFEvals);
+      break;
+    }
 }
 
 } // namespace Dakota
