@@ -649,8 +649,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
     copy_data_partial(avg_eval_ratios, x0, 0);  x0[numApprox] = 1.;
     if (mlmfIter) x0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
     else          x0.scale(avg_hf_target);
-    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? 1. :
-      (Real)pilotSamples[numApprox]; // *** TO DO ***: update to avg_N_H?
+    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? 1. : avg_N_H;
 
     // linear inequality constraint on budget:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
@@ -782,7 +781,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
     // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
     // N_VECTOR: N*_i is leading part of r_and_N and N* is trailing part
     copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r_i | N_i
-    avg_hf_target = cv_star[numApprox];  // N*
+    avg_hf_target = cv_star[numApprox];  // N*, bounded by linear ineq constr
     break;
   }
   if (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT)
@@ -1027,8 +1026,9 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   s << "<<<<< Variance for mean estimator:";
 
   if (pilotMgmtMode != OFFLINE_PILOT)
-    s << "\n      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
-      << " pilot samples): " << std::setw(wpp7) << average(estVarIter0);
+    s << "\n      Initial MC (" << std::setw(4)
+      << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
+      << std::setw(wpp7) << average(estVarIter0);
 
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   //String method = method_enum_to_string(methodName); // string too verbose
@@ -1041,11 +1041,11 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   RealVector final_mc_estvar;
   compute_mc_estimator_variance(varH, numH, final_mc_estvar);
   s << "\n  " << type << "   MC (" << std::setw(4)
-    << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
+    << (size_t)std::floor(average(numH) + .5) << " HF samples): "
     << std::setw(wpp7) << average(final_mc_estvar) // avgEstVar / avgEstVarRatio
-    << "\n  " << type << method << " (sample profile):     "
+    << "\n  " << type << method << " (sample profile):  "
     << std::setw(wpp7) << avgEstVar
-    << "\n  " << type << method << " ratio (1 - R^2):      "
+    << "\n  " << type << method << " ratio (1 - R^2):   "
     << std::setw(wpp7) << avgEstVarRatio << '\n';
 }
 

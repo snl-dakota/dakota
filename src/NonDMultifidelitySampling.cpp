@@ -57,6 +57,9 @@ void NonDMultifidelitySampling::core_run()
 {
   //sequence_models(); // enforce correlation condition (*** AFTER PILOT ***)
 
+  // Initialize for pilot sample
+  numSamples = pilotSamples[numApprox]; // last in pilot array
+
   switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated MFMC (default)
     multifidelity_mc();                  break;
@@ -93,9 +96,6 @@ void NonDMultifidelitySampling::multifidelity_mc()
   //initialize_counts(N_L_baseline, numH, N_LH);
   numH.assign(numFunctions, 0);
 
-  // Initialize for pilot sample
-  numSamples = pilotSamples[numApprox]; // last in array
-
   while (numSamples && mlmfIter <= maxIterations) {
 
     // ----------------------------------------------------
@@ -115,7 +115,10 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
     // - sum_L_refined / N_refined) cancel out prior to sample refinement.
     // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
-    if (mlmfIter == 0) compute_mc_estimator_variance(varH, numH, estVarIter0);
+    if (mlmfIter == 0) {
+      compute_mc_estimator_variance(varH, numH, estVarIter0);
+      numHIter0 = numH;
+    }
     // compute r* from rho2 and cost, either analytically or numerically
     mfmc_eval_ratios(var_L, rho2LH, sequenceCost, approxSequence, eval_ratios,
 		     hf_targets);
@@ -152,7 +155,6 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // Compute final rho2LH, varH, {eval,estvar} ratios from (oracle) pilot
   // treated as "offline" cost
   // ---------------------------------------------------------------------
-  numSamples = pilotSamples[numApprox]; // last in array
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		     sum_HH_pilot, N_shared_pilot);
@@ -184,7 +186,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // however result in mixing offline varH with online numH for estVarIter0.
   //compute_variance(sum_H[1], sum_HH, numH, varH); // online varH
   // With changes to print_results(), estVarIter0 no longer used for this mode.
-  //compute_mc_estimator_variance(varH, numH, estVarIter0);
+  //compute_mc_estimator_variance(varH, numH, estVarIter0);  numHIter0 = numH;
   // Exclude pilot from R^2 benefit, but include any difference between numH
   // and hf_targets:
   mfmc_estimator_variance(rho2LH, numH, hf_targets, approxSequence,eval_ratios);
@@ -208,7 +210,6 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // ----------------------------------------------------
   // Evaluate shared increment and increment accumulators
   // ----------------------------------------------------
-  numSamples = pilotSamples[numApprox]; // last in array
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, numH);
   increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1);
@@ -223,7 +224,8 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
   // - sum_L_refined / N_refined) cancel out prior to sample refinement.
   // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
-  compute_mc_estimator_variance(varH, numH, estVarIter0);
+  // > Note: numHIter0 may differ from pilotSamples[numApprox] for sim faults
+  compute_mc_estimator_variance(varH, numH, estVarIter0);  numHIter0 = numH;
   // compute r* from rho2 and cost
   mfmc_eval_ratios(var_L, rho2LH, sequenceCost, approxSequence, eval_ratios,
 		   hf_targets);
@@ -231,7 +233,8 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // ----------------------
   // Compute EstVar ratios:
   // ----------------------
-  // update projected numH
+  // overwrite actual incurred numH with projected numH
+  //SizetArray N_H_projected = numH; // more fine-grained bookkeeping if needed
   Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
   update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
   // Compute the ratio of MC and MFMC mean squared errors, which incorporates
@@ -1169,8 +1172,9 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     s << "<<<<< Variance for mean estimator:\n";
 
     if (pilotMgmtMode != OFFLINE_PILOT)
-      s << "      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
-	<< " pilot samples): " << std::setw(wpp7) << average(estVarIter0)<<'\n';
+      s << "      Initial MC (" << std::setw(4)
+	<< (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
+	<< std::setw(wpp7) << average(estVarIter0)<<'\n';
 
     RealVector mc_est_var(numFunctions, false),
              mfmc_est_var(numFunctions, false);
@@ -1182,11 +1186,11 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
          avg_mc_est_var   = average(mc_est_var);
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
     s << "  " << type << "   MC (" << std::setw(4)
-      << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
+      << (size_t)std::floor(average(numH) + .5) << " HF samples): "
       << std::setw(wpp7) << avg_mc_est_var
-      << "\n  " << type << " MFMC (sample profile):     "
+      << "\n  " << type << " MFMC (sample profile):  "
       << std::setw(wpp7) << avg_mfmc_est_var
-      << "\n  " << type << " MFMC ratio (1 - R^2):      "
+      << "\n  " << type << " MFMC ratio (1 - R^2):   "
       // report ratio of averages rather than average of ratios (consistent
       // with ACV definition which would have to recompute the latter)
       << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var << '\n';

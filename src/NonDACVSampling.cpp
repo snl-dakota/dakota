@@ -70,6 +70,9 @@ void NonDACVSampling::core_run()
     abort_handler(METHOD_ERROR);
   }
 
+  // Initialize for pilot sample
+  numSamples = pilotSamples[numApprox]; // last in pilot array
+
   switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated ACV (default)
     approximate_control_variate();                  break;
@@ -95,9 +98,8 @@ void NonDACVSampling::approximate_control_variate()
   //initialize_acv_covariances(covLL, covLH, varH);
 
   // Initialize for pilot sample
-  size_t num_steps = numApprox+1, hf_shared_pilot;//, start=0, lf_shared_pilot;
-  numSamples = hf_shared_pilot = pilotSamples[numApprox]; // last in array
-  //lf_shared_pilot = find_min(pilotSamples, start, numApprox-1);
+  size_t num_steps = numApprox+1, hf_shared_pilot = numSamples;
+  //, start=0, lf_shared_pilot = find_min(pilotSamples, start, numApprox-1);
 
   Real avg_hf_target = 0.;
   while (numSamples && mlmfIter <= maxIterations) {
@@ -160,8 +162,7 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   // Compute var L,H & covar LL,LH from (oracle) pilot treated as "offline" cost
   // ------------------------------------------------------------
   // Initialize for pilot sample
-  size_t num_steps = numApprox + 1, hf_shared_pilot;
-  numSamples = hf_shared_pilot = pilotSamples[numApprox]; // last in array
+  size_t num_steps = numApprox + 1, hf_shared_pilot = numSamples;
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		      sum_HH_pilot, N_shared_pilot);//, N_LL_pilot);
@@ -220,9 +221,8 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   Real avg_hf_target = 0.;
 
   // Initialize for pilot sample
-  size_t num_steps = numApprox+1, hf_shared_pilot;//, start=0, lf_shared_pilot;
-  numSamples = hf_shared_pilot = pilotSamples[numApprox]; // last in array
-  //lf_shared_pilot = find_min(pilotSamples, start, numApprox-1);
+  size_t num_steps = numApprox+1, hf_shared_pilot = numSamples;
+  //, start=0, lf_shared_pilot = find_min(pilotSamples, start, numApprox-1);
 
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
@@ -247,7 +247,8 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
 
   // No LF increments or final moments for pilot projection
 
-  // update projected numH
+  // overwrite actual incurred numH with projected numH
+  //SizetArray N_H_projected = numH; // more fine-grained bookkeeping if needed
   Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
   update_projected_samples(avg_hf_target, avg_eval_ratios, numH, N_L_projected);
   finalize_counts(N_L_projected);
@@ -357,7 +358,7 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
     // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
     // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
-    compute_mc_estimator_variance(varH, numH, estVarIter0);//numH=0 is protected
+    compute_mc_estimator_variance(varH, numH, estVarIter0);  numHIter0 = numH;
 
     if (budget_exhausted) { // there is only 1 feasible pt, no need for solve
       if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);

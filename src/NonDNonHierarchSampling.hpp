@@ -220,6 +220,8 @@ protected:
 
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;
+  /// number of successful pilot evaluations of HF truth model (exclude faults)
+  SizetArray numHIter0;
   /// final estimator variance (optimizer result), averaged across QoI
   Real avgEstVar;
   /// ratio of final estimator variance (optimizer result averaged across QoI)
