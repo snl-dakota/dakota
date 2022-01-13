@@ -17,6 +17,8 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 
+//#define DEBUG
+
 namespace Dakota {
 
 extern PRPCache data_pairs;
@@ -1392,8 +1394,9 @@ assign_asynch_local_queue(PRPQueue& local_prp_queue,
 size_t ApplicationInterface::
 test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
 {
-  if (outputLevel == DEBUG_OUTPUT)
-    Cout << "Testing message receives from remote servers\n";
+#ifdef DEBUG
+  Cout << "Testing message receives from remote servers\n";
+#endif
 
   int mpi_test_flag, fn_eval_id, new_eval_id, server_id;
   size_t buff_index;
@@ -1457,8 +1460,9 @@ test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
 size_t ApplicationInterface::
 test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
 {
-  if (outputLevel == DEBUG_OUTPUT) // explicit debug user specification
-    Cout << "Testing local completions\n";
+#ifdef DEBUG
+  Cout << "Testing local completions\n";
+#endif
 
   bool static_limited
     = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
