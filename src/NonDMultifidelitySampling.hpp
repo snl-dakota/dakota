@@ -175,7 +175,8 @@ private:
   //- Heading: Data
   //
 
-  /// ratio of MFMC estimator variance to estVarIter0, one per QoI
+  /// ratio of MFMC to MC estimator variance for the same HF samples,
+  /// also known as (1 - R^2)
   RealVector estVarRatios;
 };
 

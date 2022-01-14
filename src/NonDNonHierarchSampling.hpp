@@ -94,8 +94,6 @@ protected:
 			 Sizet2DArray& num_LH);
   void finalize_counts(Sizet2DArray& N_L);
 
-  void increment_samples(SizetArray& N_l, size_t num_samples);
-
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t start, size_t end);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
@@ -194,11 +192,6 @@ protected:
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
 
-  /// type of model sequence enumerated with primary MF/ACV loop over steps
-  short sequenceType;
-  /// setting for the inactive model dimension not traversed by primary MF/ACV
-  /// loop over steps
-  size_t secondaryIndex;
   /// relative costs of models within sequence of steps
   RealVector sequenceCost;
   /// tracks ordering of a metric (correlations, eval ratios) across set of
@@ -306,17 +299,6 @@ inline void NonDNonHierarchSampling::finalize_counts(Sizet2DArray& N_L)
   N_L.push_back(numH);
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_L, multilev, secondaryIndex, NLev);
-}
-
-
-inline void NonDNonHierarchSampling::
-increment_samples(SizetArray& N_l, size_t new_samples)
-{
-  if (new_samples) {
-    size_t q, nq = N_l.size();
-    for (q=0; q<nq; ++q)
-      N_l[q] += new_samples;
-  }
 }
 
 
@@ -453,13 +435,9 @@ inline void NonDNonHierarchSampling::
 compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
 		 //size_t num_QQ, // this count is the same as num_Q
 {
-  Real bessel_corr_Q = (Real)num_Q / (Real)(num_Q - 1); // num_QQ same as num_Q
-
-  // unbiased mean estimator
-  Real mu_Q = sum_Q / num_Q;
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  var_Q = (sum_QQ / num_Q - mu_Q * mu_Q) * bessel_corr_Q;
+  // unbiased sample variance estimator = 1/(N-1) sum[(Q_i - Q-bar)^2]
+  // = 1/(N-1) [ sum_QQ - N Q-bar^2 ] = 1/(N-1) [ sum_QQ - sum_Q^2 / N ]
+  var_Q = (sum_QQ - sum_Q * sum_Q / num_Q) / (num_Q - 1);
 
   //Cout << "compute_variance: sum_Q = " << sum_Q << " sum_QQ = " << sum_QQ
   //     << " num_Q = " << num_Q << " var_Q = " << var_Q << std::endl;
@@ -484,16 +462,16 @@ compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
 {
   // unbiased mean estimator
   Real mu_Q1 = sum_Q1 / N_shared, mu_Q2 = sum_Q2 / N_shared,
-    bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
+     num_sm1 = (Real)(N_shared - 1);
   // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
-  // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel [RawMom_XY - X-bar Y-bar]
-  var_Q1 = (sum_Q1Q1 / N_shared - mu_Q1 * mu_Q1);       // * bessel_corr,
-  var_Q2 = (sum_Q2Q2 / N_shared - mu_Q2 * mu_Q2);       // * bessel_corr;
-  Real cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2);// * bessel_corr;
+  // = 1/(N-1) [ sum_XY - N X-bar Y-bar ] = 1/(N-1) [ sum_XY - sum_X sum_Y / N ]
+  var_Q1 = (sum_Q1Q1 - mu_Q1 * sum_Q1);       // / num_sm1;
+  var_Q2 = (sum_Q2Q2 - mu_Q2 * sum_Q2);       // / num_sm1;
+  Real cov_Q1Q2 = (sum_Q1Q2 - mu_Q1 * sum_Q2);// / num_sm1;
 
-  rho2_Q1Q2 = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // bessel corrs cancel
-  var_Q1   *= bessel_corr; // now apply correction where required
-  var_Q2   *= bessel_corr; // now apply correction where required
+  rho2_Q1Q2 = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // divisors cancel
+  var_Q1   /= num_sm1; // now apply divisor
+  var_Q2   /= num_sm1; // now apply divisor
 
   //Cout << "compute_correlation: rho2_Q1Q2 = " << rho2_Q1Q2;
 }

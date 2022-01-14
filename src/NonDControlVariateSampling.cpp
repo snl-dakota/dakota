@@ -57,8 +57,8 @@ void NonDControlVariateSampling::core_run()
   iteratedModel.multifidelity_precedence(true);
 
   // May retire control_variate_mc() in time, but retain for right now...
-  //size_t num_steps, fixed_index;  short seq_type;
-  //configure_sequence(num_steps, fixed_index, seq_type);
+  //size_t num_steps;
+  //configure_sequence(num_steps, secondaryIndex, sequenceType);
   //if (num_steps == 2)
   control_variate_mc();   // Ng and Willcox, 2014
   //else
@@ -73,22 +73,21 @@ void NonDControlVariateSampling::core_run()
     model form and discretization level. */
 void NonDControlVariateSampling::control_variate_mc()
 {
-  size_t qoi, num_steps, form, lev, fixed_index;  short seq_type;
-  configure_sequence(num_steps, fixed_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  size_t qoi, num_steps, form, lev;
+  configure_sequence(num_steps, secondaryIndex, sequenceType);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // For two-model control variate, select extreme fidelities/resolutions
   Pecos::ActiveKey active_key, hf_key, lf_key;
   unsigned short hf_form, lf_form;  size_t hf_lev, lf_lev;
   if (multilev) {
-    hf_form = lf_form = (fixed_index == SZ_MAX) ? USHRT_MAX : fixed_index;
-    hf_lev  = num_steps-1;  lf_lev = 0;  // extremes of range
+    hf_lev  = num_steps - 1;  lf_lev = 0;  // extremes of range
+    hf_form = lf_form = (secondaryIndex == SZ_MAX) ? USHRT_MAX : secondaryIndex;
   }
   else {
-    hf_form = num_steps-1;  lf_form = 0; // extremes of range
-    hf_lev = lf_lev = fixed_index;
+    hf_form = num_steps - 1;  lf_form = 0; // extremes of range
+    hf_lev = lf_lev = secondaryIndex;
   }
-  hf_key.form_key(0, hf_form, hf_lev);
-  lf_key.form_key(0, lf_form, lf_lev);
+  hf_key.form_key(0, hf_form, hf_lev);  lf_key.form_key(0, lf_form, lf_lev);
   active_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
 
   aggregated_models_mode();
@@ -97,23 +96,14 @@ void NonDControlVariateSampling::control_variate_mc()
   // retrieve cost estimates across model forms for a particular soln level
   Real lf_cost, hf_cost;
   size_t hf_form_index, lf_form_index, hf_lev_index, lf_lev_index;
+  hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
   if (multilev) {
     RealVector cost;  configure_cost(num_steps, multilev, cost);
-    hf_cost = cost[hf_lev];  hf_lev_index = hf_lev;
-    lf_cost = cost[lf_lev];  lf_lev_index = lf_lev;
-    hf_form_index = (hf_form == USHRT_MAX) ? 0 : hf_form; // should not happen
-    lf_form_index = (lf_form == USHRT_MAX) ? 0 : lf_form; // should not happen
+    hf_cost = cost[hf_lev];  lf_cost = cost[lf_lev];
   }
   else {
-    Model& truth_model = iteratedModel.truth_model();
-    Model&  surr_model = iteratedModel.surrogate_model();
-    hf_cost       = truth_model.solution_level_cost();          // active
-    lf_cost       =  surr_model.solution_level_cost();          // active
-    hf_form_index = hf_form;  lf_form_index = lf_form;
-    size_t raw_index = truth_model.solution_level_cost_index(); // active
-    hf_lev_index  = (raw_index == SZ_MAX) ? 0 : raw_index;
-    raw_index     =  surr_model.solution_level_cost_index();    // active
-    lf_lev_index  = (raw_index == SZ_MAX) ? 0 : raw_index;
+    hf_cost = iteratedModel.truth_model().solution_level_cost();     // active
+    lf_cost = iteratedModel.surrogate_model().solution_level_cost(); // active
   }
   Real cost_ratio = hf_cost / lf_cost;
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
@@ -123,9 +113,9 @@ void NonDControlVariateSampling::control_variate_mc()
 
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
-  RealVector eval_ratios, estvar_iter0, estvar_ratios, mu_hat, hf_targets,
-    sum_HH(numFunctions), var_H(numFunctions, false),
+  RealVector eval_ratios, mu_hat, hf_targets, sum_HH(numFunctions),
     rho2_LH(numFunctions, false);
+  varH.sizeUninitialized(numFunctions);
 
   // Initialize for pilot sample
   SizetArray delta_N_l;
@@ -145,18 +135,21 @@ void NonDControlVariateSampling::control_variate_mc()
     increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
 
     // Compute the LF/HF evaluation ratio using shared samples, averaged
-    // over QoI.  This includes updating var_H and rho2_LH.
+    // over QoI.  This includes updating varH and rho2_LH.
     compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
-			cost_ratio, N_hf, var_H, rho2_LH, eval_ratios);
-    // estvar_iter0 only uses HF pilot since sum_L_shared / N_shared minus
+			cost_ratio, N_hf, varH, rho2_LH, eval_ratios);
+    // estVarIter0 only uses HF pilot since sum_L_shared / N_shared minus
     // sum_L_refined / N_refined is zero for CV prior to sample refinement.
     // (This differs from MLMC estvar^0 which uses pilot for all levels.)
-    if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_hf, estvar_iter0);
+    if (mlmfIter == 0) {
+      compute_mc_estimator_variance(varH, N_hf, estVarIter0);
+      numHIter0 = N_hf;
+    }
     // Compute the ratio of MC and CVMC mean squared errors (for convergence).
     // This ratio incorporates the anticipated variance reduction from the
     // upcoming application of eval_ratios.
-    compute_estvar_ratios(eval_ratios, var_H, rho2_LH, mlmfIter, N_hf,
-			  estvar_ratios);
+    compute_estvar_ratios(eval_ratios, varH, rho2_LH, mlmfIter, N_hf,
+			  estVarRatios);
 
     // -----------------------------------------------------------------------
     // Compute shared increment targeting specified budget || estvar reduction
@@ -166,18 +159,17 @@ void NonDControlVariateSampling::control_variate_mc()
       allocate_budget(eval_ratios, cost_ratio, hf_targets);
     }
     else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: support both
-      // N_hf = estvar_ratio * var_H / convTol / estvar_iter0
-      // Note: don't simplify further since estvar_iter0 is fixed based on pilot
+      // N_hf = estvar_ratio * varH / convTol / estVarIter0
+      // Note: don't simplify further since estVarIter0 is fixed based on pilot
       Cout << "Scaling profile for convergenceTol = " << convergenceTol;
-      hf_targets = estvar_ratios;
+      hf_targets = estVarRatios;
       for (qoi=0; qoi<numFunctions; ++qoi)
-	hf_targets[qoi] *= var_H[qoi] / estvar_iter0[qoi] / convergenceTol;
+	hf_targets[qoi] *= varH[qoi] / estVarIter0[qoi] / convergenceTol;
     }
     // numSamples is relative to N_H, but the approx_increments() below are
     // computed relative to hf_targets (independent of sunk cost for pilot)
     Cout << ": average HF target = " << average(hf_targets) << std::endl;
-    numSamples = //(pilotMgmtMode == PILOT_PROJECTION) ? 0 :
-      one_sided_delta(N_hf, hf_targets, 1); // average
+    numSamples = one_sided_delta(N_hf, hf_targets, 1); // average
     //numSamples = std::min(num_samp_budget, num_samp_ctol);
 
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
@@ -210,6 +202,30 @@ void NonDControlVariateSampling::control_variate_mc()
     convert_moments(H_raw_mom, momentStats);
     break;
   }
+  case PILOT_PROJECTION:
+    update_projected_samples(hf_targets, eval_ratios, cost_ratio, N_hf, N_lf);
+    break;
+  }
+}
+
+
+void NonDControlVariateSampling::
+hf_lf_indices(size_t& hf_form_index, size_t& hf_lev_index,
+	      size_t& lf_form_index, size_t& lf_lev_index)
+{
+  if (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE) {// resolution hierarchy
+    // traps for completeness (undefined model form should not occur)
+    hf_form_index = lf_form_index
+      = (secondaryIndex == SZ_MAX) ? 0 : secondaryIndex;
+    // extremes of range
+    hf_lev_index = NLev[hf_form_index].size() - 1;  lf_lev_index = 0;
+  }
+  else { // model form hierarchy
+    hf_form_index = NLev.size() - 1;  lf_form_index = 0; // extremes of range
+    size_t raw_index = iteratedModel.truth_model().solution_level_cost_index();
+    hf_lev_index = (raw_index == SZ_MAX) ? 0 : raw_index;
+    raw_index    = iteratedModel.surrogate_model().solution_level_cost_index();
+    lf_lev_index = (raw_index == SZ_MAX) ? 0 : raw_index;
   }
 }
 
@@ -601,6 +617,62 @@ cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,
     apply_mf_control(sum_H[i], sum_L_shared[i], N_shared, sum_L_refined[i],
 		     N_refined, beta, H_rm_col);
   }
+}
+
+
+void NonDControlVariateSampling::
+update_projected_samples(const RealVector& hf_targets,
+			 const RealVector& eval_ratios, Real cost_ratio,
+			 SizetArray& N_hf, SizetArray& N_lf)
+{
+  RealVector lf_targets(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    lf_targets[qoi] = eval_ratios[qoi] * hf_targets[qoi];
+
+  size_t hf_incr = one_sided_delta(N_hf, hf_targets, 1),
+         lf_incr = one_sided_delta(N_lf, lf_targets, 1);
+  increment_samples(N_hf, hf_incr);
+  increment_samples(N_lf, lf_incr);
+  increment_mf_equivalent_cost(hf_incr, lf_incr, cost_ratio);
+}
+
+
+void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
+{
+  size_t hf_form_index, hf_lev_index, lf_form_index, lf_lev_index;
+  hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
+  SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
+
+  s << "<<<<< Variance for mean estimator:\n";
+  size_t wpp7 = write_precision + 7;
+  if (pilotMgmtMode != OFFLINE_PILOT)
+    s << "      Initial MC (" << std::setw(5)
+      << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
+      << std::setw(wpp7) << average(estVarIter0);
+
+  RealVector mc_est_var(numFunctions, false),
+           cvmc_est_var(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    cvmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / N_hf[qoi];
+    cvmc_est_var[qoi] *= estVarRatios[qoi];
+  }
+  Real avg_cvmc_est_var      = average(cvmc_est_var),
+       avg_mc_est_var        = average(mc_est_var),
+       avg_budget_mc_est_var = average(varH) / equivHFEvals;
+  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
+  s << "\n  " << type << "   MC (" << std::setw(5)
+    << (size_t)std::floor(average(N_hf) + .5) << " HF samples): "
+    << std::setw(wpp7) << avg_mc_est_var << "\n  " << type
+    << " CVMC (sample profile):   " << std::setw(wpp7) << avg_cvmc_est_var
+    << "\n  " << type << " CVMC ratio (1 - R^2):    "
+    // report ratio of averages rather than average of ratios (consistent
+    // with ACV/CVMC definitions)
+    << std::setw(wpp7) << avg_cvmc_est_var / avg_mc_est_var
+    << "\n Equivalent   MC (" << std::setw(5)
+    << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+    << std::setw(wpp7) << avg_budget_mc_est_var
+    << "\n Equivalent CVMC ratio:              " << std::setw(wpp7)
+    << avg_cvmc_est_var / avg_budget_mc_est_var << '\n';
 }
 
 } // namespace Dakota

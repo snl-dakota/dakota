@@ -81,6 +81,9 @@ protected:
   /// extract current random seed from randomSeedSeqSpec
   int random_seed(size_t index) const;
 
+  /// increment samples array with a shared scalar
+  void increment_samples(SizetArray& N_l, size_t num_samples);
+
   /// compute the variance of the mean estimator (Monte Carlo sample average)
   void compute_mc_estimator_variance(const RealVector& var_l,
 				     const SizetArray& N_l,
@@ -140,6 +143,12 @@ protected:
   //
   //- Heading: Data
   //
+
+  /// type of model sequence enumerated with primary MF/ACV loop over steps
+  short sequenceType;
+  /// setting for the inactive model dimension not traversed by primary MF/ACV
+  /// loop over steps
+  size_t secondaryIndex;
 
   /// total number of successful sample evaluations (excluding faults)
   /// for each model form, discretization level, and QoI
@@ -250,6 +259,17 @@ compute_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
   for (qoi=0; qoi<numFunctions; ++qoi) {
     N_l_q = N_l[qoi]; // can be zero in offline pilot cases
     mc_est_var[qoi] = (N_l_q) ? var_l[qoi] / N_l_q : DBL_MAX;
+  }
+}
+
+
+inline void NonDEnsembleSampling::
+increment_samples(SizetArray& N_l, size_t new_samples)
+{
+  if (new_samples) {
+    size_t q, nq = N_l.size();
+    for (q=0; q<nq; ++q)
+      N_l[q] += new_samples;
   }
 }
 

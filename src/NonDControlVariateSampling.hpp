@@ -50,6 +50,7 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_variance_reduction(std::ostream& s);
 
   //
   //- Heading: Member functions
@@ -90,6 +91,12 @@ protected:
   // normal termination based on l1_norm(delta_N_hf) = 0.
   //bool finalCVRefinement;
 
+  RealVector varH;
+  RealVector estVarIter0;
+  RealVector estVarRatios;
+
+  SizetArray numHIter0;
+
 private:
 
   //
@@ -98,6 +105,10 @@ private:
 
   /// Perform control variate Monte Carlo across two model forms
   void control_variate_mc();
+
+  /// define model form and resolution level indices
+  void hf_lf_indices(size_t& hf_form_index, size_t& hf_lev_index,
+		     size_t& lf_form_index, size_t& lf_lev_index);
 
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation and estimator variance ratios
@@ -177,6 +188,12 @@ private:
 			const RealVector& sum_L_refined,
 			const SizetArray& N_refined, const RealVector& beta,
 			RealVector& H_raw_mom);
+
+  /// for pilot-projection mode, update the same counts based on projections
+  /// rather than accumulations
+  void update_projected_samples(const RealVector& hf_targets,
+				const RealVector& eval_ratios, Real cost_ratio,
+				SizetArray& N_hf, SizetArray& N_lf);
 
   //
   //- Heading: Data

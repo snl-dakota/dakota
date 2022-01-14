@@ -1172,9 +1172,9 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     s << "<<<<< Variance for mean estimator:\n";
 
     if (pilotMgmtMode != OFFLINE_PILOT)
-      s << "      Initial MC (" << std::setw(4)
+      s << "      Initial MC (" << std::setw(5)
 	<< (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
-	<< std::setw(wpp7) << average(estVarIter0)<<'\n';
+	<< std::setw(wpp7) << average(estVarIter0);
 
     RealVector mc_est_var(numFunctions, false),
              mfmc_est_var(numFunctions, false);
@@ -1183,17 +1183,22 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
       mfmc_est_var[qoi] *= estVarRatios[qoi];
     }
     Real avg_mfmc_est_var = average(mfmc_est_var),
-         avg_mc_est_var   = average(mc_est_var);
+         avg_mc_est_var   = average(mc_est_var),
+         avg_budget_mc_est_var = average(varH) / equivHFEvals;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
-    s << "  " << type << "   MC (" << std::setw(4)
+    s << "\n  " << type << "   MC (" << std::setw(5)
       << (size_t)std::floor(average(numH) + .5) << " HF samples): "
-      << std::setw(wpp7) << avg_mc_est_var
-      << "\n  " << type << " MFMC (sample profile):  "
-      << std::setw(wpp7) << avg_mfmc_est_var
-      << "\n  " << type << " MFMC ratio (1 - R^2):   "
+      << std::setw(wpp7) << avg_mc_est_var << "\n  " << type
+      << " MFMC (sample profile):   " << std::setw(wpp7) << avg_mfmc_est_var
+      << "\n  " << type << " MFMC ratio (1 - R^2):    "
       // report ratio of averages rather than average of ratios (consistent
       // with ACV definition which would have to recompute the latter)
-      << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var << '\n';
+      << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var
+      << "\n Equivalent   MC (" << std::setw(5)
+      << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+      << std::setw(wpp7) << avg_budget_mc_est_var
+      << "\n Equivalent MFMC ratio:              " << std::setw(wpp7)
+      << avg_mfmc_est_var / avg_budget_mc_est_var << '\n';
     break;
   }
   // For numerical cases, mfmc_numerical_solution() must incorporate varH/numH

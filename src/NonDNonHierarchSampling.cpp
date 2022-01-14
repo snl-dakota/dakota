@@ -1026,7 +1026,7 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   s << "<<<<< Variance for mean estimator:";
 
   if (pilotMgmtMode != OFFLINE_PILOT)
-    s << "\n      Initial MC (" << std::setw(4)
+    s << "\n    Initial   MC (" << std::setw(5)
       << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
       << std::setw(wpp7) << average(estVarIter0);
 
@@ -1040,13 +1040,19 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   //   avgEstVar from the optimizer obj fn), but difference is usually small.
   RealVector final_mc_estvar;
   compute_mc_estimator_variance(varH, numH, final_mc_estvar);
-  s << "\n  " << type << "   MC (" << std::setw(4)
+  Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
+  s << "\n  " << type << "   MC (" << std::setw(5)
     << (size_t)std::floor(average(numH) + .5) << " HF samples): "
     << std::setw(wpp7) << average(final_mc_estvar) // avgEstVar / avgEstVarRatio
-    << "\n  " << type << method << " (sample profile):  "
+    << "\n  " << type << method << " (sample profile):   "
     << std::setw(wpp7) << avgEstVar
-    << "\n  " << type << method << " ratio (1 - R^2):   "
-    << std::setw(wpp7) << avgEstVarRatio << '\n';
+    << "\n  " << type << method << " ratio (1 - R^2):    "
+    << std::setw(wpp7) << avgEstVarRatio
+    << "\n Equivalent   MC (" << std::setw(5)
+    << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+    << std::setw(wpp7) << avg_budget_mc_estvar
+    << "\n Equivalent" << method << " ratio:              "
+    << std::setw(wpp7) << avgEstVar / avg_budget_mc_estvar << '\n';
 }
 
 } // namespace Dakota
