@@ -4,11 +4,12 @@ Advanced Topics
 .. toctree::
    :maxdepth: 1
    
-   advancedmethods
-   advancedmodelrecursions
-   advancedsimulationcodeinterfaces
-   parallelcomputing
-   restartcapabilities
-   simulationfailurecapturing
-   dimensionreductionstrategies
-   ouu
+   advanced/advancedmethods
+   advanced/surrogates
+   advanced/advancedmodelrecursions
+   advanced/advancedsimulationcodeinterfaces
+   advanced/parallelcomputing
+   advanced/restartcapabilities
+   advanced/simulationfailurecapturing
+   advanced/dimensionreductionstrategies
+   advanced/ouu

@@ -10,7 +10,7 @@ Using Dakota
    examples
    inputfile
    output
-   methodtypes
    studytypes
+   methodtypes
    advanced
    reference

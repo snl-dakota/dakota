@@ -8,4 +8,5 @@ Developing Dakota
    setupgit
    writingcode
    testingcode
+   writingdocs
    tpls
