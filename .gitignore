@@ -3,3 +3,4 @@
 cscope*
 tags
 .DS_Store
+docs-sphinx/build
