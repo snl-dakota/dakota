@@ -16,12 +16,12 @@ If you are having trouble orienting yourself in this new documentation, but you 
   * [Release Notes](misc/releasenotes.rst)
   * Screencasts
 * Community
-  * Get Help
+  * [Get Help](misc/help.md)
   * FAQs
-  * Mail Lists
+  * [Mail Lists](misc/help.md)
   * Training
 * About
-  * Pacakges
+  * [Packages](developingdakota/tpls.rst)
   * Team
   * Contributors
   * License

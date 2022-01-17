@@ -6,8 +6,8 @@ Using Dakota
    
    introduction/aboutdakota
    introduction/helloworld
-   introduction/couplingtosimulations
    examples
+   introduction/couplingtosimulations
    inputfile
    output
    studytypes

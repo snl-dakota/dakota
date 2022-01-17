@@ -1,6 +1,10 @@
 Coupling Dakota to a Simulation
 ============
 
+```{eval-rst}
+.. _couplingtosimulations:
+```
+
 A key Dakota advantage is access to a broad range of iterative capabilities through a single, relatively simple, interface
 between Dakota and your simulator. Trying a different iterative method or meta-algorithm typically requires changing only
 a few commands in the Dakota text input file and starting the new analysis. It does not require intimate knowledge of the

@@ -1,14 +1,7 @@
 Examples
 =======================================
 
-```{eval-rst}
-
-.. toctree::
-   :maxdepth: 1
-   
-   examples/offlineexamples
-   examples/onlinerepo
-```
+## "Getting Started" Examples
 
 This section serves to familiarize users with how to perform parameter studies, optimization, and uncertainty quantification
 through their common Dakota interface. The initial examples utilize simple built in driver functions; later we show how to
@@ -16,7 +9,7 @@ utilize Dakota to drive the evaluation of user supplied black box code. The exam
 show the simplest use of Dakota for methods of each type. More advanced examples of using Dakota for specific purposes are
 provided in subsequent, topic-based, chapters.
 
-## Rosenbrock Test Problem
+### Rosenbrock Test Problem
 
 [![alt text](examples/img/DakotaRosenbrockExamplesScreencastTeaser.png "Watch Screencast 1.3: More Method Examples with Rosenbrock")](https://www.youtube.com/watch?v=jPd5zarUs1o&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=3)
 
@@ -55,7 +48,7 @@ The unique solution to this problem lies at the point (x1, x2) = (1, 1), where t
 Several other test problems are available. See Chapter 20 for a description of these test problems as well as further discussion
 of the Rosenbrock test problem.
 
-## Two-Dimensional Grid Parameter Study
+### Two-Dimensional Grid Parameter Study
 
 ![alt text](img/rosen_2d_pts.png "Fig 2.6")
 
@@ -87,7 +80,7 @@ or by importing Dakota’s tabular data into an external graphics/plotting packa
 include Mathematica, Matlab, Microsoft Excel, Origin, Tecplot, Gnuplot, and Matplotlib. (Sandia National Laboratories and
 the Dakota developers do not endorse any of these commercial products.)
 
-## Gradient-based Unconstrained Optimization
+### Gradient-based Unconstrained Optimization
 
 Dakota’s optimization capabilities include a variety of gradient-based and nongradient-based optimization methods. This
 subsection demonstrates the use of one such method through the Dakota interface.
@@ -162,7 +155,7 @@ data on the optimal design point. These data include the optimum design point pa
 constraint function values (if any), plus the number of function evaluations that occurred and the amount of time that elapsed
 during the optimization study.
 
-## Uncertainty Quantification with Monte Carlo Sampling
+### Uncertainty Quantification with Monte Carlo Sampling
 
 ```
 # Dakota Input File: rosen_sampling.in
@@ -297,6 +290,19 @@ sample sites within the parameter space of the Rosenbrock function for this exam
 
 ![alt text](img/rosen_nond_pts.png "Fig 2.11")
 
-## User Supplied Simulation Code Examples
+### User Supplied Simulation Code Examples
 
-See Coupling section.
+```{eval-rst}
+   :ref:`See "Coupling to a Simulation" <couplingtosimulations>`.
+```
+
+## Further Examples
+
+```{eval-rst}
+
+.. toctree::
+   :maxdepth: 1
+   
+   examples/offlineexamples
+   examples/onlinerepo
+```
