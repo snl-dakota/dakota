@@ -1,19 +1,7 @@
 Dakota Input File
 =======================================
 
-```{eval-rst}
-
-.. toctree::
-   :maxdepth: 1
-   
-   inputfile/inputspec
-   inputfile/model
-   inputfile/variables
-   inputfile/interfaces
-   inputfile/responses
-   inputfile/inputstodakota
-   inputfile/outputsfromdakota
-```
+[![alt text](inputfile/img/InputFileScreencastTeaser.png "Watch Screencast 1.2: Input File Format")](https://www.youtube.com/watch?v=f1l8DIXd9Gs&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=2)
 
 There are six specification blocks that may appear in Dakota input files. These are identified in the input file using the following
 keywords: variables, interface, responses, model, method, and environment. While, these keyword blocks can appear in any
@@ -123,4 +111,16 @@ We close this section with a list of rules regarding the formatting of the Dakot
 * Strings can be surrounded by single or double quotes (but not “fancy” quotes).
 * Scientific notation is fine.
 
-Please see the Dakota Reference Manual for additional details on this input file syntax.
+```{eval-rst}
+
+.. toctree::
+   :maxdepth: 1
+   
+   inputfile/inputspec
+   inputfile/model
+   inputfile/variables
+   inputfile/interfaces
+   inputfile/responses
+   inputfile/inputstodakota
+   inputfile/outputsfromdakota
+```

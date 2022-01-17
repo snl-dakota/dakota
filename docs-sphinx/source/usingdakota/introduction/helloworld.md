@@ -9,6 +9,8 @@ This section is intended for users who are new to Dakota, to demonstrate the bas
 
 ## Running Dakota with a simple input file
 
+[![alt text](img/DakotaSimpleExampleScreencastTeaser.png "Watch Screencast 1.1: Running a Simple Example in Dakota")](https://www.youtube.com/watch?v=ofi13UTq_Is&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=1)
+
 ### First Steps
 
 1. Make sure Dakota runs. You should see Dakota version information when you type

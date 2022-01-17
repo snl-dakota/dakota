@@ -18,7 +18,9 @@ provided in subsequent, topic-based, chapters.
 
 ## Rosenbrock Test Problem
 
-The examples shown later in this chapter use the Rosenbrock function, which has the form:
+[![alt text](examples/img/DakotaRosenbrockExamplesScreencastTeaser.png "Watch Screencast 1.3: More Method Examples with Rosenbrock")](https://www.youtube.com/watch?v=jPd5zarUs1o&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=3)
+
+The Rosenbrock function is a common test problem for Dakota examples. This function has the form:
 
 ```{eval-rst}
 
