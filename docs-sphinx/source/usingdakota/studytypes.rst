@@ -4,8 +4,8 @@ Study Types
 .. toctree::
    :maxdepth: 1
    
-   parameterstudies
-   designofexperiments
-   uq
-   optimization
-   nonlinearleastsquares
+   studytypes/parameterstudies
+   studytypes/designofexperiments
+   studytypes/uq
+   studytypes/optimization
+   studytypes/nonlinearleastsquares

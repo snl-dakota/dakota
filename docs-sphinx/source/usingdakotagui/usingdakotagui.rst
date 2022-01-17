@@ -11,5 +11,5 @@ Using Dakota GUI
    inputfiles
    output
    Chartreuse
-   QOI
+   qoi/QOI
    miscgui

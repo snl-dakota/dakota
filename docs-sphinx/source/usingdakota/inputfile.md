@@ -6,13 +6,13 @@ Dakota Input File
 .. toctree::
    :maxdepth: 1
    
-   inputspec
-   model
-   variables
-   itnerfaces
-   responses
-   inputstodakota
-   outputsfromdakota
+   inputfile/inputspec
+   inputfile/model
+   inputfile/variables
+   inputfile/interfaces
+   inputfile/responses
+   inputfile/inputstodakota
+   inputfile/outputsfromdakota
 ```
 
 There are six specification blocks that may appear in Dakota input files. These are identified in the input file using the following

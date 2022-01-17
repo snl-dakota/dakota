@@ -4,8 +4,8 @@ Method Types
 .. toctree::
    :maxdepth: 1
    
-   sampling
-   reliability
-   stochastic
-   epistemic
-   bayesian
+   methodtypes/sampling
+   methodtypes/reliability
+   methodtypes/stochastic
+   methodtypes/epistemic
+   methodtypes/bayesian

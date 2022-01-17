@@ -34,7 +34,7 @@ Before you begin plotting, there are three major terms used in Chartreuse that y
 
 Here is an illustration of these plotting terms:
 
-![alt text](img/Plotting_TheBasics_1.png "Example plot")
+![alt text](chartreuse/img/Plotting_TheBasics_1.png "Example plot")
 
 In this image, we see **two canvases** - the one on the left and the one on the right.  Each of these canvases has **one trace** on it - the left canvas has a red trace and the right canvas has a green trace.  All of this is rendered onto **one plot window**.  The plot window is named "Cantilever Example Plot."
 

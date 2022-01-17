@@ -5,5 +5,7 @@ Miscellaneous
    :maxdepth: 1
    
    help
+   aboutteam
    publications
    releasenotes
+   ../classictoc

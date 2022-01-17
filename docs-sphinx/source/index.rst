@@ -18,3 +18,5 @@ The Dakota project delivers both state-of-the-art research and robust, usable so
    usingdakotagui/usingdakotagui
    developingdakota/developingdakota
    misc/misc
+
+:ref:`Click here for shortcuts based on the old organization of multiple manuals <classictoc>`.

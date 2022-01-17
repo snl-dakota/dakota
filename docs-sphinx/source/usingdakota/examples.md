@@ -6,8 +6,8 @@ Examples
 .. toctree::
    :maxdepth: 1
    
-   offlineexamples
-   onlinerepo
+   examples/offlineexamples
+   examples/onlinerepo
 ```
 
 This section serves to familiarize users with how to perform parameter studies, optimization, and uncertainty quantification

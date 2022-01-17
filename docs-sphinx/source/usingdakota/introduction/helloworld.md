@@ -1,6 +1,10 @@
 Dakota Beginner's Tutorial
 ============
 
+```{eval-rst}
+.. _helloworld:
+```
+
 This section is intended for users who are new to Dakota, to demonstrate the basics of running a simple example.
 
 ## Running Dakota with a simple input file

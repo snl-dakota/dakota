@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'dakota'
-copyright = '2021, Sandia National Laboratories'
+copyright = '2022, Sandia National Laboratories'
 author = 'Sandia National Laboratories'
 
 # The full version, including alpha/beta/rc tags

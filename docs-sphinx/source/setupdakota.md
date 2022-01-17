@@ -160,4 +160,6 @@ dakota -v
 
 **Now what?**
 
-TODO: Cross-references to "Simple Examples" in CLI User's Manual and GUI User's Manual.
+```{eval-rst}
+   :ref:`Learn how to run a simple example in Dakota. <helloworld>`
+```
