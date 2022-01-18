@@ -34,8 +34,8 @@ If you are having trouble orienting yourself in this new documentation, but you 
 **User's Manual**
 
 * [Chapter 1: Introduction](usingdakota/introduction/aboutdakota.md)
-  * 1.1: Motivation for Dakota Development
-  * 1.2: Dakota Capabilities
+  * [1.1: Motivation for Dakota Development](usingdakota/introduction/aboutdakota.md)
+  * [1.2: Dakota Capabilities](usingdakota/introduction/aboutdakota.md)
   * [1.3: Coupling Dakota to a Simulation](usingdakota/introduction/couplingtosimulations.md)
   * 1.4: User's Manual Organization
   * 1.5: Files Referenced in this Manual
@@ -43,7 +43,7 @@ If you are having trouble orienting yourself in this new documentation, but you 
 * Chapter 2: Dakota Tutorial
   * [2.1: Quickstart](usingdakota/introduction/helloworld.md)
   * [2.2: Dakota Input File Format](usingdakota/inputfile.md)
-  * [2.3: Examples](usingdakota/examples.md)
+  * [2.3: Examples](usingdakota/examples/gettingstarted.md)
   * [2.4: Dakota Command-Line Options](usingdakota/introduction/helloworld.md#dakota-command-line-options)
   * 2.5: Next Steps
 * Chapter 3: Parameter Study Capabilities
@@ -87,10 +87,10 @@ If you are having trouble orienting yourself in this new documentation, but you 
   * Restarting Dakota Stuides
   * The Dakota Restart Utility
 * Dakota Input Specification
-  * Dakota Keywords
-  * Input Spec Overview
-  * Sample Input Files
-  * Input Spec Summary
+  * [Dakota Keywords](usingdakota/inputfile/inputspec.md)
+  * [Input Spec Overview](usingdakota/inputfile/inputspec.md)
+  * [Sample Input Files](usingdakota/examples/gettingstarted.md)
+  * [Input Spec Summary](usingdakota/inputfile/inputspec.md)
 * [Keywords Area](usingdakota/reference.rst)
 * Topics Area
   * admin

@@ -7,6 +7,11 @@ utilize Dakota to drive the evaluation of user supplied black box code. The exam
 show the simplest use of Dakota for methods of each type. More advanced examples of using Dakota for specific purposes are
 provided in subsequent, topic-based, chapters.
 
+
+```{eval-rst}
+   :ref:`If you are looking for examples of coupling Dakota to external simulations, click here <couplingtosimulations>`.
+```
+
 ## Rosenbrock Test Problem
 
 [![alt text](img/DakotaRosenbrockExamplesScreencastTeaser.png "Watch Screencast 1.3: More Method Examples with Rosenbrock")](https://www.youtube.com/watch?v=jPd5zarUs1o&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=3)
@@ -46,7 +51,9 @@ The unique solution to this problem lies at the point (x1, x2) = (1, 1), where t
 Several other test problems are available. See Chapter 20 for a description of these test problems as well as further discussion
 of the Rosenbrock test problem.
 
-## Two-Dimensional Grid Parameter Study
+## Parameter Studies
+
+### Two-Dimensional Grid Parameter Study
 
 ![alt text](../img/rosen_2d_pts.png "Fig 2.6")
 
@@ -78,7 +85,39 @@ or by importing Dakota’s tabular data into an external graphics/plotting packa
 include Mathematica, Matlab, Microsoft Excel, Origin, Tecplot, Gnuplot, and Matplotlib. (Sandia National Laboratories and
 the Dakota developers do not endorse any of these commercial products.)
 
-## Gradient-based Unconstrained Optimization
+### Vector Parameter Study
+
+The following sample input file shows a 1-D vector parameter study using the Textbook Example (see Textbook). It makes use of the default environment and model specifications, so they can be omitted. A similar file is available in the test directory as dakota/share/dakota/examples/users/rosen_ps_vector.in.
+
+```
+# Dakota Input File: rosen_ps_vector.in
+environment
+ tabular_data
+  tabular_data_file = 'rosen_ps_vector.dat'
+
+method
+ vector_parameter_study
+  final_point = 1.1 1.3
+  num_steps = 10
+
+variables
+ continuous_design = 2
+  initial_point  -0.3   0.2
+  descriptors    'x1'   "x2"
+
+interface
+ analysis_driver = 'rosenbrock'
+  direct
+
+responses
+ objective_functions = 1
+ no_gradients
+ no_hessians
+```
+
+## Optimization
+
+### Gradient-based Unconstrained Optimization
 
 Dakota’s optimization capabilities include a variety of gradient-based and nongradient-based optimization methods. This
 subsection demonstrates the use of one such method through the Dakota interface.
@@ -152,6 +191,43 @@ CONMIN iteration are not shown on the plot. At the end of the Dakota run, inform
 data on the optimal design point. These data include the optimum design point parameter values, the optimum objective and
 constraint function values (if any), plus the number of function evaluations that occurred and the amount of time that elapsed
 during the optimization study.
+
+### Optimization Example #2
+
+The following sample input file shows single-method optimization of the Textbook Example (see Textbook) using DOT's modified method of feasible directions. A similar file is available as dakota/share/dakota/examples/users/textbook_opt_conmin.in.
+
+```
+# Dakota Input File: textbook_opt_conmin.in
+environment
+ tabular_data
+  tabular_data_file = 'textbook_opt_conmin.dat'
+
+method
+# dot_mmfd #DOT performs better but may not be available
+ conmin_mfd
+  max_iterations = 50
+  convergence_tolerance = 1e-4
+
+variables
+ continuous_design = 2
+  initial_point  0.9  1.1
+  upper_bounds   5.8  2.9
+  lower_bounds   0.5  -2.9
+  descriptors   'x1'  'x2'
+
+interface
+ direct
+  analysis_driver =    'text_book'
+
+responses
+ objective_functions = 1
+ nonlinear_inequality_constraints = 2
+ numerical_gradients
+  method_source dakota
+  interval_type central
+  fd_gradient_step_size = 1.e-4
+ no_hessians
+```
 
 ## Uncertainty Quantification with Monte Carlo Sampling
 
@@ -288,8 +364,165 @@ sample sites within the parameter space of the Rosenbrock function for this exam
 
 ![alt text](../img/rosen_nond_pts.png "Fig 2.11")
 
-## User Supplied Simulation Code Examples
+## Least Squares (Calibration)
 
-```{eval-rst}
-   :ref:`See "Coupling to a Simulation" <couplingtosimulations>`.
+The following sample input file shows a nonlinear least squares (calibration) solution of the Rosenbrock Example (see Rosenbrock) using the NL2SOL method. A similar file is available as dakota/share/dakota/examples/users/rosen_opt_nls.in 
+
+```
+# Dakota Input File: rosen_opt_nls.in
+environment
+ tabular_data
+  tabular_data_file = 'rosen_opt_nls.dat'
+
+method
+ max_iterations = 100
+ convergence_tolerance = 1e-4
+ nl2sol
+
+model
+ single
+
+variables
+ continuous_design = 2
+  initial_point  -1.2   1.0
+  lower_bounds   -2.0   -2.0
+  upper_bounds   2.0   2.0
+  descriptors    'x1'   "x2"
+
+interface
+ analysis_driver = 'rosenbrock'
+  direct
+
+responses
+ calibration_terms = 2
+ analytic_gradients
+ no_hessians
+```
+
+## Nondeterministic Analysis
+
+The following sample input file shows Latin Hypercube Monte Carlo sampling using the Textbook Example (see Textbook). A similar file is available as dakota/share/dakota/test/dakota_uq_textbook_lhs.in.
+
+```
+method,
+    sampling,
+     samples = 100 seed = 1
+     complementary distribution
+     response_levels = 3.6e+11 4.0e+11 4.4e+11
+              6.0e+04 6.5e+04 7.0e+04
+              3.5e+05 4.0e+05 4.5e+05
+     sample_type lhs
+
+variables,
+    normal_uncertain = 2
+     means       = 248.89, 593.33
+     std_deviations  =  12.4,  29.7
+     descriptors    = 'TF1n' 'TF2n'
+    uniform_uncertain = 2
+     lower_bounds   = 199.3, 474.63
+     upper_bounds   = 298.5, 712.
+     descriptors    = 'TF1u' 'TF2u'
+    weibull_uncertain = 2
+     alphas      =  12.,  30.
+     betas       = 250.,  590.
+     descriptors    = 'TF1w' 'TF2w'
+    histogram_bin_uncertain = 2
+     num_pairs  = 3     4
+     abscissas  = 5 8 10 .1 .2 .3 .4
+     counts   = 17 21 0 12 24 12  0
+     descriptors = 'TF1h' 'TF2h'
+    histogram_point_uncertain = 1
+     num_pairs  = 2
+     abscissas  = 3 4
+     counts   = 1 1
+     descriptors = 'TF3h'
+
+interface,
+    fork asynch evaluation_concurrency = 5
+     analysis_driver = 'text_book'
+
+responses,
+    response_functions = 3
+    no_gradients
+    no_hessians
+```
+
+## Hybrid Strategy
+
+The following sample input file shows a hybrid environment using three methods. It employs a genetic algorithm, pattern search, and full Newton gradient-based optimization in succession to solve the Textbook Example (see Textbook). A similar file is available as dakota/share/dakota/examples/users/textbook_hybrid_strat.in.
+
+```
+environment
+ hybrid sequential
+  method_list = 'PS' 'PS2' 'NLP'
+
+method
+ id_method = 'PS'
+ model_pointer = 'M1'
+ coliny_pattern_search stochastic
+  seed = 1234
+  initial_delta = 0.1
+  variable_tolerance = 1.e-4
+  solution_accuracy = 1.e-10
+  exploratory_moves basic_pattern
+  #verbose output
+
+method
+ id_method = 'PS2'
+ model_pointer = 'M1'
+ max_function_evaluations = 10
+ coliny_pattern_search stochastic
+  seed = 1234
+  initial_delta = 0.1
+  variable_tolerance = 1.e-4
+  solution_accuracy = 1.e-10
+  exploratory_moves basic_pattern
+  #verbose output
+
+method
+ id_method = 'NLP'
+ model_pointer = 'M2'
+    optpp_newton
+  gradient_tolerance = 1.e-12
+  convergence_tolerance = 1.e-15
+  #verbose output
+
+model
+ id_model = 'M1'
+ single
+  variables_pointer = 'V1'
+  interface_pointer = 'I1'
+  responses_pointer = 'R1'
+
+model
+ id_model = 'M2'
+ single
+  variables_pointer = 'V1'
+  interface_pointer = 'I1'
+  responses_pointer = 'R2'
+
+variables
+ id_variables = 'V1'
+ continuous_design = 2
+  initial_point  0.6  0.7
+  upper_bounds   5.8  2.9
+  lower_bounds   0.5  -2.9
+  descriptors   'x1'  'x2'
+
+interface
+ id_interface = 'I1'
+ direct
+  analysis_driver= 'text_book'
+
+responses
+ id_responses = 'R1'
+ objective_functions = 1
+ no_gradients
+ no_hessians
+
+responses
+ id_responses = 'R2'
+ objective_functions = 1
+ analytic_gradients
+ analytic_hessians
 ```
