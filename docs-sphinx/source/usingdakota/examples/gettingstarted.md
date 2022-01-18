@@ -1,7 +1,5 @@
-Examples
+"Getting Started" Examples
 =======================================
-
-## "Getting Started" Examples
 
 This section serves to familiarize users with how to perform parameter studies, optimization, and uncertainty quantification
 through their common Dakota interface. The initial examples utilize simple built in driver functions; later we show how to
@@ -9,9 +7,9 @@ utilize Dakota to drive the evaluation of user supplied black box code. The exam
 show the simplest use of Dakota for methods of each type. More advanced examples of using Dakota for specific purposes are
 provided in subsequent, topic-based, chapters.
 
-### Rosenbrock Test Problem
+## Rosenbrock Test Problem
 
-[![alt text](examples/img/DakotaRosenbrockExamplesScreencastTeaser.png "Watch Screencast 1.3: More Method Examples with Rosenbrock")](https://www.youtube.com/watch?v=jPd5zarUs1o&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=3)
+[![alt text](img/DakotaRosenbrockExamplesScreencastTeaser.png "Watch Screencast 1.3: More Method Examples with Rosenbrock")](https://www.youtube.com/watch?v=jPd5zarUs1o&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=3)
 
 The Rosenbrock function is a common test problem for Dakota examples. This function has the form:
 
@@ -25,7 +23,7 @@ The Rosenbrock function is a common test problem for Dakota examples. This funct
 Shown below is a three-dimensional plot of this function, where both x1 and x2 range in value from −2 to 2;
 also shown below is a contour plot for Rosenbrock’s function. 
 
-| ![alt text](img/rosen_3d_surf.png "Fig 2.5a") | ![alt text](img/rosen_2d_surf.png "Fig 2.5b") |
+| ![alt text](../img/rosen_3d_surf.png "Fig 2.5a") | ![alt text](../img/rosen_2d_surf.png "Fig 2.5b") |
 |---|---|
 | 3D Plot | Contour Plot |
 
@@ -48,9 +46,9 @@ The unique solution to this problem lies at the point (x1, x2) = (1, 1), where t
 Several other test problems are available. See Chapter 20 for a description of these test problems as well as further discussion
 of the Rosenbrock test problem.
 
-### Two-Dimensional Grid Parameter Study
+## Two-Dimensional Grid Parameter Study
 
-![alt text](img/rosen_2d_pts.png "Fig 2.6")
+![alt text](../img/rosen_2d_pts.png "Fig 2.6")
 
 Parameter study methods in the Dakota toolkit involve the computation of response data sets at a selection of points in the
 parameter space. These response data sets are not linked to any specific interpretation, so they may consist of any allowable
@@ -80,7 +78,7 @@ or by importing Dakota’s tabular data into an external graphics/plotting packa
 include Mathematica, Matlab, Microsoft Excel, Origin, Tecplot, Gnuplot, and Matplotlib. (Sandia National Laboratories and
 the Dakota developers do not endorse any of these commercial products.)
 
-### Gradient-based Unconstrained Optimization
+## Gradient-based Unconstrained Optimization
 
 Dakota’s optimization capabilities include a variety of gradient-based and nongradient-based optimization methods. This
 subsection demonstrates the use of one such method through the Dakota interface.
@@ -143,9 +141,9 @@ steps. The scaling of the horizontal and vertical axes can be changed by moving 
 “Options” button allows the user to plot the vertical axes using a logarithmic scale. Note that log-scaling is only allowed if the
 values on the vertical axis are strictly greater than zero. Similar plots can also be created in Dakota’s graphical user interface.
 
-![alt text](img/dak_graphics_grad_opt.png "Fig 2.8a")
+![alt text](../img/dak_graphics_grad_opt.png "Fig 2.8a")
 
-![alt text](img/rosen_grad_opt_pts.png "Fig 2.8b")
+![alt text](../img/rosen_grad_opt_pts.png "Fig 2.8b")
 
 Above, we can see the iteration history of the optimization algorithm. The optimization starts at the point (x1, x2) =
 (−1.2, 1.0) as given in the Dakota input file. Subsequent iterations follow the banana-shaped valley that curves around toward
@@ -155,7 +153,7 @@ data on the optimal design point. These data include the optimum design point pa
 constraint function values (if any), plus the number of function evaluations that occurred and the amount of time that elapsed
 during the optimization study.
 
-### Uncertainty Quantification with Monte Carlo Sampling
+## Uncertainty Quantification with Monte Carlo Sampling
 
 ```
 # Dakota Input File: rosen_sampling.in
@@ -288,21 +286,10 @@ between input and outputs. More detail on correlation coefficients and their int
 detail about sampling methods in general can be found in Section 5.2. Finally, Figure 2.11 shows the locations of the 200
 sample sites within the parameter space of the Rosenbrock function for this example.
 
-![alt text](img/rosen_nond_pts.png "Fig 2.11")
+![alt text](../img/rosen_nond_pts.png "Fig 2.11")
 
-### User Supplied Simulation Code Examples
+## User Supplied Simulation Code Examples
 
 ```{eval-rst}
    :ref:`See "Coupling to a Simulation" <couplingtosimulations>`.
-```
-
-## Further Examples
-
-```{eval-rst}
-
-.. toctree::
-   :maxdepth: 1
-   
-   examples/offlineexamples
-   examples/onlinerepo
 ```

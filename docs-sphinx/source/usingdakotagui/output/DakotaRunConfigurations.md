@@ -1,17 +1,13 @@
 Dakota Run Configurations
 =========================
 
-##Table of Contents
-1. [Run Dakota Using the Eclipse Run Configuration Framework](#run-configurations)
-2. [Run Dakota Using the Workflow Engine](#run-dakota-using-the-workflow-engine)
+## Run Dakota Using the Eclipse Run Configuration Framework
 
-##Run Dakota Using the Eclipse Run Configuration Framework<a name="run-configurations"></a>
+<a name="run-configurations"></a> Creating a run configuration to run Dakota is a straightforward process for most cases, and is designed to save you lots of time in the future.
 
-Creating a run configuration to run Dakota is a straightforward process for most cases, and is designed to save you lots of time in the future.
+### Quick Start
 
-###Quick Start<a name="run-shortcuts"></a>
-
-To immediately run a Dakota input file with reasonable default settings, right-click on your Dakota study, then select Run As > Dakota.
+<a name="run-shortcuts"></a> To immediately run a Dakota input file with reasonable default settings, right-click on your Dakota study, then select Run As > Dakota.
 
 ![alt text](img/Run_Configurations_9.png "Run using the context menu")
 
@@ -25,7 +21,7 @@ In the background, a new run configuration will automatically be created for you
 * The run configuration's run directory will be the parent directory of the input file.
 * All possible Dakota output files will be backed up in a time-stamped directory in your project.
 
-###The Run Configurations Dialog
+### The Run Configurations Dialog
 
 The Run Configurations dialog provides information about past run configurations, and also gives you the controls to make new run configurations.  To access the Run Configurations dialog, select Run > Run Configurations from the top menu.
 
@@ -45,7 +41,7 @@ To begin, double-click on the Dakota line in the list on the left.
 
 ![alt text](img/Run_Configurations_4.png "Dakota run configuration options - Main Tab")
 
-###Dakota Run Configuration options
+### Dakota Run Configuration options
 
 **Name** The name of your run configuration.  This can be whatever you want.
 
@@ -70,7 +66,7 @@ When you are done configuring your Dakota run configuration, click the Apply but
 
 When you are ready to run, click Run in the bottom-right corner of this dialog.
 
-###Run Configuration History
+### Run Configuration History
 
 After executing a run configuration, you can easily access it again by clicking the down arrow near the Run icon:
 
@@ -78,7 +74,7 @@ After executing a run configuration, you can easily access it again by clicking 
 
 This menu keeps a history of recent previous run configurations.  Simply select the one you want to run – there is no need to open the Run Configurations dialog again unless you want to reconfigure your run configuration.
 
-###Dakota Console Options
+### Dakota Console Options
 
 Dakota displays its console output in the Console view:
 
@@ -99,7 +95,9 @@ From left to right:
 * **Display Selected Console** Allows you to switch between multiple open consoles.
 * **New Console View** Opens a new console.
 
-##Run Dakota Using the Workflow Engine<a name="run-dakota-using-the-workflow-engine"></a>
+## Run Dakota Using the Workflow Engine
+
+<a name="run-dakota-using-the-workflow-engine"></a>
 
 You can also execute Dakota via the "dakota" node in [Next-Gen Workflow](NextGenWorkflow.html).
 

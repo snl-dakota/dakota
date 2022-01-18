@@ -9,6 +9,7 @@ Using Dakota
    examples
    introduction/couplingtosimulations
    inputfile
+   running
    output
    studytypes
    methodtypes

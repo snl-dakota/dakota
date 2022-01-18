@@ -1,26 +1,15 @@
-Dakota Output
+Examples of Dakota Output
 =======================================
-
-```{eval-rst}
-
-.. toctree::
-   :maxdepth: 1
-   
-   output/runningdakota
-   output/hdf
-```
-
-## Examples of Dakota Output
 
 Beyond numerical results, all output files provide information that allows the user to check that the actual analysis was the
 intended analysis. More details on all outputs can be found in Chapter 13.
 
-### Screen output saved to a file
+## Screen output saved to a file
 
 Whenever an output file is specified for a Dakota run, the screen output itself becomes quite minimal consisting of version
 statements, environment statements and execution times.
 
-### Output file
+## Output file
 The output file is much more extensive, because it contains information on every function evaluation:
 
 ```
@@ -79,7 +68,7 @@ The function evaluation summary is preceded by `<<<<<`. For this example 81 tota
 assessed; all were new, none were read in from the restart file. Correlation matrices complete the statistics
 and output for this problem. Successful runs will finish with `<<<<< Iterator study type completed.`
 
-### Tabular output file
+## Tabular output file
 For this example, the default name for the tabular output file dakota_tabular.dat was changed in the input file to
 rosen_multidim.dat. This tab-delimited text file summarizes the inputs and outputs to the function
 evaluator:
