@@ -31,12 +31,11 @@ the output file has details about each of the 81 function evaluations. For more 
 visualization, the tabular data file can be imported into another analysis tool.
 
 ## What now?
-* Assuming Dakota ran successfully, skim the three text files (restart files are in a binary format). These are described further in Section 2.1.3.
-* This example used a parameter study method, and the rosenbrock test problem. More details about the example are in Section 2.3.2 and the test problem is described in Sections 2.3.1 and 20.2.
-* Explore the many methods available in Dakota in Chapters 3– 7.
-* Try running the other examples in the same directory. These are mentioned throughout the manual and are listed in Table 2.1 for convenience.
-* Learn the syntax needed to use these methods. For help running Dakota, see Section 2.4 and for input file information, see Section 2.2.
-* Learn how to use your own analysis code with Dakota in Chapter 16.
+* Assuming Dakota ran successfully, [skim the three text files](../output/classicoutput.md) (restart files are in a binary format).
+* [Learn more about this example's parameter study method, and the rosenbrock test problem.](../examples/gettingstarted.md)
+* [Explore the many methods available in Dakota](../methodtypes.rst).
+* [Learn the syntax needed to use these methods](../inputfile.md).
+* [Learn how to use your own analysis code with Dakota](../advanced/advancedsimulationcodeinterfaces.md).
 
 ## Video Resources
 

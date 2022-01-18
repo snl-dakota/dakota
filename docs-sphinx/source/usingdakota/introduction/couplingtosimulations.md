@@ -18,7 +18,7 @@ cluster computer.
 | --- |
 | The loosely-coupled or 'black-box' interface between Dakota and a user-supplied simulation code. |
 
-Figure 1.1 depicts a typical loosely-coupled relationship between Dakota and the simulation code(s). Such coupling is often
+This figure depicts a typical loosely-coupled relationship between Dakota and the simulation code(s). Such coupling is often
 referred to as “black-box,” as Dakota has no (or little) awareness of the internal details of the computational model, obviating
 any need for its source code. Such loose coupling is the simplest and most common interfacing approach Dakota users employ.
 Dakota and the simulation code exchange data by reading and writing short data files. Dakota is executed with commands
@@ -34,7 +34,7 @@ script wrapping it), and when the simulation completes, reads the response data 
 until all of the simulations required by the iterative study are complete.
 
 In some cases it is advantageous to have a close coupling between Dakota and the simulation code. This close coupling is an
-advanced feature of Dakota and is accomplished through either a direct interface or a SAND (simultaneous analysis and design)
+advanced feature of Dakota and is accomplished through either a direct interface or a SAND (Simultaneous ANalysis and Design)
 interface. For the direct interface, the user’s simulation code is modified to behave as a function or subroutine under Dakota.
 This interface can be considered to be “semi-intrusive” in that it requires relatively minor modifications to the simulation code.
 Its major advantage is the elimination of the overhead resulting from file I/O and process creation. It can also be a useful
@@ -53,13 +53,14 @@ future Dakota releases.
 
 ### Example #1
 
-Many of the previous examples made use of the direct interface to access the Rosenbrock and textbook test functions that
+Many examples make use of the direct interface to access the Rosenbrock and textbook test functions that
 are compiled into Dakota. In engineering applications, it is much more common to use the fork interface approach within
-Dakota to manage external simulation codes. In both of these cases, the communication between Dakota and the external
-code is conducted through the reading and writing of short text files. For this example, the C++ program rosenbrock.cpp
-in dakota_source/test is used as the simulation code. This file is compiled to create the stand-alone rosenbrock
-executable that is referenced as the analysis driver in Figure 2.12. This stand-alone program performs the same function
-evaluations as Dakota’s internal Rosenbrock test function.
+Dakota to manage external simulation codes.
+
+In both of these cases, the communication between Dakota and the external code is conducted through the reading and
+writing of short text files. For this example, the C++ program rosenbrock.cpp in dakota_source/test is used as the
+simulation code. This file is compiled to create the stand-alone rosenbrock executable that is referenced as the
+analysis driver below. This stand-alone program performs the same function evaluations as Dakota’s internal Rosenbrock test function.
 
 ```
 # Dakota Input File: rosen_syscall.in
@@ -100,13 +101,11 @@ responses
   no_hessians
 ```
 
-Figure 2.12 shows the text of the Dakota input file named rosen_syscall.in that is provided in the directory dakota/
-share/dakota/examples/users. The only differences between this input file and the one in Figure 2.7 occur in the
-interface keyword section. The keyword fork indicates that Dakota will use fork calls to create separate Unix processes for
+This input file shows the text of the Dakota input file named rosen_syscall.in that is provided in the directory `dakota/share/dakota/examples/users.`
+The keyword `fork` indicates that Dakota will use fork calls to create separate Unix processes for
 executions of the user-supplied simulation code. The name of the simulation code, and the names for Dakota’s parameters and
 results file are specified using the analysis driver, parameters file, and results file keywords, respectively.
-The Dakota command is noted in the file, and copies of the outputs are in the dakota/share/dakota/examples/
-users directory, with .sav appended to the name.
+The Dakota command is noted in the file, and copies of the outputs are in the `dakota/share/dakota/examples/users` directory, with .sav appended to the name.
 
 This run of Dakota takes longer to complete than the previous gradient-based optimization example since the fork interface
 method has additional process creation and file I/O overhead, as compared to the internal communication that occurs when the
@@ -165,7 +164,9 @@ In many situations the user-supplied simulation code cannot be modified to read 
 results.out.X file, as described above. Typically, this occurs when the simulation code is a commercial or proprietary
 software product that has specific input file and output file formats. In such cases, it is common to replace the executable
 program name in the Dakota input file with the name of a Unix shell script containing a sequence of commands that read and
-write the necessary files and run the simulation code. For example, the executable program named rosenbrock listed in
+write the necessary files and run the simulation code.
+
+For example, the executable program named rosenbrock listed in
 Figure 2.12 could be replaced by a Unix Bourne or C-shell script named simulator_script, with the script containing a
 sequence of commands to perform the following steps: insert the data from the parameters.in.X file into the input file of
 the simulation code, execute the simulation code, post-process the files generated by the simulation code to compute response
