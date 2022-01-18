@@ -73,6 +73,11 @@ protected:
   void increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost,
 				    Real ref_cost);
 
+  /// compute MLMC estimator variance from level QoI variances
+  void compute_ml_estimator_variance(const RealMatrix&   var_Y,
+				     const Sizet2DArray& num_Y,
+				     RealVector& ml_est_var);
+
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
@@ -104,6 +109,10 @@ protected:
 
   /// return (aggregate) level cost
   Real level_cost(const RealVector& cost, size_t step);
+
+  //
+  //- Heading: Data
+  //
 
 private:
 
@@ -415,22 +424,12 @@ nested_response_mappings(const RealMatrix& primary_coeffs,
 inline Real NonDMultilevelSampling::
 variance_Ysum(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq)
 {
-  Real mu_Y = sum_Y / Nlq;
   // Note: precision loss in variance is difficult to avoid without
   // storing full sample history; must accumulate Y^2 across iterations
   // instead of (Y-mean)^2 since mean is updated on each iteration.
-  Real var_Y = (sum_YY / Nlq - mu_Y * mu_Y)
-             * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
+  Real var_Y = (sum_YY - sum_Y * sum_Y / Nlq) / (Nlq - 1); // unbiased
   check_negative(var_Y);
   return var_Y;
-
-  /*
-  Real new_mu_Y = mu_Y + offset;
-  return var_Y
-    //  + offset   * offset    // uncenter from old mu_hat
-    //  - new_mu_Y * new_mu_Y; // recenter with new_mu_Y
-    - mu_Y * mu_Y - 2. * mu_Y * offset; // cancel offset^2
-  */
 }
 
 inline Real NonDMultilevelSampling::
@@ -442,21 +441,12 @@ variance_Ysum_static(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq_pilot,
   // instead of (Y-mean)^2 since mean is updated on each iteration.
   Real variance_tmp = (sum_YY / Nlq_pilot - mu_Y * mu_Y); 
 
-  if(compute_gradient){
-  	grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
-  }
+  if (compute_gradient)
+    grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
 
   Real var_Y = variance_tmp * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
   check_negative(var_Y);
   return var_Y;
-
-  /*
-  Real new_mu_Y = mu_Y + offset;
-  return var_Y
-    //  + offset   * offset    // uncenter from old mu_hat
-    //  - new_mu_Y * new_mu_Y; // recenter with new_mu_Y
-    - mu_Y * mu_Y - 2. * mu_Y * offset; // cancel offset^2
-  */
 }
 
 inline Real NonDMultilevelSampling::
@@ -465,7 +455,7 @@ variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
 {
   Real mu_Ql = sum_Ql / Nlq, mu_Qlm1 = sum_Qlm1 / Nlq;
   //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-  Real var_Q =(       sum_QlQl / Nlq - mu_Ql   * mu_Ql     // var_Ql
+  Real var_Q = ( sum_QlQl / Nlq - mu_Ql   * mu_Ql     // var_Ql
     - 2. * (   sum_QlQlm1 / Nlq - mu_Ql   * mu_Qlm1 ) // covar_QlQlm1
     +        sum_Qlm1Qlm1 / Nlq - mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
     * (Real)Nlq / (Real)(Nlq - 1);
@@ -480,7 +470,7 @@ variance_Qsum_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
 {
   Real mu_Ql = sum_Ql / Nlq_pilot, mu_Qlm1 = sum_Qlm1 / Nlq_pilot;
   //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-  Real variance_tmp = (       sum_QlQl / Nlq_pilot - mu_Ql   * mu_Ql     // var_Ql
+  Real variance_tmp = ( sum_QlQl / Nlq_pilot - mu_Ql   * mu_Ql     // var_Ql
     - 2. * (   sum_QlQlm1 / Nlq_pilot - mu_Ql   * mu_Qlm1 ) // covar_QlQlm1
     +        sum_Qlm1Qlm1 / Nlq_pilot - mu_Qlm1 * mu_Qlm1 ); // var_Qlm1
   if(compute_gradient){
@@ -588,12 +578,11 @@ aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
 }
 
 inline void NonDMultilevelSampling::
-aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, 
-						  						const Sizet2DArray& N_l, const size_t step, RealVector& estimator_var0_qoi)
+aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, const Sizet2DArray& N_l,
+			  const size_t step, RealVector& estimator_var0_qoi)
 {
-	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-		estimator_var0_qoi[qoi] += agg_var_qoi(qoi, step)/N_l[step][qoi];
-	}
+  for (size_t qoi = 0; qoi < numFunctions; ++qoi)
+    estimator_var0_qoi[qoi] += agg_var_qoi(qoi, step)/N_l[step][qoi];
 }
 
 inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, RealVector& eps_sq_div_2_qoi)
@@ -632,6 +621,22 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 	if (outputLevel == DEBUG_OUTPUT)
 	       Cout << "Epsilon squared target per QoI = " << eps_sq_div_2_qoi << std::endl;
 }
+
+
+inline void NonDMultilevelSampling::
+compute_ml_estimator_variance(const RealMatrix&   var_Y,
+			      const Sizet2DArray& num_Y, RealVector& ml_est_var)
+{
+  ml_est_var.size(numFunctions); // init to 0
+  size_t qoi, lev, num_lev = num_Y.size();
+  for (lev=0; lev<num_lev; ++lev) {
+    const Real*       var_Yl = var_Y[lev];
+    const SizetArray& num_Yl = num_Y[lev];
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      ml_est_var[qoi] += var_Yl[qoi] / num_Yl[qoi];
+  }
+}
+
 
 inline void NonDMultilevelSampling::
 increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost, Real ref_cost)

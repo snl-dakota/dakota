@@ -53,6 +53,7 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_variance_reduction(std::ostream& s);
 
 private:
 
@@ -78,6 +79,12 @@ private:
   void increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
 				      size_t new_N_lf, Real lf_lev_cost,
 				      Real hf_ref_cost);
+
+  /// compute the variance of the MLMF estimator
+  void compute_mlmf_estimator_variance(const RealMatrix&   var_Y,
+				       const Sizet2DArray& num_Y,
+				       const RealMatrix&  Lambda,
+				       RealVector& mlmf_est_var);
 
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   void compute_eval_ratios(RealMatrix& sum_L_shared, RealMatrix& sum_H,
@@ -168,6 +175,12 @@ private:
 			  const RealVector& beta_dot, const RealVector& gamma,
 			  RealVector& H_raw_mom);
 
+  /// for pilot projection mode, advance sample counts and accumulated cost
+  void update_projected_samples(const RealVector& hf_targets,
+				const RealVectorArray& eval_ratios,
+				Sizet2DArray& N_hf, const RealVector& hf_cost,
+				Sizet2DArray& N_lf, const RealVector& lf_cost);
+
   /// initialize the MLMF accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_mlmf_sums(IntRealMatrixMap& sum_L_shared,
@@ -257,6 +270,8 @@ private:
   //- Heading: Data
   //
 
+  RealMatrix varH;
+  RealVector mlmfEstVar;
 };
 
 
@@ -294,6 +309,29 @@ increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
   if (new_N_hf) incr += new_N_hf * hf_lev_cost;
   if (new_N_lf) incr += new_N_lf * lf_lev_cost;
   equivHFEvals += incr / hf_ref_cost; // normalize into equiv HF evals
+}
+
+
+inline void NonDMultilevControlVarSampling::
+compute_mlmf_estimator_variance(const RealMatrix&   var_Y,
+				const Sizet2DArray& num_Y,
+				const RealMatrix&  Lambda,
+				RealVector& mlmf_est_var)
+{
+  mlmf_est_var.size(numFunctions); // init to 0
+  size_t qoi, lev, num_lev = num_Y.size(), num_cv_lev = Lambda.numCols();
+  for (lev=0; lev<num_lev; ++lev) {
+    const Real*       var_Yl = var_Y[lev];
+    const SizetArray& num_Yl = num_Y[lev];
+    if (lev < num_cv_lev) { // control variate with LF model for this level
+      const Real* Lambda_l = Lambda[lev];
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	mlmf_est_var[qoi] += var_Yl[qoi] / num_Yl[qoi] * Lambda_l[qoi];
+    }
+    else // no control variate for this level
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	mlmf_est_var[qoi] += var_Yl[qoi] / num_Yl[qoi];
+  }
 }
 
 

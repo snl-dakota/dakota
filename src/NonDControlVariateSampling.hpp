@@ -91,11 +91,7 @@ protected:
   // normal termination based on l1_norm(delta_N_hf) = 0.
   //bool finalCVRefinement;
 
-  RealVector varH;
   RealVector estVarIter0;
-  RealVector estVarRatios;
-
-  SizetArray numHIter0;
 
 private:
 
@@ -199,6 +195,9 @@ private:
   //- Heading: Data
   //
 
+  RealVector varH;
+  RealVector estVarRatios;
+  SizetArray numHIter0;
 };
 
 

@@ -137,8 +137,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost, agg_var(num_steps);
   configure_cost(num_steps, multilev, cost);
-  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost, budget,
+  Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar0 = 0., lev_cost, budget,
     ref_cost = cost[num_steps-1]; // HF cost (1 level)
+
   if (budget_constrained) budget = (Real)maxFunctionEvals * ref_cost;
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (sum_Y[i] for i=1:4).
@@ -201,16 +202,16 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
       sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
       // MSE reference is MLMC with pilot sample, prior to any N_l adaptation:
       if (mlmfIter == 0 && !budget_constrained)
-	estimator_var0
+	agg_estvar0
 	  += aggregate_mse_Ysum(sum_Y[1][step], sum_YY[step], N_l[step]);
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
-    // which is equally apportioned (eps^2 / 2) among discretization MSE and
-    // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
-    // discretization error, we compute an initial estimator variance from MLMC
-    // on the pilot sample and then seek to reduce it by a relative_factor <= 1.
-    if (mlmfIter == 0 && !budget_constrained) { // eps^2 / 2 = est var * rel tol
-      eps_sq_div_2 = estimator_var0 * convergenceTol;
+    // which is equally apportioned (eps^2 / 2) among residual bias and
+    // estimator variance (\Sum var_Y_l / N_l).  Since we usually do not know
+    // the bias error, we compute an initial estimator variance from MLMC on
+    // the pilot sample and then seek to reduce it by a relative_factor <= 1.
+    if (mlmfIter == 0 && !budget_constrained) { // eps^2 / 2 = estvar0 * rel tol
+      eps_sq_div_2 = agg_estvar0 * convergenceTol;
       if (outputLevel == DEBUG_OUTPUT)
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
     }
@@ -277,8 +278,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost;  configure_cost(num_steps, multilev, cost);
-  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost,
-    ref_cost = cost[num_steps-1]; // HF cost (1 level)
+  Real eps_sq_div_2, sum_sqrt_var_cost, lev_cost, ref_cost = cost[num_steps-1];
 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector agg_var(num_steps), agg_var_of_var(num_steps),
@@ -685,8 +685,7 @@ Real NonDMultilevelSampling::aggregate_variance_mean_Qsum(const IntRealMatrixMap
                   const Sizet2DArray& N_l, const size_t step, const size_t qoi)
 {
   IntIntPair pr11(1, 1);
-  Real agg_var_l = 0.;
-  agg_var_l = aggregate_variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
+  Real agg_var_l = aggregate_variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
                                                        sum_Ql.at(2)[step], sum_QlQlm1.at(pr11)[step],
                                                        sum_Qlm1.at(2)[step],
                                                            N_l[step], step, qoi);
@@ -699,8 +698,7 @@ Real NonDMultilevelSampling::aggregate_variance_variance_Qsum(const IntRealMatri
                   const Sizet2DArray& N_l, const size_t step, const size_t qoi)
 {
   Real place_holder;
-  Real agg_var_l = 0.;
-  agg_var_l = ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
+  Real agg_var_l = ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
                                                            N_l[step][qoi], qoi, false, place_holder)
                                         : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
                                                           N_l[step][qoi], qoi, step, false, place_holder)) *
@@ -714,15 +712,13 @@ Real NonDMultilevelSampling::aggregate_variance_sigma_Qsum(const IntRealMatrixMa
                   const Sizet2DArray& N_l, const size_t step, const size_t qoi)
 {
   Real place_holder;
-  Real agg_var_l = 0.;
-  Real var_l = 0;
   IntIntPair pr11(1, 1);
 
-  agg_var_l = ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
+  Real agg_var_l = ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
                                                            N_l[step][qoi], qoi, false, place_holder)
                                         : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
                                                           N_l[step][qoi], qoi, step, false, place_holder)); 
-  var_l = var_lev_l(sum_Ql.at(1)[step][qoi], sum_Qlm1.at(1)[step][qoi], sum_Ql.at(2)[step][qoi], sum_Qlm1.at(2)[step][qoi], N_l[step][qoi]);
+  Real var_l = var_lev_l(sum_Ql.at(1)[step][qoi], sum_Qlm1.at(1)[step][qoi], sum_Ql.at(2)[step][qoi], sum_Qlm1.at(2)[step][qoi], N_l[step][qoi]);
   if(var_l <= 0)
     return 0;
   return 1./(4. * var_l) * agg_var_l * N_l[step][qoi]; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile
