@@ -14,10 +14,10 @@ If you are having trouble orienting yourself in this new documentation, but you 
   * [Get Started](setupdakota.md#installation)
   * [Publications](misc/publications.md)
   * [Release Notes](misc/releasenotes.rst)
-  * Screencasts
+  * [Screencasts](misc/help.md#screencasts)
 * Community
   * [Get Help](misc/help.md)
-  * FAQs
+  * [FAQs](misc/faq.md)
   * [Mail Lists](misc/help.md)
   * Training
 * About

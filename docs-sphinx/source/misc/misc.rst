@@ -5,6 +5,7 @@ Miscellaneous
    :maxdepth: 1
    
    help
+   faq
    aboutteam
    publications
    releasenotes

@@ -1,6 +1,8 @@
 Coupling Dakota to a Simulation
 ============
 
+## Introduction
+
 ```{eval-rst}
 .. _couplingtosimulations:
 ```
@@ -47,7 +49,9 @@ can greatly reduce the computational expense of optimization, considerable softw
 achieve this intrusive coupling between SAND optimization methods and the simulation code. SAND may be supported in
 future Dakota releases.
 
-## Coupling Example 1
+## Coupling Examples
+
+### Example #1
 
 Many of the previous examples made use of the direct interface to access the Rosenbrock and textbook test functions that
 are compiled into Dakota. In engineering applications, it is much more common to use the fork interface approach within
@@ -155,7 +159,7 @@ The value shown above is the value of the objective function, and the descriptor
 code. When the fork call has completed, Dakota reads in the data from the results.in.X file and processes the results.
 Dakota then continues with additional executions of the rosenbrock program until the optimization process is complete.
 
-## Coupling Example 2
+### Example #2
 
 In many situations the user-supplied simulation code cannot be modified to read and write the params.in.X file and the
 results.out.X file, as described above. Typically, this occurs when the simulation code is a commercial or proprietary
