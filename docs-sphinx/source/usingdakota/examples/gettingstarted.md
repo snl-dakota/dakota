@@ -10,11 +10,11 @@ provided in subsequent, topic-based, chapters.
 
 ```{eval-rst}
    :ref:`If you are looking for examples of coupling Dakota to external simulations, click here <couplingtosimulations>`.
+   
+   :ref:`If you are looking for video examples, click here <gettingstartedvideos>`.
 ```
 
 ## Rosenbrock Test Problem
-
-[![alt text](img/DakotaRosenbrockExamplesScreencastTeaser.png "Watch Screencast 1.3: More Method Examples with Rosenbrock")](https://www.youtube.com/watch?v=jPd5zarUs1o&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=3)
 
 The Rosenbrock function is a common test problem for Dakota examples. This function has the form:
 
@@ -526,3 +526,14 @@ responses
  analytic_gradients
  analytic_hessians
 ```
+
+```{eval-rst}
+.. _gettingstartedvideos:
+```
+
+## Video Resources
+
+| Title | Link | Resources|
+| --- | --- | --- |
+| More Method Examples with Rosenbrock | [![alt text](img/DakotaRosenbrockExamplesScreencastTeaser.png "Watch Screencast 1.3: More Method Examples with Rosenbrock")](https://www.youtube.com/watch?v=jPd5zarUs1o&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=3) | |
+| Model Characterization | [![alt text](img/DakotaModelCharacteristicsTrainingTeaser.png "Watch Model Characterization")](http://digitalops.sandia.gov/Mediasite/Play/536240e97b444ee19a24d55c72fd52941d) | ([Slides](https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_ModelCharacterization.pdf) / [Exercises](https://dakota.sandia.gov/sites/default/files/training/characterization-151215.zip)) |

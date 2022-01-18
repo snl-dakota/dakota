@@ -1,7 +1,22 @@
 Dakota Input File
 =======================================
 
-[![alt text](inputfile/img/InputFileScreencastTeaser.png "Watch Screencast 1.2: Input File Format")](https://www.youtube.com/watch?v=f1l8DIXd9Gs&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=2)
+```{eval-rst}
+
+.. toctree::
+   :maxdepth: 1
+   
+   inputfile/formatting
+   inputfile/model
+   inputfile/variables
+   inputfile/interfaces
+   inputfile/responses
+   inputfile/inputstodakota
+   inputfile/outputsfromdakota
+   inputfile/inputspec   
+
+:ref:`If you are looking for video resources on Dakota's input file format, click here <inputfilevideos>`.
+```
 
 There are six specification blocks that may appear in Dakota input files. These are identified in the input file using the following
 keywords: variables, interface, responses, model, method, and environment. While, these keyword blocks can appear in any
@@ -101,19 +116,13 @@ no gradients and no hessians indicate that no derivatives will be provided to th
 parameter study. At least one responses block is required, and multiple blocks may appear in Dakota input files for advanced
 studies.
 
----
-
 ```{eval-rst}
-
-.. toctree::
-   :maxdepth: 1
-   
-   inputfile/formatting
-   inputfile/model
-   inputfile/variables
-   inputfile/interfaces
-   inputfile/responses
-   inputfile/inputstodakota
-   inputfile/outputsfromdakota
-   inputfile/inputspec   
+.. _inputfilevideos:
 ```
+
+## Video Resources
+
+| Title | Link | Resources|
+| --- | --- | --- |
+| Input File Format | [![alt text](inputfile/img/InputFileScreencastTeaser.png "Watch Screencast 1.2: Input File Format")](https://www.youtube.com/watch?v=f1l8DIXd9Gs&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=2) | |
+| Input Syntax / Building Blocks | [![alt text](inputfile/img/InputFileTrainingTeaser.png "Input Syntax / Building Blocks")](http://digitalops.sandia.gov/Mediasite/Play/16134f3f4b6842d2b145a9600cbbcbbd1d) | ([Slides](https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_InputComponents.pdf) / [Exercises](https://dakota.sandia.gov/sites/default/files/training/input-151215.zip)) |
