@@ -9,7 +9,9 @@ In this version of Dakota GUI, [Python 3](https://www.python.org/downloads/) is 
 
 Open the Script-Based Dakota Driver wizard by going to File > New > Script-Based Dakota Driver.
 
-## Page 1 (Welcome)<a name="script-based-welcome"></a>
+## Page 1 (Welcome)
+
+<a name="script-based-welcome"></a>
 
 The first page of the wizard is a welcome page that provides some overview information about this wizard.  There is nothing that needs to be done on this page.
 
@@ -19,7 +21,9 @@ Select the project location and name of your new Python driver script.
 
 ![alt text](img/NewDakotaStudy_Drivers_Python_2.png "Python File Creation")
 
-## Page 3 (Data Source Files Selection)<a name="script-based-data-source"></a>
+## Page 3 (Data Source Files Selection)
+
+<a name="script-based-data-source"></a>
 
 On this page, we provide our driver script with two things – information about the parameters and responses we’ll be using, and the path to our simulation model executable.
 
@@ -33,7 +37,9 @@ For the second file selector field (“Select a simulation model file”), you a
 
 ![alt text](img/NewDakotaStudy_Drivers_Python_5.png "Added a simulation model executable")
 
-## Page 4 (Map Variables to Simulation Model Input)<a name="script-based-preproc"></a>
+## Page 4 (Map Variables to Simulation Model Input)
+
+<a name="script-based-preproc"></a>
 
 This page of the wizard covers the pre-processing step.  There are two ways to pre-process a file in this wizard - you can either provide text-based pre-processing markup, or define positional pre-processors.
 
@@ -81,7 +87,9 @@ When you're done, select OK.  Here is an example of what your wizard page could 
 
 ![alt text](img/NewDakotaStudy_Drivers_Python_10.png "Beautiful")
 
-## Page 5 (Map Simulation Model Output to Dakota Responses)<a name="script-based-postproc"></a>
+## Page 5 (Map Simulation Model Output to Dakota Responses)
+
+<a name="script-based-postproc"></a>
 
 This page of the wizard is concerned with quantity of interest (QOI) extraction.
 
@@ -102,7 +110,9 @@ When you're done, this page of the wizard will look something like this:
 
 ![alt text](img/NewDakotaStudy_Drivers_Python_14.png "Ready to move on")
 
-## Page 6 (Execution)<a name="script-based-execution"></a>
+## Page 6 (Execution)
+
+<a name="script-based-execution"></a>
 
 This last page of the wizard has several controls to help with the task of actually executing your simulation model.
 

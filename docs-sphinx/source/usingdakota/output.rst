@@ -6,4 +6,3 @@ Dakota Output
    
    output/classicoutput
    output/hdf
-```
