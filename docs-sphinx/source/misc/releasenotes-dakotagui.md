@@ -1,13 +1,9 @@
-Release Notes
+Dakota GUI Release Notes
 =============
 
-## Dakota Release Notes
+## Version 6.15 - Lakeside Limbo
 
-TODO
-
-## Dakota GUI Release Notes
-
-### [Version 6.15](https://dakota.sandia.gov/content/dakota-615) - Lakeside Limbo (Released November 2021)
+*Released November 2021*
 
 * **Multi-level / Multi-fidelity Editor (Experimental)**
   * New Dakota input file editor tailored to working with multi-level / multi-fidelity studies.  Allows for easy manipulation of model hierarchies and solution level costs.
@@ -22,7 +18,9 @@ TODO
   * Added form-based editing support for OPT++ family of methods.
   * Some options now available in context menus throughout the Visual Editor (pre-processor replacement, Dakota reference manual access)
 
-### [Version 6.14](https://dakota.sandia.gov/content/dakota-614) - Koindozer Klamber (Released May 2021)
+## Version 6.14 - Koindozer Klamber
+
+*Released May 2021*
 
 * **Dakota Surrogates**
   * New GUI support for serialized Dakota surrogates files.
@@ -44,7 +42,9 @@ TODO
 * **Misc.**
   * *Deprecation note:* Output stream scraping has been removed from Dakota GUI
 
-### [Version 6.13](https://dakota.sandia.gov/content/dakota-613) - Jungle Japes (Released November 2020)
+## Version 6.13 - Jungle Japes
+
+*Released November 2020*
 
 * **Chartreuse**
   * New "Sandbox View" for fast visualizations of generic data using Chartreuse.
@@ -62,7 +62,9 @@ TODO
   * "dprepro" node added to Next-Gen Workflow
   * General enhancements for the New Dakota Study wizard
 
-### [Version 6.12](https://dakota.sandia.gov/content/dakota-612) - Ice Age Alley (Released June 2020)
+## Version 6.12 - Ice Age Alley
+
+*Released June 2020*
 
 * **Chartreuse Plotting**
   * New "relative threshold" feature allows you to define graph color scales on a 0-100 percentage scale.
@@ -73,7 +75,9 @@ TODO
 * **Quantity of Interest extractors:** New "Last Anchor Occurrence" QOI extractor added
 * A variety of small bugfixes to the Basic Model Format (BMF) creator, the New Dakota Study wizard, and the Dakota text editor
 
-### [Version 6.11](https://dakota.sandia.gov/content/dakota-611) - Hot Head Hop (Released November 2019)
+## Version 6.11 - Hot Head Hop
+
+*Released November 2019*
 
 The Dakota GUI has added many significant feature improvements over the last year.  The Dakota GUI now allows you to seamlessly browse Dakota's HDF5 database output files, as well as generate sophisticated graphical plots from HDF5 data with just a few clicks.  HDF5 browsing and plot generation can also be driven within Dakota GUI by Next-Gen Workflow, a powerful tool that allows you to construct node-based workflows for complex tasks.
 
@@ -81,11 +85,15 @@ The Dakota GUI has added many significant feature improvements over the last yea
 
 **Documentation:**  An enhanced version of the Dakota GUI manual now ships with the GUI, giving you easy access to a wealth of reference material for using the GUI.  
 
-### [Version 6.10](https://dakota.sandia.gov/content/dakota-610) - Gangplank Galleon (Released May 2019)
+## Version 6.10 - Gangplank Galleon
+
+*Released May 2019*
 
 The Dakota 6.9 GUI has been updated to work with Dakota 6.10, but not substantially changed. New GUI features will be released with the next Dakota release.
 
-### [Version 6.9](https://dakota.sandia.gov/content/dakota-69) - Frantic Factory (Released November 2018)
+## Version 6.9 - Frantic Factory
+
+*Released November 2018*
 
 **Highlights:**
 
@@ -139,7 +147,9 @@ The Dakota 6.9 GUI has been updated to work with Dakota 6.10, but not substantia
 * Dakota Console:  Output and error streams no longer interleave characters together.
 * Project Navigator View:  Fixed bug where navigator view of Dakota input file wouldn't always update on a change to the text.
 
-### [Version 6.8](https://dakota.sandia.gov/content/dakota-68) - Elevator Antics (Released May 2018)
+## Version 6.8 - Elevator Antics
+
+*Released May 2018*
 
 Dakota's graphical user interface (GUI) was substantially updated.
 
@@ -156,7 +166,9 @@ A number of bugfixes and other enhancements were made as well:
 * Squelched "phantom" pop-up dialog behind real dialogs on Linux build
 * Bugfix: Mac/Linux version of Dakota GUI appears to truncate Dakota output stream
 
-### [Version 6.7](https://dakota.sandia.gov/content/dakota-67) - Doorstop Dash (Released November 2017)
+## Version 6.7 - Doorstop Dash
+
+*Released November 2017*
 
 * GUI plotting enhancements:
   * Support for log scales
@@ -169,7 +181,9 @@ A number of bugfixes and other enhancements were made as well:
   * Support for renaming Dakota projects
   * Reorganized GUI menu options
 
-### [Version 6.6](https://dakota.sandia.gov/content/dakota-66) - Coral Capers (Released May 2017)
+## Version 6.6 - Coral Capers
+
+*Released May 2017*
 
 * Plotly Plotting Integration. The GUI now integrates the Plotly plotting library. You can perform basic scatter plots, histograms, and box-and-whisker plots against Dakota tabular output data.
 * Input specification ordering. Reorder and clean up interface, environment, and model blocks to follow more natural ordering and support GUI integration.
@@ -177,10 +191,14 @@ A number of bugfixes and other enhancements were made as well:
 * NIDR Parser Utilities. Developer productivity: NIDR utilities built on all platforms to allow fewer NIDR-generated files in repository and input file reordering in GUI
 * Use of examples in GUI. Examples from training, users, and advanced directories are now ordered and debugged to work in GUI
 
-### [Version 6.5](https://dakota.sandia.gov/content/dakota-65) (GUI Version 0.2) - Blazing Bazookas (Released November 2016)
+## Version 6.5 (GUI Version 0.2) - Blazing Bazookas
+
+*Released November 2016*
 
 The first beta release of the new Dakota GUI is now available for download.
 
-### [Version 6.4](https://dakota.sandia.gov/release-notes/6.4) (GUI Version 0.1) - Arctic Abyss (Released May 2016)
+## Version 6.4 (GUI Version 0.1) - Arctic Abyss
+
+*Released May 2016*
 
 The first experimental release of Dakota GUI was created for Dakota version 6.4, but was not advertised.
