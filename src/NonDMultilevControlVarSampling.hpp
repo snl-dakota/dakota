@@ -140,7 +140,7 @@ private:
 			    Real sum_Hl_Llm1, Real sum_Hlm1_Ll,
 			    Real sum_Hlm1_Llm1, Real sum_Hl_Hl,
 			    Real sum_Hl_Hlm1, Real sum_Hlm1_Hlm1,
-			    size_t N_shared, Real& var_YH, Real& rho_dot2_LH,
+			    size_t N_shared, Real& var_YHl, Real& rho_dot2_LH,
 			    Real& beta_dot, Real& gamma);
   /// compute matrix control variate parameters
   void compute_mlmf_control(const RealMatrix& sum_Ll,
@@ -270,7 +270,7 @@ private:
   //- Heading: Data
   //
 
-  RealMatrix varH;
+  //RealMatrix varYH;
   RealVector mlmfEstVar;
 };
 
@@ -348,7 +348,7 @@ compute_mlmf_control(const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
 		     const SizetArray& N_shared, size_t lev,
 		     RealVector& beta_dot, RealVector& gamma)
 {
-  Real var_YH, rho_dot2_LH; // not needed for this context
+  Real var_YHl, rho_dot2_LH; // not needed for this context
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     compute_mlmf_control(sum_Ll(qoi,lev), sum_Llm1(qoi,lev), sum_Hl(qoi,lev),
 			 sum_Hlm1(qoi,lev), sum_Ll_Ll(qoi,lev),
@@ -356,7 +356,7 @@ compute_mlmf_control(const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
 			 sum_Hl_Ll(qoi,lev), sum_Hl_Llm1(qoi,lev),
 			 sum_Hlm1_Ll(qoi,lev), sum_Hlm1_Llm1(qoi,lev),
 			 sum_Hl_Hl(qoi,lev), sum_Hl_Hlm1(qoi,lev),
-			 sum_Hlm1_Hlm1(qoi,lev), N_shared[qoi], var_YH,
+			 sum_Hlm1_Hlm1(qoi,lev), N_shared[qoi], var_YHl,
 			 rho_dot2_LH, beta_dot[qoi], gamma[qoi]);
 }
 

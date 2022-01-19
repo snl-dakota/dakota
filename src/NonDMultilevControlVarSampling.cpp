@@ -132,10 +132,10 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   IntRealMatrixMap sum_L_refined, sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH;
   initialize_mlmf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 		       sum_HH, num_hf_lev, num_cv_lev);
-  RealMatrix rho2_LH(numFunctions, num_cv_lev, false),
-              Lambda(numFunctions, num_cv_lev, false);
+  RealMatrix var_YH(numFunctions,  num_hf_lev, false),
+             rho2_LH(numFunctions, num_cv_lev, false),
+             Lambda(numFunctions,  num_cv_lev, false);
   RealVector avg_rho2_LH(num_cv_lev, false), avg_lambda(num_cv_lev, false);
-  varH.shapeUninitialized(numFunctions, num_cv_lev);
 
   // Initialize for pilot sample
   Sizet2DArray&       N_lf =      NLev[lf_form];
@@ -194,8 +194,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (L_shared[1,2], L_refined[1,2], LH[1,2])"
 		 << ":\n" << sum_L_shared[1] << sum_L_shared[2]
-		 << sum_L_refined[1] << sum_L_refined[2]
-		 << sum_LH[1] << sum_LH[2];
+		 << sum_L_refined[1]<< sum_L_refined[2]<< sum_LH[1]<< sum_LH[2];
 	  // update raw evaluation counts
 	  //raw_N_hf[lev] += numSamples;  raw_N_lf[lev] += numSamples;
 	  increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
@@ -205,32 +204,29 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 	  RealVector& eval_ratios_l = eval_ratios[lev];
 	  compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
 			      sum_HH[1], hf_lev_cost/lf_lev_cost, lev,
-			      N_hf[lev], varH, rho2_LH, eval_ratios_l);
+			      N_hf[lev], var_YH, rho2_LH, eval_ratios_l);
 
-	  // defer averaging for Lambda
+	  // retain Lambda per QoI and level, but apply QoI-average where needed
 	  for (qoi=0; qoi<numFunctions; ++qoi) {
 	    r_lq = eval_ratios_l[qoi];
 	    Lambda(qoi,lev) = 1. - rho2_LH(qoi,lev) * (r_lq - 1.) / r_lq;
 	  }
 	  avg_lambda[lev]  = average(Lambda[lev],  numFunctions);
 	  avg_rho2_LH[lev] = average(rho2_LH[lev], numFunctions);
-	  agg_var_hf_l     = sum(varH[lev],        numFunctions);
 	}
 	else { // no LF model for this level; accumulate only multilevel sums
 	  RealMatrix& sum_HH1 = sum_HH[1];
-	  accumulate_ml_Ysums(sum_H, sum_HH1, lev, mu_H_hat,
-			      N_hf[lev]); // sum_Y for lev>0
+	  // accumulate H sums for lev = 0, Y sums for lev > 0
+	  accumulate_ml_Ysums(sum_H, sum_HH1, lev, mu_H_hat, N_hf[lev]);
 	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (H[1], H[2], HH):\n"
 		 << sum_H[1] << sum_H[2] << sum_HH1;
 	  //raw_N_hf[lev] += numSamples;
 	  increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
-	  // aggregate Y variances across QoI for this level
-	  if (outputLevel >= DEBUG_OUTPUT)
-	    Cout << "variance of Y[" << lev << "]: ";
-	  agg_var_hf_l
-	    = aggregate_variance_Ysum(sum_H[1][lev], sum_HH1[lev], N_hf[lev]);
+	  // compute Y variances for this level and aggregate across QoI:
+	  variance_Ysum(sum_H[1][lev], sum_HH1[lev], N_hf[lev], var_YH[lev]);
 	}
+	agg_var_hf_l = sum(var_YH[lev], numFunctions);
       }
 
       // accumulate sum of sqrt's of estimator var * cost used in N_target
@@ -248,9 +244,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
       // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
       // will result in no additional variance reduction beyond MLMC.
       if (mlmfIter == 0 && !budget_constrained)
-	agg_estvar_iter0 += (lev < num_cv_lev) ?
-	  aggregate_mse_Yvar(varH[lev], N_hf[lev]) :
-	  aggregate_mse_Ysum(sum_H[1][lev], sum_HH[1][lev], N_hf[lev]);
+	agg_estvar_iter0 += aggregate_mse_Yvar(var_YH[lev], N_hf[lev]);
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -260,7 +254,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
     if (mlmfIter == 0) {
       // MLMC estimator variance for final estvar reporting is not aggregated
       // (reduction from control variate is applied subsequently)
-      compute_ml_estimator_variance(varH, N_hf, estVarIter0);//numHIter0 = numH;
+      compute_ml_estimator_variance(var_YH, N_hf, estVarIter0);//numHIter0=numH;
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
       if (!budget_constrained) {
 	eps_sq_div_2 = agg_estvar_iter0 * convergenceTol;
@@ -335,7 +329,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
     break;
   }
 
-  compute_mlmf_estimator_variance(varH, N_hf, Lambda, mlmfEstVar);
+  compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, mlmfEstVar);
 }
 
 
@@ -390,11 +384,10 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 		       sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1,
 		       sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1, num_hf_lev,
 		       num_cv_lev);
-  RealMatrix var_Yl(numFunctions, num_cv_lev, false),
-    rho_dot2_LH(numFunctions, num_cv_lev, false),
-    Lambda(numFunctions, num_cv_lev, false);
+  RealMatrix var_YH(numFunctions,      num_hf_lev, false),
+             rho_dot2_LH(numFunctions, num_cv_lev, false),
+             Lambda(numFunctions,      num_cv_lev, false);
   RealVector avg_rho_dot2_LH(num_cv_lev, false), avg_lambda(num_cv_lev, false);
-  varH.shapeUninitialized(numFunctions, num_cv_lev);
 
   // Initialize for pilot sample
   Sizet2DArray&       N_lf =      NLev[lf_form];
@@ -469,33 +462,30 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 			      sum_Hl_Ll[1], sum_Hl_Llm1[1], sum_Hlm1_Ll[1],
 			      sum_Hlm1_Llm1[1], sum_Hl_Hl[1], sum_Hl_Hlm1[1],
 			      sum_Hlm1_Hlm1[1], hf_lev_cost/lf_lev_cost, lev,
-			      N_hf[lev], var_Yl, rho_dot2_LH, eval_ratios_l);
+			      N_hf[lev], var_YH, rho_dot2_LH, eval_ratios_l);
 
-	  // defer averaging for Lambda
+	  // retain Lambda per QoI and level, but apply QoI-average where needed
 	  for (qoi=0; qoi<numFunctions; ++qoi) {
 	    r_lq = eval_ratios_l[qoi];
 	    Lambda(qoi,lev) = 1. - rho_dot2_LH(qoi,lev) * (r_lq - 1.) / r_lq;
 	  }
 	  avg_lambda[lev]      = average(Lambda[lev],      numFunctions);
 	  avg_rho_dot2_LH[lev] = average(rho_dot2_LH[lev], numFunctions);
-	  agg_var_hf_l         = sum(var_Yl[lev],          numFunctions);
 	}
 	else { // no LF model for this level; accumulate only multilevel
 	       // discrepancy sums (Hl is Yl) as in standard MLMC
 	  RealMatrix& sum_HH1 = sum_Hl_Hl[1];
-	  accumulate_ml_Ysums(sum_Hl, sum_HH1, lev, mu_H_hat,
-			      N_hf[lev]); // sum_Y for lev>0
+	  // accumulate H sums for lev = 0, Y sums for lev > 0
+	  accumulate_ml_Ysums(sum_Hl, sum_HH1, lev, mu_H_hat, N_hf[lev]);
 	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n"
 		 << sum_Hl[1] << sum_Hl[2] << sum_HH1;
 	  //raw_N_hf[lev] += numSamples;
 	  increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
-	  // aggregate Y variances across QoI for this level
-	  if (outputLevel >= DEBUG_OUTPUT)
-	    Cout << "variance of Y[" << lev << "]: ";
-	  agg_var_hf_l
-	    = aggregate_variance_Ysum(sum_Hl[1][lev], sum_HH1[lev], N_hf[lev]);
+	  // compute Y variances for this level and aggregate across QoI:
+	  variance_Ysum(sum_Hl[1][lev], sum_HH1[lev], N_hf[lev], var_YH[lev]);
 	}
+	agg_var_hf_l = sum(var_YH[lev], numFunctions);
       }
 
       // accumulate sum of sqrt's of estimator var * cost used in N_target
@@ -513,9 +503,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
       // will result in no additional variance reduction beyond MLMC.
       if (mlmfIter == 0 && !budget_constrained)
-	agg_estvar_iter0 += (lev < num_cv_lev) ?
-	  aggregate_mse_Yvar(var_Yl[lev], N_hf[lev]) :
-	  aggregate_mse_Ysum(sum_Hl[1][lev], sum_Hl_Hl[1][lev], N_hf[lev]);
+	agg_estvar_iter0 += aggregate_mse_Yvar(var_YH[lev], N_hf[lev]);
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -525,7 +513,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
     if (mlmfIter == 0) {
       // MLMC estimator variance for final estvar reporting is not aggregated
       // (reduction from control variate is applied subsequently)
-      compute_ml_estimator_variance(varH, N_hf, estVarIter0);//numHIter0 = N_hf;
+      compute_ml_estimator_variance(var_YH, N_hf, estVarIter0);//numHIter0=N_hf;
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
       if (!budget_constrained) {// eps^2 / 2 = est var * conv tol
 	eps_sq_div_2 = agg_estvar_iter0 * convergenceTol;
@@ -608,7 +596,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
     break;
   }
 
-  compute_mlmf_estimator_variance(varH, N_hf, Lambda, mlmfEstVar);
+  compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, mlmfEstVar);
 }
 
 
@@ -783,7 +771,7 @@ compute_mlmf_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
 		     Real sum_Ll_Ll, Real sum_Ll_Llm1, Real sum_Llm1_Llm1,
 		     Real sum_Hl_Ll, Real sum_Hl_Llm1, Real sum_Hlm1_Ll,
 		     Real sum_Hlm1_Llm1, Real sum_Hl_Hl, Real sum_Hl_Hlm1,
-		     Real sum_Hlm1_Hlm1, size_t N_shared, Real& var_YH,
+		     Real sum_Hlm1_Hlm1, size_t N_shared, Real& var_YHl,
 		     Real& rho_dot2_LH, Real& beta_dot, Real& gamma)
 {
   Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
@@ -819,11 +807,9 @@ compute_mlmf_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
                       - cov_Hl_Llm1 + cov_Hlm1_Llm1;
   Real cov_YHl_YLl = cov_Hl_Ll - cov_Hlm1_Ll - cov_Hl_Llm1 + cov_Hlm1_Llm1;
   Real var_YLldot  = gamma * (gamma * var_Ll - 2. * cov_Ll_Llm1) + var_Llm1;
-  Real var_YHl = var_Hl - 2. * cov_Hl_Hlm1 + var_Hlm1,
-       var_YLl = var_Ll - 2. * cov_Ll_Llm1 + var_Llm1,
+  var_YHl      = var_Hl - 2. * cov_Hl_Hlm1 + var_Hlm1; // var(H_l - H_lm1)
+  Real var_YLl = var_Ll - 2. * cov_Ll_Llm1 + var_Llm1, // var(L_l - L_lm1)
        theta   = cov_YHl_YLldot / cov_YHl_YLl, tau = var_YLldot / var_YLl;
-  // carry forwards:
-  var_YH   = var_Hl - 2. * cov_Hl_Hlm1 + var_Hlm1; // var(H_l - H_lm1)
   beta_dot = cov_YHl_YLldot / var_YLldot;
 
   // compute evaluation ratio which determines increment for LF samples
@@ -1490,16 +1476,16 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
   s << "<<<<< Variance for mean estimator:\n";
   size_t wpp7 = write_precision + 7;
   if (pilotMgmtMode != OFFLINE_PILOT)
-    s << "      Initial MLMC (pilot samples): " << std::setw(wpp7)
+    s << "      Initial MLMC (pilot samples):  " << std::setw(wpp7)
       << avg_mlmc_estvar0;
 
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
   //s << "\n  " << type << "   MC (" << std::setw(5)
   //  << (size_t)std::floor(average(N_hf) + .5) << " HF samples): "
   //  << std::setw(wpp7) << avg_mc_estvar
-  s << "\n" << type << " MLCVMC (sample profile):   "
+  s << "\n  " << type << " MLCVMC (sample profile): "
     << std::setw(wpp7) << avg_mlcvmc_estvar
-    << "\n  " << type << " Reduction ratio from pilot:  "
+    << "\n  " << type << " MLCVMC / pilot ratio:    "
     // report ratio of averages rather than average of ratios:
     << std::setw(wpp7) << avg_mlcvmc_estvar / avg_mlmc_estvar0 << '\n';
   //<< "\n Equivalent   MC (" << std::setw(5)
