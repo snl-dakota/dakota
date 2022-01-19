@@ -11,10 +11,10 @@ If you are having trouble orienting yourself in this new documentation, but you 
 
 * [Download](setupdakota.md)
 * Documentation
-  * [Get Started](setupdakota.md#installation)
+  * [Get Started](setupdakota.md)
   * [Publications](misc/publications.md)
   * [Release Notes](misc/releasenotes.rst)
-  * [Screencasts](misc/help.md#screencasts)
+  * [Screencasts](misc/help.md)
 * Community
   * [Get Help](misc/help.md)
   * [FAQs](misc/faq.md)

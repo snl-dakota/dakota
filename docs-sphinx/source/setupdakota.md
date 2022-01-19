@@ -21,7 +21,7 @@ Getting Started
 * **6.14.0** [Mac OSX](https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-Darwin.x86_64-cli.tar.gz) | [Windows](https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-Windows.x64-cli.zip) | [Linux (RHEL7)](https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-rhel7.x86_64-cli.tar.gz) | [Source](https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-src-gui.tar.gz)
 * **6.13.0** [Mac OSX](https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-Darwin.x86_64-gui.tar.gz) | [Windows](https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-Windows.x64-gui.zip) | [Linux (RHEL7)](https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-linux.x86_64-gui.tar.gz) | [Source](https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-src-gui.tar.gz)
 
-[**Release Notes**](https://google.com)
+[**Release Notes**](misc/releasenotes.md)
 
 ```{eval-rst}
 .. _installation:
