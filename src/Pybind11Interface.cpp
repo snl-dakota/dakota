@@ -98,6 +98,20 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
   // minimal error checking for now (or actually none ... but should be)
   int fail_code = 0;
 
+  // If a python callback has not yet been registered (eg via
+  // top-evel Dakota API) then try it here.  This is consistent with how
+  // PythonInterface does it, ie a lazy initialization. - RWH
+  if( !py11Active )
+  {
+    size_t pos = ac_name.find(":");
+    std::string module_name = ac_name.substr(0,pos);
+    std::string function_name = ac_name.substr(pos+1);
+
+    py::module_ calc = py::module_::import(module_name.c_str());
+    py::function callback_fn = calc.attr(function_name.c_str());
+    register_pybind11_callback_fn(callback_fn);
+  }
+
   assert( py11Active );
   assert( Py_IsInitialized() );
 
