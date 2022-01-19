@@ -38,8 +38,8 @@ As Dakota runs, it does the following:
 * Dakota writes the new variable values to a parameters file.
 * The analysis driver is called with two arguments – the Dakota parameters file, and the destination results file, where data will eventually be written out.
 * The analysis driver is responsible for preparing input to the simulation model. This step is referred to as **pre-processing.**
-* The simulation model is executed, using the pre-processed input data.
-* After the simulation model has finished running, the analysis driver is responsible for extracting quantities of interest from the simulation model's output (usually from console output, or from a log file) and preparing it for Dakota. This step is referred to as post-processing.
+* The simulation model is **executed**, using the pre-processed input data.
+* After the simulation model has finished running, the analysis driver is responsible for extracting quantities of interest from the simulation model's output (usually from console output, or from a log file) and preparing it for Dakota. This step is referred to as **post-processing**.
 * The analysis driver must write the response values (i.e. quantities of interest) from the simulation model to Dakota's destination result file.
 * Finally, Dakota collects the response values from the results file, and moves on to the next iteration, which starts this sequence over again.
 
