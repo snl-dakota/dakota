@@ -19,10 +19,10 @@ If you are having trouble orienting yourself in this new documentation, but you 
   * [Get Help](misc/help.md)
   * [FAQs](misc/faq.md)
   * [Mail Lists](misc/help.md)
-  * Training
+  * [Training](misc/help.md)
 * About
   * [Packages](developingdakota/tpls.rst)
-  * Team
+  * [Team](misc/aboutteam.md)
   * Contributors
   * License
   * Citing Dakota
@@ -81,9 +81,9 @@ If you are having trouble orienting yourself in this new documentation, but you 
 **Reference Manual**
 
 * Running Dakota
-  * Usage
-  * Examples
-  * Execution Phases
+  * [Usage](usingdakota/running/commandline.md)
+  * [Examples](usingdakota/running/runningexamples.md)
+  * [Execution Phases](usingdakota/running/executionphases.md)
   * Restarting Dakota Stuides
   * The Dakota Restart Utility
 * Dakota Input Specification
@@ -104,7 +104,7 @@ If you are having trouble orienting yourself in this new documentation, but you 
   * advanced_topics
   * packages
 * [Dakota HDF5 Output](usingdakota/output/hdf.md)
-* Test Problems
+* [Test Problems](usingdakota/examples/gettingstarted.md)
 
 **Developer's Manual**
 
