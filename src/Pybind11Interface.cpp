@@ -107,8 +107,8 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
     std::string module_name = ac_name.substr(0,pos);
     std::string function_name = ac_name.substr(pos+1);
 
-    py::module_ calc = py::module_::import(module_name.c_str());
-    py::function callback_fn = calc.attr(function_name.c_str());
+    py::module_ module = py::module_::import(module_name.c_str());
+    py::function callback_fn = module.attr(function_name.c_str());
     register_pybind11_callback_fn(callback_fn);
   }
 
