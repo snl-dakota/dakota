@@ -174,7 +174,7 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
         if (grads[i].size() != numVars) {
           throw(std::runtime_error("Pybind11 Direct Interface [\"fnGrads\"]: "
                                    "gradient dimension != # of variables "
-                                   "for response " + i));
+                                   "for response " + std::to_string(i)));
         }
         for (size_t j = 0; j < numVars; ++j) {
           fnGrads[i][j] = grads[i][j];
@@ -194,14 +194,14 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
           throw(std::runtime_error(
               "Pybind11 Direct Interface [\"fnHessians\"]: "
               "Hessian # of rows != # of variables "
-              "for response " + i));
+              "for response " + std::to_string(i)));
         }
         for (size_t j = 0; j < numVars; ++j) {
           if (hess[i][j].size() != numVars) {
             throw(std::runtime_error(
                 "Pybind11 Direct Interface [\"fnHessians\"]: "
                 "Hessian # of columns != # of variables "
-                "for response " + i));
+                "for response " + std::to_string(i)));
           }
           for (size_t k = 0; k <= j; ++k) {
             fnHessians[i](j, k) = hess[i][j][k];
