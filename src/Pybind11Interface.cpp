@@ -115,6 +115,7 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
   assert( py11Active );
   assert( Py_IsInitialized() );
 
+  py::list all_labels   = copy_array_to_pybind11<StringArray,String>(xAllLabels);
   py::list cv           = copy_array_to_pybind11(xC);
   py::list cv_labels    = copy_array_to_pybind11<StringMultiArray,String>(xCLabels);
   py::list div          = copy_array_to_pybind11(xDI);
@@ -132,6 +133,7 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
   py::dict kwargs = py::dict(
       "variables"_a             = numVars,
       "functions"_a             = numFns,
+      "all_labels"_a            = all_labels,
       "cv"_a                    = cv,
       "cv_labels"_a             = cv_labels,
       "div"_a                   = div,
@@ -147,15 +149,66 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
 
   py::dict ret_val = py11CallBack(kwargs);
 
-  for (auto item : ret_val)
-  {
+  for (auto item : ret_val) {
     auto key = item.first.cast<std::string>();
-    auto value = item.second.cast<std::vector<double>>();
     //Cout << "key: " << key << " = " << value[i] << std::endl;
 
-    // Hard-coded for a single response
-    if( key == "fns" )
-      fnVals[0] = value[0];
+    if (key == "fns") {
+      auto values = item.second.cast<std::vector<double>>();
+      if (values.size() != numFns) {
+        throw(std::runtime_error("Pybind11 Direct Interface [\"fns\"]: "
+                                 "incorrect size for # of functions"));
+      }
+      for (size_t i = 0; i < numFns; ++i) {
+        fnVals[i] = values[i];
+      }
+    }
+
+    else if (key == "fnGrads") {
+      auto grads = item.second.cast<std::vector<std::vector<double>>>();
+      if (grads.size() != numFns) {
+        throw(std::runtime_error("Pybind11 Direct Interface [\"fnGrads\"]: "
+                                 "incorrect size for # of functions"));
+      }
+      for (size_t i = 0; i < numFns; ++i) {
+        if (grads[i].size() != numVars) {
+          throw(std::runtime_error("Pybind11 Direct Interface [\"fnGrads\"]: "
+                                   "gradient dimension != # of variables "
+                                   "for response " + std::to_string(i)));
+        }
+        for (size_t j = 0; j < numVars; ++j) {
+          fnGrads[i][j] = grads[i][j];
+        }
+      }
+    }
+
+    else if (key == "fnHessians") {
+      auto hess = item.second.cast<
+          std::vector<std::vector<std::vector<double>>>>();
+      if (hess.size() != numFns) {
+        throw(std::runtime_error("Pybind11 Direct Interface [\"fnHessians\"]: "
+                                 "incorrect size for # of functions"));
+      }
+      for (size_t i = 0; i < numFns; ++i) {
+        if (hess[i].size() != numVars) {
+          throw(std::runtime_error(
+              "Pybind11 Direct Interface [\"fnHessians\"]: "
+              "Hessian # of rows != # of variables "
+              "for response " + std::to_string(i)));
+        }
+        for (size_t j = 0; j < numVars; ++j) {
+          if (hess[i][j].size() != numVars) {
+            throw(std::runtime_error(
+                "Pybind11 Direct Interface [\"fnHessians\"]: "
+                "Hessian # of columns != # of variables "
+                "for response " + std::to_string(i)));
+          }
+          for (size_t k = 0; k <= j; ++k) {
+            fnHessians[i](j, k) = hess[i][j][k];
+          }
+        }
+      }
+    }
   }
 
   return(fail_code);
