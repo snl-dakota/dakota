@@ -182,6 +182,7 @@ protected:
   StringMultiArray xDILabels; ///< discrete integer variable labels
   StringMultiArray xDRLabels; ///< discrete real variable labels
   StringMultiArray xDSLabels; ///< discrete string variable labels
+  StringArray      xAllLabels; ///< all variable labels in input spec order
 
   std::map<String, var_t>       varTypeMap; ///< map from variable label to enum
   std::map<String, driver_t> driverTypeMap; ///< map from driver name to enum

@@ -370,6 +370,9 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   numADSV = vars.adsv();
   numVars = numACV + numADIV + numADRV + numADSV;
 
+  // DTS: was not initialized in demo study when put in conditional below
+  xAllLabels = vars.ordered_labels();
+
   // Initialize copies of incoming data
   //directFnVars = vars; // shared rep
   if (localDataView & VARIABLES_MAP) {

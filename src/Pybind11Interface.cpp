@@ -115,6 +115,7 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
   assert( py11Active );
   assert( Py_IsInitialized() );
 
+  py::list all_labels   = copy_array_to_pybind11<StringArray,String>(xAllLabels);
   py::list cv           = copy_array_to_pybind11(xC);
   py::list cv_labels    = copy_array_to_pybind11<StringMultiArray,String>(xCLabels);
   py::list div          = copy_array_to_pybind11(xDI);
@@ -132,6 +133,7 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
   py::dict kwargs = py::dict(
       "variables"_a             = numVars,
       "functions"_a             = numFns,
+      "all_labels"_a            = all_labels,
       "cv"_a                    = cv,
       "cv_labels"_a             = cv_labels,
       "div"_a                   = div,
