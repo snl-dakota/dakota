@@ -152,12 +152,29 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
   for (auto item : ret_val)
   {
     auto key = item.first.cast<std::string>();
-    auto value = item.second.cast<std::vector<double>>();
     //Cout << "key: " << key << " = " << value[i] << std::endl;
 
     // Hard-coded for a single response
     if( key == "fns" )
+    {
+      auto value = item.second.cast<std::vector<double>>();
       fnVals[0] = value[0];
+    }
+    else if( key == "fnGrads" )
+    {
+      auto grads = item.second.cast<std::vector<std::vector<double>>>();
+      for( size_t i=0; i<grads.size(); ++i )
+        for( size_t j=0; j<grads[i].size(); ++j )
+          fnGrads[i][j] = grads[i][j];
+    }
+    else if( key == "fnHessians" )
+    {
+      auto hess = item.second.cast<std::vector<std::vector<std::vector<double>>>>();
+      for( size_t i=0; i<hess.size(); ++i )
+        for( size_t j=0; j<hess[i].size(); ++j )
+          for( size_t k=0; k<=j; ++k )
+            fnHessians[i](j,k) = hess[i][j][k];
+    }
   }
 
   return(fail_code);
