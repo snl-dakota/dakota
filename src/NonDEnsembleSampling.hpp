@@ -171,6 +171,9 @@ protected:
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
 
+  /// initial estimator variance from shared pilot (no CV reduction)
+  RealVector estVarIter0;
+
   /// if defined, export each of the sample increments in ML, CV, MLCV
   /// using tagged tabular files
   bool exportSampleSets;

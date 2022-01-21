@@ -211,8 +211,6 @@ protected:
   /// squared Pearson correlations among approximations and truth
   RealMatrix rho2LH;
 
-  /// initial estimator variance from shared pilot (no CV reduction)
-  RealVector estVarIter0;
   /// number of successful pilot evaluations of HF truth model (exclude faults)
   SizetArray numHIter0;
   /// final estimator variance (optimizer result), averaged across QoI

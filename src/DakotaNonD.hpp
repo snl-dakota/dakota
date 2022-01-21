@@ -207,6 +207,9 @@ protected:
   /// move current sampling level to a new target
   size_t one_sided_delta(const SizetArray& current, const RealVector& targets,
 			 size_t power);
+  /// compute a one-sided sample increment for multilevel methods to
+  /// move current sampling level to a new target
+  size_t one_sided_delta(const SizetArray& current, Real target, size_t power);
   //size_t one_sided_delta(const Sizet2DArray& current,
   //			   const RealMatrix& targets, size_t power);
 
@@ -459,6 +462,34 @@ one_sided_delta(const SizetArray& current, const RealVector& targets,
   }
   }
   */
+
+  return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
+}
+
+
+inline size_t NonD::
+one_sided_delta(const SizetArray& current, Real target,	size_t power)
+{
+  size_t i, len = current.size();
+  Real diff, pow_mean = 0.;
+  switch (power) {
+  case 1: // average difference same as difference of averages
+    for (i=0; i<len; ++i)
+      pow_mean += target - (Real)current[i]; // Note: not one-sided 
+    pow_mean /= len;
+    break;
+  case SZ_MAX: // find max difference
+    for (i=0; i<len; ++i) {
+      diff = target - (Real)current[i];
+      if (diff > pow_mean) pow_mean = diff;
+    }
+    break;
+  default:
+    Cerr << "Error: power " << power << " not supported in NonD::"
+	 << "one_sided_delta()." << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
 
   return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
 }

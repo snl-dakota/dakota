@@ -271,7 +271,10 @@ private:
   //
 
   //RealMatrix varYH;
-  RealVector mlmfEstVar;
+
+  /// core_run() can delegate execution to either ML or CV if hierarchy
+  /// does not support MLCV; in this case output must also be delegated
+  short delegateMethod;
 };
 
 

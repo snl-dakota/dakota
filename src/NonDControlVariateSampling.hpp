@@ -91,8 +91,6 @@ protected:
   // normal termination based on l1_norm(delta_N_hf) = 0.
   //bool finalCVRefinement;
 
-  RealVector estVarIter0;
-
 private:
 
   //

@@ -202,8 +202,8 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
     switch (pilotMgmtMode) {
     case PILOT_PROJECTION:
       print_multilevel_evaluation_summary(s, NLev, "Projected");
-      //s << "<<<<< Equivalent number of high fidelity evaluations: "
-      //  << equivHFEvals << '\n';
+      s << "<<<<< Equivalent number of high fidelity evaluations: "
+        << equivHFEvals << '\n';
       print_variance_reduction(s);
 
       //s << "\nStatistics based on multilevel sample set:\n";
