@@ -133,7 +133,7 @@ protected:
   void push_level_mappings(const RealVector& level_maps, size_t offset);
 
   /// configure fidelity/level counts from model hierarchy
-  void configure_sequence(size_t& num_steps, size_t& fixed_index,
+  void configure_sequence(size_t& num_steps, size_t& secondary_index,
 			  short& seq_type);
   /// extract cost estimates from model hierarchy (forms or resolutions)
   void configure_cost(unsigned short num_steps, bool multilevel,
@@ -150,7 +150,7 @@ protected:
   /// update the relevant slice of N_l_3D from the final 2D multilevel
   /// or 2D multifidelity sample profile
   void inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
-			     size_t fixed_index, Sizet3DArray& N_l_3D);
+			     size_t secondary_index, Sizet3DArray& N_l_3D);
 
   /// resizes finalStatistics::functionGradients based on finalStatistics ASV
   void resize_final_statistics_gradients();

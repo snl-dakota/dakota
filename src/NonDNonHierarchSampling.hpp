@@ -84,8 +84,7 @@ protected:
   // seq_type defines the active dimension for a model sequence.
   //void configure_indices(size_t group,size_t form,size_t lev,short seq_type);
 
-  void assign_active_key(size_t num_steps, size_t secondary_index,
-			 bool multilev);
+  void assign_active_key(bool multilev);
 
   void initialize_sums(IntRealMatrixMap& sum_L_baseline,
 		       IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LH,

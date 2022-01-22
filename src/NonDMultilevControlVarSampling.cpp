@@ -89,6 +89,7 @@ void NonDMultilevControlVarSampling::core_run()
 
   // prefer ML over MF if both available
   //iteratedModel.multifidelity_precedence(false);
+  sequenceType = Pecos::RESOLUTION_LEVEL_SEQUENCE;
 
   // ML performed on HF + CV applied per level using LF if available:
   // perform MLMC on HF model and bind 1:min(num_hf,num_lf) LF control
@@ -113,7 +114,6 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
-  short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
   size_t lev = SZ_MAX; // updated in loop below
   active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
@@ -161,7 +161,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
     sum_sqrt_var_cost = 0.;
     for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
-      configure_indices(group, hf_form, lev, seq_type);
+      configure_indices(group, hf_form, lev, sequenceType);
       hf_lev_cost = level_cost(hf_cost, lev);
 
       // set the number of current samples from the defined increment
@@ -189,7 +189,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
 	  // corresponding variable values for the new model form.
-	  configure_indices(group, lf_form, lev, seq_type);
+	  configure_indices(group, lf_form, lev, sequenceType);
 	  lf_lev_cost = level_cost(lf_cost, lev);
 	  // compute allResp w/ LF model form reusing allVars from MLMC step
 	  evaluate_parameter_sets(iteratedModel, true, false);
@@ -292,7 +292,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   case ONLINE_PILOT: case OFFLINE_PILOT: {
     // All CV lf_increment() calls now follow convergence of ML iteration:
     for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-      configure_indices(group, lf_form, lev, seq_type);
+      configure_indices(group, lf_form, lev, sequenceType);
       // execute additional LF sample increment
       if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
 		       mlmfIter, lev)) {
@@ -354,7 +354,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
-  short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
+  sequenceType = Pecos::RESOLUTION_LEVEL_SEQUENCE;
   size_t lev = SZ_MAX; // updated in loop below
   active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
@@ -413,7 +413,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
     sum_sqrt_var_cost = 0.;
     for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
-      configure_indices(group, hf_form, lev, seq_type);
+      configure_indices(group, hf_form, lev, sequenceType);
       hf_lev_cost = level_cost(hf_cost, lev);
 
       // set the number of current samples from the defined increment
@@ -441,7 +441,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
 	  // corresponding variable values for the new model form.
-	  configure_indices(group, lf_form, lev, seq_type);
+	  configure_indices(group, lf_form, lev, sequenceType);
 	  lf_lev_cost = level_cost(lf_cost, lev);
 	  // eval allResp w/ LF model reusing allVars from ML step above
 	  evaluate_parameter_sets(iteratedModel, true, false);
@@ -553,7 +553,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
     // > Avoids early mis-estimation of LF increments
     // > Parallel scheduling benefits from one final large batch of refinements
     for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-      configure_indices(group, lf_form, lev, seq_type);
+      configure_indices(group, lf_form, lev, sequenceType);
 
       // now execute additional LF sample increment
       if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],

@@ -86,9 +86,6 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   if (err_flag)
     abort_handler(METHOD_ERROR);
 
-  if (pilotMgmtMode == PILOT_PROJECTION)
-    maxIterations = 0; //finalCVRefinement = false;
-
   pilotSamples = problem_db.get_sza("method.nond.pilot_samples");
   if ( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples),
 		     [](int i){ return i > 0; }) ) {

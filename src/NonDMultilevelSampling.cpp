@@ -80,8 +80,8 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     each of which may contain multiple discretization levels. */
 void NonDMultilevelSampling::core_run()
 {
-  // prefer ML over MF if both available
-  iteratedModel.multifidelity_precedence(false);
+  iteratedModel.multifidelity_precedence(false);// prefer ML to MF if both avail
+  configure_sequence(numSteps, secondaryIndex, sequenceType);
 
   if (true)//(subIteratorFlag)
     multilevel_mc_Qsum(); // w/ error est, unbiased central moments
@@ -125,50 +125,49 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   // 2. Better: select N_l based on convergence in aggregated variance.
 
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE),
+  size_t form, lev;
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE),
     budget_constrained = (maxFunctionEvals != SZ_MAX);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;
-  if (multilev) form = secondary_index;
-  else          lev  = secondary_index;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
 
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost, agg_var(num_steps);
-  configure_cost(num_steps, multilev, cost);
+  RealVector cost, agg_var(numSteps);
+  configure_cost(numSteps, multilev, cost);
   Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar0 = 0., lev_cost, budget,
-    ref_cost = cost[num_steps-1]; // HF cost (1 level)
+    ref_cost = cost[numSteps-1]; // HF cost (1 level)
 
   if (budget_constrained) budget = (Real)maxFunctionEvals * ref_cost;
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (sum_Y[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
   // estimator (YY[i] = (Y^i)^2 for i=1).
-  IntRealMatrixMap sum_Y; RealMatrix sum_YY(numFunctions, num_steps);
-  initialize_ml_Ysums(sum_Y, num_steps);
-  RealMatrix var_Y(numFunctions, num_steps, false);
+  IntRealMatrixMap sum_Y; RealMatrix sum_YY(numFunctions, numSteps);
+  initialize_ml_Ysums(sum_Y, numSteps);
+  RealMatrix var_Y(numFunctions, numSteps, false);
 
   // Initialize for pilot sample
   SizetArray delta_N_l;
-  load_pilot_sample(pilotSamples, num_steps, delta_N_l);
+  load_pilot_sample(pilotSamples, numSteps, delta_N_l);
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
-  //SizetArray raw_N_l(num_steps, 0);
-  RealVectorArray mu_hat(num_steps);
+  //SizetArray raw_N_l(numSteps, 0);
+  RealVectorArray mu_hat(numSteps);
   //Sizet2DArray& N_l = NLev[form]; // slice only valid for ML
   // define a new 2D array and then post back to NLev at end
-  Sizet2DArray N_l(num_steps);
-  for (step=0; step<num_steps; ++step)
+  Sizet2DArray N_l(numSteps);
+  for (step=0; step<numSteps; ++step)
     N_l[step].assign(numFunctions, 0);
 
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations) {
 
     sum_sqrt_var_cost = 0.;
-    for (step=0; step<num_steps; ++step) { // step is reference to lev
+    for (step=0; step<numSteps; ++step) { // step is reference to lev
 
-      configure_indices(step, form, lev, seq_type); // step,form,lev as size_t
+      configure_indices(step, form, lev, sequenceType); // step,form,lev as size_t
       lev_cost = level_cost(cost, step); // raw cost (not equiv HF)
 
       // set the number of current samples from the defined increment
@@ -223,7 +222,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     Real N_target, fact = (budget_constrained) ?
       budget / sum_sqrt_var_cost :      // budget constraint
       sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint
-    for (step=0; step<num_steps; ++step) {
+    for (step=0; step<numSteps; ++step) {
       // Equation 3.9 in CTR Annual Research Briefs:
       // "A multifidelity control variate approach for the multilevel Monte 
       // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
@@ -244,7 +243,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     RealMatrix &sum_Y1 = sum_Y[1], &sum_Y2 = sum_Y[2],
                &sum_Y3 = sum_Y[3], &sum_Y4 = sum_Y[4];
     for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      for (step=0; step<num_steps; ++step) {
+      for (step=0; step<numSteps; ++step) {
 	size_t Nlq = N_l[step][qoi];
 	Q_raw_mom(qoi,0) += sum_Y1(qoi,step) / Nlq;
 	Q_raw_mom(qoi,1) += sum_Y2(qoi,step) / Nlq;
@@ -263,7 +262,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 
   compute_ml_estimator_variance(var_Y, N_l, estVar);
   // post final N_l back to NLev (needed for final eval summary)
-  inflate_final_samples(N_l, multilev, secondary_index, NLev);
+  inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
 }
 
 
@@ -280,29 +279,28 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   }
 
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE),
+  size_t form, lev;
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE),
     budget_constrained = (maxFunctionEvals != SZ_MAX);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;
-  if (multilev) form = secondary_index;
-  else          lev  = secondary_index;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
 
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost;  configure_cost(num_steps, multilev, cost);
-  Real eps_sq_div_2, sum_sqrt_var_cost, lev_cost, ref_cost = cost[num_steps-1];
+  RealVector cost;  configure_cost(numSteps, multilev, cost);
+  Real eps_sq_div_2, sum_sqrt_var_cost, lev_cost, ref_cost = cost[numSteps-1];
 
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector agg_var(num_steps), agg_var_of_var(num_steps),
+  RealVector agg_var(numSteps), agg_var_of_var(numSteps),
     estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions),
     sum_sqrt_var_cost_qoi(numFunctions),
     sum_sqrt_var_cost_var_qoi(numFunctions),
     sum_sqrt_var_cost_mean_qoi(numFunctions), agg_var_l_qoi(numFunctions),
-    level_cost_vec(num_steps);
-  RealMatrix agg_var_qoi(numFunctions, num_steps),
-    agg_var_mean_qoi(numFunctions, num_steps),
-    agg_var_var_qoi(numFunctions, num_steps);
+    level_cost_vec(numSteps);
+  RealMatrix agg_var_qoi(numFunctions, numSteps),
+    agg_var_mean_qoi(numFunctions, numSteps),
+    agg_var_var_qoi(numFunctions, numSteps);
 
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -310,20 +308,20 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   // estimator (YY[i] = (Y^i)^2 for i=1).
   IntRealMatrixMap sum_Ql, sum_Qlm1;
   IntIntPairRealMatrixMap sum_QlQlm1;
-  initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, num_steps);
-  RealMatrix var_Y(numFunctions, num_steps, false);
+  initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps);
+  RealMatrix var_Y(numFunctions, numSteps, false);
 
   // Initialize for pilot sample
   SizetArray delta_N_l;
-  load_pilot_sample(pilotSamples, num_steps, delta_N_l);
+  load_pilot_sample(pilotSamples, numSteps, delta_N_l);
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
-  //SizetArray raw_N_l(num_steps, 0);
-  RealVectorArray mu_hat(num_steps);
+  //SizetArray raw_N_l(numSteps, 0);
+  RealVectorArray mu_hat(numSteps);
   //Sizet2DArray& N_l = NLev[form]; // *** VALID ONLY FOR ML
   // define a new 2D array and then post back to NLev at end
-  Sizet2DArray N_l(num_steps);
-  for (step=0; step<num_steps; ++step)
+  Sizet2DArray N_l(numSteps);
+  for (step=0; step<numSteps; ++step)
     N_l[step].assign(numFunctions, 0);
   IntIntPair pr11(1, 1);
 
@@ -334,9 +332,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations) {
 
-    for (step=0; step<num_steps; ++step) {
+    for (step=0; step<numSteps; ++step) {
 
-      configure_indices(step, form, lev, seq_type);
+      configure_indices(step, form, lev, sequenceType);
       lev_cost = level_cost_vec[step] = level_cost(cost, step);
 
       // set the number of current samples from the defined increment
@@ -396,7 +394,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 
   compute_ml_estimator_variance(var_Y, N_l, estVar);
   // post final N_l back to NLev (needed for final eval summary)
-  inflate_final_samples(N_l, multilev, secondary_index, NLev);
+  inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
 }
 
 
