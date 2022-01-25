@@ -83,10 +83,10 @@ void NonDMultilevelSampling::core_run()
   iteratedModel.multifidelity_precedence(false);// prefer ML to MF if both avail
   configure_sequence(numSteps, secondaryIndex, sequenceType);
 
-  if (true)//(subIteratorFlag)
-    multilevel_mc_Qsum(); // w/ error est, unbiased central moments
-  else
-    multilevel_mc_Ysum(); // lighter weight
+  //if (true)//(subIteratorFlag)
+  multilevel_mc_Qsum(); // w/ error est, unbiased central moments
+  //else
+  //  multilevel_mc_Ysum(); // lighter weight
 }
 
 
@@ -154,7 +154,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   //SizetArray raw_N_l(numSteps, 0);
-  RealVectorArray mu_hat(numSteps);
   //Sizet2DArray& N_l = NLev[form]; // slice only valid for ML
   // define a new 2D array and then post back to NLev at end
   Sizet2DArray N_l(numSteps);
@@ -167,7 +166,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     sum_sqrt_var_cost = 0.;
     for (step=0; step<numSteps; ++step) { // step is reference to lev
 
-      configure_indices(step, form, lev, sequenceType); // step,form,lev as size_t
+      configure_indices(step, form, lev, sequenceType);
       lev_cost = level_cost(cost, step); // raw cost (not equiv HF)
 
       // set the number of current samples from the defined increment
@@ -183,8 +182,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
-	//if (mlmfIter == 0) accumulate_offsets(mu_hat[lev]);
-	accumulate_ml_Ysums(sum_Y, sum_YY, lev, mu_hat[step], N_l[step]);
+	accumulate_ml_Ysums(sum_Y, sum_YY, lev, N_l[step]);
 	if (outputLevel == DEBUG_OUTPUT)
 	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n" << sum_Y[1]
 	       << sum_Y[2] << sum_Y[3] << sum_Y[4] << sum_YY << std::endl;
@@ -317,7 +315,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   //SizetArray raw_N_l(numSteps, 0);
-  RealVectorArray mu_hat(numSteps);
   //Sizet2DArray& N_l = NLev[form]; // *** VALID ONLY FOR ML
   // define a new 2D array and then post back to NLev at end
   Sizet2DArray N_l(numSteps);
@@ -347,7 +344,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(step);
-	accumulate_sums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, mu_hat, N_l);
+	accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_l[step]);
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n" << sum_Ql[1]
+	       << sum_Ql[2] << sum_Qlm1[1] << sum_Qlm1[2] << std::endl;
 	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
 
 	variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
@@ -450,23 +450,6 @@ void NonDMultilevelSampling::evaluate_ml_sample_increment(unsigned short step)
 
 
 void NonDMultilevelSampling::
-accumulate_sums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		IntIntPairRealMatrixMap& sum_QlQlm1, const size_t step,
-		const RealVectorArray& offset, Sizet2DArray& N_l)
-{
-  // process allResponses: accumulate new samples for each qoi and
-  // update number of successful samples for each QoI
-  //if (mlmfIter == 0) accumulate_offsets(mu_hat[step]);
-  accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
-                      offset[step], N_l[step]);
-
-  if (outputLevel == DEBUG_OUTPUT)
-    Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n" << sum_Ql[1]
-         << sum_Ql[2] << sum_Qlm1[1] << sum_Qlm1[2] << std::endl;
-}
-
-
-void NonDMultilevelSampling::
 initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev)
 {
   // sum_* are running sums across all increments
@@ -506,20 +489,18 @@ initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
 
 void NonDMultilevelSampling::
-accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
-		    const RealVector& offset, SizetArray& num_Q)
+accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
 {
   using std::isfinite;
   Real q_l, q_l_prod;
   int ord, active_ord; size_t qoi;
   IntRespMCIter r_it; IntRMMIter q_it;
-  bool os = !offset.empty();
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const RealVector& fn_vals = r_it->second.function_values();
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
-      q_l_prod = q_l = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+      q_l_prod = q_l = fn_vals[qoi];
 
       if (isfinite(q_l)) { // neither NaN nor +/-Inf
 	q_it = sum_Q.begin(); ord = q_it->first;
@@ -544,16 +525,15 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
 void NonDMultilevelSampling::
 accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		    IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
-		    const RealVector& offset, SizetArray& num_Q)
+		    SizetArray& num_Q)
 {
   if (lev == 0)
-    accumulate_ml_Qsums(sum_Ql, lev, offset, num_Q);
+    accumulate_ml_Qsums(sum_Ql, lev, num_Q);
   else {
     using std::isfinite;
     Real q_l, q_lm1, q_l_prod, q_lm1_prod, qq_prod;
     int l1_ord, l2_ord, active_ord; size_t qoi;
     IntRespMCIter r_it; IntRMMIter l1_it, l2_it; IntIntPair pr;
-    bool os = !offset.empty();
 
     for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
@@ -561,10 +541,8 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       for (qoi=0; qoi<numFunctions; ++qoi) {
 	// response mode AGGREGATED_MODELS orders HF (active model key)
 	// followed by LF (previous/decremented model key)
-	q_l_prod   = q_l   = (os) ?  fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
-	q_lm1_prod = q_lm1 = (os) ?
-	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
-	  fn_vals[qoi+numFunctions];
+	q_l_prod   = q_l   = fn_vals[qoi];
+	q_lm1_prod = q_lm1 = fn_vals[qoi+numFunctions];
 
 	// sync sample counts for Ql and Qlm1
 	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
@@ -612,20 +590,19 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
 void NonDMultilevelSampling::
 accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
-		    const RealVector& offset, SizetArray& num_Y)
+		    SizetArray& num_Y)
 {
   using std::isfinite;
   Real lf_fn, lf_prod;
   int y_ord, active_ord; size_t qoi;
   IntRespMCIter r_it; IntRMMIter y_it;
-  bool os = !offset.empty();
 
   if (lev == 0) {
     for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	lf_prod = lf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+	lf_prod = lf_fn = fn_vals[qoi];
 	if (isfinite(lf_fn)) { // neither NaN nor +/-Inf
 	  // add to sum_YY: running sums across all sample increments
 	  sum_YY(qoi,lev) += lf_prod * lf_prod;
@@ -646,21 +623,19 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
     }
   }
   else {
-    Real hf_fn, hf_prod;
+    Real hf_fn, hf_prod, delta_prod;
     for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
 	// response mode AGGREGATED_MODELS orders HF (active model key)
 	// followed by LF (previous/decremented model key)
-	hf_prod = hf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
-	lf_prod = lf_fn = (os) ?
-	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
-	  fn_vals[qoi+numFunctions];
+	hf_prod = hf_fn = fn_vals[qoi];
+	lf_prod = lf_fn = fn_vals[qoi+numFunctions];
 	if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
 
 	  // add to sum_YY: running sums across all sample increments
-	  Real delta_prod = hf_prod - lf_prod;
+	  delta_prod = hf_prod - lf_prod;
 	  sum_YY(qoi,lev) += delta_prod * delta_prod; // (HF^p-LF^p)^2 for p=1
 
 	  // add to sum_Y: running sums across all sample increments
@@ -679,6 +654,55 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
     }
   }
 }
+
+
+void NonDMultilevelSampling::
+accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY, size_t lev,
+		    SizetArray& num_Y)
+{
+  using std::isfinite;
+  Real lf_fn, lf_prod;  size_t qoi;  IntRespMCIter r_it;
+
+  if (lev == 0) {
+    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+      const RealVector& fn_vals = r_it->second.function_values();
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	lf_prod = lf_fn = fn_vals[qoi];
+	if (isfinite(lf_fn)) { // neither NaN nor +/-Inf
+	  ++num_Y[qoi];
+	  sum_Y(qoi,lev)  += lf_prod;           // add to sum_Y
+	  sum_YY(qoi,lev) += lf_prod * lf_prod;	// add to sum_YY
+	  lf_prod *= lf_fn;
+	}
+      }
+    }
+  }
+  else {
+    Real hf_fn, hf_prod, delta_prod;
+    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+      const RealVector& fn_vals = r_it->second.function_values();
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+
+	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// followed by LF (previous/decremented model key)
+	hf_prod = hf_fn = fn_vals[qoi];
+	lf_prod = lf_fn = fn_vals[qoi+numFunctions];
+	if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
+	  ++num_Y[qoi];
+
+	  // add to sum_Y
+	  sum_Y(qoi,lev) += hf_prod - lf_prod; // HF^p-LF^p
+	  // add to sum_YY
+	  delta_prod = hf_prod - lf_prod;
+	  sum_YY(qoi,lev) += delta_prod * delta_prod; // (HF^p-LF^p)^2 for p=1
+
+	  hf_prod *= hf_fn; lf_prod *= lf_fn;
+	}
+      }
+    }
+  }
+}
+
 
 void NonDMultilevelSampling::
 aggregate_variance_target_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 

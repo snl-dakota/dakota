@@ -82,12 +82,15 @@ protected:
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
-			   size_t lev, const RealVector& offset,
-			   SizetArray& num_Y);
+			   size_t lev, SizetArray& num_Y);
+  /// update accumulators for multilevel telescoping running sums
+  /// using set of model evaluations within allResponses
+  void accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY,
+			   size_t lev, SizetArray& num_Y);
   /// update running QoI sums for one model (sum_Q) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
-			   const RealVector& offset, SizetArray& num_Q);
+			   SizetArray& num_Q);
 
   /// compute variance scalar from sum accumulators
   Real variance_Ysum(Real sum_Y, Real sum_YY, size_t Nlq);
@@ -148,21 +151,15 @@ private:
   void initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t num_lev);
 
-  /// accumulate initial approximation to mean vector, for use as offsets in
-  /// subsequent accumulations
-  void accumulate_offsets(RealVector& mu);
-
-  /// update running QoI sums for one model (sum_Q) using set of model
-  /// evaluations within allResponses; used for level 0 from other accumulators
-  void accumulate_sums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		       IntIntPairRealMatrixMap& sum_QlQlm1, const size_t step,
-		       const RealVectorArray& offset, Sizet2DArray& N_l);
+  // accumulate initial approximation to mean vector, for use as offsets in
+  // subsequent accumulations
+  //void accumulate_offsets(RealVector& mu);
 
   /// update running QoI sums for two models (sum_Ql, sum_Qlm1) using set of
   /// model evaluations within allResponses
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
-			   const RealVector& offset, SizetArray& num_Q);
+			   SizetArray& num_Q);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
   void compute_ml_equivalent_cost(const SizetArray& raw_N_l,
@@ -706,6 +703,7 @@ compute_ml_equivalent_cost(const SizetArray& raw_N_l, const RealVector& cost)
 }
 
 
+/*
 inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
 {
   IntRespMCIter r_it = allResponses.begin();
@@ -722,6 +720,7 @@ inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
     mu[qoi] = sum / num_samp;
   }
 }
+*/
 
 
 inline Real NonDMultilevelSampling::var_of_var_ml_l0(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1,

@@ -69,6 +69,10 @@ private:
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Q (LH correlations for QoI)
   void multilevel_control_variate_mc_Qcorr();
+  /// Qcorr approach using a pilot sample treated as separate offline cost
+  void multilevel_control_variate_mc_offline_pilot();
+  /// Qcorr approach using projecting performance from a pilot sample
+  void multilevel_control_variate_mc_pilot_projection();
 
   /// compute the equivalent number of HF evaluations (includes any sim faults)
   void compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
@@ -213,11 +217,11 @@ private:
   /// using set of model evaluations within allResponses
   void accumulate_mlmf_Qsums(IntRealMatrixMap& sum_Ql,
 			     IntRealMatrixMap& sum_Qlm1, size_t lev,
-			     const RealVector& offset, SizetArray& num_Q);
+			     SizetArray& num_Q);
   /// update running discrepancy sums for one model (sum_Y) using
   /// set of model evaluations within allResponses
   void accumulate_mlmf_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
-			     const RealVector& offset, SizetArray& num_Y);
+			     SizetArray& num_Y);
   /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
   /// and sum_HH) from set of low/high fidelity model evaluations within
   /// {lf,hf}_resp_map; used for level 0 from other accumulators
@@ -227,9 +231,16 @@ private:
 			     IntRealMatrixMap& sum_L_refined,
 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
 			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
-			     size_t lev, const RealVector& lf_offset,
-			     const RealVector& hf_offset, SizetArray& num_L,
-			     SizetArray& num_H);
+			     size_t lev, SizetArray& num_L, SizetArray& num_H);
+  /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
+  /// and sum_HH) from set of low/high fidelity model evaluations within
+  /// {lf,hf}_resp_map; used for level 0 from other accumulators
+  void accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
+			     const IntResponseMap& hf_resp_map,
+			     RealMatrix& sum_L_shared,RealMatrix& sum_L_refined,
+			     RealMatrix& sum_H,  RealMatrix& sum_LL,
+			     RealMatrix& sum_LH, RealMatrix& sum_HH,
+			     size_t lev, SizetArray& N_shared);
   /// update running two-level discrepancy sums for two models (sum_L,
   /// sum_H, sum_LL, sum_LH, and sum_HH) from set of low/high fidelity
   /// model evaluations within {lf,hf}resp_map
@@ -239,9 +250,7 @@ private:
 			     IntRealMatrixMap& sum_L_refined,
 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
 			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
-			     size_t lev, const RealVector& lf_offset,
-			     const RealVector& hf_offset,
-			     SizetArray& num_L, SizetArray& num_H);
+			     size_t lev, SizetArray& num_L, SizetArray& num_H);
   /// update running QoI sums for two models and two levels from set
   /// of low/high fidelity model evaluations within {lf,hf}_resp_map
   void accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
@@ -262,9 +271,28 @@ private:
 			     IntRealMatrixMap& sum_Hl_Hl,
 			     IntRealMatrixMap& sum_Hl_Hlm1,
 			     IntRealMatrixMap& sum_Hlm1_Hlm1, size_t lev,
-			     const RealVector& lf_offset,
-			     const RealVector& hf_offset,
 			     SizetArray& num_L, SizetArray& num_H);
+  /// update running QoI sums for two models and two levels from set
+  /// of low/high fidelity model evaluations within {lf,hf}_resp_map
+  void accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
+			     const IntResponseMap& hf_resp_map,
+			     RealMatrix& sum_Ll,
+			     RealMatrix& sum_Llm1,
+			     RealMatrix& sum_Ll_refined,
+			     RealMatrix& sum_Llm1_refined,
+			     RealMatrix& sum_Hl,
+			     RealMatrix& sum_Hlm1,
+			     RealMatrix& sum_Ll_Ll,
+			     RealMatrix& sum_Ll_Llm1,
+			     RealMatrix& sum_Llm1_Llm1,
+			     RealMatrix& sum_Hl_Ll,
+			     RealMatrix& sum_Hl_Llm1,
+			     RealMatrix& sum_Hlm1_Ll,
+			     RealMatrix& sum_Hlm1_Llm1,
+			     RealMatrix& sum_Hl_Hl,
+			     RealMatrix& sum_Hl_Hlm1,
+			     RealMatrix& sum_Hlm1_Hlm1, size_t lev,
+			     SizetArray& N_shared);
 
   //
   //- Heading: Data
