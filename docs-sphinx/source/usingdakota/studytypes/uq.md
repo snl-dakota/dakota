@@ -1,2 +1,0 @@
-Uncertainty Quantification Capabilities
-=======================================

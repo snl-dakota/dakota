@@ -236,9 +236,9 @@ Video Resources
 __ https://dakota.sandia.gov/sites/default/files/training/interfacing-151215.zip
 
 .. |Training1| image:: img/InterfacingTrainingPart1.png
-                  :alt: Interfacing a User's Simulation to Dakota (Part 1)
+                 :alt: Interfacing a User's Simulation to Dakota (Part 1)
 .. _Training1: http://digitalops.sandia.gov/Mediasite/Play/82fa69553ac64d9b997a59316100d23a1d
 
 .. |Training2| image:: img/InterfacingTrainingPart2.png
-                :alt: Interfacing a User's Simulation to Dakota (Part 2)
+                 :alt: Interfacing a User's Simulation to Dakota (Part 2)
 .. _Training2: http://digitalops.sandia.gov/Mediasite/Play/5c5f47304b934159a40347f3ba74ad851d
