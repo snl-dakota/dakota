@@ -24,7 +24,7 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = '20200619.0'
+__version__ = '20210218.1'
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
@@ -80,11 +80,13 @@ CLI_MODE = False # Reset in the if __name__ == '__main__'
 ###########################################################################
 ############################## Main Functions #############################
 ###########################################################################
-def pyprepro(tpl,include_files=None,
+def pyprepro(tpl,
+             include_files=None,
              json_include=None,
              python_include=None,
              dakota_include=None,
-             env=None,immutable_env=None,fmt='%0.10g',
+             env=None,immutable_env=None,
+             fmt='%0.10g',
              code='%',code_block='{% %}',inline='{ }',
              warn=True,output=None):
     """
@@ -458,6 +460,9 @@ class IncludeSyntaxError(Exception):
 class BlockCharacterError(Exception):
     pass
 
+class EmptyInlineError(ValueError):
+    pass
+
 def _check_block_syntax():
     """
     Confirm that the open and closing blocks inner-most characters
@@ -499,15 +504,12 @@ def _formatter(*obj):
     #   {% include('file') %}
     # and NOT
     #   {include('file')}
-    try:
-        if obj['__includesentinel']:
-            msg = ['Incorrect include syntax. Use "code-block" syntax, not "inline"']
-            msg.append("  e.g.: BLOCK_START include('include_file.inp') BLOCK_CLOSE")
-            msg = _mult_replace('\n'.join(msg),BLOCK_START=BLOCK_START,BLOCK_CLOSE=BLOCK_CLOSE)
-            raise IncludeSyntaxError(msg)
-    except (KeyError,AttributeError,TypeError):
-        pass
-        
+    if getattr(obj,'includesentinel',False):
+        msg = ['Incorrect include syntax. Use "code-block" syntax, not "inline"']
+        msg.append("  e.g.: BLOCK_START include('include_file.inp') BLOCK_CLOSE")
+        msg = _mult_replace('\n'.join(msg),BLOCK_START=BLOCK_START,BLOCK_CLOSE=BLOCK_CLOSE)
+        raise IncludeSyntaxError(msg)
+
     if obj is None:
         return ''     
     if isinstance(obj,Immutable):
@@ -553,7 +555,8 @@ def _formatter(*obj):
 
 def _preparser(text):
     """
-    This is a PREPARSER before sending anything to Bottle.
+    This is a PREPARSER before sending anything to Bottle Simple Template 
+    Engine.
     
     It parses out inline syntax of `{ param = val }` so that it will still 
     define `param`. It will also make sure the evaluation is NOT inside 
@@ -606,9 +609,7 @@ def _preparser(text):
     code_rep = defaultdict(lambda:_rnd_str(20))    # will return random string but store it
     _,text = _delim_capture(text,'{0} {1}'.format(BLOCK_START,BLOCK_CLOSE), # delim_capture does NOT want re.escape
                             lambda t:code_rep[t])
-    
-    #if text != 'BLA': import ipdb;ipdb.set_trace()
-    
+        
     # Convert single line expression "% expr" and convert them to "{% expr %}" 
     search  =  "^([\t\f ]*)LINE_START(.*)".replace('LINE_START',re.escape(LINE_START))
     replace = r"\1{0} \2 {1}".format(BLOCK_START,BLOCK_CLOSE)
@@ -669,6 +670,9 @@ def _inline_fix(capture):
 
     match = capture[len(INLINE_START):-len(INLINE_END)].strip() # Remove open and close brackets
     
+    if not match.strip():
+        raise EmptyInlineError('Empty inline expression')
+    
     # Need to decide if this is a {param} or {var=param}
     # But need to be careful for:
     #
@@ -702,35 +706,40 @@ def _inline_fix(capture):
     if any(c in var for c in ['"',"'",'(',')']):  # something like {function(p="}")}
         return capture # Do not fix. See above
     
-    opperator = '='
+    operator = '='
     
     # is it a modified assignment operator (e.g. "+=","<<=") but NOT comparison (e.g. "<=").
     # Check first for assignment and ONLY then can you check for comparison.
     assignment_mods = ['+', '-', '*', '/', '%', '//', '**', '&', '|', '^', '>>', '<<'] # += -= *=, etc
     comparison_mods = ['=','!','>','<'] # ==,!=, etc
     
-    is_assignment = False
+    if pyv >= (3,8):
+        # This is the python3.8 "Walrus Operator" called an assignment expression.
+        # Essentially `a := val` becomes `a = val` and then `val`. But this
+        # is what we already do! So just let it pass for newer python
+        # See PEP572 https://www.python.org/dev/peps/pep-0572/ for details
+        comparison_mods.append(':') 
+        
+    
     for v in assignment_mods:
         if var.endswith(v):
-            is_assignment = True
             var = var[:-len(v)]
-            opperator = v + opperator
+            operator = v + operator
             break
-            
-    if not is_assignment:
+    else:
         for v in comparison_mods:
             if var.endswith(v):
                 var = var[:-len(v)]
                 var = _fix_varnames(var)   # { A <= 10 } and/or {A:1 <= 10} becomes {A_1<=10}
-                opperator = v + opperator
-                return INLINE_START + var + opperator + val + INLINE_END 
+                operator = v + operator
+                return INLINE_START + var + operator + val + INLINE_END 
                
     # Fix disallowed var names
     var = _fix_varnames(var)
     
     # Set the value
     return ''.join([r'\\','\n', 
-                    BLOCK_START,' ',var,opperator,val,' ',BLOCK_CLOSE,'\n', 
+                    BLOCK_START,' ',var,operator,val,' ',BLOCK_CLOSE,'\n', 
                     INLINE_START,' ',var.strip(),' ',INLINE_END])
 
 
@@ -1467,8 +1476,9 @@ class _SimpleTemplate(_BaseTemplate):
             self.cache[_name] = self.__class__(name=_name, lookup=self.lookup, syntax=self.syntax)
         
         r = self.cache[_name].execute(env['_stdout'], env)
-        r['__includesentinel'] = True # This is to make sure the return of include
-                                      # is not trying to be displayed
+        
+        r.includesentinel = True # This is to make sure the return of include
+                                 # is not trying to be displayed
         return r
 
     def execute(self, _stdout, kwargs):

@@ -107,6 +107,7 @@ import pyprepro
 from pyprepro import ImmutableValDict,Immutable,Mutable
 from pyprepro import _preparser
 from pyprepro import _formatter
+from pyprepro import EmptyInlineError
 
 ####################
 
@@ -765,6 +766,11 @@ class preparser_edge_cases(unittest.TestCase):
             read('test_output/inline_comparison_and_assignment_colons.out'),
             read('test_gold/inline_comparison_and_assignment_colons.gold')))   
     
+    def test_py38_walrus(self):
+        if sys.version_info < (3,8):
+            return
+        self.assert_(pyprepro.pyprepro('A = {A:= 10}; {A}') == 'A = 10; 10')
+    
     def test_parse_inline_assignment_preparser(self):
         """
         Tests *just* the preparser including regressions
@@ -830,7 +836,26 @@ class preparser_edge_cases(unittest.TestCase):
         # With UNmatched inner quotes. We still expect this to fail since it isn't
         self.assertRaises(SyntaxError,pyprepro.pyprepro,'{A = "}adshd}')
 
+    def test_empty_inline(self):
+        """
+        Tests that empty inline raise an error that is helpful
+        """
+        # This *should* work
+        pyprepro.pyprepro('A = {""}')
+        
+        # These should not:
+        self.assertRaises(EmptyInlineError,pyprepro.pyprepro,'A = {}')
+        self.assertRaises(EmptyInlineError,pyprepro.pyprepro,'A = [[ ]]',inline='[[ ]]')
+        
+        self.assert_(pyprepro.pyprepro('A = [[ ]]') == 'A = [[ ]]') # Just to make sure that otherwise passes
 
+        cmd = 'test_files/empty_inline.inp'
+        with CLI_Error() as E:
+            pyprepro._pyprepro_cli(shsplit(cmd))
+        self.assert_(E.exit_code != 0)
+        self.assert_('EmptyInlineError' in E.stderr)
+        self.assert_('Empty inline expression' in E.stderr)
+        
 class dakota_dprepro(unittest.TestCase):
     def test_dakota_param_names(self):
         """
@@ -1046,6 +1071,13 @@ class misc(unittest.TestCase):
         self.assert_(compare_lines(output1,gold1))
         self.assert_(compare_lines(output2,gold2))
         self.assert_(compare_lines(output3,gold2))
+        
+        try:
+            import numpy as np
+            res = pyprepro.pyprepro('num = {num}',env={'num':np.float64(10.2)})
+            self.assert_(compare_lines(res,'num = 10.2'))
+        except ImportError:
+            sys.stderr.write("Skipping tests for np.float64 formatting since cannot find NumPy\n")
 
     def test_white_space(self):
         """
