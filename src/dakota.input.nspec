@@ -6911,9 +6911,9 @@ KEYWORD interface {N_ifm3(start,0,stop)}
     |
     matlab {N_ifm(type,interfaceType_MATLAB_INTERFACE)}
     |
-    pybind11 {N_ifm(type,interfaceType_PYBIND11_INTERFACE)}
+    python {N_ifm(type,interfaceType_PYTHON_INTERFACE)}
     |
-    ( python {N_ifm(type,interfaceType_PYTHON_INTERFACE)}
+    ( legacy_python {N_ifm(type,interfaceType_LEGACY_PYTHON_INTERFACE)}
       [ numpy {N_ifm(true,numpyFlag)} ]
      )
     |
