@@ -1,3 +1,0 @@
-Simulation Failure Capturing
-=======================================
-

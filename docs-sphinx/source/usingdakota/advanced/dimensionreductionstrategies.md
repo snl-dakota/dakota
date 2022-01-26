@@ -1,3 +1,0 @@
-Dimension Reduction Strategies
-=======================================
-

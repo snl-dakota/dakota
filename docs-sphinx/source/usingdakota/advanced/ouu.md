@@ -1,3 +1,0 @@
-Optimization Under Uncertainty
-=======================================
-
