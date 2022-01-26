@@ -209,9 +209,9 @@ PYBIND11_MODULE(environment, m) {
                   if( callbacks_map.count(idrv) > 0 )
                     py11_int->register_pybind11_callback_fn(callbacks_map[idrv]);
                   else {
-                    Cerr << "Error: Could not find a pybind11 callback \"" << idrv << "\" needed "
-                                   "by Dakota interface \"" << interface.interface_id() << "\".\n";
-                    Dakota::abort_handler(-1);
+                    Cout << "Warning: Could not find a pybind11 callback \"" << idrv << "\" needed "
+                            "by Dakota interface \"" << interface.interface_id() << "\".\n"
+                            "... will try to use module:function interface specification.\n";
                   }
                 }
               }
