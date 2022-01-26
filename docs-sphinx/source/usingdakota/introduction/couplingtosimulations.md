@@ -4,7 +4,7 @@ Coupling Dakota to a Simulation
 ## Introduction
 
 ```{eval-rst}
-.. _couplingtosimulations:
+.. _couplingtosimulations-main:
 ```
 
 A key Dakota advantage is access to a broad range of iterative capabilities through a single, relatively simple interface

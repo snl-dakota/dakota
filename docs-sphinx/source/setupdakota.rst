@@ -66,7 +66,7 @@ __ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.1
 __ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-linux.x86_64-gui.tar.gz
 __ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-src-gui.tar.gz
 
-:ref:`Release Notes <releasenotes>`
+:ref:`Release Notes <releasenotes-main>`
 
 .. _installation:
 
@@ -237,4 +237,4 @@ Make sure Dakota runs. You should see Dakota version information when you type:
 
 **Now what?**
 
-:ref:`Learn how to run a simple example in Dakota. <helloworld>`
+:ref:`Learn how to run a simple example in Dakota. <helloworld-main>`

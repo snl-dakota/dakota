@@ -1,7 +1,8 @@
+"""""""""""""""""
 Dakota Input File
-=======================================
+"""""""""""""""""
 
-```{eval-rst}
+.. _inputfile-main:
 
 .. toctree::
    :maxdepth: 1
@@ -15,53 +16,53 @@ Dakota Input File
    inputfile/outputsfromdakota
    inputfile/inputspec   
 
-:ref:`If you are looking for video resources on Dakota's input file format, click here <inputfilevideos>`.
-```
+:ref:`If you are looking for video resources on Dakota's input file format, click here <inputfile-videos>`.
 
 There are six specification blocks that may appear in Dakota input files. These are identified in the input file using the following
 keywords: variables, interface, responses, model, method, and environment. While, these keyword blocks can appear in any
 order in a Dakota input file, there is an inherent relationship that ties them together. The simplest form of that relationship is
 shown below:
 
-![alt text](img/InputBlocks.png "Fig 2.3")
-
-<p style="text-align: center;"><strong>Relationship between the six blocks, for a simple study.</strong></p>
+.. image:: img/InputBlocks.png
+   :width: 400
+   :alt: Relationship between the six blocks, for a simple study.
 
 It can be summarized as follows: In each iteration of its algorithm, a method block requests a variables-
 to-responses mapping from its model, which the model fulfills through an interface. While most Dakota analyses satisfy this
 relationship, where a single method runs a single model, advanced cases are possible and are discussed in Chapter 14.
 
-```
-# Dakota Input File: rosen_multidim.in
-# Usage:
-# dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout
+.. code-block::
 
-environment
-  tabular_data
-    tabular_data_file = ’rosen_multidim.dat’
+   # Dakota Input File: rosen_multidim.in
+   # Usage:
+   # dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout
 
-method
-  multidim_parameter_study
-    partitions = 8 8
+   environment
+     tabular_data
+       tabular_data_file = ’rosen_multidim.dat’
+
+   method
+     multidim_parameter_study
+       partitions = 8 8
 	
-model
-  single
+   model
+     single
   
-variables
-  continuous_design = 2
-  lower_bounds -2.0 -2.0
-  upper_bounds 2.0 2.0
-  descriptors ’x1’ "x2"
+   variables
+     continuous_design = 2
+     lower_bounds -2.0 -2.0
+     upper_bounds 2.0 2.0
+     descriptors ’x1’ "x2"
   
-interface
-  analysis_drivers = ’rosenbrock’
-    direct
+   interface
+     analysis_drivers = ’rosenbrock’
+       direct
   
-responses
-  response_functions = 1
-  no_gradients
-  no_hessians
-```
+   responses
+     response_functions = 1
+     no_gradients
+     no_hessians
+
 
 As a concrete example, a simple Dakota input file, rosen_multidim.in, is shown above, for a two-dimensional
 parameter study on Rosenbrock’s function. This input file will be used to describe the basic format and syntax used in all
@@ -116,13 +117,28 @@ no gradients and no hessians indicate that no derivatives will be provided to th
 parameter study. At least one responses block is required, and multiple blocks may appear in Dakota input files for advanced
 studies.
 
-```{eval-rst}
-.. _inputfilevideos:
-```
+.. _inputfile-videos:
 
-## Video Resources
+===============
+Video Resources
+===============
 
-| Title | Link | Resources|
-| --- | --- | --- |
-| Input File Format | [![alt text](inputfile/img/InputFileScreencastTeaser.png "Watch Screencast 1.2: Input File Format")](https://www.youtube.com/watch?v=f1l8DIXd9Gs&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=2) | |
-| Input Syntax / Building Blocks | [![alt text](inputfile/img/InputFileTrainingTeaser.png "Input Syntax / Building Blocks")](http://digitalops.sandia.gov/Mediasite/Play/16134f3f4b6842d2b145a9600cbbcbbd1d) | ([Slides](https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_InputComponents.pdf) / [Exercises](https://dakota.sandia.gov/sites/default/files/training/input-151215.zip)) |
++--------------------------------+-----------------+----------------+
+| Title                          | Link            | Resources      |
++================================+=================+================+
+| Input File Format              | |Screencast|_   |                |
++--------------------------------+-----------------+----------------+
+| Input Syntax / Building Blocks | |Training|_     | `Slides`__ /   |
+|                                |                 | `Exercises`__  |
++--------------------------------+-----------------+----------------+
+
+.. __: https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_InputComponents.pdf
+__ https://dakota.sandia.gov/sites/default/files/training/input-151215.zip
+
+.. |Screencast| image:: inputfile/img/InputFileScreencastTeaser.png
+                  :alt: Watch Screencast 1.2: Input File Format
+.. _Screencast: https://www.youtube.com/watch?v=f1l8DIXd9Gs&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=2
+
+.. |Training| image:: inputfile/img/InputFileTrainingTeaser.png
+                :alt: Input Syntax / Building Blocks
+.. _Training: http://digitalops.sandia.gov/Mediasite/Play/16134f3f4b6842d2b145a9600cbbcbbd1d

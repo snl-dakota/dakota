@@ -1,6 +1,8 @@
 Method Types
 =======================================
 
+.. _methodtypes-main:
+
 .. toctree::
    :maxdepth: 1
    

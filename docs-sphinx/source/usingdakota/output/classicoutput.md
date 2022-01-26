@@ -1,6 +1,10 @@
 Examples of Dakota Output
 =======================================
 
+```{eval-rst}
+.. _classicoutput-main:
+```
+
 Beyond numerical results, all output files provide information that allows the user to check that the actual analysis was the
 intended analysis. More details on all outputs can be found in Chapter 13.
 

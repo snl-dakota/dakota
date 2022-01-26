@@ -2,7 +2,7 @@
 Release Notes
 """""""""""""
 
-.. _releasenotes:
+.. _releasenotes-main:
 
 .. toctree::
    :maxdepth: 1

@@ -1,6 +1,10 @@
 "Getting Started" Examples
 =======================================
 
+```{eval-rst}
+.. _examples-gettingstarted-main:
+```
+
 This section serves to familiarize users with how to perform parameter studies, optimization, and uncertainty quantification
 through their common Dakota interface. The initial examples utilize simple built in driver functions; later we show how to
 utilize Dakota to drive the evaluation of user supplied black box code. The examples presented in this chapter are intended to
@@ -9,9 +13,9 @@ provided in subsequent, topic-based, chapters.
 
 
 ```{eval-rst}
-   :ref:`If you are looking for examples of coupling Dakota to external simulations, click here <couplingtosimulations>`.
+   :ref:`If you are looking for examples of coupling Dakota to external simulations, click here <couplingtosimulations-main>`.
    
-   :ref:`If you are looking for video examples, click here <gettingstartedvideos>`.
+   :ref:`If you are looking for video examples, click here <examples-gettingstarted-videos>`.
 ```
 
 ## Rosenbrock Test Problem
@@ -528,7 +532,7 @@ responses
 ```
 
 ```{eval-rst}
-.. _gettingstartedvideos:
+.. _examples-gettingstarted-videos:
 ```
 
 ## Video Resources
