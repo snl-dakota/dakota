@@ -52,7 +52,7 @@ acceptable combination, and blue indicates a common combination.
 
 Initial approaches to nonlinearly-constrained SBO optimized an
 approximate merit function which incorporated the nonlinear
-constraints:
+constraints :raw-latex:`\cite{Rod98,Ale00}`:
 
 .. math::
 
@@ -66,7 +66,7 @@ where the surrogate merit function is denoted as
 :math:`\hat \Phi({\bf x})`, :math:`{\bf x}_c` is the center point of the
 trust region, and the trust region is truncated at the global variable
 bounds as needed. The merit function to approximate was typically chosen
-to be a standard implementation of
+to be a standard implementation :raw-latex:`\cite{Van84,Noc99,Gil81}` of
 the augmented Lagrangian merit function (see
 Eqs. `[eq:aug_lag_merit] <#eq:aug_lag_merit>`__–`[eq:aug_lag_psi] <#eq:aug_lag_psi>`__),
 where the surrogate augmented Lagrangian is constructed from individual
@@ -77,10 +77,10 @@ and is known as the trust-region augmented Lagrangian (TRAL) approach.
 While this approach was provably convergent, convergence rates to
 constrained minima have been observed to be slowed by the required
 updating of Lagrange multipliers and penalty
-parameters. Prior to converging these
+parameters :raw-latex:`\cite{Per04a}`. Prior to converging these
 parameters, SBO iterates did not strictly respect constraint boundaries
 and were often infeasible. A subsequent approach
-(IPTRSAO) that sought to directly address
+(IPTRSAO :raw-latex:`\cite{Per04a}`) that sought to directly address
 this shortcoming added explicit surrogate constraints (row 3, column 3
 in Table `1.1 <#tab:sbo_subprob>`__):
 
@@ -101,7 +101,7 @@ convergence of the Lagrange multipliers and penalty parameters. That is,
 one may benefit from more feasible intermediate iterates, but the
 process may still be slow to converge to optimality. The concept of this
 approach is similar to that of SQP-like SBO
-approaches which use linearized constraints:
+approaches :raw-latex:`\cite{Ale00}` which use linearized constraints:
 
 .. math::
 
@@ -165,8 +165,11 @@ and others from rows 2-3 in Table `1.1 <#tab:sbo_subprob>`__) can suffer
 from the lack of a feasible solution within the current trust region.
 Techniques for dealing with this latter challenge involve some form of
 constraint relaxation. Homotopy
-approaches or composite step approaches such as Byrd-Omojokun, Celis-Dennis-Tapia, or
-MAESTRO may be used for this purpose (see Section `1.4 <#sbm:sblm_con_relax>`__).
+approaches :raw-latex:`\cite{Per04a,Per04b}` or composite step
+approaches such as Byrd-Omojokun :raw-latex:`\cite{Omo89}`,
+Celis-Dennis-Tapia :raw-latex:`\cite{Cel85}`, or
+MAESTRO :raw-latex:`\cite{Ale00}` may be used for this purpose (see
+Section `1.4 <#sbm:sblm_con_relax>`__).
 
 After each of the :math:`k` iterations in the SBO method, the predicted
 step is validated by computing :math:`f({\bf x}^k_\ast)`,
@@ -196,9 +199,9 @@ using logic similar to that shown in Table `1.2 <#tab:rho_k>`__. Typical
 factors for shrinking and expanding are 0.5 and 2.0, respectively, but
 these as well as the threshold ratio values are tunable parameters in
 the algorithm (see Surrogate-Based Method controls in the Dakota
-Reference Manual). In addition, the use of
+Reference Manual :raw-latex:`\cite{RefMan}`). In addition, the use of
 discrete thresholds is not required, and continuous relationships using
-adaptive logic can also be explored.
+adaptive logic can also be explored :raw-latex:`\cite{Wuj98a,Wuj98b}`.
 Iterate acceptance or rejection completes an SBO cycle, and the cycles
 are continued until either soft or hard convergence criteria (see
 Section `1.3 <#sbm:sblm_con_hard>`__) are satisfied.
@@ -243,7 +246,7 @@ has been validated, then the decision must be made to either accept or
 reject the step. The traditional approach is to base this decision on
 the value of the trust region ratio, as outlined previously in
 Table `1.2 <#tab:rho_k>`__. An alternate approach is to utilize a filter
-method, which does not require penalty
+method :raw-latex:`\cite{Fle02}`, which does not require penalty
 parameters or Lagrange multiplier estimates. The basic idea in a filter
 method is to apply the concept of Pareto optimality to the objective
 function and constraint violations and only accept an iterate if it is
@@ -262,7 +265,7 @@ is true for all :math:`i` in the filter, where :math:`c` is a selected
 norm of the constraint violation. This basic description can be
 augmented with mild requirements to prevent point accumulation and
 assure convergence, known as a slanting
-filter. Figure `[fig:filter] <#fig:filter>`__
+filter :raw-latex:`\cite{Fle02}`. Figure `[fig:filter] <#fig:filter>`__
 illustrates the filter concept, where objective values are plotted
 against constraint violation for accepted iterates (blue circles) to
 define the dominated region (denoted by the gray lines). A filter method
@@ -332,7 +335,7 @@ function is normally restricted to approximate subproblems and hard
 convergence assessments.
 
 The augmented Lagrangian employed in this paper follows the sign
-conventions described in...
+conventions described in :raw-latex:`\cite{Van84}`
 
 .. math::
 
@@ -363,7 +366,7 @@ zeroth-order Lagrange multiplier updates may be used:
    \label{eq:lambda_h}\end{aligned}
 
 The updating of multipliers and penalties is carefully
-orchestrated TODO to drive reduction in constraint
+orchestrated :raw-latex:`\cite{Con00}` to drive reduction in constraint
 violation of the iterates. The penalty updates can be more conservative
 than in Eq. `[eq:exp_rp] <#eq:exp_rp>`__, often using an infrequent
 application of a constant multiplier rather than a fixed exponential
@@ -409,7 +412,7 @@ where :math:`{\bf A}` is the matrix of active constraint gradients,
 :math:`\mbox{\boldmath $\lambda$}_g` is constrained to be non-negative,
 and :math:`\mbox{\boldmath $\lambda$}_h` is unrestricted in sign. To
 estimate the multipliers using non-negative and bound-constrained linear
-least squares, the NNLS and BVLS routines from
+least squares, the NNLS and BVLS routines :raw-latex:`\cite{Law74}` from
 NETLIB are used, respectively.
 
 .. _`sbm:sblm_con_relax`:
@@ -426,11 +429,11 @@ and other formulations from rows 2-3 in
 Table `1.1 <#tab:sbo_subprob>`__). The SBO algorithm starting from
 infeasible points will commonly generate iterates which seek to satisfy
 feasibility conditions without regard to objective
-reduction.
+reduction :raw-latex:`\cite{Per04b}`.
 
 One approach for achieving this balance is to use *relaxed constraints*
 when iterates are infeasible with respect to the surrogate constraints.
-We follow Perez, Renaud, and Watson, and use
+We follow Perez, Renaud, and Watson :raw-latex:`\cite{Per04a}`, and use
 a *global homotopy* mapping the relaxed constraints and the surrogate
 constraints. For formulations in
 Eqs. `[eq:NLP_SBO_TRAL2] <#eq:NLP_SBO_TRAL2>`__
@@ -564,7 +567,7 @@ be significant in some cases (i.e., when the cost of evaluating
 :math:`{\bf {\hat g}}^k({\bf x})` and :math:`{\bf {\hat h}}^k({\bf x})`
 is not negligible, such as with multifidelity or ROM surrogates). As
 shown in the numerical experiments involving the Barnes problem
-presented in TODO, the directions toward
+presented in  :raw-latex:`\cite{Per04a}`, the directions toward
 constraint violation reduction and objective function reduction may be
 in opposing directions. In such cases, the use of the relaxed
 constraints may result in an *increase* in the overall number of SBO

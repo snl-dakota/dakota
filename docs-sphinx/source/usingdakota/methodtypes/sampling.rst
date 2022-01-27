@@ -1,9 +1,5 @@
 .. _`uq:sampling`:
 
-.. image:: img/SamplingScreencastTeaser.png
-   :alt: Watch Screencast 2.2: Sampling"
-   :target: https://www.youtube.com/watch?v=dnqoUCw6wSo&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=5
-
 Sampling Methods
 ================
 

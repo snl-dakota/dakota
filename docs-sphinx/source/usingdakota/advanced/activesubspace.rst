@@ -42,7 +42,7 @@ dimension reduction. Below is a brief summary of the process.
    .. math:: g(\mathbf{y}) \approx f(\mathbf{x})
 
 As a concrete example, consider the
-function:
+function: :raw-latex:`\cite{constantine2015active}`
 
 .. math:: f(x) = \exp\left(0.7x_1 + 0.3x_2\right).
 
@@ -61,7 +61,8 @@ rotated input space can be reduced to 1.
 
    2
 
-For additional information, see references TODO.
+For additional information, see
+references :raw-latex:`\cite{Constantine-preprint-active,constantine2014active,constantine2015active}`.
 
 .. _`Sec:trunc`:
 
@@ -127,7 +128,8 @@ truncation methods.
 
    .. math:: r = \operatorname*{arg\,min}_n \, e^*_n.
 
-For additional information, see Ref. TODO.
+For additional information, see
+Ref. :raw-latex:`\cite{constantine2015active}`.
 
 .. _`SubSec:bingli`:
 
@@ -191,7 +193,7 @@ truncation methods.
 #. The index of first minimum of :math:`g_i` is then the estimated
    active subspace rank.
 
-For additional information, see Ref. TODO.
+For additional information, see Ref. :raw-latex:`\cite{bing-li}`.
 
 .. _`SubSec:energy`:
 
