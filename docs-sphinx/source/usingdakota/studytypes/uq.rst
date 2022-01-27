@@ -351,10 +351,8 @@ sites in this example, where each sample is randomly located in its bin.
 There is no restriction on the number of bins in the range of each
 parameter, however, all parameters must have the same number of bins.
 
-.. figure:: images/lhs_graphic.png
-   :alt: An example of Latin hypercube sampling with four bins in design
-   parameters :math:`x_1` and :math:`x_2`. The dots are the sample
-   sites.
+.. figure:: img/lhs_graphic.png
+   :alt: An example of Latin hypercube sampling with four bins in design parameters :math:`x_1` and :math:`x_2`. The dots are the sample sites.
    :name: dace:figure01
 
    An example of Latin hypercube sampling with four bins in design
@@ -398,10 +396,6 @@ algorithms. The input samples generated are shown in
 Figure `[uq:figure02] <#uq:figure02>`__ for the case where ``samples`` =
 5 and ``samples`` = 10 for both ``random`` (:math:`\circ`) and ``lhs``
 (:math:`+`) sample types.
-
-.. container:: bigbox
-
-   .. container:: small
 
 Latin hypercube sampling ensures full coverage of the range of the input
 variables, which is often a problem with Monte Carlo sampling when the
@@ -795,18 +789,15 @@ of the methods available are local, meaning that a local optimization
 formulation is used to locate one MPP. In contrast, global methods can
 find multiple MPPs if they exist.
 
-.. figure:: images/cdf_orig_graphic.png
-   :alt: Graphical depiction of calculation of cumulative distribution
-   function in the original uncertain variable space.
+.. figure:: img/cdf_orig_graphic.png
+   :alt: Graphical depiction of calculation of cumulative distribution function in the original uncertain variable space.
    :name: uq:figure05
 
    Graphical depiction of calculation of cumulative distribution
    function in the original uncertain variable space.
 
-.. figure:: images/cdf_tran_graphic.png
-   :alt: Graphical depiction of integration for the calculation of
-   cumulative distribution function in the transformed uncertain
-   variable space.
+.. figure:: img/cdf_tran_graphic.png
+   :alt: Graphical depiction of integration for the calculation of cumulative distribution function in the transformed uncertain variable space.
    :name: uq:figure06
 
    Graphical depiction of integration for the calculation of cumulative
@@ -835,35 +826,32 @@ of these combinations to common method names from the reliability
 literature, where blue indicates the most well-known combinations and
 gray indicates other supported combinations.
 
-.. container::
-   :name: tab:rel_meth_map
-
-   .. table:: Mapping from Dakota options to standard reliability
+.. table:: Mapping from Dakota options to standard reliability
    methods.
 
-      +---------------+-------------------------+-------------------------+
-      |               | Order of approximation  |                         |
-      |               | and integration         |                         |
-      +===============+=========================+=========================+
-      | MPP search    | First order             | Second order            |
-      +---------------+-------------------------+-------------------------+
-      | none          | MVFOSM                  | MVSOSM                  |
-      +---------------+-------------------------+-------------------------+
-      | x_taylor_mean | AMV                     | AMV\ :math:`^2`         |
-      +---------------+-------------------------+-------------------------+
-      | u_taylor_mean | u-space AMV             | u-space AMV\ :math:`^2` |
-      +---------------+-------------------------+-------------------------+
-      | x_taylor_mpp  | AMV+                    | AMV\ :math:`^2`\ +      |
-      +---------------+-------------------------+-------------------------+
-      | u_taylor_mpp  | u-space AMV+            | u-space                 |
-      |               |                         | AMV\ :math:`^2`\ +      |
-      +---------------+-------------------------+-------------------------+
-      | x_two_point   | TANA                    |                         |
-      +---------------+-------------------------+-------------------------+
-      | u_two_point   | u-space TANA            |                         |
-      +---------------+-------------------------+-------------------------+
-      | no_approx     | FORM                    | SORM                    |
-      +---------------+-------------------------+-------------------------+
+   +---------------+-------------------------+-------------------------+
+   |               | Order of approximation  |                         |
+   |               | and integration         |                         |
+   +===============+=========================+=========================+
+   | MPP search    | First order             | Second order            |
+   +---------------+-------------------------+-------------------------+
+   | none          | MVFOSM                  | MVSOSM                  |
+   +---------------+-------------------------+-------------------------+
+   | x_taylor_mean | AMV                     | AMV\ :math:`^2`         |
+   +---------------+-------------------------+-------------------------+
+   | u_taylor_mean | u-space AMV             | u-space AMV\ :math:`^2` |
+   +---------------+-------------------------+-------------------------+
+   | x_taylor_mpp  | AMV+                    | AMV\ :math:`^2`\ +      |
+   +---------------+-------------------------+-------------------------+
+   | u_taylor_mpp  | u-space AMV+            | u-space                 |
+   |               |                         | AMV\ :math:`^2`\ +      |
+   +---------------+-------------------------+-------------------------+
+   | x_two_point   | TANA                    |                         |
+   +---------------+-------------------------+-------------------------+
+   | u_two_point   | u-space TANA            |                         |
+   +---------------+-------------------------+-------------------------+
+   | no_approx     | FORM                    | SORM                    |
+   +---------------+-------------------------+-------------------------+
 
 Within the Dakota specification (refer to ``local_reliability`` in the
 keywords section of the Reference Manual)
@@ -1054,10 +1042,6 @@ standard deviation is zero.
 
    .. container:: small
 
-.. container:: bigbox
-
-   .. container:: small
-
       ::
 
          MV Statistics for response_fn_1:
@@ -1117,10 +1101,6 @@ next.
 
    .. container:: small
 
-.. container:: bigbox
-
-   .. container:: small
-
       ::
 
          Cumulative Distribution Function (CDF) for response_fn_1:
@@ -1151,15 +1131,12 @@ next.
             1.7000000000e+00   8.3301386860e-01  -9.6614373461e-01
             1.7500000000e+00   8.4588021938e-01  -1.0189229206e+00
 
-.. figure:: images/cdf_form.png
-   :alt: Comparison of the cumulative distribution function (CDF)
-   computed by FORM, the Mean Value method, and the exact CDF for
-   :math:`g(x_1,x_2)=\frac{x_1}{x_2}`
+.. figure:: img/cdf_form.png
+   :alt: Comparison of the cumulative distribution function (CDF) computed by FORM, the Mean Value method, and the exact CDF for :math:`g(x_1,x_2)=\frac{x_1}{x_2}`
    :name: uq:rel_form_compare
 
    Comparison of the cumulative distribution function (CDF) computed by
-   FORM, the Mean Value method, and the exact CDF for
-   :math:`g(x_1,x_2)=\frac{x_1}{x_2}`
+   FORM, the Mean Value method, and the exact CDF for :math:`g(x_1,x_2)=\frac{x_1}{x_2}`
 
 If the user specifies ``local_reliability`` as a method with no
 additional specification on how to do the MPP search (for example, by
@@ -1384,18 +1361,13 @@ quadrature in :math:`x_1` and third-order quadrature in :math:`x_2`),
 resulting in a total of 15 function evaluations to compute the PCE
 coefficients.
 
-.. container:: bigbox
-
-   .. container:: small
-
 The tensor product quadature points upon which the expansion is
 calculated are shown in Figure `1.5 <#uq:examples:rosen_pce_points>`__.
 The tensor product generates all combinations of values from each
 individual dimension: it is an all-way pairing of points.
 
-.. figure:: images/rosen_pce_pts.png
-   :alt: Rosenbrock polynomial chaos example: tensor product quadrature
-   points.
+.. figure:: img/rosen_pce_pts.png
+   :alt: Rosenbrock polynomial chaos example: tensor product quadrature points.
    :name: uq:examples:rosen_pce_points
    :height: 2.5in
 
@@ -1522,10 +1494,6 @@ example requires 19 function evaluations to calculate the interpolating
 polynomials in stochastic collocation and the resulting expansion
 exactly reproduces Rosenbrock’s function. The placement of the points
 generated by the sparse grid is shown in Figure `1.6 <#uq:figure11b>`__.
-
-.. container:: bigbox
-
-   .. container:: small
 
 .. figure:: img/rosen_sc_pts.png
    :alt: Rosenbrock stochastic collocation example: sparse grid points.
@@ -2066,10 +2034,6 @@ that the interval estimate of beam weight is approximately [1,100].
 
    .. container:: small
 
-.. container:: bigbox
-
-   .. container:: small
-
       ::
 
          ------------------------------------------------------------------
@@ -2106,10 +2070,8 @@ or intervals on probability values. Typical plots of cumulative and
 complementary cumulative belief and plausibility functions are shown in
 Figure 1.7.
 
-.. figure:: images/belief_plaus.png
-   :alt: Example cumulative belief and plausibility distribution
-   functions on left; complementary cumulative belief and plausibility
-   distribution functions on right
+.. figure:: img/belief_plaus.png
+   :alt: Example cumulative belief and plausibility distribution functions on left; complementary cumulative belief and plausibility distribution functions on right
    :name: uq:figure15
 
    Example cumulative belief and plausibility distribution functions on
@@ -2144,10 +2106,6 @@ within the interval, and the BPA for that interval would be 1.0. In the
 case we have shown, the interval bounds on the first interval for the
 first variable are 0.6 and 0.9, and the bounds for the second interval
 for the first variable are 0.1 to 0.5, etc.
-
-.. container:: bigbox
-
-   .. container:: small
 
 Once the intervals, the BPAs, and the interval bounds are defined, the
 user can run an epistemic analysis by specifying the method as either
@@ -2639,10 +2597,6 @@ with ten experiments. For each experiment, there are two experiment
 values, one for stress and one for displacement, followed by two
 variance values for the error associated with that experiment for each
 quantity of interest.
-
-.. container:: bigbox
-
-   .. container:: small
 
 When the input file shown in `[uq:figure18] <#uq:figure18>`__ is run,
 Dakota will run the MCMC algorithm and generate a posterior sample of
