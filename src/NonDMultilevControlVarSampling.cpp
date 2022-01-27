@@ -300,17 +300,17 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   }
 
   // Roll up raw moments from MLCVMC and MLMC levels
-  RealMatrix Y_mlmc_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
+  RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
   for (lev=0; lev<num_cv_lev; ++lev) {
     cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf[lev],
 		   sum_L_refined, N_lf[lev], /*rho2_LH,*/ lev, Y_cvmc_mom);
-    Y_mlmc_mom += Y_cvmc_mom;
+    Y_mom += Y_cvmc_mom;
   }
   if (num_hf_lev > num_cv_lev)
     ml_raw_moments(sum_H[1], sum_H[2], sum_H[3], sum_H[4], N_hf,
-		   num_cv_lev, num_hf_lev, Y_mlmc_mom);
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mlmc_mom, momentStats);
+		   num_cv_lev, num_hf_lev, Y_mom);
+  convert_moments(Y_mom, momentStats); // raw to final (central or std)
+  recover_variance(momentStats, varH);
 
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
 }
@@ -521,20 +521,20 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
   }
 
   // Roll up raw moments from MLCVMC and MLMC levels
-  RealMatrix Y_mlmc_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
+  RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
   for (lev=0; lev<num_cv_lev; ++lev) {
     cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
 		   sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
 		   sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
 		   N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
 		   /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
-    Y_mlmc_mom += Y_cvmc_mom;
+    Y_mom += Y_cvmc_mom;
   }
   if (num_hf_lev > num_cv_lev)
     ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
-		   num_cv_lev, num_hf_lev, Y_mlmc_mom);
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mlmc_mom, momentStats);
+		   num_cv_lev, num_hf_lev, Y_mom);
+  convert_moments(Y_mom, momentStats); // raw to final (central or std)
+  recover_variance(momentStats, varH);
 
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
 }
@@ -544,22 +544,22 @@ void NonDMultilevControlVarSampling::
 multilevel_control_variate_mc_offline_pilot()
 {
   // retrieve cost estimates across solution levels for HF model
-  RealVector hf_targets,
+  RealVector hf_targets_pilot,
     hf_cost = iteratedModel.truth_model().solution_level_costs(),
     lf_cost = iteratedModel.surrogate_model().solution_level_costs();
-  RealMatrix Lambda, var_YH;
-  RealVectorArray eval_ratios;
+  RealMatrix Lambda_pilot, var_YH_pilot;
+  RealVectorArray eval_ratios_pilot;
 
   unsigned short group, lf_form = 0, hf_form = NLev.size() - 1; // extremes
   Sizet2DArray& N_lf = NLev[lf_form];
   Sizet2DArray& N_hf = NLev[hf_form]; 
-  Sizet2DArray  N_shared;
+  Sizet2DArray  N_pilot;
 
   // -----------------------------------------
   // Initial loop for offline (overkill) pilot
   // -----------------------------------------
-  evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, N_shared,
-		 hf_targets, false);
+  evaluate_pilot(hf_cost, lf_cost, eval_ratios_pilot, Lambda_pilot,
+		 var_YH_pilot, N_pilot, hf_targets_pilot, false, false);
 
   // ----------------------------------------------------------
   // Evaluate online sample profile computed from offline pilot
@@ -578,7 +578,7 @@ multilevel_control_variate_mc_offline_pilot()
   for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
     configure_indices(group, hf_form, lev, sequenceType);
     hf_lev_cost = level_cost(hf_cost, lev);
-    numSamples = one_sided_delta(0., hf_targets[lev]);//delta_N_hf[lev];
+    numSamples = one_sided_delta(0., hf_targets_pilot[lev]);//delta_N_hf[lev];
     evaluate_ml_sample_increment(lev);
     if (lev < num_cv_lev) {
       IntResponseMap hf_resp = allResponses; // shallow copy is sufficient
@@ -594,11 +594,11 @@ multilevel_control_variate_mc_offline_pilot()
 			    sum_Hl_Hlm1, sum_Hlm1_Hlm1,lev,N_lf[lev],N_hf[lev]);
       increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
 				     numSamples, lf_lev_cost, hf_ref_cost);
-      // leave eval_ratios and Lambda at Oracle values
+      // leave evaluation ratios and Lambda at values from Oracle pilot
 
       // LF increments from online sample profile
       configure_indices(group, lf_form, lev, sequenceType);
-      if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
+      if (lf_increment(eval_ratios_pilot[lev], N_lf[lev], hf_targets_pilot[lev],
 		       mlmfIter, lev)) {
 	accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, N_lf[lev]);
 	increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
@@ -615,22 +615,26 @@ multilevel_control_variate_mc_offline_pilot()
   // --------------------------------------
   // Final stats from online sample profile
   // --------------------------------------
-  RealMatrix Y_mlmc_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
+  RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
   for (lev=0; lev<num_cv_lev; ++lev) {
     cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
 		   sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
 		   sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
 		   N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
 		   /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
-    Y_mlmc_mom += Y_cvmc_mom;
+    Y_mom += Y_cvmc_mom;
   }
   if (num_hf_lev > num_cv_lev)
     ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
-		   num_cv_lev, num_hf_lev, Y_mlmc_mom);
+		   num_cv_lev, num_hf_lev, Y_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mlmc_mom, momentStats);
+  convert_moments(Y_mom, momentStats);
+  recover_variance(momentStats, varH); // online variance
 
-  compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
+  // Retain var_YH and Lambda from "oracle" pilot for computing final estimator
+  // variances.  This results in mixing offline var_YH,Lambda with online
+  // varH,N_hf, but is consistent with offline modes for MFMC and ACV.
+  compute_mlmf_estimator_variance(var_YH_pilot, N_hf, Lambda_pilot, estVar);
 }
 
 
@@ -650,7 +654,7 @@ multilevel_control_variate_mc_pilot_projection()
   Sizet2DArray& N_hf = NLev[hf_form]; 
 
   evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, N_hf,
-		 hf_targets, true);
+		 hf_targets, true, true); // accumulate cost, compute estvar0
 
   N_lf = N_hf;
   update_projected_samples(hf_targets, eval_ratios, N_hf, hf_cost,
@@ -663,7 +667,7 @@ void NonDMultilevControlVarSampling::
 evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
 	       RealVectorArray& eval_ratios, RealMatrix& Lambda,
 	       RealMatrix& var_YH, Sizet2DArray& N_shared,
-	       RealVector& hf_targets, bool accumulate_cost)
+	       RealVector& hf_targets, bool accumulate_cost, bool pilot_estvar)
 {
   size_t qoi, lev, num_mf = NLev.size(), num_hf_lev = hf_cost.length(),
     num_cv_lev = std::min(num_hf_lev, (size_t)lf_cost.length());
@@ -777,8 +781,10 @@ evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
 
   // MLMC estimator variance for final estvar reporting is not aggregated
   // (reduction from control variate is applied subsequently)
-  compute_ml_estimator_variance(var_YH, N_shared, estVarIter0);
-  //numHIter0 = N_shared;
+  if (pilot_estvar) {
+    compute_ml_estimator_variance(var_YH, N_shared, estVarIter0);
+    //numHIter0 = N_shared;
+  }
   // compute eps^2 / 2 = aggregated estvar0 * rel tol
   if (!budget_constrained) {// eps^2 / 2 = est var * conv tol
     eps_sq_div_2 = agg_estvar_iter0 * convergenceTol;
@@ -829,6 +835,10 @@ compute_eval_ratios(RealMatrix& sum_L_shared, RealMatrix& sum_H,
     }
     else // should not happen, but provide a reasonable upper bound
       eval_ratios[qoi] = (Real)maxFunctionEvals / average(N_shared);
+
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "rho_LH (Pearson correlation) for QoI " << qoi+1 << " = "
+	   << std::setw(9) << std::sqrt(rho_sq) << '\n';
   }
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "variance of HF Q[" << lev << "]:\n";
@@ -883,6 +893,10 @@ compute_eval_ratios(RealMatrix& sum_Ll,        RealMatrix& sum_Llm1,
       }
       else // should not happen, but provide a reasonable upper bound
 	eval_ratios[qoi] = (Real)maxFunctionEvals / average(N_shared);
+
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "rho_dot_LH for QoI " << qoi+1 << " = " << std::setw(9)
+	     << std::sqrt(rho_dot_sq) << '\n';
     }
     if (outputLevel >= DEBUG_OUTPUT) {
       Cout << "variance of HF Y[" << lev << "]:\n";
@@ -946,8 +960,8 @@ cv_raw_moments(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
 
     // rho_dot2_LH not stored for i > 1
     //for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    //  Cout << "rho_dot_LH (Pearson correlation) for QoI " << qoi+1 << " = "
-    //       << std::setw(9) << std::sqrt(rho_dot2_LH(qoi,lev)) << '\n';
+    //  Cout << "rho_dot_LH for QoI " << qoi+1 << " = " << std::setw(9)
+    //       << std::sqrt(rho_dot2_LH(qoi,lev)) << '\n';
     //<< ", effectiveness ratio = " << rho_dot2_LH(qoi,lev) * cr1;
 
     // aggregate expected value of estimators for E[Y] for Y=LF^k or Y=HF^k
@@ -1767,35 +1781,31 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
   case MULTIFIDELITY_SAMPLING:
     NonDControlVariateSampling::print_variance_reduction(s); break;
   default: {
-    //size_t hf_form_index, hf_lev_index, lf_form_index, lf_lev_index;
-    //hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
-    //SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
-
-    Real avg_mlmc_estvar0     = average(estVarIter0),
-         avg_mlcvmc_estvar    = average(estVar);
-       //avg_mc_estvar        = average(mc_estvar),
-       //avg_budget_mc_estvar = average(varH) / equivHFEvals;//only have ML varH
-
-    s << "<<<<< Variance for mean estimator:\n";
-    size_t wpp7 = write_precision + 7;
-    if (pilotMgmtMode != OFFLINE_PILOT)
-      s << "      Initial MLMC (pilot samples):  " << std::setw(wpp7)
-	<< avg_mlmc_estvar0;
-
+    Real avg_mlcvmc_estvar = average(estVar), avg_mlmc_estvar0,
+      avg_budget_mc_estvar = average(varH) / equivHFEvals;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
-    //s << "\n  " << type << "   MC (" << std::setw(5)
-    //  << (size_t)std::floor(average(N_hf) + .5) << " HF samples): "
-    //  << std::setw(wpp7) << avg_mc_estvar
-    s << "\n  " << type << " MLCVMC (sample profile): "
-      << std::setw(wpp7) << avg_mlcvmc_estvar
-      << "\n  " << type << " MLCVMC / pilot ratio:    "
-      // report ratio of averages rather than average of ratios:
-      << std::setw(wpp7) << avg_mlcvmc_estvar / avg_mlmc_estvar0 << '\n';
-    //<< "\n Equivalent   MC (" << std::setw(5)
-    //<< (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
-    //<< std::setw(wpp7) << avg_budget_mc_estvar
-    //<< "\n Equivalent MLCVMC / MC ratio:        " << std::setw(wpp7)
-    //<< avg_mlcvmc_estvar / avg_budget_mc_estvar << '\n';
+    size_t wpp7 = write_precision + 7;
+    s << "<<<<< Variance for mean estimator:\n";
+    switch (pilotMgmtMode) {
+    case OFFLINE_PILOT:
+      s << "  " << type << " MLCVMC (sample profile): "
+	<< std::setw(wpp7) << avg_mlcvmc_estvar;
+    default:
+      avg_mlmc_estvar0 = average(estVarIter0);
+      s << "      Initial MLMC (pilot samples):  " << std::setw(wpp7)
+	<< avg_mlmc_estvar0
+	<< "\n  " << type << " MLCVMC (sample profile): "
+	<< std::setw(wpp7) << avg_mlcvmc_estvar
+	<< "\n  " << type << " MLCVMC / pilot ratio:    "
+	// report ratio of averages rather than average of ratios:
+	<< std::setw(wpp7) << avg_mlcvmc_estvar / avg_mlmc_estvar0;
+      break;
+    }
+    s << "\n Equivalent   MC (" << std::setw(5)
+      << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+      << std::setw(wpp7) << avg_budget_mc_estvar
+      << "\n Equivalent MLCVMC / MC ratio:        " << std::setw(wpp7)
+      << avg_mlcvmc_estvar / avg_budget_mc_estvar << '\n';
     break;
   }
   }

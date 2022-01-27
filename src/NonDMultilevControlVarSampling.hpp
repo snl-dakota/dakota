@@ -78,7 +78,8 @@ private:
   void evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
 		      RealVectorArray& eval_ratios, RealMatrix& Lambda,
 		      RealMatrix& var_YH, Sizet2DArray& N_shared,
-		      RealVector& hf_targets, bool accumulate_cost);
+		      RealVector& hf_targets, bool accumulate_cost,
+		      bool pilot_estvar);
 
   /// compute the equivalent number of HF evaluations (includes any sim faults)
   void compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
@@ -325,17 +326,17 @@ inline void NonDMultilevControlVarSampling::
 ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
 	       const RealMatrix& sum_H3, const RealMatrix& sum_H4,
 	       const Sizet2DArray& N_hf, size_t num_cv_lev, size_t num_hf_lev,
-	       RealMatrix& Y_mlmc_mom)
+	       RealMatrix& Y_ml_mom)
 {
   // MLMC without CV: sum_H = HF Q sums for lev 0 and HF Y sums for lev > 0
   size_t qoi, lev;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     for (lev=num_cv_lev; lev<num_hf_lev; ++lev) {
       size_t Nlq = N_hf[lev][qoi];
-      Y_mlmc_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
-      Y_mlmc_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
-      Y_mlmc_mom(qoi,2) += sum_H3(qoi,lev) / Nlq;
-      Y_mlmc_mom(qoi,3) += sum_H4(qoi,lev) / Nlq;
+      Y_ml_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
+      Y_ml_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
+      Y_ml_mom(qoi,2) += sum_H3(qoi,lev) / Nlq;
+      Y_ml_mom(qoi,3) += sum_H4(qoi,lev) / Nlq;
     }
   }
 }

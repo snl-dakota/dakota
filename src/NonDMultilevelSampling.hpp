@@ -79,6 +79,9 @@ protected:
 				     const Sizet2DArray& num_Y,
 				     RealVector& ml_est_var);
 
+  /// recover variance from raw moments
+  void recover_variance(const RealMatrix& moment_stats, RealVector& var_H);
+
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
@@ -608,6 +611,7 @@ aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
   return agg_mse;
 }
 
+
 inline void NonDMultilevelSampling::
 aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, const Sizet2DArray& N_l,
 			  const size_t step, RealVector& estimator_var0_qoi)
@@ -616,7 +620,9 @@ aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, const Sizet2DArray& N_l,
     estimator_var0_qoi[qoi] += agg_var_qoi(qoi, step)/N_l[step][qoi];
 }
 
-inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, RealVector& eps_sq_div_2_qoi)
+
+inline void NonDMultilevelSampling::
+set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, RealVector& eps_sq_div_2_qoi)
 {
 	// compute epsilon target based on relative tolerance: total MSE = eps^2
 	// which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -700,6 +706,24 @@ compute_ml_equivalent_cost(const SizetArray& raw_N_l, const RealVector& cost)
   for (step=1; step<num_steps; ++step) // subsequent levels incur 2 model costs
     equivHFEvals += raw_N_l[step] * (cost[step] + cost[step - 1]);
   equivHFEvals /= cost[num_steps - 1]; // normalize into equivalent HF evals
+}
+
+
+inline void NonDMultilevelSampling::
+recover_variance(const RealMatrix& moment_stats, RealVector& var_H)
+{
+  if (var_H.empty()) var_H.sizeUninitialized(numFunctions);
+
+  if (finalMomentsType == Pecos::CENTRAL_MOMENTS)
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      var_H[qoi] = moment_stats(1, qoi); // central already computed
+  else {
+    Real stdev_q;
+    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+      stdev_q    = moment_stats(1, qoi);
+      var_H[qoi] = stdev_q * stdev_q;    // standardized to central
+    }
+  }
 }
 
 

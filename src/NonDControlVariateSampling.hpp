@@ -91,6 +91,8 @@ protected:
   // normal termination based on l1_norm(delta_N_hf) = 0.
   //bool finalCVRefinement;
 
+  RealVector varH;
+
 private:
 
   //
@@ -106,6 +108,12 @@ private:
   /// Perform control variate Monte Carlo across two model forms,
   /// projecting estimator performance based only on the pilot sample
   void control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key);
+
+  /// helper for shared code among MLCV for offline-pilot and pilot-projection
+  void evaluate_pilot(const Pecos::ActiveKey& active_key, Real cost_ratio,
+		      RealVector& eval_ratios, RealVector& var_H,
+		      SizetArray& N_shared, RealVector& hf_targets,
+		      bool accumulate_cost, bool pilot_estvar);
 
   /// define model form and resolution level indices
   void hf_lf_indices(size_t& hf_form_index, size_t& hf_lev_index,
@@ -176,7 +184,7 @@ private:
 		      IntRealVectorMap& sum_LL, IntRealVectorMap& sum_LH,
 		      const SizetArray& N_shared,
 		      IntRealVectorMap& sum_L_refined,
-		      const SizetArray& N_refined, const RealVector& rho2_LH,
+		      const SizetArray& N_refined, //const RealVector& rho2_LH,
 		      RealMatrix& H_raw_mom);
 
   /*
@@ -206,7 +214,6 @@ private:
   //- Heading: Data
   //
 
-  RealVector varH;
   RealVector estVarRatios;
   SizetArray numHIter0;
 };
