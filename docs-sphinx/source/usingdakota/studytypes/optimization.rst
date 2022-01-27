@@ -24,7 +24,8 @@ This section provides a basic introduction to the mathematical
 formulation of optimization, problems. The primary goal of this section
 is to introduce terms relating to these topics, and is not intended to
 be a description of theory or numerical algorithms. For further details,
-consult TODO, TODO, TODO, TODO, and TODO.
+consult :raw-latex:`\cite{Aro89}`, :raw-latex:`\cite{Gil81}`, :raw-latex:`\cite{Haf92}`, :raw-latex:`\cite{Noc99}`,
+and  :raw-latex:`\cite{Van84}`.
 
 A general optimization problem is formulated as follows:
 
@@ -284,7 +285,7 @@ There are a couple of options in terms of methods to be used strictly
 for unconstrained problems, namely the Polak-Ribiere conjugate gradient
 method (``optpp_cg``) and ROL’s (Rapid Optimization Library for
 large-scale optimization, part of the Trilinos software
-suite trust-region method with truncated
+suite :raw-latex:`\cite{Kou2014}`) trust-region method with truncated
 conjugate gradient subproblem solver (``rol``). ROL relies on secant
 updates for the Hessian, with the an approximation to the Hessian matrix
 at each iteration provided using only values of the gradient at current
@@ -306,7 +307,7 @@ For bound-constrained problems, both conjugate gradient methods and
 quasi-Newton methods (described in the next sub-section) are available
 in Dakota. For conjugate gradient methods, the Fletcher-Reeves conjugate
 gradient method (``conmin_frcg`` and
-``dot_frcg``) and ROL’s trust-region method
+``dot_frcg`` :raw-latex:`\cite{Van95}`) and ROL’s trust-region method
 with truncated conjugate gradient subproblem solver (``rol``) are
 available. Note that ROL exhibits slow/erratic convergence when
 finite-differencing approximations to the gradient of objective function
@@ -339,8 +340,8 @@ required; Hessians are approximated by low-rank updates defined by the
 step taken at each iterations. *It is important to note that while the
 solution found by an SQP method will respect the constraints, the
 intermediate iterates may not.* SQP methods available in Dakota include
-``dot_sqp``, ``nlpql_sqp``, and ``npsol_sqp``.
-The particular implementation in ``nlpql_sqp``
+``dot_sqp``, ``nlpql_sqp``, and ``npsol_sqp`` :raw-latex:`\cite{Gil86}`.
+The particular implementation in ``nlpql_sqp`` :raw-latex:`\cite{Sch04}`
 uses a variant with distributed and non-monotone line search. Thus, this
 variant is designed to be more robust in the presence of inaccurate or
 noisy gradients common in many engineering applications. ROL’s
@@ -368,7 +369,7 @@ differences.
 Method of Feasible Directions (MFD) methods are appropriate for
 nonlinear optimization problems with nonlinear constraints. These
 methods ensure that all iterates remain feasible. Dakota includes
-``conmin_mfd`` and ``dot_mmfd`` *One observed
+``conmin_mfd`` :raw-latex:`\cite{Van78}` and ``dot_mmfd`` *One observed
 drawback to ``conmin_mfd`` is that it does a poor job handling equality
 constraints*. ``dot_mmfd`` does not suffer from this problem, nor do
 other methods for constrained problems.
@@ -431,16 +432,17 @@ identification abilities if the stencil is such that it allows them to
 step over local minima. There are two main pattern search methods
 available in Dakota, and they vary according to richness of available
 stencil and the way constraints supported. Asynchronous Parallel Pattern
-Search (APPS) (``asynch_pattern_search``)
+Search (APPS) :raw-latex:`\cite{GrKo06}` (``asynch_pattern_search``)
 uses the coordinate basis as its stencil, and it handles nonlinear
 constraints explicitly through modification of the coordinate stencil to
-allow directions that parallel constraints. A
+allow directions that parallel constraints :raw-latex:`\cite{GrKo07}`. A
 second variant of pattern search, ``coliny_pattern_search``, has the
 option of using either a coordinate or a simplex basis as well as
 allowing more options for the stencil to evolve over the course of the
 optimization. It handles nonlinear constraints through the use of
 penalty functions. The
-``mesh_adaptive_search`` is similar in spirit to and falls in the same class of methods as the
+``mesh_adaptive_search`` :raw-latex:`\cite{AuLeTr09a}`, :raw-latex:`\cite{Nomad}`, :raw-latex:`\cite{Le2011a}`
+is similar in spirit to and falls in the same class of methods as the
 pattern search methods. The primary difference is that its underlying
 search structure is that of a mesh. The ``mesh_adaptive_search`` also
 provides a unique optimization capability in Dakota in that it can
@@ -454,7 +456,8 @@ of function evaluations with the goal of reducing the number needed.
 pattern search methods, but their search directions are defined by
 triangles that are reflected, expanded, and contracted across the
 variable space. The two simplex-based methods available in Dakota are
-the Parallel Direct Search method (``optpp_pds``) and the Constrained Optimization BY Linear
+the Parallel Direct Search method :raw-latex:`\cite{Den94b}`
+(``optpp_pds``) and the Constrained Optimization BY Linear
 Approximations (COBYLA) (``coliny_cobyla``). The former handles only
 bound constraints, while the latter handles nonlinear constraints. *One
 drawback of both simplex-based methods is that their current
@@ -482,7 +485,7 @@ provably-convergent gradient-free inequality-constrained optimization
 method that solves a series of trust region surrogate-based subproblems
 to generate improving steps. Due to its use of an interior penalty
 scheme and enforcement of strict feasibility,
-``nowpac`` does not support
+``nowpac`` :raw-latex:`\cite{Augustin-preprint-nowpac}` does not support
 linear or nonlinear equality constraints. The stochastic version is
 ``snowpac``, which incorporates noise estimates in its objective and
 inequality constraints. ``snowpac`` modifies its trust region controls
@@ -514,9 +517,13 @@ it has a different set of keywords in the method block of the input
 file, and the gradient specification in the responses block has been
 changed to ``no_gradients``. The pattern search optimization algorithm
 used, ``coliny_pattern_search`` is part of the SCOLIB
-library. See the Dakota Reference
-Manual for more information on the *methods*
+library :raw-latex:`\cite{Har06}`. See the Dakota Reference
+Manual :raw-latex:`\cite{RefMan}` for more information on the *methods*
 block commands that can be used with SCOLIB algorithms.
+
+.. container:: bigbox
+
+   .. container:: small
 
 For this run, the optimizer was given an initial design point of
 :math:`(x_1,x_2) = (0.0,0.0)` and was limited to 2000 function
@@ -581,7 +588,8 @@ natural selection, breeding, and mutation. Ultimately, the EA identifies
 a design point (or a family of design points) that minimizes the
 objective function of the optimization problem. An extensive discussion
 of EAs is beyond the scope of this text, but may be found in a variety
-of sources (cf.,  TODO pp. 149-158; TODO). EAs available in Dakota include
+of sources (cf.,  :raw-latex:`\cite{Haf92}` pp.
+149-158; :raw-latex:`\cite{Gol89}`). EAs available in Dakota include
 ``coliny_ea``, ``soga``, and ``moga``. The latter is specifically
 designed for multi-objective problems, discussed further
 in `1.3 <#opt:additional>`__. All variants can optimize over discrete
@@ -593,7 +601,7 @@ is that it does not handle categorical variables (e.g., string
 variables). The branch and bound method is discussed further in
 Section `[adv_meth:minlp] <#adv_meth:minlp>`__.
 
-**DIvision of RECTangles (DIRECT)** balances
+**DIvision of RECTangles (DIRECT)** :raw-latex:`\cite{Gab01}` balances
 local search in promising regions of the design space with global search
 in unexplored regions. It adaptively subdivides the space of feasible
 design points to guarantee that iterates are generated in the
@@ -607,7 +615,7 @@ nonlinear constraints using a penalty formulation of the problem.
 
 **Efficient Global Optimization (EGO)** is a global optimization
 technique that employs response surface
-surrogates. In each EGO iteration, a
+surrogates :raw-latex:`\cite{Jon98,Hua06}`. In each EGO iteration, a
 Gaussian process (GP) approximation for the objective function is
 constructed based on sample points of the true simulation. The GP allows
 one to specify the prediction at a new input location as well as the
@@ -635,13 +643,13 @@ predict good solutions, and exploring areas where more information is
 needed.
 
 There are two major differences between our implementation and that of
-TODO: we do not use a branch and bound method to
+ :raw-latex:`\cite{Jon98}`: we do not use a branch and bound method to
 find points which maximize the EIF. Rather, we use the DIRECT algorithm.
 Second, we allow for multiobjective optimization and nonlinear least
 squares including general nonlinear constraints. Constraints are handled
 through an augmented Lagrangian merit function approach (see
 Surrogate-Based Minimization chapter in Dakota Theory
-Manual).
+Manual :raw-latex:`\cite{TheoMan}`).
 
 .. _`opt:methods:gradientfree:global:example`:
 
@@ -656,6 +664,10 @@ for showcasing the capabilities of evolutionary algorithms. Rather, EAs
 are best suited to optimization problems that have multiple local
 optima, and where gradients are either too expensive to compute or are
 not readily available.
+
+.. container:: bigbox
+
+   .. container:: small
 
 Figure `[opt:methods:gradientfree:global:example:rosenbrock_ea] <#opt:methods:gradientfree:global:example:rosenbrock_ea>`__
 shows a Dakota input file that uses an EA to minimize the Rosenbrock
@@ -673,7 +685,8 @@ optimization process will be terminated after either 100 iterations
 (generations of the EA) or 2,000 function evaluations. The EA software
 available in Dakota provides the user with much flexibility in choosing
 the settings used in the optimization process.
-See TODO and TODO for details on these settings.
+See :raw-latex:`\cite{RefMan}` and :raw-latex:`\cite{Har06}` for details
+on these settings.
 
 The EA optimization results printed at the end of this file show that
 the best design point found was :math:`(x_1,x_2) = (0.98,0.95)`. The
@@ -727,6 +740,10 @@ acquisition function, where the second batch promotes the exploration by
 maximizing the variance. An example specification for the EGO algorithm
 is shown in
 Figure `[opt:methods:gradientfree:global:example:egm_rosen] <#opt:methods:gradientfree:global:example:egm_rosen>`__.
+
+.. container:: bigbox
+
+   .. container:: small
 
 .. _`opt:additional`:
 
@@ -877,6 +894,10 @@ that the weights sum to a value of one. The multiobjective optimization
 capability also allows any number of constraints, although none are
 included in this example.
 
+.. container:: bigbox
+
+   .. container:: small
+
 Figure `[opt:additional:multiobjective:example1:figure02] <#opt:additional:multiobjective:example1:figure02>`__
 shows an excerpt of the results for this multiobjective optimization
 problem, with output in verbose mode. The data for function evaluation 9
@@ -969,11 +990,11 @@ makes all the selections it would make anyway and if that is not enough,
 it relaxes its limit and makes selections from the remaining designs. It
 continues to do this until it has made enough selections. The moga
 method has many other important features. Complete descriptions can be
-found in the Dakota Reference Manual.
+found in the Dakota Reference Manual :raw-latex:`\cite{RefMan}`.
 
 We demonstrate the MOGA algorithm on three examples that are taken from
 a multiobjective evolutionary algorithm (MOEA) test suite described by
-Van Veldhuizen et. al. in TODO. These three
+Van Veldhuizen et. al. in :raw-latex:`\cite{Coe02}`. These three
 examples illustrate the different forms that the Pareto set may take.
 For each problem, we describe the Dakota input and show a graph of the
 Pareto front. These problems are all solved with the ``moga`` method.
@@ -1017,6 +1038,10 @@ Figure `[opt:additional:multiobjective:example2:moga1inp] <#opt:additional:mult
 shows an input file that demonstrates some of the multi-objective
 capabilities available with the moga method.
 
+.. container:: bigbox
+
+   .. container:: small
+
 In this example, the three best solutions (as specified by
 ``final_solutions`` =3) are written to the output. Additionally, final
 results from moga are output to a file called in the directory in which
@@ -1032,8 +1057,9 @@ function f1 without increasing the value of f2: another point on the
 Pareto front, (0.63, 0.63) represents a better value of objective f1 but
 a worse value of objective f2.
 
-.. figure:: img/dakota_mogatest1_pareto_front.png
-   :alt: Multiple objective genetic algorithm (MOGA) example: Pareto front showing trade-offs between functions f1 and f2.
+.. figure:: images/dakota_mogatest1_pareto_front.png
+   :alt: Multiple objective genetic algorithm (MOGA) example: Pareto
+   front showing trade-offs between functions f1 and f2.
    :name: opt:additional:multiobjective:example2:moga_pareto
 
    Multiple objective genetic algorithm (MOGA) example: Pareto front
@@ -1173,6 +1199,10 @@ into :math:`[0,1]` based on its bounds. The objective function will be
 scaled by a factor of 50.0, then logarithmically, the first nonlinear
 constraint by a factor of 15.0, and the second nonlinear constraint is
 not scaled.
+
+.. container:: bigbox
+
+   .. container:: small
 
 .. _`opt:usage`:
 
@@ -1499,12 +1529,12 @@ along with the license status and web page where available.
 -  SCOLIB (``coliny_`` methods) License: BSD; website:
    https://software.sandia.gov/trac/acro/wiki/Packages.
 
-.. |image| image:: img/dak_graphics_ps_opt.png
-.. |image1| image:: img/rosen_ps_opt_pts.png
+.. |image| image:: images/dak_graphics_ps_opt.png
+.. |image1| image:: images/rosen_ps_opt_pts.png
    :height: 2.5in
-.. |image2| image:: img/rosen_ps_opt_pts2.png
+.. |image2| image:: images/rosen_ps_opt_pts2.png
    :height: 2.5in
-.. |image3| image:: img/rosen_ea_init.png
+.. |image3| image:: images/rosen_ea_init.png
    :height: 2.5in
-.. |image4| image:: img/rosen_ea_final.png
+.. |image4| image:: images/rosen_ea_final.png
    :height: 2.5in

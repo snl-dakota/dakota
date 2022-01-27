@@ -38,6 +38,10 @@ Figure `[output:incont] <#output:incont>`__ specifies one equality
 constraint, and that Dakota’s finite difference algorithm will provide
 central difference numerical gradients to the NPSOL optimizer.
 
+.. container:: small
+
+   .. container:: bigbox
+
 A partial listing of the Dakota output for the container optimization
 example follows:
 
@@ -394,7 +398,8 @@ Download page of the Dakota website; building from source is necessary.
 See the instructions on the Dakota website.
 
 For a more complete description of Dakota’s HDF5 capapbility, see the
-"Dakota HDF5 Output" section of the Dakota Reference Manual.
+"Dakota HDF5 Output" section of the Dakota Reference
+Manual :raw-latex:`\cite{RefMan}`.
 
 .. _`output:graphics`:
 
@@ -420,11 +425,12 @@ graphics. Figure `1.1 <#output:2dcont>`__ shows the optimization
 iteration history for the container example.
 
 If Dakota is executed on a remote machine, the DISPLAY variable in the
-user’s UNIX environment may need to be set to
+user’s UNIX environment :raw-latex:`\cite{Gil92}` may need to be set to
 the local machine in order to display the graphics window.
 
-.. figure:: img/container_graphic.png
-   :alt: Dakota 2D graphics for “container” problem showing history of an objective function, an equality constraint, and two variables.
+.. figure:: images/container_graphic.png
+   :alt: Dakota 2D graphics for “container” problem showing history of
+   an objective function, an equality constraint, and two variables.
    :name: output:2dcont
 
    Dakota 2D graphics for “container” problem showing history of an
@@ -443,7 +449,7 @@ an encapsulated postscript (EPS) file, named ``dakota_graphic_i.eps``
 where *i* is the plot window number, can be created using the “Print”
 button.
 
-.. figure:: img/container_graphic_options.png
+.. figure:: images/container_graphic_options.png
    :alt: Options for Dakota 2D graphics.
    :name: output:2dcontoptions
 
@@ -458,7 +464,7 @@ A variety of error messages are printed by Dakota in the event that an
 error is detected in the input specification. Some of the more common
 input errors, and the associated error messages, are described below.
 See also the Common Specification Mistakes section in the Dakota
-Reference Manual.
+Reference Manual :raw-latex:`\cite{RefMan}`.
 
 Incorrectly spelled specifications, such as ``“numericl_gradients”``,
 will result in error messages of the form:
@@ -566,7 +572,7 @@ the ``surfpack`` executable or library API. Select Surfpack models can
 export to a human-readable and self-documenting algebraic form, suitable
 for reuse in user-developed tools. The keyword group is used to specify
 model export filenames and formats. It is described in the Dakota
-Reference Manual.
+Reference Manual :raw-latex:`\cite{RefMan}`.
 
 Variables Output from Pre-run
 -----------------------------

@@ -21,7 +21,8 @@ overview of simulation interface components, covers issues relating to
 file management, and presents a number of example data mappings.
 
 For a detailed description of interface specification syntax, refer to
-the interface commands chapter in the Dakota Reference Manual.
+the interface commands chapter in the Dakota Reference
+Manual :raw-latex:`\cite{RefMan}`.
 
 .. _`interfaces:sim`:
 
@@ -58,7 +59,7 @@ development. In the latter case, the additional effort is particularly
 justified since SIERRA unifies an entire suite of physics codes. [*Note:
 the “sandwich implementation” of combining a direct interface plug-in
 with Dakota’s library mode is discussed in the Dakota Developers
-Manual].
+Manual :raw-latex:`\cite{DevMan}`*].
 
 In addition to direct linking with simulation codes, the direct
 interface also provides access to internal polynomial test functions
@@ -72,7 +73,9 @@ more rapid testing. See Chapter `[additional] <#additional>`__ for
 additional information on several of these test problems. An example
 input specification for a direct interface follows:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           interface,
                   direct
@@ -97,19 +100,21 @@ System Call Simulation Interface
 possible, though the system interface is still supported for portability
 and backward compatibility.** The system call approach invokes a
 simulation code or simulation driver by using the ``system`` function
-from the standard C library. In this approach,
+from the standard C library :raw-latex:`\cite{Ker88}`. In this approach,
 the system call creates a new process that communicates with Dakota
 through parameter and response files. The system call approach allows
 the simulation to be initiated via its standard invocation procedure (as
 a “black box”) and then coordinated with a variety of tools for pre- and
 post-processing. This approach has been widely used in previous
-studies. The system call
+studies :raw-latex:`\cite{Eld96a,Eld96b,Eld98b}`. The system call
 approach involves more process creation and file I/O overhead than the
 direct function approach, but this extra overhead is usually
 insignificant compared with the cost of a simulation. An example of a
 system call interface specification follows:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           interface,
                   system
@@ -138,7 +143,9 @@ code or driver occurs through the file system in exactly the same manner
 as for the system call interface. An example of a fork interface
 specification follows:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           interface,
                   fork
@@ -267,7 +274,9 @@ response values of interest from the simulator’s output file for return
 to Dakota (see Figures `[intro:bbinterface] <#intro:bbinterface>`__
 and `1.1 <#interfaces:bbinterfacecomp>`__). This is often managed
 through the use of scripting languages, such as
-C-shell, Bourne shell, Perl, or Python. While these are common and convenient
+C-shell :raw-latex:`\cite{And86}`, Bourne
+shell :raw-latex:`\cite{Bli96}`, Perl :raw-latex:`\cite{Wal96}`, or
+Python :raw-latex:`\cite{Mar03}`. While these are common and convenient
 choices for simulation drivers/filters, it is important to recognize
 that any executable file can be used. If the user prefers, the desired
 pre- and post-processing functionality may also be compiled or
@@ -297,12 +306,20 @@ function evaluations. In particular, it identifies as its
 ``analysis_driver``, as shown in
 Figure `[advint:figure01] <#advint:figure01>`__.
 
+.. container:: bigbox
+
+   .. container:: small
+
 The listed in Figure `[advint:figure02] <#advint:figure02>`__ is a short
 driver shell script that Dakota executes to perform each function
 evaluation. The names of the parameters and results files are passed to
 the script on its command line; they are referenced in the script by
 ``$1`` and ``$2``, respectively. The is divided into three parts:
 pre-processing, analysis, and post-processing.
+
+.. container:: bigbox
+
+   .. container:: small
 
 In the pre-processing portion, the uses , a template processing utility,
 to extract the current variable values from a parameters file (``$1``)
@@ -320,9 +337,9 @@ templates, is extensively documented in
 Section `1.9 <#interfaces:dprepro-and-pyprepro>`__.
 
 Other preprocessing tools of potential interest are the BPREPRO utility
-(see TODO), and at Lockheed Martin sites, the
+(see :raw-latex:`\cite{WalXX}`), and at Lockheed Martin sites, the
 JPrePost utility, a JAVA pre- and
-post-processor. The ``dprepro`` script will be
+post-processor :raw-latex:`\cite{Fla}`. The ``dprepro`` script will be
 used here for simplicity of discussion. It can use either Dakota’s
 ``aprepro`` parameters file format (see
 Section `[variables:parameters:aprepro] <#variables:parameters:aprepro>`__)
@@ -342,6 +359,10 @@ create a new file () by replacing these targets with the corresponding
 numerical values for the variables. As shown in , the names for the
 Dakota parameters file (``$1``), template file (), and generated input
 file () must be specified in the ``dprepro`` command line arguments.
+
+.. container:: bigbox
+
+   .. container:: small
 
 The second part of the script executes the simulator. The input and
 output file names, and , respectively, are hard-coded into the. When the
@@ -388,7 +409,9 @@ As an example of the data flow on a particular function evaluation,
 consider evaluation 60. The parameters file for this evaluation consists
 of:
 
-.. code-block::
+.. container:: small
+
+   ::
 
                                                 2 variables
                             4.664752623441543e-01 x1
@@ -403,7 +426,9 @@ of:
 
 This file is called if the line
 
-.. code-block::
+.. container:: small
+
+   ::
 
             named 'workdir' file_save  directory_save
 
@@ -419,7 +444,9 @@ variable values from this file, namely ``4.664752623441543e-01`` and
 substitutes them in the ``{x1}`` and ``{x2}`` fields of the file. The
 final three lines of the resulting input file () then appear as follows:
 
-.. code-block::
+.. container:: small
+
+   ::
 
       variable 1 0.4664752623
       variable 2 0.2256400864
@@ -429,7 +456,9 @@ where all other lines are identical to the template file. The simulator
 accepts as its input file and generates the following output to the file
 :
 
-.. code-block::
+.. container:: small
+
+   ::
 
        Beginning execution of model: Rosenbrock black box
        Set up complete.
@@ -576,7 +605,7 @@ the individual analysis drivers, and shared pre- and post-processing
 tasks that are only performed once for the set of analyses can be
 performed within the input and output filters.
 
-.. figure:: img/dakota_components.png
+.. figure:: images/dakota_components.png
    :alt: Components of the simulation interface
    :name: interfaces:bbinterfacecomp
 
@@ -594,12 +623,12 @@ be retrieved from the command line when Dakota is changing the file
 names from one function evaluation to the next (i.e., using temporary
 files or root names tagged with numerical identifiers). In the case of a
 UNIX C-shell script, the two command line arguments are retrieved using
-``$argv[1]`` and ``$argv[2]`` (see TODO).
+``$argv[1]`` and ``$argv[2]`` (see :raw-latex:`\cite{And86}`).
 Similarly, Bourne shell scripts retrieve the two command line arguments
 using ``$1`` and ``$2``, and Perl scripts retrieve the two command line
 arguments using ``@ARGV[0]`` and ``@ARGV[1]``. In the case of a C or C++
 program, command line arguments are retrieved using ``argc`` (argument
-count) and ``argv`` (argument vector), and for
+count) and ``argv`` (argument vector) :raw-latex:`\cite{Ker88}`, and for
 Fortran 77, the ``iargc`` function returns the argument count and the
 ``getarg`` subroutine returns command line arguments.
 
@@ -614,7 +643,9 @@ the ``input_filter`` and ``output_filter`` specifications), then only
 one process will appear in the execution syntax of the simulation
 interface. An example of this syntax in the system call case is:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           driver params.in results.out
 
@@ -626,7 +657,9 @@ since the same file names will be used each time.
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           blocking fork: driver params.in results.out
 
@@ -636,7 +669,9 @@ evaluation.
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           Direct function: invoking driver
 
@@ -649,14 +684,18 @@ Both the system call and fork interfaces support asynchronous
 operations. The asynchronous system call execution syntax involves
 executing the system call in the background:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           driver params.in.1 results.out.1 &
 
 and the asynchronous fork execution syntax involves use of a nonblocking
 fork:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           nonblocking fork: driver params.in.1 results.out.1
 
@@ -676,21 +715,25 @@ Single analysis driver with filters
 When filters are used, the syntax of the system call that Dakota
 performs is:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           ifilter params.in results.out; driver params.in results.out;
                ofilter params.in results.out
 
 in which the input filter (), analysis driver (), and output filter ()
 processes are combined into a single system call through the use of
-semi-colons (see TODO). All three portions are
+semi-colons (see :raw-latex:`\cite{And86}`). All three portions are
 passed the names of the parameters and results files on the command
 line.
 
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           blocking fork: ifilter params.in results.out;
                driver params.in results.out; ofilter params.in results.out
@@ -701,7 +744,9 @@ evaluation.
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           Direct function: invoking { ifilter driver ofilter }
 
@@ -715,14 +760,18 @@ argument lists.
 Asynchronous executions would appear as follows for the system call
 interface:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           (ifilter params.in.1 results.out.1; driver params.in.1 results.out.1;
                ofilter params.in.1 results.out.1) &
 
 and, for the fork interface, as:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           nonblocking fork: ifilter params.in.1 results.out.1;
                driver params.in.1 results.out.1; ofilter params.in.1 results.out.1
@@ -751,7 +800,9 @@ If a list of ``analysis_drivers`` is specified and filters are not
 needed (i.e., neither ``input_filter`` nor ``output_filter`` appears),
 then the system call syntax would appear as:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           driver1 params.in results.out.1; driver2 params.in results.out.2;
                driver3 params.in results.out.3
@@ -767,7 +818,9 @@ Section `1.5.2 <#interfaces:file:tagging1>`__).
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           blocking fork: driver1 params.in results.out.1;
                driver2 params.in results.out.2; driver3 params.in results.out.3
@@ -778,7 +831,9 @@ intermediate process is required).
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           Direct function: invoking { driver1 driver2 driver3 }
 
@@ -790,14 +845,18 @@ Both the system call and fork interfaces support asynchronous function
 evaluations. The asynchronous system call execution syntax would be
 reported as
 
-.. code-block::
+.. container:: small
+
+   ::
 
           (driver1 params.in.1 results.out.1.1; driver2 params.in.1 results.out.1.2;
                driver3 params.in.1 results.out.1.3) &
 
 and the nonblocking fork execution syntax would be reported as
 
-.. code-block::
+.. container:: small
+
+   ::
 
           nonblocking fork: driver1 params.in.1 results.out.1.1;
                driver2 params.in.1 results.out.1.2; driver3 params.in.1 results.out.1.3
@@ -818,7 +877,9 @@ Multiple analysis drivers with filters
 Finally, when combining filters with multiple ``analysis_drivers``, the
 syntax of the system call that Dakota performs is:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           ifilter params.in.1 results.out.1;
                driver1 params.in.1 results.out.1.1;
@@ -839,7 +900,9 @@ information).
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           blocking fork: ifilter params.in.1 results.out.1;
                driver1 params.in.1 results.out.1.1;
@@ -853,7 +916,9 @@ intermediate process is required).
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           Direct function: invoking { ifilter driver1 driver2 driver3 ofilter }
 
@@ -867,7 +932,9 @@ through the function argument lists.
 Asynchronous executions would appear as follows for the system call
 interface:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           (ifilter params.in.1 results.out.1;
                driver1 params.in.1 results.out.1.1;
@@ -877,7 +944,9 @@ interface:
 
 and for the fork interface:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           nonblocking fork: ifilter params.in.1 results.out.1;
                driver1 params.in.1 results.out.1.1;
@@ -926,7 +995,9 @@ their use is complete to reduce clutter. If the method output setting is
 verbose, a file remove notification will follow the function evaluation
 echo, e.g.,
 
-.. code-block::
+.. container:: small
+
+   ::
 
           driver /usr/tmp/aaaa20305 /usr/tmp/baaa20305
           Removing /usr/tmp/aaaa20305 and /usr/tmp/baaa20305
@@ -958,7 +1029,9 @@ running in a common disk space, since it can prevent conflicts between
 the simulations. An example specification of ``file_tag`` and
 ``file_save`` is shown below:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           interface,
                   system
@@ -975,7 +1048,9 @@ files for which a ``file_save`` request has been given. If the output
 control is set to verbose, then a notification similar to the following
 will follow the function evaluation echo:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           driver params.in results.out
           Files with non-unique names will be tagged to enable file_save:
@@ -1005,14 +1080,18 @@ If ``parameters_file`` and ``results_file`` are not specified by the
 user, temporary files having generated names are used. For example, a
 system call to a single analysis driver might appear as:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           driver /tmp/dakota_params_aaaa2035 /tmp/dakota_results_baaa2030
 
 and a system call to an analysis driver with filter programs might
 appear as:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           ifilter /tmp/dakota_params_aaaa2490 /tmp/dakota_results_baaa2490;
                driver /tmp/dakota_params_aaaa2490 tmp/dakota_results_baaa2490;
@@ -1047,7 +1126,9 @@ different analysis drivers to the response results, since the same root
 results filename is used for each component. For the system call
 interface, the syntax would be similar to the following:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           ifilter /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ;
                driver1 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.1;
@@ -1057,7 +1138,9 @@ interface, the syntax would be similar to the following:
 
 and, for the fork interface, similar to:
 
-.. code-block::
+.. container:: small
+
+   ::
 
           blocking fork:
                ifilter /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ;
@@ -1113,7 +1196,9 @@ optional tagging and saving as with files). To enable the
 ``work_directory`` feature an interface specification includes the
 keyword
 
-.. code-block::
+.. container:: small
+
+   ::
 
              work_directory
 
@@ -1126,7 +1211,9 @@ for the simulator to have various files, e.g., data files, available in
 the directory where it runs. If, say, is such a directory (as seen from
 Dakota’s directory), the interface specification
 
-.. code-block::
+.. container:: small
+
+   ::
 
              work_directory named 'my/special/directory'
 
@@ -1148,7 +1235,9 @@ useful in debugging.
 Sometimes it can be helpful for the simulator and filters to start in a
 new directory populated with some files. Adding
 
-.. code-block::
+.. container:: small
+
+   ::
 
              link_files 'templatedir/*'
 
@@ -1163,7 +1252,9 @@ unless ``replace`` also appears in the specification.
 Here is a summary of possibilities for a work directory specification,
 with ``[...]`` denoting that :math:`...` is optional:
 
-.. code-block::
+.. container:: small
+
+   ::
 
         work_directory [ named '...' ]
           [ directory_tag ]     # (or dir_tag)
@@ -1175,6 +1266,10 @@ with ``[...]`` denoting that :math:`...` is optional:
 Figure `[fig:interface:workdir] <#fig:interface:workdir>`__ contains an
 example of these specifications in a Dakota input file for constrained
 optimization.
+
+.. container:: bigbox
+
+   .. container:: small
 
 .. _`interfaces:batch`:
 
@@ -1217,7 +1312,9 @@ can select the aprepro format.
 The following example parameters file contains parameter sets for two
 evaluations.
 
-.. code-block::
+.. container:: small
+
+   ::
 
                                                 1 variables
                            -4.912558193411678e-01 x1
@@ -1874,6 +1971,8 @@ Section `1.9 <#interfaces:dprepro-and-pyprepro>`__. Templates may be
 processed within Python analysis drivers without externally invoking
 ``dprepro`` by calling the ``dprepro`` function:
 
+TODO Bogus phantom section
+
 If *template* is a string, it is assumed to contain a template. If it is
 a file-like object (that has a ``.read()`` method), the template will be
 read from it. (Templates that are already in string form can be passed
@@ -2068,6 +2167,10 @@ The remaining options are used to
 -  Silence warnings (``--no-warn``)
 
 -  Set the default numerical output format (``--output-format``).
+
+.. container:: bigbox
+
+   .. container:: tiny
 
 The ``pyprepro`` script accepts largely the same command line options.
 The primary differences are that ``pyprepro`` does not require or accept
@@ -2701,7 +2804,7 @@ Which returns:
    Single quotes: single
    Double quotes: double
 
-Strings can be enclosed by either single quotes (`'`) or double quotes
+Strings can be enclosed by either single quotes (````) or double quotes
 (``"``). The choice is a matter of convenience or style.
 
 Strings can be joined by adding them:
@@ -3004,8 +3107,14 @@ arrays was demonstrated in a previous section. The following example
 illustrates using Python’s ``random`` module to draw a sample from a
 uniform distribution:
 
-A = random()
+::
+
+   % from random import random,seed
+   % seed(1)
+   {A = random()}
 
 Returns (may depend on the system)
 
-0.1343642441
+::
+
+   0.1343642441

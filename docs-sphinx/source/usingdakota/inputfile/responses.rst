@@ -18,7 +18,7 @@ their uses, as well as cover some user issues relating to file formats
 and derivative vector and matrix sizing. For a detailed description of
 responses section syntax and example specifications, refer to the
 Responses Commands chapter in the Dakota Reference
-Manual TODO.
+Manual :raw-latex:`\cite{RefMan}`.
 
 .. _`responses:overview:types`:
 
@@ -178,7 +178,20 @@ reflecting the current parameters and corresponding to the function
 requests in the active set vector. The response data must be in the
 format shown in Figure `[responses:figure01] <#responses:figure01>`__.
 
-TODO
+.. container:: bigbox
+
+   | ``<double>``\ :raw-latex:`\ `\ ``<fn_label``\ :math:`\sb{1}`\ ``>``
+   | ``<double>``\ :raw-latex:`\ `\ ``<fn_label``\ :math:`\sb{2}`\ ``>``
+   | ``...``
+   | ``<double>``\ :raw-latex:`\ `\ ``<fn_label``\ :math:`\sb{m}`\ ``>``
+   | ``[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]``
+   | ``[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]``
+   | ``...``
+   | ``[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]``
+   | ``[[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]]``
+   | ``[[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]]``
+   | ``...``
+   | ``[[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]]``
 
 The first block of data (shown in black) conveys the requested function
 values and is followed by a block of requested gradients (shown in

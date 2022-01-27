@@ -42,7 +42,7 @@ identifier strings, and each of the corresponding method specifications
 has the responsibility for identifying the model specification (which
 may in turn identify variables, interface, and responses specifications)
 that each method will use (see the Dakota Reference
-Manual and the example discussed below).
+Manual :raw-latex:`\cite{RefMan}` and the example discussed below).
 Currently, only the sequential hybrid approach is available. The
 ``embedded`` and ``collaborative`` approaches are not fully functional
 at this time.
@@ -108,6 +108,10 @@ and ‘``I1``’ keyword blocks, but uses the responses keyword block
 (``optpp_newton``) needs analytic gradient and Hessian data to perform
 its search.
 
+.. container:: bigbox
+
+   .. container:: tiny
+
 .. _`adv_meth:multistart`:
 
 Multistart Local Minimization
@@ -122,7 +126,7 @@ However, there is no theoretical guarantee that the global optimum will
 be found. This approach combines the efficiency of local minimization
 methods with a user-specified global stratification (using a specified
 ``starting_points`` list, a number of specified ``random_starts``, or
-both; see the Dakota Reference Manual for
+both; see the Dakota Reference Manual :raw-latex:`\cite{RefMan}` for
 additional specification details). Since solutions for different
 starting points are independent, parallel computing may be used to
 concurrently run the local minimizations.
@@ -135,9 +139,14 @@ the set of starting points (3 random and 5 listed) that will be used for
 the optimization runs. The other keyword blocks in the input file are
 similar to what would be used in a single optimization run.
 
+.. container:: bigbox
+
+   .. container:: small
+
 The ``quasi_sine`` test function has multiple local minima, but there is
 an overall trend in the function that tends toward the global minimum at
-:math:`(x1,x2)=(0.177,0.177)`. See TODO for more information on this test function.
+:math:`(x1,x2)=(0.177,0.177)`. See :raw-latex:`\cite{Giu00}` for more
+information on this test function.
 Figure `[adv_meth:figure03] <#adv_meth:figure03>`__ shows the results
 summary for the eight local optimizations performed. From the five
 specified starting points and the 3 random starting points (as
@@ -173,7 +182,7 @@ Section `[opt:additional:multiobjective] <#opt:additional:multiobjective>`__.
 In the Pareto optimization method, multiple sets of multiobjective
 weightings are evaluated. The user can specify these weighting sets in
 the method keyword block using a list, a number of , or both (see the
-Dakota Reference Manual for additional
+Dakota Reference Manual :raw-latex:`\cite{RefMan}` for additional
 specification details).
 
 Dakota performs one multiobjective optimization problem for each set of
@@ -198,7 +207,13 @@ objectives. Plotting these (:math:`f_1,f_2,f_3`) triplets on a
 3-dimensional plot results in a Pareto surface (not shown), which is
 useful for visualizing the trade-offs in the competing objectives.
 
-.. code-block::
+.. container:: bigbox
+
+   .. container:: small
+
+.. container:: bigbox
+
+   .. container:: scriptsize
 
       ::
 
@@ -246,7 +261,7 @@ Dakota’s branch and bound method (keyword: ``branch_and_bound``) can
 solve optimization problems having either discrete or mixed
 continuous/discrete variables. This method uses the parallel
 branch-and-bound algorithm from the PEBBL software
-package to generate a series of optimization
+package :raw-latex:`\cite{Eck09}` to generate a series of optimization
 subproblems (“branches”). These subproblems are solved as continuous
 variable problems using any of Dakota’s nonlinear optimization
 algorithms (e.g., DOT, NPSOL). When a solution to a branch is feasible
@@ -286,7 +301,8 @@ problem.
 Example MINLP Problem
 ~~~~~~~~~~~~~~~~~~~~~
 
-As an example, consider the following MINLP problem:
+As an example, consider the following MINLP
+problem :raw-latex:`\cite{Eld99}`:
 
 .. math::
 
@@ -324,7 +340,7 @@ solved where :math:`x_{5}` and :math:`x_{6}` are integer-valued. At the
 solution to this problem, the optimal values for :math:`x_{5}` and
 :math:`x_{6}` are :math:`x_{5}=x_{6}=1`.
 
-.. figure:: img/branch_history.png
+.. figure:: images/branch_history.png
    :alt: Branching history for example MINLP optimization problem.
    :name: adv_meth:figure07
 
@@ -391,7 +407,7 @@ local algorithm periodically checks the accuracy of the surrogate model
 against the original simulation model and adaptively manages the extent
 of the approximate optimization cycles using a trust region approach.
 
-Refer to the Dakota Theory Manual for
+Refer to the Dakota Theory Manual :raw-latex:`\cite{TheoMan}` for
 algorithmic details on iterate acceptance, merit function formulations,
 convergence assessment, and constraint relaxation.
 
@@ -413,7 +429,7 @@ original model into smooth, differentiable, easily navigated surrogates.
 This allows SBO with global data fits to extract the relevant global
 design trends from noisy simulation data.
 
-.. figure:: img/sbo_df.png
+.. figure:: images/sbo_df.png
    :alt: SBO iteration progression for global data fits.
    :name: fig:sbo_df
 
@@ -474,6 +490,10 @@ centered at the design point :math:`(x_1,x_2)=(-1.2,1.0)`, and extends
 :math:`\pm 0.4` (10% of the global bounds) from this point in the
 :math:`x_1` and :math:`x_2` coordinate directions.
 
+.. container:: bigbox
+
+   .. container:: tiny
+
 If this input file is executed in Dakota, it will converge to the
 optimal design point at :math:`(x_{1},x_{2})=(1,1)` in approximately 800
 function evaluations. While this solution is correct, it is obtained at
@@ -486,11 +506,11 @@ direct gradient-based optimization can be more efficient for such
 applications. Rather, SBO with global data fits is best-suited for the
 types of problems that occur in engineering design where the response
 quantities may be discontinuous, nonsmooth, or may have multiple local
-optima. In these types of engineering design
+optima :raw-latex:`\cite{Giu02}`. In these types of engineering design
 problems, traditional gradient-based optimizers often are ineffective,
 whereas global data fits can extract the global trends of interest
 despite the presence of local nonsmoothness (for an example problem with
-multiple local optima, look in for the file TODO).
+multiple local optima, look in for the file  :raw-latex:`\cite{Giu00}`).
 
 The surrogate-based local minimizer is only mathematically guaranteed to
 find a local minimum. However, in practice, SBO can often find the
@@ -519,11 +539,11 @@ iteration (assuming no finite differencing for derivatives) is
 independent of the scale of the design problem. However, the ability to
 smooth poorly-behaved response variations in the high-fidelity model is
 lost, and the technique becomes dependent on having a well-behaved
-low-fidelity model. In addition, the parameterizations for the low
+low-fidelity model [1]_. In addition, the parameterizations for the low
 and high-fidelity models may differ, requiring the use of a mapping
 between these parameterizations. Space mapping, corrected space mapping,
 POD mapping, and hybrid POD space mapping are being explored for this
-purpose.
+purpose :raw-latex:`\cite{Rob06a,Rob06b}`.
 
 .. container:: wrapfigure
 
@@ -534,7 +554,7 @@ for balancing global accuracy with the local consistency requirements.
 However, with only a single high-fidelity model evaluation at the center
 of each trust region, it is critical to use the best correction possible
 on the low-fidelity model in order to achieve rapid convergence rates to
-the optimum of the high-fidelity model.
+the optimum of the high-fidelity model :raw-latex:`\cite{Eld04}`.
 
 A multifidelity test problem named is available in to demonstrate this
 SBO approach. This test problem uses the Rosenbrock function as the high
@@ -558,9 +578,9 @@ mathematically generated from the high-fidelity model. A critical issue
 in this ROM generation is the ability to capture the effect of
 parametric changes within the ROM. Two approaches to parametric ROM are
 extended ROM (E-ROM) and spanning ROM (S-ROM)
-techniques. Closely related techniques include
+techniques :raw-latex:`\cite{Wei06}`. Closely related techniques include
 tensor singular value decomposition (SVD)
-methods. In the single-point and multipoint
+methods :raw-latex:`\cite{Lat00}`. In the single-point and multipoint
 E-ROM cases, the SBO iteration can appear as in
 Fig. `[fig:sbo_mh] <#fig:sbo_mh>`__, whereas in the S-ROM, global E-ROM,
 and tensor SVD cases, the SBO iteration will appear as in
@@ -689,10 +709,13 @@ input specification deals with the interface to the actual analysis
 driver and the 2 responses being returned as objective functions from
 that driver.
 
-.. code-block::
+.. container:: bigbox
 
+   .. container:: scriptsize
+
+.. [1]
    It is also possible to use a hybrid data fit/multifidelity approach
    in which a smooth data fit of a noisy low fidelity model is used in
    combination with a high fidelity model
 
-.. |image| image:: img/sbo_mh.png
+.. |image| image:: images/sbo_mh.png

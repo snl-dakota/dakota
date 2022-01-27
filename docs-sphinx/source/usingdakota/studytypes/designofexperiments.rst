@@ -3,10 +3,6 @@
 Design of Experiments Capabilities
 ==================================
 
-.. image:: img/SensitivityAnalysisScreencastTeaser.png
-   :alt: Watch Screencast 2.1: Introduction to Sensitivity Analysis
-   :target: https://www.youtube.com/watch?v=YshRCgm_f1Y&list=PLouetuxaIMDo-NMFXT-hlHYhOkePLrayY&index=4
-
 .. _`dace:overview`:
 
 Overview
@@ -42,11 +38,11 @@ data generation methods for building response surface approximations.
 
 Dakota includes several approaches sampling and design of experiments,
 all implemented in included third-party software libraries. LHS (Latin
-hypercube sampling) is a general-purpose
+hypercube sampling) :raw-latex:`\cite{Swi04}` is a general-purpose
 sampling package developed at Sandia that has been used by the DOE
 national labs for several decades. DDACE (distributed design and
 analysis for computer experiments) is a more recent package for computer
-experiments developed at Sandia Labs. DDACE
+experiments developed at Sandia Labs :raw-latex:`\cite{TonXX}`. DDACE
 provides the capability for generating orthogonal arrays, Box-Behnken
 designs, Central Composite designs, and random designs. The FSUDace
 (Florida State University’s Design and Analysis of Computer Experiments)
@@ -54,7 +50,7 @@ package provides the following sampling techniques: quasi-Monte Carlo
 sampling based on Halton or Hammersley sequences, and Centroidal Voronoi
 Tessellation. Lawrence Livermore National Lab’s PSUADE (Problem Solving
 Environment for Uncertainty Analysis and Design
-Exploration) includes several methods for
+Exploration) :raw-latex:`\cite{Ton05}` includes several methods for
 model exploration, but only the Morris screening method is exposed in
 Dakota.
 
@@ -180,11 +176,11 @@ DDACE
 
 The Distributed Design and Analysis of Computer Experiments (DDACE)
 package includes both classical design of experiments
-methods and stochastic sampling methods. The
+methods :raw-latex:`\cite{TonXX}` and stochastic sampling methods. The
 classical design of experiments methods in DDACE are central composite
 design (CCD) and Box-Behnken (BB) sampling. A grid-based sampling
 (full-factorial) method is also available. The stochastic methods are
-orthogonal array sampling (which permits main
+orthogonal array sampling :raw-latex:`\cite{Koe96}` (which permits main
 effects calculations), Monte Carlo (random) sampling, Latin hypercube
 sampling, and orthogonal array-Latin hypercube sampling. While DDACE LHS
 supports variables with normal or uniform distributions, only uniform
@@ -294,7 +290,7 @@ Orthogonal Array Designs
 
 Orthogonal array (OA) sampling is a widely used technique for running
 experiments and systematically testing factor
-effects. An orthogonal array sample can be
+effects :raw-latex:`\cite{Hed99}`. An orthogonal array sample can be
 described as a 4-tuple :math:`(m,n,s,r)`, where :math:`m` is the number
 of sample points, :math:`n` is the number of input variables, :math:`s`
 is the number of symbols, and :math:`r` is the strength of the
@@ -425,7 +421,8 @@ OA-LHS Design
 DDACE offers a hybrid design which is combination of an orthogonal array
 and a Latin Hypercube sample. This design is specified with the method
 command ``dace oa_lhs``. This design has the advantages of both
-orthogonality of the inputs as well as stratification of the samples.
+orthogonality of the inputs as well as stratification of the samples
+(see :raw-latex:`\cite{Owe92}`).
 
 .. _`dace:fsudace`:
 
@@ -467,7 +464,7 @@ produce CVT points, an almost arbitrary set of initial points is chosen,
 and then an internal set of iterations is carried out. These iterations
 repeatedly replace the current set of sample points by an estimate of
 the centroids of the corresponding Voronoi
-subregions. A CVT design is specified in Dakota
+subregions :raw-latex:`\cite{Du99}`. A CVT design is specified in Dakota
 with the method command ``fsu_cvt``.
 
 The methods in FSUDace are useful for design of experiments because they
@@ -486,13 +483,13 @@ optimization. Its features include non-intrusive and parallel function
 evaluations, sampling and analysis methods, an integrated design and
 analysis framework, global optimization, numerical integration, response
 surfaces (MARS and higher order regressions), graphical output with
-Pgplot or Matlab, and fault tolerance. Dakota
+Pgplot or Matlab, and fault tolerance :raw-latex:`\cite{Ton05}`. Dakota
 includes a prototype interface to its Morris One-At-A-Time (MOAT)
 screening method, a valuable tool for global sensitivity (including
 interaction) analysis.
 
 The Morris One-At-A-Time method, originally proposed by M. D.
-Morris, is a screening method, designed to
+Morris :raw-latex:`\cite{Mor91}`, is a screening method, designed to
 explore a computational model to distinguish between input variables
 that have negligible, linear and additive, or nonlinear or interaction
 effects on the output. The computer experiments performed consist of
@@ -550,7 +547,11 @@ runtime as necessary. Finite user-specified lower and upper bounds are
 required and will be scaled as needed by the method. For more
 information on use of MOAT sampling, see the Morris example in
 Section `[additional:morris] <#additional:morris>`__, or Saltelli, et
-al.
+al. :raw-latex:`\cite{Sal04}`.
+
+.. container:: bigbox
+
+   .. container:: small
 
 .. _`dace:sa`:
 
@@ -630,7 +631,7 @@ uniformly distributed cloud of points indicate parameters with little
 influence on the results, whereas scatter plots with a defined shape to
 the cloud indicate parameters which are more significant. Related
 techniques include analysis of variance
-(ANOVA) and main effects analysis, in which
+(ANOVA) :raw-latex:`\cite{Mye95}` and main effects analysis, in which
 the parameters which have the greatest influence on the results are
 identified from sampling results. Scatter plots and ANOVA may be
 accessed through import of Dakota tabular results (see
@@ -644,7 +645,7 @@ addition, we have provided some functions to help determine the most
 important variables.
 
 We take the definition of uncertainty analysis
-from: “The study of how uncertainty in the
+from :raw-latex:`\cite{Sal04}`: “The study of how uncertainty in the
 output of a model can be apportioned to different sources of uncertainty
 in the model input.”
 
@@ -683,10 +684,10 @@ The calculation of :math:`S_{i}` and :math:`T_{i}` requires the
 evaluation of m-dimensional integrals which are typically approximated
 by Monte-Carlo sampling. More details on the calculations and
 interpretation of the sensitivity indices can be found
-in TODO. In Dakota version 5.1, we have improved
+in :raw-latex:`\cite{Sal04}`. In Dakota version 5.1, we have improved
 calculations for the calculation of the :math:`S_{i}` and :math:`T_{i}`
 indices when using sampling. The implementation details of these
-calculatiosn are provided in TODO. VBD can be
+calculatiosn are provided in :raw-latex:`\cite{Weirs10}`. VBD can be
 specified for any of the sampling or DACE methods using the command
 ``variance_based_decomposition``. Note that VBD is extremely
 computationally intensive when using sampling since replicated sets of
@@ -702,7 +703,7 @@ these indices using one of the stochastic expansion methods described in
 Section `[uq:expansion] <#uq:expansion>`__. The calculation of the
 indices using expansion methods is much more efficient since the VBD
 indices are analytic functions of the coefficients in the stochastic
-expansion. The paper by Weirs et al. 
+expansion. The paper by Weirs et al. :raw-latex:`\cite{Weirs10}`
 compares different methods for calculating the sensitivity indices for
 nonlinear problems with significant interaction effects.
 
@@ -774,7 +775,8 @@ Table `1.4 <#dace:usage:table>`__.
 .. container::
    :name: dace:usage:table
 
-   .. table:: Guidelines for selection of parameter study, DOE, DACE, and sampling methods.
+   .. table:: Guidelines for selection of parameter study, DOE, DACE,
+   and sampling methods.
 
       +--------------------+-----------------------+-----------------------+
       | **Method**         | **Applications**      | **Applicable          |

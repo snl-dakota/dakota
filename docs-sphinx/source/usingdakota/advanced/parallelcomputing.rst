@@ -87,7 +87,7 @@ Categorization of parallelism
 
 To understand the parallel computing possibilities, it is instructive to
 first categorize the opportunities for exploiting parallelism into four
-main areas, consisting of coarse-grained and
+main areas :raw-latex:`\cite{Eld98a}`, consisting of coarse-grained and
 fine-grained parallelism opportunities within algorithms and their
 function evaluations:
 
@@ -126,7 +126,7 @@ function evaluations:
    multiple loading cases or operational environments) or multiple
    dependent analyses where the coupling is applied at the optimizer
    level (e.g., multiple disciplines in the individual discipline
-   feasible formulation).
+   feasible formulation :raw-latex:`\cite{Den94a}`).
 
 #. *Function evaluation fine-grained parallelism*: This involves
    parallelization of the solution steps within a single analysis code.
@@ -141,7 +141,7 @@ to communication as the number of processors increases. However, it is
 often the case that there are not enough separable computations on each
 algorithm cycle to utilize the thousands of processors available on
 massively parallel machines. For example, a thermal safety
-application demonstrated this limitation with
+application :raw-latex:`\cite{Eld96a}` demonstrated this limitation with
 a pattern search optimization in which the maximum speedup exploiting
 *only* coarse-grained algorithmic parallelism was shown to be limited by
 the size of the design problem (coordinate pattern search has at most
@@ -153,7 +153,7 @@ communication among processors and care must be taken to avoid the case
 of inefficient machine utilization in which the communication demands
 among processors outstrip the amount of actual computational work to be
 performed. For example, a chemically-reacting flow
-application illustrated this limitation for a
+application :raw-latex:`\cite{Eld98a}` illustrated this limitation for a
 simulation of fixed size in which it was shown that, while simulation
 run time did monotonically decrease with increasing number of
 processors, the relative parallel efficiency :math:`\hat{E}` of the
@@ -199,7 +199,7 @@ Parallel iterators
    offsets. For ``n`` variables, forward differences result in an
    :math:`n+1` concurrency and central differences result in a
    :math:`2n+1` concurrency. In addition, CONMIN, DOT, and OPT++ can use
-   speculative gradient techniques to obtain
+   speculative gradient techniques :raw-latex:`\cite{Byr88}` to obtain
    better parallel load balancing. By speculating that the gradient
    information associated with a given line search point will be used
    later and computing the gradient information in parallel at the same
@@ -208,7 +208,7 @@ Parallel iterators
    speculative gradients since this approach is superseded by NPSOL’s
    gradient-based line search in user-supplied derivative mode. NLPQL
    also supports a distributed line search capability for generating
-   concurrency. Finally, finite-difference
+   concurrency :raw-latex:`\cite{Sch04}`. Finally, finite-difference
    Newton algorithms can exploit additional concurrency in numerically
    evaluating Hessian matrices.
 
@@ -361,7 +361,7 @@ parallelism; however, this can still be quite effective in reducing the
 time to obtain a solution. Three single-level parallelism models will be
 discussed, and are depicted in Figure `1.1 <#parallel:figure03>`__:
 
-.. figure:: img/ex_in_hy_job_management.png
+.. figure:: images/ex_in_hy_job_management.png
    :alt: External, internal, and hybrid job management.
    :name: parallel:figure03
    :width: 60mm
@@ -499,7 +499,7 @@ multiple system calls is recovered in a synchronize operation.
 
 In this synchronize operation, completion of a function evaluation is
 detected by testing for the existence of the evaluation’s results file
-using the ``stat`` utility. Care must be taken
+using the ``stat`` utility :raw-latex:`\cite{Ker88}`. Care must be taken
 when using asynchronous system calls since they are prone to the race
 condition in which the results file passes the existence test but the
 recording of the function evaluation results in the file is incomplete.
@@ -743,7 +743,8 @@ Message Passing Parallelism
 Dakota uses a “single program-multiple data” (SPMD) parallel programming
 model. It uses message-passing routines from the Message Passing
 Interface (MPI)
-standard, to communicate data between processors. The SPMD designation simply denotes
+standard :raw-latex:`\cite{Gro94}`, :raw-latex:`\cite{Sni96}` to
+communicate data between processors. The SPMD designation simply denotes
 that the same Dakota executable is loaded on all processors during the
 parallel invocation. This differs from the MPMD model (“multiple
 program-multiple data”) which would have the Dakota executable on one or
@@ -779,7 +780,7 @@ neither of these characteristics is present, then use of the dedicated
 master partition supports a dynamic scheduling which assures that server
 idleness is minimized.
 
-.. figure:: img/comm_partitioning.png
+.. figure:: images/comm_partitioning.png
    :alt: Communicator partitioning models.
    :name: parallel:figure01
    :width: 70mm
@@ -988,7 +989,7 @@ launched into the compute nodes from the service node partition. While
 an asynchronous local approach from a single service node would be
 sufficient, spreading the application load by running Dakota in parallel
 across multiple service nodes results in better
-performance. If the number of concurrent jobs
+performance :raw-latex:`\cite{Eld00}`. If the number of concurrent jobs
 to be managed in the compute partition exceeds the number of available
 service nodes, then hybrid parallelism is the preferred approach. In the
 case of a cluster of SMPs (or network of multiprocessor workstations),
@@ -1155,7 +1156,7 @@ the question may arise as to how the amount of parallelism at each level
 should be selected so as to maximize the overall parallel efficiency of
 the study. For performance analysis of multilevel parallelism
 formulations and detailed discussion of these issues, refer
-to TODO. In many cases, *the user may simply employ
+to :raw-latex:`\cite{Eld00}`. In many cases, *the user may simply employ
 Dakota’s automatic parallelism configuration facilities,* which
 implement the recommendations from the aforementioned paper.
 
@@ -1241,7 +1242,7 @@ lower level of parallelism.
 Scheduling within levels
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. figure:: img/recursive_partitioning.png
+.. figure:: images/recursive_partitioning.png
    :alt: Recursive partitioning for nested parallelism.
    :name: parallel:figure02
    :width: 60mm
@@ -1266,7 +1267,7 @@ into ``evalCOMM0`` (master) and ``evalCOMM1/2/3/.../\tau_{2}`` (slaves),
 and each slave ``evalCOMM`` is further subdivided into
 ``analCOMM1/2/3/.../\tau_{3}``. Logic for selecting the :math:`\tau_i`
 that maximize overall efficiency is discussed
-in TODO.
+in :raw-latex:`\cite{Eld00}`.
 
 .. _`parallel:MLP:hybrid`:
 
@@ -1441,7 +1442,7 @@ used to initiate a parallel Dakota job, e.g.:
 where both examples specify the use of 12 processors, the former
 selecting them from a default system resources file and the latter
 specifying particular machines in a machine file
-(see TODO for details).
+(see :raw-latex:`\cite{Gro96}` for details).
 
 On a massively parallel computer, the familiar mpirun/mpiexec options
 may be replaced with other launch scripts as dictated by the particular
@@ -1531,7 +1532,7 @@ Specifying Parallelism
 ----------------------
 
 Given an allotment of processors, Dakota contains logic based on the
-theoretical work in TODO to automatically determine
+theoretical work in :raw-latex:`\cite{Eld00}` to automatically determine
 an efficient parallel configuration, consisting of partitioning and
 scheduling selections for each of the parallelism levels. This logic
 accounts for problem size, the concurrency supported by particular
@@ -1619,7 +1620,7 @@ multiprocessor analyses used in a direct function simulation interface.
 Scheduling options for this level include ``master`` or ``peer``, where
 the latter is static (no dynamic peer option supported). Each of these
 keywords appears as part of the interface commands specification in the
-Dakota Reference Manual.
+Dakota Reference Manual :raw-latex:`\cite{RefMan}`.
 
 .. _`parallel:spec:meta`:
 
@@ -1631,7 +1632,8 @@ and nested models, the , , and keywords are used to override the
 automatic parallelism configuration. For this level, the available
 scheduling options are or , where the latter is static (no dynamic peer
 option supported). See the method and model commands specification in
-the Dakota Reference Manual for additional details.
+the Dakota Reference Manual :raw-latex:`\cite{RefMan}` for additional
+details.
 
 .. _`parallel:spec:single`:
 
@@ -2169,6 +2171,21 @@ Dakota and the application jobs run within a single cluster processor
 allocation (queued job), are preferred. However for particularly
 long-running or large jobs, or platforms that not supporting the first
 scheduling modes, Case 4 may be most appropriate.
+
+[1]>m1 [parallel:application:table01]
+
+.. container:: tabular
+
+   | c|L2cm\|c|c|L7.5cm **Case** & **Name** & **Dakota** &
+     **Application** & **Notes**
+   | & Massively Serial & parallel & serial & :math:`M` simultaneous
+     application instances, each :math:`N=1` processor
+   | & Sequential Parallel & serial & parallel & 1 simultaneous
+     application instance on :math:`N` processors
+   | & Evaluation Tiling &serial & parallel & :math:`M/N` simultaneous
+     :math:`N` processor jobs
+   | & Evaluation Submission & serial & parallel & submit *expensive*
+     :math:`N` processor application jobs to a scheduler (e.g., qsub)
 
 | Relevant example files for each case are included in directories
 | with the Dakota distribution. These typically include a PBS or SLURM

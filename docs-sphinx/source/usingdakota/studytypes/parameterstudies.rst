@@ -107,7 +107,8 @@ distribution bounds, mean values for discrete integer range
 distributions are rounded down to the nearest integer, and mean values
 for discrete set distributions are rounded to the nearest set value. See
 the , , and keywords in the Dakota Reference
-Manual for additional details on default values.
+Manual :raw-latex:`\cite{RefMan}` for additional details on default
+values.
 
 .. _`ps:overview:bounds`:
 
@@ -118,7 +119,7 @@ The multidimensional parameter study uses the bounds of the variables
 from the ``variables`` keyword block to define the range of parameter
 values to study. In the case of design and state variables, the
 ``lower_bounds`` and ``upper_bounds`` specifications are used (see the
-Dakota Reference Manual for default values
+Dakota Reference Manual :raw-latex:`\cite{RefMan}` for default values
 when ``lower_bounds`` or ``upper_bounds`` are unspecified). In the case
 of uncertain variables, these values are either drawn or inferred from
 the distribution specification. Distribution lower and upper bounds can
@@ -353,7 +354,7 @@ two positive deltas) per variable:
 This set of points in parameter space is depicted in
 Figure `1.1 <#ps:figure01>`__.
 
-.. figure:: img/centered_pstudy.png
+.. figure:: images/centered_pstudy.png
    :alt: Example centered parameter study.
    :name: ps:figure01
 
@@ -393,7 +394,7 @@ interval [0,3] is divided into three equal-sized partitions. This
 two-dimensional grid, shown in Figure `1.2 <#ps:figure02>`__, would
 result in the following twelve function evaluations:
 
-.. figure:: img/multi_d_pstudy.png
+.. figure:: images/multi_d_pstudy.png
    :alt: Example multidimensional parameter study
    :name: ps:figure02
 
@@ -487,6 +488,10 @@ section, the ``vector_parameter_study`` keyword is used. The
 study, and ``num_steps`` specifies the number of steps taken between the
 initial and final points in the parameter study.
 
+.. container:: bigbox
+
+   .. container:: small
+
 Figure `[additional:rosenbrock_vector_graphics] <#additional:rosenbrock_vector_graphics>`__\ (a)
 shows the legacy X Windows-based graphics output created by Dakota,
 which can be useful for visualizing the results.
@@ -508,6 +513,6 @@ to the valley.
 | (b)      |
 +----------+
 
-.. |image| image:: img/dak_graphics_vector.png
-.. |image1| image:: img/rosen_vect_pts.png
+.. |image| image:: images/dak_graphics_vector.png
+.. |image1| image:: images/rosen_vect_pts.png
    :height: 2.5in

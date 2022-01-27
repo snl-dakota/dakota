@@ -21,14 +21,14 @@ Algebraic Mappings
 ------------------
 
 If desired, one can define algebraic input-output mappings using the
-AMPL code TODO and save these mappings in 3 files:
+AMPL code :raw-latex:`\cite{Fou03}` and save these mappings in 3 files:
 , , and , where ``stub`` is a particular root name describing a
 particular problem. These files names can be communicated to Dakota
 using the ``algebraic_mappings`` input.
 
 Dakota will use and to obtain input and output identifier strings,
 respectively, and will use the AMPL solver
-library TODO to evaluate expressions conveyed in ,
+library :raw-latex:`\cite{Gay97}` to evaluate expressions conveyed in ,
 and, if needed, their first and second derivatives.
 
 As a simple example (from ), consider algebraic mappings based on
@@ -69,7 +69,7 @@ and the file contains the set of response descriptor strings:
 
 The variable and objective function names declared within AMPL should be
 a subset of the variable descriptors and response descriptors used by
-Dakota (see the Dakota Reference Manual for
+Dakota (see the Dakota Reference Manual :raw-latex:`\cite{RefMan}` for
 information on Dakota variable and response descriptors). Ordering of
 the inputs and outputs within the AMPL declaration is not important, as
 Dakota will reorder data as needed. The following listing shows an
@@ -153,7 +153,7 @@ simulation code.
 Three approaches are outlined below for developing direct linking
 between Dakota and a simulation: extension, derivation, and sandwich.
 For additional information, refer to “Interfacing with Dakota as a
-Library” in the Dakota Developers Manual.
+Library” in the Dakota Developers Manual :raw-latex:`\cite{DevMan}`.
 
 Once performed, Dakota can bind with the new direct simulation interface
 using the ``direct`` interface specification in combination with an
@@ -216,7 +216,7 @@ member functions. In this case, the following steps are performed:
 Various header files may have to be included, particularly within the
 **DirectFnApplicInterface** class, in order to recognize new external
 functions and compile successfully. Refer to the Dakota Developers
-Manual for additional information on the
+Manual :raw-latex:`\cite{DevMan}` for additional information on the
 **DirectFnApplicInterface** class and the Dakota data types.
 
 .. _`advint:direct:derivation`:
@@ -225,7 +225,7 @@ Derivation
 ~~~~~~~~~~
 
 As described in “Interfacing with Dakota as a Library” in the Dakota
-Developers Manual, a derivation approach can
+Developers Manual :raw-latex:`\cite{DevMan}`, a derivation approach can
 be employed to further increase the level of independence between Dakota
 and the host application. In this case, rather than *adding* a new
 function to the existing **DirectFnApplicInterface** class, a new
@@ -247,7 +247,7 @@ end” and “back end” with Dakota sandwiched in the middle. To accomplish
 this approach, the simulation code is responsible for interacting with
 the user (the front end), links Dakota in as a library (refer to
 “Interfacing with Dakota as a Library” in the Dakota Developers
-Manual, and plugs in a derived direct
+Manual :raw-latex:`\cite{DevMan}`), and plugs in a derived direct
 interface class to provide a closely-coupled mechanism for performing
 function evaluations (the back end). This approach makes Dakota services
 available to other codes and frameworks and is currently used by Sandia

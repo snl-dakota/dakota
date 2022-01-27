@@ -27,7 +27,8 @@ which can be used to define a parallel configuration that partitions
 servers for supporting sub-iteration concurrency. Refer to
 Chapter `[parallel] <#parallel>`__ for additional information on
 parallel configurations, and to the Methods and Models chapters of the
-Reference Manual for additional information on these specifications.
+Reference Manual :raw-latex:`\cite{RefMan}` for additional information
+on these specifications.
 
 .. _`adv_models:mixed_uq`:
 
@@ -61,7 +62,7 @@ Interval-valued probability (IVP)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In IVP (also known as probability bounds
-analysis, we employ an outer
+analysis :raw-latex:`\cite{Fer06,KaKiVeAj09,Aug07}`), we employ an outer
 loop of interval estimation in combination with an aleatory inner loop.
 In interval analysis, it is assumed that nothing is known about the
 uncertain input variables except that they lie within certain intervals.
@@ -73,7 +74,7 @@ Starting from a specification of intervals and probability distributions
 on the inputs, the intervals may augment the probability distributions,
 insert into the probability distributions, or some combination (refer to
 Section `[models:nested] <#models:nested>`__ and to the Models chapter
-of the Reference Manual). We generate an
+of the Reference Manual :raw-latex:`\cite{RefMan}`). We generate an
 ensemble of cumulative distribution functions (CDF) or Complementary
 Cumulative Distribution Functions (CCDF), one CDF/CCDF result for each
 aleatory analysis. Plotting an entire ensemble of CDFs or CCDFs in a
@@ -82,8 +83,9 @@ the family of distributions (see Figure `1.1 <#fig:horsetail>`__).
 
 .. container:: center
 
-   .. figure:: img/horsetail.png
-      :alt: Example CDF ensemble. Commonly referred to as a “horsetail” plot.
+   .. figure:: images/horsetail.png
+      :alt: Example CDF ensemble. Commonly referred to as a “horsetail”
+      plot.
       :name: fig:horsetail
       :width: 3.5in
 
@@ -130,7 +132,15 @@ defining distribution parameters for the inner loop, they are not
 required to be: they can just be separate uncertain variables in the
 problem.
 
-.. code-block::
+.. container:: bigbox
+
+   .. container:: tiny
+
+.. container:: bigbox
+
+   .. container:: small
+
+      ::
 
          Statistics based on 50 samples:
 
@@ -163,7 +173,7 @@ modeling epistemic uncertainty with a single interval per variable and
 computing interval-valued statistics, we instead employ subjective
 probability distributions and compute epistemic statistics on the
 aleatory statistics (for example, probabilities on probabilities – the
-source of the “second-order” terminology).
+source of the “second-order” terminology :raw-latex:`\cite{GoNg99}`).
 Now the different hairs of the horsetail shown in
 Figure `1.1 <#fig:horsetail>`__ have a relative probability of
 occurrence and stronger inferences may be drawn. In particular, mean,
@@ -174,7 +184,7 @@ referring to a probabilistic interpretation of the epistemic variables
 and a frequency interpretation of the aleatory variables. The PoF
 terminology is used in a recent National Academy of Sciences report on
 the Quantification of Margins and Uncertainties
-(QMU).
+(QMU) :raw-latex:`\cite{NAS08}`.
 
 Rather than employing interval estimation techniques at the outer loop
 in SOP, we instead apply probabilistic methods, potentially the same
@@ -220,7 +230,7 @@ resolved epistemic characterization than a basic output interval.
 
 The single-level DSTE approach for propagating epistemic uncertainties
 is described in Section `[uq:dempshaf] <#uq:dempshaf>`__ and in the
-Dakota Theory Manual. An example of nested
+Dakota Theory Manual :raw-latex:`\cite{TheoMan}`. An example of nested
 DSTE for propagating mixed uncertainties can be seen in in the input
 file .
 
@@ -251,23 +261,23 @@ methodologies.
 If the UQ method is sampling based, then three approaches are currently
 supported: nested OUU, surrogate-based OUU, and trust-region
 surrogate-based OUU. Additional details and computational results are
-provided in TODO.
+provided in :raw-latex:`\cite{Eld02}`.
 
 Another class of OUU algorithms is called reliability-based design
 optimization (RBDO). RBDO methods are used to perform design
 optimization accounting for reliability metrics. The reliability
 analysis capabilities described in
 Section `[uq:reliability] <#uq:reliability>`__ provide a rich foundation
-for exploring a variety of RBDO formulations. TODO
+for exploring a variety of RBDO formulations. :raw-latex:`\cite{Eld05}`
 investigated bi-level, fully-analytic bi-level, and first-order
 sequential RBDO approaches employing underlying first-order reliability
-assessments. TODO investigated fully-analytic
+assessments. :raw-latex:`\cite{Eld06a}` investigated fully-analytic
 bi-level and second-order sequential RBDO approaches employing
 underlying second-order reliability assessments.
 
 When using stochastic expansions for UQ, analytic moments and analytic
 design sensitivities can be exploited as described
-in TODO. Several approaches for obtaining design
+in :raw-latex:`\cite{Eld07}`. Several approaches for obtaining design
 sensitivities of statistical metrics are discussed in
 Section `1.2.5 <#adv_models:ouu:sebdo>`__.
 
@@ -297,7 +307,7 @@ response functions from the simulation, and
 :math:`\mathit{\mathbf{s_{u}(d)}}` are the statistics generated from the
 uncertainty quantification on these response functions.
 
-.. figure:: img/nested_ouu.png
+.. figure:: images/nested_ouu.png
    :alt: Formulation 1: Nested OUU.
    :name: adv_models:figure08
 
@@ -316,12 +326,16 @@ of the optimization method, the continuous design variables, and the
 response quantities that will be used by the optimizer. The mapping
 matrices used for incorporating UQ statistics into the optimization
 response data are described in the Dakota Reference
-Manual. The uncertainty quantification
+Manual :raw-latex:`\cite{RefMan}`. The uncertainty quantification
 specification includes the UQ method, the uncertain variable probability
 distributions, the interface to the simulation code, and the UQ response
 attributes. As with other complex Dakota input files, the identification
 tags given in each keyword block can be used to follow the relationships
 among the different keyword blocks.
+
+.. container:: bigbox
+
+   .. container:: tiny
 
 Latin hypercube sampling is used as the UQ method in this example
 problem. Thus, each evaluation of the response functions by the
@@ -355,7 +369,7 @@ surrogate-based formulations where :math:`\mathbf{\hat{r}_{u}}` and
 approximate response statistics, respectively, generated from the
 surrogate models.
 
-.. figure:: img/sbouu.png
+.. figure:: images/sbouu.png
    :alt: Formulations 2, 3, and 4 for Surrogate-based OUU.
    :name: adv_models:figure10
 
@@ -396,7 +410,7 @@ textbook OUU problem, and and , which solve the cantilever OUU problem
 (see Section `[additional:cantilever] <#additional:cantilever>`__).
 
 Computational results for several example problems are available
-in TODO.
+in :raw-latex:`\cite{Eld02}`.
 
 .. _`adv_models:ouu:rbdo`:
 
@@ -406,7 +420,7 @@ RBDO
 Bi-level and sequential approaches to reliability-based design
 optimization (RBDO) and their associated sensitivity analysis
 requirements are described in the Optimization Under Uncertainty chapter
-of the Dakota Theory Manual.
+of the Dakota Theory Manual :raw-latex:`\cite{TheoMan}`.
 
 A number of bi-level RBDO examples are provided in . The , , and input
 files solve the cantilever (see
@@ -440,7 +454,7 @@ For stochastic expansion-based approaches to optimization under
 uncertainty, bi-level, sequential, and multifidelity approaches and
 their associated sensitivity analysis requirements are described in the
 Optimization Under Uncertainty chapter of the Dakota Theory
-Manual.
+Manual :raw-latex:`\cite{TheoMan}`.
 
 In , the , , , and input files solve cantilever (see
 Section `[additional:cantilever] <#additional:cantilever>`__),
@@ -451,7 +465,7 @@ Section `[additional:steel_column] <#additional:steel_column>`__) OUU
 problems using a bi-level polynomial chaos-based approach, where the
 statistical design metrics are reliability indices based on moment
 projection (see Mean Value section in Reliability Methods Chapter of
-Dakota Theory Manual). The test matrix in
+Dakota Theory Manual :raw-latex:`\cite{TheoMan}`). The test matrix in
 the former three input files evaluate design gradients of these
 reliability indices using several different approaches: analytic design
 gradients based on a PCE formed over only over the random variables,
@@ -468,7 +482,8 @@ however, sensitivities for “inserted” design variables (which define
 distribution parameters for the random variables) must be computed using
 :math:`\frac{dR}{dx} \frac{dx}{ds}` (refer to Stochastic Sensitivity
 Analysis section in Optimization Under Uncertainty chapter of Dakota
-Theory Manual). Additional test input files include:
+Theory Manual :raw-latex:`\cite{TheoMan}`). Additional test input files
+include:
 
 -  , , , and input files solve cantilever, Rosenbrock, short column, and
    steel column OUU problems using a bi-level stochastic
@@ -489,7 +504,7 @@ Epistemic OUU
 
 An emerging capability is optimization under epistemic uncertainty. As
 described in the Nested Model section of the Reference
-Manual, epistemic and mixed
+Manual :raw-latex:`\cite{RefMan}`, epistemic and mixed
 aleatory/epistemic uncertainty quantification methods generate lower and
 upper interval bounds for all requested response, probability,
 reliability, and generalized reliability level mappings. Design for
@@ -502,7 +517,7 @@ worst case upper or lower bound of the interval.
 We now have the capability to perform epistemic analysis by using
 interval optimization on the “outer loop” to calculate bounding
 statistics of the aleatory uncertainty on the “inner loop.” Preliminary
-studies have shown this approach is more
+studies :raw-latex:`\cite{Eld09b}` have shown this approach is more
 efficient and accurate than nested sampling (which was described in
 Section `1.1.2 <#adv_models:mixed_uq:sop>`__). This approach uses an
 efficient global optimization method for the outer loop and stochastic
@@ -543,11 +558,11 @@ methods for uncertainty quantification. In general, there is not a
 single, straightforward approach to incorporate the error of the
 surrogate fit into the uncertainty estimates of the output produced by
 sampling the surrogate. Two references which discuss some of the related
-issues are TODO and TODO. The
+issues are :raw-latex:`\cite{Giu06}` and :raw-latex:`\cite{Swi06}`. The
 first reference shows that statistics of a response based on a surrogate
 model were less accurate, and sometimes biased, for surrogates
 constructed on very small sample sizes. In many cases,
-however, TODO shows that surrogate-based UQ
+however, :raw-latex:`\cite{Giu06}` shows that surrogate-based UQ
 performs well and sometimes generates more accurate estimates of
 statistical quantities on the output. The second reference goes into
 more detail about the interaction between sample type and response
