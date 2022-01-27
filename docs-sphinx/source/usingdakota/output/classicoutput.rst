@@ -1,61 +1,65 @@
+"""""""""""""""""""""""""
 Examples of Dakota Output
-=======================================
+"""""""""""""""""""""""""
 
-```{eval-rst}
 .. _classicoutput-main:
-```
 
 Beyond numerical results, all output files provide information that allows the user to check that the actual analysis was the
 intended analysis. More details on all outputs can be found in Chapter 13.
 
-## Screen output saved to a file
+=============================
+Screen output saved to a file
+=============================
 
 Whenever an output file is specified for a Dakota run, the screen output itself becomes quite minimal consisting of version
 statements, environment statements and execution times.
 
-## Output file
+===========
+Output file
+===========
+
 The output file is much more extensive, because it contains information on every function evaluation:
 
-```
-{Writing new restart file dakota.rst
-methodName = multidim_parameter_study
-gradientType = none
-hessianType = none
+.. code-block::
 
->>>>> Running multidim_parameter_study iterator.
+    {Writing new restart file dakota.rst
+    methodName = multidim_parameter_study
+    gradientType = none
+    hessianType = none
 
-Multidimensional parameter study for variable partitions of
-                                     8
-                                     8
-									 
-									 
-------------------------------
-Begin Function Evaluation 1
-------------------------------
-Parameters for function evaluation 1:
-                     -2.0000000000e+00 x1
-                     -2.0000000000e+00 x2
-					 
-Direct function: invoking rosenbrock
+    >>>>> Running multidim_parameter_study iterator.
 
-Active response data for function evaluation 1:
-Active set vector = { 1 }
-                      3.6090000000e+03 response_fn_1
-.
-.
-.
-<<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)
+    Multidimensional parameter study for variable partitions of
+                                         8
+                                         8
+                                         
+                                         
+    ------------------------------
+    Begin Function Evaluation 1
+    ------------------------------
+    Parameters for function evaluation 1:
+                         -2.0000000000e+00 x1
+                         -2.0000000000e+00 x2
+                         
+    Direct function: invoking rosenbrock
 
-Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2  response_fn_1
-          x1  1.00000e+00
-          x2  1.73472e-17  1.00000e+00
-response_fn_1 -3.00705e-03 -5.01176e-01 1.00000e+00
-.
-.
-.
-<<<<< Iterator multidim_parameter_study completed.}
-```
+    Active response data for function evaluation 1:
+    Active set vector = { 1 }
+                          3.6090000000e+03 response_fn_1
+    .
+    .
+    .
+    <<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)
+
+    Simple Correlation Matrix among all inputs and outputs:
+                           x1           x2  response_fn_1
+              x1  1.00000e+00
+              x2  1.73472e-17  1.00000e+00
+    response_fn_1 -3.00705e-03 -5.01176e-01 1.00000e+00
+    .
+    .
+    .
+    <<<<< Iterator multidim_parameter_study completed.}
 
 Excluding the copy of the input file at the beginning and timing information at the end, the file is organized into three basic
 parts:
@@ -77,20 +81,22 @@ For this example, the default name for the tabular output file dakota_tabular.da
 rosen_multidim.dat. This tab-delimited text file summarizes the inputs and outputs to the function
 evaluator:
 
-```
-%eval_id   interface   x1     x2   response_fn_1
-       1       NO_ID   -2     -2            3609
-       2       NO_ID   -1.5   -2          1812.5
-       3       NO_ID   -1     -2             904
-       4       NO_ID   -0.5   -2           508.5
-```
+.. code-block::
+
+    %eval_id   interface   x1     x2   response_fn_1
+           1       NO_ID   -2     -2            3609
+           2       NO_ID   -1.5   -2          1812.5
+           3       NO_ID   -1     -2             904
+           4       NO_ID   -0.5   -2           508.5
+
 
 The first line contains the names of the variables and responses, as well as headers for the evaluation id and interface
 columns.
 
-```
-%eval_id interface x1 x2 response_fn_1
-```
+.. code-block::
+
+    %eval_id interface x1 x2 response_fn_1
+
 
 The number of function evaluations will match the number of evaluations listed in the summary part of the output file for single
 method approaches; the names of inputs and outputs will match the descriptors specified in the input file. The interface

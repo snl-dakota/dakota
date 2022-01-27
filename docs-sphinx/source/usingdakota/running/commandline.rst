@@ -1,27 +1,28 @@
+""""""""""""""""""""
 Command-Line Options
-============
+""""""""""""""""""""
 
 The Dakota executable file is named dakota (dakota.exe on Windows). If this command is entered at the command
 prompt without any arguments, a usage message similar to the following appears:
 
-```
-usage: dakota [options and <args>]
--help (Print this summary)
--version (Print DAKOTA version number)
--input <$val> (REQUIRED DAKOTA input file $val)
--preproc [$val] (Pre-process input file with pyprepro or tool $val)
--output <$val> (Redirect DAKOTA standard output to file $val)
--error <$val> (Redirect DAKOTA standard error to file $val)
--parser <$val> (Parsing technology: nidr[strict][:dumpfile])
--no_input_echo (Do not echo DAKOTA input file)
--check (Perform input checks)
--pre_run [$val] (Perform pre-run (variables generation) phase)
--run [$val] (Perform run (model evaluation) phase)
--post_run [$val] (Perform post-run (final results) phase)
--read_restart [$val] (Read an existing DAKOTA restart file $val)
--stop_restart <$val> (Stop restart file processing at evaluation $val)
--write_restart [$val] (Write a new DAKOTA restart file $val)
-```
+.. code-block::
+
+    usage: dakota [options and <args>]
+    -help (Print this summary)
+    -version (Print DAKOTA version number)
+    -input <$val> (REQUIRED DAKOTA input file $val)
+    -preproc [$val] (Pre-process input file with pyprepro or tool $val)
+    -output <$val> (Redirect DAKOTA standard output to file $val)
+    -error <$val> (Redirect DAKOTA standard error to file $val)
+    -parser <$val> (Parsing technology: nidr[strict][:dumpfile])
+    -no_input_echo (Do not echo DAKOTA input file)
+    -check (Perform input checks)
+    -pre_run [$val] (Perform pre-run (variables generation) phase)
+    -run [$val] (Perform run (model evaluation) phase)
+    -post_run [$val] (Perform post-run (final results) phase)
+    -read_restart [$val] (Read an existing DAKOTA restart file $val)
+    -stop_restart <$val> (Stop restart file processing at evaluation $val)
+    -write_restart [$val] (Write a new DAKOTA restart file $val)
 
 Of these available command line inputs, only the “-input” option is required, and “-input” can be omitted if the input
 file name is the final item on the command line; all other command-line inputs are optional. The “-help” option prints the
