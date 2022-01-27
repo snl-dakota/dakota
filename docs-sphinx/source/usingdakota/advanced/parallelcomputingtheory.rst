@@ -29,7 +29,7 @@ Categorization of parallelism
 
 To understand the parallel computing possibilities, it is instructive to
 first categorize the opportunities for exploiting parallelism into four
-main areas :raw-latex:`\cite{Eld98a}`, consisting of coarse-grained and
+main areas, consisting of coarse-grained and
 fine-grained parallelism opportunities within algorithms and their
 function evaluations:
 
@@ -68,7 +68,7 @@ function evaluations:
    multiple loading cases or operational environments) or multiple
    dependent analyses where the coupling is applied at the optimizer
    level (e.g., multiple disciplines in the individual discipline
-   feasible formulation :raw-latex:`\cite{Den94a}`).
+   feasible formulation).
 
 #. *Function evaluation fine-grained parallelism*: This involves
    parallelization of the solution steps within a single analysis code.
@@ -83,7 +83,7 @@ to communication as the number of processors increases. However, it is
 often the case that there are not enough separable computations on each
 algorithm cycle to utilize the thousands of processors available on MP
 machines. For example, a thermal safety
-application :raw-latex:`\cite{Eld96a}` demonstrated this limitation with
+application demonstrated this limitation with
 a pattern search optimization in which the maximum speedup exploiting
 *only* coarse-grained algorithmic parallelism was shown to be limited by
 the size of the design problem (coordinate pattern search has at most
@@ -95,7 +95,7 @@ communication among processors and care must be taken to avoid the case
 of inefficient machine utilization in which the communication demands
 among processors outstrip the amount of actual computational work to be
 performed. For example, a chemically-reacting flow
-application :raw-latex:`\cite{Eld98a}` illustrated this limitation for a
+application illustrated this limitation for a
 simulation of fixed size in which it was shown that, while simulation
 run time did monotonically decrease with increasing number of
 processors, the relative parallel efficiency :math:`\hat{E}` of the
@@ -156,7 +156,7 @@ Parallel iterators
    differences result in an :math:`n+1` concurrency and central
    differences result in a :math:`2n+1` concurrency. In addition,
    CONMIN, DOT, and OPT++ can use speculative gradient
-   techniques :raw-latex:`\cite{Byr88}` to obtain better parallel load
+   techniques to obtain better parallel load
    balancing. By speculating that the gradient information associated
    with a given line search point will be used later and computing the
    gradient information in parallel at the same time as the function
@@ -165,7 +165,7 @@ Parallel iterators
    gradients since this approach is superseded by NPSOL’s gradient-based
    line search in user-supplied derivative mode. NLPQL also supports a
    distributed line search capability for generating
-   concurrency :raw-latex:`\cite{Sch04}`.
+   concurrency.
 
 -  Nongradient-based optimizers: HOPSPACK, JEGA methods, and most COLINY
    methods support parallelism. HOPSPACK and COLINY methods exploit
@@ -457,7 +457,7 @@ multiple system calls is recovered in a synchronize operation.
 
 In this synchronize operation, completion of a function evaluation is
 detected by testing for the existence of the evaluation’s results file
-using the ``stat`` utility :raw-latex:`\cite{Ker88}`. Care must be taken
+using the ``stat`` utility. Care must be taken
 when using asynchronous system calls since they are prone to the race
 condition in which the results file passes the existence test but the
 recording of the function evaluation results in the file is incomplete.
@@ -704,9 +704,7 @@ Message Passing Parallelism
 
 Dakota uses a “single program-multiple data” (SPMD) parallel programming
 model. It uses message-passing routines from the Message Passing
-Interface (MPI)
-standard :raw-latex:`\cite{Gro94}`, :raw-latex:`\cite{Sni96}` to
-communicate data between processors. The SPMD designation simply denotes
+Interface (MPI) standard to communicate data between processors. The SPMD designation simply denotes
 that the same Dakota executable is loaded on all processors during the
 parallel invocation. This differs from the MPMD model (“multiple
 program-multiple data”) which would have the Dakota executable on one or
@@ -960,7 +958,7 @@ launched into the compute nodes from the service node partition. While
 an asynchronous local approach from a single service node would be
 sufficient, spreading the application load by running Dakota in parallel
 across multiple service nodes results in better
-performance :raw-latex:`\cite{Eld00}`. If the number of concurrent jobs
+performance. If the number of concurrent jobs
 to be managed in the compute partition exceeds the number of available
 service nodes, then hybrid parallelism is the preferred approach. In the
 case of a cluster of SMPs (or network of multiprocessor workstations),
@@ -1122,7 +1120,7 @@ parallelism, and the fourth is function evaluation fine-grained
 parallelism (see Section `1.1.1 <#parallel:overview:cat>`__).
 Algorithmic fine-grained parallelism is not currently supported,
 although the development of large-scale parallel SAND techniques is a
-current research direction :raw-latex:`\cite{Bar01b}`.
+current research direction.
 
 A particular application may support one or more of these parallelism
 types, and Dakota provides for convenient selection and combination of
@@ -1131,7 +1129,7 @@ exploited, then the question may arise as to how the amount of
 parallelism at each level should be selected so as to maximize the
 overall parallel efficiency of the study. For performance analysis of
 multilevel parallelism formulations and detailed discussion of these
-issues, refer to :raw-latex:`\cite{Eld00}`. In many cases, *the user may
+issues, refer to TODO. In many cases, *the user may
 simply employ Dakota’s automatic parallelism configuration facilities,*
 which implement the recommendations from the aforementioned paper.
 
@@ -1239,7 +1237,7 @@ partition/static scheduling model at level 3. In this case,
 each ``optCOMM`` is further subdivided into ``evalCOMM0`` (master) and
 ``evalCOMM1/2/3/.../\tau_{2}`` (slaves), and each slave ``evalCOMM`` is
 further subdivided into ``analCOMM1/2/3/.../\tau_{3}``. Logic for
-selection of :math:`\tau_i` is discussed in :raw-latex:`\cite{Eld00}`.
+selection of :math:`\tau_i` is discussed in TODO.
 
 .. _`parallel:MLP:hybrid`:
 
@@ -1414,7 +1412,7 @@ used to initiate a parallel Dakota job, e.g.:
 where both examples specify the use of 12 processors, the former
 selecting them from a default system resources file and the latter
 specifying particular machines in a machine file
-(see :raw-latex:`\cite{Gro96}` for details).
+(see TODO for details).
 
 On a massively parallel computer such as ASCI Red, similar facilities
 are available from the Cougar operating system via the ``yod``
@@ -1488,7 +1486,7 @@ Specifying Parallelism
 ----------------------
 
 Given an allotment of processors, Dakota contains logic based on the
-theoretical work in :raw-latex:`\cite{Eld00}` to automatically determine
+theoretical work in TODO to automatically determine
 an efficient parallel configuration, consisting of partitioning and
 scheduling selections for each of the parallelism levels. This logic
 accounts for problem size, the concurrency supported by particular
@@ -1573,7 +1571,7 @@ automatic parallelism configuration for concurrent analyses; and the
 automatic parallelism configuration for the size of multiprocessor
 analyses used in a direct function simulation interface. Each of these
 keywords appears as part of the interface commands specification in the
-Dakota Reference Manual :raw-latex:`\cite{RefMan}`.
+Dakota Reference Manual.
 
 .. _`parallel:spec:strategy`:
 
@@ -1584,7 +1582,7 @@ To specify concurrency in iterator executions, the ``iterator_servers``,
 ``iterator_self_scheduling``, and ``iterator_static_scheduling``
 keywords are used to override the automatic parallelism configuration.
 See the strategy commands specification in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}` for additional information.
+Manual for additional information.
 
 .. _`parallel:spec:single`:
 

@@ -13,10 +13,10 @@ design optimization accounting for reliability metrics. The reliability
 analysis capabilities described in
 Section `[uq:reliability:local] <#uq:reliability:local>`__ provide a
 substantial foundation for exploring a variety of gradient-based RBDO
-formulations. :raw-latex:`\cite{Eld05}` investigated bi-level,
+formulations. TODO investigated bi-level,
 fully-analytic bi-level, and first-order sequential RBDO approaches
 employing underlying first-order reliability assessments.
-:raw-latex:`\cite{Eld06a}` investigated fully-analytic bi-level and
+TODO investigated fully-analytic bi-level and
 second-order sequential RBDO approaches employing underlying
 second-order reliability assessments. These methods are overviewed in
 the following sections.
@@ -63,7 +63,7 @@ RBDO constraint for a complementary cumulative failure probability
 \ge \bar{z}`). It is worth noting that Dakota is not limited to these
 types of inequality-constrained RBDO formulations; rather, they are
 convenient examples. Dakota supports general optimization under
-uncertainty mappings :raw-latex:`\cite{Eld02}` which allow flexible use
+uncertainty mappings which allow flexible use
 of statistics within multiple objectives, inequality constraints, and
 equality constraints.
 
@@ -72,7 +72,7 @@ sensitivity analysis to analytically compute the design gradients of
 probability, reliability, and response levels. When design variables are
 separate from the uncertain variables (i.e., they are not distribution
 parameters), then the following first-order expressions may be
-used :raw-latex:`\cite{Hoh86,Kar92,All04}`:
+used:
 
 .. math::
 
@@ -104,7 +104,7 @@ where :math:`\nabla_{\bf d} \kappa_i` has been neglected and
 :math:`\beta_p \ge 0` (see
 Section `[uq:reliability:local:mpp:int] <#uq:reliability:local:mpp:int>`__).
 Other approaches assume the curvature correction is nearly independent
-of the design variables :raw-latex:`\cite{Rac02}`, which is equivalent
+of the design variables, which is equivalent
 to neglecting the first term in
 Eq. `[eq:deriv_p_breit] <#eq:deriv_p_breit>`__.
 
@@ -175,16 +175,15 @@ of the MPP and design searches. The general concept is to iterate
 between optimization and uncertainty quantification, updating the
 optimization goals based on the most recent probabilistic assessment
 results. This update may be based on safety
-factors :raw-latex:`\cite{Wu01}` or other
-approximations :raw-latex:`\cite{Du04}`.
+factors or other approximations.
 
 A particularly effective approach for updating the optimization goals is
 to use the :math:`p/\beta/z` sensitivity analysis of
 Eqs. `[eq:deriv_z] <#eq:deriv_z>`__-`[eq:deriv_beta_ds] <#eq:deriv_beta_ds>`__
-in combination with local surrogate models :raw-latex:`\cite{Zou04}`. In
-:raw-latex:`\cite{Eld05}` and :raw-latex:`\cite{Eld06a}`, first-order
+in combination with local surrogate models. In
+TODO and TODO, first-order
 and second-order Taylor series approximations were employed within a
-trust-region model management framework :raw-latex:`\cite{Giu00}` in
+trust-region model management framework in
 order to adaptively manage the extent of the approximations and ensure
 convergence of the RBDO process. Surrogate models were used for both the
 objective function and the constraints, although the use of constraint
@@ -540,17 +539,16 @@ between optimization and uncertainty quantification, updating the
 optimization goals based on the most recent uncertainty assessment
 results. This approach is common with the reliability methods community,
 for which the updating strategy may be based on safety
-factors :raw-latex:`\cite{Wu01}` or other
-approximations :raw-latex:`\cite{Du04}`.
+factors TODO or other approximations TODO.
 
 A particularly effective approach for updating the optimization goals is
 to use data fit surrogate models, and in particular, local Taylor series
 models allow direct insertion of stochastic sensitivity analysis
-capabilities. In Ref. :raw-latex:`\cite{Eld05}`, first-order Taylor
+capabilities. In Ref. TODO, first-order Taylor
 series approximations were explored, and in
-Ref. :raw-latex:`\cite{Eld06a}`, second-order Taylor series
+Ref. TODO, second-order Taylor series
 approximations are investigated. In both cases, a trust-region model
-management framework :raw-latex:`\cite{Eld06b}` is used to adaptively
+management framework TODO is used to adaptively
 manage the extent of the approximations and ensure convergence of the
 OUU process. Surrogate models are used for both the objective and the
 constraint functions, although the use of surrogates is only required
@@ -588,7 +586,7 @@ surrogate models of :math:`f` and :math:`\sigma^2` within a trust region
 
 Second-order local surrogates may also be employed, where the Hessians
 are typically approximated from an accumulation of curvature information
-using quasi-Newton updates :raw-latex:`\cite{Noc99}` such as
+using quasi-Newton updates TODO such as
 Broyden-Fletcher-Goldfarb-Shanno (BFGS, Eq. `[eq:bfgs] <#eq:bfgs>`__) or
 symmetric rank one (SR1, Eq. `[eq:sr1] <#eq:sr1>`__). The sequential
 approach is available for probabilistic expansions using PCE and SC.
@@ -682,8 +680,8 @@ low-fidelity UQ results. In the case of an additive correction function:
    \alpha_{\sigma^2}({\bf s}) \label{eq:corr_lf_sigma}\end{aligned}
 
 where correction functions :math:`\alpha({\bf s})` enforcing first-order
-consistency :raw-latex:`\cite{Eld04}` are typically employed.
-Quasi-second-order correction functions :raw-latex:`\cite{Eld04}` can
+consistency are typically employed.
+Quasi-second-order correction functions can
 also be employed, but care must be taken due to the different rates of
 curvature accumulation between the low and high fidelity models. In
 particular, since the low fidelity model is evaluated more frequently

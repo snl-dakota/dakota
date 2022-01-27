@@ -24,8 +24,8 @@ Table `1.1 <#TAB:askey>`__ shows the set of classical orthogonal
 polynomials which provide an optimal basis for different continuous
 probability distribution types. It is derived from the family of
 hypergeometric orthogonal polynomials known as the Askey
-scheme :raw-latex:`\cite{askey}`, for which the Hermite polynomials
-originally employed by Wiener :raw-latex:`\cite{wiener}` are a subset.
+scheme, for which the Hermite polynomials
+originally employed by Wiener are a subset.
 The optimality of these basis selections derives from their
 orthogonality with respect to weighting functions that correspond to the
 probability density functions (PDFs) of the continuous distributions
@@ -60,7 +60,7 @@ the PDF over the support range is one.
       |             | (1+x)^{\bet | eta)}_n(x)` | x)^{\beta}` |             |
       |             | a}}{2^{\alp |             |             |             |
       |             | ha+\beta+1} |             |             |             |
-      |             |  B(\alpha+1 |             |             |             |
+      |             | B(\alpha+1  |             |             |             |
       |             | ,\beta+1)}` |             |             |             |
       +-------------+-------------+-------------+-------------+-------------+
       | Exponential | :ma         | Laguerre    | :ma         | :math:`[    |
@@ -82,7 +82,7 @@ which extends the factorial function to continuous values, and
 :math:`B(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}`. Some care is
 necessary when specifying the :math:`\alpha` and :math:`\beta`
 parameters for the Jacobi and generalized Laguerre polynomials since the
-orthogonal polynomial conventions :raw-latex:`\cite{abram_stegun}`
+orthogonal polynomial conventions
 differ from the common statistical PDF conventions. The former
 conventions are used in Table `1.1 <#TAB:askey>`__.
 
@@ -98,19 +98,15 @@ present, then additional techniques are required. One solution is to
 employ nonlinear variable transformations as described in
 Section `1.5 <#uq:expansion:trans>`__ such that an Askey basis can be
 applied in the transformed space. This can be effective as shown
-in :raw-latex:`\cite{Eld07}`, but convergence rates are typically
+in TODO, but convergence rates are typically
 degraded. In addition, correlation coefficients are warped by the
-nonlinear transformation :raw-latex:`\cite{Der86}`, and simple
+nonlinear transformation, and simple
 expressions for these transformed correlation values are not always
 readily available. An alternative is to numerically generate the
-orthogonal polynomials (using
-Gauss-Wigert :raw-latex:`\cite{simpson_gw}`, discretized
-Stieltjes :raw-latex:`\cite{gautschi_book}`,
-Chebyshev :raw-latex:`\cite{gautschi_book}`, or
-Gramm-Schmidt :raw-latex:`\cite{WillBijl06}` approaches) and then
+orthogonal polynomials (using Gauss-Wigert, discretized Stieltjes,
+Chebyshev, or Gramm-Schmidt approaches) and then
 compute their Gauss points and weights (using the
-Golub-Welsch :raw-latex:`\cite{GolubWelsch69}` tridiagonal
-eigensolution). These solutions are optimal for given random variable
+Golub-Welsch tridiagonal eigensolution). These solutions are optimal for given random variable
 sets having arbitrary probability density functions and eliminate the
 need to induce additional nonlinearity through variable transformations,
 but performing this process for general joint density functions with
@@ -183,7 +179,7 @@ where it is evident that :math:`L_j` is 1 at :math:`\xi = \xi_j`, is 0
 for each of the points :math:`\xi = \xi_k`, and has order :math:`m - 1`.
 
 To improve numerical efficiency and stability, a barycentric Lagrange
-formulation :raw-latex:`\cite{BerTref04,Higham04}` is used. We define
+formulation is used. We define
 the barycentric weights :math:`w_j` as
 
 .. math::
@@ -244,7 +240,7 @@ both values and derivatives. In our case, we are interested in
 interpolating values and first derivatives, i.e, gradients.
 One-dimensional polynomials satisfying the interpolation constraints for
 general point sets are generated using divided differences as described
-in :raw-latex:`\cite{Burk11}`.
+in TODO.
 
 .. _`uq:expansion:interp:linear`:
 
@@ -342,7 +338,7 @@ using the same local or global definitions for :math:`L_j(\xi)`,
 :math:`H_j^{(1)}(\xi)`, and :math:`H_j^{(2)}(\xi)`, and
 :math:`I^{l-1}(R)` is evaluated as :math:`I^l(I^{l-1}(R))`, indicating
 reinterpolation of the lower level interpolant across the higher level
-point set :raw-latex:`\cite{spinterp,AgaAlu09}`.
+point set TODO.
 
 Utilizing
 Eqs. `[eq:lagrange_interp_1d] <#eq:lagrange_interp_1d>`__–`[eq:hermite_interp_1d] <#eq:hermite_interp_1d>`__,
@@ -623,7 +619,7 @@ barycentric formulation as described in
 Section `1.2.1.1 <#uq:expansion:interp:Lagrange>`__ (i.e.,
 Eq. `[eq:barycentric_lagrange2_1d] <#eq:barycentric_lagrange2_1d>`__),
 additional efficiency in evaluating a tensor interpolant is achieved
-using the procedure in :raw-latex:`\cite{Klimke05}`, which amounts to a
+using the procedure in TODO, which amounts to a
 multi-dimensional extension to Horner’s rule for tensor-product
 polynomial evaluation.
 
@@ -792,9 +788,7 @@ uncorrelated standard normal distributions is denoted as
 :math:`\boldsymbol{\xi} = T({\bf x})` with the reverse transformation
 denoted as :math:`{\bf x} = T^{-1}(\boldsymbol{\xi})`. These
 transformations are nonlinear in general, and possible approaches
-include the Rosenblatt :raw-latex:`\cite{Ros52}`,
-Nataf :raw-latex:`\cite{Der86}`, and Box-Cox :raw-latex:`\cite{Box64}`
-transformations. Dakota employs the Nataf transformation, which is
+include the Rosenblatt, Nataf, and Box-Cox transformations. Dakota employs the Nataf transformation, which is
 suitable for the common case when marginal distributions and a
 correlation matrix are provided, but full joint distributions are not
 known [1]_. The Nataf transformation occurs in the following two steps.
@@ -815,7 +809,7 @@ used:
 
 where the original correlation matrix for non-normals in x-space has
 been modified to represent the corresponding “warped” correlation in
-z-space :raw-latex:`\cite{Der86}`.
+z-space.
 
 .. _`uq:expansion:spectral`:
 
@@ -865,9 +859,8 @@ analytically using the product of univariate norms squared
    \label{eq:norm_squared}
 
 where the univariate inner products have simple closed form expressions
-for each polynomial in the Askey scheme :raw-latex:`\cite{abram_stegun}`
-and are readily computed as part of the numerically-generated solution
-procedures described in
+for each polynomial in the Askey scheme and are readily computed as part
+of the numerically-generated solution procedures described in
 Section `1.1.2 <#uq:expansion:orth:beyond_askey>`__. Thus, the primary
 computational effort resides in evaluating the numerator, which is
 evaluated numerically using sampling, quadrature, cubature, or sparse
@@ -958,7 +951,7 @@ all random dimensions, :math:`m_{i_j} = m`, then
 Eq. `[eq:multi_tensor] <#eq:multi_tensor>`__ requires :math:`m^n`
 function evaluations.
 
-In :raw-latex:`\cite{Eld09a}`, it is demonstrated that close
+In TODO, it is demonstrated that close
 synchronization of expansion form with the monomial resolution of a
 particular numerical integration technique can result in significant
 performance improvements. In particular, the traditional approach of
@@ -972,9 +965,9 @@ to provide improved synchronization and more effective usage of the
 Gauss point evaluations. When the quadrature points are standard Gauss
 rules (i.e., no Clenshaw-Curtis, Gauss-Patterson, or Genz-Keister nested
 rules), it has been shown that tensor-product PCE and SC result in
-identical polynomial forms :raw-latex:`\cite{ConstTPQ}`, completely
+identical polynomial forms, completely
 eliminating a performance gap that exists between total-order PCE and
-SC :raw-latex:`\cite{Eld09a}`.
+SC.
 
 .. _`uq:expansion:spectral_sparse`:
 
@@ -983,13 +976,12 @@ Smolyak sparse grids
 
 If the number of random variables is moderately large, one should rather
 consider sparse tensor product spaces as first proposed by Smolyak
-:raw-latex:`\cite{Smolyak_63}` and further investigated by
-Refs. :raw-latex:`\cite{gerstner_griebel_98,barth_novak_ritter_00,Fran_Schwab_Todor_04,Xiu_Hesthaven_05, webster1, webster2}`
-that reduce dramatically the number of collocation points, while
+and further investigated by
+Refs. that reduce dramatically the number of collocation points, while
 preserving a high level of accuracy.
 
 Here we follow the notation and extend the description in
-Ref. :raw-latex:`\cite{webster1}` to describe the Smolyak *isotropic*
+Ref. TODO to describe the Smolyak *isotropic*
 formulas :math:`\mathscr{A}({\rm w},n)`, where :math:`{\rm w}` is a
 level that is independent of dimension [3]_. The Smolyak formulas are
 just linear combinations of the product formulas in
@@ -1014,8 +1006,7 @@ This form is preferred for use in forming hierarchical interpolants as
 described in Sections `1.2.2 <#uq:expansion:interp:hierarch>`__
 and `1.4.3 <#uq:expansion:sc:hierarch>`__. For nodal interpolants and
 polynomial chaos in sparse grids, the following equivalent
-form :raw-latex:`\cite{was_woz}` is often more convenient since it
-collapses repeated index sets
+form is often more convenient since it collapses repeated index sets
 
 .. math::
 
@@ -1065,10 +1056,7 @@ number of points in each direction, namely :math:`2^{\rm w}+1 = 33`.
 .. container:: center
 
    .. figure:: images/isogrid_N2_q6.png
-      :alt: Two-dimensional grid comparison with a tensor product grid
-      using Clenshaw-Curtis points (left) and sparse grids
-      :math:`\mathscr{A}(5,2)` utilizing Clenshaw-Curtis (middle) and
-      Gauss-Legendre (right) points with nonlinear growth.
+      :alt: Two-dimensional grid comparison with a tensor product grid using Clenshaw-Curtis points (left) and sparse grids :math:`\mathscr{A}(5,2)` utilizing Clenshaw-Curtis (middle) and Gauss-Legendre (right) points with nonlinear growth.
       :name: fig:isogrid_N2_q7
       :width: 6.5in
 
@@ -1077,7 +1065,7 @@ number of points in each direction, namely :math:`2^{\rm w}+1 = 33`.
       :math:`\mathscr{A}(5,2)` utilizing Clenshaw-Curtis (middle) and
       Gauss-Legendre (right) points with nonlinear growth.
 
-In :raw-latex:`\cite{Eld09a}`, it is demonstrated that the
+In TODO, it is demonstrated that the
 synchronization of total-order PCE with the monomial resolution of a
 sparse grid is imperfect, and that sparse grid SC consistently
 outperforms sparse grid PCE when employing the sparse grid to directly
@@ -1085,7 +1073,7 @@ evaluate the integrals in
 Eq. `[eq:coeff_extract] <#eq:coeff_extract>`__. In our Dakota
 implementation, we depart from the use of sparse integration of
 total-order expansions, and instead employ a linear combination of
-tensor expansions :raw-latex:`\cite{ConstSSG}`. That is, we compute
+tensor expansions. That is, we compute
 separate tensor polynomial chaos expansions for each of the underlying
 tensor quadrature grids (for which there is no synchronization issue)
 and then sum them using the Smolyak combinatorial coefficient (from
@@ -1118,14 +1106,14 @@ index constraint :math:`{\rm w}+1 \leq
 |\mathbf{i}| \leq {\rm w}+n` (note the change from :math:`<` to
 :math:`\leq`). Second, the combinatorial coefficient for adding the
 contribution from each of these index sets is modified as described
-in :raw-latex:`\cite{Burk09}`.
+in TODO.
 
 .. _`uq:expansion:cubature`:
 
 Cubature
 ~~~~~~~~
 
-Cubature rules :raw-latex:`\cite{stroud,xiu_cubature}` are specifically
+Cubature rules are specifically
 optimized for multidimensional integration and are distinct from
 tensor-products and sparse grids in that they are not based on
 combinations of one-dimensional Gauss quadrature rules. They have the
@@ -1150,10 +1138,9 @@ for a set of PCE coefficients :math:`\boldsymbol{\alpha}` that best
 reproduce a set of response values :math:`\boldsymbol{R}`. The set of
 response values can be defined on an unstructured grid obtained from
 sampling within the density function of :math:`\boldsymbol{\xi}` (point
-collocation :raw-latex:`\cite{pt_colloc1,pt_colloc2}`) or on a
-structured grid defined from uniform random sampling on the
+collocation) or on a structured grid defined from uniform random sampling on the
 multi-index [5]_ of a tensor-product quadrature grid (probabilistic
-collocation :raw-latex:`\cite{Tat95}`), where the quadrature is of
+collocation), where the quadrature is of
 sufficient order to avoid sampling at roots of the basis
 polynomials [6]_. In either case, each row of the matrix
 :math:`\boldsymbol{\Psi}` contains the :math:`N_t` multivariate
@@ -1166,7 +1153,7 @@ collocation ratio with typical values :math:`0.1 \leq r \leq 2`).
 Additional regression equations can be obtained through the use of
 derivative information (gradients and Hessians) from each collocation
 point (refer to ``use_derivatives`` in the PCE regression specification
-details in the Dakota Reference Manual :raw-latex:`\cite{RefMan}`),
+details in the Dakota Reference Manual),
 which can aid in scaling with respect to the number of random variables,
 particularly for adjoint-based derivative approaches.
 
@@ -1177,14 +1164,14 @@ method has been least squares regression. However when
 :math:`\boldsymbol{\Psi}` is under-determined, minimizing the residual
 with respect to the :math:`\ell_2` norm typically produces poor
 solutions. Compressed sensing methods have been successfully used to
-address this limitation :raw-latex:`\cite{Blatman2011,Doostan2011}`.
+address this limitation.
 Such methods attempt to only identify the elements of the coefficient
 vector :math:`\boldsymbol{\alpha}` with the largest magnitude and
 enforce as many elements as possible to be zero. Such solutions are
 often called sparse solutions. Dakota provides algorithms that solve the
 following formulations:
 
--  Basis Pursuit (BP) :raw-latex:`\cite{Chen2001}`
+-  Basis Pursuit (BP)
 
    .. math::
 
@@ -1194,9 +1181,9 @@ following formulations:
    The BP solution is obtained in Dakota, by
    transforming `[eq:bp] <#eq:bp>`__ to a linear program which is then
    solved using the primal-dual interior-point
-   method :raw-latex:`\cite{Boyd2004,Chen2001}`.
+   method.
 
--  Basis Pursuit DeNoising (BPDN) :raw-latex:`\cite{Chen2001}`.
+-  Basis Pursuit DeNoising (BPDN).
 
    .. math::
 
@@ -1206,14 +1193,14 @@ following formulations:
    The BPDN solution is computed in Dakota by
    transforming `[eq:bpdn] <#eq:bpdn>`__ to a quadratic cone problem
    which is solved using the log-barrier Newton
-   method :raw-latex:`\cite{Boyd2004,Chen2001}`.
+   method.
 
    When the matrix :math:`\boldsymbol{\Psi}` is not over-determined the
    BP and BPDN solvers used in Dakota will not return a solution. In
    such situations these methods simply return the least squares
    solution.
 
--  Orthogonal Matching Pursuit (OMP) :raw-latex:`\cite{Davis1997}`,
+-  Orthogonal Matching Pursuit (OMP),
 
    .. math::
 
@@ -1231,9 +1218,9 @@ following formulations:
    each iteration the inactive column with the highest correlation
    (inner product) with the current residual is added.
 
--  Least Angle Regression (LARS) :raw-latex:`\cite{Efron2004}` and Least
+-  Least Angle Regression (LARS) and Least
    Absolute Shrinkage and Selection Operator
-   (LASSO) :raw-latex:`\cite{Tibshirani1996}`
+   (LASSO)
 
    .. math::
 
@@ -1245,8 +1232,8 @@ following formulations:
    one can provide a rigorous solution to this global optimization
    problem, which we refer to as the LASSO solution. Such an approach is
    identical to the homotopy algorithm of Osborne et
-   al :raw-latex:`\cite{Osborne2000}`. It is interesting to note that
-   Efron :raw-latex:`\cite{Efron2004}` experimentally observed that the
+   al. It is interesting to note that
+   Efron experimentally observed that the
    basic, faster LARS procedure is often identical to the LASSO
    solution.
 
@@ -1261,7 +1248,7 @@ following formulations:
    from OMP) the resulting algorithm can provably
    solve `[eq:lasso] <#eq:lasso>`__ and generates the LASSO solution.
 
--  Elastic net :raw-latex:`\cite{Zou2005}`
+-  Elastic net
 
    .. math::
 
@@ -1279,8 +1266,7 @@ following formulations:
    variable from the group and does not care which one is selected; and
    finally if there are high correlations between predictors, it has
    been empirically observed that the prediction performance of the
-   LASSO is dominated by ridge
-   regression :raw-latex:`\cite{Tibshirani1996}`. Here we note that it
+   LASSO is dominated by ridge regression. Here we note that it
    is hard to estimate the :math:`\lambda` penalty in practice and the
    aforementioned issues typically do not arise very often when
    solving `[eq:regression] <#eq:regression>`__. The elastic net
@@ -1289,26 +1275,26 @@ following formulations:
 
 .. figure:: images/compressed-sensing-hierarchy.png
    :alt: Bridging provably convergent :math:`\ell_1` minimization
-   algorithms and greedy algorithms such as OMP. (1) Homotopy provably
-   solves :math:`\ell_1` minimization
-   problems :raw-latex:`\cite{Efron2004}`. (2) LARS is obtained from
-   homotopy by removing the sign constraint check. (3) OMP and LARS are
-   similar in structure, the only difference being that OMP solves a
-   least-squares problem at each iteration, whereas LARS solves a
-   linearly penalized least-squares problem. Figure and caption based
-   upon Figure 1 in :raw-latex:`\cite{Donoho2008}`.
+         algorithms and greedy algorithms such as OMP. (1) Homotopy provably
+         solves :math:`\ell_1` minimization
+         problems. (2) LARS is obtained from
+         homotopy by removing the sign constraint check. (3) OMP and LARS are
+         similar in structure, the only difference being that OMP solves a
+         least-squares problem at each iteration, whereas LARS solves a
+         linearly penalized least-squares problem. Figure and caption based
+         upon Figure 1 in TODO.
    :name: fig:compressed-sensing-method-heirarchy
    :width: 95.0%
 
    Bridging provably convergent :math:`\ell_1` minimization algorithms
    and greedy algorithms such as OMP. (1) Homotopy provably solves
-   :math:`\ell_1` minimization problems :raw-latex:`\cite{Efron2004}`.
+   :math:`\ell_1` minimization problems.
    (2) LARS is obtained from homotopy by removing the sign constraint
    check. (3) OMP and LARS are similar in structure, the only difference
    being that OMP solves a least-squares problem at each iteration,
    whereas LARS solves a linearly penalized least-squares problem.
    Figure and caption based upon Figure 1
-   in :raw-latex:`\cite{Donoho2008}`.
+   in TODO.
 
 OMP and LARS add a PCE basis one step at a time. If
 :math:`\boldsymbol{\alpha}` contains only :math:`k` non-zero terms then
@@ -1344,7 +1330,7 @@ the :math:`k`-th fold removed, using the tuning parameters
 then used to estimate the prediction error. The prediction error is
 typically approximated by
 :math:`e(\hat{f})=\lVert \hat{f}(\mathbf{x})-f(\mathbf{x})\rVert_{\ell_2}`,
-:math:`\mathbf{x}\in\mathbf{X}_{k}` :raw-latex:`\cite{hastie2001}`. This
+:math:`\mathbf{x}\in\mathbf{X}_{k}`. This
 process is then repeated :math:`K` times, removing a different fold from
 the training set each time.
 
@@ -1377,8 +1363,7 @@ the coefficients of that PCE. It is possible, however, to further
 increase the efficacy of :math:`\ell_1`-minimization by leveraging
 realistic models of structural dependencies between the values and
 locations of the PCE coefficients. For
-example :raw-latex:`\cite{Baraniuk_CDH_IEEIT_2010,Duarte_WB_SPARS_2005,La_D_IEEEIP_2006}`
-have successfully increased the performance of
+example have successfully increased the performance of
 :math:`\ell_1`-minimization when recovering wavelet coefficients that
 exhibit a tree-like structure. In this vein, we propose an algorithm for
 identifying the large coefficients of PC expansions that form a
@@ -1404,14 +1389,8 @@ accuracy of coefficient estimates obtained by
 :math:`\ell_1`-minimization.
 
 .. figure:: images/pce-tree.pdf
-   :alt: Tree structure of the coefficients of a two dimensional PCE
-   with a total-degree basis of order 3. For clarity we only depict one
-   connection per node, but in :math:`d` dimensions a node of a given
-   degree :math:`p` will be a child of up to :math:`d` nodes of degree
-   :math:`p-1`. For example, not only is the basis
-   :math:`\boldsymbol{\phi}_{[1,1]}` a child of
-   :math:`\boldsymbol{\phi}_{[1,0]}` (as depicted) but it is also a
-   child of :math:`\boldsymbol{\phi}_{[0,1]}`
+   :alt: Tree structure of the coefficients of a two dimensional PCE with a total-degree basis of order 3. For clarity we only depict one connection per node, but in :math:`d` dimensions a node of a given degree :math:`p` will be a child of up to :math:`d` nodes of degree
+         :math:`p-1`. For example, not only is the basis :math:`\boldsymbol{\phi}_{[1,1]}` a child of :math:`\boldsymbol{\phi}_{[1,0]}` (as depicted) but it is also a child of :math:`\boldsymbol{\phi}_{[0,1]}`
    :name: fig:pce-tree
    :width: 75.0%
 
@@ -1515,10 +1494,7 @@ horizontal child exist.
 .. container:: center
 
    .. figure:: images/index-expansion.pdf
-      :alt: Identification of the admissible indices of an index (red).
-      The indices of the current basis :math:`\Lambda` are gray and
-      admissible indices are striped. A index is admissible only if its
-      backwards neighbors exists in every dimension.
+      :alt: Identification of the admissible indices of an index (red). The indices of the current basis :math:`\Lambda` are gray and admissible indices are striped. A index is admissible only if its backwards neighbors exists in every dimension.
       :name: fig:index-dmissibiliy-examples
       :width: 95.0%
 
@@ -1552,8 +1528,7 @@ number of inner expansion steps :math:`t\in[1,T]`.
 Orthogonal Least Interpolation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Orthogonal least interpolation (OLI) :raw-latex:`\cite{narayan12}`
-enables the construction of interpolation polynomials based on
+Orthogonal least interpolation (OLI) enables the construction of interpolation polynomials based on
 arbitrarily located grids in arbitrary dimensions. The interpolation
 polynomials can be constructed using using orthogonal polynomials
 corresponding to the probability distribution function of the uncertain
@@ -1651,7 +1626,7 @@ Local sensitivity analysis: derivatives with respect to expansion variables
 ---------------------------------------------------------------------------
 
 Polynomial chaos expansions are easily differentiated with respect to
-the random variables :raw-latex:`\cite{reagan_sens}`. First, using
+the random variables. First, using
 Eq. `[eq:pc_exp_trunc] <#eq:pc_exp_trunc>`__,
 
 .. math::
@@ -1669,8 +1644,7 @@ and then using Eq. `[eq:multivar_prod] <#eq:multivar_prod>`__,
 
 where the univariate polynomial derivatives :math:`\frac{d\psi}{d\xi}`
 have simple closed form expressions for each polynomial in the Askey
-scheme :raw-latex:`\cite{abram_stegun}`. Finally, using the Jacobian of
-the (extended) Nataf variable transformation,
+scheme. Finally, using the Jacobian of the (extended) Nataf variable transformation,
 
 .. math::
 
@@ -1715,7 +1689,7 @@ In addition to obtaining derivatives of stochastic expansions with
 respect to the random variables, it is possible to obtain variance-based
 sensitivity indices from the stochastic expansions. Variance-based
 sensitivity indices are explained in the Design of Experiments Chapter
-of the User’s Manual :raw-latex:`\cite{UsersMan}`. The concepts are
+of the User’s Manual. The concepts are
 summarized here as well. Variance-based decomposition is a global
 sensitivity method that summarizes how the uncertainty in model output
 can be apportioned to uncertainty in individual input variables. VBD
@@ -1748,7 +1722,7 @@ evaluation of m-dimensional integrals which are typically approximated
 by Monte-Carlo sampling. However, in stochastic expansion methods, it is
 possible to obtain the sensitivity indices as analytic functions of the
 coefficients in the stochastic expansion. The derivation of these
-results is presented in  :raw-latex:`\cite{Tang10b}`. The sensitivity
+results is presented in TODO. The sensitivity
 indices are printed as a default when running either polynomial chaos or
 stochastic collocation in Dakota. Note that in addition to the
 first-order main effects, :math:`S_{i}`, we are able to calculate the
@@ -1818,7 +1792,7 @@ order local basis polynomials
 and `1.2.1.4 <#uq:expansion:interp:cubic>`__). And in the case of
 uniform p-refinement with PCE regression, the collocation oversampling
 ratio (refer to Methods specification within Dakota Reference
-Manual :raw-latex:`\cite{RefMan}`) is held fixed, such that an increment
+Manual) is held fixed, such that an increment
 in isotropic expansion order is matched with a corresponding increment
 in the number of structured (probabilistic collocation) or unstructured
 samples (point collocation) employed in the linear least squares solve.
@@ -1886,7 +1860,7 @@ Goal-oriented dimension-adaptive refinement with greedy adaptation
 
 Relative to the uniform and dimension-adaptive refinement capabilities
 described previously, the generalized sparse grid
-algorithm :raw-latex:`\cite{Gerstner_Griebel_2003}` supports greater
+algorithm supports greater
 flexibility in the definition of sparse grid index sets and supports
 refinement controls based on general statistical quantities of interest
 (QOI). This algorithm was originally intended for adaptive numerical
@@ -1905,11 +1879,10 @@ refinement of stochastic expansions using the following customizations:
    Gauss-Patterson for uniform or transformed uniform variables, and
    Genz-Keister for normal or transformed normal variables), but we do
    not require it. This implies a loss of some algorithmic
-   simplifications in :raw-latex:`\cite{Gerstner_Griebel_2003}` that
-   occur when grids are strictly hierarchical.
+   simplifications in TODO that occur when grids are strictly hierarchical.
 
 -  In the evaluation of the effect of a trial index set, the goal
-   in :raw-latex:`\cite{Gerstner_Griebel_2003}` is numerical integration
+   in TODO is numerical integration
    and the metric is the size of the increment induced by the trial set
    on the expectation of the function of interest. It is straightforward
    to instead measure the effect of a trial index set on response
@@ -1984,15 +1957,14 @@ precision. When a low-fidelity model captures useful trends of the
 high-fidelity model, then the model discrepancy may have either lower
 complexity, lower variance, or both, requiring less computational effort
 to resolve its functional form than that required for the original
-high-fidelity model :raw-latex:`\cite{NgEldred2012}`.
+high-fidelity model.
 
 To accomplish this goal, an expansion will first be formed for the model
 discrepancy (the difference between response results if additive
 correction or the ratio of results if multiplicative correction). These
 discrepancy functions are the same functions approximated in
 surrogate-based minimization (see Surrogate Models section within the
-Models chapter of the User’s Manual :raw-latex:`\cite{UsersMan}`). The
-exact discrepancy functions are
+Models chapter of the User’s Manual). The exact discrepancy functions are
 
 .. math::
 
