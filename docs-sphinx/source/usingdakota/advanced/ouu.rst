@@ -1,4 +1,724 @@
-""""""""""""""""""""""""""""""
-Optimization Under Uncertainty
-""""""""""""""""""""""""""""""
+.. _ouu:
 
+Optimization Under Uncertainty (OUU)
+====================================
+
+.. _`ouu:rbdo`:
+
+Reliability-Based Design Optimization (RBDO)
+--------------------------------------------
+
+Reliability-based design optimization (RBDO) methods are used to perform
+design optimization accounting for reliability metrics. The reliability
+analysis capabilities described in
+Section `[uq:reliability:local] <#uq:reliability:local>`__ provide a
+substantial foundation for exploring a variety of gradient-based RBDO
+formulations. :raw-latex:`\cite{Eld05}` investigated bi-level,
+fully-analytic bi-level, and first-order sequential RBDO approaches
+employing underlying first-order reliability assessments.
+:raw-latex:`\cite{Eld06a}` investigated fully-analytic bi-level and
+second-order sequential RBDO approaches employing underlying
+second-order reliability assessments. These methods are overviewed in
+the following sections.
+
+.. _`ouu:rbdo:bilev`:
+
+Bi-level RBDO
+~~~~~~~~~~~~~
+
+The simplest and most direct RBDO approach is the bi-level approach in
+which a full reliability analysis is performed for every optimization
+function evaluation. This involves a nesting of two distinct levels of
+optimization within each other, one at the design level and one at the
+MPP search level.
+
+Since an RBDO problem will typically specify both the :math:`\bar{z}`
+level and the :math:`\bar{p}/\bar{\beta}` level, one can use either the
+RIA or the PMA formulation for the UQ portion and then constrain the
+result in the design optimization portion. In particular, RIA
+reliability analysis maps :math:`\bar{z}` to :math:`p/\beta`, so RIA
+RBDO constrains :math:`p/\beta`:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f \nonumber \\
+     {\rm subject \ to } & \beta \ge \bar{\beta} \nonumber \\
+     {\rm or }           & p \le \bar{p} \label{eq:rbdo_ria}\end{aligned}
+
+And PMA reliability analysis maps :math:`\bar{p}/\bar{\beta}` to
+:math:`z`, so PMA RBDO constrains :math:`z`:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f \nonumber \\
+     {\rm subject \ to } & z \ge \bar{z} \label{eq:rbdo_pma}\end{aligned}
+
+where :math:`z \ge \bar{z}` is used as the RBDO constraint for a
+cumulative failure probability (failure defined as
+:math:`z \le \bar{z}`) but :math:`z \le \bar{z}` would be used as the
+RBDO constraint for a complementary cumulative failure probability
+(failure defined as :math:`z
+\ge \bar{z}`). It is worth noting that Dakota is not limited to these
+types of inequality-constrained RBDO formulations; rather, they are
+convenient examples. Dakota supports general optimization under
+uncertainty mappings :raw-latex:`\cite{Eld02}` which allow flexible use
+of statistics within multiple objectives, inequality constraints, and
+equality constraints.
+
+An important performance enhancement for bi-level methods is the use of
+sensitivity analysis to analytically compute the design gradients of
+probability, reliability, and response levels. When design variables are
+separate from the uncertain variables (i.e., they are not distribution
+parameters), then the following first-order expressions may be
+used :raw-latex:`\cite{Hoh86,Kar92,All04}`:
+
+.. math::
+
+   \begin{aligned}
+   \nabla_{\bf d} z           & = & \nabla_{\bf d} g \label{eq:deriv_z} \\
+   \nabla_{\bf d} \beta_{cdf} & = & \frac{1}{{\parallel \nabla_{\bf u} G 
+   \parallel}} \nabla_{\bf d} g \label{eq:deriv_beta} \\
+   \nabla_{\bf d} p_{cdf}     & = & -\phi(-\beta_{cdf}) \nabla_{\bf d} \beta_{cdf}
+   \label{eq:deriv_p}\end{aligned}
+
+where it is evident from
+Eqs. `[eq:beta_cdf_ccdf] <#eq:beta_cdf_ccdf>`__-`[eq:p_cdf_ccdf] <#eq:p_cdf_ccdf>`__
+that :math:`\nabla_{\bf d} \beta_{ccdf} = -\nabla_{\bf d} \beta_{cdf}`
+and :math:`\nabla_{\bf d} p_{ccdf} = -\nabla_{\bf d} p_{cdf}`. In the
+case of second-order integrations, Eq. `[eq:deriv_p] <#eq:deriv_p>`__
+must be expanded to include the curvature correction. For Breitung’s
+correction (Eq. `[eq:p_2nd_breit] <#eq:p_2nd_breit>`__),
+
+.. math::
+
+   \nabla_{\bf d} p_{cdf} = \left[ \Phi(-\beta_p) \sum_{i=1}^{n-1} 
+   \left( \frac{-\kappa_i}{2 (1 + \beta_p \kappa_i)^{\frac{3}{2}}}
+   \prod_{\stackrel{\scriptstyle j=1}{j \ne i}}^{n-1} 
+   \frac{1}{\sqrt{1 + \beta_p \kappa_j}} \right) - 
+   \phi(-\beta_p) \prod_{i=1}^{n-1} \frac{1}{\sqrt{1 + \beta_p \kappa_i}} 
+   \right] \nabla_{\bf d} \beta_{cdf} \label{eq:deriv_p_breit}
+
+where :math:`\nabla_{\bf d} \kappa_i` has been neglected and
+:math:`\beta_p \ge 0` (see
+Section `[uq:reliability:local:mpp:int] <#uq:reliability:local:mpp:int>`__).
+Other approaches assume the curvature correction is nearly independent
+of the design variables :raw-latex:`\cite{Rac02}`, which is equivalent
+to neglecting the first term in
+Eq. `[eq:deriv_p_breit] <#eq:deriv_p_breit>`__.
+
+To capture second-order probability estimates within an RIA RBDO
+formulation using well-behaved :math:`\beta` constraints, a generalized
+reliability index can be introduced where, similar to
+Eq. `[eq:beta_cdf] <#eq:beta_cdf>`__,
+
+.. math:: \beta^*_{cdf} = -\Phi^{-1}(p_{cdf}) \label{eq:gen_beta}
+
+for second-order :math:`p_{cdf}`. This reliability index is no longer
+equivalent to the magnitude of :math:`{\bf u}`, but rather is a
+convenience metric for capturing the effect of more accurate probability
+estimates. The corresponding generalized reliability index sensitivity,
+similar to Eq. `[eq:deriv_p] <#eq:deriv_p>`__, is
+
+.. math::
+
+   \nabla_{\bf d} \beta^*_{cdf} = -\frac{1}{\phi(-\beta^*_{cdf})}
+   \nabla_{\bf d} p_{cdf} \label{eq:deriv_gen_beta}
+
+where :math:`\nabla_{\bf d} p_{cdf}` is defined from
+Eq. `[eq:deriv_p_breit] <#eq:deriv_p_breit>`__. Even when
+:math:`\nabla_{\bf d} g` is estimated numerically,
+Eqs. `[eq:deriv_z] <#eq:deriv_z>`__-`[eq:deriv_gen_beta] <#eq:deriv_gen_beta>`__
+can be used to avoid numerical differencing across full reliability
+analyses.
+
+When the design variables are distribution parameters of the uncertain
+variables, :math:`\nabla_{\bf d} g` is expanded with the chain rule and
+Eqs. `[eq:deriv_z] <#eq:deriv_z>`__
+and `[eq:deriv_beta] <#eq:deriv_beta>`__ become
+
+.. math::
+
+   \begin{aligned}
+   \nabla_{\bf d} z           & = & \nabla_{\bf d} {\bf x} \nabla_{\bf x} g
+   \label{eq:deriv_z_ds} \\
+   \nabla_{\bf d} \beta_{cdf} & = & \frac{1}{{\parallel \nabla_{\bf u} G 
+   \parallel}} \nabla_{\bf d} {\bf x} \nabla_{\bf x} g \label{eq:deriv_beta_ds}\end{aligned}
+
+where the design Jacobian of the transformation
+(:math:`\nabla_{\bf d} {\bf x}`) may be obtained analytically for
+uncorrelated :math:`{\bf x}` or semi-analytically for correlated
+:math:`{\bf x}` (:math:`\nabla_{\bf d} {\bf L}` is evaluated
+numerically) by differentiating Eqs. `[eq:trans_zx] <#eq:trans_zx>`__
+and `[eq:trans_zu] <#eq:trans_zu>`__ with respect to the distribution
+parameters.
+Eqs. `[eq:deriv_p] <#eq:deriv_p>`__-`[eq:deriv_gen_beta] <#eq:deriv_gen_beta>`__
+remain the same as before. For this design variable case, all required
+information for the sensitivities is available from the MPP search.
+
+Since
+Eqs. `[eq:deriv_z] <#eq:deriv_z>`__-`[eq:deriv_beta_ds] <#eq:deriv_beta_ds>`__
+are derived using the Karush-Kuhn-Tucker optimality conditions for a
+converged MPP, they are appropriate for RBDO using AMV+,
+AMV\ :math:`^2`\ +, TANA, FORM, and SORM, but not for RBDO using MVFOSM,
+MVSOSM, AMV, or AMV\ :math:`^2`.
+
+.. _`ouu:rbdo:surr`:
+
+Sequential/Surrogate-based RBDO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+An alternative RBDO approach is the sequential approach, in which
+additional efficiency is sought through breaking the nested relationship
+of the MPP and design searches. The general concept is to iterate
+between optimization and uncertainty quantification, updating the
+optimization goals based on the most recent probabilistic assessment
+results. This update may be based on safety
+factors :raw-latex:`\cite{Wu01}` or other
+approximations :raw-latex:`\cite{Du04}`.
+
+A particularly effective approach for updating the optimization goals is
+to use the :math:`p/\beta/z` sensitivity analysis of
+Eqs. `[eq:deriv_z] <#eq:deriv_z>`__-`[eq:deriv_beta_ds] <#eq:deriv_beta_ds>`__
+in combination with local surrogate models :raw-latex:`\cite{Zou04}`. In
+:raw-latex:`\cite{Eld05}` and :raw-latex:`\cite{Eld06a}`, first-order
+and second-order Taylor series approximations were employed within a
+trust-region model management framework :raw-latex:`\cite{Giu00}` in
+order to adaptively manage the extent of the approximations and ensure
+convergence of the RBDO process. Surrogate models were used for both the
+objective function and the constraints, although the use of constraint
+surrogates alone is sufficient to remove the nesting.
+
+In particular, RIA trust-region surrogate-based RBDO employs surrogate
+models of :math:`f` and :math:`p/\beta` within a trust region
+:math:`\Delta^k` centered at :math:`{\bf d}_c`. For first-order
+surrogates:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f({\bf d}_c) + \nabla_d f({\bf d}_c)^T
+   ({\bf d} - {\bf d}_c) \nonumber \\
+     {\rm subject \ to } & \beta({\bf d}_c) + \nabla_d \beta({\bf d}_c)^T
+   ({\bf d} - {\bf d}_c) \ge \bar{\beta} \nonumber \\
+     {\rm or }           & p ({\bf d}_c) + \nabla_d p({\bf d}_c)^T 
+   ({\bf d} - {\bf d}_c) \le \bar{p} \nonumber \\
+   & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
+   \label{eq:rbdo_surr1_ria}\end{aligned}
+
+and for second-order surrogates:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f({\bf d}_c) + \nabla_{\bf d} f({\bf d}_c)^T
+   ({\bf d} - {\bf d}_c)  + \frac{1}{2} ({\bf d} - {\bf d}_c)^T 
+   \nabla^2_{\bf d} f({\bf d}_c) ({\bf d} - {\bf d}_c) \nonumber \\
+     {\rm subject \ to } & \beta({\bf d}_c) + \nabla_{\bf d} \beta({\bf d}_c)^T
+   ({\bf d} - {\bf d}_c) + \frac{1}{2} ({\bf d} - {\bf d}_c)^T 
+   \nabla^2_{\bf d} \beta({\bf d}_c) ({\bf d} - {\bf d}_c) \ge \bar{\beta}
+   \nonumber \\
+     {\rm or }           & p ({\bf d}_c) + \nabla_{\bf d} p({\bf d}_c)^T 
+   ({\bf d} - {\bf d}_c) + \frac{1}{2} ({\bf d} - {\bf d}_c)^T 
+   \nabla^2_{\bf d} p({\bf d}_c) ({\bf d} - {\bf d}_c) \le \bar{p} \nonumber \\
+   & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
+   \label{eq:rbdo_surr2_ria}\end{aligned}
+
+For PMA trust-region surrogate-based RBDO, surrogate models of :math:`f`
+and :math:`z` are employed within a trust region :math:`\Delta^k`
+centered at :math:`{\bf d}_c`. For first-order surrogates:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f({\bf d}_c) + \nabla_d f({\bf d}_c)^T
+   ({\bf d} - {\bf d}_c) \nonumber \\
+     {\rm subject \ to } & z({\bf d}_c) + \nabla_d z({\bf d}_c)^T ({\bf d} - {\bf d}_c) 
+   \ge \bar{z} \nonumber \\
+   & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
+   \label{eq:rbdo_surr1_pma}\end{aligned}
+
+and for second-order surrogates:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f({\bf d}_c) + \nabla_{\bf d} f({\bf d}_c)^T
+   ({\bf d} - {\bf d}_c) + \frac{1}{2} ({\bf d} - {\bf d}_c)^T 
+   \nabla^2_{\bf d} f({\bf d}_c) ({\bf d} - {\bf d}_c) \nonumber \\
+     {\rm subject \ to } & z({\bf d}_c) + \nabla_{\bf d} z({\bf d}_c)^T ({\bf d} - {\bf d}_c)
+    + \frac{1}{2} ({\bf d} - {\bf d}_c)^T \nabla^2_{\bf d} z({\bf d}_c) 
+   ({\bf d} - {\bf d}_c) \ge \bar{z} \nonumber \\
+   & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
+   \label{eq:rbdo_surr2_pma}\end{aligned}
+
+where the sense of the :math:`z` constraint may vary as described
+previously. The second-order information in
+Eqs. `[eq:rbdo_surr2_ria] <#eq:rbdo_surr2_ria>`__ and
+`[eq:rbdo_surr2_pma] <#eq:rbdo_surr2_pma>`__ will typically be
+approximated with quasi-Newton updates.
+
+.. _`ouu:sebdo`:
+
+Stochastic Expansion-Based Design Optimization (SEBDO)
+------------------------------------------------------
+
+.. _`ouu:sebdo:ssa`:
+
+Stochastic Sensitivity Analysis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Section `[uq:expansion:rvsa] <#uq:expansion:rvsa>`__ describes
+sensitivity analysis of the polynomial chaos expansion with respect to
+the expansion variables. Here we extend this analysis to include
+sensitivity analysis of probabilistic moments with respect to
+nonprobabilistic (i.e., design or epistemic uncertain) variables.
+
+.. _`ouu:sebdo:ssa:dvsa_rve`:
+
+Local sensitivity analysis: first-order probabilistic expansions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With the introduction of nonprobabilistic variables
+:math:`\boldsymbol{s}` (for example, design variables or epistemic
+uncertain variables), a polynomial chaos expansion only over the
+probabilistic variables :math:`\boldsymbol{\xi}` has the functional
+relationship:
+
+.. math::
+
+   R(\boldsymbol{\xi}, \boldsymbol{s}) \cong \sum_{j=0}^P \alpha_j(\boldsymbol{s}) 
+   \Psi_j(\boldsymbol{\xi}) \label{eq:R_alpha_s_psi_xi}
+
+For computing sensitivities of response mean and variance, the
+:math:`ij` indices may be dropped from
+Eqs. `[eq:mean_pce] <#eq:mean_pce>`__
+and `[eq:covar_pce] <#eq:covar_pce>`__, simplifying to
+
+.. math:: \mu(s) ~=~ \alpha_0(s), ~~~~\sigma^2(s) = \sum_{k=1}^P \alpha^2_k(s) \langle \Psi^2_k \rangle \label{eq:var_pce}
+
+Sensitivities of Eq. `[eq:var_pce] <#eq:var_pce>`__ with respect to the
+nonprobabilistic variables are as follows, where independence of
+:math:`\boldsymbol{s}` and :math:`\boldsymbol{\xi}` is assumed:
+
+.. math::
+
+   \begin{aligned}
+   \frac{d\mu}{ds} &=& \frac{d\alpha_0}{ds} ~~=~~ 
+   %\frac{d}{ds} \langle R \rangle ~~=~~ 
+   \langle \frac{dR}{ds} \rangle \label{eq:dmuR_ds_xi_pce} \\
+   \frac{d\sigma^2}{ds} &=& \sum_{k=1}^P \langle \Psi_k^2 \rangle 
+   \frac{d\alpha_k^2}{ds} ~~=~~ 
+   2 \sum_{k=1}^P \alpha_k \langle \frac{dR}{ds}, \Psi_k \rangle 
+   \label{eq:dsigR_ds_xi_pce}
+   %2 \sigma \frac{d\sigma}{ds} &=& 2 
+   %\sum_{k=1}^P \alpha_k \frac{d\alpha_k}{ds} \langle \Psi_k^2 \rangle \\
+   %\frac{d\sigma}{ds} &=& \frac{1}{\sigma} 
+   %\sum_{k=1}^P \alpha_k \frac{d}{ds} \langle R, \Psi_k \rangle 
+   %\label{eq:dsigR_ds_xi_pce}\end{aligned}
+
+where
+
+.. math::
+
+   \frac{d\alpha_k}{ds} = \frac{\langle \frac{dR}{ds}, \Psi_k \rangle}
+   {\langle \Psi^2_k \rangle} \label{eq:dalpha_k_ds}
+
+has been used. Due to independence, the coefficients calculated in
+Eq. `[eq:dalpha_k_ds] <#eq:dalpha_k_ds>`__ may be interpreted as either
+the derivatives of the expectations or the expectations of the
+derivatives, or more precisely, the nonprobabilistic sensitivities of
+the chaos coefficients for the response expansion or the chaos
+coefficients of an expansion for the nonprobabilistic sensitivities of
+the response. The evaluation of integrals involving
+:math:`\frac{dR}{ds}` extends the data requirements for the PCE approach
+to include response sensitivities at each of the sampled points. The
+resulting expansions are valid only for a particular set of
+nonprobabilistic variables and must be recalculated each time the
+nonprobabilistic variables are modified.
+
+Similarly for stochastic collocation,
+
+.. math::
+
+   R(\boldsymbol{\xi}, \boldsymbol{s}) \cong \sum_{k=1}^{N_p} r_k(\boldsymbol{s}) 
+   \boldsymbol{L}_k(\boldsymbol{\xi}) \label{eq:R_r_s_L_xi}
+
+leads to
+
+.. math::
+
+   \begin{aligned}
+   \mu(s) &=& \sum_{k=1}^{N_p} r_k(s) w_k, ~~~~\sigma^2(s) ~=~ \sum_{k=1}^{N_p} r^2_k(s) w_k - \mu^2(s) \label{eq:var_sc} \\
+   \frac{d\mu}{ds} &=& %\frac{d}{ds} \langle R \rangle ~~=~~ 
+   %\sum_{k=1}^{N_p} \frac{dr_k}{ds} \langle \boldsymbol{L}_k \rangle ~~=~~ 
+   \sum_{k=1}^{N_p} w_k \frac{dr_k}{ds} \label{eq:dmuR_ds_xi_sc} \\
+   \frac{d\sigma^2}{ds} &=& \sum_{k=1}^{N_p} 2 w_k r_k \frac{dr_k}{ds}
+   - 2 \mu \frac{d\mu}{ds} 
+   ~~=~~ \sum_{k=1}^{N_p} 2 w_k (r_k - \mu) \frac{dr_k}{ds}
+   \label{eq:dsigR_ds_xi_sc}\end{aligned}
+
+.. _`ouu:sebdo:ssa:dvsa_cve`:
+
+Local sensitivity analysis: zeroth-order combined expansions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Alternatively, a stochastic expansion can be formed over both
+:math:`\boldsymbol{\xi}` and :math:`\boldsymbol{s}`. Assuming a bounded
+design domain :math:`\boldsymbol{s}_L \le \boldsymbol{s} \le
+\boldsymbol{s}_U` (with no implied probability content), a Legendre
+chaos basis would be appropriate for each of the dimensions in
+:math:`\boldsymbol{s}` within a polynomial chaos expansion.
+
+.. math::
+
+   R(\boldsymbol{\xi}, \boldsymbol{s}) \cong \sum_{j=0}^P \alpha_j 
+   \Psi_j(\boldsymbol{\xi}, \boldsymbol{s}) \label{eq:R_alpha_psi_xi_s}
+
+In this case, design sensitivities for the mean and variance do not
+require response sensitivity data, but this comes at the cost of forming
+the PCE over additional dimensions. For this combined variable
+expansion, the mean and variance are evaluated by performing the
+expectations over only the probabilistic expansion variables, which
+eliminates the polynomial dependence on :math:`\boldsymbol{\xi}`,
+leaving behind the desired polynomial dependence of the moments on
+:math:`\boldsymbol{s}`:
+
+.. math::
+
+   \begin{aligned}
+   \mu_R(\boldsymbol{s}) &=& \sum_{j=0}^P \alpha_j \langle \Psi_j(\boldsymbol{\xi},
+   \boldsymbol{s}) \rangle_{\boldsymbol{\xi}} \label{eq:muR_comb_pce} \\
+   \sigma^2_R(\boldsymbol{s}) &=& \sum_{j=0}^P \sum_{k=0}^P \alpha_j \alpha_k 
+   \langle \Psi_j(\boldsymbol{\xi}, \boldsymbol{s}) \Psi_k(\boldsymbol{\xi},
+   \boldsymbol{s}) \rangle_{\boldsymbol{\xi}} ~-~ \mu^2_R(\boldsymbol{s})
+   \label{eq:sigR_comb_pce}\end{aligned}
+
+The remaining polynomials may then be differentiated with respect to
+:math:`\boldsymbol{s}`. In this approach, the combined PCE is valid for
+the full design variable range
+(:math:`\boldsymbol{s}_L \le \boldsymbol{s} \le \boldsymbol{s}_U`) and
+does not need to be updated for each change in nonprobabilistic
+variables, although adaptive localization techniques (i.e., trust region
+model management approaches) can be employed when improved local
+accuracy of the sensitivities is required.
+
+Similarly for stochastic collocation,
+
+.. math::
+
+   R(\boldsymbol{\xi}, \boldsymbol{s}) \cong \sum_{j=1}^{N_p} r_j 
+   \boldsymbol{L}_j(\boldsymbol{\xi}, \boldsymbol{s}) \label{eq:R_r_L_xi_s}
+
+leads to
+
+.. math::
+
+   \begin{aligned}
+   \mu_R(\boldsymbol{s}) &=& \sum_{j=1}^{N_p} r_j \langle 
+   \boldsymbol{L}_j(\boldsymbol{\xi}, \boldsymbol{s}) \rangle_{\boldsymbol{\xi}} 
+   \label{eq:muR_both_sc} \\
+   \sigma^2_R(\boldsymbol{s}) &=& \sum_{j=1}^{N_p} \sum_{k=1}^{N_p} r_j r_k 
+   \langle \boldsymbol{L}_j(\boldsymbol{\xi}, \boldsymbol{s}) 
+   \boldsymbol{L}_k(\boldsymbol{\xi}, \boldsymbol{s}) \rangle_{\boldsymbol{\xi}}
+   ~-~ \mu^2_R(\boldsymbol{s}) \label{eq:sigR_both_sc}\end{aligned}
+
+where the remaining polynomials not eliminated by the expectation over
+:math:`\boldsymbol{\xi}` are again differentiated with respect to
+:math:`\boldsymbol{s}`.
+
+.. _`ouu:sebdo:ssa:io`:
+
+Inputs and outputs
+^^^^^^^^^^^^^^^^^^
+
+There are two types of nonprobabilistic variables for which
+sensitivities must be calculated: “augmented,” where the
+nonprobabilistic variables are separate from and augment the
+probabilistic variables, and “inserted,” where the nonprobabilistic
+variables define distribution parameters for the probabilistic
+variables. Any inserted nonprobabilistic variable sensitivities must be
+handled using
+Eqs. `[eq:dmuR_ds_xi_pce] <#eq:dmuR_ds_xi_pce>`__-`[eq:dsigR_ds_xi_pce] <#eq:dsigR_ds_xi_pce>`__
+and
+Eqs. `[eq:dmuR_ds_xi_sc] <#eq:dmuR_ds_xi_sc>`__-`[eq:dsigR_ds_xi_sc] <#eq:dsigR_ds_xi_sc>`__
+where :math:`\frac{dR}{ds}` is calculated as
+:math:`\frac{dR}{dx} \frac{dx}{ds}` and :math:`\frac{dx}{ds}` is the
+Jacobian of the variable transformation
+:math:`{\bf x} = T^{-1}(\boldsymbol{\xi})` with respect to the inserted
+nonprobabilistic variables. In addition, parameterized polynomials
+(generalized Gauss-Laguerre, Jacobi, and numerically-generated
+polynomials) may introduce a :math:`\frac{d\Psi}{ds}` or
+:math:`\frac{d\boldsymbol{L}}{ds}` dependence for inserted :math:`s`
+that will introduce additional terms in the sensitivity expressions.
+
+While moment sensitivities directly enable robust design optimization
+and interval estimation formulations which seek to control or bound
+response variance, control or bounding of reliability requires
+sensitivities of tail statistics. In this work, the sensitivity of
+simple moment-based approximations to cumulative distribution function
+(CDF) and complementary cumulative distribution function (CCDF) mappings
+(Eqs. `[eq:mv_ria] <#eq:mv_ria>`__–`[eq:mv_pma] <#eq:mv_pma>`__) are
+employed for this purpose, such that it is straightforward to form
+approximate design sensitivities of reliability index :math:`\beta`
+(forward reliability mapping :math:`\bar{z} \rightarrow \beta`) or
+response level :math:`z` (inverse reliability mapping
+:math:`\bar{\beta} \rightarrow z`) from the moment design sensitivities
+and the specified levels :math:`\bar{\beta}` or :math:`\bar{z}`.
+
+.. _`ouu:sebdo:form`:
+
+Optimization Formulations
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Given the capability to compute analytic statistics of the response
+along with design sensitivities of these statistics, Dakota supports
+bi-level, sequential, and multifidelity approaches for optimization
+under uncertainty (OUU). The latter two approaches apply surrogate
+modeling approaches (data fits and multifidelity modeling) to the
+uncertainty analysis and then apply trust region model management to the
+optimization process.
+
+.. _`ouu:sebdo:form:bilev`:
+
+Bi-level SEBDO
+^^^^^^^^^^^^^^
+
+The simplest and most direct approach is to employ these analytic
+statistics and their design derivatives from
+Section `1.2.1 <#ouu:sebdo:ssa>`__ directly within an optimization loop.
+This approach is known as bi-level OUU, since there is an inner level
+uncertainty analysis nested within an outer level optimization.
+
+Consider the common reliability-based design example of a deterministic
+objective function with a reliability constraint:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f \nonumber \\
+     {\rm subject \ to } & \beta \ge \bar{\beta} \label{eq:rbdo}\end{aligned}
+
+where :math:`\beta` is computed relative to a prescribed threshold
+response value :math:`\bar{z}` (e.g., a failure threshold) and is
+constrained by a prescribed reliability level :math:`\bar{\beta}`
+(minimum allowable reliability in the design), and is either a CDF or
+CCDF index depending on the definition of the failure domain (i.e.,
+defined from whether the associated failure probability is cumulative,
+:math:`p(g \le
+\bar{z})`, or complementary cumulative, :math:`p(g > \bar{z})`).
+
+Another common example is robust design in which the constraint
+enforcing a reliability lower-bound has been replaced with a constraint
+enforcing a variance upper-bound :math:`\bar{\sigma}^2` (maximum
+allowable variance in the design):
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f \nonumber \\
+     {\rm subject \ to } & \sigma^2 \le \bar{\sigma}^2 \label{eq:rdo}\end{aligned}
+
+Solving these problems using a bi-level approach involves computing
+:math:`\beta` and :math:`\frac{d\beta}{d\boldsymbol{s}}` for
+Eq. `[eq:rbdo] <#eq:rbdo>`__ or :math:`\sigma^2` and
+:math:`\frac{d\sigma^2}{d\boldsymbol{s}}` for Eq. `[eq:rdo] <#eq:rdo>`__
+for each set of design variables :math:`\boldsymbol{s}` passed from the
+optimizer. This approach is supported for both probabilistic and
+combined expansions using PCE and SC.
+
+.. _`ouu:sebdo:form:surr`:
+
+Sequential/Surrogate-Based SEBDO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An alternative OUU approach is the sequential approach, in which
+additional efficiency is sought through breaking the nested relationship
+of the UQ and optimization loops. The general concept is to iterate
+between optimization and uncertainty quantification, updating the
+optimization goals based on the most recent uncertainty assessment
+results. This approach is common with the reliability methods community,
+for which the updating strategy may be based on safety
+factors :raw-latex:`\cite{Wu01}` or other
+approximations :raw-latex:`\cite{Du04}`.
+
+A particularly effective approach for updating the optimization goals is
+to use data fit surrogate models, and in particular, local Taylor series
+models allow direct insertion of stochastic sensitivity analysis
+capabilities. In Ref. :raw-latex:`\cite{Eld05}`, first-order Taylor
+series approximations were explored, and in
+Ref. :raw-latex:`\cite{Eld06a}`, second-order Taylor series
+approximations are investigated. In both cases, a trust-region model
+management framework :raw-latex:`\cite{Eld06b}` is used to adaptively
+manage the extent of the approximations and ensure convergence of the
+OUU process. Surrogate models are used for both the objective and the
+constraint functions, although the use of surrogates is only required
+for the functions containing statistical results; deterministic
+functions may remain explicit is desired.
+
+In particular, trust-region surrogate-based optimization for
+reliability-based design employs surrogate models of :math:`f` and
+:math:`\beta` within a trust region :math:`\Delta^k` centered at
+:math:`{\bf s}_c`:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f({\bf s}_c) + \nabla_s f({\bf s}_c)^T
+   ({\bf s} - {\bf s}_c) \nonumber \\
+     {\rm subject \ to } & \beta({\bf s}_c) + \nabla_s \beta({\bf s}_c)^T
+   ({\bf s} - {\bf s}_c) \ge \bar{\beta} \\
+   & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
+   \label{eq:rbdo_surr}\end{aligned}
+
+and trust-region surrogate-based optimization for robust design employs
+surrogate models of :math:`f` and :math:`\sigma^2` within a trust region
+:math:`\Delta^k` centered at :math:`{\bf s}_c`:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f({\bf s}_c) + \nabla_s f({\bf s}_c)^T
+   ({\bf s} - {\bf s}_c) \nonumber \\
+     {\rm subject \ to } & \sigma^2({\bf s}_c) + \nabla_s \sigma^2({\bf s}_c)^T 
+   ({\bf s} - {\bf s}_c) \le \bar{\sigma}^2 \\
+   & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
+   \label{eq:rdo_surr}\end{aligned}
+
+Second-order local surrogates may also be employed, where the Hessians
+are typically approximated from an accumulation of curvature information
+using quasi-Newton updates :raw-latex:`\cite{Noc99}` such as
+Broyden-Fletcher-Goldfarb-Shanno (BFGS, Eq. `[eq:bfgs] <#eq:bfgs>`__) or
+symmetric rank one (SR1, Eq. `[eq:sr1] <#eq:sr1>`__). The sequential
+approach is available for probabilistic expansions using PCE and SC.
+
+.. _`ouu:sebdo:form:mf`:
+
+Multifidelity SEBDO
+^^^^^^^^^^^^^^^^^^^
+
+The multifidelity OUU approach is another trust-region surrogate-based
+approach. Instead of the surrogate UQ model being a simple data fit (in
+particular, first-/second-order Taylor series model) of the truth UQ
+model results, distinct UQ models of differing fidelity are now
+employed. This differing UQ fidelity could stem from the fidelity of the
+underlying simulation model, the fidelity of the UQ algorithm, or both.
+In this section, we focus on the fidelity of the UQ algorithm. For
+reliability methods, this could entail varying fidelity in approximating
+assumptions (e.g., Mean Value for low fidelity, SORM for high fidelity),
+and for stochastic expansion methods, it could involve differences in
+selected levels of :math:`p` and :math:`h` refinement.
+
+Here, we define UQ fidelity as point-wise accuracy in the design space
+and take the high fidelity truth model to be the probabilistic expansion
+PCE/SC model, with validity only at a single design point. The low
+fidelity model, whose validity over the design space will be adaptively
+controlled, will be either the combined expansion PCE/SC model, with
+validity over a range of design parameters, or the MVFOSM reliability
+method, with validity only at a single design point. The combined
+expansion low fidelity approach will span the current trust region of
+the design space and will be reconstructed for each new trust region.
+Trust region adaptation will ensure that the combined expansion approach
+remains sufficiently accurate for design purposes. By taking advantage
+of the design space spanning, one can eliminate the cost of multiple low
+fidelity UQ analyses within the trust region, with fallback to the
+greater accuracy and higher expense of the probabilistic expansion
+approach when needed. The MVFOSM low fidelity approximation must be
+reformed for each change in design variables, but it only requires a
+single evaluation of a response function and its derivative to
+approximate the response mean and variance from the input mean and
+covariance
+(Eqs. `[eq:mv_mean1] <#eq:mv_mean1>`__–`[eq:mv_std_dev] <#eq:mv_std_dev>`__)
+from which forward/inverse CDF/CCDF reliability mappings can be
+generated using
+Eqs. `[eq:mv_ria] <#eq:mv_ria>`__–`[eq:mv_pma] <#eq:mv_pma>`__. This is
+the least expensive UQ option, but its limited accuracy [1]_ may dictate
+the use of small trust regions, resulting in greater iterations to
+convergence. The expense of optimizing a combined expansion, on the
+other hand, is not significantly less than that of optimizing the high
+fidelity UQ model, but its representation of global trends should allow
+the use of larger trust regions, resulting in reduced iterations to
+convergence. The design derivatives of each of the PCE/SC expansion
+models provide the necessary data to correct the low fidelity model to
+first-order consistency with the high fidelity model at the center of
+each trust region, ensuring convergence of the multifidelity
+optimization process to the high fidelity optimum. Design derivatives of
+the MVFOSM statistics are currently evaluated numerically using forward
+finite differences.
+
+Multifidelity optimization for reliability-based design can be
+formulated as:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f({\bf s}) \nonumber \\
+     {\rm subject \ to } & \hat{\beta_{hi}}({\bf s}) \ge \bar{\beta} \\
+   & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
+   \label{eq:rbdo_mf}\end{aligned}
+
+and multifidelity optimization for robust design can be formulated as:
+
+.. math::
+
+   \begin{aligned}
+     {\rm minimize }     & f({\bf s}) \nonumber \\
+     {\rm subject \ to } & \hat{\sigma_{hi}}^2({\bf s}) \le \bar{\sigma}^2 \\
+   & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
+   \label{eq:rdo_mf}\end{aligned}
+
+where the deterministic objective function is not approximated and
+:math:`\hat{\beta_{hi}}` and :math:`\hat{\sigma_{hi}}^2` are the
+approximated high-fidelity UQ results resulting from correction of the
+low-fidelity UQ results. In the case of an additive correction function:
+
+.. math::
+
+   \begin{aligned}
+   \hat{\beta_{hi}}({\bf s})    &=& \beta_{lo}({\bf s}) + 
+   \alpha_{\beta}({\bf s})  \label{eq:corr_lf_beta} \\
+   \hat{\sigma_{hi}}^2({\bf s}) &=& \sigma_{lo}^2({\bf s}) + 
+   \alpha_{\sigma^2}({\bf s}) \label{eq:corr_lf_sigma}\end{aligned}
+
+where correction functions :math:`\alpha({\bf s})` enforcing first-order
+consistency :raw-latex:`\cite{Eld04}` are typically employed.
+Quasi-second-order correction functions :raw-latex:`\cite{Eld04}` can
+also be employed, but care must be taken due to the different rates of
+curvature accumulation between the low and high fidelity models. In
+particular, since the low fidelity model is evaluated more frequently
+than the high fidelity model, it accumulates curvature information more
+quickly, such that enforcing quasi-second-order consistency with the
+high fidelity model can be detrimental in the initial iterations of the
+algorithm [2]_. Instead, this consistency should only be enforced when
+sufficient high fidelity curvature information has been accumulated
+(e.g., after :math:`n` rank one updates).
+
+.. _`ouu:sampling`:
+
+Sampling-based OUU
+------------------
+
+Gradient-based OUU can also be performed using random sampling methods.
+In this case, the sample-average approximation to the design derivative
+of the mean and standard deviation are:
+
+.. math::
+
+   \begin{aligned}
+     \frac{d\mu}{ds}    &=& \frac{1}{N} \sum_{i=1}^N \frac{dQ}{ds} \\
+     \frac{d\sigma}{ds} &=& \left[ \sum_{i=1}^N (Q \frac{dQ}{ds})
+       - N \mu \frac{d\mu}{ds} \right] / (\sigma (N-1))\end{aligned}
+
+This enables design sensitivities for mean, standard deviation or
+variance (based on ``final_moments`` type), and forward/inverse
+reliability index mappings (:math:`\bar{z} \rightarrow \beta`,
+:math:`\bar{\beta} \rightarrow z`).
+
+.. [1]
+   MVFOSM is exact for linear functions with Gaussian inputs, but
+   quickly degrades for nonlinear and/or non-Gaussian.
+
+.. [2]
+   Analytic and numerical Hessians, when available, are instantaneous
+   with no accumulation rate concerns.
