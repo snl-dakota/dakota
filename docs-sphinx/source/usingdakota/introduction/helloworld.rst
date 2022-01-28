@@ -1,8 +1,8 @@
+.. _helloworld-main:
+
 """"""""""""""""""""""""""
 Dakota Beginner's Tutorial
 """"""""""""""""""""""""""
-
-.. _helloworld-main:
 
 This section is intended for users who are new to Dakota, to demonstrate the basics of running a simple example.
 

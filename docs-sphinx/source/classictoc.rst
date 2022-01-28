@@ -26,31 +26,32 @@ set of manuals, this set of links may help you find what you're looking for...
   
 - About
 
-  - [Packages](developingdakota/tpls.rst)
-  - [Team](misc/aboutteam.md)
+  - :ref:`Packages <developing-tpls-main>`
+  - :ref:`Team <aboutteam-main>`
   - Contributors
   - License
   - Citing Dakota
   
 - Developer Portal
-  - [Development Environment](developingdakota/devenvironment.rst)
-  - [Git for Version Control](developingdakota/setupgit.rst)
-  - [Adding a unit test (eg for an Optimization TPL)](developingdakota/testingcode.rst)
+
+  - :ref:`Development Environment <devenvironment-main>`
+  - :ref:`Git for Version Control <setupgit-main>`
+  - :ref:`Adding a unit test (eg for an Optimization TPL) <testingcode-main>`
 
 **User's Manual**
 
-- [Chapter 1: Introduction](usingdakota/introduction/aboutdakota.md)
+- :ref:`Chapter 1: Introduction <aboutdakota-main>`
 
-  - [1.1: Motivation for Dakota Development](usingdakota/introduction/aboutdakota.md)
-  - [1.2: Dakota Capabilities](usingdakota/introduction/aboutdakota.md)
-  - [1.3: Coupling Dakota to a Simulation](usingdakota/introduction/couplingtosimulations.md)
+  - :ref:`1.1: Motivation for Dakota Development <aboutdakota-motivation>`
+  - :ref:`1.2: Dakota Capabilities <aboutdakota-use>`
+  - :ref:`1.3: Coupling Dakota to a Simulation <couplingtosimulations-main>`
 
 - Chapter 2: Dakota Tutorial
 
-  - [2.1: Quickstart](usingdakota/introduction/helloworld.md)
+  - :ref:`2.1: Quickstart <helloworld-main>`
   - :ref:`2.2: Dakota Input File Format <inputfile-main>`
-  - [2.3: Examples](usingdakota/examples/gettingstarted.md)
-  - [2.4: Dakota Command-Line Options](usingdakota/introduction/helloworld.md#dakota-command-line-options)
+  - :ref:`2.3: Examples <examples-gettingstarted-main>`
+  - :ref:`2.4: Dakota Command-Line Options <command-line-main>`
 
 - Chapter 3: Parameter Study Capabilities
 - Chapter 4: Design of Experiments Capabilities

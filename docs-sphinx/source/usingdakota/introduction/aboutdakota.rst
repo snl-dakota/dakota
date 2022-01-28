@@ -1,8 +1,8 @@
+.. _aboutdakota-main:
+
 """"""""""""
 About Dakota
 """"""""""""
-
-.. _aboutdakota-main:
 
 =======
 Summary
@@ -20,6 +20,8 @@ simulation codes and its iterative systems analysis methods, which include:
 
 These capabilities may be used on their own or as components within advanced strategies such as hybrid optimization,
 surrogate-based optimization, mixed integer nonlinear programming, or optimization under uncertainty.
+
+.. _aboutdakota-use:
 
 =======================
 Intended Use and Impact
@@ -47,6 +49,8 @@ with respect to system performance objectives such as:
 A systematic approach for addressing these questions will lead to higher confidence in our computational simulations, in turn
 leading to better designs and improved system performance. Moreover, a reduced dependence on physical testing can shorten
 the design cycle and reduce development costs.
+
+.. _aboutdakota-motivation:
 
 =================================
 Motivation for Dakota Development

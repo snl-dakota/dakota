@@ -1,3 +1,5 @@
+.. _command-line-main:
+
 """"""""""""""""""""
 Command-Line Options
 """"""""""""""""""""

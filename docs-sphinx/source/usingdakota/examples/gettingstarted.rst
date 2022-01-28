@@ -1,8 +1,8 @@
+.. _examples-gettingstarted-main:
+
 """"""""""""""""""""""""""""
 \"Getting Started\" Examples
 """"""""""""""""""""""""""""
-
-.. _examples-gettingstarted-main:
 
 This section serves to familiarize users with how to perform parameter studies, optimization, and uncertainty quantification
 through their common Dakota interface. The initial examples utilize simple built in driver functions; later we show how to

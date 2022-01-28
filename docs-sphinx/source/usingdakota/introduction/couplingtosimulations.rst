@@ -1,3 +1,5 @@
+.. _couplingtosimulations-main:
+
 """""""""""""""""""""""""""""""
 Coupling Dakota to a Simulation
 """""""""""""""""""""""""""""""
@@ -5,8 +7,6 @@ Coupling Dakota to a Simulation
 ============
 Introduction
 ============
-
-.. _couplingtosimulations-main:
 
 A key Dakota advantage is access to a broad range of iterative capabilities through a single, relatively simple interface
 between Dakota and external, black-box simulation models. By "black-box", we mean that Dakota has no (or little) awareness of the

@@ -1,3 +1,5 @@
+.. _setupgit-main:
+
 """""""""""""""""""""
 Setup Git Environment
 """""""""""""""""""""
