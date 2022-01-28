@@ -53,24 +53,24 @@ set of manuals, this set of links may help you find what you're looking for...
   - :ref:`2.3: Examples <examples-gettingstarted-main>`
   - :ref:`2.4: Dakota Command-Line Options <command-line-main>`
 
-- Chapter 3: Parameter Study Capabilities
-- Chapter 4: Design of Experiments Capabilities
-- Chapter 5: Uncertainty Quantification Capabilities
-- Chapter 6: Optimization Capabilities
-- Chapter 7: Nonlinear Least Squares Capabilities
-- Chapter 8: Models
-- Chapter 9: Variables
-- Chapter 10: Interfaces
-- Chapter 11: Responses
-- Chapter 12: Inputs to Dakota
-- Chapter 13: Output from Dakota
-- Chapter 14: Advanced Methods
-- Chapter 15: Advanced Model Recursions
-- Chapter 16: Advanced Simulation Code Interfaces
-- Chapter 17: Parallel Computing
-- Chapter 18: Restart Capabilities and Utilities
-- Chapter 19: Simulation Failure Capturing
-- Chapter 20: Additional Examples
+- :ref:`Chapter 3: Parameter Study Capabilities <ps>`
+- :ref:`Chapter 4: Design of Experiments Capabilities <dace>`
+- :ref:`Chapter 5: Uncertainty Quantification Capabilities <uq>`
+- :ref:`Chapter 6: Optimization Capabilities <opt>`
+- :ref:`Chapter 7: Nonlinear Least Squares Capabilities <nls>`
+- :ref:`Chapter 8: Models <models:overview>`
+- :ref:`Chapter 9: Variables <variables:overview>`
+- :ref:`Chapter 10: Interfaces <interfaces:overview>`
+- :ref:`Chapter 11: Responses <responses:overview>`
+- :ref:`Chapter 12: Inputs to Dakota <input>`
+- :ref:`Chapter 13: Output from Dakota <output>`
+- :ref:`Chapter 14: Advanced Methods <adv_meth>`
+- :ref:`Chapter 15: Advanced Model Recursions <adv_models>`
+- :ref:`Chapter 16: Advanced Simulation Code Interfaces <advint>`
+- :ref:`Chapter 17: Parallel Computing <parallel>`
+- :ref:`Chapter 18: Restart Capabilities and Utilities <restart>`
+- :ref:`Chapter 19: Simulation Failure Capturing <failure>`
+- :ref:`Chapter 20: Additional Examples <additional>`
 
 **Theory Manual**
 
