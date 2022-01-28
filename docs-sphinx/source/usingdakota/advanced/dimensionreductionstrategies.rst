@@ -11,8 +11,8 @@ space is identified, several UQ strategies can be deployed on it making
 the UQ studies less computational expensive.
 
 In the following two approaches are introduced, namely the Active
-Subspace method :raw-latex:`\cite{constantine2015active}` and the Basis
-Adaptation :raw-latex:`\cite{Tip14}`.
+Subspace method :cite:p:`constantine2015active` and the Basis
+Adaptation :cite:p:`Tip14`.
 
 .. _`Chap:ActSub`:
 
@@ -58,7 +58,7 @@ dimension reduction. Below is a brief summary of the process.
    .. math:: g(\mathbf{y}) \approx f(\mathbf{x})
 
 As a concrete example, consider the
-function: :raw-latex:`\cite{constantine2015active}`
+function: :cite:p:`constantine2015active`
 
 .. math:: f(x) = \exp\left(0.7x_1 + 0.3x_2\right).
 
@@ -78,7 +78,7 @@ rotated input space can be reduced to 1.
    2
 
 For additional information, see
-references :raw-latex:`\cite{Constantine-preprint-active,constantine2014active,constantine2015active}`.
+references :cite:p:`Constantine-preprint-active,constantine2014active,constantine2015active`.
 
 .. _`Sec:trunc`:
 
@@ -145,7 +145,7 @@ truncation methods.
    .. math:: r = \operatorname*{arg\,min}_n \, e^*_n.
 
 For additional information, see
-Ref. :raw-latex:`\cite{constantine2015active}`.
+Ref. :cite:p:`constantine2015active`.
 
 .. _`SubSec:bingli`:
 
@@ -209,7 +209,7 @@ truncation methods.
 #. The index of first minimum of :math:`g_i` is then the estimated
    active subspace rank.
 
-For additional information, see Ref. :raw-latex:`\cite{bing-li}`.
+For additional information, see Ref. :cite:p:`bing-li`.
 
 .. _`SubSec:energy`:
 

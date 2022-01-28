@@ -16,8 +16,8 @@ methodology to equality-constrained reliability analysis is the primary
 contribution of EGRA.
 
 Efficient global optimization was originally proposed by Jones et
-al. :raw-latex:`\cite{Jon98}` and has been adapted into similar methods
-such as sequential kriging optimization (SKO) :raw-latex:`\cite{Hua06}`.
+al. :cite:p:`Jon98` and has been adapted into similar methods
+such as sequential kriging optimization (SKO) :cite:p:`Hua06`.
 The main difference between SKO and EGO lies within the specific
 formulation of what is known as the expected improvement function (EIF),
 which is the feature that sets all EGO/SKO-type methods apart from other
@@ -65,7 +65,7 @@ input points which are near the points used to train the model, and will
 increase as one moves further from the training points.
 
 It is assumed that the true response function being modeled
-:math:`G({\bf u})` can be described by: :raw-latex:`\cite{Cre91}`
+:math:`G({\bf u})` can be described by: :cite:p:`Cre91`
 
 .. math:: G({\bf u})={\bf h}({\bf u})^T{\boldsymbol \beta} + Z({\bf u})
 
@@ -75,7 +75,7 @@ where :math:`{\bf h}()` is the trend of the model,
 covariance defined below) that describes the departure of the model from
 its underlying trend. The trend of the model can be assumed to be any
 function, but taking it to be a constant value has been reported to be
-generally sufficient. :raw-latex:`\cite{Sac89}` For the work presented
+generally sufficient. :cite:p:`Sac89` For the work presented
 here, the trend is assumed constant and :math:`{\boldsymbol \beta}` is
 taken as simply the mean of the responses at the training points. The
 covariance between outputs of the Gaussian process :math:`Z()` at points
@@ -89,7 +89,7 @@ covariance between outputs of the Gaussian process :math:`Z()` at points
 where :math:`\sigma_Z^2` is the process variance and :math:`R()` is the
 correlation function. There are several options for the correlation
 function, but the squared-exponential function is
-common :raw-latex:`\cite{Sac89}`, and is used here for :math:`R()`:
+common :cite:p:`Sac89`, and is used here for :math:`R()`:
 
 .. math:: R({\bf a},{\bf b}) = \exp \left[ -\sum_{i=1}^d \theta_i(a_i - b_i)^2 \right]
 
@@ -134,7 +134,7 @@ The parameters :math:`\sigma_Z^2` and :math:`{\boldsymbol \theta}` are
 determined through maximum likelihood estimation. This involves taking
 the log of the probability of observing the response values
 :math:`{\bf g}` given the covariance matrix :math:`{\bf R}`, which can
-be written as: :raw-latex:`\cite{Sac89}`
+be written as: :cite:p:`Sac89`
 
 .. math::
 
@@ -187,7 +187,7 @@ distribution:
 
 where the mean :math:`\mu_G()` and the variance :math:`\sigma_G^2()`
 were defined in Eqs. `[eq:exp] <#eq:exp>`__ and `[eq:var] <#eq:var>`__,
-respectively. The EIF is defined as: :raw-latex:`\cite{Jon98}`
+respectively. The EIF is defined as: :cite:p:`Jon98`
 
 .. math::
 
@@ -207,7 +207,7 @@ with :math:`G^*` held constant:
      \label{eq:eif_int}
 
 where :math:`G` is a realization of :math:`\hat{G}`. This integral can
-be expressed analytically as: :raw-latex:`\cite{Jon98}`
+be expressed analytically as: :cite:p:`Jon98`
 
 .. math::
 
@@ -234,14 +234,14 @@ training point. With the new training point added, a new GP model is
 built and then used to construct another EIF, which is then used to
 choose another new training point, and so on, until the value of the EIF
 at its maximized point is below some specified tolerance. In
-Ref. :raw-latex:`\cite{Hua06}` this maximization is performed using a
+Ref. :cite:p:`Hua06` this maximization is performed using a
 Nelder-Mead simplex approach, which is a local optimization method.
-Because the EIF is often highly multimodal :raw-latex:`\cite{Jon98}` it
+Because the EIF is often highly multimodal :cite:p:`Jon98` it
 is expected that Nelder-Mead may fail to converge to the true global
-optimum. In Ref. :raw-latex:`\cite{Jon98}`, a branch-and-bound technique
+optimum. In Ref. :cite:p:`Jon98`, a branch-and-bound technique
 for maximizing the EIF is used, but was found to often be too expensive
 to run to convergence. In Dakota, an implementation of the DIRECT global
-optimization algorithm is used :raw-latex:`\cite{Gab01}`.
+optimization algorithm is used :cite:p:`Gab01`.
 
 It is important to understand how the use of this EIF leads to optimal
 solutions. Eq. `[eq:eif] <#eq:eif>`__ indicates how much the objective
@@ -276,7 +276,7 @@ Probability Improvement Acquisition Function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The probability of improvement (PI) acquisition function is proposed by
-:raw-latex:`\cite{kushner1964new}`, using the same argument that the GP
+:cite:p:`kushner1964new`, using the same argument that the GP
 prediction is a Gaussian distribution. Similar to Equation
 `[eq:eifShort] <#eq:eifShort>`__, the PI acquisition function is given
 by
@@ -293,7 +293,7 @@ Lower-Confidence Bound Acquisition Function
 
 Another form of acquisition is lower-confidence bound (LCB), proposed
 recently by Srinivas et al.
-:raw-latex:`\cite{srinivas2009gaussian,srinivas2012information}`, which
+:cite:p:`srinivas2009gaussian,srinivas2012information`, which
 has shown to perform very well. The LCB acquisition function takes the
 form of
 
@@ -303,12 +303,12 @@ where :math:`\kappa` is a hyper-parameter describing the acquisition
 exploitation-exploration balance. In many cases in design optimization,
 :math:`\kappa = 2` is preferred, but relaxing this :math:`\kappa` as a
 function of iterations is also possible, cf. Daniel et al.
-:raw-latex:`\cite{daniel2014active}`, as
+:cite:p:`daniel2014active`, as
 
 .. math:: \kappa = \sqrt{\nu \gamma_n},\quad \nu = 1, \quad \gamma_n = 2\log{\left(\frac{N^{d/2 + 2}\pi^2}{3\delta} \right)},
 
 and :math:`d` is the dimensionality of the problem, and
-:math:`\delta \in (0,1)` :raw-latex:`\cite{srinivas2012information}`.
+:math:`\delta \in (0,1)` :cite:p:`srinivas2012information`.
 
 Batch-sequential parallel
 -------------------------
@@ -322,14 +322,14 @@ reduced with a factor of :math:`\sqrt{K}`, where :math:`K` is the batch
 size. While there are many flavors of batch-sequential parallelization,
 as well as asynchronous parallelization in EGO and Bayesian
 optimization, we mainly review the theory of GP-BUCB by Desautels et al.
-:raw-latex:`\cite{desautels2014parallelizing}`, GP-UCB-PE by Contal et
-al :raw-latex:`\cite{contal2013parallel}`, and pBO-2GP-3B by Tran et al
-:raw-latex:`\cite{tran2019pbo}`. The parallelization feature of EGO is
+:cite:p:`desautels2014parallelizing`, GP-UCB-PE by Contal et
+al :cite:p:`contal2013parallel`, and pBO-2GP-3B by Tran et al
+:cite:p:`tran2019pbo`. The parallelization feature of EGO is
 sometimes referred to as lookahead or non-myopic Bayesian optimization
 in the literature, especially in the machine learning community.
 
 The approach by Desautels et al.
-:raw-latex:`\cite{desautels2014parallelizing}` mainly advocates for the
+:cite:p:`desautels2014parallelizing` mainly advocates for the
 “hallucination” scheme or heuristic liar, in which the unknown
 observation at the currently querying sampling point :math:`{\bf u}^*`
 is *temporarily* assumed as the posterior mean :math:`\mu({\bf u}^*)`.
@@ -337,10 +337,10 @@ Then, the underlying GP model updates based on this assumption and
 locates other points in the same batch, until the batch is filled. After
 the whole batch is constructed, it is then queried, and all the
 responses are received at once when the batch is completed. Contal et
-al. :raw-latex:`\cite{contal2013parallel}` extended from the work of
-Desautels et al. :raw-latex:`\cite{desautels2014parallelizing}` and
+al. :cite:p:`contal2013parallel` extended from the work of
+Desautels et al. :cite:p:`desautels2014parallelizing` and
 proved that including pure exploration (i.e. sampling at
 :math:`{\bf u}^*` where :math:`\sigma({\bf u})` is maximum) increases
-the efficiency. Tran et al. :raw-latex:`\cite{tran2019pbo}` adopted two
+the efficiency. Tran et al. :cite:p:`tran2019pbo` adopted two
 aforementioned approaches and extended for known and unknown
 constraints.

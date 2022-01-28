@@ -22,7 +22,7 @@ file management, and presents a number of example data mappings.
 
 For a detailed description of interface specification syntax, refer to
 the interface commands chapter in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}`.
+Manual :cite:p:`RefMan`.
 
 .. _`interfaces:sim`:
 
@@ -59,7 +59,7 @@ development. In the latter case, the additional effort is particularly
 justified since SIERRA unifies an entire suite of physics codes. [*Note:
 the “sandwich implementation” of combining a direct interface plug-in
 with Dakota’s library mode is discussed in the Dakota Developers
-Manual :raw-latex:`\cite{DevMan}`*].
+Manual :cite:p:`DevMan`*].
 
 In addition to direct linking with simulation codes, the direct
 interface also provides access to internal polynomial test functions
@@ -100,13 +100,13 @@ System Call Simulation Interface
 possible, though the system interface is still supported for portability
 and backward compatibility.** The system call approach invokes a
 simulation code or simulation driver by using the ``system`` function
-from the standard C library :raw-latex:`\cite{Ker88}`. In this approach,
+from the standard C library :cite:p:`Ker88`. In this approach,
 the system call creates a new process that communicates with Dakota
 through parameter and response files. The system call approach allows
 the simulation to be initiated via its standard invocation procedure (as
 a “black box”) and then coordinated with a variety of tools for pre- and
 post-processing. This approach has been widely used in previous
-studies :raw-latex:`\cite{Eld96a,Eld96b,Eld98b}`. The system call
+studies :cite:p:`Eld96a,Eld96b,Eld98b`. The system call
 approach involves more process creation and file I/O overhead than the
 direct function approach, but this extra overhead is usually
 insignificant compared with the cost of a simulation. An example of a
@@ -274,9 +274,9 @@ response values of interest from the simulator’s output file for return
 to Dakota (see Figures `[intro:bbinterface] <#intro:bbinterface>`__
 and `1.1 <#interfaces:bbinterfacecomp>`__). This is often managed
 through the use of scripting languages, such as
-C-shell :raw-latex:`\cite{And86}`, Bourne
-shell :raw-latex:`\cite{Bli96}`, Perl :raw-latex:`\cite{Wal96}`, or
-Python :raw-latex:`\cite{Mar03}`. While these are common and convenient
+C-shell :cite:p:`And86`, Bourne
+shell :cite:p:`Bli96`, Perl :cite:p:`Wal96`, or
+Python :cite:p:`Mar03`. While these are common and convenient
 choices for simulation drivers/filters, it is important to recognize
 that any executable file can be used. If the user prefers, the desired
 pre- and post-processing functionality may also be compiled or
@@ -337,9 +337,9 @@ templates, is extensively documented in
 Section `1.9 <#interfaces:dprepro-and-pyprepro>`__.
 
 Other preprocessing tools of potential interest are the BPREPRO utility
-(see :raw-latex:`\cite{WalXX}`), and at Lockheed Martin sites, the
+(see :cite:p:`WalXX`), and at Lockheed Martin sites, the
 JPrePost utility, a JAVA pre- and
-post-processor :raw-latex:`\cite{Fla}`. The ``dprepro`` script will be
+post-processor :cite:p:`Fla`. The ``dprepro`` script will be
 used here for simplicity of discussion. It can use either Dakota’s
 ``aprepro`` parameters file format (see
 Section `[variables:parameters:aprepro] <#variables:parameters:aprepro>`__)
@@ -623,12 +623,12 @@ be retrieved from the command line when Dakota is changing the file
 names from one function evaluation to the next (i.e., using temporary
 files or root names tagged with numerical identifiers). In the case of a
 UNIX C-shell script, the two command line arguments are retrieved using
-``$argv[1]`` and ``$argv[2]`` (see :raw-latex:`\cite{And86}`).
+``$argv[1]`` and ``$argv[2]`` (see :cite:p:`And86`).
 Similarly, Bourne shell scripts retrieve the two command line arguments
 using ``$1`` and ``$2``, and Perl scripts retrieve the two command line
 arguments using ``@ARGV[0]`` and ``@ARGV[1]``. In the case of a C or C++
 program, command line arguments are retrieved using ``argc`` (argument
-count) and ``argv`` (argument vector) :raw-latex:`\cite{Ker88}`, and for
+count) and ``argv`` (argument vector) :cite:p:`Ker88`, and for
 Fortran 77, the ``iargc`` function returns the argument count and the
 ``getarg`` subroutine returns command line arguments.
 
@@ -724,7 +724,7 @@ performs is:
 
 in which the input filter (), analysis driver (), and output filter ()
 processes are combined into a single system call through the use of
-semi-colons (see :raw-latex:`\cite{And86}`). All three portions are
+semi-colons (see :cite:p:`And86`). All three portions are
 passed the names of the parameters and results files on the command
 line.
 

@@ -27,7 +27,7 @@ long of a sequence as needed (e.g., layered containing nested contained
 layered containing single in
 Section `[adv_models:ouu:sb] <#adv_models:ouu:sb>`__).
 Figure `1.1 <#model:hier>`__ displays the model class hierarchy from the
-Dakota Developers Manual :raw-latex:`\cite{DevMan}`, with derived
+Dakota Developers Manual :cite:p:`DevMan`, with derived
 classes for single models, nested models, recast models, and two types
 of surrogate models: data fit and hierarchical/multifidelity. A third
 type of derived surrogate model supporting reduced-order models (ROM) is
@@ -58,7 +58,7 @@ instance (see Chapter `[interfaces] <#interfaces>`__) to map variables
 (see Chapter `[variables] <#variables>`__) into responses (see
 Chapter `[responses] <#responses>`__). There is no recursion in this
 case. Refer to the Models chapter in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}` for additional information on the
+Manual :cite:p:`RefMan` for additional information on the
 single model specification.
 
 .. _`models:recast`:
@@ -83,7 +83,7 @@ Section `[adv_meth:sbm:sblm] <#adv_meth:sbm:sblm>`__), and expected
 improvement/feasibility (see
 Sections `[opt:methods:gradientfree:global] <#opt:methods:gradientfree:global>`__
 and `[uq:reliability:global] <#uq:reliability:global>`__). Refer to the
-Dakota Developers Manual :raw-latex:`\cite{DevMan}` for additional
+Dakota Developers Manual :cite:p:`DevMan` for additional
 details on the mechanics of recasting problem formulations.
 
 .. _`models:surrogate`:
@@ -130,7 +130,7 @@ in parameter space, often involving the current and previous iterates of
 a minimization algorithm. Available techniques currently include:
 
 **TANA-3**: This multipoint approximation uses a two-point exponential
-approximation :raw-latex:`\cite{Xu98,Fad90}` built with response value
+approximation :cite:p:`Xu98,Fad90` built with response value
 and gradient information from the current and previous iterates.
 
 Global methods, often referred to as *response surface methods*, involve
@@ -152,7 +152,7 @@ through a total degree scheme.
 
 **Gaussian Process (GP) or Kriging Interpolation** Dakota contains two
 supported implementations of Gaussian process, also known as Kriging
- :raw-latex:`\cite{Giu98}`, spatial interpolation. One of these resides
+ :cite:p:`Giu98`, spatial interpolation. One of these resides
 in the Surfpack sub-package of Dakota, the other resides in Dakota
 itself. Both versions use the Gaussian correlation function with
 parameters that are selected by Maximum Likelihood Estimation (MLE).
@@ -184,13 +184,13 @@ process model was added in Dakota 6.12.
 
 **Artificial Neural Networks**: An implementation of the stochastic
 layered perceptron neural network developed by Prof. D. C. Zimmerman of
-the University of Houston :raw-latex:`\cite{Zim96}`. This neural network
+the University of Houston :cite:p:`Zim96`. This neural network
 method is intended to have a lower training (fitting) cost than typical
 back-propagation neural networks.
 
 **Multivariate Adaptive Regression Splines (MARS)**: Software developed
 by Prof. J. H. Friedman of Stanford
-University :raw-latex:`\cite{Fri91}`. The MARS method creates a
+University :cite:p:`Fri91`. The MARS method creates a
 :math:`C^2`-continuous patchwork of splines in the parameter space.
 
 **Radial Basis Functions (RBF)**: Radial basis functions are functions
@@ -202,7 +202,7 @@ the weighted sum of individual radial basis functions.
 more specialized version of linear regression models. MLS is a weighted
 least squares approach where the weighting is “moved” or recalculated
 for every new point where a prediction is
-desired. :raw-latex:`\cite{Nea04}`
+desired. :cite:p:`Nea04`
 
 **Piecewise Decomposition Option for Global Surrogates**: Typically, the
 previous regression techniques use all available sample points to
@@ -254,14 +254,14 @@ function values between the surrogate and original models at a single
 point in parameter space through use of a simple scalar offset or
 scaling applied to the surrogate model. First-order corrections such as
 the first-order multiplicative correction (also known as beta
-correction :raw-latex:`\cite{Cha93}`) and the first-order additive
-correction :raw-latex:`\cite{Lew00}` also enforce consistency in the
+correction :cite:p:`Cha93`) and the first-order additive
+correction :cite:p:`Lew00` also enforce consistency in the
 gradients and provide a much more substantial correction capability that
 is sufficient for ensuring provable convergence in SBO algorithms (see
 Section `[adv_meth:sbm:sblm] <#adv_meth:sbm:sblm>`__). SBO convergence
 rates can be further accelerated through the use of second-order
 corrections which also enforce consistency in the
-Hessians :raw-latex:`\cite{Eld04}`, where the second-order information
+Hessians :cite:p:`Eld04`, where the second-order information
 may involve analytic, finite-difference, or quasi-Newton Hessians.
 
 Correcting surrogate models with additive corrections involves
@@ -301,7 +301,7 @@ where the exact correction functions are
    A({\bf x}) & = & f_{hi}({\bf x}) - f_{lo}({\bf x})       \label{eq:exact_A} \\
    B({\bf x}) & = & \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})} \label{eq:exact_B}\end{aligned}
 
-Refer to :raw-latex:`\cite{Eld04}` for additional details on the
+Refer to :cite:p:`Eld04` for additional details on the
 derivations.
 
 A combination of additive and multiplicative corrections can provide for
@@ -384,12 +384,12 @@ singular value decomposition to compute the polynomial coefficients,
 whereas the kriging surface uses Maximum Likelihood Estimation to
 compute its correlation coefficients. More information on the numerical
 methods used in the surface fitting codes is provided in the Dakota
-Developers Manual :raw-latex:`\cite{DevMan}`.
+Developers Manual :cite:p:`DevMan`.
 
 The set of design points that is used to construct a surface fit model
 is generated using either the DDACE software
-package :raw-latex:`\cite{TonXX}` or the LHS software
-package :raw-latex:`\cite{Ima84}`. These packages provide a variety of
+package :cite:p:`TonXX` or the LHS software
+package :cite:p:`Ima84`. These packages provide a variety of
 sampling methods including Monte Carlo (random) sampling, Latin
 hypercube sampling, orthogonal array sampling, central composite design
 sampling, and Box-Behnken sampling. More information on these software
@@ -445,9 +445,9 @@ consistency requirements of provably-convergent SBO.
 Two Point Adaptive Nonlinearity Approximation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The TANA-3 method :raw-latex:`\cite{Xu98}` is a multipoint approximation
+The TANA-3 method :cite:p:`Xu98` is a multipoint approximation
 method based on the two point exponential
-approximation :raw-latex:`\cite{Fad90}`. This approach involves a Taylor
+approximation :cite:p:`Fad90`. This approach involves a Taylor
 series approximation in intermediate variables where the powers used for
 the intermediate variables are selected to match information at the
 current and previous expansion points. The form of the TANA model is:
@@ -557,7 +557,7 @@ often is successful when using polynomial models, particularly quadratic
 models. However, a polynomial surface fit may not be the best choice for
 modeling data trends over the entire parameter space, unless it is known
 a priori that the true data trends are close to linear, quadratic, or
-cubic. See :raw-latex:`\cite{Mye95}` for more information on polynomial
+cubic. See :cite:p:`Mye95` for more information on polynomial
 models.
 
 This surrogate model supports the domain decomposition option, further
@@ -593,7 +593,7 @@ them are explained in more detail below.
 
 The Kriging, also known as Gaussian process (GP), method uses techniques
 developed in the geostatistics and spatial statistics communities
-( :raw-latex:`\cite{Cre91}`, :raw-latex:`\cite{Koe96}`) to produce
+( :cite:p:`Cre91`, :cite:p:`Koe96`) to produce
 smooth surface fit models of the response values from a set of data
 points. The number of times the fitted surface is differentiable will
 depend on the correlation function that is used. Currently, the Gaussian
@@ -635,7 +635,7 @@ analogy to define a small feasible region in which to search for
 correlation lengths. This region should (almost) always contain some
 correlation matrices that are well conditioned and some that are
 optimal, or at least near optimal. More details on Kriging/GP models may
-be found in :raw-latex:`\cite{Giu98}`.
+be found in :cite:p:`Giu98`.
 
 Since a GP has a hyper-parametric error model, it can be used to model
 surfaces with slope discontinuities along with multiple local minima and
@@ -660,7 +660,7 @@ extrapolation).
 As mentioned above, there are two ``gaussian_process`` models in Dakota,
 the ``surfpack`` version and the ``dakota`` version. More details on the
 ``gaussian_process dakota`` model can be found
-in :raw-latex:`\cite{McF08}`. The differences between these models are
+in :cite:p:`McF08`. The differences between these models are
 as follows:
 
 -  | Trend Function: The GP models incorporate a parametric trend
@@ -843,7 +843,7 @@ Artificial Neural Network (ANN) Models
 
 The ANN surface fitting method in Dakota employs a stochastic layered
 perceptron (SLP) artificial neural network based on the direct training
-approach of Zimmerman :raw-latex:`\cite{Zim96}`. The SLP ANN method is
+approach of Zimmerman :cite:p:`Zim96`. The SLP ANN method is
 designed to have a lower training cost than traditional ANNs. This is a
 useful feature for SBO and OUU where new ANNs are constructed many times
 during the optimization process (i.e., one ANN for each response
@@ -882,7 +882,7 @@ Multivariate Adaptive Regression Spline (MARS) Models
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This surface fitting method uses multivariate adaptive regression
-splines from the MARS3.6 package :raw-latex:`\cite{Fri91}` developed at
+splines from the MARS3.6 package :cite:p:`Fri91` developed at
 Stanford University.
 
 The form of the MARS model is based on the following expression:
@@ -933,7 +933,7 @@ where the :math:`\phi` are the individual radial basis functions. These
 functions can be of any form, but often a Gaussian bell-shaped function
 or splines are used. Our implementation uses a Gaussian radial basis
 function. The weights are determined via a linear least squares solution
-approach. See :raw-latex:`\cite{Orr96}` for more details. This surrogate
+approach. See :cite:p:`Orr96` for more details. This surrogate
 model supports the domain decomposition option, further explained
 in `1.4.3.10 <#models:surf:piecewise_decomp>`__.
 
@@ -958,7 +958,7 @@ are obtained by minimizing the weighted sum of squares at N data points:
 
 Moving least squares is a further generalization of weighted least
 squares where the weighting is “moved” or recalculated for every new
-point where a prediction is desired. :raw-latex:`\cite{Nea04}` The
+point where a prediction is desired. :cite:p:`Nea04` The
 implementation of moving least squares is still under development. We
 have found that it works well in trust region methods where the
 surrogate model is constructed in a constrained region over a few
@@ -1202,7 +1202,7 @@ surrogate model types.
 Python Interface to the Surrogates Module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Dakota 6.13 onwards uses Pybind11 :raw-latex:`\cite{pybind11}` to
+| Dakota 6.13 onwards uses Pybind11 :cite:p:`pybind11` to
   provide a Python interface to the surrogates module
 | ``dakota.surrogates``, which currently contains polynomial and
   Gaussian process regression surrogates. In this section we describe
@@ -1255,7 +1255,7 @@ complete iterative study as part of every evaluation of the model. This
 sub-iteration accepts variables from the outer level, performs the
 sub-level analysis, and computes a set of sub-level responses which are
 passed back up to the outer level. As described in the Models chapter of
-the Reference Manual :raw-latex:`\cite{RefMan}`, mappings are employed
+the Reference Manual :cite:p:`RefMan`, mappings are employed
 for both the variable inputs to the sub-model and the response outputs
 from the sub-model.
 
@@ -1348,7 +1348,7 @@ with the random field input.
 Active Subspace Models
 ----------------------
 
-The active subspace technique :raw-latex:`\cite{constantine2015active}`
+The active subspace technique :cite:p:`constantine2015active`
 seeks directions in the input space for which the response function(s)
 show little variation. After a rotation to align with these directions,
 significant dimension reduction may be possible.
@@ -1395,7 +1395,7 @@ performed of the derivative matrix and the resulting singular values and
 vectors are used to determine the basis vectors and size of the active
 subspace.
 
-Constantine :raw-latex:`\cite{constantine2015active}` recommends
+Constantine :cite:p:`constantine2015active` recommends
 choosing ``initial_samples`` such that:
 
 .. math:: \text{\texttt{initial\_samples}} = \alpha k \log(m),
@@ -1428,5 +1428,5 @@ the subspace representation accounts for all but a maximum percentage
 specified using the ``truncation_tolerance`` keyword.
 
 For more information on active subspaces please consult the Theory
-Manual :raw-latex:`\cite{TheoMan}` and/or
-references :raw-latex:`\cite{Constantine-preprint-active,constantine2014active,constantine2015active}`.
+Manual :cite:p:`TheoMan` and/or
+references :cite:p:`Constantine-preprint-active,constantine2014active,constantine2015active`.

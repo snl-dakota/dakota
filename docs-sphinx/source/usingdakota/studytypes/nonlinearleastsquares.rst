@@ -12,7 +12,7 @@ Any Dakota optimization algorithm can be applied to calibration problems
 arising in parameter estimation, system identification, and
 test/analysis reconciliation. However, nonlinear least-squares methods
 are optimization algorithms that exploit the special structure of a sum
-of the squares objective function :raw-latex:`\cite{Gil81}`.
+of the squares objective function :cite:p:`Gil81`.
 
 To exploit the problem structure, more granularity is needed in the
 response data than is required for a typical optimization problem. That
@@ -153,7 +153,7 @@ Gauss-Newton
 Dakota’s Gauss-Newton algorithm consists of combining an implementation
 of the Gauss-Newton Hessian approximation (see
 Section `1.2 <#nls:formulations>`__) with full Newton optimization
-algorithms from the OPT++ package :raw-latex:`\cite{MeOlHoWi07}` (see
+algorithms from the OPT++ package :cite:p:`MeOlHoWi07` (see
 Section `[opt:methods:gradient:constrained] <#opt:methods:gradient:constrained>`__).
 The exact objective function value, exact objective function gradient,
 and the approximate objective function Hessian are defined from the
@@ -180,7 +180,7 @@ specification. An example specification follows:
                   convergence_tolerance = 1e-4
                   output debug
 
-Refer to the Dakota Reference Manual :raw-latex:`\cite{RefMan}` for more
+Refer to the Dakota Reference Manual :cite:p:`RefMan` for more
 detail on the input commands for the Gauss-Newton algorithm.
 
 The Gauss-Newton algorithm is gradient-based and is best suited for
@@ -217,7 +217,7 @@ specification. An example specification follows:
                 nlssol_sqp
                   convergence_tolerance = 1e-8
 
-Refer to the Dakota Reference Manual :raw-latex:`\cite{RefMan}` for more
+Refer to the Dakota Reference Manual :cite:p:`RefMan` for more
 detail on the input commands for NLSSOL.
 
 .. _`nls:solution:nl2sol`:
@@ -225,7 +225,7 @@ detail on the input commands for NLSSOL.
 NL2SOL
 ~~~~~~
 
-The NL2SOL algorithm :raw-latex:`\cite{Den81}` is a secant-based
+The NL2SOL algorithm :cite:p:`Den81` is a secant-based
 least-squares algorithm that is :math:`q`-superlinearly convergent. It
 adaptively chooses between the Gauss-Newton Hessian approximation and
 this approximation augmented by a correction term from a secant update.
@@ -252,7 +252,7 @@ nonlinear, the confidence intervals reported are likely to be inaccurate
 as well. (Confidence intervals cannot be calculated when the number of
 least-squares terms is less than the number of parameters to be
 estimated, or when using vendor numerical gradients.)
-See :raw-latex:`\cite{Seb03}` and :raw-latex:`\cite{Vug07}` for more
+See :cite:p:`Seb03` and :cite:p:`Vug07` for more
 details about confidence intervals, and note that there are alternative
 approaches such as Bonferroni confidence intervals and joint confidence
 intervals based on linear approximations or F-tests.
@@ -266,7 +266,7 @@ of weights are adjusted during calibration as they would be in
 iteratively re-weighted least squares.) When response scaling is active,
 it is applied after error variance weighting and before ``weights``
 application. The ``calibration_terms`` keyword documentation in the
-Dakota Reference Manual :raw-latex:`\cite{RefMan}` has more detail about
+Dakota Reference Manual :cite:p:`RefMan` has more detail about
 weighting and scaling of the residual terms.
 
 .. _`nls:examples`:

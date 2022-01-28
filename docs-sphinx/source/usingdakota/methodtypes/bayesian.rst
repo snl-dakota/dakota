@@ -32,7 +32,7 @@ the measure-theoretic approach.
 Fundamentals
 ------------
 
-Bayes Theorem :raw-latex:`\cite{Jaynes}`, shown in
+Bayes Theorem :cite:p:`Jaynes`, shown in
 Eq. `[eq:BayesThm] <#eq:BayesThm>`__, is used for performing inference.
 In particular, we derive the plausible parameter values based on the
 prior probability density and the data :math:`\boldsymbol{d}`. A typical
@@ -181,7 +181,7 @@ resulting Hessian, we will employ
 Eq. `[eq:normal_prior_hess] <#eq:normal_prior_hess>`__ for all prior
 distribution types.
 
-From here, we follow :raw-latex:`\cite{Petra2014}` and decompose the
+From here, we follow :cite:p:`Petra2014` and decompose the
 prior covariance into its Cholesky factors, resulting in
 
 .. math::
@@ -378,7 +378,7 @@ Confidence Intervals
 
 Suppose :math:`g` is a function that represents some characteristic of
 the probability distribution :math:`\pi` underlying the MCMC
-chain :raw-latex:`\cite{Fle10}`, such as the mean or variance. Then
+chain :cite:p:`Fle10`, such as the mean or variance. Then
 under the standard assumptions of an MCMC chain, the true expected value
 of this function, :math:`\mathbb{E}_{\pi}g` can be approximated by
 taking the mean over the :math:`n` samples in the MCMC chain, denoted
@@ -430,10 +430,10 @@ It has been found that an appropriate batch size is
 :math:`b_{n} = \left 
 \lfloor{\sqrt{n}}\right \rfloor`. Further discussion and comparison to
 alternate estimators of :math:`\sigma_{g}^{2}` can be found
-in :raw-latex:`\cite{Fle10}`.
+in :cite:p:`Fle10`.
 
 Confidence intervals may be used as a chain diagnostic by setting
-fixed-width stopping rules :raw-latex:`\cite{Rob18}`. For example, if
+fixed-width stopping rules :cite:p:`Rob18`. For example, if
 the width of one or more intervals is below some threshold value, that
 may indicate that enough samples have been drawn. Common choices for the
 threshold value include:
@@ -445,7 +445,7 @@ threshold value include:
 -  Relative standard deviation: :math:`\epsilon \| \hat{\sigma}_{n} \|`
 
 If the chosen threshold is exceeded, ``samples`` may need to be
-increased. Sources :raw-latex:`\cite{Fle10, Rob18}` suggest increasing
+increased. Sources :cite:p:`Fle10, Rob18` suggest increasing
 the sample size by 10% and reevaluating the diagnostics for signs of
 chain convergence.
 
@@ -480,7 +480,7 @@ It is often the case that the calibrated model provides an insufficient
 fit to the experimental data. This is generally attributed to model form
 or structural error, and can be corrected to some extent with the use of
 a model discrepancy term. The seminal work in model discrepancy
-techniques, Kennedy and O’Hagan :raw-latex:`\cite{Kenn01}`, introduces
+techniques, Kennedy and O’Hagan :cite:p:`Kenn01`, introduces
 an additive formulation
 
 .. math::
@@ -765,7 +765,7 @@ parameters.
 The question then becomes one of determining the meaning of “best." In
 information theory, the mutual information is a measure of the reduction
 in the uncertainty of one random variable due to the knowledge of
-another :raw-latex:`\cite{Cov2006}`. Recast into the context of
+another :cite:p:`Cov2006`. Recast into the context of
 experimental design, the mutual information represents how much the
 proposed experiment and resulting observation would reduce the
 uncertainties in the model parameters. Therefore, given a set of
@@ -844,7 +844,7 @@ The mutual information must, therefore, be computed for each candidate
 design point :math:`\boldsymbol{\xi}_{j}`. There are two
 :math:`k`-nearest neighbor methods available in Dakota that can be used
 to approximate Eq. `[eq:mutual_info] <#eq:mutual_info>`__, both of which
-are derived in :raw-latex:`\cite{Kra04}`. Within Dakota, the posterior
+are derived in :cite:p:`Kra04`. Within Dakota, the posterior
 distribution
 :math:`f_{\boldsymbol{\Theta | D}}\left(\boldsymbol{\theta | d(\xi)}\right)`
 is given by MCMC samples. From these, :math:`N` samples are drawn and
@@ -857,7 +857,7 @@ represent the joint distribution between the parameters and model
 responses. For each row :math:`X_{i}`, the distance to its
 :math:`k^{th}`-nearest neighbor among the other rows is approximated
 :math:`\varepsilon_{i} = \| X_{i} - X_{k(i)} \|_{\infty}`. As noted
-in :raw-latex:`\cite{Lew16}`, :math:`k` is often taken to be six. The
+in :cite:p:`Lew16`, :math:`k` is often taken to be six. The
 treatment of the marginal distributions is where the two mutual
 information algorithms differ. In the first algorithm, the marginal
 distributions are considered by calculating
@@ -867,7 +867,7 @@ samples that lie within :math:`\varepsilon_{i}` of
 is the number of responses that lie within :math:`\varepsilon_{i}` of
 :math:`\tilde{\boldsymbol{d}}(\boldsymbol{\theta}^{i}, 
 \boldsymbol{\xi}_{j})`. The mutual information then is approximated
-as :raw-latex:`\cite{Kra04}`
+as :cite:p:`Kra04`
 
 .. math::
 
@@ -889,7 +889,7 @@ projected values of :math:`\boldsymbol{\theta}_{l}`. Similarly,
 :math:`\varepsilon_{\boldsymbol{d},i}` is defined as the radius of the
 :math:`l_{\infty}`-ball containing all :math:`k+1` projected values of
 :math:`\tilde{\boldsymbol{d}}(\boldsymbol{\theta}_{l}, 
-\boldsymbol{\xi}_{j})` :raw-latex:`\cite{Gao14}`. In this version of the
+\boldsymbol{\xi}_{j})` :cite:p:`Gao14`. In this version of the
 mutual information calculation, :math:`n_{\boldsymbol{\theta},i}` is the
 number of parameter samples that lie within
 :math:`\varepsilon_{\boldsymbol{\theta},i}` of
@@ -897,7 +897,7 @@ number of parameter samples that lie within
 number of responses that lie within
 :math:`\varepsilon_{\boldsymbol{d}, i}` of
 :math:`\tilde{\boldsymbol{d}}(\boldsymbol{\theta}^{i}, \boldsymbol{\xi}_{j})`.
-The mutual information then is approximated as :raw-latex:`\cite{Kra04}`
+The mutual information then is approximated as :cite:p:`Kra04`
 
 .. math::
 
@@ -910,7 +910,7 @@ By default, Dakota uses Eq. `[eq:ksg1] <#eq:ksg1>`__ to approximate the
 mutual information. The user may decide to use
 Eq. `[eq:ksg2] <#eq:ksg2>`__ by including the keyword ``ksg2`` in the
 Dakota input script. An example can be found
-in :raw-latex:`\cite{RefMan}`. Users also have the option of specifying
+in :cite:p:`RefMan`. Users also have the option of specifying
 statistical noise in the low-fidelity model through the
 ``simulation_variance`` keyword. When this option is included in the
 Dakota input file, a random “error" is added to the low-fidelity model
@@ -1011,7 +1011,7 @@ Information Theoretic Tools
 ---------------------------
 
 The notion of the entropy of a random variable was introduced by C.E.
-Shannon in 1948 :raw-latex:`\cite{Sha1948}`. So named for its
+Shannon in 1948 :cite:p:`Sha1948`. So named for its
 resemblance to the statistical mechanical entropy, the Shannon entropy
 (or simply the entropy), is characterized by the probability
 distribution of the random variable being investigated. For a random
@@ -1024,7 +1024,7 @@ function :math:`p`, the entropy :math:`h` is given by
    \label{ent_cont}
 
 The entropy captures the average uncertainty in a random
-variable :raw-latex:`\cite{Cov2006}`, and is therefore quite commonly
+variable :cite:p:`Cov2006`, and is therefore quite commonly
 used in predictive science. The entropy also provides the basis for
 other information measures, such as the relative entropy and the mutual
 information, both of which compare the information content between two
@@ -1054,7 +1054,7 @@ non-negative, and equals zero if and only if :math:`p = q`.
 
 As in Section `1.7 <#uq:bayes_experimental_design>`__, the
 Kullback-Leibler Divergence is approximated with the :math:`k`-nearest
-neighbor method advocated in :raw-latex:`\cite{Per2008}`. Let the
+neighbor method advocated in :cite:p:`Per2008`. Let the
 distributions :math:`p` and :math:`q` be represented by a collection of
 samples of size :math:`n` and :math:`m`, respectively. For each sample
 :math:`x_{i}` in :math:`p`, let :math:`\nu_{k}(i)` be the distance to
@@ -1120,11 +1120,11 @@ solution. This approach differs from the standard Bayesian counterpart
 described in previous sections in that the posterior satisfies a
 consistency requirement with the model and the observed data. The
 material in this section is based on the foundational work in
-:raw-latex:`\cite{Butler2017, Walsh2017}`. A more thorough description
+:cite:p:`Butler2017, Walsh2017`. A more thorough description
 of this consistent Bayesian approach and a comparison with the standard
-Bayesian approach can be found in :raw-latex:`\cite{Butler2017}` and an
+Bayesian approach can be found in :cite:p:`Butler2017` and an
 extension to solve an optimal experimental design problem can be found
-in :raw-latex:`\cite{Walsh2017}`.
+in :cite:p:`Walsh2017`.
 
 Let :math:`M(Y,\lambda)` denote a deterministic model with solution
 :math:`Y(\lambda)` that is an implicit function of model parameters
@@ -1208,7 +1208,7 @@ probability densities associated with
 :math:`P_{\mathbf{\Lambda}}^{\text{prior}}`,
 :math:`P_{\mathbf{\mathcal{D}}}^{\text{obs}}` and
 :math:`P_{\mathbf{\mathcal{D}}}^{Q(\text{prior})}` respectively. From
-:raw-latex:`\cite{Butler2017}`, the following posterior probability
+:cite:p:`Butler2017`, the following posterior probability
 density, when interpreted through a disintegration theorem, solves the
 stochastic inverse problem:
 

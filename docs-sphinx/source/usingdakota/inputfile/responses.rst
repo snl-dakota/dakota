@@ -18,7 +18,7 @@ their uses, as well as cover some user issues relating to file formats
 and derivative vector and matrix sizing. For a detailed description of
 responses section syntax and example specifications, refer to the
 Responses Commands chapter in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}`.
+Manual :cite:p:`RefMan`.
 
 .. _`responses:overview:types`:
 

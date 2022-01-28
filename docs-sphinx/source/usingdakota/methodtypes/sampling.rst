@@ -127,9 +127,9 @@ from a more crude physical/engineering approximation of the problem. A
 viable way of building a well correlated control variate is to rely on a
 low-fidelity model (i.e. a crude approximation of the model of interest)
 to estimate the control variate using estimated control means (see
-:raw-latex:`\cite{Pasupathy2014}`). This technique has been introduced
+:cite:p:`Pasupathy2014`). This technique has been introduced
 in the context of optimization under uncertainty in
-:raw-latex:`\cite{Ng2014}`.
+:cite:p:`Ng2014`.
 
 .. _`uq:sampling:multilevel`:
 
@@ -264,7 +264,7 @@ MLMC extension to the variance
 
 Despite the original introduction of the MLMC approach for the
 computation of the mean estimator in
-:raw-latex:`\cite{Giles2008,Giles2015}`, it is possible to estimate
+:cite:p:`Giles2008,Giles2015`, it is possible to estimate
 higher-order moments with a MLMC sampling strategy, as for instance the
 variance.
 
@@ -402,7 +402,7 @@ the previous section, can be written in the case of variance
 This optimization problem can be solved in two different ways, namely an
 analytical approximation and by solving a non-linear optimization
 problem. The analytical approximation follows the approach described in
-:raw-latex:`\cite{Pisaroni2017}` and introduces a helper variable
+:cite:p:`Pisaroni2017` and introduces a helper variable
 
 .. math:: \hat{V}_{2, \ell} := \mathbb{V}ar\left[ \hat{Q}_{\ell,2} \right] \cdot N_{\ell}.
 
@@ -562,7 +562,7 @@ parameter :math:`r_{\ell} \in \mathbb{R}^+_0`
 The set of samples :math:`\Delta_{\ell}^{\mathrm{LF}}` is independent of
 :math:`N_{\ell}^{\mathrm{HF}}`, therefore the variance of the estimator
 can be written as (for further details see
-:raw-latex:`\cite{GeraciCTR}`)
+:cite:p:`GeraciCTR`)
 
 .. math::
 

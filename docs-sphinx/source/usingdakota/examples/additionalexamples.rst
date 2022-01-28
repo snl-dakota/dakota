@@ -195,7 +195,7 @@ Figure `[additional:textbook_grad_constr_graphics] <#additional:textbook_grad_c
 Rosenbrock
 ----------
 
-The Rosenbrock function :raw-latex:`\cite{Gil81}` is a well known test
+The Rosenbrock function :cite:p:`Gil81` is a well known test
 problem for optimization algorithms. The standard formulation includes
 two design variables, and computes a single objective function. This
 problem can also be posed as a least-squares optimization problem with
@@ -285,7 +285,7 @@ Figure `[tutorial:rosenbrock_grad] <#tutorial:rosenbrock_grad>`__ in
 several key areas. The responses block of the input file uses the
 keyword ``calibration_terms = 2`` instead of
 ``objective_functions = 1``. The method block of the input file shows
-that the NL2SOL algorithm :raw-latex:`\cite{Den81}` (``nl2sol``) is used
+that the NL2SOL algorithm :cite:p:`Den81` (``nl2sol``) is used
 in this example. (The Gauss-Newton, NL2SOL, and NLSSOL SQP algorithms
 are currently available for exploiting the special mathematical
 structure of least squares minimization problems).
@@ -318,7 +318,7 @@ vicinity of the solution.
 Herbie, Smooth Herbie, and Shubert
 ----------------------------------
 
-Lee, et al. :raw-latex:`\cite{herbiefunc}` developed the Herbie function
+Lee, et al. :cite:p:`herbiefunc` developed the Herbie function
 as a 2D test problem for surrogate-based optimization. However, since it
 is separable and each dimension is identical it is easily generalized to
 an arbitrary number of dimensions. The generalized (to :math:`M`
@@ -399,7 +399,7 @@ Sobol and Ishigami Functions
 ----------------------------
 
 These functions are often used to test sensitivity analysis methods.
-These are documented in  :raw-latex:`\cite{storlie_09}`. The first is
+These are documented in  :cite:p:`storlie_09`. The first is
 the Sobol rational function, given by the equation:
 
 .. math:: f({\bf x})=\frac{(x_2+0.5)^4}{(x_1+0.5)^4}
@@ -415,7 +415,7 @@ Figure `1.4 <#fig:sobol_rational>`__.
 
    Plot of the ``sobol_rational`` test function in 2 dimensions.
 
-The Ishigami test problem :raw-latex:`\cite{storlie_09}` is a smooth
+The Ishigami test problem :cite:p:`storlie_09` is a smooth
 :math:`C^{\infty}` function:
 
 .. math::
@@ -439,7 +439,7 @@ Figure `1.5 <#fig:sobol_ishigami>`__.
    x3.
 
 At the opposite end of the smoothness spectrum, Sobol’s
-g-function :raw-latex:`\cite{storlie_09}` is :math:`C^0` with the
+g-function :cite:p:`storlie_09` is :math:`C^0` with the
 absolute value contributing a slope discontinuity at the center of the
 domain:
 
@@ -758,7 +758,7 @@ Cantilever
 
 This test problem is adapted from the reliability-based design
 optimization
-literature :raw-latex:`\cite{Sue01}`, :raw-latex:`\cite{Wu01}` and
+literature :cite:p:`Sue01`, :cite:p:`Wu01` and
 involves a simple uniform cantilever beam as shown in
 Figure `1.9 <#additional:figure03>`__.
 
@@ -871,7 +871,7 @@ Optimization Under Uncertainty
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Optimization under uncertainty solutions to the stochastic problem are
-described in :raw-latex:`\cite{Eld02,Eld05,Eld06a}`, for which the
+described in :cite:p:`Eld02,Eld05,Eld06a`, for which the
 solution is :math:`(w,t)=(2.45,3.88)` with an objective function of
 :math:`9.52`. This demonstrates that a more conservative design is
 needed to satisfy the probabilistic constraints.
@@ -911,7 +911,7 @@ a good sampling of the entire Pareto frontier.
 
 There are three examples that are taken from a multiobjective
 evolutionary algorithm (MOEA) test suite described by Van Veldhuizen et.
-al. in :raw-latex:`\cite{Coe02}`. These three examples illustrate the
+al. in :cite:p:`Coe02`. These three examples illustrate the
 different forms that the Pareto set may take. For each problem, we
 describe the Dakota input and show a graph of the Pareto front. These
 problems are all solved with the ``moga`` method. The first example is
@@ -1021,7 +1021,7 @@ Figure `1.12 <#additional:moga3front>`__.
 Morris
 ------
 
-Morris :raw-latex:`\cite{Mor91}` includes a screening design test
+Morris :cite:p:`Mor91` includes a screening design test
 problem with a single-output analytical test function. The output
 depends on 20 inputs with first- through fourth-order interaction terms,
 some having large fixed coefficients and others small random
@@ -1053,7 +1053,7 @@ the remaining third- and fourth-order coefficients are set to zero.
 
 Examination of the test function reveals that one should be able to
 conclude the following (stated and verified computationally
-in :raw-latex:`\cite{Sal04}`) for this test problem:
+in :cite:p:`Sal04`) for this test problem:
 
 #. the first ten factors are important;
 
@@ -1198,7 +1198,7 @@ samples.
 Steel Section
 ~~~~~~~~~~~~~
 
-This test problem is used extensively in :raw-latex:`\cite{Hal00}`. It
+This test problem is used extensively in :cite:p:`Hal00`. It
 involves a W16x31 steel block of A36 steel that must carry an applied
 deterministic bending moment of 1140 kip-in. For Dakota, it has been
 used as a code verification test for second-order integrations in
@@ -1212,10 +1212,10 @@ and the variables are uncorrelated.
 The input file computes a first-order CDF probability of
 :math:`p(g \leq 0.)` = 1.297e-07 and a second-order CDF probability of
 :math:`p(g \leq 0.)` = 1.375e-07. This second-order result differs from
-that reported in :raw-latex:`\cite{Hal00}`, since Dakota uses the Nataf
+that reported in :cite:p:`Hal00`, since Dakota uses the Nataf
 nonlinear transformation to u-space (see MPP Search Methods block in
 Reliability Methods chapter of Dakota Theory
-Manual :raw-latex:`\cite{TheoMan}`) and :raw-latex:`\cite{Hal00}` uses a
+Manual :cite:p:`TheoMan`) and :cite:p:`Hal00` uses a
 linearized transformation.
 
 .. _`additional:portal_frame`:
@@ -1223,7 +1223,7 @@ linearized transformation.
 Portal Frame
 ~~~~~~~~~~~~
 
-This test problem is taken from :raw-latex:`\cite{Tve90,Hon99}`. It
+This test problem is taken from :cite:p:`Tve90,Hon99`. It
 involves a plastic collapse mechanism of a simple portal frame. It also
 has been used as a verification test for second-order integrations in
 reliability methods. The limit state function is defined as:
@@ -1249,7 +1249,7 @@ This test problem involves the plastic analysis and design of a short
 column with rectangular cross section (width :math:`b` and depth
 :math:`h`) having uncertain material properties (yield stress :math:`Y`)
 and subject to uncertain loads (bending moment :math:`M` and axial force
-:math:`P`) :raw-latex:`\cite{Kus97}`. The limit state function is
+:math:`P`) :cite:p:`Kus97`. The limit state function is
 defined as:
 
 .. math:: g({\bf x}) = 1 - \frac{4M}{b h^2 Y} - \frac{P^2}{b^2 h^2 Y^2}
@@ -1301,7 +1301,7 @@ and :math:`h` are 5 and 15, respectively.
   the target reliability at the optimal design
   :math:`(b, h) = (8.68, 25.0)`. Simple bi-level, fully analytic
   bi-level, and sequential RBDO methods are explored in inputs files , ,
-  and , with results as described in :raw-latex:`\cite{Eld05,Eld06a}`.
+  and , with results as described in :cite:p:`Eld05,Eld06a`.
   These files are located in .
 
 .. _`additional:steel_column`:
@@ -1310,7 +1310,7 @@ Steel Column
 ~~~~~~~~~~~~
 
 This test problem involves the trade-off between cost and reliability
-for a steel column :raw-latex:`\cite{Kus97}`. The cost is defined as
+for a steel column :cite:p:`Kus97`. The cost is defined as
 
 .. math:: Cost = b d + 5 h
 
@@ -1468,7 +1468,7 @@ satisfies the auxiliary properties
 
 .. math:: \mathbb{E}[a(x,\boldsymbol{\xi})]=1\quad\text{and}\quad 1-\frac{\sigma}{6}<a(x,\boldsymbol{\xi})<1+\frac{\sigma}{6}.
 
-This is the same test case used in :raw-latex:`\cite{Xiu_Hesthaven_05}`.
+This is the same test case used in :cite:p:`Xiu_Hesthaven_05`.
 
 Damped Oscillator
 ~~~~~~~~~~~~~~~~~
@@ -1546,7 +1546,7 @@ in Section `[sec:bayes_expdesign] <#sec:bayes_expdesign>`__, in which a
 low-fidelity model is calibrated to optimally-selected data points of a
 high-fidelity model. The ``analysis_driver`` for the the low and
 high-fidelity models implement the steady state heat example given
-in :raw-latex:`\cite{Lew16}`. The high-fidelity model is the analytic
+in :cite:p:`Lew16`. The high-fidelity model is the analytic
 solution to the example described therein,
 
 .. math:: T(x) = c_{1} \exp(-\gamma x) + c_{2} \exp(\gamma x) + T_{amb},
@@ -1584,7 +1584,7 @@ Bayes linear
 
 This is a simple model that is only available by using the ``direct``
 interface with ``’bayes_linear’``. The model is discussed extensively in
- :raw-latex:`\cite{CASL2014}` both on pages 93–102 and in Appendix A.
+ :cite:p:`CASL2014` both on pages 93–102 and in Appendix A.
 The model is simply the sum of the d input parameters:
 
 .. math:: y = \sum\limits_{i=1}^d x_i

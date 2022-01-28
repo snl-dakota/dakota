@@ -45,7 +45,7 @@ write a restart file, but using the default name instead of a
 user-specified name. To turn restart recording off, the user may select
 ``deactivate restart_file`` in the ``interface`` specification (refer to
 the Interface Commands chapter in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}` for additional information). This can
+Manual :cite:p:`RefMan` for additional information). This can
 increase execution speed and reduce disk storage requirements, but at
 the expense of a loss in the ability to recover and continue a run that
 terminates prematurely. Obviously, this option is not recommended when
