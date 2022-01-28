@@ -71,7 +71,7 @@ private:
   void multilevel_control_variate_mc_Qcorr();
   /// Qcorr approach using a pilot sample treated as separate offline cost
   void multilevel_control_variate_mc_offline_pilot();
-  /// Qcorr approach using projecting performance from a pilot sample
+  /// Qcorr approach projecting estimator performance from a pilot sample
   void multilevel_control_variate_mc_pilot_projection();
 
   /// helper for shared code among MLCV for offline-pilot and pilot-projection
@@ -143,11 +143,6 @@ private:
 		      const SizetArray& N_refined,
 		      //const RealMatrix& rho_dot2_LH,
 		      size_t lev, RealMatrix& H_raw_mom);
-  /// accumulate ML-only contributions (levels with no CV) to raw moments
-  void ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
-		      const RealMatrix& sum_H3, const RealMatrix& sum_H4,
-		      const Sizet2DArray& N_hf, size_t num_cv_lev,
-		      size_t num_hf_lev, RealMatrix& Y_mlmc_mom);
 
   /// compute scalar control variate parameters
   void compute_mlmf_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl,
@@ -320,26 +315,6 @@ private:
 
 inline NonDMultilevControlVarSampling::~NonDMultilevControlVarSampling()
 { }
-
-
-inline void NonDMultilevControlVarSampling::
-ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
-	       const RealMatrix& sum_H3, const RealMatrix& sum_H4,
-	       const Sizet2DArray& N_hf, size_t num_cv_lev, size_t num_hf_lev,
-	       RealMatrix& Y_ml_mom)
-{
-  // MLMC without CV: sum_H = HF Q sums for lev 0 and HF Y sums for lev > 0
-  size_t qoi, lev;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    for (lev=num_cv_lev; lev<num_hf_lev; ++lev) {
-      size_t Nlq = N_hf[lev][qoi];
-      Y_ml_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
-      Y_ml_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
-      Y_ml_mom(qoi,2) += sum_H3(qoi,lev) / Nlq;
-      Y_ml_mom(qoi,3) += sum_H4(qoi,lev) / Nlq;
-    }
-  }
-}
 
 
 inline void NonDMultilevControlVarSampling::

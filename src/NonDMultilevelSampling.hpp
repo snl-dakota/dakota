@@ -116,6 +116,12 @@ protected:
   Real aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY,
 			  const SizetArray& N_l);
 
+  /// accumulate ML-only contributions (levels with no CV) to raw moments
+  void ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+		      const RealMatrix& sum_H3, const RealMatrix& sum_H4,
+		      const Sizet2DArray& N_hf, size_t start, size_t end,
+		      RealMatrix& ml_raw_mom);
+
   /// manage response mode and active model key from {group,form,lev} triplet.
   /// seq_type defines the active dimension for a 1D model sequence.
   void configure_indices(unsigned short group, unsigned short form,
@@ -145,6 +151,10 @@ private:
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using QoI accumulators (sum_Q)
   void multilevel_mc_Qsum();
+  /// Qsum approach using a pilot sample treated as separate offline cost
+  void multilevel_mc_offline_pilot();
+  /// Qsum approach projecting estimator performance from a pilot sample
+  void multilevel_mc_pilot_projection();
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -657,6 +667,45 @@ set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost
 	}
 	if (outputLevel == DEBUG_OUTPUT)
 	       Cout << "Epsilon squared target per QoI = " << eps_sq_div_2_qoi << std::endl;
+}
+
+
+/*
+inline void NonDMultilevelSampling::
+ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+	       const Sizet2DArray& N_l, size_t start, size_t end,
+	       RealMatrix& ml_raw_mom)
+{
+  // MLMC without CV: sum_H = HF Q sums for lev 0 and HF Y sums for lev > 0
+  size_t qoi, lev;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    for (lev=start; lev<end; ++lev) {
+      size_t Nlq = N_l[lev][qoi];
+      ml_raw_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
+      ml_raw_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
+    }
+  }
+}
+*/
+
+
+inline void NonDMultilevelSampling::
+ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+	       const RealMatrix& sum_H3, const RealMatrix& sum_H4,
+	       const Sizet2DArray& N_l, size_t start, size_t end,
+	       RealMatrix& ml_raw_mom)
+{
+  // MLMC without CV: sum_H = HF Q sums for lev 0 and HF Y sums for lev > 0
+  size_t qoi, lev;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    for (lev=start; lev<end; ++lev) {
+      size_t Nlq = N_l[lev][qoi];
+      ml_raw_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
+      ml_raw_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
+      ml_raw_mom(qoi,2) += sum_H3(qoi,lev) / Nlq;
+      ml_raw_mom(qoi,3) += sum_H4(qoi,lev) / Nlq;
+    }
+  }
 }
 
 

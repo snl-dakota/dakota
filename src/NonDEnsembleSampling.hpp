@@ -173,6 +173,9 @@ protected:
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
 
+  /// variances for HF truth (length numFunctions)
+  RealVector varH;
+
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;
 
