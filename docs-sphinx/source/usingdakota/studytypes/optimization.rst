@@ -1057,9 +1057,9 @@ function f1 without increasing the value of f2: another point on the
 Pareto front, (0.63, 0.63) represents a better value of objective f1 but
 a worse value of objective f2.
 
-.. figure:: images/dakota_mogatest1_pareto_front.png
+.. figure:: img/dakota_mogatest1_pareto_front.png
    :alt: Multiple objective genetic algorithm (MOGA) example: Pareto
-   front showing trade-offs between functions f1 and f2.
+         front showing trade-offs between functions f1 and f2.
    :name: opt:additional:multiobjective:example2:moga_pareto
 
    Multiple objective genetic algorithm (MOGA) example: Pareto front
@@ -1529,12 +1529,12 @@ along with the license status and web page where available.
 -  SCOLIB (``coliny_`` methods) License: BSD; website:
    https://software.sandia.gov/trac/acro/wiki/Packages.
 
-.. |image| image:: images/dak_graphics_ps_opt.png
-.. |image1| image:: images/rosen_ps_opt_pts.png
+.. |image| image:: img/dak_graphics_ps_opt.png
+.. |image1| image:: img/rosen_ps_opt_pts.png
    :height: 2.5in
-.. |image2| image:: images/rosen_ps_opt_pts2.png
+.. |image2| image:: img/rosen_ps_opt_pts2.png
    :height: 2.5in
-.. |image3| image:: images/rosen_ea_init.png
+.. |image3| image:: img/rosen_ea_init.png
    :height: 2.5in
-.. |image4| image:: images/rosen_ea_final.png
+.. |image4| image:: img/rosen_ea_final.png
    :height: 2.5in

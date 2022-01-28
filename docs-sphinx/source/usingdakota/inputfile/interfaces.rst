@@ -605,7 +605,7 @@ the individual analysis drivers, and shared pre- and post-processing
 tasks that are only performed once for the set of analyses can be
 performed within the input and output filters.
 
-.. figure:: images/dakota_components.png
+.. figure:: img/dakota_components.png
    :alt: Components of the simulation interface
    :name: interfaces:bbinterfacecomp
 

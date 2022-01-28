@@ -668,7 +668,7 @@ the discrepancy model.
    .. figure:: img/moddiscrep_ExpAllData.png
       :alt: Graphs of the experimental data :math:`d(t,x)` for
             configurations (temperatures) ranging from :math:`x = 296.15K` to
-      :math:`x = 1073.15K`.
+            :math:`x = 1073.15K`.
       :name: fig:mat_exp
 
       Graphs of the experimental data :math:`d(t,x)` for configurations

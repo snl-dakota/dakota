@@ -226,9 +226,9 @@ response group. Covariance across the highest-level responses
 (off-diagonal blocks) is not supported, nor is covariance between
 experiments.
 
-.. figure:: images/ObsErrorCovariance.png
+.. figure:: img/ObsErrorCovariance.png
    :alt: An example of scalar and field response data, with associated
-   block-diagonal observation error covariance.
+         block-diagonal observation error covariance.
    :name: fig:input:obs_err_cov
 
    An example of scalar and field response data, with associated

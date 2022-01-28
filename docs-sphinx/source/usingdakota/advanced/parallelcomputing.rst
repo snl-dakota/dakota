@@ -361,7 +361,7 @@ parallelism; however, this can still be quite effective in reducing the
 time to obtain a solution. Three single-level parallelism models will be
 discussed, and are depicted in Figure `1.1 <#parallel:figure03>`__:
 
-.. figure:: images/ex_in_hy_job_management.png
+.. figure:: img/ex_in_hy_job_management.png
    :alt: External, internal, and hybrid job management.
    :name: parallel:figure03
    :width: 60mm
@@ -780,7 +780,7 @@ neither of these characteristics is present, then use of the dedicated
 master partition supports a dynamic scheduling which assures that server
 idleness is minimized.
 
-.. figure:: images/comm_partitioning.png
+.. figure:: img/comm_partitioning.png
    :alt: Communicator partitioning models.
    :name: parallel:figure01
    :width: 70mm
@@ -1242,7 +1242,7 @@ lower level of parallelism.
 Scheduling within levels
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. figure:: images/recursive_partitioning.png
+.. figure:: img/recursive_partitioning.png
    :alt: Recursive partitioning for nested parallelism.
    :name: parallel:figure02
    :width: 60mm

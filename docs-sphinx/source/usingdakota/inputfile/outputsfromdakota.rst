@@ -428,9 +428,9 @@ If Dakota is executed on a remote machine, the DISPLAY variable in the
 user’s UNIX environment :cite:p:`Gil92` may need to be set to
 the local machine in order to display the graphics window.
 
-.. figure:: images/container_graphic.png
+.. figure:: img/container_graphic.png
    :alt: Dakota 2D graphics for “container” problem showing history of
-   an objective function, an equality constraint, and two variables.
+         an objective function, an equality constraint, and two variables.
    :name: output:2dcont
 
    Dakota 2D graphics for “container” problem showing history of an
@@ -449,7 +449,7 @@ an encapsulated postscript (EPS) file, named ``dakota_graphic_i.eps``
 where *i* is the plot window number, can be created using the “Print”
 button.
 
-.. figure:: images/container_graphic_options.png
+.. figure:: img/container_graphic_options.png
    :alt: Options for Dakota 2D graphics.
    :name: output:2dcontoptions
 

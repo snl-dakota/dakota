@@ -340,7 +340,7 @@ solved where :math:`x_{5}` and :math:`x_{6}` are integer-valued. At the
 solution to this problem, the optimal values for :math:`x_{5}` and
 :math:`x_{6}` are :math:`x_{5}=x_{6}=1`.
 
-.. figure:: images/branch_history.png
+.. figure:: img/branch_history.png
    :alt: Branching history for example MINLP optimization problem.
    :name: adv_meth:figure07
 
@@ -429,7 +429,7 @@ original model into smooth, differentiable, easily navigated surrogates.
 This allows SBO with global data fits to extract the relevant global
 design trends from noisy simulation data.
 
-.. figure:: images/sbo_df.png
+.. figure:: img/sbo_df.png
    :alt: SBO iteration progression for global data fits.
    :name: fig:sbo_df
 
@@ -718,4 +718,4 @@ that driver.
    in which a smooth data fit of a noisy low fidelity model is used in
    combination with a high fidelity model
 
-.. |image| image:: images/sbo_mh.png
+.. |image| image:: img/sbo_mh.png

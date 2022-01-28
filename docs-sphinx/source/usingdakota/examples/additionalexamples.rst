@@ -306,9 +306,9 @@ evaluations as did conventional gradient-based optimization. In many
 cases a good least squares algorithm will converge more rapidly in the
 vicinity of the solution.
 
-.. figure:: images/nonlin_paramest_hist.png
+.. figure:: img/nonlin_paramest_hist.png
    :alt: Rosenbrock nonlinear least squares example: iteration history
-   for least squares terms :math:`f_1` and :math:`f_2`.
+         for least squares terms :math:`f_1` and :math:`f_2`.
    :name: additional:rosenbrock_nls_graphics
    :height: 4in
 
@@ -347,11 +347,11 @@ where
 Two dimensional versions of the ``herbie`` and ``smooth_herbie`` test
 functions are plotted in Figure `1.2 <#fig:2D_herbie__smooth_herbie>`__.
 
-.. figure:: images/DAK5pt2_2D__herbie__smooth_herbie.png
+.. figure:: img/DAK5pt2_2D__herbie__smooth_herbie.png
    :alt: Plots of the ``herbie`` (left) and ``smooth_herbie`` (right)
-   test functions in 2 dimensions. They can accept an arbitrary number
-   of inputs. The direction of the z-axis has been reversed (negative is
-   up) to better view the functions’ minima.
+         test functions in 2 dimensions. They can accept an arbitrary number
+         of inputs. The direction of the z-axis has been reversed (negative is
+         up) to better view the functions’ minima.
    :name: fig:2D_herbie__smooth_herbie
 
    Plots of the ``herbie`` (left) and ``smooth_herbie`` (right) test
@@ -387,9 +387,9 @@ of these functions is :math:`-2\le x_k \le 2` for all dimensions.
 
    .. container:: bigbox
 
-.. figure:: images/DAK5pt2_2D_shubert.png
+.. figure:: img/DAK5pt2_2D_shubert.png
    :alt: Plot of the ``shubert`` test function in 2 dimensions. It can
-   accept an arbitrary number of inputs.
+         accept an arbitrary number of inputs.
    :name: fig:2D_shubert
 
    Plot of the ``shubert`` test function in 2 dimensions. It can accept
@@ -409,7 +409,7 @@ substantial interaction between :math:`x_1` and :math:`x_2` which makes
 sensitivity analysis difficult. This function in shown in
 Figure `1.4 <#fig:sobol_rational>`__.
 
-.. figure:: images/sobol_rational.png
+.. figure:: img/sobol_rational.png
    :alt: Plot of the ``sobol_rational`` test function in 2 dimensions.
    :name: fig:sobol_rational
 
@@ -430,9 +430,9 @@ based on low-order structured grids (e.g., due to term cancellation at
 midpoints and bounds). This function in shown in
 Figure `1.5 <#fig:sobol_ishigami>`__.
 
-.. figure:: images/sobol_ishigami.png
+.. figure:: img/sobol_ishigami.png
    :alt: Plot of the ``sobol_ishigami`` test function as a function of
-   x1 and x3.
+         x1 and x3.
    :name: fig:sobol_ishigami
 
    Plot of the ``sobol_ishigami`` test function as a function of x1 and
@@ -452,7 +452,7 @@ The distributions for :math:`x_j` for :math:`j=1,2,3,4,5` are *iid*
 uniform on [0,1]. This function in shown in
 Figure `1.6 <#fig:sobol_g_function>`__.
 
-.. figure:: images/sobol_g_function.png
+.. figure:: img/sobol_g_function.png
    :alt: Plot of the ``sobol_g_function`` test function.
    :name: fig:sobol_g_function
 
@@ -606,7 +606,7 @@ seal between the end caps and container wall is manufactured by a press
 forming operation on the end caps. The end caps can then be attached to
 the container wall forming a seal through a crimping operation.
 
-.. figure:: images/end_cap.png
+.. figure:: img/end_cap.png
    :alt: Container wall-to-end-cap seal
    :name: additional:figure01
 
@@ -712,9 +712,9 @@ line with the smallest 3-D surface height in
 Figure `1.8 <#additional:figure02>`__. This point corresponds to the
 optimal values for diameter and height of the final product.
 
-.. figure:: images/graphical_container_opt.png
+.. figure:: img/graphical_container_opt.png
    :alt: A graphical representation of the container optimization
-   problem.
+         problem.
    :name: additional:figure02
 
    A graphical representation of the container optimization problem.
@@ -762,7 +762,7 @@ literature :cite:p:`Sue01`, :cite:p:`Wu01` and
 involves a simple uniform cantilever beam as shown in
 Figure `1.9 <#additional:figure03>`__.
 
-.. figure:: images/cantilever_beam.png
+.. figure:: img/cantilever_beam.png
    :alt: Cantilever beam test problem.
    :name: additional:figure03
 
@@ -951,9 +951,9 @@ of the front in this example.
 
    .. container:: small
 
-.. figure:: images/dakota_mogatest2_pareto_front.png
+.. figure:: img/dakota_mogatest2_pareto_front.png
    :alt: Pareto Front showing Tradeoffs between Function F1 and Function
-   F2 for mogatest2
+         F2 for mogatest2
    :name: additional:moga2front
 
    Pareto Front showing Tradeoffs between Function F1 and Function F2
@@ -1000,17 +1000,17 @@ Figure `1.12 <#additional:moga3front>`__.
 
    .. container:: small
 
-.. figure:: images/dakota_mogatest3_pareto_set.png
+.. figure:: img/dakota_mogatest3_pareto_set.png
    :alt: Pareto Set of Design Variables corresponding to the Pareto
-   front for mogatest3
+         front for mogatest3
    :name: additional:moga3set
 
    Pareto Set of Design Variables corresponding to the Pareto front for
    mogatest3
 
-.. figure:: images/dakota_mogatest3_pareto_front.png
+.. figure:: img/dakota_mogatest3_pareto_front.png
    :alt: Pareto Front showing Tradeoffs between Function F1 and Function
-   F2 for mogatest3
+         F2 for mogatest3
    :name: additional:moga3front
 
    Pareto Front showing Tradeoffs between Function F1 and Function F2
@@ -1136,12 +1136,12 @@ output, while the others have less. While some of inputs 11–20 have
 nontrivial values of :math:`\sigma`, their relatively small modified
 means :math:`\mu^*` indicate they have little overall influence.
 
-.. figure:: images/moat_mustar_sigma.png
+.. figure:: img/moat_mustar_sigma.png
    :alt: [FIG:mustar_sigma] Standard deviation of elementary effects
-   plotted against modified mean for Morris for each of 20 inputs. Red
-   circles 1–7 correspond to inputs having interactions or nonlinear
-   effects, blue squares 8–10 indicate those with mainly linear effects,
-   and black Xs denote insignificant inputs.
+         plotted against modified mean for Morris for each of 20 inputs. Red
+         circles 1–7 correspond to inputs having interactions or nonlinear
+         effects, blue squares 8–10 indicate those with mainly linear effects,
+         and black Xs denote insignificant inputs.
    :name: FIG:mustar_sigma
 
    [FIG:mustar_sigma] Standard deviation of elementary effects plotted
@@ -1592,14 +1592,14 @@ The model is simply the sum of the d input parameters:
 where the input varaibles :math:`x_i` can be any uncertain variable type
 but are typically considered as uniform or normal uncertain inputs.
 
-.. |image| image:: images/textbook_contours.png
+.. |image| image:: img/textbook_contours.png
    :height: 2.5in
-.. |image1| image:: images/textbook_closeup.png
+.. |image1| image:: img/textbook_closeup.png
    :height: 2.5in
-.. |image2| image:: images/textbook_opt_hist.png
-.. |image3| image:: images/textbook_history.png
+.. |image2| image:: img/textbook_opt_hist.png
+.. |image3| image:: img/textbook_history.png
    :height: 2.5in
-.. |image4| image:: images/log_ratio_cdf_ria.png
-.. |image5| image:: images/log_ratio_cdf_pma.png
-.. |image6| image:: images/short_col_cdf_ria.png
-.. |image7| image:: images/short_col_cdf_pma.png
+.. |image4| image:: img/log_ratio_cdf_ria.png
+.. |image5| image:: img/log_ratio_cdf_pma.png
+.. |image6| image:: img/short_col_cdf_ria.png
+.. |image7| image:: img/short_col_cdf_pma.png

@@ -83,9 +83,8 @@ the family of distributions (see Figure `1.1 <#fig:horsetail>`__).
 
 .. container:: center
 
-   .. figure:: images/horsetail.png
-      :alt: Example CDF ensemble. Commonly referred to as a “horsetail”
-      plot.
+   .. figure:: img/horsetail.png
+      :alt: Example CDF ensemble. Commonly referred to as a “horsetail” plot.
       :name: fig:horsetail
       :width: 3.5in
 
@@ -307,7 +306,7 @@ response functions from the simulation, and
 :math:`\mathit{\mathbf{s_{u}(d)}}` are the statistics generated from the
 uncertainty quantification on these response functions.
 
-.. figure:: images/nested_ouu.png
+.. figure:: img/nested_ouu.png
    :alt: Formulation 1: Nested OUU.
    :name: adv_models:figure08
 
@@ -369,7 +368,7 @@ surrogate-based formulations where :math:`\mathbf{\hat{r}_{u}}` and
 approximate response statistics, respectively, generated from the
 surrogate models.
 
-.. figure:: images/sbouu.png
+.. figure:: img/sbouu.png
    :alt: Formulations 2, 3, and 4 for Surrogate-based OUU.
    :name: adv_models:figure10
 

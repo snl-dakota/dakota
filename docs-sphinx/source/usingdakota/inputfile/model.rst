@@ -33,7 +33,7 @@ of surrogate models: data fit and hierarchical/multifidelity. A third
 type of derived surrogate model supporting reduced-order models (ROM) is
 planned for future releases.
 
-.. figure:: images/classDakota_1_1Model.png
+.. figure:: img/classDakota_1_1Model.png
    :alt: The Dakota model class hierarchy.
    :name: model:hier
 

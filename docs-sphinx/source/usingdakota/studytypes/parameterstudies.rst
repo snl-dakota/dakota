@@ -354,7 +354,7 @@ two positive deltas) per variable:
 This set of points in parameter space is depicted in
 Figure `1.1 <#ps:figure01>`__.
 
-.. figure:: images/centered_pstudy.png
+.. figure:: img/centered_pstudy.png
    :alt: Example centered parameter study.
    :name: ps:figure01
 
@@ -394,7 +394,7 @@ interval [0,3] is divided into three equal-sized partitions. This
 two-dimensional grid, shown in Figure `1.2 <#ps:figure02>`__, would
 result in the following twelve function evaluations:
 
-.. figure:: images/multi_d_pstudy.png
+.. figure:: img/multi_d_pstudy.png
    :alt: Example multidimensional parameter study
    :name: ps:figure02
 
@@ -513,6 +513,6 @@ to the valley.
 | (b)      |
 +----------+
 
-.. |image| image:: images/dak_graphics_vector.png
-.. |image1| image:: images/rosen_vect_pts.png
+.. |image| image:: img/dak_graphics_vector.png
+.. |image1| image:: img/rosen_vect_pts.png
    :height: 2.5in
