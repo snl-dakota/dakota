@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _gui-wizards-main:
+```
+
 Wizards
 =======
 

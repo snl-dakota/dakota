@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _gui-mlmf-main:
+```
+
 Multi-Level / Multi-Fidelity Study Editor
 =========================================
 

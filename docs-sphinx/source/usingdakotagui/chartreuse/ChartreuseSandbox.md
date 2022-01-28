@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _chartreuse-sandbox-main:
+```
+
 Chartreuse Sandbox View
 =======================
 

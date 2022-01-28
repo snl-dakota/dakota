@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _gui-run-configurations-main:
+```
+
 Dakota Run Configurations
 =========================
 

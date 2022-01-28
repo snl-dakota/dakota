@@ -2,6 +2,8 @@ Chartreuse
 ==========
 
 ```{eval-rst}
+.. _chartreuse-main:
+
 .. toctree::
    :maxdepth: 1
    

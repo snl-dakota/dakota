@@ -1,3 +1,8 @@
+```{eval-rst}
+.. _gui-releasenotes-main:
+```
+
+
 Dakota GUI Release Notes
 =============
 

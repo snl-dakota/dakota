@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _chartreuse-ngw-main:
+```
+
 Chartreuse in Next-Gen Workflow
 ===============================
 

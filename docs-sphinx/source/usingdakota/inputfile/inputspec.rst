@@ -1,6 +1,10 @@
+.. _inputspec-main:
+
 """""""""""""""""
 Dakota Input Spec
 """""""""""""""""
+
+.. _inputspec-keywords:
 
 ===============
 Dakota Keywords
@@ -9,6 +13,8 @@ Dakota Keywords
 Valid Dakota input keywords are dictated by dakota.xml, included in source and binary distributions of Dakota. This specification file is used with the NIDR[29] parser to validate user input and is therefore the definitive source for input syntax, capability options, and optional and required capability sub-parameters for any given Dakota version. A more readable variant of the specification dakota.input.summary is also distributed.
 
 While complete, users may find dakota.input.summary overwhelming or confusing and will likely derive more benefit from adapting example input files to a particular problem. Some examples can be found here: Sample Input Files. Advanced users can master the many input specification possibilities by understanding the structure of the input specification file.
+
+.. _inputspec-overview:
 
 ===================
 Input Spec Overview
@@ -25,6 +31,8 @@ Refer to the dakota.input.summary file, in Input Spec Summary, for all current v
   
 - Additional details and descriptions are described in Keywords Area
 - For additional details on NIDR specification logic and rules, refer to[29] (Gay, 2008).
+
+.. _inputspec-summary:
 
 ==================
 Input Spec Summary

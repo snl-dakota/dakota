@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _gui-context-tools-main:
+```
+
 Context Menu Tools
 ==================
 

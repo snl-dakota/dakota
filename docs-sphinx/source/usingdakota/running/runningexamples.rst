@@ -1,3 +1,5 @@
+.. _running-examples-main:
+
 """"""""""""""""
 Running Examples
 """"""""""""""""

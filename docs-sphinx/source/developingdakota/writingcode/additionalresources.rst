@@ -1,3 +1,5 @@
+.. _developer-additional-resources:
+
 """"""""""""""""""""
 Additional Resources
 """"""""""""""""""""

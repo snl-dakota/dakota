@@ -1,4 +1,4 @@
-.. _`uq:sampling`:
+.. _`sampling-theory-main`:
 
 Sampling Methods
 ================

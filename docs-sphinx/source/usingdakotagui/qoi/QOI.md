@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _qoi-main:
+```
+
 QOI
 ===
 

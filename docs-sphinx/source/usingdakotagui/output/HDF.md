@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _gui-hdf-main:
+```
+
 HDF5
 ====
 

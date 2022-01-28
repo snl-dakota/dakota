@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _gui-eclipse-main:
+```
+
 Eclipse Reference
 =======
 

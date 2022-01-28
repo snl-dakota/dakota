@@ -5,6 +5,10 @@ The Dakota GUI is an application that allows you to easily edit Dakota input fil
 
 This manual is structured as a reference guide.  The sections can be read in any order, depending on which topic you’re interested in learning about.
 
+```{eval-rst}
+.. _dakota-gui-quickstart:
+```
+
 ## Getting Started
 
 * **I'm completely new to Dakota.  Where do I start?**

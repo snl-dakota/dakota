@@ -1,3 +1,5 @@
+.. _developer-responses-main:
+
 """""""""
 Responses
 """""""""

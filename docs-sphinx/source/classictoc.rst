@@ -74,35 +74,35 @@ set of manuals, this set of links may help you find what you're looking for...
 
 **Theory Manual**
 
-- Sampling Methods
-- Reliability Methods
-- Stochastic Expansion Methods
-- Epistemic Methods
-- Bayesian Methods
-- Surrogate Models
-- Surrogate-Based Local Minimization
-- Efficient Global Optimization
-- Dimension Reduction Strategies
-- Optimization Under Uncertainty (OUU)
-- `Parallel Compting <parallel-theory>`
+- :ref:`Sampling Methods <sampling-theory-main>`
+- :ref:`Reliability Methods <uq:reliability>`
+- :ref:`Stochastic Expansion Methods <uq:expansion>`
+- :ref:`Epistemic Methods <uq:epist>`
+- :ref:`Bayesian Methods <uq:bayes>`
+- :ref:`Surrogate Models <Chap:SurMod>`
+- :ref:`Surrogate-Based Local Minimization <sblm>`
+- :ref:`Efficient Global Optimization <uq:ego>`
+- :ref:`Dimension Reduction Strategies <Chap:DimRed>`
+- :ref:`Optimization Under Uncertainty (OUU) <ouu>`
 
 **Reference Manual**
 
 - Running Dakota
 
-  - [Usage](usingdakota/running/commandline.md)
-  - [Examples](usingdakota/running/runningexamples.md)
-  - [Execution Phases](usingdakota/running/executionphases.md)
+  - :ref:`Usage <command-line-main>`
+  - :ref:`Examples <running-examples-main>`
+  - :ref:`Execution Phases <execution-phases-main>`
   - Restarting Dakota Stuides
   - The Dakota Restart Utility
   
 - Dakota Input Specification
-  - [Dakota Keywords](usingdakota/inputfile/inputspec.md)
-  - [Input Spec Overview](usingdakota/inputfile/inputspec.md)
-  - [Sample Input Files](usingdakota/examples/gettingstarted.md)
-  - [Input Spec Summary](usingdakota/inputfile/inputspec.md)
+
+  - :ref:`Dakota Keywords <inputspec-keywords>`
+  - :ref:`Input Spec Overview <inputspec-overview>`
+  - :ref:`Sample Input Files <examples-gettingstarted-main>`
+  - :ref:`Input Spec Summary <inputspec-summary>`
   
-- [Keywords Area](usingdakota/reference.rst)
+- :ref:`Keywords Area <reference-keywords-area-main>`
 - Topics Area
 
   - admin
@@ -116,44 +116,44 @@ set of manuals, this set of links may help you find what you're looking for...
   - advanced_topics
   - packages
 
-- [Dakota HDF5 Output](usingdakota/output/hdf.md)
-- [Test Problems](usingdakota/examples/gettingstarted.md)
+- :ref:`Dakota HDF5 Output <hdf-main>`
+- :ref:`Test Problems <examples-gettingstarted-main>`
 
 **Developer's Manual**
 
-- [Introduction](developingdakota/writingcode.rst)
-- [Overview of Dakota](developingdakota/writingcode/overview.rst)
+- :ref:`Introduction <writing-code-main>`
+- :ref:`Overview of Dakota <developer-overview-main>`
 
-  - [Environment](developingdakota/writingcode/dakotainput/environment.md)
-  - [Iterators](developingdakota/writingcode/dakotainput/iterators.md)
-  - [Models](developingdakota/writingcode/dakotainput/models.md)
-  - [Variables](developingdakota/writingcode/dakotainput/variables.md)
-  - [Interfaces](developingdakota/writingcode/dakotainput/interfaces.md)
-  - [Responses](developingdakota/writingcode/dakotainput/responses.md)
+  - :ref:`Environment <developer-environment>`
+  - :ref:`Iterators <developer-iterators-main>`
+  - :ref:`Models <developer-models-main>`
+  - :ref:`Variables <developer-variables-main>`
+  - :ref:`Interfaces <developer-interfaces-main>`
+  - :ref:`Responses <developer-responses-main>`
   
-- [Services](developingdakota/writingcode/services.rst)
-- [Development Practices and Guidance](developingdakota/writingcode/developmentpractices.rst)
-- [Additional Resources](developingdakota/writingcode/additionalresources.rst)
+- :ref:`Services <developer-services-main>`
+- :ref:`Development Practices and Guidance <developer-devpractices-main>`
+- :ref:`Additional Resources <developer-additional-resources>`
 
 **Dakota GUI Manual**
 
-- [GUI Quickstart Guide](usingdakotagui/Introduction.md)
-- [Basic Model Format (BMF)](usingdakotagui/simulationmodels/BMF.md)
-- [Chartreuse](usingdakotagui/Chartreuse.md)
-- [Chartreuse Sandbox View](usingdakotagui/chartreuse/ChartreuseSandbox.md)
-- [Chartreuse in Next-Gen Workflow](usingdakotagui/chartreuse/ChartreuseWorkflow.md)
-- [Connecting Dakota to External Simulation Models](usingdakota/introduction/couplingtosimulations.md)
-- [Context Menu Tools](usingdakotagui/miscgui/ContextMenuTools.md)
-- [Dakota Examples](usingdakotagui/examples/DakotaExamples.md)
-- [Dakota Input Files](usingdakotagui/inputfiles/DakotaInputFiles.md)
-- [Dakota Run Configurations](usingdakotagui/output/DakotaRunConfigurations.md)
-- [Dakota Visual Editor](usingdakotagui/inputfiles/DakotaVisualEditor.md)
-- [Eclipse](usingdakotagui/miscgui/Eclipse.md)
-- [HDF](usingdakotagui/output/HDF.md)
-- [Multi-Level / Multi-Fidelity Study Editor](usingdakotagui/inputfiles/MlmfEditor.md)
-- [Next-Gen Workflow](usingdakotagui/simulationmodels/NextGenWorkflow.md)
-- [Preferences](usingdakotagui/miscgui/Preferences.md)
-- [QOI](usingdakotagui/qoi/QOI.md)
-- [Wizards](usingdakotagui/wizards/Wizards.md)
-- [Further Help Resources](misc/help.md)
-- [Release Notes](misc/releasenotes.rst)
+- :ref:`GUI Quickstart Guide <dakota-gui-quickstart>`
+- :ref:`Basic Model Format (BMF) <bmf-main>`
+- :ref:`Chartreuse <chartreuse-main>`
+- :ref:`Chartreuse Sandbox View <chartreuse-sandbox-main>`
+- :ref:`Chartreuse in Next-Gen Workflow <chartreuse-ngw-main>`
+- :ref:`Connecting Dakota to External Simulation Models <couplingtosimulations-main>`
+- :ref:`Context Menu Tools <gui-context-tools-main>`
+- :ref:`Dakota Examples <gui-examples-main>`
+- :ref:`Dakota Input Files <gui-inputfiles-main>`
+- :ref:`Dakota Run Configurations <gui-run-configurations-main>`
+- :ref:`Dakota Visual Editor <gui-visual-editor-main>`
+- :ref:`Eclipse <gui-eclipse-main>`
+- :ref:`HDF <gui-hdf-main>`
+- :ref:`Multi-Level / Multi-Fidelity Study Editor <gui-mlmf-main>`
+- :ref:`Next-Gen Workflow <ngw-main>`
+- :ref:`Preferences <gui-preferences-main>`
+- :ref:`QOI <qoi-main>`
+- :ref:`Wizards <gui-wizards-main>`
+- :ref:`Further Help Resources <help-main>`
+- :ref:`Release Notes <gui-releasenotes-main>`

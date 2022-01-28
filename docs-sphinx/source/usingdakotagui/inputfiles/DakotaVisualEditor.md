@@ -1,18 +1,11 @@
+```{eval-rst}
+.. _gui-visual-editor-main:
+```
+
 The Dakota Visual Editor
 ========================
 
-##Table of Contents
-1. [Introduction](#introduction)
-2. [The Top Level](#top-level)
-3. [Environment Block](#environment)
-4. [Method Blocks](#method)
-5. [Model Blocks](#model)
-6. [Variables Blocks](#variables)
-7. [Interface Blocks](#interface)
-8. [Response Blocks](#interface)
-9. [Using Preprocessor Markup](#markup)
-
-##Introduction<a name="introduction"></a>
+## Introduction<a name="introduction"></a>
 
 The Dakota Visual Editor is a powerful alternative to editing Dakota input files in a text editor.  Gone are the days of manually tinkering with long number arrays, or hoping that variables and responses are active and indexed correctly.
 
@@ -20,7 +13,7 @@ If the Dakota Visual Editor is not configured as your default editor of Dakota i
 
 ![alt text](img/DakotaVisualEditor.png "Dakota Visual Editor")
 
-##The Top Level<a name="top-level"></a>
+## The Top Level<a name="top-level"></a>
 
 When first opened, the Dakota Visual Editor shows you the top level of a Dakota input file:
 
@@ -40,13 +33,13 @@ Finally, note that there are "?" buttons throughout the editors for specific Dak
 
 When you are done making changes to the Dakota input file, simply save the file as you would with any other text editor.
 
-##Environment Blocks<a name="environment"></a>
+## Environment Blocks<a name="environment"></a>
 
 Here is an example of a Dakota environment block in the Dakota Visual Editor.
 
 ![alt text](img/DakotaVisualEditor_4.png "The environment block")
 
-##Method Blocks<a name="method"></a>
+## Method Blocks<a name="method"></a>
 
 Dakota has a multitude of method types, so we can't cover all of them in this manual.  But we will take a look at one method editor that clearly demonstrates the benefits of using the Dakota Visual Editor:  centered parameter studies.
 
@@ -83,13 +76,13 @@ There is now no longer a need to keep track of values by index.  The step vector
 * sampling
 * vector\_parameter\_study
 
-##Model Blocks<a name="model"></a>
+## Model Blocks<a name="model"></a>
 
 Here is an example of a model block in the Dakota Visual Editor.
 
 ![alt text](img/DakotaVisualEditor_11.png "The model block")
 
-##Variable Blocks<a name="variables"></a>
+## Variable Blocks<a name="variables"></a>
 
 The editor for a variables block is slightly more involved and warrants some additional explanation.
 
@@ -129,7 +122,7 @@ Along the top action bar of the Dakota Visual Editor, you may also notice a "Vie
 
 Note that we are still in the same variables block, but the view has changed.  In this screenshot, we're only viewing continuous design variables.  The other continuous state variables in this example have been hidden from view.  In addition, the properties of those continuous design variables have been exposed as table columns.  From this view, if you want to edit the properties of an individual variable, you no longer have to push the "Edit" button along the top of the table - you can simply directly edit the property using the table.
 
-##Interface Blocks<a name="interface"></a>
+## Interface Blocks<a name="interface"></a>
 
 The editor for an interface block affords you a lot of additional functionality beyond editing hierarchically stacked keywords.
 
@@ -139,7 +132,7 @@ Now let's look at a more complex example:
 
 ![alt text](img/DakotaVisualEditor_12.png "A fork driver example")
 
-##Response Blocks<a name="responses"></a>
+## Response Blocks<a name="responses"></a>
 
 ![alt text](img/DakotaVisualEditor_7.png "The responses block")
 
@@ -176,7 +169,7 @@ Along the top action bar of the Dakota Visual Editor, you may also notice a "Vie
 
 Note that we are still in the same response block, but the view has changed.  In this screenshot, we're only viewing field responses.  The other scalar responses in this example have been hidden from view.  In addition, the properties of those field responses have been exposed as table columns.  From this view, if you want to edit the properties of an individual response, you no longer have to push the "Edit" button along the top of the table - you can simply directly edit the property using the table.
 
-##Using Pre-processor Markup<a name="markup"></a>
+## Using Pre-processor Markup<a name="markup"></a>
 
 To replace a value in a Dakota study with pre-processing markup (i.e. curly brace syntax), use the hotkey combination **Ctrl+Shift+P** (P for "parameterize").  The value's text will turn orange and bold, and curly braces will automatically be added around the existing text for you.  You can now put whatever you like between the curly braces to indicate the name of your pre-processing variable:
 

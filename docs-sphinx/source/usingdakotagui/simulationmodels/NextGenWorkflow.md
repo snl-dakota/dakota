@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _ngw-main:
+```
+
 Next-Gen Workflow
 =================
 

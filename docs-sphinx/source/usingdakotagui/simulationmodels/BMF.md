@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _bmf-main:
+```
+
 Basic Model Format (BMF)
 ========================
 

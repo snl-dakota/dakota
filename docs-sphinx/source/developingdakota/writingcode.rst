@@ -1,5 +1,8 @@
+.. _writing-code-main:
+
+"""""""""""""""""""
 Writing Dakota Code
-=======================================
+"""""""""""""""""""
 
 Formerly the Dakota Developer's Manual.
 
