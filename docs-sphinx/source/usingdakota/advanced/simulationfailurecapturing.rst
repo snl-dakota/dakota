@@ -35,9 +35,9 @@ if the ``grep`` command finds the string ``ERROR`` anywhere in the file.
 The device file is called the “bit bucket” and the ``grep`` command
 output is discarded by redirecting it to this destination. The
 ``$status`` shell variable contains the exit status of the last command
-executed :raw-latex:`\cite{And86}`, which is the exit status of ``grep``
+executed :cite:p:`And86`, which is the exit status of ``grep``
 in this case (0 if successful in finding the error string, nonzero
-otherwise). For Bourne shells :raw-latex:`\cite{Bli96}`, the ``$?``
+otherwise). For Bourne shells :cite:p:`Bli96`, the ``$?``
 shell variable serves the same purpose as ``$status`` for C shells. In a
 related approach, if the return code from a simulation can be used
 directly for failure detection purposes, then ``$status`` or ``$?``
@@ -86,7 +86,7 @@ Once the analysis failure has been communicated, Dakota will attempt to
 recover from the failure using one of the following four mechanisms, as
 governed by the interface specification in the user’s input file (see
 the Interface Commands chapter in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}` for additional information).
+Manual :cite:p:`RefMan` for additional information).
 
 .. _`failure:mitigation:abort`:
 
@@ -155,7 +155,7 @@ to aborting the Dakota process.
 While Dakota manages the interval halving and function evaluation
 invocations, the user is responsible for managing the initial guess for
 the simulation program. For example, in a GOMA input
-file :raw-latex:`\cite{Sch95}`, the user specifies the files to be used
+file :cite:p:`Sch95`, the user specifies the files to be used
 for reading initial guess data and writing solution data. When using the
 last successful evaluation in the continuation algorithm, the
 translation of initial guess data can be accomplished by simply copying

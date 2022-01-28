@@ -26,7 +26,7 @@ variables and their uses, as well as cover some user issues relating to
 file formats and the active set vector. For a detailed description of
 variables section syntax and example specifications, refer to the
 variables keywords in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}`.
+Manual :cite:p:`RefMan`.
 
 .. _`variables:design`:
 
@@ -99,7 +99,7 @@ subjective relationship between the different values a given categorical
 variable can take on, the user can communicate that relationship in the
 form of an adjacency matrix. The ``mesh_adaptive_search`` will take that
 relationship into consideration. Further documentation can be found
-in :raw-latex:`\cite{RefMan}` under the keywords ``adjacency_matrix``
+in :cite:p:`RefMan` under the keywords ``adjacency_matrix``
 and ``neighbor_order``. Branch and bound techniques are discussed in
 Section `[adv_meth:minlp] <#adv_meth:minlp>`__ and nongradient-based
 methods are further described in Chapter `[opt] <#opt>`__.
@@ -208,8 +208,8 @@ default, the correlation matrix is set to the identity matrix, i.e., no
 correlation among the uncertain variables.
 
 For additional information on random variable probability distributions,
-refer to :raw-latex:`\cite{Hal00}` and :raw-latex:`\cite{Swi04}`. Refer
-to the Dakota Reference Manual :raw-latex:`\cite{RefMan}` for more
+refer to :cite:p:`Hal00` and :cite:p:`Swi04`. Refer
+to the Dakota Reference Manual :cite:p:`RefMan` for more
 detail on the uncertain variable specifications and to
 Chapter `[uq] <#uq>`__ for a description of methods available to
 quantify the uncertainty in the response.
@@ -349,7 +349,7 @@ For additional model parameterizations involving strings (e.g.,
 “mesh1.exo”), refer to the analysis components specification described
 in Section `1.6.1 <#variables:parameters:standard>`__ and in the
 Interface Commands chapter of the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}`. Similar to the design variables
+Manual :cite:p:`RefMan`. Similar to the design variables
 discussed in Section `1.2 <#variables:design>`__, state variables can be
 specified with a continuous range (real-valued between bounds), a
 discrete range (integer-valued between bounds), a discrete
@@ -504,7 +504,7 @@ specification, Dakota will write the parameters file in either standard
 or APREPRO format (future XML formats are planned). The former option
 uses a simple “``value tag``” format, whereas the latter option uses a
 “``{ tag = value }``” format for compatibility with the APREPRO
-utility :raw-latex:`\cite{Sja92}` (as well as DPrePro, BPREPRO, and
+utility :cite:p:`Sja92` (as well as DPrePro, BPREPRO, and
 JPrePost variants).
 
 .. _`variables:parameters:standard`:
@@ -646,7 +646,7 @@ additional Perl and JAVA tools, respectively, in use at other sites.]*
 When a parameters file in APREPRO format is included within a template
 file (using an include directive), the APREPRO utility recognizes these
 constructs as variable definitions which can then be used to populate
-targets throughout the template file :raw-latex:`\cite{Sja92}`. DPrePro,
+targets throughout the template file :cite:p:`Sja92`. DPrePro,
 conversely, does not require the use of includes since it processes the
 Dakota parameters file and template simulation file separately to create
 a simulation input file populated with the variables data.
@@ -732,7 +732,7 @@ Active set vector control may be turned off to allow the user to
 simplify the supplied interface by removing the need to check the
 content of the active set vector on each evaluation. The Interface
 Commands chapter in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}` provides additional information on
+Manual :cite:p:`RefMan` provides additional information on
 this option ( ). Of course, this option trades some efficiency for
 simplicity and is most appropriate for those cases in which only a
 relatively small penalty occurs when computing and returning more data

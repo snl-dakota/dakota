@@ -19,7 +19,7 @@ Mean Value
 ~~~~~~~~~~
 
 The Mean Value method (MV, also known as MVFOSM in
-:raw-latex:`\cite{Hal00}`) is the simplest, least-expensive reliability
+:cite:p:`Hal00`) is the simplest, least-expensive reliability
 method because it estimates the response means, response standard
 deviations, and all CDF/CCDF response-probability-reliability levels
 from a single evaluation of response functions and their gradients at
@@ -73,7 +73,7 @@ calculates a second-order mean as
 This is commonly combined with a first-order variance
 (Equation `[eq:mv_std_dev] <#eq:mv_std_dev>`__), since second-order
 variance involves higher order distribution moments (skewness,
-kurtosis) :raw-latex:`\cite{Hal00}` which are often unavailable.
+kurtosis) :cite:p:`Hal00` which are often unavailable.
 
 The first-order CDF probability :math:`p(g \le z)`, first-order CCDF
 probability :math:`p(g > z)`, :math:`\beta_{\rm CDF}`, and
@@ -150,12 +150,12 @@ threshold. The transformation from correlated non-normal distributions
 denoted as :math:`{\bf u} = T({\bf x})` with the reverse transformation
 denoted as :math:`{\bf x} = T^{-1}({\bf u})`. These transformations are
 nonlinear in general, and possible approaches include the
-Rosenblatt :raw-latex:`\cite{Ros52}`, Nataf :raw-latex:`\cite{Der86}`,
-and Box-Cox :raw-latex:`\cite{Box64}` transformations. The nonlinear
+Rosenblatt :cite:p:`Ros52`, Nataf :cite:p:`Der86`,
+and Box-Cox :cite:p:`Box64` transformations. The nonlinear
 transformations may also be linearized, and common approaches for this
-include the Rackwitz-Fiessler :raw-latex:`\cite{Rac78}` two-parameter
-equivalent normal and the Chen-Lind :raw-latex:`\cite{Che83}` and
-Wu-Wirsching :raw-latex:`\cite{Wu87}` three-parameter equivalent
+include the Rackwitz-Fiessler :cite:p:`Rac78` two-parameter
+equivalent normal and the Chen-Lind :cite:p:`Che83` and
+Wu-Wirsching :cite:p:`Wu87` three-parameter equivalent
 normals. Dakota employs the Nataf nonlinear transformation which is
 suitable for the common case when marginal distributions and a
 correlation matrix are provided, but full joint distributions are not
@@ -175,14 +175,14 @@ factor :math:`{\bf L}` of a modified correlation matrix is used:
 
 where the original correlation matrix for non-normals in x-space has
 been modified to represent the corresponding “warped” correlation in
-z-space :raw-latex:`\cite{Der86}`.
+z-space :cite:p:`Der86`.
 
 The forward reliability analysis algorithm of computing CDF/CCDF
 probability/reliability levels for specified response levels is called
 the reliability index approach (RIA), and the inverse reliability
 analysis algorithm of computing response levels for specified CDF/CCDF
 probability/reliability levels is called the performance measure
-approach (PMA) :raw-latex:`\cite{Tu99}`. The differences between the RIA
+approach (PMA) :cite:p:`Tu99`. The differences between the RIA
 and PMA formulations appear in the objective function and equality
 constraint formulations used in the MPP searches. For RIA, the MPP
 search for achieving the specified response level :math:`\bar{z}` is
@@ -269,8 +269,8 @@ within RIA/PMA reliability analyses. First, one may select among several
 different limit state approximations that can be used to reduce
 computational expense during the MPP searches. Local, multipoint, and
 global approximations of the limit state are possible.
-:raw-latex:`\cite{Eld05}` investigated local first-order limit state
-approximations, and :raw-latex:`\cite{Eld06a}` investigated local
+:cite:p:`Eld05` investigated local first-order limit state
+approximations, and :cite:p:`Eld06a` investigated local
 second-order and multipoint approximations. These techniques include:
 
 #. a single Taylor series per response/reliability/probability level in
@@ -352,8 +352,8 @@ second-order and multipoint approximations. These techniques include:
    powers used for the intermediate variables are selected to match
    information at the current and previous expansion points. Based on
    the two-point exponential approximation concept (TPEA,
-   :raw-latex:`\cite{Fad90}`), the two-point adaptive nonlinearity
-   approximation (TANA-3, :raw-latex:`\cite{Xu98}`) approximates the
+   :cite:p:`Fad90`), the two-point adaptive nonlinearity
+   approximation (TANA-3, :cite:p:`Xu98`) approximates the
    limit state as:
 
    .. math::
@@ -453,9 +453,9 @@ computing probabilities at the MPP, which can be selected to be
 first-order
 (Equations `[eq:p_cdf] <#eq:p_cdf>`__-`[eq:p_ccdf] <#eq:p_ccdf>`__) or
 second-order integration. Second-order integration involves applying a
-curvature correction :raw-latex:`\cite{Bre84,Hoh88,Hon99}`. Breitung
+curvature correction :cite:p:`Bre84,Hoh88,Hon99`. Breitung
 applies a correction based on asymptotic
-analysis :raw-latex:`\cite{Bre84}`:
+analysis :cite:p:`Bre84`:
 
 .. math::
 
@@ -467,7 +467,7 @@ function (the eigenvalues of an orthonormal transformation of
 :math:`\nabla^2_{\bf u} G`, taken positive for a convex limit state) and
 :math:`\beta_p \ge 0` (a CDF or CCDF probability correction is selected
 to obtain the correct sign for :math:`\beta_p`). An alternate correction
-in :raw-latex:`\cite{Hoh88}` is consistent in the asymptotic regime
+in :cite:p:`Hoh88` is consistent in the asymptotic regime
 (:math:`\beta_p \to \infty`) but does not collapse to first-order
 integration for :math:`\beta_p = 0`:
 
@@ -477,7 +477,7 @@ integration for :math:`\beta_p = 0`:
    \frac{1}{\sqrt{1 + \psi(-\beta_p) \kappa_i}} \label{eq:p_2nd_hr}
 
 where :math:`\psi() = \frac{\phi()}{\Phi()}` and :math:`\phi()` is the
-standard normal density function. :raw-latex:`\cite{Hon99}` applies
+standard normal density function. :cite:p:`Hon99` applies
 further corrections to Equation `[eq:p_2nd_hr] <#eq:p_2nd_hr>`__ based
 on point concentration methods. At this time, all three approaches are
 available within the code, but the Hohenbichler-Rackwitz correction is
@@ -558,7 +558,7 @@ approximations; if the procedure does not require it, then the SR1
 update can be more accurate if the true Hessian is not positive
 definite. Initial scalings for :math:`{\bf B}_0` and numerical
 safeguarding techniques (damped BFGS, update skipping) are described in
-:raw-latex:`\cite{Eld06a}`.
+:cite:p:`Eld06a`.
 
 Optimization algorithms
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -566,29 +566,29 @@ Optimization algorithms
 The next algorithmic variation involves the optimization algorithm
 selection for solving Eqs. `[eq:ria_opt] <#eq:ria_opt>`__
 and `[eq:pma_opt] <#eq:pma_opt>`__. The Hasofer-Lind Rackwitz-Fissler
-(HL-RF) algorithm :raw-latex:`\cite{Hal00}` is a classical approach that
+(HL-RF) algorithm :cite:p:`Hal00` is a classical approach that
 has been broadly applied. It is a Newton-based approach lacking line
 search/trust region globalization, and is generally regarded as
 computationally efficient but occasionally unreliable. Dakota takes the
 approach of employing robust, general-purpose optimization algorithms
 with provable convergence properties. In particular, we employ the
 sequential quadratic programming (SQP) and nonlinear interior-point
-(NIP) optimization algorithms from the NPSOL :raw-latex:`\cite{Gil86}`
-and OPT++ :raw-latex:`\cite{MeOlHoWi07}` libraries, respectively.
+(NIP) optimization algorithms from the NPSOL :cite:p:`Gil86`
+and OPT++ :cite:p:`MeOlHoWi07` libraries, respectively.
 
 Warm Starting of MPP Searches
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The final algorithmic variation for local reliability methods involves
 the use of warm starting approaches for improving computational
-efficiency. :raw-latex:`\cite{Eld05}` describes the acceleration of MPP
+efficiency. :cite:p:`Eld05` describes the acceleration of MPP
 searches through warm starting with approximate iteration increment,
 with :math:`z/p/\beta` level increment, and with design variable
 increment. Warm started data includes the expansion point and associated
 response values and the MPP optimizer initial guess. Projections are
 used when an increment in :math:`z/p/\beta` level or design variables
 occurs. Warm starts were consistently effective in
-:raw-latex:`\cite{Eld05}`, with greater effectiveness for smaller
+:cite:p:`Eld05`, with greater effectiveness for smaller
 parameter changes, and are used by default in Dakota.
 
 .. _`uq:reliability:global`:
@@ -611,7 +611,7 @@ capture the contour of a highly nonlinear limit state.
 A reliability analysis method that is both efficient when applied to
 expensive response functions and accurate for a response function of any
 arbitrary shape is needed. This section develops such a method based on
-efficient global optimization :raw-latex:`\cite{Jon98}` (EGO) to the
+efficient global optimization :cite:p:`Jon98` (EGO) to the
 search for multiple points on or near the limit state throughout the
 random variable space. By locating multiple points on the limit state,
 more complex limit states can be accurately modeled, resulting in a more
@@ -619,7 +619,7 @@ accurate assessment of the reliability. It should be emphasized here
 that these multiple points exist on a single limit state. Because of its
 roots in efficient global optimization, this method of reliability
 analysis is called efficient global reliability analysis
-(EGRA) :raw-latex:`\cite{Bichon2007}`. The following two subsections
+(EGRA) :cite:p:`Bichon2007`. The following two subsections
 describe two capabilities that are incorporated into the EGRA algorithm:
 importance sampling and EGO.
 
@@ -641,7 +641,7 @@ samples will lie the region of interest, thus increasing the efficiency
 of the sampling method. Adaptive importance sampling (AIS) further
 improves the efficiency by adaptively updating the sampling density
 function. Multimodal adaptive importance
-sampling :raw-latex:`\cite{Dey98,Zou02}` is a variation of AIS that
+sampling :cite:p:`Dey98,Zou02` is a variation of AIS that
 allows for the use of multiple sampling densities making it better
 suited for cases where multiple sections of the limit state are highly
 probable.
@@ -687,7 +687,7 @@ value. The expected feasibility function (EFF) is introduced here to
 provide an indication of how well the true value of the response is
 expected to satisfy the equality constraint
 :math:`G({\bf u})\!=\!\bar{z}`. Inspired by the contour estimation work
-in :raw-latex:`\cite{Ran08}`, this expectation can be calculated in a
+in :cite:p:`Ran08`, this expectation can be calculated in a
 similar fashion as Eq. `[eq:eif_int] <#eq:eif_int>`__ by integrating
 over a region in the immediate vicinity of the threshold value
 :math:`\bar{z}\pm\epsilon`:

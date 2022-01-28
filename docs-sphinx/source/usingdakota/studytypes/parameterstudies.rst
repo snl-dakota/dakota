@@ -107,7 +107,7 @@ distribution bounds, mean values for discrete integer range
 distributions are rounded down to the nearest integer, and mean values
 for discrete set distributions are rounded to the nearest set value. See
 the , , and keywords in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}` for additional details on default
+Manual :cite:p:`RefMan` for additional details on default
 values.
 
 .. _`ps:overview:bounds`:
@@ -119,7 +119,7 @@ The multidimensional parameter study uses the bounds of the variables
 from the ``variables`` keyword block to define the range of parameter
 values to study. In the case of design and state variables, the
 ``lower_bounds`` and ``upper_bounds`` specifications are used (see the
-Dakota Reference Manual :raw-latex:`\cite{RefMan}` for default values
+Dakota Reference Manual :cite:p:`RefMan` for default values
 when ``lower_bounds`` or ``upper_bounds`` are unspecified). In the case
 of uncertain variables, these values are either drawn or inferred from
 the distribution specification. Distribution lower and upper bounds can

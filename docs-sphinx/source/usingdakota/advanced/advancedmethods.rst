@@ -42,7 +42,7 @@ identifier strings, and each of the corresponding method specifications
 has the responsibility for identifying the model specification (which
 may in turn identify variables, interface, and responses specifications)
 that each method will use (see the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}` and the example discussed below).
+Manual :cite:p:`RefMan` and the example discussed below).
 Currently, only the sequential hybrid approach is available. The
 ``embedded`` and ``collaborative`` approaches are not fully functional
 at this time.
@@ -126,7 +126,7 @@ However, there is no theoretical guarantee that the global optimum will
 be found. This approach combines the efficiency of local minimization
 methods with a user-specified global stratification (using a specified
 ``starting_points`` list, a number of specified ``random_starts``, or
-both; see the Dakota Reference Manual :raw-latex:`\cite{RefMan}` for
+both; see the Dakota Reference Manual :cite:p:`RefMan` for
 additional specification details). Since solutions for different
 starting points are independent, parallel computing may be used to
 concurrently run the local minimizations.
@@ -145,7 +145,7 @@ similar to what would be used in a single optimization run.
 
 The ``quasi_sine`` test function has multiple local minima, but there is
 an overall trend in the function that tends toward the global minimum at
-:math:`(x1,x2)=(0.177,0.177)`. See :raw-latex:`\cite{Giu00}` for more
+:math:`(x1,x2)=(0.177,0.177)`. See :cite:p:`Giu00` for more
 information on this test function.
 Figure `[adv_meth:figure03] <#adv_meth:figure03>`__ shows the results
 summary for the eight local optimizations performed. From the five
@@ -182,7 +182,7 @@ Section `[opt:additional:multiobjective] <#opt:additional:multiobjective>`__.
 In the Pareto optimization method, multiple sets of multiobjective
 weightings are evaluated. The user can specify these weighting sets in
 the method keyword block using a list, a number of , or both (see the
-Dakota Reference Manual :raw-latex:`\cite{RefMan}` for additional
+Dakota Reference Manual :cite:p:`RefMan` for additional
 specification details).
 
 Dakota performs one multiobjective optimization problem for each set of
@@ -261,7 +261,7 @@ Dakota’s branch and bound method (keyword: ``branch_and_bound``) can
 solve optimization problems having either discrete or mixed
 continuous/discrete variables. This method uses the parallel
 branch-and-bound algorithm from the PEBBL software
-package :raw-latex:`\cite{Eck09}` to generate a series of optimization
+package :cite:p:`Eck09` to generate a series of optimization
 subproblems (“branches”). These subproblems are solved as continuous
 variable problems using any of Dakota’s nonlinear optimization
 algorithms (e.g., DOT, NPSOL). When a solution to a branch is feasible
@@ -302,7 +302,7 @@ Example MINLP Problem
 ~~~~~~~~~~~~~~~~~~~~~
 
 As an example, consider the following MINLP
-problem :raw-latex:`\cite{Eld99}`:
+problem :cite:p:`Eld99`:
 
 .. math::
 
@@ -407,7 +407,7 @@ local algorithm periodically checks the accuracy of the surrogate model
 against the original simulation model and adaptively manages the extent
 of the approximate optimization cycles using a trust region approach.
 
-Refer to the Dakota Theory Manual :raw-latex:`\cite{TheoMan}` for
+Refer to the Dakota Theory Manual :cite:p:`TheoMan` for
 algorithmic details on iterate acceptance, merit function formulations,
 convergence assessment, and constraint relaxation.
 
@@ -506,11 +506,11 @@ direct gradient-based optimization can be more efficient for such
 applications. Rather, SBO with global data fits is best-suited for the
 types of problems that occur in engineering design where the response
 quantities may be discontinuous, nonsmooth, or may have multiple local
-optima :raw-latex:`\cite{Giu02}`. In these types of engineering design
+optima :cite:p:`Giu02`. In these types of engineering design
 problems, traditional gradient-based optimizers often are ineffective,
 whereas global data fits can extract the global trends of interest
 despite the presence of local nonsmoothness (for an example problem with
-multiple local optima, look in for the file  :raw-latex:`\cite{Giu00}`).
+multiple local optima, look in for the file  :cite:p:`Giu00`).
 
 The surrogate-based local minimizer is only mathematically guaranteed to
 find a local minimum. However, in practice, SBO can often find the
@@ -543,7 +543,7 @@ low-fidelity model [1]_. In addition, the parameterizations for the low
 and high-fidelity models may differ, requiring the use of a mapping
 between these parameterizations. Space mapping, corrected space mapping,
 POD mapping, and hybrid POD space mapping are being explored for this
-purpose :raw-latex:`\cite{Rob06a,Rob06b}`.
+purpose :cite:p:`Rob06a,Rob06b`.
 
 .. container:: wrapfigure
 
@@ -554,7 +554,7 @@ for balancing global accuracy with the local consistency requirements.
 However, with only a single high-fidelity model evaluation at the center
 of each trust region, it is critical to use the best correction possible
 on the low-fidelity model in order to achieve rapid convergence rates to
-the optimum of the high-fidelity model :raw-latex:`\cite{Eld04}`.
+the optimum of the high-fidelity model :cite:p:`Eld04`.
 
 A multifidelity test problem named is available in to demonstrate this
 SBO approach. This test problem uses the Rosenbrock function as the high
@@ -578,9 +578,9 @@ mathematically generated from the high-fidelity model. A critical issue
 in this ROM generation is the ability to capture the effect of
 parametric changes within the ROM. Two approaches to parametric ROM are
 extended ROM (E-ROM) and spanning ROM (S-ROM)
-techniques :raw-latex:`\cite{Wei06}`. Closely related techniques include
+techniques :cite:p:`Wei06`. Closely related techniques include
 tensor singular value decomposition (SVD)
-methods :raw-latex:`\cite{Lat00}`. In the single-point and multipoint
+methods :cite:p:`Lat00`. In the single-point and multipoint
 E-ROM cases, the SBO iteration can appear as in
 Fig. `[fig:sbo_mh] <#fig:sbo_mh>`__, whereas in the S-ROM, global E-ROM,
 and tensor SVD cases, the SBO iteration will appear as in

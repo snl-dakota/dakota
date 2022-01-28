@@ -35,7 +35,7 @@ The set of interpolation techniques known as Kriging, also referred to
 as Gaussian Processes, were originally developed in the geostatistics
 and spatial statistics communities to produce maps of underground
 geologic deposits based on a set of widely and irregularly spaced
-borehole sites:raw-latex:`\cite{Cre91}`. Building a Kriging model
+borehole sites:cite:p:`Cre91`. Building a Kriging model
 typically involves the
 
 #. Choice of a trend function,
@@ -82,7 +82,7 @@ By convention, the terms simple Kriging, ordinary Kriging, and universal
 Kriging are used to indicate the three most common choices for the trend
 function. In simple Kriging, the trend is treated as a known constant,
 usually zero, :math:`g\left(\underline{x}\right)\beta\equiv 0`.
-Universal Kriging :raw-latex:`\cite{Mat71}` uses a general polynomial
+Universal Kriging :cite:p:`Mat71` uses a general polynomial
 trend model
 :math:`\underline{g}\left(\underline{x}\right)^T\underline{\beta}` whose
 coefficients are determined by least squares regression. Ordinary
@@ -144,10 +144,10 @@ families of correlation functions:
 
    where :math:`0<\gamma\le2`, :math:`0<\nu`, and :math:`0<\theta_k`.
 
-Gneiting et al. :raw-latex:`\cite{Gne07}` provide a more thorough
+Gneiting et al. :cite:p:`Gne07` provide a more thorough
 discussion of the properties of and relationships between these three
 families. Some additional correlation functions include the Dagum family
-:raw-latex:`\cite{Ber08}` and cubic splines.
+:cite:p:`Ber08` and cubic splines.
 
 The squared exponential or Gaussian correlation function (Equation
 `[Eqn:PowExpCorrFunc] <#Eqn:PowExpCorrFunc>`__ with :math:`\gamma=2`)
@@ -185,7 +185,7 @@ from as long as its correlation matrix,
 
 Ill-conditioning of :math:`\underline{\underline{R}}` and other matrices
 is a recognized as a significant challenge for Kriging. Davis and Morris
-:raw-latex:`\cite{Dav97}` gave a thorough review of six factors
+:cite:p:`Dav97` gave a thorough review of six factors
 affecting the condition number of matrices associated with Kriging (from
 the perspective of semivariograms rather than correlation functions).
 They concluded that “Perhaps the best advice we can give is to be
@@ -193,18 +193,18 @@ mindful of the condition number when building and solving kriging
 systems.”
 
 In the context of estimating the optimal :math:`\underline{\theta}`,
-Martin :raw-latex:`\cite{Mar09}` stated that Kriging’s “three most
+Martin :cite:p:`Mar09` stated that Kriging’s “three most
 prevalent issues are (1) ill-conditioned correlation matrices,(2)
 multiple local optimum, and (3) long ridges of near optimal values.”
 Because of the second issue, global optimization methods are more robust
 than local methods. Martin used constrained optimization to address
 ill-conditioning of :math:`\underline{\underline{R}}`.
 
-Rennen :raw-latex:`\cite{Ren09}` advocated that ill-conditioning be
+Rennen :cite:p:`Ren09` advocated that ill-conditioning be
 handled by building Kriging models from a uniform subset of available
 sample points. That option has been available in Dakota’s “Gaussian
 process” model (a separate implementation from Dakota’s “Kriging” model)
-since version 4.1 :raw-latex:`\cite{UserMan4_1}`. Note that
+since version 4.1 :cite:p:`UserMan4_1`. Note that
 Kriging/Gaussian-Process models will not exactly interpolate the
 discarded points. The implicit justification for this type of approach
 is that the row or columns of an ill-conditioned matrix contain a
@@ -521,7 +521,7 @@ accurate than Kriging given the same sample design provided that the
 If gradients can be obtained cheaply (e.g. by automatic differentiation
 or adjoint techniques) and the previous conditions are met, GEK also
 tends to outperform Kriging for the same computational budget. Previous
-works, such as Dwight:raw-latex:`\cite{Dwi09}`, state that the direct
+works, such as Dwight:cite:p:`Dwi09`, state that the direct
 approach to GEK is significantly better conditioned than the indirect
 approach. While this is true, (direct) GEK’s
 :math:`\underline{\underline{R_{\nabla}}}` matrix can still be, and
@@ -555,7 +555,7 @@ maximum eigenvalue and increasing the minimum eigenvalue by a smaller
 amount than a pseudo inverse. The result is that the GEK model will
 exactly fit all of the retained information. This can be achieved using
 a pivoted Cholesky factorization, such as the one developed by Lucas
-:raw-latex:`\cite{Luc04}` to determine a reordering
+:cite:p:`Luc04` to determine a reordering
 :math:`\underline{\underline{\tilde{R}_{\nabla}}}` and dropping
 equations off its end until it tightly meets the constraint on rcond.
 However, a straight-forward implementation of this is neither efficient
@@ -601,7 +601,7 @@ Cholesky approach for GEK was modified to:
 -  Equilibrate :math:`\underline{\underline{R_{\nabla}}}` to improve the
    accuracy of the Cholesky factorization; this is beneficial because
    :math:`\underline{\underline{R_{\nabla}}}` can be poorly scaled.
-   Theorem 4.1 of van der Sluis :raw-latex:`\cite{Van69}` states that if
+   Theorem 4.1 of van der Sluis :cite:p:`Van69` states that if
    :math:`\underline{\underline{a}}` is a real, symmetric, positive
    definite :math:`n` by :math:`n` matrix and the diagonal matrix
    :math:`\underline{\underline{\alpha}}` contains the square roots of
@@ -827,9 +827,9 @@ The gradient is
    \frac{dJ}{d \boldsymbol{\beta}} &= - \boldsymbol{\Phi}^T \boldsymbol{\alpha}.
    \end{aligned}\end{gathered}
 
-We use the Rapid Optimization Library’s :raw-latex:`\cite{Kou2014}`
+We use the Rapid Optimization Library’s :cite:p:`Kou2014`
 gradient-based, bound-constrained implementation of the optimization
-algorithm L-BFGS-B :raw-latex:`\cite{Byrd95}` to minimize :math:`J`.
+algorithm L-BFGS-B :cite:p:`Byrd95` to minimize :math:`J`.
 This is a local optimization method so it is typically run multiple
 times from different initial guesses to increase the chances of finding
 the global minimum.
@@ -866,7 +866,7 @@ Polynomial Models
 
 A preliminary discussion of the surrogate polynomial models available in
 Dakota is presented in the Surrogate Models Chapter of the User’s
-Manual :raw-latex:`\cite{UsersMan}`, with select details reproduced
+Manual :cite:p:`UsersMan`, with select details reproduced
 here. For ease of notation, the discussion in this section assumes that
 the model returns a single response :math:`\hat{f}` and that the design
 parameters :math:`x` have dimension :math:`n`.
@@ -933,4 +933,4 @@ variance is given by
    (X^{T} X)^{-1} v_{x_{new}} \right).
 
 Additional discussion and detail can be found
-in :raw-latex:`\cite{Net85}`.
+in :cite:p:`Net85`.

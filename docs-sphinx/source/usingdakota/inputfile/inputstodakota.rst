@@ -13,13 +13,13 @@ Section `[tutorial:installation:running] <#tutorial:installation:running>`__.
 Among these are specifications for the Dakota input file and,
 optionally, a restart file. The syntax of the Dakota input file is
 described in detail in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}`, and the restart file is described in
+Manual :cite:p:`RefMan`, and the restart file is described in
 Chapter `[restart] <#restart>`__.
 
 A Dakota input file may be prepared with a text editor such as Emacs,
 Vi, or WordPad, or with the Dakota graphical user interface. The Dakota
 GUI is built on the Java-based Eclipse Framework
-:raw-latex:`\cite{Eclipse}` and presents the Dakota input specification
+:cite:p:`Eclipse` and presents the Dakota input specification
 options in either a text editor view or a graphical view. The Dakota GUI
 includes templates and wizards for helping create Dakota studies and can
 invoke Dakota to run an analysis. The Dakota GUI for Linux, Windows, and
@@ -144,7 +144,7 @@ population import feature using the keywords
 ``initialization_type flat_file = STRING``. This is useful for warm
 starting GAs from available data or previous runs. Refer to the Method
 Specification chapter in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}` for additional information on this
+Manual :cite:p:`RefMan` for additional information on this
 specification. The flat file must be in free-form format as described in
 Section `1.1.1 <#input:tabularformat>`__.
 
@@ -209,7 +209,7 @@ Calibration data imports include the following information:
 For more on specifying calibration data imports,
 see `[nls:examples] <#nls:examples>`__ and the ``responses`` >
 ``calibration_terms`` keyword in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}`.
+Manual :cite:p:`RefMan`.
 
 **Note on variance:** Field responses may optionally have scalar,
 diagonal, or matrix-valued error covariance information. As an example,
@@ -251,7 +251,7 @@ PCE coefficient import
   be used to evaluate moments analytically or compute probabilities
   numerically from a known response expansion. Refer to the Method
   Specification chapter in the Dakota Reference
-  Manual :raw-latex:`\cite{RefMan}` for additional information on this
+  Manual :cite:p:`RefMan` for additional information on this
   specification.
 
 Surrogate Model Imports
@@ -267,7 +267,7 @@ will trigger validation and potential reordering of imported variable
 columns based on labels provided in the tabular header. Surfpack global
 surrogate models may also be evaluated at a user-provided file
 containing challenge (test) points. Refer to the keyword in the Dakota
-Reference Manual :raw-latex:`\cite{RefMan}` for additional information
+Reference Manual :cite:p:`RefMan` for additional information
 on these specifications.
 
 Previously exported surfpack and experimental global surrogate models

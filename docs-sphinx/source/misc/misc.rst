@@ -9,4 +9,5 @@ Miscellaneous
    aboutteam
    publications
    releasenotes
+   bibliography
    ../classictoc

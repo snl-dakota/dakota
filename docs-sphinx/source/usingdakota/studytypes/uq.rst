@@ -19,7 +19,7 @@ analysis parts of the process (2 and 3), where probabilistic or interval
 information on parametric inputs are mapped through the computational
 model to assess statistics or intervals on outputs. For an overview of
 these approaches for engineering applications,
-consult :raw-latex:`\cite{Hal00}`. Dakota also has emerging methods for
+consult :cite:p:`Hal00`. Dakota also has emerging methods for
 inference or inverse UQ, such as Bayesian calibration. These methods
 help with (1) by inferring a statistical characterization of input
 parameters that is consistent with available observational data.
@@ -55,7 +55,7 @@ Summary of Dakota UQ Methods
 Dakota contains capabilities for performing nondeterministic analysis
 with both types of input uncertainty. These UQ methods have been
 developed by Sandia Labs, in conjunction with collaborators in
-academia :raw-latex:`\cite{Gha99,Gha91,Eld05,Tang10a}`.
+academia :cite:p:`Gha99,Gha91,Eld05,Tang10a`.
 
 The aleatory UQ methods in Dakota include various sampling-based
 approaches (e.g., Monte Carlo and Latin Hypercube sampling), local and
@@ -77,7 +77,7 @@ distributions: normal, lognormal, uniform, loguniform, triangular,
 exponential, beta, gamma, gumbel, frechet, weibull, poisson, binomial,
 negative binomial, geometric, hypergeometric, and user-supplied
 histograms. In addition, LHS accounts for correlations among the
-variables :raw-latex:`\cite{Ima84}`, which can be used to accommodate a
+variables :cite:p:`Ima84`, which can be used to accommodate a
 user-supplied correlation matrix or to minimize correlation when a
 correlation matrix is not supplied. In addition to a standard sampling
 study, we support the capability to perform “incremental” LHS, where a
@@ -96,7 +96,7 @@ Advanced Mean Value method (AMV and AMV\ :math:`^2`), the iterated
 Advanced Mean Value method (AMV+ and AMV\ :math:`^2`\ +), the Two-point
 Adaptive Nonlinearity Approximation method (TANA-3), and the traditional
 First Order and Second Order Reliability Methods (FORM and
-SORM) :raw-latex:`\cite{Hal00}`. The MPP search methods may be used in
+SORM) :cite:p:`Hal00`. The MPP search methods may be used in
 forward (Reliability Index Approach (RIA)) or inverse (Performance
 Measure Approach (PMA)) modes, as dictated by the type of level
 mappings. Each of the MPP search techniques solve local optimization
@@ -112,7 +112,7 @@ probabilities using multimodal adaptive importance sampling.
 **Stochastic Expansion Methods**: Theoretical development of these
 techniques mirrors that of deterministic finite element analysis
 utilizing the notions of projection, orthogonality, and weak
-convergence :raw-latex:`\cite{Gha99}`, :raw-latex:`\cite{Gha91}`.
+convergence :cite:p:`Gha99`, :cite:p:`Gha91`.
 
 Rather than focusing on estimating specific statistics (e.g., failure
 probability), they form an approximation to the functional relationship
@@ -133,7 +133,7 @@ approach (least squares or compressive sensing). For SC, interpolants
 are formed over tensor-product or sparse grids and may be local or
 global, value-based or gradient-enhanced, and nodal or hierarchical. In
 global value-based cases (Lagrange polynomials), the barycentric
-formulation is used :raw-latex:`\cite{BerTref04,Klimke05,Higham04}` to
+formulation is used :cite:p:`BerTref04,Klimke05,Higham04` to
 improve numerical efficiency and stability. For FTT, regression via
 regularized nonlinear least squares is employed for recovering low rank
 coefficients, and cross-validation schemes are available to determine
@@ -281,7 +281,7 @@ intervals are computed for the response functions. Probabilities and
 reliabilities may be computed for ``response_levels`` specifications,
 and response levels may be computed for either ``probability_levels`` or
 ``reliability_levels`` specifications (refer to the Method keywords
-section in the Dakota Reference Manual :raw-latex:`\cite{RefMan}` for
+section in the Dakota Reference Manual :cite:p:`RefMan` for
 additional information).
 
 Currently, traditional Monte Carlo (MC) and Latin hypercube sampling
@@ -318,9 +318,9 @@ LHS techniques, in general, require fewer samples than traditional Monte
 Carlo for the same accuracy in statistics, but they still can be
 prohibitively expensive. For further information on the method and its
 relationship to other sampling techniques, one is referred to the works
-by McKay, et al. :raw-latex:`\cite{Mck79}`, Iman and
-Shortencarier :raw-latex:`\cite{Ima84}`, and Helton and
-Davis :raw-latex:`\cite{Hel00}`. Note that under certain separability
+by McKay, et al. :cite:p:`Mck79`, Iman and
+Shortencarier :cite:p:`Ima84`, and Helton and
+Davis :cite:p:`Hel00`. Note that under certain separability
 conditions associated with the function to be sampled, Latin hypercube
 sampling provides a more accurate estimate of the mean value than does
 random sampling. That is, given an equal number of samples, the LHS
@@ -364,10 +364,10 @@ parameter, however, all parameters must have the same number of bins.
 The actual algorithm for generating Latin hypercube samples is more
 complex than indicated by the description given above. For example, the
 Latin hypercube sampling method implemented in the LHS
-code :raw-latex:`\cite{Swi04}` takes into account a user-specified
+code :cite:p:`Swi04` takes into account a user-specified
 correlation structure when selecting the sample sites. For more details
 on the implementation of the LHS algorithm, see
-Reference :raw-latex:`\cite{Swi04}`.
+Reference :cite:p:`Swi04`.
 
 In addition to Monte Carlo vs. LHS design choices, Dakota sampling
 methods support options for incrementally-refined designs, generation of
@@ -704,12 +704,12 @@ Wilks-based Sample Sizes
 
 Most of the sampling methods require the user to specify the number of
 samples in advance. However, if one specifies ``random`` sampling, one
-can use an approach developed by Wilks:raw-latex:`\cite{Wilks}` to
+can use an approach developed by Wilks:cite:p:`Wilks` to
 determine the number of samples that ensures a particular confidence
 level in a percentile of interest. The Wilks method of computing the
 number of samples to execute for a random sampling study is based on
 order statistics, eg considering the outputs ordered from smallest to
-largest :raw-latex:`\cite{Wilks,Nutt04}`. Given a ``probability_level``,
+largest :cite:p:`Wilks,Nutt04`. Given a ``probability_level``,
 :math:`\alpha`, and ``confidence_level``, :math:`\beta`, the Wilks
 calculation determines the minimum number of samples required such that
 there is :math:`(\beta*100)`\ % confidence that the
@@ -774,8 +774,8 @@ a mean value of zero and unit variance (i.e., standard normal
 variables). The region of interest, :math:`\mathbf{D}`, is also mapped
 to the transformed space to yield, :math:`\mathbf{D_{u}}` , where
 :math:`g(\mathbf{U}) < z` as shown in Figure `1.3 <#uq:figure06>`__. The
-Nataf transformation :raw-latex:`\cite{Der86}`, which is identical to
-the Rosenblatt transformation :raw-latex:`\cite{Ros52}` in the case of
+Nataf transformation :cite:p:`Der86`, which is identical to
+the Rosenblatt transformation :cite:p:`Ros52` in the case of
 independent random variables, is used in Dakota to accomplish this
 mapping. This transformation is performed to make the probability
 calculation more tractable. In the transformed space, probability
@@ -817,7 +817,7 @@ find multiple MPPs if they exist.
 Local Reliability Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Dakota Theory Manual :raw-latex:`\cite{TheoMan}` provides the
+The Dakota Theory Manual :cite:p:`TheoMan` provides the
 algorithmic details for the local reliability methods, including the
 Mean Value method and the family of most probable point (MPP) search
 methods.
@@ -866,7 +866,7 @@ gray indicates other supported combinations.
       +---------------+-------------------------+-------------------------+
 
 Within the Dakota specification (refer to ``local_reliability`` in the
-keywords section of the Reference Manual :raw-latex:`\cite{RefMan}`)
+keywords section of the Reference Manual :cite:p:`RefMan`)
 within the Reference Manual), the MPP search and integration order
 selections are explicit in the method specification, but the order of
 the approximation is inferred from the associated response specification
@@ -888,9 +888,9 @@ a response function and then estimate probabilities using multimodal
 adaptive importance sampling.
 
 The global reliability method in Dakota is called Efficient Global
-Reliability Analysis (EGRA)  :raw-latex:`\cite{Bichon2008}`. The name is
+Reliability Analysis (EGRA)  :cite:p:`Bichon2008`. The name is
 due to its roots in efficient global optimization (EGO)
- :raw-latex:`\cite{Jon98,Hua06}`. The main idea in EGO-type optimization
+ :cite:p:`Jon98,Hua06`. The main idea in EGO-type optimization
 methods is that a global approximation is made of the underlying
 function. This approximation, which is a Gaussian process model, is used
 to guide the search by finding points which maximize the expected
@@ -951,7 +951,7 @@ that the response equals a threshold value and is on the limit state:
 :math:`G({\bf u})\!=\!\bar{z}`. Therefore, the EIF function was modified
 to focus on feasibility, and instead of using an expected improvement
 function, we use an expected feasibility function (EFF)
- :raw-latex:`\cite{Bichon2008}`. The EFF provides an indication of how
+ :cite:p:`Bichon2008`. The EFF provides an indication of how
 well the response is expected to satisfy the equality constraint. Points
 where the expected value is close to the threshold
 (:math:`\mu_G\!\approx\!\bar{z}`) and points with a large uncertainty in
@@ -980,7 +980,7 @@ mean. This ensures the samples will lie the region of interest, thus
 increasing the efficiency of the sampling method. Adaptive importance
 sampling (AIS) further improves the efficiency by adaptively updating
 the sampling density function. Multimodal adaptive importance
-sampling :raw-latex:`\cite{Dey98}` is a variation of AIS that allows for
+sampling :cite:p:`Dey98` is a variation of AIS that allows for
 the use of multiple sampling densities making it better suited for cases
 where multiple sections of the limit state are highly probable.
 
@@ -1037,7 +1037,7 @@ the inputs. The mean value method is extremely cheap computationally
 quite inaccurate, especially for nonlinear problems and/or problems with
 uncertain inputs that are significantly non-normal. More detail on the
 mean value method can be found in the Local Reliability Methods section
-of the Dakota Theory Manual :raw-latex:`\cite{TheoMan}`, and more detail
+of the Dakota Theory Manual :cite:p:`TheoMan`, and more detail
 on reliability methods in general (including the more advanced methods)
 is found in Section `1.3 <#uq:reliability>`__.
 
@@ -1174,7 +1174,7 @@ factors for each uncertain variable, and approximate
 probability/reliability levels for the prescribed response levels that
 have been inferred from the approximate mean and standard deviation (see
 Mean Value section in Reliability Methods Chapter of Dakota Theory
-Manual :raw-latex:`\cite{TheoMan}`). It is evident that the statistics
+Manual :cite:p:`TheoMan`). It is evident that the statistics
 are considerably different from the fully converged FORM results;
 however, these rough approximations are also much less expensive to
 calculate. The importance factors are a measure of the sensitivity of
@@ -1184,7 +1184,7 @@ Figure `1.4 <#uq:rel_form_compare>`__. The mean value results are not
 accurate near the tail values of the CDF, and can differ from the exact
 solution by as much as 0.11 in CDF estimates. A comprehensive comparison
 of various reliability methods applied to the logratio problem is
-provided in  :raw-latex:`\cite{Eld06a}`.
+provided in  :cite:p:`Eld06a`.
 
 .. container:: bigbox
 
@@ -1247,13 +1247,13 @@ other methodologies (sampling, reliability, et al.). This makes these
 techniques particularly attractive for use in multi-physics applications
 which link different analysis packages. The first stochastic expansion
 method is the polynomial chaos expansion
-(PCE) :raw-latex:`\cite{Gha99,Gha91}`. For smooth functions (i.e.,
+(PCE) :cite:p:`Gha99,Gha91`. For smooth functions (i.e.,
 analytic, infinitely-differentiable) in :math:`L^2` (i.e., possessing
 finite variance), exponential convergence rates can be obtained under
 order refinement for integrated statistical quantities of interest such
 as mean, variance, and probability. Dakota implements the generalized
 PCE approach using the Wiener-Askey
-scheme :raw-latex:`\cite{XiuKarn02}`, in which Hermite, Legendre,
+scheme :cite:p:`XiuKarn02`, in which Hermite, Legendre,
 Laguerre, Jacobi, and generalized Laguerre orthogonal polynomials are
 used for modeling the effect of continuous random variables described by
 normal, uniform, exponential, beta, and gamma probability distributions,
@@ -1281,20 +1281,20 @@ products and employs the polynomial orthogonality properties to extract
 each coefficient. Each inner product involves a multidimensional
 integral over the support range of the weighting function, which can be
 evaluated numerically using sampling, tensor-product quadrature, Smolyak
-sparse grid :raw-latex:`\cite{Smolyak_63}`, or
-cubature :raw-latex:`\cite{stroud}` approaches. The regression approach
+sparse grid :cite:p:`Smolyak_63`, or
+cubature :cite:p:`stroud` approaches. The regression approach
 finds a set of PCE coefficients which best match a set of response
 values obtained from either a design of computer experiments (“point
-collocation” :raw-latex:`\cite{pt_colloc1}`) or from a randomly selected
+collocation” :cite:p:`pt_colloc1`) or from a randomly selected
 subset of tensor Gauss points (“probabilistic
-collocation” :raw-latex:`\cite{Tat95}`). Various methods can be used to
+collocation” :cite:p:`Tat95`). Various methods can be used to
 solve the resulting linear system, including least squares methods for
 over-determined systems and compressed sensing methods for
 under-determined systems. Details of these methods are documented in the
 Linear regression section of the Dakota Theory
-Manual :raw-latex:`\cite{TheoMan}` and the necessary specifications
+Manual :cite:p:`TheoMan` and the necessary specifications
 needed to activate these techniques are listed in the keyword section of
-the Dakota Reference Manual :raw-latex:`\cite{RefMan}`.
+the Dakota Reference Manual :cite:p:`RefMan`.
 
 Stochastic collocation (SC) is another stochastic expansion technique
 for UQ that is closely related to PCE. As for PCE, exponential
@@ -1319,7 +1319,7 @@ collocation points. In the gradient-enhanced case (Hermite or piecewise
 cubic spline), SC includes both “type 1” and “type 2” interpolation
 polynomials, where the former interpolate the values while producing
 zero gradients and the latter interpolate the gradients while producing
-zero values (refer to :raw-latex:`\cite{TheoMan}` for additional
+zero values (refer to :cite:p:`TheoMan` for additional
 details). Sparse interpolants are weighted sums of these tensor
 interpolants; however, they are only interpolatory for sparse grids
 based on fully nested rules and will exhibit some interpolation error at
@@ -1330,12 +1330,12 @@ used in PCE. For use of standard Gauss integration rules (not nested
 variants such as Gauss-Patterson or Genz-Keister) within tensor-product
 quadrature, tensor PCE expansions and tensor SC interpolants are
 equivalent in that identical polynomial approximations are
-generated :raw-latex:`\cite{ConstTPQ}`. Moreover, this equivalence can
+generated :cite:p:`ConstTPQ`. Moreover, this equivalence can
 be extended to sparse grids based on standard Gauss rules, provided that
 a sparse PCE is formed based on a weighted sum of tensor
-expansions :raw-latex:`\cite{ConstSSG}`.
+expansions :cite:p:`ConstSSG`.
 
-The Dakota Theory Manual :raw-latex:`\cite{TheoMan}` provides full
+The Dakota Theory Manual :cite:p:`TheoMan` provides full
 algorithmic details for the PCE and SC methods.
 
 A recent addition is functional tensor train (FTT) expansions which
@@ -1356,7 +1356,7 @@ promoted to a default part of the Dakota software configuration.
 
 Finally, advanced multilevel and multifidelity approaches are provided
 for PCE, SC, and FT, as described in the Reference
-Manual :raw-latex:`\cite{RefMan}` (refer to
+Manual :cite:p:`RefMan` (refer to
 ``multilevel_polynomial_chaos, multifidelity_polynomial_chaos, multilevel_function_train, multifidelity_function_train``
 and ``multifidelity_stoch_collocation``). These approaches decompose the
 input-output mapping and form multiple expansions in order to reduce
@@ -1510,15 +1510,15 @@ sophisticated example, where we use stochastic collocation built on an
 anisotropic sparse grid defined from numerically-generated orthogonal
 polynomials. The uncertain variables are lognormal in this example and
 the orthogonal polynomials are generated from Gauss-Wigert recursion
-coefficients :raw-latex:`\cite{simpson_gw}` in combination with the
-Golub-Welsch procedure :raw-latex:`\cite{GolubWelsch69}`. The input file
+coefficients :cite:p:`simpson_gw` in combination with the
+Golub-Welsch procedure :cite:p:`GolubWelsch69`. The input file
 is shown in Figure `[uq:figure11] <#uq:figure11>`__. Note that the
 dimension preference of :math:`(2,1)` is inverted to define a
 :math:`\gamma` weighting vector of :math:`(0.5,1)` (and
 :math:`\underline{\gamma}` of :math:`0.5`) for use in the anisotropic
 Smolyak index set constraint (see Smolyak sparse grids section in
 Stochastic Expansion Methods chapter in Dakota Theory
-Manual :raw-latex:`\cite{TheoMan}`). In this example, we compute CDF
+Manual :cite:p:`TheoMan`). In this example, we compute CDF
 probabilities for six response levels of Rosenbrock’s function. This
 example requires 19 function evaluations to calculate the interpolating
 polynomials in stochastic collocation and the resulting expansion
@@ -1545,7 +1545,7 @@ the results summary are presented. We first see the moment statistics
 for mean, standard deviation, skewness, and kurtosis computed by
 numerical integration (see Analytic moments section in Stochastic
 Expansion Methods chapter in Dakota Theory
-Manual :raw-latex:`\cite{TheoMan}`), where the numerical row corresponds
+Manual :cite:p:`TheoMan`), where the numerical row corresponds
 to integration using the original response values and the expansion row
 corresponds to integration using values from the interpolant. The
 response covariance (collapsing to a single variance value for one
@@ -1611,7 +1611,7 @@ core idea in importance sampling is that one generates samples that
 preferentially samples important regions in the space (e.g. in or near
 the failure region or user-defined region of interest), and then
 appropriately weights the samples to obtain an unbiased estimate of the
-failure probability  :raw-latex:`\cite{Srinivasan2002}`. In importance
+failure probability  :cite:p:`Srinivasan2002`. In importance
 sampling, the samples are generated from a density which is called the
 importance density: it is not the original probability density of the
 input distributions. The importance density should be centered near the
@@ -1619,7 +1619,7 @@ failure region of interest. For black-box simulations such as those
 commonly interfaced with Dakota, it is difficult to specify the
 importance density a priori: the user often does not know where the
 failure region lies, especially in a high-dimensional
-space. :raw-latex:`\cite{Swiler2010}`
+space. :cite:p:`Swiler2010`
 
 More formally, we define the objective of importance sampling as
 calculating the probability, :math:`P`, that the output will exceed a
@@ -1736,7 +1736,7 @@ The second importance sampling method in Dakota is the one we recommend,
 at least for problems that have a relatively small number of input
 variables (e.g. less than 10). This method, Gaussian Process Adaptive
 Importance Sampling, is outlined in the paper
- :raw-latex:`\cite{Dalbey2014}`. This method starts with an initial set
+ :cite:p:`Dalbey2014`. This method starts with an initial set
 of LHS samples and adds samples one at a time, with the goal of
 adaptively improving the estimate of the ideal importance density during
 the process. The approach uses a mixture of component densities. An
@@ -1810,8 +1810,8 @@ Dakota. The fitness metrics for scoring candidate points currently
 include:
 
 Predicted Variance
-   First introduced in :raw-latex:`\cite{MacKay}` and later used in
-   :raw-latex:`\cite{Seo}`, this method uses the predicted variance of
+   First introduced in :cite:p:`MacKay` and later used in
+   :cite:p:`Seo`, this method uses the predicted variance of
    the Gaussian process surrogate as the score of a candidate point.
    Thus, the adaptively chosen points will be in areas of highest
    uncertainty according to the Gaussian process model.
@@ -1867,7 +1867,7 @@ implemented several strategies for batch selection of points:
    factor added in to the score. Only points selected within a round are
    used for the distance penalization. The factor is the same as used in
    the distance penalization scoring metrics from
-   :raw-latex:`\cite{Maljovec}`. First, compute all of the minimum
+   :cite:p:`Maljovec`. First, compute all of the minimum
    distances from each remaining candidate to the selected candidates.
    Then, determine the median value of these distances. If the smallest
    distance, :math:`d`, between a point and the selected set is less
@@ -1890,7 +1890,7 @@ implemented several strategies for batch selection of points:
 
 **Constant Liar**
    We adapt the constant liar strategy presented in
-   :raw-latex:`\cite{Ginsbourger}` with the scoring metrics. The
+   :cite:p:`Ginsbourger` with the scoring metrics. The
    strategy first selects the highest scoring candidate, and then refits
    the surrogate using a “lie” value at the point selected and repeating
    until :math:`n` points have been selected whereupon the lie values
@@ -1916,7 +1916,7 @@ Adaptive sampling based on dart throwing
 parameter space. Random points are sequentially sampled from the domain
 and consequently surrounded by protecting spheres, with the constraint
 that each new sphere center has to be outside all prior
-spheres :raw-latex:`\cite{ebeida2016pof}`. The radius of each sphere is
+spheres :cite:p:`ebeida2016pof`. The radius of each sphere is
 chosen such that the entire sphere lies either in the failure or the
 non-failure region. This radius depends of the function evaluation at
 the disk center, the failure threshold and an estimate of the function
@@ -1976,7 +1976,7 @@ Uncertainty quantification is often used as part of the risk assessment
 of performance, reliability, and safety of engineered systems.
 Increasingly, uncertainty is separated into two categories for analysis
 purposes: aleatory and epistemic
-uncertainty :raw-latex:`\cite{Obe03,Hel07}`. Aleatory uncertainty is
+uncertainty :cite:p:`Obe03,Hel07`. Aleatory uncertainty is
 also referred to as variability, irreducible or inherent uncertainty, or
 uncertainty due to chance. Examples of aleatory uncertainty include the
 height of individuals in a population, or the temperature in a
@@ -2092,7 +2092,7 @@ We have chosen to pursue evidence theory at Sandia as a way to model
 epistemic uncertainty, in part because evidence theory is a
 generalization of probability theory. Evidence theory is also referred
 to as Dempster-Shafer theory or the theory of random
-sets :raw-latex:`\cite{Obe03}`. This section focuses on the use of
+sets :cite:p:`Obe03`. This section focuses on the use of
 Dempster-Shafer evidence theory for propagating epistemic uncertainties.
 When aleatory uncertainties are also present, we may choose either to
 discretize the aleatory probability distributions into sets of intervals
@@ -2108,7 +2108,7 @@ thought of as defining lower and upper bounds, respectively, on
 probabilities. Belief and plausibility define the lower and upper limits
 or intervals on probability values. Typical plots of cumulative and
 complementary cumulative belief and plausibility functions are shown in
-Figure `1.7 <#uq:figure15>`__ :raw-latex:`\cite{Hel07}`.
+Figure `1.7 <#uq:figure15>`__ :cite:p:`Hel07`.
 
 .. figure:: images/belief_plaus.png
    :alt: Example cumulative belief and plausibility distribution
@@ -2255,7 +2255,7 @@ Note that for a situation with many uncertain variables, each with a
 fairly complicated Dempster-Shafer structure described by many
 intervals, there will be a huge number of interval calls, and the
 overall process of performing Dempster-Shafer analysis will be extremely
-expensive. Reference :raw-latex:`\cite{Tang10b}` provides more details
+expensive. Reference :cite:p:`Tang10b` provides more details
 about the implementation of the optimization methods to perform
 Dempster-Shafer calculations, as well as comparisons on test problems.
 
@@ -2267,7 +2267,7 @@ Bayesian Calibration Methods
 In Bayesian calibration a “prior distribution” on a parameter is updated
 through a Bayesian framework involving experimental data and a
 likelihood function. Bayesian inference theory is best left to other
-sources  :raw-latex:`\cite{Kenn01}` and only a brief summary is given
+sources  :cite:p:`Kenn01` and only a brief summary is given
 here. In Bayesian methods, uncertain parameters are characterized by
 probability density functions. These probability density functions
 define the permissible parameter values - the support, as well as the
@@ -2286,7 +2286,7 @@ probability transformation by specifying .
 
 When data are available, the likelihood function describes how well each
 parameter value is supported by the data. Bayes
-Theorem :raw-latex:`\cite{Jaynes}`, shown in
+Theorem :cite:p:`Jaynes`, shown in
 Equation `[eq:BayesThm] <#eq:BayesThm>`__, is used for inference: to
 derive the plausible parameter values, based on the prior probability
 density and the data :math:`\boldsymbol{d}`. The result is the posterior
@@ -2368,7 +2368,7 @@ specified with units of variance/covariance, not standard deviation.
 Markov Chain Monte Carlo (MCMC) is the prototypical method used to
 estimate posterior parameter densities, given the observational data and
 the priors. There are many references that describe the basic
-algorithm :raw-latex:`\cite{Gilks}` and this is an active research area.
+algorithm :cite:p:`Gilks` and this is an active research area.
 MCMC algorithms may require hundreds of thousands of steps to converge,
 depending on dimensionality, response nonlinearity, and the desired set
 of posterior statistics. Since each iteration involves an evaluation of
@@ -2384,7 +2384,7 @@ The QUESO and GPMSA methods use components from the QUESO library
 (Quantification of Uncertainty for Estimation, Simulation, and
 Optimization) developed at The University of Texas at Austin. It
 implements the Delayed Rejection and Adaptive
-Metropolis :raw-latex:`\cite{Haario}` (DRAM) algorithm, among others.
+Metropolis :cite:p:`Haario` (DRAM) algorithm, among others.
 Algorithm variants selectively combine the delayed rejection and
 adaptive elements. The QUESO/GPMSA capability is based on the GPMSA
 Matlab toolbox developed at Los Alamos National Laboratory and uses
@@ -2394,9 +2394,9 @@ an implementation of DiffeRential Evolution Adaptive Metropolis
 developed by John Burkardt. The DREAM approach runs concurrent chains
 for global exploration, and automatically tunes the proposal covariance
 during the process by a self-adaptive randomized subspace
-sampling :raw-latex:`\cite{Vrugt}`. MUQ uses components from the MIT
+sampling :cite:p:`Vrugt`. MUQ uses components from the MIT
 Uncertainty Quantification library and also implements the Delayed
-Rejection and Adaptive Metropolis :raw-latex:`\cite{Haario}` (DRAM)
+Rejection and Adaptive Metropolis :cite:p:`Haario` (DRAM)
 algorithms, among others. The prototype WASABI method is an MCMC-free
 Bayesian calibration approach. QUESO/DRAM and variants are the most
 well-developed within Dakota.
@@ -2474,7 +2474,7 @@ interest and quantify how well the model fits the provided data, while
 prediction intervals propagate both parameter and experimental
 measurement uncertainties and contain the next experimental or simulated
 observation with the specified probability. Further details can be found
-in :raw-latex:`\cite{Smith2013}`. If ``probability_levels`` is
+in :cite:p:`Smith2013`. If ``probability_levels`` is
 specified, credible intervals will always be calculated. Prediction
 intervals will only be calculated if ``experiment_variance_type`` is
 also specified in the ``responses`` block. By specifying
@@ -2493,7 +2493,7 @@ between the posterior and the prior distributions such that
 This quantity represents the amount of information gained about the
 parameters during the Bayesian update. Further details regarding the
 calculation and use of :math:`D_{KL}` can be found
-in :raw-latex:`\cite{TheoMan}`.
+in :cite:p:`TheoMan`.
 
 DREAM
 ~~~~~
@@ -2512,7 +2512,7 @@ specified with ``num_cr``. The ``gr_threshold`` control is the
 convergence tolerance for the Gelman-Rubin statistic, which governs the
 convergence of the multiple chain process. The integer ``jump_step``
 forces a long jump every ``jump_step`` generations. For more details
-about these parameters, refer to :raw-latex:`\cite{Vrugt}`. Credible and
+about these parameters, refer to :cite:p:`Vrugt`. Credible and
 prediction intervals can be calculated by specifying
 ``probability_levels``, and statistics regarding the posterior may be
 calculated by specifying ``posterior_stats``, as described in
@@ -2527,14 +2527,14 @@ emulator is a statistical model of the system response, and it is used
 to incorporate the observational data to improve system predictions and
 constrain or calibrate the unknown parameters. The GPMSA code draws
 heavily on the theory developed in the seminal Bayesian calibration
-paper by Kennedy and O’Hagan :raw-latex:`\cite{Kenn01}`. The particular
+paper by Kennedy and O’Hagan :cite:p:`Kenn01`. The particular
 approach developed by the Los Alamos group, and implemented in QUESO and
-therefore Dakota, is provided in :raw-latex:`\cite{Hig08}`. It includes
+therefore Dakota, is provided in :cite:p:`Hig08`. It includes
 an embedded discrepancy model and the ability to estimate various
 hyper-parameters of the Gaussian process, observation error model, and
 discrepancy model. Dakota’s GPMSA capability is an experimental
 prototype with a number of limitations. See the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}` for more information.
+Manual :cite:p:`RefMan` for more information.
 
 MUQ
 ~~~
@@ -2555,7 +2555,7 @@ WASABI
 
 WASABI differs from the other Bayesian approaches in that it is not an
 MCMC-based approach. Instead, it is based on the idea of “consistent
-Bayes” which is outlined in  :raw-latex:`\cite{Butler2017}`. This
+Bayes” which is outlined in  :cite:p:`Butler2017`. This
 approach to stochastic inference uses measure-theoretic principles to
 construct a probability measure or density on model parameters that is
 consistent with the model and the data. The idea is that the probability
@@ -2579,7 +2579,7 @@ through the model and represents a forward propagation of uncertainty.
    \pi_{post}(\boldsymbol{\theta})=\pi_{prior}(\boldsymbol{\theta})\frac{\pi_{D}^{obs}(q(\boldsymbol{\theta}))}{\pi_{D}^{q_{prior}}(q(\boldsymbol{\theta}))}. 
    \label{eq:consistentBayesEq}
 
-The Theory Manual :raw-latex:`\cite{TheoMan}` has more detail about the
+The Theory Manual :cite:p:`TheoMan` has more detail about the
 assumptions and mathematical foundations for this method. Note a major
 difference in interpretation of the posterior results with respect to a
 standard Bayesian approach: In a standard Bayesian approach, the
@@ -2589,7 +2589,7 @@ consistent Bayes, the posterior reflects a stochastic mapping of
 parameter values such that the posterior parameters, when pushed-forward
 through the model, give results that are consistent with the density of
 the observational data. WASABI is a prototype capability. See the Dakota
-Reference Manual :raw-latex:`\cite{RefMan}` for more information.
+Reference Manual :cite:p:`RefMan` for more information.
 
 Feature Comparison
 ~~~~~~~~~~~~~~~~~~
@@ -2694,7 +2694,7 @@ variance. Then under the standard assumptions of an MCMC chain, the true
 value can be approximated by taking the ensemble mean over the MCMC
 chain. The confidence interval for the true moment calculated using the
 asymptotically valid interval estimator is given
-by :raw-latex:`\cite{Fle10}`
+by :cite:p:`Fle10`
 
 .. math:: \bar{g}_{n} \pm t_{*} \frac{\hat{\sigma}_{n}}{\sqrt{n}},
 
@@ -2711,10 +2711,10 @@ over the batches. The confidence intervals produced are 95% confidence
 intervals, and they are calculated for the mean and variance (first and
 second moments) for each parameter and each response. Further details
 regarding the default settings for these calculations can be found in
-the Dakota Theory Manual :raw-latex:`\cite{TheoMan}`.
+the Dakota Theory Manual :cite:p:`TheoMan`.
 
 Confidence intervals may be used as a chain diagnostic by setting
-fixed-width stopping rules :raw-latex:`\cite{Rob18}`. For example, if
+fixed-width stopping rules :cite:p:`Rob18`. For example, if
 the interval width is below some threshold value, that may indicate that
 enough samples have been drawn. Common choices for the threshold value
 include:
@@ -2776,7 +2776,7 @@ Additionally, Bayesian calibration residuals-squared can be weighted via
 the specification. Neither set of weights nor scales are adjusted during
 calibration. When response scaling is active, it is applied after error
 variance weighting and before application. The keyword documentation in
-the Dakota Reference Manual :raw-latex:`\cite{RefMan}` has more detail
+the Dakota Reference Manual :cite:p:`RefMan` has more detail
 about weighting and scaling of the residual terms.
 
 Model Evidence
@@ -2839,7 +2839,7 @@ depending on the method(s) used to calculate model evidence.
    computation of the integral.
 
 #. Laplace approximation. This approach is based on the Laplace
-   approximation, as outlined in :raw-latex:`\cite{Wasserman}`. It has
+   approximation, as outlined in :cite:p:`Wasserman`. It has
    the assumption that the posterior distribution is nearly Gaussian,
    which is not always a safe assumption. Then, with maximum a
    posteriori (MAP) point :math:`\hat{\boldsymbol{\theta}}`, the Laplace
@@ -2874,7 +2874,7 @@ However, it is often the case that the agreement between the data and
 the model after calibration is not sufficiently close. This is generally
 attributed to model form or structural error, and can be corrected to
 some extent with the use of model discrepancy. The Kennedy and
-O’Hagan :raw-latex:`\cite{Kenn01}` formulation takes the form
+O’Hagan :cite:p:`Kenn01` formulation takes the form
 
 .. math:: d_i(x) = q_i\left(\boldsymbol{\theta}, x\right) + \delta_i(x) + \epsilon_i,
 
@@ -2977,7 +2977,7 @@ provided with the experimental data, such that
 for each observable :math:`i`. Further details of how the variance
 :math:`\Sigma_{\delta,i}(x)` is computed for Gaussian process and
 polynomial regression models can be found in the Dakota Theory
-Manual :raw-latex:`\cite{TheoMan}`. The experimental variance provided
+Manual :cite:p:`TheoMan`. The experimental variance provided
 for parameter calibration may vary for the same observable from
 experiment to experiment, thus :math:`\sigma^{2}_{exp,i}` is taken to be
 the maximum variance given for each observable. That is,
@@ -3005,7 +3005,7 @@ calculation of combined experimental variance and discrepancy model
 variance for field responses.
 
 Additional details and an illustrative example of these calculations are
-given in the Dakota Theory Manual :raw-latex:`\cite{TheoMan}`.
+given in the Dakota Theory Manual :cite:p:`TheoMan`.
 
 .. _`sec:bayes_expdesign`:
 
@@ -3078,7 +3078,7 @@ any user-provided data, such as through the ``calibration_data_file``
 keyword, while the latter applies only to those high-fidelity model
 responses produced by the high-fidelity code run by Dakota. Further
 information can be found in the Dakota Reference
-Manual :raw-latex:`\cite{RefMan}`. If the number of points taken from
+Manual :cite:p:`RefMan`. If the number of points taken from
 this file is less than ``initial_samples``, or if no such file is
 provided, Latin Hypercube Sampling is used to draw samples of the design
 space, and the high-fidelity model is run at these points to supplement
@@ -3094,20 +3094,20 @@ From these candidate designs, that which maximizes the mutual
 information with respect to the low-fidelity model parameters is deemed
 “optimal." The mutual information is approximated using the low-fidelity
 model and a :math:`k`-nearest neighbor algorithm, as detailed
-in :raw-latex:`\cite{Lew16}`. This optimal design is used in the
+in :cite:p:`Lew16`. This optimal design is used in the
 high-fidelity model to create a new observation, which is appended to
 the initial data. This updated data is used to recalculate the Bayesian
 posterior, and the process repeats until one of three stopping criteria
 are met. Multiple optimal designs may be selected concurrently by
 specifying ``batch_size`` in the input script. These designs are
 selected using the greedy algorithm described in detail
-in :raw-latex:`\cite{TheoMan}`. In this case, the high-fidelity model is
+in :cite:p:`TheoMan`. In this case, the high-fidelity model is
 run at all batch-selected optimal designs before the Bayesian posterior
 is recalculated with the updated data for an ensuing iteration of the
 experimental design algorithm.
 
 There are two algorithms that may be used to calculate the mutual
-information, both of which are derived in :raw-latex:`\cite{Kra04}`. The
+information, both of which are derived in :cite:p:`Kra04`. The
 first algorithm discussed therein is used as the default algorithm
 within Dakota; the second may be selected by including the keyword
 ``ksg2`` in the Dakota input script. Furthermore, the user may choose to
@@ -3115,7 +3115,7 @@ include, during the computation of the mutual information, a stochastic
 error term on the low-fidelity model responses. This is done by
 specifying ``simulation_variance`` in the ``responses`` block
 corresponding to the low-fidelity model. See the Dakota Theory
-Manual :raw-latex:`\cite{TheoMan}` for more information regarding the
+Manual :cite:p:`TheoMan` for more information regarding the
 implementation of the mutual information calculations.
 
 There are three criteria by which this algorithm is considered complete.
