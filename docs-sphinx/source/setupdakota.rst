@@ -1,6 +1,10 @@
+.. _setupdakota-main:
+
 """""""""""""""
 Getting Started
 """""""""""""""
+
+.. _setupdakota-download:
 
 ===============
 Download Dakota
@@ -68,7 +72,7 @@ __ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.1
 
 :ref:`Release Notes <releasenotes-main>`
 
-.. _installation:
+.. _setupdakota-installation:
 
 ============
 Installation
@@ -118,6 +122,8 @@ Build from Source Code (Advanced)
 ---------------------------------
 
 For custom installations, download and build Dakota from source code.
+
+.. _setupdakota-environment:
 
 ========================
 Setting Your Environment

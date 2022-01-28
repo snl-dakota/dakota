@@ -1,8 +1,8 @@
+.. _releasenotes-main:
+
 """""""""""""
 Release Notes
 """""""""""""
-
-.. _releasenotes-main:
 
 .. toctree::
    :maxdepth: 1

@@ -1,8 +1,8 @@
+.. _inputfile-main:
+
 """""""""""""""""
 Dakota Input File
 """""""""""""""""
-
-.. _inputfile-main:
 
 .. toctree::
    :maxdepth: 1

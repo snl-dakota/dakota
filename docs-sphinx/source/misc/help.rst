@@ -1,3 +1,5 @@
+.. _help-main:
+
 """"""""""""""
 Help Resources
 """"""""""""""
@@ -12,6 +14,8 @@ Dakota is an open source and publicly available project with a significant world
 - CRADA and other DOE users and partners, e.g., NNSA/ASC labs, NEAMS and CASL Nuclear Energy initiatives
 - Close research or software collaborators
 - Other users
+
+.. _help-mailing:
 
 =============
 Mailing Lists
@@ -44,6 +48,8 @@ Managing Your Subscriptions
 | Contact List Owners    | dakota-users-owner@software.sandia.gov | dakota-announce-owner@software.sandia.gov |
 +------------------------+----------------------------------------+-------------------------------------------+
 
+.. _help-screencasts:
+
 ===========
 Screencasts
 ===========
@@ -63,6 +69,8 @@ users learn how to use Dakota at varying stages of complexity.  These screencast
     * `2.2: Sampling <https://www.youtube.com/watch?v=dnqoUCw6wSo>`_
     * 2.3: Variance-Based Decomposition (coming soon)
   
+.. _help-training:
+ 
 ==================
 Training Resources
 ==================

@@ -1,6 +1,10 @@
+.. _faq-main:
+
 """"""""""""""""""""""""""
 Frequently Asked Questions
 """"""""""""""""""""""""""
+
+.. _faq-general:
 
 =======
 General
@@ -30,6 +34,8 @@ General
 - **Does the Dakota software have assigned manufacturer part numbers (MPNs) or stock-keeping units (SKUs)?**
     No. Dakota software releases are versioned, but are are not assigned MPNs nor SKUs. Dakota is open source software, distributed under the GNU LGPL license and associated compatible licenses.
 
+.. _faq-downloading:
+
 ===========
 Downloading 
 ===========
@@ -40,6 +46,8 @@ Downloading
   - Try saving the file to disk and using Acrobat reader outside of the browser (bypassing the browser-embedded PDF viewer).
   - Try another computer/browser/Acrobat combination.
   - For the Reference and Developers manuals, you can use the HTML documentation if hardcopies are not needed.
+
+.. _faq-running:
 
 ==============
 Running Dakota
@@ -70,6 +78,8 @@ Running Dakota
   - Compile from source code, enabling GSL and QUESO.
   - Try out Kayla Coleman's Ubuntu Docker container that has Dakota + QUESO running in it.
 
+.. _faq-interfacing:
+
 ==================================
 Interfacing Dakota to a Simulation
 ==================================
@@ -81,6 +91,8 @@ Interfacing Dakota to a Simulation
 - **What are the options for interfacing Dakota to my computational model?**
     Dakota can be either loosely or tightly coupled to a simulation. Most users start by loosely coupling Dakota to an application using Dakota's black-box interface. In this mode, Dakota exchanges information with the application through the file system and executes the application with a system call. Some users wish to use Dakota's library mode to tightly couple Dakota algorithms with their applications. This more advanced use case can be very powerful, but requires programming to Dakota's C++ library API and typically involves compiling Dakota from source.
 
+.. _faq-building:
+
 ===============
 Building Dakota
 ===============
@@ -89,6 +101,8 @@ Building Dakota
     When compiling Dakota against the MPI2-compliant OpenMPI, you will need to define `MPICH_IGNORE_CXX_SEEK` at compile time, e.g., add the following to `CPPFLAGS`: `-DMPICH_IGNORE_CXX_SEEK.`
 - **My build fails because it can't find header files/libraries that Dakota needs.**
     The Dakota configuration files are set up for a typical build within the Sandia environment. Customizations for other environments may be needed and will typically involve supplying overrides or additional path information to CMake. Refer to the INSTALL file within the source distribution for additional information.
+
+.. _faq-featureadditions:
 
 =================
 Feature Additions
@@ -115,6 +129,8 @@ Feature Additions
     - Dakota's issue tracking system is not publicly accessible at this time.
     - If you wish to submit a patch or larger changeset, please discuss on the dakota-users mailing list.
     - A Dakota development team member will ask you to submit the changes via email or (if large enough) our file transfer system.
+
+.. _faq-support
 
 =======
 Support
