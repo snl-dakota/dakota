@@ -577,5 +577,5 @@ iterations since feasibility must ultimately take precedence.
    Any linear constraints are not approximated and may be added without
    modification to all formulations
 
-.. |image| image:: images/filter.png
-.. |image1| image:: images/tau_updates.png
+.. |image| image:: img/filter.png
+.. |image1| image:: img/tau_updates.png

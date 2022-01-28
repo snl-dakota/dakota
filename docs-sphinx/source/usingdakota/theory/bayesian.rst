@@ -592,10 +592,10 @@ insufficiently captures the given experimental data.
 
 .. container:: center
 
-   .. figure:: images/moddiscrep_TruthExpModel.png
+   .. figure:: img/moddiscrep_TruthExpModel.png
       :alt: Graphs of the uncorrected model output :math:`m(t,x)`, the
-      truth :math:`y(t,x)`, and experimental data :math:`d(t,x)` for
-      configurations :math:`x = 10` and :math:`x = 15`.
+            truth :math:`y(t,x)`, and experimental data :math:`d(t,x)` for
+            configurations :math:`x = 10` and :math:`x = 15`.
       :name: fig:md_uncorr
 
       Graphs of the uncorrected model output :math:`m(t,x)`, the truth
@@ -640,10 +640,10 @@ within the prediction intervals.
 
 .. container:: center
 
-   .. figure:: images/moddiscrep_correctedlowmidhigh.png
+   .. figure:: img/moddiscrep_correctedlowmidhigh.png
       :alt: The graphs of :math:`y(t,x)` for :math:`x = 7.5, 12.5, 17.5`
-      are compared to the corrected model and its prediction intervals.
-      The uncorrected model is also shown to illustrate its inadequacy.
+            are compared to the corrected model and its prediction intervals.
+            The uncorrected model is also shown to illustrate its inadequacy.
       :name: fig:md_pred
       :width: 60.0%
 
@@ -665,9 +665,9 @@ the discrepancy model.
 
 .. container:: center
 
-   .. figure:: images/moddiscrep_ExpAllData.png
+   .. figure:: img/moddiscrep_ExpAllData.png
       :alt: Graphs of the experimental data :math:`d(t,x)` for
-      configurations (temperatures) ranging from :math:`x = 296.15K` to
+            configurations (temperatures) ranging from :math:`x = 296.15K` to
       :math:`x = 1073.15K`.
       :name: fig:mat_exp
 
@@ -701,11 +701,11 @@ not adequately capture the experimental data.
 
 .. container:: center
 
-   .. figure:: images/moddiscrep_ExpUncorr.png
+   .. figure:: img/moddiscrep_ExpUncorr.png
       :alt: Graphs of the calibration data :math:`d(t,x)` and
-      uncorrected calibrated model :math:`m(t, \boldsymbol{\theta}, x)`
-      for configurations (temperatures) :math:`x = 
-      373.15K`, :math:`x = 673.15K`, and :math:`x = 973.15K`.
+            uncorrected calibrated model :math:`m(t, \boldsymbol{\theta}, x)`
+            for configurations (temperatures) :math:`x = 
+            373.15K`, :math:`x = 673.15K`, and :math:`x = 973.15K`.
       :name: fig:mat_uncorr
 
       Graphs of the calibration data :math:`d(t,x)` and uncorrected

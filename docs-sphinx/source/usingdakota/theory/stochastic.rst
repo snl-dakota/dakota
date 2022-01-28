@@ -1064,11 +1064,11 @@ number of points in each direction, namely :math:`2^{\rm w}+1 = 33`.
 
 .. container:: center
 
-   .. figure:: images/isogrid_N2_q6.png
+   .. figure:: img/isogrid_N2_q6.png
       :alt: Two-dimensional grid comparison with a tensor product grid
-      using Clenshaw-Curtis points (left) and sparse grids
-      :math:`\mathscr{A}(5,2)` utilizing Clenshaw-Curtis (middle) and
-      Gauss-Legendre (right) points with nonlinear growth.
+            using Clenshaw-Curtis points (left) and sparse grids
+            :math:`\mathscr{A}(5,2)` utilizing Clenshaw-Curtis (middle) and
+            Gauss-Legendre (right) points with nonlinear growth.
       :name: fig:isogrid_N2_q7
       :width: 6.5in
 
@@ -1287,16 +1287,16 @@ following formulations:
    formulation can be solved with a minor modification of the LARS
    algorithm.
 
-.. figure:: images/compressed-sensing-hierarchy.png
+.. figure:: img/compressed-sensing-hierarchy.png
    :alt: Bridging provably convergent :math:`\ell_1` minimization
-   algorithms and greedy algorithms such as OMP. (1) Homotopy provably
-   solves :math:`\ell_1` minimization
-   problems :cite:p:`Efron2004`. (2) LARS is obtained from
-   homotopy by removing the sign constraint check. (3) OMP and LARS are
-   similar in structure, the only difference being that OMP solves a
-   least-squares problem at each iteration, whereas LARS solves a
-   linearly penalized least-squares problem. Figure and caption based
-   upon Figure 1 in :cite:p:`Donoho2008`.
+         algorithms and greedy algorithms such as OMP. (1) Homotopy provably
+         solves :math:`\ell_1` minimization
+         problems :cite:p:`Efron2004`. (2) LARS is obtained from
+         homotopy by removing the sign constraint check. (3) OMP and LARS are
+         similar in structure, the only difference being that OMP solves a
+         least-squares problem at each iteration, whereas LARS solves a
+         linearly penalized least-squares problem. Figure and caption based
+         upon Figure 1 in :cite:p:`Donoho2008`.
    :name: fig:compressed-sensing-method-heirarchy
    :width: 95.0%
 
@@ -1403,15 +1403,15 @@ that leverages the tree structure of PCE coefficients to increase the
 accuracy of coefficient estimates obtained by
 :math:`\ell_1`-minimization.
 
-.. figure:: images/pce-tree.pdf
+.. figure:: img/pce-tree.pdf
    :alt: Tree structure of the coefficients of a two dimensional PCE
-   with a total-degree basis of order 3. For clarity we only depict one
-   connection per node, but in :math:`d` dimensions a node of a given
-   degree :math:`p` will be a child of up to :math:`d` nodes of degree
-   :math:`p-1`. For example, not only is the basis
-   :math:`\boldsymbol{\phi}_{[1,1]}` a child of
-   :math:`\boldsymbol{\phi}_{[1,0]}` (as depicted) but it is also a
-   child of :math:`\boldsymbol{\phi}_{[0,1]}`
+         with a total-degree basis of order 3. For clarity we only depict one
+         connection per node, but in :math:`d` dimensions a node of a given
+         degree :math:`p` will be a child of up to :math:`d` nodes of degree
+         :math:`p-1`. For example, not only is the basis
+         :math:`\boldsymbol{\phi}_{[1,1]}` a child of
+         :math:`\boldsymbol{\phi}_{[1,0]}` (as depicted) but it is also a
+         child of :math:`\boldsymbol{\phi}_{[0,1]}`
    :name: fig:pce-tree
    :width: 75.0%
 
@@ -1469,7 +1469,7 @@ cross validation error.
    :math:`\ell_1`-minimization[:math:`\boldsymbol{\phi}(\Lambda^{(0)})`,\ :math:`\mathbf{f}`]
    :math:`T=3`, :math:`e_{\mathrm{cv}}^\star = \infty`, :math:`k = 1`
 
-.. figure:: images/basis-adaptation-algorithm-summary.pdf
+.. figure:: img/basis-adaptation-algorithm-summary.pdf
    :alt: Graphical depiction of the basis adaptation algorithm.
    :name: fig:basis-selection-alg
    :width: 130.0%
@@ -1514,11 +1514,11 @@ horizontal child exist.
 
 .. container:: center
 
-   .. figure:: images/index-expansion.pdf
+   .. figure:: img/index-expansion.pdf
       :alt: Identification of the admissible indices of an index (red).
-      The indices of the current basis :math:`\Lambda` are gray and
-      admissible indices are striped. A index is admissible only if its
-      backwards neighbors exists in every dimension.
+            The indices of the current basis :math:`\Lambda` are gray and
+            admissible indices are striped. A index is admissible only if its
+            backwards neighbors exists in every dimension.
       :name: fig:index-dmissibiliy-examples
       :width: 95.0%
 

@@ -14,4 +14,5 @@ Using Dakota
    studytypes
    methodtypes
    advanced
+   theory
    reference

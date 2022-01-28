@@ -84,6 +84,7 @@ set of manuals, this set of links may help you find what you're looking for...
 - Efficient Global Optimization
 - Dimension Reduction Strategies
 - Optimization Under Uncertainty (OUU)
+- `Parallel Compting <parallel-theory>`
 
 **Reference Manual**
 

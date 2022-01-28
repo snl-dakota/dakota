@@ -579,13 +579,13 @@ This can (and often did) significantly degrade the accuracy of the GEK
 predictions. The implication is that derivative equations contain more
 information than, but are not as reliable as, function value equations.
 
-.. figure:: images/PivotCholSelectEqnAlgorithm.pdf
+.. figure:: img/PivotCholSelectEqnAlgorithm.pdf
    :alt: A diagram with pseudo code for the pivoted Cholesky algorithm
-   used to select the subset of equations to retain when
-   :math:`\underline{\underline{R_{\nabla}}}` is ill-conditioned.
-   Although it is part of the algorithm, the equilibration of
-   :math:`\underline{\underline{R_{\nabla}}}` is not shown in this
-   figure. The pseudo code uses MATLAB notation.
+         used to select the subset of equations to retain when
+         :math:`\underline{\underline{R_{\nabla}}}` is ill-conditioned.
+         Although it is part of the algorithm, the equilibration of
+         :math:`\underline{\underline{R_{\nabla}}}` is not shown in this
+         figure. The pseudo code uses MATLAB notation.
    :name: fig:SubsetSelectAlgorithm
 
    A diagram with pseudo code for the pivoted Cholesky algorithm used to
