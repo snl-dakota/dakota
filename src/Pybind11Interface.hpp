@@ -60,12 +60,12 @@ class Pybind11Interface: public DirectApplicInterface
     bool py11Active;
 
     /// copy Dakota arrays to pybind11 lists via std::vector<> copy
-    template<class ArrayT, typename T>
-    py::list copy_array_to_pybind11(const ArrayT & src);
+    template<typename RetT, class ArrayT, typename T>
+    RetT copy_array_to_pybind11(const ArrayT & src);
 
     /// specialized copy Dakota arrays to pybind11 lists via std::vector<> copy
-    template<typename OrdinalType, typename ScalarType> 
-    py::list copy_array_to_pybind11(const Teuchos::SerialDenseVector<OrdinalType,ScalarType> & src);
+    template<typename RetT, typename OrdinalType, typename ScalarType> 
+    RetT copy_array_to_pybind11(const Teuchos::SerialDenseVector<OrdinalType,ScalarType> & src);
 };
 
 
