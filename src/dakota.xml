@@ -5412,7 +5412,9 @@
           </keyword>
 	      <!-- TODO: processors per analysis? -->
 	      <keyword id="matlab" name="matlab" code="{N_ifm(type,interfaceType_MATLAB_INTERFACE)}" label="Matlab Interface "  complexity="1"/>
-              <keyword id="python" name="python" code="{N_ifm(type,interfaceType_PYTHON_INTERFACE)}" label="Python Interface "  complexity="1"/>
+	      <keyword id="python" name="python" code="{N_ifm(type,interfaceType_PYTHON_INTERFACE)}" label="Python Interface "  complexity="1">
+                <keyword id="numpy" name="numpy" code="{N_ifm(true,numpyFlag)}" label="Python NumPy Dataflow"  minOccurs="0" default="Python list dataflow" complexity="1"/>
+              </keyword>
 	      <!-- #	  | modelcenter {N_ifm(type,interfaceType_MC_INTERFACE)}
                #	  | plugin {N_ifm(type,interfaceType_PLUGIN_INTERFACE)}
 	      -->

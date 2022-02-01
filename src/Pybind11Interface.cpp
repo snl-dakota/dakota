@@ -50,9 +50,9 @@ Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db)
 #ifdef DAKOTA_PYTHON_NUMPY
     //DAKPY_IMPORT_ARRAY();
 #else
-    Cerr << "\nError: Direct Python interface 'numpy' option requested, but "
+    Cout << "\nError: Direct Python interface 'numpy' option requested, but "
 	 << "not available." << std::endl;
-    abort_handler(-1);
+    //abort_handler(-1);
 #endif
   }
 
