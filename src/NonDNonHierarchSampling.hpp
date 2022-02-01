@@ -94,6 +94,8 @@ protected:
   void finalize_counts(Sizet2DArray& N_L);
 
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+				 size_t index);
+  void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t start, size_t end);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 const SizetArray& approx_sequence,
@@ -299,14 +301,24 @@ inline void NonDNonHierarchSampling::finalize_counts(Sizet2DArray& N_L)
 
 inline void NonDNonHierarchSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+			  size_t index)
+{
+  size_t len = cost.length(), hf_index = len-1;
+  equivHFEvals += (index == hf_index) ? new_samp :
+    (Real)new_samp * cost[index] / cost[hf_index];
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  size_t start, size_t end)
 {
-  size_t i, len = cost.length(), hf_index = len-1;
+  size_t index, len = cost.length(), hf_index = len-1;
   Real cost_ref = cost[hf_index];
   if (end == len)
     { equivHFEvals += new_samp; --end; }
-  for (i=start; i<end; ++i)
-    equivHFEvals += (Real)new_samp * cost[i] / cost_ref;
+  for (index=start; index<end; ++index)
+    equivHFEvals += (Real)new_samp * cost[index] / cost_ref;
 }
 
 
