@@ -59,9 +59,26 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   if (!sampleType) // SUBMETHOD_DEFAULT
     sampleType = SUBMETHOD_RANDOM;
 
-  // method-specific default: don't let allocator get stuck in fine-tuning
-  if (maxIterations == SZ_MAX) maxIterations = 25;
-  //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // inf is good
+  switch (pilotMgmtMode) {
+  case PILOT_PROJECTION: // no iteration
+    maxIterations = 0; //finalCVRefinement = false;
+    break;
+  case OFFLINE_PILOT: // no iteration
+    maxIterations = 0; //finalCVRefinement = true;
+    // convergenceTol option is problematic since the reference EstVar
+    // comes from offline eval with Oracle/overkill N
+    if (maxFunctionEvals == SZ_MAX) {
+      Cerr << "Error: evaluation budget required for offline pilot mode."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    break;
+  default: // ONLINE_PILOT
+    // MLMF-specific default: don't let allocator get stuck in fine-tuning
+    if (maxIterations    == SZ_MAX) maxIterations    = 25;
+  //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // allow inf budget
+    break;
+  }
 }
 
 
@@ -202,8 +219,8 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
     switch (pilotMgmtMode) {
     case PILOT_PROJECTION:
       print_multilevel_evaluation_summary(s, NLev, "Projected");
-      //s << "<<<<< Equivalent number of high fidelity evaluations: "
-      //  << equivHFEvals << '\n';
+      s << "<<<<< Equivalent number of high fidelity evaluations: "
+        << equivHFEvals << '\n';
       print_variance_reduction(s);
 
       //s << "\nStatistics based on multilevel sample set:\n";

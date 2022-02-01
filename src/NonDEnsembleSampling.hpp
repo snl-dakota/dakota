@@ -81,6 +81,9 @@ protected:
   /// extract current random seed from randomSeedSeqSpec
   int random_seed(size_t index) const;
 
+  /// increment samples array with a shared scalar
+  void increment_samples(SizetArray& N_l, size_t num_samples);
+
   /// compute the variance of the mean estimator (Monte Carlo sample average)
   void compute_mc_estimator_variance(const RealVector& var_l,
 				     const SizetArray& N_l,
@@ -141,6 +144,14 @@ protected:
   //- Heading: Data
   //
 
+  /// number of model forms/resolution in the (outer) sequence
+  size_t numSteps;
+  /// type of model sequence enumerated with primary MF/ACV loop over steps
+  short sequenceType;
+  /// setting for the inactive model dimension not traversed by primary MF/ACV
+  /// loop over steps
+  size_t secondaryIndex;
+
   /// total number of successful sample evaluations (excluding faults)
   /// for each model form, discretization level, and QoI
   Sizet3DArray NLev;
@@ -161,6 +172,12 @@ protected:
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
+
+  /// variances for HF truth (length numFunctions)
+  RealVector varH;
+
+  /// initial estimator variance from shared pilot (no CV reduction)
+  RealVector estVarIter0;
 
   /// if defined, export each of the sample increments in ML, CV, MLCV
   /// using tagged tabular files
@@ -250,6 +267,17 @@ compute_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
   for (qoi=0; qoi<numFunctions; ++qoi) {
     N_l_q = N_l[qoi]; // can be zero in offline pilot cases
     mc_est_var[qoi] = (N_l_q) ? var_l[qoi] / N_l_q : DBL_MAX;
+  }
+}
+
+
+inline void NonDEnsembleSampling::
+increment_samples(SizetArray& N_l, size_t new_samples)
+{
+  if (new_samples) {
+    size_t q, nq = N_l.size();
+    for (q=0; q<nq; ++q)
+      N_l[q] += new_samples;
   }
 }
 
@@ -360,8 +388,10 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
     //cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * cm2 * cm2 )
     //    / (n_sq - 3. * Nlq + 3.);
     //[fm] account for bias correction due to cm2^2 term
-    cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * (n_sq - Nlq) / (n_sq - 2. * Nlq + 3) * cm2 * cm2 )
-        / ( (n_sq - 3. * Nlq + 3.) - (6. * Nlq - 9.) * (n_sq - Nlq) / (Nlq * (n_sq - 2. * Nlq + 3.)) );
+    cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * (n_sq - Nlq)
+	    / (n_sq - 2. * Nlq + 3) * cm2 * cm2 )
+        / ( (n_sq - 3. * Nlq + 3.) - (6. * Nlq - 9.) * (n_sq - Nlq)
+	    / (Nlq * (n_sq - 2. * Nlq + 3.)) );
   }
   else
     Cerr << "Warning: due to small sample size, resorting to biased estimator "
@@ -374,7 +404,7 @@ centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 		     Real& sm1, Real& sm2, Real& sm3, Real& sm4)
 {
   // convert from centered to standardized moments
-  sm1 = cm1;                    // mean
+  sm1 = cm1;                      // mean
   if (cm2 > 0.) {
     sm2 = std::sqrt(cm2);         // std deviation
     sm3 = cm3 / (cm2 * sm2);      // skewness

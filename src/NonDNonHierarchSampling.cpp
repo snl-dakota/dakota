@@ -91,13 +91,12 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   if (err_flag)
     abort_handler(METHOD_ERROR);
 
-  size_t num_steps;
-  configure_sequence(num_steps, secondaryIndex, sequenceType);
-  numApprox = num_steps - 1;
+  configure_sequence(numSteps, secondaryIndex, sequenceType);
+  numApprox = numSteps - 1;
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  configure_cost(num_steps, multilev, sequenceCost);
+  configure_cost(numSteps, multilev, sequenceCost);
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
-		    num_steps, pilotSamples);
+		    numSteps, pilotSamples);
 
   size_t max_ps = find_max(pilotSamples);
   if (max_ps) maxEvalConcurrency *= max_ps;
@@ -132,30 +131,29 @@ void NonDNonHierarchSampling::pre_run()
   iteratedModel.multifidelity_precedence(true);
   // assign an aggregate model key that persists for core_run()
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  assign_active_key(numApprox+1, secondaryIndex, multilev);
+  assign_active_key(multilev);
 }
 
 
-void NonDNonHierarchSampling::
-assign_active_key(size_t num_steps, size_t secondary_index, bool multilev)
+void NonDNonHierarchSampling::assign_active_key(bool multilev)
 {
   // For M-model control variate, select fidelities/resolutions
   Pecos::ActiveKey active_key, truth_key;
   std::vector<Pecos::ActiveKey> approx_keys(numApprox);
   //unsigned short truth_form;  size_t truth_lev;
   if (multilev) {
-    unsigned short fixed_form = (secondary_index == SZ_MAX) ?
-      USHRT_MAX : secondary_index;
+    unsigned short fixed_form = (secondaryIndex == SZ_MAX) ?
+      USHRT_MAX : secondaryIndex;
     truth_key.form_key(0, fixed_form, numApprox);
     for (size_t approx=0; approx<numApprox; ++approx)
       approx_keys[approx].form_key(0, fixed_form, approx);
     //truth_form = fixed_form;  truth_lev = numApprox;
   }
   else {
-    truth_key.form_key(0, numApprox, secondary_index);
+    truth_key.form_key(0, numApprox, secondaryIndex);
     for (unsigned short approx=0; approx<numApprox; ++approx)
-      approx_keys[approx].form_key(0, approx, secondary_index);
-    //truth_form = numApprox;  truth_lev = secondary_index;
+      approx_keys[approx].form_key(0, approx, secondaryIndex);
+    //truth_form = numApprox;  truth_lev = secondaryIndex;
   }
   active_key.aggregate_keys(truth_key, approx_keys, Pecos::RAW_DATA);
   aggregated_models_mode();
@@ -1026,7 +1024,7 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   s << "<<<<< Variance for mean estimator:";
 
   if (pilotMgmtMode != OFFLINE_PILOT)
-    s << "\n      Initial MC (" << std::setw(4)
+    s << "\n    Initial   MC (" << std::setw(5)
       << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
       << std::setw(wpp7) << average(estVarIter0);
 
@@ -1040,13 +1038,19 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   //   avgEstVar from the optimizer obj fn), but difference is usually small.
   RealVector final_mc_estvar;
   compute_mc_estimator_variance(varH, numH, final_mc_estvar);
-  s << "\n  " << type << "   MC (" << std::setw(4)
+  Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
+  s << "\n  " << type << "   MC (" << std::setw(5)
     << (size_t)std::floor(average(numH) + .5) << " HF samples): "
     << std::setw(wpp7) << average(final_mc_estvar) // avgEstVar / avgEstVarRatio
-    << "\n  " << type << method << " (sample profile):  "
+    << "\n  " << type << method << " (sample profile):   "
     << std::setw(wpp7) << avgEstVar
-    << "\n  " << type << method << " ratio (1 - R^2):   "
-    << std::setw(wpp7) << avgEstVarRatio << '\n';
+    << "\n  " << type << method << " ratio (1 - R^2):    "
+    << std::setw(wpp7) << avgEstVarRatio
+    << "\n Equivalent   MC (" << std::setw(5)
+    << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+    << std::setw(wpp7) << avg_budget_mc_estvar
+    << "\n Equivalent" << method << " ratio:              "
+    << std::setw(wpp7) << avgEstVar / avg_budget_mc_estvar << '\n';
 }
 
 } // namespace Dakota
