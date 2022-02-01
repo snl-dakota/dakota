@@ -293,15 +293,15 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   Real eps_sq_div_2, sum_sqrt_var_cost, lev_cost, ref_cost = cost[numSteps-1];
 
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector agg_var(numSteps), agg_var_of_var(numSteps),
-    estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions),
-    sum_sqrt_var_cost_qoi(numFunctions),
-    sum_sqrt_var_cost_var_qoi(numFunctions),
-    sum_sqrt_var_cost_mean_qoi(numFunctions), agg_var_l_qoi(numFunctions),
-    level_cost_vec(numSteps);
-  RealMatrix agg_var_qoi(numFunctions, numSteps),
-    agg_var_mean_qoi(numFunctions, numSteps),
-    agg_var_var_qoi(numFunctions, numSteps);
+  RealVector //agg_var(numSteps), agg_var_of_var(numSteps),
+    estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions);
+    //sum_sqrt_var_cost_qoi(numFunctions),
+    //sum_sqrt_var_cost_var_qoi(numFunctions),
+    //sum_sqrt_var_cost_mean_qoi(numFunctions), agg_var_l_qoi(numFunctions),
+    //level_cost_vec(numSteps);
+  RealMatrix agg_var_qoi(numFunctions, numSteps);
+    //agg_var_mean_qoi(numFunctions, numSteps),
+    //agg_var_var_qoi(numFunctions, numSteps);
 
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -331,7 +331,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     for (step=0; step<numSteps; ++step) {
 
       configure_indices(step, form, lev, sequenceType);
-      lev_cost = level_cost_vec[step] = level_cost(cost, step);
+      lev_cost = /*level_cost_vec[step] =*/ level_cost(cost, step);
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[step];
@@ -393,98 +393,38 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 
 void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 {
-  // Allow either model forms or discretization levels, but not both
-  size_t form, lev;
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE),
-    budget_constrained = (maxFunctionEvals != SZ_MAX);
-  // either lev varies and form is fixed, or vice versa:
-  size_t& step = (multilev) ? lev : form;
-  if (multilev) form = secondaryIndex;
-  else          lev  = secondaryIndex;
-
   // retrieve cost estimates across soln levels for a particular model form
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   RealVector cost;  configure_cost(numSteps, multilev, cost);
-  Real eps_sq_div_2, sum_sqrt_var_cost, lev_cost, ref_cost = cost[numSteps-1];
-
-  // -----------------------------------------
-  // Initial loop for offline (overkill) pilot
-  // -----------------------------------------
-  // *** TO DO: replace with evaluate_pilot() after some rework ***
-
-  // retrieve cost estimates across soln levels for a particular model form
-  RealVector agg_var(numSteps), agg_var_of_var(numSteps),
-    estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions),
-    sum_sqrt_var_cost_qoi(numFunctions),
-    sum_sqrt_var_cost_var_qoi(numFunctions),
-    sum_sqrt_var_cost_mean_qoi(numFunctions), agg_var_l_qoi(numFunctions),
-    level_cost_vec(numSteps);
-  RealMatrix agg_var_qoi(numFunctions, numSteps),
-    agg_var_mean_qoi(numFunctions, numSteps),
-    agg_var_var_qoi(numFunctions, numSteps);
+  Real   ref_cost = cost[numSteps-1];
 
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
   // estimator (YY[i] = (Y^i)^2 for i=1).
-  IntRealMatrixMap sum_Ql_pilot, sum_Qlm1_pilot;
-  IntIntPairRealMatrixMap sum_QlQlm1_pilot;
-  initialize_ml_Qsums(sum_Ql_pilot, sum_Qlm1_pilot, sum_QlQlm1_pilot, numSteps);
+  IntRealMatrixMap sum_Ql, sum_Qlm1;
+  IntIntPairRealMatrixMap sum_QlQlm1;
+  initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps);
   RealMatrix var_Y(numFunctions, numSteps, false);
+  Sizet2DArray N_pilot(numSteps), N_l(numSteps);  SizetArray delta_N_l;
 
-  // Initialize for pilot sample
-  SizetArray delta_N_l;
-  load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-
-  // raw eval counts are accumulation of allSamples irrespective of resp faults
-  //SizetArray raw_N_l(numSteps, 0);
-  //Sizet2DArray& N_l = NLev[form]; // *** VALID ONLY FOR ML
-  // define a new 2D array and then post back to NLev at end
-  Sizet2DArray N_pilot(numSteps);
-  for (step=0; step<numSteps; ++step)
-    N_pilot[step].assign(numFunctions, 0);
-  IntIntPair pr11(1, 1);
-
-  for (step=0; step<numSteps; ++step) {
-
-    configure_indices(step, form, lev, sequenceType);
-    lev_cost = level_cost_vec[step] = level_cost(cost, step);
-
-    numSamples = delta_N_l[step];
-    if (numSamples) {
-
-      // assign sequence, get samples, export, evaluate
-      evaluate_ml_sample_increment(step);
-      accumulate_ml_Qsums(sum_Ql_pilot, sum_Qlm1_pilot, sum_QlQlm1_pilot,
-			  step, N_pilot[step]);
-      //increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
-
-      variance_Qsum(sum_Ql_pilot.at(1)[step], sum_Qlm1_pilot.at(1)[step],
-		    sum_Ql_pilot.at(2)[step], sum_QlQlm1_pilot.at(pr11)[step],
-		    sum_Qlm1_pilot.at(2)[step], N_pilot[step],
-		    step, var_Y[step]);
-      aggregate_variance_target_Qsum(sum_Ql_pilot, sum_Qlm1_pilot,
-				     sum_QlQlm1_pilot, N_pilot, step,
-				     agg_var_qoi); // assign column in matrix
-    }
-  }
-  // MLMC estimator variance for final estvar reporting is not aggregated
-  compute_ml_estimator_variance(var_Y, N_pilot, estVarIter0);//numHIter0=numH;
-  // update targets based on variance estimates
-  compute_sample_allocation_target(agg_var_qoi, cost, N_pilot, delta_N_l);
+  // -----------------------------------------
+  // Initial loop for offline (overkill) pilot
+  // -----------------------------------------
+  evaluate_pilot(sum_Ql, sum_Qlm1, sum_QlQlm1, N_pilot, cost, delta_N_l,
+		 var_Y, false, false);
 
   // ----------------------------------------------------------
   // Evaluate online sample profile computed from offline pilot
   // ----------------------------------------------------------
-  IntRealMatrixMap sum_Ql, sum_Qlm1;
-  IntIntPairRealMatrixMap sum_QlQlm1;
-  initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps);
-  //RealMatrix var_Y(numFunctions, numSteps, false);
-  Sizet2DArray N_l(numSteps);
+  reset_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1);
 
+  size_t form, lev, &step = (multilev) ? lev : form;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
   for (step=0; step<numSteps; ++step) {
 
     configure_indices(step, form, lev, sequenceType);
-    lev_cost = level_cost_vec[step] = level_cost(cost, step);
     N_l[step].assign(numFunctions, 0);
 
     // set the number of current samples from the defined increment
@@ -493,7 +433,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
     if (numSamples) { // assign sequence, get samples, export, evaluate
       evaluate_ml_sample_increment(step);
       accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_l[step]);
-      increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
+      increment_ml_equivalent_cost(numSamples, level_cost(cost,step), ref_cost);
     }
   }
 
@@ -514,34 +454,9 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 
 void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 {
-  // Allow either model forms or discretization levels, but not both
-  size_t form, lev;
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE),
-    budget_constrained = (maxFunctionEvals != SZ_MAX);
-  // either lev varies and form is fixed, or vice versa:
-  size_t& step = (multilev) ? lev : form;
-  if (multilev) form = secondaryIndex;
-  else          lev  = secondaryIndex;
-
   // retrieve cost estimates across soln levels for a particular model form
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   RealVector cost;  configure_cost(numSteps, multilev, cost);
-  Real eps_sq_div_2, sum_sqrt_var_cost, lev_cost, ref_cost = cost[numSteps-1];
-
-  // ----------------------
-  // Initial loop for pilot
-  // ----------------------
-  // *** TO DO: replace with evaluate_pilot() after some rework ***
-
-  // retrieve cost estimates across soln levels for a particular model form
-  RealVector agg_var(numSteps), agg_var_of_var(numSteps),
-    estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions),
-    sum_sqrt_var_cost_qoi(numFunctions),
-    sum_sqrt_var_cost_var_qoi(numFunctions),
-    sum_sqrt_var_cost_mean_qoi(numFunctions), agg_var_l_qoi(numFunctions),
-    level_cost_vec(numSteps);
-  RealMatrix agg_var_qoi(numFunctions, numSteps),
-    agg_var_mean_qoi(numFunctions, numSteps),
-    agg_var_var_qoi(numFunctions, numSteps);
 
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -551,63 +466,13 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   IntIntPairRealMatrixMap sum_QlQlm1;
   initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps);
   RealMatrix var_Y(numFunctions, numSteps, false);
+  Sizet2DArray N_l;  SizetArray delta_N_l;
 
-  // Initialize for pilot sample
-  SizetArray delta_N_l;
-  load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-
-  // raw eval counts are accumulation of allSamples irrespective of resp faults
-  //SizetArray raw_N_l(numSteps, 0);
-  //Sizet2DArray& N_l = NLev[form]; // *** VALID ONLY FOR ML
-  // define a new 2D array and then post back to NLev at end
-  Sizet2DArray N_l(numSteps);
-  for (step=0; step<numSteps; ++step)
-    N_l[step].assign(numFunctions, 0);
-  IntIntPair pr11(1, 1);
-
-  for (step=0; step<numSteps; ++step) {
-
-    configure_indices(step, form, lev, sequenceType);
-    lev_cost = level_cost_vec[step] = level_cost(cost, step);
-
-    // set the number of current samples from the defined increment
-    numSamples = delta_N_l[step];
-
-    // aggregate variances across QoI for estimating N_l (justification:
-    // for independent QoI, sum of QoI variances = variance of QoI sum)
-    //Real &agg_var_l = agg_var[step];//carried over from prev iter if no samp
-    if (numSamples) {
-
-      // assign sequence, get samples, export, evaluate
-      evaluate_ml_sample_increment(step);
-      accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_l[step]);
-      if (outputLevel == DEBUG_OUTPUT)
-	Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n" << sum_Ql[1]
-	     << sum_Ql[2] << sum_Qlm1[1] << sum_Qlm1[2] << std::endl;
-      increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
-
-      variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
-		    sum_Ql.at(2)[step], sum_QlQlm1.at(pr11)[step],
-		    sum_Qlm1.at(2)[step], N_l[step], step, var_Y[step]);
-      aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step,
-				     agg_var_qoi); // assign column in matrix
-      // MSE reference is MC applied to HF
-      if (!budget_constrained)
-	aggregate_mse_target_Qsum(agg_var_qoi, N_l, step, estimator_var0_qoi);
-    }
-  }
-  // MLMC estimator variance for final estvar reporting is not aggregated
-  compute_ml_estimator_variance(var_Y, N_l, estVarIter0);//numHIter0=numH;
-  // compute eps^2 / 2 = aggregated estvar0 * rel tol
-  if (!budget_constrained) // eps^2 / 2 = est var * conv tol
-    set_convergence_tol(estimator_var0_qoi, cost, eps_sq_div_2_qoi);
-  // update targets based on variance estimates
-  if (budget_constrained)
-    compute_sample_allocation_target(agg_var_qoi, cost, N_l, delta_N_l);
-  else
-    compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1,
-				     eps_sq_div_2_qoi, agg_var_qoi,
-				     cost, N_l, delta_N_l);
+  // ----------------------
+  // Initial loop for pilot
+  // ----------------------
+  evaluate_pilot(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, cost, delta_N_l,
+		 var_Y, true, true);
 
   // ---------------------
   // Final post-processing
@@ -622,78 +487,59 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 }
 
 
-/*
 void NonDMultilevelSampling::
-evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
-	       RealVectorArray& eval_ratios, RealMatrix& Lambda,
-	       RealMatrix& var_YH, Sizet2DArray& N_shared,
-	       RealVector& hf_targets, bool accumulate_cost, bool pilot_estvar)
+evaluate_pilot(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+	       IntIntPairRealMatrixMap& sum_QlQlm1, Sizet2DArray& N_l,
+	       const RealVector& cost, SizetArray& delta_N_l,
+	       RealMatrix& var_Y, bool accumulate_cost, bool pilot_estvar)
 {
-  // retrieve cost estimates across soln levels for a particular model form
-  RealVector agg_var(numSteps), agg_var_of_var(numSteps),
-    estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions),
-    sum_sqrt_var_cost_qoi(numFunctions),
-    sum_sqrt_var_cost_var_qoi(numFunctions),
-    sum_sqrt_var_cost_mean_qoi(numFunctions), agg_var_l_qoi(numFunctions),
-    level_cost_vec(numSteps);
-  RealMatrix agg_var_qoi(numFunctions, numSteps),
-    agg_var_mean_qoi(numFunctions, numSteps),
-    agg_var_var_qoi(numFunctions, numSteps);
-
-  // For moment estimation, we accumulate telescoping sums for Q^i using
-  // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
-  // For computing N_l from estimator variance, we accumulate square of Y1
-  // estimator (YY[i] = (Y^i)^2 for i=1).
-  RealMatrix sum_Ql(numFunctions, numSteps), sum_Qlm1(numFunctions, numSteps);
-  RealMatrix sum_QlQl(numFunctions, numSteps),
-    sum_QlQlm1(numFunctions, numSteps), sum_Qlm1Qlm1(numFunctions, numSteps);
-  //initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps);
-  RealMatrix var_Y(numFunctions, numSteps, false);
+  // NOTE: Unlike other MLMF methods that currently target the mean estimator
+  // (requiring only the first 2 moments and allowing streamlining of this fn),
+  // MLMC may target {variance,stdev,scalarizations} which require up to 4th
+  // moments.  Therefore, this implementation retains the full QoI Maps.
 
   // Initialize for pilot sample
-  SizetArray delta_N_l;
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
+  N_l.resize(numSteps);
 
-  // raw eval counts are accumulation of allSamples irrespective of resp faults
-  //SizetArray raw_N_l(numSteps, 0);
-  //Sizet2DArray& N_l = NLev[form]; // *** VALID ONLY FOR ML
-  // define a new 2D array and then post back to NLev at end
-  Sizet2DArray N_l(numSteps);
-  for (step=0; step<numSteps; ++step)
-    N_l[step].assign(numFunctions, 0);
+  // Allow either model forms or discretization levels, but not both
+  // (either lev varies for fixed form or vice versa)
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE),
+    budget_constrained = (maxFunctionEvals != SZ_MAX);
+  size_t form, lev, &step = (multilev) ? lev : form;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
+  Real ref_cost = cost[numSteps-1];
+
+  IntIntPair pr11(1, 1);
+  RealVector estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions);
+  RealMatrix agg_var_qoi(numFunctions, numSteps);
 
   for (step=0; step<numSteps; ++step) {
 
     configure_indices(step, form, lev, sequenceType);
-    lev_cost = level_cost_vec[step] = level_cost(cost, step);
-
-    // set the number of current samples from the defined increment
     numSamples = delta_N_l[step];
+    N_l[step].assign(numFunctions, 0);
 
-    // aggregate variances across QoI for estimating N_l (justification:
-    // for independent QoI, sum of QoI variances = variance of QoI sum)
-    //Real &agg_var_l = agg_var[step];//carried over from prev iter if no samp
     if (numSamples) {
 
       // assign sequence, get samples, export, evaluate
       evaluate_ml_sample_increment(step);
       accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_l[step]);
       if (accumulate_cost)
-	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
+	increment_ml_equivalent_cost(numSamples,level_cost(cost,step),ref_cost);
 
-      variance_Qsum(sum_Ql[step], sum_Qlm1[step], sum_QlQl[step],
-		    sum_QlQlm1[step], sum_Qlm1Qlm1[step], N_l[step],
-		    step, var_Y[step]);
-      // *** NEED TO UPDATE ALL DOWNSTREAM CODE TO REPLACE STATIC MAPS WITH STATIC MATRICES ***  --> Coordinate first...
+      variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
+		    sum_Ql.at(2)[step], sum_QlQlm1.at(pr11)[step],
+		    sum_Qlm1.at(2)[step], N_l[step], step, var_Y[step]);
       aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step,
-				     agg_var_qoi); // *** OVERLOAD
+				     agg_var_qoi);
       // MSE reference is MC applied to HF
       if (!budget_constrained)
 	aggregate_mse_target_Qsum(agg_var_qoi, N_l, step, estimator_var0_qoi);
     }
   }
-  if (pilot_estvar) {
-    // MLMC estimator variance for final estvar reporting is not aggregated
+  if (pilot_estvar) { // MLMC estimator var for final report is not aggregated
     compute_ml_estimator_variance(var_Y, N_l, estVarIter0);
     //numHIter0 = N_l;
   }
@@ -709,7 +555,6 @@ evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
 				     cost, N_l, delta_N_l);
   }
 }
-*/
 
 
 void NonDMultilevelSampling::
@@ -799,6 +644,22 @@ initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       sum_QlQlm1.insert(empty_iirm_pr).first->
 	second.shape(numFunctions, num_lev);
     }
+}
+
+
+void NonDMultilevelSampling::
+reset_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+	       IntIntPairRealMatrixMap& sum_QlQlm1)
+{
+  // reset accumulators to zero
+  IntRMMIter q_it;
+  for (q_it=sum_Ql.begin();   q_it!=sum_Ql.begin();   ++q_it)
+    q_it->second = 0.;
+  for (q_it=sum_Qlm1.begin(); q_it!=sum_Qlm1.begin(); ++q_it)
+    q_it->second = 0.;
+  for (IntIntPairRealMatrixMap::iterator qq_it=sum_QlQlm1.begin();
+       qq_it!=sum_QlQlm1.begin(); ++qq_it)
+    qq_it->second = 0.;
 }
 
 

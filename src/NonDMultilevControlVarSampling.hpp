@@ -74,7 +74,7 @@ private:
   /// Qcorr approach projecting estimator performance from a pilot sample
   void multilevel_control_variate_mc_pilot_projection();
 
-  /// helper for shared code among MLCV for offline-pilot and pilot-projection
+  /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
 		      RealVectorArray& eval_ratios, RealMatrix& Lambda,
 		      RealMatrix& var_YH, Sizet2DArray& N_shared,

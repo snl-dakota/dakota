@@ -156,6 +156,13 @@ private:
   /// Qsum approach projecting estimator performance from a pilot sample
   void multilevel_mc_pilot_projection();
 
+  /// helper for shared code among offline-pilot and pilot-projection modes
+  void evaluate_pilot(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+		      IntIntPairRealMatrixMap& sum_QlQlm1, Sizet2DArray& N_l,
+		      const RealVector& cost, SizetArray& delta_N_l,
+		      RealMatrix& var_Y, bool accumulate_cost,
+		      bool pilot_estvar);
+
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev);
@@ -163,6 +170,9 @@ private:
   /// covariances across fidelity levels
   void initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t num_lev);
+  /// reset existing ML accumulators to zero for all keys
+  void reset_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+		      IntIntPairRealMatrixMap& sum_QlQlm1);
 
   // accumulate initial approximation to mean vector, for use as offsets in
   // subsequent accumulations
