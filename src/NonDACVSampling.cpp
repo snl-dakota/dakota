@@ -1050,14 +1050,17 @@ void NonDACVSampling::
 update_projected_samples(Real avg_hf_target, const RealVector& avg_eval_ratios,
 			 SizetArray& N_H_projected, Sizet2DArray& N_L_projected)
 {
-  increment_samples(N_H_projected,
-		    one_sided_delta(average(N_H_projected), avg_hf_target));
+  size_t incr = one_sided_delta(average(N_H_projected), avg_hf_target);
+  increment_samples(N_H_projected, incr);
+  increment_equivalent_cost(incr, sequenceCost, numApprox);
 
-  size_t approx;  Real lf_target;
-  for (approx=0; approx<numApprox; ++approx) {
+  Real lf_target;
+  for (size_t approx=0; approx<numApprox; ++approx) {
     lf_target = avg_eval_ratios[approx] * avg_hf_target;
     SizetArray& N_L_a = N_L_projected[approx];
-    increment_samples(N_L_a, one_sided_delta(average(N_L_a), lf_target));
+    incr = one_sided_delta(average(N_L_a), lf_target);
+    increment_samples(N_L_a, incr);
+    increment_equivalent_cost(incr, sequenceCost, approx);
   }
 }
 

@@ -333,15 +333,18 @@ update_projected_samples(const RealVector& hf_targets,
 			 const RealMatrix& eval_ratios,
 			 SizetArray& N_H_projected, Sizet2DArray& N_L_projected)
 {
-  increment_samples(N_H_projected,
-		    one_sided_delta(N_H_projected, hf_targets, 1));
+  size_t incr = one_sided_delta(N_H_projected, hf_targets, 1);
+  increment_samples(N_H_projected, incr);
+  increment_equivalent_cost(incr, sequenceCost, numApprox);
 
   size_t qoi, approx;  RealVector lf_targets(numFunctions, false);
   for (approx=0; approx<numApprox; ++approx) {
     for (qoi=0; qoi<numFunctions; ++qoi)
       lf_targets[qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
     SizetArray& N_L_a = N_L_projected[approx];
-    increment_samples(N_L_a, one_sided_delta(N_L_a, lf_targets, 1));
+    incr = one_sided_delta(N_L_a, lf_targets, 1);
+    increment_samples(N_L_a, incr);
+    increment_equivalent_cost(incr, sequenceCost, approx);
   }
 }
 
