@@ -232,7 +232,7 @@ private:
 		     const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
 		     const size_t lev, const size_t qoi);
   /// evaluate variances for given level across set of QoI
-  Real variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+  void variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 		     const Real* sum_QlQl,     const Real* sum_QlQlm1,
 		     const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
 		     const size_t lev, Real* var_Yl);
@@ -594,7 +594,7 @@ variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 }
 
 
-inline Real NonDMultilevelSampling::
+inline void NonDMultilevelSampling::
 variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 	      const Real* sum_QlQl,     const Real* sum_QlQlm1,
 	      const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
