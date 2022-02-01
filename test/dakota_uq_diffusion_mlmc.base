@@ -1,6 +1,12 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 661 total (661 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5879882812e+01
+<<<<< Variance for mean estimator:
+      Initial MLMC (pilot samples):   1.0681995540e-05
+      Final MLMC (sample profile):  7.8989110870e-07
+      Final MLMC / pilot ratio:     7.3946024949e-02
+ Equivalent   MC (   26 HF samples):  3.3384832570e-06
+ Equivalent MLMC / MC ratio:         2.3660178827e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785010e-01
@@ -9,6 +15,12 @@ Sample moment statistics for each response function:
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 5478 total (5478 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.7859130859e+01
+<<<<< Variance for mean estimator:
+      Initial MLMC (pilot samples):   1.0681995540e-05
+      Final MLMC (sample profile):  9.5590741888e-08
+      Final MLMC / pilot ratio:     8.9487719341e-03
+ Equivalent   MC (   28 HF samples):  2.9788233098e-06
+ Equivalent MLMC / MC ratio:         3.2090101341e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5322473721e-02  6.4914973020e-03  7.2107219372e-01 -3.1214800826e-01
@@ -17,6 +29,12 @@ Sample moment statistics for each response function:
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 53718 total (53718 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 5.0399658203e+01
+<<<<< Variance for mean estimator:
+      Initial MLMC (pilot samples):   1.0681995540e-05
+      Final MLMC (sample profile):  9.4280440053e-09
+      Final MLMC / pilot ratio:     8.8261074160e-04
+ Equivalent   MC (   50 HF samples):  1.8160290043e-06
+ Equivalent MLMC / MC ratio:         5.1915712705e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5308018403e-02  6.5930537711e-03  7.6899200572e-01 -1.6558267853e-01
@@ -25,6 +43,12 @@ Sample moment statistics for each response function:
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 699 total (699 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5902832031e+01
+<<<<< Variance for mean estimator:
+      Initial MLMC (pilot samples):   8.3850965945e-06
+      Final MLMC (sample profile):  6.7123299560e-07
+      Final MLMC / pilot ratio:     8.0050717131e-02
+ Equivalent   MC (   26 HF samples):  3.6381815869e-06
+ Equivalent MLMC / MC ratio:         1.8449683711e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5277065413e-02  6.6241774473e-03  8.1981248901e-01 -5.0356695119e-02
@@ -33,6 +57,12 @@ Sample moment statistics for each response function:
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 5925 total (5925 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.8212646484e+01
+<<<<< Variance for mean estimator:
+      Initial MLMC (pilot samples):   8.3850965945e-06
+      Final MLMC (sample profile):  7.8553103333e-08
+      Final MLMC / pilot ratio:     9.3681810875e-03
+ Equivalent   MC (   28 HF samples):  3.2481763617e-06
+ Equivalent MLMC / MC ratio:         2.4183755617e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5277746553e-02  6.6222689812e-03  8.1383628987e-01 -4.5480587593e-03
@@ -41,6 +71,12 @@ Sample moment statistics for each response function:
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 59053 total (59053 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 5.4574951172e+01
+<<<<< Variance for mean estimator:
+      Initial MLMC (pilot samples):   8.3850965945e-06
+      Final MLMC (sample profile):  8.1617322276e-09
+      Final MLMC / pilot ratio:     9.7336174195e-04
+ Equivalent   MC (   55 HF samples):  1.6410860727e-06
+ Equivalent MLMC / MC ratio:         4.9733724291e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5271909128e-02  6.5926090921e-03  7.7758946923e-01 -1.6324617553e-01
@@ -49,6 +85,12 @@ Sample moment statistics for each response function:
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 3000 total (3000 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.7349853516e+01
+<<<<< Variance for mean estimator:
+      Initial MLMC (pilot samples):   1.0681995540e-05
+      Final MLMC (sample profile):  1.3721872316e-07
+      Final MLMC / pilot ratio:     1.2845794837e-02
+ Equivalent   MC (   27 HF samples):  3.4239798973e-06
+ Equivalent MLMC / MC ratio:         4.0075796960e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5266841123e-02  6.6342863434e-03  7.5635211505e-01 -1.9848639499e-01
@@ -57,6 +99,12 @@ Sample moment statistics for each response function:
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 26147 total (26147 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 5.6776367188e+01
+<<<<< Variance for mean estimator:
+      Initial MLMC (pilot samples):   1.0681995540e-05
+      Final MLMC (sample profile):  1.5621343530e-08
+      Final MLMC / pilot ratio:     1.4623993684e-03
+ Equivalent   MC (   57 HF samples):  1.5420653296e-06
+ Equivalent MLMC / MC ratio:         1.0130143796e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5251523784e-02  6.5872485705e-03  7.9375072136e-01 -8.2177519460e-02
@@ -65,6 +113,12 @@ Sample moment statistics for each response function:
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 166998 total (166998 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.7806689453e+02
+<<<<< Variance for mean estimator:
+      Initial MLMC (pilot samples):   1.0681995540e-05
+      Final MLMC (sample profile):  2.4477571858e-09
+      Final MLMC / pilot ratio:     2.2914793183e-04
+ Equivalent   MC (  278 HF samples):  3.2185799058e-07
+ Equivalent MLMC / MC ratio:         7.6050844079e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5259990724e-02  6.5925335608e-03  7.8149648205e-01 -1.2819911406e-01
@@ -73,6 +127,12 @@ Sample moment statistics for each response function:
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 26849 total (26849 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 3.9845947266e+01
+<<<<< Variance for mean estimator:
+      Initial MLMC (pilot samples):   1.8029611872e-06
+      Final MLMC (sample profile):  1.7105089563e-08
+      Final MLMC / pilot ratio:     9.4872200716e-03
+ Equivalent   MC (   40 HF samples):  2.2626528418e-06
+ Equivalent MLMC / MC ratio:         7.5597498863e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5297645726e-02  6.5945128826e-03  7.8126537643e-01 -1.4129619094e-01
@@ -81,6 +141,13 @@ Sample moment statistics for each response function:
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 13496 total (13496 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 9.4272705078e+01
+<<<<< Variance for mean estimator:
+      Initial MC (   20 HF samples):  6.5592356880e-06
+      Final   MC (   91 HF samples):  1.0118732199e-06
+      Final CVMC (sample profile):    7.7400506673e-08
+      Final CVMC ratio (1 - R^2):     7.6492296816e-02
+ Equivalent   MC (   94 HF samples):  9.7674573918e-07
+ Equivalent CVMC ratio:               7.9243249873e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5340694550e-02  6.5739244510e-03  7.6662006213e-01 -2.0506278064e-01
