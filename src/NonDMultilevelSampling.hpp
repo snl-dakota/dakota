@@ -824,6 +824,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(const IntRealMatrixMap& sum
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
   }
 
+  //Cout << "NonDMultilevelSampling::var_of_var_ml_l0: (Qoi, 0): " << qoi << ", 0" << ") Var[Var]: " << var_of_var << std::endl;
   if(var_of_var < 0){
     Cerr << "NonDMultilevelSampling::var_of_var_ml_l0: var_of_var < 0.";
     check_negative(var_of_var);
@@ -959,8 +960,9 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_
                              (-2. * Nlq + 1.) / ((Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq)) * term);
     }
 
+  //Cout << "NonDMultilevelSampling::var_of_var_ml_l: (Qoi, lev): " << qoi << ", " << lev << ") Var[Var]: " << var_of_var << std::endl;
   if(var_of_var < 0){
-    Cerr << "NonDMultilevelSampling::var_of_var_ml_l: var_of_var < 0.";
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_l(qoi, lev) = (" << qoi << ", " << lev << "): var_of_var < 0.";
     check_negative(var_of_var);
   }
   return var_of_var;

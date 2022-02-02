@@ -355,8 +355,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     convergenceTolVec[qoi] = convergenceTol;
   
   //// Cantilever
-  //Real w = iteratedModel.current_variables().all_continuous_variables()[0];
-  //Real t = iteratedModel.current_variables().all_continuous_variables()[1];
+  Real w = iteratedModel.current_variables().all_continuous_variables()[0];
+  Real t = iteratedModel.current_variables().all_continuous_variables()[1];
   /*
   int num_resamples = 1000;
   RealMatrix estimator_matrix;
@@ -436,9 +436,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   
   //convergenceTol = std::min(estim_std[0], estim_std[1]);
   */
-  //convergenceTolVec[0] = 1.;
-  //convergenceTolVec[1] = 4.403682565654715e-06; //Mean: 1.3870663074728554e-06; //MeanSigma: 4.403682565654715e-06; //4.372016e-06; //Matlab: 8.495684862764098e-07; //estim_var[0];
-  //convergenceTolVec[2] = 2.765951814952467e-06; //Mean: 7.544840659147794e-07; //MeanSigma: 2.765951814952467e-06; //2.663141e-06; //Matlab: 1.755518067332361e-06; //estim_var1];
+  convergenceTolVec[0] = 1.;
+  convergenceTolVec[1] = 4.183718815322915e-09; //Mean: 1.423185440473230e-06; //Variance: 4.183718815322915e-09//Sigma: 7.350595822335362e-07 //MeanSigma: 8.659953812653066e-06; 
+  convergenceTolVec[2] = 1.189555462940623e-09; //Mean: 7.575797292600822e-07; //Variance: 1.189555462940623e-09//Sigma: 3.924903845943030e-07 //MeanSigma: 4.637311854976656e-06; 
 
   //Cout << "Convergence Tol: " << convergenceTolVec << std::endl;
   // now converge on sample counts per level (N_l)
@@ -504,42 +504,83 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   // post final N_l back to NLev (needed for final eval summary)
   inflate_final_samples(N_l, multilev, secondary_index, NLev);
 
+  
+  //exit(-1);   
+  
+  //exit(-1);
+  // roll up moment contributions
+  compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
+  // populate finalStatErrors
+  compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
+
+  /////
+  RealVector noise_qoi(numFunctions);
+  for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
+    noise_qoi[qoi] = 0;
+    noise_qoi[qoi] += pow(scalarizationCoeffs(qoi, 2*qoi)*finalStatErrors(2*qoi, 2*qoi), 2); //Mean noise
+    noise_qoi[qoi] += pow(scalarizationCoeffs(qoi, 2*qoi+1)*finalStatErrors(2*qoi+1, 2*qoi+1), 2); //Std noise
+    if(scalarizationCoeffs(qoi, 2*qoi) != 0 && scalarizationCoeffs(qoi, 2*qoi+1) != 0
+         && finalMomentsType == STANDARD_MOMENTS){
+      noise_qoi[qoi] += scalarizationCoeffs(qoi, 2*qoi)*scalarizationCoeffs(qoi, 2*qoi+1)*finalStatErrors(2*qoi, 2*qoi+1); //Std noise
+    }
+    //Cout << "Noise [qoi]: " << qoi << " : " << noise_qoi[qoi] << std::endl;
+  }
   std::ofstream myfile;
   //Cantilever
-  /*
-  myfile.open("cantilever_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                     
-  myfile         << w                     << "\t" << t     
-         << "\t" << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]             << "\t" << N_l[3][0] 
-         << "\t" << NTargetQoi(1, 0)    << "\t" << (NTargetQoi(1, 1))<< "\t" << NTargetQoi(1, 2)    << "\t" << (NTargetQoi(1, 3))
-         << "\t" << NTargetQoiFN(1, 0) << "\t" << (NTargetQoiFN(1, 1))<< "\t" << NTargetQoiFN(1, 2) << "\t" << (NTargetQoiFN(1, 3))
-         << "\t" << NTargetQoi(2, 0)    << "\t" << (NTargetQoi(2, 1))<< "\t" << NTargetQoi(2, 2)    << "\t" << (NTargetQoi(2, 3))
-         << "\t" << NTargetQoiFN(2, 0) << "\t" << (NTargetQoiFN(2, 1)) << "\t" << NTargetQoiFN(2, 2) << "\t" << (NTargetQoiFN(2, 3)) 
-         << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
-  */
+  
+  myfile.open("cantilever_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);   
 
+  if(num_steps==2){
+    myfile         << w                     << "\t" << t     
+           << "\t" << N_l[0][0]             << "\t" << N_l[1][0]              
+           << "\t" << NTargetQoi(1, 0)    << "\t" << (NTargetQoi(1, 1))    
+           << "\t" << NTargetQoiFN(1, 0) << "\t" << (NTargetQoiFN(1, 1))
+           << "\t" << NTargetQoi(2, 0)    << "\t" << (NTargetQoi(2, 1))   
+           << "\t" << NTargetQoiFN(2, 0) << "\t" << (NTargetQoiFN(2, 1)) 
+           << "\t" << noise_qoi[1] << "\t" << noise_qoi[2] 
+           << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
+  }else if(num_steps==3){
+    myfile         << w                     << "\t" << t     
+           << "\t" << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]              
+           << "\t" << NTargetQoi(1, 0)    << "\t" << (NTargetQoi(1, 1))<< "\t" << NTargetQoi(1, 2)    
+           << "\t" << NTargetQoiFN(1, 0) << "\t" << (NTargetQoiFN(1, 1))<< "\t" << NTargetQoiFN(1, 2) 
+           << "\t" << NTargetQoi(2, 0)    << "\t" << (NTargetQoi(2, 1))<< "\t" << NTargetQoi(2, 2)    
+           << "\t" << NTargetQoiFN(2, 0) << "\t" << (NTargetQoiFN(2, 1)) << "\t" << NTargetQoiFN(2, 2)  
+           << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
+  }else if(num_steps==4){
+    myfile         << w                     << "\t" << t     
+           << "\t" << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]             << "\t" << N_l[3][0] 
+           << "\t" << NTargetQoi(1, 0)    << "\t" << (NTargetQoi(1, 1))<< "\t" << NTargetQoi(1, 2)    << "\t" << (NTargetQoi(1, 3))
+           << "\t" << NTargetQoiFN(1, 0) << "\t" << (NTargetQoiFN(1, 1))<< "\t" << NTargetQoiFN(1, 2) << "\t" << (NTargetQoiFN(1, 3))
+           << "\t" << NTargetQoi(2, 0)    << "\t" << (NTargetQoi(2, 1))<< "\t" << NTargetQoi(2, 2)    << "\t" << (NTargetQoi(2, 3))
+           << "\t" << NTargetQoiFN(2, 0) << "\t" << (NTargetQoiFN(2, 1)) << "\t" << NTargetQoiFN(2, 2) << "\t" << (NTargetQoiFN(2, 3)) 
+           << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
+  }              
+  
+  /*
   myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app); 
   if(num_steps==2){
     myfile << "\t" << N_l[0][0]             << "\t" << N_l[1][0] 
          << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))
          << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1))
+         << "\t" << noise_qoi[0]
          << "\t" << "\n";
   }else if(num_steps==3){
     myfile << "\t" << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]        
          << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))<< "\t" << NTargetQoi(0, 2)    
          << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1))<< "\t" << NTargetQoiFN(0, 2) 
+         << "\t" << noise_qoi[0]
          << "\t" << "\n";
   }else if(num_steps==4){
     myfile << "\t" << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]             << "\t" << N_l[3][0] 
          << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))<< "\t" << NTargetQoi(0, 2)    << "\t" << (NTargetQoi(0, 3))
          << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1))<< "\t" << NTargetQoiFN(0, 2) << "\t" << (NTargetQoiFN(0, 3))
+         << "\t" << noise_qoi[0]
          << "\t" << "\n";
   }
+  */
   myfile.close();
-  
-  // roll up moment contributions
-  compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
-  // populate finalStatErrors
-  compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
+  /////
 }
 
 
@@ -832,20 +873,20 @@ aggregate_variance_target_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatr
   for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
     if (allocationTarget == TARGET_MEAN) {
       agg_var_qoi(qoi, step) = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
-      check_negative(agg_var_qoi(qoi, step));
     } else if (allocationTarget == TARGET_VARIANCE) {
       agg_var_qoi(qoi, step) = aggregate_variance_variance_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
-      check_negative(agg_var_qoi(qoi, step));
+      //Cout << "(Qoi, step): " << qoi << ", " << step << ") Var[Var]: " << agg_var_qoi(qoi, step) << std::endl; 
     } else if (allocationTarget == TARGET_SIGMA) {
       agg_var_qoi(qoi, step) = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);  
-      check_negative(agg_var_qoi(qoi, step));
+      //Cout << "(Qoi, step): " << qoi << ", " << step << ") Var[Sigma]: " << agg_var_qoi(qoi, step) << std::endl; 
     } else if (allocationTarget == TARGET_SCALARIZATION){
-      agg_var_qoi(qoi, step) = aggregate_variance_scalarization_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);  
-      check_negative(agg_var_qoi(qoi, step));
+      agg_var_qoi(qoi, step) = aggregate_variance_scalarization_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
+      //Cout << "(Qoi, step): " << qoi << ", " << step << ") Var[Scalar]: " << agg_var_qoi(qoi, step) << std::endl; 
     }else{
         Cout << "NonDMultilevelSampling::aggregate_variance_target_Qsum: allocationTarget is not known.\n";
         abort_handler(INTERFACE_ERROR);
     }
+    check_negative(agg_var_qoi(qoi, step));
   }
 }
 
@@ -893,7 +934,8 @@ Real NonDMultilevelSampling::aggregate_variance_sigma_Qsum(const IntRealMatrixMa
                                                           N_l[step][qoi], qoi, step, false, place_holder)); 
   for(size_t cur_step = 0; cur_step < N_l.size(); ++cur_step)
     var_l += var_lev_l(sum_Ql.at(1)[cur_step][qoi], sum_Qlm1.at(1)[cur_step][qoi], sum_Ql.at(2)[cur_step][qoi], sum_Qlm1.at(2)[cur_step][qoi], N_l[cur_step][qoi]);
-  return 1./(4. * var_l) * agg_var_l * N_l[step][qoi]; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile
+
+  return agg_var_l/(4. * var_l) * N_l[step][qoi]; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile
 }
 
 Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
@@ -917,6 +959,7 @@ Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntReal
   /// \approx V[mu_1] + V[2 sigma_1] + 2 Cov[mu_1, 2 sigma_1] + V[3 mu_2] (What we do)
   Real cov_scaling = 1.0;
   Real dummy_grad = 0;
+  bool use_bootstrap = true;
   for(size_t cur_qoi = 0; cur_qoi < numFunctions; ++cur_qoi){
     cur_qoi_offset = cur_qoi*2;
 
@@ -932,14 +975,16 @@ Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntReal
         cur_qoi);
 
     //Cov[Mean_l - Mean_(l-1), Sigma_l - Sigma_(l-1)]
-    upper_bound_cov_of_mean_sigma = std::sqrt(var_of_mean_l*var_of_sigma_l); 
-    cov_bootstrap = (scalarizationCoeffs(qoi, cur_qoi_offset) == 0) ||
+    if(use_bootstrap){
+      cov_estim = (scalarizationCoeffs(qoi, cur_qoi_offset) == 0) ||
                     (scalarizationCoeffs(qoi, cur_qoi_offset+1) == 0) ? 0 :
       bootstrap_covariance(step, cur_qoi, levQoisamplesmatrixMap, 
         N_l[step][cur_qoi], false, dummy_grad, &(++bootstrapSeed)) * N_l[step][cur_qoi];
-    cov_estim = cov_bootstrap;
+    }else{
+      cov_estim = std::sqrt(var_of_mean_l*var_of_sigma_l); 
+    }
 
-    /*if(cur_qoi == 0 && qoi == 0){
+    /*if(cur_qoi == 0 && qoi != 0){
       Cout << "aggregate_variance_scalarization_Qsum: step: " << step << " qoi: " << cur_qoi 
         << " variances: " << var_of_mean_l << ", " << var_of_sigma_l << ", " << upper_bound_cov_of_mean_sigma << ", " << cov_bootstrap << std::endl;
       Cout << scalarizationCoeffs(qoi, cur_qoi_offset) << ", " << scalarizationCoeffs(qoi, cur_qoi_offset+1) << std::endl;
@@ -953,9 +998,9 @@ Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntReal
       + cov_scaling * 2.0 * scalarizationCoeffs(qoi, cur_qoi_offset) *
            scalarizationCoeffs(qoi, cur_qoi_offset+1) * cov_estim; 
     var_of_scalarization_l += var_of_scalarization_cur;
-    //if(cur_qoi == 0 && qoi == 0){
-    //  Cout << var_of_scalarization_cur << "\n";
-    //}
+    /*if(cur_qoi == 0 && qoi != 0){
+      Cout << var_of_scalarization_cur << "\n";
+    }*/
   }                 
   return var_of_scalarization_l; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile is already done in submethods
 }
@@ -964,7 +1009,7 @@ Real NonDMultilevelSampling::bootstrap_covariance(const size_t step,
                 const size_t qoi, 
                 const IntRealMatrixMap& lev_qoisamplematrix_map, const Real N,
                 const bool compute_gradient, Real& grad, int* seed){
-  int nb_bs_samples = 1000, nb_samples, nb_functions, bs_sample_idx;
+  int nb_bs_samples = 100, nb_samples, nb_functions, bs_sample_idx;
   RealVector bs_samples_l, bs_samples_lm1;
   RealVector meanl_bs(nb_bs_samples), meanlm1_bs(nb_bs_samples);
   RealVector sigmal_bs(nb_bs_samples), sigmalm1_bs(nb_bs_samples);
@@ -1432,9 +1477,9 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
                                 lin_eq_targets,nonlin_ineq_lower_bnds,
                                 nonlin_ineq_upper_bnds, nonlin_eq_targets,
                                 objective_function_optpp_ptr,
-                                constraint_function_optpp_ptr,
-                                10000, 100000, 1.e-14,
-                                1.e-14, 100000));
+                                constraint_function_optpp_ptr));
+                                //1000, 10000, 1.e-10,
+                                //1.e-10, 10000));
       #endif
       optimizer->output_level(DEBUG_OUTPUT);
       optimizer->run();
@@ -1551,9 +1596,9 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
                       lin_eq_targets,     nonlin_ineq_lower_bnds,
                       nonlin_ineq_upper_bnds, nonlin_eq_targets,
                       objective_function_optpp_ptr,
-                      constraint_function_optpp_ptr,
-                      10000, 100000, 1.e-14,
-                      1.e-14, 100000));
+                      constraint_function_optpp_ptr));
+                                //1000, 10000, 1.e-10,
+                                //1.e-10, 10000));
         #endif
         optimizer->run();
         if (outputLevel == DEBUG_OUTPUT) {
@@ -2691,7 +2736,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
     RealVector grad_f_mean;
     grad_f_mean.resize(num_lev);
     if (qoiAggregation==QOI_AGGREGATION_SUM) {
-      for(size_t sum_qoi = 0; sum_qoi < nb_qois; ++sum_qoi){
+      for(size_t sum_qoi = 0; sum_qoi < nb_qois && (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) != 0; ++sum_qoi){
         for (lev = 0; lev < num_lev; ++lev) {
           Nlq = x[lev];
           Nlq_pilot = (*static_Nlq_pilot)[lev];
@@ -2709,7 +2754,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
         }
       }
     }else if(qoiAggregation==QOI_AGGREGATION_MAX){
-      for (lev = 0; lev < num_lev; ++lev) {
+      for (lev = 0; lev < num_lev && (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) != 0; ++lev) {
         Nlq = x[lev];
         Nlq_pilot = (*static_Nlq_pilot)[lev];
         f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql).at(1)[0][cur_qoi], (*static_sum_Ql).at(2)[0][cur_qoi], Nlq_pilot, Nlq,
@@ -2735,24 +2780,21 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
     for (lev = 0; lev < num_lev; ++lev) {
       grad_f_sigma[lev] = 0;
     }
-    *static_qoi = cur_qoi;
-    target_sigma_objective_eval_optpp(mode, n, x, f_sigma, grad_f_sigma, result_mode);
-    *static_qoi = qoi; //Reset pointer
+    if((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) != 0){
+      *static_qoi = cur_qoi;
+      target_sigma_objective_eval_optpp(mode, n, x, f_sigma, grad_f_sigma, result_mode);
+      *static_qoi = qoi; //Reset pointer
+    }
 
     //Cov
     Real cov_scaling = 1.0;
-    bool use_pearson = false;
+    bool use_bootstrap = true;
     Real f_cov_estimate = 0;
     RealVector grad_f_cov_estimate(num_lev);
-    if(cov_scaling != 0){
-      if(use_pearson){
-        f_cov_estimate = std::sqrt(f_mean * f_sigma);
-        if(compute_gradient){
-          for (lev = 0; lev < num_lev; ++lev) {
-            grad_f_cov_estimate[lev] = f_cov_estimate > 0. ? 1./(2.*f_cov_estimate)*(grad_f_mean[lev]*f_sigma + f_mean*grad_f_sigma[lev]) : 0;
-          }
-        }
-      }else{
+    if(cov_scaling != 0 
+        && (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) != 0
+        && (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) != 0){
+      if(use_bootstrap){
         Real grad_f_bootstrap_cov_tmp = 0;
         for (lev = 0; lev < num_lev; ++lev) {
           //TODO_SCALARBUGFIX x[lev] <-> (*static_Nlq_pilot)[lev]: Results in a zero gradient and constant over N bootstrap estimation.
@@ -2761,19 +2803,26 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
             grad_f_cov_estimate[lev] = grad_f_bootstrap_cov_tmp;
           }
         }
+      }else{
+        f_cov_estimate = std::sqrt(f_mean * f_sigma);
+        if(compute_gradient){
+          for (lev = 0; lev < num_lev; ++lev) {
+            grad_f_cov_estimate[lev] = f_cov_estimate > 0. ? 1./(2.*f_cov_estimate)*(grad_f_mean[lev]*f_sigma + f_mean*grad_f_sigma[lev]) : 0;
+          }
+        }
       }
     }
     
     Real f_tmp = (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * f_mean 
           + (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * f_sigma;
-    if(use_pearson){
-       f_tmp += cov_scaling * 2.0 * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * f_cov_estimate;
-    }else{
+    if(use_bootstrap){
        f_tmp += cov_scaling * 2.0 * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * f_cov_estimate;
+    }else{
+      f_tmp += cov_scaling * 2.0 * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * f_cov_estimate;
     }
 
-    
-    /*Cout << "Opt: qoi: " << qoi << " cur_qoi: " << cur_qoi << ": (";
+    /*
+    Cout << "Opt: qoi: " << qoi << " cur_qoi: " << cur_qoi << ": (";
     for (lev = 0; lev < num_lev; ++lev)
       Cout << x[lev] << ((lev == num_lev-1) ? "" : ", ");
     Cout << ")\n\tValues:" << f_mean << ", " << f_sigma << ", " << f_cov_estimate << " = " << f_tmp << std::endl;
@@ -2789,10 +2838,10 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
       for (lev = 0; lev < num_lev; ++lev) {
         grad_f[lev] += (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * grad_f_mean[lev] 
           + (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * grad_f_sigma[lev];
-        if(use_pearson){
-          grad_f[lev] +=  cov_scaling * 2.0 * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * grad_f_cov_estimate[lev];
-        }else{
+        if(use_bootstrap){
           grad_f[lev] +=  cov_scaling * 2.0 * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * grad_f_cov_estimate[lev];
+        }else{
+          grad_f[lev] +=  cov_scaling * 2.0 * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * grad_f_cov_estimate[lev];
         }
       }
     }
@@ -3033,9 +3082,9 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp_fd(int mo
     Real f_upper_bound_cov = std::sqrt(f_mean * f_sigma);
     Real grad_f_bootstrap_cov_tmp = 0;
     Real f_bootstrap_cov = 0;
-    for (lev = 0; lev < num_lev; ++lev) {
-      f_bootstrap_cov += bootstrap_covariance(lev, cur_qoi, *static_levQoisamplesmatrixMap, x[lev], compute_gradient, grad_f_bootstrap_cov_tmp, static_randomSeed);
-    }
+    //for (lev = 0; lev < num_lev; ++lev) {
+    //  f_bootstrap_cov += bootstrap_covariance(lev, cur_qoi, *static_levQoisamplesmatrixMap, x[lev], compute_gradient, grad_f_bootstrap_cov_tmp, static_randomSeed);
+    //}
     //Overwrite varvar by bootstrap
     Real f_cov_estimate = f_bootstrap_cov;
 
