@@ -427,8 +427,8 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
     configure_indices(step, form, lev, sequenceType);
     N_l[step].assign(numFunctions, 0);
 
-    // set the number of current samples from the defined increment
-    numSamples = delta_N_l[step];
+    // define online samples from delta increment; min of 2 reqd for online var
+    numSamples = std::max(delta_N_l[step], (size_t)2);
 
     if (numSamples) { // assign sequence, get samples, export, evaluate
       evaluate_ml_sample_increment(step);
@@ -1602,15 +1602,16 @@ void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
   s << "<<<<< Variance for mean estimator:\n";
   switch (pilotMgmtMode) {
   case OFFLINE_PILOT:
-    s << "  " << type << " MLMC (sample profile): "
+    s << "  " << type << " MLMC (sample profile):   "
       << std::setw(wpp7) << avg_mlmc_estvar;
+    break;
   default:
     avg_mlmc_estvar0 = average(estVarIter0);
-    s << "      Initial MLMC (pilot samples):  "
+    s << "    Initial MLMC (pilot samples):    "
       << std::setw(wpp7) << avg_mlmc_estvar0
-      << "\n  " << type << " MLMC (sample profile): "
+      << "\n  " << type << " MLMC (sample profile):   "
       << std::setw(wpp7) << avg_mlmc_estvar
-      << "\n  " << type << " MLMC / pilot ratio:    "
+      << "\n  " << type << " MLMC / pilot ratio:      "
       // report ratio of averages rather than average of ratios:
       << std::setw(wpp7) << avg_mlmc_estvar / avg_mlmc_estvar0;
     break;
@@ -1618,7 +1619,7 @@ void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
   s << "\n Equivalent   MC (" << std::setw(5)
     << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
     << std::setw(wpp7) << avg_budget_mc_estvar
-    << "\n Equivalent MLMC / MC ratio:        " << std::setw(wpp7)
+    << "\n Equivalent MLMC / MC ratio:         " << std::setw(wpp7)
     << avg_mlmc_estvar / avg_budget_mc_estvar << '\n';
 }
 

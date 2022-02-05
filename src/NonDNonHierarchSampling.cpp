@@ -554,7 +554,7 @@ void NonDNonHierarchSampling::
 nonhierarch_numerical_solution(const RealVector& cost,
 			       const SizetArray& approx_sequence,
 			       RealVector& avg_eval_ratios,
-			       Real& avg_hf_target, int& num_samples,
+			       Real& avg_hf_target, size_t& num_samples,
 			       Real& avg_estvar, Real& avg_estvar_ratio)
 {
   // --------------------------------------
@@ -1021,12 +1021,12 @@ optpp_constraint_evaluator(int mode, int n, const RealVector& x, RealVector& c,
 void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
 {
   size_t wpp7 = write_precision + 7;
-  s << "<<<<< Variance for mean estimator:";
+  s << "<<<<< Variance for mean estimator:\n";
 
   if (pilotMgmtMode != OFFLINE_PILOT)
-    s << "\n    Initial   MC (" << std::setw(5)
+    s << "    Initial   MC (" << std::setw(5)
       << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
-      << std::setw(wpp7) << average(estVarIter0);
+      << std::setw(wpp7) << average(estVarIter0) << '\n';
 
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   //String method = method_enum_to_string(methodName); // string too verbose
@@ -1039,7 +1039,7 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   RealVector final_mc_estvar;
   compute_mc_estimator_variance(varH, numH, final_mc_estvar);
   Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
-  s << "\n  " << type << "   MC (" << std::setw(5)
+  s << "  " << type << "   MC (" << std::setw(5)
     << (size_t)std::floor(average(numH) + .5) << " HF samples): "
     << std::setw(wpp7) << average(final_mc_estvar) // avgEstVar / avgEstVarRatio
     << "\n  " << type << method << " (sample profile):   "

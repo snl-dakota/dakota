@@ -133,7 +133,7 @@ protected:
   void nonhierarch_numerical_solution(const RealVector& cost,
 				      const SizetArray& approx_sequence,
 				      RealVector& avg_eval_ratios,
-				      Real& avg_hf_target, int& num_samples,
+				      Real& avg_hf_target, size_t& num_samples,
 				      Real& avg_estvar, Real& avg_estvar_ratio);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,

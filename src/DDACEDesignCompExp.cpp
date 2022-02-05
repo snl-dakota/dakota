@@ -188,8 +188,9 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
 }
 
 
-void DDACEDesignCompExp::get_parameter_sets(Model& model, const int num_samples,
-					    RealMatrix& design_matrix)
+void DDACEDesignCompExp::
+get_parameter_sets(Model& model, const size_t num_samples,
+		   RealMatrix& design_matrix)
 {
   // keep track of number of DACE executions for this object
   numDACERuns++;
@@ -370,7 +371,7 @@ void DDACEDesignCompExp::resolve_samples_symbols()
     abort_handler(-1);
   }
 
-  int num_samples_orig = numSamples, num_symbols_orig = numSymbols;
+  size_t num_samples_orig = numSamples, num_symbols_orig = numSymbols;
   switch (daceMethod) {
   case SUBMETHOD_OAS: case SUBMETHOD_OA_LHS: {  
     // numSamples is an integer multiple of numSymbols^r where r=2 for DDACE
@@ -427,7 +428,7 @@ void DDACEDesignCompExp::resolve_samples_symbols()
     break;
   case SUBMETHOD_BOX_BEHNKEN: {
     // BBD is inflexible in the number of samples that can be used
-    int num_samples_bb = 1 + 4*numContinuousVars*(numContinuousVars-1)/2;
+    size_t num_samples_bb = 1 + 4*numContinuousVars*(numContinuousVars-1)/2;
     if ( num_samples_bb >= numSamples )
       // For a quadratic polynomial, BBD is sufficient only for #vars >= 3
       numSymbols = numSamples = num_samples_bb;
@@ -447,7 +448,7 @@ void DDACEDesignCompExp::resolve_samples_symbols()
   }
   case SUBMETHOD_CENTRAL_COMPOSITE: {
     // CCD is inflexible in the number of samples that can be used
-    int num_samples_ccd
+    size_t num_samples_ccd
       = 1 + 2*numContinuousVars + (int)std::pow(2.0,(double)numContinuousVars);
     if ( num_samples_ccd >= numSamples )
       // num_samples_ccd should be greater than the minimum number of samples

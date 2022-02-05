@@ -578,7 +578,8 @@ multilevel_control_variate_mc_offline_pilot()
   for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
     configure_indices(group, hf_form, lev, sequenceType);
     hf_lev_cost = level_cost(hf_cost, lev);
-    numSamples = one_sided_delta(0., hf_targets_pilot[lev]);//delta_N_hf[lev];
+    // use 0 in place of delta_N_hf[lev]; min of 2 samples reqd for online var
+    numSamples = std::max(one_sided_delta(0., hf_targets_pilot[lev]),(size_t)2);
     evaluate_ml_sample_increment(lev);
     if (lev < num_cv_lev) {
       IntResponseMap hf_resp = allResponses; // shallow copy is sufficient
@@ -655,6 +656,10 @@ multilevel_control_variate_mc_pilot_projection()
 
   evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, N_hf,
 		 hf_targets, true, true); // accumulate cost, compute estvar0
+
+  // Unlike NonDMultilevelSampling::multilevel_mc_pilot_projection(), here we
+  // cannot readily estimate cv_raw_moments().  Rather than reporting only the
+  // ml_raw_moments() roll up, seems better to bypass variance recovery.
 
   N_lf = N_hf;
   update_projected_samples(hf_targets, eval_ratios, N_hf, hf_cost,
@@ -1782,30 +1787,36 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
     NonDControlVariateSampling::print_variance_reduction(s); break;
   default: {
     Real avg_mlcvmc_estvar = average(estVar), avg_mlmc_estvar0,
-      avg_budget_mc_estvar = average(varH) / equivHFEvals;
+      avg_budget_mc_estvar;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
     size_t wpp7 = write_precision + 7;
     s << "<<<<< Variance for mean estimator:\n";
     switch (pilotMgmtMode) {
     case OFFLINE_PILOT:
-      s << "  " << type << " MLCVMC (sample profile): "
-	<< std::setw(wpp7) << avg_mlcvmc_estvar;
+      s << "  " << type << " MLCVMC (sample profile):   "
+	<< std::setw(wpp7) << avg_mlcvmc_estvar << '\n';
+      break;
     default:
       avg_mlmc_estvar0 = average(estVarIter0);
-      s << "      Initial MLMC (pilot samples):  " << std::setw(wpp7)
-	<< avg_mlmc_estvar0
-	<< "\n  " << type << " MLCVMC (sample profile): "
-	<< std::setw(wpp7) << avg_mlcvmc_estvar
-	<< "\n  " << type << " MLCVMC / pilot ratio:    "
+      s << "      Initial MLMC (pilot samples):    " << std::setw(wpp7)
+	<< avg_mlmc_estvar0 << "\n  "
+	<< type << " MLCVMC (sample profile):   "
+	<< std::setw(wpp7) << avg_mlcvmc_estvar	<< "\n  "
+	<< type << " MLCVMC / pilot ratio:      "
 	// report ratio of averages rather than average of ratios:
-	<< std::setw(wpp7) << avg_mlcvmc_estvar / avg_mlmc_estvar0;
+	<< std::setw(wpp7) << avg_mlcvmc_estvar / avg_mlmc_estvar0 << '\n';
       break;
     }
-    s << "\n Equivalent   MC (" << std::setw(5)
-      << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
-      << std::setw(wpp7) << avg_budget_mc_estvar
-      << "\n Equivalent MLCVMC / MC ratio:        " << std::setw(wpp7)
-      << avg_mlcvmc_estvar / avg_budget_mc_estvar << '\n';
+    switch (pilotMgmtMode) {
+    case ONLINE_PILOT: case OFFLINE_PILOT:
+      avg_budget_mc_estvar = average(varH) / equivHFEvals;
+      s << " Equivalent     MC (" << std::setw(5)
+	<< (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+	<< std::setw(wpp7) << avg_budget_mc_estvar
+	<< "\n Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
+	<< avg_mlcvmc_estvar / avg_budget_mc_estvar << '\n';
+      break;
+    }
     break;
   }
   }

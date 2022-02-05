@@ -205,7 +205,8 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
   initialize_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH);
   RealVector sum_HH(numFunctions);
 
-  numSamples = one_sided_delta(N_hf, hf_targets, 1); // online N_hf is zero
+  // online N_hf is zero; at least 2 samples required for online variance/corr
+  numSamples = std::max(one_sided_delta(N_hf, hf_targets, 1), (size_t)2);
   shared_increment(active_key, mlmfIter, 0);
   accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH, N_hf);
   increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
@@ -793,23 +794,23 @@ void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
        avg_mc_est_var        = average(mc_est_var),
        avg_budget_mc_est_var = average(varH) / equivHFEvals;
 
-  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
-  s << "<<<<< Variance for mean estimator:\n";
+  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   size_t wpp7 = write_precision + 7;
+  s << "<<<<< Variance for mean estimator:\n";
 
   if (pilotMgmtMode != OFFLINE_PILOT)
     s << "      Initial MC (" << std::setw(5)
       << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
-      << std::setw(wpp7) << average(estVarIter0);
+      << std::setw(wpp7) << average(estVarIter0) << '\n';
 
-  s << "\n  " << type << "   MC (" << std::setw(5)
+  s << "  " << type << "   MC (" << std::setw(5)
     << (size_t)std::floor(average(N_hf) + .5) << " HF samples): "
     << std::setw(wpp7) << avg_mc_est_var
     << "\n  " << type << " CVMC (sample profile):   "
     << std::setw(wpp7) << avg_cvmc_est_var
     << "\n  " << type << " CVMC ratio (1 - R^2):    "
     << std::setw(wpp7) << avg_cvmc_est_var / avg_mc_est_var
-      << "\n Equivalent   MC (" << std::setw(5)
+    << "\n Equivalent   MC (" << std::setw(5)
     << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
     << std::setw(wpp7) << avg_budget_mc_est_var
     << "\n Equivalent CVMC ratio:              " << std::setw(wpp7)

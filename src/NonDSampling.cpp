@@ -116,7 +116,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     of on-the-fly sample sets. */
 NonDSampling::
 NonDSampling(unsigned short method_name, Model& model,
-	     unsigned short sample_type, int samples, int seed,
+	     unsigned short sample_type, size_t samples, int seed,
 	     const String& rng, bool vary_pattern, short sampling_vars_mode):
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
@@ -149,7 +149,7 @@ NonDSampling(unsigned short method_name, Model& model,
 /** This alternate constructor is used by ConcurrentStrategy for
     generation of uniform, uncorrelated sample sets. */
 NonDSampling::
-NonDSampling(unsigned short sample_type, int samples, int seed,
+NonDSampling(unsigned short sample_type, size_t samples, int seed,
 	     const String& rng, const RealVector& lower_bnds,
 	     const RealVector& upper_bnds):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
@@ -174,7 +174,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 /** This alternate constructor is used by ConcurrentStrategy for
     generation of normal, correlated sample sets. */
 NonDSampling::
-NonDSampling(unsigned short sample_type, int samples, int seed,
+NonDSampling(unsigned short sample_type, size_t samples, int seed,
 	     const String& rng, const RealVector& means, 
              const RealVector& std_devs, const RealVector& lower_bnds,
 	     const RealVector& upper_bnds, RealSymMatrix& correl):
@@ -224,7 +224,7 @@ NonDSampling::~NonDSampling()
 
 void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf,
-		  RealMatrix& sample_matrix, int num_samples, bool x_to_u)
+		  RealMatrix& sample_matrix, size_t num_samples, bool x_to_u)
 {
   if (num_samples == 0)
     num_samples = sample_matrix.numCols();
@@ -246,8 +246,9 @@ transform_samples(Pecos::ProbabilityTransformation& nataf,
 }
 
 
-void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
-                                      RealMatrix& design_matrix, bool write_msg)
+void NonDSampling::
+get_parameter_sets(Model& model, const size_t num_samples,
+		   RealMatrix& design_matrix, bool write_msg)
 {
   initialize_lhs(write_msg, num_samples);
 
@@ -796,7 +797,7 @@ mode_bits(const Variables& vars, BitArray& active_vars,
 }
 
 
-void NonDSampling::initialize_lhs(bool write_message, int num_samples)
+void NonDSampling::initialize_lhs(bool write_message, size_t num_samples)
 {
   // keep track of number of LHS executions for this object
   ++numLHSRuns;

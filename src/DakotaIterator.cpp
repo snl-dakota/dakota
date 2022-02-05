@@ -1601,7 +1601,7 @@ void Iterator::print_results(std::ostream& s, short results_state)
 }
 
 
-int Iterator::num_samples() const
+size_t Iterator::num_samples() const
 {
   if (iteratorRep) // envelope fwd to letter
     return iteratorRep->num_samples();
@@ -1611,7 +1611,7 @@ int Iterator::num_samples() const
 
 
 void Iterator::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_reset(min_samples, all_data_flag, stats_flag);
@@ -1622,16 +1622,16 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
   }
 }
 
-void Iterator::
-sampling_reference(int samples_ref)
+
+void Iterator::sampling_reference(size_t samples_ref)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_reference(samples_ref);
   // else no-op: iterator does not employ a sampling reference (lower bound)
 }
 
-void Iterator::
-sampling_increment()
+
+void Iterator::sampling_increment()
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_increment();
@@ -1643,12 +1643,14 @@ sampling_increment()
   }
 }
 
+
 void Iterator::random_seed(int seed)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->random_seed(seed);
   // else no-op (don't require support from all Iterators that could be called)
 }
+
 
 unsigned short Iterator::sampling_scheme() const
 {

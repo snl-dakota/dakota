@@ -165,9 +165,8 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   RealVector sum_HH;     //Sizet2DArray N_L_baseline, N_LH;
   initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
   numH.assign(numFunctions, 0); //initialize_counts(N_L_baseline, numH, N_LH);
-  // at least 2 samples reqd for variance (and resetting allSamples from pilot)
-  int sample_increment = one_sided_delta(numH, hf_targets, 1); // numH is 0
-  numSamples = std::max(sample_increment, 2);
+  // at least 2 samples reqd for variance (and resetting allSamples after pilot)
+  numSamples = std::max(one_sided_delta(numH, hf_targets, 1),(size_t)2);//numH=0
 
   // As a first cut, don't reuse any of offline pilot for numH
   shared_increment(++mlmfIter); // spans ALL models, blocking
@@ -1176,7 +1175,7 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     if (pilotMgmtMode != OFFLINE_PILOT)
       s << "      Initial MC (" << std::setw(5)
 	<< (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
-	<< std::setw(wpp7) << average(estVarIter0);
+	<< std::setw(wpp7) << average(estVarIter0) << '\n';
 
     RealVector mc_est_var(numFunctions, false),
              mfmc_est_var(numFunctions, false);
@@ -1188,7 +1187,7 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
          avg_mc_est_var   = average(mc_est_var),
          avg_budget_mc_est_var = average(varH) / equivHFEvals;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
-    s << "\n  " << type << "   MC (" << std::setw(5)
+    s << "  " << type << "   MC (" << std::setw(5)
       << (size_t)std::floor(average(numH) + .5) << " HF samples): "
       << std::setw(wpp7) << avg_mc_est_var << "\n  " << type
       << " MFMC (sample profile):   " << std::setw(wpp7) << avg_mfmc_est_var
