@@ -63,8 +63,9 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   case PILOT_PROJECTION: // no iteration
     maxIterations = 0; //finalCVRefinement = false;
     break;
-  case OFFLINE_PILOT: // no iteration
-    maxIterations = 0; //finalCVRefinement = true;
+  case OFFLINE_PILOT:
+    maxIterations = 1; // allows for LF increments in *_offline_pilot()
+    //finalCVRefinement = true;
     // convergenceTol option is problematic since the reference EstVar
     // comes from offline eval with Oracle/overkill N
     if (maxFunctionEvals == SZ_MAX) {
@@ -219,8 +220,9 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
     switch (pilotMgmtMode) {
     case PILOT_PROJECTION:
       print_multilevel_evaluation_summary(s, NLev, "Projected");
-      s << "<<<<< Equivalent number of high fidelity evaluations: "
-        << equivHFEvals << '\n';
+      s << "<<<<< Projected number of equivalent high fidelity evaluations: "
+	<< std::scientific  << std::setprecision(write_precision)
+	<< equivHFEvals << '\n';
       print_variance_reduction(s);
 
       //s << "\nStatistics based on multilevel sample set:\n";
@@ -232,6 +234,7 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
     default:
       print_multilevel_evaluation_summary(s, NLev);
       s << "<<<<< Equivalent number of high fidelity evaluations: "
+	<< std::scientific  << std::setprecision(write_precision)
 	<< equivHFEvals << '\n';
       print_variance_reduction(s);
 

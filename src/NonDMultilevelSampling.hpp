@@ -158,8 +158,9 @@ private:
 
   /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_pilot(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		      IntIntPairRealMatrixMap& sum_QlQlm1, Sizet2DArray& N_l,
-		      const RealVector& cost, SizetArray& delta_N_l,
+		      IntIntPairRealMatrixMap& sum_QlQlm1,
+		      const RealVector& cost, Sizet2DArray& N_pilot,
+		      const Sizet2DArray& N_online, SizetArray& delta_N_l,
 		      RealMatrix& var_Y, bool accumulate_cost,
 		      bool pilot_estvar);
 

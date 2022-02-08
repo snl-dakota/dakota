@@ -199,8 +199,8 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
 		 avgEstVar, avgEstVarRatio);
 
-  // at least 1 sample (?) reqd for numerics (+ resetting allSamples from pilot)
-  if (numSamples < 1) numSamples = 1;
+  // at least 2 samples reqd for variance (+ resetting allSamples from pilot)
+  numSamples = std::max(numSamples, (size_t)2);
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 		      sum_LH, sum_HH, numH);//, N_LL);
@@ -401,7 +401,8 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 	average(eval_ratios2, 0, avg_eval_ratios2);
 	scale_to_target(avg_N_H, cost, avg_eval_ratios1, avg_hf_target1);
 	scale_to_target(avg_N_H, cost, avg_eval_ratios2, avg_hf_target2);
-	Real avg_estvar_ratio1, avg_estvar_ratio2;  int num_samp1, num_samp2;
+	Real avg_estvar_ratio1, avg_estvar_ratio2;
+	size_t num_samp1, num_samp2;
 	nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios1,
 				       avg_hf_target1, num_samp1, avg_estvar1,
 				       avg_estvar_ratio1);

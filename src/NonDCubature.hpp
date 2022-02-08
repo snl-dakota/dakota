@@ -70,7 +70,7 @@ protected:
 
   void get_parameter_sets(Model& model);
 
-  void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
 
   void increment_grid();
   void increment_grid_preference(const RealVector& dim_pref);
@@ -79,7 +79,7 @@ protected:
 
   void reset();
 
-  int num_samples() const;
+  size_t num_samples() const;
 
 private:
 
@@ -131,7 +131,7 @@ inline void NonDCubature::increment_grid_preference()
 { increment_grid(); } // ignore dim_pref
 
 
-inline int NonDCubature::num_samples() const
+inline size_t NonDCubature::num_samples() const
 { return cubDriver->grid_size(); }
 
 } // namespace Dakota

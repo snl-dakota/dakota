@@ -11,22 +11,24 @@
 
 method,
 	model_pointer = 'HIERARCH'
-        multifidelity_sampling			#s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#p0,#p1,#p2,#p3,#p4
+        multifidelity_sampling			#s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#p0,#p1,#p2,#p3,#p4
 # Ensure MLMC can also work across model forms:
 #	multilevel_sampling			#s5
-	  pilot_samples = 20 seed = 1237
+	  pilot_samples = 20  seed = 1237	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1,#p2,#p3,#p4
+#	  pilot_samples = 500 seed = 1237	#s10
 #	  solution_mode pilot_projection	#s9
+#	  solution_mode offline_pilot		#s10
 	  convergence_tolerance =    .1		#s0,#s2,#s4,#p0,#p1,#p2,#p3
 #	  convergence_tolerance =   .01		#s1,#s3,#s5,#s6
-#	  max_function_evaluations = 250	#s7,#s8,#s9,#p4
+#	  max_function_evaluations = 250	#s7,#s8,#s9,#s10,#p4
 	  output silent
 
 model,
 	id_model = 'HIERARCH'
 	variables_pointer = 'HF_VARS'
-	surrogate hierarchical		#s0,#s1,#s2,#s3,#s4,#s5,#s9,#p0,#p1,#p2,#p3
+	surrogate hierarchical		#s0,#s1,#s2,#s3,#s4,#s5,#s9,#s10,#p0,#p1,#p2,#p3
 	  ordered_model_fidelities = 'MF' 'HF'		#s0,#s1,#p0
-#	  ordered_model_fidelities = 'LF' 'HF'		#s2,#s3,#s4,#s9,#p1,#p2,#p3
+#	  ordered_model_fidelities = 'LF' 'HF'		#s2,#s3,#s4,#s9,#s10,#p1,#p2,#p3
 #	  ordered_model_fidelities = 'LF' 'MF' 'HF'	#s5
 #	surrogate non_hierarchical   	       		#s6,#s7,#s8,#p4
 #	  truth_model = 'HF'				#s6,#s7,#s8,#p4
@@ -36,7 +38,7 @@ model,
 model,
 	id_model = 'LF'
 	variables_pointer = 'LF_VARS'
-#	interface_pointer = 'LF_INT'	#s4,#s5,#s6,#s7,#s8,#s9,#p2,#p3,#p4
+#	interface_pointer = 'LF_INT'	#s4,#s5,#s6,#s7,#s8,#s9,#s10,#p2,#p3,#p4
 	simulation
 	  solution_level_control = 'mesh_size'
 # dense matrices --> direct solvers --> cubic cost growth
@@ -55,7 +57,7 @@ model,
 model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
-#	interface_pointer = 'HF_INT'	#s4,#s5,#s6,#s7,#s8,#s9,#p2,#p3,#p4
+#	interface_pointer = 'HF_INT'	#s4,#s5,#s6,#s7,#s8,#s9,#s10,#p2,#p3,#p4
 	simulation
 	  solution_level_control = 'mesh_size'
 	  solution_level_cost = 4096.
@@ -143,7 +145,7 @@ variables,
 
 # Enumerated interfaces improve the final evaluation summaries
 interface,
-#	id_interface = 'LF_INT'			#s4,#s5,#s6,#s7,#s8,#s9,#p2,#p3,#p4
+#	id_interface = 'LF_INT'			#s4,#s5,#s6,#s7,#s8,#s9,#s10,#p2,#p3,#p4
 	direct
 	  analysis_driver = 'steady_state_diffusion_1d'
 	  deactivate evaluation_cache restart_file

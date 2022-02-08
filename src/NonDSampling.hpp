@@ -172,7 +172,7 @@ public:
 
   /// transform the specified samples matrix from x to u or u to x
   void transform_samples(Pecos::ProbabilityTransformation& nataf,
-			 RealMatrix& sample_matrix, int num_samples = 0,
+			 RealMatrix& sample_matrix, size_t num_samples = 0,
 			 bool x_to_u = true);
 
   /// return sampleType
@@ -190,15 +190,15 @@ protected:
   NonDSampling(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonDSampling(unsigned short method_name, Model& model,
-	       unsigned short sample_type, int samples, int seed,
+	       unsigned short sample_type, size_t samples, int seed,
 	       const String& rng, bool vary_pattern, short sampling_vars_mode);
   /// alternate constructor for sample generation "on the fly"
-  NonDSampling(unsigned short sample_type, int samples, int seed,
+  NonDSampling(unsigned short sample_type, size_t samples, int seed,
 	       const String& rng, const RealVector& lower_bnds,
 	       const RealVector& upper_bnds);
   /// alternate constructor for sample generation of correlated normals
   /// "on the fly"
-  NonDSampling(unsigned short sample_type, int samples, int seed,
+  NonDSampling(unsigned short sample_type, size_t samples, int seed,
                const String& rng, const RealVector& means,
                const RealVector& std_devs, const RealVector& lower_bnds,
                const RealVector& upper_bnds, RealSymMatrix& correl);
@@ -210,13 +210,13 @@ protected:
   void pre_run();
   void core_run();
 
-  int num_samples() const;
+  size_t num_samples() const;
 
   /// resets number of samples and sampling flags
-  void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
 
   /// set reference number of samples, which is a lower bound during reset 
-  void sampling_reference(int samples_ref);
+  void sampling_reference(size_t samples_ref);
 
   /// assign randomSeed
   void random_seed(int seed);
@@ -227,22 +227,18 @@ protected:
   /// Uses lhsDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model.
   void get_parameter_sets(Model& model);
-
   /// Uses lhsDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model and populates
   /// the specified design matrix.
-  void get_parameter_sets(Model& model, const int num_samples, 
+  void get_parameter_sets(Model& model, const size_t num_samples, 
                           RealMatrix& design_matrix);
-
   /// core of get_parameter_sets that accepts message print control
-  void get_parameter_sets(Model& model, const int num_samples,
+  void get_parameter_sets(Model& model, const size_t num_samples,
                           RealMatrix& design_matrix, bool write_msg);
-
   /// Uses lhsDriver to generate a set of uniform samples over
   /// lower_bnds/upper_bnds.
   void get_parameter_sets(const RealVector& lower_bnds,
                           const RealVector& upper_bnds);
-
   /// Uses lhsDriver to generate a set of normal samples 
   void get_parameter_sets(const RealVector& means,
                           const RealVector& std_devs,
@@ -265,7 +261,7 @@ protected:
   //
 
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
-  void initialize_lhs(bool write_message, int num_samples);
+  void initialize_lhs(bool write_message, size_t num_samples);
 
   /// in the case of sub-iteration, map from finalStatistics.active_set()
   /// requests to activeSet used in evaluate_parameter_sets()
@@ -287,8 +283,8 @@ protected:
   int       seedSpec;    ///< the user seed specification (default is 0)
   int       randomSeed;  ///< the current seed
   const int samplesSpec; ///< initial specification of number of samples
-  int       samplesRef;  ///< reference number of samples updated for refinement
-  int       numSamples;  ///< the current number of samples to evaluate
+  size_t    samplesRef;  ///< reference number of samples updated for refinement
+  size_t    numSamples;  ///< the current number of samples to evaluate
   String    rngName;	 ///< name of the random number generator
   unsigned short sampleType; ///< the sample type: default, random, lhs,
                              ///< incremental random, or incremental lhs
@@ -452,11 +448,11 @@ inline void NonDSampling::print_moments(std::ostream& s) const
 { print_moments(s, "response function", iteratedModel.response_labels()); }
 
 
-inline void NonDSampling::sampling_reference(int samples_ref)
+inline void NonDSampling::sampling_reference(size_t samples_ref)
 { samplesRef = samples_ref; }
 
 
-inline int NonDSampling::num_samples() const
+inline size_t NonDSampling::num_samples() const
 { return numSamples; }
 
 
@@ -468,7 +464,7 @@ inline int NonDSampling::num_samples() const
     approximation) and statsFlag is set to false (statistics
     computations are not needed). */
 inline void NonDSampling::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   // allow sample reduction relative to previous sampling_reset() calls
   // (that is, numSamples may be increased or decreased to match min_samples),
@@ -509,7 +505,7 @@ transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
     user-defined model in any of the four sampling modes and populates
     the specified design matrix. */
 inline void NonDSampling::
-get_parameter_sets(Model& model, const int num_samples,
+get_parameter_sets(Model& model, const size_t num_samples,
 		   RealMatrix& design_matrix)
 { get_parameter_sets(model, num_samples, design_matrix, true); }
 

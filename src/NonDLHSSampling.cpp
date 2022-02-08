@@ -175,9 +175,10 @@ void NonDLHSSampling::sampling_increment()
 {
   // if no refinment samples, leave numSamples at baseline
   varyPattern = true;
-  if (refineSamples.length() > 0) {
+  int len = refineSamples.length();
+  if (len > 0) {
     numSamples = refineSamples[samplesIncrement];
-    samplesIncrement = std::min(samplesIncrement + 1, refineSamples.length()-1);
+    samplesIncrement = std::min(samplesIncrement + 1, len - 1);
   }
 }
 

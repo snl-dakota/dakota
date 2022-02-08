@@ -106,7 +106,7 @@ public:
   /// invokes SparseGridDriver::finalize_sets()
   void finalize_sets(bool output_sets, bool converged_within_tol,bool reverted);
 
-  int num_samples() const;
+  size_t num_samples() const;
 
 protected:
 
@@ -126,7 +126,7 @@ protected:
 
   //void check_variables(const Pecos::ShortArray& x_types);
 
-  void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
 
   //
   //- Heading: Member functions
@@ -262,7 +262,7 @@ inline void NonDSparseGrid::merge_grid_increment()
 { ssgDriver->merge_unique(); }
 
 
-inline int NonDSparseGrid::num_samples() const
+inline size_t NonDSparseGrid::num_samples() const
 { return ssgDriver->grid_size(); }
 
 

@@ -703,9 +703,9 @@ sub compare_output {
       }
     }
     elsif ( ( ($t_eq) = $test =~
-	      /^<<<<< Equivalent number of high fidelity evaluations:\s+($e)\s+$/ ) &&
+	      /^<<<<< (Equivalent number of|Projected number of equivalent) high fidelity evaluations:\s+($e)\s+$/ ) &&
 	    ( ($b_eq) = $base =~
-	      /^<<<<< Equivalent number of high fidelity evaluations:\s+($e)\s+$/ ) ) {
+	      /^<<<<< (Equivalent number of|Projected number of equivalent) high fidelity evaluations:\s+($e)\s+$/ ) ) {
       if ( diff($t_eq, $b_eq) ) {
 	$test_diff = 1;
 	push @base_diffs, $base;
@@ -713,9 +713,9 @@ sub compare_output {
       }
     }
     elsif ( ( ($t_ev) = $test =~
-	      /^\s+(?:Initial|Final|Projected)\s+(?:MC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) &&
+	      /^\s+(?:Initial|Final|Projected|Equivalent)\s+(?:MC|MLMC|CVMC|MLCVMC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) &&
 	    ( ($b_ev) = $base =~
-	      /^\s+(?:Initial|Final|Projected)\s+(?:MC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) ) {
+	      /^\s+(?:Initial|Final|Projected|Equivalent)\s+(?:MC|MLMC|CVMC|MLCVMC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) ) {
       if ( diff($t_ev, $b_ev) ) {
 	$test_diff = 1;
 	push @base_diffs, $base;
