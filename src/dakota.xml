@@ -5765,7 +5765,10 @@
       </oneOf>
       &response_gradients;
       &response_hessians;
-     </keyword>
+      <keyword  id="metadata" name="metadata" code="{N_rem(strL,metadataLabels)}" label="metadata labels"  minOccurs="0" default="no metadata" >
+        <param type="STRINGLIST"/>
+      </keyword>
+    </keyword>
 
   </input>
 </document>
