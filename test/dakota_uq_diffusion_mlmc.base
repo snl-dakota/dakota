@@ -181,10 +181,10 @@ Test Number 13 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 5.0005585938e+03
 <<<<< Variance for mean estimator:
       Final MLMC (sample profile):    5.3198752429e-10
- Equivalent   MC ( 5001 HF samples):  6.0393947225e-09
- Equivalent MLMC / MC ratio:          8.8086231938e-02
+ Equivalent   MC ( 5001 HF samples):  1.7980864930e-08
+ Equivalent MLMC / MC ratio:          2.9586314471e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5296988407e-02  6.7305662804e-03 -9.5325448907e+01  1.8267522784e+05
- response_fn_2  1.2923392925e-01  0.0000000000e+00  4.3509079762e-02  0.0000000000e+00
- response_fn_3  2.5296988407e-02  6.7305660302e-03 -9.5325318034e+01  1.8267498632e+05
+ response_fn_1  2.5275848159e-02  6.5956533481e-03  7.8040126748e-01 -1.2369967610e-01
+ response_fn_2  1.2908536444e-01  1.3518055325e-02  7.3913097301e-01 -5.6137936691e-01
+ response_fn_3  2.5275848158e-02  6.5956533475e-03  7.8040126766e-01 -1.2369967514e-01
