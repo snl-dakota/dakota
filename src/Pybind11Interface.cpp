@@ -149,9 +149,11 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
       "asv"_a                   = asv,
       "dvv"_a                   = dvv,
       "analysis_components"_a   = an_comps,
-      "currEvalId"_a            = currEvalId );
+      "currEvalId"_a            = currEvalId);
 
   py::dict ret_val = py11CallBack(kwargs);
+
+  size_t const numDerivs = directFnDVV.size();
 
   for (auto item : ret_val) {
     auto key = item.first.cast<std::string>();
@@ -175,12 +177,12 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
                                  "incorrect size for # of functions"));
       }
       for (size_t i = 0; i < numFns; ++i) {
-        if (grads[i].size() != numVars) {
+        if (grads[i].size() != numDerivs) {
           throw(std::runtime_error("Pybind11 Direct Interface [\"fnGrads\"]: "
-                                   "gradient dimension != # of variables "
+                                   "gradient dimension != # of derivatives "
                                    "for response " + std::to_string(i)));
         }
-        for (size_t j = 0; j < numVars; ++j) {
+        for (size_t j = 0; j < numDerivs; ++j) {
           fnGrads[i][j] = grads[i][j];
         }
       }
@@ -194,17 +196,17 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
                                  "incorrect size for # of functions"));
       }
       for (size_t i = 0; i < numFns; ++i) {
-        if (hess[i].size() != numVars) {
+        if (hess[i].size() != numDerivs) {
           throw(std::runtime_error(
               "Pybind11 Direct Interface [\"fnHessians\"]: "
-              "Hessian # of rows != # of variables "
+              "Hessian # of rows != # of derivatives "
               "for response " + std::to_string(i)));
         }
-        for (size_t j = 0; j < numVars; ++j) {
-          if (hess[i][j].size() != numVars) {
+        for (size_t j = 0; j < numDerivs; ++j) {
+          if (hess[i][j].size() != numDerivs) {
             throw(std::runtime_error(
                 "Pybind11 Direct Interface [\"fnHessians\"]: "
-                "Hessian # of columns != # of variables "
+                "Hessian # of columns != # of derivatives "
                 "for response " + std::to_string(i)));
           }
           for (size_t k = 0; k <= j; ++k) {
