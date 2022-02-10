@@ -265,8 +265,8 @@ private:
     const RealVector& cost, const Sizet2DArray& N_l, SizetArray& delta_N_l);
   /// compute sample allocation delta based on current samples and based on allocation target. Single allocation target for each qoi, aggregated using max operation.
   void compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
- 									const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2, const RealMatrix& agg_var_qoi, 
-  										const RealVector& cost, const Sizet2DArray& N_l, SizetArray& delta_N_l);
+					const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2, const RealMatrix& agg_var_qoi,
+					const RealVector& cost, const Sizet2DArray& N_pilot, const Sizet2DArray& N_online, SizetArray& delta_N_l);
   
   // Roll up expected value estimators for central moments.  Final expected
   // value is sum of expected values from telescopic sum.  Note: raw moments

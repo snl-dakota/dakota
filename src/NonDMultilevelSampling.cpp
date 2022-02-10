@@ -172,8 +172,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   SizetArray delta_N_l;
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
 
-  // raw eval counts are accumulation of allSamples irrespective of resp faults
-  //SizetArray raw_N_l(numSteps, 0);
   //Sizet2DArray& N_l = NLev[form]; // slice only valid for ML
   // define a new 2D array and then post back to NLev at end
   Sizet2DArray N_l(numSteps);
@@ -203,11 +201,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
 	accumulate_ml_Ysums(sum_Y, sum_YY, lev, N_l[step]);
-	if (outputLevel == DEBUG_OUTPUT)
-	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n" << sum_Y[1]
-	       << sum_Y[2] << sum_Y[3] << sum_Y[4] << sum_YY << std::endl;
-	// update raw evaluation counts
-	//raw_N_l[step] += numSamples;
 	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
 
 	// compute estimator variance from current sample accumulation:
@@ -229,11 +222,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
       // MLMC estimator variance for final estvar reporting is not aggregated
       compute_ml_estimator_variance(var_Y, N_l, estVarIter0);//numHIter0=numH;
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
-      if (!budget_constrained) { // eps^2 / 2 = estvar0 * rel tol
+      if (!budget_constrained) // eps^2 / 2 = estvar0 * rel tol
 	eps_sq_div_2 = agg_estvar0 * convergenceTol;
-	if (outputLevel == DEBUG_OUTPUT)
-	  Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
-      }
     }
 
     // update sample targets based on latest variance estimates
@@ -316,8 +306,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   SizetArray delta_N_l;
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
 
-  // raw eval counts are accumulation of allSamples irrespective of resp faults
-  //SizetArray raw_N_l(numSteps, 0);
   //Sizet2DArray& N_l = NLev[form]; // *** VALID ONLY FOR ML
   // define a new 2D array and then post back to NLev at end
   Sizet2DArray N_l(numSteps);
@@ -344,9 +332,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(step);
 	accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_l[step]);
-	if (outputLevel == DEBUG_OUTPUT)
-	  Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n" << sum_Ql[1]
-	       << sum_Ql[2] << sum_Qlm1[1] << sum_Qlm1[2] << std::endl;
 	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
 
 	variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
@@ -372,7 +357,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     else
       compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1,
 				       eps_sq_div_2_qoi, agg_var_qoi,
-				       cost, N_l, delta_N_l);
+				       cost, N_l, N_l, delta_N_l);
 
     ++mlmfIter;
     Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
@@ -410,15 +395,15 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   IntIntPairRealMatrixMap sum_QlQlm1;
   initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps);
   RealMatrix var_Y(numFunctions, numSteps, false);
-  Sizet2DArray N_pilot, N_l(numSteps);  SizetArray delta_N_l;
+  Sizet2DArray N_pilot, N_online(numSteps);  SizetArray delta_N_l;
   for (step=0; step<numSteps; ++step)
-    N_l[step].assign(numFunctions, 0);
+    N_online[step].assign(numFunctions, 0);
 
   // -----------------------------------------
   // Initial loop for offline (overkill) pilot
   // -----------------------------------------
-  evaluate_pilot(sum_Ql, sum_Qlm1, sum_QlQlm1, cost, N_pilot, N_l, delta_N_l,
-		 var_Y, false, false);
+  evaluate_pilot(sum_Ql, sum_Qlm1, sum_QlQlm1, cost, N_pilot,// pilot is offline
+		 N_online, delta_N_l, var_Y, false, false);
 
   // ----------------------------------------------------------
   // Evaluate online sample profile computed from offline pilot
@@ -438,7 +423,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
       numSamples = 2;
     }
     evaluate_ml_sample_increment(step);
-    accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_l[step]);
+    accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_online[step]);
     increment_ml_equivalent_cost(numSamples, level_cost(cost,step), ref_cost);
   }
 
@@ -446,14 +431,14 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   // Final post-processing
   // ---------------------
   // roll up moment contributions
-  compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
+  compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_online);
   recover_variance(momentStats, varH);
   // populate finalStatErrors
-  compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
+  compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_online);
 
-  compute_ml_estimator_variance(var_Y, N_l, estVar);
-  // post final N_l back to NLev (needed for final eval summary)
-  inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
+  compute_ml_estimator_variance(var_Y, N_online, estVar);
+  // post final N_online back to NLev (needed for final eval summary)
+  inflate_final_samples(N_online, multilev, secondaryIndex, NLev);
 }
 
 
@@ -557,8 +542,8 @@ evaluate_pilot(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     // compute eps^2 / 2 = aggregated estvar0 * rel tol
     set_convergence_tol(est_var0_qoi, cost, eps_sq_div_2_qoi);
     compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1,
-				     eps_sq_div_2_qoi, agg_var_qoi,
-				     cost, N_online, delta_N_l);
+				     eps_sq_div_2_qoi, agg_var_qoi, cost,
+				     N_pilot, N_online, delta_N_l);
   }
 }
 
@@ -658,13 +643,12 @@ reset_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	       IntIntPairRealMatrixMap& sum_QlQlm1)
 {
   // reset accumulators to zero
-  IntRMMIter q_it;
-  for (q_it=sum_Ql.begin();   q_it!=sum_Ql.begin();   ++q_it)
+  IntRMMIter q_it;  IntIntPairRealMatrixMap::iterator qq_it;
+  for (q_it=sum_Ql.begin();       q_it!=sum_Ql.end();      ++q_it)
     q_it->second = 0.;
-  for (q_it=sum_Qlm1.begin(); q_it!=sum_Qlm1.begin(); ++q_it)
+  for (q_it=sum_Qlm1.begin();     q_it!=sum_Qlm1.end();    ++q_it)
     q_it->second = 0.;
-  for (IntIntPairRealMatrixMap::iterator qq_it=sum_QlQlm1.begin();
-       qq_it!=sum_QlQlm1.begin(); ++qq_it)
+  for (qq_it=sum_QlQlm1.begin(); qq_it!=sum_QlQlm1.end(); ++qq_it)
     qq_it->second = 0.;
 }
 
@@ -700,6 +684,9 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
     }
     //Cout << r_it->first << ": " << sum_Q[1];
   }
+
+  if (outputLevel == DEBUG_OUTPUT)
+    Cout << "Accumulated sums (Q[1,2]):\n" << sum_Q[1] << sum_Q[2] << std::endl;
 }
 
 
@@ -765,6 +752,10 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       }
       //Cout << r_it->first << ": " << sum_Ql[1] << sum_Qlm1[1];
     }
+
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n" << sum_Ql[1]
+	   << sum_Ql[2] << sum_Qlm1[1] << sum_Qlm1[2] << std::endl;
   }
 }
 
@@ -834,6 +825,10 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
       }
     }
   }
+
+  if (outputLevel == DEBUG_OUTPUT)
+    Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n" << sum_Y[1]
+	 << sum_Y[2] << sum_Y[3] << sum_Y[4] << sum_YY << std::endl;
 }
 
 
@@ -882,6 +877,9 @@ accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY, size_t lev,
       }
     }
   }
+
+  if (outputLevel == DEBUG_OUTPUT)
+    Cout << "Accumulated sums (Y, YY):\n" << sum_Y << sum_YY << std::endl;
 }
 
 
@@ -1031,10 +1029,11 @@ compute_sample_allocation_target(const RealMatrix& agg_var_qoi_in,
 }
 
 
-void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
-                  const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2_in, 
-                      const RealMatrix& agg_var_qoi_in, const RealVector& cost, 
-                      const Sizet2DArray& N_l, SizetArray& delta_N_l)
+void NonDMultilevelSampling::
+compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+				 const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2_in, 
+				 const RealMatrix& agg_var_qoi_in, const RealVector& cost, 
+				 const Sizet2DArray& N_pilot, const Sizet2DArray& N_online, SizetArray& delta_N_l)
 {
   const size_t num_steps = agg_var_qoi_in.numCols(), max_iter = (maxIterations < 0) ? 25 : maxIterations;
   RealVector level_cost_vec(num_steps);
@@ -1141,7 +1140,7 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
       initial_point.size(num_steps);
       pilot_samples.size(num_steps);
       for (size_t step = 0; step < num_steps; ++step) {
-        pilot_samples[step] = N_l[step][qoi];
+        pilot_samples[step] = N_pilot[step][qoi];
         initial_point[step] = 8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); 
       }
 
@@ -1151,7 +1150,7 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
 
       //Bound constraints only allowing positive values for Nlq
       var_lower_bnds.size(num_steps); //init to 0
-      for (size_t step = 0; step < N_l.size(); ++step) {
+      for (size_t step = 0; step < N_pilot.size(); ++step) {
         var_lower_bnds[step] = 6.;
       }
 
@@ -1419,12 +1418,12 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
   for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
     for (size_t step = 0; step < num_steps; ++step) {
         if(allocationTarget == TARGET_MEAN){
-          delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], NTargetQoi(qoi, step));
+          delta_N_l_qoi(qoi, step) = one_sided_delta(N_online[step][qoi], NTargetQoi(qoi, step));
         }else if (allocationTarget == TARGET_VARIANCE || allocationTarget == TARGET_SIGMA || allocationTarget == TARGET_SCALARIZATION){
           if(max_iter==1){
-            delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], NTargetQoi(qoi, step));
+            delta_N_l_qoi(qoi, step) = one_sided_delta(N_online[step][qoi], NTargetQoi(qoi, step));
           }else{
-            delta_N_l_qoi(qoi, step) = std::min(N_l[step][qoi]*3, one_sided_delta(N_l[step][qoi], NTargetQoi(qoi, step)));
+            delta_N_l_qoi(qoi, step) = std::min(N_online[step][qoi]*3, one_sided_delta(N_online[step][qoi], NTargetQoi(qoi, step)));
             delta_N_l_qoi(qoi, step) = delta_N_l_qoi(qoi, step) > 1 
                                         ?  
                                         delta_N_l_qoi(qoi, step)*underrelaxation_factor > 1 
@@ -1461,7 +1460,11 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
   }
 }
 
-void NonDMultilevelSampling::compute_moments(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1, const Sizet2DArray& N_l)
+void NonDMultilevelSampling::
+compute_moments(const IntRealMatrixMap& sum_Ql,
+		const IntRealMatrixMap& sum_Qlm1,
+		const IntIntPairRealMatrixMap& sum_QlQlm1,
+		const Sizet2DArray& N_l)
 {
   //RealMatrix Q_raw_mom(numFunctions, 4);
   const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q2l = sum_Ql.at(2),
@@ -1471,7 +1474,8 @@ void NonDMultilevelSampling::compute_moments(const IntRealMatrixMap& sum_Ql, con
   const IntIntPair pr11(1, 1);
   Real cm1, cm2, cm3, cm4, cm1l, cm2l, cm3l, cm4l;
   const size_t num_steps = sum_Q1l.numCols();
-  assert(sum_Q1l.numCols() == sum_Q2l.numCols() && sum_Q2l.numCols() == sum_Q3l.numCols()&& sum_Q3l.numCols() == sum_Q4l.numCols());
+  assert(num_steps == sum_Q2l.numCols() && num_steps == sum_Q3l.numCols() &&
+	 num_steps == sum_Q4l.numCols());
 
   if (momentStats.empty())
     momentStats.shapeUninitialized(4, numFunctions);
@@ -1490,8 +1494,8 @@ void NonDMultilevelSampling::compute_moments(const IntRealMatrixMap& sum_Ql, con
       cm4 += cm4l;
 
       if (outputLevel == DEBUG_OUTPUT)
-      Cout << "CM_l   for level " << step << ": "
-           << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
+	Cout << "CM_l   for level " << step << ": "
+	     << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
       if (step) {
         uncentered_to_centered(sum_Q1lm1(qoi, step) / Nlq, sum_Q2lm1(qoi, step) / Nlq,
                                sum_Q3lm1(qoi, step) / Nlq, sum_Q4lm1(qoi, step) / Nlq,
@@ -1501,8 +1505,8 @@ void NonDMultilevelSampling::compute_moments(const IntRealMatrixMap& sum_Ql, con
         cm3 -= cm3l;
         cm4 -= cm4l;
         if (outputLevel == DEBUG_OUTPUT)
-        Cout << "CM_lm1 for level " << step << ": "
-             << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
+	  Cout << "CM_lm1 for level " << step << ": "
+	       << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
       }
     }
     check_negative(cm2);
