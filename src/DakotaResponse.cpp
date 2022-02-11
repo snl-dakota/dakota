@@ -93,6 +93,8 @@ Response(BaseConstructor, const Variables& vars,
       }  
     }
   }
+
+  metaData.resize(sharedRespData.metadata_labels().size());
 }
 
 
@@ -108,6 +110,7 @@ Response(BaseConstructor, const SharedResponseData& srd, const ActiveSet& set):
   sharedRespData(srd), responseActiveSet(set)
 {
   shape_rep(set);
+  metaData.resize(sharedRespData.metadata_labels().size());
 }
 
 
@@ -123,6 +126,7 @@ Response::Response(BaseConstructor, const ActiveSet& set):
   responseActiveSet(set)
 {
   shape_rep(set);
+  metaData.resize(sharedRespData.metadata_labels().size());
 }
 
 
@@ -338,10 +342,11 @@ Response Response::copy(bool deep_srd) const
 void Response::copy_rep(std::shared_ptr<Response> source_resp_rep)
 {
   functionValues    = source_resp_rep->functionValues;
-  fieldCoords       = source_resp_rep->fieldCoords;
   functionGradients = source_resp_rep->functionGradients;
   functionHessians  = source_resp_rep->functionHessians;
+  fieldCoords       = source_resp_rep->fieldCoords;
   responseActiveSet = source_resp_rep->responseActiveSet;
+  metaData          = source_resp_rep->metaData;
 }
 
 
@@ -411,6 +416,8 @@ void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv,
     if(asv[i] & 1)
       expected_responses[fn_labels[i]] = Rmeta(i, false);
   }
+  for(size_t i=0; i<metaData.size(); ++i)
+    expected_responses[shared_data().metadata_labels()[i]] = Rmeta(nf+i, false);
   // Use std::map.find() to learn whether a token extracted from s is an
   // expected label. find() returns an iterator to the first matching item.
   // If no match was found, the iterator refers to the end.
@@ -446,8 +453,10 @@ void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv,
         max_index = expected_responses[token2].first;
       expected_responses[token2].second = true;
       num_found++;
-      functionValues[expected_responses[token2].first] =
-        std::atof(token1.c_str());
+      if (expected_responses[token2].first < nf)
+	functionValues[expected_responses[token2].first] = std::stod(token1);
+      else
+	metaData[expected_responses[token2].first - nf] = std::stod(token1);
       token1.clear(); token2.clear();
       pos1 = s.tellg();
       s >> token1;
@@ -805,6 +814,12 @@ void Response::write(std::ostream& s) const
       s << fn_labels[i] << " Hessian\n";
     }
   }
+
+  // Write the metadata
+  for (i=0; i<metaData.size(); ++i)
+    s << "                     " << std::setw(write_precision+7)
+      << metaData[i] << ' ' << sharedRespData.metadata_labels()[i] << '\n';
+
   s << std::endl;
 }
 
@@ -1514,6 +1529,7 @@ void Response::reset()
     size_t nh = functionHessians.size();
     for (size_t i=0; i<nh; i++)
       functionHessians[i] = 0.;
+    std::fill(metaData.begin(), metaData.end(), RespMetadataT());
   }
 }
 

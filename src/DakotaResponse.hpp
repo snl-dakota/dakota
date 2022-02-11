@@ -24,6 +24,7 @@
 namespace Dakota {
 
 class ProblemDescDB;
+using RespMetadataT = double;
 
 
 /// Container class for response functions and their derivatives.  
@@ -219,6 +220,13 @@ public:
   /// unrolled labels available through function_labels()
   const StringArray& field_group_labels();
 
+  /// get the (possibly empty) response metadata;
+  /// (get labels through shared_data())
+  const std::vector<RespMetadataT>& metadata() const;
+  /// set the response metadata
+  /// (set labels through shared_data())
+  void metadata(const std::vector<RespMetadataT>& md);
+
   /// read a response object of specified format from a std::istream 
   void read(std::istream& s, const unsigned short format = FLEXIBLE_RESULTS);
  
@@ -381,6 +389,9 @@ protected:
 
   /// copy of the ActiveSet used by the Model to generate a Response instance
   ActiveSet responseActiveSet;
+
+  /// metadata storage
+  std::vector<RespMetadataT> metaData;
 
 private:
 
@@ -832,6 +843,24 @@ inline const StringArray& Response::field_group_labels()
     return responseRep->sharedRespData.field_group_labels();
   else             
     return sharedRespData.field_group_labels();
+}
+
+
+inline const std::vector<RespMetadataT>& Response::metadata() const
+{
+  if (responseRep)
+    return responseRep->metaData;
+  else
+    return metaData;
+}
+
+
+inline void Response::metadata(const std::vector<RespMetadataT>& md)
+{
+  if (responseRep)
+    responseRep->metaData = md;
+  else
+    metaData = md;
 }
 
 
