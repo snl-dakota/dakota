@@ -62,7 +62,8 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
 			  all_relax_dr, 1, 0, 0, recast_resp_order));
 
   // instantiate the optimizer used to compute the output interval bounds
-  switch (sub_optimizer_select(probDescDB.get_ushort("method.sub_method"))) {
+  switch (sub_optimizer_select(
+	  probDescDB.get_ushort("method.nond.opt_subproblem_solver"))) {
   case SUBMETHOD_SQP: {
 #ifdef HAVE_NPSOL
     int deriv_level = 3;

@@ -50,7 +50,8 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
   bool err_flag = false;
 
   // Define optimization sub-problem solver
-  unsigned short opt_alg = probDescDB.get_ushort("method.sub_method");
+  unsigned short opt_alg
+    = probDescDB.get_ushort("method.nond.opt_subproblem_solver");
   bool discrete
     = (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars);
   if (opt_alg == SUBMETHOD_EGO) {
