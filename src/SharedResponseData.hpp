@@ -127,6 +127,9 @@ private:
 
   /// number of independent coordinates, e.g., x, t, for each field f(x,t)
   IntVector coordsPerPriField;
+
+  /// descriptors for metadata fields (empty if none)
+  StringArray metadataLabels;
   
 };
 
@@ -253,6 +256,11 @@ public:
 
   /// retrieve simulation variance
   const RealVector& simulation_error() const;
+
+  /// get labels for metadata fields
+  const StringArray& metadata_labels() const;
+  /// set labels for metadata fields
+  void metadata_labels(const StringArray& md_labels);
 
   /// create a deep copy of the current object and return by value
   SharedResponseData copy() const;
@@ -398,6 +406,14 @@ inline void SharedResponseData::function_labels(const StringArray& labels)
 
 inline const StringArray& SharedResponseData::field_group_labels() const
 { return srdRep->priFieldLabels; }
+
+
+inline const StringArray& SharedResponseData::metadata_labels() const
+{ return srdRep->metadataLabels; }
+
+
+inline void SharedResponseData::metadata_labels(const StringArray& md_labels)
+{ srdRep->metadataLabels = md_labels; }
 
 
 inline bool SharedResponseData::is_null() const
