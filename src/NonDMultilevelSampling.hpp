@@ -157,12 +157,13 @@ private:
   void multilevel_mc_pilot_projection();
 
   /// helper for shared code among offline-pilot and pilot-projection modes
-  void evaluate_pilot(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		      IntIntPairRealMatrixMap& sum_QlQlm1,
-		      const RealVector& cost, Sizet2DArray& N_pilot,
-		      const Sizet2DArray& N_online, SizetArray& delta_N_l,
-		      RealMatrix& var_Y, bool accumulate_cost,
-		      bool pilot_estvar);
+  void evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+		       IntIntPairRealMatrixMap& sum_QlQlm1,
+		       const RealVector& cost, Sizet2DArray& N_pilot,
+		       Sizet2DArray& N_online, SizetArray& delta_N_l,
+		       RealMatrix& var_Y, RealMatrix& var_qoi,
+		       RealVector& eps_sq_div_2, bool accumulate_cost,
+		       bool pilot_estvar);
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -261,11 +262,11 @@ private:
   void set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, RealVector& eps_sq_div_2_qoi);
 
   /// compute sample allocation delta based on a budget constraint
-  void compute_sample_allocation_target(const RealMatrix& agg_var_qoi, 
+  void compute_sample_allocation_target(const RealMatrix& var_qoi, 
     const RealVector& cost, const Sizet2DArray& N_l, SizetArray& delta_N_l);
   /// compute sample allocation delta based on current samples and based on allocation target. Single allocation target for each qoi, aggregated using max operation.
   void compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
-					const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2, const RealMatrix& agg_var_qoi,
+					const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2, const RealMatrix& var_qoi,
 					const RealVector& cost, const Sizet2DArray& N_pilot, const Sizet2DArray& N_online, SizetArray& delta_N_l);
   
   // Roll up expected value estimators for central moments.  Final expected
