@@ -102,7 +102,7 @@ set of manuals, this set of links may help you find what you're looking for...
   - :ref:`Sample Input Files <examples-gettingstarted-main>`
   - :ref:`Input Spec Summary <inputspec-summary>`
   
-- :ref:`Keywords Area <reference-keywords-area-main>`
+- :ref:`Keywords Area <keyword-reference-area>`
 - Topics Area
 
   - admin
