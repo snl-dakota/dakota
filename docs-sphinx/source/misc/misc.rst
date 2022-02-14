@@ -7,6 +7,9 @@ Miscellaneous
    help
    faq
    aboutteam
+   contributors
+   license
+   citing
    publications
    releasenotes
    bibliography

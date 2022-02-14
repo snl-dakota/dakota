@@ -4,6 +4,8 @@
 Publications
 """"""""""""
 
+.. _publications-outreach:
+
 ==================
 Outreach/Tutorials
 ==================
@@ -14,6 +16,8 @@ Outreach/Tutorials
 - Iaccarino, G., Eldred, M.S., Ghattas, O., and Doostan, A., `"Minitutorial: Introduction to Uncertainty Quantification Techniques, parts I and II," <http://www.siam.org/meetings/cse09/mini.php>`_ SIAM CSE09 Conference, Miami, FL, March 2-6, 2009.   
 - Swiler, L.P., T. Paez, T., and Mayes, R., `"Epistemic Uncertainty Quantification Tutorial <https://dakota.sandia.gov//sites/default/files/documents/294_swi.pdf>`_, SAND 2008-6578C, paper 294 in the Proceedings of the IMAC XXVII Conference and Exposition on Structural Dynamics, Society for Structural Mechanics, Orlando, FL, Feb. 2009.
 
+.. _publications-books:
+
 =============
 Book Chapters
 =============
@@ -22,6 +26,8 @@ Book Chapters
 - Biegler, L.T., Ghattas, O., Heinkenschloss, M., and van Bloemen Waanders, B., "Large-scale PDE-constrained Optimization: An Introduction," Large-Scale PDE-Constrained Optimization, Lecture Notes in Computational Science and Engineering, No. 30, Springer-Verlag, 2003, pp. 3-13.
 - Salinger, A.G., Pawlowski, R.P., Shadid, J.N., van Bloemen Waanders, B., Bartlett, R., Itle, G.C., and Biegler, L., "rSQP Optimization of Large Scale Reacting Flow Applications with MPSalsa," Large-Scale PDE-Constrained Optimization, Lecture Notes in Computational Science and Engineering, No. 30, Springer-Verlag, 2003, pp. 45-59.
 - Bartlett, R.A. and Biegler, L.T., `"rSQP++: An Object-Oriented Framework for Successive Quadratic Programming," <https://dakota.sandia.gov//sites/default/files/documents/SantaFePDE_rSQP.pdf>`_ Large-Scale PDE-Constrained Optimization, Lecture Notes in Computational Science and Engineering, No. 30, Springer-Verlag, 2003, pp. 316-330.
+
+.. _publications-papers:
 
 ==============
 Journal Papers
@@ -66,6 +72,8 @@ Journal Papers
 - Eldred, M.S., Outka, D.E., Bohnhoff, W.J., Witkowski, W.R., Romero, V.J., Ponslet, E.R., and Chen, K.S., `"Optimization of Complex Mechanics Simulations with Object-Oriented Software Design," <https://dakota.sandia.gov//sites/default/files/documents/CMSEpaper.pdf>`_ Computer Modeling and Simulation in Engineering, Vol. 1, No. 3, August 1996, pp. 323-352.
 
   - Earlier version: paper AIAA-95-1433 in Proceedings of the 36th AIAA/ASME/ ASCE/AHE/ASC Structures, Structural Dynamics, and Materials Conference, New Orleans, LA, April 10-13, 1995, pp. 2406-2415.
+  
+.. _publications-conf-papers:
   
 =================
 Conference Papers
@@ -128,6 +136,8 @@ Conference Papers
 - Romero, V.J., Eldred, M.S., Bohnhoff, W.J., and Outka, D.E., "Application of Optimization to the Inverse Problem of Finding the Worst-Case Heating Configuration in a Fire," Proceedings of the 9th International Conference on Numerical Methods in Thermal Problems, Atlanta, GA, July 17-21, 1995, Vol. 9, Part 2, pp. 1022-1033.
 - Witkowski, W.R., Eldred, M.S., and Harding, D.C., "Integration of Numerical Analysis Tools for Automated Numerical Optimization of a Transportation Package Design," Proceedings of the 5th AIAA/NASA/USAF/ISSMO Symposium on Multidisciplinary Analysis and Optimization, paper AIAA94-4259, Panama City Beach, FL, Sept. 7-9, 1994.
 
+.. _publications-conf-posters:
+
 ==================
 Conference Posters
 ==================
@@ -140,6 +150,8 @@ Conference Posters
 - Eldred, M.S., Higdon, D., Prudencio, E., and Debusschere, B.J., "QUEST Software Tools for Uncertainty Propagation and Inference," 2012 SciDAC PI Meeting, Rockville, MD, Sept. 10-12, 2012.
 - Najm, H.N., Debusschere, B.J., Eldred, M.S., Safta, C., Jakeman, J.D., Higdon, D.M., Gattiker, J.R., Ghanem, R.G., Knio, O.M., Alexanderian, A., Marzouk, Y.M., El Moselhy, T.A., Li, J., Conrad, P.R., Bui-Thanh, T., Ghattas, O., Martin, J., Moser, R., Prudencio, E., and Stadler, G., "Quantification of Uncertainty in Extreme Scale Computations (QUEST)," ASCR Exascale Research Conference, Portland, Apr. 16-18, 2012.
 - Alonso, J.J., Iaccarino, G., Duraisamy, K., Witteveen, J.A.S., Petrone, G., Tang, G., Eldred, M.S., Barone, M.F., Domino, S.P., Xiu, D., "Large-Scale Uncertainty and Error Analysis for Time-dependent Fluid/Structure Interactions in Wind Turbine Applications," 2011 ASCR Applied Mathematics Program PI Meeting, Washington DC, Oct. 17-19, 2011.
+
+.. _publications-conf-abstracts:
 
 ====================
 Conference Abstracts
@@ -188,6 +200,8 @@ Conference Abstracts
 - van Bloemen Waanders, B.G., Eldred, M.S., Hart, W.E., Schimel, B.D., and Giunta, A.A., "A Review of the Dakota Toolkit, Multilevel Parallelism for Complex PDE Simulations on TeraFLOP Computers," abstract presented in the Optimization in Engineering Minisymposium at the SIAM Annual Meeting, Rio Grande, Puerto Rico, July 10-14, 2000.
 - Romero, V.J., Painton, L.A., and Eldred, M.S., "Optimization Under Uncertainty: Shifting of Maximum Vulnerability Point Due to Uncertain Failure Thresholds," 1997 INFORMS Spring Meeting, San Diego, CA, May 1997.
 - Eldred, M.S., Outka, D.E., and Bohnhoff, W.J., "Optimization of Complex Engineering Simulations with the DAKOTA Toolkit," abstract in Proceedings of the First Biennial Tri-Laboratory Engineering Conference on Computational Modeling, Pleasanton, CA, Oct. 31-Nov. 2, 1995.
+
+.. _publications-sand-reports:
 
 ============
 SAND Reports

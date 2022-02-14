@@ -28,9 +28,9 @@ set of manuals, this set of links may help you find what you're looking for...
 
   - :ref:`Packages <developing-tpls-main>`
   - :ref:`Team <aboutteam-main>`
-  - Contributors
-  - License
-  - Citing Dakota
+  - :ref:`Contributors <contributors>`
+  - :ref:`License <license>`
+  - :ref:`Citing Dakota <citing-dakota>`
   
 - Developer Portal
 
@@ -92,7 +92,7 @@ set of manuals, this set of links may help you find what you're looking for...
   - :ref:`Usage <command-line-main>`
   - :ref:`Examples <running-examples-main>`
   - :ref:`Execution Phases <execution-phases-main>`
-  - Restarting Dakota Stuides
+  - Restarting Dakota Studies
   - The Dakota Restart Utility
   
 - Dakota Input Specification
