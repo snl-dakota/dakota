@@ -865,9 +865,9 @@ void Response::write_annotated(std::ostream& s) const
 void Response::read_annotated_rep(std::istream& s)
 {
   // Read sizing data
-  size_t i, num_fns, num_params;
+  size_t i, num_fns, num_params, num_metadata;
   bool grad_flag, hess_flag;
-  s >> num_fns >> num_params >> grad_flag >> hess_flag;
+  s >> num_fns >> num_params >> grad_flag >> hess_flag >> num_metadata;
 
   // Read responseActiveSet and SharedResponseData::functionLabels
   responseActiveSet.reshape(num_fns, num_params);
@@ -875,6 +875,7 @@ void Response::read_annotated_rep(std::istream& s)
   if (sharedRespData.is_null())
     sharedRespData = SharedResponseData(responseActiveSet);
   s >> sharedRespData.function_labels();
+  sharedRespData.read_annotated(s, num_metadata);
 
   // reshape response arrays and reset all data to zero
   reshape(num_fns, num_params, grad_flag, hess_flag);
@@ -897,6 +898,9 @@ void Response::read_annotated_rep(std::istream& s)
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       read_lower_triangle(s, functionHessians[i]); // fault tolerant
+
+  metaData.resize(num_metadata);
+  s >> metaData;
 }
 
 
@@ -911,12 +915,14 @@ void Response::write_annotated_rep(std::ostream& s) const
 
   // Write Response sizing data
   s << num_fns << ' ' << responseActiveSet.derivative_vector().size() << ' '
-    << !functionGradients.empty() << ' ' << !functionHessians.empty() << ' ';
+    << !functionGradients.empty() << ' ' << !functionHessians.empty() << ' '
+    << metaData.size() << ' ';
 
   // Write responseActiveSet and function labels.  Don't separately annotate
   // arrays with sizing data since Response handles this all at once.
   responseActiveSet.write_annotated(s);
   array_write_annotated(s, sharedRespData.function_labels(), false);
+  array_write_annotated(s, sharedRespData.metadata_labels(), false);
 
   // Write the function values if present
   for (i=0; i<num_fns; ++i)
@@ -932,6 +938,8 @@ void Response::write_annotated_rep(std::ostream& s) const
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       write_lower_triangle(s, functionHessians[i], false);
+
+  array_write_annotated(s, metaData, false);
 }
 
 
@@ -1823,6 +1831,8 @@ void Response::load_rep(Archive& ar, const unsigned int version)
   for (size_t i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       ar & functionHessians[i];
+
+  ar & metaData;
 }
 
 
@@ -1863,6 +1873,8 @@ void Response::save_rep(Archive& ar, const unsigned int version) const
   for (size_t i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       ar & functionHessians[i];
+
+  ar & metaData;
 }
 
 /// convenience fnction to write a serial dense matrix column to an Archive

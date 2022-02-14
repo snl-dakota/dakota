@@ -16,6 +16,7 @@
 #ifndef SHARED_RESPONSE_DATA_H
 #define SHARED_RESPONSE_DATA_H
 
+#include "dakota_data_io.hpp"
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 #include "DataResponses.hpp"
@@ -262,6 +263,9 @@ public:
   /// set labels for metadata fields
   void metadata_labels(const StringArray& md_labels);
 
+  /// read metadata labels from annotated (neutral) file
+  void read_annotated(std::istream& s, size_t num_md);
+
   /// create a deep copy of the current object and return by value
   SharedResponseData copy() const;
   /// reshape the data, disconnecting a shared rep if necessary
@@ -414,6 +418,13 @@ inline const StringArray& SharedResponseData::metadata_labels() const
 
 inline void SharedResponseData::metadata_labels(const StringArray& md_labels)
 { srdRep->metadataLabels = md_labels; }
+
+
+inline void SharedResponseData::read_annotated(std::istream& s, size_t num_md)
+{
+  srdRep->metadataLabels.resize(num_md);
+  s >> srdRep->metadataLabels;
+}
 
 
 inline bool SharedResponseData::is_null() const
