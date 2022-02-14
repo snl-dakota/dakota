@@ -525,8 +525,10 @@ void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv,
   size_t num_expected = 0, num_found = 0;
   for(size_t i=0; i<nf; ++i) // count the requested responses for error checking
     if(asv[i] & 1) ++num_expected;
+  num_expected += metaData.size();
 
   size_t asv_idx = 0; //functionValues/asv index; advanced as fn vals are stored
+  size_t md_idx = 0;
   pos1 = s.tellg();
   s >> token1;
   pos2 = s.tellg();
@@ -539,8 +541,12 @@ void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv,
 
     if(isfloat(token1)) {
       ++num_found;
-      if(num_found <= num_expected)
-        functionValues[asv_idx] = std::atof(token1.c_str());
+      if(num_found <= num_expected) {
+	if(asv_idx < nf)
+	  functionValues[asv_idx] = std::stod(token1);
+	else
+	  metaData[md_idx++] = std::stod(token1);
+      }
     } else {
       throw ResultsFileError("Item \"" + token1 + "\" found while reading "
           "function values is not a valid floating point number.");
