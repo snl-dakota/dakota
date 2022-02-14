@@ -8,18 +8,7 @@
  * For more information see the files copyright.txt and license.txt
  * included with the software.
  ******************************************************************************/
-package gov.sandia.dart.dakota;
-
-import gov.sandia.dart.dakota.RefManInputSpec;
-import gov.sandia.dart.dakota.nidr.antlr.NIDRBaseListener;
-import gov.sandia.dart.dakota.nidr.antlr.NIDRLexer;
-import gov.sandia.dart.dakota.nidr.antlr.NIDRParser;
-import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.CommandContext;
-import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.GOptionalGroupContext;
-import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.GRequiredGroupContext;
-import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.OptionalGroupContext;
-import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.RequiredGroupContext;
-import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.ToplevelContext;
+package gov.sandia.dart.dakota.nidr;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,6 +23,18 @@ import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
+
+import gov.sandia.dart.dakota.nidr.antlr.NIDRBaseListener;
+import gov.sandia.dart.dakota.nidr.antlr.NIDRLexer;
+import gov.sandia.dart.dakota.nidr.antlr.NIDRParser;
+import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.CommandContext;
+import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.GOptionalGroupContext;
+import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.GRequiredGroupContext;
+import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.OptionalGroupContext;
+import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.RequiredGroupContext;
+import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.ToplevelContext;
+import gov.sandia.dart.dakota.refman.RefManInputSpec;
+import gov.sandia.dart.dakota.refman.metadata.InputSpecKeywordMetaData;
 
 
 /**
@@ -484,8 +485,8 @@ public class NIDRToRefManSpec extends NIDRBaseListener {
 		
 		String hierarchy_string = context_string();
 		
-		spec_data.addData(hierarchy_string, "Keyword_Hierarchy", hierarchy_string);
-		spec_data.addData(hierarchy_string, "Name", keyword.get("name").toString());
+		spec_data.addData(hierarchy_string, InputSpecKeywordMetaData.KEYWORD_HIERARCHY, hierarchy_string);
+		spec_data.addData(hierarchy_string, InputSpecKeywordMetaData.NAME, keyword.get("name").toString());
 		
 		// TODO: multiple aliases aren't supported, but we print them for now
 		StringBuilder alias_builder = new StringBuilder();
@@ -494,12 +495,12 @@ public class NIDRToRefManSpec extends NIDRBaseListener {
 			for (String alias: aliases)
 				alias_builder.append(alias).append(" ");			
 		}
-		spec_data.addData(hierarchy_string, "Alias", alias_builder.toString());
+		spec_data.addData(hierarchy_string, InputSpecKeywordMetaData.ALIAS, alias_builder.toString());
 		
 		StringBuilder param_builder = new StringBuilder();
 		if (keyword.containsKey("param"))
 			param_builder.append(keyword.get("param"));
-		spec_data.addData(hierarchy_string, "Argument", param_builder.toString());
+		spec_data.addData(hierarchy_string, InputSpecKeywordMetaData.ARGUMENT, param_builder.toString());
 		
 	}
 	

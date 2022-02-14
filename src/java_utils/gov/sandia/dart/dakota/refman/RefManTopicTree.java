@@ -8,7 +8,7 @@
  * For more information see the files copyright.txt and license.txt
  * included with the software.
  ******************************************************************************/
-package gov.sandia.dart.dakota;
+package gov.sandia.dart.dakota.refman;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -144,7 +144,7 @@ public class RefManTopicTree {
 				
 				topic_page.append("<h2>Related Keywords</h2>\n");
 				for (String subkw : entry.subKeywords) {
-					String blurb = kw_metadata.get_blurb(subkw);
+					String blurb = kw_metadata.getBlurb(subkw);
 					topic_page.append("- \\ref " + subkw + " : " + blurb.trim() + "\n\n");
 				}
 				os.append(topic_page + "\n");

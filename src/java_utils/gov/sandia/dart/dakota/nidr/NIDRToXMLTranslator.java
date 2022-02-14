@@ -8,8 +8,10 @@
  * For more information see the files copyright.txt and license.txt
  * included with the software.
  ******************************************************************************/
-package gov.sandia.dart.dakota;
+package gov.sandia.dart.dakota.nidr;
 
+import gov.sandia.dart.dakota.DescFile;
+import gov.sandia.dart.dakota.Indenter;
 import gov.sandia.dart.dakota.nidr.antlr.NIDRBaseListener;
 import gov.sandia.dart.dakota.nidr.antlr.NIDRLexer;
 import gov.sandia.dart.dakota.nidr.antlr.NIDRParser;
@@ -448,11 +450,12 @@ public class NIDRToXMLTranslator extends NIDRBaseListener{
 	 * not sure that's always the case.
 	 * @param list
 	 */
+	@SuppressWarnings("unchecked")
 	private void print(Alternatives list) {
 		String label = null;
 		for (Object obj: list) {
 			if (obj instanceof Map) {
-				Map<Object, Object> keyword =  (Map<Object, Object>) obj;
+				Map<Object, Object> keyword = (Map<Object, Object>) obj;
 				String name = (String) keyword.get("name");
 				path.push(name);
 				try {

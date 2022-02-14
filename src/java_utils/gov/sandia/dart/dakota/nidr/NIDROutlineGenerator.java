@@ -8,8 +8,9 @@
  * For more information see the files copyright.txt and license.txt
  * included with the software.
  ******************************************************************************/
-package gov.sandia.dart.dakota;
+package gov.sandia.dart.dakota.nidr;
 
+import gov.sandia.dart.dakota.Indenter;
 import gov.sandia.dart.dakota.nidr.antlr.NIDRBaseListener;
 import gov.sandia.dart.dakota.nidr.antlr.NIDRLexer;
 import gov.sandia.dart.dakota.nidr.antlr.NIDRParser;

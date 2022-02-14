@@ -9,14 +9,13 @@
  * included with the software.
  ******************************************************************************/
 // briadam modification of XMLtoNIDRTranslator.java (ejfried)
-package gov.sandia.dart.dakota;
+package gov.sandia.dart.dakota.xml;
 
-import gov.sandia.dart.dakota.RefManInputSpec;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,6 +31,9 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import gov.sandia.dart.dakota.refman.RefManInputSpec;
+import gov.sandia.dart.dakota.refman.metadata.InputSpecKeywordMetaData;
 
 // Note: this translator assumes XML validates!
 // Parse a Dakota XML file and create a reference manual-friendly
@@ -229,16 +231,6 @@ public class XMLToRefManSpec {
 		return result;
 	}
 
-	// Determine whether a keyword has any non-trivial children -- i.e.,
-	// children other than param and alias elements
-	private static List<String> trivialTags = Arrays.asList("alias", "param");
-	private boolean hasChildren(Element keyword) {		
-		for (Element element: asElementList(keyword.getChildNodes()))
-			if (!trivialTags.contains(element.getTagName()))
-						return true;
-		return false;
-	}
-	
 	private void parseAlternatives(Element oneOf, String option_str, boolean immediate_children) throws XPathException {
 		List<Element> alternatives = asElementList(oneOf.getChildNodes());
 		if (immediate_children) {
@@ -403,32 +395,30 @@ public class XMLToRefManSpec {
 	}
 
 	
-	// print the tag followed by keyword "name" field
+	/**
+	 * Print the tag followed by keyword "name" field
+	 * @param tag
+	 * @param keyword
+	 */
 	private void addTaggedChild(String tag, Element keyword) {
 		spec_data.appendChild(context_string(), tag + " " + keyword.getAttribute("name"));
 	}
 
 	private void addKeywordHeader(Element keyword) throws XPathException {
-
 		String hierarchy_string = context_string();
 
-		spec_data.addData(hierarchy_string, "Keyword_Hierarchy", hierarchy_string);
-		spec_data.addData(hierarchy_string, "Name", keyword.getAttribute("name"));
+		spec_data.addData(hierarchy_string, InputSpecKeywordMetaData.KEYWORD_HIERARCHY, hierarchy_string);
+		spec_data.addData(hierarchy_string, InputSpecKeywordMetaData.NAME, keyword.getAttribute("name"));
 
 		String space_sep_aliases = getAliases(keyword);
-		//if (!space_sep_aliases.isEmpty())
-		spec_data.addData(hierarchy_string, "Alias", space_sep_aliases);
+		spec_data.addData(hierarchy_string, InputSpecKeywordMetaData.ALIAS, space_sep_aliases);
 		
-		// TODO: may need to format parameters
 		String space_sep_params = getParams(keyword);
-		//if (!space_sep_params.isEmpty())
-		//addData("Argument", space_sep_params);
-		// for backward compat with debugging output, trim to avoid constraints, pointers:
-		spec_data.addData(hierarchy_string, "Argument", space_sep_params.trim());
+		spec_data.addData(hierarchy_string, InputSpecKeywordMetaData.ARGUMENT, space_sep_params.trim());
 
-		if (keyword.hasAttribute("default"))
-			spec_data.addData(hierarchy_string, "Default", keyword.getAttribute("default"));
-
+		if(keyword.hasAttribute("default")) {
+			spec_data.addData(hierarchy_string, InputSpecKeywordMetaData.DEFAULT, keyword.getAttribute("default"));
+		}
 	}
 
 	
@@ -472,11 +462,6 @@ public class XMLToRefManSpec {
     		xPathInstance.setNamespaceContext(new NamespaceContext() {
 
     			@Override
-    			public Iterator getPrefixes(String namespaceURI) {
-    				throw new UnsupportedOperationException();
-    			}
-
-    			@Override
     			public String getPrefix(String namespaceURI) {
     				throw new UnsupportedOperationException();
     			}
@@ -485,6 +470,11 @@ public class XMLToRefManSpec {
     			public String getNamespaceURI(String prefix) {
     				return "http://www.sandia.gov/dakota/1.0";
     			}
+
+				@Override
+				public Iterator<String> getPrefixes(String namespaceURI) {
+					throw new UnsupportedOperationException();
+				}
     		});
     	}
     	return xPathInstance;

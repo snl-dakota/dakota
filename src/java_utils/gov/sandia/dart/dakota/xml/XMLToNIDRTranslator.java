@@ -8,7 +8,7 @@
  * For more information see the files copyright.txt and license.txt
  * included with the software.
  ******************************************************************************/
-package gov.sandia.dart.dakota;
+package gov.sandia.dart.dakota.xml;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -32,6 +32,8 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import gov.sandia.dart.dakota.Indenter;
 
 // Note: this translator assumes XML validates!
 public class XMLToNIDRTranslator {			
@@ -268,7 +270,7 @@ public class XMLToNIDRTranslator {
     		xPathInstance.setNamespaceContext(new NamespaceContext() {
 
     			@Override
-    			public Iterator getPrefixes(String namespaceURI) {
+    			public Iterator<String> getPrefixes(String namespaceURI) {
     				throw new UnsupportedOperationException();
     			}
 

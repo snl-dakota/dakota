@@ -8,7 +8,7 @@
  * For more information see the files copyright.txt and license.txt
  * included with the software.
  ******************************************************************************/
-package gov.sandia.dart.dakota;
+package gov.sandia.dart.dakota.xml;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
