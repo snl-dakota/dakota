@@ -4,4 +4,9 @@ Keyword Reference
 .. toctree::
    :maxdepth: 1
    
-   reference/keywords
+   reference/environment
+   reference/method
+   reference/model
+   reference/variables
+   reference/interface
+   reference/responses
