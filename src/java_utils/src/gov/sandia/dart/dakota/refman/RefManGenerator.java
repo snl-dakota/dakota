@@ -14,8 +14,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import gov.sandia.dart.dakota.nidr.NIDRToRefManSpec;
-import gov.sandia.dart.dakota.refman.print.doxygen.KeywordPageRSTPrinter;
-import gov.sandia.dart.dakota.refman.print.doxygen.KeywordPrinter;
+import gov.sandia.dart.dakota.refman.print.KeywordPageRSTPrinter;
+import gov.sandia.dart.dakota.refman.print.KeywordPrinter;
 import gov.sandia.dart.dakota.xml.XMLToRefManSpec;
 
 /**

@@ -1,4 +1,4 @@
-package gov.sandia.dart.dakota.refman.print.doxygen;
+package gov.sandia.dart.dakota.refman.print;
 
 import java.io.FileWriter;
 import java.io.IOException;
