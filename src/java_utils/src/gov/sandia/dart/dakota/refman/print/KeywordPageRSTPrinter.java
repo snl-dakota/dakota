@@ -106,7 +106,7 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 	@Override
 	public String printBlurb(RefManKeywordMetaData mdcontents) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(doxygenConvert(mdcontents.getBlurb()));
+		sb.append(DoxygenToRSTConverter.convert(mdcontents.getBlurb()));
 		sb.append("\n\n");
 		return sb.toString();
 	}
@@ -118,7 +118,7 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		if(!mdcontents.getTopics().isBlank()) {
 			sb.append("\n").append(bold("Topics")).append("\n");
 			sb.append("\n");
-			sb.append(doxygenConvert(mdcontents.getTopics()));
+			sb.append(DoxygenToRSTConverter.convert(mdcontents.getTopics()));
 			sb.append("\n\n");
 		}
 		return sb.toString();
@@ -153,7 +153,7 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		
 		sb.append("\n").append(bold("Description")).append("\n");
 		sb.append("\n");
-		sb.append(doxygenConvert(mdcontents.getDescription())).append("\n\n");
+		sb.append(DoxygenToRSTConverter.convert(mdcontents.getDescription())).append("\n\n");
 		return sb.toString();
 	}
 
@@ -164,7 +164,7 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		if(!mdcontents.getExamples().isBlank()) {
 			sb.append("\n").append(bold("Examples")).append("\n");
 			sb.append("\n");
-			sb.append(doxygenConvert(mdcontents.getExamples()));
+			sb.append(DoxygenToRSTConverter.convert(mdcontents.getExamples()));
 			sb.append("\n\n");
 		}
 		return sb.toString();
@@ -177,7 +177,7 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		if(!mdcontents.getTheory().isBlank()) {
 			sb.append("\n").append(bold("Theory")).append("\n");
 			sb.append("\n");
-			sb.append(doxygenConvert(mdcontents.getTheory()));
+			sb.append(DoxygenToRSTConverter.convert(mdcontents.getTheory()));
 			sb.append("\n\n");
 		}
 		return sb.toString();
@@ -190,7 +190,7 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		if(!mdcontents.getFaq().isBlank()) {
 			sb.append("\n").append(bold("FAQ")).append("\n");
 			sb.append("\n");
-			sb.append(doxygenConvert(mdcontents.getFaq()));
+			sb.append(DoxygenToRSTConverter.convert(mdcontents.getFaq()));
 			sb.append("\n\n");
 		}
 		return sb.toString();
@@ -245,116 +245,5 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		sb.append("*").append(original).append("*");
 		return sb.toString();
 	}
-	
-	/////////////////////
-	// DOXYGEN CLEANUP //
-	/////////////////////
-	
-	protected String doxygenConvert(String original) {
-		String converted = original.trim();
-		
-		converted = converted.replaceAll("\\%(?=\\w)", "");
-		converted = converted.replaceAll("\\<b\\>\\s*", "*");
-		converted = converted.replaceAll("\\s*\\<\\/b\\>", "*");
-		converted = doxygenConvertLists(converted);
-		converted = doxygenConvertMonospaceSections(converted);
-		converted = doxygenConvertVerbatimBlock(converted);
-		return converted;
-	}
-	
-	private String doxygenConvertLists(String original) {
-		StringBuilder sb = new StringBuilder();
-		String[] lines = original.split("\\n|\\r\\n");
-		
-		boolean firstListItemFound = false;
-		boolean insideListItem = false;
-		for(int i = 0; i < lines.length; i++) {
-			String line = lines[i];
-			if(insideListItem) {
-				if(line.isBlank()) {
-					insideListItem = false;
-					sb.append("\n");
-				} else if(line.contains("\\li")) {
-					String replacement = line.replace("\\li", "-");
-					sb.append("\n").append(replacement).append(" ");
-				} else {
-					sb.append(line).append(" ");
-				}
-			} else if(line.contains("\\li")) {
-				insideListItem = true;
-				if(!firstListItemFound) {
-					firstListItemFound = true;
-					sb.append("\n"); // Extra spacer for top of list
-				}
-				String replacement = line.replace("\\li", "-");
-				sb.append(replacement).append(" ");
-			} else {
-				sb.append(line); // Pass through
-				if(i < lines.length - 1) {
-					sb.append("\n");
-				}
-			}
-		}
-		return sb.toString();
-	}
-	
-	private String doxygenConvertMonospaceSections(String original) {
-		StringBuilder sb = new StringBuilder();
-		String[] lines = original.split("\\n|\\r\\n");
-		
-		boolean insideMonospaceSection = false;
-		for(int i = 0; i < lines.length; i++) {
-			String line = lines[i];
-			String[] words = line.split("\\s");
-		
-			String insertedWord = "";
-			for(int j = 0; j < words.length; j++) {
-				if(words[j].contains("\\c")) {
-					insertedWord = words[j].replace("\\c", "");
-					insideMonospaceSection = true;
-				} else {
-					if(insideMonospaceSection && words[j].matches("[A-Za-z0-9_,\\(\\)\\.:]+")) {
-						insertedWord = "``" + words[j] + "``";
-						insideMonospaceSection = false;
-					} else {
-						insertedWord = words[j];
-					}
-				}
-				
-				sb.append(insertedWord);
-				if(words[j].isEmpty() || (!insertedWord.isEmpty() && j < words.length - 1)) {
-					sb.append(" ");
-				}
-			}
-			if(i < lines.length - 1) {
-				sb.append("\n");
-			}
-		}
-		return sb.toString();
-	}
-	
-	private String doxygenConvertVerbatimBlock(String original) {
-		StringBuilder sb = new StringBuilder();
-		String[] lines = original.split("\\n|\\r\\n");
-		
-		boolean inVerbatimSection = false;
-		for(int i = 0; i < lines.length; i++) {
-			String line = lines[i];
-			if(line.startsWith("\\verbatim")) {
-				inVerbatimSection = true;
-				sb.append("\n.. code-block::\n\n");
-			} else if(line.startsWith("\\endverbatim")) {
-				inVerbatimSection = false;
-				sb.append("\n");
-			} else if(inVerbatimSection) {
-				sb.append("    ").append(line).append("\n");
-			} else {
-				sb.append(line); // Pass through
-				if(i < lines.length - 1) {
-					sb.append("\n");
-				}
-			}
-		}
-		return sb.toString();
-	}
+
 }
