@@ -1,5 +1,7 @@
 .. _inputfile-main:
 
+.. _`topic-block_pointer`: TODO These topic from the old Reference Manual need a better location.
+
 """""""""""""""""
 Dakota Input File
 """""""""""""""""

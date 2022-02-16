@@ -1,6 +1,8 @@
 Running Dakota
 =======================================
 
+.. _running_dakota-usage:
+
 .. toctree::
    :maxdepth: 1
    

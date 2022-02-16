@@ -5,4 +5,5 @@ Dakota Output
    :maxdepth: 1
    
    output/classicoutput
+   output/restart
    output/hdf
