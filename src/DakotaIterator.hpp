@@ -165,7 +165,7 @@ public:
   virtual void response_results_active_set(const ActiveSet& set);
 
   /// return error estimates associated with the final iterator solution
-  virtual const RealVector& response_error_estimates() const;
+  virtual const RealSymMatrix& response_error_estimates() const;
 
   /// indicates if this iterator accepts multiple initial points.  Default
   /// return is false.  Override to return true if appropriate.

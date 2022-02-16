@@ -126,6 +126,10 @@ private:
 		       IntIntPairRealMatrixMap& sum_QlQlm1, const size_t step,
 		       const RealVectorArray& offset, Sizet2DArray& N_l);
 
+  /// adds the response evaluations for the current step to 
+  /// levQoisamplesmatrixMap. 
+  void store_evaluations(const size_t step);
+
   /// update running QoI sums for two models (sum_Ql, sum_Qlm1) using set of
   /// model evaluations within allResponses
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
@@ -145,29 +149,38 @@ private:
   /// compute variance from sum accumulators
   Real variance_Ysum(Real sum_Y, Real sum_YY, size_t Nlq);
 
-  /// compute variance from sum accumulators, necessary for sample allocation optimization
-  static Real variance_Ysum_static(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad);
+  /// compute variance from sum accumulators
+  /// necessary for sample allocation optimization
+  static Real variance_Ysum_static(Real sum_Y, Real sum_YY, /*Real offset,*/ 
+  						size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad);
 
   /// compute variance from sum accumulators
   Real variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
 		     Real sum_Qlm1Qlm1, size_t Nlq);
-  /// compute variance from sum accumulators, necessary for sample allocation optimization
-  static Real variance_Qsum_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
-	      Real sum_Qlm1Qlm1, size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad);
+  /// compute variance from sum accumulators
+  /// necessary for sample allocation optimization
+  static Real variance_Qsum_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, 
+  			 Real sum_QlQlm1, Real sum_Qlm1Qlm1, size_t Nlq_pilot, size_t Nlq, 
+  			 bool compute_gradient, Real& grad);
 
   Real var_lev_l(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
 	      Real sum_Qlm1Qlm1, size_t Nlq);
 	static Real var_lev_l_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
-	      Real sum_Qlm1Qlm1, size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad);
+	      Real sum_Qlm1Qlm1, size_t Nlq_pilot, size_t Nlq, bool compute_gradient, 
+	      Real& grad);
 
-  /// sum up variances for QoI (using sum_YY with means from sum_Y) based on allocation target
-  void aggregate_variance_target_Qsum(const IntRealMatrixMap&  sum_Ql, const IntRealMatrixMap&  sum_Qlm1, 
+  /// sum up variances for QoI (using sum_YY with means from sum_Y) based on 
+  /// allocation target
+  void aggregate_variance_target_Qsum(const IntRealMatrixMap&  sum_Ql, 
+  								const IntRealMatrixMap&  sum_Qlm1, 
  									const IntIntPairRealMatrixMap& sum_QlQlm1, 
-									const Sizet2DArray& N_l, const size_t step, RealMatrix& agg_var_qoi);
+									const Sizet2DArray& N_l, const size_t step, 
+									RealMatrix& agg_var_qoi);
 
 
   /// wrapper for aggregate_variance_Qsum 
-  Real aggregate_variance_mean_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+  Real aggregate_variance_mean_Qsum(const IntRealMatrixMap& sum_Ql, 
+  								const IntRealMatrixMap& sum_Qlm1, 
  									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t step, const size_t qoi);
   /// sum up variances across QoI (using sum_YY with means from sum_Y)
@@ -181,121 +194,217 @@ private:
                                const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
                                const size_t lev, const size_t qoi);
   /// wrapper for var_of_var_ml 
-  Real aggregate_variance_variance_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+  Real aggregate_variance_variance_Qsum(const IntRealMatrixMap& sum_Ql, 
+  								const IntRealMatrixMap& sum_Qlm1, 
  									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t step, const size_t qoi);
 
   /// wrapper for var_of_sigma_ml 
-  Real aggregate_variance_sigma_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+  Real aggregate_variance_sigma_Qsum(const IntRealMatrixMap& sum_Ql, 
+  								const IntRealMatrixMap& sum_Qlm1, 
  									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t step, const size_t qoi);
 
   /// wrapper for var_of_scalarization_ml
-  Real aggregate_variance_scalarization_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+  Real aggregate_variance_scalarization_Qsum(const IntRealMatrixMap& sum_Ql, 
+  								const IntRealMatrixMap& sum_Qlm1, 
  									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t step, const size_t qoi);
+
+  static Real bootstrap_covariance(const size_t step, const size_t qoi, 
+  								const IntRealMatrixMap& lev_qoisamplematrix_map, const Real N,
+  								const bool compute_gradient, Real& grad, int* seed);
+
+  static Real compute_mean(const RealVector& samples);
+
+  static Real compute_mean(const RealVector& samples, const bool compute_gradient, Real& grad);
+
+  static Real compute_mean(const RealVector& samples, const Real N);
+
+  static Real compute_mean(const RealVector& samples, const Real N, const bool compute_gradient, Real& grad);
+
+  static Real compute_std(const RealVector& samples);
+
+  static Real compute_std(const RealVector& samples, const bool compute_gradient, Real& grad);
+
+  static Real compute_std(const RealVector& samples, const Real N);
+
+  static Real compute_std(const RealVector& samples, const Real N, const bool compute_gradient, Real& grad);
+
+  static Real compute_cov(const RealVector& samples_X, const RealVector& samples_hat);
 
   /// sum up Monte Carlo estimates for mean squared error (MSE) for
   /// QoI using discrepancy sums based on allocation target
   void aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, 
-						  const Sizet2DArray& N_l, const size_t step, RealVector& estimator_var0_qoi);
+  								const Sizet2DArray& N_l, const size_t step, 
+  								RealVector& estimator_var0_qoi);
 
   /// compute epsilon^2/2 term for each qoi based on reference estimator_var0 and relative convergence tolereance
-  void set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, RealVector& eps_sq_div_2_qoi);
+  void set_convergence_tol(const RealVector& estimator_var0_qoi, 
+  								const RealVector& cost, RealVector& eps_sq_div_2_qoi);
 
   /// compute sample allocation delta based on current samples and based on allocation target. Single allocation target for each qoi, aggregated using max operation.
-  void compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
- 									const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2, const RealMatrix& agg_var_qoi, 
-  										const RealVector& cost, const Sizet2DArray& N_l, SizetArray& delta_N_l);
+  void compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, 
+  								const IntRealMatrixMap& sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, 
+ 									const RealVector& eps_sq_div_2, const RealMatrix& agg_var_qoi, 
+  								const RealVector& cost, const Sizet2DArray& N_l, 
+  								SizetArray& delta_N_l);
   
   // Roll up expected value estimators for central moments.  Final expected
   // value is sum of expected values from telescopic sum.  Note: raw moments
   // have no bias correction (no additional variance from an estimated center).
-  void compute_moments(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1, const Sizet2DArray& N_l);
+  void compute_moments(const IntRealMatrixMap& sum_Ql, 
+  								const IntRealMatrixMap& sum_Qlm1, 
+  								const IntIntPairRealMatrixMap& sum_QlQlm1, 
+  								const Sizet2DArray& N_l);
 
   /// compute the unbiased product of two sampling means
-  static Real unbiased_mean_product_pair(const Real sumQ1, const Real sumQ2, const Real sumQ1Q2, const size_t Nlq);
+  static Real unbiased_mean_product_pair(const Real sumQ1, const Real sumQ2, 
+  								const Real sumQ1Q2, const size_t Nlq);
   /// compute the unbiased product of three sampling means
-  static Real unbiased_mean_product_triplet(const Real sumQ1, const Real sumQ2, const Real sumQ3,
-                                                                    const Real sumQ1Q2, const Real sumQ1Q3, const Real sumQ2Q3, const Real sumQ1Q2Q3, const size_t Nlq);
+  static Real unbiased_mean_product_triplet(const Real sumQ1, const Real sumQ2, 
+  								const Real sumQ3, const Real sumQ1Q2, const Real sumQ1Q3, 
+  								const Real sumQ2Q3, const Real sumQ1Q2Q3, const size_t Nlq);
   /// compute the unbiased product of two pairs of products of sampling means
-  static Real unbiased_mean_product_pairpair(const Real sumQ1, const Real sumQ2, const Real sumQ1Q2,
-                                                                     const Real sumQ1sq, const Real sumQ2sq,
-                                                                     const Real sumQ1sqQ2, const Real sumQ1Q2sq, const Real sumQ1sqQ2sq, const size_t Nlq);
+  static Real unbiased_mean_product_pairpair(const Real sumQ1, const Real sumQ2, 
+  								const Real sumQ1Q2, const Real sumQ1sq, const Real sumQ2sq,
+                  const Real sumQ1sqQ2, const Real sumQ1Q2sq, 
+                  const Real sumQ1sqQ2sq, const size_t Nlq);
 
-  static Real var_of_var_ml_l0(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1, const size_t Nlq_pilot, const Real Nlq, const size_t qoi, const bool compute_gradient, Real& grad_g);
+  static Real var_of_var_ml_l0(const IntRealMatrixMap& sum_Ql, 
+  								const IntRealMatrixMap& sum_Qlm1, 
+  								const IntIntPairRealMatrixMap& sum_QlQlm1, 
+  								const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+  								const bool compute_gradient, Real& grad_g);
 
-  static Real var_of_var_ml_lmax(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1, const size_t Nlq_pilot, const Real Nlq, const size_t qoi, const bool compute_gradient, Real& grad_g);
+  static Real var_of_var_ml_lmax(const IntRealMatrixMap& sum_Ql, 
+  								const IntRealMatrixMap& sum_Qlm1, 
+  								const IntIntPairRealMatrixMap& sum_QlQlm1, 
+  								const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+  								const bool compute_gradient, Real& grad_g);
 
-  static Real var_of_var_ml_l(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1, const size_t Nlq_pilot, const Real Nlq, const size_t qoi, const size_t lev, const bool compute_gradient, Real& grad_g);
+  static Real var_of_var_ml_l(const IntRealMatrixMap& sum_Ql, 
+  								const IntRealMatrixMap& sum_Qlm1, 
+  								const IntIntPairRealMatrixMap& sum_QlQlm1, 
+  								const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+  								const size_t lev, const bool compute_gradient, Real& grad_g);
 
   ///OPTPP definition
-  static void target_cost_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
-                                        RealVector& grad_f, int& result_mode);
-  static void target_cost_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
-                                         RealMatrix& grad_g, int& result_mode);
+  static void target_cost_objective_eval_optpp(int mode, int n, 
+  								const RealVector& x, double& f, RealVector& grad_f, 
+  								int& result_mode);
+  static void target_cost_constraint_eval_optpp(int mode, int n, 
+  								const RealVector& x, RealVector& g, RealMatrix& grad_g, 
+  								int& result_mode);
 
-  static void target_var_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
-                                         RealMatrix& grad_g, int& result_mode);
-  static void target_var_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
-                                               RealMatrix& grad_g, int& result_mode);
+  static void target_var_constraint_eval_optpp(int mode, int n, 
+  								const RealVector& x, RealVector& g, RealMatrix& grad_g, 
+  								int& result_mode);
+  static void target_var_constraint_eval_logscale_optpp(int mode, int n, 
+  								const RealVector& x, RealVector& g, RealMatrix& grad_g, 
+  								int& result_mode);
+
+  static void target_sigma_constraint_eval_optpp(int mode, int n, 
+  								const RealVector& x, RealVector& g, RealMatrix& grad_g, 
+  								int& result_mode);
+  static void target_sigma_constraint_eval_logscale_optpp(int mode, int n, 
+  								const RealVector& x, RealVector& g, RealMatrix& grad_g, 
+  								int& result_mode);
+
+  static void target_scalarization_constraint_eval_optpp(int mode, int n, 
+  								const RealVector& x, RealVector& g, RealMatrix& grad_g, 
+  								int& result_mode);
+  static void target_scalarization_constraint_eval_logscale_optpp(int mode, 
+  								int n, const RealVector& x, RealVector& g, RealMatrix& grad_g,
+  								int& result_mode);
+
+  static void target_var_objective_eval_optpp(int mode, int n, 
+  								const RealVector& x, double& f, RealVector& grad_f, 
+  								int& result_mode);
+  static void target_var_objective_eval_logscale_optpp(int mode, int n, 
+  								const RealVector& x, double& f, RealVector& grad_f, 
+  								int& result_mode);
+
+  static void target_sigma_objective_eval_optpp(int mode, int n, 
+  								const RealVector& x, double& f, RealVector& grad_f, 
+  								int& result_mode);
+  static void target_sigma_objective_eval_logscale_optpp(int mode, int n, 
+  								const RealVector& x, double& f, RealVector& grad_f, 
+  								int& result_mode);
+
+  static void target_scalarization_objective_eval_optpp(int mode, int n, 
+  								const RealVector& x, double& f, RealVector& grad_f, 
+  								int& result_mode);
+  static void target_scalarization_objective_eval_logscale_optpp(int mode, 
+  								int n, const RealVector& x, double& f, RealVector& grad_f, 
+  								int& result_mode);
 
 
-  static void target_sigma_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
-                                         RealMatrix& grad_g, int& result_mode);
-  static void target_sigma_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
-                                               RealMatrix& grad_g, int& result_mode);
-
-  static void target_scalarization_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
-                                         RealMatrix& grad_g, int& result_mode);
-  static void target_scalarization_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
-                                               RealMatrix& grad_g, int& result_mode);
-
-  static void target_var_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
-                                        RealVector& grad_f, int& result_mode);
-  static void target_var_objective_eval_logscale_optpp(int mode, int n, const RealVector& x, double& f,
-                                        RealVector& grad_f, int& result_mode);
-
-  static void target_sigma_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
-                                        RealVector& grad_f, int& result_mode);
-  static void target_sigma_objective_eval_logscale_optpp(int mode, int n, const RealVector& x, double& f,
-                                        RealVector& grad_f, int& result_mode);
-
-  static void target_scalarization_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
-                                        RealVector& grad_f, int& result_mode);
-  static void target_scalarization_objective_eval_logscale_optpp(int mode, int n, const RealVector& x, double& f,
-                                        RealVector& grad_f, int& result_mode);
+  static void target_scalarization_objective_eval_optpp_fd(int mode, int n, const RealVector& x, double& f, int& result_mode);
 
   /// NPSOL definition (Wrapper using OPTPP implementation above under the hood)
-  static void target_cost_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
-  static void target_cost_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+  static void target_cost_objective_eval_npsol(int& mode, int& n, double* x, 
+  								double& f, double* gradf, int& nstate);
+  static void target_cost_constraint_eval_npsol(int& mode, int& m, int& n, 
+									int& ldJ, int* needc, double* x, double* g, double* grad_g, 
+									int& nstate);
 
-  static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
-  static void target_var_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+  static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, 
+  								int& ldJ, int* needc, double* x, double* g, double* grad_g, 
+  								int& nstate);
+  static void target_var_constraint_eval_logscale_npsol(int& mode, int& m, 
+  								int& n, int& ldJ, int* needc, double* x, double* g, 
+  								double* grad_g, int& nstate);
 
-  static void target_sigma_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
-  static void target_sigma_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+  static void target_sigma_constraint_eval_npsol(int& mode, int& m, int& n, 
+  								int& ldJ, int* needc, double* x, double* g, double* grad_g, 
+  								int& nstate);
+  static void target_sigma_constraint_eval_logscale_npsol(int& mode, int& m, 
+  								int& n, int& ldJ, int* needc, double* x, double* g, 
+  								double* grad_g, int& nstate);
 
-  static void target_scalarization_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
-  static void target_scalarization_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+  static void target_scalarization_constraint_eval_npsol(int& mode, int& m, 
+  								int& n, int& ldJ, int* needc, double* x, double* g, 
+  								double* grad_g, int& nstate);
+  static void target_scalarization_constraint_eval_logscale_npsol(int& mode, 
+  								int& m, int& n, int& ldJ, int* needc, double* x, double* g, 
+  								double* grad_g, int& nstate);
 
-  static void target_var_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
-  static void target_var_objective_eval_logscale_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_var_objective_eval_npsol(int& mode, int& n, double* x, 
+  								double& f, double* gradf, int& nstate);
+  static void target_var_objective_eval_logscale_npsol(int& mode, int& n, 
+  								double* x, double& f, double* gradf, int& nstate);
 
-  static void target_sigma_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
-  static void target_sigma_objective_eval_logscale_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_sigma_objective_eval_npsol(int& mode, int& n, double* x, 
+  								double& f, double* gradf, int& nstate);
+  static void target_sigma_objective_eval_logscale_npsol(int& mode, int& n, 
+  								double* x, double& f, double* gradf, int& nstate);
 
-  static void target_scalarization_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
-  static void target_scalarization_objective_eval_logscale_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_scalarization_objective_eval_npsol(int& mode, int& n, 
+  								double* x, double& f, double* gradf, int& nstate);
+  static void target_scalarization_objective_eval_logscale_npsol(int& mode, 
+  								int& n, double* x, double& f, double* gradf, int& nstate);
 
-  void assign_static_member(const Real &conv_tol, size_t &qoi, const size_t &qoi_aggregation, const size_t &num_functions, const RealVector &level_cost_vec, const IntRealMatrixMap &sum_Ql,
-                            const IntRealMatrixMap &sum_Qlm1, const IntIntPairRealMatrixMap &sum_QlQlm1,
-                            const RealVector &pilot_samples, const RealMatrix &scalarization_response_mapping) const;
+  void assign_static_member(const Real &conv_tol, size_t &qoi, 
+  								const size_t &qoi_aggregation, const size_t &num_functions, 
+  								const RealVector &level_cost_vec, 
+  								const IntRealMatrixMap &sum_Ql,
+                  const IntRealMatrixMap &sum_Qlm1, 
+                  const IntIntPairRealMatrixMap &sum_QlQlm1,
+                  const RealVector &pilot_samples, 
+                  const RealMatrix &scalarization_response_mapping);
 
-  void assign_static_member_problem18(Real &var_L_exact, Real &var_H_exact, Real &mu_four_L_exact, Real &mu_four_H_exact, Real &Ax, RealVector &level_cost_vec) const;
+  void assign_static_member_problem18(Real &var_L_exact, Real &var_H_exact, 
+  								Real &mu_four_L_exact, Real &mu_four_H_exact, 
+  								Real &Ax, RealVector &level_cost_vec) const;
 
-  static void target_var_constraint_eval_optpp_problem18(int mode, int n, const RealVector &x, RealVector &g, RealMatrix &grad_g, int &result_mode);
-  static void target_sigma_constraint_eval_optpp_problem18(int mode, int n, const RealVector &x, RealVector &g, RealMatrix &grad_g, int &result_mode);
+  static void target_var_constraint_eval_optpp_problem18(int mode, int n, 
+  								const RealVector &x, RealVector &g, RealMatrix &grad_g, 
+  								int &result_mode);
+  static void target_sigma_constraint_eval_optpp_problem18(int mode, int n, 
+  								const RealVector &x, RealVector &g, RealMatrix &grad_g, 
+  								int &result_mode);
   static double exact_var_of_var_problem18(const RealVector &Nl);
   static double exact_var_of_sigma_problem18(const RealVector &Nl);
   //
@@ -342,6 +451,10 @@ private:
   /// Helper data structure to store intermedia sample allocations
   RealMatrix NTargetQoi;
   RealMatrix NTargetQoiFN;
+
+  IntRealMatrixMap levQoisamplesmatrixMap;
+  bool storeEvals;
+  int bootstrapSeed;
 };
 
 
@@ -353,26 +466,51 @@ inline void NonDMultilevelSampling::
 nested_response_mappings(const RealMatrix& primary_coeffs,
 			 const RealMatrix& secondary_coeffs)
 {
-  if (scalarizationCoeffs.empty() && allocationTarget == TARGET_SCALARIZATION){
-    if (primary_coeffs.numCols() != 2*numFunctions ||
-	primary_coeffs.numRows() != 1 ||
-	secondary_coeffs.numCols() != 2*numFunctions ||
-	secondary_coeffs.numRows() != numFunctions-1){
-      Cerr << "\nWrong size for primary or secondary_response_mapping. If you are sure, they are the right size, e.g.,"
-	   << " you are interested in quantiles, you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
+  if (scalarizationCoeffs.empty()){// && allocationTarget == TARGET_SCALARIZATION){
+    if(primary_coeffs.empty()){
+      Cerr << "\nPrimary_response_mapping should not be empty at this point. If you are sure this is correct, "
+     << "you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
       abort_handler(METHOD_ERROR);
     }
-    scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
+    if (primary_coeffs.numCols() != 2*numFunctions ||
+          primary_coeffs.numRows() != 1){
+      Cerr << "\nWrong size for primary_response_mapping. If you are sure, it is the right size, e.g.,"
+     << " you are interested in quantiles, you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    if (!secondary_coeffs.empty()){
+      if (secondary_coeffs.numCols() != 2*numFunctions){
+      Cerr << "\nWrong size for columns of secondary_response_mapping. If you are sure, it is the right size, e.g.,"
+     << " you are interested in quantiles, you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
+      abort_handler(METHOD_ERROR);
+      }
+    }
+    size_t nb_rows = primary_coeffs.numRows() + secondary_coeffs.numRows();
+    if (nb_rows > numFunctions){
+      Cerr << "\nWrong size for rows of response_mapping. If you are sure, it is the right size, e.g.,"
+     << ", you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    size_t nb_cols = primary_coeffs.numCols();
+    scalarizationCoeffs.reshape(numFunctions, nb_cols);
     for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
       scalarizationCoeffs(0, row_qoi*2) = primary_coeffs(0, row_qoi*2);
       scalarizationCoeffs(0, row_qoi*2+1) = primary_coeffs(0, row_qoi*2+1);
     }
-    for(size_t qoi = 1; qoi < numFunctions; ++qoi){
+    for(size_t qoi = 1; qoi < nb_rows; ++qoi){
       for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
-	scalarizationCoeffs(qoi, row_qoi*2)
-	  = secondary_coeffs(qoi-1, row_qoi*2);
-	scalarizationCoeffs(qoi, row_qoi*2+1)
-	  = secondary_coeffs(qoi-1, row_qoi*2+1);
+	      scalarizationCoeffs(qoi, row_qoi*2)
+	                    = secondary_coeffs(qoi-1, row_qoi*2);
+	      scalarizationCoeffs(qoi, row_qoi*2+1)
+	                    = secondary_coeffs(qoi-1, row_qoi*2+1);
+      }
+    }
+    for(size_t qoi = nb_rows; qoi < numFunctions; ++qoi){
+      for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
+        scalarizationCoeffs(qoi, row_qoi*2)
+                      = 0.;
+        scalarizationCoeffs(qoi, row_qoi*2+1)
+                      = 0.;
       }
     }
   }
@@ -409,10 +547,13 @@ variance_Ysum_static(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq_pilot,
   // instead of (Y-mean)^2 since mean is updated on each iteration.
   Real variance_tmp = (sum_YY / Nlq_pilot - mu_Y * mu_Y); 
 
+ 
   if(compute_gradient){
   	grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
+    grad = 0;  //TODO_SCALARBUGFIX
   }
 
+  Nlq = Nlq_pilot;  //TODO_SCALARBUGFIX
   Real var_Y = variance_tmp * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
   check_negative(var_Y);
   return var_Y;
@@ -450,10 +591,14 @@ variance_Qsum_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
   Real variance_tmp = (       sum_QlQl / Nlq_pilot - mu_Ql   * mu_Ql     // var_Ql
     - 2. * (   sum_QlQlm1 / Nlq_pilot - mu_Ql   * mu_Qlm1 ) // covar_QlQlm1
     +        sum_Qlm1Qlm1 / Nlq_pilot - mu_Qlm1 * mu_Qlm1 ); // var_Qlm1
+ 
   if(compute_gradient){
-  	grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
+  	grad = variance_tmp * (-1.) / ((Real)(Nlq_pilot - 1.) * (Real)(Nlq_pilot - 1.));
+    grad = 0; //TODO_SCALARBUGFIX
   }
   check_negative(variance_tmp);
+
+  Nlq = Nlq_pilot;  //TODO_SCALARBUGFIX
   return variance_tmp * (Real)Nlq / (Real)(Nlq - 1.); // Bessel's correction
 }
 
@@ -465,7 +610,10 @@ var_lev_l(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
   Real var_lev_Q = (sum_QlQl / Nlq - mu_Ql * mu_Ql)     // var_Ql
     			- (sum_Qlm1Qlm1 / Nlq - mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
     * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
-  check_negative(var_lev_Q);
+  //if(var_lev_Q < 0){
+  //  Cerr << "NonDMultilevelSampling::var_lev_l: var_lev_Q < 0: " << var_lev_Q << " But that should be fine.\n";
+    //check_negative(var_of_var);
+  //}
   return var_lev_Q; 
 }
 
@@ -475,13 +623,22 @@ var_lev_l_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
 {
   Real mu_Ql = sum_Ql / Nlq_pilot, mu_Qlm1 = sum_Qlm1 / Nlq_pilot;
   //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-  Real variance_tmp = (sum_QlQl / Nlq_pilot - mu_Ql   * mu_Ql)     // var_Ql
+  //Cerr << "1NonDMultilevelSampling::var_lev_l_static: " << sum_QlQl << ", " << Nlq_pilot << ", " << mu_Ql << ", " <<" \n";
+  //Cerr << "1NonDMultilevelSampling::var_lev_l_static: " << sum_Qlm1Qlm1 << ", " << Nlq_pilot << ", " << mu_Qlm1 << ", " <<" \n";
+  Real var_lev_Q = (sum_QlQl / Nlq_pilot - mu_Ql   * mu_Ql)     // var_Ql
     										- (sum_Qlm1Qlm1 / Nlq_pilot - mu_Qlm1 * mu_Qlm1 ); // var_Qlm1
+  //sCerr << "2NonDMultilevelSampling::var_lev_l_static: " << var_lev_Q << ", " << Nlq << " But that should be fine.\n";
   if(compute_gradient){
-  	grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
+  	grad = var_lev_Q * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
+    grad = 0;  //TODO_SCALARBUGFIX
   }
-  check_negative(variance_tmp);
-  return variance_tmp * (Real)Nlq / (Real)(Nlq - 1.); // Bessel's correction
+  var_lev_Q *= (Real)Nlq / (Real)(Nlq - 1.);
+
+  //if(var_lev_Q < 0){
+  //  Cerr << "NonDMultilevelSampling::var_lev_l_static: var_lev_Q < 0: " << var_lev_Q << " But that should be fine.\n";
+    //check_negative(var_of_var);
+  //}
+  return var_lev_Q; // Bessel's correction
 }
 
 inline Real NonDMultilevelSampling::
@@ -565,16 +722,16 @@ aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi,
 
 inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, RealVector& eps_sq_div_2_qoi)
 {
-	// compute epsilon target based on relative tolerance: total MSE = eps^2
-	// which is equally apportioned (eps^2 / 2) among discretization MSE and
-	// estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
-	// discretization error, we compute an initial estimator variance and
-	// then seek to reduce it by a relative_factor <= 1.
 	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-
 	  if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+      // compute epsilon target based on relative tolerance: total MSE = eps^2
+      // which is equally apportioned (eps^2 / 2) among discretization MSE and
+      // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
+      // discretization error, we compute an initial estimator variance and
+      // then seek to reduce it by a relative_factor <= 1.
 		  if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
 				eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTolVec[qoi];
+      // compute epsilon target based on absolute tolerance which is given.
 			}else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
 				eps_sq_div_2_qoi[qoi] = convergenceTolVec[qoi];
 			}else{
@@ -582,10 +739,12 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 	  	  abort_handler(INTERFACE_ERROR);
 			}
 		}else if (convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+      //Relative cost with respect to convergenceTol evaluations on finest grid
 			if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
-				eps_sq_div_2_qoi[qoi] = cost[cost.length()-1] * convergenceTolVec[qoi]; //Relative cost with respect to convergenceTol evaluations on finest grid
+				eps_sq_div_2_qoi[qoi] = cost[cost.length()-1] * convergenceTolVec[qoi]; 
+      //Absolute cost which is given.
 			}else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
-				eps_sq_div_2_qoi[qoi] = convergenceTolVec[qoi]; //Direct cost
+				eps_sq_div_2_qoi[qoi] = convergenceTolVec[qoi]; 
 			}else{
 	  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolType is not known.\n";
 	  	  abort_handler(INTERFACE_ERROR);
@@ -665,7 +824,11 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(const IntRealMatrixMap& sum
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
   }
 
-  check_negative(var_of_var);
+  //Cout << "NonDMultilevelSampling::var_of_var_ml_l0: (Qoi, 0): " << qoi << ", 0" << ") Var[Var]: " << var_of_var << std::endl;
+  if(var_of_var < 0){
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_l0: var_of_var < 0.";
+    check_negative(var_of_var);
+  }
   return var_of_var;
 }
 
@@ -697,7 +860,10 @@ inline Real NonDMultilevelSampling::var_of_var_ml_lmax(const IntRealMatrixMap& s
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
   }
 
-  check_negative(var_of_var);
+  if(var_of_var < 0){
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_lmax: var_of_var < 0.";
+    check_negative(var_of_var);
+  }
   return var_of_var;
 }
 
@@ -732,9 +898,8 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_
 
 
   // [fm] bias correction for var_P2l and var_P2lm1
-  var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
-  var_P2lm1 =
-      Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
+  var_P2l = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
+  var_P2lm1 = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
 
   //[fm] unbiased products of mean
   mu_Q2lQ2lm1 = sum_Q2lQ2lm1(qoi, lev) / Nlq_pilot;
@@ -778,9 +943,9 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_
 
   //[fm] Using only unbiased estimators the sum is also unbiased
   covar_P2lP2lm1
-      = mu_P2lP2lm1 + term / (Nlq - 1.);
+      = (mu_P2lP2lm1 + term / (Nlq - 1.)) / Nlq;
 
-  var_of_var = (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
+  var_of_var = var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1 ;
 
   if(compute_gradient) {
     grad_g = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
@@ -795,7 +960,11 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_
                              (-2. * Nlq + 1.) / ((Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq)) * term);
     }
 
-  check_negative(var_of_var);
+  //Cout << "NonDMultilevelSampling::var_of_var_ml_l: (Qoi, lev): " << qoi << ", " << lev << ") Var[Var]: " << var_of_var << std::endl;
+  if(var_of_var < 0){
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_l(qoi, lev) = (" << qoi << ", " << lev << "): var_of_var < 0.";
+    check_negative(var_of_var);
+  }
   return var_of_var;
 }
 
