@@ -12,9 +12,7 @@
 //- Owner:        Russell Hooper
 
 
-#ifdef DAKOTA_PYTHON_NUMPY
 #include <pybind11/numpy.h>
-#endif
 
 #include "Pybind11Interface.hpp"
 #include "dakota_global_defs.hpp"
@@ -22,12 +20,6 @@
 #include "ProblemDescDB.hpp"
 
 using namespace pybind11::literals; // to bring in the `_a` literal
-
-#ifdef DAKOTA_PYTHON_NUMPY
-  using py_arrayT = py::array;
-#else
-  using py_arrayT = py::list;
-#endif
 
 namespace Dakota {
 
@@ -54,9 +46,10 @@ Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db)
 
   if (userNumpyFlag) {
 #ifndef DAKOTA_PYTHON_NUMPY
-    Cout << "\nWarning: Direct Python interface 'numpy' option requested, but "
-	 << "not available.  Variables will be passed to python as lists."
+    Cerr << "\nError: Direct Python interface 'numpy' option requested, but "
+	 << "Dakota was not built with numpy support enabled."
          << std::endl;
+    abort_handler(-1);
 #endif
   }
 
@@ -119,37 +112,11 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
   assert( py11Active );
   assert( Py_IsInitialized() );
 
-  py::list  all_labels   = copy_array_to_pybind11<py::list,StringArray,String>(xAllLabels);
-  py_arrayT cv           = copy_array_to_pybind11<py_arrayT>(xC);
-  py::list  cv_labels    = copy_array_to_pybind11<py::list,StringMultiArray,String>(xCLabels);
-  py_arrayT div          = copy_array_to_pybind11<py_arrayT>(xDI);
-  py::list  div_labels   = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDILabels);
-  py_arrayT dsv          = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDS);
-  py::list  dsv_labels   = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDSLabels);
-  py_arrayT drv          = copy_array_to_pybind11<py_arrayT>(xDR);
-  py::list  drv_labels   = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDRLabels);
-  py_arrayT asv          = copy_array_to_pybind11<py_arrayT,ShortArray,int>(directFnASV);
-  py_arrayT dvv          = copy_array_to_pybind11<py_arrayT,SizetArray,size_t>(directFnDVV);
-  py_arrayT an_comps     = (analysisComponents.size() > 0)
-                          ?  copy_array_to_pybind11<py_arrayT,StringArray,String>(analysisComponents[analysisDriverIndex])
-                          :  py_arrayT();
-
-  py::dict kwargs = py::dict(
-      "variables"_a             = numVars,
-      "functions"_a             = numFns,
-      "all_labels"_a            = all_labels,
-      "cv"_a                    = cv,
-      "cv_labels"_a             = cv_labels,
-      "div"_a                   = div,
-      "div_labels"_a            = div_labels,
-      "dsv"_a                   = dsv,
-      "dsv_labels"_a            = dsv_labels,
-      "drv"_a                   = drv,
-      "drv_labels"_a            = drv_labels,
-      "asv"_a                   = asv,
-      "dvv"_a                   = dvv,
-      "analysis_components"_a   = an_comps,
-      "currEvalId"_a            = currEvalId);
+  py::dict kwargs;
+  if( userNumpyFlag )
+    kwargs = pack_kwargs<py::array>();
+  else
+    kwargs = pack_kwargs<py::list>();
 
   py::dict ret_val = py11CallBack(kwargs);
 
@@ -221,7 +188,7 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
 }
 
 template<typename RetT, class ArrayT, typename T>
-RetT Pybind11Interface::copy_array_to_pybind11(const ArrayT & src)
+RetT Pybind11Interface::copy_array_to_pybind11(const ArrayT & src) const
 {
   std::vector<T> tmp_vec;
   for( auto const & a : src )
@@ -230,11 +197,49 @@ RetT Pybind11Interface::copy_array_to_pybind11(const ArrayT & src)
 }
 
 template<typename RetT, class O, class S>
-RetT Pybind11Interface::copy_array_to_pybind11(const Teuchos::SerialDenseVector<O,S> & src)
+RetT Pybind11Interface::copy_array_to_pybind11(const Teuchos::SerialDenseVector<O,S> & src) const
 {
   std::vector<S> tmp_vec;
   copy_data(src, tmp_vec);
   return py::cast(tmp_vec);
+}
+
+template<typename py_arrayT>
+py::dict Pybind11Interface::pack_kwargs() const
+{
+  py::list  all_labels   = copy_array_to_pybind11<py::list,StringArray,String>(xAllLabels);
+  py_arrayT cv           = copy_array_to_pybind11<py_arrayT>(xC);
+  py::list  cv_labels    = copy_array_to_pybind11<py::list,StringMultiArray,String>(xCLabels);
+  py_arrayT div          = copy_array_to_pybind11<py_arrayT>(xDI);
+  py::list  div_labels   = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDILabels);
+  py_arrayT dsv          = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDS);
+  py::list  dsv_labels   = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDSLabels);
+  py_arrayT drv          = copy_array_to_pybind11<py_arrayT>(xDR);
+  py::list  drv_labels   = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDRLabels);
+  py_arrayT asv          = copy_array_to_pybind11<py_arrayT,ShortArray,int>(directFnASV);
+  py_arrayT dvv          = copy_array_to_pybind11<py_arrayT,SizetArray,size_t>(directFnDVV);
+  py_arrayT an_comps     = (analysisComponents.size() > 0)
+                          ?  copy_array_to_pybind11<py_arrayT,StringArray,String>(analysisComponents[analysisDriverIndex])
+                          :  py_arrayT();
+
+  py::dict kwargs = py::dict(
+      "variables"_a             = numVars,
+      "functions"_a             = numFns,
+      "all_labels"_a            = all_labels,
+      "cv"_a                    = cv,
+      "cv_labels"_a             = cv_labels,
+      "div"_a                   = div,
+      "div_labels"_a            = div_labels,
+      "dsv"_a                   = dsv,
+      "dsv_labels"_a            = dsv_labels,
+      "drv"_a                   = drv,
+      "drv_labels"_a            = drv_labels,
+      "asv"_a                   = asv,
+      "dvv"_a                   = dvv,
+      "analysis_components"_a   = an_comps,
+      "currEvalId"_a            = currEvalId);
+
+  return kwargs;
 }
 
 } //namespace Dakota
