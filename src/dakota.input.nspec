@@ -3289,7 +3289,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ samples INTEGER {N_mdm(int,numSamples)} ]
     [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ 
-      ( sbo {N_mdm(utype,optSubProbSolver_SUBMETHOD_SBO)}
+      ( sbgo {N_mdm(utype,optSubProbSolver_SUBMETHOD_SBGO)}
         [ gaussian_process ALIAS kriging {0}
           surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
           |
@@ -3427,7 +3427,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ 
-      ( sbo {N_mdm(utype,optSubProbSolver_SUBMETHOD_SBO)}
+      ( sbgo {N_mdm(utype,optSubProbSolver_SUBMETHOD_SBGO)}
         [ gaussian_process ALIAS kriging {0}
           surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
           |

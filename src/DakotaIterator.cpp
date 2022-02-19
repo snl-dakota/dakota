@@ -930,7 +930,7 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_SQP,               "sqp")
   (SUBMETHOD_EA,                "ea")
   (SUBMETHOD_EGO,               "ego")
-  (SUBMETHOD_SBO,               "sbo")
+  (SUBMETHOD_SBGO,              "sbgo")
   (SUBMETHOD_CONVERGE_ORDER,    "converge_order")
   (SUBMETHOD_CONVERGE_QOI,      "converge_qoi")
   (SUBMETHOD_ESTIMATE_ORDER,    "estimate_order")

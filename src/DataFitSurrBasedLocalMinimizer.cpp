@@ -38,21 +38,12 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   multiLayerBypassFlag(false),
   useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))
 {
-  // check iteratedModel for model form hierarchy and/or discretization levels
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    Cerr << "Error: DataFitSurrBasedLocalMinimizer requires a local, multipoint"
-	 << ", or global surrogate model specification." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  Model& truth_model  = iteratedModel.truth_model();
-  Model& approx_model = iteratedModel.surrogate_model();
-
   // If (and only if) the user has requested a surrogate bypass, test sub-models
   // to verify that there there is an additional approx layer to bypass.  The
   // surrogate bypass allows for rigorous evaluation of responseCenterTruth
   // and responseStarTruth (which would otherwise involve an approximation).
   if ( probDescDB.get_bool("method.sbl.truth_surrogate_bypass") == true ) {
+    Model& truth_model = model.truth_model();
     if (truth_model.model_type() == "surrogate")
       multiLayerBypassFlag = true;
     ModelList& ml = truth_model.subordinate_models();
@@ -62,9 +53,36 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // Initialize method/interface dependent settings
-  const String& approx_type = probDescDB.get_string("model.surrogate.type");
   short corr_order = (correctionType) ?
     probDescDB.get_short("model.surrogate.correction_order") : -1;
+  initialize_trust_region_data(probDescDB.get_string("model.surrogate.type"),
+			       corr_order);
+}
+
+
+DataFitSurrBasedLocalMinimizer::
+DataFitSurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
+			       short constr_relax, Real tr_factor,
+			       short corr_type, short corr_order,
+			       size_t max_iter, size_t max_eval,
+			       unsigned short soft_conv_limit, bool use_derivs):
+  SurrBasedLocalMinimizer(model, merit_fn, accept_logic, constr_relax,
+			  tr_factor, corr_type, max_iter, max_eval,
+			  soft_conv_limit),
+  multiLayerBypassFlag(false), useDerivsFlag(use_derivs)
+{ initialize_trust_region_data(iteratedModel.surrogate_type(), corr_order); }
+
+
+void DataFitSurrBasedLocalMinimizer::
+initialize_trust_region_data(const String& approx_type, short corr_order)
+{
+  // check iteratedModel for model form hierarchy and/or discretization levels
+  if (iteratedModel.surrogate_type() == "hierarchical") {
+    Cerr << "Error: DataFitSurrBasedLocalMinimizer requires a local, multipoint"
+	 << ", or global surrogate model specification." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
   // approximation types:
   globalApproxFlag = (strbegins(approx_type, "global_"));
   localApproxFlag  = (strbegins(approx_type, "local_"));
@@ -73,6 +91,10 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     if (strends(approx_type, "_tana")) twoPtApproxFlag = true;
     else                             multiPtApproxFlag = true;
   }
+
+  Model& truth_model  = iteratedModel.truth_model();
+  Model& approx_model = iteratedModel.surrogate_model();
+
   // derivative orders:
   approxSetRequest = truthSetRequest = 1;
   if (corr_order >= 1 || ( globalApproxFlag && useDerivsFlag ) ||

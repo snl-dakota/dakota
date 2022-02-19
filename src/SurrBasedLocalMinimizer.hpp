@@ -40,7 +40,13 @@ public:
   //
 
   /// constructor
-  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
+  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model,
+			  std::shared_ptr<TraitsBase> traits);
+  /// alternate constructor for instantiations "on the fly"
+  SurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
+			  short constr_relax, Real tr_factor, // DF-SBLM
+			  short corr_type, size_t max_iter, size_t max_eval,
+			  unsigned short soft_conv_limit);
   /// destructor
   ~SurrBasedLocalMinimizer();
 
@@ -89,6 +95,8 @@ protected:
   //- Heading: Member functions
   //
 
+  /// shared constructor initializations
+  void initialize();
   /// construct and initialize approxSubProbModel
   void initialize_sub_model();
   /// construct and initialize approxSubProbMinimizer

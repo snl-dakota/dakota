@@ -46,7 +46,8 @@ extern ResultsManager iterator_results_db; // defined in DakotaIterator.cpp
     the real ParallelLibrary object is not available. */
 ParallelLibrary::ParallelLibrary(): 
   mpiManager(dummy_mpi_mgr), programOptions(dummy_prg_opt),
-  outputManager(dummy_out_mgr), dummyFlag(true), outputTimings(false)
+  outputManager(dummy_out_mgr), dummyFlag(true), outputTimings(false),
+  currPCIter(parallelConfigurations.end())
 { }
 
 

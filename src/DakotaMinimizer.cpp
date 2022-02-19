@@ -44,7 +44,9 @@ Minimizer* Minimizer::minimizerInstance(NULL);
 
 /** This constructor extracts inherited data for the optimizer and least
     squares branches and performs sanity checking on constraint settings. */
-Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits): 
+Minimizer::
+Minimizer(ProblemDescDB& problem_db, Model& model,
+	  std::shared_ptr<TraitsBase> traits): 
   Iterator(BaseConstructor(), problem_db, traits),
   constraintTol(probDescDB.get_real("method.constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
@@ -72,9 +74,11 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
 }
 
 
-Minimizer::Minimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
-  Iterator(NoDBBaseConstructor(), method_name, model, traits), constraintTol(0.),
-  bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
+Minimizer::
+Minimizer(unsigned short method_name, Model& model,
+	  std::shared_ptr<TraitsBase> traits):
+  Iterator(NoDBBaseConstructor(), method_name, model, traits),
+  constraintTol(0.), bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(false)
@@ -83,8 +87,10 @@ Minimizer::Minimizer(unsigned short method_name, Model& model, std::shared_ptr<T
 }
 
 
-Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
-		     size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits):
+Minimizer::
+Minimizer(unsigned short method_name, size_t num_lin_ineq, size_t num_lin_eq,
+	  size_t num_nln_ineq, size_t num_nln_eq,
+	  std::shared_ptr<TraitsBase> traits):
   Iterator(NoDBBaseConstructor(), method_name, traits),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   numNonlinearIneqConstraints(num_nln_ineq),

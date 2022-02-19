@@ -52,40 +52,53 @@ void NNLS_F77( double* a, int& mda, int& m, int& n, double* b, double* x,
 
 }
 
-
 using namespace std;
 
 namespace Dakota {
   extern PRPCache data_pairs; // global container
 
-SurrBasedMinimizer::SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+
+SurrBasedMinimizer::
+SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model,
+		   std::shared_ptr<TraitsBase> traits):
   Minimizer(problem_db, model, traits), globalIterCount(0),
   // See Conn, Gould, and Toint, pp. 598-599
   penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
   etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))
+{ initialize_from_model(iteratedModel); }
+
+
+SurrBasedMinimizer::
+SurrBasedMinimizer(Model& model, size_t max_iter, size_t max_eval):
+  //Minimizer(model, max_iter, max_eval), // *** TO DO ***
+  globalIterCount(0),
+  // See Conn, Gould, and Toint, pp. 598-599
+  penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
+  etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))
+{ initialize_from_model(iteratedModel); }
+
+
+void SurrBasedMinimizer::initialize_from_model(Model& model)
 {
-  if (model.primary_fn_type() == OBJECTIVE_FNS)
-    optimizationFlag  = true;
-  else if (model.primary_fn_type() == CALIB_TERMS)
-    optimizationFlag  = false;
-  else {
+  switch (model.primary_fn_type()) {
+  case OBJECTIVE_FNS: optimizationFlag = true;  break;
+  case CALIB_TERMS:   optimizationFlag = false; break;
+  default:
     Cerr << "Error: unsupported response type specification in "
-	 << "SurrBasedMinimizer constructor." << std::endl;
-    abort_handler(-1);
+	 << "SurrBasedMinimizer::initialize_from_model()." << std::endl;
+    abort_handler(-1);  break;
   }
 
   // initialize attributes for merit function calculations
-  origNonlinIneqLowerBnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-  origNonlinIneqUpperBnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
-  origNonlinEqTargets = iteratedModel.nonlinear_eq_constraint_targets();
+  origNonlinIneqLowerBnds = model.nonlinear_ineq_constraint_lower_bounds();
+  origNonlinIneqUpperBnds = model.nonlinear_ineq_constraint_upper_bounds();
+  origNonlinEqTargets     = model.nonlinear_eq_constraint_targets();
 
   // Verify that global bounds are available (some Constraints types can
   // return empty vectors) and are not set to the +/- infinity defaults (TR
   // size is relative to the global bounded region).
-  const RealVector& lower_bnds = iteratedModel.continuous_lower_bounds();
-  const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
+  const RealVector& lower_bnds = model.continuous_lower_bounds();
+  const RealVector& upper_bnds = model.continuous_upper_bounds();
   if (lower_bnds.length() != numContinuousVars ||
       upper_bnds.length() != numContinuousVars) {
     Cerr << "\nError: mismatch in length of variable bounds array in "

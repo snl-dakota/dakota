@@ -16,7 +16,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 //#include "dakota_tabular_io.hpp"
-#include "DakotaModel.hpp"
+#include "MinimizerAdapterModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDNonHierarchSampling.hpp"
 #include "ProblemDescDB.hpp"
@@ -680,7 +680,14 @@ nonhierarch_numerical_solution(const RealVector& cost,
   }
   }
 
-  if (varianceMinimizer.is_null())
+  if (varianceMinimizer.is_null()) {
+    // configure the minimization sub-problem
+    MinimizerAdapterModel min_model(x0, x_lb, x_ub, lin_ineq_coeffs,
+				    lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+				    lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
+				    nln_eq_tgt, response_evaluator);
+
+    // select the sub-problem solver
     switch (optSubProblemSolver) {
     case SUBMETHOD_SQP: {
       int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) ?
@@ -706,12 +713,39 @@ nonhierarch_numerical_solution(const RealVector& cost,
 #endif
       break;
     }
+    /*
+    case SUBMETHOD_SBLM: {
+      varianceMinimizer.assign_rep(
+        std::make_shared<DataFitSurrBasedLocalMinimizer>(
+	min_model, max_iter, max_eval, conv_tol));
+      break;
+    }
+    case SUBMETHOD_EGM: { // may need to be combined with local refinement
+      varianceMinimizer.assign_rep(std::make_shared<EffGlobalMinimizer>(
+	min_model, max_iter, max_eval, conv_tol));
+      break;
+    }
+    case SUBMETHOD_CPS: { // may need to be combined with local refinement
+      break;
+    }
+    case SUBMETHOD_SBGM: { // for NonDGlobalInterval, was EAminlp + GP ...
+      varianceMinimizer.assign_rep(std::make_shared<SurrBasedGlobalMinimizer>(
+	min_model, max_iter, max_eval, conv_tol));
+      break;
+    }
+    case SUBMETHOD_EA: { // may need to be combined with local refinement
+      varianceMinimizer.assign_rep(std::make_shared<COLINOptimizer>(
+	min_model, max_iter, max_eval, conv_tol));
+      break;
+    }
+    */
     default: // SUBMETHOD_NONE, ...
       Cerr << "Error: sub-problem solver undefined in NonDNonHierarchSampling."
 	   << std::endl;
       abort_handler(METHOD_ERROR);
       break;
     }
+  }
   else {
     varianceMinimizer.initial_point(x0);
     //if (x_bounds_update)
@@ -1014,6 +1048,42 @@ optpp_constraint_evaluator(int mode, int n, const RealVector& x, RealVector& c,
     RealVector grad_c_rv(Teuchos::View, grad_c[0], n); // 0-th col vec
     nonHierSampInstance->nonlinear_constraint_gradient(x, grad_c_rv);
     result_mode |= OPTPP::NLPGradient; // adds 2 bit
+  }
+}
+
+
+/** API for MinimizerAdapterModel */
+void NonDNonHierarchSampling::
+response_evaluator(const Variables& vars, const ActiveSet& set,
+		   Response& response)
+{
+  const ShortArray& asv = set.request_vector();
+  size_t i, num_fns = asv.size();//, num_deriv_vars = dvv.size();
+  //bool grad_flag = false, hess_flag = false;
+  //for (i=0; i<num_fns; ++i) {
+  //  if (asv[i] & 2) grad_flag = true;
+  //  if (asv[i] & 4) hess_flag = true;
+  //}
+
+  const RealVector& c_vars = vars.continuous_variables();
+  if (num_fns) {
+    if (asv[0] & 1)
+      response.function_value(nonHierSampInstance->
+			      objective_function(c_vars), 0);
+    if (asv[0] & 2) {
+      Cerr << "Error: objective grad not supported in NonHierarch" << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+  }
+
+  if (num_fns > 1) {
+    if (asv[1] & 1)
+      response.function_value(nonHierSampInstance->
+			      nonlinear_constraint(c_vars), 0);
+    if (asv[1] & 2) {
+      RealVector grad_c = response.function_gradient_view(1);
+      nonHierSampInstance->nonlinear_constraint_gradient(c_vars, grad_c);
+    }
   }
 }
 

@@ -62,7 +62,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
       err_flag = true;
     }
   }
-  else if (opt_alg == SUBMETHOD_SBO)
+  else if (opt_alg == SUBMETHOD_SBGO)
     { eifFlag = false; gpModelFlag = true; }
   else if (opt_alg == SUBMETHOD_EA)
     eifFlag = gpModelFlag = false;
@@ -187,7 +187,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     convergenceTol = 1.e-12; distanceTol = 1.e-8;
     if (maxIterations == SZ_MAX) // default value
       maxIterations  = 25*numContinuousVars;
-    
+
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
     size_t max_direct_iter = 1000, max_direct_eval = 10000; // 10*defaults
 #ifdef HAVE_NCSU
