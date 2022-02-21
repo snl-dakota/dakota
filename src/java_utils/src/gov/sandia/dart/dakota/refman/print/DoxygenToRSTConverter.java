@@ -12,9 +12,11 @@ public class DoxygenToRSTConverter {
 		converted = converted.replaceAll("\\s*\\<\\/em\\>", "*");
 		
 		converted = removeCommentBlocks(converted);
-		converted = convertLists(converted);
+		converted = convertLists(converted, "\\li");
+		converted = convertLists(converted, "-# ");
 		converted = convertMarkupFlag(converted, "\\c", "``", "``", "");
 		converted = convertMarkupFlag(converted, "\\ref", ":ref:`", "<", ">`");
+		converted = convertMarkupBookends(converted, "\\f$", "\\f$", " :math:`", "` ");
 		converted = convertVerbatimBlock(converted);
 		
 		converted = converted.replaceAll("\\\\f\\[", "\n\\.\\.\smath:: ");
@@ -22,33 +24,39 @@ public class DoxygenToRSTConverter {
 		return converted;
 	}
 	
-	private static String convertLists(String original) {
+	private static String convertLists(String original, String itemMarker) {
 		StringBuilder sb = new StringBuilder();
 		String[] lines = original.split("\\n|\\r\\n");
 		
 		boolean firstListItemFound = false;
 		boolean insideListItem = false;
+		boolean lastListItemFound = false;
 		for(int i = 0; i < lines.length; i++) {
 			String line = lines[i];
 			if(insideListItem) {
 				if(line.isBlank()) {
 					insideListItem = false;
 					sb.append("\n");
-				} else if(line.contains("\\li")) {
-					String replacement = line.replace("\\li", "-");
+				} else if(line.startsWith(itemMarker)) {
+					String replacement = line.replace(itemMarker, "-");
 					sb.append("\n").append(replacement).append(" ");
 				} else {
 					sb.append(line).append(" ");
 				}
-			} else if(line.contains("\\li")) {
+			} else if(line.startsWith(itemMarker)) {
 				insideListItem = true;
 				if(!firstListItemFound) {
 					firstListItemFound = true;
 					sb.append("\n"); // Extra spacer for top of list
 				}
-				String replacement = line.replace("\\li", "-");
+				String replacement = line.replace(itemMarker, "-");
 				sb.append(replacement).append(" ");
 			} else {
+				if(firstListItemFound && !lastListItemFound) {
+					sb.append("\n"); // Extra spacer for bottom of list
+					lastListItemFound = true;
+				}
+				
 				sb.append(line); // Pass through
 				if(i < lines.length - 1) {
 					sb.append("\n");
@@ -167,7 +175,7 @@ public class DoxygenToRSTConverter {
 			String[] words = lines[i].split("\\s");
 			for(int j = 0; j < words.length; j++) {
 				if(!eat) {
-					if(words[j].equals("<!–") || words[j].equals("<!--")) {
+					if(words[j].equals("<!–") || words[j].equals("<!--") || words[j].equals("<!---")) {
 						eat = true;
 					} else {
 						sb.append(words[j]);
@@ -176,7 +184,7 @@ public class DoxygenToRSTConverter {
 						}
 					}
 				} else {
-					if(words[j].equals("–>") || words[j].equals("-->")) {
+					if(words[j].equals("–>") || words[j].equals("-->") || words[j].equals("--->")) {
 						eat = false;
 					} 
 				}
@@ -187,6 +195,41 @@ public class DoxygenToRSTConverter {
 				sb.append("\n");
 			}
 		}
+		return sb.toString();
+	}
+	
+	private static String convertMarkupBookends(String original, String startFlag, String endFlag, String newStartFlag, String newEndFlag) {
+		StringBuilder sb = new StringBuilder();
+		String[] lines = original.split("\\n|\\r\\n");
+		
+		boolean insideSection = false;
+		for(int i = 0; i < lines.length; i++) {
+			String line = lines[i];
+			String[] words = line.split("\\s");
+			for(int j = 0; j < words.length; j++) {
+				String newWord = words[j];
+				while(newWord.indexOf(startFlag) != -1 || newWord.indexOf(endFlag) != -1) {
+					if(!insideSection) {
+						int index = newWord.indexOf(startFlag);
+						newWord = newWord.substring(0, index) + newStartFlag + newWord.substring(index+startFlag.length(), newWord.length());
+						insideSection = true;
+					} else {
+						int index = newWord.indexOf(endFlag);
+						newWord = newWord.substring(0, index) + newEndFlag + newWord.substring(index+endFlag.length(), newWord.length());
+						insideSection = false;
+					}
+				}
+				sb.append(newWord);
+				if(j < words.length - 1) {
+					sb.append(" ");
+				}
+			}
+			
+			if(i < lines.length - 1) {
+				sb.append("\n");
+			}
+		}
+		
 		return sb.toString();
 	}
 }

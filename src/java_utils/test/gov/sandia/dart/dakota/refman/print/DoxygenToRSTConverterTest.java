@@ -27,6 +27,7 @@ public class DoxygenToRSTConverterTest {
 				"My Lists\n\n"
 				+ "- List Item 1\n"
 				+ "- List Item 2 This item unfortunately has a line wrap\n"
+				+ "\n"
 				+ "End of list";
 		
 		assertEquals(expected, DoxygenToRSTConverter.convert(original));
@@ -65,7 +66,7 @@ public class DoxygenToRSTConverterTest {
 	public void testConvert_Ref() {
 		assertEquals("This has a :ref:`cool<cool>` link.", DoxygenToRSTConverter.convert("This has a \\ref cool link."));
 		assertEquals("This has a :ref:`reference-to-something<reference-to-something>` link.", DoxygenToRSTConverter.convert("This has a \\ref reference-to-something link."));
-		assertEquals("This has a \n :ref:`line-break-interruption<line-break-interruption>` link.", DoxygenToRSTConverter.convert("This has a \\ref \n line-break-interruption link."));
+		assertEquals("This has a\n :ref:`line-break-interruption<line-break-interruption>` link.", DoxygenToRSTConverter.convert("This has a \\ref \n line-break-interruption link."));
 	}
 	
 	@Test
@@ -104,6 +105,13 @@ public class DoxygenToRSTConverterTest {
 	public void testConvert_FullLineMath() {
 		String original = "\\f[p = ln\\left(\\frac{QoI_3 - QoI_2}{QoI_2 - QoI_1}\\right)/ln(r)\\f]";
 		String expected = "\n.. math:: p = ln\\left(\\frac{QoI_3 - QoI_2}{QoI_2 - QoI_1}\\right)/ln(r)\n";
+		assertEquals(expected, DoxygenToRSTConverter.convert(original));
+	}
+	
+	@Test
+	public void testConvert_InlineMath() {
+		String original = "where \\f$r\\f$ is the uniform refinement rate specified by";
+		String expected = "where  :math:`r`  is the uniform refinement rate specified by";
 		assertEquals(expected, DoxygenToRSTConverter.convert(original));
 	}
 }
