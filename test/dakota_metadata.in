@@ -1,0 +1,34 @@
+#@ s*: DakotaConfig=UNIX
+#@ s*: ReqFiles=text_book_metadata.py
+#@ s*: Label=FastTest
+
+environment
+  tabular_data tabular_data_file "evals_with_metadata.dat"
+
+method,
+	conmin_mfd
+
+variables,
+	continuous_design = 2
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+interface,
+	fork
+        analysis_driver = 'text_book_metadata.py'
+	parameters_file = 'p.in'
+	results_file = 'r.out'
+	file_save
+	file_tag
+
+	# Driver depends on c2 always being present; has no asynch support
+	deactivate active_set_vector
+
+responses,
+	descriptors 'f' 'c1' 'c2'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	metadata 'seconds'
+	analytic_gradients
+	no_hessians
