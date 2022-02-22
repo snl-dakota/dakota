@@ -1019,6 +1019,8 @@ write_tabular_partial(std::ostream& s, size_t start_index,
       // BMA TODO: write something that can be read back in for tabular...
       //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
       //s << "EMPTY"; // inactive data
+    for (const auto& md : metaData)
+      s << std::setw(write_precision+4) << md << ' ';
   }
 }
 
@@ -1029,10 +1031,10 @@ void Response::write_tabular_labels(std::ostream& s, bool eol) const
   if (responseRep)
     responseRep->write_tabular_labels(s, eol);
   else {
-    const StringArray& fn_labels = sharedRespData.function_labels();
-    size_t num_fns = fn_labels.size();
-    for (size_t j=0; j<num_fns; ++j)
-      s << std::setw(14) << fn_labels[j] << ' ';
+    for (const auto& fn_label : sharedRespData.function_labels())
+      s << std::setw(14) << fn_label << ' ';
+    for (const auto& md_label : sharedRespData.metadata_labels())
+      s << std::setw(14) << md_label << ' ';
     if (eol) s << std::endl; // table row completed
   }
 }
