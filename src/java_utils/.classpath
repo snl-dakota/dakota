@@ -7,7 +7,7 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="lib" path="C:/Users/emridgw/workspace/svn/dart/java_utils/antlr-runtime-4.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/emridgw/workspace/git/dakota/src/java_utils/antlr-runtime-4.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
