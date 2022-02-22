@@ -1,0 +1,9 @@
+@import 'theme.css'; /* for the Read the Docs theme */
+
+div.wy-side-nav-search {
+    background-color: #b6f8fc;
+}
+
+div.wy-side-nav-search a {
+    color: #50bfc7;
+}

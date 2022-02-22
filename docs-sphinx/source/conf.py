@@ -49,8 +49,6 @@ exclude_patterns = []
 bibtex_bibfiles = ['Dakota.bib']
 
 
-# -- Options for HTML output -------------------------------------------------
-
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
@@ -59,6 +57,12 @@ html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
     'navigation_depth': -1,
 }
+
+html_css_files = [
+    'css/dakota_theme.css',
+]
+
+html_logo = 'img/dakota_Arrow_Name_Tag_horiz_transparent.png'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
