@@ -1056,14 +1056,18 @@ void HierarchSurrModel::create_tabular_datastream()
     if (responseMode == MODEL_DISCREPANCY)
       for (q=0; q<num_qoi; ++q)
 	labels[q].insert(0, "Del_");
-    //else if (multilevel_multifidelity()) // *** TO DO ***
-    else if (multilevel()) { // MLMC or ML-CV MC
+    // Detection of the correct response label annotation is imperfect.  Basing
+    // label alternation below on active solution level control seems the best
+    // option -- improving it would require either knowledge of methodName
+    // (violates capsulation) or detection of the changing models/resolutions
+    // (not known until run time)
+    if (av_index != _NPOS) { // soln levels are present, but might not be active
       for (q=0; q<num_qoi; ++q)
 	labels[q].append("_L");  //labels[q].insert(0, "HF_");
       for (q=num_qoi; q<num_labels; ++q)
 	labels[q].append("_Lm1");//labels[q].insert(0, "LF_");
     }
-    else {
+    else { // assume that model forms are being paired
       for (q=0; q<num_qoi; ++q)
 	labels[q].append("_M");  //labels[q].insert(0, "HF_");
       for (q=num_qoi; q<num_labels; ++q)
