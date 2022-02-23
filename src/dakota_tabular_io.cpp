@@ -151,9 +151,9 @@ void write_header_tabular(std::ostream& tabular_ostream,
 
   tabular_ostream << "%"; // headers use Matlab comment syntax
   if (tabular_format & TABULAR_EVAL_ID)
-    tabular_ostream << std::setw(8) << std::left <<  eval_label << ' ';
+    tabular_ostream << std::setw(7) << std::left <<  eval_label << ' ';
   if (tabular_format & TABULAR_IFACE_ID)
-    tabular_ostream << std::setw(9) << std::left << iface_label << ' ';
+    tabular_ostream << std::setw(8) << std::left << iface_label << ' ';
 }
 
 
@@ -166,11 +166,11 @@ void write_header_tabular(std::ostream& tabular_ostream,
 
   tabular_ostream << "%"; // headers use Matlab comment syntax
   if (tabular_format & TABULAR_EVAL_ID)
-    tabular_ostream << std::setw(8) << std::left << eval_label << ' ';
+    tabular_ostream << std::setw(7) << std::left << eval_label << ' ';
   if (tabular_format & TABULAR_IFACE_ID) {
     size_t i, num_labels = iface_labels.size();
     for (i=0; i<num_labels; ++i)
-      tabular_ostream << std::setw(9) << std::left << iface_labels[i] << ' ';
+      tabular_ostream << std::setw(10) << std::left << iface_labels[i] << ' ';
   }
 }
 
@@ -252,9 +252,9 @@ void write_leading_columns(std::ostream& tabular_ostream,
   // write the interface ID string, NO_ID for empty
   // (Dakota 6.1 used EMPTY for missing ID)
   if (iface_id.empty())
-    tabular_ostream << std::setw(9) << std::left << "NO_ID"  << ' ';
+    tabular_ostream << std::setw(10) << std::left << "NO_ID"  << ' ';
   else
-    tabular_ostream << std::setw(9) << std::left << iface_id << ' ';
+    tabular_ostream << std::setw(10) << std::left << iface_id << ' ';
 }
 
 

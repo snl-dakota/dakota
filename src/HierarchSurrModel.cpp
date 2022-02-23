@@ -1008,34 +1008,47 @@ void HierarchSurrModel::create_tabular_datastream()
   case AGGREGATED_MODELS: case MODEL_DISCREPANCY: // two models/resolutions
   case BYPASS_SURROGATE: { // use same row len since commonly alternated
 
-    bool mf = multifidelity();  StringArray iface_ids;
-    if (mf) { // sameInterfaceInstance can't be used since it varies at run time
-      iface_ids.push_back("HF_interf");
-      iface_ids.push_back("LF_interf");
-    }
-    else
+    // --------------------
+    // {eval,interface} ids
+    // --------------------
+    // To flatten into one composite tabular format, we must rely on invariant
+    // quantities rather than run-time flags like same{Model,Interface}Instance
+    bool one_iface_id = matching_all_interface_ids();
+    StringArray iface_ids;
+    if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
       iface_ids.push_back("interface");
+    else {
+      iface_ids.push_back("interf_M");  //("HF_interf");
+      iface_ids.push_back("interf_Mm1");//("LF_interf");
+    }
     mgr.create_tabular_header(iface_ids); // includes graphics cntr
 
+    // ---------
+    // Variables
+    // ---------
     // identify solution level control variable
-    size_t av_index = truth_model().solution_control_variable_index();
+    Model&    hf_model = truth_model();
+    Variables& hf_vars = hf_model.current_variables();
+    size_t    av_index = hf_model.solution_control_variable_index();
     if (av_index == _NPOS)
-      mgr.append_tabular_header(currentVariables);
+      mgr.append_tabular_header(hf_vars);
     else {
-      mgr.append_tabular_header(currentVariables, 0, av_index); // leading set
+      mgr.append_tabular_header(hf_vars, 0, av_index); // leading set
 
       // output paired solution control values
       const String& soln_cntl_label = solution_control_label();
       StringArray tab_labels(2);
-      tab_labels[0] = "HF_" + soln_cntl_label;
-      tab_labels[1] = "LF_" + soln_cntl_label;
+      tab_labels[0] = soln_cntl_label + "_L";  // = "HF_" + soln_cntl_label;
+      tab_labels[1] = soln_cntl_label + "_Lm1";// = "LF_" + soln_cntl_label;
       mgr.append_tabular_header(tab_labels);
 
       ++av_index; // output completed for the active soln control
-      mgr.append_tabular_header(currentVariables, av_index,
-				currentVariables.tv() - av_index);
+      mgr.append_tabular_header(hf_vars, av_index, hf_vars.tv() - av_index);
     }
 
+    // --------
+    // Response
+    // --------
     //mgr.append_tabular_header(currentResponse);
     // Add HF/LF/Del prepends
     StringArray labels = currentResponse.function_labels(); // copy
@@ -1043,18 +1056,29 @@ void HierarchSurrModel::create_tabular_datastream()
     if (responseMode == MODEL_DISCREPANCY)
       for (q=0; q<num_qoi; ++q)
 	labels[q].insert(0, "Del_");
+    //else if (multilevel_multifidelity()) // *** TO DO ***
+    else if (multilevel()) { // MLMC or ML-CV MC
+      for (q=0; q<num_qoi; ++q)
+	labels[q].append("_L");  //labels[q].insert(0, "HF_");
+      for (q=num_qoi; q<num_labels; ++q)
+	labels[q].append("_Lm1");//labels[q].insert(0, "LF_");
+    }
     else {
       for (q=0; q<num_qoi; ++q)
-	labels[q].insert(0, "HF_");
+	labels[q].append("_M");  //labels[q].insert(0, "HF_");
       for (q=num_qoi; q<num_labels; ++q)
-	labels[q].insert(0, "LF_");
+	labels[q].append("_Mm1");//labels[q].insert(0, "LF_");
     }
     mgr.append_tabular_header(labels, true); // with endl
     break;
   }
   case NO_SURROGATE:
+    mgr.create_tabular_header(truth_model().current_variables(),
+			      currentResponse);
+    break;
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    mgr.create_tabular_header(currentVariables, currentResponse);
+    mgr.create_tabular_header(surrogate_model().current_variables(),
+			      currentResponse);
     break;
   }
 }
@@ -1087,36 +1111,49 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 {
   //parallelLib.output_manager().add_tabular_data(vars, interface_id(), resp);
 
-  // manage interface id(s) and resolution control
+  // As called from Model::evaluate() et al., passed data are top-level Model::
+  // currentVariables (neglecting inactive specializations among {HF,LF} vars)
+  // and final reduced/aggregated Model::currentResponse.  Active input/output
+  // components are shared among the ordered models, but inactive components
+  // must be managed to provide sensible composite tabular output.
+  // > Differences in solution control are handled via specialized handling for
+  //   a solution control index.
+  // > Other uncontrolled inactive variables must be rely on the correct
+  //   subordinate model Variables instance.
+
   Model &lf_model = surrogate_model(), &hf_model = truth_model();
   OutputManager& output_mgr = parallelLib.output_manager();
-
   switch (responseMode) {
   case AGGREGATED_MODELS: case MODEL_DISCREPANCY: // two models/resolutions
-  case BYPASS_SURROGATE: { // use same row len since commonly alternated
+  case BYPASS_SURROGATE: { // use same #Cols since commonly alternated
 
     // output interface ids, potentially paired
-    bool mf = multifidelity();  StringArray iface_ids;
-    if (mf) { // sameInterfaceInstance can't be used since it varies at run time
-      if (truthModelKey.empty()) iface_ids.push_back("N/A");//preserve row len
-      else                       iface_ids.push_back(hf_model.interface_id());
-      if ( surrModelKey.empty()) iface_ids.push_back("N/A");//preserve row len
-      else                       iface_ids.push_back(lf_model.interface_id());
-    }
-    else
+    bool one_iface_id = matching_all_interface_ids(),
+      truth_key = !truthModelKey.empty(), surr_key = !surrModelKey.empty();
+    StringArray iface_ids;
+    if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
       iface_ids.push_back(hf_model.interface_id());
+    else {
+      if (truth_key) iface_ids.push_back(hf_model.interface_id());
+      else           iface_ids.push_back("N/A");//preserve row len
+      if (surr_key)  iface_ids.push_back(lf_model.interface_id());
+      else           iface_ids.push_back("N/A");//preserve row len
+    }
     output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
 
+    // capture correct inactive: bypass HierarchSurrModel::currentVariables
+    Variables& export_vars = hf_model.current_variables();
     // identify solution level control variable
     size_t av_index = hf_model.solution_control_variable_index();
     if (av_index == _NPOS)
-      output_mgr.add_tabular_data(vars);
+      output_mgr.add_tabular_data(export_vars);
     else {
-      output_mgr.add_tabular_data(vars, 0, av_index);//leading set in spec order
+      // output leading set of variables in spec order
+      output_mgr.add_tabular_data(export_vars, 0, av_index);
 
-      // output paired solution control values
-      bool truth_key = !truthModelKey.empty(), surr_key = !surrModelKey.empty();
-      if (sameModelInstance && truth_key && surr_key) {
+      // output paired solution control values (flags are not invariant,
+      // but data count is)
+      if (sameModelInstance && truth_key && surr_key) {//data count is invariant
 	// HF soln cntl was overwritten by LF and must be temporarily restored
 	assign_truth_key();      add_tabular_solution_level_value(hf_model);
 	assign_surrogate_key();  add_tabular_solution_level_value(lf_model);
@@ -1127,11 +1164,13 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 	if ( surr_key)  add_tabular_solution_level_value(lf_model);
 	else output_mgr.add_tabular_scalar("N/A");// preserve consistent row len
       }
-
       ++av_index; // output completed for the active soln control
-      output_mgr.add_tabular_data(vars, av_index, vars.tv()-av_index);//trailing
+
+      // output trailing variables in spec order
+      output_mgr.add_tabular_data(export_vars, av_index,
+				  export_vars.tv() - av_index);
     }
-     
+
     output_mgr.add_tabular_data(resp);
     break;
   }
