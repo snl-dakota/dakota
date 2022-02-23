@@ -32,7 +32,7 @@ namespace Dakota {
 class MinimizerAdapterModel: public Model
 {
 public:
-  
+
   //
   //- Heading: Constructor and destructor
   //
@@ -169,7 +169,6 @@ protected:
 
   /// set the hierarchical eval ID tag prefix
   void eval_tag_prefix(const String& eval_id_str);
-  */
 
   //
   //- Heading: Member functions
@@ -179,7 +178,6 @@ protected:
   /// transformation functions
   void assign_instance();
 
-  /*
   /// initialize currentVariables and related info from the passed
   /// size/type info
   bool init_variables(const SizetArray& vars_comps_totals,
