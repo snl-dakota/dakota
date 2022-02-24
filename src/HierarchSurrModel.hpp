@@ -403,9 +403,8 @@ inline void HierarchSurrModel::check_model_interface_instance()
     sameModelInstance = sameInterfaceInstance = false; // including both undef
   else {
     sameModelInstance = (lf_form == hf_form);
-    if (sameModelInstance) sameInterfaceInstance = true;
-    else
-      sameInterfaceInstance = matching_truth_surrogate_interface_ids();
+    sameInterfaceInstance = (sameModelInstance) ? true :
+      matching_truth_surrogate_interface_ids();
   }
 }
 

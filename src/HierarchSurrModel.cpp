@@ -1050,7 +1050,7 @@ void HierarchSurrModel::create_tabular_datastream()
     // Response
     // --------
     //mgr.append_tabular_header(currentResponse);
-    // Add HF/LF/Del prepends
+    // Add Del_ pre-pend or model/resolution post-pends
     StringArray labels = currentResponse.function_labels(); // copy
     size_t q, num_qoi = qoi(), num_labels = labels.size();
     if (responseMode == MODEL_DISCREPANCY)
@@ -1059,21 +1059,21 @@ void HierarchSurrModel::create_tabular_datastream()
     // Detection of the correct response label annotation is imperfect.  Basing
     // label alternation below on active solution level control seems the best
     // option -- improving it would require either knowledge of methodName
-    // (violates capsulation) or detection of the changing models/resolutions
+    // (violates encapsulation) or detection of the changing models/resolutions
     // (not known until run time)
-    if (av_index != _NPOS) { // soln levels are present, but might not be active
-      for (q=0; q<num_qoi; ++q)
-	labels[q].append("_L");  //labels[q].insert(0, "HF_");
-      for (q=num_qoi; q<num_labels; ++q)
-	labels[q].append("_Lm1");//labels[q].insert(0, "LF_");
-    }
-    else { // assume that model forms are being paired
+    else if (av_index == _NPOS) { // assume that model forms are being paired
       for (q=0; q<num_qoi; ++q)
 	labels[q].append("_M");  //labels[q].insert(0, "HF_");
       for (q=num_qoi; q<num_labels; ++q)
 	labels[q].append("_Mm1");//labels[q].insert(0, "LF_");
     }
-    mgr.append_tabular_header(labels, true); // with endl
+    else { // solution levels are present, but they might not be active
+      for (q=0; q<num_qoi; ++q)
+	labels[q].append("_L");  //labels[q].insert(0, "HF_");
+      for (q=num_qoi; q<num_labels; ++q)
+	labels[q].append("_Lm1");//labels[q].insert(0, "LF_");
+    }
+    mgr.append_tabular_header(labels, true); // include EOL
     break;
   }
   case NO_SURROGATE:
@@ -1175,7 +1175,16 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 				  export_vars.tv() - av_index);
     }
 
-    output_mgr.add_tabular_data(resp);
+    // Output response data
+    if (surr_key)
+      output_mgr.add_tabular_data(resp);        // include EOL
+    else { // inactive: match header by padding empty cols with "N/A"
+      output_mgr.add_tabular_data(resp, false); // defer EOL
+      size_t qoi, num_qoi = lf_model.qoi();
+      for (qoi=0; qoi<num_qoi; ++qoi) // pad response data
+	output_mgr.add_tabular_scalar("N/A");
+      output_mgr.add_eol(); // now return the row
+    }
     break;
   }
   case NO_SURROGATE:

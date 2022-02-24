@@ -230,10 +230,10 @@ void append_header_tabular(std::ostream& tabular_ostream,
 
 void append_header_tabular(std::ostream& tabular_ostream, 
 			  const Response& response,
-			  unsigned short tabular_format)
+			   unsigned short tabular_format, bool eol)
 {
   if ( !(tabular_format & TABULAR_HEADER) ) return;
-  response.write_tabular_labels(tabular_ostream);
+  response.write_tabular_labels(tabular_ostream, eol);
 }
 
 
@@ -293,8 +293,9 @@ void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars,
 { vars.write_tabular_partial(tabular_ostream, start_index, num_items); }
 
 
-void write_data_tabular(std::ostream& tabular_ostream, const Response& response)
-{ response.write_tabular(tabular_ostream); } // includes EOL
+void write_data_tabular(std::ostream& tabular_ostream,
+			const Response& response, bool eol)
+{ response.write_tabular(tabular_ostream, eol); }
 
 
 void write_data_tabular(std::ostream& tabular_ostream, 
@@ -314,8 +315,12 @@ void write_data_tabular(std::ostream& tabular_ostream,
 {
   write_leading_columns(tabular_ostream, counter, iface_id, tabular_format);
   vars.write_tabular(tabular_ostream); // no EOL
-  tabular_ostream << '\n';
+  write_eol(tabular_ostream);
 }
+
+
+void write_eol(std::ostream& tabular_ostream)
+{ tabular_ostream << std::endl; }
 
 
 // PCE export 

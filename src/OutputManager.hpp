@@ -281,11 +281,13 @@ public:
   //void add_tabular_data(const String& iface);
   /// adds data to each window in the 2d graphics and adds a row to
   /// the tabular data file for the evaluation response
-  void add_tabular_data(const Response& response);
+  void add_tabular_data(const Response& response, bool eol = true);
   /// augments the data set for a row in the tabular data file
   template<class T> 
   void add_tabular_scalar(T val);
-  
+  /// complete tabular row with EOL
+  void add_eol();
+
   /// close tabular datastream
   void close_tabular_datastream();
 
@@ -413,6 +415,13 @@ void OutputManager::add_tabular_scalar(T val)
   // whether the file is open, not whether the user asked
   if (tabularDataFStream.is_open())
     TabularIO::write_scalar_tabular(tabularDataFStream, val);
+}
+
+
+inline void OutputManager::add_eol()
+{
+  if (tabularDataFStream.is_open())
+    TabularIO::write_eol(tabularDataFStream);
 }
 
 } //namespace Dakota

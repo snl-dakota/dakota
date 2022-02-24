@@ -233,10 +233,10 @@ public:
   /// read responseRep::functionValues in tabular format from an std::istream
   void read_tabular(std::istream& s);
   /// write responseRep::functionValues in tabular format to an std::ostream
-  void write_tabular(std::ostream& s) const;
+  void write_tabular(std::ostream& s, bool eol = true) const;
 
   /// write the labels to a tabular data stream
-  void write_tabular_labels(std::ostream& s) const;
+  void write_tabular_labels(std::ostream& s, bool eol = true) const;
 
   /// read a response object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);

@@ -530,6 +530,172 @@ derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
 }
 
 
+void NonHierarchSurrModel::create_tabular_datastream()
+{
+  OutputManager& mgr = parallelLib.output_manager();
+  mgr.open_tabular_datastream();
+
+  switch (responseMode) {
+  case AGGREGATED_MODELS: { // two models/resolutions
+
+    // --------------------
+    // {eval,interface} ids
+    // --------------------
+    // To flatten into one composite tabular format, we must rely on invariant
+    // quantities rather than run-time flags like same{Model,Interface}Instance
+    StringArray iface_ids;
+    bool one_iface_id = matching_all_interface_ids();
+    if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
+      iface_ids.push_back("interface");
+    else
+      //for (i=0; i<num_approx; ++i)
+	iface_ids.push_back("interf_M"); // *** TO DO: append i+1
+    mgr.create_tabular_header(iface_ids); // includes graphics cntr
+
+    // ---------
+    // Variables
+    // ---------
+    // identify solution level control variable
+    Model&    hf_model = truth_model();
+    Variables& hf_vars = hf_model.current_variables();
+    size_t    av_index = hf_model.solution_control_variable_index();
+    if (av_index == _NPOS)
+      mgr.append_tabular_header(hf_vars);
+    else {
+      mgr.append_tabular_header(hf_vars, 0, av_index); // leading set
+
+      // output paired solution control values
+      //const String& soln_cntl_label = solution_control_label();
+      StringArray tab_labels(2);
+      //tab_labels[0] = soln_cntl_label + "_L";  // = "HF_" + soln_cntl_label;
+      //tab_labels[1] = soln_cntl_label + "_Lm1";// = "LF_" + soln_cntl_label;
+      mgr.append_tabular_header(tab_labels);
+
+      ++av_index; // output completed for the active soln control
+      mgr.append_tabular_header(hf_vars, av_index, hf_vars.tv() - av_index);
+    }
+
+    // --------
+    // Response
+    // --------
+    //mgr.append_tabular_header(currentResponse);
+    // Add HF/LF/Del prepends
+    StringArray labels = currentResponse.function_labels(); // copy
+    size_t q, num_qoi = qoi(), num_labels = labels.size(), cntr;
+    // Detection of the correct response label annotation is imperfect.  Basing
+    // label alternation below on active solution level control seems the best
+    // option -- improving it would require either knowledge of methodName
+    // (violates capsulation) or detection of the changing models/resolutions
+    // (not known until run time)
+    if (av_index == _NPOS) { // assume that model forms are being paired
+      //for (m=0, cntr=0; m<num_mod; ++m)
+	for (q=0; q<num_qoi; ++q, ++cntr)
+	  labels[cntr].append("_M");  //labels[cntr].append(q); // *** TO DO
+    }
+    else { // soln levels are present, but might not be active
+      //for (m=0, cntr=0; m<num_mod; ++m)
+	for (q=0; q<num_qoi; ++q, ++cntr)
+	  labels[cntr].append("_L");  //labels[cntr].append(q); // *** TO DO
+    }
+    mgr.append_tabular_header(labels, true); // with endl
+    break;
+  }
+  case BYPASS_SURROGATE: //case NO_SURROGATE:
+    mgr.create_tabular_header(truth_model().current_variables(),
+			      currentResponse);
+    break;
+  //case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+  //  mgr.create_tabular_header(surrogate_model().current_variables(),
+  //			        currentResponse);
+  //  break;
+  }
+}
+
+
+void NonHierarchSurrModel::
+derived_auto_graphics(const Variables& vars, const Response& resp)
+{
+  //parallelLib.output_manager().add_tabular_data(vars, interface_id(), resp);
+
+  // As called from Model::evaluate() et al., passed data are top-level Model::
+  // currentVariables (neglecting inactive specializations among {HF,LF} vars)
+  // and final reduced/aggregated Model::currentResponse.  Active input/output
+  // components are shared among the ordered models, but inactive components
+  // must be managed to provide sensible composite tabular output.
+  // > Differences in solution control are handled via specialized handling for
+  //   a solution control index.
+  // > Other uncontrolled inactive variables must be rely on the correct
+  //   subordinate model Variables instance.
+
+  Model &lf_model = surrogate_model(), // *** TO DO
+        &hf_model = truth_model();
+  OutputManager& output_mgr = parallelLib.output_manager();
+  switch (responseMode) {
+  case AGGREGATED_MODELS: case MODEL_DISCREPANCY: // two models/resolutions
+  case BYPASS_SURROGATE: { // use same #Cols since commonly alternated
+
+    // output interface ids, potentially paired
+    bool one_iface_id = matching_all_interface_ids(),
+      truth_key = !truthModelKey.empty(), surr_keys = !surrModelKeys.empty();
+    StringArray iface_ids;
+    if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
+      iface_ids.push_back(hf_model.interface_id());
+    else {
+      if (truth_key) iface_ids.push_back(hf_model.interface_id());
+      else           iface_ids.push_back("N/A");//preserve row len
+      if (surr_keys) iface_ids.push_back(lf_model.interface_id()); // *** TO DO
+      else           iface_ids.push_back("N/A");//preserve row len
+    }
+    output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
+
+    // capture correct inactive: bypass HierarchSurrModel::currentVariables
+    Variables& export_vars = hf_model.current_variables();
+    // identify solution level control variable
+    size_t av_index = hf_model.solution_control_variable_index();
+    if (av_index == _NPOS)
+      output_mgr.add_tabular_data(export_vars);
+    /*
+    else {
+      // output leading set of variables in spec order
+      output_mgr.add_tabular_data(export_vars, 0, av_index);
+
+      // output paired solution control values (flags are not invariant,
+      // but data count is)
+      if (sameModelInstance && truth_key && surr_key) {//data count is invariant
+	// HF soln cntl was overwritten by LF and must be temporarily restored
+	assign_truth_key();      add_tabular_solution_level_value(hf_model);
+	assign_surrogate_key();  add_tabular_solution_level_value(lf_model);
+      }
+      else { // HF and LF soln levels are not overlapping
+	if (truth_key)  add_tabular_solution_level_value(hf_model);
+	else output_mgr.add_tabular_scalar("N/A");// preserve consistent row len
+	if ( surr_key)  add_tabular_solution_level_value(lf_model);
+	else output_mgr.add_tabular_scalar("N/A");// preserve consistent row len
+      }
+      ++av_index; // output completed for the active soln control
+
+      // output trailing variables in spec order
+      output_mgr.add_tabular_data(export_vars, av_index,
+				  export_vars.tv() - av_index);
+    }
+    */
+
+    output_mgr.add_tabular_data(resp);
+    // *** TO DO: pad with N/A
+    break;
+  }
+  case NO_SURROGATE:
+    output_mgr.add_tabular_data(hf_model.current_variables(),
+				hf_model.interface_id(), resp);
+    break;
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    output_mgr.add_tabular_data(lf_model.current_variables(),
+				lf_model.interface_id(), resp);
+    break;
+  }
+}
+
+
 void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 {
   size_t num_approx = surrModelKeys.size(), // model forms or resolutions
