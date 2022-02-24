@@ -64,12 +64,6 @@ void NonDMultifidelitySampling::core_run()
   case  ONLINE_PILOT: // iterated MFMC (default)
     multifidelity_mc();                  break;
   case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
-    // convergenceTol option seems problematic since the only reference EstVar
-    // comes from offline eval with Oracle/overkill N
-    if (maxFunctionEvals == SZ_MAX) {
-      Cerr << "Error: budget required for offline pilot mode." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
     multifidelity_mc_offline_pilot();    break;
   case PILOT_PROJECTION: // for algorithm assessment/selection
     multifidelity_mc_pilot_projection(); break;
@@ -91,7 +85,6 @@ void NonDMultifidelitySampling::multifidelity_mc()
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
   RealVector sum_HH, hf_targets;    RealMatrix var_L, eval_ratios;
   //Sizet2DArray N_L_baseline, N_LH;
-  size_t num_steps = numApprox + 1;
   initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
   //initialize_counts(N_L_baseline, numH, N_LH);
   numH.assign(numFunctions, 0);
@@ -103,7 +96,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // ----------------------------------------------------
     shared_increment(mlmfIter); // spans ALL models, blocking
     accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, numH);
-    increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps);
 
     // -------------------------------------------
     // Compute correlations and evaluation ratios:
@@ -172,9 +165,8 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   RealVector sum_HH;     //Sizet2DArray N_L_baseline, N_LH;
   initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
   numH.assign(numFunctions, 0); //initialize_counts(N_L_baseline, numH, N_LH);
-  // at least 2 samples reqd for variance (and resetting allSamples from pilot)
-  int sample_increment = one_sided_delta(numH, hf_targets, 1); // numH is 0
-  numSamples = std::max(sample_increment, 2);
+  // at least 2 samples reqd for variance (and resetting allSamples after pilot)
+  numSamples = std::max(one_sided_delta(numH, hf_targets, 1),(size_t)2);//numH=0
 
   // As a first cut, don't reuse any of offline pilot for numH
   shared_increment(++mlmfIter); // spans ALL models, blocking
@@ -340,15 +332,18 @@ update_projected_samples(const RealVector& hf_targets,
 			 const RealMatrix& eval_ratios,
 			 SizetArray& N_H_projected, Sizet2DArray& N_L_projected)
 {
-  increment_samples(N_H_projected,
-		    one_sided_delta(N_H_projected, hf_targets, 1));
+  size_t incr = one_sided_delta(N_H_projected, hf_targets, 1);
+  increment_samples(N_H_projected, incr);
+  increment_equivalent_cost(incr, sequenceCost, numApprox);
 
   size_t qoi, approx;  RealVector lf_targets(numFunctions, false);
   for (approx=0; approx<numApprox; ++approx) {
     for (qoi=0; qoi<numFunctions; ++qoi)
       lf_targets[qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
     SizetArray& N_L_a = N_L_projected[approx];
-    increment_samples(N_L_a, one_sided_delta(N_L_a, lf_targets, 1));
+    incr = one_sided_delta(N_L_a, lf_targets, 1);
+    increment_samples(N_L_a, incr);
+    increment_equivalent_cost(incr, sequenceCost, approx);
   }
 }
 
@@ -987,6 +982,12 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 			const RealVector& cost,  SizetArray& approx_sequence,
 			RealMatrix& eval_ratios, Real& avg_hf_target)
 {
+  if (maxFunctionEvals == SZ_MAX) {
+    Cerr << "Error: evaluation budget required for numerical MFMC "
+	 << "(convergence tolerance option not yet supported)." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
   size_t qoi, approx, num_am1 = numApprox - 1;
   Real cost_L, cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
     avg_N_H = average(numH), r_i;
@@ -1172,9 +1173,9 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     s << "<<<<< Variance for mean estimator:\n";
 
     if (pilotMgmtMode != OFFLINE_PILOT)
-      s << "      Initial MC (" << std::setw(4)
+      s << "      Initial MC (" << std::setw(5)
 	<< (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
-	<< std::setw(wpp7) << average(estVarIter0)<<'\n';
+	<< std::setw(wpp7) << average(estVarIter0) << '\n';
 
     RealVector mc_est_var(numFunctions, false),
              mfmc_est_var(numFunctions, false);
@@ -1183,17 +1184,22 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
       mfmc_est_var[qoi] *= estVarRatios[qoi];
     }
     Real avg_mfmc_est_var = average(mfmc_est_var),
-         avg_mc_est_var   = average(mc_est_var);
+         avg_mc_est_var   = average(mc_est_var),
+         avg_budget_mc_est_var = average(varH) / equivHFEvals;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
-    s << "  " << type << "   MC (" << std::setw(4)
+    s << "  " << type << "   MC (" << std::setw(5)
       << (size_t)std::floor(average(numH) + .5) << " HF samples): "
-      << std::setw(wpp7) << avg_mc_est_var
-      << "\n  " << type << " MFMC (sample profile):  "
-      << std::setw(wpp7) << avg_mfmc_est_var
-      << "\n  " << type << " MFMC ratio (1 - R^2):   "
+      << std::setw(wpp7) << avg_mc_est_var << "\n  " << type
+      << " MFMC (sample profile):   " << std::setw(wpp7) << avg_mfmc_est_var
+      << "\n  " << type << " MFMC ratio (1 - R^2):    "
       // report ratio of averages rather than average of ratios (consistent
       // with ACV definition which would have to recompute the latter)
-      << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var << '\n';
+      << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var
+      << "\n Equivalent   MC (" << std::setw(5)
+      << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+      << std::setw(wpp7) << avg_budget_mc_est_var
+      << "\n Equivalent MFMC ratio:              " << std::setw(wpp7)
+      << avg_mfmc_est_var / avg_budget_mc_est_var << '\n';
     break;
   }
   // For numerical cases, mfmc_numerical_solution() must incorporate varH/numH

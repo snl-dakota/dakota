@@ -45,6 +45,12 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
     Cout << "ACV sub-method selection = " << mlmfSubMethod
 	 << " sub-method formulation = "  << optSubProblemForm
 	 << " sub-problem solver = "      << optSubProblemSolver << std::endl;
+
+  if (maxFunctionEvals == SZ_MAX) {
+    Cerr << "Error: evaluation budget required for ACV (convergence tolerance "
+	 << "option not yet supported)." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 }
 
 
@@ -98,7 +104,7 @@ void NonDACVSampling::approximate_control_variate()
   //initialize_acv_covariances(covLL, covLH, varH);
 
   // Initialize for pilot sample
-  size_t num_steps = numApprox+1, hf_shared_pilot = numSamples;
+  size_t hf_shared_pilot = numSamples;
   //, start=0, lf_shared_pilot = find_min(pilotSamples, start, numApprox-1);
 
   Real avg_hf_target = 0.;
@@ -110,7 +116,7 @@ void NonDACVSampling::approximate_control_variate()
     shared_increment(mlmfIter); // spans ALL models, blocking
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, numH);//, N_LL);
-    increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps);
     // allow pilot to vary for C vs c
     // *** TO DO: numSamples logic after pilot (mlmfIter >= 1)
     // *** Will likely require _baselineL and _baselineH
@@ -162,11 +168,11 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   // Compute var L,H & covar LL,LH from (oracle) pilot treated as "offline" cost
   // ------------------------------------------------------------
   // Initialize for pilot sample
-  size_t num_steps = numApprox + 1, hf_shared_pilot = numSamples;
+  size_t hf_shared_pilot = numSamples;
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		      sum_HH_pilot, N_shared_pilot);//, N_LL_pilot);
-  //increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
+  //increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps);
   compute_variance(sum_H_pilot, sum_HH_pilot, N_shared_pilot, varH);
   compute_L_variance(sum_L_pilot, sum_LL_pilot, N_shared_pilot, var_L);
   compute_LH_covariance(sum_L_pilot, sum_H_pilot, sum_LH_pilot,
@@ -193,12 +199,12 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
 		 avgEstVar, avgEstVarRatio);
 
-  // at least 1 sample (?) reqd for numerics (+ resetting allSamples from pilot)
-  if (numSamples < 1) numSamples = 1;
+  // at least 2 samples reqd for variance (+ resetting allSamples from pilot)
+  numSamples = std::max(numSamples, (size_t)2);
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 		      sum_LH, sum_HH, numH);//, N_LL);
-  increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
+  increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps);
   // allow pilot to vary for C vs c
 
   approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, numH,
@@ -221,7 +227,7 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   Real avg_hf_target = 0.;
 
   // Initialize for pilot sample
-  size_t num_steps = numApprox+1, hf_shared_pilot = numSamples;
+  size_t hf_shared_pilot = numSamples;
   //, start=0, lf_shared_pilot = find_min(pilotSamples, start, numApprox-1);
 
   // --------------------------------------------------------------------
@@ -230,7 +236,7 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 		      sum_LH, sum_HH, numH);//, N_LL);
-  increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
+  increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps);
   // allow pilot to vary for C vs c
 
   compute_variance(sum_H, sum_HH, numH, varH);
@@ -274,7 +280,6 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // define approx_sequence in decreasing r_i order, directionally consistent
   // with default approx indexing for well-ordered models
   // > approx 0 is lowest fidelity --> lowest corr,cost --> highest r_i
-  // > 
   SizetArray approx_sequence;  bool descending = true;
   ordered_approx_sequence(avg_eval_ratios, approx_sequence, descending);
 
@@ -396,7 +401,8 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 	average(eval_ratios2, 0, avg_eval_ratios2);
 	scale_to_target(avg_N_H, cost, avg_eval_ratios1, avg_hf_target1);
 	scale_to_target(avg_N_H, cost, avg_eval_ratios2, avg_hf_target2);
-	Real avg_estvar_ratio1, avg_estvar_ratio2;  int num_samp1, num_samp2;
+	Real avg_estvar_ratio1, avg_estvar_ratio2;
+	size_t num_samp1, num_samp2;
 	nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios1,
 				       avg_hf_target1, num_samp1, avg_estvar1,
 				       avg_estvar_ratio1);
@@ -1045,14 +1051,17 @@ void NonDACVSampling::
 update_projected_samples(Real avg_hf_target, const RealVector& avg_eval_ratios,
 			 SizetArray& N_H_projected, Sizet2DArray& N_L_projected)
 {
-  increment_samples(N_H_projected,
-		    one_sided_delta(average(N_H_projected), avg_hf_target));
+  size_t incr = one_sided_delta(average(N_H_projected), avg_hf_target);
+  increment_samples(N_H_projected, incr);
+  increment_equivalent_cost(incr, sequenceCost, numApprox);
 
-  size_t approx;  Real lf_target;
-  for (approx=0; approx<numApprox; ++approx) {
+  Real lf_target;
+  for (size_t approx=0; approx<numApprox; ++approx) {
     lf_target = avg_eval_ratios[approx] * avg_hf_target;
     SizetArray& N_L_a = N_L_projected[approx];
-    increment_samples(N_L_a, one_sided_delta(average(N_L_a), lf_target));
+    incr = one_sided_delta(average(N_L_a), lf_target);
+    increment_samples(N_L_a, incr);
+    increment_equivalent_cost(incr, sequenceCost, approx);
   }
 }
 

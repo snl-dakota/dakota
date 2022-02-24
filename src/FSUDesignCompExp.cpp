@@ -246,8 +246,9 @@ void FSUDesignCompExp::get_parameter_sets(Model& model)
 }
 
 
-void FSUDesignCompExp::get_parameter_sets(Model& model, const int num_samples,
-					  RealMatrix& design_matrix)
+void FSUDesignCompExp::
+get_parameter_sets(Model& model, const size_t num_samples,
+		   RealMatrix& design_matrix)
 {
   // keep track of number of DACE executions for this object
   numDACERuns++;

@@ -360,7 +360,7 @@ variables_array_to_samples(const VariablesArray& vars_array,
 
 /** Generate (numvars + 2)*num_samples replicate sets for VBD,
     populating allSamples( numvars, (numvars + 2)*num_samples ) */
-void Analyzer::get_vbd_parameter_sets(Model& model, int num_samples)
+void Analyzer::get_vbd_parameter_sets(Model& model, size_t num_samples)
 {
   if (!compactMode) {
     Cerr << "\nError: get_vbd_parameter_sets requires compactMode.\n";
@@ -418,7 +418,7 @@ void Analyzer::get_vbd_parameter_sets(Model& model, int num_samples)
     of the Sobol VBD which uses (K+2)*N function evaluations, where K
     is the number of dimensions (uncertain vars) and N is the number
     of samples.  */
-void Analyzer::compute_vbd_stats(const int num_samples, 
+void Analyzer::compute_vbd_stats(const size_t num_samples, 
 				 const IntResponseMap& resp_samples)
 {
   using boost::multi_array;
@@ -1064,7 +1064,7 @@ void Analyzer::get_parameter_sets(Model& model)
   abort_handler(METHOD_ERROR);
 }
 
-void Analyzer::get_parameter_sets(Model& model, const int num_samples, 
+void Analyzer::get_parameter_sets(Model& model, const size_t num_samples, 
 				  RealMatrix& design_matrix)
 {
   Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets"

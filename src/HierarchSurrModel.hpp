@@ -215,6 +215,11 @@ private:
   /// for exporting a scalar solution level value
   void add_tabular_solution_level_value(Model& model);
 
+  /// check for matching interface ids among active truth/surrogate models
+  /// (varies based on active keys)
+  bool matching_truth_surrogate_interface_ids();
+  /// check for matching interface ids across full set of models (invariant)
+  bool matching_all_interface_ids();
   /// update sameInterfaceInstance based on interface ids for models
   /// identified by current {low,high}FidelityKey
   void check_model_interface_instance();
@@ -294,23 +299,6 @@ nested_variable_mappings(const SizetArray& c_index1,
 }
 
 
-inline void HierarchSurrModel::check_model_interface_instance()
-{
-  unsigned short lf_form =  surrModelKey.retrieve_model_form(),
-                 hf_form = truthModelKey.retrieve_model_form();
-
-  if (hf_form == USHRT_MAX || lf_form == USHRT_MAX)
-    sameModelInstance = sameInterfaceInstance = false; // including both undef
-  else {
-    sameModelInstance = (lf_form == hf_form);
-    if (sameModelInstance) sameInterfaceInstance = true;
-    else
-      sameInterfaceInstance
-	= (surrogate_model().interface_id() == truth_model().interface_id());
-  }
-}
-
-
 inline DiscrepancyCorrection& HierarchSurrModel::discrepancy_correction()
 { return deltaCorr[activeKey]; }
 
@@ -387,6 +375,37 @@ inline const Model& HierarchSurrModel::truth_model() const
       abort_handler(MODEL_ERROR);
     }
     return orderedModels[hf_form];
+  }
+}
+
+
+inline bool HierarchSurrModel::matching_truth_surrogate_interface_ids()
+{ return (surrogate_model().interface_id() == truth_model().interface_id()); }
+
+
+inline bool HierarchSurrModel::matching_all_interface_ids()
+{
+  size_t m, num_m = orderedModels.size();
+  const String& iface_id0 = orderedModels[0].interface_id();
+  for (m=1; m<num_m; ++m)
+    if (orderedModels[m].interface_id() != iface_id0)
+      return false;
+  return true;
+}
+
+
+inline void HierarchSurrModel::check_model_interface_instance()
+{
+  unsigned short lf_form =  surrModelKey.retrieve_model_form(),
+                 hf_form = truthModelKey.retrieve_model_form();
+
+  if (hf_form == USHRT_MAX || lf_form == USHRT_MAX)
+    sameModelInstance = sameInterfaceInstance = false; // including both undef
+  else {
+    sameModelInstance = (lf_form == hf_form);
+    if (sameModelInstance) sameInterfaceInstance = true;
+    else
+      sameInterfaceInstance = matching_truth_surrogate_interface_ids();
   }
 }
 

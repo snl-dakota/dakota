@@ -566,7 +566,7 @@ load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
 
 void NonD::
 inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
-		      size_t fixed_index, Sizet3DArray& N_l_3D)
+		      size_t secondary_index, Sizet3DArray& N_l_3D)
 {
   // 2D array is num_steps x num_qoi
   // 3D array is num_mf x num_lev x num_qoi which we slice as either:
@@ -575,9 +575,9 @@ inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
 
   size_t i, num_mf = N_l_3D.size();  
   if (multilev) // ML case
-    N_l_3D[fixed_index] = N_l_2D;
+    N_l_3D[secondary_index] = N_l_2D;
   else { // MF case
-    if (fixed_index == SZ_MAX) {
+    if (secondary_index == SZ_MAX) {
       ModelList& sub_models = iteratedModel.subordinate_models(false);
       ModelLIter m_iter = sub_models.begin();
       size_t m_soln_lev, active_lev;
@@ -587,9 +587,9 @@ inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
 	N_l_3D[i][active_lev] = N_l_2D[i];  // assign vector of qoi samples
       }
     }
-    else // valid fixed_index
+    else // valid secondary_index
       for (i=0; i<num_mf; ++i)
-	N_l_3D[i][fixed_index] = N_l_2D[i]; // assign vector of qoi samples
+	N_l_3D[i][secondary_index] = N_l_2D[i]; // assign vector of qoi samples
   }
 }
 

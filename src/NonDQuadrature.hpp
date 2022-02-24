@@ -114,13 +114,13 @@ protected:
 
   void get_parameter_sets(Model& model);
 
-  void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);
-  void sampling_reference(int samples_ref);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
+  void sampling_reference(size_t samples_ref);
 
   void increment_grid_preference(const RealVector& dim_pref);
   void increment_grid_preference();
 
-  int num_samples() const;
+  size_t num_samples() const;
 
   void random_seed(int seed);
 
@@ -314,11 +314,11 @@ inline void NonDQuadrature::evaluate_grid_increment()
 }
 
 
-inline void NonDQuadrature::sampling_reference(int samples_ref)
+inline void NonDQuadrature::sampling_reference(size_t samples_ref)
 { numSamples = samples_ref; }
 
 
-inline int NonDQuadrature::num_samples() const
+inline size_t NonDQuadrature::num_samples() const
 {
   switch (quadMode) {
   case FULL_TENSOR:                        return tpqDriver->grid_size(); break;

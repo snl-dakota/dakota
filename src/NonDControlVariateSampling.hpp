@@ -50,6 +50,7 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_variance_reduction(std::ostream& s);
 
   //
   //- Heading: Member functions
@@ -96,8 +97,25 @@ private:
   //- Heading: Helper functions
   //
 
-  /// Perform control variate Monte Carlo across two model forms
-  void control_variate_mc();
+  /// Perform control variate Monte Carlo across two model forms,
+  /// including pilot sample as online cost
+  void control_variate_mc(const Pecos::ActiveKey& active_key);
+  /// Perform control variate Monte Carlo across two model forms,
+  /// segregating the pilot sample as separate offline cost
+  void control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key);
+  /// Perform control variate Monte Carlo across two model forms,
+  /// projecting estimator performance based only on the pilot sample
+  void control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key);
+
+  /// helper for shared code among MLCV for offline-pilot and pilot-projection
+  void evaluate_pilot(const Pecos::ActiveKey& active_key, Real cost_ratio,
+		      RealVector& eval_ratios, RealVector& var_H,
+		      SizetArray& N_shared, RealVector& hf_targets,
+		      bool accumulate_cost, bool pilot_estvar);
+
+  /// define model form and resolution level indices
+  void hf_lf_indices(size_t& hf_form_index, size_t& hf_lev_index,
+		     size_t& lf_form_index, size_t& lf_lev_index);
 
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation and estimator variance ratios
@@ -106,6 +124,8 @@ private:
   /// core parameter set definition and evaluation for LF sample increment
   bool lf_increment(size_t iter, size_t lev);
 
+  /// initialize LF and HF cost along with their ratio
+  void initialize_mf_cost(Real& lf_cost, Real& hf_cost, Real& cost_ratio);
   /// update equivHFEvals from HF, LF evaluation counts
   void compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,
 				  Real cost_ratio);
@@ -118,22 +138,25 @@ private:
   /// initialize the CV accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_mf_sums(IntRealVectorMap& sum_L_shared,
-			  IntRealVectorMap& sum_L_refined,
+			//IntRealVectorMap& sum_L_refined,
 			  IntRealVectorMap& sum_H, IntRealVectorMap& sum_LL,
 			  IntRealVectorMap& sum_LH);
 
   /// update running sums for one model (sum_L) using set of model
   /// evaluations within allResponses
-  void accumulate_mf_sums(IntRealVectorMap& sum_L, const RealVector& offset,
-			  SizetArray& num_L);
-  /// update running sums for two models (sum_L, sum_H, and sum_LH)
-  /// from set of low/high fidelity model evaluations within allResponses
+  void accumulate_mf_sums(IntRealVectorMap& sum_L, SizetArray& num_L);
+  /// update running sums for two models from set of low/high fidelity
+  /// model evaluations within allResponses
   void accumulate_mf_sums(IntRealVectorMap& sum_L_shared,
-			  IntRealVectorMap& sum_L_refined,
+			//IntRealVectorMap& sum_L_refined,
 			  IntRealVectorMap& sum_H,  IntRealVectorMap& sum_LL,
 			  IntRealVectorMap& sum_LH, RealVector& sum_HH,
-			  const RealVector& offset, SizetArray& num_L,
-			  SizetArray& num_H);
+			  SizetArray& N_shared);
+  /// update running sums for two models from set of low/high fidelity
+  /// model evaluations within allResponses
+  void accumulate_mf_sums(RealVector& sum_L,  RealVector& sum_H,
+			  RealVector& sum_LL, RealVector& sum_LH,
+			  RealVector& sum_HH, SizetArray& N_shared);
 
   /// scale sample profile to meeet a specified budget
   void allocate_budget(const RealVector& eval_ratios, Real cost_ratio,
@@ -149,8 +172,9 @@ private:
 
   /// compute ratios of MC and CVMC mean squared errors across the QoI vector
   void compute_estvar_ratios(const RealVector& eval_ratios,
-			     const RealVector& var_H, const RealVector& rho2_LH,
-			     size_t iter, const SizetArray& N_hf,
+			   //const RealVector& var_H,
+			     const RealVector& rho2_LH,
+			   //size_t iter, const SizetArray& N_hf,
 			     RealVector& estvar_ratios);
 
   /// compute control variate parameters for CVMC and estimate raw moments
@@ -158,7 +182,7 @@ private:
 		      IntRealVectorMap& sum_LL, IntRealVectorMap& sum_LH,
 		      const SizetArray& N_shared,
 		      IntRealVectorMap& sum_L_refined,
-		      const SizetArray& N_refined, const RealVector& rho2_LH,
+		      const SizetArray& N_refined, //const RealVector& rho2_LH,
 		      RealMatrix& H_raw_mom);
 
   /*
@@ -178,15 +202,41 @@ private:
 			const SizetArray& N_refined, const RealVector& beta,
 			RealVector& H_raw_mom);
 
+  /// for pilot-projection mode, update the same counts based on projections
+  /// rather than accumulations
+  void update_projected_samples(const RealVector& hf_targets,
+				const RealVector& eval_ratios, Real cost_ratio,
+				SizetArray& N_hf, SizetArray& N_lf);
+
   //
   //- Heading: Data
   //
 
+  RealVector estVarRatios;
+  SizetArray numHIter0;
 };
 
 
 inline NonDControlVariateSampling::~NonDControlVariateSampling()
 { }
+
+
+inline void NonDControlVariateSampling::
+initialize_mf_cost(Real& lf_cost, Real& hf_cost, Real& cost_ratio)
+{
+  // retrieve cost estimates across model forms for a particular soln level
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  if (multilev) {
+    RealVector cost;  configure_cost(numSteps, multilev, cost);
+    hf_cost = cost[numSteps - 1];
+    lf_cost = cost[0];
+  }
+  else {
+    hf_cost =     iteratedModel.truth_model().solution_level_cost(); // active
+    lf_cost = iteratedModel.surrogate_model().solution_level_cost(); // active
+  }
+  cost_ratio = hf_cost / lf_cost;
+}
 
 
 inline void NonDControlVariateSampling::
