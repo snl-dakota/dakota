@@ -97,12 +97,12 @@ def test_lib():
 
         interface,
           id_interface = 'I1'
-          pybind11
+          python
             analysis_driver = 'interface_id_1'
 
         interface,
           id_interface = 'I2'
-          pybind11
+          python
             analysis_driver = 'interface_id_2'
 
         interface,
