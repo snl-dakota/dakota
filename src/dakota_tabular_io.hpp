@@ -190,8 +190,11 @@ void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars,
 			size_t start_index, size_t num_items);
 
 /// Output a row of tabular data from a response object
-void write_data_tabular(std::ostream& tabular_ostream, 
-			const Response& response, bool eol = true);
+void write_data_tabular(std::ostream& tabular_ostream, const Response& response,
+			bool eol = true);
+/// Output a row of tabular data from a portion of a response object
+void write_data_tabular(std::ostream& tabular_ostream, const Response& response,
+			size_t start_index, size_t num_items);
 
 /// Output a row of tabular data from a variables object.  All active/inactive
 /// variables written in input spec order.  Conditionally include interface ID.

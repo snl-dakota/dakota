@@ -110,6 +110,14 @@ protected:
   /// with competing LF/HF job queues
   void derived_synchronize_competing();
 
+  /// helper to select among Variables::all_discrete_{int,string,real}_
+  /// variable_labels() for exporting a solution control variable label
+  const String& solution_control_label();
+
+  /// helper to select among Model::solution_level_{int,string,real}_value()
+  /// for exporting a scalar solution level value
+  void add_tabular_solution_level_value(Model& model);
+
   //
   //- Heading: Data members
   //

@@ -298,6 +298,11 @@ void write_data_tabular(std::ostream& tabular_ostream,
 { response.write_tabular(tabular_ostream, eol); }
 
 
+void write_data_tabular(std::ostream& tabular_ostream, const Response& response,
+			size_t start_index, size_t num_items)
+{ response.write_tabular_partial(tabular_ostream, start_index, num_items); }
+
+
 void write_data_tabular(std::ostream& tabular_ostream, 
 			const Variables& vars, const String& iface_id, 
 			const Response& response, size_t counter,

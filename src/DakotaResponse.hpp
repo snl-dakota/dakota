@@ -219,23 +219,26 @@ public:
   /// unrolled labels available through function_labels()
   const StringArray& field_group_labels();
 
-  /// read a response object of specified format from an std::istream 
+  /// read a response object of specified format from a std::istream 
   void read(std::istream& s, const unsigned short format = FLEXIBLE_RESULTS);
  
-  /// write a response object to an std::ostream
+  /// write a response object to a std::ostream
   void write(std::ostream& s) const;
 
-  /// read a response object in annotated format from an std::istream
+  /// read a response object in annotated format from a std::istream
   void read_annotated(std::istream& s);
-  /// write a response object in annotated format to an std::ostream
+  /// write a response object in annotated format to a std::ostream
   void write_annotated(std::ostream& s) const;
 
-  /// read responseRep::functionValues in tabular format from an std::istream
+  /// read responseRep::functionValues in tabular format from a std::istream
   void read_tabular(std::istream& s);
-  /// write responseRep::functionValues in tabular format to an std::ostream
+  /// write responseRep::functionValues in tabular format to a std::ostream
   void write_tabular(std::ostream& s, bool eol = true) const;
-
-  /// write the labels to a tabular data stream
+  /// write portion of responseRep::functionValues in tabular format
+  /// to a std::ostream
+  void write_tabular_partial(std::ostream& s, size_t start_index,
+			     size_t num_items) const;
+  /// write the response labels in tabular format to a std::ostream
   void write_tabular_labels(std::ostream& s, bool eol = true) const;
 
   /// read a response object from a packed MPI buffer
@@ -426,9 +429,9 @@ private:
   /// Used by read functions to instantiate a new letter class
   std::shared_ptr<Response> get_response(short type) const;
 
-  /// read a letter object in annotated format from an std::istream
+  /// read a letter object in annotated format from a std::istream
   void read_annotated_rep(std::istream& s);
-  /// write a letter object in annotated format to an std::ostream
+  /// write a letter object in annotated format to a std::ostream
   void write_annotated_rep(std::ostream& s) const;
   /// read a letter object from a packed MPI buffer
   void read_rep(MPIUnpackBuffer& s);

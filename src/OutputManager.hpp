@@ -280,8 +280,12 @@ public:
   // the tabular data file for the evaluation interface id
   //void add_tabular_data(const String& iface);
   /// adds data to each window in the 2d graphics and adds a row to
-  /// the tabular data file for the evaluation response
+  /// the tabular data file for the response functions
   void add_tabular_data(const Response& response, bool eol = true);
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file for a portion of the response functions
+  void add_tabular_data(const Response& response, size_t start_index,
+			size_t num_items);
   /// augments the data set for a row in the tabular data file
   template<class T> 
   void add_tabular_scalar(T val);

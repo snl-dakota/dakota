@@ -94,4 +94,44 @@ void EnsembleSurrModel::derived_synchronize_competing()
   std::swap(surrResponseMap, aggregated_map);
 }
 
+
+const String& EnsembleSurrModel::solution_control_label()
+{
+  Model&  hf_model = truth_model();
+  size_t adv_index = hf_model.solution_control_discrete_variable_index();
+  switch (hf_model.solution_control_variable_type()) {
+  case DISCRETE_DESIGN_RANGE:       case DISCRETE_DESIGN_SET_INT:
+  case DISCRETE_INTERVAL_UNCERTAIN: case DISCRETE_UNCERTAIN_SET_INT:
+  case DISCRETE_STATE_RANGE:        case DISCRETE_STATE_SET_INT:
+    return currentVariables.all_discrete_int_variable_labels()[adv_index];
+    break;
+  case DISCRETE_DESIGN_SET_STRING:  case DISCRETE_UNCERTAIN_SET_STRING:
+  case DISCRETE_STATE_SET_STRING:
+    return currentVariables.all_discrete_string_variable_labels()[adv_index];
+    break;
+  case DISCRETE_DESIGN_SET_REAL:  case DISCRETE_UNCERTAIN_SET_REAL:
+  case DISCRETE_STATE_SET_REAL:
+    return currentVariables.all_discrete_real_variable_labels()[adv_index];
+    break;
+  }
+}
+
+
+void EnsembleSurrModel::add_tabular_solution_level_value(Model& model)
+{
+  OutputManager& output_mgr = parallelLib.output_manager();
+  switch (model.solution_control_variable_type()) {
+  case DISCRETE_DESIGN_RANGE:       case DISCRETE_DESIGN_SET_INT:
+  case DISCRETE_INTERVAL_UNCERTAIN: case DISCRETE_UNCERTAIN_SET_INT:
+  case DISCRETE_STATE_RANGE:        case DISCRETE_STATE_SET_INT:
+    output_mgr.add_tabular_scalar(model.solution_level_int_value());    break;
+  case DISCRETE_DESIGN_SET_STRING:  case DISCRETE_UNCERTAIN_SET_STRING:
+  case DISCRETE_STATE_SET_STRING:
+    output_mgr.add_tabular_scalar(model.solution_level_string_value()); break;
+  case DISCRETE_DESIGN_SET_REAL:  case DISCRETE_UNCERTAIN_SET_REAL:
+  case DISCRETE_STATE_SET_REAL:
+    output_mgr.add_tabular_scalar(model.solution_level_real_value());   break;
+  }
+}
+
 } // namespace Dakota
