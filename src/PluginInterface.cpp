@@ -36,6 +36,14 @@ void PluginInterface::derived_map(const Variables& vars, const ActiveSet& set,
 {
   // loading at first map to head off conflicting Python issues
   load_plugin();
+
+  // NOTE: May want to persist the request across input filter,
+  // driver(s), output filter
+  const DakotaPlugins::EvalRequest plugin_request =
+    form_eval_request(vars, set, fn_eval_id);
+  DakotaPlugins::EvalResponse plugin_response =
+    pluginInterface->evaluate(plugin_request);
+  populate_response(plugin_response, response);
 }
 
 
@@ -68,6 +76,26 @@ void PluginInterface::load_plugin()
   if (outputLevel >= VERBOSE_OUTPUT)
     Cout << "Loading plugin interface from '" << pluginPath << "'" << std::endl;
   pluginInterface->initialize();
+}
+
+
+DakotaPlugins::EvalRequest PluginInterface::form_eval_request
+(const Variables& vars, const ActiveSet& set, int fn_eval_id) const
+{
+  DakotaPlugins::EvalRequest req;
+  // TODO: do we want to use the legacy copy_data or another means?
+  copy_data(vars.all_continuous_variables(), req.continuousVars);
+
+  return req;
+}
+
+
+void PluginInterface::populate_response
+(const DakotaPlugins::EvalResponse plugin_response, Response& response) const
+{
+  // TODO: this is abuse, getting a reference to a non-const view...
+  auto resp_fns = response.function_values_view();
+  copy_data(plugin_response.functions, resp_fns);
 }
 
 

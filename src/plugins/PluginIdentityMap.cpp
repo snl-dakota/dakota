@@ -19,7 +19,8 @@ namespace DP = DakotaPlugins;
 DP::EvalResponse PluginIdentityMap::evaluate(const DP::EvalRequest& request)
 {
   DP::EvalResponse resp;
-  resp.functions.push_back(request.continuousVars[0]);
+  for (const auto& cv : request.continuousVars)
+    resp.functions.push_back(cv);
   return resp;
 }
 

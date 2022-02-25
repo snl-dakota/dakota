@@ -40,6 +40,14 @@ protected:
   /// Use Boost DLL to runtime load the plugin
   void load_plugin();
 
+  /// map variables and set to the plugin request
+  DakotaPlugins::EvalRequest form_eval_request
+  (const Variables& vars, const ActiveSet& set, int fn_eval_id) const;
+
+  /// map plugin response to Dakota response
+  void populate_response
+  (const DakotaPlugins::EvalResponse plugin_response, Response& response) const;
+
   /// path to the plugin to load, e.g., /path/to/libuser_plugin.so
   String pluginPath;
 

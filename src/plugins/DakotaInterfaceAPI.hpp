@@ -54,6 +54,9 @@ public:
  */
 class DakotaInterfaceAPI
 {
+
+public:
+
   void initialize() {};
 
   /// report the supported number of continuous, discrete int/string/real vars
@@ -74,14 +77,24 @@ class DakotaInterfaceAPI
   /// single evaluator
   virtual EvalResponse evaluate(const EvalRequest& request) = 0;
 
-  // can do default implementation in DakotaCore
-  /// batch evaluator
+  /// batch evaluator; default implementation delegates to single evaluate
   std::vector<EvalResponse>
-  evaluate(const std::vector<const EvalRequest>& reuest) {};
+  evaluate(const std::vector<EvalRequest>& requests);
 
   void finalize() {};
 
 };
+
+
+inline std::vector<EvalResponse>
+DakotaInterfaceAPI::evaluate(const std::vector<EvalRequest>& requests)
+{
+  std::vector<EvalResponse> responses;
+  responses.reserve(requests.size());
+  for (const auto& req : requests)
+    responses.push_back(evaluate(req));
+}
+
 
 }
 
