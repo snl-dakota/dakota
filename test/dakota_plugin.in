@@ -1,0 +1,20 @@
+method
+  centered_parameter_study
+    step_vector 1.0
+    steps_per_variable 1
+  output verbose
+
+variables
+  continuous_design 1
+  descriptors 'x'
+
+interface
+  analysis_drivers 'f_of_x'
+  plugin
+    library_path '/home/user/dakota/source/src/plugins/build/libidentity_map.so'
+
+responses
+  descriptors 'f'
+  response_functions 1
+  no_gradients
+  no_hessians

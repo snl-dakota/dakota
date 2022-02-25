@@ -10,7 +10,9 @@
 #include "PluginInterface.hpp"
 #include "ProblemDescDB.hpp"
 
+#include <boost/dll/import.hpp>
 #include <boost/filesystem.hpp>
+
 
 namespace Dakota {
 
@@ -32,16 +34,40 @@ PluginInterface::~PluginInterface()
 void PluginInterface::derived_map(const Variables& vars, const ActiveSet& set,
 				  Response& response, int fn_eval_id)
 {
+  // loading at first map to head off conflicting Python issues
+  load_plugin();
 }
 
 
 void PluginInterface::wait_local_evaluations(PRPQueue& prp_queue)
 {
+  // loading at first map to head off conflicting Python issues
+  load_plugin();
 }
 
-
+/** Load plugin if not already active */
 void PluginInterface::load_plugin()
 {
+  if (pluginInterface) return;
+  try {
+    pluginInterface = boost::dll::import<DakotaPlugins::DakotaInterfaceAPI>
+      (pluginPath,
+	 "dakota_interface_plugin"  // name of the symbol to import
+	 // TODO: append .dll, .so, .dylib via
+	 //boost::dll::load_mode::append_decorations
+	 //     boost::dll::load_mode::rtld_now
+	 );
+  }
+  catch (const boost::system::system_error& e) {
+    Cerr << "\nError: Could not load symbol dakota_interface_plugin from "
+	 << "specified plugin \ninterface library '" << pluginPath
+	 << "'\nDetails:\n"
+	 << e.what() << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (outputLevel >= VERBOSE_OUTPUT)
+    Cout << "Loading plugin interface from '" << pluginPath << "'" << std::endl;
+  pluginInterface->initialize();
 }
 
 
