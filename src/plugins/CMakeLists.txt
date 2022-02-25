@@ -1,0 +1,30 @@
+#  _______________________________________________________________________
+#
+#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  This software is distributed under the GNU Lesser General Public License.
+#  For more information, see the README file in the top Dakota directory.
+#  _______________________________________________________________________
+
+cmake_minimum_required(VERSION 3.12)
+project(DakotaPlugins CXX)
+
+
+# TODO: Decide if we want the dependence on boost or want to roll our
+# own export macro. This should work with most any version of Boost
+# and needn't match Dakota's
+find_package(Boost)
+
+
+add_library(identity_map SHARED PluginIdentityMap.cpp)
+
+set_target_properties(identity_map PROPERTIES
+                      CXX_STANDARD 11
+		      CXX_STANDARD_REQUIRED TRUE
+		      CXX_VISIBILITY_PRESET hidden)
+
+target_link_libraries(identity_map Boost::boost)
+
+# TODO: install whole plugin source dir to share/dakota/ for end users
+#install(...)
