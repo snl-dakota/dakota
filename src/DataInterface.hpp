@@ -233,6 +233,8 @@ public:
   StringArray copyFiles;
   /// whether to replace / overwrite existing files
   bool templateReplace;
+  /// path to plugin to runtime load
+  String pluginLibraryPath;
   /// Python interface: use NumPy data structures (default is list data)
   bool numpyFlag;
 

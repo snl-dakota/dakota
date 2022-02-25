@@ -16,7 +16,7 @@ namespace Dakota {
 
 PluginInterface::PluginInterface(const ProblemDescDB& problem_db):
   ApplicationInterface(problem_db),
-  pluginPath(problem_db.get_string("interface.plugin_path")),
+  pluginPath(problem_db.get_string("interface.plugin_library_path")),
   analysisDrivers(
     problem_db.get_sa("interface.application.analysis_drivers"))
 {
@@ -51,11 +51,10 @@ void PluginInterface::check_plugin_exists()
   // TODO: locate plugin in default locations such as dakota/bin or dakota/lib
   if (!boost::filesystem::exists(pluginPath)) {
     Cerr << "\nError: Specified plugin interface library \n  '" << pluginPath
-	 << "\ndoes not exist.\n";
+	 << "'\ndoes not exist.\n";
     abort_handler(INTERFACE_ERROR);
   }
 }
 
 
 }
-
