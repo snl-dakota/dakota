@@ -41,7 +41,8 @@ EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 
 
 // This constructor accepts a Model
-EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
+EffGlobalMinimizer::
+EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedMinimizer(problem_db, model,
 		     std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
   batchSize(probDescDB.get_int("method.batch_size")),

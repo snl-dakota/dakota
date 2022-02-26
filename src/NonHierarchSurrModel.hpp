@@ -51,15 +51,6 @@ protected:
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
-  void nested_variable_mappings(const SizetArray& c_index1,
-				const SizetArray& di_index1,
-				const SizetArray& ds_index1,
-				const SizetArray& dr_index1,
-				const ShortArray& c_target2,
-				const ShortArray& di_target2,
-				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
-
   void derived_evaluate(const ActiveSet& set);
   void derived_evaluate_nowait(const ActiveSet& set);
 
@@ -69,6 +60,18 @@ protected:
     IntResponseMap& combined_resp_map);
   void derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
     IntResponseMap& combined_resp_map);
+
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+
+  void create_tabular_datastream();
+  void derived_auto_graphics(const Variables& vars, const Response& resp);
 
   size_t num_approximation_models() const;
   void assign_default_keys();
@@ -164,6 +167,11 @@ private:
   /// assign the resolution level for the i-th model key
   void assign_key(size_t i);
 
+  /// check for matching interface ids among active truth/surrogate models
+  /// (varies based on active keys)
+  bool matching_truth_surrogate_interface_ids();
+  /// check for matching interface ids across full set of models (invariant)
+  bool matching_all_interface_ids();
   /// update sameInterfaceInstance based on interface ids for models
   /// identified by current {low,high}FidelityKey
   void check_model_interface_instance();
@@ -215,6 +223,30 @@ nested_variable_mappings(const SizetArray& c_index1,
 }
 
 
+inline bool NonHierarchSurrModel::matching_all_interface_ids()
+{
+  size_t i, num_approx = unorderedModels.size();
+  const String& hf_id  = truthModel.interface_id();
+  for (i=0; i<num_approx; ++i)
+    if (unorderedModels[i].interface_id() != hf_id)
+      return false;
+  return true;
+}
+
+
+inline bool NonHierarchSurrModel::matching_truth_surrogate_interface_ids()
+{
+  size_t i, num_approx = surrModelKeys.size();  unsigned short lf_form;
+  const String& hf_id  = truthModel.interface_id();
+  for (i=0; i<num_approx; ++i) {
+    lf_form = surrModelKeys[i].retrieve_model_form();
+    if (unorderedModels[lf_form].interface_id() != hf_id)
+      return false;
+  }
+  return true;
+}
+
+
 inline void NonHierarchSurrModel::check_model_interface_instance()
 {
   unsigned short hf_form = truthModelKey.retrieve_model_form();
@@ -227,15 +259,8 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
     for (i=0; i<num_approx; ++i)
       if (surrModelKeys[i].retrieve_model_form() != hf_form)
 	{ sameModelInstance = false; break; }
-  }
-
-  if (sameModelInstance) sameInterfaceInstance = true;
-  else { // approximations are separate models
-    const String& hf_id = truthModel.interface_id();
-    sameInterfaceInstance = true;
-    for (i=0; i<num_approx; ++i)
-      if (unorderedModels[i].interface_id() != hf_id)
-	{ sameInterfaceInstance = false; break; }
+    sameInterfaceInstance = (sameModelInstance) ? true :
+      matching_truth_surrogate_interface_ids();
   }
 }
 
@@ -351,6 +376,26 @@ inline void NonHierarchSurrModel::clear_model_keys()
     unorderedModels[i].clear_model_keys();
   truthModel.clear_model_keys();
 }
+
+
+/*
+inline bool NonHierarchSurrModel::multilevel_from_keys() const
+{
+  bool ml = true;
+  unsigned short hf_form = truthModelKey.retrieve_model_form();
+  //if (hf_lev == SZ_MAX) return false;
+
+  size_t         hf_lev  = truthModelKey.retrieve_resolution_level(),
+    i, num_approx = surrModelKeys.size();
+  for (i=0; i<num_approx; ++i) {
+    const Pecos::ActiveKey& surr_key = surrModelKeys[i];
+    if (surr_key.retrieve_model_form()       == hf_form &&
+	surr_key.retrieve_resolution_level() != hf_lev)
+      return true;
+  }
+  return false;
+}
+*/
 
 
 inline void NonHierarchSurrModel::resize_maps()

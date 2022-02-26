@@ -36,8 +36,6 @@ static const char rcsId[]="@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z m
 namespace Dakota 
 {
 extern PRPCache        data_pairs;
-extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
-extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
 extern EvaluationStore evaluation_store_db; // defined in dakota_global_defs.cpp
 
 // These globals defined here rather than in dakota_global_defs.cpp in order to
@@ -217,11 +215,10 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
 
 
 Model::
-Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-      ParallelLibrary& parallel_lib,
-      const SharedVariablesData& svd, bool share_svd,
-      const SharedResponseData&  srd, bool share_srd,
-      const ActiveSet& set, short output_level):
+Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
+      const SharedResponseData&  srd, bool share_srd, const ActiveSet& set,
+      short output_level, ProblemDescDB& problem_db,
+      ParallelLibrary& parallel_lib):
   numDerivVars(set.derivative_vector().size()),
   numFns(set.request_vector().size()), evaluationsDB(evaluation_store_db),
   fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 

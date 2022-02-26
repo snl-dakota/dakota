@@ -47,6 +47,9 @@ class SharedApproxData;
 class DiscrepancyCorrection;
 class EvaluationStore;
 
+extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
+extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
+
 
 /// Base class for the model class hierarchy.
 
@@ -1197,11 +1200,10 @@ protected:
 
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
-  Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-	ParallelLibrary& parallel_lib,
-	const SharedVariablesData& svd, bool share_svd,
-	const SharedResponseData&  srd, bool share_srd,
-	const ActiveSet& set, short output_level);
+  Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
+	const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
+	short output_level, ProblemDescDB& problem_db = dummy_db,
+	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
   Model(LightWtBaseConstructor, ProblemDescDB& problem_db,

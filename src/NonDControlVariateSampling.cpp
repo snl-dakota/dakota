@@ -40,6 +40,13 @@ NonDControlVariateSampling(ProblemDescDB& problem_db, Model& model):
   if (num_mf > 2)
     Cerr << "Warning: NonDControlVariateSampling currently uses first and last "
 	 << "model in ordered sequence and ignores the rest." << std::endl;
+
+  // Want to define this as construct time for early run-time use in
+  // HierarchSurrModel::create_tabular_datastream().  Note that MLCV will have
+  // two overlapping assignments, one from this ctor (first) that is then
+  // overwritten by the ML ctor (second).  Alternatively we could protect this
+  // call with methodName, but the current behavior is sufficient.
+  iteratedModel.multifidelity_precedence(true); // prefer MF, reassign keys
 }
 
 
@@ -48,7 +55,6 @@ NonDControlVariateSampling(ProblemDescDB& problem_db, Model& model):
     each of which may contain multiple discretization levels. */
 void NonDControlVariateSampling::core_run()
 {
-  iteratedModel.multifidelity_precedence(true); // prefer MF to ML if both avail
   configure_sequence(numSteps, secondaryIndex, sequenceType);
 
   // For two-model control variate, select extreme fidelities/resolutions

@@ -230,11 +230,73 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY sbgo_sub_problem_solver '
+	    <keyword  id="sbgo" name="sbgo" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SBGO)}" label="sbgo"  >
+	       <!-- &method_gaussian_process; -->
+	       &method_gp_alternatives_no_export;
+	       &method_use_derivatives;
+	       &import_build;
+	       &method_export_approx_points_file;
+	     </keyword>
+	     ' >
+
+    <!ENTITY ego_sub_problem_solver '
+	     <keyword  id="ego1" name="ego" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_EGO)}" label="ego"  >
+	       <!-- &method_gaussian_process; -->
+	       &method_gp_alternatives_with_export;
+	       &method_use_derivatives;
+	       &import_build;
+	       &method_export_approx_points_file;
+	     </keyword>
+	     ' >
+
+    <!ENTITY sblo_sub_problem_solver '
+	    <keyword  id="sblo" name="sbgo" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SBLO)}" label="sblo"  >
+	       &method_export_approx_points_file;
+	     </keyword>
+	     ' >
+
+    <!ENTITY method_gradient_sub_problem_solver '
+             <optional>
+	       <oneOf label="Optimization Solver">
+                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp"  default="sqp" />
+                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip"  default="sqp" />
+               </oneOf>
+             </optional>
+	     ' >
+
+    <!ENTITY method_local_sub_problem_solver '
+             <optional>
+	       <oneOf label="Optimization Solver">
+                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp"  default="sqp" />
+                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip"  default="sqp" />
+	         &sblo_sub_problem_solver;
+	         &pattern_search_sub_problem_solver;
+	       </oneOf>
+             </optional>
+	     ' >
+
+    <!ENTITY method_global_sub_problem_solver '
+             <optional>
+	       <oneOf label="Solution Approach">
+	         &sbgo_sub_problem_solver;
+	         &ego_sub_problem_solver;
+	         <keyword  id="ea1" name="ea" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_EA)}" label="ea"   />
+	         <keyword  id="lhs4" name="lhs" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_LHS)}" label="lhs"   />
+	       </oneOf>
+	     </optional>
+	     ' >
+
     <!ENTITY method_sub_problem_solver '
              <optional>
 	       <oneOf label="Optimization Solver">
                  <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp"  default="sqp" />
                  <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip"  default="sqp" />
+	         &sblo_sub_problem_solver;
+	         &pattern_search_sub_problem_solver;
+	         &sbgo_sub_problem_solver;
+	         &ego_sub_problem_solver;
+	         <keyword  id="ea1" name="ea" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_EA)}" label="ea"   />
                </oneOf>
              </optional>
 	     ' >
@@ -2965,7 +3027,7 @@
 	  &method_seed_sequence;
 	  &mc_pilot_samples;
 	  &mc_solution_mode;
-	  &method_sub_problem_solver;
+	  &method_gradient_sub_problem_solver;
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
@@ -3026,7 +3088,7 @@
 	    </oneOf>
 	  </keyword>
 	  -->
-	  &method_sub_problem_solver;
+	  &method_gradient_sub_problem_solver;
 	  &method_seed_sequence;
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
@@ -3191,24 +3253,7 @@
 	  <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
-	  <optional>
-	    <oneOf label="Solution Approach">
-	      <keyword  id="sbo" name="sbo" code="{N_mdm(utype,subMethod_SUBMETHOD_SBO)}" label="sbo"  >
-		&method_gaussian_process;
-		&method_use_derivatives;
-		&import_build;
-		&method_export_approx_points_file;
-	      </keyword>
-	      <keyword  id="ego" name="ego" code="{N_mdm(utype,subMethod_SUBMETHOD_EGO)}" label="ego"  >
-		&method_gaussian_process;
-		&method_use_derivatives;
-		&import_build;
-		&method_export_approx_points_file;
-	      </keyword>
-	      <keyword  id="ea" name="ea" code="{N_mdm(utype,subMethod_SUBMETHOD_EA)}" label="ea"   />
-	      <keyword  id="lhs3" name="lhs" code="{N_mdm(utype,subMethod_SUBMETHOD_LHS)}" label="lhs"   />
-	    </oneOf>
-	  </optional>
+	  &method_global_sub_problem_solver;
 	  &level_mappings_no_rel;
 	  &rng_options;
 	  &method_optional_model_pointer;
@@ -3226,32 +3271,7 @@
 	  &method_max_iterations;
 	  &method_convergence_tolerance;
 	  &method_max_function_evaluations;
-	  <optional>
-	    <oneOf label="Solution Approach">
-	      <keyword  id="sbo1" name="sbo" code="{N_mdm(utype,subMethod_SUBMETHOD_SBO)}" label="sbo"  >
-		&method_gp_alternatives_no_export;
-		<keyword  id="use_derivatives4" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only" />
-		&import_build;
-		<keyword  id="export_approx_points_file6" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="export_approx_points_file"  minOccurs="0" default="no point export to a file" >
-		  <alias name="export_points_file"/>
-		  <param type="OUTPUT_FILE" />
-		  &method_export_approx_format;
-		</keyword>
-	      </keyword>
-	      <keyword  id="ego1" name="ego" code="{N_mdm(utype,subMethod_SUBMETHOD_EGO)}" label="ego"  >
-		&method_gp_alternatives_with_export;
-		<keyword  id="use_derivatives4" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only" />
-		&import_build;
-		<keyword  id="export_approx_points_file6" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="export_approx_points_file"  minOccurs="0" default="no point export to a file" >
-		  <alias name="export_points_file"/>
-		  <param type="OUTPUT_FILE" />
-		  &method_export_approx_format;
-		</keyword>
-	      </keyword>
-	      <keyword  id="ea1" name="ea" code="{N_mdm(utype,subMethod_SUBMETHOD_EA)}" label="ea"   />
-	      <keyword  id="lhs4" name="lhs" code="{N_mdm(utype,subMethod_SUBMETHOD_LHS)}" label="lhs"   />
-	    </oneOf>
-	  </optional>
+	  &method_global_sub_problem_solver;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3655,24 +3675,14 @@
 
         <keyword  id="local_evidence" name="local_evidence" code="{N_mdm(utype,methodName_LOCAL_EVIDENCE)}" label="local_evidence"  group="Uncertainty Quantification" >
           <alias name="nond_local_evidence"/>
-          <optional>
-            <oneOf label="Optimization Solver">
-              <keyword  id="sqp2" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp"   />
-              <keyword  id="nip1" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip"   />
-            </oneOf>
-          </optional>
+          &method_gradient_sub_problem_solver;
 	  &level_mappings_no_rel;
 	  &method_optional_model_pointer;
         </keyword>
 
         <keyword  id="local_interval_est" name="local_interval_est" code="{N_mdm(utype,methodName_LOCAL_INTERVAL_EST)}" label="local_interval_est"  group="Uncertainty Quantification" >
           <alias name="nond_local_interval_est"/>
-          <optional>
-            <oneOf label="Optimization Solver">
-              <keyword  id="sqp3" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp"   />
-              <keyword  id="nip2" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip"   />
-            </oneOf>
-          </optional>
+          &method_gradient_sub_problem_solver;
           &method_convergence_tolerance;
 	  &method_optional_model_pointer;
         </keyword>
@@ -3697,7 +3707,7 @@
               </keyword>
               <keyword  id="no_approx" name="no_approx" code="{N_mdm(utype,subMethod_SUBMETHOD_NO_APPROX)}" label="no_approx"   />
             </oneOf>
-            &method_sub_problem_solver;
+            &method_gradient_sub_problem_solver;
             <keyword  id="integration" name="integration" code="{0}" label="Integration method"  minOccurs="0" default="First-order integration" >
               <oneOf label="Integration Order">
                 <keyword  id="first_order" name="first_order" code="{N_mdm(lit,reliabilityIntegration_first_order)}" label="first_order"   />

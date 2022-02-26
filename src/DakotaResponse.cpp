@@ -941,11 +941,10 @@ void Response::read_tabular(std::istream& s)
 
 /** write_tabular is used for output of functionValues in a tabular
     format for convenience in post-processing/plotting of DAKOTA results. */
-void Response::write_tabular(std::ostream& s) const
+void Response::write_tabular(std::ostream& s, bool eol) const
 {
-  // if envelope, forward to letter
-  if (responseRep)
-    responseRep->write_tabular(s);
+  if (responseRep) // envelope forward to letter
+    responseRep->write_tabular(s, eol);
   else {
     // Print a field for each of the function values, even if inactive (since
     // this is a table and the header associations must be preserved). Dropouts
@@ -960,26 +959,52 @@ void Response::write_tabular(std::ostream& s) const
       if (asv[i] & 1)
 	s << std::setw(write_precision+4) << functionValues[i] << ' ';
       else
-	s << "               "; // blank field for inactive data
+	s << std::setw(write_precision+4) << "N/A" << ' '; // N/A for inactive
       // BMA TODO: write something that can be read back in for tabular...
       //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
       //s << "EMPTY"; // inactive data
-    s << std::endl; // table row completed
+    if (eol) s << std::endl; // table row completed
   }
 }
 
 
-void Response::write_tabular_labels(std::ostream& s) const
+/** write_tabular is used for output of functionValues in a tabular
+    format for convenience in post-processing/plotting of DAKOTA results. */
+void Response::
+write_tabular_partial(std::ostream& s, size_t start_index,
+		      size_t num_items) const
+{
+  if (responseRep) // envelope forward to letter
+    responseRep->write_tabular_partial(s, start_index, num_items);
+  else {
+    size_t i, num_fns = functionValues.length(),
+      end = std::min(num_fns, start_index + num_items);
+    const ShortArray& asv = responseActiveSet.request_vector();
+    s << std::setprecision(write_precision) 
+      << std::resetiosflags(std::ios::floatfield);
+    for (i=start_index; i<end; ++i)
+      if (asv[i] & 1)
+	s << std::setw(write_precision+4) << functionValues[i] << ' ';
+      else
+	s << std::setw(write_precision+4) << "N/A" << ' '; // N/A for inactive
+      // BMA TODO: write something that can be read back in for tabular...
+      //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
+      //s << "EMPTY"; // inactive data
+  }
+}
+
+
+void Response::write_tabular_labels(std::ostream& s, bool eol) const
 {
   // if envelope, forward to letter
   if (responseRep)
-    responseRep->write_tabular_labels(s);
+    responseRep->write_tabular_labels(s, eol);
   else {
     const StringArray& fn_labels = sharedRespData.function_labels();
     size_t num_fns = fn_labels.size();
     for (size_t j=0; j<num_fns; ++j)
       s << std::setw(14) << fn_labels[j] << ' ';
-    s << std::endl; // table row completed
+    if (eol) s << std::endl; // table row completed
   }
 }
 

@@ -11,7 +11,7 @@ method,
 	id_method = 'EPISTEMIC'
 	model_pointer = 'EPIST_M'
 	global_interval_est lhs					#s0
-#	global_interval_est sbo					#s1
+#	global_interval_est sbgo				#s1
 	  samples = 10						#s0,#s1
 #	global_interval_est ea					#s2
 #	  max_iterations = 5					#s2

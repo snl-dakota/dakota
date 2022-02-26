@@ -248,6 +248,10 @@ private:
   static void optpp_constraint_evaluator(int mode, int n, const RealVector& x,
 					 RealVector& g, RealMatrix& grad_g,
 					 int& result_mode);
+  /// static function used by MinimizerAdapterModel for response data
+  /// (objective and nonlinear constraint, if present)
+  static void response_evaluator(const Variables& vars, const ActiveSet& set,
+				 Response& response);
 
   //
   //- Heading: Data

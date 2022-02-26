@@ -86,7 +86,7 @@ protected:
   bool multilevel_multifidelity() const;
 
   bool multifidelity_precedence() const;
-  void multifidelity_precedence(bool mf_prec, bool update_default = false);
+  void multifidelity_precedence(bool mf_prec, bool update_default = true);
 
   /// set responseMode and pass any bypass request on to the high
   /// fidelity model for any lower-level surrogate recursions
@@ -110,6 +110,14 @@ protected:
   /// with competing LF/HF job queues
   void derived_synchronize_competing();
 
+  /// helper to select among Variables::all_discrete_{int,string,real}_
+  /// variable_labels() for exporting a solution control variable label
+  const String& solution_control_label();
+
+  /// helper to select among Model::solution_level_{int,string,real}_value()
+  /// for exporting a scalar solution level value
+  void add_tabular_solution_level_value(Model& model);
+
   //
   //- Heading: Data members
   //
@@ -125,6 +133,8 @@ protected:
   /// employ the same interface instance, requiring modifications to evaluation
   /// scheduling processes
   bool sameInterfaceInstance;
+  /// index of solution control variable within all variables
+  size_t solnCntlAVIndex;
   /// tie breaker for type of model hierarchy when forms and levels are present
   bool mfPrecedence;
 
@@ -224,8 +234,10 @@ inline bool EnsembleSurrModel::multifidelity_precedence() const
 inline void EnsembleSurrModel::
 multifidelity_precedence(bool mf_prec, bool update_default)
 {
-  mfPrecedence = mf_prec;
-  if (update_default) assign_default_keys();
+  if (mfPrecedence != mf_prec) {
+    mfPrecedence = mf_prec;
+    if (update_default) assign_default_keys();
+  }
 }
 
 

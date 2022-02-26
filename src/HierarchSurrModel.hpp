@@ -208,13 +208,6 @@ private:
 			  Pecos::ActiveKey& truth_key,
 			  Pecos::ActiveKey& surr_key, short parallel_mode);
 
-  /// helper to select among Variables::all_discrete_{int,string,real}_
-  /// variable_labels() for exporting a solution control variable label
-  const String& solution_control_label();
-  /// helper to select among Model::solution_level_{int,string,real}_value()
-  /// for exporting a scalar solution level value
-  void add_tabular_solution_level_value(Model& model);
-
   /// check for matching interface ids among active truth/surrogate models
   /// (varies based on active keys)
   bool matching_truth_surrogate_interface_ids();
@@ -403,9 +396,8 @@ inline void HierarchSurrModel::check_model_interface_instance()
     sameModelInstance = sameInterfaceInstance = false; // including both undef
   else {
     sameModelInstance = (lf_form == hf_form);
-    if (sameModelInstance) sameInterfaceInstance = true;
-    else
-      sameInterfaceInstance = matching_truth_surrogate_interface_ids();
+    sameInterfaceInstance = (sameModelInstance) ? true :
+      matching_truth_surrogate_interface_ids();
   }
 }
 

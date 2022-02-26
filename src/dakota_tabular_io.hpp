@@ -147,7 +147,7 @@ void append_header_tabular(std::ostream& tabular_ostream,
 /// append response labels to the tabular header
 void append_header_tabular(std::ostream& tabular_ostream, 
 			   const Response& response,
-			   unsigned short tabular_format);
+			   unsigned short tabular_format, bool eol = true);
 
 /// lower level helper for writing an evaluation id
 void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id);
@@ -177,6 +177,9 @@ void write_scalar_tabular(std::ostream& tabular_ostream, T val)
 		  << std::setw(write_precision+4) << val << ' '; // no EOL
 }
 
+/// complete tabular row with EOL
+void write_eol(std::ostream& tabular_ostream);
+
 /// Output a row of tabular data from a variables object.  All active/inactive
 /// variables written in input spec order.
 void write_data_tabular(std::ostream& tabular_ostream, 
@@ -187,8 +190,11 @@ void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars,
 			size_t start_index, size_t num_items);
 
 /// Output a row of tabular data from a response object
-void write_data_tabular(std::ostream& tabular_ostream, 
-			const Response& response);
+void write_data_tabular(std::ostream& tabular_ostream, const Response& response,
+			bool eol = true);
+/// Output a row of tabular data from a portion of a response object
+void write_data_tabular(std::ostream& tabular_ostream, const Response& response,
+			size_t start_index, size_t num_items);
 
 /// Output a row of tabular data from a variables object.  All active/inactive
 /// variables written in input spec order.  Conditionally include interface ID.

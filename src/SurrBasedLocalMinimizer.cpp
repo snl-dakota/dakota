@@ -41,7 +41,8 @@ SurrBasedLocalMinimizer* SurrBasedLocalMinimizer::sblmInstance(NULL);
 
 
 SurrBasedLocalMinimizer::
-SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model,
+			std::shared_ptr<TraitsBase> traits):
   SurrBasedMinimizer(problem_db, model, traits), 
   approxSubProbObj(probDescDB.get_short("method.sbl.subproblem_objective")),
   approxSubProbCon(probDescDB.get_short("method.sbl.subproblem_constraints")),
@@ -62,6 +63,26 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr
   gammaExpand(probDescDB.get_real("method.trust_region.expansion_factor")),
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   correctionType(probDescDB.get_short("model.surrogate.correction_type"))
+{ initialize(); }
+
+
+SurrBasedLocalMinimizer::
+SurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
+			short constr_relax, Real tr_factor, // DF-SBLM
+			short corr_type, size_t max_iter, size_t max_eval,
+			unsigned short soft_conv_limit):
+  SurrBasedMinimizer(model, max_iter, max_eval), 
+  approxSubProbObj(ORIGINAL_PRIMARY), approxSubProbCon(ORIGINAL_CONSTRAINTS),
+  meritFnType(merit_fn), acceptLogic(accept_logic),
+  trConstraintRelax(constr_relax), minimizeCycles(0), penaltyIterOffset(-200), 
+  //origTrustRegionFactor(), // *** scalar to vector (in ctor body)
+  minTrustRegionFactor(1.e-6), trRatioContractValue(0.25),
+  trRatioExpandValue(0.75), gammaContract(0.25), gammaExpand(2.),
+  softConvLimit(soft_conv_limit), correctionType(corr_type)
+{ initialize(); }
+
+
+void SurrBasedLocalMinimizer::initialize()
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
@@ -100,10 +121,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr
 #endif
 
   // historical default convergence tolerance
-  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
-
-  bestVariablesArray.push_back(
-    iteratedModel.truth_model().current_variables().copy());
+  if (convergenceTol < 0.) convergenceTol = 1.e-4;
 
   // Note: There are checks in ProblemDescDB.cpp to verify that the trust region
   // user-defined values (e.g., gammaExpand, trRationExpandValue, etc.) are 
@@ -112,6 +130,9 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr
   // Set method-specific default for softConvLimit
   if (!softConvLimit)
     softConvLimit = 5;
+
+  bestVariablesArray.push_back(
+    iteratedModel.truth_model().current_variables().copy());
 }
 
 

@@ -1029,11 +1029,14 @@ void HierarchSurrModel::create_tabular_datastream()
     // identify solution level control variable
     Model&    hf_model = truth_model();
     Variables& hf_vars = hf_model.current_variables();
-    size_t    av_index = hf_model.solution_control_variable_index();
-    if (av_index == _NPOS)
+    // must detect ML versus MF since solution level index can exist for MF
+    // and be one value per model instance
+    solnCntlAVIndex = (multilevel()) ? // either ML or MLCV
+      hf_model.solution_control_variable_index() : _NPOS;
+    if (solnCntlAVIndex == _NPOS)
       mgr.append_tabular_header(hf_vars);
     else {
-      mgr.append_tabular_header(hf_vars, 0, av_index); // leading set
+      mgr.append_tabular_header(hf_vars, 0, solnCntlAVIndex); // leading set
 
       // output paired solution control values
       const String& soln_cntl_label = solution_control_label();
@@ -1042,15 +1045,15 @@ void HierarchSurrModel::create_tabular_datastream()
       tab_labels[1] = soln_cntl_label + "_Lm1";// = "LF_" + soln_cntl_label;
       mgr.append_tabular_header(tab_labels);
 
-      ++av_index; // output completed for the active soln control
-      mgr.append_tabular_header(hf_vars, av_index, hf_vars.tv() - av_index);
+      size_t start = solnCntlAVIndex + 1;
+      mgr.append_tabular_header(hf_vars, start, hf_vars.tv() - start);
     }
 
     // --------
     // Response
     // --------
     //mgr.append_tabular_header(currentResponse);
-    // Add HF/LF/Del prepends
+    // Add Del_ pre-pend or model/resolution post-pends
     StringArray labels = currentResponse.function_labels(); // copy
     size_t q, num_qoi = qoi(), num_labels = labels.size();
     if (responseMode == MODEL_DISCREPANCY)
@@ -1059,21 +1062,21 @@ void HierarchSurrModel::create_tabular_datastream()
     // Detection of the correct response label annotation is imperfect.  Basing
     // label alternation below on active solution level control seems the best
     // option -- improving it would require either knowledge of methodName
-    // (violates capsulation) or detection of the changing models/resolutions
+    // (violates encapsulation) or detection of the changing models/resolutions
     // (not known until run time)
-    if (av_index != _NPOS) { // soln levels are present, but might not be active
-      for (q=0; q<num_qoi; ++q)
-	labels[q].append("_L");  //labels[q].insert(0, "HF_");
-      for (q=num_qoi; q<num_labels; ++q)
-	labels[q].append("_Lm1");//labels[q].insert(0, "LF_");
-    }
-    else { // assume that model forms are being paired
+    else if (solnCntlAVIndex == _NPOS) {
       for (q=0; q<num_qoi; ++q)
 	labels[q].append("_M");  //labels[q].insert(0, "HF_");
       for (q=num_qoi; q<num_labels; ++q)
 	labels[q].append("_Mm1");//labels[q].insert(0, "LF_");
     }
-    mgr.append_tabular_header(labels, true); // with endl
+    else { // solution levels are present, but they might not be active
+      for (q=0; q<num_qoi; ++q)
+	labels[q].append("_L");  //labels[q].insert(0, "HF_");
+      for (q=num_qoi; q<num_labels; ++q)
+	labels[q].append("_Lm1");//labels[q].insert(0, "LF_");
+    }
+    mgr.append_tabular_header(labels, true); // include EOL
     break;
   }
   case NO_SURROGATE:
@@ -1083,28 +1086,6 @@ void HierarchSurrModel::create_tabular_datastream()
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     mgr.create_tabular_header(surrogate_model().current_variables(),
 			      currentResponse);
-    break;
-  }
-}
-
-
-const String& HierarchSurrModel::solution_control_label()
-{
-  Model&  hf_model = truth_model();
-  size_t adv_index = hf_model.solution_control_discrete_variable_index();
-  switch (hf_model.solution_control_variable_type()) {
-  case DISCRETE_DESIGN_RANGE:       case DISCRETE_DESIGN_SET_INT:
-  case DISCRETE_INTERVAL_UNCERTAIN: case DISCRETE_UNCERTAIN_SET_INT:
-  case DISCRETE_STATE_RANGE:        case DISCRETE_STATE_SET_INT:
-    return currentVariables.all_discrete_int_variable_labels()[adv_index];
-    break;
-  case DISCRETE_DESIGN_SET_STRING:  case DISCRETE_UNCERTAIN_SET_STRING:
-  case DISCRETE_STATE_SET_STRING:
-    return currentVariables.all_discrete_string_variable_labels()[adv_index];
-    break;
-  case DISCRETE_DESIGN_SET_REAL:  case DISCRETE_UNCERTAIN_SET_REAL:
-  case DISCRETE_STATE_SET_REAL:
-    return currentVariables.all_discrete_real_variable_labels()[adv_index];
     break;
   }
 }
@@ -1131,7 +1112,7 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
   case AGGREGATED_MODELS: case MODEL_DISCREPANCY: // two models/resolutions
   case BYPASS_SURROGATE: { // use same #Cols since commonly alternated
 
-    // output interface ids, potentially paired
+    // Output interface ids, potentially paired
     bool one_iface_id = matching_all_interface_ids(),
       truth_key = !truthModelKey.empty(), surr_key = !surrModelKey.empty();
     StringArray iface_ids;
@@ -1145,15 +1126,14 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
     }
     output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
 
+    // Output Variables data
     // capture correct inactive: bypass HierarchSurrModel::currentVariables
     Variables& export_vars = hf_model.current_variables();
-    // identify solution level control variable
-    size_t av_index = hf_model.solution_control_variable_index();
-    if (av_index == _NPOS)
+    if (solnCntlAVIndex == _NPOS)
       output_mgr.add_tabular_data(export_vars);
     else {
       // output leading set of variables in spec order
-      output_mgr.add_tabular_data(export_vars, 0, av_index);
+      output_mgr.add_tabular_data(export_vars, 0, solnCntlAVIndex);
 
       // output paired solution control values (flags are not invariant,
       // but data count is)
@@ -1168,14 +1148,22 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 	if ( surr_key)  add_tabular_solution_level_value(lf_model);
 	else output_mgr.add_tabular_scalar("N/A");// preserve consistent row len
       }
-      ++av_index; // output completed for the active soln control
 
       // output trailing variables in spec order
-      output_mgr.add_tabular_data(export_vars, av_index,
-				  export_vars.tv() - av_index);
+      size_t start = solnCntlAVIndex + 1;
+      output_mgr.add_tabular_data(export_vars, start, export_vars.tv() - start);
     }
 
-    output_mgr.add_tabular_data(resp);
+    // Output response data
+    if (surr_key)
+      output_mgr.add_tabular_data(resp);        // include EOL
+    else { // inactive: match header by padding empty cols with "N/A"
+      output_mgr.add_tabular_data(resp, false); // defer EOL
+      size_t qoi, num_qoi = lf_model.qoi();
+      for (qoi=0; qoi<num_qoi; ++qoi) // pad response data
+	output_mgr.add_tabular_scalar("N/A");
+      output_mgr.add_eol(); // now return the row
+    }
     break;
   }
   case NO_SURROGATE:
@@ -1186,24 +1174,6 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
     output_mgr.add_tabular_data(lf_model.current_variables(),
 				lf_model.interface_id(), resp);
     break;
-  }
-}
-
-
-void HierarchSurrModel::add_tabular_solution_level_value(Model& model)
-{
-  OutputManager& output_mgr = parallelLib.output_manager();
-  switch (model.solution_control_variable_type()) {
-  case DISCRETE_DESIGN_RANGE:       case DISCRETE_DESIGN_SET_INT:
-  case DISCRETE_INTERVAL_UNCERTAIN: case DISCRETE_UNCERTAIN_SET_INT:
-  case DISCRETE_STATE_RANGE:        case DISCRETE_STATE_SET_INT:
-    output_mgr.add_tabular_scalar(model.solution_level_int_value());    break;
-  case DISCRETE_DESIGN_SET_STRING:  case DISCRETE_UNCERTAIN_SET_STRING:
-  case DISCRETE_STATE_SET_STRING:
-    output_mgr.add_tabular_scalar(model.solution_level_string_value()); break;
-  case DISCRETE_DESIGN_SET_REAL:  case DISCRETE_UNCERTAIN_SET_REAL:
-  case DISCRETE_STATE_SET_REAL:
-    output_mgr.add_tabular_scalar(model.solution_level_real_value());   break;
   }
 }
 
