@@ -959,7 +959,7 @@ void Response::write_tabular(std::ostream& s, bool eol) const
       if (asv[i] & 1)
 	s << std::setw(write_precision+4) << functionValues[i] << ' ';
       else
-	s << "               "; // blank field for inactive data
+	s << std::setw(write_precision+4) << "N/A" << ' '; // N/A for inactive
       // BMA TODO: write something that can be read back in for tabular...
       //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
       //s << "EMPTY"; // inactive data
@@ -986,7 +986,7 @@ write_tabular_partial(std::ostream& s, size_t start_index,
       if (asv[i] & 1)
 	s << std::setw(write_precision+4) << functionValues[i] << ' ';
       else
-	s << "               "; // blank field for inactive data
+	s << std::setw(write_precision+4) << "N/A" << ' '; // N/A for inactive
       // BMA TODO: write something that can be read back in for tabular...
       //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
       //s << "EMPTY"; // inactive data

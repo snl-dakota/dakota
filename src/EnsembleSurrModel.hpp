@@ -86,7 +86,7 @@ protected:
   bool multilevel_multifidelity() const;
 
   bool multifidelity_precedence() const;
-  void multifidelity_precedence(bool mf_prec, bool update_default = false);
+  void multifidelity_precedence(bool mf_prec, bool update_default = true);
 
   /// set responseMode and pass any bypass request on to the high
   /// fidelity model for any lower-level surrogate recursions
@@ -133,6 +133,8 @@ protected:
   /// employ the same interface instance, requiring modifications to evaluation
   /// scheduling processes
   bool sameInterfaceInstance;
+  /// index of solution control variable within all variables
+  size_t solnCntlAVIndex;
   /// tie breaker for type of model hierarchy when forms and levels are present
   bool mfPrecedence;
 
@@ -232,8 +234,10 @@ inline bool EnsembleSurrModel::multifidelity_precedence() const
 inline void EnsembleSurrModel::
 multifidelity_precedence(bool mf_prec, bool update_default)
 {
-  mfPrecedence = mf_prec;
-  if (update_default) assign_default_keys();
+  if (mfPrecedence != mf_prec) {
+    mfPrecedence = mf_prec;
+    if (update_default) assign_default_keys();
+  }
 }
 
 

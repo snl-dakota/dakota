@@ -91,6 +91,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   if (err_flag)
     abort_handler(METHOD_ERROR);
 
+  iteratedModel.multifidelity_precedence(true); // prefer MF, reassign keys
   configure_sequence(numSteps, secondaryIndex, sequenceType);
   numApprox = numSteps - 1;
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
@@ -127,8 +128,6 @@ void NonDNonHierarchSampling::pre_run()
 
   nonHierSampInstance = this;
 
-  // prefer MF over ML if both available
-  iteratedModel.multifidelity_precedence(true);
   // assign an aggregate model key that persists for core_run()
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   assign_active_key(multilev);

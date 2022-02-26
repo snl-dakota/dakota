@@ -29,8 +29,8 @@ namespace Dakota {
     decay across model resolutions with variance reduction from a
     control variate across model fidelities. */
 
-class NonDMultilevControlVarSampling: public NonDMultilevelSampling,
-				      public NonDControlVariateSampling
+class NonDMultilevControlVarSampling: public NonDControlVariateSampling,
+				      public NonDMultilevelSampling
 {
 public:
 

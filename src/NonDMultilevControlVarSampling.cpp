@@ -32,8 +32,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevControlVarSampling::
 NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
-  NonDMultilevelSampling(problem_db, model),
   NonDControlVariateSampling(problem_db, model),
+  NonDMultilevelSampling(problem_db, model),
   NonDHierarchSampling(problem_db, model), // top of virtual inheritance
   delegateMethod(MULTILEVEL_MULTIFIDELITY_SAMPLING)
 {
@@ -46,6 +46,11 @@ NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
 	 << "forms and multiple HF solution levels." << std::endl;
     //abort_handler(METHOD_ERROR);
   }
+
+  // MLCV has two overlapping precedence assignments, one from CV ctor (first)
+  // that is then overwritten by the ML ctor (second), such that we retain a
+  // ML precedence.  This precedence is not required for core_run() below.
+  //iteratedModel.multifidelity_precedence(false); // prefer ML, reassign keys
 }
 
 
@@ -86,7 +91,6 @@ void NonDMultilevControlVarSampling::core_run()
   }
   // else multiple model forms (currently limited to 2) + multiple soln levels
 
-  //iteratedModel.multifidelity_precedence(false); // prefer ML over MF
   sequenceType = Pecos::RESOLUTION_LEVEL_SEQUENCE;
 
   // For two-model control variate methods, select lowest,highest fidelities

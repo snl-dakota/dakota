@@ -532,6 +532,12 @@ derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
 
 void NonHierarchSurrModel::create_tabular_datastream()
 {
+  // This function is invoked early at run time, for which the results of
+  // assign_default_keys() are available (defined from basic multifidelity()
+  // and multilevel() logic) --> create_tabular_datastream() has to be fairly
+  // inclusive of possible ensembles and derived_auto_graphics() can then
+  // be more specialized to specific active keys.
+
   OutputManager& mgr = parallelLib.output_manager();
   mgr.open_tabular_datastream();
 
@@ -545,7 +551,7 @@ void NonHierarchSurrModel::create_tabular_datastream()
     // quantities rather than run-time flags like same{Model,Interface}Instance
     StringArray iface_ids;
     bool one_iface_id = matching_all_interface_ids();
-    size_t m, num_m = unorderedModels.size() + 1;
+    size_t l, num_l, m, num_m = unorderedModels.size() + 1;
     if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
       iface_ids.push_back("interface");
     else
@@ -558,15 +564,15 @@ void NonHierarchSurrModel::create_tabular_datastream()
     // ---------
     // FUTURE: manage solution level control variables
     // For now, enumerate model instances
-    Model&    hf_model = truth_model();
-    Variables& hf_vars = hf_model.current_variables();
-    size_t    av_index = hf_model.solution_control_variable_index(),
-              l, num_l = hf_model.solution_levels();
-    Cout << "av_index = " << av_index << std::endl;
-    if (av_index == _NPOS) // *** TO DO: mf versus ml --> detect from activeKey
+    Model&     hf_model = truth_model();
+    Variables& hf_vars  = hf_model.current_variables();
+    solnCntlAVIndex = (multifidelity()) ? _NPOS :
+      hf_model.solution_control_variable_index();
+    if (solnCntlAVIndex == _NPOS)
       mgr.append_tabular_header(hf_vars);
     else {
-      mgr.append_tabular_header(hf_vars, 0, av_index); // leading set
+      num_l = hf_model.solution_levels();
+      mgr.append_tabular_header(hf_vars, 0, solnCntlAVIndex); // leading set
 
       // output paired solution control values
       const String& soln_cntl_label = solution_control_label();
@@ -575,8 +581,8 @@ void NonHierarchSurrModel::create_tabular_datastream()
 	tab_labels[l] = soln_cntl_label + "_L" + std::to_string(l+1);
       mgr.append_tabular_header(tab_labels);
 
-      ++av_index; // output completed for the active soln control
-      mgr.append_tabular_header(hf_vars, av_index, hf_vars.tv() - av_index);
+      size_t start = solnCntlAVIndex + 1;
+      mgr.append_tabular_header(hf_vars, start, hf_vars.tv() - start);
     }
 
     // --------
@@ -586,22 +592,18 @@ void NonHierarchSurrModel::create_tabular_datastream()
     // Add HF/LF/Del prepends
     StringArray labels = currentResponse.function_labels(); // copy
     size_t q, num_qoi = qoi(), num_labels = labels.size(), cntr;
-    // Detection of the correct response label annotation is imperfect
-    // (see notes in HierarchSurrModel::create_tabular_datastream())
-    if (av_index == _NPOS) { // assume that model forms are being aggregated
+    if (solnCntlAVIndex == _NPOS)
       for (m=1, cntr=0; m<=num_m; ++m) {
 	String postpend = "_M" + std::to_string(m);
 	for (q=0; q<num_qoi; ++q, ++cntr)
 	  labels[cntr].append(postpend);
       }
-    }
-    else { // soln levels are present, but might not be active
+    else
       for (l=1, cntr=0; l<=num_l; ++l) {
 	String postpend = "_L" + std::to_string(l);
 	for (q=0; q<num_qoi; ++q, ++cntr)
 	  labels[cntr].append(postpend);
       }
-    }
     mgr.append_tabular_header(labels, true); // with endl
     break;
   }
@@ -641,7 +643,7 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
       iface_ids.push_back(hf_model.interface_id());
     else {
       for (i=0; i<num_approx; ++i) {
-	if (surr_keys && surrModelKeys[i].empty())
+	if (surr_keys && !surrModelKeys[i].empty())
 	  iface_ids.push_back(unorderedModels[i].interface_id());
 	else iface_ids.push_back("N/A");
       }
@@ -653,19 +655,17 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
     // Output Variables data
     // capture correct inactive: bypass NonHierarchSurrModel::currentVariables
     Variables& export_vars = hf_model.current_variables();
-    // identify solution level control variable
-    size_t av_index = hf_model.solution_control_variable_index();
-    if (av_index == _NPOS)
+    if (solnCntlAVIndex == _NPOS)
       output_mgr.add_tabular_data(export_vars);
     else {
       // output leading set of variables in spec order
-      output_mgr.add_tabular_data(export_vars, 0, av_index);
+      output_mgr.add_tabular_data(export_vars, 0, solnCntlAVIndex);
 
       // output solution control values (flags are not invariant, but data
       // count is). If sameModelInstance, desired soln cntl was overwritten
-      // by last model's value and must be temporarily restored
+      // by last model's value and must be temporarily restored.
       for (i=0; i<num_approx; ++i) {
-	if (surr_keys && surrModelKeys[i].empty()) {
+	if (surr_keys && !surrModelKeys[i].empty()) {
 	  if (sameModelInstance) assign_key(i);
 	  add_tabular_solution_level_value(unorderedModels[i]);
 	}
@@ -677,30 +677,32 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
       }
       else
 	output_mgr.add_tabular_scalar("N/A");
-      ++av_index; // output completed for the active soln control
 
       // output trailing variables in spec order
-      output_mgr.add_tabular_data(export_vars, av_index,
-				  export_vars.tv() - av_index);
+      size_t start = solnCntlAVIndex + 1;
+      output_mgr.add_tabular_data(export_vars, start, export_vars.tv() - start);
     }
 
     // Output Response data
-    //output_mgr.add_tabular_data(resp);
+    output_mgr.add_tabular_data(resp);
+    /* This block no longer necessary with Response tabular change to
+       output N/A for inactive functions
     size_t q, num_qoi = hf_model.qoi(), cntr = 0;
     for (i=0; i<num_approx; ++i) {
-      if (surr_keys && surrModelKeys[i].empty())
-	output_mgr.add_tabular_data(resp, cntr, cntr+num_qoi);
+      if (surr_keys && !surrModelKeys[i].empty())
+	output_mgr.add_tabular_data(resp, cntr, num_qoi);
       else
 	for (q=0; q<num_qoi; ++q)
 	  output_mgr.add_tabular_scalar("N/A");
       cntr += num_qoi;
     }
     if (truth_key)
-      output_mgr.add_tabular_data(resp, cntr, cntr+num_qoi);
+      output_mgr.add_tabular_data(resp, cntr, num_qoi);
     else
       for (q=0; q<num_qoi; ++q)
 	output_mgr.add_tabular_scalar("N/A");
     output_mgr.add_eol();
+    */
     break;
   }
   case BYPASS_SURROGATE: //case NO_SURROGATE:

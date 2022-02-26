@@ -378,6 +378,26 @@ inline void NonHierarchSurrModel::clear_model_keys()
 }
 
 
+/*
+inline bool NonHierarchSurrModel::multilevel_from_keys() const
+{
+  bool ml = true;
+  unsigned short hf_form = truthModelKey.retrieve_model_form();
+  //if (hf_lev == SZ_MAX) return false;
+
+  size_t         hf_lev  = truthModelKey.retrieve_resolution_level(),
+    i, num_approx = surrModelKeys.size();
+  for (i=0; i<num_approx; ++i) {
+    const Pecos::ActiveKey& surr_key = surrModelKeys[i];
+    if (surr_key.retrieve_model_form()       == hf_form &&
+	surr_key.retrieve_resolution_level() != hf_lev)
+      return true;
+  }
+  return false;
+}
+*/
+
+
 inline void NonHierarchSurrModel::resize_maps()
 {
   size_t num_steps = 1;

@@ -72,6 +72,13 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
       }
     }
   }
+
+  // Want to define this as construct time for use in HierarchSurrModel::
+  // create_tabular_datastream().  Note that MLCV will have two overlapping
+  // assignments, one from the CV ctor (first) that is then overwritten by
+  // this ctor (second).  Alternatively we could protect this call with
+  // methodName, but the current behavior is sufficient.
+  iteratedModel.multifidelity_precedence(false); // prefer ML, reassign keys
 }
 
 
@@ -88,7 +95,6 @@ void NonDMultilevelSampling::core_run()
     abort_handler(METHOD_ERROR);
   }
 
-  iteratedModel.multifidelity_precedence(false);// prefer ML to MF if both avail
   configure_sequence(numSteps, secondaryIndex, sequenceType);
 
   // Useful for future extensions when convergence tolerance can be a vector

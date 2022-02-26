@@ -1029,11 +1029,14 @@ void HierarchSurrModel::create_tabular_datastream()
     // identify solution level control variable
     Model&    hf_model = truth_model();
     Variables& hf_vars = hf_model.current_variables();
-    size_t    av_index = hf_model.solution_control_variable_index();
-    if (av_index == _NPOS)
+    // must detect ML versus MF since solution level index can exist for MF
+    // and be one value per model instance
+    solnCntlAVIndex = (multilevel()) ? // either ML or MLCV
+      hf_model.solution_control_variable_index() : _NPOS;
+    if (solnCntlAVIndex == _NPOS)
       mgr.append_tabular_header(hf_vars);
     else {
-      mgr.append_tabular_header(hf_vars, 0, av_index); // leading set
+      mgr.append_tabular_header(hf_vars, 0, solnCntlAVIndex); // leading set
 
       // output paired solution control values
       const String& soln_cntl_label = solution_control_label();
@@ -1042,8 +1045,8 @@ void HierarchSurrModel::create_tabular_datastream()
       tab_labels[1] = soln_cntl_label + "_Lm1";// = "LF_" + soln_cntl_label;
       mgr.append_tabular_header(tab_labels);
 
-      ++av_index; // output completed for the active soln control
-      mgr.append_tabular_header(hf_vars, av_index, hf_vars.tv() - av_index);
+      size_t start = solnCntlAVIndex + 1;
+      mgr.append_tabular_header(hf_vars, start, hf_vars.tv() - start);
     }
 
     // --------
@@ -1061,7 +1064,7 @@ void HierarchSurrModel::create_tabular_datastream()
     // option -- improving it would require either knowledge of methodName
     // (violates encapsulation) or detection of the changing models/resolutions
     // (not known until run time)
-    else if (av_index == _NPOS) { // assume that model forms are being paired
+    else if (solnCntlAVIndex == _NPOS) {
       for (q=0; q<num_qoi; ++q)
 	labels[q].append("_M");  //labels[q].insert(0, "HF_");
       for (q=num_qoi; q<num_labels; ++q)
@@ -1126,13 +1129,11 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
     // Output Variables data
     // capture correct inactive: bypass HierarchSurrModel::currentVariables
     Variables& export_vars = hf_model.current_variables();
-    // identify solution level control variable
-    size_t av_index = hf_model.solution_control_variable_index();
-    if (av_index == _NPOS)
+    if (solnCntlAVIndex == _NPOS)
       output_mgr.add_tabular_data(export_vars);
     else {
       // output leading set of variables in spec order
-      output_mgr.add_tabular_data(export_vars, 0, av_index);
+      output_mgr.add_tabular_data(export_vars, 0, solnCntlAVIndex);
 
       // output paired solution control values (flags are not invariant,
       // but data count is)
@@ -1147,11 +1148,10 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 	if ( surr_key)  add_tabular_solution_level_value(lf_model);
 	else output_mgr.add_tabular_scalar("N/A");// preserve consistent row len
       }
-      ++av_index; // output completed for the active soln control
 
       // output trailing variables in spec order
-      output_mgr.add_tabular_data(export_vars, av_index,
-				  export_vars.tv() - av_index);
+      size_t start = solnCntlAVIndex + 1;
+      output_mgr.add_tabular_data(export_vars, start, export_vars.tv() - start);
     }
 
     // Output response data

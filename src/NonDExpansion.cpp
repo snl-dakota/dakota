@@ -244,7 +244,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
   // define tie breaker for hierarchy of model forms versus resolution levels
   if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.multifidelity_precedence(mf, true); // update default keys
+    iteratedModel.multifidelity_precedence(mf);//reassign default keys if needed
 
   // Check for suitable distribution types.
   // Note: prefer warning in Analyzer (active discrete ignored), but
