@@ -12,6 +12,7 @@ interface
   analysis_drivers 'f_of_x_equals_x'
   plugin
     library_path '/home/user/dakota/source/src/plugins/build/libidentity_map.so'
+#  batch				#s1
 
 responses
   descriptors 'f1' 'f2'

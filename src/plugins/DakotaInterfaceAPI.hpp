@@ -93,6 +93,8 @@ DakotaInterfaceAPI::evaluate(const std::vector<EvalRequest>& requests)
   responses.reserve(requests.size());
   for (const auto& req : requests)
     responses.push_back(evaluate(req));
+
+  return responses;
 }
 
 

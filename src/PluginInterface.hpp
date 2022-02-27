@@ -30,6 +30,8 @@ public:
   void derived_map(const Variables& vars, const ActiveSet& set,
 		   Response& response, int fn_eval_id);
 
+  void derived_map_asynch(const ParamResponsePair& pair);
+
   /// For plugins, implements blocking bulk-synchronous evaluation of
   /// batch (PRPQueue)
   void wait_local_evaluations(PRPQueue& prp_queue);
@@ -46,7 +48,7 @@ protected:
 
   /// map plugin response to Dakota response
   void populate_response
-  (const DakotaPlugins::EvalResponse plugin_response, Response& response) const;
+  (const DakotaPlugins::EvalResponse& plugin_response, Response& response) const;
 
   /// path to the plugin to load, e.g., /path/to/libuser_plugin.so
   String pluginPath;

@@ -46,12 +46,45 @@ void PluginInterface::derived_map(const Variables& vars, const ActiveSet& set,
   populate_response(plugin_response, response);
 }
 
+void PluginInterface::derived_map_asynch(const ParamResponsePair& pair)
+{
+  // This interface only supports bulk synchronous batch evals for now
+  // TODO: Catch this at construct time
+  if (!batchEval) {
+    Cerr << "\nError: Plugin interfaces support single or batch evaluations, "
+	 << "but not\nasynchronous.\n";
+    abort_handler(INTERFACE_ERROR);
+  }
+}
+
 
 void PluginInterface::wait_local_evaluations(PRPQueue& prp_queue)
 {
   // loading at first map to head off conflicting Python issues
   load_plugin();
+
+  // prepare requests
+  std::vector<DakotaPlugins::EvalRequest> plugin_requests;
+  plugin_requests.reserve(prp_queue.size());
+  for (const auto& prp : prp_queue)
+    plugin_requests.push_back
+      (form_eval_request(prp.variables(), prp.active_set(), prp.eval_id()));
+
+  // evaluate
+  const auto plugin_responses = pluginInterface->evaluate(plugin_requests);
+
+  // retrieve responses; grr, need a std::zip or boost combine/tie
+  auto pr_it = plugin_responses.begin();
+  for (auto& prp : prp_queue) {
+    // not sure why this indirection is needed to get a non-const Response&;
+    // it's cheating by creating a non-const envelope
+    Response resp = prp.response();
+    populate_response(*pr_it, resp);
+    completionSet.insert(prp.eval_id());
+    ++pr_it;
+  }
 }
+
 
 /** Load plugin if not already active */
 void PluginInterface::load_plugin()
@@ -91,7 +124,7 @@ DakotaPlugins::EvalRequest PluginInterface::form_eval_request
 
 
 void PluginInterface::populate_response
-(const DakotaPlugins::EvalResponse plugin_response, Response& response) const
+(const DakotaPlugins::EvalResponse& plugin_response, Response& response) const
 {
   // TODO: this is abuse, getting a reference to a non-const view...
   auto resp_fns = response.function_values_view();
