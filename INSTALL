@@ -89,8 +89,8 @@ Most users will install from a binary distribution, if available for
 the target platform.  This typically involves unpacking the archive
 and setting the PATH variable, if required.
 
-Dakota binary distributions are provided in archive format (either tar.gz 
-or zip). 
+Dakota binary distributions are provided in archive format (either tar.gz or 
+zip).
  * See Section I below to install tar.gz archive on Unix-like platform.
  * See Section II below to install zip archive on Windows platform.
  * See Section III below to test binary installion.
