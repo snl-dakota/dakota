@@ -404,7 +404,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case GLOBAL_RELIABILITY:
     return std::make_shared<NonDGlobalReliability>(problem_db, model); break;
   case GLOBAL_INTERVAL_EST:
-    switch (probDescDB.get_ushort("method.sub_method")) {
+    switch (probDescDB.get_ushort("method.nond.opt_subproblem_solver")) {
     case SUBMETHOD_LHS:
       return std::make_shared<NonDLHSSingleInterval>(problem_db, model); break;
     default:
@@ -413,7 +413,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     }
     break;
   case GLOBAL_EVIDENCE:
-    switch (probDescDB.get_ushort("method.sub_method")) {
+    switch (probDescDB.get_ushort("method.nond.opt_subproblem_solver")) {
     case SUBMETHOD_LHS:
       return std::make_shared<NonDLHSEvidence>(problem_db, model); break;
     default:
