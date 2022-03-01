@@ -14,16 +14,17 @@ public class RstRowPrinter {
 	}
 	
 
-	public String printRow(List<String> cells, List<Integer> widths) {
+	public String printRow(List<GenericCell> cells, List<Integer> widths) {
 		StringBuilder sb = new StringBuilder();
-		List<String> rowOverflow = new ArrayList<>();
+		List<GenericCell> rowOverflow = new ArrayList<>();
 		for(int i = 0; i < cells.size(); i++) {
-			rowOverflow.add("");
+			GenericCell cell = cells.get(i);
+			rowOverflow.add(new GenericCell("", cell.getHorizontalSpan(), cell.getVerticalSpan()));
 		}
 		
 		sb.append("|");
 		for(int i = 0; i < cells.size(); i++) {
-			String cell = cells.get(i);
+			String cell = cells.get(i).getContents();
 			int width = widths.get(i);
 			
 			CellPayload result = getCellFormattedContents(cell, width);
@@ -32,7 +33,7 @@ public class RstRowPrinter {
 			
 			sb.append(cellAvailable);
 			if(!cellRemainder.isBlank()) {
-				rowOverflow.set(i, cellRemainder);
+				rowOverflow.get(i).setContents(cellRemainder);
 			}
 			int remainingPadding = width - cellAvailable.length();
 			sb.append(pad(remainingPadding));
@@ -48,6 +49,10 @@ public class RstRowPrinter {
 	}
 
 	private CellPayload getCellFormattedContents(String cellContents, int cellWidth) {
+		if(cellContents.isBlank()) {
+			return new CellPayload("", "");
+		}
+		
 		String[] words = cellContents.split(" ");
 		
 		if(cellWidth <= leftPadding + rightPadding) {
@@ -81,6 +86,10 @@ public class RstRowPrinter {
 			}
 		}
 		
+		if(words.length == 1 && !nextWord.startsWith(pad(leftPadding)) && !nextWord.startsWith(pad(rightPadding))) {
+			nextWord = pad(leftPadding) + nextWord + pad(rightPadding);
+		}
+		
 		if(nextWord.length() > cellWidth) {
 			splitWord(nextWord, cellWidth, thisLineWords, nextLineWords);
 			wordIndex++;
@@ -103,15 +112,16 @@ public class RstRowPrinter {
 	}
 	
 	private void splitWord(String nextWord, int width, List<String> thisLineWords, List<String> nextLineWords) {
-		String thisLine = nextWord.substring(0, width - rightPadding);
-		String nextLine = nextWord.substring(width, nextWord.length());
+		int paddedWidth = width - rightPadding;
+		String thisLine = nextWord.substring(0, paddedWidth);
+		String nextLine = nextWord.substring(paddedWidth, nextWord.length());
 		thisLineWords.add(thisLine);
 		nextLineWords.add(nextLine);
 	}
 	
-	private boolean elementsAreBlank(List<String> elements) {
-		for(String element : elements) {
-			if(!element.isBlank()) {
+	private boolean elementsAreBlank(List<GenericCell> elements) {
+		for(GenericCell element : elements) {
+			if(!element.getContents().isBlank()) {
 				return false;
 			}
 		}

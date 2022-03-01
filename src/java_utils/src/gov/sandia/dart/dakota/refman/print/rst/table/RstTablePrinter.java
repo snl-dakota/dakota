@@ -15,13 +15,13 @@ public class RstTablePrinter {
 		sb.append(printDivider(widths, false)).append(NEWLINE);
 		GenericRow headerRow = table.getHeaderRow();
 		if(headerRow != null) {
-			sb.append(rowPrinter.printRow(headerRow.getDataStrings(), widths)).append(NEWLINE);
+			sb.append(rowPrinter.printRow(headerRow.getData(), widths)).append(NEWLINE);
 		}
 		sb.append(printDivider(widths, true)).append(NEWLINE);
 		
 		for(int i = 1; i < table.getRows().size(); i++) {
 			GenericRow row = table.getRows().get(i);
-			sb.append(rowPrinter.printRow(row.getDataStrings(), widths)).append(NEWLINE);
+			sb.append(rowPrinter.printRow(row.getData(), widths)).append(NEWLINE);
 			sb.append(printDivider(widths, false)).append(NEWLINE);
 		}
 		

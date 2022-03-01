@@ -148,10 +148,10 @@ public class RstTablePrinterTest {
 		header.addCell("Video/Slides/Exercises");
 		
 		GenericRow row1 = new GenericRow();
-		row1.addCell("Overview");
-		row1.addCell("Supercalifragilisticexpial");
+		row1.addCell("Antidisestablishmentarianism");
+		row1.addCell("Supercalifragilisticexpialidocious");
 		row1.addCell("45");
-		row1.addCell("Slides link here");
+		row1.addCell("IDK here are some more words");
 		
 		table.addRow(header);
 		table.addRow(row1);
@@ -166,15 +166,11 @@ public class RstTablePrinterTest {
 				        + "| Module             | Learning | Approx. Time  | Video/Slides/Exercises  |\n"
 				        + "|                    | Goals    | (minutes)     |                         |\n"
 				        + "+====================+==========+===============+=========================+\n"
-				        + "| Overview           | - What   | 45            | Slides link here        |\n"
-				        + "|                    | is       |               |                         |\n"
-				        + "|                    | Dakota?  |               |                         |\n"
-				        + "+--------------------+----------+---------------+-------------------------+\n"
-				        + "| This row has some  | content  | be really     | it would run off the    |\n"
-				        + "| really long        | in it.   | obnoxious to  | edge of most user's     |\n"
-				        + "|                    | This     | read and      | screens.                |\n"
-				        + "|                    | table    |               |                         |\n"
-				        + "|                    | would    |               |                         |\n"
+				        + "| Antidisestablishme | Supercal | 45            | IDK here are some more  |\n"
+				        + "| ntarianism         | ifragili |               | words                   |\n"
+				        + "|                    | sticexpi |               |                         |\n"
+				        + "|                    | alidocio |               |                         |\n"
+				        + "|                    | us       |               |                         |\n"
 				        + "+--------------------+----------+---------------+-------------------------+\n";
 		assertEquals(expected, actual);
 	}	
