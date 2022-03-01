@@ -127,7 +127,6 @@ private:
 
   /// number of independent coordinates, e.g., x, t, for each field f(x,t)
   IntVector coordsPerPriField;
-  
 };
 
 

@@ -107,19 +107,15 @@ protected:
   //
 
   /// portion of evaluate() specific to MinimizerAdapterModel
-  /// (forward to subModel.evaluate())
   void derived_evaluate(const ActiveSet& set);
-  /*
   /// portion of evaluate_nowait() specific to MinimizerAdapterModel
-  /// (forward to subModel.evaluate_nowait())
   void derived_evaluate_nowait(const ActiveSet& set);
   /// portion of synchronize() specific to MinimizerAdapterModel
-  /// (forward to subModel.synchronize())
   const IntResponseMap& derived_synchronize();
   /// portion of synchronize_nowait() specific to MinimizerAdapterModel
-  /// (forward to subModel.synchronize_nowait())
   const IntResponseMap& derived_synchronize_nowait();
 
+  /*
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
@@ -222,22 +218,15 @@ protected:
   /// local evaluation id counter used for id mapping
   int adapterModelEvalCntr;
 
-  /*
-  /// map of recast active set passed to derived_evaluate_nowait().
-  /// Needed for currentResponse update in synchronization routines.
-  IntActiveSetMap recastSetMap;
-  /// map of recast variables used by derived_evaluate_nowait().
-  /// Needed for primaryRespMapping() and secondaryRespMapping() in
-  /// synchronization routines.
-  IntVariablesMap recastVarsMap;
-  /// map of recast responses used by
-  /// MinimizerAdapterModel::derived_synchronize() and
-  /// MinimizerAdapterModel::derived_synchronize_nowait()
-  IntResponseMap recastResponseMap;
-
-  /// Counters for naming MinimizerAdapterModels
-  static StringStringPairIntMap recastModelIdCounters;
-  */
+  /// map of variables used by derived_evaluate_nowait().
+  /// Caches values needed for evaluation in synchronization routines.
+  IntVariablesMap adapterVarsMap;
+  /// map of active set passed to derived_evaluate_nowait().
+  /// Caches values needed for evaluation in synchronization routines.
+  IntActiveSetMap adapterSetMap;
+  /// map of responses returned by derived_synchronize() and
+  /// derived_synchronize_nowait()
+  IntResponseMap adapterRespMap;
 
 private:
 

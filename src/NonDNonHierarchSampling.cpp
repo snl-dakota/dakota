@@ -680,13 +680,11 @@ nonhierarch_numerical_solution(const RealVector& cost,
   }
 
   if (varianceMinimizer.is_null()) {
-    /*
     // configure the minimization sub-problem
     MinimizerAdapterModel min_model(x0, x_lb, x_ub, lin_ineq_coeffs,
 				    lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
 				    lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
 				    nln_eq_tgt, response_evaluator);
-    */
 
     // select the sub-problem solver
     switch (optSubProblemSolver) {

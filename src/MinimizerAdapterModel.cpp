@@ -183,49 +183,41 @@ void MinimizerAdapterModel::derived_evaluate(const ActiveSet& set)
 }
 
 
-/*
 void MinimizerAdapterModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++adapterModelEvalCntr;
 
-  // bookkeep variables for use in primaryRespMapping/secondaryRespMapping
-  recastSetMap[adapterModelEvalCntr]  = set;
-  recastVarsMap[adapterModelEvalCntr] = currentVariables.copy();
+  // bookkeep Variables/ActiveSet instances for use in synchronize
+  adapterVarsMap[adapterModelEvalCntr] = currentVariables.copy();
+  adapterSetMap[adapterModelEvalCntr]  = set;
 }
 
 
 const IntResponseMap& MinimizerAdapterModel::derived_synchronize()
 {
-  recastResponseMap.clear();
+  adapterRespMap.clear();
 
-  if (primaryRespMapping || secondaryRespMapping) {
-    IntResponseMap resp_map_rekey;
-    rekey_synch(subModel, true, recastIdMap, resp_map_rekey);
-    transform_response_map(resp_map_rekey, recastResponseMap);
+  IntVarsMIter v_it;  IntASMIter s_it;
+  std::pair<IntRespMIter, bool> r_it_pr;
+  const SharedResponseData& srd = currentResponse.shared_data();
+  for (v_it =adapterVarsMap.begin(), s_it =adapterSetMap.begin();
+       v_it!=adapterVarsMap.end() && s_it!=adapterSetMap.end(); ++v_it, ++s_it){
+    ActiveSet& set = s_it->second;
+    r_it_pr = adapterRespMap.insert(
+      std::pair<int,Response>(v_it->first, Response(srd, set)));
+    respMapping(v_it->second, set, r_it_pr.first->second);
   }
-  else
-    rekey_synch(subModel, true, recastIdMap, recastResponseMap);
 
-  return recastResponseMap;
+  adapterVarsMap.clear();  adapterSetMap.clear();
+  return adapterRespMap;
 }
 
 
 const IntResponseMap& MinimizerAdapterModel::derived_synchronize_nowait()
-{
-  recastResponseMap.clear();
-
-  if (primaryRespMapping || secondaryRespMapping) {
-    IntResponseMap resp_map_rekey;
-    rekey_synch(subModel, false, recastIdMap, resp_map_rekey);
-    transform_response_map(resp_map_rekey, recastResponseMap);
-  }
-  else
-    rekey_synch(subModel, false, recastIdMap, recastResponseMap);
-
-  return recastResponseMap;
-}
+{ return derived_synchronize(); }
 
 
+/*
 void MinimizerAdapterModel::
 transform_response(const Variables& vars, Response& resp)
 {
