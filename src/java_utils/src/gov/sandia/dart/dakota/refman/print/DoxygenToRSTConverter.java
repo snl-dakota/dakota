@@ -19,7 +19,7 @@ public class DoxygenToRSTConverter {
 		converted = convertMarkupBookends(converted, "\\f$", "\\f$", " :math:`", "` ");
 		converted = convertVerbatimBlock(converted);
 		
-		converted = converted.replaceAll("\\\\f\\[", "\n\\.\\.\smath:: ");
+		converted = converted.replaceAll("\\\\f\\[", "\n\\.\\.\\smath:: ");
 		converted = converted.replaceAll("\\\\f\\]", "\n");
 		return converted;
 	}
@@ -175,7 +175,7 @@ public class DoxygenToRSTConverter {
 			String[] words = lines[i].split("\\s");
 			for(int j = 0; j < words.length; j++) {
 				if(!eat) {
-					if(words[j].equals("<!–") || words[j].equals("<!--") || words[j].equals("<!---")) {
+					if(words[j].equals("<!ï¿½") || words[j].equals("<!--") || words[j].equals("<!---")) {
 						eat = true;
 					} else {
 						sb.append(words[j]);
@@ -184,7 +184,7 @@ public class DoxygenToRSTConverter {
 						}
 					}
 				} else {
-					if(words[j].equals("–>") || words[j].equals("-->") || words[j].equals("--->")) {
+					if(words[j].equals("ï¿½>") || words[j].equals("-->") || words[j].equals("--->")) {
 						eat = false;
 					} 
 				}
