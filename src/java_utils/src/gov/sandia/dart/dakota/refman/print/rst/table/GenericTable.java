@@ -41,10 +41,14 @@ public class GenericTable {
 		
 		int widestWidthSoFar = 0;
 		for(GenericRow row : rows) {
-			GenericCell cell = row.getData().get(column);
-			int newWidth = cellLeftPadding + cell.getContents().length() + cellRightPadding;
-			if(newWidth > widestWidthSoFar) {
-				widestWidthSoFar = newWidth;
+			if(column < row.getData().size()) {
+				GenericCell cell = row.getData().get(column);
+				if(cell.getHorizontalSpan() == 1) { // Is it a regular cell we can measure for determining width?
+					int newWidth = cellLeftPadding + cell.getContents().length() + cellRightPadding;
+					if(newWidth > widestWidthSoFar) {
+						widestWidthSoFar = newWidth;
+					}
+				}
 			}
 		}
 		return widestWidthSoFar;

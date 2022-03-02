@@ -25,7 +25,7 @@ public class RstRowPrinter {
 		sb.append("|");
 		for(int i = 0; i < cells.size(); i++) {
 			String cell = cells.get(i).getContents();
-			int width = widths.get(i);
+			int width = getCellWidth(cells.get(i), widths, i);
 			
 			CellPayload result = getCellFormattedContents(cell, width);
 			String cellAvailable = result.getThisRowPrint();
@@ -46,6 +46,26 @@ public class RstRowPrinter {
 			sb.append(printRow(rowOverflow, widths));
 		}
 		return sb.toString();
+	}
+	
+	private int getCellWidth(GenericCell cell, List<Integer> widths, int nativeWidthIndex) {
+		if(cell.getHorizontalSpan() == 1) {
+			return widths.get(nativeWidthIndex);
+		} else {
+			int totalWidth = 0;
+			int span = cell.getHorizontalSpan();
+			for(int i = nativeWidthIndex; i < nativeWidthIndex + span; i++) {
+				if(i < widths.size()) {
+					totalWidth += widths.get(i);
+				}
+			}
+			for(int i = nativeWidthIndex; i < nativeWidthIndex + span - 1; i++) {
+				if(i < widths.size()) {
+					totalWidth ++; // Count dividers between cells.
+				}
+			}
+			return totalWidth;
+		}
 	}
 
 	private CellPayload getCellFormattedContents(String cellContents, int cellWidth) {

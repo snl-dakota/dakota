@@ -173,5 +173,96 @@ public class RstTablePrinterTest {
 				        + "|                    | us       |               |                         |\n"
 				        + "+--------------------+----------+---------------+-------------------------+\n";
 		assertEquals(expected, actual);
-	}	
+	}
+	
+	@Test
+	public void testPrintTableWithTwoMergedColumns() {
+		GenericTable table = new GenericTable();
+		GenericRow header = new GenericRow();
+		header.addCell("Module");
+		header.addCell("Learning Goals");
+		header.addCell("Approx. Time (minutes)");
+		header.addCell("Video/Slides/Exercises");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Overview");
+		row1.addCell("This is a merged column cell.", 2, 1);
+		row1.addCell("Slides link here");
+		
+		table.addRow(header);
+		table.addRow(row1);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+----------+----------------+------------------------+------------------------+\n"
+	                	+ "| Module   | Learning Goals | Approx. Time (minutes) | Video/Slides/Exercises |\n"
+		                + "+==========+================+========================+========================+\n"
+		                + "| Overview | This is a merged column cell.           | Slides link here       |\n"
+		                + "+----------+----------------+------------------------+------------------------+\n";
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testPrintTableWithThreeMergedColumns() {
+		GenericTable table = new GenericTable();
+		GenericRow header = new GenericRow();
+		header.addCell("Module");
+		header.addCell("Learning Goals");
+		header.addCell("Approx. Time (minutes)");
+		header.addCell("Video/Slides/Exercises");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Overview");
+		row1.addCell("This is a hecking big merged column cell that spans 3 columns!", 3, 1);
+		
+		table.addRow(header);
+		table.addRow(row1);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+----------+----------------+------------------------+------------------------+\n"
+	                	+ "| Module   | Learning Goals | Approx. Time (minutes) | Video/Slides/Exercises |\n"
+		                + "+==========+================+========================+========================+\n"
+		                + "| Overview | This is a hecking big merged column cell that spans 3 columns!   |\n"
+		                + "+----------+----------------+------------------------+------------------------+\n";
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testPrintTableWithMergedRows() {
+		GenericTable table = new GenericTable();
+		GenericRow header = new GenericRow();
+		header.addCell("Module");
+		header.addCell("Learning Goals");
+		header.addCell("Approx. Time (minutes)");
+		header.addCell("Video/Slides/Exercises");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Overview");
+		row1.addCell("Here is a merged cell that spans rows.", 1, 2);
+		row1.addCell("45");
+		row1.addCell("Slides link here");
+		
+		GenericRow row2 = new GenericRow();
+		row2.addCell("Interface");
+		row2.addSpanHoldCell();
+		row2.addCell("90");
+		row2.addCell("Slides link here");
+		
+		table.addRow(header);
+		table.addRow(row1);
+		table.addRow(row2);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+-----------+----------------+------------------------+------------------------+\n"
+	                	+ "| Module    | Learning Goals | Approx. Time (minutes) | Video/Slides/Exercises |\n"
+		                + "+===========+================+========================+========================+\n"
+		                + "| Overview  | Here is a      | 45                     | Slides link here       |\n"
+		                + "+-----------+ merged cell    +------------------------+------------------------+\n"
+		                + "| Interface | that spans     | 90                     | Slides link here       |\n"
+		                + "|           | rows.          |                        |                        |\n"
+		                + "+-----------+----------------+------------------------+------------------------+\n";
+		assertEquals(expected, actual);
+	}
 }

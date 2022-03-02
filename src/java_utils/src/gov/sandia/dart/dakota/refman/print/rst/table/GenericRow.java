@@ -27,4 +27,14 @@ public class GenericRow {
 		GenericCell newCell = new GenericCell(cellContents);
 		data.add(newCell);
 	}
+	
+	public void addSpanHoldCell() {
+		SpanHoldCell newCell = new SpanHoldCell();
+		data.add(newCell);
+	}
+	
+	public void addCell(String cellContents, int horizontalSpan, int verticalSpan) {
+		GenericCell newCell = new GenericCell(cellContents, horizontalSpan, verticalSpan);
+		data.add(newCell);
+	}
 }
