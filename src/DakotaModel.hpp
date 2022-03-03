@@ -1206,8 +1206,8 @@ protected:
 	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
-  Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-	ParallelLibrary& parallel_lib);
+  Model(LightWtBaseConstructor, ProblemDescDB& problem_db = dummy_db,
+	ParallelLibrary& parallel_lib = dummy_lib);
 
   //
   //- Heading: Virtual functions

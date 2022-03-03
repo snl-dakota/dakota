@@ -258,6 +258,9 @@ public:
 
   /// for use when a deep copy is needed (the representation is _not_ shared)
   Constraints copy() const;
+  /// for use when only data updates are desired between existing
+  /// Constraints objects
+  void update(const Constraints& cons);
 
   /// shape the lower/upper bound arrays based on sharedVarsData
   void shape();
