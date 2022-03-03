@@ -8,10 +8,7 @@
     _______________________________________________________________________ */
 
 #include "PluginIdentityMap.hpp"
-
-// TODO: Decide if we want the dependence on boost or want to roll our
-// own macro. This should work with most any version of Boost
-#include <boost/config.hpp>
+#include "dakota_symbol_visibility.hpp"
 
 
 namespace DP = DakotaPlugins;
@@ -25,5 +22,5 @@ DP::EvalResponse PluginIdentityMap::evaluate(const DP::EvalRequest& request)
 }
 
 
-extern "C" BOOST_SYMBOL_EXPORT PluginIdentityMap dakota_interface_plugin;
+extern "C" DAKOTA_SYMBOL_EXPORT PluginIdentityMap dakota_interface_plugin;
 PluginIdentityMap dakota_interface_plugin;
