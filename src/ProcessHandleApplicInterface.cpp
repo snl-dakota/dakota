@@ -479,14 +479,8 @@ void ProcessHandleApplicInterface::check_wait(pid_t pid, int status)
     //   to exit or _exit or as the argument for a return statement in main().
     //   This macro should only be employed if WIFEXITED returned true.
     if ( WIFEXITED(status) == 0 || (signed char)WEXITSTATUS(status) == -1 ) {
-      Cerr << "Fork application failure. Aborting.\nOperating system error "
-	   << "message: " << std::strerror(errno) << '\n';
-      if (errno == EACCES) {
-	Cerr << "Note: Each analysis_driver must have read and execute permission.\n";
-#ifndef _WIN32
-	Cerr << "Note: Consider 'chmod u+rx driver_filename' or similar.\n";
-#endif
-      }
+      Cerr << "Fork application failure, aborting.\nSystem error message: "
+	   << std::strerror(errno) << '\n';
       // std::strerror() returns the system error message associated with errno
       // (a system constant defined in errno.h containing the number of the last
       // observed error).  Note: If it becomes an issue, it would also be
