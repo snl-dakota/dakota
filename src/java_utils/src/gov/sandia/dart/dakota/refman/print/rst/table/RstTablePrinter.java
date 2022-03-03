@@ -9,35 +9,44 @@ public class RstTablePrinter {
 	public String print(GenericTable table) {
 		
 		List<Integer> widths = table.getColumnWidths();
-		RstRowPrinter rowPrinter = new RstRowPrinter(table.getLeftPadding(), table.getRightPadding());
+		
+		RstDividerPrinter dividerPrinter = new RstDividerPrinter();
+		RstRowPrinter rowPrinter = new RstRowPrinter();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append(printDivider(widths, false)).append(NEWLINE);
+		
+		sb.append(dividerPrinter.print(widths, null, false)).append(NEWLINE);
+		
 		GenericRow headerRow = table.getHeaderRow();
 		if(headerRow != null) {
-			sb.append(rowPrinter.printRow(headerRow.getData(), widths)).append(NEWLINE);
+			sb.append(rowPrinter.print(headerRow, widths)).append(NEWLINE);
 		}
-		sb.append(printDivider(widths, true)).append(NEWLINE);
+		
+		sb.append(dividerPrinter.print(widths, null, true)).append(NEWLINE);
+		
+		GenericRow verticalSpanOverflow = null;
+		int verticalSpanLocationPointer = 0; // To keep track of how far we are into a vertical span cell.
 		
 		for(int i = 1; i < table.getRows().size(); i++) {
 			GenericRow row = table.getRows().get(i);
-			sb.append(rowPrinter.printRow(row.getData(), widths)).append(NEWLINE);
-			sb.append(printDivider(widths, false)).append(NEWLINE);
+			sb.append(rowPrinter.print(row, verticalSpanOverflow, widths)).append(NEWLINE);
+			
+			GenericRow previousVerticalSpanOverflow = verticalSpanOverflow;
+			verticalSpanOverflow = rowPrinter.getVerticalSpanOverflow();
+			if(previousVerticalSpanOverflow != verticalSpanOverflow) {
+				verticalSpanLocationPointer = 0;
+			}
+			
+			sb.append(dividerPrinter.print(widths, verticalSpanOverflow, false)).append(NEWLINE);
+			if(verticalSpanOverflow != null) {
+				verticalSpanLocationPointer ++;
+				if(verticalSpanOverflow.elementsAreBlank() &&
+						verticalSpanLocationPointer == verticalSpanOverflow.getLargestVerticalSpan()) {
+					verticalSpanOverflow = null;
+				}
+			}
 		}
 		
-		return sb.toString();
-	}
-	
-	private String printDivider(List<Integer> widths, boolean headerDivider) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("+");
-		for(int i = 0; i < widths.size(); i++) {
-			Integer width = widths.get(i);
-			for(int j = 0; j < width; j++) {
-				sb.append(headerDivider ? "=" : "-");
-			}
-			sb.append("+");
-		}
 		return sb.toString();
 	}
 }

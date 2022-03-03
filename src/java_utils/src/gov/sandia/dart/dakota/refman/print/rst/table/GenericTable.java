@@ -43,7 +43,8 @@ public class GenericTable {
 		for(GenericRow row : rows) {
 			if(column < row.getData().size()) {
 				GenericCell cell = row.getData().get(column);
-				if(cell.getHorizontalSpan() == 1) { // Is it a regular cell we can measure for determining width?
+				// Is it a regular cell we can measure for determining width?
+				if(cell.getHorizontalSpan() == 1 && cell.getVerticalSpan() == 1) { 
 					int newWidth = cellLeftPadding + cell.getContents().length() + cellRightPadding;
 					if(newWidth > widestWidthSoFar) {
 						widestWidthSoFar = newWidth;
@@ -71,6 +72,10 @@ public class GenericTable {
 	}
 	
 	public void addRow(GenericRow row) {
+		for(GenericRow oldRow : rows) {
+			oldRow.setLastRow(false);
+		}
+		row.setLastRow(true);
 		rows.add(row);
 	}
 }

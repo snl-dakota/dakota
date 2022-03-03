@@ -6,25 +6,34 @@ import java.util.List;
 public class GenericRow {
 
 	private List<GenericCell> data = new ArrayList<>();
+	private boolean lastRow;
 	
 	public List<GenericCell> getData() {
 		return data;
 	}
 	
-	public List<String> getDataStrings() {
-		List<String> dataStrings = new ArrayList<>();
-		for(GenericCell cell : data) {
-			dataStrings.add(cell.getContents());
-		}
-		return dataStrings;
+	public boolean isLastRow() {
+		return lastRow;
 	}
 	
-	public int getRowHeight() {
-		return -1;
+	public void setLastRow(boolean lastRow) {
+		this.lastRow = lastRow;
+	}
+	
+	public void addCell(GenericCell cell) {
+		data.add(cell);
 	}
 	
 	public void addCell(String cellContents) {
-		GenericCell newCell = new GenericCell(cellContents);
+		addCell(cellContents, 1, 1);
+	}
+	
+	public void addCell(String cellContents, int horizontalSpan, int verticalSpan) {
+		addCell(cellContents, horizontalSpan, verticalSpan, 1, 1);
+	}
+	
+	public void addCell(String cellContents, int horizontalSpan, int verticalSpan, int leftPadding, int rightPadding) {
+		GenericCell newCell = new GenericCell(cellContents, horizontalSpan, verticalSpan, leftPadding, rightPadding);
 		data.add(newCell);
 	}
 	
@@ -33,8 +42,29 @@ public class GenericRow {
 		data.add(newCell);
 	}
 	
-	public void addCell(String cellContents, int horizontalSpan, int verticalSpan) {
-		GenericCell newCell = new GenericCell(cellContents, horizontalSpan, verticalSpan);
-		data.add(newCell);
+	public boolean elementsAreBlank() {
+		for(GenericCell element : data) {
+			if(!element.getContents().isBlank()) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean onlySpanningCellsShouldContinue() {
+		for(GenericCell element : data) {
+			if(!element.getContents().isBlank() && element.getVerticalSpan() == 1) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public int getLargestVerticalSpan() {
+		int verticalSpan = 1;
+		for(GenericCell element : data) {
+			verticalSpan = Math.max(verticalSpan, element.getVerticalSpan());
+		}
+		return verticalSpan;
 	}
 }

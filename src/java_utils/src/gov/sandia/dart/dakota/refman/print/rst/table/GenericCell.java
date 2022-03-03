@@ -5,15 +5,23 @@ public class GenericCell {
 	private String contents;
 	private int horizontalSpan;
 	private int verticalSpan;
+	private final int leftPadding;
+	private final int rightPadding;
 	
 	public GenericCell(String contents) {
 		this(contents, 1, 1);
 	}
 	
 	public GenericCell(String contents, int horizontalSpan, int verticalSpan) {
+		this(contents, horizontalSpan, verticalSpan, 1, 1);
+	}
+	
+	public GenericCell(String contents, int horizontalSpan, int verticalSpan, int leftPadding, int rightPadding) {
 		this.contents = contents;
 		this.horizontalSpan = horizontalSpan;
 		this.verticalSpan = verticalSpan;
+		this.leftPadding = leftPadding;
+		this.rightPadding = rightPadding;
 	}
 	
 	public String getContents() {
@@ -38,5 +46,13 @@ public class GenericCell {
 	
 	public int getVerticalSpan() {
 		return verticalSpan;
+	}
+
+	public int getLeftPadding() {
+		return leftPadding;
+	}
+	
+	public int getRightPadding() {
+		return rightPadding;
 	}
 }

@@ -265,4 +265,111 @@ public class RstTablePrinterTest {
 		                + "+-----------+----------------+------------------------+------------------------+\n";
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void testPrintTableWithMergedRowsAndColumns() {
+		GenericTable table = new GenericTable();
+		GenericRow header = new GenericRow();
+		header.addCell("Module");
+		header.addCell("Learning Goals");
+		header.addCell("Approx. Time (minutes)");
+		header.addCell("Video/Slides/Exercises");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Overview");
+		row1.addCell("Here is a merged cell that spans rows.", 1, 2);
+		row1.addCell("Here is a merged cell that spans columns.", 2, 1);
+		
+		GenericRow row2 = new GenericRow();
+		row2.addCell("Interface");
+		row2.addSpanHoldCell();
+		row2.addCell("90");
+		row2.addCell("Slides link here");
+		
+		table.addRow(header);
+		table.addRow(row1);
+		table.addRow(row2);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+-----------+----------------+------------------------+------------------------+\n"
+	                	+ "| Module    | Learning Goals | Approx. Time (minutes) | Video/Slides/Exercises |\n"
+		                + "+===========+================+========================+========================+\n"
+		                + "| Overview  | Here is a      | Here is a merged cell that spans columns.       |\n"
+		                + "+-----------+ merged cell    +------------------------+------------------------+\n"
+		                + "| Interface | that spans     | 90                     | Slides link here       |\n"
+		                + "|           | rows.          |                        |                        |\n"
+		                + "+-----------+----------------+------------------------+------------------------+\n";
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testPrintTableWithFreakingBigCell() {
+		GenericTable table = new GenericTable();
+		GenericRow header = new GenericRow();
+		header.addCell("Module");
+		header.addCell("Learning Goals");
+		header.addCell("Approx. Time (minutes)");
+		header.addCell("Video/Slides/Exercises");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Overview");
+		row1.addCell("Why do we need such a big cell? Well, a lot of text goes into this cell, you see. There is still a blank row below though.", 3, 2);
+		
+		GenericRow row2 = new GenericRow();
+		row2.addCell("Interface");
+		row2.addSpanHoldCell();
+		row2.addSpanHoldCell();
+		row2.addSpanHoldCell();
+		
+		table.addRow(header);
+		table.addRow(row1);
+		table.addRow(row2);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+-----------+----------------+------------------------+------------------------+\n"
+	                	+ "| Module    | Learning Goals | Approx. Time (minutes) | Video/Slides/Exercises |\n"
+		                + "+===========+================+========================+========================+\n"
+		                + "| Overview  | Why do we need such a big cell? Well, a lot of text goes into    |\n"
+		                + "+-----------+ this cell, you see. There is still a blank row below though.     +\n"
+		                + "| Interface |                                                                  |\n"
+		                + "+-----------+----------------+------------------------+------------------------+\n";
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testPrintTableWithFreakingBigCellAndNoExtraSpace() {
+		GenericTable table = new GenericTable();
+		GenericRow header = new GenericRow();
+		header.addCell("Module");
+		header.addCell("Learning Goals");
+		header.addCell("Approx. Time (minutes)");
+		header.addCell("Video/Slides/Exercises");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Overview");
+		row1.addCell("Why do we need such a big cell? Well, a lot of text goes into this cell, you see. There is so much text in this cell, in fact, that there is no space left for blank rows!!", 3, 2);
+		
+		GenericRow row2 = new GenericRow();
+		row2.addCell("Interface");
+		row2.addSpanHoldCell();
+		row2.addSpanHoldCell();
+		row2.addSpanHoldCell();
+		
+		table.addRow(header);
+		table.addRow(row1);
+		table.addRow(row2);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+-----------+----------------+------------------------+------------------------+\n"
+	                	+ "| Module    | Learning Goals | Approx. Time (minutes) | Video/Slides/Exercises |\n"
+		                + "+===========+================+========================+========================+\n"
+		                + "| Overview  | Why do we need such a big cell? Well, a lot of text goes into    |\n"
+		                + "+-----------+ this cell, you see. There is so much text in this cell, in fact, +\n"
+		                + "| Interface | that there is no space left for blank rows!!                     |\n"
+		                + "+-----------+----------------+------------------------+------------------------+\n";
+		assertEquals(expected, actual);
+	}
 }

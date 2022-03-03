@@ -10,6 +10,6 @@ package gov.sandia.dart.dakota.refman.print.rst.table;
 public class SpanHoldCell extends GenericCell {
 
 	public SpanHoldCell() {
-		super("", 0, 0);
+		super("", 1, 1);
 	}
 }
