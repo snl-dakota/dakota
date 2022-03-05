@@ -83,7 +83,8 @@ public:
 				 short accept_logic, short constr_relax,
 				 Real tr_factor, short corr_type,
 				 short corr_order, size_t max_iter,
-				 size_t max_eval,unsigned short soft_conv_limit,
+				 size_t max_eval, Real conv_tol,
+				 unsigned short soft_conv_limit,
 				 bool use_derivs);
   /// destructor
   ~DataFitSurrBasedLocalMinimizer();

@@ -64,13 +64,17 @@ DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
 			       short constr_relax, Real tr_factor,
 			       short corr_type, short corr_order,
-			       size_t max_iter, size_t max_eval,
+			       size_t max_iter, size_t max_eval, Real conv_tol,
 			       unsigned short soft_conv_limit, bool use_derivs):
   SurrBasedLocalMinimizer(model, merit_fn, accept_logic, constr_relax,
-			  tr_factor, corr_type, max_iter, max_eval,
-			  soft_conv_limit),
+    RealVector(1), corr_type, max_iter, max_eval, conv_tol, soft_conv_limit,
+    std::shared_ptr<TraitsBase>(new DataFitSurrBasedLocalTraits())),
   multiLayerBypassFlag(false), useDerivsFlag(use_derivs)
-{ initialize_trust_region_data(iteratedModel.surrogate_type(), corr_order); }
+{
+  methodName = DATA_FIT_SURROGATE_BASED_LOCAL;
+  origTrustRegionFactor[0] = tr_factor; // only sized to 1 above
+  initialize_trust_region_data(iteratedModel.surrogate_type(), corr_order);
+}
 
 
 void DataFitSurrBasedLocalMinimizer::

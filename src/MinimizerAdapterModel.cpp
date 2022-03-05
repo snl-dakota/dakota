@@ -24,8 +24,8 @@ namespace Dakota {
 //#define DEBUG
 
 
-/** Default adapter constructor.  Requires full definition of the
-    minimization sub-problem. */
+/** Default constructor.  Includes full definition of a minimization
+    sub-problem. */
 MinimizerAdapterModel::
 MinimizerAdapterModel(const RealVector& cv_initial_pt,//, di_vars, dr_vars, ...
 		      const RealVector& cv_lower_bnds,

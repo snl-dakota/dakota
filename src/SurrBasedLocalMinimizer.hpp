@@ -44,9 +44,10 @@ public:
 			  std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
   SurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
-			  short constr_relax, Real tr_factor, // DF-SBLM
+			  short constr_relax, const RealVector& tr_factors,
 			  short corr_type, size_t max_iter, size_t max_eval,
-			  unsigned short soft_conv_limit);
+			  Real conv_tol, unsigned short soft_conv_limit,
+			  std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~SurrBasedLocalMinimizer();
 

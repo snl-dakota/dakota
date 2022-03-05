@@ -22,6 +22,8 @@
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
+#include "DataFitSurrBasedLocalMinimizer.hpp"
+#include "EffGlobalMinimizer.hpp"
 
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
@@ -573,8 +575,8 @@ nonhierarch_numerical_solution(const RealVector& cost,
   //   >> No need for a priori model sequence, only for post-proc of opt result
   // > ACV-IS is unconstrained in model order --> retain N_i > N
 
-  size_t i, num_cdv, num_lin_con = 0, num_nln_con = 0,
-    approx, approx_im1, approx_ip1, max_iter = 100000;
+  size_t i, num_cdv, num_lin_con = 0, num_nln_con = 0, approx, approx_im1,
+    approx_ip1, max_iter = 100000, max_eval = 500000;
   Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
     avg_N_H = average(numH), conv_tol = 1.e-8; // tight convergence
   bool ordered = approx_sequence.empty();
@@ -680,69 +682,87 @@ nonhierarch_numerical_solution(const RealVector& cost,
   }
 
   if (varianceMinimizer.is_null()) {
-    // configure the minimization sub-problem
-    MinimizerAdapterModel min_model(x0, x_lb, x_ub, lin_ineq_coeffs,
-				    lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-				    lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
-				    nln_eq_tgt, response_evaluator);
 
-    // select the sub-problem solver
-    switch (optSubProblemSolver) {
-    case SUBMETHOD_SQP: {
-      int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) ?
-	2 : 0; // 0 neither, 1 obj, 2 constr, 3 both
-      Real fdss = 1.e-6;
+    bool use_adapter = (optSubProblemSolver == SUBMETHOD_SQP ||
+			optSubProblemSolver == SUBMETHOD_NIP);
+    if (use_adapter) {
+      // configure the minimization sub-problem
+      MinimizerAdapterModel min_model(x0, x_lb, x_ub, lin_ineq_coeffs,
+				      lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+				      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
+				      nln_eq_tgt, response_evaluator);
+      // select the sub-problem solver
+      switch (optSubProblemSolver) {
+      case SUBMETHOD_SBLO: {
+	short merit_fn = AUGMENTED_LAGRANGIAN_MERIT, accept_logic = FILTER,
+	  constr_relax = NO_RELAX, corr_type = ADDITIVE_CORRECTION,
+	  corr_order = 1;
+	unsigned short soft_conv_limit = 5;
+	Real tr_factor = 1.; // start from full bounds
+	varianceMinimizer.assign_rep(
+	  std::make_shared<DataFitSurrBasedLocalMinimizer>(min_model, merit_fn,
+	  accept_logic, constr_relax, tr_factor, corr_type, corr_order,
+	  max_iter, max_eval, conv_tol, soft_conv_limit, false));
+	break;
+      }
+      case SUBMETHOD_EGO: { // may need to be combined with local refinement
+	int samples = 100, seed = 12347; // TO DO: spec
+	String approx_type("global_kriging"); // TO DO: spec
+	bool use_derivs = false;
+	varianceMinimizer.assign_rep(std::make_shared<EffGlobalMinimizer>(
+	  min_model, approx_type, samples, seed, use_derivs, max_iter,
+	  max_eval, conv_tol));
+	break;
+      }
+      /*
+      case SUBMETHOD_CPS: { // may need to be combined with local refinement
+        break;
+      }
+      case SUBMETHOD_SBGO: { // for NonDGlobalInterval, was EAminlp + GP ...
+        varianceMinimizer.assign_rep(std::make_shared<SurrBasedGlobalMinimizer>(
+	  min_model, max_iter, max_eval, conv_tol));
+        break;
+      }
+      case SUBMETHOD_EA: { // may need to be combined with local refinement
+        varianceMinimizer.assign_rep(std::make_shared<COLINOptimizer>(
+	  min_model, max_iter, max_eval, conv_tol));
+        break;
+      }
+      */
+      default: // SUBMETHOD_NONE, ...
+	Cerr << "Error: sub-problem solver undefined in NonDNonHierarchSampling"
+	     << std::endl;
+	abort_handler(METHOD_ERROR);
+	break;
+      }
+    }
+    else { // existing call-back API does not require an adapter
+      switch (optSubProblemSolver) {
+      case SUBMETHOD_SQP: {
+	int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) ?
+	  2 : 0; // 0 neither, 1 obj, 2 constr, 3 both
+	Real fdss = 1.e-6;
 #ifdef HAVE_NPSOL
-      varianceMinimizer.assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb,
-        x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-        lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-        npsol_objective_evaluator, npsol_constraint_evaluator, deriv_level,
-	conv_tol, max_iter, fdss));
+	varianceMinimizer.assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb,
+          x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+          lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+          npsol_objective_evaluator, npsol_constraint_evaluator, deriv_level,
+	  conv_tol, max_iter, fdss));
 #endif
-      break;
-    }
-    case SUBMETHOD_NIP: {
-      size_t max_eval = 500000;  Real max_step = 100000.;
+	break;
+      }
+      case SUBMETHOD_NIP: {
+	Real max_step = 100000.;
 #ifdef HAVE_OPTPP
-      varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
-	x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-	lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	optpp_objective_evaluator, optpp_constraint_evaluator, max_iter,
-	max_eval, conv_tol, conv_tol, max_step));
+	varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
+	  x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	  lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	  optpp_objective_evaluator, optpp_constraint_evaluator, max_iter,
+	  max_eval, conv_tol, conv_tol, max_step));
 #endif
-      break;
-    }
-    /*
-    case SUBMETHOD_SBLM: {
-      varianceMinimizer.assign_rep(
-        std::make_shared<DataFitSurrBasedLocalMinimizer>(
-	min_model, max_iter, max_eval, conv_tol));
-      break;
-    }
-    case SUBMETHOD_EGM: { // may need to be combined with local refinement
-      varianceMinimizer.assign_rep(std::make_shared<EffGlobalMinimizer>(
-	min_model, max_iter, max_eval, conv_tol));
-      break;
-    }
-    case SUBMETHOD_CPS: { // may need to be combined with local refinement
-      break;
-    }
-    case SUBMETHOD_SBGM: { // for NonDGlobalInterval, was EAminlp + GP ...
-      varianceMinimizer.assign_rep(std::make_shared<SurrBasedGlobalMinimizer>(
-	min_model, max_iter, max_eval, conv_tol));
-      break;
-    }
-    case SUBMETHOD_EA: { // may need to be combined with local refinement
-      varianceMinimizer.assign_rep(std::make_shared<COLINOptimizer>(
-	min_model, max_iter, max_eval, conv_tol));
-      break;
-    }
-    */
-    default: // SUBMETHOD_NONE, ...
-      Cerr << "Error: sub-problem solver undefined in NonDNonHierarchSampling."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-      break;
+	break;
+      }
+      }
     }
   }
   else {

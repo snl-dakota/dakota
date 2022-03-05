@@ -24,8 +24,7 @@ namespace Dakota {
 //#define DEBUG
 
 
-/** Default recast model constructor.  Requires full definition of the
-    minimization sub-problem. */
+/** Base portion of derived constructor chains. */
 AdapterModel::
 AdapterModel(void (*resp_map) (const Variables& vars, const ActiveSet& set,
 			       Response& response)):
@@ -41,8 +40,8 @@ AdapterModel(void (*resp_map) (const Variables& vars, const ActiveSet& set,
 }
 
 
-/** Default recast model constructor.  Requires full definition of the
-    minimization sub-problem. */
+/** This constructor creates a generic stand-alone AdapterModel
+    (not part of a derived constructor chain). */
 AdapterModel::
 AdapterModel(const Variables& initial_vars, const Constraints& cons,
 	     const Response& resp,
@@ -52,7 +51,9 @@ AdapterModel(const Variables& initial_vars, const Constraints& cons,
 	resp.shared_data(), true, resp.active_set(), SILENT_OUTPUT),
   adapterModelEvalCntr(0), respMapping(resp_map)
 {
-  modelType = "adapter"; 
+  modelType   = "adapter";
+  modelId     = "ADAPTER";
+  outputLevel = SILENT_OUTPUT;
 
   currentVariables.active_variables(initial_vars); // {c,di,dr}_vars
   userDefinedConstraints.update(cons); // update the Model ctor instantiation
@@ -161,7 +162,7 @@ void AdapterModel::derived_evaluate_nowait(const ActiveSet& set)
   ++adapterModelEvalCntr;
 
   // Bookkeep Variables/ActiveSet instances for use in synchronize, emulating
-  // for now the potential for future parallel execution of call-backs
+  // (for now) the potential for future parallel execution of call-backs
   // > Note: Model::parallelLib is currently initialized to dummy_lib
 
   // A reduced overhead alternative would be to just short-circuit with a

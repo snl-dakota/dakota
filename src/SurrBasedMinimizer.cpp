@@ -69,9 +69,9 @@ SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model,
 
 
 SurrBasedMinimizer::
-SurrBasedMinimizer(Model& model, size_t max_iter, size_t max_eval):
-  //Minimizer(model, max_iter, max_eval), // *** TO DO ***
-  globalIterCount(0),
+SurrBasedMinimizer(Model& model, size_t max_iter, size_t max_eval,
+		   Real conv_tol, std::shared_ptr<TraitsBase> traits):
+  Minimizer(model, max_iter, max_eval, conv_tol, traits), globalIterCount(0),
   // See Conn, Gould, and Toint, pp. 598-599
   penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
   etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))

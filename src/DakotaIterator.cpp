@@ -242,6 +242,26 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
 { /* empty ctor */ }
 
 
+/** This alternate constructor builds base class data for inherited iterators.
+    It is used for on-the-fly instantiations for which DB queries cannot be
+    used, and is not used for construction of meta-iterators. */
+Iterator::
+Iterator(NoDBBaseConstructor, Model& model, size_t max_iter, size_t max_eval,
+	 Real conv_tol, std::shared_ptr<TraitsBase> traits):
+  probDescDB(dummy_db), parallelLib(model.parallel_library()),
+  methodPCIter(parallelLib.parallel_configuration_iterator()),
+  myModelLayers(0), iteratedModel(model), //methodName(method_name),
+  convergenceTol(conv_tol), maxIterations(max_iter), maxFunctionEvals(max_eval),
+  maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
+  outputLevel(model.output_level()), summaryOutputFlag(false), topLevel(false),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
+  execNum(0), methodTraits(traits)
+{
+  //update_from_model(iteratedModel); // variable/response counts & checks
+}
+
+
 /** The default constructor is used in Vector<Iterator> instantiations
     and for initialization of Iterator objects contained in
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
