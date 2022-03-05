@@ -61,16 +61,15 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model,
   gammaContract(
     probDescDB.get_real("method.trust_region.contraction_factor")),
   gammaExpand(probDescDB.get_real("method.trust_region.expansion_factor")),
-  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
-  correctionType(probDescDB.get_short("model.surrogate.correction_type"))
+  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit"))
 { initialize(); }
 
 
 SurrBasedLocalMinimizer::
 SurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
 			short constr_relax, const RealVector& tr_factors,
-			short corr_type, size_t max_iter, size_t max_eval,
-			Real conv_tol, unsigned short soft_conv_limit,
+			size_t max_iter, size_t max_eval, Real conv_tol,
+			unsigned short soft_conv_limit,
 			std::shared_ptr<TraitsBase> traits):
   SurrBasedMinimizer(model, max_iter, max_eval, conv_tol, traits),
   approxSubProbObj(ORIGINAL_PRIMARY), approxSubProbCon(ORIGINAL_CONSTRAINTS),
@@ -78,7 +77,7 @@ SurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
   trConstraintRelax(constr_relax), minimizeCycles(0), penaltyIterOffset(-200), 
   origTrustRegionFactor(tr_factors), minTrustRegionFactor(1.e-6),
   trRatioContractValue(0.25), trRatioExpandValue(0.75), gammaContract(0.25),
-  gammaExpand(2.), softConvLimit(soft_conv_limit), correctionType(corr_type)
+  gammaExpand(2.), softConvLimit(soft_conv_limit)
 { initialize(); }
 
 

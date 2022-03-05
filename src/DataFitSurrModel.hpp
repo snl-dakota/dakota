@@ -89,6 +89,7 @@ protected:
   DiscrepancyCorrection& discrepancy_correction();
   short correction_type();
   void  correction_type(short corr_type);
+  short correction_order();
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
@@ -537,6 +538,10 @@ inline short DataFitSurrModel::correction_type()
 
 inline void DataFitSurrModel::correction_type(short corr_type)
 { deltaCorr.correction_type(corr_type); }
+
+
+inline short DataFitSurrModel::correction_order()
+{ return deltaCorr.correction_order(); }
 
 
 inline void DataFitSurrModel::total_points(int points)

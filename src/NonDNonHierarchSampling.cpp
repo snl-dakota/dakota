@@ -16,14 +16,15 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 //#include "dakota_tabular_io.hpp"
-#include "MinimizerAdapterModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDNonHierarchSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
-#include "DakotaIterator.hpp"
+#include "MinimizerAdapterModel.hpp"
+#include "DataFitSurrModel.hpp"
 #include "DataFitSurrBasedLocalMinimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
+#include "NonDLHSSampling.hpp"
 
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
@@ -683,34 +684,71 @@ nonhierarch_numerical_solution(const RealVector& cost,
 
   if (varianceMinimizer.is_null()) {
 
-    bool use_adapter = (optSubProblemSolver == SUBMETHOD_SQP ||
-			optSubProblemSolver == SUBMETHOD_NIP);
+    bool use_adapter   = (optSubProblemSolver != SUBMETHOD_SQP &&
+			  optSubProblemSolver != SUBMETHOD_NIP);
+    bool construct_dfs = (optSubProblemSolver == SUBMETHOD_SBLO &&
+			  optSubProblemSolver == SUBMETHOD_SBGO);
     if (use_adapter) {
       // configure the minimization sub-problem
-      MinimizerAdapterModel min_model(x0, x_lb, x_ub, lin_ineq_coeffs,
-				      lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-				      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
-				      nln_eq_tgt, response_evaluator);
+      MinimizerAdapterModel adapt_model(x0, x_lb, x_ub, lin_ineq_coeffs,
+					lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+					lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
+					nln_eq_tgt, response_evaluator); // ***
+      // NEED TO START THINKING ABOUT THIS EVALUATOR:
+      // > EVALUATES ESTVAR AS BEFORE FOR r_i, N_i
+      // > MUST NOW RE-EVALUATE CORR/COVAR FOR HYPER-PARAMETERS FROM SURROGATE
+      // > SURROGATE IS UPDATED WITH NEW VERIFICATION EVALUATION
+
+      Model sub_prob_model;
+      if (construct_dfs) {
+	int samples = 100, seed = 12347;      // TO DO: spec
+	unsigned short sample_type = SUBMETHOD_DEFAULT;
+	String rng; // empty string: use default
+	bool vary_pattern = false, use_derivs = false;
+	short corr_type = ADDITIVE_CORRECTION, corr_order = 1, data_order = 1;
+	if (use_derivs) { // Would also need to verify surrogate support
+	  if (adapt_model.gradient_type() != "none") data_order |= 2;
+	  if (adapt_model.hessian_type()  != "none") data_order |= 4;
+	}
+	Iterator dace_iterator;
+	dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(adapt_model,
+	  sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM));
+	dace_iterator.active_set_request_values(data_order);
+
+	String approx_type("global_kriging"), point_reuse("none");// TO DO: spec
+	UShortArray approx_order; // empty
+	ActiveSet dfs_set = adapt_model.current_response().active_set();// copy
+	dfs_set.request_values(1);
+	sub_prob_model = DataFitSurrModel(dace_iterator, adapt_model, dfs_set,
+					  approx_type, approx_order, corr_type,
+					  corr_order, data_order, SILENT_OUTPUT,
+					  point_reuse);
+      }
+      else
+	sub_prob_model = adapt_model;
+
       // select the sub-problem solver
       switch (optSubProblemSolver) {
       case SUBMETHOD_SBLO: {
 	short merit_fn = AUGMENTED_LAGRANGIAN_MERIT, accept_logic = FILTER,
-	  constr_relax = NO_RELAX, corr_type = ADDITIVE_CORRECTION,
-	  corr_order = 1;
+	  constr_relax = NO_RELAX;
 	unsigned short soft_conv_limit = 5;
-	Real tr_factor = 1.; // start from full bounds
+	Real tr_factor = .5;
 	varianceMinimizer.assign_rep(
-	  std::make_shared<DataFitSurrBasedLocalMinimizer>(min_model, merit_fn,
-	  accept_logic, constr_relax, tr_factor, corr_type, corr_order,
-	  max_iter, max_eval, conv_tol, soft_conv_limit, false));
+	  std::make_shared<DataFitSurrBasedLocalMinimizer>(sub_prob_model,
+	  merit_fn, accept_logic, constr_relax, tr_factor, max_iter, max_eval,
+	  conv_tol, soft_conv_limit, false));
 	break;
       }
-      case SUBMETHOD_EGO: { // may need to be combined with local refinement
-	int samples = 100, seed = 12347; // TO DO: spec
+      case SUBMETHOD_EGO: {
+	// EGO builds its own GP in initialize_sub_problem(), so a DFSModel
+	// does not need to be constructed here as for SBLO/SBGO
+	// > TO DO: pure global opt may need subsequent local refinement
+	int samples = 100, seed = 12347;      // TO DO: spec
 	String approx_type("global_kriging"); // TO DO: spec
 	bool use_derivs = false;
 	varianceMinimizer.assign_rep(std::make_shared<EffGlobalMinimizer>(
-	  min_model, approx_type, samples, seed, use_derivs, max_iter,
+	  sub_prob_model, approx_type, samples, seed, use_derivs, max_iter,
 	  max_eval, conv_tol));
 	break;
       }
@@ -720,12 +758,12 @@ nonhierarch_numerical_solution(const RealVector& cost,
       }
       case SUBMETHOD_SBGO: { // for NonDGlobalInterval, was EAminlp + GP ...
         varianceMinimizer.assign_rep(std::make_shared<SurrBasedGlobalMinimizer>(
-	  min_model, max_iter, max_eval, conv_tol));
+	  sub_prob_model, max_iter, max_eval, conv_tol));
         break;
       }
       case SUBMETHOD_EA: { // may need to be combined with local refinement
         varianceMinimizer.assign_rep(std::make_shared<COLINOptimizer>(
-	  min_model, max_iter, max_eval, conv_tol));
+	  sub_prob_model, max_iter, max_eval, conv_tol));
         break;
       }
       */
@@ -736,7 +774,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
 	break;
       }
     }
-    else { // existing call-back API does not require an adapter
+    else { // existing call-back APIs do not require adapter or surrogate
       switch (optSubProblemSolver) {
       case SUBMETHOD_SQP: {
 	int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) ?

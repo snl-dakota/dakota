@@ -98,6 +98,7 @@ protected:
   DiscrepancyCorrection& discrepancy_correction();
   short correction_type();
   void  correction_type(short corr_type);
+  short correction_order();
 
   void create_tabular_datastream();
   void derived_auto_graphics(const Variables& vars, const Response& resp);
@@ -306,6 +307,10 @@ inline void HierarchSurrModel::correction_type(short corr_type)
   for (it=deltaCorr.begin(); it!=deltaCorr.end(); ++it)
     it->second.correction_type(corr_type);
 }
+
+
+inline short HierarchSurrModel::correction_order()
+{ return discrepancy_correction().correction_order(); }
 
 
 inline Model& HierarchSurrModel::surrogate_model(size_t i)

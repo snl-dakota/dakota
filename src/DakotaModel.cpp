@@ -4297,6 +4297,15 @@ void Model::correction_type(short corr_type)
 }
 
 
+short Model::correction_order()
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->correction_order();
+  else
+    return -1; // special value for no correction (0 = value correction)
+}
+
+
 void Model::single_apply(const Variables& vars, Response& resp,
 			 const Pecos::ActiveKey& paired_key)
 {

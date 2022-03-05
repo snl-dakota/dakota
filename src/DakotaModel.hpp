@@ -393,6 +393,9 @@ public:
   /// return the correction type from the DiscrepancyCorrection object
   /// used by SurrogateModels
   virtual short correction_type();
+  /// return the correction order from the DiscrepancyCorrection object
+  /// used by SurrogateModels
+  virtual short correction_order();
 
   /// apply a DiscrepancyCorrection to correct an approximation within
   /// a HierarchSurrModel
