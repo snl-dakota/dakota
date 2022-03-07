@@ -68,6 +68,19 @@ public class GenericRow {
 		return verticalSpan;
 	}
 	
+	public int getAdjustedHorizontalSpanIndex(int columnIndex) {
+		int actualIndex = columnIndex;
+		for(int i = 0; i < data.size(); i++) {
+			if(i < actualIndex) {
+				GenericCell cell = data.get(0);
+				if(cell.getHorizontalSpan() > 1) {
+					actualIndex -= (cell.getHorizontalSpan() - 1);
+				}
+			}
+		}
+		return actualIndex;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();

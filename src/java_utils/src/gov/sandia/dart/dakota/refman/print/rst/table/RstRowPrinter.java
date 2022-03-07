@@ -36,9 +36,9 @@ public class RstRowPrinter {
 				
 				cell = receivedVerticalSpanOverflow.getData().get(i);
 			} 
-			int width = CellUtil.getCellWidth(cell, widths, i + spanOffset);
+			int width = cell.getCellWidth(widths, i + spanOffset);
 			
-			CellPayload result = CellUtil.getCellFormattedContents(cell, width);
+			CellPayload result = cell.getCellFormattedContents(width);
 			String cellAvailable = result.getThisRowPrint();
 			String cellRemainder = result.getRemainderToPrint();
 			

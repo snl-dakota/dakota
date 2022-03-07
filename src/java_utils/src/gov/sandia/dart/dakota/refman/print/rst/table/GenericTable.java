@@ -42,7 +42,7 @@ public class GenericTable {
 		int widestWidthSoFar = 0;
 		for(GenericRow row : rows) {
 			if(column < row.getData().size()) {
-				int adjustedIndex = CellUtil.getAdjustedHorizontalSpanIndex(row, column);
+				int adjustedIndex = row.getAdjustedHorizontalSpanIndex(column);
 				GenericCell cell = row.getData().get(adjustedIndex);
 				// Is it a regular cell we can measure for determining width?
 				if(cell.getHorizontalSpan() == 1 && cell.getVerticalSpan() == 1) { 

@@ -25,7 +25,7 @@ public class RstDividerPrinter {
 			
 			if(verticalSpanOverflow != null && i < verticalSpanOverflow.getData().size()) {
 				GenericCell overflowCell = verticalSpanOverflow.getData().get(i);
-				width = CellUtil.getCellWidth(overflowCell, widths, i);
+				width = overflowCell.getCellWidth(widths, i);
 				String result =
 					getOverflowLineAndUpdateVerticalSpanOverflow(verticalSpanOverflow, width, i);
 				if(result.length() > 0) {
@@ -69,7 +69,7 @@ public class RstDividerPrinter {
 	private String getOverflowLineAndUpdateVerticalSpanOverflow(GenericRow rowOverflow, int width, int index) {
 		GenericCell overflowCell = rowOverflow.getData().get(index);
 		if(!overflowCell.getContents().isBlank()) {
-			CellPayload result = CellUtil.getCellFormattedContents(overflowCell, width);
+			CellPayload result = overflowCell.getCellFormattedContents(width);
 			String cellAvailable = result.getThisRowPrint();
 			String cellRemainder = result.getRemainderToPrint();
 			
