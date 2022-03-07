@@ -90,6 +90,19 @@ public class CellUtil {
 		return new CellPayload(String.join(" ", thisLineWords), String.join(" ", nextLineWords));
 	}
 	
+	public static int getAdjustedHorizontalSpanIndex(GenericRow row, int columnIndex) {
+		int actualIndex = columnIndex;
+		for(int i = 0; i < row.getData().size(); i++) {
+			if(i < actualIndex) {
+				GenericCell cell = row.getData().get(0);
+				if(cell.getHorizontalSpan() > 1) {
+					actualIndex -= (cell.getHorizontalSpan() - 1);
+				}
+			}
+		}
+		return actualIndex;
+	}
+	
 	private static boolean nextWordFits(List<String> words, String nextWord, int cellWidth, int rightPadding) {
 		String proposedString = "";
 		if(words.isEmpty()) {

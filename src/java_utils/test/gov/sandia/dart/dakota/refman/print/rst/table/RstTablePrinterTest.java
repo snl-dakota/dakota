@@ -372,4 +372,66 @@ public class RstTablePrinterTest {
 		                + "+-----------+----------------+------------------------+------------------------+\n";
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void testPrintDakotaKeywordTable() {
+		GenericTable table = new GenericTable();
+		GenericRow header = new GenericRow();
+		header.addCell("Required/Optional");
+		header.addCell("Description of Group");
+		header.addCell("Dakota Keyword");
+		header.addCell("Dakota Keyword Description");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Optional", 2, 1);
+		row1.addCell("id_method");
+		row1.addCell("Name the method block; helpful when there are multiple");
+		
+		GenericRow row2 = new GenericRow();
+		row2.addCell("Optional", 2, 1);
+		row2.addCell("final_solutions");
+		row2.addCell("Number of designs returned as the best solutions");
+		
+		GenericRow row3 = new GenericRow();
+		row3.addCell("Required", 1, 3);
+		row3.addCell("Method (Iterative Algorithm) (Group 1)", 1, 3);
+		row3.addCell("vector_parameter_study");
+		row3.addCell("Samples variables along a user-defined vector");
+		
+		GenericRow row4 = new GenericRow();
+		row4.addSpanHoldCell();
+		row4.addSpanHoldCell();
+		row4.addCell("list_parameter_study");
+		row4.addCell("Samples variables as a specified values");
+		
+		GenericRow row5 = new GenericRow();
+		row5.addSpanHoldCell();
+		row5.addSpanHoldCell();
+		row5.addCell("centered_parameter_study");
+		row5.addCell("Samples variables along points moving out from a center point");
+		
+		table.addRow(header);
+		table.addRow(row1);
+		table.addRow(row2);
+		table.addRow(row3);
+		table.addRow(row4);
+		table.addRow(row5);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+-------------------+----------------------+--------------------------+---------------------------------------------------------------+\n"
+				        + "| Required/Optional | Description of Group | Dakota Keyword           | Dakota Keyword Description                                    |\n"
+				        + "+===================+======================+==========================+===============================================================+\n"
+				        + "| Optional                                 | id_method                | Name the method block; helpful when there are multiple        |\n"
+				        + "+-------------------+----------------------+--------------------------+---------------------------------------------------------------+\n"
+				        + "| Optional                                 | final_solutions          | Number of designs returned as the best solutions              |\n"
+				        + "+-------------------+----------------------+--------------------------+---------------------------------------------------------------+\n"
+				        + "| Required          | Method (Iterative    | vector_parameter_study   | Samples variables along a user-defined vector                 |\n"
+				        + "|                   | Algorithm) (Group 1) +--------------------------+---------------------------------------------------------------+\n"
+				        + "|                   |                      | list_parameter_study     | Samples variables as a specified values                       |\n"
+				        + "|                   |                      +--------------------------+---------------------------------------------------------------+\n"
+				        + "|                   |                      | centered_parameter_study | Samples variables along points moving out from a center point |\n"
+				        + "+-------------------+----------------------+--------------------------+---------------------------------------------------------------+\n";
+		assertEquals(expected, actual);
+	}
 }

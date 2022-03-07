@@ -67,4 +67,18 @@ public class GenericRow {
 		}
 		return verticalSpan;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		for(GenericCell element : data) {
+			sb.append(element.toString());
+			if(data.indexOf(element) < data.size() - 1) {
+				sb.append(",");
+			}
+		}
+		sb.append("]");
+		return sb.toString();
+	}
 }

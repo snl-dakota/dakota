@@ -55,4 +55,9 @@ public class GenericCell {
 	public int getRightPadding() {
 		return rightPadding;
 	}
+	
+	@Override
+	public String toString() {
+		return contents;
+	}
 }

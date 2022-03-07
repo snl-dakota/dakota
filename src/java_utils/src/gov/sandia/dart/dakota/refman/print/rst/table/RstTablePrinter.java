@@ -37,14 +37,15 @@ public class RstTablePrinter {
 				verticalSpanLocationPointer = 0;
 			}
 			
-			sb.append(dividerPrinter.print(widths, verticalSpanOverflow, false)).append(NEWLINE);
 			if(verticalSpanOverflow != null) {
 				verticalSpanLocationPointer ++;
 				if(verticalSpanOverflow.elementsAreBlank() &&
 						verticalSpanLocationPointer == verticalSpanOverflow.getLargestVerticalSpan()) {
 					verticalSpanOverflow = null;
+					verticalSpanLocationPointer = 0;
 				}
 			}
+			sb.append(dividerPrinter.print(widths, verticalSpanOverflow, false)).append(NEWLINE);
 		}
 		
 		return sb.toString();

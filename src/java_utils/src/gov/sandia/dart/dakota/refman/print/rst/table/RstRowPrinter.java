@@ -17,10 +17,16 @@ public class RstRowPrinter {
 		List<GenericCell> cells = row.getData();
 		for(int i = 0; i < cells.size(); i++) {
 			GenericCell cell = cells.get(i);
-			rowOverflow.addCell(new GenericCell("", cell.getHorizontalSpan(), cell.getVerticalSpan()));
+			int verticalSpan = cell.getVerticalSpan();
+			if(receivedVerticalSpanOverflow != null && i < receivedVerticalSpanOverflow.getData().size()) {
+				verticalSpan = Math.max(cell.getVerticalSpan(), receivedVerticalSpanOverflow.getData().get(i).getVerticalSpan());
+			}
+			rowOverflow.addCell(
+				new GenericCell("", cell.getHorizontalSpan(), verticalSpan));
 		}
 		
 		sb.append("|");
+		int spanOffset = 0;
 		for(int i = 0; i < cells.size(); i++) {
 			GenericCell originalCell = cells.get(i);
 			GenericCell cell = cells.get(i);
@@ -30,7 +36,7 @@ public class RstRowPrinter {
 				
 				cell = receivedVerticalSpanOverflow.getData().get(i);
 			} 
-			int width = CellUtil.getCellWidth(cell, widths, i);
+			int width = CellUtil.getCellWidth(cell, widths, i + spanOffset);
 			
 			CellPayload result = CellUtil.getCellFormattedContents(cell, width);
 			String cellAvailable = result.getThisRowPrint();
@@ -48,6 +54,7 @@ public class RstRowPrinter {
 			if(originalCell instanceof SpanHoldCell && cell.getHorizontalSpan() > 1) {
 				i += (cell.getHorizontalSpan() - 1);
 			}
+			spanOffset += (cell.getHorizontalSpan() - 1);
 		}
 		
 		if(!rowOverflow.elementsAreBlank()) {
@@ -60,8 +67,10 @@ public class RstRowPrinter {
 				sb.append(RstTablePrinter.NEWLINE);
 				sb.append(print(rowOverflow, widths));
 			}
-		} else {
+		} else if(!rowOverflow.onlySpanningCellsShouldContinue() || rowOverflow.isLastRow()) {
 			storedVerticalSpanOverflow = null;
+		} else {
+			storedVerticalSpanOverflow = rowOverflow;
 		}
 		return sb.toString();
 	}
