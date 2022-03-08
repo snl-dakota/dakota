@@ -422,6 +422,7 @@ inline void SharedResponseData::metadata_labels(const StringArray& md_labels)
 
 inline void SharedResponseData::read_annotated(std::istream& s, size_t num_md)
 {
+  s >> srdRep->functionLabels;
   srdRep->metadataLabels.resize(num_md);
   s >> srdRep->metadataLabels;
 }

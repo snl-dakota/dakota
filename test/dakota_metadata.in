@@ -1,12 +1,14 @@
 #@ s*: DakotaConfig=UNIX
-#@ s*: ReqFiles=text_book_metadata.py
+#@ s*: ReqFiles=dakota_metadata_wrapper.py
 #@ s*: Label=FastTest
 
 environment
-  tabular_data tabular_data_file "evals_with_metadata.dat"
+  tabular_data tabular_data_file "dakota_metadata.dat"
 
 method,
-	conmin_mfd
+	optpp_q_newton	#s0
+#	conmin_mfd	#s1
+#	optpp_newton	#s2,#s3
 
 variables,
 	continuous_design = 2
@@ -16,19 +18,23 @@ variables,
 
 interface,
 	fork
-        analysis_driver = 'text_book_metadata.py'
+        analysis_driver = 'dakota_metadata_wrapper.py'
+	  analysis_components = 'text_book'
 	parameters_file = 'p.in'
 	results_file = 'r.out'
-	file_save
-	file_tag
-
-	# Driver depends on c2 always being present; has no asynch support
-	deactivate active_set_vector
+#	file_save
+#	file_tag
+# NOTE: Driver has no asynch support
 
 responses,
 	descriptors 'f' 'c1' 'c2'
 	objective_functions = 1
 	nonlinear_inequality_constraints = 2
 	metadata 'seconds'
-	analytic_gradients
-	no_hessians
+
+# Verify results reading with ASV and combinations of derivatives
+	numerical_gradients	#s0,#s2
+#	analytic_gradients	#s1,#s3
+
+	no_hessians		#s0,#s1
+#	analytic_hessians	#s2,#s3

@@ -385,26 +385,61 @@ void Response::read(std::istream& s, const unsigned short format)
   // below). The arrays have been properly sized by the Response constructor.
   reset();
   
-  const ShortArray& asv = responseActiveSet.request_vector();
   std::ostringstream errors; // all helper funcs can append messages to errors
-  switch(format) { // future formats go here
-    case FLEXIBLE_RESULTS:
-      read_flexible_fn_vals(s, asv, errors);
-      break;
-    case LABELED_RESULTS:
-      read_labeled_fn_vals(s, asv, errors);
-      break;
-  }
-  read_gradients(s, asv, errors);
-  read_hessians(s, asv, errors);
+
+  read_core(s, format, errors);
 
   if(!errors.str().empty())
     throw ResultsFileError(errors.str());
 }
 
 
+void Response::read_core(std::istream& s, const unsigned short format,
+			 std::ostringstream& errors)
+{
+  // std::function is overkill, but perhaps clearer than bind or lambda
+  std::function<void(Response&, std::istream& s, const ShortArray &asv,
+		     size_t, std::ostringstream &errors)> value_reader;
+  switch(format) { // future formats go here
+    case FLEXIBLE_RESULTS:
+      value_reader = &Response::read_flexible_fn_vals;
+      break;
+    case LABELED_RESULTS:
+      value_reader = &Response::read_labeled_fn_vals;
+      break;
+  }
+
+  // A segmented parser until we do an all-at-once parse of the file.
+  // This implementation is fragile w.r.t. kinds of errors it can detect.
+  // Error messages don't differentiate functions from metadata.
+  // ASV (populated or empty) and num_metadata control how many fns
+  // and/or metadata are read.
+  const ShortArray& asv = responseActiveSet.request_vector();
+  if(expect_derivatives(asv)) {
+    value_reader(*this, s, asv, 0, errors); // fns only
+    read_gradients(s, asv, !metaData.empty(), errors);
+    read_hessians(s, asv, !metaData.empty(), errors);
+    value_reader(*this, s, ShortArray(), metaData.size(), errors); // md only
+  }
+  else {
+    value_reader(*this, s, asv, metaData.size(), errors); // fns and md
+    // TODO: validate that derivatives don't errantly appear after metadata:
+    //read_gradients(s, asv, false, errors);
+    //read_hessians(s, asv, false, errors);
+  }
+}
+
+
+bool Response::expect_derivatives(const ShortArray& asv){
+  for(const short a : asv)
+    if(a & 2 || a & 4)
+      return true;
+  return false;
+}
+
+
 void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv, 
-          std::ostringstream &errors) {
+          size_t num_metadata, std::ostringstream &errors) {
   const StringArray fn_labels = sharedRespData.function_labels();
   const size_t nf = asv.size();
   // "metadata" for each expected response. First item is the index
@@ -416,7 +451,7 @@ void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv,
     if(asv[i] & 1)
       expected_responses[fn_labels[i]] = Rmeta(i, false);
   }
-  for(size_t i=0; i<metaData.size(); ++i)
+  for(size_t i=0; i<num_metadata; ++i)
     expected_responses[shared_data().metadata_labels()[i]] = Rmeta(nf+i, false);
   // Use std::map.find() to learn whether a token extracted from s is an
   // expected label. find() returns an iterator to the first matching item.
@@ -518,14 +553,14 @@ void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv,
 
 
 void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv, 
-          std::ostringstream &errors) {
+          size_t num_metadata, std::ostringstream &errors) {
   String token1, token2;
   size_t pos1, pos2;
   size_t nf = asv.size();
   size_t num_expected = 0, num_found = 0;
   for(size_t i=0; i<nf; ++i) // count the requested responses for error checking
     if(asv[i] & 1) ++num_expected;
-  num_expected += metaData.size();
+  num_expected += num_metadata;
 
   size_t asv_idx = 0; //functionValues/asv index; advanced as fn vals are stored
   size_t md_idx = 0;
@@ -620,8 +655,9 @@ void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv,
   }
 }
 */
-void Response::read_gradients(std::istream& s, const ShortArray &asv, 
-          std::ostringstream &errors) {
+void Response::read_gradients(std::istream& s, const ShortArray &asv,
+			      bool expect_metadata, std::ostringstream &errors)
+{
   size_t nf = asv.size();
   size_t num_expected = 0, num_found = 0;
   for(size_t i=0; i<nf; ++i)
@@ -672,8 +708,10 @@ void Response::read_gradients(std::istream& s, const ShortArray &asv,
   // (eof). If they don't, there was unexpected junk following the last 
   // gradient. The case of no gradients + unexpected junk following the last 
   // fn val is handled by the fn val reading functions.
-  if( ! ((l_bracket1 == '[' && l_bracket2 == '[') ||
-         (l_bracket1 == '\0' && l_bracket2 == '\0') ) ) { 
+  bool hessian_follows = (l_bracket1 == '[' && l_bracket2 == '[');
+  bool at_eof = (l_bracket1 == '\0' && l_bracket2 == '\0');
+  Cout << "expect_metadata = " << expect_metadata << std::endl;
+  if( ! (hessian_follows || at_eof || expect_metadata) ) {
     throw ResultsFileError("Unexpected data found after reading " +
 			   std::to_string(num_found) +
 			   " function gradient(s).");
@@ -688,8 +726,9 @@ void Response::read_gradients(std::istream& s, const ShortArray &asv,
   }
 }
 
-void Response::read_hessians(std::istream& s, const ShortArray &asv, 
-          std::ostringstream &errors) {
+void Response::read_hessians(std::istream& s, const ShortArray &asv,
+			     bool expect_metadata, std::ostringstream &errors)
+{
   size_t nf = asv.size();
   size_t num_expected = 0, num_found = 0;
   for(size_t i=0; i<nf; ++i)
@@ -727,7 +766,8 @@ void Response::read_hessians(std::istream& s, const ShortArray &asv,
     l_bracket[0] = '\0'; l_bracket[1] = '\0';
     s >> l_bracket[0] >> l_bracket[1];
   }
-  if(l_bracket[0] != '\0')
+  bool at_eof = (l_bracket[0] == '\0');
+  if( ! (at_eof || expect_metadata) )
     throw ResultsFileError("Unexpected data found after reading " +
 			   std::to_string(num_found) + " function Hessian(s).");
 
@@ -874,7 +914,6 @@ void Response::read_annotated_rep(std::istream& s)
   s >> responseActiveSet;
   if (sharedRespData.is_null())
     sharedRespData = SharedResponseData(responseActiveSet);
-  s >> sharedRespData.function_labels();
   sharedRespData.read_annotated(s, num_metadata);
 
   // reshape response arrays and reset all data to zero
@@ -1081,7 +1120,8 @@ void Response::read_rep(MPIUnpackBuffer& s)
 {
   // Read derivative sizing data and responseActiveSet
   bool grad_flag, hess_flag;
-  s >> grad_flag >> hess_flag >> responseActiveSet;
+  size_t num_metadata;
+  s >> grad_flag >> hess_flag >> responseActiveSet >> num_metadata;
 
   // build shared counts and (default) functionLabels
   if (sharedRespData.is_null())
@@ -1108,6 +1148,9 @@ void Response::read_rep(MPIUnpackBuffer& s)
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       read_lower_triangle(s, functionHessians[i]);
+
+  metaData.resize(num_metadata);
+  s >> metaData;
 }
 
 
@@ -1118,7 +1161,7 @@ void Response::write_rep(MPIPackBuffer& s) const
 {
   // Write sizing data and responseActiveSet
   s << !functionGradients.empty() << !functionHessians.empty()
-    << responseActiveSet;
+    << responseActiveSet << metaData.size();
 
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, num_fns = asv.size();
@@ -1137,6 +1180,8 @@ void Response::write_rep(MPIPackBuffer& s) const
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       write_lower_triangle(s, functionHessians[i]);
+
+  s << metaData;
 }
 
 
