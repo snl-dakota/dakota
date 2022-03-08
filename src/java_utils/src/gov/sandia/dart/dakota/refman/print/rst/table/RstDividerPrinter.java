@@ -3,83 +3,112 @@ package gov.sandia.dart.dakota.refman.print.rst.table;
 import java.util.List;
 
 public class RstDividerPrinter {
-
-	public String print(List<Integer> widths, GenericRow verticalSpanOverflow, boolean headerDivider) {
+	
+	private final boolean headerDivider;
+	private int dividerPointer = 0;
+	
+	public RstDividerPrinter(boolean headerDivider) {
+		this.headerDivider = headerDivider;
+	}
+	
+	public String print(List<Integer> widths, GenericRow verticalSpanOverflow) {
 		StringBuilder sb = new StringBuilder();
 		
-		String leftPortion = (segmentIsBlankOverflowFromPreviousRow(verticalSpanOverflow, 0) ? "|" : "+");
-		String centerPortion = "";
-		String rightPortion = "";
+		String leftPortion = (segmentIsBlankOverflowFromPreviousRow(verticalSpanOverflow) ? "|" : "+");
 		
 		sb.append(leftPortion);
-		for(int i = 0; i < widths.size(); i++) {
-			Integer width = widths.get(i);
-			centerPortion = "";
-			for(int j = 0; j < width; j++) {
-				if(segmentIsBlankOverflowFromPreviousRow(verticalSpanOverflow, i)) {
-					centerPortion += " ";
-				} else {
-					centerPortion += (headerDivider ? "=" : "-");
-				}
-			}
+		for(dividerPointer = 0; dividerPointer < widths.size(); dividerPointer++) {
+			Integer width = widths.get(dividerPointer);
+			boolean lastEntry = dividerPointer == widths.size() - 1;
 			
-			if(verticalSpanOverflow != null && i < verticalSpanOverflow.getData().size()) {
-				GenericCell overflowCell = verticalSpanOverflow.getData().get(i);
-				width = overflowCell.getCellWidth(widths, i);
-				String result =
-					getOverflowLineAndUpdateVerticalSpanOverflow(verticalSpanOverflow, width, i);
-				if(result.length() > 0) {
-					centerPortion = result;
-					i += (overflowCell.getHorizontalSpan() - 1);
-				}
-			}
-			
-			sb.append(centerPortion);
-			
-			if(i < widths.size() - 1) {
-				boolean blankOnBothSides =
-					segmentIsBlankOverflowFromPreviousRow(verticalSpanOverflow, i) &&
-				    segmentIsOverflowing(verticalSpanOverflow, i+1);
-				rightPortion = (blankOnBothSides ? "|" : "+");
-			} else {
-				rightPortion = (segmentIsBlankOverflowFromPreviousRow(verticalSpanOverflow, i) ? "|" : "+");
-			}
-			sb.append(rightPortion);
+			sb.append(appendCenterPortion(widths, width, verticalSpanOverflow));
+			sb.append(appendRightPortion(verticalSpanOverflow, lastEntry));
 		}
 		
+		dividerPointer = 0;
 		return sb.toString();
 	}
 	
-	private boolean segmentIsBlankOverflowFromPreviousRow(GenericRow verticalSpanOverflow, int index) {
-		if(verticalSpanOverflow != null && index >= 0 && index < verticalSpanOverflow.getData().size()) {
-			GenericCell overflowCell = verticalSpanOverflow.getData().get(index);
+	private String appendCenterPortion(List<Integer> widths, Integer width, GenericRow verticalSpanOverflow) {
+		String centerPortion = "";
+		for(int j = 0; j < width; j++) {
+			if(segmentIsBlankOverflowFromPreviousRow(verticalSpanOverflow)) {
+				centerPortion += " ";
+			} else {
+				centerPortion += (headerDivider ? "=" : "-");
+			}
+		}
+		
+		String centerOverflowPortion = appendCenterPortionIfOverflow(widths, verticalSpanOverflow);
+		if(!centerOverflowPortion.isBlank()) {
+			centerPortion = centerOverflowPortion;
+		}
+		
+		return centerPortion;
+	}
+	
+	private String appendCenterPortionIfOverflow(List<Integer> widths, GenericRow verticalSpanOverflow) {
+		if(verticalSpanOverflow != null && dividerPointer < verticalSpanOverflow.getData().size()) {
+			GenericCell overflowCell = verticalSpanOverflow.getData().get(dividerPointer);
+			int width = overflowCell.getCellWidth(widths, dividerPointer);
+			String result =
+				getOverflowLineAndUpdateVerticalSpanOverflow(verticalSpanOverflow, width);
+			if(result.length() > 0) {
+				dividerPointer += (overflowCell.getHorizontalSpan() - 1);
+				return result;
+			}
+		}
+		return "";
+	}
+	
+	private String appendRightPortion(GenericRow verticalSpanOverflow, boolean lastEntry) {
+		String rightPortion = "";
+		if(!lastEntry) {
+			boolean blankOnBothSides =
+				segmentIsBlankOverflowFromPreviousRow(verticalSpanOverflow) &&
+			    segmentIsOverflowing(verticalSpanOverflow);
+			rightPortion = (blankOnBothSides ? "|" : "+");
+		} else {
+			rightPortion = (segmentIsBlankOverflowFromPreviousRow(verticalSpanOverflow) ? "|" : "+");
+		}
+		return rightPortion;
+	}
+	
+	private boolean segmentIsBlankOverflowFromPreviousRow(GenericRow verticalSpanOverflow) {
+		if(verticalSpanOverflow != null && dividerPointer >= 0 && dividerPointer < verticalSpanOverflow.getData().size()) {
+			GenericCell overflowCell = verticalSpanOverflow.getData().get(dividerPointer);
 			return overflowCell.getContents().isBlank() && overflowCell.getVerticalSpan() > 1;
 		}
 		return false;
 	}
 	
-	private boolean segmentIsOverflowing(GenericRow verticalSpanOverflow, int index) {
-		if(verticalSpanOverflow != null && index >= 0 && index < verticalSpanOverflow.getData().size()) {
-			GenericCell overflowCell = verticalSpanOverflow.getData().get(index);
+	private boolean segmentIsOverflowing(GenericRow verticalSpanOverflow) {
+		int nextIndex = dividerPointer + 1;
+		if(verticalSpanOverflow != null && nextIndex >= 0 && nextIndex < verticalSpanOverflow.getData().size()) {
+			GenericCell overflowCell = verticalSpanOverflow.getData().get(nextIndex);
 			return overflowCell.getVerticalSpan() > 1;
 		}
 		return false;
 	}
 	
-	private String getOverflowLineAndUpdateVerticalSpanOverflow(GenericRow rowOverflow, int width, int index) {
-		GenericCell overflowCell = rowOverflow.getData().get(index);
+	private String getOverflowLineAndUpdateVerticalSpanOverflow(GenericRow rowOverflow, int width) {
+		GenericCell overflowCell = rowOverflow.getData().get(dividerPointer);
 		if(!overflowCell.getContents().isBlank()) {
 			CellPayload result = overflowCell.getCellFormattedContents(width);
-			String cellAvailable = result.getThisRowPrint();
-			String cellRemainder = result.getRemainderToPrint();
-			
-			rowOverflow.getData().get(index).setContents(cellRemainder);
-			
-			String finalString = cellAvailable;
-			int remainingPadding = width - cellAvailable.length();
-			finalString = finalString + CellUtil.pad(remainingPadding);
-			return finalString;
+			updateVerticalSpanOverflow(rowOverflow, dividerPointer, result.getRemainderToPrint());
+			return padToWidth(result.getThisRowPrint(), width);
 		}
 		return "";
+	}
+	
+	private String padToWidth(String cellAvailable, int width) {
+		String finalString = cellAvailable;
+		int remainingPadding = width - cellAvailable.length();
+		finalString = finalString + CellUtil.pad(remainingPadding);
+		return finalString;
+	}
+	
+	private void updateVerticalSpanOverflow(GenericRow rowOverflow, int index, String cellRemainder) {
+		rowOverflow.getData().get(index).setContents(cellRemainder);
 	}
 }

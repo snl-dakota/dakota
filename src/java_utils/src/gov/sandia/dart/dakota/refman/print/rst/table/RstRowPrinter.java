@@ -5,38 +5,24 @@ import java.util.List;
 public class RstRowPrinter {
 	
 	private GenericRow storedVerticalSpanOverflow; // This row's vertical span overflow
+	private int rowPointer = 0;
+	private int spanOffset = 0;
 	
 	public String print(GenericRow row, List<Integer> widths) {
 		return print(row, null, widths);
 	}
 
-	public String print(GenericRow row, GenericRow receivedVerticalSpanOverflow, List<Integer> widths) {
+	public String print(GenericRow row, GenericRow receivedRowOverflow, List<Integer> widths) {
 		StringBuilder sb = new StringBuilder();
-		GenericRow rowOverflow = new GenericRow();
-		rowOverflow.setLastRow(row.isLastRow());
 		List<GenericCell> cells = row.getData();
-		for(int i = 0; i < cells.size(); i++) {
-			GenericCell cell = cells.get(i);
-			int verticalSpan = cell.getVerticalSpan();
-			if(receivedVerticalSpanOverflow != null && i < receivedVerticalSpanOverflow.getData().size()) {
-				verticalSpan = Math.max(cell.getVerticalSpan(), receivedVerticalSpanOverflow.getData().get(i).getVerticalSpan());
-			}
-			rowOverflow.addCell(
-				new GenericCell("", cell.getHorizontalSpan(), verticalSpan));
-		}
+		GenericRow rowOverflow = initNewOverflowRow(row, receivedRowOverflow, cells);
 		
 		sb.append("|");
-		int spanOffset = 0;
-		for(int i = 0; i < cells.size(); i++) {
-			GenericCell originalCell = cells.get(i);
-			GenericCell cell = cells.get(i);
-			if(cell instanceof SpanHoldCell &&
-				receivedVerticalSpanOverflow != null &&
-				i < receivedVerticalSpanOverflow.getData().size()) {
-				
-				cell = receivedVerticalSpanOverflow.getData().get(i);
-			} 
-			int width = cell.getCellWidth(widths, i + spanOffset);
+		
+		for(rowPointer = 0; rowPointer < cells.size(); rowPointer++) {
+			GenericCell originalCell = cells.get(rowPointer);
+			GenericCell cell = getCell(cells, receivedRowOverflow, rowPointer);
+			int width = cell.getCellWidth(widths, rowPointer + spanOffset);
 			
 			CellPayload result = cell.getCellFormattedContents(width);
 			String cellAvailable = result.getThisRowPrint();
@@ -44,35 +30,87 @@ public class RstRowPrinter {
 			
 			sb.append(cellAvailable);
 			if(!cellRemainder.isBlank()) {
-				rowOverflow.getData().get(i).setContents(cellRemainder);
+				rowOverflow.getData().get(rowPointer).setContents(cellRemainder);
 			}
-			int remainingPadding = width - cellAvailable.length();
-			sb.append(CellUtil.pad(remainingPadding));
-			
-			sb.append("|");
-			
-			if(originalCell instanceof SpanHoldCell && cell.getHorizontalSpan() > 1) {
-				i += (cell.getHorizontalSpan() - 1);
-			}
-			spanOffset += (cell.getHorizontalSpan() - 1);
+			sb.append(printCellPaddingAndRightBorder(width, cellAvailable));
+			updateRowPointerForHorizontalSpan(originalCell, cell);
 		}
 		
+		updateVerticalSpanOverflow(rowOverflow, receivedRowOverflow);
+		sb.append(printRowOverflow(rowOverflow, widths));
+		
+		rowPointer = 0;
+		spanOffset = 0;
+		return sb.toString();
+	}
+	
+	private GenericRow initNewOverflowRow(GenericRow row, GenericRow receivedRowOverflow, List<GenericCell> cells) {
+		GenericRow rowOverflow = new GenericRow();
+		rowOverflow.setLastRow(row.isLastRow());
+		
+		for(int i = 0; i < cells.size(); i++) {
+			GenericCell cell = cells.get(i);
+			int verticalSpan = cell.getVerticalSpan();
+			if(receivedRowOverflow != null && i < receivedRowOverflow.getData().size()) {
+				verticalSpan = Math.max(cell.getVerticalSpan(), receivedRowOverflow.getData().get(i).getVerticalSpan());
+			}
+			rowOverflow.addCell(new GenericCell("", cell.getHorizontalSpan(), verticalSpan));
+		}
+		
+		return rowOverflow;
+	}
+	
+	private GenericCell getCell(List<GenericCell> cells, GenericRow receivedRowOverflow, int rowPointer) {
+		GenericCell cell = cells.get(rowPointer);
+		if(cell instanceof SpanHoldCell &&
+			receivedRowOverflow != null &&
+			rowPointer < receivedRowOverflow.getData().size()) {
+			
+			cell = receivedRowOverflow.getData().get(rowPointer);
+		}
+		return cell;
+	}
+	
+	private String printCellPaddingAndRightBorder(int width, String cellAvailable) {
+		int remainingPadding = width - cellAvailable.length();
+		StringBuilder sb = new StringBuilder();
+		sb.append(CellUtil.pad(remainingPadding));
+		sb.append("|");
+		return sb.toString();
+	}
+	
+	private void updateRowPointerForHorizontalSpan(GenericCell oldCell, GenericCell newCell) {
+		if(oldCell instanceof SpanHoldCell && newCell.getHorizontalSpan() > 1) {
+			rowPointer += (newCell.getHorizontalSpan() - 1);
+		}
+		spanOffset += (newCell.getHorizontalSpan() - 1);
+	}
+	
+	private void updateVerticalSpanOverflow(GenericRow rowOverflow, GenericRow receivedVerticalSpanOverflow) {
 		if(!rowOverflow.elementsAreBlank()) {
 			if(rowOverflow.onlySpanningCellsShouldContinue() && !rowOverflow.isLastRow()) {
 				storedVerticalSpanOverflow = rowOverflow;
 				if(receivedVerticalSpanOverflow != null) {
 					throw new IllegalStateException("Collision between two overlapping cells with vertical spans > 1");
 				}
-			} else {
-				sb.append(RstTablePrinter.NEWLINE);
-				sb.append(print(rowOverflow, widths));
 			}
 		} else if(!rowOverflow.onlySpanningCellsShouldContinue() || rowOverflow.isLastRow()) {
 			storedVerticalSpanOverflow = null;
 		} else {
 			storedVerticalSpanOverflow = rowOverflow;
 		}
-		return sb.toString();
+	}
+	
+	private String printRowOverflow(GenericRow rowOverflow, List<Integer> widths) {
+		boolean proceed = !rowOverflow.elementsAreBlank();
+		proceed = proceed && (!rowOverflow.onlySpanningCellsShouldContinue() || rowOverflow.isLastRow());
+		if(proceed) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(RstTablePrinter.NEWLINE);
+			sb.append(print(rowOverflow, widths));
+			return sb.toString();
+		}
+		return "";
 	}
 	
 	public GenericRow getVerticalSpanOverflow() {
