@@ -645,6 +645,8 @@ _pRE = {
                 value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_DER_VARS)")),
             "num_an_comps":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_AN_COMPS)")),
+            "num_metadata":re.compile(_aprepro_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_METADATA)")),
             "eval_id":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+(?::\d+)*)",
                 tag="(?P<tag>DAKOTA_EVAL_ID)")),
@@ -655,7 +657,9 @@ _pRE = {
             "deriv_var":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
             "an_comp":re.compile(_aprepro_re_base.format(
-                value="\"(?P<value>.+?)\"", tag="AC_\d+:(?P<tag>.+?)"))
+                value="\"(?P<value>.+?)\"", tag="AC_\d+:(?P<tag>.+?)")),
+            "metadata":re.compile(_aprepro_re_base.format(
+                value="\"(?P<value>.+?)\"", tag="(?P<tag>MD_\d+)"))
             },
         "DAKOTA":{"num_variables":re.compile(_dakota_re_base.format(
             value="(?P<value>\d+)", tag="(?P<tag>variables)")),
@@ -665,6 +669,8 @@ _pRE = {
                 value="(?P<value>\d+)", tag="(?P<tag>derivative_variables)")),
             "num_an_comps":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>analysis_components)")),
+            "num_metadata":re.compile(_dakota_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>metadata)")),
             "eval_id":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+(?::\d+)*)", tag="(?P<tag>eval_id)")),
             # A lookahead assertion is required to catch string variables with
@@ -675,7 +681,9 @@ _pRE = {
             "deriv_var":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
             "an_comp":re.compile(_dakota_re_base.format(
-                value="(?P<value>.+?)", tag="AC_\d+:(?P<tag>.+?)"))
+                value="(?P<value>.+?)", tag="AC_\d+:(?P<tag>.+?)")),
+            "metadata":re.compile(_dakota_re_base.format(
+                value="(?P<value>.+?)", tag="(?P<tag>MD_\d+)"))
             }
         }
 
@@ -758,6 +766,13 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, inf
     # Read eval_id
     m = useRE["eval_id"].match(stream.readline())
     eval_id = m.group("value")
+
+    # Read metadata requests
+    metadata = []
+    def store_metadata(t, v):
+        metadata.append(v)
+    _extract_block(stream, useRE["num_metadata"], useRE["metadata"],
+                   store_metadata)
     
     return (Parameters(aprepro_format, variables, an_comps, eval_id, infer_types, types),
             Results(aprepro_format, responses, deriv_vars, eval_id, ignore_asv,

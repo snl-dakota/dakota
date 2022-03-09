@@ -27,6 +27,8 @@ apreproParams = """                    { DAKOTA_VARS     =                      
                     { AC_1:first.sh   =                      "a b" }
                     { AC_2:first.sh   =                      "b" }
                     { DAKOTA_EVAL_ID  =                      1 }
+                    { DAKOTA_METADATA =                      1 }
+                    { MD_1            =                      "seconds" }
 """
 
 dakotaParams = """                                          3 variables
@@ -42,6 +44,8 @@ dakotaParams = """                                          3 variables
                                         a b AC_1:first.sh
                                           b AC_2:first.sh
                                           1 eval_id
+                                          1 metadata
+                                    seconds MD_1
 """
 
 dakotaSingleEvalBatchParams = """                                          3 variables
@@ -55,6 +59,7 @@ dakotaSingleEvalBatchParams = """                                          3 var
                                           2 DVV_2:x2
                                           0 analysis_components
                                         2:1 eval_id
+                                          0 metadata
 """
 
 
@@ -68,6 +73,8 @@ dakotaBatchParams = """                                          2 variables
                                           2 DVV_2:x2
                                           0 analysis_components
                                         1:1 eval_id
+                                          1 metadata
+                                    seconds MD_1
                                           2 variables
                       3.222614371054804e-01 x1
                       4.946014218730854e-02 x2
@@ -78,6 +85,8 @@ dakotaBatchParams = """                                          2 variables
                                           2 DVV_2:x2
                                           0 analysis_components
                                         1:2 eval_id
+                                          1 metadata
+                                    seconds MD_1
 """
 
 # Helper functions needed for Python < 2.7
