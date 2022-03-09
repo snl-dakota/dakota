@@ -694,42 +694,20 @@ nonhierarch_numerical_solution(const RealVector& cost,
 					lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
 					lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
 					nln_eq_tgt, response_evaluator);
-      // response_evaluator():
-      //   --> objective = min_{N,r_i} Estvar(corr(hp),cost(hp))
-      //   --> lin/nln constraints(N,r_i,cost(hp))
-      // > change in hyper-parameters must reset sample counts/accumulators
-      //   >> track high-level metrics over hp, but don't retain low level
-      // > Costs for each model = ensemble average over pilot for each hp
 
-      // Solution of approx sub-problem uses DataFitSurrModel::approxInterface
-      // to query the low-level (cost, corr) or high-level (estvar) surrogates
-      // over the hyper-parameters
-      // > low-level: minimal emulated set = cost + {corr/covar terms(N,r)} ?
-      //   >> some simplifications can be made for 3 model case, but not beyond
-      // > high-level:
-      //   >> EstVar  = emulated over (hp,N,r_i)
-      //      --> lots of low-level surrogates over hp or one high-level
-      //          surrogate over combined vars
-      //   >> EstVar* = emulated only over hp: requires nested opt
-      // DataFitSurrModel::actualModel evaluations compute corr,cost from
-      // scratch for each hp (initial surrogate build, validation, refinement)
-
-      // TRMM/EGO must solve multiple approx sub-problems and perform multiple
-      // surrogate refinements to converge to EstVar*(hp)
-
-      // Iterated ACV,MFMC would then be outer-loop around this pilot-based
-      // solution --> perform N* increment to update correlations/covariances
-      // > can we integrate this upstream to eliminate this loop?
-
-      // r* over-sampling occurs after iterative convergence --> final stats
-
+      //////////////////////////////////////////////////////////////////////////
       // For nested optimization, we emulate EstVar*(hp) at the top level,
       // eliminating all lower level quantities through the lower level solve.
-      // > Conceptually simple but many optim's required, which may be noisy.
+      // > Conceptually simple but repeated optim's required --> top level is
+      //   noisy if lower-level is numerical; less efficient than 1 solve
       // > Best option for analytic cases like MLMC, ordered MFMC, et al.
       //   >> numerical opt still relevant for misordered models or
       //      over-estimated pilots
+      // > Want to support this in any case, so start with this as lower risk
+      //   option --> main needs are recovering cost(hp) from metadata, ...
+      //////////////////////////////////////////////////////////////////////////
 
+      //////////////////////////////////////////////////////////////////////////
       // For integrated optimization, pilot computed for each model at each hp.
       // Main loop:
       // > shared incr --> counts, sums --> varL, covLL, covLH
@@ -739,6 +717,39 @@ nonhierarch_numerical_solution(const RealVector& cost,
       // > Apply delta-N* and continue
       // Post-process: apply r*, compute LF incr, roll up final stats
 
+      // response_evaluator():
+      //   --> objective = min_{N,r_i} Estvar(corr(hp),cost(hp))
+      //   --> constraints = lin/nln budget = fn(N,r_i,cost(hp))
+      // > change in hyper-parameters must reset sample counts/accumulators
+      //   >> track high-level metrics over hp, but don't retain low level
+      // > Costs for each model = ensemble average over pilot for each hp
+
+      // Solution of approx sub-problem uses DataFitSurrModel::approxInterface
+      // to query either the low-level (cost, corr) or high-level (estvar)
+      // surrogates over the hyper-parameters
+      // > low-level: minimal emulated set = cost + {corr/covar terms(N,r)} ?
+      //   >> simplifications can be made for 3 model case, but not in general
+      // > high-level:
+      //   >> EstVar = emulated over (hp,N,r_i) --> surrogate emulation extent
+      //      can be pointwise(N,r_i) for each hp or combined(hp,N,r_i)
+      //   >> EstVar* = emulated only over hp, but requires nested opt
+      // DataFitSurrModel::actualModel evaluations compute corr,cost from
+      // scratch for each hp (initial surrogate build, validation, refinement)
+
+      // TRMM/EGO must solve multiple approx sub-problems and perform multiple
+      // surrogate refinements to converge to EstVar*(hp)
+
+      // Iterated ACV,MFMC would then be outer-loop around this pilot-based
+      // solution --> perform N* increment to update correlations/covariances
+      // > can we integrate this upstream to eliminate this loop? --> would
+      //   require performing N* increment as part of optimization, which would
+      //   not be inconsistent with updating N* after a converged sub-problem
+      //   (both can overshoot).  Key would be doing this at a major iteration
+      //   step (SBLO validation), not during exploration (EGO).
+      // > or restrict to offline pilot mode (no iteration)
+
+      // Then r* over-sampling occurs after all iteration is done -> final stats
+      //////////////////////////////////////////////////////////////////////////
       
       Model sub_prob_model;
       if (construct_dfs) {
