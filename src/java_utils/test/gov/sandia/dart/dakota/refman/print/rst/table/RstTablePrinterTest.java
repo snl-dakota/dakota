@@ -198,7 +198,7 @@ public class RstTablePrinterTest {
 	                	+ "| Module   | Learning Goals | Approx. Time (minutes) | Video/Slides/Exercises |\n"
 		                + "+==========+================+========================+========================+\n"
 		                + "| Overview | This is a merged column cell.           | Slides link here       |\n"
-		                + "+----------+----------------+------------------------+------------------------+\n";
+		                + "+----------+-----------------------------------------+------------------------+\n";
 		assertEquals(expected, actual);
 	}
 	
@@ -224,7 +224,7 @@ public class RstTablePrinterTest {
 	                	+ "| Module   | Learning Goals | Approx. Time (minutes) | Video/Slides/Exercises |\n"
 		                + "+==========+================+========================+========================+\n"
 		                + "| Overview | This is a hecking big merged column cell that spans 3 columns!   |\n"
-		                + "+----------+----------------+------------------------+------------------------+\n";
+		                + "+----------+------------------------------------------------------------------+\n";
 		assertEquals(expected, actual);
 	}
 	
@@ -334,7 +334,7 @@ public class RstTablePrinterTest {
 		                + "| Overview  | Why do we need such a big cell? Well, a lot of text goes into    |\n"
 		                + "+-----------+ this cell, you see. There is still a blank row below though.     +\n"
 		                + "| Interface |                                                                  |\n"
-		                + "+-----------+----------------+------------------------+------------------------+\n";
+		                + "+-----------+------------------------------------------------------------------+\n";
 		assertEquals(expected, actual);
 	}
 	
@@ -369,7 +369,7 @@ public class RstTablePrinterTest {
 		                + "| Overview  | Why do we need such a big cell? Well, a lot of text goes into    |\n"
 		                + "+-----------+ this cell, you see. There is so much text in this cell, in fact, +\n"
 		                + "| Interface | that there is no space left for blank rows!!                     |\n"
-		                + "+-----------+----------------+------------------------+------------------------+\n";
+		                + "+-----------+------------------------------------------------------------------+\n";
 		assertEquals(expected, actual);
 	}
 	
@@ -423,7 +423,7 @@ public class RstTablePrinterTest {
 				        + "| Required/Optional | Description of Group | Dakota Keyword           | Dakota Keyword Description                                    |\n"
 				        + "+===================+======================+==========================+===============================================================+\n"
 				        + "| Optional                                 | id_method                | Name the method block; helpful when there are multiple        |\n"
-				        + "+-------------------+----------------------+--------------------------+---------------------------------------------------------------+\n"
+				        + "+------------------------------------------+--------------------------+---------------------------------------------------------------+\n"
 				        + "| Optional                                 | final_solutions          | Number of designs returned as the best solutions              |\n"
 				        + "+-------------------+----------------------+--------------------------+---------------------------------------------------------------+\n"
 				        + "| Required          | Method (Iterative    | vector_parameter_study   | Samples variables along a user-defined vector                 |\n"
