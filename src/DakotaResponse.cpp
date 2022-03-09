@@ -424,17 +424,15 @@ void Response::read_core(std::istream& s, const unsigned short format,
   else {
     value_reader(*this, s, asv, metaData.size(), errors); // fns and md
     // TODO: validate that derivatives don't errantly appear after metadata:
-    //read_gradients(s, asv, false, errors);
-    //read_hessians(s, asv, false, errors);
+    read_gradients(s, asv, false, errors);
+    read_hessians(s, asv, false, errors);
   }
 }
 
 
 bool Response::expect_derivatives(const ShortArray& asv){
-  for(const short a : asv)
-    if(a & 2 || a & 4)
-      return true;
-  return false;
+  return std::any_of(asv.begin(), asv.end(),
+		     [](short a){ return (a & 2 || a & 4); });
 }
 
 
@@ -710,7 +708,6 @@ void Response::read_gradients(std::istream& s, const ShortArray &asv,
   // fn val is handled by the fn val reading functions.
   bool hessian_follows = (l_bracket1 == '[' && l_bracket2 == '[');
   bool at_eof = (l_bracket1 == '\0' && l_bracket2 == '\0');
-  Cout << "expect_metadata = " << expect_metadata << std::endl;
   if( ! (hessian_follows || at_eof || expect_metadata) ) {
     throw ResultsFileError("Unexpected data found after reading " +
 			   std::to_string(num_found) +
