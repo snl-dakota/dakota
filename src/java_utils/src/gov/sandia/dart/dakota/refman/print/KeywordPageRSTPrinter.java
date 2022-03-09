@@ -3,6 +3,7 @@ package gov.sandia.dart.dakota.refman.print;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -10,6 +11,9 @@ import gov.sandia.dart.dakota.refman.RefManInputSpec;
 import gov.sandia.dart.dakota.refman.RefManMetaData;
 import gov.sandia.dart.dakota.refman.metadata.InputSpecKeywordMetaData;
 import gov.sandia.dart.dakota.refman.metadata.RefManKeywordMetaData;
+import gov.sandia.dart.dakota.refman.print.rst.table.GenericRow;
+import gov.sandia.dart.dakota.refman.print.rst.table.GenericTable;
+import gov.sandia.dart.dakota.refman.print.rst.table.RstTablePrinter;
 
 public class KeywordPageRSTPrinter implements KeywordPrinter {
 
@@ -37,6 +41,7 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 					kw_os.append(printBlurb(kwMetadata));
 					kw_os.append(printTopics(kwMetadata));
 				}
+				
 				kw_os.append(printKeyword(kwInputSpec, meta_data));
 				
 				if(has_metadata) {
@@ -52,7 +57,7 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 	}
 	
 	@Override
-	public String printKeyword(InputSpecKeywordMetaData kw, RefManMetaData meta_data) {
+	public String printKeyword(InputSpecKeywordMetaData kw, RefManMetaData metadata) {
 		StringBuilder sb = new StringBuilder();
 		
 		String alias = kw.getAlias();
@@ -79,6 +84,8 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		if(!defaultProperty.trim().isEmpty()) {
 			sb.append("\n- ").append(italic("Default:")).append(" ").append(defaultProperty).append("\n");
 		}
+		
+		sb.append(printChildKeywordTable(kw.getKeywordHierarchy(), children, metadata));
 
 		sb.append("\n");
 		return sb.toString();
@@ -245,5 +252,128 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		sb.append("*").append(original).append("*");
 		return sb.toString();
 	}
-
+	
+	private String printChildKeywordTable(String parentPrefix, List<String> childKeywords, RefManMetaData metadata) {
+		List<TableKeyword> keywords = new ArrayList<>();
+		TableKeyword oneOfKeyword = null;
+		
+		boolean inOptionalChooseOneSection = false;
+		boolean inRequiredChooseOneSection = false;
+		
+		for(String child : childKeywords) {
+			String trimChildName = child.trim();
+			if(child.contains("::")) {
+				trimChildName = child.split("::")[1].trim();
+			}
+			String description = metadata.getBlurb(parentPrefix + "-" + trimChildName).trim();
+			
+			if(child.startsWith("Optional_Keyword:: ")) {
+				inOptionalChooseOneSection = false;
+				inRequiredChooseOneSection = false;
+				if(oneOfKeyword != null) {
+					keywords.add(oneOfKeyword);
+					oneOfKeyword = null;
+				}
+				
+				TableKeyword optKeyword = new TableKeyword(trimChildName, description, true, false);
+				keywords.add(optKeyword);
+			} else if(child.startsWith("Required_Keyword:: ")) {
+				inOptionalChooseOneSection = false;
+				inRequiredChooseOneSection = false;
+				TableKeyword reqKeyword = new TableKeyword(trimChildName, description, false, true);
+				keywords.add(reqKeyword);
+			} else if(child.startsWith("Optional_Choose_One:: ")) {
+				inOptionalChooseOneSection = true;
+				inRequiredChooseOneSection = false;
+				oneOfKeyword = new TableKeyword("", description, true, false);
+				oneOfKeyword.setOptionalOrRequiredGroupName(trimChildName);
+			} else if(child.startsWith("Required_Choose_One:: ")) {
+				inOptionalChooseOneSection = false;
+				inRequiredChooseOneSection = true;
+				oneOfKeyword = new TableKeyword("", description, false, true);
+				oneOfKeyword.setOptionalOrRequiredGroupName(trimChildName);
+			} else {
+				if(oneOfKeyword != null && (inOptionalChooseOneSection || inRequiredChooseOneSection)) {
+					TableKeyword subKeyword = new TableKeyword(trimChildName, description, false, false);
+					oneOfKeyword.getOneOf().add(subKeyword);
+				} else {
+					System.err.println("ERROR - not sure what to do with keyword " + trimChildName);
+				}
+			}
+		}
+		
+		// Now, print the table.
+		GenericTable table = new GenericTable();
+		GenericRow header = new GenericRow();
+		header.addCell("Required/Optional");
+		header.addCell("Description of Group");
+		header.addCell("Dakota Keyword");
+		header.addCell("Dakota Keyword Description");
+		
+		List<GenericRow> rows = new ArrayList<>();
+		for(TableKeyword tableKeyword : keywords) {
+			if(tableKeyword.getOneOf().isEmpty()) {
+				GenericRow simpleRow = new GenericRow();
+				if(tableKeyword.getOptional()) {
+					simpleRow.addCell("Optional", 2, 1);
+					simpleRow.addCell(tableKeyword.getKeyword());
+					simpleRow.addCell(tableKeyword.getDescription());					
+				} else {
+					simpleRow.addCell("Required", 2, 1);
+					simpleRow.addCell(tableKeyword.getKeyword());
+					simpleRow.addCell(tableKeyword.getDescription());
+				}
+				rows.add(simpleRow);
+			} else {
+				if(tableKeyword.getOptional()) {
+					GenericRow optionalOneOfRow = new GenericRow();
+					int verticalSpan = tableKeyword.getOneOf().size();
+					optionalOneOfRow.addCell("Optional (Choose One)", 1, verticalSpan);
+					optionalOneOfRow.addCell(tableKeyword.getOptionalOrRequiredGroupName(), 1, verticalSpan);
+					optionalOneOfRow.addCell(tableKeyword.getKeyword());
+					optionalOneOfRow.addCell(tableKeyword.getDescription());
+					rows.add(optionalOneOfRow);
+					for(TableKeyword option : tableKeyword.getOneOf()) {
+						GenericRow optionRow = new GenericRow();
+						optionRow.addSpanHoldCell();
+						optionRow.addSpanHoldCell();
+						optionRow.addCell(option.getKeyword());
+						optionRow.addCell(option.getDescription());
+						rows.add(optionRow);
+					}
+				} else {
+					GenericRow requiredOneOfRow = new GenericRow();
+					int verticalSpan = tableKeyword.getOneOf().size();
+					requiredOneOfRow.addCell("Required (Choose One)", 1, verticalSpan);
+					requiredOneOfRow.addCell(tableKeyword.getOptionalOrRequiredGroupName(), 1, verticalSpan);
+					requiredOneOfRow.addCell(tableKeyword.getKeyword());
+					requiredOneOfRow.addCell(tableKeyword.getDescription());
+					rows.add(requiredOneOfRow);
+					for(TableKeyword option : tableKeyword.getOneOf()) {
+						GenericRow optionRow = new GenericRow();
+						optionRow.addSpanHoldCell();
+						optionRow.addSpanHoldCell();
+						optionRow.addCell(option.getKeyword());
+						optionRow.addCell(option.getDescription());
+						rows.add(optionRow);
+					}
+				}
+			}
+		}
+		
+		if(!rows.isEmpty()) {
+			table.addRow(header);
+			for(GenericRow row : rows) {
+				table.addRow(row);
+			}			
+			RstTablePrinter printer = new RstTablePrinter();
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(printer.print(table)).append("\n\n");
+			sb.append("Keyword link dump here"); //TODO
+			System.out.println(sb.toString());
+			return sb.toString();
+		}
+		return "";
+	}
 }

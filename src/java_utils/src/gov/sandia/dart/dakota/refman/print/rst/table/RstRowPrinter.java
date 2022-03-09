@@ -38,7 +38,7 @@ public class RstRowPrinter {
 		
 		updateVerticalSpanOverflow(rowOverflow, receivedRowOverflow);
 		sb.append(printRowOverflow(rowOverflow, widths));
-		
+	
 		rowPointer = 0;
 		spanOffset = 0;
 		return sb.toString();
@@ -89,9 +89,10 @@ public class RstRowPrinter {
 	private void updateVerticalSpanOverflow(GenericRow rowOverflow, GenericRow receivedVerticalSpanOverflow) {
 		if(!rowOverflow.elementsAreBlank()) {
 			if(rowOverflow.onlySpanningCellsShouldContinue() && !rowOverflow.isLastRow()) {
-				storedVerticalSpanOverflow = rowOverflow;
 				if(receivedVerticalSpanOverflow != null) {
 					throw new IllegalStateException("Collision between two overlapping cells with vertical spans > 1");
+				} else {
+					storedVerticalSpanOverflow = rowOverflow;
 				}
 			}
 		} else if(!rowOverflow.onlySpanningCellsShouldContinue() || rowOverflow.isLastRow()) {

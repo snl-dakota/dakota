@@ -18,28 +18,33 @@ public class RstTablePrinter {
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append(dividerPrinter.print(widths, null)).append(NEWLINE);
+		sb.append(dividerPrinter.print(widths)).append(NEWLINE);
 		
 		GenericRow headerRow = table.getHeaderRow();
 		if(headerRow != null) {
 			sb.append(rowPrinter.print(headerRow, widths)).append(NEWLINE);
 		}
 		
-		sb.append(headerDividerPrinter.print(widths, null)).append(NEWLINE);
+		sb.append(headerDividerPrinter.print(widths)).append(NEWLINE);
 		
 		for(int i = 1; i < table.getRows().size(); i++) {
 			GenericRow row = table.getRows().get(i);
 			sb.append(rowPrinter.print(row, verticalSpanOverflow, widths)).append(NEWLINE);
+			
 			updateVerticalSpan(rowPrinter);
-			sb.append(dividerPrinter.print(widths, verticalSpanOverflow)).append(NEWLINE);
+			if(verticalSpanOverflow != null) {
+				sb.append(dividerPrinter.printWithOverflow(widths, table, i, verticalSpanOverflow)).append(NEWLINE);
+			} else {
+				sb.append(dividerPrinter.print(widths, table, i)).append(NEWLINE);
+			}
 		}
 		
 		return sb.toString();
 	}
 	
-	private void updateVerticalSpan(RstRowPrinter lastRowPrinter) {
+	private void updateVerticalSpan(RstRowPrinter previousRowPrinter) {
 		GenericRow previousVerticalSpanOverflow = verticalSpanOverflow;
-		verticalSpanOverflow = lastRowPrinter.getVerticalSpanOverflow();
+		verticalSpanOverflow = previousRowPrinter.getVerticalSpanOverflow();
 		if(previousVerticalSpanOverflow != verticalSpanOverflow) {
 			verticalSpanLocationPointer = 0;
 		}

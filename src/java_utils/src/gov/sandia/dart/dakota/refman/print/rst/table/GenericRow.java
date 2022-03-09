@@ -69,16 +69,40 @@ public class GenericRow {
 	}
 	
 	public int getAdjustedHorizontalSpanIndex(int columnIndex) {
-		int actualIndex = columnIndex;
+		int actualIndex = 0;
+		int counter = 0;
+		
 		for(int i = 0; i < data.size(); i++) {
-			if(i < actualIndex) {
-				GenericCell cell = data.get(0);
-				if(cell.getHorizontalSpan() > 1) {
-					actualIndex -= (cell.getHorizontalSpan() - 1);
+			GenericCell cell = data.get(i);
+			if(cell.getHorizontalSpan() > 1) {
+				if(counter + cell.getHorizontalSpan() > columnIndex) {
+					break;
+				} else {
+					actualIndex++;
+					counter += cell.getHorizontalSpan();
+				}
+			} else {
+				if(counter == columnIndex) {
+					break;
+				} else {
+					actualIndex++;
+					counter++;
 				}
 			}
 		}
 		return actualIndex;
+	}
+	
+	public int getAdjustedHorizontalSpanCount() {
+		int count = 0;
+		for(int i = 0; i < data.size(); i++) {
+			count++;
+			GenericCell cell = data.get(i);
+			if(cell.getHorizontalSpan() > 1) {
+				count += (cell.getHorizontalSpan() - 1);
+			}
+		}
+		return count;
 	}
 	
 	@Override

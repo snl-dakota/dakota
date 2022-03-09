@@ -67,6 +67,9 @@ public class GenericCell {
 	}
 	
 	private int getCellWidthVerticalSpan(List<Integer> widths, int nativeWidthIndex) {
+		if(nativeWidthIndex > widths.size()) {
+			throw new IllegalStateException("Trying to get out-of-bound column width for column at index " + nativeWidthIndex);
+		}
 		int nativeWidth = widths.get(nativeWidthIndex);
 		if(nativeWidth == -1) {
 			throw new IllegalStateException("For columns with vertical spans, width must be explicitly defined.");
