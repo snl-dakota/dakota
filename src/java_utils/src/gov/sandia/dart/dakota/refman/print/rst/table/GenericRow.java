@@ -118,4 +118,16 @@ public class GenericRow {
 		sb.append("]");
 		return sb.toString();
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if(other instanceof GenericRow) {
+			GenericRow otherRow = (GenericRow) other;
+			
+			boolean equals = lastRow == otherRow.lastRow;
+			equals = equals && otherRow.getData().equals(getData());
+			return equals;
+		}
+		return false;
+	}
 }

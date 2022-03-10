@@ -45,7 +45,7 @@ public class RstTablePrinter {
 	private void updateVerticalSpan(RstRowPrinter previousRowPrinter) {
 		GenericRow previousVerticalSpanOverflow = verticalSpanOverflow;
 		verticalSpanOverflow = previousRowPrinter.getVerticalSpanOverflow();
-		if(previousVerticalSpanOverflow != verticalSpanOverflow) {
+		if(previousVerticalSpanOverflow == null || !previousVerticalSpanOverflow.equals(verticalSpanOverflow)) {
 			verticalSpanLocationPointer = 0;
 		}
 		

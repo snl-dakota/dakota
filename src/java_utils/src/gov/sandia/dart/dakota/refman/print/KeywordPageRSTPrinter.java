@@ -262,48 +262,71 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		
 		for(String child : childKeywords) {
 			String trimChildName = child.trim();
+			String tokenChildName = "";
 			if(child.contains("::")) {
-				trimChildName = child.split("::")[1].trim();
+				String[] tokens = child.split("::");
+				if(tokens.length > 1) {
+					tokenChildName = child.split("::")[1].trim();
+				}
 			}
-			String description = metadata.getBlurb(parentPrefix + "-" + trimChildName).trim();
+			String description = "";
+			if(!tokenChildName.isBlank() && !trimChildName.contains("_Choose_One::")) {
+				description = metadata.getBlurb(parentPrefix + "-" + tokenChildName).trim();
+			}
 			
-			if(child.startsWith("Optional_Keyword:: ")) {
-				inOptionalChooseOneSection = false;
-				inRequiredChooseOneSection = false;
-				if(oneOfKeyword != null) {
-					keywords.add(oneOfKeyword);
-					oneOfKeyword = null;
-				}
-				
-				TableKeyword optKeyword = new TableKeyword(trimChildName, description, true, false);
-				keywords.add(optKeyword);
-			} else if(child.startsWith("Required_Keyword:: ")) {
-				inOptionalChooseOneSection = false;
-				inRequiredChooseOneSection = false;
-				TableKeyword reqKeyword = new TableKeyword(trimChildName, description, false, true);
-				keywords.add(reqKeyword);
-			} else if(child.startsWith("Optional_Choose_One:: ")) {
-				inOptionalChooseOneSection = true;
-				inRequiredChooseOneSection = false;
-				oneOfKeyword = new TableKeyword("", description, true, false);
-				oneOfKeyword.setOptionalOrRequiredGroupName(trimChildName);
-			} else if(child.startsWith("Required_Choose_One:: ")) {
-				inOptionalChooseOneSection = false;
-				inRequiredChooseOneSection = true;
-				oneOfKeyword = new TableKeyword("", description, false, true);
-				oneOfKeyword.setOptionalOrRequiredGroupName(trimChildName);
-			} else {
-				if(oneOfKeyword != null && (inOptionalChooseOneSection || inRequiredChooseOneSection)) {
-					TableKeyword subKeyword = new TableKeyword(trimChildName, description, false, false);
-					oneOfKeyword.getOneOf().add(subKeyword);
+			if(!tokenChildName.isBlank()) {
+				if(child.startsWith("Optional_Keyword:: ")) {
+					inOptionalChooseOneSection = false;
+					inRequiredChooseOneSection = false;
+					if(oneOfKeyword != null) {
+						keywords.add(oneOfKeyword);
+						oneOfKeyword = null;
+					}
+					
+					TableKeyword optKeyword = new TableKeyword(tokenChildName, description, true, false);
+					keywords.add(optKeyword);
+				} else if(child.startsWith("Required_Keyword:: ")) {
+					inOptionalChooseOneSection = false;
+					inRequiredChooseOneSection = false;
+					TableKeyword reqKeyword = new TableKeyword(tokenChildName, description, false, true);
+					keywords.add(reqKeyword);
+				} else if(child.startsWith("Optional_Choose_One:: ")) {
+					if(oneOfKeyword != null) {
+						keywords.add(oneOfKeyword);
+						oneOfKeyword = null;
+					}
+					inOptionalChooseOneSection = true;
+					inRequiredChooseOneSection = false;
+					oneOfKeyword = new TableKeyword("", description, true, false);
+					oneOfKeyword.setOptionalOrRequiredGroupName(tokenChildName);
+				} else if(child.startsWith("Required_Choose_One:: ")) {
+					if(oneOfKeyword != null) {
+						keywords.add(oneOfKeyword);
+						oneOfKeyword = null;
+					}
+					inOptionalChooseOneSection = false;
+					inRequiredChooseOneSection = true;
+					oneOfKeyword = new TableKeyword("", description, false, true);
+					oneOfKeyword.setOptionalOrRequiredGroupName(tokenChildName);
 				} else {
-					System.err.println("ERROR - not sure what to do with keyword " + trimChildName);
+					if(oneOfKeyword != null && (inOptionalChooseOneSection || inRequiredChooseOneSection)) {
+						TableKeyword subKeyword = new TableKeyword(tokenChildName, description, false, false);
+						oneOfKeyword.getOneOf().add(subKeyword);
+					} else {
+						System.err.println("ERROR - not sure what to do with keyword " + tokenChildName);
+					}
 				}
 			}
+		}
+		if(oneOfKeyword != null) {
+			keywords.add(oneOfKeyword);
+			oneOfKeyword = null;
 		}
 		
 		// Now, print the table.
 		GenericTable table = new GenericTable();
+		table.setColumnWidth(0, 25);
+		
 		GenericRow header = new GenericRow();
 		header.addCell("Required/Optional");
 		header.addCell("Description of Group");
@@ -330,15 +353,18 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 					int verticalSpan = tableKeyword.getOneOf().size();
 					optionalOneOfRow.addCell("Optional (Choose One)", 1, verticalSpan);
 					optionalOneOfRow.addCell(tableKeyword.getOptionalOrRequiredGroupName(), 1, verticalSpan);
-					optionalOneOfRow.addCell(tableKeyword.getKeyword());
-					optionalOneOfRow.addCell(tableKeyword.getDescription());
+					
+					TableKeyword firstKeyword = tableKeyword.getOneOf().get(0);
+					optionalOneOfRow.addCell(firstKeyword.getKeyword());
+					optionalOneOfRow.addCell(firstKeyword.getDescription());
 					rows.add(optionalOneOfRow);
-					for(TableKeyword option : tableKeyword.getOneOf()) {
+					for(int i = 1; i < tableKeyword.getOneOf().size(); i++) {
+						TableKeyword nextKeyword = tableKeyword.getOneOf().get(i);
 						GenericRow optionRow = new GenericRow();
 						optionRow.addSpanHoldCell();
 						optionRow.addSpanHoldCell();
-						optionRow.addCell(option.getKeyword());
-						optionRow.addCell(option.getDescription());
+						optionRow.addCell(nextKeyword.getKeyword());
+						optionRow.addCell(nextKeyword.getDescription());
 						rows.add(optionRow);
 					}
 				} else {
@@ -346,15 +372,18 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 					int verticalSpan = tableKeyword.getOneOf().size();
 					requiredOneOfRow.addCell("Required (Choose One)", 1, verticalSpan);
 					requiredOneOfRow.addCell(tableKeyword.getOptionalOrRequiredGroupName(), 1, verticalSpan);
-					requiredOneOfRow.addCell(tableKeyword.getKeyword());
-					requiredOneOfRow.addCell(tableKeyword.getDescription());
+					
+					TableKeyword firstKeyword = tableKeyword.getOneOf().get(0);
+					requiredOneOfRow.addCell(firstKeyword.getKeyword());
+					requiredOneOfRow.addCell(firstKeyword.getDescription());
 					rows.add(requiredOneOfRow);
-					for(TableKeyword option : tableKeyword.getOneOf()) {
+					for(int i = 1; i < tableKeyword.getOneOf().size(); i++) {
+						TableKeyword nextKeyword = tableKeyword.getOneOf().get(i);
 						GenericRow optionRow = new GenericRow();
 						optionRow.addSpanHoldCell();
 						optionRow.addSpanHoldCell();
-						optionRow.addCell(option.getKeyword());
-						optionRow.addCell(option.getDescription());
+						optionRow.addCell(nextKeyword.getKeyword());
+						optionRow.addCell(nextKeyword.getDescription());
 						rows.add(optionRow);
 					}
 				}
@@ -362,16 +391,19 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		}
 		
 		if(!rows.isEmpty()) {
+			
 			table.addRow(header);
 			for(GenericRow row : rows) {
 				table.addRow(row);
 			}			
 			RstTablePrinter printer = new RstTablePrinter();
+			// System.out.println("**************" + parentPrefix + "***************");
 			
 			StringBuilder sb = new StringBuilder();
+			sb.append("\n\n**Child Keywords:**\n\n");
 			sb.append(printer.print(table)).append("\n\n");
-			sb.append("Keyword link dump here"); //TODO
-			System.out.println(sb.toString());
+			//sb.append("Keyword link dump here"); //TODO
+			// System.out.println(sb.toString());
 			return sb.toString();
 		}
 		return "";

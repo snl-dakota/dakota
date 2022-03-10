@@ -103,4 +103,19 @@ public class GenericCell {
 	public String toString() {
 		return contents;
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if(other instanceof GenericCell) {
+			GenericCell otherCell = (GenericCell) other;
+			
+			boolean equals = contents.equals(otherCell.contents);
+			equals = equals && horizontalSpan == otherCell.horizontalSpan;
+			equals = equals && leftPadding == otherCell.leftPadding;
+			equals = equals && rightPadding == otherCell.rightPadding;
+			equals = equals && verticalSpan == otherCell.verticalSpan;
+			return equals;
+		}
+		return false;
+	}
 }

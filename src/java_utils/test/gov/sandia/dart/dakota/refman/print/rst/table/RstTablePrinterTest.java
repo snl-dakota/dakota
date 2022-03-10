@@ -374,7 +374,7 @@ public class RstTablePrinterTest {
 	}
 	
 	@Test
-	public void testPrintDakotaKeywordTable() {
+	public void testPrintDakotaKeywordTable_Example1() {
 		GenericTable table = new GenericTable();
 		GenericRow header = new GenericRow();
 		header.addCell("Required/Optional");
@@ -432,6 +432,118 @@ public class RstTablePrinterTest {
 				        + "|                   |                      +--------------------------+---------------------------------------------------------------+\n"
 				        + "|                   |                      | centered_parameter_study | Samples variables along points moving out from a center point |\n"
 				        + "+-------------------+----------------------+--------------------------+---------------------------------------------------------------+\n";
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testPrintDakotaKeywordTable_Example2() {
+		GenericTable table = new GenericTable();
+		table.setColumnWidth(0, 25);
+		
+		GenericRow header = new GenericRow();
+		header.addCell("Required/Optional");
+		header.addCell("Description of Group");
+		header.addCell("Dakota Keyword");
+		header.addCell("Dakota Keyword Description");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Required (Choose One)");
+		row1.addCell("Importance Sampling Approach");
+		row1.addCell("import");
+		row1.addCell("Importance sampling option for probability refinement");
+		
+		GenericRow row2 = new GenericRow();
+		row2.addSpanHoldCell();
+		row2.addSpanHoldCell();
+		row2.addCell("adapt_import");
+		row2.addCell("Importance sampling option for probability refinement");
+		
+		GenericRow row3 = new GenericRow();
+		row3.addSpanHoldCell();
+		row3.addSpanHoldCell();
+		row3.addCell("mm_adapt_import");
+		row3.addCell("Importance sampling option for probability refinement");
+		
+		GenericRow row4 = new GenericRow();
+		row4.addCell("Optional", 2, 1);
+		row4.addCell("refinement_samples");
+		row4.addCell("Number of samples used to refine a probabilty estimate or sampling design.");
+		
+		table.addRow(header);
+		table.addRow(row1);
+		table.addRow(row2);
+		table.addRow(row3);
+		table.addRow(row4);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+-------------------------+------------------------------+--------------------+----------------------------------------------------------------------------+\n"
+				        + "| Required/Optional       | Description of Group         | Dakota Keyword     | Dakota Keyword Description                                                 |\n"
+				        + "+=========================+==============================+====================+============================================================================+\n"
+				        + "| Required (Choose One)   | Importance Sampling Approach | import             | Importance sampling option for probability refinement                      |\n"
+				        + "+-------------------------+------------------------------+--------------------+----------------------------------------------------------------------------+\n"
+				        + "|                         |                              | adapt_import       | Importance sampling option for probability refinement                      |\n"
+				        + "+-------------------------+------------------------------+--------------------+----------------------------------------------------------------------------+\n"
+				        + "|                         |                              | mm_adapt_import    | Importance sampling option for probability refinement                      |\n"
+				        + "+-------------------------+------------------------------+--------------------+----------------------------------------------------------------------------+\n"
+				        + "| Optional                                               | refinement_samples | Number of samples used to refine a probabilty estimate or sampling design. |\n"
+				        + "+--------------------------------------------------------+--------------------+----------------------------------------------------------------------------+\n";
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testPrintDakotaKeywordTable_Example3() {
+		GenericTable table = new GenericTable();
+		table.setColumnWidth(0, 25);
+		
+		GenericRow header = new GenericRow();
+		header.addCell("Required/Optional");
+		header.addCell("Description of Group");
+		header.addCell("Dakota Keyword");
+		header.addCell("Dakota Keyword Description");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Required (Choose One)", 1, 3);
+		row1.addCell("Statistics to Compute", 1, 3);
+		row1.addCell("probabilities");
+		row1.addCell("Computes probabilities associated with response levels");
+		
+		GenericRow row2 = new GenericRow();
+		row2.addSpanHoldCell();
+		row2.addSpanHoldCell();
+		row2.addCell("reliabilities");
+		row2.addCell("Computes reliabilities associated with response levels");
+		
+		GenericRow row3 = new GenericRow();
+		row3.addSpanHoldCell();
+		row3.addSpanHoldCell();
+		row3.addCell("gen_reliabilities");
+		row3.addCell("Computes generalized reliabilities associated with response levels");
+		
+		GenericRow row4 = new GenericRow();
+		row4.addCell("Optional", 2, 1);
+		row4.addCell("system");
+		row4.addCell("Compute system reliability (series or parallel)");
+		
+		table.addRow(header);
+		table.addRow(row1);
+		table.addRow(row2);
+		table.addRow(row3);
+		table.addRow(row4);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+-------------------------+----------------------+-------------------+--------------------------------------------------------------------+\n"
+						+ "| Required/Optional       | Description of Group | Dakota Keyword    | Dakota Keyword Description                                         |\n"
+						+ "+=========================+======================+===================+====================================================================+\n"
+						+ "| Required (Choose One)   | Statistics to        | probabilities     | Computes probabilities associated with response levels             |\n"
+						+ "|                         | Compute              +-------------------+--------------------------------------------------------------------+\n"
+						+ "|                         |                      | reliabilities     | Computes reliabilities associated with response levels             |\n"
+						+ "|                         |                      +-------------------+--------------------------------------------------------------------+\n"
+						+ "|                         |                      | gen_reliabilities | Computes generalized reliabilities associated with response levels |\n"
+						+ "+-------------------------+----------------------+-------------------+--------------------------------------------------------------------+\n"
+						+ "| Optional                                       | system            | Compute system reliability (series or parallel)                    |\n"
+						+ "+------------------------------------------------+-------------------+--------------------------------------------------------------------+\n";
 		assertEquals(expected, actual);
 	}
 }
