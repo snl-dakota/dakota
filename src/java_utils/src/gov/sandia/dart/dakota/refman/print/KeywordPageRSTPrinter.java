@@ -268,10 +268,13 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 				if(tokens.length > 1) {
 					tokenChildName = child.split("::")[1].trim();
 				}
+			} else if(inOptionalChooseOneSection || inRequiredChooseOneSection) {
+				tokenChildName = trimChildName;
 			}
 			String description = "";
 			if(!tokenChildName.isBlank() && !trimChildName.contains("_Choose_One::")) {
 				description = metadata.getBlurb(parentPrefix + "-" + tokenChildName).trim();
+				description = description.replaceAll("\n|\r\n", " ");
 			}
 			
 			if(!tokenChildName.isBlank()) {
@@ -402,7 +405,7 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 			StringBuilder sb = new StringBuilder();
 			sb.append("\n\n**Child Keywords:**\n\n");
 			sb.append(printer.print(table)).append("\n\n");
-			//sb.append("Keyword link dump here"); //TODO
+			// sb.append("Keyword link dump here"); //TODO
 			// System.out.println(sb.toString());
 			return sb.toString();
 		}
