@@ -193,8 +193,6 @@ protected:
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
 
-  /// relative costs of models within sequence of steps
-  RealVector sequenceCost;
   /// tracks ordering of a metric (correlations, eval ratios) across set of
   /// approximations
   SizetArray approxSequence;

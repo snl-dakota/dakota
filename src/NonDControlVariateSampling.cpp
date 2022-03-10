@@ -56,11 +56,13 @@ NonDControlVariateSampling(ProblemDescDB& problem_db, Model& model):
 void NonDControlVariateSampling::core_run()
 {
   configure_sequence(numSteps, secondaryIndex, sequenceType);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  configure_cost(numSteps, multilev, sequenceCost);
 
   // For two-model control variate, select extreme fidelities/resolutions
   Pecos::ActiveKey active_key, hf_key, lf_key;
   unsigned short hf_form, lf_form;  size_t hf_lev, lf_lev;
-  if (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE) {
+  if (multilev) {
     hf_lev  = numSteps - 1;  lf_lev = 0;  // extremes of range
     hf_form = lf_form = (secondaryIndex == SZ_MAX) ? USHRT_MAX : secondaryIndex;
   }
@@ -97,9 +99,8 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
-
-  Real lf_cost, hf_cost, cost_ratio;
-  initialize_mf_cost(lf_cost, hf_cost, cost_ratio);
+  Real hf_cost = sequenceCost[numSteps - 1], lf_cost = sequenceCost[0],
+    cost_ratio = hf_cost / lf_cost;
 
   IntRealVectorMap sum_L_shared, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH);
@@ -192,9 +193,8 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
-
-  Real lf_cost, hf_cost, cost_ratio;
-  initialize_mf_cost(lf_cost, hf_cost, cost_ratio);
+  Real hf_cost = sequenceCost[numSteps - 1], lf_cost = sequenceCost[0],
+    cost_ratio = hf_cost / lf_cost;
 
   // ---------------------------------------------------------------------
   // Compute final rho2LH, varH, {eval,estvar} ratios from (oracle) pilot
@@ -244,9 +244,8 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
-
-  Real lf_cost, hf_cost, cost_ratio;
-  initialize_mf_cost(lf_cost, hf_cost, cost_ratio);
+  Real hf_cost = sequenceCost[numSteps - 1], lf_cost = sequenceCost[0],
+    cost_ratio = hf_cost / lf_cost;
 
   RealVector eval_ratios, hf_targets;
   evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_hf, hf_targets,

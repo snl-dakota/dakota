@@ -96,6 +96,8 @@ void NonDMultilevelSampling::core_run()
   }
 
   configure_sequence(numSteps, secondaryIndex, sequenceType);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  configure_cost(numSteps, multilev, sequenceCost);
 
   // Useful for future extensions when convergence tolerance can be a vector
   convergenceTolVec.sizeUninitialized(numFunctions);
@@ -160,10 +162,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   else          lev  = secondaryIndex;
 
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost, agg_var(numSteps);
-  configure_cost(numSteps, multilev, cost);
+  RealVector agg_var(numSteps);
   Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar0 = 0., lev_cost, budget,
-    ref_cost = cost[numSteps-1]; // HF cost (1 level)
+    ref_cost = sequenceCost[numSteps-1]; // HF cost (1 level)
 
   if (budget_constrained) budget = (Real)maxFunctionEvals * ref_cost;
   // For moment estimation, we accumulate telescoping sums for Q^i using
@@ -191,7 +192,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     for (step=0; step<numSteps; ++step) { // step is reference to lev
 
       configure_indices(step, form, lev, sequenceType);
-      lev_cost = level_cost(cost, step); // raw cost (not equiv HF)
+      lev_cost = level_cost(sequenceCost, step); // raw cost (not equiv HF)
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[step];
@@ -240,7 +241,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
       // Equation 3.9 in CTR Annual Research Briefs:
       // "A multifidelity control variate approach for the multilevel Monte 
       // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
-      N_target = std::sqrt(agg_var[step] / level_cost(cost, step)) * fact;
+      N_target = std::sqrt(agg_var[step]/level_cost(sequenceCost, step)) * fact;
       delta_N_l[step] = one_sided_delta(average(N_l[step]), N_target);
     }
     ++mlmfIter;
@@ -261,7 +262,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     break;
   }
   case PILOT_PROJECTION:
-    update_projected_samples(delta_N_l, N_l, cost);
+    update_projected_samples(delta_N_l, N_l, sequenceCost);
     break;
   }
 
@@ -275,10 +276,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     with multiple discretization levels. */
 void NonDMultilevelSampling::multilevel_mc_Qsum()
 {
-  // retrieve cost estimates across soln levels for a particular model form
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  RealVector cost;  configure_cost(numSteps, multilev, cost);
-
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
@@ -292,8 +289,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
   while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations) {
     // loop over levels and compute sample increments
-    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, cost, N_l, N_l, delta_N_l,
-		    var_Y, var_qoi, eps_sq_div_2, true, true);
+    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_l, N_l,
+		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
     ++mlmfIter;
     Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_l << std::endl;
@@ -307,20 +304,18 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 
   compute_ml_estimator_variance(var_Y, N_l, estVar);
   // post final N_l back to NLev (needed for final eval summary)
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
 }
 
 
 void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 {
-  // retrieve cost estimates across soln levels for a particular model form
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  RealVector cost;  configure_cost(numSteps, multilev, cost);
-  Real   ref_cost = cost[numSteps-1];
-
   size_t form, lev, &step = (multilev) ? lev : form;
   if (multilev) form = secondaryIndex;
   else          lev  = secondaryIndex;
+  Real ref_cost = sequenceCost[numSteps-1];
 
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -337,7 +332,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   // Initial loop for offline (overkill) pilot
   // -----------------------------------------
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-  evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, cost, N_pilot, N_online,
+  evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_pilot, N_online,
 		  delta_N_l, var_Y, var_qoi, eps_sq_div_2, false, false);
 
   // ----------------------------------------------------------
@@ -359,7 +354,8 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
     }
     evaluate_ml_sample_increment(step);
     accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_online[step]);
-    increment_ml_equivalent_cost(numSamples, level_cost(cost,step), ref_cost);
+    increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, step),
+				 ref_cost);
   }
 
   // ---------------------
@@ -379,10 +375,6 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 
 void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 {
-  // retrieve cost estimates across soln levels for a particular model form
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  RealVector cost;  configure_cost(numSteps, multilev, cost);
-
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
@@ -396,7 +388,8 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   // Initial loop for pilot
   // ----------------------
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-  evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, cost, N_l, N_l,//pilot is online
+  evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
+		  N_l, N_l, // pilot is online
 		  delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
 
   // ---------------------
@@ -405,9 +398,10 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l); // not reported
   recover_variance(momentStats, varH); // momentStats only for varH
 
-  update_projected_samples(delta_N_l, N_l, cost);
+  update_projected_samples(delta_N_l, N_l, sequenceCost);
   compute_ml_estimator_variance(var_Y, N_l, estVar);
   // post final N_l back to NLev (needed for final eval summary)
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
 }
 

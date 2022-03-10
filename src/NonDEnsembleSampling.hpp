@@ -151,6 +151,8 @@ protected:
   /// setting for the inactive model dimension not traversed by primary MF/ACV
   /// loop over steps
   size_t secondaryIndex;
+  /// relative costs of model forms/resolution levels within a 1D sequence
+  RealVector sequenceCost;
 
   /// total number of successful sample evaluations (excluding faults)
   /// for each model form, discretization level, and QoI
