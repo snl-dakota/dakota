@@ -24,6 +24,7 @@
 namespace Dakota {
 
 class ProblemDescDB;
+using RespMetadataT = double;
 
 
 /// Container class for response functions and their derivatives.  
@@ -219,6 +220,13 @@ public:
   /// unrolled labels available through function_labels()
   const StringArray& field_group_labels();
 
+  /// get the (possibly empty) response metadata;
+  /// (get labels through shared_data())
+  const std::vector<RespMetadataT>& metadata() const;
+  /// set the response metadata
+  /// (set labels through shared_data())
+  void metadata(const std::vector<RespMetadataT>& md);
+
   /// read a response object of specified format from a std::istream 
   void read(std::istream& s, const unsigned short format = FLEXIBLE_RESULTS);
  
@@ -382,6 +390,9 @@ protected:
   /// copy of the ActiveSet used by the Model to generate a Response instance
   ActiveSet responseActiveSet;
 
+  /// metadata storage
+  std::vector<RespMetadataT> metaData;
+
 private:
 
   friend class boost::serialization::access;
@@ -444,25 +455,30 @@ private:
   void reshape_rep(size_t num_fns, size_t num_params, bool grad_flag,
 		   bool hess_flag);
 
+  void read_core(std::istream& s, const unsigned short formats,
+		 std::ostringstream& errors);
+
+  bool expect_derivatives(const ShortArray& asv);
+
   /// Read gradients from a freeform stream. Insert error messages
   // into errors stream.
-  void read_gradients(std::istream& s, const ShortArray &asv, 
-      std::ostringstream &error);
+  void read_gradients(std::istream& s, const ShortArray &asv,
+		      bool expect_metadata, std::ostringstream &error);
 
   /// Read Hessians from a freeform stream. Insert error messages
   // into errors stream.
   void read_hessians(std::istream& s, const ShortArray &asv,
-       std::ostringstream &error);
+		     bool expect_metadata, std::ostringstream &error);
 
   /// Read function values from an annotated stream. Insert error messages
   // into errors stream. 
   void read_labeled_fn_vals(std::istream &s, const ShortArray &asv,
-      std::ostringstream &errors);
+			    size_t num_metadata, std::ostringstream &errors);
 
   /// Read function values from a stream in a "flexible" way -- ignoring 
   /// any labels. Insert error messages into errors stream.
   void read_flexible_fn_vals(std::istream &s, const ShortArray &asv,
-      std::ostringstream &errors);
+			    size_t num_metadata, std::ostringstream &errors);
 
 /*  /// Read function values from a freeform stream. Insert error messages
   // into errors stream.
@@ -832,6 +848,24 @@ inline const StringArray& Response::field_group_labels()
     return responseRep->sharedRespData.field_group_labels();
   else             
     return sharedRespData.field_group_labels();
+}
+
+
+inline const std::vector<RespMetadataT>& Response::metadata() const
+{
+  if (responseRep)
+    return responseRep->metaData;
+  else
+    return metaData;
+}
+
+
+inline void Response::metadata(const std::vector<RespMetadataT>& md)
+{
+  if (responseRep)
+    responseRep->metaData = md;
+  else
+    metaData = md;
 }
 
 

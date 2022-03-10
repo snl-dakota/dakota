@@ -2006,6 +2006,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
     },
     { /* responses */
       { "labels", P_RES responseLabels},
+      { "metadata_labels", P_RES metadataLabels},
       { "nonlinear_equality_scale_types", P_RES nonlinearEqScaleTypes},
       { "nonlinear_inequality_scale_types", P_RES nonlinearIneqScaleTypes},
       { "primary_response_fn_scale_types", P_RES primaryRespFnScaleTypes},

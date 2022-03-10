@@ -62,7 +62,7 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians
     // field data
     << fieldLengths << numCoordsPerField 
-    << readFieldCoords << varianceType;
+    << readFieldCoords << varianceType << metadataLabels;
 }
 
 
@@ -95,7 +95,7 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     >> idNumericalHessians >> idQuasiHessians >> idAnalyticHessians
     // field data
     >> fieldLengths >> numCoordsPerField
-    >> readFieldCoords >> varianceType;
+    >> readFieldCoords >> varianceType >> metadataLabels;
 
 }
 
@@ -129,7 +129,7 @@ void DataResponsesRep::write(std::ostream& s) const
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians
     // field data
     << fieldLengths << numCoordsPerField  
-    << readFieldCoords << varianceType;
+    << readFieldCoords << varianceType << metadataLabels;
 }
 
 

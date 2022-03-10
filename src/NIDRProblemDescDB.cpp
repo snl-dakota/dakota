@@ -7615,6 +7615,7 @@ static String
         MP_(idResponses);
 
 static StringArray
+        MP_(metadataLabels),
 	MP_(nonlinearEqScaleTypes),
 	MP_(nonlinearIneqScaleTypes),
 	MP_(primaryRespFnScaleTypes),

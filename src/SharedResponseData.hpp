@@ -16,6 +16,7 @@
 #ifndef SHARED_RESPONSE_DATA_H
 #define SHARED_RESPONSE_DATA_H
 
+#include "dakota_data_io.hpp"
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 #include "DataResponses.hpp"
@@ -127,6 +128,10 @@ private:
 
   /// number of independent coordinates, e.g., x, t, for each field f(x,t)
   IntVector coordsPerPriField;
+
+  /// descriptors for metadata fields (empty if none)
+  StringArray metadataLabels;
+  
 };
 
 
@@ -252,6 +257,14 @@ public:
 
   /// retrieve simulation variance
   const RealVector& simulation_error() const;
+
+  /// get labels for metadata fields
+  const StringArray& metadata_labels() const;
+  /// set labels for metadata fields
+  void metadata_labels(const StringArray& md_labels);
+
+  /// read metadata labels from annotated (neutral) file
+  void read_annotated(std::istream& s, size_t num_md);
 
   /// create a deep copy of the current object and return by value
   SharedResponseData copy() const;
@@ -397,6 +410,22 @@ inline void SharedResponseData::function_labels(const StringArray& labels)
 
 inline const StringArray& SharedResponseData::field_group_labels() const
 { return srdRep->priFieldLabels; }
+
+
+inline const StringArray& SharedResponseData::metadata_labels() const
+{ return srdRep->metadataLabels; }
+
+
+inline void SharedResponseData::metadata_labels(const StringArray& md_labels)
+{ srdRep->metadataLabels = md_labels; }
+
+
+inline void SharedResponseData::read_annotated(std::istream& s, size_t num_md)
+{
+  s >> srdRep->functionLabels;
+  srdRep->metadataLabels.resize(num_md);
+  s >> srdRep->metadataLabels;
+}
 
 
 inline bool SharedResponseData::is_null() const

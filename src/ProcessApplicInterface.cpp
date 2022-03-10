@@ -634,12 +634,15 @@ write_parameters_file(const Variables& vars, const ActiveSet& set,
   const ShortArray&         asv         = set.request_vector();
   const SizetArray&         dvv         = set.derivative_vector();
   const StringArray&        resp_labels = response.function_labels();
+  const StringArray& md_labels = response.shared_data().metadata_labels();
   size_t i, asv_len = asv.size(), dvv_len = dvv.size(),
-    ac_len = an_comps.size();
-  StringArray asv_labels(asv_len), dvv_labels(dvv_len), ac_labels(ac_len);
+    ac_len = an_comps.size(), md_len = md_labels.size();
+  StringArray asv_labels(asv_len), dvv_labels(dvv_len), ac_labels(ac_len),
+    md_tags(md_len);
   build_labels(asv_labels, "ASV_");
   build_labels(dvv_labels, "DVV_");
   build_labels(ac_labels,  "AC_");
+  build_labels(md_tags,  "MD_");
   for (i=0; i<asv_len; ++i)
     asv_labels[i] += ":" + resp_labels[i];
   for (i=0; i<dvv_len; ++i) {
@@ -675,6 +678,9 @@ write_parameters_file(const Variables& vars, const ActiveSet& set,
     boost::algorithm::replace_all(full_eval_id, String("."), String(":"));
     parameter_stream << sp20 << "{ DAKOTA_EVAL_ID  = " << setw(w) 
 		     << full_eval_id << " }\n";
+    parameter_stream << sp20 << "{ DAKOTA_METADATA = " << setw(w) << md_len
+		     << " }\n";
+    array_write_aprepro(parameter_stream, md_labels, md_tags);
     //parameter_stream << resetiosflags(ios::adjustfield);
   }
   else {
@@ -692,6 +698,8 @@ write_parameters_file(const Variables& vars, const ActiveSet& set,
     full_eval_id.erase(0,1); 
     boost::algorithm::replace_all(full_eval_id, String("."), String(":"));
     parameter_stream << sp21 << setw(w) << full_eval_id << " eval_id\n";
+    parameter_stream << sp21 << setw(w) << md_len  << " metadata\n";
+    array_write(parameter_stream, md_labels, md_tags);
     //parameter_stream << resetiosflags(ios::adjustfield);
   }
   write_precision = prec; // restore

@@ -255,6 +255,9 @@ public:
   /// constant value, one per response (vector) or a full covariance matrix
   StringArray varianceType; 
 
+  /// descriptors for each metadata field
+  StringArray metadataLabels;
+
 private:
 
   //
