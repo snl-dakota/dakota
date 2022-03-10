@@ -482,7 +482,7 @@ query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
     cost.sizeUninitialized(num_steps);
     m_iter = sub_models.begin();
     for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
-      cost[i] = m_iter->solution_level_cost(); // cost for active soln index
+      cost[i] = m_iter->solution_level_cost();// active soln index; 0 if unfound
       if (cost[i] <= 0.) cost_defined = false;
     }
   }

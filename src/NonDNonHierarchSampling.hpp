@@ -93,6 +93,8 @@ protected:
 			 Sizet2DArray& num_LH);
   void finalize_counts(Sizet2DArray& N_L);
 
+  void recover_online_cost(RealVector& seq_cost);
+
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t index);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,

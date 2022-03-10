@@ -98,7 +98,9 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   configure_sequence(numSteps, secondaryIndex, sequenceType);
   numApprox = numSteps - 1;
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  configure_cost(numSteps, multilev, sequenceCost);
+  // Precedence: if solution costs provided, then we use them; else sequenceCost
+  // is empty and we rely on online cost recovery through response metadata
+  query_cost(numSteps, multilev, sequenceCost);
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
 		    numSteps, pilotSamples);
 
@@ -245,6 +247,41 @@ ensemble_sample_increment(size_t iter, size_t step)
 
   // compute allResponses from allVariables using non-hierarchical model
   evaluate_parameter_sets(iteratedModel, true, false);
+}
+
+
+void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+
+  Real cost;
+  size_t cost_offset = 0, // TO DO: lookup cost index from labels?
+    cntr = cost_offset, step, num_steps = numApprox+1,
+    num_meta = 1,//allResponses.begin()->second.metadata().length(),
+    num_meta_per_step = num_meta / num_steps;
+  seq_cost.size(num_steps); // init to 0
+  SizetArray finite_cnt(num_steps);
+
+  IntRespMCIter r_it;
+  using std::isfinite;
+  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+
+    RealVector md;//const RealVector& md = r_it->second.metadata();
+    if (outputLevel >= DEBUG_OUTPUT) Cout << "Metadata:\n" << md;
+
+    for (step=0; step<num_steps; ++step) {
+      cost = md[cntr];
+      if (isfinite(cost)) {
+	++finite_cnt[step];
+	seq_cost[step] += cost;
+      }
+      cntr += num_meta_per_step;
+    }
+  }
+  // Ensemble average cost
+  for (step=0; step<num_steps; ++step)
+    seq_cost[step] /= finite_cnt[step];
 }
 
 
