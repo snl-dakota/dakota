@@ -258,7 +258,7 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
   Real cost;
   size_t cost_offset = 0, // TO DO: lookup cost index from labels?
     cntr = cost_offset, step, num_steps = numApprox+1,
-    num_meta = 1,//allResponses.begin()->second.metadata().length(),
+    num_meta = allResponses.begin()->second.metadata().size(),
     num_meta_per_step = num_meta / num_steps;
   seq_cost.size(num_steps); // init to 0
   SizetArray finite_cnt(num_steps);
@@ -267,7 +267,7 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
   using std::isfinite;
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
 
-    RealVector md;//const RealVector& md = r_it->second.metadata();
+    const std::vector<RespMetadataT>& md = r_it->second.metadata();
     if (outputLevel >= DEBUG_OUTPUT) Cout << "Metadata:\n" << md;
 
     for (step=0; step<num_steps; ++step) {
