@@ -32,7 +32,7 @@ public class RstTablePrinter {
 			sb.append(rowPrinter.print(row, verticalSpanOverflow, widths)).append(NEWLINE);
 			
 			updateVerticalSpan(rowPrinter);
-			if(verticalSpanOverflow != null) {
+			if(inTheMiddleOfAVerticalSpanOverflow()) {
 				sb.append(dividerPrinter.printWithOverflow(widths, table, i, verticalSpanOverflow)).append(NEWLINE);
 			} else {
 				sb.append(dividerPrinter.print(widths, table, i)).append(NEWLINE);
@@ -45,17 +45,36 @@ public class RstTablePrinter {
 	private void updateVerticalSpan(RstRowPrinter previousRowPrinter) {
 		GenericRow previousVerticalSpanOverflow = verticalSpanOverflow;
 		verticalSpanOverflow = previousRowPrinter.getVerticalSpanOverflow();
-		if(previousVerticalSpanOverflow == null || !previousVerticalSpanOverflow.equals(verticalSpanOverflow)) {
-			verticalSpanLocationPointer = 0;
+		if(readyToStartNewVerticalSpanOverflow(previousVerticalSpanOverflow, verticalSpanOverflow)) {
+			resetVerticalSpanPointer();
 		}
 		
-		if(verticalSpanOverflow != null) {
+		if(inTheMiddleOfAVerticalSpanOverflow()) {
 			verticalSpanLocationPointer ++;
-			if(verticalSpanOverflow.elementsAreBlank() &&
-					verticalSpanLocationPointer == verticalSpanOverflow.getLargestVerticalSpan()) {
-				verticalSpanOverflow = null;
-				verticalSpanLocationPointer = 0;
+			if(verticalSpanOverflow.elementsAreBlank() && atEndOfVerticalSpanOverflow()) {
+				doneWithVerticalSpanOverflow();
+				resetVerticalSpanPointer();
 			}
 		}
+	}
+	
+	private boolean inTheMiddleOfAVerticalSpanOverflow() {
+		return verticalSpanOverflow != null;
+	}
+	
+	private void doneWithVerticalSpanOverflow() {
+		verticalSpanOverflow = null;
+	}
+	
+	private boolean atEndOfVerticalSpanOverflow() {
+		return verticalSpanLocationPointer == verticalSpanOverflow.getLargestVerticalSpan();
+	}
+	
+	private boolean readyToStartNewVerticalSpanOverflow(GenericRow oldOverflowRow, GenericRow newOverflowRow) {
+		return oldOverflowRow == null || !oldOverflowRow.equals(newOverflowRow);
+	}
+	
+	private void resetVerticalSpanPointer() {
+		verticalSpanLocationPointer = 0;
 	}
 }
