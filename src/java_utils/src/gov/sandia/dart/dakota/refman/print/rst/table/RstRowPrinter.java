@@ -106,6 +106,9 @@ public class RstRowPrinter {
 		boolean proceed = !rowOverflow.elementsAreBlank();
 		proceed = proceed && (!rowOverflow.onlySpanningCellsShouldContinue() || rowOverflow.isLastRow());
 		if(proceed) {
+			rowPointer = 0;
+			spanOffset = 0;
+			
 			StringBuilder sb = new StringBuilder();
 			sb.append(RstTablePrinter.NEWLINE);
 			sb.append(print(rowOverflow, widths));

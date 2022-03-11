@@ -546,4 +546,67 @@ public class RstTablePrinterTest {
 						+ "+------------------------------------------------+-------------------+--------------------------------------------------------------------+\n";
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void testPrintDakotaKeywordTable_Example3_WithMoreCellWrapping() {
+		GenericTable table = new GenericTable();
+		table.setColumnWidth(0, 25);
+		table.setColumnWidth(1, 30);
+		table.setColumnWidth(2, 20);
+		table.setColumnWidth(3, 45);
+		
+		GenericRow header = new GenericRow();
+		header.addCell("Required/Optional");
+		header.addCell("Description of Group");
+		header.addCell("Dakota Keyword");
+		header.addCell("Dakota Keyword Description");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Required (Choose One)", 1, 3);
+		row1.addCell("Statistics to Compute", 1, 3);
+		row1.addCell("probabilities");
+		row1.addCell("Computes probabilities associated with response levels");
+		
+		GenericRow row2 = new GenericRow();
+		row2.addSpanHoldCell();
+		row2.addSpanHoldCell();
+		row2.addCell("reliabilities");
+		row2.addCell("Computes reliabilities associated with response levels");
+		
+		GenericRow row3 = new GenericRow();
+		row3.addSpanHoldCell();
+		row3.addSpanHoldCell();
+		row3.addCell("gen_reliabilities");
+		row3.addCell("Computes generalized reliabilities associated with response levels");
+		
+		GenericRow row4 = new GenericRow();
+		row4.addCell("Optional", 2, 1);
+		row4.addCell("system");
+		row4.addCell("Compute system reliability (series or parallel)");
+		
+		table.addRow(header);
+		table.addRow(row1);
+		table.addRow(row2);
+		table.addRow(row3);
+		table.addRow(row4);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+-------------------------+------------------------------+--------------------+---------------------------------------------+\n"
+						+ "| Required/Optional       | Description of Group         | Dakota Keyword     | Dakota Keyword Description                  |\n"
+						+ "+=========================+==============================+====================+=============================================+\n"
+						+ "| Required (Choose One)   | Statistics to Compute        | probabilities      | Computes probabilities associated with      |\n"
+						+ "|                         |                              |                    | response levels                             |\n"
+						+ "|                         |                              +--------------------+---------------------------------------------+\n"
+						+ "|                         |                              | reliabilities      | Computes reliabilities associated with      |\n"
+						+ "|                         |                              |                    | response levels                             |\n"
+						+ "|                         |                              +--------------------+---------------------------------------------+\n"
+						+ "|                         |                              | gen_reliabilities  | Computes generalized reliabilities          |\n"
+						+ "|                         |                              |                    | associated with response levels             |\n"
+						+ "+-------------------------+------------------------------+--------------------+---------------------------------------------+\n"
+						+ "| Optional                                               | system             | Compute system reliability (series or       |\n"
+						+ "|                                                        |                    | parallel)                                   |\n"
+						+ "+--------------------------------------------------------+--------------------+---------------------------------------------+\n";
+		assertEquals(expected, actual);
+	}
 }

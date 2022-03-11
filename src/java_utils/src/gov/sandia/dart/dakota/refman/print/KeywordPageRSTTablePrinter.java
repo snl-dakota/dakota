@@ -166,6 +166,7 @@ public class KeywordPageRSTTablePrinter {
 		header.addCell("Dakota Keyword Description");
 		rows.add(header);
 		
+		
 		for(TableKeyword tableKeyword : keywords) {
 			if(tableKeyword.getOneOf().isEmpty()) {
 				if(tableKeyword.getOptional()) {
@@ -182,9 +183,27 @@ public class KeywordPageRSTTablePrinter {
 			}
 		}
 		
+		int widestKeyword = 20; // Default
+		final int linkWrapperLength = 6; // Every keyword is wrapped in RST link markup, like so: `keyword`__
+		                                 // That's 4 extra characters, plus 2 for the default left and right cell padding.
+		for(TableKeyword tableKeyword : keywords) {
+			widestKeyword = Math.max(tableKeyword.getKeyword().length() + linkWrapperLength, widestKeyword);
+			if(!tableKeyword.getOneOf().isEmpty()) {
+				for(TableKeyword subKeyword : tableKeyword.getOneOf()) {
+					widestKeyword = Math.max(subKeyword.getKeyword().length() + linkWrapperLength, widestKeyword);
+				}
+			}
+		}
+		
 		if(rows.size() > 1) { // More than just a header row
 			GenericTable table = new GenericTable();
+			
+			// These column widths are heuristic, and can be freely altered by future developers.
 			table.setColumnWidth(0, 25);
+			table.setColumnWidth(1, 20);
+			table.setColumnWidth(2, widestKeyword);
+			table.setColumnWidth(3, 45);
+			
 			for(GenericRow row : rows) {
 				table.addRow(row);
 			}			
