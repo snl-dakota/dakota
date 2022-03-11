@@ -257,6 +257,9 @@ private:
   //- Heading: Data
   //
 
+  /// index of cost data within the array of response metadata
+  size_t costMetadataIndex;
+
   /// pointer to NonDACV instance used in static member functions
   static NonDNonHierarchSampling* nonHierSampInstance;
 };

@@ -2128,6 +2128,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"optional_interface_responses_pointer", P_MOD optionalInterfRespPointer},
       {"rf.propagation_model_pointer", P_MOD propagationModelPointer},
       {"rf_data_file", P_MOD rfDataFileName},
+      {"simulation.cost_recovery_metadata", P_MOD costRecoveryMetadata},
       {"simulation.solution_level_control", P_MOD solutionLevelControl},
       {"surrogate.truth_model_pointer", P_MOD truthModelPointer},
       {"surrogate.challenge_points_file", P_MOD importChallengePtsFile},

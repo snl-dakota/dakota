@@ -7448,6 +7448,7 @@ static IntVector
 
 static String
         MP_(advancedOptionsFilename),
+	MP_(costRecoveryMetadata),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
 	MP_(exportApproxVarianceFile),

@@ -104,6 +104,11 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
 		    numSteps, pilotSamples);
 
+  // *** TO DO: is ensemble response well formed enough for this yet?
+  costMetadataIndex = find_index(
+    iteratedModel.current_response().shared_data().metadata_labels(),
+    probDescDB.get_string("model.simulation.cost_recovery_metadata"));
+
   size_t max_ps = find_max(pilotSamples);
   if (max_ps) maxEvalConcurrency *= max_ps;
 }
@@ -256,12 +261,11 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
   Real cost;
-  size_t cost_offset = 0, // TO DO: lookup cost index from labels?
-    cntr = cost_offset, step, num_steps = numApprox+1,
+  size_t cntr = costMetadataIndex, step, num_steps = numApprox+1,
     num_meta = allResponses.begin()->second.metadata().size(),
     num_meta_per_step = num_meta / num_steps;
   seq_cost.size(num_steps); // init to 0
-  SizetArray finite_cnt(num_steps);
+  SizetArray num_finite(num_steps);
 
   IntRespMCIter r_it;
   using std::isfinite;
@@ -273,7 +277,7 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
     for (step=0; step<num_steps; ++step) {
       cost = md[cntr];
       if (isfinite(cost)) {
-	++finite_cnt[step];
+	++num_finite[step];
 	seq_cost[step] += cost;
       }
       cntr += num_meta_per_step;
@@ -281,7 +285,7 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
   }
   // Ensemble average cost
   for (step=0; step<num_steps; ++step)
-    seq_cost[step] /= finite_cnt[step];
+    seq_cost[step] /= num_finite[step];
 }
 
 

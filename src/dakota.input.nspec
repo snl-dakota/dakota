@@ -6085,8 +6085,11 @@ KEYWORD model {N_mom3(start,0,stop)}
   [ id_model STRING {N_mom(str,idModel)} ]
   ( single ALIAS simulation {N_mom(lit,modelType_simulation)}
     [ interface_pointer STRING {N_mom(str,interfacePointer)} ]
-    [ solution_level_cost REALLIST {N_mom(RealDL,solutionLevelCost)}
-      [ solution_level_control STRING {N_mom(str,solutionLevelControl)} ]
+    [ solution_level_control STRING {N_mom(str,solutionLevelControl)} ]
+    [ 
+      solution_level_cost REALLIST {N_mom(RealDL,solutionLevelCost)}
+      |
+      cost_recovery_metadata STRING {N_mom(str,costRecoveryMetadata)}
      ]
    )
   |
