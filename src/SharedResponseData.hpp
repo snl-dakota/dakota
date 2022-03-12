@@ -131,7 +131,6 @@ private:
 
   /// descriptors for metadata fields (empty if none)
   StringArray metadataLabels;
-  
 };
 
 
@@ -270,6 +269,8 @@ public:
   SharedResponseData copy() const;
   /// reshape the data, disconnecting a shared rep if necessary
   void reshape(size_t num_fns);
+  /// reshape the shared metadata (labels only at this time)
+  void reshape_metadata(size_t num_meta);
   /// reshape the response labels using inflation/deflation if possible
   void reshape_labels(StringArray& resp_labels, size_t num_fns);
 
@@ -418,6 +419,10 @@ inline const StringArray& SharedResponseData::metadata_labels() const
 
 inline void SharedResponseData::metadata_labels(const StringArray& md_labels)
 { srdRep->metadataLabels = md_labels; }
+
+
+inline void SharedResponseData::reshape_metadata(size_t num_meta)
+{ reshape_labels(srdRep->metadataLabels, num_meta); }
 
 
 inline void SharedResponseData::read_annotated(std::istream& s, size_t num_md)

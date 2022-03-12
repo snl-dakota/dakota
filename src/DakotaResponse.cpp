@@ -1493,6 +1493,20 @@ reshape(size_t num_fns, size_t num_params, bool grad_flag, bool hess_flag)
 }
 
 
+/** Reshape functionValues, functionGradients, and functionHessians
+    according to num_fns, num_params, grad_flag, and hess_flag. */
+void Response::reshape_metadata(size_t num_meta)
+{
+  if (responseRep)
+    responseRep->reshape_metadata(num_meta);
+  else {
+    // resizes scalars for now (needs additional data for field reshape)
+    sharedRespData.reshape_metadata(num_meta);
+    metaData.resize(num_meta);
+  }
+}
+
+
 void Response::field_lengths(const IntVector& field_lens)
 {
   if (responseRep) 

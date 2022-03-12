@@ -226,6 +226,8 @@ public:
   /// set the response metadata
   /// (set labels through shared_data())
   void metadata(const std::vector<RespMetadataT>& md);
+  /// set a portion of the response metadata starting from given position
+  void metadata(const std::vector<RespMetadataT>& md, size_t start);
 
   /// read a response object of specified format from a std::istream 
   void read(std::istream& s, const unsigned short format = FLEXIBLE_RESULTS);
@@ -295,6 +297,8 @@ public:
   /// rehapes response data arrays
   void reshape(size_t num_fns, size_t num_params, bool grad_flag,
 	       bool hess_flag);
+  /// rehapes response metadata arrays
+  void reshape_metadata(size_t num_meta);
   /// resets all response data to zero
   void reset();
   /// resets all inactive response data to zero
@@ -866,6 +870,24 @@ inline void Response::metadata(const std::vector<RespMetadataT>& md)
     responseRep->metaData = md;
   else
     metaData = md;
+}
+
+
+inline void Response::
+metadata(const std::vector<RespMetadataT>& md, size_t start)
+{
+  if (responseRep)
+    responseRep->metadata(md, start);
+  else {
+    size_t i, num_md = md.size(), end = start + num_md, cntr;
+    if (metaData.size() < end) {
+      Cerr << "Error: insufficient size (" << metaData.size()
+	   << ") in partial metadata update." << std::endl;
+      abort_handler(RESP_ERROR);
+    }
+    for (i=0, cntr=start; i<num_md; ++i, ++cntr)
+      metaData[cntr] = md[i];
+  }
 }
 
 
