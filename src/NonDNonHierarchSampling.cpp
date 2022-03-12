@@ -104,7 +104,8 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
 		    numSteps, pilotSamples);
 
-  // *** TO DO: is ensemble response well formed enough for this yet?
+  // ensemble response is resized above by aggregated_models_mode(), but
+  // find_index() returns the first label match
   costMetadataIndex = find_index(
     iteratedModel.current_response().shared_data().metadata_labels(),
     probDescDB.get_string("model.simulation.cost_recovery_metadata"));

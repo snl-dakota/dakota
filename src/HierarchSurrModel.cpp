@@ -1301,14 +1301,17 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
 
 void HierarchSurrModel::resize_response(bool use_virtual_counts)
 {
-  size_t num_surr, num_truth;
+  Model &hf_model = truth_model(), &lf_model = surrogate_model();
+  size_t num_surr, num_truth,
+    num_hf_meta = hf_model.current_response().metadata().size(),
+    num_lf_meta = lf_model.current_response().metadata().size();
   if (use_virtual_counts) { // allow models to consume lower-level aggregations
-    num_surr  = surrogate_model().qoi();
-    num_truth =     truth_model().qoi();
+    num_surr  = lf_model.qoi();
+    num_truth = hf_model.qoi();
   }
   else { // raw counts align with currentResponse raw count
-    num_surr  = surrogate_model().response_size();
-    num_truth =     truth_model().response_size();
+    num_surr  = lf_model.response_size();
+    num_truth = hf_model.response_size();
   }
 
   switch (responseMode) {
@@ -1333,6 +1336,9 @@ void HierarchSurrModel::resize_response(bool use_virtual_counts)
     currentResponse.reshape(numFns, currentVariables.cv(),
                             !currentResponse.function_gradients().empty(),
                             !currentResponse.function_hessians().empty());
+
+    // TO DO: vector and shared labels
+    //currentResponse.reshape_metadata(num_hf_meta + num_lf_meta);
 
     // update message lengths for send/receive of parallel jobs (normally
     // performed once in Model::init_communicators() just after construct time)

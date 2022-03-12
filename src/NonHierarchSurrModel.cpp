@@ -716,13 +716,15 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 {
   size_t num_approx = surrModelKeys.size(), // model forms or resolutions
+    multiplier = 1, num_meta = truthModel.current_response().metadata().size(),
     num_truth = (use_virtual_counts) ?
     truthModel.qoi() : // allow models to consume lower-level aggregations
     truthModel.response_size(); // raw counts align w/ currentResponse raw count
 
   switch (responseMode) {
-  case AGGREGATED_MODELS: numFns = (num_approx + 1) * num_truth;  break;
-  case BYPASS_SURROGATE:  numFns =                    num_truth;  break;
+  case AGGREGATED_MODELS:
+    multiplier = num_approx + 1;  numFns = multiplier * num_truth;  break;
+  case BYPASS_SURROGATE:          numFns =              num_truth;  break;
   }
 
   // gradient and Hessian settings are based on independent spec (not LF, HF)
@@ -731,6 +733,9 @@ void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
     currentResponse.reshape(numFns, currentVariables.cv(),
                             !currentResponse.function_gradients().empty(),
                             !currentResponse.function_hessians().empty());
+
+    // TO DO: vector and shared labels
+    //currentResponse.reshape_metadata(num_meta * multiplier);
 
     // update message lengths for send/receive of parallel jobs (normally
     // performed once in Model::init_communicators() just after construct time)
