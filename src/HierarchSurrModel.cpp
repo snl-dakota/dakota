@@ -1302,32 +1302,34 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
 void HierarchSurrModel::resize_response(bool use_virtual_counts)
 {
   Model &hf_model = truth_model(), &lf_model = surrogate_model();
-  size_t num_surr, num_truth,
+  size_t num_lf_fns, num_hf_fns, num_meta,
     num_hf_meta = hf_model.current_response().metadata().size(),
     num_lf_meta = lf_model.current_response().metadata().size();
   if (use_virtual_counts) { // allow models to consume lower-level aggregations
-    num_surr  = lf_model.qoi();
-    num_truth = hf_model.qoi();
+    num_lf_fns = lf_model.qoi();
+    num_hf_fns = hf_model.qoi();
   }
   else { // raw counts align with currentResponse raw count
-    num_surr  = lf_model.response_size();
-    num_truth = hf_model.response_size();
+    num_lf_fns = lf_model.response_size();
+    num_hf_fns = hf_model.response_size();
   }
 
   switch (responseMode) {
   case AGGREGATED_MODELS:
-    numFns = num_surr + num_truth;  break;
+    numFns   = num_lf_fns  + num_hf_fns;
+    num_meta = num_hf_meta + num_lf_meta;
+    break;
   case MODEL_DISCREPANCY:
-    if (num_surr != num_truth) {
+    if (num_lf_fns != num_hf_fns) {
       Cerr << "Error: mismatch in response sizes for MODEL_DISCREPANCY mode "
 	   << "in HierarchSurrModel::resize_response()." << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    numFns = num_truth;  break;
+    numFns = num_hf_fns;  num_meta = num_hf_meta;  break;
   case BYPASS_SURROGATE:       case NO_SURROGATE:
-    numFns = num_truth;  break;
+    numFns = num_hf_fns;  num_meta = num_hf_meta;  break;
   case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:  default:
-    numFns = num_surr;   break;
+    numFns = num_lf_fns;  num_meta = num_lf_meta;  break;
   }
 
   // gradient and Hessian settings are based on independent spec (not LF, HF)
@@ -1336,9 +1338,6 @@ void HierarchSurrModel::resize_response(bool use_virtual_counts)
     currentResponse.reshape(numFns, currentVariables.cv(),
                             !currentResponse.function_gradients().empty(),
                             !currentResponse.function_hessians().empty());
-
-    // TO DO: vector and shared labels
-    //currentResponse.reshape_metadata(num_hf_meta + num_lf_meta);
 
     // update message lengths for send/receive of parallel jobs (normally
     // performed once in Model::init_communicators() just after construct time)
@@ -1351,6 +1350,8 @@ void HierarchSurrModel::resize_response(bool use_virtual_counts)
     //     Response object.  Expansion by combination only happens on
     //     iteratorCommRank 0 within derived_synchronize_combine{,_nowait}().
   }
+  if (currentResponse.metadata().size() != num_meta)
+    currentResponse.reshape_metadata(num_meta);
 }
 
 

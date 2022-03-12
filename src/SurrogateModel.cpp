@@ -1303,16 +1303,9 @@ aggregate_response(const Response& hf_resp, const Response& lf_resp,
       agg_resp.function_hessian(lf_resp.function_hessian(i), offset_i);
   }
 
-  // overwrite full vector for now
-  RealArray agg_meta_data = hf_resp.metadata(); // copy
-  const RealArray& lf_md  = lf_resp.metadata();
-  agg_meta_data.insert(agg_meta_data.end(), lf_md.begin(), lf_md.end());
-  agg_resp.metadata(agg_meta_data);
-
-  // After updated API:
-  //const RealArray& hf_md = hf_resp.metadata();
-  //agg_resp.metadata(hf_md, 0);
-  //agg_resp.metadata(lf_resp.metadata(), hf_md.size());
+  const RealArray& hf_md = hf_resp.metadata();
+  agg_resp.metadata(hf_md, 0);
+  agg_resp.metadata(lf_resp.metadata(), hf_md.size());
 }
 
 
@@ -1367,20 +1360,8 @@ insert_response(const Response& response, size_t position,
       agg_response.function_hessian(response.function_hessian(fn), cntr);
   }
 
-  // overwrite full vector for now
   const RealArray& md = response.metadata();
-  size_t i, num_agg = agg_response.active_set_request_vector().size() / num_fns,
-    num_md = md.size(), num_agg_md = num_md * num_agg;
-  RealArray agg_meta_data = agg_response.metadata(); // copy
-  agg_meta_data.resize(num_agg_md); // if needed
-  for (i=0, cntr=position * num_md; i<num_md; ++i, ++cntr)
-    agg_meta_data[cntr] = md[i];
-  agg_response.metadata(agg_meta_data);
-
-  // After updated API:
-  //const RealArray& md = response.metadata();
-  //size_t num_md = md.size(), start = position * num_md;
-  //agg_response.metadata(md, start);
+  agg_response.metadata(md, position * md.size());
 }
 
 } // namespace Dakota
