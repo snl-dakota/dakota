@@ -17,6 +17,6 @@ interface
 responses
   descriptors 'f1' 'f2'
   response_functions 2
-  no_gradients
-  no_hessians
+  analytic_gradients
+  analytic_hessians
 

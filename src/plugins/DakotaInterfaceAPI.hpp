@@ -77,23 +77,51 @@ public:
   { return std::vector<std::string>(); }
 
   /// single evaluator
-  virtual EvalResponse evaluate(const EvalRequest& request) = 0;
+  virtual EvalResponse evaluate(EvalRequest const& request) = 0;
 
   /// batch evaluator; default implementation delegates to single evaluate
   std::vector<EvalResponse>
-  evaluate(const std::vector<EvalRequest>& requests);
+  evaluate(std::vector<EvalRequest> const& requests);
 
   void finalize() {};
+
+protected:
+
+  void resize_response_arrays(
+      EvalRequest const& request,
+      EvalResponse& response) {
+
+    size_t const num_fns = request.activeSet.size();
+    size_t const num_derivs = request.derivativeVars.size();
+
+    response.functions.resize(num_fns);
+    response.gradients.resize(num_derivs);
+    response.hessians.resize(num_fns);
+
+    for (size_t k = 0; k < num_derivs; ++k) {
+      response.gradients[k].resize(num_fns);
+    }
+
+    for (size_t i = 0; i < num_fns; ++i) {
+      response.hessians[i].resize(num_derivs);
+      for (size_t j = 0; j < num_derivs; ++j) {
+        response.hessians[i][j].resize(num_derivs);
+      }
+    }
+
+  }
 
 };
 
 inline std::vector<EvalResponse>
-DakotaInterfaceAPI::evaluate(const std::vector<EvalRequest>& requests)
+DakotaInterfaceAPI::evaluate(std::vector<EvalRequest> const& requests)
 {
   std::vector<EvalResponse> responses;
-  responses.reserve(requests.size());
-  for (const auto& req : requests)
-    responses.push_back(evaluate(req));
+  size_t const num_requests = requests.size();
+  responses.resize(num_requests);
+  for (size_t i = 0; i < num_requests; ++i) {
+    responses[i] = evaluate(requests[i]);
+  }
 
   return responses;
 }
