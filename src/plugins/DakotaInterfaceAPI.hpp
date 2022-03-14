@@ -35,6 +35,8 @@ public:
   std::vector<std::string> discreteRealLabels;
   std::vector<std::string> inputOrderedLabels;
 
+  int functionEvalId = -1;
+
 };
 
 
@@ -85,7 +87,6 @@ public:
 
 };
 
-
 inline std::vector<EvalResponse>
 DakotaInterfaceAPI::evaluate(const std::vector<EvalRequest>& requests)
 {
@@ -96,7 +97,6 @@ DakotaInterfaceAPI::evaluate(const std::vector<EvalRequest>& requests)
 
   return responses;
 }
-
 
 }
 

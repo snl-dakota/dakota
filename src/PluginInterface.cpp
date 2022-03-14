@@ -31,6 +31,7 @@ PluginInterface::~PluginInterface()
 }
 
 
+// not sure active set passed in is consistent with response
 void PluginInterface::derived_map(const Variables& vars, const ActiveSet& set,
 				  Response& response, int fn_eval_id)
 {
@@ -118,17 +119,49 @@ DakotaPlugins::EvalRequest PluginInterface::form_eval_request
   DakotaPlugins::EvalRequest req;
   // TODO: do we want to use the legacy copy_data or another means?
   copy_data(vars.all_continuous_variables(), req.continuousVars);
+  copy_data(vars.all_discrete_int_variables(), req.discreteIntVars);
+  copy_data(vars.all_discrete_string_variables(), req.discreteStringVars);
+  copy_data(vars.all_discrete_real_variables(), req.discreteRealVars);
+
+  copy_data(vars.all_continuous_variable_labels(), req.continuousLabels);
+  copy_data(vars.all_discrete_int_variable_labels(), req.discreteIntLabels);
+  copy_data(vars.all_discrete_string_variable_labels(), req.discreteStringLabels);
+  copy_data(vars.all_discrete_real_variable_labels(), req.discreteRealLabels);
+
+  req.activeSet = set.request_vector();
+  req.derivativeVars = set.derivative_vector();
+  req.inputOrderedLabels = vars.ordered_labels();
+
+  req.functionEvalId = fn_eval_id;
 
   return req;
 }
 
 
+// pass active set in here too
 void PluginInterface::populate_response
 (const DakotaPlugins::EvalResponse& plugin_response, Response& response) const
 {
+  auto const& asv = response.active_set_request_vector();
+
   // TODO: this is abuse, getting a reference to a non-const view...
   auto resp_fns = response.function_values_view();
-  copy_data(plugin_response.functions, resp_fns);
+  auto resp_grads = response.function_gradients_view(); // RealMatrix
+  auto resp_hessians = response.function_hessians_view(); // RealSymMatrixArray
+
+  size_t const num_fns = response.num_functions();
+  for (size_t i = 0; i < num_fns; ++i) {
+    if (asv[i] & 1) {
+      resp_fns[i] = plugin_response.functions[i];
+    }
+    if (asv[i] & 2) {
+      copy_column(i, plugin_response.gradients, resp_grads);
+    }
+    if (asv[i] & 4) {
+      copy_data(plugin_response.hessians[i], resp_hessians[i]);
+    }
+  }
+
 }
 
 

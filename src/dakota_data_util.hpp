@@ -1484,6 +1484,44 @@ inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
     da[i] = ma[i];
 }
 
+template <typename OrdinalType, typename ScalarType>
+void copy_data(std::vector<std::vector<ScalarType>> const& source,
+    Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& dest) {
+  OrdinalType const nrows = dest.numRows();
+  OrdinalType const ncols = dest.numCols();
+  for (OrdinalType i = 0; i < nrows; ++i) {
+    for (OrdinalType j = 0; j < ncols; ++j) {
+      dest(i, j) = source[i][j];
+    }
+  }
+}
+template <typename OrdinalType, typename ScalarType>
+void copy_data(std::vector<std::vector<ScalarType>> const& source,
+    Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& dest) {
+  OrdinalType const dim = dest.numRows();
+  for (OrdinalType i = 0; i < dim; ++i) {
+    for (OrdinalType j = 0; j <= i; ++j) {
+      dest(i, j) = source[i][j];
+    }
+  }
+}
+
+template<typename OrdinalType, typename ScalarType>
+void copy_column(size_t const col,
+    std::vector<std::vector<ScalarType>> const& source,
+    Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& dest) {
+  OrdinalType const nrows = source.size();
+  if (nrows != dest.numRows()) {
+    Cerr << "Column dimension mismatch between source and destination arrays\n";
+    abort_handler(-1);
+  }
+  for (size_t i = 0; i < nrows; ++i) {
+    dest(i, col) = source[i][col];
+  }
+}
+
+
+
 
 /// return true if the item val appears in container v
 template <typename DakContainerType>
