@@ -65,6 +65,9 @@ protected:
   void post_run(std::ostream& s);
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
+  void initialize_final_statistics();
+  void update_final_statistics();
+
   //
   //- Heading: Member functions
   //
@@ -180,6 +183,10 @@ protected:
 
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;
+
+  /// ALGORITHM_RESULTS (moments, level mappings) or ALGORITHM_PERFORMANCE
+  /// (for model tuning of estVar,equivHFEvals by an outer loop)
+  short finalStatsType;
 
   /// if defined, export each of the sample increments in ML, CV, MLCV
   /// using tagged tabular files

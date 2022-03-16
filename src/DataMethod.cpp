@@ -154,13 +154,14 @@ DataMethodRep::DataMethodRep():
   //reliabilitySearchType(MV),
   integrationRefine(NO_INT_REFINE), multilevAllocControl(DEFAULT_MLMF_CONTROL),
   multilevEstimatorRate(2.), multilevDiscrepEmulation(DEFAULT_EMULATION),
-  finalMomentsType(Pecos::STANDARD_MOMENTS), distributionType(CUMULATIVE),
-  responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
-  chainSamples(0), buildSamples(0), samplesOnEmulator(0), emulatorOrder(0),
-  emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
-  adaptPosteriorRefine(false), logitTransform(false), gpmsaNormalize(false),
-  posteriorStatsKL(false), posteriorStatsMutual(false),
-  posteriorStatsKDE(false), chainDiagnostics(false), chainDiagnosticsCI(false),
+  finalStatsType(ALGORITHM_RESULTS), finalMomentsType(Pecos::STANDARD_MOMENTS),
+  distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
+  responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
+  samplesOnEmulator(0), emulatorOrder(0), emulatorType(NO_EMULATOR),
+  mcmcType("dram"), standardizedSpace(false), adaptPosteriorRefine(false),
+  logitTransform(false), gpmsaNormalize(false), posteriorStatsKL(false),
+  posteriorStatsMutual(false), posteriorStatsKDE(false),
+  chainDiagnostics(false), chainDiagnosticsCI(false),
   modelEvidence(false), modelEvidMC(false), modelEvidLaplace(false),
   optSubProbSolver(SUBMETHOD_DEFAULT), priorPropCovMult(1.0),
   proposalCovUpdatePeriod(std::numeric_limits<int>::max()),
@@ -314,11 +315,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
     << multilevAllocControl << multilevEstimatorRate
-    << multilevDiscrepEmulation << finalMomentsType << distributionType
-    << responseLevelTarget << responseLevelTargetReduce << responseLevels
-    << probabilityLevels << reliabilityLevels << genReliabilityLevels
-    << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
-    << emulatorType << mcmcType << standardizedSpace
+    << multilevDiscrepEmulation << finalStatsType << finalMomentsType
+    << distributionType << responseLevelTarget << responseLevelTargetReduce
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << chainSamples << buildSamples << samplesOnEmulator
+    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
     << chainDiagnostics << chainDiagnosticsCI
@@ -482,11 +483,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> pilotSamples >> ensembleSampSolnMode >> truthPilotConstraint
     >> multilevAllocControl >> multilevEstimatorRate
-    >> multilevDiscrepEmulation >> finalMomentsType >> distributionType
-    >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
-    >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
-    >> chainSamples >> buildSamples >> samplesOnEmulator >> emulatorOrder
-    >> emulatorType >> mcmcType >> standardizedSpace
+    >> multilevDiscrepEmulation >> finalStatsType >> finalMomentsType
+    >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
+    >> responseLevels >> probabilityLevels >> reliabilityLevels
+    >> genReliabilityLevels >> chainSamples >> buildSamples >> samplesOnEmulator
+    >> emulatorOrder >> emulatorType >> mcmcType >> standardizedSpace
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
     >> chainDiagnostics >> chainDiagnosticsCI
@@ -650,11 +651,11 @@ void DataMethodRep::write(std::ostream& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
     << multilevAllocControl << multilevEstimatorRate
-    << multilevDiscrepEmulation << finalMomentsType << distributionType
-    << responseLevelTarget << responseLevelTargetReduce << responseLevels
-    << probabilityLevels << reliabilityLevels << genReliabilityLevels
-    << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
-    << emulatorType << mcmcType << standardizedSpace
+    << multilevDiscrepEmulation << finalStatsType << finalMomentsType
+    << distributionType << responseLevelTarget << responseLevelTargetReduce
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << chainSamples << buildSamples << samplesOnEmulator
+    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
     << chainDiagnostics << chainDiagnosticsCI

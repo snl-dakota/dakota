@@ -326,7 +326,7 @@
 
     <!ENTITY default_final_moments '
 	     <keyword  id="final_moments" name="final_moments" code="{0}" label="Type of moments in final statistics"  minOccurs="0" default="standard" >
-               <oneOf label="Objective Formulation">
+               <oneOf label="Final moment type">
 		 <keyword  id="none" name="none" code="{N_mdm(type,finalMomentsType_NO_MOMENTS)}" label="no moments"   />
 		 <keyword  id="standard" name="standard" code="{N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}" label="standardized moments"   />
 		 <keyword  id="central" name="central" code="{N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}" label="central moments"   />
@@ -351,6 +351,20 @@
 	 Global interval, evidence: 10000 LHS, numVars^2 for EGO
 	 DACE, sampling: minimum required
       -->
+
+    <!ENTITY final_stats_perf_res '
+             <optional>
+               <oneOf label="Final statistics type" >
+		 <keyword  id="algorithm_performance" name="algorithm_performance" code="{N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}" label="Final algorithm performance" />
+		 <keyword  id="algorithm_results" name="algorithm_results" code="{N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}" label="Final algorithm results" >
+		   &default_final_moments;
+		   <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
+		   <!-- &reliability_levels;          TO DO: support moment-based mappings -->
+		   &distribution_cumul_compl;               <!-- inactive without mappings -->
+	         </keyword>
+               </oneOf>
+             </optional>
+	     ' >
 
     <!ENTITY import_build '
        	     <keyword  id="import_build_points_file" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file"  minOccurs="0" default="no point import from a file" >
@@ -3013,10 +3027,7 @@
 	  </keyword>
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &default_final_moments;
-	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
-	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
-	  &distribution_cumul_compl;               <!-- inactive without mappings -->
+	  &final_stats_perf_res;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3035,10 +3046,7 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &default_final_moments;
-	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
-	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
-	  &distribution_cumul_compl;               <!-- inactive without mappings -->
+	  &final_stats_perf_res;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3056,10 +3064,7 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &default_final_moments;
-	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
-	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
-	  &distribution_cumul_compl;               <!-- inactive without mappings -->
+	  &final_stats_perf_res;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3097,10 +3102,7 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &default_final_moments;
-	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
-	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
-	  &distribution_cumul_compl;               <!-- inactive without mappings -->
+	  &final_stats_perf_res;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>

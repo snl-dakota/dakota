@@ -2367,6 +2367,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"nond.expansion_refinement_type", P_MET refinementType},
       {"nond.expansion_type", P_MET expansionType},
       {"nond.final_moments", P_MET finalMomentsType},
+      {"nond.final_statistics", P_MET finalStatsType},
       {"nond.growth_override", P_MET growthOverride},
       {"nond.least_squares_regression_type", P_MET lsRegressionType},
       {"nond.multilevel_allocation_control", P_MET multilevAllocControl},

@@ -2822,17 +2822,23 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_moments {0}
-      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+    [ 
+      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
       |
-      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-      |
-      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-     ]
-    [ distribution {0}
-      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-      |
-      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
+        [ distribution {0}
+          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+          |
+          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+         ]
+       )
      ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
@@ -2879,17 +2885,23 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_moments {0}
-      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+    [ 
+      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
       |
-      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-      |
-      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-     ]
-    [ distribution {0}
-      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-      |
-      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
+        [ distribution {0}
+          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+          |
+          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+         ]
+       )
      ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
@@ -2931,17 +2943,23 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_moments {0}
-      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+    [ 
+      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
       |
-      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-      |
-      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-     ]
-    [ distribution {0}
-      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-      |
-      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
+        [ distribution {0}
+          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+          |
+          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+         ]
+       )
      ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
@@ -2994,17 +3012,23 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_moments {0}
-      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+    [ 
+      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
       |
-      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-      |
-      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-     ]
-    [ distribution {0}
-      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-      |
-      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
+        [ distribution {0}
+          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+          |
+          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+         ]
+       )
      ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}

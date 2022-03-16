@@ -41,6 +41,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
+  finalStatsType(problem_db.get_short("method.nond.final_statistics")),
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
     problem_db.get_ushort("method.nond.export_samples_format"))
@@ -211,6 +212,51 @@ void NonDEnsembleSampling::post_run(std::ostream& s)
   update_final_statistics();
 
   Analyzer::post_run(s);
+}
+
+
+void NonDEnsembleSampling::initialize_final_statistics()
+{
+  switch (finalStatsType) {
+  case ALGORITHM_PERFORMANCE: { // MSE in stat goal(s) used for method selection
+    size_t num_final = 2;
+    ActiveSet set(num_final);//, num_active_vars); // default RV = 1
+    set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
+    finalStatistics = Response(SIMULATION_RESPONSE, set);
+
+    StringArray stats_labels(num_final);
+    stats_labels[0] = "avg_est_var";  stats_labels[0] = "equiv_HF_cost";
+    finalStatistics.function_labels(stats_labels);
+    break;
+  }
+  case ALGORITHM_RESULTS: // final stats: moments + level mappings
+    NonD::initialize_final_statistics();  break;
+  }
+}
+
+
+void NonDEnsembleSampling::update_final_statistics()
+{
+  if (finalStatistics.is_null()) // some ctor chains do not track final stats
+    return;
+
+  /*
+  if (epistemicStats) {
+    size_t i, cntr = 0;
+    for (i=0; i<numFunctions; ++i) {
+      finalStatistics.function_value(extremeValues[i].first,  cntr++);
+      finalStatistics.function_value(extremeValues[i].second, cntr++);
+    }
+  }
+  */
+  switch (finalStatsType) {
+  case ALGORITHM_PERFORMANCE:
+    //finalStatistics.function_value(avgEstVar,    0); // TO DO: elevate and update in NonDHierarchSampling
+    finalStatistics.function_value(equivHFEvals, 1);
+    break;
+  case ALGORITHM_RESULTS: // final stats: moments + level mappings
+    NonD::update_final_statistics(); break;
+  }
 }
 
 
