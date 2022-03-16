@@ -3,10 +3,11 @@ package gov.sandia.dakota.gui.copyright;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
 public class BatchCopyrightCommentUpdater {
 	
@@ -45,40 +46,94 @@ public class BatchCopyrightCommentUpdater {
 			+ " ******************************************************************************/";
 	
 	private static final String TEST_STRING = "Under the terms of Contract DE-NA0003525 with NTESS,";
-	private static final String STRING_2018 = "* Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC (NTESS).";
-	private static final String STRING_2019 = "* Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).";
-	private static final String STRING_2020 = "* Copyright 2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).";
-	private static final String STRING_2021 = "* Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC (NTESS).";
+	private static final String STRING_2018 = "* Copyright 2018";
+	private static final String STRING_2019 = "* Copyright 2019";
+	private static final String STRING_2020 = "* Copyright 2020";
+	private static final String STRING_2021 = "* Copyright 2021";
 	
-	private static final String STRING_CURRENT = "* Copyright 2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).";
+	private static final String STRING_CURRENT = "* Copyright 2022";
 	
-	///////////////////
-	// CONFIGURATION //
-	///////////////////
+	public static final List<String> DAKOTA_GUI_PLUGINS = List.of(
+		"gov.sandia.bb.commons",
+		"gov.sandia.bb.commons.ui",
+		"gov.sandia.blackbox",
+		"gov.sandia.blackbox.aprepro",
+		"gov.sandia.blackbox.bmf",
+		"gov.sandia.blackbox.dakota",
+		"gov.sandia.blackbox.dakota.surrogate",
+		"gov.sandia.blackbox.im",
+		"gov.sandia.blackbox.iwf",
+		"gov.sandia.blackbox.workflow.runtime",
+		"gov.sandia.blackbox.workflow.ui",
+		"gov.sandia.bmf",
+		"gov.sandia.bmf.chartreuse.bridge",
+		"gov.sandia.bmf.chartreuse.dakota.bridge",
+		"gov.sandia.bmf.ui",
+		"gov.sandia.bmf.units",
+		"gov.sandia.chartreuse",
+		"gov.sandia.chartreuse.csv.bridge",
+		"gov.sandia.chartreuse.impl.plotly",
+		"gov.sandia.chartreuse.impl.plotly.linux",
+		"gov.sandia.chartreuse.impl.plotly.mac",
+		"gov.sandia.chartreuse.impl.plotly.windows",
+		"gov.sandia.chartreuse.workflow",
+		"gov.sandia.dakota.chartreuse.bridge",
+		"gov.sandia.dakota.chartreuse.hdf.bridge",
+		"gov.sandia.dakota.chartreuse.workflow",
+		"gov.sandia.dakota.common",
+		"gov.sandia.dakota.common.ui",
+		"gov.sandia.dakota.editor",
+		"gov.sandia.dakota.glimmer.bridge",
+		"gov.sandia.dakota.help",
+		"gov.sandia.dakota.jni",
+		"gov.sandia.dakota.mlmf",
+		"gov.sandia.dakota.parser",
+		"gov.sandia.dakota.parser.ui",
+		"gov.sandia.dakota.runner",
+		"gov.sandia.dakota.taxonomy",
+		"gov.sandia.dakota.wizards",
+		"gov.sandia.dakota.workflow.bridge",
+		"gov.sandia.dart.dakota.workflow.runtime",
+		"gov.sandia.dart.dakota.workflow.ui",
+		"gov.sandia.dart.dakotaui.app",
+		"gov.sandia.glimmer",
+		"gov.sandia.hdf.chartreuse.bridge",
+		"gov.sandia.hdf.eclipse",
+		"gov.sandia.hdf.hdfview",
+		"gov.sandia.hdf.workflow.runtime",
+		"gov.sandia.hdf.workflow.ui",
+		"gov.sandia.highlighter",
+		"gov.sandia.highlighter.ui",
+		"gov.sandia.qoi",
+		"gov.sandia.qoi.ui"
+	);
 	
-	private static final boolean DRY_RUN            = true;
-	private static final String START_DIR          = "C:\\Users\\emridgw\\workspace\\svn\\dart";
-	private static final boolean USE_DAKOTA_HEADER = true;
-	private static final boolean USE_SAW_HEADER    = true;
-	private static final boolean UPDATE_EXISTING_HEADERS = true;
-	private static final boolean INSERT_IF_MISSING = true;
-	private static final String[] FOLDER_BLACKLIST = new String[] {
-		".metadata",
-		".sonarlint",
-		"apache-ant-1.10.7",
-		"BinaryPluginHelper",
-		"build",
-		"CC-build-info",
-		".settings",
-		".svn",
-		"bin",
-		"test",
-		"testdata",
-		"cubit-bundle-Windows-AMD64",
+	public static final List<String> SAW_IF_PLUGINS = List.of(
+		"com.strikewire.snl.apc.Common",
+		"com.strikewire.utils",
+		"gov.sandia.dart.apache.commons",
+		"gov.sandia.dart.application",
+		"gov.sandia.dart.aprepro",
+		"gov.sandia.dart.argv",
+		"gov.sandia.dart.chart.xyplot.ui",
+		"gov.sandia.dart.common.core",
+		"gov.sandia.dart.common.preferences",
+		"gov.sandia.dart.jna",
+		"gov.sandia.dart.metrics",
+		"gov.sandia.dart.workflow.editor",
+		"gov.sandia.dart.workflow.help",
+		"gov.sandia.dart.workflow.phase3",
+		"gov.sandia.dart.workflow.phase3.embedded"
+	);
+	
+	public static final List<String> NON_DAKOTA_PLUGINS = List.of(
 		"gov.sandia.aleph",
 		"gov.sandia.aleph.ui",
 		"gov.sandia.aleph.workflow.runtime",
+		"gov.sandia.bb.commons.ui.saw",
+		"gov.sandia.blackbox.xyce",
 		"gov.sandia.dakota.method.soga",
+		"gov.sandia.dakota.parser.ui.saw.bridge",
 		"gov.sandia.dart.dakota.tests",
 		"gov.sandia.hdf.hdfview",
 		"gov.sandia.hdf.hdfview.tests",
@@ -86,20 +141,66 @@ public class BatchCopyrightCommentUpdater {
 		"gov.sandia.modules.runtime",
 		"org.eclipse.graphiti",
 		"org.eclipse.graphiti.mm",
-		"org.eclipse.graphiti.ui",
+		"org.eclipse.graphiti.ui"
+	);
+	
+	public static final List<String> PLATFORM_PLUGINS = List.of(
+		"apache-ant-1.10.7",
+		"BinaryPluginHelper",
+		"build",
+		"CC-build-info",
+		"cubit-bundle-Windows-AMD64",
 		"SAW-Target-Platform",
 		"Target-Platform"
-	};
+	);
+	
+	public static final List<String> NON_SRC_FOLDERS = List.of(
+		".metadata",
+		".sonarlint",
+		".settings",
+		".svn",
+		"bin",
+		"test",
+		"testdata"
+	);
+	
+	///////////////////
+	// CONFIGURATION //
+	///////////////////
+	
+	private static final boolean DRY_RUN           = true;
+	private static final String START_DIR          = "C:\\Users\\emridgw\\workspace\\svn\\dart";
+	private static final boolean UPDATE_EXISTING_HEADERS = true;
+	private static final boolean INSERT_IF_MISSING = true;
+	private static final boolean INSERT_DAKOTA_HEADER = true;
+	private static final boolean INSERT_SAW_HEADER    = true;
+	private static final List<String> FOLDER_WHITELIST = new ArrayList<>();
+	
+	static {
+		FOLDER_WHITELIST.addAll(SAW_IF_PLUGINS);
+	}
+	
+	//////////
+	// MAIN //
+	//////////
 	
 	public static void main(String args[]) throws Exception {
 		updateJavaFiles(new File(START_DIR));
+		System.out.println("Done!");
 	}
 	
 	private static void updateJavaFiles(File startDir) throws IOException {
 		for(File childFile : startDir.listFiles()) {
-			if(childFile.isDirectory() && !ArrayUtils.contains(FOLDER_BLACKLIST, childFile.getName())) {
-				updateJavaFiles(childFile);
-			} else {
+			if(childFile.isDirectory()) {
+				if(startDir.getAbsolutePath().equals(START_DIR)) { // More stringent checks for root folders.
+					if(FOLDER_WHITELIST.contains(childFile.getName())) {
+						System.out.println("Working on " + childFile.getName() + "...");
+						updateJavaFiles(childFile);
+					}
+				} else {
+					updateJavaFiles(childFile);
+				}
+			} else if(!childFile.isDirectory()) {
 				String extension = FilenameUtils.getExtension(childFile.getName());
 				if(extension.equals("java")) {
 					updateJavaFile(childFile);
@@ -116,8 +217,8 @@ public class BatchCopyrightCommentUpdater {
 			updateYearOfCommentHeader(javaFile, STRING_2020);
 			updateYearOfCommentHeader(javaFile, STRING_2021);
 		} else if(!hasHeader && INSERT_IF_MISSING) {
-			if(USE_DAKOTA_HEADER) insertHeader(javaFile, DAKOTA_HEADER);
-			else if(USE_SAW_HEADER) insertHeader(javaFile, SAW_IF_HEADER);
+			if(INSERT_DAKOTA_HEADER) insertHeader(javaFile, DAKOTA_HEADER);
+			else if(INSERT_SAW_HEADER) insertHeader(javaFile, SAW_IF_HEADER);
 		}
 	}
 	
@@ -145,8 +246,9 @@ public class BatchCopyrightCommentUpdater {
 			String contents = FileUtils.readFileToString(javaFile, StandardCharsets.UTF_8);
 			boolean usesCRLF = contents.contains("\r\n");
 			String ln = usesCRLF ? "\r\n" : "\n";
+			String formattedHeader = usesCRLF ? header.replace("\n", "\r\n") : header;
 			
-			String finalFileContents = header + ln + contents;
+			String finalFileContents = formattedHeader + ln + contents;
 			FileUtils.write(javaFile, finalFileContents, StandardCharsets.UTF_8, false);
 		}
 	}
