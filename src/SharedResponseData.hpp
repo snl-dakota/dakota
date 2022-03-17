@@ -535,12 +535,9 @@ void expand_for_fields_stl(const SharedResponseData& srd, const T& src_array,
 } // namespace Dakota
 
 
-// Since we may serialize this class through a temporary, force
-// serialization mode and no tracking.  We allow tracking on
-// SharedResponseDataRep as we want to serialize each unique pointer
-// exactly once (may need to revisit this).
-BOOST_CLASS_IMPLEMENTATION(Dakota::SharedResponseData, 
- 			   boost::serialization::object_serializable)
+// Since we may serialize this class through a temporary, disallow tracking.
+// We allow tracking on SharedResponseDataRep as we want to serialize each
+// unique pointer exactly once (may need to revisit this).
 BOOST_CLASS_TRACKING(Dakota::SharedResponseData, 
   		     boost::serialization::track_never)
 
