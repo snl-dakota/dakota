@@ -1890,7 +1890,8 @@ void Response::load_rep(Archive& ar, const unsigned int version)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       ar & functionHessians[i];
 
-  ar & metaData;
+  if (version >= 1)
+    ar & metaData;
 }
 
 

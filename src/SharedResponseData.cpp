@@ -195,7 +195,8 @@ void SharedResponseDataRep::serialize(Archive& ar, const unsigned int version)
   ar & numScalarPrimary;
   ar & priFieldLengths;
   ar & coordsPerPriField;
-  ar & metadataLabels;
+  if (version >= 1)
+    ar & metadataLabels;
 #ifdef SERIALIZE_DEBUG  
   Cout << "Serializing SharedResponseDataRep:\n"
        << responseType << '\n'

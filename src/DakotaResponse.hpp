@@ -1031,5 +1031,7 @@ inline bool operator!=(const Response& resp1, const Response& resp2)
 // Since we may serialize this class through a temporary, disallow tracking
 BOOST_CLASS_TRACKING(Dakota::Response, 
 		     boost::serialization::track_never)
+// Version 1 adds metadata
+BOOST_CLASS_VERSION(Dakota::Response, 1)
 
 #endif // !DAKOTA_RESPONSE_H

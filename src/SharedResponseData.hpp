@@ -540,5 +540,7 @@ void expand_for_fields_stl(const SharedResponseData& srd, const T& src_array,
 // unique pointer exactly once (may need to revisit this).
 BOOST_CLASS_TRACKING(Dakota::SharedResponseData, 
   		     boost::serialization::track_never)
+// Version 1 adds metadata
+BOOST_CLASS_VERSION(Dakota::SharedResponseDataRep, 1)
 
 #endif
