@@ -65,11 +65,19 @@ std::string bad_functions_file = R"(  45.93  f1
 )";
 
 
-void check_functions(const std::vector<double>& fns, const Dakota::Response& resp)
+Dakota::Response get_fn_only_response()
 {
-  const auto& resp_vals = resp.function_values();
-  for (size_t i=0; i<fns.size(); ++i)
-    BOOST_TEST(fns[i] == resp_vals[i], btt::tolerance(1.0e-15));
+  size_t num_derivs = 2, num_fns = 3;
+  Dakota::ActiveSet as(num_fns, num_derivs);
+  Dakota::SharedResponseData srd(as);
+  return Dakota::Response(srd);
+}
+
+template<class VectorT>
+void check_vector(const std::vector<double>& truth_vec, const VectorT& trial_vec)
+{
+  for (size_t i=0; i<truth_vec.size(); ++i)
+    BOOST_TEST(truth_vec[i] == trial_vec[i], btt::tolerance(1.0e-15));
 }
 
 
@@ -114,18 +122,15 @@ void malformed_file_throws(const std::string& results_string,
 // check functions only with default ASV = 1's
 BOOST_AUTO_TEST_CASE(test_response_read_functions_only)
 {
-  size_t num_derivs = 2, num_fns = 3;
-  Dakota::ActiveSet as(num_fns, num_derivs);
-  Dakota::SharedResponseData srd(as);
-  Dakota::Response resp(srd);
+  Dakota::Response resp = get_fn_only_response();
 
   read_response(valid_functions_file, Dakota::FLEXIBLE_RESULTS, resp);
-  check_functions(functions, resp);
+  check_vector(functions, resp.function_values());
 
   resp.reset();
   read_response(bad_functions_file, Dakota::FLEXIBLE_RESULTS, resp);
   const auto& bad_vals = resp.function_values();
-  for (size_t i=0; i<num_fns; ++i)
+  for (size_t i=0; i<functions.size(); ++i)
     BOOST_TEST(functions[i] != bad_vals[i], btt::tolerance(1.0e-15));
 
   malformed_file_throws(extra_functions_file, Dakota::FLEXIBLE_RESULTS, resp);
@@ -140,7 +145,7 @@ BOOST_AUTO_TEST_CASE(test_response_read_functions_only)
   resp.reset();
   resp.function_labels({"f1", "eff2", "F3"});
   read_response(valid_functions_file, Dakota::LABELED_RESULTS, resp);
-  check_functions(functions, resp);
+  check_vector(functions, resp.function_values());
 
   malformed_file_throws(extra_functions_file, Dakota::LABELED_RESULTS, resp);
   malformed_file_throws(extra_gradient_file, Dakota::LABELED_RESULTS, resp);
@@ -264,16 +269,21 @@ junk
   };
 
 
-
-BOOST_AUTO_TEST_CASE(test_response_read_mixed_derivs)
+Dakota::Response get_derivs_response()
 {
   size_t num_derivs = 2, num_fns = 3;
   Dakota::ActiveSet as({3, 1, 5}, {1, 2});
   Dakota::SharedResponseData srd(as);
-  Dakota::Response resp(srd, as);
+  return Dakota::Response(srd, as);
+}
+
+
+BOOST_AUTO_TEST_CASE(test_response_read_mixed_derivs)
+{
+  Dakota::Response resp = get_derivs_response();
 
   read_response(valid_mixed_file, Dakota::FLEXIBLE_RESULTS, resp);
-  check_functions(functions, resp);
+  check_vector(functions, resp.function_values());
   check_matrix(gradients, resp.function_gradients());
   check_matrix(hessian_F3, resp.function_hessian(2));
 
@@ -286,7 +296,7 @@ BOOST_AUTO_TEST_CASE(test_response_read_mixed_derivs)
   resp.reset();
   resp.function_labels({"f1", "eff2", "F3"});
   read_response(valid_mixed_file, Dakota::LABELED_RESULTS, resp);
-  check_functions(functions, resp);
+  check_vector(functions, resp.function_values());
 
   // verify all invalid files throw, even though labels match
   for (const auto& invalid_file : invalid_mixed_files_named) {
@@ -294,4 +304,181 @@ BOOST_AUTO_TEST_CASE(test_response_read_mixed_derivs)
     BOOST_TEST_CHECKPOINT(invalid_file.first);
     malformed_file_throws(invalid_file.second, resp);
   }
+}
+
+
+// valid results file for ASV = 1, 1, 1, with 2 metadata
+std::string valid_functions_metadata_file = R"(  54.93  f1
+93855432.34E+02 eff2
+  3  F3
+3.1415 ApplePi
+  4000 cost
+)";
+
+std::string one_metadata_file = R"(  54.93  f1
+93855432.34E+02 eff2
+  3  F3
+  4000 cost
+)";
+
+std::string missing_metadata_file = R"(  54.93  f1
+93855432.34E+02 eff2
+  3  F3
+)";
+
+std::vector<double> metadata = {3.1415, 4000};
+
+
+// check functions + metadata with default ASV = 1's
+BOOST_AUTO_TEST_CASE(test_response_read_functions_metadata)
+{
+  Dakota::Response resp = get_fn_only_response();
+  resp.reshape_metadata(metadata.size());
+
+  read_response(valid_functions_metadata_file, Dakota::FLEXIBLE_RESULTS, resp);
+  check_vector(functions, resp.function_values());
+  check_vector(metadata, resp.metadata());
+
+  // throws on metadata label mismatch
+  resp.function_labels({"f1", "eff2", "F3"});
+  malformed_file_throws(valid_functions_metadata_file, Dakota::LABELED_RESULTS, resp);
+
+  // works on matching MD labels
+  resp.reset();
+  resp.shared_data().metadata_labels({"ApplePi", "cost"});
+  read_response(valid_functions_metadata_file, Dakota::LABELED_RESULTS, resp);
+  check_vector(functions, resp.function_values());
+  check_vector(metadata, resp.metadata());
+
+  // throws if metadata missing
+  malformed_file_throws(one_metadata_file, resp);
+  malformed_file_throws(missing_metadata_file, resp);
+}
+
+
+// for object expecting two metadata
+// TODO: improve error reporting?
+/*
+fns,meta,grad,hess
+
+fns,grad,hess,meta
+*/
+
+
+
+// valid results file for ASV = 3, 1, 5, with 2 metadata
+std::string valid_derivs_metadata_file = R"(  54.93  f1
+93855432.34E+02 eff2
+  3  F3
+[ 4398349.32423 389490.2 ]
+  [[  2.0 -1.0
+     -1.0  2.0 ]]
+3.1415 ApplePi
+  4000 cost
+)";
+
+std::string metadata_grad_hess_file = R"(  54.93  f1
+93855432.34E+02 eff2
+  3  F3
+3.1415 ApplePi
+  4000 cost
+[ 4398349.32423 389490.2 ]
+  [[  2.0 -1.0
+     -1.0  2.0 ]]
+)";
+
+std::string grad_metadata_hess_file = R"(  54.93  f1
+93855432.34E+02 eff2
+  3  F3
+[ 4398349.32423 389490.2 ]
+3.1415 ApplePi
+  4000 cost
+  [[  2.0 -1.0
+     -1.0  2.0 ]]
+)";
+
+std::string missing_gradient_metadata_file = R"(  54.93  f1
+93855432.34E+02 eff2
+  3  F3
+  [[  2.0 -1.0
+     -1.0  2.0 ]]
+3.1415 ApplePi
+  4000 cost
+)";
+
+std::string missing_hessian_metadata_file = R"(  54.93  f1
+93855432.34E+02 eff2
+  3  F3
+[ 4398349.32423 389490.2 ]
+3.1415 ApplePi
+  4000 cost
+)";
+
+
+BOOST_AUTO_TEST_CASE(test_response_read_derivs_metadata)
+{
+  Dakota::Response resp = get_derivs_response();
+  resp.reshape_metadata(metadata.size());
+
+  read_response(valid_derivs_metadata_file, Dakota::FLEXIBLE_RESULTS, resp);
+  check_vector(functions, resp.function_values());
+  check_matrix(gradients, resp.function_gradients());
+  check_matrix(hessian_F3, resp.function_hessian(2));
+  check_vector(metadata, resp.metadata());
+
+  // throws on metadata label mismatch
+  resp.function_labels({"f1", "eff2", "F3"});
+  malformed_file_throws(valid_derivs_metadata_file, Dakota::LABELED_RESULTS, resp);
+
+  // works on matching MD labels
+  resp.reset();
+  resp.shared_data().metadata_labels({"ApplePi", "cost"});
+  read_response(valid_derivs_metadata_file, Dakota::LABELED_RESULTS, resp);
+  check_vector(functions, resp.function_values());
+  check_matrix(gradients, resp.function_gradients());
+  check_matrix(hessian_F3, resp.function_hessian(2));
+  check_vector(metadata, resp.metadata());
+
+  // throws for malformed results
+  malformed_file_throws(metadata_grad_hess_file, resp);
+  malformed_file_throws(grad_metadata_hess_file, resp);
+  malformed_file_throws(missing_gradient_metadata_file, resp);
+  malformed_file_throws(missing_hessian_metadata_file, resp);
+}
+
+
+// valid results file for ASV = 3, 1, 1, with 2 metadata
+std::string valid_gradient_metadata_file = R"(  54.93  f1
+93855432.34E+02 eff2
+  3  F3
+[ 4398349.32423 389490.2 ]
+3.1415 ApplePi
+  4000 cost
+)";
+
+
+// test for gradient immediately followed by metadata (validate that
+// reader puts back the data from forward seek)
+BOOST_AUTO_TEST_CASE(test_response_read_grads_metadata)
+{
+  Dakota::Response resp = get_derivs_response();
+  resp.active_set_request_vector({3, 1, 1});
+  resp.reshape_metadata(metadata.size());
+
+  read_response(valid_gradient_metadata_file, Dakota::FLEXIBLE_RESULTS, resp);
+  check_vector(functions, resp.function_values());
+  check_matrix(gradients, resp.function_gradients());
+  check_vector(metadata, resp.metadata());
+
+  // throws on metadata label mismatch
+  resp.function_labels({"f1", "eff2", "F3"});
+  malformed_file_throws(valid_gradient_metadata_file, Dakota::LABELED_RESULTS, resp);
+
+  // works on matching MD labels
+  resp.reset();
+  resp.shared_data().metadata_labels({"ApplePi", "cost"});
+  read_response(valid_gradient_metadata_file, Dakota::LABELED_RESULTS, resp);
+  check_vector(functions, resp.function_values());
+  check_matrix(gradients, resp.function_gradients());
+  check_vector(metadata, resp.metadata());
 }
