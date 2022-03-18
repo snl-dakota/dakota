@@ -739,6 +739,7 @@ void Response::read_hessians(std::istream& s, const ShortArray &asv,
   
   char l_bracket[2] = {'\0','\0'};
   char r_bracket[2] = {'\0','\0'};
+  size_t pos1 = s.tellg();
   size_t asv_idx = 0;
   s >> l_bracket[0] >> l_bracket[1];
   // Keep reading until we run out of Hessians 
@@ -761,8 +762,10 @@ void Response::read_hessians(std::istream& s, const ShortArray &asv,
     }
     asv_idx++;
     l_bracket[0] = '\0'; l_bracket[1] = '\0';
+    pos1 = s.tellg();
     s >> l_bracket[0] >> l_bracket[1];
   }
+  s.seekg(pos1);
   bool at_eof = (l_bracket[0] == '\0');
   if( ! (at_eof || expect_metadata) )
     throw ResultsFileError("Unexpected data found after reading " +

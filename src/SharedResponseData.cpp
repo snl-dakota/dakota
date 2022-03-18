@@ -343,7 +343,7 @@ reshape_labels(StringArray& resp_labels, size_t num_new)
   size_t num_curr = resp_labels.size();
   bool overwrite = false;
   if (num_new > num_curr) {
-    if (num_new % num_curr) // not a growth factor
+    if (num_curr == 0 || num_new % num_curr) // not a growth factor
       overwrite = true;
     else { // inflate using set replication (no added annotation)
       resp_labels.resize(num_new);
@@ -352,7 +352,7 @@ reshape_labels(StringArray& resp_labels, size_t num_new)
     }
   }
   else if (num_curr > num_new) {
-    if (num_curr % num_new)
+    if (num_new == 0 || num_curr % num_new)
       overwrite = true;
     else // deflate by concatenation (no annotation to remove)
       resp_labels.resize(num_new);
