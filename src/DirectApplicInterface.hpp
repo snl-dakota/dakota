@@ -37,7 +37,8 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 	     VAR_F0, VAR_d, /* VAR_b, VAR_h, VAR_E */ // steel column
 	     VAR_MForm, // mf_*() test functions, tunable model
 	     VAR_x, VAR_xi, VAR_Af, VAR_Ac, //Problem18
-             VAR_y, VAR_theta }; // tunable model
+             VAR_y, VAR_theta, VAR_theta1, VAR_theta2,
+	     VAR_delta, VAR_gamma }; // tunable model
 //enum x3_var_t  { X1, X2, X3 }; // generic up to 3 dimensions
 //enum shc_var_t { SHC_B, SHC_H, SHC_P, SHC_M, SHC_Y }; // short column
 //enum cb_var_t  { CB_W, CB_T, CB_R, CB_E, CB_X, CB_Y }; // cantilever beam
@@ -135,7 +136,7 @@ protected:
   /// variable, active set, and response attributes; derived classes
   /// reimplementing this likely need to invoke the base class API
   virtual void set_local_data(const Variables& vars, const ActiveSet& set,
-		      const Response& response);
+			      const Response& response);
 
   /// convenience function for local test simulators which overlays
   /// response contributions from multiple analyses using MPI_Reduce
@@ -183,6 +184,9 @@ protected:
   StringMultiArray xDRLabels; ///< discrete real variable labels
   StringMultiArray xDSLabels; ///< discrete string variable labels
   StringArray      xAllLabels; ///< all variable labels in input spec order
+
+  RealArray   metaData;       ///< real-valued metadata
+  StringArray metaDataLabels; ///< labels for optional metadata
 
   std::map<String, var_t>       varTypeMap; ///< map from variable label to enum
   std::map<String, driver_t> driverTypeMap; ///< map from driver name to enum
