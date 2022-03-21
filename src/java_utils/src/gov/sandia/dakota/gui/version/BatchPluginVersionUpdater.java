@@ -60,7 +60,7 @@ public class BatchPluginVersionUpdater {
 	// CONFIGURATION //
 	///////////////////
 	
-	private static final boolean DRY_RUN = true;
+	private static final boolean DRY_RUN = false;
 	private static final String START_DIR = "C:\\Users\\emridgw\\workspace\\svn\\dart";
 	private static final String[] PLUGIN_BLACKLIST = new String[]{
 		"gov.sandia.aleph",
@@ -104,14 +104,14 @@ public class BatchPluginVersionUpdater {
 	private static final String[] DEPRECATED_PLUGINS = new String[] {};
 	private static final String[] DEPRECATED_FEATURES = new String[] {};
 	private static final boolean GET_PLUGIN_LIST = true;
-	private static final boolean GET_FEATURE_LIST = true;
 	private static final boolean UPDATE_PLUGIN_RELEASENOTES = true;
 	private static final boolean UPDATE_PLUGIN_MANIFEST = true;
+	private static final boolean GET_FEATURE_LIST = true;
 	private static final boolean UPDATE_FEATURE_XML = true;
 	private static final boolean UPDATE_FEATURE_RELEASENOTES = true;
 	private static final boolean UPDATE_DAKOTAGUI_PRODUCT = true;
 	private static final String GUI_VERSION = "6.15.4";
-	private static final String BUILD_DATE = "2022/03/14";
+	private static final String BUILD_DATE = "2022/03/21";
 	
 	////////////
 	// FIELDS //
