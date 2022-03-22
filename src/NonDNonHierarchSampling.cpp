@@ -65,22 +65,26 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
-  size_t i, num_mf = model_ensemble.size(), num_lev;
+  size_t i, num_mf = model_ensemble.size(), num_lev, md_index, num_md;
   ModelLIter ml_it;
   NLev.resize(num_mf);
+  costMetadataIndices.resize(num_mf);
   for (i=0, ml_it=model_ensemble.begin(); ml_it!=model_ensemble.end();
        ++i, ++ml_it) {
-    // for now, only SimulationModel supports solution_{levels,costs}()
-    num_lev = ml_it->solution_levels(); // lower bound is 1 soln level
+    // only SimulationModel supports solution_{levels,costs} and cost metadata
+    num_lev  = ml_it->solution_levels(); // lower bound is 1 soln level
+    md_index = ml_it->cost_metadata_index();
+    num_md   = ml_it->current_response().metadata().size();
 
     // Ensure there is consistent cost data available as SimulationModel must
     // be allowed to have empty solnCntlCostMap (when optional solution control
     // is not specified).  Passing false bypasses lower bound of 1.
     // > For ACV, only require 1 solution cost, neglecting resolutions for now
     //if (num_lev > ml_it->solution_levels(false)) { // 
-    if (ml_it->solution_levels(false) == 0) { // default is 0 soln costs
-      Cerr << "Error: insufficient cost data provided for ACV sampling."
-	   << "\n       Please provide solution_level_cost estimates for model "
+    if (md_index == _NPOS && ml_it->solution_levels(false) == 0) { // no low bnd
+      Cerr << "Error: insufficient cost data provided for non-hierarchical "
+	   << "sampling.\n       Please provide offline solution_level_cost "
+	   << "estimates or activate\n       online cost recovery for model "
 	   << ml_it->model_id() << '.' << std::endl;
       err_flag = true;
     }
@@ -89,6 +93,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
     NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
     //for (j=0; j<num_lev; ++j)
     //  Nl_i[j].resize(numFunctions); // defer
+    costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
   }
 
   if (err_flag)
@@ -103,12 +108,6 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   query_cost(numSteps, multilev, sequenceCost);
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
 		    numSteps, pilotSamples);
-
-  // ensemble response is resized above by aggregated_models_mode(), but
-  // find_index() returns the first label match
-  costMetadataIndex = find_index(
-    iteratedModel.current_response().shared_data().metadata_labels(),
-    probDescDB.get_string("model.simulation.cost_recovery_metadata"));
 
   size_t max_ps = find_max(pilotSamples);
   if (max_ps) maxEvalConcurrency *= max_ps;
@@ -261,27 +260,24 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
   // uses one set of allResponses with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
-  Real cost;
-  size_t cntr = costMetadataIndex, step, num_steps = numApprox+1,
-    num_meta = allResponses.begin()->second.metadata().size(),
-    num_meta_per_step = num_meta / num_steps;
+  size_t cntr, step, num_steps = numApprox+1;  Real cost;
   seq_cost.size(num_steps); // init to 0
   SizetArray num_finite(num_steps);
-
   IntRespMCIter r_it;
   using std::isfinite;
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
 
-    const std::vector<RespMetadataT>& md = r_it->second.metadata();
+    const std::vector<RespMetadataT>& md = r_it->second.metadata();// aggregated
     if (outputLevel >= DEBUG_OUTPUT) Cout << "Metadata:\n" << md;
 
-    for (step=0; step<num_steps; ++step) {
-      cost = md[cntr];
+    for (step=0, cntr=0; step<num_steps; ++step) {
+      const SizetSizetPair& cost_mdi = costMetadataIndices[step];
+      cost = md[cntr + cost_mdi.first]; // offset by index
       if (isfinite(cost)) {
 	++num_finite[step];
 	seq_cost[step] += cost;
       }
-      cntr += num_meta_per_step;
+      cntr += cost_mdi.second; // offset by size of metadata for step
     }
   }
   // Ensemble average cost

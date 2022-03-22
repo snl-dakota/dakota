@@ -179,6 +179,9 @@ public:
   /// return the active (real) value of the solution control
   virtual Real   solution_level_real_value() const;
 
+  /// return index of online cost estimates within metadata
+  virtual size_t cost_metadata_index() const;
+
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
   virtual void primary_response_fn_weights(const RealVector& wts, 

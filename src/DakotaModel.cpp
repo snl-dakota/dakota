@@ -3621,6 +3621,19 @@ Real Model::solution_level_real_value() const
 }
 
 
+size_t Model::cost_metadata_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual cost_metadata_index"
+	 << "() function.\n       cost_metadata_index() is not supported by "
+	 << "this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->cost_metadata_index(); // envelope fwd
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */

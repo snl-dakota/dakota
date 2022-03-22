@@ -83,6 +83,9 @@ protected:
   /// return a discrete real variable value corresponding to solnCntlADVIndex
   Real   solution_level_real_value() const;
 
+  /// return costMetadataIndex
+  size_t cost_metadata_index() const;
+
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs userDefinedInterface.map()/
   // synch()/synch_nowait()
@@ -179,6 +182,9 @@ private:
   /// solnCntlCostMap, and solnCntl{AV,ADV}Index
   void initialize_solution_control(const String& control,
 				   const RealVector& cost);
+  /// process the solution level inputs to define solnCntlVarType,
+  /// solnCntlCostMap, and solnCntl{AV,ADV}Index
+  void initialize_solution_recovery(const String& cost_label);
 
   //
   //- Heading: Data members
@@ -198,6 +204,9 @@ private:
   size_t solnCntlAVIndex;
   /// sorted array of relative costs associated with a set of solution levels
   std::map<Real, size_t> solnCntlCostMap;
+
+  /// index of metadata label used for online cost recovery
+  size_t costMetadataIndex;
 
   /// counter for calls to derived_evaluate()/derived_evaluate_nowait()
   size_t simModelEvalCntr;
@@ -238,6 +247,10 @@ inline size_t SimulationModel::solution_control_variable_index() const
 
 inline size_t SimulationModel::solution_control_discrete_variable_index() const
 { return solnCntlADVIndex; }
+
+
+inline size_t SimulationModel::cost_metadata_index() const
+{ return costMetadataIndex; }
 
 
 inline void SimulationModel::derived_evaluate(const ActiveSet& set)

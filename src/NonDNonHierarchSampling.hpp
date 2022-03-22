@@ -257,8 +257,8 @@ private:
   //- Heading: Data
   //
 
-  /// index of cost data within the array of response metadata
-  size_t costMetadataIndex;
+  /// indices of cost data within response metadata, one per model form
+  SizetSizetPairArray costMetadataIndices;
 
   /// pointer to NonDACV instance used in static member functions
   static NonDNonHierarchSampling* nonHierSampInstance;

@@ -28,7 +28,8 @@ namespace Dakota {
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   userDefinedInterface(problem_db.get_interface()), solnCntlVarType(EMPTY_TYPE),
-  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), simModelEvalCntr(0)
+  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
+  simModelEvalCntr(0)
 {
   componentParallelMode = INTERFACE_MODE;
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
@@ -37,6 +38,23 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   initialize_solution_control(
     problem_db.get_string("model.simulation.solution_level_control"),
     problem_db.get_rv("model.simulation.solution_level_cost"));
+
+  if (solnCntlCostMap.empty()) {
+    initialize_solution_recovery(
+      probDescDB.get_string("model.simulation.cost_recovery_metadata"));
+    // Error checks can be encompass a model ensemble at a higher level
+    //if (costMetadataIndex == _NPOS)
+    //  Cerr << "Error: insufficient cost data provided." << std::endl;
+  }
+}
+
+
+void SimulationModel::
+initialize_solution_recovery(const String& cost_label)
+{
+  // returns _NPOS if no metadata label match
+  costMetadataIndex = find_index(
+    currentResponse.shared_data().metadata_labels(), cost_label);
 }
 
 
