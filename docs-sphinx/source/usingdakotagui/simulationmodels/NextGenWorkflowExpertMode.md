@@ -1,5 +1,5 @@
 Dakota Workflows in "Expert Mode"
-=================
+=================================
 
 By default, Next-Gen Workflow manages the cycle of parameters and responses between itself and Dakota.  Behind the scenes, Dakota is [writing its parameter information to a file](ExternalSimulationModelOverview.html#parameter-and-response-format), which Next-Gen Workflow knows how to read at the beginning of your analysis driver workflow.  Likewise, behind the scenes, Next-Gen Workflow is [writing the output response values to a file](ExternalSimulationModelOverview.html#parameter-and-response-format), which Dakota knows how to read.
 

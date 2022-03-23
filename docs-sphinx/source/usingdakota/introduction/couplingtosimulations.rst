@@ -53,13 +53,27 @@ This process is repeated until all of the simulations required by the iterative 
 based on the most appropriate word for the context, but they all mean approximately the same thing. Likewise, "response", "output", and "QOI"
 (quantity of interest) will also be used interchangeably based on context.
 
-.. topic:: Guidance for Beginners
+======================
+Guidance for Beginners
+======================
 
-   - [Watch in-depth video tutorials for setting up Dakota with external simulation codes.](http://digitalops.sandia.gov/Mediasite/Play/82fa69553ac64d9b997a59316100d23a1d)
-   - [Basic Model Format (.bmf) files](../../usingdakotagui/simulationmodels/BMF.md) allow you to formally define your simulation model's input parameters and output responses. These files are useful throughout Dakota GUI's tools for defining analysis drivers.
-   - You can use the [Next-Gen Workflow tool](../../usingdakotagui/simulationmodels/NextGenWorkflow.md) in Dakota GUI to create a node-based workflow that will act as a Dakota analysis driver.
-   - You can use the [Script-Based Dakota Driver wizard](../../usingdakotagui/wizards/NewScriptDriver.md) in Dakota GUI to auto-generate a Python script that will act as a Dakota analysis driver.
-   - If your external simulation model receives a text-based input file, you can use [the "Markup File" tool](../../usingdakotagui/miscgui/ContextMenuTools.md) to markup a text file with pre-processing syntax.
+Writing an analysis driver for the first time can feel daunting. We have collected some resources for helping you get started, organized depending on whether you prefer to
+work on the command-line or in Dakota's GUI application.
+
+----------------------
+Command-Line Resources
+----------------------
+
+   - `Watch in-depth video tutorials for setting up Dakota with external simulation codes. <http://digitalops.sandia.gov/Mediasite/Play/82fa69553ac64d9b997a59316100d23a1d>`_
+   
+-------------
+GUI Resources
+-------------
+   
+   - :ref:`Basic Model Format (.bmf) files<bmf-main>` allow you to formally define your simulation model's input parameters and output responses. These files are useful throughout Dakota GUI's tools for defining analysis drivers.
+   - You can use the :ref:`Next-Gen Workflow tool<ngw-main>` in Dakota GUI to create a node-based workflow that will act as a Dakota analysis driver.
+   - You can use the :ref:`Script-Based Dakota Driver wizard<wizards-scriptdriver-main>` in Dakota GUI to auto-generate a Python script that will act as a Dakota analysis driver.
+   - If your external simulation model receives a text-based input file, you can use :ref:`the Markup File tool in the GUI<gui-context-tools-markup>` to markup a text file with pre-processing syntax.
 
 ===============================================
 Deep Dive into Dakota's Analysis Driver Process

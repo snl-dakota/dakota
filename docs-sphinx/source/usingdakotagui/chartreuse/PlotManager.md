@@ -1,7 +1,5 @@
 Plot Manager:  Managing Multiple Traces and Canvases
-==========
-
-<a name="the-plot-manager-dialog"></a>
+====================================================
 
 The Plot Manager dialog is the big brother to the Plot Trace Creator covered in the previous section.  The Plot Manager allows you to specify multiple canvases with multiple traces.  You can get extremely sophisticated with this dialog, so there are a lot of options to cover.
 

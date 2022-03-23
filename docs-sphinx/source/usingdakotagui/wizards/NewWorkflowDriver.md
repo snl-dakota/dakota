@@ -1,5 +1,9 @@
+```{eval-rst}
+.. _wizards-newworkflowdriver-main:
+```
+
 New Workflow-Based Driver
-=======
+=========================
 
 The Workflow-Based Dakota Driver wizard creates a [Dakota analysis driver](ExternalSimulationModelOverview.html) that is an [IWF workflow file](NextGenWorkflow.html).  Workflow files provide you with a great degree of flexibility over how you pass input variables and output responses back and forth between Dakota and an external simulation model, all without the need to write any driver scripts.
 

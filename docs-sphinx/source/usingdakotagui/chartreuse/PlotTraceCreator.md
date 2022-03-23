@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _chartreuse-plot-trace:
+```
+
 Plot Trace Creator
 ==================
 

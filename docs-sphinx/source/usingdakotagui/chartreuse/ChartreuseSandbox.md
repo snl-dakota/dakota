@@ -5,14 +5,7 @@
 Chartreuse Sandbox View
 =======================
 
-##Table of Contents
-1. [Introduction](#introduction)
-2. [Supported Data Sources](#supported-data-sources)
-3. [Sending Data to the Sandbox](#sending-data)
-4. [Options (or How to Play in the Sandbox)](#options)
-5. [Recommended Reading](#recommended-reading)
-
-##Introduction<a name="introduction"></a>
+## Introduction
 
 Historically, Chartreuse has required the user to provide some upfront configuration before they can turn a data output file into a visualized plot.  However, there's often a need to quickly visualize the data using the most reasonable default options.
 
@@ -25,7 +18,7 @@ By default, the Chartreuse Sandbox View is hidden.  It can be activated in one o
 
 ![alt text](img/Plotting_Sandbox_1.png "Manually activate the Sandbox View")
 
-##Supported Data Sources<a name="supported-data-sources"></a>
+## Supported Data Sources
 
 The Chartreuse Sandbox View can receive data from the following sources of plot data:
 
@@ -34,11 +27,11 @@ The Chartreuse Sandbox View can receive data from the following sources of plot 
 * Dakota tabular data files
 * Dakota-based HDF5 files (generic HDF5 files are not supported)
 
-##Sending Data to the Sandbox<a name="sending-data"></a>
+## Sending Data to the Sandbox
 
 There are two primary methods to send data to the Sandbox.  Both methods will be illustrated using a single example.
 
-###Method 1:  Embedded Buttons Located throughout the GUI
+### Method 1:  Embedded Buttons Located throughout the GUI
 
 Buttons have been made available at key locations in Dakota GUI to send currently-selected data to the Sandbox.
 
@@ -56,7 +49,7 @@ For example, suppose we send both x1 and x2 to the Sandbox.  We will see the PDF
 
 ![alt text](img/Plotting_Sandbox_3.png "The table for normal variables")
 
-###Method 2:  Project Explorer Context Menu
+### Method 2:  Project Explorer Context Menu
 
 You can also right-click a file that contains [plottable data](#supported-data-sources) in the Project Explorer view.  Select "Chartreuse" in the context menu, then the "Fast plot in sandbox" sub-menu.  From here, you have a number of options for creating plots quickly with no configuration.
 
@@ -72,7 +65,7 @@ For example, let's continue with the example of two Dakota normal uncertain vari
 
 Depending on what you want to do, you may want to send all the file data to the Sandbox, or only the data matching labels that are already in the Sandbox (what we did in the previous example), or even the data that doesn't match the labels in the Sandbox.  It just depends on what you want to visualize.  You can also opt to not show this dialog again once you have made your preferred selection.
 
-##Options (or How to Play in the Sandbox)<a name="options"></a>
+## Options (or How to Play in the Sandbox)
 
 Once you have some data in the Sandbox view, you have some options for how to manipulate it.
 
@@ -89,7 +82,7 @@ Once you have some data in the Sandbox view, you have some options for how to ma
  * **Group Matching Labels** If a dataset is added to the Sandbox and it matches the label of an existing canvas, the added dataset will be placed on a new canvas located to the right of the existing canvas.
 * **Manually Overlay** Force two plot traces to be combined onto the same canvas, even if they are unrelated datasets.
 
-##Recommended Reading<a name="recommended-reading"></a>
+## Recommended Reading
 
 * For more traditional Chartreuse plotting options, [see the main Chartreuse documentation page](Chartreuse.html).
 * For visualizing PDF curves of Dakota's uncertain variable types using Next-Gen Workflow, [see the page on Chartreuse/Next-Gen Workflow integration](ChartreuseWorkflow.html#ngw-uncertainty-variables).

@@ -1,5 +1,9 @@
+```{eval-rst}
+.. _gui-nestedworkflowtutorial-main:
+```
+
 Create a Nested Workflow Driver for Dakota
-=================
+==========================================
 
 This section shows you the concrete steps for creating a workflow-based Dakota analysis driver.  This is meant to be an exemplary tutorial, and not the "only" way to do things.  In practice, you can use any combination of nodes to get from point A to point B; in fact, you are encouraged to experiment with NGW to see what it is capable of.
 

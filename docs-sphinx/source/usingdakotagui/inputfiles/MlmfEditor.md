@@ -5,13 +5,7 @@
 Multi-Level / Multi-Fidelity Study Editor
 =========================================
 
-##Table of Contents
-1. [What is multi-level / multi-fidelity (MLMF)?](#introduction)
-2. [Accessing the MLMF Editor](#accessing-mlmf-editor)
-3. [Using the MLMF Editor](#using-mlmf-editor) 
-4. [Strategy for MLMF Studies](#strategy)
-
-##What is multi-level / multi-fidelity (MLMF)?<a name="introduction"></a>
+## What is multi-level / multi-fidelity (MLMF)?<a name="introduction"></a>
 
 Multi-level and multi-fidelity methods work with a hierarchy or ensemble of models with differential accuracy and simulation cost. The models are strategically run in concert to achieve an optimization or uncertainty quantification goal.
 
@@ -28,7 +22,7 @@ multi-fidelity models, each with one mesh resolution. Dakota will soon
 have generalizations that can more generally treat ensembles of models
 with less focus on this distinction.
 
-##Accessing the MLMF Editor<a name="accessing-mlmf-editor"></a>
+## Accessing the MLMF Editor<a name="accessing-mlmf-editor"></a>
 
 A new editor tailored for working with MLMF studies is available in Dakota GUI as of version 6.15.  It's important to remember that the MLMF Study Editor is simply another "view" into a Dakota input file.  Like the [**Dakota Text Editor**](DakotaInputFiles.html#dakota-text-editor) and [**Dakota Visual Editor**](DakotaVisualEditor.html), it provides specific options for editing Dakota's input file format that were designed to make your life easier, and whether or not you need to use the MLMF Study editor depends on your use case.
 
@@ -38,7 +32,7 @@ There are two ways to access the MLMF Study editor:
 * **Open existing Dakota study as MLMF study:** Given an existing Dakota input file, right-click and choose Open With > MLMF Study Editor.
  * *Note:* When opening an existing Dakota input file in the MLMF Study editor, you may be stopped by a dialog that informs you that there are problems with your study that need to be mitigated.  This can happen if you have a Dakota study that is not well-suited for MLMF studies.  Most "problems" with existing Dakota input files can be auto-mitigated, but some will require you to close the MLMF Study editor, adjust the Dakota input file in a different editor, and then return to the MLMF Study editor.
 
-##Using the MLMF Editor<a name="using-mlmf-editor"></a>
+## Using the MLMF Editor<a name="using-mlmf-editor"></a>
 
 When you open the MLMF editor, it will look something like this:
 
@@ -60,7 +54,7 @@ The general process for creating a multi-level / multi-fidelity Dakota study in 
 4. Specify the type of method you would like to use.
 	* In this editor, use the "Method Type" dropdown to select a method and auto-configure the `method` block with reasonable defaults.
 
-###The Action Bar
+### The Action Bar
 
 ![alt text](img/DakotaStudy_MLMF_2.png "Action bar")
 
@@ -72,7 +66,7 @@ First, let's discuss in turn what each of the *action bar* buttons do.
 * **Plot Correlations**:  After running Dakota, for example to conduct a UQ pilot study, this button will display inter-model correlation information. Eventually it will also predict which MLMF method strategy is the most promising for your analysis. *Note: This button is currently disabled, as the MLMF editor is still under development, and MLMF correlation plotting has not yet been implemented.*
 * **Help using MLMF editor (blue question mark icon)**: Opens this section of the GUI manual.
 
-###Specifying Model Hierarchy
+### Specifying Model Hierarchy
 
 The main portion of the MLMF Study Editor is occupied by the **model tree view**.  For new MLMF studies, there will only be one model in the hierarchy:
 
@@ -100,7 +94,7 @@ You will usually begin by clicking on the "New model" button to add a single mod
 
 You can rename a model by double-clicking on its name.
 
-###Importing Interfaces
+### Importing Interfaces
 
 Every model must relate to an interface.  As a reminder, *interface* refers specifically to top-level Dakota "interface" blocks that manage [**analysis drivers**](ExternalSimulationModelOverview.html).
 
@@ -113,7 +107,7 @@ Interfaces can be imported using the "Interfaces" group at the top of the single
 * **Edit Analysis Driver button (pencil icon):** Allows you to edit the name of the selected analysis driver interface.
 * **Delete Analysis Driver button (red X icon):** Deletes the currently selected analysis driver interface.
 
-###Specifying Control Variables
+### Specifying Control Variables
 
 After you have specified an interface by importing an analysis driver, that analysis driver should provide defined input parameters (i.e. variables).  These variables will appear in the Variables table immediately below:
 
@@ -143,7 +137,7 @@ Once you have defined at least one variable as a `discrete_state_set` type, you 
 
 ![alt text](img/DakotaStudy_MLMF_9.png "Choose your control variable")
 
-###Setting Costs Associated with Levels
+### Setting Costs Associated with Levels
 
 ![alt text](img/DakotaStudy_MLMF_10.png "Levels and costs")
 
@@ -153,7 +147,7 @@ You must inform Dakota about the relative cost associated with each level of you
 
 You can also add new levels by right-clicking the table and choosing "Add Row Before" or "Add Row After."
 
-###Selecting a Method
+### Selecting a Method
 
 ![alt text](img/DakotaStudy_MLMF_12.png "Method recipes")
 
@@ -164,9 +158,9 @@ The last step is to choose a method recipe (i.e. a fully-configured method block
 - [**multifidelity\_sampling**](https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-ref/method-multifidelity_sampling.html)
 - [**multilevel\\_multifidelity\\_sampling**](https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-ref/method-multilevel_multifidelity_sampling.html)
 
-##Strategy for MLMF Studies<a name="strategy"></a>
+## Strategy for MLMF Studies<a name="strategy"></a>
 
-###1. Perform a UQ pilot Study
+### 1. Perform a UQ pilot Study
 
 Typically, you will run a single iteration of the UQ study, known as a "pilot study" to:
  
@@ -174,13 +168,13 @@ Typically, you will run a single iteration of the UQ study, known as a "pilot st
 2. Refine simulation model cost estimates; and
 3. Assess correlation among the various models in the hierarchy and consequently which MLMF method might be most efficient.
 
-###2. Analyze correlations
+### 2. Analyze correlations
 
 To analyze the model correlation, press the "Plot Correlations" button.
 
 *Note: This button is currently disabled, as the MLMF editor is still under development, and MLMF correlation plotting has not yet been implemented.*
 
-###3. Perform final UQ study
+### 3. Perform final UQ study
 
 Finally, specify a function evaluation or iteration budget, or
 convergence tolerance, and run it like any other Dakota study.

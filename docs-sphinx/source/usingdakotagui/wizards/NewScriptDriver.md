@@ -1,5 +1,9 @@
+```{eval-rst}
+.. _wizards-scriptdriver-main:
+```
+
 New Script-Based Dakota Driver
-=======
+==============================
 
 The Script-Based Dakota Driver Wizard allows you to create an [analysis driver for Dakota](ExternalSimulationModelOverview.html) that is a script file.  This script file will facilitate the transfer of input parameters and output responses between a Dakota study and your external simulation model.
 

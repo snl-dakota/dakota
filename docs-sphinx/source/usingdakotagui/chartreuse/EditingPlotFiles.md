@@ -1,5 +1,5 @@
 Editing Plot Files
-==========
+==================
 
 ## From the editor area
 

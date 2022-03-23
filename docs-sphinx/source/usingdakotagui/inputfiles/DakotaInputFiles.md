@@ -51,6 +51,10 @@ As stated earlier, if you have block pointers specified elsewhere in your study,
 
 ### Block Recipes
 
+```{eval-rst}
+.. _gui-inputfiles-blockrecipes:
+```
+
 If you want to wholesale replace a Dakota block with another block that has reasonable defaults for a different situation, right-clicking on a top-level keyword in the Dakota text editor will enable a "Replace Block with Recipe" context menu option:
 
 ![alt text](img/BlockRecipe_1.png "Replace Block with Recipe")

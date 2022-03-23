@@ -1,5 +1,9 @@
+```{eval-rst}
+.. _wizards-newwrapperworkflow-main:
+```
+
 New Dakota Wrapper Workflow
-=======
+===========================
 
 "Why would I want to create an workflow that does nothing but execute a Dakota input file?" you may be asking yourself.
 

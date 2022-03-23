@@ -7,7 +7,9 @@ Context Menu Tools
 
 ## Dakota Order Input Utility
 
-<a name="dakota-order-input-utility"></a>
+```{eval-rst}
+.. _gui-context-tools-order-input-util:
+```
 
 If you have imported an old Dakota input file that used to work, but now has syntax errors, you may want to try applying the Dakota Order Input Utility on it.  This utility attempts to reorganize your input file according to current Dakota language standards.
 
@@ -21,7 +23,9 @@ To access the Order Input Utility, right-click on a Dakota input file and select
 
 ## Markup File
 
-<a name="markup-file"></a>
+```{eval-rst}
+.. _gui-context-tools-markup:
+```
 
 ### Introduction to Markup
 
@@ -58,7 +62,9 @@ When you're done, your marked-up file may look something like this.
 
 ## Recognize as Analysis Driver
 
-<a name="using-an-existing-script-file-as-a-driver"></a>
+```{eval-rst}
+.. _gui-context-tools-recognize-driver:
+```
 
 Suppose you already have a script file you want to use as an analysis driver.  You’ve imported it into your workspace, but wizards (like the New Dakota Study wizard) don’t recognize it as a valid analysis driver.  That is because the Dakota GUI depends on a concept known as an **interface manifest** to enforce a handshake between Dakota and its analysis drivers.  The interface manifest is simply a file that declares what input parameters a given analysis driver expects to receive, and what output results it can produce.
 

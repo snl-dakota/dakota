@@ -3,14 +3,9 @@
 ```
 
 Examples
-======================
+========
 
-##Table of Contents
-1. [Introduction](#introduction)
-2. [Offline Examples Search](#offline-examples-search)
-3. [Online Examples Search](#search-dakota-examples-online)
-
-##Introduction<a name="introduction"></a>
+## Introduction<a name="introduction"></a>
 
 The Dakota GUI provides a Google-like search functionality that allows you to browse curated input file examples written by the Dakota team.
 
@@ -18,7 +13,7 @@ You can access the Search dialog by right-clicking on an existing Dakota project
 
 ![alt text](img/DakotaStudyIntro_Search_2.png "Example Dakota project")
 
-##Offline Examples Search<a name="offline-examples-search"></a>
+## Offline Examples Search<a name="offline-examples-search"></a>
 
 The Search dialog is straightforward to use. Simply type in a keyword that represents what you're looking for and hit Search.
 
@@ -28,7 +23,7 @@ The Search dialog is straightforward to use. Simply type in a keyword that repre
 
 Select the input file you want and click "Import."  The Search dialog will either create a new project to hold this input file, or add it to your currently selected project.
 
-##Online Examples Search<a name="search-dakota-examples-online"></a>
+## Online Examples Search<a name="search-dakota-examples-online"></a>
 
 The Dakota team owns a handful of online Git repositories containing Dakota examples, in order to promote community contributions, as well as to always provide the latest and greatest examples to users.  The primary Git repository that the Dakota team maintains is:
 

@@ -1,5 +1,9 @@
+```{eval-rst}
+.. _wizards-newdakotastudy:
+```
+
 New Dakota Study
-=======
+================
 
 The New Dakota Study wizard allows you to wrap an existing, parameterized simulation model with a Dakota study.  This wizard is ideal for new Dakota users who are not familiar with Dakota input file syntax, but would like to have a new Dakota study up and running with minimal effort.
 
@@ -18,8 +22,6 @@ On the first page, simply choose a file name and location for your new Dakota st
 
 ## Page 2 (Import Variables and Responses)
 
-<a name="dakota-study-import"></a>
-
 ![alt text](img/NewDakotaStudy_Wizard_2.png "Import variables and responses page")
 
 Select the file that will provide variable and response information to the wizard.  This file is the [first of the two prerequisites](#new-dakota-study-prereq) mentioned in the introduction.
@@ -34,8 +36,6 @@ From the "Method Settings" page onward, you’ll notice a "Preview" button in th
 
 ## Page 3 (Method Settings)
 
-<a name="dakota-study-method"></a>
-
 ![alt text](img/NewDakotaStudy_Wizard_4.png "Method page")
 
 Because Dakota is home to a large number of methods for different types of studies, providing a comprehensive list of methods on this page would not be helpful.  Instead, this page of the wizard guides you to a method recommendation based on how you answer a series of questions.  For example, if you choose "Basic Parameter Sweep" in the first dropdown, you will be presented with a subsequent dropdown:
@@ -47,8 +47,6 @@ In response to your choice of "Basic Parameter Sweep", the wizard recommends thr
 At this juncture, you can hit the "?" button to open the Dakota reference manual and find out more about your chosen method.
 
 ## Page 4 (Variable Settings)
-
-<a name="dakota-study-variables"></a>
 
 ![alt text](img/NewDakotaStudy_Wizard_6.png "Variables page")
 
@@ -87,8 +85,6 @@ A new dialog will pop up that allows you to edit each possible property for that
 
 ## Page 5 (Response Settings)
 
-<a name="dakota-study-responses"></a>
-
 ![alt text](img/NewDakotaStudy_Wizard_9.png "Responses page")
 
 The response settings page is a mirror of the variable settings page, with a few key differences:
@@ -98,8 +94,6 @@ The response settings page is a mirror of the variable settings page, with a few
 * **Hessians** Use this dropdown to select a [hessian setting for your study](https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-ref/responses-no_hessians.html).
 
 ## Page 6 (Interface Settings)
-
-<a name="dakota-study-interface"></a>
 
 ![alt text](img/NewDakotaStudy_Wizard_11.png "Interface page")
 

@@ -1,5 +1,5 @@
 New Dakota Project
-=======
+==================
 
 You can create a new Dakota [project](../miscgui/Eclipse.html#projects) using the Dakota Project wizard.
 

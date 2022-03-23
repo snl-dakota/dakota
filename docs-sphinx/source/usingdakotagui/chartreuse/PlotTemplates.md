@@ -1,7 +1,9 @@
-Plot Templates
-==========
+```{eval-rst}
+.. _chartreuse-plot-templates:
+```
 
-<a name="plotting-template-basics"></a>
+Plot Templates
+==============
 
 The Plotting Templates dialog fills a usage gap between the [Plot Trace Creator](#plot-trace-basics) dialog and the [Plot Window Manager](#the-plot-manager-dialog) dialog...
 
@@ -19,8 +21,6 @@ Each available plotting template is described in detail in the following section
 
 ## Bar Chart Variable Comparison
 
-<a name="plotting-template-barchart"></a>
-
 ![alt text](img/Plotting_Templates_BarChart_1.png "Bar chart example")
 
 ![alt text](img/PlottingTemplates_BarChart.png "Bar chart options")
@@ -35,8 +35,6 @@ Each available plotting template is described in detail in the following section
 
 ## Centered Parameter Study
 
-<a name="plotting-template-cps"></a>
-
 ![alt text](img/Plotting_Templates_CPS_3.png "Centered parameter study response comparison")
 
 ![alt text](img/PlottingTemplates_CPS.png "Centered parameter study options")
@@ -46,8 +44,6 @@ Each available plotting template is described in detail in the following section
 * **Filter Parameters and Responses** Use these options to filter parameters and responses from being included in the final plot.
 
 ## Correlation Coefficient Table
-
-<a name="plotting-template-corrcoeff"></a>
 
 ![alt text](img/Plotting_Templates_Correlation_Matrix_3.png "Correlation coefficients example")
 
@@ -61,8 +57,6 @@ Each available plotting template is described in detail in the following section
 
 ## Iteration History
 
-<a name="plotting-template-iterhistory"></a>
-
 ![alt text](img/Plotting_Templates_IterationHistory_1.png "Iteration history example")
 
 ![alt text](img/PlottingTemplates_IterHistory.png "Iteration history options")
@@ -74,8 +68,6 @@ Each available plotting template is described in detail in the following section
 * **Filter Parameters and Responses** Use these options to filter parameters and responses from being included in the final plot. 
 
 ## Scatter Plot Matrix
-
-<a name="plotting-template-scatterplotmatrix"></a>
 
 ![alt text](img/Plotting_Templates_Matrix_2.png "Scatter plot matrix example")
 
@@ -97,8 +89,6 @@ Each available plotting template is described in detail in the following section
 * **Text on Outer Axes Only** Do not repeat canvas text for canvases that are "inside" the grid.  If unchecked, this will lead to redundant canvas labels throughout your final plot.
 
 ## Sobol Indices
-
-<a name="plotting-template-sobolindices"></a>
 
 ![alt text](img/Plotting_Templates_Sobol.png "Sobol indices")
 

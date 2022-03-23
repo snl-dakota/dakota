@@ -1,5 +1,5 @@
 Using Color Scales in Plot Traces
-==========
+=================================
 
 <a name="color-scales"></a>
 

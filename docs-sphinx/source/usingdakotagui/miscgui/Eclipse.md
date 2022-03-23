@@ -7,8 +7,6 @@ Eclipse Reference
 
 ## Introduction
 
-<a name="introduction"></a>
-
 This section is intended to get new Dakota GUI users up to speed on Eclipse terminology and concepts. If you have used Eclipse-based applications previously, you may skip this section.
 
 The Dakota GUI is built on the Eclipse platform. The Eclipse platform provides a highly customizable *integrated development environment* (or "IDE") for many different popular programming languages. In this section, when we refer to something as being "an Eclipse feature", that means that it is something that is common to all distributions of Eclipse, not just the Dakota GUI.
@@ -16,8 +14,6 @@ The Dakota GUI is built on the Eclipse platform. The Eclipse platform provides a
 For more comprehensive reading about common Eclipse functionality, please refer to [Eclipse's official documentation](https://help.eclipse.org/).
 
 ## Menus and Actions
-
-<a name="menus-and-actions"></a>
 
 Like most applications, you can expect to find a series of dropdown menus in the top-left corner of the screen. By default, the Dakota GUI provides "File," "Edit," "Run," "Window," and "Help." Many of these are self-explanatory and provide functionality common to other applications. The menu options key to running Dakota will be covered in later sections.
 
@@ -36,8 +32,6 @@ From left to right, the icons represent the following actions:
  
 ## The Workspace
 
-<a name="the-workspace"></a>
-
 All Eclipse-based applications work off the idea that your files and folders exist in a single conceptual location called "the workspace."  The most common case is for the workspace to exist as a single folder on your computer.  The workspace is where the Dakota GUI will create new files and folders while you work. Eclipse applications also allow you to import files from elsewhere on your computer into the workspace.
 
 When you open the Dakota GUI, by default, you will be presented with the following dialog:
@@ -52,13 +46,9 @@ Changing the workspace is easy. Simply select File > Switch Workspace > Other, t
 
 ## Projects
 
-<a name="projects"></a>
-
 Within a workspace, you can have multiple "projects."  A project is a top-level, logical organization of files and folders. You can have as many or as few projects as you like (though you need to have at least one to work in the Dakota GUI). Within a project, files and folders can be organized however you like.
 
 ## Views
-
-<a name="views"></a>
 
 Eclipse applications divide their screen real estate into "views."  By default, Dakota GUI arranges its views as follows:
 
@@ -76,8 +66,6 @@ There are many other useful views available in the Dakota GUI.  For instance, th
 
 ## Perspectives
 
-<a name="perspectives"></a>
-
 The way that these three views are arranged on the screen is called a "perspective."  In Eclipse, perspectives can be rearranged to suit your particular preference for how things should be visually organized. For instance, you may prefer to have the console above and the text editor below, or to move the Project Explorer view to the right side of the screen.
 
 Generally, rearranging a perspective in an Eclipse application can be achieved by left-clicking on the edge of a view and dragging to where you want the view to go.
@@ -90,15 +78,15 @@ To see the full list of default perspectives shipped with the Dakota GUI, go to 
 
 ## Launch Configurations
 
-<a name="launch-configurations"></a>
-
 A "launch configuration" is a template for running an external process (namely, the Dakota executable) through the Dakota GUI.  This is the primary means of running Dakota studies in the GUI.  There are two main types of launch configurations in the Eclipse world – "run configurations" and "debug configurations."  Debug configurations are not implemented currently in the Dakota GUI, so this user manual will focus primarily on run configurations.
 
 For more information on how to set up run configurations, [refer the manual section on run configurations](DakotaRunConfigurations.html).
 
 ## File Import
 
-<a name="file-import"></a>
+```{eval-rst}
+.. _gui-eclipse-file_import:
+```
 
 You can import from elsewhere on your machine in one of three ways:
 
