@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class BatchCopyrightCommentUpdater {
 	
@@ -99,7 +100,6 @@ public class BatchCopyrightCommentUpdater {
 		"gov.sandia.glimmer",
 		"gov.sandia.hdf.chartreuse.bridge",
 		"gov.sandia.hdf.eclipse",
-		"gov.sandia.hdf.hdfview",
 		"gov.sandia.hdf.workflow.runtime",
 		"gov.sandia.hdf.workflow.ui",
 		"gov.sandia.highlighter",
@@ -168,16 +168,16 @@ public class BatchCopyrightCommentUpdater {
 	// CONFIGURATION //
 	///////////////////
 	
-	private static final boolean DRY_RUN           = true;
+	private static final boolean DRY_RUN           = false;
 	private static final String START_DIR          = "C:\\Users\\emridgw\\workspace\\svn\\dart";
 	private static final boolean UPDATE_EXISTING_HEADERS = true;
 	private static final boolean INSERT_IF_MISSING = true;
 	private static final boolean INSERT_DAKOTA_HEADER = true;
-	private static final boolean INSERT_SAW_HEADER    = true;
+	private static final boolean INSERT_SAW_HEADER    = false;
 	private static final List<String> FOLDER_WHITELIST = new ArrayList<>();
 	
 	static {
-		FOLDER_WHITELIST.addAll(SAW_IF_PLUGINS);
+		FOLDER_WHITELIST.addAll(DAKOTA_GUI_PLUGINS);
 	}
 	
 	//////////
@@ -191,7 +191,7 @@ public class BatchCopyrightCommentUpdater {
 	
 	private static void updateJavaFiles(File startDir) throws IOException {
 		for(File childFile : startDir.listFiles()) {
-			if(childFile.isDirectory()) {
+			if(childFile.isDirectory() && !NON_SRC_FOLDERS.contains(childFile.getName()) ) {
 				if(startDir.getAbsolutePath().equals(START_DIR)) { // More stringent checks for root folders.
 					if(FOLDER_WHITELIST.contains(childFile.getName())) {
 						System.out.println("Working on " + childFile.getName() + "...");
@@ -233,6 +233,7 @@ public class BatchCopyrightCommentUpdater {
 			if(DRY_RUN) {
 				System.out.println("Would update " + javaFile.getAbsolutePath() + " with new year.");
 			} else {
+				System.out.println("Updated " + javaFile.getAbsolutePath() + " with new year.");
 				contents = contents.replace(oldYear, STRING_CURRENT);
 				FileUtils.write(javaFile, contents, StandardCharsets.UTF_8, false);
 			}
@@ -243,6 +244,7 @@ public class BatchCopyrightCommentUpdater {
 		if(DRY_RUN) {
 			System.out.println("Would update " + javaFile.getAbsolutePath() + " with missing header.");
 		} else {
+			System.out.println("Updated " + javaFile.getAbsolutePath() + " with missing header.");
 			String contents = FileUtils.readFileToString(javaFile, StandardCharsets.UTF_8);
 			boolean usesCRLF = contents.contains("\r\n");
 			String ln = usesCRLF ? "\r\n" : "\n";
