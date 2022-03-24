@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
 public class BatchCopyrightCommentUpdater {
 	
@@ -168,7 +167,7 @@ public class BatchCopyrightCommentUpdater {
 	// CONFIGURATION //
 	///////////////////
 	
-	private static final boolean DRY_RUN           = false;
+	private static final boolean DRY_RUN           = true;
 	private static final String START_DIR          = "C:\\Users\\emridgw\\workspace\\svn\\dart";
 	private static final boolean UPDATE_EXISTING_HEADERS = true;
 	private static final boolean INSERT_IF_MISSING = true;
@@ -177,6 +176,7 @@ public class BatchCopyrightCommentUpdater {
 	private static final List<String> FOLDER_WHITELIST = new ArrayList<>();
 	
 	static {
+		//FOLDER_WHITELIST.addAll(SAW_IF_PLUGINS);
 		FOLDER_WHITELIST.addAll(DAKOTA_GUI_PLUGINS);
 	}
 	
