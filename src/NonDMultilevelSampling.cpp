@@ -478,29 +478,43 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
 
 void NonDMultilevelSampling::
-configure_indices(unsigned short group, unsigned short form,
-		  size_t lev, short seq_type)
+configure_indices(unsigned short group, unsigned short form, size_t lev,
+		  short seq_type)
 {
   // Notes:
   // > could consolidate with NonDExpansion::configure_indices() with a passed
   //   model and virtual *_mode() assignments.  Leaving separate for now...
   // > group index is assigned based on step in model form/resolution sequence
-  // > CVMC does not use this helper; it requires uncorrected_surrogate_mode()
+  // > solution_level_cost_index() is available after SimulationModel ctor, so
+  //   nominal solution level is available prior to assigning active key.
 
-  Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, lev);
+  size_t hf_lev = (lev == SZ_MAX) ? // use nominal soln level for each model
+    iteratedModel.truth_model().solution_level_cost_index() : lev;
+  Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, hf_lev);
 
   if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
        (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0)) {
     // step 0 in the sequence
     bypass_surrogate_mode();
-    iteratedModel.active_model_key(hf_key);      // one active fidelity
+    iteratedModel.active_model_key(hf_key); // one active fidelity
   }
   else {
     aggregated_models_mode();
 
     Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
-    lf_key.decrement_key(seq_type); // seq_index defaults to 0
-    // For MLMC/MFMC/MLMFMC, we aggregate levels but don't reduce them
+    bool success = lf_key.decrement_key(seq_type); // seq_index defaults to 0
+    if (!success) {
+      Cerr << "Error: failure in LF key decrement in NonDMultilevelSampling::"
+	   << "configure_indices()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    if (seq_type == Pecos::MODEL_FORM_SEQUENCE && lev == SZ_MAX) {
+      unsigned short lf_form = lf_key.retrieve_model_form();
+      size_t lf_lev
+	= iteratedModel.surrogate_model(lf_form).solution_level_cost_index();
+      lf_key.assign_resolution_level(lf_lev);
+    }
+
     discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
     iteratedModel.active_model_key(discrep_key); // two active fidelities
   }

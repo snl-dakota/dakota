@@ -215,13 +215,8 @@ initialize_solution_control(const String& control, const RealVector& cost)
   // to the discrete variable value index (val_index below).
   // Most often, these two indices will be the same, but we always order with
   // increasing cost in case the discrete values are not monotonic.
-  if (cost_index == _NPOS) { // just return quietly to simplify calling code
-    return;                  // (rather than always checking index validity)
-
-    //Cerr << "Error: _NPOS passed to SimulationModel::solution_level_"
-    //     << "cost_index()." << std::endl;
-    //abort_handler(MODEL_ERROR);
-  }
+  if (cost_index == _NPOS) // just return quietly to simplify calling code
+    return;
 
   std::map<Real, size_t>::const_iterator c_cit = solnCntlCostMap.begin();
   std::advance(c_cit, cost_index);

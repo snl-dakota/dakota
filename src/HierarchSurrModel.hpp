@@ -284,7 +284,10 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  // forward along to actualModel:
+  EnsembleSurrModel::nested_variable_mappings(c_index1, di_index1, ds_index1,
+					      dr_index1, c_target2, di_target2,
+					      ds_target2, dr_target2);
+  // forward along to subordinate models
   size_t i, num_models = orderedModels.size();
   for (i=0; i<num_models; ++i)
     orderedModels[i].nested_variable_mappings(c_index1, di_index1, ds_index1,

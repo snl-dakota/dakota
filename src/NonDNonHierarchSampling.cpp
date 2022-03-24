@@ -158,7 +158,15 @@ void NonDNonHierarchSampling::assign_active_key(bool multilev)
       approx_keys[approx].form_key(0, fixed_form, approx);
     //truth_form = fixed_form;  truth_lev = numApprox;
   }
-  else {
+  else if (secondaryIndex == SZ_MAX) { // MF with default resolution level(s)
+    truth_key.form_key(0, numApprox,
+      iteratedModel.truth_model().solution_level_cost_index());
+    for (unsigned short approx=0; approx<numApprox; ++approx)
+      approx_keys[approx].form_key(0, approx,
+	iteratedModel.surrogate_model(approx).solution_level_cost_index());
+    //truth_form = numApprox;  truth_lev = secondaryIndex;
+  }
+  else { // MF with assigned resolution level
     truth_key.form_key(0, numApprox, secondaryIndex);
     for (unsigned short approx=0; approx<numApprox; ++approx)
       approx_keys[approx].form_key(0, approx, secondaryIndex);

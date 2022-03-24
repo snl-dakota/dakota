@@ -68,7 +68,12 @@ void NonDControlVariateSampling::core_run()
   }
   else {
     hf_form = numSteps - 1;  lf_form = 0; // extremes of range
-    hf_lev = lf_lev = secondaryIndex;
+    if (secondaryIndex == SZ_MAX) {
+      hf_lev =     iteratedModel.truth_model().solution_level_cost_index();
+      lf_lev = iteratedModel.surrogate_model().solution_level_cost_index();
+    }
+    else
+      hf_lev = lf_lev = secondaryIndex;
   }
   hf_key.form_key(0, hf_form, hf_lev);  lf_key.form_key(0, lf_form, lf_lev);
   active_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);

@@ -35,6 +35,82 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
 }
 
 
+void EnsembleSurrModel::init_model(Model& model)
+{
+  SurrogateModel::init_model(model);
+
+  // Rather than map all inactive variables, propagate nested mappings from
+  // currentVariables into the target model
+  init_model_mapped_variables(model);
+  //init_model_inactive_variables(model);
+}
+
+
+void EnsembleSurrModel::init_model_mapped_variables(Model& model)
+{
+  /*
+  // can implement this once a use-case exists
+  if (secondaryACVarMapTargets.size()  || secondaryADIVarMapTargets.size() ||
+      secondaryADSVarMapTargets.size() || secondaryADRVarMapTargets.size()) {
+    Cerr << "Error: secondary mappings not yet supported in SurrogateModel::"
+	 << "init_model_mapped_variables()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  */
+
+  size_t i, num_map = primaryACVarMapIndices.size(), // all sizes are the same
+    ac_index1, adi_index1, ads_index1, adr_index1, m_index;
+  for (i=0; i<num_map; ++i) {
+    ac_index1  = primaryACVarMapIndices[i];
+    adi_index1 = primaryADIVarMapIndices[i];
+    ads_index1 = primaryADSVarMapIndices[i];
+    adr_index1 = primaryADRVarMapIndices[i];
+    if (ac_index1 != _NPOS) {
+      // retrieve the label of the mapped variable from currentVariables
+      const String& surr_label
+	= currentVariables.all_continuous_variable_labels()[ac_index1];
+      // map this to sub-ordinate label variables
+      m_index = find_index(model.all_continuous_variable_labels(), surr_label);
+      // push value from currentVariables to sub-ordinate variables
+      if (m_index != _NPOS)
+	model.all_continuous_variable(
+	  currentVariables.all_continuous_variables()[ac_index1], m_index);
+    }
+    else if (adi_index1 != _NPOS) {
+      const String& surr_label
+	= currentVariables.all_discrete_int_variable_labels()[adi_index1];
+      m_index = find_index(model.all_discrete_int_variable_labels(),surr_label);
+      if (m_index != _NPOS)
+	model.all_discrete_int_variable(
+	  currentVariables.all_discrete_int_variables()[adi_index1], m_index);
+    }
+    else if (ads_index1 != _NPOS) {
+      const String& surr_label
+	= currentVariables.all_discrete_string_variable_labels()[ads_index1];
+      m_index = find_index(model.all_discrete_string_variable_labels(),
+			   surr_label);
+      if (m_index != _NPOS)
+	model.all_discrete_string_variable(
+	  currentVariables.all_discrete_string_variables()[ads_index1],m_index);
+    }
+    else if (adr_index1 != _NPOS) {
+      const String& surr_label
+	= currentVariables.all_discrete_real_variable_labels()[adr_index1];
+      m_index = find_index(model.all_discrete_real_variable_labels(),
+			   surr_label);
+      if (m_index != _NPOS)
+	model.all_discrete_real_variable(
+	  currentVariables.all_discrete_real_variables()[adr_index1], m_index);
+    }
+    else {
+      Cerr << "Error: undefined mapping in SurrogateModel::"
+	   << "init_model_mapped_variables()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
+}
+
+
 /** Blocking retrieval of asynchronous evaluations from LF model, HF
     model, or both (mixed case).  For the LF model portion, apply
     correction (if active) to each response in the array.

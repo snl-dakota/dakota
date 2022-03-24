@@ -70,6 +70,17 @@ protected:
 
   size_t qoi() const;
 
+  void init_model(Model& model);
+
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+
   const SizetArray& nested_acv1_indices() const;
   const ShortArray& nested_acv2_targets() const;
   short query_distribution_parameter_derivatives() const;
@@ -105,6 +116,10 @@ protected:
   //
   //- Heading: member functions
   //
+
+  /// initialize model variables that corresponsd to nested mappings that could
+  /// change once per set of evaluations (e.g., an outer iterator execution)
+  void init_model_mapped_variables(Model& model);
 
   /// called from derived_synchronize() for case of distinct models/interfaces
   /// with competing LF/HF job queues
@@ -151,6 +166,31 @@ protected:
   /// still pending, blocking response aggregation
   IntResponseMapArray cachedRespMaps;
 
+  /// "primary" all continuous variable mapping indices flowed down
+  /// from higher level iteration
+  SizetArray primaryACVarMapIndices;
+  /// "primary" all discrete int variable mapping indices flowed down from
+  /// higher level iteration
+  SizetArray primaryADIVarMapIndices;
+  /// "primary" all discrete string variable mapping indices flowed down from
+  /// higher level iteration
+  SizetArray primaryADSVarMapIndices;
+  /// "primary" all discrete real variable mapping indices flowed down from
+  /// higher level iteration
+  SizetArray primaryADRVarMapIndices;
+  // "secondary" all continuous variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryACVarMapTargets;
+  // "secondary" all discrete int variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADIVarMapTargets;
+  // "secondary" all discrete string variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADSVarMapTargets;
+  // "secondary" all discrete real variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADRVarMapTargets;
+
 private:
 
   //
@@ -179,12 +219,33 @@ inline size_t EnsembleSurrModel::qoi() const
 }
 
 
+inline void EnsembleSurrModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  primaryACVarMapIndices  = c_index1;
+  primaryADIVarMapIndices = di_index1;
+  primaryADSVarMapIndices = ds_index1;
+  primaryADRVarMapIndices = dr_index1;
+  //secondaryACVarMapTargets  = c_target2;
+  //secondaryADIVarMapTargets = di_target2;
+  //secondaryADSVarMapTargets = ds_target2;
+  //secondaryADRVarMapTargets = dr_target2;
+}
+
+
 inline const SizetArray& EnsembleSurrModel::nested_acv1_indices() const
-{ return truth_model().nested_acv1_indices(); }
+{ return primaryACVarMapIndices; }
 
 
 inline const ShortArray& EnsembleSurrModel::nested_acv2_targets() const
-{ return truth_model().nested_acv2_targets(); }
+{ return truth_model().nested_acv2_targets(); }//secondaryACVarMapTargets
 
 
 inline short EnsembleSurrModel::

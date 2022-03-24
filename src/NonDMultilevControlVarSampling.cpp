@@ -95,7 +95,7 @@ void NonDMultilevControlVarSampling::core_run()
 
   // For two-model control variate methods, select lowest,highest fidelities
   unsigned short lf_form = 0, hf_form = NLev.size() - 1; // ordered low:high
-  size_t lev = SZ_MAX;
+  size_t lev = SZ_MAX; // defer on assigning soln levels
   Pecos::ActiveKey active_key;
   active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
