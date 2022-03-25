@@ -56,17 +56,24 @@ NonDControlVariateSampling(ProblemDescDB& problem_db, Model& model):
 void NonDControlVariateSampling::core_run()
 {
   configure_sequence(numSteps, secondaryIndex, sequenceType);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  configure_cost(numSteps, multilev, sequenceCost);
 
   // For two-model control variate, select extreme fidelities/resolutions
   Pecos::ActiveKey active_key, hf_key, lf_key;
   unsigned short hf_form, lf_form;  size_t hf_lev, lf_lev;
-  if (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE) {
+  if (multilev) {
     hf_lev  = numSteps - 1;  lf_lev = 0;  // extremes of range
     hf_form = lf_form = (secondaryIndex == SZ_MAX) ? USHRT_MAX : secondaryIndex;
   }
   else {
     hf_form = numSteps - 1;  lf_form = 0; // extremes of range
-    hf_lev = lf_lev = secondaryIndex;
+    if (secondaryIndex == SZ_MAX) {
+      hf_lev =     iteratedModel.truth_model().solution_level_cost_index();
+      lf_lev = iteratedModel.surrogate_model().solution_level_cost_index();
+    }
+    else
+      hf_lev = lf_lev = secondaryIndex;
   }
   hf_key.form_key(0, hf_form, hf_lev);  lf_key.form_key(0, lf_form, lf_lev);
   active_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
@@ -97,9 +104,8 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
-
-  Real lf_cost, hf_cost, cost_ratio;
-  initialize_mf_cost(lf_cost, hf_cost, cost_ratio);
+  Real hf_cost = sequenceCost[numSteps - 1], lf_cost = sequenceCost[0],
+    cost_ratio = hf_cost / lf_cost;
 
   IntRealVectorMap sum_L_shared, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH);
@@ -192,9 +198,8 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
-
-  Real lf_cost, hf_cost, cost_ratio;
-  initialize_mf_cost(lf_cost, hf_cost, cost_ratio);
+  Real hf_cost = sequenceCost[numSteps - 1], lf_cost = sequenceCost[0],
+    cost_ratio = hf_cost / lf_cost;
 
   // ---------------------------------------------------------------------
   // Compute final rho2LH, varH, {eval,estvar} ratios from (oracle) pilot
@@ -244,9 +249,8 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
-
-  Real lf_cost, hf_cost, cost_ratio;
-  initialize_mf_cost(lf_cost, hf_cost, cost_ratio);
+  Real hf_cost = sequenceCost[numSteps - 1], lf_cost = sequenceCost[0],
+    cost_ratio = hf_cost / lf_cost;
 
   RealVector eval_ratios, hf_targets;
   evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_hf, hf_targets,
@@ -796,9 +800,9 @@ void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
     cvmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / N_hf[qoi];
     cvmc_est_var[qoi] *= estVarRatios[qoi];
   }
-  Real avg_cvmc_est_var      = average(cvmc_est_var),
-       avg_mc_est_var        = average(mc_est_var),
-       avg_budget_mc_est_var = average(varH) / equivHFEvals;
+  avgEstVar               = average(cvmc_est_var);
+  Real     avg_mc_est_var = average(mc_est_var),
+    avg_budget_mc_est_var = average(varH) / equivHFEvals;
 
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   size_t wpp7 = write_precision + 7;
@@ -813,14 +817,14 @@ void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
     << (size_t)std::floor(average(N_hf) + .5) << " HF samples): "
     << std::setw(wpp7) << avg_mc_est_var
     << "\n  " << type << " CVMC (sample profile):   "
-    << std::setw(wpp7) << avg_cvmc_est_var
+    << std::setw(wpp7) << avgEstVar
     << "\n  " << type << " CVMC ratio (1 - R^2):    "
-    << std::setw(wpp7) << avg_cvmc_est_var / avg_mc_est_var
+    << std::setw(wpp7) << avgEstVar / avg_mc_est_var
     << "\n Equivalent   MC (" << std::setw(5)
     << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
     << std::setw(wpp7) << avg_budget_mc_est_var
     << "\n Equivalent CVMC ratio:              " << std::setw(wpp7)
-    << avg_cvmc_est_var / avg_budget_mc_est_var << '\n';
+    << avgEstVar / avg_budget_mc_est_var << '\n';
 }
 
 } // namespace Dakota

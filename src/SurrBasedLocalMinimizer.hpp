@@ -44,9 +44,10 @@ public:
 			  std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
   SurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
-			  short constr_relax, Real tr_factor, // DF-SBLM
-			  short corr_type, size_t max_iter, size_t max_eval,
-			  unsigned short soft_conv_limit);
+			  short constr_relax, const RealVector& tr_factors,
+			  size_t max_iter, size_t max_eval, Real conv_tol,
+			  unsigned short soft_conv_limit,
+			  std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~SurrBasedLocalMinimizer();
 
@@ -223,10 +224,6 @@ protected:
   short truthSetRequest;
   /// derivative order of surrogate data used within the SBLM process
   short approxSetRequest;
-
-  /// flags the use of surrogate correction techniques at the center
-  /// of each trust region
-  short correctionType;
 
   /// starting point prior to sequence of SBLM iterations
   RealVector initialPoint;

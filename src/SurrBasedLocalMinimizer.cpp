@@ -43,7 +43,7 @@ SurrBasedLocalMinimizer* SurrBasedLocalMinimizer::sblmInstance(NULL);
 SurrBasedLocalMinimizer::
 SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model,
 			std::shared_ptr<TraitsBase> traits):
-  SurrBasedMinimizer(problem_db, model, traits), 
+  SurrBasedMinimizer(problem_db, model, traits),
   approxSubProbObj(probDescDB.get_short("method.sbl.subproblem_objective")),
   approxSubProbCon(probDescDB.get_short("method.sbl.subproblem_constraints")),
   meritFnType(probDescDB.get_short("method.sbl.merit_function")),
@@ -61,24 +61,23 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model,
   gammaContract(
     probDescDB.get_real("method.trust_region.contraction_factor")),
   gammaExpand(probDescDB.get_real("method.trust_region.expansion_factor")),
-  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
-  correctionType(probDescDB.get_short("model.surrogate.correction_type"))
+  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit"))
 { initialize(); }
 
 
 SurrBasedLocalMinimizer::
 SurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
-			short constr_relax, Real tr_factor, // DF-SBLM
-			short corr_type, size_t max_iter, size_t max_eval,
-			unsigned short soft_conv_limit):
-  SurrBasedMinimizer(model, max_iter, max_eval), 
+			short constr_relax, const RealVector& tr_factors,
+			size_t max_iter, size_t max_eval, Real conv_tol,
+			unsigned short soft_conv_limit,
+			std::shared_ptr<TraitsBase> traits):
+  SurrBasedMinimizer(model, max_iter, max_eval, conv_tol, traits),
   approxSubProbObj(ORIGINAL_PRIMARY), approxSubProbCon(ORIGINAL_CONSTRAINTS),
   meritFnType(merit_fn), acceptLogic(accept_logic),
   trConstraintRelax(constr_relax), minimizeCycles(0), penaltyIterOffset(-200), 
-  //origTrustRegionFactor(), // *** scalar to vector (in ctor body)
-  minTrustRegionFactor(1.e-6), trRatioContractValue(0.25),
-  trRatioExpandValue(0.75), gammaContract(0.25), gammaExpand(2.),
-  softConvLimit(soft_conv_limit), correctionType(corr_type)
+  origTrustRegionFactor(tr_factors), minTrustRegionFactor(1.e-6),
+  trRatioContractValue(0.25), trRatioExpandValue(0.75), gammaContract(0.25),
+  gammaExpand(2.), softConvLimit(soft_conv_limit)
 { initialize(); }
 
 

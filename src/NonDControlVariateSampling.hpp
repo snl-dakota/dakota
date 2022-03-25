@@ -124,8 +124,6 @@ private:
   /// core parameter set definition and evaluation for LF sample increment
   bool lf_increment(size_t iter, size_t lev);
 
-  /// initialize LF and HF cost along with their ratio
-  void initialize_mf_cost(Real& lf_cost, Real& hf_cost, Real& cost_ratio);
   /// update equivHFEvals from HF, LF evaluation counts
   void compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,
 				  Real cost_ratio);
@@ -219,24 +217,6 @@ private:
 
 inline NonDControlVariateSampling::~NonDControlVariateSampling()
 { }
-
-
-inline void NonDControlVariateSampling::
-initialize_mf_cost(Real& lf_cost, Real& hf_cost, Real& cost_ratio)
-{
-  // retrieve cost estimates across model forms for a particular soln level
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  if (multilev) {
-    RealVector cost;  configure_cost(numSteps, multilev, cost);
-    hf_cost = cost[numSteps - 1];
-    lf_cost = cost[0];
-  }
-  else {
-    hf_cost =     iteratedModel.truth_model().solution_level_cost(); // active
-    lf_cost = iteratedModel.surrogate_model().solution_level_cost(); // active
-  }
-  cost_ratio = hf_cost / lf_cost;
-}
 
 
 inline void NonDControlVariateSampling::

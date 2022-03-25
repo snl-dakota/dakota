@@ -53,24 +53,25 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // Initialize method/interface dependent settings
-  short corr_order = (correctionType) ?
-    probDescDB.get_short("model.surrogate.correction_order") : -1;
   initialize_trust_region_data(probDescDB.get_string("model.surrogate.type"),
-			       corr_order);
+			       model.correction_order());
 }
 
 
 DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
 			       short constr_relax, Real tr_factor,
-			       short corr_type, short corr_order,
-			       size_t max_iter, size_t max_eval,
+			       size_t max_iter, size_t max_eval, Real conv_tol,
 			       unsigned short soft_conv_limit, bool use_derivs):
   SurrBasedLocalMinimizer(model, merit_fn, accept_logic, constr_relax,
-			  tr_factor, corr_type, max_iter, max_eval,
-			  soft_conv_limit),
+    RealVector(1), max_iter, max_eval, conv_tol, soft_conv_limit,
+    std::shared_ptr<TraitsBase>(new DataFitSurrBasedLocalTraits())),
   multiLayerBypassFlag(false), useDerivsFlag(use_derivs)
-{ initialize_trust_region_data(iteratedModel.surrogate_type(), corr_order); }
+{
+  methodName = DATA_FIT_SURROGATE_BASED_LOCAL;
+  origTrustRegionFactor[0] = tr_factor; // only sized to 1 above
+  initialize_trust_region_data(model.surrogate_type(),model.correction_order());
+}
 
 
 void DataFitSurrBasedLocalMinimizer::
@@ -361,7 +362,7 @@ compute_center_correction(bool embed_correction)
   // ******************************************
   // Compute additive/multiplicative correction
   // ******************************************
-  if (correctionType && !embed_correction) {
+  if (iteratedModel.correction_type() && !embed_correction) {
     // -->> local and up to 1st-order multipt do not need correction
     // -->> hierarchical needs compute_correction if new center
     // -->> global needs compute_correction if new center or new bounds

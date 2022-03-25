@@ -413,18 +413,6 @@ bool DataFitSurrModel::finalize_mapping()
 }
 
 
-void DataFitSurrModel::init_model(Model& model)
-{
-  init_model_constraints(model);
-  init_model_labels(model);
-  // This push down of vars data can disrupt subsequent calls to
-  // update_from_subordinate_model() in surrogate-based methods with local
-  // DataFit instantiations, such as local reliability, expansion UQ, SBO, etc.
-  // For this reason, we override the SurrogateModel::init_model() default.
-  //init_model_inactive_variables(model);
-}
-
-
 void DataFitSurrModel::update_model(Model& model)
 {
   if (model.is_null()) return;

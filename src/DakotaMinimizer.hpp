@@ -103,6 +103,10 @@ protected:
 	    size_t num_nln_ineq, size_t num_nln_eq, 
             std::shared_ptr<TraitsBase> traits = 
             std::shared_ptr<TraitsBase>(new TraitsBase()));
+  /// alternate constructor for "on the fly" instantiations
+  Minimizer(Model& model, size_t max_iter, size_t max_eval, Real conv_tol,
+	    std::shared_ptr<TraitsBase> traits = 
+	    std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// destructor
   ~Minimizer();

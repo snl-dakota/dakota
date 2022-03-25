@@ -65,6 +65,9 @@ protected:
   void post_run(std::ostream& s);
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
+  void initialize_final_statistics();
+  void update_final_statistics();
+
   //
   //- Heading: Member functions
   //
@@ -151,6 +154,8 @@ protected:
   /// setting for the inactive model dimension not traversed by primary MF/ACV
   /// loop over steps
   size_t secondaryIndex;
+  /// relative costs of model forms/resolution levels within a 1D sequence
+  RealVector sequenceCost;
 
   /// total number of successful sample evaluations (excluding faults)
   /// for each model form, discretization level, and QoI
@@ -169,6 +174,9 @@ protected:
   /// major iteration counter
   size_t mlmfIter;
 
+  /// final estimator variance for targeted moment (usually mean), averaged
+  /// across QoI
+  Real avgEstVar;
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
@@ -178,6 +186,10 @@ protected:
 
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;
+
+  /// ALGORITHM_RESULTS (moments, level mappings) or ALGORITHM_PERFORMANCE
+  /// (for model tuning of estVar,equivHFEvals by an outer loop)
+  short finalStatsType;
 
   /// if defined, export each of the sample increments in ML, CV, MLCV
   /// using tagged tabular files

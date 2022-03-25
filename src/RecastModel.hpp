@@ -298,6 +298,8 @@ protected:
   short correction_type();
   /// update subModel's correction type
   void correction_type(short corr_type);
+  /// retrieve subModel's correction order
+  short correction_order();
 
   /// retrieve error estimates corresponding to the subModel
   const RealVector& error_estimates();
@@ -853,6 +855,10 @@ inline short RecastModel::correction_type()
 
 inline void RecastModel::correction_type(short corr_type)
 { subModel.correction_type(corr_type); }
+
+
+inline short RecastModel::correction_order()
+{ return subModel.correction_order(); }
 
 
 inline void RecastModel::build_approximation()

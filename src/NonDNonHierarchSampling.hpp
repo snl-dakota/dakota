@@ -93,6 +93,8 @@ protected:
 			 Sizet2DArray& num_LH);
   void finalize_counts(Sizet2DArray& N_L);
 
+  void recover_online_cost(RealVector& seq_cost);
+
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t index);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
@@ -193,11 +195,13 @@ protected:
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
 
-  /// relative costs of models within sequence of steps
-  RealVector sequenceCost;
   /// tracks ordering of a metric (correlations, eval ratios) across set of
   /// approximations
   SizetArray approxSequence;
+
+  /// Indicates use of user-specified cost ratios, rather than online
+  /// cost recovery
+  bool onlineCost;
 
   /// number of evaluations of HF truth model (length numFunctions)
   SizetArray numH;
@@ -212,8 +216,6 @@ protected:
 
   /// number of successful pilot evaluations of HF truth model (exclude faults)
   SizetArray numHIter0;
-  /// final estimator variance (optimizer result), averaged across QoI
-  Real avgEstVar;
   /// ratio of final estimator variance (optimizer result averaged across QoI)
   /// and final MC estimator variance  (final varH / numH averaged across QoI)
   Real avgEstVarRatio;
@@ -256,6 +258,9 @@ private:
   //
   //- Heading: Data
   //
+
+  /// indices of cost data within response metadata, one per model form
+  SizetSizetPairArray costMetadataIndices;
 
   /// pointer to NonDACV instance used in static member functions
   static NonDNonHierarchSampling* nonHierSampInstance;

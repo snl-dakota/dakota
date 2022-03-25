@@ -98,6 +98,7 @@ protected:
   DiscrepancyCorrection& discrepancy_correction();
   short correction_type();
   void  correction_type(short corr_type);
+  short correction_order();
 
   void create_tabular_datastream();
   void derived_auto_graphics(const Variables& vars, const Response& resp);
@@ -283,7 +284,10 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  // forward along to actualModel:
+  EnsembleSurrModel::nested_variable_mappings(c_index1, di_index1, ds_index1,
+					      dr_index1, c_target2, di_target2,
+					      ds_target2, dr_target2);
+  // forward along to subordinate models
   size_t i, num_models = orderedModels.size();
   for (i=0; i<num_models; ++i)
     orderedModels[i].nested_variable_mappings(c_index1, di_index1, ds_index1,
@@ -306,6 +310,10 @@ inline void HierarchSurrModel::correction_type(short corr_type)
   for (it=deltaCorr.begin(); it!=deltaCorr.end(); ++it)
     it->second.correction_type(corr_type);
 }
+
+
+inline short HierarchSurrModel::correction_order()
+{ return discrepancy_correction().correction_order(); }
 
 
 inline Model& HierarchSurrModel::surrogate_model(size_t i)

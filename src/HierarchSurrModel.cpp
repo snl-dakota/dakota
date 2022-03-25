@@ -86,8 +86,10 @@ void HierarchSurrModel::assign_default_keys()
     // with NonDExpansion::configure_{sequence,indices}() and key definition
     // for NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX
     // usage, since this suppresses allocation of a solution level array.
-    truthModelKey = Pecos::ActiveKey(id, r_type, last_m, SZ_MAX);
-    surrModelKey  = Pecos::ActiveKey(id, r_type,      0, SZ_MAX);
+    truthModelKey = Pecos::ActiveKey(id, r_type, last_m,
+      orderedModels[last_m].solution_level_cost_index());
+    surrModelKey  = Pecos::ActiveKey(id, r_type,      0,
+      orderedModels[0].solution_level_cost_index());
   }
   else if (multilevel()) { // first and last solution level (last model)
     size_t truth_soln_lev = orderedModels[last_m].solution_levels();
@@ -98,7 +100,7 @@ void HierarchSurrModel::assign_default_keys()
 			   Pecos::SINGLE_REDUCTION); // default: reduction only
 
   if (parallelLib.mpirun_flag()) {
-    MPIPackBuffer send_buff;  short mode;
+    MPIPackBuffer send_buff;  short mode(0);
     send_buff << mode << activeKey; // serve_run() recvs single | aggregate key
     modeKeyBufferSize = send_buff.size();
   }
@@ -418,7 +420,7 @@ void HierarchSurrModel::build_approximation()
     truthResponseRef[truthModelKey] = currentResponse.copy();
   ActiveSet hf_set = currentResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
-  if (sameModelInstance) assign_truth_key();
+  assign_truth_key();
   hf_model.evaluate(hf_set);
   truthResponseRef[truthModelKey].update(hf_model.current_response());
 
@@ -525,8 +527,8 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   // ------------------------------
   if (hi_fi_eval) {
     component_parallel_mode(TRUTH_MODEL_MODE); // TO DO: sameModelInstance
-    if (sameModelInstance) assign_truth_key();
-    else                   update_model(hf_model);
+    assign_truth_key();
+    if (!sameModelInstance) update_model(hf_model);
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     case AGGREGATED_MODELS: {
@@ -568,8 +570,8 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     }
     // compute the LF response
     component_parallel_mode(SURROGATE_MODEL_MODE); // TO DO: sameModelInstance
-    if (sameModelInstance) assign_surrogate_key();
-    else                   update_model(lf_model);
+    assign_surrogate_key();
+    if (!sameModelInstance) update_model(lf_model);
     ActiveSet lo_fi_set;
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
@@ -716,14 +718,14 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // launch nonblocking evals before any blocking ones
   if (hi_fi_eval && asynch_hi_fi) { // HF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
-    if (sameModelInstance) assign_truth_key();
+    assign_truth_key();
     hf_model.evaluate_nowait(hi_fi_set);
     // store map from HF eval id to HierarchSurrModel id
     modelIdMaps[1][hf_model.evaluation_id()] = surrModelEvalCntr;
   }
   if (lo_fi_eval && asynch_lo_fi) { // LF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
-    if (sameModelInstance) assign_surrogate_key();
+    assign_surrogate_key();
     lf_model.evaluate_nowait(lo_fi_set);
     // store map from LF eval id to HierarchSurrModel id
     modelIdMaps[0][lf_model.evaluation_id()] = surrModelEvalCntr;
@@ -735,14 +737,14 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // now launch any blocking evals
   if (hi_fi_eval && !asynch_hi_fi) { // execute HF synchronously & cache resp
     component_parallel_mode(TRUTH_MODEL_MODE);
-    if (sameModelInstance) assign_truth_key();
+    assign_truth_key();
     hf_model.evaluate(hi_fi_set);
     // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately
     cachedRespMaps[1][surrModelEvalCntr] = hf_model.current_response().copy();
   }
   if (lo_fi_eval && !asynch_lo_fi) { // execute LF synchronously & cache resp
     component_parallel_mode(SURROGATE_MODEL_MODE);
-    if (sameModelInstance) assign_surrogate_key();
+    assign_surrogate_key();
     lf_model.evaluate(lo_fi_set);
     Response lo_fi_response(lf_model.current_response().copy());
     // correct LF response prior to caching
@@ -1301,30 +1303,35 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
 
 void HierarchSurrModel::resize_response(bool use_virtual_counts)
 {
-  size_t num_surr, num_truth;
+  Model &hf_model = truth_model(), &lf_model = surrogate_model();
+  size_t num_lf_fns, num_hf_fns, num_meta,
+    num_hf_meta = hf_model.current_response().metadata().size(),
+    num_lf_meta = lf_model.current_response().metadata().size();
   if (use_virtual_counts) { // allow models to consume lower-level aggregations
-    num_surr  = surrogate_model().qoi();
-    num_truth =     truth_model().qoi();
+    num_lf_fns = lf_model.qoi();
+    num_hf_fns = hf_model.qoi();
   }
   else { // raw counts align with currentResponse raw count
-    num_surr  = surrogate_model().response_size();
-    num_truth =     truth_model().response_size();
+    num_lf_fns = lf_model.response_size();
+    num_hf_fns = hf_model.response_size();
   }
 
   switch (responseMode) {
   case AGGREGATED_MODELS:
-    numFns = num_surr + num_truth;  break;
+    numFns   = num_lf_fns  + num_hf_fns;
+    num_meta = num_hf_meta + num_lf_meta;
+    break;
   case MODEL_DISCREPANCY:
-    if (num_surr != num_truth) {
+    if (num_lf_fns != num_hf_fns) {
       Cerr << "Error: mismatch in response sizes for MODEL_DISCREPANCY mode "
 	   << "in HierarchSurrModel::resize_response()." << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    numFns = num_truth;  break;
+    numFns = num_hf_fns;  num_meta = num_hf_meta;  break;
   case BYPASS_SURROGATE:       case NO_SURROGATE:
-    numFns = num_truth;  break;
+    numFns = num_hf_fns;  num_meta = num_hf_meta;  break;
   case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:  default:
-    numFns = num_surr;   break;
+    numFns = num_lf_fns;  num_meta = num_lf_meta;  break;
   }
 
   // gradient and Hessian settings are based on independent spec (not LF, HF)
@@ -1345,6 +1352,8 @@ void HierarchSurrModel::resize_response(bool use_virtual_counts)
     //     Response object.  Expansion by combination only happens on
     //     iteratorCommRank 0 within derived_synchronize_combine{,_nowait}().
   }
+  if (currentResponse.metadata().size() != num_meta)
+    currentResponse.reshape_metadata(num_meta);
 }
 
 
@@ -1432,14 +1441,14 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 
       active_model_key(activeKey); // updates {truth,surr}ModelKey
       if (componentParallelMode == SURROGATE_MODEL_MODE) {
-	if (sameModelInstance) assign_surrogate_key(); // may have been deferred
+	assign_surrogate_key(); // may have been deferred
 
 	// serve active LF model:
 	surrogate_model().serve_run(pl_iter, max_eval_concurrency);
 	// Note: ignores erroneous BYPASS_SURROGATE
       }
       else if (componentParallelMode == TRUTH_MODEL_MODE) {
-	if (sameModelInstance) assign_truth_key(); // may have been deferred
+	assign_truth_key(); // may have been deferred
 
 	// serve active HF model, employing correct iterator concurrency:
 	Model& hf_model = truth_model();

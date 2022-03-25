@@ -394,7 +394,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
       xDSMLabels.resize(numADSV);
       //String label_i;
       // Map labels in a*v_labels to var_t enum in x*Labels through varTypeMap
-      map_labels_to_enum(acv_labels,xCMLabels);
+      map_labels_to_enum( acv_labels, xCMLabels);
       map_labels_to_enum(adiv_labels,xDIMLabels);
       map_labels_to_enum(adrv_labels,xDRMLabels);
       map_labels_to_enum(adsv_labels,xDSMLabels);
@@ -498,6 +498,9 @@ void DirectApplicInterface::set_local_data(const Response& response)
   // set labels once (all processors)
   if (fnLabels.empty())
     fnLabels = response.function_labels();
+
+  metaData       = response.metadata();
+  metaDataLabels = response.shared_data().metadata_labels();
 }
 
 
@@ -522,6 +525,7 @@ void DirectApplicInterface::overlay_response(Response& response)
     set.request_vector(directFnASV);
     set.derivative_vector(directFnDVV);
     response.update(fnVals, fnGrads, fnHessians, set);
+    response.metadata(metaData);
   }
 
   // For all master-slave cases & for peer cases in which numAnalysisServers>1,

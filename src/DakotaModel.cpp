@@ -216,7 +216,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
 
 Model::
 Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
-      const SharedResponseData&  srd, bool share_srd, const ActiveSet& set,
+      const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
       short output_level, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
   numDerivVars(set.derivative_vector().size()),
@@ -252,7 +252,7 @@ Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
 
 
 /** This constructor also builds the base class data for inherited models.
-    However, it is used for recast models which are instantiated on the fly.
+    However, it is used for derived models which are instantiated on the fly.
     Therefore it only initializes a small subset of attributes. */
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
@@ -273,11 +273,9 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 { /* empty ctor */ }
 
 
-/** The default constructor is used in vector<Model> instantiations
-    and for initialization of Model objects contained in Iterator and
-    derived Strategy classes.  modelRep is NULL in this case (a
-    populated problem_db is needed to build a meaningful Model
-    object). */
+/** The default constructor is used in vector<Model> instantiations and for
+    default initialization of Model objects.  modelRep is NULL in this case
+    (a populated problem_db is needed to build a meaningful Model object). */
 Model::Model():
   probDescDB(dummy_db), parallelLib(dummy_lib),
   evaluationsDB(evaluation_store_db)
@@ -3623,6 +3621,19 @@ Real Model::solution_level_real_value() const
 }
 
 
+size_t Model::cost_metadata_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual cost_metadata_index"
+	 << "() function.\n       cost_metadata_index() is not supported by "
+	 << "this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->cost_metadata_index(); // envelope fwd
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
@@ -4296,6 +4307,15 @@ void Model::correction_type(short corr_type)
   if (modelRep) // envelope fwd to letter
     modelRep->correction_type(corr_type);
   //else no-op
+}
+
+
+short Model::correction_order()
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->correction_order();
+  else
+    return -1; // special value for no correction (0 = value correction)
 }
 
 

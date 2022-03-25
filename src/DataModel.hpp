@@ -130,6 +130,11 @@ public:
   /// \c solution_level_control); a scalar input is interpreted as a constant
   /// cost multiplier to be applied recursively
   RealVector solutionLevelCost;
+  /// identifier for response metadata that returns the incurred cost of a
+  /// simulation execution.  This online recovery option (typically averaged
+  /// over a pilot sample) can replace the need for a priori specification
+  /// of solutionLevelCost.
+  String costRecoveryMetadata;
 
   // surrogate models
 

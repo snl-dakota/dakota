@@ -179,6 +179,9 @@ public:
   /// return the active (real) value of the solution control
   virtual Real   solution_level_real_value() const;
 
+  /// return index of online cost estimates within metadata
+  virtual size_t cost_metadata_index() const;
+
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
   virtual void primary_response_fn_weights(const RealVector& wts, 
@@ -393,6 +396,9 @@ public:
   /// return the correction type from the DiscrepancyCorrection object
   /// used by SurrogateModels
   virtual short correction_type();
+  /// return the correction order from the DiscrepancyCorrection object
+  /// used by SurrogateModels
+  virtual short correction_order();
 
   /// apply a DiscrepancyCorrection to correct an approximation within
   /// a HierarchSurrModel
@@ -1206,8 +1212,8 @@ protected:
 	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
-  Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-	ParallelLibrary& parallel_lib);
+  Model(LightWtBaseConstructor, ProblemDescDB& problem_db = dummy_db,
+	ParallelLibrary& parallel_lib = dummy_lib);
 
   //
   //- Heading: Virtual functions

@@ -55,6 +55,8 @@ namespace Dakota
 	        if (!sampleType)
 		  sampleType = SUBMETHOD_LHS;
 
+		initialize_final_statistics();
+
 		AMSC = NULL;
 
 		//Defaults are set before parsing input parameters

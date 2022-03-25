@@ -209,7 +209,9 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
       varTypeMap["x"]  = VAR_x;  varTypeMap["xi"] = VAR_xi; 
       varTypeMap["Af"] = VAR_Af; varTypeMap["Ac"] = VAR_Ac;
     //case TUNABLE_MODEL:
-      varTypeMap["y"]  = VAR_y;  varTypeMap["theta"] = VAR_theta;
+      varTypeMap["y"]      = VAR_y;       varTypeMap["theta"]  = VAR_theta;
+      varTypeMap["theta1"] = VAR_theta1;  varTypeMap["theta2"] = VAR_theta2;
+      varTypeMap["delta"]  = VAR_delta;   varTypeMap["gamma"]  = VAR_gamma;   
     //}
   }
 }
@@ -2135,11 +2137,6 @@ int TestDriverInterface::tunable_model()
 	 << "analyses." << std::endl;
     abort_handler(-1);
   }
-  if (numACV != 3 || numADIV != 1) { // x,y,theta and model form
-    Cerr << "Error: unsupported variable counts in tunable_model direct fn."
-	 << std::endl;
-    abort_handler(INTERFACE_ERROR);
-  }
   if (numFns != 1) {
     Cerr << "Error: unsupported function counts in tunable_model direct fn."
 	 << std::endl;
@@ -2151,17 +2148,51 @@ int TestDriverInterface::tunable_model()
     abort_handler(INTERFACE_ERROR);
   }
 
-  // Check state variable for ModelForm
-
-  Real A, xy_pow, theta = xCM[VAR_theta]; // continuous state variable
-  switch (xDIM[VAR_MForm]) {
-  case 0:  A = std::sqrt(11.); xy_pow = 5;  break;//theta = Pi/2.;
-  case 1:  A = std::sqrt(7.);  xy_pow = 3;  break;//theta = xCM[VAR_theta];
-  case 2:  A = std::sqrt(3.);  xy_pow = 1;  break;//theta = Pi/6.;
+  size_t md_index = find_index(metaDataLabels, "cost_model");
+  Real A, xy_pow, active_th, rel_cost;
+  if (numACV == 3 && numADIV == 1) { // x,y,theta1 and model form integer
+    active_th = xCM[VAR_theta]; // one CSV = theta for this MForm only
+    switch (xDIM[VAR_MForm]) {  // state variable for ModelForm
+    case 0:  A = std::sqrt(11.); xy_pow = 5;  rel_cost = 1.;   break; // HF
+    case 1:  A = std::sqrt(7.);  xy_pow = 3;  rel_cost = 0.1;  break; // MF
+    case 2:  A = std::sqrt(3.);  xy_pow = 1;  rel_cost = 0.01; break; // LF
+    }
   }
-  fnVals[0] = A * (std::cos(theta) * std::pow(xCM[VAR_x], xy_pow) +
-		   std::sin(theta) * std::pow(xCM[VAR_y], xy_pow));
+  else if (numACV == 7 && numADSV == 1) {//x,y,theta{,1,2},delta,gamma,MForm str
+    const String& mform = xDSM[VAR_MForm]; // discrete state var for ModelForm
+    if (mform == "HF") {
+      A = std::sqrt(11.);  xy_pow = 5;  active_th = xCM[VAR_theta];
+      rel_cost = 1.;
+    }
+    else {
+      Real delta, w_lo = .001, w_hi = 1.; // initial definition for MF
+      Real th = xCM[VAR_theta], th1 = xCM[VAR_theta1], th2 = xCM[VAR_theta2],
+	th_lb = PI / 6., th_ub = PI / 2., th_range = th_ub - th_lb;
+      if (mform == "LF1")
+	{ A = std::sqrt(7.);  xy_pow = 3;  delta = 1.;  active_th = th1; }
+      else if (mform == "LF2") {
+	A = std::sqrt(3.);  xy_pow = 1;  active_th = th2;
+	std::map<var_t, Real>::iterator x_iter = xCM.find(VAR_delta);
+	delta = (x_iter == xCM.end()) ? 2.5  : x_iter->second;
+	x_iter = xCM.find(VAR_gamma);
+	Real gamma = (x_iter == xCM.end()) ? 0.55 : x_iter->second;
+	w_lo *= gamma;  w_hi *= gamma; // new for LF: reduce MF cost by gamma
+      }
+      // cost metadata for tunable problem (extended cost model)
+      Real log_w = std::log(w_lo) - std::log(w_lo/w_hi) / th_range *
+	           std::pow(active_th - th_lb, delta);
+      rel_cost = std::exp(log_w); // w_i = cost_LF_i / cost HF --> rel_cost
+    }
+  }
+  else {
+    Cerr << "Error: unexpected parameterization in tunable_model direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
 
+  fnVals[0] = A * (std::cos(active_th) * std::pow(xCM[VAR_x], xy_pow) +
+		   std::sin(active_th) * std::pow(xCM[VAR_y], xy_pow));
+  if (md_index != _NPOS) metaData[md_index] = rel_cost;
   return 0;
 }
 
@@ -4531,11 +4562,10 @@ int TestDriverInterface::bayes_linear()
     abort_handler(INTERFACE_ERROR);
   }
   
-  /*const Real pi = 3.14159265358979324;
- 
+  /* 
   Real mean_pred = 0.4; int i;
   for (i=1; i<numVars; i++) {
-     mean_pred += 0.4 + 0.5*std::sin(2*pi*i/numVars);
+     mean_pred += 0.4 + 0.5*std::sin(2*PI*i/numVars);
   }
   RealVector n_means, n_std_devs, n_l_bnds, n_u_bnds;
   n_means.resize(numFns); n_std_devs.resize(numFns); 

@@ -482,7 +482,7 @@ query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
     cost.sizeUninitialized(num_steps);
     m_iter = sub_models.begin();
     for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
-      cost[i] = m_iter->solution_level_cost(); // cost for active soln index
+      cost[i] = m_iter->solution_level_cost();// active soln index; 0 if unfound
       if (cost[i] <= 0.) cost_defined = false;
     }
   }
@@ -1157,11 +1157,21 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp,
 				    String type)
 {
   size_t i, j, num_mf = N_samp.size(), width = write_precision+7;
-  if (num_mf == 1)  s << "<<<<< " << type << " samples per level:\n";
-  else              s << "<<<<< " << type << " samples per model form:\n";
-  for (i=0; i<num_mf; ++i) {
-    if (num_mf > 1) s << "      Model Form " << i+1 << ":\n";
-    print_multilevel_evaluation_summary(s, N_samp[i]);
+  if (num_mf == 1) {
+    s << "<<<<< " << type << " samples per level:\n";
+    print_multilevel_evaluation_summary(s, N_samp[0]);
+  }
+  else {
+    ModelList& sub_models = iteratedModel.subordinate_models(false);
+    ModelLIter m_iter = sub_models.begin();
+    s << "<<<<< " << type << " samples per model form:\n";
+    for (i=0; i<num_mf; ++i) {
+      s << "      Model Form ";
+      if (m_iter != sub_models.end())
+	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
+      else s << i+1 << ":\n";
+      print_multilevel_evaluation_summary(s, N_samp[i]);
+    }
   }
 }
 

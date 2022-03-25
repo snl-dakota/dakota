@@ -7037,6 +7037,9 @@ static Method_mp_type
 	MP2p(finalMomentsType,CENTRAL_MOMENTS),            // Pecos enumeration
 	MP2p(finalMomentsType,NO_MOMENTS),                 // Pecos enumeration
 	MP2p(finalMomentsType,STANDARD_MOMENTS),           // Pecos enumeration
+	MP2s(finalStatsType,ALGORITHM_PERFORMANCE),
+	MP2s(finalStatsType,ALGORITHM_RESULTS),
+	MP2s(finalStatsType,NO_FINAL_STATS),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
 	MP2s(iteratorScheduling,MASTER_SCHEDULING),
@@ -7448,6 +7451,7 @@ static IntVector
 
 static String
         MP_(advancedOptionsFilename),
+	MP_(costRecoveryMetadata),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
 	MP_(exportApproxVarianceFile),

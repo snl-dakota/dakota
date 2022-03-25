@@ -1,0 +1,157 @@
+environment
+	output_precision = 16
+	  method_pointer = 'PSTUDY'
+	  tabular_data
+	    tabular_data_file = 'ps_acv.dat' freeform
+
+##############
+# OUTER LOOP #
+##############
+
+method,
+	id_method = 'PSTUDY'
+	model_pointer = 'PSTUDY_M'
+        vector_parameter_study					#s0,#s1
+	  step_vector = .02 0.  num_steps = 50			#s0
+#	  step_vector = .01 .01 num_steps = 50			#s1
+#	efficient_global					#s2
+#	  convergence_tolerance = 1.e-6
+	output silent
+
+model,
+	id_model = 'PSTUDY_M'
+	nested
+	  variables_pointer  = 'PSTUDY_V'
+	  sub_method_pointer = 'UQ'
+	  responses_pointer  = 'PSTUDY_R'
+# Variable mapping: "type 2" from RefMan docs.
+     	  primary_variable_mapping 'theta1' 'theta2'
+# Response mapping: inner loop returns alg perf: est_var, equiv_cost
+# Here we pull the estvar result for inner loop mapping of cost-bar -> estvar
+	  primary_response_mapping   = 1. 0.
+	  secondary_response_mapping = 0. 1.
+
+variables,
+	id_variables = 'PSTUDY_V'
+	continuous_design = 2
+	  initial_point  = 0.55            0.5235987755983	#s0
+#	  initial_point  = 1.0471975511966 0.5235987755983	#s1,#s2
+	  lower_bounds   = 2 * 0.5235987755983
+	  upper_bounds   = 2 * 1.5707963267949
+	  descriptors    = 'outer_theta1' 'outer_theta2'
+
+responses,
+# NOTE: This specifies the TOTAL RESPONSE for the outer loop,
+#       which is a combination of nested & interface responses.
+	id_responses = 'PSTUDY_R'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 1
+	nonlinear_inequality_upper_bounds = 1100.
+	descriptors = 'ACV_EstVar' 'ACV_EquivHFCost'
+	no_gradients
+	no_hessians
+
+
+##############
+# INNER LOOP #
+##############
+
+method,
+	id_method = 'UQ'
+	model_pointer = 'NONHIER'
+	approximate_control_variate acv_mf sqp	
+	  max_function_evaluations = 1000
+	  pilot_samples =  25
+	  seed = 8674132
+	  final_statistics algorithm_performance
+	output silent
+
+model,
+	id_model = 'NONHIER'
+	variables_pointer = 'HF_VARS'
+	surrogate model_ensemble 
+	  truth_model = 'HF'
+	  unordered_model_fidelities = 'LF2' 'LF1' # tunable problem names
+
+model,
+	id_model = 'LF2' # low-fidelity
+	variables_pointer = 'LF2_VARS'
+#	interface_pointer = 'LF2_INT
+	simulation
+#	  solution_level_control = 'ModelForm'
+#	  solution_level_cost = 0.01 # w = 10 case
+	  cost_recovery_metadata = 'cost_model'
+
+model,
+	id_model = 'LF1' # mid-fidelity
+	variables_pointer = 'LF1_VARS'
+#	interface_pointer = 'LF1_INT'
+	simulation
+#	  solution_level_control = 'ModelForm'
+#	  solution_level_cost = 0.1 # w = 10 case
+	  cost_recovery_metadata = 'cost_model'
+
+model,
+	id_model = 'HF'
+	variables_pointer = 'HF_VARS'
+#	interface_pointer = 'HF_INT'
+	simulation
+#	  solution_level_control = 'ModelForm'
+#	  solution_level_cost = 1.
+	  cost_recovery_metadata = 'cost_model'
+
+variables,
+	id_variables = 'LF2_VARS'
+	uniform_uncertain = 2
+	  lower_bounds    = 2*-1.
+	  upper_bounds    = 2* 1.
+     	  descriptors     = 'x' 'y'
+	continuous_state  = 5
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s1,#s2
+     	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
+	discrete_state_set string = 1
+	  initial_state = 'LF2'
+	  set_values    = 'LF2'
+     	  descriptors   = 'ModelForm'  	  
+
+variables,
+	id_variables = 'LF1_VARS'
+	uniform_uncertain = 2
+	  lower_bounds    = 2*-1.
+	  upper_bounds    = 2* 1.
+     	  descriptors     = 'x' 'y'
+	continuous_state  = 5
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s1,#s2
+     	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
+	discrete_state_set string = 1
+	  initial_state = 'LF1'
+	  set_values    = 'LF1'
+     	  descriptors   = 'ModelForm' 	  
+
+variables,
+	id_variables = 'HF_VARS'
+	uniform_uncertain = 2
+	  lower_bounds    = 2*-1.
+	  upper_bounds    = 2* 1.
+     	  descriptors     = 'x' 'y'
+	continuous_state  = 5
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s1,#s2
+     	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
+	discrete_state_set string = 1
+	  initial_state = 'HF'
+	  set_values    = 'HF'
+     	  descriptors   = 'ModelForm'     	  
+     	       	  
+interface,
+   analysis_driver = 'tunable_model'
+   direct
+
+responses,
+	response_functions = 1
+	descriptors = 'Q'
+	no_gradients
+	no_hessians
+	metadata 'cost_model'

@@ -205,13 +205,12 @@ void SurrogateModel::init_model(Model& model)
 {
   init_model_constraints(model);
   init_model_labels(model);
-  // This push down of vars data can disrupt subsequent calls to
+
+  // A push down of inactive vars data can disrupt subsequent calls to
   // update_from_subordinate_model() in surrogate-based methods with local
   // DataFit instantiations, such as local reliability, expansion UQ, SBO, etc.
-  // This call is not disruptive for hierarchical/non-hierarchical surrogates,
-  // however, which are not instantiated locally, so is included here as the
-  // base-class default implementation.
-  init_model_inactive_variables(model);
+  // It is therefore not included in the base-class default implementation.
+  //init_model_inactive_variables(model);
 }
 
 
@@ -290,7 +289,7 @@ void SurrogateModel::init_model_labels(Model& model)
       model.response_labels(currentResponse.function_labels()); break;
     }
 
-    // Set the incoming model variable descriptors with the variable descriptors
+  // Set the incoming model variable descriptors with the variable descriptors
   // from currentVariables (eliminates need to replicate descriptors in the
   // input file).  This only needs to be performed once.  However, performing
   // this in the ctor does not propagate properly for multiple surrogates /
@@ -351,14 +350,6 @@ void SurrogateModel::init_model_labels(Model& model)
 
 void SurrogateModel::init_model_inactive_variables(Model& model)
 {
-  // Set the incoming model variable descriptors with the variable descriptors
-  // from currentVariables (eliminates need to replicate descriptors in the
-  // input file).  This only needs to be performed once.  However, performing
-  // this in the ctor does not propagate properly for multiple surrogates /
-  // nestings since the sub-model construction (and therefore any sub-sub-model
-  // constructions) must finish before calling any set functions on it.  That
-  // is, after-the-fact updating in constructors only propagates one level,
-  // whereas before-the-fact updating in compute/build functions propagates
   short active_view = currentVariables.view().first,
      sm_active_view = model.current_variables().view().first;
   bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL);
@@ -385,9 +376,18 @@ void SurrogateModel::init_model_inactive_variables(Model& model)
       model.inactive_discrete_int_upper_bounds(
         userDefinedConstraints.inactive_discrete_int_upper_bounds());
     }
-    if (num_idsv && num_idsv == model.idsv())   // not enforced previously
+    if (num_idsv && num_idsv == model.idsv()) {  // not enforced previously
+      Cout << "Before currentVariables idsv:\n";
+      write_data(Cout, currentVariables.inactive_discrete_string_variables());
+      Cout << "Before model target idsv:\n";
+      write_data(Cout, model.inactive_discrete_string_variables());
       model.inactive_discrete_string_variables(
         currentVariables.inactive_discrete_string_variables());
+      Cout << "After currentVariables idsv:\n";
+      write_data(Cout, currentVariables.inactive_discrete_string_variables());
+      Cout << "After model target idsv:\n";
+      write_data(Cout, model.inactive_discrete_string_variables());
+    }
     if (num_idrv && num_idrv == model.idrv()) { // not enforced previously
       model.inactive_discrete_real_variables(
         currentVariables.inactive_discrete_real_variables());
@@ -1302,6 +1302,10 @@ aggregate_response(const Response& hf_resp, const Response& lf_resp,
     if (asv_i & 4)
       agg_resp.function_hessian(lf_resp.function_hessian(i), offset_i);
   }
+
+  const RealArray& hf_md = hf_resp.metadata();
+  agg_resp.metadata(hf_md, 0);
+  agg_resp.metadata(lf_resp.metadata(), hf_md.size());
 }
 
 
@@ -1355,6 +1359,9 @@ insert_response(const Response& response, size_t position,
     if (asv_fn & 4)
       agg_response.function_hessian(response.function_hessian(fn), cntr);
   }
+
+  const RealArray& md = response.metadata();
+  agg_response.metadata(md, position * md.size());
 }
 
 } // namespace Dakota

@@ -143,10 +143,16 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     num_curr_vars = num_curr_cv + num_curr_div + num_curr_dsv + num_curr_drv;
   // Error checks: maps can be empty strings, but must be present to assure
   // correct association.
-  if ( ( num_var_map_1 && num_var_map_1 != num_curr_vars ) ||
-       ( num_var_map_2 && num_var_map_2 != num_var_map_1 ) ) {
-    Cerr << "\nError: length of variable mapping specification(s) does not "
-	 << "match number of active variables." << std::endl;
+  if (num_var_map_1 && num_var_map_1 != num_curr_vars) {
+    Cerr << "\nError: length of primary variable mapping specification ("
+	 << num_var_map_1 << ") does not match number of active variables ("
+	 << num_curr_vars << ")." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  if (num_var_map_2 && num_var_map_2 != num_var_map_1) {
+    Cerr << "\nError: length of secondary variable mapping specification ("
+	 << num_var_map_2 << ") does not match number of primary variables ("
+	 << num_var_map_1 << ")." << std::endl;
     abort_handler(MODEL_ERROR);
   }
   // active are sized based on totals due to different mapping options

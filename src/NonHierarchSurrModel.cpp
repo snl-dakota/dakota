@@ -55,11 +55,13 @@ void NonHierarchSurrModel::assign_default_keys()
   // default key data values, to be overridden at run time
   unsigned short id = 0, num_unord = unorderedModels.size();
   if (multifidelity()) { // first and last model form (no soln levels)
-    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord, SZ_MAX);
+    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord,
+				     truthModel.solution_level_cost_index());
     //if (responseMode == AGGREGATED_MODELS) {
       surrModelKeys.resize(num_unord);
       for (unsigned short i=0; i<num_unord; ++i)
-	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, SZ_MAX);
+	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i,
+	  unorderedModels[i].solution_level_cost_index());
     //}
   }
   else if (multilevel()) { // first and last solution level (last model)
@@ -77,7 +79,7 @@ void NonHierarchSurrModel::assign_default_keys()
   activeKey.aggregate_keys(truthModelKey, surrModelKeys, Pecos::RAW_DATA);
 
   if (parallelLib.mpirun_flag()) {
-    MPIPackBuffer send_buff;  short mode;
+    MPIPackBuffer send_buff;  short mode(0);
     send_buff << mode << activeKey; // serve_run() recvs single | aggregate key
     modeKeyBufferSize = send_buff.size();
   }
@@ -279,8 +281,6 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
   }
   */
 
-  if (sameModelInstance) update_model(truthModel);
-
   currentResponse.active_set(set);
   size_t num_unord = unorderedModels.size();
   switch (responseMode) {
@@ -290,13 +290,14 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
     asv_split(set.request_vector(), indiv_asv);
     size_t i, num_steps = indiv_asv.size();
     ActiveSet set_i(set); // copy DVV
+    if (sameModelInstance) update_model(truthModel);
     for (i=0; i<num_steps; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       if (test_asv(asv_i)) {
 	Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
 	component_parallel_mode(i+1); // index to id (0 is reserved)
-	if (sameModelInstance) assign_key(i);
-	else                   update_model(model_i);
+	assign_key(i);
+	if (!sameModelInstance) update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate(set_i);
 	// insert i-th contribution to currentResponse asrv/fns/grads/hessians
@@ -312,8 +313,8 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
       abort_handler(MODEL_ERROR);
     }
     component_parallel_mode(num_unord+1); // truth model id
-    if (sameModelInstance) assign_key(truthModelKey);
-    else                   update_model(truthModel);
+    assign_key(truthModelKey);
+    update_model(truthModel);
     truthModel.evaluate(set);
     currentResponse.update(truthModel.current_response());
     break;
@@ -337,8 +338,6 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 
   // For notes on repetitive use of assign_key(), see derived_evaluate() above
 
-  if (sameModelInstance) update_model(truthModel);
-
   switch (responseMode) {
   case AGGREGATED_MODELS: {
     // define eval reqmts, with unorderedModels followed by truthModel at end
@@ -348,12 +347,13 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     ActiveSet set_i(set); // copy DVV
 
     // first pass for nonblocking models
+    if (sameModelInstance) update_model(truthModel);
     for (i=0; i<num_steps; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
       if (model_i.asynch_flag() && test_asv(asv_i)) {
-	if (sameModelInstance) assign_key(i);
-	else                   update_model(model_i);
+	assign_key(i);
+	if (!sameModelInstance) update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate_nowait(set_i);
 	modelIdMaps[i][model_i.evaluation_id()] = surrModelEvalCntr;
@@ -365,8 +365,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
       if (!model_i.asynch_flag() && test_asv(asv_i)) {
 	component_parallel_mode(i+1); // model id (0 is reserved)
-	if (sameModelInstance) assign_key(i);
-	else                   update_model(model_i);
+	assign_key(i);
+	if (!sameModelInstance) update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate(set_i);
 	cachedRespMaps[i][surrModelEvalCntr]
@@ -381,8 +381,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 	   << "NonHierarchSurrModel::derived_evaluate()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    if (sameModelInstance) assign_key(truthModelKey);
-    else                   update_model(truthModel);
+    assign_key(truthModelKey);
+    update_model(truthModel);
     truthModel.evaluate_nowait(set); // no need to test for blocking eval
     modelIdMaps[0][truthModel.evaluation_id()] = surrModelEvalCntr;
     break;
@@ -716,13 +716,20 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 {
   size_t num_approx = surrModelKeys.size(), // model forms or resolutions
-    num_truth = (use_virtual_counts) ?
+    num_meta, num_truth_md = truthModel.current_response().metadata().size(),
+    num_truth_fns = (use_virtual_counts) ?
     truthModel.qoi() : // allow models to consume lower-level aggregations
     truthModel.response_size(); // raw counts align w/ currentResponse raw count
 
   switch (responseMode) {
-  case AGGREGATED_MODELS: numFns = (num_approx + 1) * num_truth;  break;
-  case BYPASS_SURROGATE:  numFns =                    num_truth;  break;
+  case AGGREGATED_MODELS: {
+    size_t multiplier = num_approx + 1;
+    numFns   = multiplier * num_truth_fns;
+    num_meta = multiplier * num_truth_md;
+    break;
+  }
+  case BYPASS_SURROGATE:
+    numFns = num_truth_fns;  num_meta = num_truth_md;  break;
   }
 
   // gradient and Hessian settings are based on independent spec (not LF, HF)
@@ -743,6 +750,8 @@ void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
     //     Response object.  Expansion by combination only happens on
     //     iteratorCommRank 0 within derived_synchronize_combine{,_nowait}().
   }
+  if (currentResponse.metadata().size() != num_meta)
+    currentResponse.reshape_metadata(num_meta);
 }
 
 

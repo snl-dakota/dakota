@@ -28,7 +28,8 @@ namespace Dakota {
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   userDefinedInterface(problem_db.get_interface()), solnCntlVarType(EMPTY_TYPE),
-  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), simModelEvalCntr(0)
+  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
+  simModelEvalCntr(0)
 {
   componentParallelMode = INTERFACE_MODE;
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
@@ -37,6 +38,23 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   initialize_solution_control(
     problem_db.get_string("model.simulation.solution_level_control"),
     problem_db.get_rv("model.simulation.solution_level_cost"));
+
+  if (solnCntlCostMap.empty()) {
+    initialize_solution_recovery(
+      probDescDB.get_string("model.simulation.cost_recovery_metadata"));
+    // Error checks can be encompass a model ensemble at a higher level
+    //if (costMetadataIndex == _NPOS)
+    //  Cerr << "Error: insufficient cost data provided." << std::endl;
+  }
+}
+
+
+void SimulationModel::
+initialize_solution_recovery(const String& cost_label)
+{
+  // returns _NPOS if no metadata label match
+  costMetadataIndex = find_index(
+    currentResponse.shared_data().metadata_labels(), cost_label);
 }
 
 
@@ -197,13 +215,8 @@ initialize_solution_control(const String& control, const RealVector& cost)
   // to the discrete variable value index (val_index below).
   // Most often, these two indices will be the same, but we always order with
   // increasing cost in case the discrete values are not monotonic.
-  if (cost_index == _NPOS) { // just return quietly to simplify calling code
-    return;                  // (rather than always checking index validity)
-
-    //Cerr << "Error: _NPOS passed to SimulationModel::solution_level_"
-    //     << "cost_index()." << std::endl;
-    //abort_handler(MODEL_ERROR);
-  }
+  if (cost_index == _NPOS) // just return quietly to simplify calling code
+    return;
 
   std::map<Real, size_t>::const_iterator c_cit = solnCntlCostMap.begin();
   std::advance(c_cit, cost_index);

@@ -210,17 +210,23 @@ enum { DESIGN,            //DESIGN_UNIFORM,
 // Wilks type of confidence interval
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
-// define special values for qoi aggregation norm for sample allocation over levels and QoIs
+// type of final statistics for NonD sampling methods
+enum { NO_FINAL_STATS, ALGORITHM_PERFORMANCE, ALGORITHM_RESULTS };
+
+// define special values for qoi aggregation norm for sample
+// allocation over levels and QoIs
 enum { QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM };
 
 // target variance for fitting sample allocation
 enum { TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA, TARGET_SCALARIZATION };
 
-// define special values for computation of convergence tolerance, either absolute or relative 
+// define special values for computation of convergence tolerance,
+// either absolute or relative
 enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE,
        CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE };
 
-// define optimization formulation for MLMC sample allocation by specifing equality constraint, either variance or cost 
+// define optimization formulation for MLMC sample allocation by
+// specifing equality constraint, either variance or cost
 enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
        CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
 
@@ -1027,7 +1033,10 @@ public:
   Real multilevEstimatorRate;
   /// type of discrepancy emulation in multilevel methods: distinct or recursive
   short multilevDiscrepEmulation;  
-  /// the \c final_moments specification in \ref MethodNonD
+  /// specification of the type of final statistics in \ref MethodNonD
+  short finalStatsType;
+  /// the \c final_moments specification in \ref MethodNonD, subordinate to
+  /// the type of final statistics 
   short finalMomentsType;
   /// the \c distribution \c cumulative or \c complementary specification
   /// in \ref MethodNonD

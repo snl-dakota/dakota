@@ -59,9 +59,6 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // initialize finalStatistics using the default statistics set
-  initialize_final_statistics();
-
   if ( wilksFlag ) {
     // Only works with sample_type of random
     // BMA: consider relaxing, despite no theory

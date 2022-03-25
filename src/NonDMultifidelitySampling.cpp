@@ -96,6 +96,10 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // ----------------------------------------------------
     shared_increment(mlmfIter); // spans ALL models, blocking
     accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, numH);
+    // While online cost recovery could be continuously updated, we restrict
+    // to the pilot and do not not update after iter 0.  We could potentially
+    // update cost for shared samples, mirroring the correlation updates.
+    if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
     increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps);
 
     // -------------------------------------------
@@ -151,6 +155,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		     sum_HH_pilot, N_shared_pilot);
+  if (onlineCost) recover_online_cost(sequenceCost);
   //increment_equivalent_cost(...); // excluded
   compute_LH_correlation(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 			 sum_HH_pilot, N_shared_pilot, var_L, varH, rho2LH);
@@ -204,6 +209,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // ----------------------------------------------------
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, numH);
+  if (onlineCost) recover_online_cost(sequenceCost);
   increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1);
 
   // -------------------------------------------

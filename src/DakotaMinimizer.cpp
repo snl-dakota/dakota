@@ -88,6 +88,19 @@ Minimizer(unsigned short method_name, Model& model,
 
 
 Minimizer::
+Minimizer(Model& model, size_t max_iter, size_t max_eval, Real conv_tol,
+	  std::shared_ptr<TraitsBase> traits):
+  Iterator(NoDBBaseConstructor(), model, max_iter, max_eval, conv_tol, traits),
+  constraintTol(0.), bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
+  boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
+  calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
+  scaleFlag(false)
+{
+  update_from_model(iteratedModel); // variable,constraint counts & checks
+}
+
+
+Minimizer::
 Minimizer(unsigned short method_name, size_t num_lin_ineq, size_t num_lin_eq,
 	  size_t num_nln_ineq, size_t num_nln_eq,
 	  std::shared_ptr<TraitsBase> traits):
