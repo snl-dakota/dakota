@@ -1,7 +1,8 @@
 environment
 	output_precision = 16
 	  method_pointer = 'PSTUDY'
-	  tabular_data tabular_data_file = 'ps_acv.dat'
+	  tabular_data
+	    tabular_data_file = 'ps_acv.dat' freeform
 
 ##############
 # OUTER LOOP #

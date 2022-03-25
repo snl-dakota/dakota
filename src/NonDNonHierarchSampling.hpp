@@ -199,6 +199,10 @@ protected:
   /// approximations
   SizetArray approxSequence;
 
+  /// Indicates use of user-specified cost ratios, rather than online
+  /// cost recovery
+  bool onlineCost;
+
   /// number of evaluations of HF truth model (length numFunctions)
   SizetArray numH;
   /// covariances between each LF approximation and HF truth (the c

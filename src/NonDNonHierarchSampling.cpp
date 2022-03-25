@@ -103,9 +103,9 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   configure_sequence(numSteps, secondaryIndex, sequenceType);
   numApprox = numSteps - 1;
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  // Precedence: if solution costs provided, then we use them; else sequenceCost
-  // is empty and we rely on online cost recovery through response metadata
-  query_cost(numSteps, multilev, sequenceCost);
+  // Precedence: if solution costs provided, then we use them; else we rely
+  /// on online cost recovery through response metadata
+  onlineCost = !query_cost(numSteps, multilev, sequenceCost);
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
 		    numSteps, pilotSamples);
 
