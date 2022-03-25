@@ -174,6 +174,9 @@ protected:
   /// major iteration counter
   size_t mlmfIter;
 
+  /// final estimator variance for targeted moment (usually mean), averaged
+  /// across QoI
+  Real avgEstVar;
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;

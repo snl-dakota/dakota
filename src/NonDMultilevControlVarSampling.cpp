@@ -1790,25 +1790,25 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
   case MULTIFIDELITY_SAMPLING:
     NonDControlVariateSampling::print_variance_reduction(s); break;
   default: {
-    Real avg_mlcvmc_estvar = average(estVar), avg_mlmc_estvar0,
-      avg_budget_mc_estvar;
+    avgEstVar = average(estVar);
+    Real avg_mlmc_estvar0, avg_budget_mc_estvar;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
     size_t wpp7 = write_precision + 7;
     s << "<<<<< Variance for mean estimator:\n";
     switch (pilotMgmtMode) {
     case OFFLINE_PILOT:
       s << "  " << type << " MLCVMC (sample profile):   "
-	<< std::setw(wpp7) << avg_mlcvmc_estvar << '\n';
+	<< std::setw(wpp7) << avgEstVar << '\n';
       break;
     default:
       avg_mlmc_estvar0 = average(estVarIter0);
       s << "      Initial MLMC (pilot samples):    " << std::setw(wpp7)
 	<< avg_mlmc_estvar0 << "\n  "
 	<< type << " MLCVMC (sample profile):   "
-	<< std::setw(wpp7) << avg_mlcvmc_estvar	<< "\n  "
+	<< std::setw(wpp7) << avgEstVar	<< "\n  "
 	<< type << " MLCVMC / pilot ratio:      "
 	// report ratio of averages rather than average of ratios:
-	<< std::setw(wpp7) << avg_mlcvmc_estvar / avg_mlmc_estvar0 << '\n';
+	<< std::setw(wpp7) << avgEstVar / avg_mlmc_estvar0 << '\n';
       break;
     }
     switch (pilotMgmtMode) {
@@ -1818,7 +1818,7 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
 	<< (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
 	<< std::setw(wpp7) << avg_budget_mc_estvar
 	<< "\n Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
-	<< avg_mlcvmc_estvar / avg_budget_mc_estvar << '\n';
+	<< avgEstVar / avg_budget_mc_estvar << '\n';
       break;
     }
     break;

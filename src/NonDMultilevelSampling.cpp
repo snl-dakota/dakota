@@ -1548,32 +1548,33 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
 
 void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
 {
-  Real   avg_mlmc_estvar = average(estVar), avg_mlmc_estvar0,
-    avg_budget_mc_estvar = average(varH) / equivHFEvals;
+  avgEstVar = average(estVar);
+  Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
   switch (pilotMgmtMode) {
   case OFFLINE_PILOT:
     s << "  " << type << " MLMC (sample profile):   "
-      << std::setw(wpp7) << avg_mlmc_estvar;
+      << std::setw(wpp7) << avgEstVar;
     break;
-  default:
-    avg_mlmc_estvar0 = average(estVarIter0);
+  default: {
+    Real avg_mlmc_estvar0 = average(estVarIter0);
     s << "    Initial MLMC (pilot samples):    "
       << std::setw(wpp7) << avg_mlmc_estvar0
       << "\n  " << type << " MLMC (sample profile):   "
-      << std::setw(wpp7) << avg_mlmc_estvar
+      << std::setw(wpp7) << avgEstVar
       << "\n  " << type << " MLMC / pilot ratio:      "
       // report ratio of averages rather than average of ratios:
-      << std::setw(wpp7) << avg_mlmc_estvar / avg_mlmc_estvar0;
+      << std::setw(wpp7) << avgEstVar / avg_mlmc_estvar0;
     break;
+  }
   }
   s << "\n Equivalent   MC (" << std::setw(5)
     << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
     << std::setw(wpp7) << avg_budget_mc_estvar
     << "\n Equivalent MLMC / MC ratio:         " << std::setw(wpp7)
-    << avg_mlmc_estvar / avg_budget_mc_estvar << '\n';
+    << avgEstVar / avg_budget_mc_estvar << '\n';
 }
 
 

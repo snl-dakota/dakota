@@ -800,9 +800,9 @@ void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
     cvmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / N_hf[qoi];
     cvmc_est_var[qoi] *= estVarRatios[qoi];
   }
-  Real avg_cvmc_est_var      = average(cvmc_est_var),
-       avg_mc_est_var        = average(mc_est_var),
-       avg_budget_mc_est_var = average(varH) / equivHFEvals;
+  avgEstVar               = average(cvmc_est_var);
+  Real     avg_mc_est_var = average(mc_est_var),
+    avg_budget_mc_est_var = average(varH) / equivHFEvals;
 
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   size_t wpp7 = write_precision + 7;
@@ -817,14 +817,14 @@ void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
     << (size_t)std::floor(average(N_hf) + .5) << " HF samples): "
     << std::setw(wpp7) << avg_mc_est_var
     << "\n  " << type << " CVMC (sample profile):   "
-    << std::setw(wpp7) << avg_cvmc_est_var
+    << std::setw(wpp7) << avgEstVar
     << "\n  " << type << " CVMC ratio (1 - R^2):    "
-    << std::setw(wpp7) << avg_cvmc_est_var / avg_mc_est_var
+    << std::setw(wpp7) << avgEstVar / avg_mc_est_var
     << "\n Equivalent   MC (" << std::setw(5)
     << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
     << std::setw(wpp7) << avg_budget_mc_est_var
     << "\n Equivalent CVMC ratio:              " << std::setw(wpp7)
-    << avg_cvmc_est_var / avg_budget_mc_est_var << '\n';
+    << avgEstVar / avg_budget_mc_est_var << '\n';
 }
 
 } // namespace Dakota

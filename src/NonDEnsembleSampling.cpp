@@ -251,7 +251,7 @@ void NonDEnsembleSampling::update_final_statistics()
   */
   switch (finalStatsType) {
   case ALGORITHM_PERFORMANCE:
-    //finalStatistics.function_value(avgEstVar,    0); // TO DO: elevate and update in NonDHierarchSampling
+    finalStatistics.function_value(avgEstVar,    0);
     finalStatistics.function_value(equivHFEvals, 1);
     break;
   case ALGORITHM_RESULTS: // final stats: moments + level mappings

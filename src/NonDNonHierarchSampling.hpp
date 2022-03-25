@@ -212,8 +212,6 @@ protected:
 
   /// number of successful pilot evaluations of HF truth model (exclude faults)
   SizetArray numHIter0;
-  /// final estimator variance (optimizer result), averaged across QoI
-  Real avgEstVar;
   /// ratio of final estimator variance (optimizer result averaged across QoI)
   /// and final MC estimator variance  (final varH / numH averaged across QoI)
   Real avgEstVarRatio;
