@@ -1,0 +1,36 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 855139 total (855139 new, 0 duplicate)
+<<<<< Function evaluation summary: 855139 total (855139 new, 0 duplicate)
+<<<<< Function evaluation summary: 855139 total (855139 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0900000000000001e+00 outer_theta1
+                      5.2359877559830004e-01 outer_theta2
+<<<<< Best objective function  =
+                      2.2532877755418305e-04
+<<<<< Best constraint values   =
+                      9.9994313497728012e+02
+<<<<< Best data captured at function evaluation 28
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 657005 total (657005 new, 0 duplicate)
+<<<<< Function evaluation summary: 657005 total (657005 new, 0 duplicate)
+<<<<< Function evaluation summary: 657005 total (657005 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0771975511966001e+00 outer_theta1
+                      5.5359877559830006e-01 outer_theta2
+<<<<< Best objective function  =
+                      2.2683264019904661e-04
+<<<<< Best constraint values   =
+                      9.9998163131955334e+02
+<<<<< Best data captured at function evaluation 4
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 1978650 total (1978650 new, 0 duplicate)
+<<<<< Function evaluation summary: 1978650 total (1978650 new, 0 duplicate)
+<<<<< Function evaluation summary: 1978650 total (1978650 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0479483067216833e+00 outer_theta1
+                      5.2800576964514845e-01 outer_theta2
+<<<<< Best objective function  =
+                      2.0953466236039680e-04
+<<<<< Best constraint values   =
+                      9.9998474487727617e+02
+<<<<< Best data not found in evaluation cache

@@ -28,9 +28,8 @@ model,
      	  primary_variable_mapping 'theta1' 'theta2'
 # Response mapping: inner loop returns alg perf: est_var, equiv_cost
 # Here we pull the estvar result for inner loop mapping of cost-bar -> estvar
-	  primary_response_mapping   = 1. 0. 0. 1.	   	#s0
-#	  primary_response_mapping   = 1. 0.	   		#s1,#s2
-#	  secondary_response_mapping = 0. 1.			#s1,#s2
+	  primary_response_mapping   = 1. 0.
+	  secondary_response_mapping = 0. 1.
 
 variables,
 	id_variables = 'PSTUDY_V'
