@@ -677,13 +677,13 @@ var_lev_l_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
   	grad = var_lev_Q * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
     grad = 0;  //TODO_SCALARBUGFIX
   }
-  var_lev_Q *= (Real)Nlq / (Real)(Nlq - 1.);
+  var_lev_Q *= (Real)Nlq_pilot / (Real)(Nlq_pilot - 1.); // Bessel's correction
 
   //if(var_lev_Q < 0){
   //  Cerr << "NonDMultilevelSampling::var_lev_l_static: var_lev_Q < 0: " << var_lev_Q << " But that should be fine.\n";
     //check_negative(var_of_var);
   //}
-  return var_lev_Q; // Bessel's correction
+  return var_lev_Q; 
 }
 
 inline Real NonDMultilevelSampling::
@@ -1132,20 +1132,23 @@ inline Real NonDMultilevelSampling::compute_cov_mean_sigma(const IntRealMatrixMa
     }
   } 
 
-  /*
-  Real h = 1e-8;
-  RealVector cov_mean_sigma_fd_plus = compute_cov_mean_sigma_fd(sum_Ql, sum_Qlm1, 
-                  sum_QlQlm1, Nlq_pilot, Nlq+h, qoi, lev);
-  RealVector cov_mean_sigma_fd_minus = compute_cov_mean_sigma_fd(sum_Ql, sum_Qlm1, 
-                  sum_QlQlm1, Nlq_pilot, Nlq-h, qoi, lev);
+  
+  /*if(compute_gradient){
+    Real h = 1e-8;
+    RealVector cov_mean_sigma_fd_plus = compute_cov_mean_sigma_fd(sum_Ql, sum_Qlm1, 
+                    sum_QlQlm1, Nlq_pilot, Nlq+h, qoi, lev);
+    RealVector cov_mean_sigma_fd_minus = compute_cov_mean_sigma_fd(sum_Ql, sum_Qlm1, 
+                    sum_QlQlm1, Nlq_pilot, Nlq-h, qoi, lev);
 
-  Cout << "QOI LEV: " << qoi << ", " << lev << std::endl;
-  Cout << "\t\t\t grad_cov_mean_sigma: " << grad_g << ", " << (cov_mean_sigma_fd_plus[0] - cov_mean_sigma_fd_minus[0])/(2*h) << std::endl;
-  Cout << "\t\t\t grad_cov_meanl_sigmal: " << grad_cov_meanl_varl << ", " << (cov_mean_sigma_fd_plus[1] - cov_mean_sigma_fd_minus[1])/(2*h) << std::endl;
-  Cout << "\t\t\t grad_cov_meanlm1_sigmal: " << grad_cov_meanlm1_varl << ", " << (cov_mean_sigma_fd_plus[2] - cov_mean_sigma_fd_minus[2])/(2*h) << std::endl;
-  Cout << "\t\t\t grad_cov_meanl_sigmalm1: " << grad_cov_meanl_varlm1 << ", " << (cov_mean_sigma_fd_plus[3] - cov_mean_sigma_fd_minus[3])/(2*h) << std::endl;
-  Cout << "\t\t\t grad_cov_meanlm1_sigmalm1: " << grad_cov_meanlm1_varlm1 << ", " << (cov_mean_sigma_fd_plus[4] - cov_mean_sigma_fd_minus[4])/(2*h) << std::endl;
-  */
+    Cout << "QOI LEV: " << qoi << ", " << lev << std::endl;
+    Cout << "\t\t\t var_var_l: " << var_var_l << ", var_var_lm1: " << var_var_lm1 << std::endl;
+    Cout << "\t\t\t var_sigma_l: " << var_sigma_l << ", var_sigma_lm1: " << var_sigma_lm1 << std::endl;
+    Cout << "\t\t\t grad_cov_mean_sigma: " << grad_g << ", " << (cov_mean_sigma_fd_plus[0] - cov_mean_sigma_fd_minus[0])/(2*h) << std::endl;
+    Cout << "\t\t\t grad_cov_meanl_sigmal: " << grad_cov_meanl_varl << ", " << (cov_mean_sigma_fd_plus[1] - cov_mean_sigma_fd_minus[1])/(2*h) << std::endl;
+    Cout << "\t\t\t grad_cov_meanlm1_sigmal: " << grad_cov_meanlm1_varl << ", " << (cov_mean_sigma_fd_plus[2] - cov_mean_sigma_fd_minus[2])/(2*h) << std::endl;
+    Cout << "\t\t\t grad_cov_meanl_sigmalm1: " << grad_cov_meanl_varlm1 << ", " << (cov_mean_sigma_fd_plus[3] - cov_mean_sigma_fd_minus[3])/(2*h) << std::endl;
+    Cout << "\t\t\t grad_cov_meanlm1_sigmalm1: " << grad_cov_meanlm1_varlm1 << ", " << (cov_mean_sigma_fd_plus[4] - cov_mean_sigma_fd_minus[4])/(2*h) << std::endl;
+  }*/
   
   /*
   if(lev > 2){
