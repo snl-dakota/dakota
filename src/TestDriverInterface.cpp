@@ -2179,7 +2179,7 @@ int TestDriverInterface::tunable_model()
 	w_lo *= gamma;  w_hi *= gamma; // new for LF: reduce MF cost by gamma
       }
       // cost metadata for tunable problem (extended cost model)
-      Real log_w = std::log(w_lo) + std::log(w_lo/w_hi) / th_range *
+      Real log_w = std::log(w_lo) - std::log(w_lo/w_hi) / th_range *
 	           std::pow(active_th - th_lb, delta);
       rel_cost = std::exp(log_w); // w_i = cost_LF_i / cost HF --> rel_cost
     }

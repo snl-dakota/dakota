@@ -1807,16 +1807,20 @@ nested_variable_mappings(const SizetArray& c_index1,
     iteratorRep->
       nested_variable_mappings(c_index1,  di_index1,  ds_index1,  dr_index1,
 			       c_target2, di_target2, ds_target2, dr_target2);
-  //else no-op
+  else // default implementation: pass along to Model hierarchy
+    iteratedModel.nested_variable_mappings(c_index1,  di_index1,  ds_index1,
+					   dr_index1, c_target2, di_target2,
+					   ds_target2, dr_target2);
 }
 
 void Iterator::
-nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs)
+nested_response_mappings(const RealMatrix& primary_coeffs,
+			 const RealMatrix& secondary_coeffs)
 {
   if (iteratorRep)
-    iteratorRep->
-      nested_response_mappings(primary_coeffs,  secondary_coeffs);
-  //esee no-op
+    iteratorRep->nested_response_mappings(primary_coeffs, secondary_coeffs);
+  //else (not implemented currently within Model hierarchy)
+  //  iteratedModel.nested_response_mappings(primary_coeffs, secondary_coeffs)
 }
 
 StrStrSizet Iterator::run_identifier() const
