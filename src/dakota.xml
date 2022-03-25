@@ -353,7 +353,7 @@
       -->
 
     <!ENTITY final_stats_perf_res '
-             <optional>
+             <keyword  id="final_statistics" name="final_statistics" code="{0}" label="final_statistics"  minOccurs="0" default="algorithm_results" >
                <oneOf label="Final statistics type" >
 		 <keyword  id="algorithm_performance" name="algorithm_performance" code="{N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}" label="Final algorithm performance" />
 		 <keyword  id="algorithm_results" name="algorithm_results" code="{N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}" label="Final algorithm results" >
@@ -363,7 +363,7 @@
 		   &distribution_cumul_compl;               <!-- inactive without mappings -->
 	         </keyword>
                </oneOf>
-             </optional>
+             </keyword>
 	     ' >
 
     <!ENTITY import_build '

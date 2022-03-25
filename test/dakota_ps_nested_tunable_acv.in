@@ -25,7 +25,8 @@ model,
      	  primary_variable_mapping 'theta1' 'theta2'
 # Response mapping: inner loop returns alg perf: est_var, equiv_cost
 # Here we pull the estvar result for inner loop mapping of cost-bar -> estvar
-	  primary_response_mapping = 1. 0.
+	  primary_response_mapping = 1. 0. 0. 1.
+#	  primary_response_mapping = 1. 0. # Opt: budget constraint embedded
 
 variables,
 	id_variables = 'PSTUDY_V'
@@ -39,7 +40,7 @@ responses,
 # NOTE: This specifies the TOTAL RESPONSE for the outer loop,
 #       which is a combination of nested & interface responses.
 	id_responses = 'PSTUDY_R'
-	response_functions = 1
+	response_functions = 2
 #	objective_functions = 1
 	no_gradients
 	no_hessians
@@ -56,7 +57,7 @@ method,
 	  max_function_evaluations = 50
 	  pilot_samples =  25
 	  seed = 8674132
-	  algorithm_performance ####### TO DO: final_statistics #######
+	  final_statistics algorithm_performance
 	output silent
 
 model,
@@ -103,8 +104,8 @@ variables,
 	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
-	  initial_state = 'LF'
-	  set_values    = 'LF'
+	  initial_state = 'LF2'
+	  set_values    = 'LF2'
      	  descriptors   = 'ModelForm'  	  
 
 variables,
@@ -117,8 +118,8 @@ variables,
 	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
-	  initial_state = 'MF'
-	  set_values    = 'MF'
+	  initial_state = 'LF1'
+	  set_values    = 'LF1'
      	  descriptors   = 'ModelForm' 	  
 
 variables,

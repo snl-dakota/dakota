@@ -2168,9 +2168,9 @@ int TestDriverInterface::tunable_model()
       Real delta, w_lo = .001, w_hi = 1.; // initial definition for MF
       Real th = xCM[VAR_theta], th1 = xCM[VAR_theta1], th2 = xCM[VAR_theta2],
 	th_lb = PI / 6., th_ub = PI / 2., th_range = th_ub - th_lb;
-      if (mform == "MF")
+      if (mform == "LF1")
 	{ A = std::sqrt(7.);  xy_pow = 3;  delta = 1.;  active_th = th1; }
-      else if (mform == "LF") { 
+      else if (mform == "LF2") {
 	A = std::sqrt(3.);  xy_pow = 1;  active_th = th2;
 	std::map<var_t, Real>::iterator x_iter = xCM.find(VAR_delta);
 	delta = (x_iter == xCM.end()) ? 2.5  : x_iter->second;
