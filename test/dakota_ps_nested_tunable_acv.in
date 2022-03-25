@@ -1,6 +1,7 @@
 environment
 	output_precision = 16
 	  method_pointer = 'PSTUDY'
+	  tabular_data tabular_data_file = 'ps_acv.dat'
 
 ##############
 # OUTER LOOP #
@@ -9,9 +10,10 @@ environment
 method,
 	id_method = 'PSTUDY'
 	model_pointer = 'PSTUDY_M'
-        vector_parameter_study
-	  step_vector = .01 0. num_steps = 100 # sweep theta1 from .55 to 1.55
-#	npsol_sqp
+        vector_parameter_study					#s0,#s1
+	  step_vector = .02 0.  num_steps = 50			#s0
+#	  step_vector = .01 .01 num_steps = 50			#s1
+#	efficient_global					#s2
 #	  convergence_tolerance = 1.e-6
 	output silent
 
@@ -25,23 +27,27 @@ model,
      	  primary_variable_mapping 'theta1' 'theta2'
 # Response mapping: inner loop returns alg perf: est_var, equiv_cost
 # Here we pull the estvar result for inner loop mapping of cost-bar -> estvar
-	  primary_response_mapping = 1. 0. 0. 1.
-#	  primary_response_mapping = 1. 0. # Opt: budget constraint embedded
+	  primary_response_mapping   = 1. 0. 0. 1.	   	#s0
+#	  primary_response_mapping   = 1. 0.	   		#s1,#s2
+#	  secondary_response_mapping = 0. 1.			#s1,#s2
 
 variables,
 	id_variables = 'PSTUDY_V'
-	continuous_state = 2
-	  initial_state  = 0.55 0.5235987755983 # 1.0471975511966 0.5235987755983
-#	  lower_bounds   = 2 * 0.5235987755983
-#	  upper_bounds   = 2 * 1.5707963267949
+	continuous_design = 2
+	  initial_point  = 0.55            0.5235987755983	#s0
+#	  initial_point  = 1.0471975511966 0.5235987755983	#s1,#s2
+	  lower_bounds   = 2 * 0.5235987755983
+	  upper_bounds   = 2 * 1.5707963267949
 	  descriptors    = 'outer_theta1' 'outer_theta2'
 
 responses,
 # NOTE: This specifies the TOTAL RESPONSE for the outer loop,
 #       which is a combination of nested & interface responses.
 	id_responses = 'PSTUDY_R'
-	response_functions = 2
-#	objective_functions = 1
+	response_functions = 2					#s0
+#	objective_functions = 1					#s1,#s2
+#	nonlinear_inequality_constraints = 1			#s1,#s2
+#	nonlinear_inequality_upper_bounds = 1100.		#s1,#s2
 	descriptors = 'ACV_EstVar' 'ACV_EquivHFCost'
 	no_gradients
 	no_hessians
@@ -55,7 +61,7 @@ method,
 	id_method = 'UQ'
 	model_pointer = 'NONHIER'
 	approximate_control_variate acv_mf sqp	
-	  max_function_evaluations = 50
+	  max_function_evaluations = 1000
 	  pilot_samples =  25
 	  seed = 8674132
 	  final_statistics algorithm_performance
@@ -102,7 +108,8 @@ variables,
 	  upper_bounds    = 2* 1.
      	  descriptors     = 'x' 'y'
 	continuous_state  = 5
-	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s1,#s2
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
 	  initial_state = 'LF2'
@@ -116,7 +123,8 @@ variables,
 	  upper_bounds    = 2* 1.
      	  descriptors     = 'x' 'y'
 	continuous_state  = 5
-	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s1,#s2
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
 	  initial_state = 'LF1'
@@ -130,7 +138,8 @@ variables,
 	  upper_bounds    = 2* 1.
      	  descriptors     = 'x' 'y'
 	continuous_state  = 5
-	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s1,#s2
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
 	  initial_state = 'HF'
