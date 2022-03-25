@@ -45,10 +45,9 @@ responses,
 # NOTE: This specifies the TOTAL RESPONSE for the outer loop,
 #       which is a combination of nested & interface responses.
 	id_responses = 'PSTUDY_R'
-	response_functions = 2					#s0
-#	objective_functions = 1					#s1,#s2
-#	nonlinear_inequality_constraints = 1			#s1,#s2
-#	nonlinear_inequality_upper_bounds = 1100.		#s1,#s2
+	objective_functions = 1
+	nonlinear_inequality_constraints = 1
+	nonlinear_inequality_upper_bounds = 1100.
 	descriptors = 'ACV_EstVar' 'ACV_EquivHFCost'
 	no_gradients
 	no_hessians
