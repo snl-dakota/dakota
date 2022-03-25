@@ -103,6 +103,8 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
 	     << "final design will not." << std::endl;
     }
   }
+
+  initialize_final_statistics();
 }
 
 

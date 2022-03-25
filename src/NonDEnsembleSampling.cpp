@@ -81,6 +81,8 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // allow inf budget
     break;
   }
+
+  initialize_final_statistics();
 }
 
 
@@ -225,7 +227,7 @@ void NonDEnsembleSampling::initialize_final_statistics()
     finalStatistics = Response(SIMULATION_RESPONSE, set);
 
     StringArray stats_labels(num_final);
-    stats_labels[0] = "avg_est_var";  stats_labels[0] = "equiv_HF_cost";
+    stats_labels[0] = "avg_est_var";  stats_labels[1] = "equiv_HF_cost";
     finalStatistics.function_labels(stats_labels);
     break;
   }

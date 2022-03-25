@@ -42,6 +42,7 @@ responses,
 	id_responses = 'PSTUDY_R'
 	response_functions = 2
 #	objective_functions = 1
+	descriptors = 'ACV_EstVar' 'ACV_EquivHFCost'
 	no_gradients
 	no_hessians
 
@@ -142,6 +143,7 @@ interface,
 
 responses,
 	response_functions = 1
+	descriptors = 'Q'
 	no_gradients
 	no_hessians
 	metadata 'cost_model'

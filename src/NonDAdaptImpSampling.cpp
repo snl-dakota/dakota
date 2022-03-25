@@ -50,6 +50,8 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
 
   finalMomentsType = Pecos::NO_MOMENTS;
 
+  initialize_final_statistics();
+
   // size of refinement batches is separate from initial LHS size (numSamples)
   const IntVector& db_refine_samples = 
     probDescDB.get_iv("method.nond.refinement_samples");
