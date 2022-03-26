@@ -23,14 +23,14 @@ Test Number 1 succeeded
                       9.9998163131955334e+02
 <<<<< Best data captured at function evaluation 4
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 1978650 total (1978650 new, 0 duplicate)
-<<<<< Function evaluation summary: 1978650 total (1978650 new, 0 duplicate)
-<<<<< Function evaluation summary: 1978650 total (1978650 new, 0 duplicate)
+<<<<< Function evaluation summary: 881870 total (881870 new, 0 duplicate)
+<<<<< Function evaluation summary: 881870 total (881870 new, 0 duplicate)
+<<<<< Function evaluation summary: 881870 total (881870 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0479483067216833e+00 outer_theta1
-                      5.2800576964514845e-01 outer_theta2
+                      1.0531917724756132e+00 outer_theta1
+                      5.4468200063932637e-01 outer_theta2
 <<<<< Best objective function  =
-                      2.0953466236039680e-04
+                      4.0334579178083160e-04
 <<<<< Best constraint values   =
-                      9.9998474487727617e+02
+                      4.9999423560634494e+02
 <<<<< Best data not found in evaluation cache

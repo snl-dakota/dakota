@@ -15,6 +15,7 @@ method,
 	  step_vector = .02 0.  num_steps = 50			#s0
 #	  step_vector = .01 .01 num_steps = 50			#s1
 #	efficient_global					#s2
+#	  seed = 1234567					#s2
 #	  convergence_tolerance = 1.e-6
 	output silent
 
@@ -46,7 +47,8 @@ responses,
 	id_responses = 'PSTUDY_R'
 	objective_functions = 1
 	nonlinear_inequality_constraints = 1
-	nonlinear_inequality_upper_bounds = 1100.
+	nonlinear_inequality_upper_bounds = 1100.		#s0,#s1
+#	nonlinear_inequality_upper_bounds = 550.		#s2
 	descriptors = 'ACV_EstVar' 'ACV_EquivHFCost'
 	no_gradients
 	no_hessians
@@ -60,7 +62,8 @@ method,
 	id_method = 'UQ'
 	model_pointer = 'NONHIER'
 	approximate_control_variate acv_mf sqp	
-	  max_function_evaluations = 1000
+	  max_function_evaluations = 1000			#s0,#s1
+#	  max_function_evaluations = 500			#s2
 	  pilot_samples =  25
 	  seed = 8674132
 	  final_statistics algorithm_performance
