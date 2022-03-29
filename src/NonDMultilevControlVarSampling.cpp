@@ -317,6 +317,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   recover_variance(momentStats, varH);
 
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
+  avgEstVar = average(estVar);
 }
 
 
@@ -541,6 +542,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
   recover_variance(momentStats, varH);
 
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
+  avgEstVar = average(estVar);
 }
 
 
@@ -640,6 +642,7 @@ multilevel_control_variate_mc_offline_pilot()
   // variances.  This results in mixing offline var_YH,Lambda with online
   // varH,N_hf, but is consistent with offline modes for MFMC and ACV.
   compute_mlmf_estimator_variance(var_YH_pilot, N_hf, Lambda_pilot, estVar);
+  avgEstVar = average(estVar);
 }
 
 
@@ -669,6 +672,7 @@ multilevel_control_variate_mc_pilot_projection()
   update_projected_samples(hf_targets, eval_ratios, N_hf, hf_cost,
 			   N_lf, lf_cost);
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
+  avgEstVar = average(estVar);
 }
 
 
@@ -1790,7 +1794,6 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
   case MULTIFIDELITY_SAMPLING:
     NonDControlVariateSampling::print_variance_reduction(s); break;
   default: {
-    avgEstVar = average(estVar);
     Real avg_mlmc_estvar0, avg_budget_mc_estvar;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
     size_t wpp7 = write_precision + 7;

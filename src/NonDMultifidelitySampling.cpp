@@ -1090,10 +1090,7 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
       mfmc_estvar_ratios(rho2_LH, approx_sequence, eval_ratios, estVarRatios);
 
     // update avgEstVar for final variance report and finalStats
-    RealVector mfmc_est_var(numFunctions, false);
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      mfmc_est_var[qoi] = estVarRatios[qoi] * var_H[qoi] / N_H[qoi];
-    avgEstVar = average(mfmc_est_var);
+    estvar_ratios_to_avg_estvar(estVarRatios, var_H, N_H, avgEstVar);
 
     if (outputLevel >= NORMAL_OUTPUT) {
       bool ordered = approx_sequence.empty();
@@ -1120,9 +1117,9 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
   // in the objective and returns avg estvar as the final objective.  So estVar
   // is more direct here than estVarRatios, as for NonDACVSampling.
   //default:
-  //  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+  //  if (estVarRatios.empty()) estVarRatios.sizeUninitialized(numFunctions);
   //  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-  //    estvar_ratios[qoi] = avgEstVar / var_H[qoi] * N_H[qoi]; // (1-R^2)
+  //    estVarRatios[qoi] = avgEstVar / var_H[qoi] * N_H[qoi]; // (1-R^2)
   //  break;
   }
 }

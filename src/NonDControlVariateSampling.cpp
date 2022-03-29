@@ -178,6 +178,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     accumulate_mf_sums(sum_L_refined, N_lf);
     increment_mf_equivalent_cost(numSamples, cost_ratio);
   }
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 
   // Compute/apply control variate params to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
@@ -229,6 +230,7 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
     accumulate_mf_sums(sum_L_refined, N_lf);
     increment_mf_equivalent_cost(numSamples, cost_ratio);
   }
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 
   // Compute/apply control variate params to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
@@ -255,6 +257,7 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
   RealVector eval_ratios, hf_targets;
   evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_hf, hf_targets,
 		 true, true); // accumulate cost, compute estvar0
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 
   N_lf = N_hf; // shared to this point, but only N_hf has been updated
   update_projected_samples(hf_targets, eval_ratios, cost_ratio, N_hf, N_lf);
@@ -794,13 +797,9 @@ void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
   hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
 
-  RealVector mc_est_var(numFunctions, false),
-           cvmc_est_var(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    cvmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / N_hf[qoi];
-    cvmc_est_var[qoi] *= estVarRatios[qoi];
-  }
-  avgEstVar               = average(cvmc_est_var);
+  RealVector mc_est_var(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    mc_est_var[qoi] = varH[qoi] / N_hf[qoi];
   Real     avg_mc_est_var = average(mc_est_var),
     avg_budget_mc_est_var = average(varH) / equivHFEvals;
 

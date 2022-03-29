@@ -267,6 +267,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   }
 
   compute_ml_estimator_variance(var_Y, N_l, estVar);
+  avgEstVar = average(estVar);
   // post final N_l back to NLev (needed for final eval summary)
   inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
 }
@@ -303,6 +304,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
 
   compute_ml_estimator_variance(var_Y, N_l, estVar);
+  avgEstVar = average(estVar);
   // post final N_l back to NLev (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
@@ -368,6 +370,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_online);
 
   compute_ml_estimator_variance(var_Y, N_online, estVar);
+  avgEstVar = average(estVar);
   // post final N_online back to NLev (needed for final eval summary)
   inflate_final_samples(N_online, multilev, secondaryIndex, NLev);
 }
@@ -400,6 +403,7 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 
   update_projected_samples(delta_N_l, N_l, sequenceCost);
   compute_ml_estimator_variance(var_Y, N_l, estVar);
+  avgEstVar = average(estVar);
   // post final N_l back to NLev (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
@@ -1548,7 +1552,6 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
 
 void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
 {
-  avgEstVar = average(estVar);
   Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   size_t wpp7 = write_precision + 7;
