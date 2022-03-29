@@ -192,7 +192,7 @@ protected:
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;
 
-  /// ALGORITHM_RESULTS (moments, level mappings) or ALGORITHM_PERFORMANCE
+  /// QOI_STATISTICS (moments, level mappings) or ESTIMATOR_PERFORMANCE
   /// (for model tuning of estVar,equivHFEvals by an outer loop)
   short finalStatsType;
 

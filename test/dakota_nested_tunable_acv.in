@@ -71,7 +71,7 @@ method,
 #	  max_function_evaluations = 500			#s2
 	  pilot_samples =  25
 	  seed = 8674132
-	  final_statistics algorithm_performance
+	  final_statistics estimator_performance
 	output silent
 
 model,

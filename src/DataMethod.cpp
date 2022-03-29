@@ -154,7 +154,7 @@ DataMethodRep::DataMethodRep():
   //reliabilitySearchType(MV),
   integrationRefine(NO_INT_REFINE), multilevAllocControl(DEFAULT_MLMF_CONTROL),
   multilevEstimatorRate(2.), multilevDiscrepEmulation(DEFAULT_EMULATION),
-  finalStatsType(ALGORITHM_RESULTS), finalMomentsType(Pecos::STANDARD_MOMENTS),
+  finalStatsType(QOI_STATISTICS), finalMomentsType(Pecos::STANDARD_MOMENTS),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
   samplesOnEmulator(0), emulatorOrder(0), emulatorType(NO_EMULATOR),

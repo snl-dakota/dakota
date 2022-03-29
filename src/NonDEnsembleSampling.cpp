@@ -220,7 +220,7 @@ void NonDEnsembleSampling::post_run(std::ostream& s)
 void NonDEnsembleSampling::initialize_final_statistics()
 {
   switch (finalStatsType) {
-  case ALGORITHM_PERFORMANCE: { // MSE in stat goal(s) used for method selection
+  case ESTIMATOR_PERFORMANCE: { // MSE in stat goal(s) used for method selection
     size_t num_final = 2;
     ActiveSet set(num_final);//, num_active_vars); // default RV = 1
     set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
@@ -231,7 +231,7 @@ void NonDEnsembleSampling::initialize_final_statistics()
     finalStatistics.function_labels(stats_labels);
     break;
   }
-  case ALGORITHM_RESULTS: // final stats: moments + level mappings
+  case QOI_STATISTICS: // final stats: moments + level mappings
     NonD::initialize_final_statistics();  break;
   }
 }
@@ -252,11 +252,11 @@ void NonDEnsembleSampling::update_final_statistics()
   }
   */
   switch (finalStatsType) {
-  case ALGORITHM_PERFORMANCE:
+  case ESTIMATOR_PERFORMANCE:
     finalStatistics.function_value(avgEstVar,    0);
     finalStatistics.function_value(equivHFEvals, 1);
     break;
-  case ALGORITHM_RESULTS: // final stats: moments + level mappings
+  case QOI_STATISTICS: // final stats: moments + level mappings
     NonD::update_final_statistics(); break;
   }
 }
