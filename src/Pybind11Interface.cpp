@@ -237,7 +237,7 @@ py::dict Pybind11Interface::pack_kwargs() const
       "asv"_a                   = asv,
       "dvv"_a                   = dvv,
       "analysis_components"_a   = an_comps,
-      "curr_eval"_a             = currEvalId);
+      "eval_id"_a               = currEvalId);
 
   return kwargs;
 }
