@@ -78,6 +78,8 @@ protected:
 
   void assign_instance();
 
+  void init_metadata() override { /* no-op to leave metadata intact */}
+
   bool update_variables_from_model(Model& model) override;
 
   // ---

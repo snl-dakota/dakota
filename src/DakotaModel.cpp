@@ -137,11 +137,13 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     }
   }
 
+  bool estimating_derivs = false;
   // Promote fdGradStepSize/fdHessByFnStepSize/fdHessByGradStepSize to defaults
   // if needed.  Note: the fdStepSize arrays specialize by variable, whereas
   // mixed grads/Hessians specialize by function.
   if ( gradientType == "numerical" ||
        ( gradientType == "mixed" && !gradIdNumerical.empty() ) ) {
+    estimating_derivs = true;
     if (fdGradStepSize.empty()) {
       fdGradStepSize.resize(1);
       fdGradStepSize[0] = 0.001;
@@ -149,6 +151,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   }
   if ( hessianType == "numerical" ||
        ( hessianType == "mixed" && !hessIdNumerical.empty() ) ) {
+    estimating_derivs = true;
     // fdHessByFnStepSize and fdHessByGradStepSize can only differ currently
     // in the case of assignment of default values, since the same
     // fd_hessian_step_size input is reused for both first- and second-order
@@ -164,6 +167,12 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
       fdHessByGradStepSize[0] = 0.001;
     }
   }
+
+  // For an initial cut, we're aggressive and swallow metadata when
+  // numerical derivatives are active, even though they may be active
+  // for some evals and inactive for others.
+  if (estimating_derivs)
+    currentResponse.reshape_metadata(0);
 
   /*
   // Populate gradient/Hessian attributes for use within the iterator hierarchy.
@@ -248,6 +257,9 @@ Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
 
   currentResponse = (share_srd) ?
     Response(srd, set) : Response(srd.response_type(), set);
+
+  // TODO: unsure if this is too aggressive due to supportsEstimDerivs = true:
+  //  currentResponse.reshape_metadata(0)
 }
 
 

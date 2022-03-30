@@ -131,6 +131,8 @@ primary_resp_weighter(const Variables& sub_model_vars,
 
   }
 
+  weighted_response.metadata(sub_model_response.metadata());
+
   if (weightModelInstance->outputLevel > NORMAL_OUTPUT)
     Cout << "Least squares weight-transformed response:\n" << weighted_response 
 	 << std::endl;

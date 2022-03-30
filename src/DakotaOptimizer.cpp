@@ -448,6 +448,10 @@ primary_resp_reducer(const Variables& full_vars, const Variables& reduced_vars,
     objective_reduction(full_response, sub_model.primary_response_fn_sense(),
 			sub_model.primary_response_fn_weights(), 
 			reduced_response);
+  // This is a hack to re-inflate until we specialize this RecastModel
+  reduced_response.shared_data().metadata_labels
+    (full_response.shared_data().metadata_labels());
+  reduced_response.metadata(full_response.metadata());
 }
 
 
@@ -467,11 +471,9 @@ void Optimizer::objective_reduction(const Response& full_response,
     Cout << "Local single objective transformation:\n";
   // BMA TODO: review whether the model should provide all this information
   
-  Cout << "Responses:\n";
   for(int i = 0; i < full_response.function_values().length(); ++i)
     Cout <<  full_response.function_values()[i] << std::endl;
  
-  Cout << "Weights:\n";
   for(int i = 0; i < full_wts.length(); ++i)
     Cout << full_wts[i] << std::endl;
  
