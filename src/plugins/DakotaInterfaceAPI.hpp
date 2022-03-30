@@ -12,6 +12,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace DakotaPlugins {
 
@@ -59,31 +60,32 @@ class DakotaInterfaceAPI
 
 public:
 
-  void initialize() {};
+  virtual void initialize() {};
 
   /// report the supported number of continuous, discrete int/string/real vars
-  std::vector<size_t> variable_counts() { return std::vector<size_t>(); }
+  virtual std::vector<size_t> variable_counts()
+      { return std::vector<size_t>(); }
 
   /// report the supported variable labels
   /// TODO: container or input-spec order?
-  std::vector<std::string> variable_labels()
-  { return std::vector<std::string>(); }
+  virtual std::vector<std::string> variable_labels()
+      { return std::vector<std::string>(); }
 
   /// report the supported number of response functions
-  size_t functions() { return 0; }
+  virtual size_t functions() { return 0; }
 
   /// report the supported function labels
   std::vector<std::string> function_labels()
-  { return std::vector<std::string>(); }
+      { return std::vector<std::string>(); }
 
   /// single evaluator
   virtual EvalResponse evaluate(EvalRequest const& request) = 0;
 
   /// batch evaluator; default implementation delegates to single evaluate
   std::vector<EvalResponse>
-  evaluate(std::vector<EvalRequest> const& requests);
+      evaluate(std::vector<EvalRequest> const& requests);
 
-  void finalize() {};
+  virtual void finalize() {};
 
 protected:
 
@@ -95,14 +97,11 @@ protected:
     size_t const num_derivs = request.derivativeVars.size();
 
     response.functions.resize(num_fns);
-    response.gradients.resize(num_derivs);
+    response.gradients.resize(num_fns);
     response.hessians.resize(num_fns);
 
-    for (size_t k = 0; k < num_derivs; ++k) {
-      response.gradients[k].resize(num_fns);
-    }
-
     for (size_t i = 0; i < num_fns; ++i) {
+      response.gradients[i].resize(num_derivs);
       response.hessians[i].resize(num_derivs);
       for (size_t j = 0; j < num_derivs; ++j) {
         response.hessians[i][j].resize(num_derivs);

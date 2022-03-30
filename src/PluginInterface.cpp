@@ -16,6 +16,25 @@
 
 namespace Dakota {
 
+void copy_gradient(int const fun_idx,
+  std::vector<std::vector<double>> const& source,
+  RealMatrix& dest) {
+  int const dim = source[fun_idx].size();
+  for (int i = 0; i < dim; ++i) {
+    dest(i, fun_idx) = source[fun_idx][i];
+  }
+}
+
+void copy_hessian(std::vector<std::vector<double>> const& source,
+  RealSymMatrix& dest) {
+  int const dim = dest.numRows();
+  for (int i = 0; i < dim; ++i) {
+    for (int j = 0; j <= i; ++j) {
+      dest(i, j) = source[i][j];
+    }
+  }
+}
+
 PluginInterface::PluginInterface(const ProblemDescDB& problem_db):
   ApplicationInterface(problem_db),
   pluginPath(problem_db.get_string("interface.plugin_library_path")),
@@ -146,8 +165,8 @@ void PluginInterface::populate_response
 
   // TODO: this is abuse, getting a reference to a non-const view...
   auto resp_fns = response.function_values_view();
-  auto resp_grads = response.function_gradients_view(); // RealMatrix
-  auto resp_hessians = response.function_hessians_view(); // RealSymMatrixArray
+  auto resp_gradients = response.function_gradients_view();
+  auto resp_hessians = response.function_hessians_view();
 
   size_t const num_fns = response.num_functions();
   for (size_t i = 0; i < num_fns; ++i) {
@@ -155,10 +174,10 @@ void PluginInterface::populate_response
       resp_fns[i] = plugin_response.functions[i];
     }
     if (asv[i] & 2) {
-      copy_column(i, plugin_response.gradients, resp_grads);
+      copy_gradient(i, plugin_response.gradients, resp_gradients);
     }
     if (asv[i] & 4) {
-      copy_data(plugin_response.hessians[i], resp_hessians[i]);
+      copy_hessian(plugin_response.hessians[i], resp_hessians[i]);
     }
   }
 

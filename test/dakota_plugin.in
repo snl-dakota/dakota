@@ -1,3 +1,5 @@
+#@ *: ReqFiles=textbook.py
+
 method
   centered_parameter_study
     step_vector 0.5 1.7
@@ -9,14 +11,18 @@ variables
   descriptors 'x1' 'x2'
 
 interface
-  analysis_drivers 'f_of_x_equals_x'
+  analysis_drivers 'f_of_x_equals_x'  #s0,#s1
+#  analysis_drivers 'textbook'        #s2,#s3
   plugin
-    library_path '/home/user/dakota/source/src/plugins/build/libidentity_map.so'
-#  batch				#s1
+    library_path '/home/user/dakota/source/src/plugins/build/libidentity_map.so'             #s0,#s1
+#    library_path '/home/user/dakota/source/src/plugins/build/libtextbook_python_plugin.so'  #s2,#s3
+#  batch                              #s1,#s3
 
 responses
-  descriptors 'f1' 'f2'
-  response_functions 2
+  descriptors 'f1' 'f2'        #s0,#s1
+  response_functions 2         #s0,#s1
+#  descriptors 'f0' 'c1' 'c2'  #s2,#s3
+#  response_functions 3        #s2,#s3
   analytic_gradients
   analytic_hessians
 
