@@ -140,7 +140,7 @@ class TabularData(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/models/simulation/NO_MODEL_ID/variables/continuous"]
-            hasv = h["/models/simulation/NO_MODEL_ID/metadata/active_set_vector"]
+            hasv = h["/models/simulation/NO_MODEL_ID/properties/active_set_vector"]
             self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
             hindex = 0
             for i, eid in enumerate(tdata["%eval_id"]):
@@ -187,7 +187,7 @@ class RestartData(unittest.TestCase):
                 for eid, tr, hr in zip(rdata["eval_id"], rdata["response"][r], hresps[:,i]):
                     self.assertAlmostEqual(tr["function"], hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
             # ASV
-            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/NO_MODEL_ID/metadata/active_set_vector"]):
+            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/NO_MODEL_ID/properties/active_set_vector"]):
                 for r_a, h_a in zip(r_asv, h_asv):
                     self.assertEqual(r_a, h_a)
 
