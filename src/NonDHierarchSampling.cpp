@@ -49,27 +49,32 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  size_t i, num_mf = ordered_models.size(), num_lev, prev_lev = SZ_MAX;
+  size_t i, num_mf = ordered_models.size(), num_lev, prev_lev = SZ_MAX,
+    md_index, num_md;
   ModelLRevIter ml_rit;
   bool err_flag = false, mlmf = (methodName==MULTILEVEL_MULTIFIDELITY_SAMPLING);
   NLev.resize(num_mf);
+  costMetadataIndices.resize(num_mf);
   for (i=num_mf-1, ml_rit=ordered_models.rbegin();
        ml_rit!=ordered_models.rend(); --i, ++ml_rit) { // high fid to low fid
     // for now, only SimulationModel supports solution_{levels,costs}()
-    num_lev = ml_rit->solution_levels(); // lower bound is 1 soln level
+    num_lev  = ml_rit->solution_levels(); // lower bound is 1 soln level
+    // Note: for MLCV w/ 2D hierarchy, metadata indices only vary per model form
+    md_index = ml_rit->cost_metadata_index();
+    num_md   = ml_rit->current_response().metadata().size();
 
     if (mlmf && num_lev > prev_lev) {
       Cerr << "\nWarning: unused solution levels in multilevel-multifidelity "
-	   << "sampling for model " << ml_rit->model_id()
-	   << ".\n         Ignoring " << num_lev - prev_lev << " of "
-	   << num_lev << " levels." << std::endl;
+	   << "sampling for model " << ml_rit->model_id() << ".\n         "
+	   << "Ignoring " << num_lev - prev_lev << " of " << num_lev
+	   << " levels." << std::endl;
       num_lev = prev_lev;
     }
 
     // Ensure there is consistent cost data available as SimulationModel must
     // be allowed to have empty solnCntlCostMap (when optional solution control
     // is not specified).  Passing false bypasses lower bound of 1.
-    if (num_lev > ml_rit->solution_levels(false)) { // default is 0 soln costs
+    if (md_index == _NPOS && num_lev > ml_rit->solution_levels(false)) {
       Cerr << "Error: insufficient cost data provided for multilevel sampling."
 	   << "\n       Please provide solution_level_cost estimates for model "
 	   << ml_rit->model_id() << '.' << std::endl;
@@ -80,7 +85,7 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
     NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
     //for (j=0; j<num_lev; ++j)
     //  Nl_i[j].resize(numFunctions); // defer to pre_run()
-
+    costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
     prev_lev = num_lev;
   }
   if (err_flag)
@@ -106,6 +111,57 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
 
 NonDHierarchSampling::~NonDHierarchSampling()
 { }
+
+
+void NonDHierarchSampling::
+recover_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
+			   size_t step)
+{
+  // This implementation is for singleton or paired responses, not for
+  // aggregation of a full Model ensemble
+
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+
+  size_t cntr, prev_step = (step) ? step - 1 : _NPOS;  Real cost;
+  // for ML and MLCV, accumulation can span two calls --> init outside
+  //accum_cost.size(num_steps);  SizetArray num_cost(num_steps);
+  IntRespMCIter r_it;
+  using std::isfinite;
+  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+
+    const std::vector<RespMetadataT>& md = r_it->second.metadata();// aggregated
+    if (outputLevel >= DEBUG_OUTPUT) Cout << "Metadata:\n" << md;
+
+    cntr = 0;
+    //if (prev_step == _NPOS) {
+    //  if (paired_from_full_ensemble)
+    //    for (i=0; i<step; ++i)
+    //      cntr += costMetadataIndices[i].second; // not for paired metadata
+    //}
+    //else {
+    if (prev_step != _NPOS) {
+      const SizetSizetPair& prev_cost_mdi = costMetadataIndices[prev_step];
+      //if (paired_from_full_ensemble)
+      //  for (i=0; i<prev_step; ++i)
+      //    cntr += costMetadataIndices[i].second; // not for paired metadata
+      cost = md[cntr + prev_cost_mdi.first]; // offset by metadata index
+      if (isfinite(cost)) {
+	++num_cost[prev_step];
+	accum_cost[prev_step] += cost;
+      }
+      cntr += prev_cost_mdi.second; // offset by metadata size
+    }
+
+    const SizetSizetPair& cost_mdi = costMetadataIndices[step];
+    cost = md[cntr + cost_mdi.first]; // offset by metadata index
+    if (isfinite(cost)) {
+      ++num_cost[step];
+      accum_cost[step] += cost;
+    }
+  }
+  // averaging is deferred until average_online_cost()
+}
 
 
 /*  ... Some early notes when there was one composite core_run() ...

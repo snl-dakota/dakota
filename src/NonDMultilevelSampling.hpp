@@ -145,9 +145,9 @@ private:
   //- Heading: Helper functions
   //
 
-  /// Perform multilevel Monte Carlo across the discretization levels for a
-  /// particular model form using discrepancy accumulators (sum_Y)
-  void multilevel_mc_Ysum();
+  // Perform multilevel Monte Carlo across the discretization levels for a
+  // particular model form using discrepancy accumulators (sum_Y)
+  //void multilevel_mc_Ysum();
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using QoI accumulators (sum_Q)
   void multilevel_mc_Qsum();
@@ -165,9 +165,9 @@ private:
 		       RealVector& eps_sq_div_2, bool accumulate_cost,
 		       bool pilot_estvar);
 
-  /// initialize the ML accumulators for computing means, variances, and
-  /// covariances across fidelity levels
-  void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev);
+  // initialize the ML accumulators for computing means, variances, and
+  // covariances across fidelity levels
+  //void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev);
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,

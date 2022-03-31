@@ -57,7 +57,7 @@ void NonDControlVariateSampling::core_run()
 {
   configure_sequence(numSteps, secondaryIndex, sequenceType);
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  configure_cost(numSteps, multilev, sequenceCost);
+  onlineCost = !query_cost(numSteps, multilev, sequenceCost);
 
   // For two-model control variate, select extreme fidelities/resolutions
   Pecos::ActiveKey active_key, hf_key, lf_key;
@@ -104,8 +104,6 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
-  Real hf_cost = sequenceCost[numSteps - 1], lf_cost = sequenceCost[0],
-    cost_ratio = hf_cost / lf_cost;
 
   IntRealVectorMap sum_L_shared, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH);
@@ -116,6 +114,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
   SizetArray delta_N_l;
   load_pilot_sample(pilotSamples, 2, delta_N_l); // 2 models only
   numSamples = std::min(delta_N_l[0], delta_N_l[1]);
+  Real cost_ratio = 0.;
 
   while (numSamples && mlmfIter <= maxIterations) {
 
@@ -124,6 +123,10 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     // -----------------------------------------------------------------------
     shared_increment(active_key, mlmfIter, 0);
     accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH, N_hf);
+    if (mlmfIter == 0) {
+      if (onlineCost) recover_paired_online_cost(sequenceCost, 1);
+      cost_ratio = sequenceCost[numSteps - 1] / sequenceCost[0]; // HF / LF
+    }
     increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
 
     // Compute the LF/HF evaluation ratio using shared samples, averaged
@@ -199,14 +202,12 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
-  Real hf_cost = sequenceCost[numSteps - 1], lf_cost = sequenceCost[0],
-    cost_ratio = hf_cost / lf_cost;
 
   // ---------------------------------------------------------------------
   // Compute final rho2LH, varH, {eval,estvar} ratios from (oracle) pilot
   // treated as "offline" cost
   // ---------------------------------------------------------------------
-  RealVector eval_ratios, hf_targets;  SizetArray N_shared;
+  RealVector eval_ratios, hf_targets;  SizetArray N_shared;  Real cost_ratio;
   evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_shared,
 		 hf_targets, false, false); // no cost, estvar
 
@@ -251,10 +252,8 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
-  Real hf_cost = sequenceCost[numSteps - 1], lf_cost = sequenceCost[0],
-    cost_ratio = hf_cost / lf_cost;
 
-  RealVector eval_ratios, hf_targets;
+  RealVector eval_ratios, hf_targets;  Real cost_ratio;
   evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_hf, hf_targets,
 		 true, true); // accumulate cost, compute estvar0
   estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
@@ -265,7 +264,7 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
 
 
 void NonDControlVariateSampling::
-evaluate_pilot(const Pecos::ActiveKey& active_key, Real cost_ratio,
+evaluate_pilot(const Pecos::ActiveKey& active_key, Real& cost_ratio,
 	       RealVector& eval_ratios, RealVector& var_H, SizetArray& N_shared,
 	       RealVector& hf_targets, bool accumulate_cost, bool pilot_estvar)
 {
@@ -284,6 +283,8 @@ evaluate_pilot(const Pecos::ActiveKey& active_key, Real cost_ratio,
   // -----------------------------------------------------------------------
   shared_increment(active_key, mlmfIter, 0);
   accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared);
+  if (onlineCost) recover_paired_online_cost(sequenceCost, 1);
+  cost_ratio = sequenceCost[numSteps - 1] / sequenceCost[0]; // HF / LF
   if (accumulate_cost)
     increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
 

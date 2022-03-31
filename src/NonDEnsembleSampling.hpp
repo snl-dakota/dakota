@@ -173,6 +173,12 @@ protected:
   /// OFFLINE_PILOT, PILOT_PROJECTION
   short pilotMgmtMode;
 
+  /// indicates use of online cost recovery rather than offline
+  /// user-specified cost ratios
+  bool onlineCost;
+  /// indices of cost data within response metadata, one per model form
+  SizetSizetPairArray costMetadataIndices;
+
   /// user specification for seed_sequence
   SizetArray randomSeedSeqSpec;
 

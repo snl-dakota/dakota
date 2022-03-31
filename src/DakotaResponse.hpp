@@ -940,7 +940,8 @@ inline void Response::update(const Response& response)
 {
   // rep forward handled downstream
   update(response.function_values(), response.function_gradients(),
-        response.function_hessians(), response.active_set());
+	 response.function_hessians(), response.active_set());
+  metadata(response.metadata());
 }
 
 

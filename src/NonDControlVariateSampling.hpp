@@ -108,7 +108,7 @@ private:
   void control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key);
 
   /// helper for shared code among MLCV for offline-pilot and pilot-projection
-  void evaluate_pilot(const Pecos::ActiveKey& active_key, Real cost_ratio,
+  void evaluate_pilot(const Pecos::ActiveKey& active_key, Real& cost_ratio,
 		      RealVector& eval_ratios, RealVector& var_H,
 		      SizetArray& N_shared, RealVector& hf_targets,
 		      bool accumulate_cost, bool pilot_estvar);

@@ -80,8 +80,8 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
     // be allowed to have empty solnCntlCostMap (when optional solution control
     // is not specified).  Passing false bypasses lower bound of 1.
     // > For ACV, only require 1 solution cost, neglecting resolutions for now
-    //if (num_lev > ml_it->solution_levels(false)) { // 
-    if (md_index == _NPOS && ml_it->solution_levels(false) == 0) { // no low bnd
+    //if (num_lev > ml_it->solution_levels(false)) {
+    if (md_index == _NPOS && ml_it->solution_levels(false) == 0) {
       Cerr << "Error: insufficient cost data provided for non-hierarchical "
 	   << "sampling.\n       Please provide offline solution_level_cost "
 	   << "estimates or activate\n       online cost recovery for model "
@@ -270,7 +270,7 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
 
   size_t cntr, step, num_steps = numApprox+1;  Real cost;
   seq_cost.size(num_steps); // init to 0
-  SizetArray num_finite(num_steps);
+  SizetArray num_finite;  num_finite.assign(num_steps, 0);
   IntRespMCIter r_it;
   using std::isfinite;
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
