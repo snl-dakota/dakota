@@ -168,11 +168,13 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     }
   }
 
-  // For an initial cut, we're aggressive and swallow metadata when
-  // numerical derivatives are active, even though they may be active
-  // for some evals and inactive for others.
-  if (estimating_derivs)
-    currentResponse.reshape_metadata(0);
+  // TODO: Tried to be aggressive and swallow metadata when numerical
+  // derivatives are active, even though they may be active for some
+  // evals and inactive for others. Causes problems with reading the
+  // results files for the underlying finite difference evals if they
+  // contain metadata...
+  //  if (estimating_derivs)
+  //  currentResponse.reshape_metadata(0);
 
   /*
   // Populate gradient/Hessian attributes for use within the iterator hierarchy.
