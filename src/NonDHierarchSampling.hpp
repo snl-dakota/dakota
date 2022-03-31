@@ -75,10 +75,10 @@ protected:
 			   const SizetArray& num_cost, RealVector& seq_cost);
   /// recover partial estimates of simulation cost using aggregated (paired)
   /// response metadata
-  void recover_paired_online_cost(RealVector& accum_cost,
-				  SizetArray& num_cost, size_t step);
+  void recover_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
+				  size_t step, size_t form);
   /// accumulate cost and counts and then perform averaging
-  void recover_paired_online_cost(RealVector& seq_cost, size_t step);
+  void recover_paired_online_cost(RealVector& seq_cost,size_t step,size_t form);
 
   //
   //- Heading: Data
@@ -111,16 +111,19 @@ average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
   if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
   for (step=0; step<num_steps; ++step)
     seq_cost[step] = accum_cost[step] / num_cost[step];
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Averaged cost: accum_cost:\n" << accum_cost << " num_cost:\n"
+	 << num_cost << " seq_cost:\n" << seq_cost << std::endl;
 }
 
 
 inline void NonDHierarchSampling::
-recover_paired_online_cost(RealVector& seq_cost, size_t step)
+recover_paired_online_cost(RealVector& seq_cost, size_t step, size_t form)
 {
   int len = seq_cost.length();
   RealVector accum_cost(len);                    // init to 0
   SizetArray num_cost;  num_cost.assign(len, 0); // init to 0
-  recover_paired_online_cost(accum_cost, num_cost, step);
+  recover_paired_online_cost(accum_cost, num_cost, step, form);
   average_online_cost(accum_cost, num_cost, seq_cost);
 }
 

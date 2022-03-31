@@ -124,7 +124,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     shared_increment(active_key, mlmfIter, 0);
     accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH, N_hf);
     if (mlmfIter == 0) {
-      if (onlineCost) recover_paired_online_cost(sequenceCost, 1);
+      if (onlineCost) recover_paired_online_cost(sequenceCost, 1, 0); // *** TO DO
       cost_ratio = sequenceCost[numSteps - 1] / sequenceCost[0]; // HF / LF
     }
     increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
@@ -283,7 +283,7 @@ evaluate_pilot(const Pecos::ActiveKey& active_key, Real& cost_ratio,
   // -----------------------------------------------------------------------
   shared_increment(active_key, mlmfIter, 0);
   accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared);
-  if (onlineCost) recover_paired_online_cost(sequenceCost, 1);
+  if (onlineCost) recover_paired_online_cost(sequenceCost, 1, 0); // *** TO DO
   cost_ratio = sequenceCost[numSteps - 1] / sequenceCost[0]; // HF / LF
   if (accumulate_cost)
     increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);

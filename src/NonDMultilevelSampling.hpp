@@ -158,12 +158,11 @@ private:
 
   /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		       IntIntPairRealMatrixMap& sum_QlQlm1,
-		       const RealVector& cost, Sizet2DArray& N_pilot,
-		       Sizet2DArray& N_online, SizetArray& delta_N_l,
-		       RealMatrix& var_Y, RealMatrix& var_qoi,
-		       RealVector& eps_sq_div_2, bool accumulate_cost,
-		       bool pilot_estvar);
+		       IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
+		       Sizet2DArray& N_pilot, Sizet2DArray& N_online,
+		       SizetArray& delta_N_l, RealMatrix& var_Y,
+		       RealMatrix& var_qoi, RealVector& eps_sq_div_2,
+		       bool increment_cost, bool pilot_estvar);
 
   // initialize the ML accumulators for computing means, variances, and
   // covariances across fidelity levels

@@ -413,11 +413,11 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 
 void NonDMultilevelSampling::
 evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& cost,
+		IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
 		Sizet2DArray& N_pilot, Sizet2DArray& N_online,
 		SizetArray& delta_N_l, RealMatrix& var_Y,
 		RealMatrix& var_qoi,   RealVector& eps_sq_div_2,
-		bool accumulate_cost,  bool pilot_estvar)
+		bool increment_cost,   bool pilot_estvar)
 {
   // NOTE: Unlike other MLMF methods that currently target the mean estimator
   // (requiring only the first 2 moments and allowing streamlining of this fn),
@@ -433,11 +433,6 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   else          lev  = secondaryIndex;
   RealVector agg_est_var0, accumulated_cost;  IntIntPair pr11(1, 1);
   SizetArray num_cost; // counts for online recovery
-  if (onlineCost) {
-    sequenceCost.sizeUninitialized(numSteps);
-    accumulated_cost.size(numSteps);
-    num_cost.assign(numSteps, 0);
-  }
 
   if (mlmfIter == 0) {
     N_pilot.resize(numSteps);
@@ -447,6 +442,8 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       { agg_est_var0.size(numFunctions); eps_sq_div_2.size(numFunctions); }
     var_Y.shapeUninitialized(numFunctions, numSteps);
     var_qoi.shapeUninitialized(numFunctions, numSteps);
+    if (onlineCost)
+      { accumulated_cost.size(numSteps); num_cost.assign(numSteps, 0); }
   }
 
   for (step=0; step<numSteps; ++step) {
@@ -467,7 +464,7 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
       if (mlmfIter == 0) {
 	if (onlineCost)
-	  recover_paired_online_cost(accumulated_cost, num_cost, step);
+	  recover_paired_online_cost(accumulated_cost, num_cost, step, form);
 	if (!budget_constrained) // MSE reference is MC applied to HF
 	  aggregate_mse_target_Qsum(var_qoi, N_pilot, step, agg_est_var0);
       }
@@ -475,12 +472,12 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   }
   // defer cost accumulation until online cost recovery is complete
   if (onlineCost && mlmfIter == 0)
-    average_online_cost(accumulated_cost, num_cost, sequenceCost);
-  if (accumulate_cost) {
+    average_online_cost(accumulated_cost, num_cost, cost);
+  if (increment_cost) {
     Real ref_cost = cost[numSteps-1];
     for (step=0; step<numSteps; ++step)
-      increment_ml_equivalent_cost(delta_N_l[step],
-				   level_cost(cost, step), ref_cost);
+      increment_ml_equivalent_cost(delta_N_l[step], level_cost(cost, step),
+				   ref_cost);
   }
   // capture pilot-sample metrics:
   if (mlmfIter == 0) {
