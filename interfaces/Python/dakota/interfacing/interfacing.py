@@ -723,7 +723,6 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, inf
     # determine format (dakota or aprepro) by examining the first line
     beginning_pos = stream.tell() # position won't be 0 in the batch case
     line = stream.readline()
-    print("And here we start LINE: ",line)
     if not line or line == '\n':
         return None, None
     dakota_format_match = _pRE["DAKOTA"]["num_variables"].match(line)
@@ -734,7 +733,6 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, inf
     elif dakota_format_match is not None: 
         aprepro_format = False
         useRE = _pRE["DAKOTA"]
-        print("Using DAKOTA")
     else:
         raise ParamsFormatError("Unrecognized parameters file format.")
     
@@ -814,35 +812,38 @@ def read_params_from_dict(parameters=None, results_file=None,
     """
 
     dakota_input = []
-    for key in parameters.keys():
-        if key == "variables":
-            dakota_input.append(str(parameters[key])+" "+key+"\n")
-            for k in parameters.keys():
-                klabel = k+"_labels"
-                if klabel in parameters.keys():
-                    for i, label in enumerate(parameters[klabel]):
-                        dakota_input.append(str(parameters[k][i])+" "+label+"\n")
+    key = "variables"
+    dakota_input.append(str(parameters[key])+" "+key+"\n")
+    for k in parameters.keys():
+        klabel = k+"_labels"
+        if klabel in parameters.keys():
+            for i, label in enumerate(parameters[klabel]):
+                dakota_input.append(str(parameters[k][i])+" "+label+"\n")
 
-        elif key == "functions":
-            dakota_input.append(str(parameters[key])+" "+key+"\n")
-            for i, val in enumerate(parameters["asv"]):
-                label = "ASV_"+str(i+1)+":response_"+str(i+1)
-                dakota_input.append(str(parameters["asv"][i])+" "+label+"\n")
+    key = "functions"
+    dakota_input.append(str(parameters[key])+" "+key+"\n")
+    for i, val in enumerate(parameters["asv"]):
+        label = "ASV_"+str(i+1)+":response_"+str(i+1)
+        dakota_input.append(str(parameters["asv"][i])+" "+label+"\n")
 
-        elif key == "dvv":
-            dakota_input.append(str(len(parameters[key]))+" derivative_variables\n")
-            for i, val in enumerate(parameters["dvv"]):
-                label = "DVV_"+str(i)+":"+parameters["all_labels"][parameters["dvv"][i]-1]
-                dakota_input.append(str(parameters["dvv"][i])+" "+label+"\n")
-        elif key == "curr_eval":
-            dakota_input.append(str(parameters[key])+" eval_id\n")
-        elif key == "analysis_components":
-            if not parameters[key]:
-                dakota_input.append("0 "+key+"\n")
-            else:
-                dakota_input.append(str(parameters[key])+" "+key+"\n")
+    key = "dvv"
+    dakota_input.append(str(len(parameters[key]))+" derivative_variables\n")
+    for i, val in enumerate(parameters["dvv"]):
+        label = "DVV_"+str(i)+":"+parameters["all_labels"][parameters["dvv"][i]-1]
+        dakota_input.append(str(parameters["dvv"][i])+" "+label+"\n")
+
+    key = "analysis_components"
+    if not parameters[key]:
+        dakota_input.append("0 "+key+"\n")
+    else:
+        dakota_input.append(str(parameters[key])+" "+key+"\n")
+
+    key = "eval_id"
+    dakota_input.append(str(parameters[key])+" eval_id\n")
+
     dakota_input.append("0 metadata"+"\n")
-    print("".join(dakota_input))
+
+    #print("".join(dakota_input))
     io_stream = io.StringIO("".join(dakota_input))
     return _read_parameters_stream(io_stream, ignore_asv, batch, results_file, infer_types, types)
 
@@ -889,7 +890,6 @@ def read_parameters_file(parameters_file=None, results_file=None,
         except IndexError:
             raise MissingSourceError("No parameters filename provided and no "
                     "command line argument.")
-    print("parameters_file: ",parameters_file)
 
     ### Determine the name of the results file
     if results_file is None:
@@ -900,8 +900,6 @@ def read_parameters_file(parameters_file=None, results_file=None,
                     "command line argument.")
     elif results_file == UNNAMED:
         results_file = ""
-    print("results_file: ",results_file)
-    #raise "Stopping here for now ..."
 
     ### Open and parse the parameters file
     with open(parameters_file, "r", encoding='utf8') as ifp:
