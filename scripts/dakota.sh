@@ -65,4 +65,4 @@ export PYTHONPATH
 PATH="$PATH:${execpath}:${execpath}/../share/dakota/test:."
 export PATH
 #echo "Launching ${execpath}/dakota with args: $@"
-"${execpath}/dakota" "$@"
+exec "${execpath}/dakota" "$@"
