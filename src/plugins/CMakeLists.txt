@@ -29,7 +29,15 @@ set_target_properties(textbook_python_plugin PROPERTIES CXX_VISIBILITY_PRESET hi
 target_link_libraries(textbook_python_plugin
   PUBLIC Boost::boost
   PRIVATE pybind11::embed Python::Python
-  )
+)
+
+add_library(alt_textbook_python_plugin SHARED AltTextbookPythonPlugin.cpp)
+set_target_properties(alt_textbook_python_plugin PROPERTIES CXX_STANDARD 11)
+set_target_properties(alt_textbook_python_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
+target_link_libraries(alt_textbook_python_plugin
+  PUBLIC Boost::boost
+  PRIVATE pybind11::embed Python::Python
+)
 
 #target_link_options(plugin_python PUBLIC -rdynamic)
 #-Wl,--no-gc-sections -Wl,--export-dynamic)
@@ -38,6 +46,8 @@ target_link_libraries(textbook_python_plugin
 # plugin is runtime loaded.
 get_target_property(_python_lib Python::Python LOCATION)
 target_compile_definitions(textbook_python_plugin PRIVATE
+  PLUGIN_PYTHON_LIB=\"${_python_lib}\")
+target_compile_definitions(alt_textbook_python_plugin PRIVATE
   PLUGIN_PYTHON_LIB=\"${_python_lib}\")
 
 # old stuff (non-python)
