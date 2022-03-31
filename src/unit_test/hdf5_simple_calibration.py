@@ -100,6 +100,13 @@ class EvaluationsStructure(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             h["/interfaces/NO_ID/NO_MODEL_ID"]
 
+    def test_interface_members(self):
+        expected = {"variables", "responses", "properties"}
+        with h5py.File(_TEST_NAME + ".h5", "r") as f:
+            h = f["/interfaces/NO_ID/NO_MODEL_ID"]
+            actual = {item for item in h}
+        self.assertEquals(expected, actual)
+
     def test_model_presence(self):
         expected_model_types = ["simulation"] #, "recast"]
         expected_sim_models = ["NO_MODEL_ID"]
@@ -111,6 +118,13 @@ class EvaluationsStructure(unittest.TestCase):
             self.assertListEqual(expected_sim_models, sim_models)
             #recast_models = [k for k in h["/models/recast"]]
             #self.assertItemsEqual(expected_recast_models, recast_models)
+
+    def test_model_members(self):
+        expected = {"variables", "responses", "properties", "sources"}
+        with h5py.File(_TEST_NAME + ".h5", "r") as f:
+            h = f["/models/simulation/NO_MODEL_ID"]
+            actual = {item for item in h}
+        self.assertEquals(expected, actual)
 
     def test_sources(self):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:

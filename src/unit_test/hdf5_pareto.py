@@ -96,7 +96,7 @@ class Results(unittest.TestCase):
                     self.assertAlmostEqual(cv, hv, msg="Difference in best responses between console and hdf5")
 
 
-class EvaluationsStructure(unittest.TestCase):
+class ResultsStructure(unittest.TestCase):
 
     def test_sources(self):
         expected_sources = set()
