@@ -464,7 +464,7 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
       if (mlmfIter == 0) {
 	if (onlineCost)
-	  recover_paired_online_cost(accumulated_cost, num_cost, step, form);
+	  accumulate_paired_online_cost(accumulated_cost, num_cost, step);
 	if (!budget_constrained) // MSE reference is MC applied to HF
 	  aggregate_mse_target_Qsum(var_qoi, N_pilot, step, agg_est_var0);
       }

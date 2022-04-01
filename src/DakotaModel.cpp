@@ -3328,6 +3328,19 @@ void Model::active_model_key(const Pecos::ActiveKey& key)
 }
 
 
+const Pecos::ActiveKey& Model::active_model_key() const
+{
+  if (!modelRep) {
+    Cerr << "Error: Letter lacking redefinition of virtual active_model_key() "
+	 << "function.\n       model keys are not available from this Model "
+	 << "class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->active_model_key();
+}
+
+
 void Model::clear_model_keys()
 {
   if (modelRep) // envelope fwd to letter

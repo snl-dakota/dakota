@@ -539,14 +539,14 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
 	  hf_model.current_response().copy() : hf_model.current_response();
       else {
         currentResponse.active_set(hi_fi_set);
-        currentResponse.update(hf_model.current_response());
+        currentResponse.update(hf_model.current_response(), true); // pull meta
       }
       break;
     }
     case BYPASS_SURROGATE:
       hf_model.evaluate(set);
       currentResponse.active_set(set);
-      currentResponse.update(hf_model.current_response());
+      currentResponse.update(hf_model.current_response(), true);// pull metadata
       break;
     case MODEL_DISCREPANCY:
       hf_model.evaluate(set);
@@ -593,7 +593,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
       recursive_apply(currentVariables, lo_fi_response);
       if (!mixed_eval) {
         currentResponse.active_set(lo_fi_set);
-        currentResponse.update(lo_fi_response);
+        currentResponse.update(lo_fi_response, true); // pull metadata
       }
       break;
     }
@@ -602,7 +602,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
         lo_fi_response = lf_model.current_response(); // shared rep
       else {
         currentResponse.active_set(lo_fi_set);
-        currentResponse.update(lf_model.current_response());
+        currentResponse.update(lf_model.current_response(), true); // pull meta
       }
       break;
     }

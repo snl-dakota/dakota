@@ -274,7 +274,7 @@ public:
   /// desired (functionValues/functionGradients/functionHessians are
   /// updated, ASV/labels/id's/etc. are not).  Care is taken to allow
   /// different derivative array sizing between the two response objects.
-  void update(const Response& response);
+  void update(const Response& response, bool pull_metadata = false);
   /// Overloaded form which allows update from components of a response
   /// object.  Care is taken to allow different derivative array sizing.
   void update(const RealVector& source_fn_vals,
@@ -936,12 +936,12 @@ inline SizetArray& Response::active_set_derivative_vector()
 }
 
 
-inline void Response::update(const Response& response)
+inline void Response::update(const Response& response, bool pull_metadata)
 {
   // rep forward handled downstream
   update(response.function_values(), response.function_gradients(),
 	 response.function_hessians(), response.active_set());
-  metadata(response.metadata());
+  if (pull_metadata) metadata(response.metadata());
 }
 
 

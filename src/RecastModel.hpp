@@ -245,6 +245,8 @@ protected:
 
   /// set key in subModel
   void active_model_key(const Pecos::ActiveKey& key);
+  /// return key from subModel
+  const Pecos::ActiveKey& active_model_key() const;
   /// remove keys in subModel
   void clear_model_keys();
 
@@ -730,6 +732,10 @@ inline Model& RecastModel::subordinate_model()
 
 inline void RecastModel::active_model_key(const Pecos::ActiveKey& key)
 { subModel.active_model_key(key); }
+
+
+inline const Pecos::ActiveKey& RecastModel::active_model_key() const
+{ return subModel.active_model_key(); }
 
 
 inline void RecastModel::clear_model_keys()

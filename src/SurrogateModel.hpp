@@ -78,6 +78,7 @@ protected:
   Model& subordinate_model();
 
   void active_model_key(const Pecos::ActiveKey& key);
+  const Pecos::ActiveKey& active_model_key() const;
 
   /// return responseMode
   short surrogate_response_mode() const;
@@ -318,6 +319,10 @@ inline void SurrogateModel::active_model_key(const Pecos::ActiveKey& key)
   // base implementation (augmented in derived SurrogateModels)
   activeKey = key;//.copy(); // share representations except for entering data into DB storage (reduce overhead of short-term activations)
 }
+
+
+inline const Pecos::ActiveKey& SurrogateModel::active_model_key() const
+{return activeKey; }
 
 
 inline short SurrogateModel::surrogate_response_mode() const

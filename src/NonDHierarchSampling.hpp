@@ -75,10 +75,10 @@ protected:
 			   const SizetArray& num_cost, RealVector& seq_cost);
   /// recover partial estimates of simulation cost using aggregated (paired)
   /// response metadata
-  void recover_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
-				  size_t step, size_t form);
+  void accumulate_paired_online_cost(RealVector& accum_cost,
+				     SizetArray& num_cost, size_t step);
   /// accumulate cost and counts and then perform averaging
-  void recover_paired_online_cost(RealVector& seq_cost,size_t step,size_t form);
+  void recover_paired_online_cost(RealVector& seq_cost, size_t step);
 
   //
   //- Heading: Data
@@ -118,12 +118,12 @@ average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
 
 
 inline void NonDHierarchSampling::
-recover_paired_online_cost(RealVector& seq_cost, size_t step, size_t form)
+recover_paired_online_cost(RealVector& seq_cost, size_t step)
 {
   int len = seq_cost.length();
   RealVector accum_cost(len);                    // init to 0
   SizetArray num_cost;  num_cost.assign(len, 0); // init to 0
-  recover_paired_online_cost(accum_cost, num_cost, step, form);
+  accumulate_paired_online_cost(accum_cost, num_cost, step);
   average_online_cost(accum_cost, num_cost, seq_cost);
 }
 

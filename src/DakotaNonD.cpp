@@ -469,25 +469,29 @@ configure_sequence(//unsigned short hierarch_dim,
 bool NonD::
 query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 {
-  bool cost_defined = true;
   ModelList& sub_models = iteratedModel.subordinate_models(false);
-  ModelLIter m_iter;
-  if (multilevel) {
-    ModelLIter m_iter = --sub_models.end(); // HF model
-    cost = m_iter->solution_level_costs();  // can be empty
-    if (cost.length() != num_steps)
-      cost_defined = false;
-  }
+  bool cost_defined;
+  if (multilevel) // 1D resolution hierarchy for HF model
+    cost_defined = query_cost(num_steps, sub_models.back(), cost);
   else  {
     cost.sizeUninitialized(num_steps);
-    m_iter = sub_models.begin();
+    ModelLIter m_iter = sub_models.begin();  cost_defined = true;
     for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
       cost[i] = m_iter->solution_level_cost();// active soln index; 0 if unfound
       if (cost[i] <= 0.) cost_defined = false;
     }
+    if (!cost_defined) cost.sizeUninitialized(0);//for compute_equivalent_cost()
   }
-  if (!cost_defined) cost.sizeUninitialized(0); // for compute_equivalent_cost()
   return cost_defined;
+}
+
+
+bool NonD::query_cost(unsigned short num_steps, Model& model, RealVector& cost)
+{
+  cost = model.solution_level_costs(); // can be empty
+  if (cost.length() != num_steps)
+    { cost.sizeUninitialized(0); return false; }
+  return true;
 }
 
 

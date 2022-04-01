@@ -74,7 +74,7 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
     // Ensure there is consistent cost data available as SimulationModel must
     // be allowed to have empty solnCntlCostMap (when optional solution control
     // is not specified).  Passing false bypasses lower bound of 1.
-    if (md_index == _NPOS && num_lev > ml_rit->solution_levels(false)) {
+    if (md_index == SZ_MAX && num_lev > ml_rit->solution_levels(false)) {
       Cerr << "Error: insufficient cost data provided for multilevel sampling."
 	   << "\n       Please provide solution_level_cost estimates for model "
 	   << ml_rit->model_id() << '.' << std::endl;
@@ -114,65 +114,55 @@ NonDHierarchSampling::~NonDHierarchSampling()
 
 
 void NonDHierarchSampling::
-recover_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
-			   size_t step, size_t form)
+accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
+			      size_t step)
 {
   // This implementation is for singleton or paired responses, not for
   // aggregation of a full Model ensemble
 
-  // uses one set of allResponses with QoI aggregation across all Models,
-  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
-
   // for ML and MLCV, accumulation can span two calls --> init outside
-  //accum_cost.size(num_steps);  SizetArray num_cost(num_steps);
 
-  // TO DO: response metadata is paired {HF,LF} as for fn data
-  // costMetadataIndices follows ordered models (even though initialized w/ rit)
-
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  const SizetSizetPair& cost_mdi = (multilev) ? costMetadataIndices[form] :
-    costMetadataIndices[step];
-  size_t cost_md_index = cost_mdi.first, cost_md_len = cost_mdi.second,
-    prev_cost_md_index, prev_cost_md_len, prev_step = _NPOS;
-  if (step) {
-    prev_step = step - 1;
-    if (multilev) {
-      const SizetSizetPair& prev_cost_mdi = costMetadataIndices[prev_step];
-      prev_cost_md_index = prev_cost_mdi.first;
-      prev_cost_md_len   = prev_cost_mdi.second; 
-    }
-    else // same model instance -> same metadata layout
-      { prev_cost_md_index = cost_md_index; prev_cost_md_len = cost_md_len; }
+  const Pecos::ActiveKey& key = iteratedModel.active_model_key();
+  unsigned short hf_form = key.retrieve_model_form(0),
+    lf_form = (key.data_size() > 1) ? key.retrieve_model_form(1) : USHRT_MAX;
+  size_t hf_form_index = (hf_form == USHRT_MAX) ? 0 : (size_t)hf_form;
+  // costMetadataIndices follows ordered models
+  const SizetSizetPair& hf_cost_mdi = costMetadataIndices[hf_form_index];
+  size_t hf_md_index = hf_cost_mdi.first, hf_md_len = hf_cost_mdi.second,
+    prev_step = (step) ? step - 1 : SZ_MAX, lf_md_index;
+  if (prev_step != SZ_MAX) {
+    size_t lf_form_index = (lf_form == USHRT_MAX) ? 0 : (size_t)lf_form;
+    lf_md_index = costMetadataIndices[lf_form_index].first;
   }
 
-  IntRespMCIter r_it;
   using std::isfinite;
   Real cost;
-  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+  IntRespMCIter r_cit;
+  for (r_cit=allResponses.begin(); r_cit!=allResponses.end(); ++r_cit) {
+    const std::vector<RespMetadataT>& md = r_cit->second.metadata();//aggregated
 
-    const std::vector<RespMetadataT>& md = r_it->second.metadata();// aggregated
-    if (outputLevel >= DEBUG_OUTPUT) Cout << "Metadata:\n" << md;
-
-    cost = md[cost_md_index]; // offset by metadata index
+    // response metadata is paired {HF,LF} as for fn data
+    cost = md[hf_md_index]; // offset by metadata index
     if (isfinite(cost)) {
-      ++num_cost[step];
       accum_cost[step] += cost;
-    }
-
-    if (prev_step != _NPOS) {
-      cost = md[cost_md_len + prev_cost_md_index]; // offset by metadata index
-      if (isfinite(cost)) {
-	++num_cost[prev_step];
-	accum_cost[prev_step] += cost;
-      }
+      ++num_cost[step];
       if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "Recovered cost: accum_cost[prev] = " << accum_cost[prev_step]
-	     << " num_cost[prev] = " << num_cost[prev_step];
+	Cout << "Metadata:\n" << md << "HF cost: accum_cost = "
+	     << accum_cost[step] << " num_cost = " << num_cost[step]<<std::endl;
     }
 
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << " accum_cost[step] = " << accum_cost[step]
-	   << " num_cost[step] = " << num_cost[step] << std::endl;
+    if (prev_step != SZ_MAX) {
+      cost = md[hf_md_len + lf_md_index]; // offset by metadata index
+      if (isfinite(cost)) {
+	accum_cost[prev_step] += cost;
+	++num_cost[prev_step];
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "LF cost: accum_cost = " << accum_cost[prev_step]
+	       << " num_cost = " << num_cost[prev_step] << std::endl;
+      }
+    }
   }
   // averaging is deferred until average_online_cost()
 }

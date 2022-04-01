@@ -1578,14 +1578,14 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 	actual_response = actualModel.current_response(); // shared rep
       else {
 	currentResponse.active_set(actual_set);
-	currentResponse.update(actualModel.current_response());
+	currentResponse.update(actualModel.current_response(), true);//pull meta
       }
       break;
     }
     case BYPASS_SURROGATE:
       actualModel.evaluate(set);
       currentResponse.active_set(set);
-      currentResponse.update(actualModel.current_response());
+      currentResponse.update(actualModel.current_response(), true); // pull meta
       // TODO: Add to surrogate build data
       //      add_tabular_data(....)
       break;

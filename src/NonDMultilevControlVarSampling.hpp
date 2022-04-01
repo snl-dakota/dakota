@@ -61,10 +61,10 @@ private:
   //- Heading: Helper functions
   //
 
-  /// Perform multilevel Monte Carlo across levels in combination with
-  /// control variate Monte Carlo across model forms at each level; CV
-  /// computes correlations for Y (LH correlations for level discrepancies)
-  void multilevel_control_variate_mc_Ycorr();
+  // Perform multilevel Monte Carlo across levels in combination with
+  // control variate Monte Carlo across model forms at each level; CV
+  // computes correlations for Y (LH correlations for level discrepancies)
+  //void multilevel_control_variate_mc_Ycorr();
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Q (LH correlations for QoI)
@@ -75,7 +75,7 @@ private:
   void multilevel_control_variate_mc_pilot_projection();
 
   /// helper for shared code among offline-pilot and pilot-projection modes
-  void evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
+  void evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 		      RealVectorArray& eval_ratios, RealMatrix& Lambda,
 		      RealMatrix& var_YH, Sizet2DArray& N_shared,
 		      RealVector& hf_targets, bool accumulate_cost,
