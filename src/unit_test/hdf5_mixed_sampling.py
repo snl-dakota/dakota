@@ -287,7 +287,7 @@ class RestartData(unittest.TestCase):
                 for eid, tr, hr in zip(rdata["eval_id"], rdata["response"][r], hresps[:,i]):
                     self.assertAlmostEqual(tr["function"], hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
             # ASV
-            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/sim_m/metadata/active_set_vector"]):
+            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/sim_m/properties/active_set_vector"]):
                 for r_a, h_a in zip(r_asv, h_asv):
                     self.assertEqual(r_a, h_a)
 

@@ -83,6 +83,8 @@ protected:
 
   void assign_instance();
 
+  void init_metadata() override;
+
   void update_from_subordinate_model(size_t depth = SZ_MAX);
 
   /// update all continuous variables from sub-model, skipping hyper-parameters

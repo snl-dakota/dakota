@@ -208,6 +208,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     if (strbegins(surrogateType, "global_")) update_global_reference();
     else                                     update_local_reference();
   }
+
+  currentResponse.reshape_metadata(0);
 }
 
 
@@ -345,6 +347,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 				import_build_active_only);
   if (export_pts) initialize_export();
   if (import_pts || export_pts) manage_data_recastings();
+
+  currentResponse.reshape_metadata(0);
 }
 
 

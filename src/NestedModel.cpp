@@ -545,6 +545,8 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   // view differences cause problems with recursion updating).
   if (inactive_sm_view != EMPTY_VIEW)
     subModel.inactive_view(inactive_sm_view); // recurse
+
+  currentResponse.reshape_metadata(0);
 }
 
 

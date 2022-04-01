@@ -1031,6 +1031,11 @@ void Response::write_tabular(std::ostream& s, bool eol) const
       // BMA TODO: write something that can be read back in for tabular...
       //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
       //s << "EMPTY"; // inactive data
+    // TODO: Unclear if we want metadata in tabular files and if yes,
+    // need to make sure re-imports still work.
+    //if (eol) ?!?
+    //  for (const auto& md : metaData)
+    //    s << std::setw(write_precision+4) << md << ' ';
     if (eol) s << std::endl; // table row completed
   }
 }
@@ -1058,8 +1063,10 @@ write_tabular_partial(std::ostream& s, size_t start_index,
       // BMA TODO: write something that can be read back in for tabular...
       //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
       //s << "EMPTY"; // inactive data
-    for (const auto& md : metaData)
-      s << std::setw(write_precision+4) << md << ' ';
+    // TODO: Unclear if we want metadata in tabular files and if yes,
+    // need to make sure re-imports still work.
+    //for (const auto& md : metaData)
+    //  s << std::setw(write_precision+4) << md << ' ';
   }
 }
 
@@ -1072,8 +1079,11 @@ void Response::write_tabular_labels(std::ostream& s, bool eol) const
   else {
     for (const auto& fn_label : sharedRespData.function_labels())
       s << std::setw(14) << fn_label << ' ';
-    for (const auto& md_label : sharedRespData.metadata_labels())
-      s << std::setw(14) << md_label << ' ';
+    // TODO: Unclear if we want metadata in tabular files and if yes,
+    // need to make sure re-imports still work.
+    //if (eol)
+    //  for (const auto& md_label : sharedRespData.metadata_labels())
+    //    s << std::setw(14) << md_label << ' ';
     if (eol) s << std::endl; // table row completed
   }
 }

@@ -212,6 +212,14 @@ void DataTransformModel::data_resize()
 }
 
 
+void DataTransformModel::init_metadata()
+{
+  // only clear if there are multiple configs, else leave intact
+  if (expData.configuration_variables().size() > 1)
+    currentResponse.reshape_metadata(0);
+}
+
+
 void DataTransformModel::update_from_subordinate_model(size_t depth)
 {
   // data flows from the bottom-up, so recurse first
@@ -747,6 +755,10 @@ primary_resp_differencer(const Variables& submodel_vars,
 
   // scale by covariance, including hyper-parameter multipliers
   dtModelInstance->scale_response(submodel_vars, recast_vars, recast_response);
+
+  // no sensible way to transform metadata in multi-config case
+  if (dtModelInstance->expData.configuration_variables().size() > 1)
+    recast_response.metadata(submodel_response.metadata());
 
   if (dtModelInstance->outputLevel >= VERBOSE_OUTPUT && 
       dtModelInstance->subordinate_model().num_primary_fns() > 0) {

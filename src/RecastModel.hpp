@@ -437,6 +437,9 @@ protected:
   /// transformation functions
   virtual void assign_instance();
 
+  /// default clear metadata in Recasts; derived classes can override to no-op
+  virtual void init_metadata();
+
   //
   //- Heading: Member functions
   //

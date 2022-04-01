@@ -57,6 +57,10 @@ macro(dakota_add_h5py_test TEST_NAME)
     ${test_dir}/hdf5_${TEST_NAME}.py dakota_unit_test_copied_files)
   dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/dakota_hdf5_${TEST_NAME}.in
     ${test_dir}/dakota_hdf5_${TEST_NAME}.in dakota_unit_test_copied_files)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hdf5_${TEST_NAME}_driver.py")
+    dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/hdf5_${TEST_NAME}_driver.py
+      ${test_dir}/hdf5_${TEST_NAME}_driver.py dakota_unit_test_copied_files)
+  endif()
 
   add_test(NAME dakota_hdf5_${TEST_NAME}_test 
     COMMAND ${Python_EXECUTABLE} -B hdf5_${TEST_NAME}.py --bindir $<TARGET_FILE_DIR:dakota>
