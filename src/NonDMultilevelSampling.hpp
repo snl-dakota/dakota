@@ -145,9 +145,9 @@ private:
   //- Heading: Helper functions
   //
 
-  /// Perform multilevel Monte Carlo across the discretization levels for a
-  /// particular model form using discrepancy accumulators (sum_Y)
-  void multilevel_mc_Ysum();
+  // Perform multilevel Monte Carlo across the discretization levels for a
+  // particular model form using discrepancy accumulators (sum_Y)
+  //void multilevel_mc_Ysum();
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using QoI accumulators (sum_Q)
   void multilevel_mc_Qsum();
@@ -158,16 +158,15 @@ private:
 
   /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		       IntIntPairRealMatrixMap& sum_QlQlm1,
-		       const RealVector& cost, Sizet2DArray& N_pilot,
-		       Sizet2DArray& N_online, SizetArray& delta_N_l,
-		       RealMatrix& var_Y, RealMatrix& var_qoi,
-		       RealVector& eps_sq_div_2, bool accumulate_cost,
-		       bool pilot_estvar);
+		       IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
+		       Sizet2DArray& N_pilot, Sizet2DArray& N_online,
+		       SizetArray& delta_N_l, RealMatrix& var_Y,
+		       RealMatrix& var_qoi, RealVector& eps_sq_div_2,
+		       bool increment_cost, bool pilot_estvar);
 
-  /// initialize the ML accumulators for computing means, variances, and
-  /// covariances across fidelity levels
-  void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev);
+  // initialize the ML accumulators for computing means, variances, and
+  // covariances across fidelity levels
+  //void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev);
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
@@ -639,7 +638,7 @@ aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, const Sizet2DArray& N_l,
 			  const size_t step, RealVector& estimator_var0_qoi)
 {
   for (size_t qoi = 0; qoi < numFunctions; ++qoi)
-    estimator_var0_qoi[qoi] += agg_var_qoi(qoi, step)/N_l[step][qoi];
+    estimator_var0_qoi[qoi] += agg_var_qoi(qoi, step) / N_l[step][qoi];
 }
 
 

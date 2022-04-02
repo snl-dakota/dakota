@@ -267,6 +267,10 @@ inline void AdapterModel::active_model_key(const Pecos::ActiveKey& key)
 { subModel.active_model_key(key); }
 
 
+inline const Pecos::ActiveKey& AdapterModel::active_model_key() const
+{ return subModel.active_model_key(); }
+
+
 inline void AdapterModel::clear_model_keys()
 { subModel.clear_model_keys(); }
 

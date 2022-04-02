@@ -140,6 +140,8 @@ protected:
 		      RealVector& cost);
   /// extract cost estimates from model hierarchy, if available
   bool query_cost(unsigned short num_steps, bool multilevel, RealVector& cost);
+  /// extract cost estimates from model hierarchy, if available
+  bool query_cost(unsigned short num_steps, Model& model, RealVector& cost);
 
   /// distribute pilot sample specification across model forms or levels
   void load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,

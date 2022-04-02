@@ -1,8 +1,15 @@
 environment
 	output_precision = 16
 	  method_pointer = 'PSTUDY'
-	  tabular_data
-	    tabular_data_file = 'ps_acv.dat' freeform
+	  tabular_data freeform			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+	    tabular_data_file = 'ps_mlmc.dat' 		#s0
+#	    tabular_data_file = 'ps_cvmc.dat' 		#s1
+#	    tabular_data_file = 'ps_mfmc.dat' 		#s2
+#	    tabular_data_file = 'ps_acv.dat'  		#s3
+#	    tabular_data_file = 'ps_mlmc_proj25.dat' 	#s4
+#	    tabular_data_file = 'ps_cvmc_proj25.dat' 	#s5
+#	    tabular_data_file = 'ps_mfmc_proj25.dat' 	#s6
+#	    tabular_data_file = 'ps_acv_proj25.dat'  	#s7
 
 ##############
 # OUTER LOOP #
@@ -11,11 +18,12 @@ environment
 method,
 	id_method = 'PSTUDY'
 	model_pointer = 'PSTUDY_M'
-        vector_parameter_study					#s0,#s1
-	  step_vector = .02 0.  num_steps = 50			#s0
-#	  step_vector = .01 .01 num_steps = 50			#s1
-#	efficient_global					#s2
-#	  seed = 1234567					#s2
+        vector_parameter_study			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+	  step_vector = .02 0.  num_steps = 50	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#	  step_vector = .01 .01 num_steps = 50		#s8
+#	efficient_global				#s9
+#	  seed = 1234567				#s9
+#	  max_iterations = 50				#s9
 #	  convergence_tolerance = 1.e-6
 	output silent
 
@@ -35,8 +43,8 @@ model,
 variables,
 	id_variables = 'PSTUDY_V'
 	continuous_design = 2
-	  initial_point  = 0.55            0.5235987755983	#s0
-#	  initial_point  = 1.0471975511966 0.5235987755983	#s1,#s2
+	  initial_point  = 0.55 0.5235987755983		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#	  initial_point  = 1.0471975511966 0.5235987755983	#s8
 	  lower_bounds   = 2 * 0.5235987755983
 	  upper_bounds   = 2 * 1.5707963267949
 	  descriptors    = 'outer_theta1' 'outer_theta2'
@@ -47,9 +55,9 @@ responses,
 	id_responses = 'PSTUDY_R'
 	objective_functions = 1
 	nonlinear_inequality_constraints = 1
-	nonlinear_inequality_upper_bounds = 1100.		#s0,#s1
-#	nonlinear_inequality_upper_bounds = 550.		#s2
-	descriptors = 'ACV_EstVar' 'ACV_EquivHFCost'
+	nonlinear_inequality_upper_bounds = 1100.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	nonlinear_inequality_upper_bounds = 550.	#s9
+	descriptors = 'avgEstVar' 'equivHFEvals'
 	no_gradients
 	no_hessians
 
@@ -61,20 +69,26 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'NONHIER'
-	approximate_control_variate acv_mf sqp	
-	  max_function_evaluations = 1000			#s0,#s1
-#	  max_function_evaluations = 500			#s2
-	  pilot_samples =  25
+	multilevel_sampling				#s0,#s4
+#	multifidelity_sampling				#s1,#s2,#s5,#s6
+#	approximate_control_variate acv_mf sqp		#s3,#s7,#s8,#s9
+	  max_function_evaluations = 1000		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	  max_function_evaluations = 500		#s9
+	  pilot_samples = 25
+#	  solution_mode pilot_projection		#s4,#s5,#s6,#s7
 	  seed = 8674132
-	  final_statistics algorithm_performance
+	  final_statistics estimator_performance
 	output silent
 
 model,
 	id_model = 'NONHIER'
 	variables_pointer = 'HF_VARS'
-	surrogate model_ensemble 
-	  truth_model = 'HF'
-	  unordered_model_fidelities = 'LF2' 'LF1' # tunable problem names
+	surrogate hierarchical 	       	     		#s0,#s1,#s4,#s5
+	  ordered_model_fidelities = 'LF2' 'LF1' 'HF'	#s0,#s4
+#	  ordered_model_fidelities = 'LF1' 'HF'		#s1,#s5
+#	surrogate model_ensemble			#s2,#s3,#s6,#s7,#s8,#s9
+#	  truth_model = 'HF'				#s2,#s3,#s6,#s7,#s8,#s9
+#	  unordered_model_fidelities = 'LF2' 'LF1' 	#s2,#s3,#s6,#s7,#s8,#s9
 
 model,
 	id_model = 'LF2' # low-fidelity
@@ -110,8 +124,8 @@ variables,
 	  upper_bounds    = 2* 1.
      	  descriptors     = 'x' 'y'
 	continuous_state  = 5
-	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0
-#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s1,#s2
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
 	  initial_state = 'LF2'
@@ -125,8 +139,8 @@ variables,
 	  upper_bounds    = 2* 1.
      	  descriptors     = 'x' 'y'
 	continuous_state  = 5
-	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0
-#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s1,#s2
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
 	  initial_state = 'LF1'
@@ -140,8 +154,8 @@ variables,
 	  upper_bounds    = 2* 1.
      	  descriptors     = 'x' 'y'
 	continuous_state  = 5
-	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0
-#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s1,#s2
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
 	  initial_state = 'HF'

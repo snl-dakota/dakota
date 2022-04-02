@@ -126,7 +126,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // Compute the ratio of MC and MFMC estimator variance, which incorporates
     // anticipated variance reduction from upcoming application of eval_ratios.
     // > Note: this could be redundant for tol-based targets with m1* > pilot
-    mfmc_estimator_variance(rho2LH, numH, hf_targets, approxSequence,
+    mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
 			    eval_ratios);
 
     ++mlmfIter;
@@ -186,7 +186,8 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   //compute_mc_estimator_variance(varH, numH, estVarIter0);  numHIter0 = numH;
   // Exclude pilot from R^2 benefit, but include any difference between numH
   // and hf_targets:
-  mfmc_estimator_variance(rho2LH, numH, hf_targets, approxSequence,eval_ratios);
+  mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
+			  eval_ratios);
 
   // numH is converged --> finalize with LF increments and post-processing
   approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH, approxSequence,
@@ -238,7 +239,8 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // Compute the ratio of MC and MFMC mean squared errors, which incorporates
   // anticipated variance reduction from upcoming application of eval_ratios.
   // > Note: this could be redundant for tol-based targets with m1* > pilot
-  mfmc_estimator_variance(rho2LH, numH, hf_targets, approxSequence,eval_ratios);
+  mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
+			  eval_ratios);
 
   // No LF increments or final moments for pilot projection
 
@@ -1046,8 +1048,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 
 
 void NonDMultifidelitySampling::
-mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
-			const RealVector& hf_targets,
+mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
+			const SizetArray& N_H, const RealVector& hf_targets,
 			const SizetArray& approx_sequence,
 			const RealMatrix& eval_ratios)
 {
@@ -1087,6 +1089,9 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
     else
       mfmc_estvar_ratios(rho2_LH, approx_sequence, eval_ratios, estVarRatios);
 
+    // update avgEstVar for final variance report and finalStats
+    estvar_ratios_to_avg_estvar(estVarRatios, var_H, N_H, avgEstVar);
+
     if (outputLevel >= NORMAL_OUTPUT) {
       bool ordered = approx_sequence.empty();
       for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -1112,9 +1117,9 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
   // in the objective and returns avg estvar as the final objective.  So estVar
   // is more direct here than estVarRatios, as for NonDACVSampling.
   //default:
-  //  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+  //  if (estVarRatios.empty()) estVarRatios.sizeUninitialized(numFunctions);
   //  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-  //    estvar_ratios[qoi] = avgEstVar / var_H[qoi] * N_H[qoi]; // (1-R^2)
+  //    estVarRatios[qoi] = avgEstVar / var_H[qoi] * N_H[qoi]; // (1-R^2)
   //  break;
   }
 }
@@ -1183,29 +1188,25 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
 	<< (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
 	<< std::setw(wpp7) << average(estVarIter0) << '\n';
 
-    RealVector mc_est_var(numFunctions, false),
-             mfmc_est_var(numFunctions, false);
-    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      mfmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / numH[qoi];
-      mfmc_est_var[qoi] *= estVarRatios[qoi];
-    }
-    Real avg_mfmc_est_var = average(mfmc_est_var),
-         avg_mc_est_var   = average(mc_est_var),
+    RealVector mc_est_var(numFunctions, false);
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      mc_est_var[qoi] = varH[qoi] / numH[qoi];
+    Real avg_mc_est_var        = average(mc_est_var),
          avg_budget_mc_est_var = average(varH) / equivHFEvals;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
     s << "  " << type << "   MC (" << std::setw(5)
       << (size_t)std::floor(average(numH) + .5) << " HF samples): "
       << std::setw(wpp7) << avg_mc_est_var << "\n  " << type
-      << " MFMC (sample profile):   " << std::setw(wpp7) << avg_mfmc_est_var
+      << " MFMC (sample profile):   " << std::setw(wpp7) << avgEstVar
       << "\n  " << type << " MFMC ratio (1 - R^2):    "
       // report ratio of averages rather than average of ratios (consistent
       // with ACV definition which would have to recompute the latter)
-      << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var
+      << std::setw(wpp7) << avgEstVar / avg_mc_est_var
       << "\n Equivalent   MC (" << std::setw(5)
       << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
       << std::setw(wpp7) << avg_budget_mc_est_var
       << "\n Equivalent MFMC ratio:              " << std::setw(wpp7)
-      << avg_mfmc_est_var / avg_budget_mc_est_var << '\n';
+      << avgEstVar / avg_budget_mc_est_var << '\n';
     break;
   }
   // For numerical cases, mfmc_numerical_solution() must incorporate varH/numH

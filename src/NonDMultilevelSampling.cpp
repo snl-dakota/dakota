@@ -97,7 +97,7 @@ void NonDMultilevelSampling::core_run()
 
   configure_sequence(numSteps, secondaryIndex, sequenceType);
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  configure_cost(numSteps, multilev, sequenceCost);
+  onlineCost = !query_cost(numSteps, multilev, sequenceCost);
 
   // Useful for future extensions when convergence tolerance can be a vector
   convergenceTolVec.sizeUninitialized(numFunctions);
@@ -119,7 +119,7 @@ void NonDMultilevelSampling::core_run()
 
 
 /** This function performs MLMC on a model sequence, either defined by
-    model forms or discretization levels. */
+    model forms or discretization levels.
 void NonDMultilevelSampling::multilevel_mc_Ysum()
 {
   // Formulate as a coordinated progression towards convergence, where, e.g.,
@@ -267,9 +267,11 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   }
 
   compute_ml_estimator_variance(var_Y, N_l, estVar);
+  avgEstVar = average(estVar);
   // post final N_l back to NLev (needed for final eval summary)
   inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
 }
+*/
 
 
 /** This function performs "geometrical" MLMC on a single model form
@@ -303,6 +305,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
 
   compute_ml_estimator_variance(var_Y, N_l, estVar);
+  avgEstVar = average(estVar);
   // post final N_l back to NLev (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
@@ -315,7 +318,6 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   size_t form, lev, &step = (multilev) ? lev : form;
   if (multilev) form = secondaryIndex;
   else          lev  = secondaryIndex;
-  Real ref_cost = sequenceCost[numSteps-1];
 
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -339,6 +341,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   // Evaluate online sample profile computed from offline pilot
   // ----------------------------------------------------------
   reset_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1);
+  Real ref_cost = sequenceCost[numSteps-1];
 
   for (step=0; step<numSteps; ++step) {
 
@@ -368,6 +371,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_online);
 
   compute_ml_estimator_variance(var_Y, N_online, estVar);
+  avgEstVar = average(estVar);
   // post final N_online back to NLev (needed for final eval summary)
   inflate_final_samples(N_online, multilev, secondaryIndex, NLev);
 }
@@ -400,6 +404,7 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 
   update_projected_samples(delta_N_l, N_l, sequenceCost);
   compute_ml_estimator_variance(var_Y, N_l, estVar);
+  avgEstVar = average(estVar);
   // post final N_l back to NLev (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
@@ -408,11 +413,11 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 
 void NonDMultilevelSampling::
 evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& cost,
+		IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
 		Sizet2DArray& N_pilot, Sizet2DArray& N_online,
 		SizetArray& delta_N_l, RealMatrix& var_Y,
 		RealMatrix& var_qoi,   RealVector& eps_sq_div_2,
-		bool accumulate_cost,  bool pilot_estvar)
+		bool increment_cost,   bool pilot_estvar)
 {
   // NOTE: Unlike other MLMF methods that currently target the mean estimator
   // (requiring only the first 2 moments and allowing streamlining of this fn),
@@ -426,8 +431,8 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   size_t form, lev, &step = (multilev) ? lev : form;
   if (multilev) form = secondaryIndex;
   else          lev  = secondaryIndex;
-  Real ref_cost = cost[numSteps-1];
-  RealVector agg_est_var0;  IntIntPair pr11(1, 1);
+  RealVector agg_est_var0, accumulated_cost;  IntIntPair pr11(1, 1);
+  SizetArray num_cost; // counts for online recovery
 
   if (mlmfIter == 0) {
     N_pilot.resize(numSteps);
@@ -437,6 +442,8 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       { agg_est_var0.size(numFunctions); eps_sq_div_2.size(numFunctions); }
     var_Y.shapeUninitialized(numFunctions, numSteps);
     var_qoi.shapeUninitialized(numFunctions, numSteps);
+    if (onlineCost)
+      { accumulated_cost.size(numSteps); num_cost.assign(numSteps, 0); }
   }
 
   for (step=0; step<numSteps; ++step) {
@@ -448,18 +455,29 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       // assign sequence, get samples, export, evaluate
       evaluate_ml_sample_increment(step);
       accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_pilot[step]);
-      if (accumulate_cost)
-	increment_ml_equivalent_cost(numSamples,level_cost(cost,step),ref_cost);
 
       variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
 		    sum_Ql.at(2)[step], sum_QlQlm1.at(pr11)[step],
 		    sum_Qlm1.at(2)[step], N_pilot[step], step, var_Y[step]);
       aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_pilot,
 				     step, var_qoi);
-      // MSE reference is MC applied to HF
-      if (mlmfIter == 0 && !budget_constrained)
-	aggregate_mse_target_Qsum(var_qoi, N_pilot, step, agg_est_var0);
+
+      if (mlmfIter == 0) {
+	if (onlineCost)
+	  accumulate_paired_online_cost(accumulated_cost, num_cost, step);
+	if (!budget_constrained) // MSE reference is MC applied to HF
+	  aggregate_mse_target_Qsum(var_qoi, N_pilot, step, agg_est_var0);
+      }
     }
+  }
+  // defer cost accumulation until online cost recovery is complete
+  if (onlineCost && mlmfIter == 0)
+    average_online_cost(accumulated_cost, num_cost, cost);
+  if (increment_cost) {
+    Real ref_cost = cost[numSteps-1];
+    for (step=0; step<numSteps; ++step)
+      increment_ml_equivalent_cost(delta_N_l[step], level_cost(cost, step),
+				   ref_cost);
   }
   // capture pilot-sample metrics:
   if (mlmfIter == 0) {
@@ -542,6 +560,7 @@ void NonDMultilevelSampling::evaluate_ml_sample_increment(unsigned short step)
 }
 
 
+/*
 void NonDMultilevelSampling::
 initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev)
 {
@@ -554,6 +573,7 @@ initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev)
     sum_Y.insert(empty_pr).first->second.shape(numFunctions, num_lev);
   }
 }
+*/
 
   
 void NonDMultilevelSampling::
@@ -1548,7 +1568,6 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
 
 void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
 {
-  avgEstVar = average(estVar);
   Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   size_t wpp7 = write_precision + 7;

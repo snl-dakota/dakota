@@ -2823,9 +2823,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_statistics {0}
-      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
         [ final_moments {0}
           none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
           |
@@ -2886,9 +2886,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_statistics {0}
-      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
         [ final_moments {0}
           none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
           |
@@ -2944,9 +2944,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_statistics {0}
-      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
         [ final_moments {0}
           none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
           |
@@ -3013,9 +3013,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_statistics {0}
-      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
         [ final_moments {0}
           none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
           |

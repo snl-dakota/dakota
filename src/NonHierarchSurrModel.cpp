@@ -316,7 +316,7 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
     assign_key(truthModelKey);
     update_model(truthModel);
     truthModel.evaluate(set);
-    currentResponse.update(truthModel.current_response());
+    currentResponse.update(truthModel.current_response(), true);// pull metadata
     break;
   }
 }

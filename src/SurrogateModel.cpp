@@ -1266,6 +1266,10 @@ response_combine(const Response& actual_response,
       }
     }
   }
+
+  // preserve the simulation-based metadata
+  if (!actual_asv.empty())
+    combined_response.metadata(actual_response.metadata(), 0);
 }
 
 
@@ -1306,6 +1310,8 @@ aggregate_response(const Response& hf_resp, const Response& lf_resp,
   const RealArray& hf_md = hf_resp.metadata();
   agg_resp.metadata(hf_md, 0);
   agg_resp.metadata(lf_resp.metadata(), hf_md.size());
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "HF Metadata:\n" << hf_md << "LF Metadata:\n"<<lf_resp.metadata();
 }
 
 
@@ -1361,7 +1367,7 @@ insert_response(const Response& response, size_t position,
   }
 
   const RealArray& md = response.metadata();
-  agg_response.metadata(md, position * md.size());
+  agg_response.metadata(md, position * md.size()); // *** TO DO: allow aggregation of models with different metadata sizes (cost recovery uses this as does aggregate_response())
 }
 
 } // namespace Dakota

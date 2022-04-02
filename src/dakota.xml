@@ -353,10 +353,10 @@
       -->
 
     <!ENTITY final_stats_perf_res '
-             <keyword  id="final_statistics" name="final_statistics" code="{0}" label="final_statistics"  minOccurs="0" default="algorithm_results" >
+             <keyword  id="final_statistics" name="final_statistics" code="{0}" label="final_statistics"  minOccurs="0" default="qoi_statistics" >
                <oneOf label="Final statistics type" >
-		 <keyword  id="algorithm_performance" name="algorithm_performance" code="{N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}" label="Final algorithm performance" />
-		 <keyword  id="algorithm_results" name="algorithm_results" code="{N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}" label="Final algorithm results" >
+		 <keyword  id="estimator_performance" name="estimator_performance" code="{N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}" label="Final algorithm performance" />
+		 <keyword  id="qoi_statistics" name="qoi_statistics" code="{N_mdm(utype,finalStatsType_QOI_STATISTICS)}" label="Final algorithm results" >
 		   &default_final_moments;
 		   <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
 		   <!-- &reliability_levels;          TO DO: support moment-based mappings -->

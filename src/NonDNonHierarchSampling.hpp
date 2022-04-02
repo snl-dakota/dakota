@@ -86,14 +86,15 @@ protected:
 
   void assign_active_key(bool multilev);
 
+  /// recover estimates of simulation cost using aggregated response metadata
+  void recover_online_cost(RealVector& seq_cost);
+
   void initialize_sums(IntRealMatrixMap& sum_L_baseline,
 		       IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LH,
 		       RealVector& sum_HH);
   void initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			 Sizet2DArray& num_LH);
   void finalize_counts(Sizet2DArray& N_L);
-
-  void recover_online_cost(RealVector& seq_cost);
 
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t index);
@@ -199,10 +200,6 @@ protected:
   /// approximations
   SizetArray approxSequence;
 
-  /// Indicates use of user-specified cost ratios, rather than online
-  /// cost recovery
-  bool onlineCost;
-
   /// number of evaluations of HF truth model (length numFunctions)
   SizetArray numH;
   /// covariances between each LF approximation and HF truth (the c
@@ -258,9 +255,6 @@ private:
   //
   //- Heading: Data
   //
-
-  /// indices of cost data within response metadata, one per model form
-  SizetSizetPairArray costMetadataIndices;
 
   /// pointer to NonDACV instance used in static member functions
   static NonDNonHierarchSampling* nonHierSampInstance;
