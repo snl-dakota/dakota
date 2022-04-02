@@ -638,7 +638,7 @@ aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, const Sizet2DArray& N_l,
 			  const size_t step, RealVector& estimator_var0_qoi)
 {
   for (size_t qoi = 0; qoi < numFunctions; ++qoi)
-    estimator_var0_qoi[qoi] += agg_var_qoi(qoi, step)/N_l[step][qoi];
+    estimator_var0_qoi[qoi] += agg_var_qoi(qoi, step) / N_l[step][qoi];
 }
 
 

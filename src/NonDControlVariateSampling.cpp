@@ -58,6 +58,7 @@ void NonDControlVariateSampling::core_run()
   configure_sequence(numSteps, secondaryIndex, sequenceType);
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   onlineCost = !query_cost(numSteps, multilev, sequenceCost);
+  if (onlineCost) sequenceCost.size(2); // collapse model recovery down to 2
 
   // For two-model control variate, select extreme fidelities/resolutions
   Pecos::ActiveKey active_key, hf_key, lf_key;
@@ -125,7 +126,8 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH, N_hf);
     if (mlmfIter == 0) {
       if (onlineCost) recover_paired_online_cost(sequenceCost, 1);
-      cost_ratio = sequenceCost[numSteps - 1] / sequenceCost[0]; // HF / LF
+      cost_ratio  = (onlineCost) ? sequenceCost[1] : sequenceCost[numSteps - 1];
+      cost_ratio /= sequenceCost[0]; // HF / LF
     }
     increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
 
@@ -181,7 +183,6 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     accumulate_mf_sums(sum_L_refined, N_lf);
     increment_mf_equivalent_cost(numSamples, cost_ratio);
   }
-  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 
   // Compute/apply control variate params to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
@@ -189,6 +190,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 		 N_lf, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 }
 
 
@@ -231,7 +233,6 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
     accumulate_mf_sums(sum_L_refined, N_lf);
     increment_mf_equivalent_cost(numSamples, cost_ratio);
   }
-  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 
   // Compute/apply control variate params to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
@@ -239,6 +240,7 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
 		 N_lf, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 }
 
 
@@ -256,10 +258,10 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
   RealVector eval_ratios, hf_targets;  Real cost_ratio;
   evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_hf, hf_targets,
 		 true, true); // accumulate cost, compute estvar0
-  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 
   N_lf = N_hf; // shared to this point, but only N_hf has been updated
   update_projected_samples(hf_targets, eval_ratios, cost_ratio, N_hf, N_lf);
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 }
 
 
@@ -284,7 +286,8 @@ evaluate_pilot(const Pecos::ActiveKey& active_key, Real& cost_ratio,
   shared_increment(active_key, mlmfIter, 0);
   accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared);
   if (onlineCost) recover_paired_online_cost(sequenceCost, 1);
-  cost_ratio = sequenceCost[numSteps - 1] / sequenceCost[0]; // HF / LF
+  cost_ratio  = (onlineCost) ? sequenceCost[1] : sequenceCost[numSteps - 1];
+  cost_ratio /= sequenceCost[0]; // HF / LF
   if (accumulate_cost)
     increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
 
