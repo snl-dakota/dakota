@@ -2068,7 +2068,8 @@ int TestDriverInterface::transient_diffusion_1d()
   // Get the number of spatial discretization points and the number of
   // Fourier solution modes from the discrete integer variables
   size_t nx_index = find_index(xDILabels, "N_x"),
-         nm_index = find_index(xDILabels, "N_mod");
+         nm_index = find_index(xDILabels, "N_mod"),
+         md_index = find_index(metaDataLabels, "cost_model");
   int N_x   = ( nx_index == _NPOS ) ? 200 : xDI[nx_index];
   int N_mod = ( nm_index == _NPOS ) ?  21 : xDI[nm_index];
 
@@ -2126,6 +2127,26 @@ int TestDriverInterface::transient_diffusion_1d()
   // QoI is the integral of the solution over the physical space
   fnVals[0] = int_u_n * dx / 2.; // trapezoidal rule
 
+  if (md_index != _NPOS) {
+    switch (N_mod) {
+    case 21: // HF model form
+      switch (N_x) {
+      case 30:  metaData[md_index] =  5.67e+5; break;
+      case 60:  metaData[md_index] = 4.536e+6; break;
+      case 100: metaData[md_index] =   2.1e+7; break;
+      case 200: metaData[md_index] =  1.68e+8; break;
+      }
+      break;
+    case 3: // LF model form
+      switch (N_x) {
+      case 5:  metaData[md_index] =      375.; break;
+      case 15: metaData[md_index] =    10125.; break;
+      case 30: metaData[md_index] =    81000.; break;
+      case 60: metaData[md_index] =   648000.; break;
+      }
+      break;
+    }
+  }
   return 0;
 }
 
