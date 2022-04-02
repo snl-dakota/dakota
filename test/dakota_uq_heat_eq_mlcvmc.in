@@ -85,3 +85,4 @@ responses,
 	response_functions = 1
 	no_gradients
 	no_hessians
+	metadata 'cost_model'
