@@ -68,15 +68,18 @@ class Parameters(object):
         descriptors: List of the variable descriptors (read-only)
         num_variables: Number of variables (read-only)
         num_an_comps: Number of analysis components (read-only)
+        metadata: Names of requested metadata fields
+        num_metadata: Number of requested metadata fields (read-only)
     """
 
     def __init__(self,aprepro_format=None, variables=None, an_comps=None, 
-            eval_id=None, infer_types=True, types=None):
+                 eval_id=None, metadata=None, infer_types=True, types=None):
         self.aprepro_format = aprepro_format
         self._variables = copy.deepcopy(variables)
         self.an_comps = list(an_comps)
         self.eval_id = str(eval_id)
         self.eval_num = int(eval_id.split(":")[-1])
+        self.metadata = list(metadata)
         if isinstance(types, list):
             self._set_types_from_list(types)
         elif isinstance(types, dict):
@@ -145,6 +148,10 @@ class Parameters(object):
     @property
     def num_an_comps(self):
         return len(self.an_comps)
+
+    @property
+    def num_metadata(self):
+        return len(self.metadata)
 
     def __iter__(self):
         for name in self._variables:
@@ -716,6 +723,22 @@ def _extract_block(stream, numRE, dataRE, handle):
         handle(tag,value)
 
 
+def _extract_optional_block(stream, numRE, dataRE, handle):
+    """Optionally extract a block of information from a Dakota parameters file.
+
+    Same API as _extract_block, except will not raise exception on
+    missing block. Will still raise on poorly formatted item within
+    the block."""
+
+    beginning_pos = stream.tell()
+    line = stream.readline()
+    m = numRE.match(line)
+    stream.seek(beginning_pos)
+    # block appears to exist, try to read in earnest
+    if m is not None:
+        _extract_block(stream, numRE, dataRE, handle)
+
+
 def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, infer_types=True, types=None):
     """Extract the parameters data from the stream."""
 
@@ -771,10 +794,9 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, inf
     metadata = []
     def store_metadata(t, v):
         metadata.append(v)
-    _extract_block(stream, useRE["num_metadata"], useRE["metadata"],
-                   store_metadata)
-    
-    return (Parameters(aprepro_format, variables, an_comps, eval_id, infer_types, types),
+    _extract_optional_block(stream, useRE["num_metadata"], useRE["metadata"],
+                            store_metadata)
+    return (Parameters(aprepro_format, variables, an_comps, eval_id, metadata, infer_types, types),
             Results(aprepro_format, responses, deriv_vars, eval_id, ignore_asv,
                 results_file))
 

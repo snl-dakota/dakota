@@ -14,7 +14,8 @@ except ImportError:
 import dakota.interfacing as di
 from dakota.interfacing import parallel
 
-apreproParams = """                    { DAKOTA_VARS     =                      3 }
+# 6.15 and older format
+apreproParamsNoMetadata = """                    { DAKOTA_VARS     =                      3 }
                     { x1              =  7.488318331306800e-01 }
                     { x2              =  2.188638686202466e-01 }
                     { dussv_1         =                      "foo bar" }
@@ -27,11 +28,15 @@ apreproParams = """                    { DAKOTA_VARS     =                      
                     { AC_1:first.sh   =                      "a b" }
                     { AC_2:first.sh   =                      "b" }
                     { DAKOTA_EVAL_ID  =                      1 }
-                    { DAKOTA_METADATA =                      1 }
+"""
+
+# 6.16 and newer format
+apreproParams = apreproParamsNoMetadata + """                    { DAKOTA_METADATA =                      1 }
                     { MD_1            =                      "seconds" }
 """
 
-dakotaParams = """                                          3 variables
+# 6.15 and older format
+dakotaParamsNoMetadata = """                                          3 variables
                       7.488318331306800e-01 x1
                       2.188638686202466e-01 x2
                                     foo bar dussv_1
@@ -44,7 +49,10 @@ dakotaParams = """                                          3 variables
                                         a b AC_1:first.sh
                                           b AC_2:first.sh
                                           1 eval_id
-                                          1 metadata
+"""
+
+# 6.16 and newer format
+dakotaParams = dakotaParamsNoMetadata + """                                          1 metadata
                                     seconds MD_1
 """
 
@@ -115,6 +123,8 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(p.an_comps[0], "a b")
         self.assertEqual(p.an_comps[1], "b")
         self.assertEqual(p.eval_id, "1")
+        self.assertEqual(p.num_metadata, 1)
+        self.assertEqual(p.metadata[0], "seconds")
         self.assertTrue(p.aprepro_format)
         
         self.assertEqual(r.num_responses, 1)
@@ -124,6 +134,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(r.deriv_vars, ["x1","x2"])
         self.assertTrue(r.aprepro_format)
         self.assertEqual(r.results_file, "results.out")
+
+    def test_metadataless_aprepro_format(self):
+        """Coarse test parsing legacy metadata-less aprepro format Parameters files."""
+        pio = StringIO.StringIO(apreproParamsNoMetadata % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
+        self.assertEqual(p.num_variables, 3)
+        self.assertEqual(p.num_metadata, 0)
+        self.assertTrue(p.aprepro_format)
 
     def test_dakota_format(self):
         """Confirm that Dakota format Parameters files are parsed correctly."""
@@ -138,6 +156,8 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(p.an_comps[0], "a b")
         self.assertEqual(p.an_comps[1], "b")
         self.assertEqual(p.eval_id, "1")
+        self.assertEqual(p.num_metadata, 1)
+        self.assertEqual(p.metadata[0], "seconds")
         self.assertFalse(p.aprepro_format)
         
         self.assertEqual(r.num_responses, 1)
@@ -148,6 +168,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(r.eval_id, "1")
         self.assertFalse(r.aprepro_format)
         self.assertEqual(r.results_file, "results.out")
+
+    def test_metadataless_dakota_format(self):
+        """Coarse test parsing legacy metadata-less dakota format Parameters files."""
+        pio = StringIO.StringIO(dakotaParamsNoMetadata % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
+        self.assertEqual(p.num_variables, 3)
+        self.assertEqual(p.num_metadata, 0)
+        self.assertFalse(p.aprepro_format)
 
     def test_asv(self):
         """Results behaves according to the ASV when response data is set."""
