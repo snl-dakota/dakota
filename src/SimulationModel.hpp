@@ -203,7 +203,7 @@ private:
   /// array) that controls the set/range of solution levels
   size_t solnCntlAVIndex;
   /// sorted array of relative costs associated with a set of solution levels
-  std::map<Real, size_t> solnCntlCostMap;
+  std::multimap<Real, size_t> solnCntlCostMap;
 
   /// index of metadata label used for online cost recovery
   size_t costMetadataIndex;
