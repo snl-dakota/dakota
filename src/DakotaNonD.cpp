@@ -489,8 +489,18 @@ query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 bool NonD::query_cost(unsigned short num_steps, Model& model, RealVector& cost)
 {
   cost = model.solution_level_costs(); // can be empty
-  if (cost.length() != num_steps)
+  if (cost.length() != num_steps || !test_cost_values(cost))
     { cost.sizeUninitialized(0); return false; }
+  return true;
+}
+
+
+bool NonD::test_cost_values(const RealVector& cost)
+{
+  size_t i, len = cost.length();
+  for (i=0; i<len; ++i)
+    if (cost[i] <= 0.)
+      return false;
   return true;
 }
 

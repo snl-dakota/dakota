@@ -342,15 +342,14 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
   RealVector hf_targets(num_hf_lev), agg_var_hf(num_hf_lev), hf_cost, lf_cost,
     hf_accum_cost, lf_accum_cost;
   SizetArray hf_num_cost, lf_num_cost;
-  bool online_hf_cost = !query_cost(num_hf_lev, true, hf_cost),
-       online_lf_cost = !query_cost(num_lf_lev, true, lf_cost);//ignore trailing
+  bool online_hf_cost = !query_cost(num_hf_lev, truth_model, hf_cost),
+       online_lf_cost = !query_cost(num_lf_lev,  surr_model, lf_cost);
   if (online_hf_cost)
     { hf_accum_cost.size(num_hf_lev); hf_num_cost.assign(num_hf_lev, 0); }
   if (online_lf_cost)
     { lf_accum_cost.size(num_cv_lev); lf_num_cost.assign(num_cv_lev, 0); }
   Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar_iter0 = 0., budget, r_lq,
-    lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
-  if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
+    lf_lev_cost, hf_lev_cost, hf_ref_cost;
   RealVectorArray eval_ratios(num_cv_lev);
 
   // CV requires cross-level covariance combinations in Qcorr approach
@@ -395,6 +394,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       if (numSamples) {
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(lev);
+	// accumulate online costs for HF model
 	if (online_hf_cost && mlmfIter == 0)
 	  accumulate_paired_online_cost(hf_accum_cost, hf_num_cost, lev);
 
@@ -415,6 +415,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 				sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
 				sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
 				sum_Hlm1_Hlm1, lev, N_lf[lev], N_hf[lev]);
+	  // accumulate online costs for LF model
 	  if (online_lf_cost && mlmfIter == 0)
 	    accumulate_paired_online_cost(lf_accum_cost, lf_num_cost, lev);
 	}
@@ -427,6 +428,10 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	average_online_cost(hf_accum_cost, hf_num_cost, hf_cost);
       if (online_lf_cost)
 	average_online_cost(lf_accum_cost, lf_num_cost, lf_cost);
+      hf_ref_cost = hf_cost[num_hf_lev-1];
+      if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "HF cost:\n" << hf_cost << "LF cost:\n" << lf_cost << std::endl;
     }
 
     // SECOND PASS: STATS
@@ -434,6 +439,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
     for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
       hf_lev_cost = level_cost(hf_cost, lev);
+      numSamples = delta_N_hf[lev];
 
       // aggregate variances across QoI for estimating N_hf (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
@@ -693,7 +699,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     num_lf_lev =  surr_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, num_lf_lev);
   bool online_hf_cost = !query_cost(num_hf_lev, truth_model, hf_cost),
-       online_lf_cost = !query_cost(num_lf_lev, surr_model,  lf_cost);
+       online_lf_cost = !query_cost(num_lf_lev,  surr_model, lf_cost);
   RealVector hf_accum_cost, lf_accum_cost; SizetArray hf_num_cost, lf_num_cost;
   if (online_hf_cost)
     { hf_accum_cost.size(num_hf_lev); hf_num_cost.assign(num_hf_lev, 0); }
@@ -708,9 +714,8 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 
   // retrieve cost estimates across solution levels for HF model
   Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar_iter0 = 0., budget, r_lq,
-    lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
+    lf_lev_cost, hf_lev_cost, hf_ref_cost;
   bool budget_constrained = (maxFunctionEvals != SZ_MAX);
-  if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
 
   RealMatrix sum_Ll(numFunctions, num_cv_lev),
     sum_Llm1(numFunctions, num_cv_lev),sum_Ll_refined(numFunctions, num_cv_lev),
@@ -745,7 +750,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     N_shared[lev].assign(numFunctions, 0);
 
     evaluate_ml_sample_increment(lev);
-    if (online_hf_cost)
+    if (online_hf_cost) // accumulate online costs for HF model
       accumulate_paired_online_cost(hf_accum_cost, hf_num_cost, lev);
 
     // control variate betwen LF and HF for this discretization level
@@ -762,7 +767,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 			    sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll,
 			    sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl,
 			    sum_Hl_Hlm1, sum_Hlm1_Hlm1,lev, N_shared[lev]);
-      if (online_lf_cost)
+      if (online_lf_cost) // accumulate online costs for LF model
 	accumulate_paired_online_cost(lf_accum_cost, lf_num_cost, lev);
     }
     else // no LF for this level; accumulate only multilevel discrepancies
@@ -770,6 +775,10 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
   }
   if (online_hf_cost) average_online_cost(hf_accum_cost, hf_num_cost, hf_cost);
   if (online_lf_cost) average_online_cost(lf_accum_cost, lf_num_cost, lf_cost);
+  hf_ref_cost = hf_cost[num_hf_lev-1];
+  if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
+  if (outputLevel == DEBUG_OUTPUT)
+    Cout << "HF cost:\n" << hf_cost << "LF cost:\n" << lf_cost << std::endl;
 
   // SECOND PASS: STATS
   sum_sqrt_var_cost = 0.;
@@ -777,6 +786,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 
     hf_lev_cost = level_cost(hf_cost, lev);
     Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
+    numSamples = delta_N_hf[lev];
 
     if (lev < num_cv_lev) {
       lf_lev_cost = level_cost(lf_cost, lev);
