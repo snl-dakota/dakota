@@ -39,13 +39,12 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db):
     problem_db.get_string("model.simulation.solution_level_control"),
     problem_db.get_rv("model.simulation.solution_level_cost"));
 
-  if (solnCntlCostMap.empty()) {
-    initialize_solution_recovery(
-      probDescDB.get_string("model.simulation.cost_recovery_metadata"));
-    // Error checks can be encompass a model ensemble at a higher level
-    //if (costMetadataIndex == _NPOS)
-    //  Cerr << "Error: insufficient cost data provided." << std::endl;
-  }
+  initialize_solution_recovery(
+    probDescDB.get_string("model.simulation.cost_recovery_metadata"));
+
+  // Error checks can encompass a model ensemble at a higher level
+  //if (solnCntlCostMap.empty() && costMetadataIndex == _NPOS)
+  //  Cerr << "Error: insufficient cost data provided." << std::endl;
 }
 
 
@@ -63,7 +62,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
 {
   solnCntlCostMap.clear();
 
-  size_t cost_len = cost.length();
+  size_t i, cost_len = cost.length(), num_lev;
   if (control.empty()) {
     // cost_len of 0: empty map for no solution control
     // cost_len of 1: nominal cost for model w/o any soln levels
@@ -134,7 +133,6 @@ initialize_solution_control(const String& control, const RealVector& cost)
   }
 
   // get size of corresponding set values
-  size_t i, num_lev;
   std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mvDist.multivar_dist_rep());
@@ -189,14 +187,28 @@ initialize_solution_control(const String& control, const RealVector& cost)
   //       solution_level_control = 'dssiv1'
   //       solution_level_cost = 10. # scalar multiplier
   // results in solnCntlCostMap = { {1., 0}, {10., 1}, {100., 2} }
-  if (cost.length() == num_lev)
+  if (cost_len == num_lev)
     for (i=0; i<num_lev; ++i)
       solnCntlCostMap.insert(std::pair<Real, size_t>(cost[i], i));
-  else if (cost.length() == 1) {
+  else if (cost_len == 1) {
     Real multiplier = cost[0], prod = 1.;
     for (i=0; i<num_lev; ++i) { // assume increasing cost
       solnCntlCostMap.insert(std::pair<Real, size_t>(prod, i));
       prod *= multiplier;
+    }
+  }
+  else if (cost_len == 0) {
+    Cerr << "Warning: solution level costs not provided for solution control.\n"
+	 << "         Relying on online metadata recovery where required."
+	 << std::endl;
+    // Define a solnCntlCostMap of the correct length with (unique) dummy costs
+    // *** TO DO: THIS MY NEED TO BE REPLACED DOWNSTREAM, BUT FOR NOW RETURNS
+    // *** THE CORRECT solution_levels().  WOULD PREFER TO USE A CONSISTENT
+    // *** DUMMY VALUE (e.g. 0) AND PROMOTE THIS TO A MULTI-MAP.
+    Real dummy_cost;
+    for (i=0; i<num_lev; ++i) {
+      dummy_cost = (Real)i;  dummy_cost -= (Real)num_lev;
+      solnCntlCostMap.insert(std::pair<Real, size_t>(dummy_cost, i));
     }
   }
   else {
