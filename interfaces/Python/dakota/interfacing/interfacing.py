@@ -305,6 +305,25 @@ class Response(object):
             self._hessian.append(row)
     
 
+class IndexableOrderedDict(collections.OrderedDict):
+    """Specialization of OrderedDict that allows access via key or index."""
+
+    def __getitem__(self, key):
+        if type(key) is int:
+            key_from_index = list(self.keys())[key]
+            return super(IndexableOrderedDict, self).__getitem__(key_from_index)
+        else:
+            return super(IndexableOrderedDict, self).__getitem__(key)
+
+    def __setitem__(self, key, value):
+        if type(key) is int:
+            # This will only work if the key already exists... raise KeyError?
+            key_from_index = list(self.keys())[key]
+            return super(IndexableOrderedDict, self).__setitem__(key_from_index, value)
+        else:
+            return super(IndexableOrderedDict, self).__setitem__(key, value)
+
+
 class Results(object):
     """Collect response data and write to results file.
 
@@ -318,7 +337,7 @@ class Results(object):
     Attributes:
         eval_id: Evaluation id (a string).
         eval_num: Evaluation number (final token in eval_id) (int).
-        metadata: OrderedDict with metadata field names as keys
+        metadata: Dictionary indexable by metadata field name or by index
         aprepro_format: Boolean indicating whether the parameters file was in
             aprepro (True) or Dakota (False) format.
         descriptors: List of the response descriptors (read-only)
@@ -340,7 +359,7 @@ class Results(object):
         for t, v in responses.items():
             self._responses[t] = Response(t, num_deriv_vars, ignore_asv, 
                     int(v)) 
-        self.metadata = collections.OrderedDict()
+        self.metadata = IndexableOrderedDict()
         for m in metadata:
             self.metadata[m] = None
         self.results_file = results_file
@@ -369,6 +388,8 @@ class Results(object):
             num_deriv_vars = len(self._deriv_vars)        
             self._responses.clear()
             self._responses = copy.deepcopy(other._responses)
+            self.metadata.clear()
+            self.metadata = copy.deepcopy(other.metadata)
             self.results_file = other.results_file
             self.eval_id = other.eval_id
             self.eval_num = other.eval_num
@@ -394,6 +415,8 @@ class Results(object):
                 raise ResultsUpdateError("Mismatch between expected responses")           
             self._responses.clear()
             self._responses = copy.deepcopy(other._responses)
+            self.metadata.clear()
+            self.metadata = copy.deepcopy(other.metadata)
             if self.results_file != other.results_file:
                 raise ResultsUpdateError("Mismatch between results file name")
             if self.eval_id != other.eval_id:

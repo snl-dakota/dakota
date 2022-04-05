@@ -196,7 +196,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertRaises(di.interfacing.ResponseError, set_function, r)
         set_gradient(r)
         self.assertRaises(di.interfacing.ResponseError, set_hessian, r)
-        set_metadata(r, "seconds", 42.0)
+        set_metadata(r, 0, 42.0)
         r.write(StringIO.StringIO())
         # Hessian only
         pio = StringIO.StringIO(dakotaParams % 4)
@@ -216,7 +216,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
             set_function(r) 
             set_gradient(r) 
             set_hessian(r)
-            set_metadata(r, "seconds", 42.0)
+            set_metadata(r, 0, 42.0)
             r.write(StringIO.StringIO())
         # Test write-time ignoring
         sio = StringIO.StringIO(dakotaParams % 3)
@@ -289,7 +289,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         r[0][0].function = 1.0
         set_metadata(r[0], "seconds", 42.0)
         r[1][0].function = 2.0
-        set_metadata(r[1], "seconds", 43.0)
+        set_metadata(r[1], 0, 43.0)
         results_file = StringIO.StringIO()
         r.write(results_file)
         results_strings = results_file.getvalue().split("\n")
@@ -361,6 +361,19 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertIsInstance(p["x1"], str)
         self.assertIsInstance(p["x2"], str)
         self.assertIsInstance(p["dussv_1"], str)
+
+    def test_results_metadata(self):
+        """Verify metadata by index vs. label"""
+        sio = StringIO.StringIO(dakotaParams % 3)
+        p, r = di.interfacing._read_parameters_stream(stream=sio)
+        set_function(r)
+        set_gradient(r)
+        # set via label, retrieve via index
+        set_metadata(r, "seconds", 1.2)
+        self.assertAlmostEqual(r.metadata[0], 1.2)
+        # set via index, retrieve via label
+        set_metadata(r, 0, 3.4)
+        self.assertAlmostEqual(r.metadata["seconds"], 3.4)
 
     def test_dprepro(self):
         """Verify that templates are substituted correctly"""
