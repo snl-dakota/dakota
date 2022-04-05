@@ -107,6 +107,9 @@ def set_gradient(r):
 def set_hessian(r):
     r["response_fn_1"].hessian = [[1.0, 2.0],[2.0,3.0]]
 
+def set_metadata(r, key, value):
+    r.metadata[key] = value
+
 
 class dakotaInterfacingTestCase(unittest.TestCase):
 
@@ -185,6 +188,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         set_function(r)
         self.assertRaises(di.interfacing.ResponseError, set_gradient, r)
         self.assertRaises(di.interfacing.ResponseError, set_hessian, r)
+        set_metadata(r, "seconds", 42.0)
         r.write(StringIO.StringIO())
         # Gradient only
         pio = StringIO.StringIO(dakotaParams % 2)
@@ -192,6 +196,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertRaises(di.interfacing.ResponseError, set_function, r)
         set_gradient(r)
         self.assertRaises(di.interfacing.ResponseError, set_hessian, r)
+        set_metadata(r, "seconds", 42.0)
         r.write(StringIO.StringIO())
         # Hessian only
         pio = StringIO.StringIO(dakotaParams % 4)
@@ -199,6 +204,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertRaises(di.interfacing.ResponseError, set_function, r)
         self.assertRaises(di.interfacing.ResponseError, set_gradient, r)
         set_hessian(r)
+        set_metadata(r, "seconds", 42.0)
         r.write(StringIO.StringIO())
        
     def test_ignore_asv(self):
@@ -210,14 +216,19 @@ class dakotaInterfacingTestCase(unittest.TestCase):
             set_function(r) 
             set_gradient(r) 
             set_hessian(r)
+            set_metadata(r, "seconds", 42.0)
             r.write(StringIO.StringIO())
         # Test write-time ignoring
         sio = StringIO.StringIO(dakotaParams % 3)
         p, r = di.interfacing._read_parameters_stream(stream=sio,ignore_asv=False)
         set_function(r)
+        set_metadata(r, "seconds", 42.0)
         rio = StringIO.StringIO()
         r.write(stream=rio,ignore_asv=True)
-        self.assertEqual(rio.getvalue(), "  5.0000000000000000E+00 response_fn_1\n")
+        expected = """  5.0000000000000000E+00 response_fn_1
+  4.2000000000000000E+01 seconds
+"""
+        self.assertEqual(rio.getvalue(), expected)
     
     def test_results_write(self):
         """Verify Written test results"""
@@ -226,12 +237,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         set_function(r) 
         set_gradient(r) 
         set_hessian(r)
+        set_metadata(r, "seconds", 42.0)
         rio = StringIO.StringIO()
         r.write(stream=rio)
         expected = """  5.0000000000000000E+00 response_fn_1
 [   1.0189673084127668E-266 -6.3508646783183408E-264 ]
 [[   1.0000000000000000E+00   2.0000000000000000E+00
      2.0000000000000000E+00   3.0000000000000000E+00 ]]
+  4.2000000000000000E+01 seconds
 """
         self.assertEqual(rio.getvalue(), expected)
         # Test simulation failure flag
@@ -274,16 +287,24 @@ class dakotaInterfacingTestCase(unittest.TestCase):
             r[0].write("foo")
         # Verify writes
         r[0][0].function = 1.0
+        set_metadata(r[0], "seconds", 42.0)
         r[1][0].function = 2.0
+        set_metadata(r[1], "seconds", 43.0)
         results_file = StringIO.StringIO()
         r.write(results_file)
         results_strings = results_file.getvalue().split("\n")
+        # Eval 1
         self.assertEqual(results_strings[0], "#")
         val, label = results_strings[1].split()
         self.assertAlmostEqual(float(val),1.0)
-        self.assertEqual(results_strings[2], "#")
-        val, label = results_strings[3].split()
+        val, label = results_strings[2].split()
+        self.assertAlmostEqual(float(val),42.0)
+        # Eval 2
+        self.assertEqual(results_strings[3], "#")
+        val, label = results_strings[4].split()
         self.assertAlmostEqual(float(val),2.0)
+        val, label = results_strings[5].split()
+        self.assertAlmostEqual(float(val),43.0)
     
     def test_single_eval_batch(self):
         """Verify that batch objects are returned for batch = True"""

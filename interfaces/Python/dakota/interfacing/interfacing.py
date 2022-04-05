@@ -25,6 +25,9 @@ else:
 class ResponseError(Exception):
     pass
 
+class ResultsError(Exception):
+    pass
+
 class MissingSourceError(Exception):
     pass
 
@@ -315,6 +318,7 @@ class Results(object):
     Attributes:
         eval_id: Evaluation id (a string).
         eval_num: Evaluation number (final token in eval_id) (int).
+        metadata: OrderedDict with metadata field names as keys
         aprepro_format: Boolean indicating whether the parameters file was in
             aprepro (True) or Dakota (False) format.
         descriptors: List of the response descriptors (read-only)
@@ -326,8 +330,8 @@ class Results(object):
     """
 
     def __init__(self, aprepro_format=None, responses=None, 
-            deriv_vars=None, eval_id=None, ignore_asv=False, 
-            results_file=None):
+            deriv_vars=None, eval_id=None, metadata=None,
+            ignore_asv=False, results_file=None):
         self.aprepro_format = aprepro_format
         self.ignore_asv = ignore_asv
         self._deriv_vars = deriv_vars[:]
@@ -336,6 +340,9 @@ class Results(object):
         for t, v in responses.items():
             self._responses[t] = Response(t, num_deriv_vars, ignore_asv, 
                     int(v)) 
+        self.metadata = collections.OrderedDict()
+        for m in metadata:
+            self.metadata[m] = None
         self.results_file = results_file
         self.eval_id = eval_id
         self.eval_num = int(eval_id.split(":")[-1])
@@ -433,6 +440,10 @@ class Results(object):
                     for c in r:
                         print(" %24.16E" % c,file=stream, end="")
                 print(" ]]",file=stream)
+        # Write metadata
+        for k, v in self.metadata.items():
+            print("%24.16E %s" %(v, k), file=stream)
+
 
     def write(self, stream=None, ignore_asv=None):
         """Write the results to the Dakota results file.
@@ -450,6 +461,8 @@ class Results(object):
                 call.
             dakota.interfacing.ResponseError: A result requested by Dakota is 
                 missing (and ignore_asv is False).
+            dakota.interfacing.ResultsError: A metadata result requested by
+                Dakota is missing.
         """
         if self._batch:
             raise BatchWriteError("write() called on Results object in " + \
@@ -470,6 +483,12 @@ class Results(object):
                 if v.asv.hessian and v.hessian is None:
                     raise ResponseError("Response '" +t + "' is missing "
                             "requested Hessian result.")
+
+        if not self._failed:
+            for k, v in self.metadata.items():
+                if v is None:
+                    raise ResultsError("Results object is missing requested "
+                            "metadata field '" + k + "'")
 
         if stream is None:
             if self.results_file is None:
@@ -797,8 +816,7 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, inf
     _extract_optional_block(stream, useRE["num_metadata"], useRE["metadata"],
                             store_metadata)
     return (Parameters(aprepro_format, variables, an_comps, eval_id, metadata, infer_types, types),
-            Results(aprepro_format, responses, deriv_vars, eval_id, ignore_asv,
-                results_file))
+            Results(aprepro_format, responses, deriv_vars, eval_id, metadata, ignore_asv, results_file))
 
 def _read_parameters_stream(stream=None, ignore_asv=False, batch=False, 
     results_file=None, infer_types=True, types=None):
