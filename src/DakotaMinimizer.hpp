@@ -196,6 +196,13 @@ protected:
 			 const RealVector& primary_wts,
 			 RealSymMatrix& obj_hess) const;
 
+  /// print best evaluation matching vars and set, or partial matches
+  /// with matching variables only.
+  void print_best_eval_ids(const String& interface_id,
+			   const Variables& best_vars,
+			   const ActiveSet& active_set,
+			   std::ostream& s) const;
+
   /// top-level archival method
   virtual void archive_best_results();
 

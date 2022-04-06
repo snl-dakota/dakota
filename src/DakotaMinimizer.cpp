@@ -689,6 +689,34 @@ objective_hessian(const RealVector& fn_vals, size_t num_fns,
 }
 
 
+/** Lookup evaluation id where best occurred.  This cannot be
+    catalogued directly because the optimizers track the best iterate
+    internally and return the best results after iteration completion.
+    Therfore, perform a search in data_pairs to extract the evalId for
+    the best fn eval. */
+void Minimizer::print_best_eval_ids(const String& interface_id,
+				    const Variables& best_vars,
+				    const ActiveSet& active_set,
+				    std::ostream& s) const
+{
+  PRPCacheHIter cache_it =
+    lookup_by_val(data_pairs, interface_id, best_vars, active_set);
+  if (cache_it == data_pairs.get<hashed>().end()) {
+    s << "<<<<< Best data not found in evaluation cache\n\n";
+  }
+  else {
+    int eval_id = cache_it->eval_id();
+    if (eval_id > 0)
+      s << "<<<<< Best data captured at function evaluation " << eval_id
+	<< "\n\n";
+    else // should not occur
+      s << "<<<<< Best data not found in evaluations from current execution,"
+	<< "\n      but retrieved from restart archive with evaluation id "
+	<< -eval_id << "\n\n";
+  }
+}
+
+
 void Minimizer::archive_best_variables(const bool active_only) const {
   if(!resultsDB.active()) return;
   // archive the best point in the iterator database
