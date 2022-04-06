@@ -811,6 +811,14 @@ def read_params_from_dict(parameters=None, results_file=None,
     Raises:
     """
 
+    vars_to_type = {
+                     "cv"  : float,
+                     "div" : int,
+                     "dsv" : str,
+                     "drv" : float
+                   }
+
+    assigned_types = {}
     dakota_input = []
     key = "variables"
     dakota_input.append(str(parameters[key])+" "+key+"\n")
@@ -819,6 +827,7 @@ def read_params_from_dict(parameters=None, results_file=None,
         if klabel in parameters.keys():
             for i, label in enumerate(parameters[klabel]):
                 dakota_input.append(str(parameters[k][i])+" "+label+"\n")
+                assigned_types[label] = vars_to_type[k]
 
     key = "functions"
     dakota_input.append(str(parameters[key])+" "+key+"\n")
@@ -845,7 +854,7 @@ def read_params_from_dict(parameters=None, results_file=None,
 
     #print("".join(dakota_input))
     io_stream = io.StringIO("".join(dakota_input))
-    return _read_parameters_stream(io_stream, ignore_asv, batch, results_file, infer_types, types)
+    return _read_parameters_stream(io_stream, ignore_asv, batch, results_file, infer_types=False, types=assigned_types)
 
 
 def read_parameters_file(parameters_file=None, results_file=None, 
