@@ -201,15 +201,9 @@ initialize_solution_control(const String& control, const RealVector& cost)
     Cerr << "Warning: solution level costs not provided for solution control.\n"
 	 << "         Relying on online metadata recovery where required."
 	 << std::endl;
-    // Define a solnCntlCostMap of the correct length with (unique) dummy costs
-    // *** TO DO: THIS MY NEED TO BE REPLACED DOWNSTREAM, BUT FOR NOW RETURNS
-    // *** THE CORRECT solution_levels().  WOULD PREFER TO USE A CONSISTENT
-    // *** DUMMY VALUE (e.g. 0) AND PROMOTE THIS TO A MULTI-MAP.
-    Real dummy_cost;
-    for (i=0; i<num_lev; ++i) {
-      dummy_cost = (Real)i;  dummy_cost -= (Real)num_lev;
-      solnCntlCostMap.insert(std::pair<Real, size_t>(dummy_cost, i));
-    }
+    // populate solnCntlCostMap with the correct length but with dummy costs
+    for (i=0; i<num_lev; ++i)
+      solnCntlCostMap.insert(std::pair<Real, size_t>(0., i));
   }
   else {
     Cerr << "Error: solution_level_cost specification of length "
@@ -367,6 +361,8 @@ size_t SimulationModel::solution_level_cost_index() const
   }
 
   // convert val_index to cost_index and return
+  // Note: while the keys (costs) could be non-unique within solnCntlCostMap,
+  // the values within solnCntlCostMap correspond to unique cost indices.
   return map_value_to_index(val_index, solnCntlCostMap);
 }
 

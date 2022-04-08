@@ -432,6 +432,9 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
       if (outputLevel == DEBUG_OUTPUT)
 	Cout << "HF cost:\n" << hf_cost << "LF cost:\n" << lf_cost << std::endl;
+      // Note: could assign these back if needed elsewhere:
+      //if (online_hf_cost) truth_model.solution_level_costs(hf_cost);
+      //if (online_lf_cost)  surr_model.solution_level_costs(lf_cost);
     }
 
     // SECOND PASS: STATS
@@ -779,6 +782,9 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
   if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
   if (outputLevel == DEBUG_OUTPUT)
     Cout << "HF cost:\n" << hf_cost << "LF cost:\n" << lf_cost << std::endl;
+  // Note: could assign these back if needed elsewhere:
+  //if (online_hf_cost) truth_model.solution_level_costs(hf_cost);
+  //if (online_lf_cost)  surr_model.solution_level_costs(lf_cost);
 
   // SECOND PASS: STATS
   sum_sqrt_var_cost = 0.;
