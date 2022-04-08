@@ -801,7 +801,7 @@ initialize_sample_driver(bool write_message, size_t num_samples)
   ++numLHSRuns;
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Initialize: numLHSRuns = " << numLHSRuns << " seedSpec = "
+    Cout <<  "Initialize: numLHSRuns = " << numLHSRuns << " seedSpec = "
 	 << seedSpec << " randomSeed = " << randomSeed << " varyPattern = "
 	 << varyPattern << std::endl;
 
