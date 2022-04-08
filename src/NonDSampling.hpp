@@ -257,11 +257,19 @@ protected:
   const RealVector& response_error_estimates() const;
 
   //
+  //- Heading: New virtual functions
+  //
+
+  /// detect whether the seed has been updated since the most recent
+  /// sample set generation
+  virtual bool seed_updated();
+
+  //
   //- Heading: Convenience member functions for derived classes
   //
 
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
-  void initialize_lhs(bool write_message, size_t num_samples);
+  void initialize_sample_driver(bool write_message, size_t num_samples);
 
   /// in the case of sub-iteration, map from finalStatistics.active_set()
   /// requests to activeSet used in evaluate_parameter_sets()
@@ -484,7 +492,16 @@ sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 
 
 inline void NonDSampling::random_seed(int seed)
-{ /*seedSpec = */randomSeed = seed; } // lhsDriver assigned in initialize_lhs()
+{ /*seedSpec = */randomSeed = seed; }
+// lhsDriver initialized in initialize_sample_driver()
+
+
+inline bool NonDSampling::seed_updated()
+{
+  // default / base implementation does not involve seed sequencing
+  // > min change from above (more logic could be specialized/isolated)
+  return (seedSpec && seedSpec != randomSeed);
+}
 
 
 inline unsigned short NonDSampling::sampling_scheme() const

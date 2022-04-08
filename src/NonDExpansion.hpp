@@ -275,7 +275,7 @@ protected:
   /// return number of collocation points for index within model sequence
   size_t collocation_points(size_t index) const;
   /// return random seed for index within model sequence
-  int random_seed(size_t index) const;
+  int seed_sequence(size_t index) const;
 
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
@@ -670,7 +670,7 @@ inline int NonDExpansion::first_seed() const
 
 
 /** extract an active seed from a seed sequence */
-inline int NonDExpansion::random_seed(size_t index) const
+inline int NonDExpansion::seed_sequence(size_t index) const
 {
   // return 0 for cases where seed is undefined or will not be updated
 

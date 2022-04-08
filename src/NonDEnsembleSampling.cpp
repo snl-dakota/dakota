@@ -44,10 +44,11 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   finalStatsType(problem_db.get_short("method.nond.final_statistics")),
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
-    problem_db.get_ushort("method.nond.export_samples_format"))
+    problem_db.get_ushort("method.nond.export_samples_format")),
+  seedIndex(SZ_MAX)
 {
   // initialize scalars from sequence
-  seedSpec = randomSeed = random_seed(0);
+  seedSpec = randomSeed = seed_sequence(0);
 
   // Support multilevel LHS as a specification override.  The estimator variance
   // is known/correct for MC and an assumption/approximation for LHS.  To get an
@@ -106,10 +107,11 @@ void NonDEnsembleSampling::assign_specification_sequence(size_t index)
 {
   // Note: seedSpec/randomSeed initialized from randomSeedSeqSpec in ctor
 
-  // advance any sequence specifications, as admissible
+  // Advance any sequence specifications, as admissible.  Refer to
+  // NonDSampling::initialize_sample_driver() for logic.
   // Note: no colloc pts sequence as load_pilot_sample() handles this separately
-  int seed_i = random_seed(index);
-  if (seed_i) randomSeed = seed_i;// propagate to NonDSampling::initialize_lhs()
+  int seed_i = seed_sequence(index);
+  if (seed_i) randomSeed = seed_i;
   // else previous value will allow existing RNG to continue for varyPattern
 }
 
