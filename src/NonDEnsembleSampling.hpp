@@ -279,6 +279,8 @@ inline int NonDEnsembleSampling::seed_sequence(size_t index)
     seedIndex = std::min(index, seq_len-1); // use end if sequence exhausted
   else if (mlmfIter == 0) // pilot sample: only advance until sequence exhausted
     seedIndex = (index < seq_len) ? index : SZ_MAX;
+  else
+    seedIndex = SZ_MAX;
 
   return (seedIndex == SZ_MAX) ? 0 : randomSeedSeqSpec[seedIndex];
 }
@@ -287,7 +289,7 @@ inline int NonDEnsembleSampling::seed_sequence(size_t index)
 /** extract an active seed from a seed sequence */
 inline bool NonDEnsembleSampling::seed_updated()
 {
-  if   ( seedIndex == SZ_MAX) return false;
+  if   ( seedIndex == SZ_MAX) return false;  // no update
   else { seedIndex =  SZ_MAX; return true; } // consume most recent update
 
   /*
