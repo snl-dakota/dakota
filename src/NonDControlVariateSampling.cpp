@@ -631,13 +631,12 @@ bool NonDControlVariateSampling::lf_increment(size_t iter, size_t lev)
   // can be hardwired to false (not currently part of input spec).
   // Note: termination based on delta_N_hf=0 has final ML and CV increments
   //       of zero, which is consistent with finalCVRefinement=true.
-  if (iter < maxIterations) { //|| finalCVRefinement) {
+  //if (iter < maxIterations || finalCVRefinement) {
     // compute allResponses from allVariables using hierarchical model
     evaluate_parameter_sets(iteratedModel, true, false);
     return true;
-  }
-  else
-    return false;
+  //}
+  //else return false;
 }
 
 

@@ -66,8 +66,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     maxIterations = 0; //finalCVRefinement = false;
     break;
   case OFFLINE_PILOT:
-    maxIterations = 1; // allows for LF increments in *_offline_pilot()
-    //finalCVRefinement = true;
+    maxIterations = 1; //finalCVRefinement = true;
     // convergenceTol option is problematic since the reference EstVar
     // comes from offline eval with Oracle/overkill N
     if (maxFunctionEvals == SZ_MAX) {
