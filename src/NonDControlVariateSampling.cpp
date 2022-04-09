@@ -326,6 +326,7 @@ evaluate_pilot(const Pecos::ActiveKey& active_key, Real& cost_ratio,
   // computed relative to hf_targets (independent of sunk cost for pilot)
   Cout << ": average HF target = " << average(hf_targets) << std::endl;
   //numSamples = one_sided_delta(N_hf, hf_targets, 1); // average
+  ++mlmfIter;
 }
 
 

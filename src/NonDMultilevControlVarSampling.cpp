@@ -865,6 +865,8 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
       fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
     //delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), hf_targets[lev]);
   }
+
+  ++mlmfIter;
 }
 
 

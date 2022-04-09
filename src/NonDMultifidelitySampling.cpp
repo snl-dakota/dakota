@@ -162,6 +162,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // compute r* from rho2 and cost and update the HF targets
   mfmc_eval_ratios(var_L, rho2LH, sequenceCost, approxSequence, eval_ratios,
 		   hf_targets);
+  ++mlmfIter;
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -174,7 +175,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   numSamples = std::max(one_sided_delta(numH, hf_targets, 1),(size_t)2);//numH=0
 
   // As a first cut, don't reuse any of offline pilot for numH
-  shared_increment(++mlmfIter); // spans ALL models, blocking
+  shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, numH);
   increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1);
 
@@ -228,6 +229,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // compute r* from rho2 and cost
   mfmc_eval_ratios(var_L, rho2LH, sequenceCost, approxSequence, eval_ratios,
 		   hf_targets);
+  ++mlmfIter;
 
   // ----------------------
   // Compute EstVar ratios:
