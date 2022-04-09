@@ -47,9 +47,6 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     problem_db.get_ushort("method.nond.export_samples_format")),
   seedIndex(SZ_MAX)
 {
-  // initialize scalars from sequence
-  seedSpec = randomSeed = seed_sequence(0);
-
   // Support multilevel LHS as a specification override.  The estimator variance
   // is known/correct for MC and an assumption/approximation for LHS.  To get an
   // accurate LHS estimator variance, one would need:
@@ -115,81 +112,6 @@ void NonDEnsembleSampling::assign_specification_sequence(size_t index)
 }
 
 
-void NonDEnsembleSampling::
-convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom)
-{
-  // Note: raw_mom is numFunctions x 4 and final_mom is the transpose
-  if (final_mom.empty())
-    final_mom.shapeUninitialized(4, numFunctions);
-
-  // Convert uncentered raw moment estimates to central moments
-  if (finalMomentsType == Pecos::CENTRAL_MOMENTS) {
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
-			     raw_mom(qoi,3), final_mom(0,qoi), final_mom(1,qoi),
-			     final_mom(2,qoi), final_mom(3,qoi));
-  }
-  // Convert uncentered raw moment estimates to standardized moments
-  else { //if (finalMomentsType == Pecos::STANDARD_MOMENTS) {
-    Real cm1, cm2, cm3, cm4;
-    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
-			     raw_mom(qoi,3), cm1, cm2, cm3, cm4);
-      centered_to_standard(cm1, cm2, cm3, cm4, final_mom(0,qoi),
-			   final_mom(1,qoi), final_mom(2,qoi),
-			   final_mom(3,qoi));
-    }
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      Cout <<  "raw mom 1 = "   << raw_mom(qoi,0)
-	   << " final mom 1 = " << final_mom(0,qoi) << '\n'
-	   <<  "raw mom 2 = "   << raw_mom(qoi,1)
-	   << " final mom 2 = " << final_mom(1,qoi) << '\n'
-	   <<  "raw mom 3 = "   << raw_mom(qoi,2)
-	   << " final mom 3 = " << final_mom(2,qoi) << '\n'
-	   <<  "raw mom 4 = "   << raw_mom(qoi,3)
-	   << " final mom 4 = " << final_mom(3,qoi) << "\n\n";
-}
-
-
-void NonDEnsembleSampling::
-export_all_samples(String root_prepend, const Model& model, size_t iter,
-		   size_t step)
-{
-  String tabular_filename(root_prepend);
-  const String& iface_id = model.interface_id();
-  size_t i, num_samp = allSamples.numCols();
-  if (iface_id.empty()) tabular_filename += "NO_ID_i";
-  else                  tabular_filename += iface_id + "_i";
-  tabular_filename += std::to_string(iter)     +  "_l"
-                   +  std::to_string(step)     +  '_'
-                   +  std::to_string(num_samp) + ".dat";
-  Variables vars(model.current_variables().copy());
-
-  String context_message("NonDEnsembleSampling::export_all_samples");
-  StringArray no_resp_labels;
-  String cntr_label("sample_id"), interf_label("interface");
-
-  // Rather than hard override, rely on output_precision user spec
-  //int save_wp = write_precision;
-  //write_precision = 16; // override
-  std::ofstream tabular_stream;
-  TabularIO::open_file(tabular_stream, tabular_filename, context_message);
-  TabularIO::write_header_tabular(tabular_stream, vars, no_resp_labels,
-				  cntr_label, interf_label,exportSamplesFormat);
-  for (i=0; i<num_samp; ++i) {
-    sample_to_variables(allSamples[i], vars); // NonDSampling version
-    TabularIO::write_data_tabular(tabular_stream, vars, iface_id, i+1,
-				  exportSamplesFormat);
-  }
-
-  TabularIO::close_file(tabular_stream, tabular_filename, context_message);
-  //write_precision = save_wp; // restore
-}
-
-
 void NonDEnsembleSampling::pre_run()
 {
   NonDSampling::pre_run();
@@ -199,7 +121,11 @@ void NonDEnsembleSampling::pre_run()
   iteratedModel.clear_model_keys();
 
   // reset shared accumulators
-  mlmfIter = 0;  equivHFEvals = 0.;
+  // Note: numLHSRuns is interpreted differently here (accumulation of LHS runs
+  //       for each execution of ensemble sampler) than for base NonDSampling
+  //       (total accumulation of LHS runs)
+  mlmfIter = numLHSRuns = 0;  equivHFEvals = 0.;
+  seedSpec = randomSeed = seed_sequence(0); // (re)set seeds to sequence
 }
 
 
@@ -295,6 +221,81 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
       archive_equiv_hf_evals(equivHFEvals);
       break;
     }
+}
+
+
+void NonDEnsembleSampling::
+export_all_samples(String root_prepend, const Model& model, size_t iter,
+		   size_t step)
+{
+  String tabular_filename(root_prepend);
+  const String& iface_id = model.interface_id();
+  size_t i, num_samp = allSamples.numCols();
+  if (iface_id.empty()) tabular_filename += "NO_ID_i";
+  else                  tabular_filename += iface_id + "_i";
+  tabular_filename += std::to_string(iter)     +  "_l"
+                   +  std::to_string(step)     +  '_'
+                   +  std::to_string(num_samp) + ".dat";
+  Variables vars(model.current_variables().copy());
+
+  String context_message("NonDEnsembleSampling::export_all_samples");
+  StringArray no_resp_labels;
+  String cntr_label("sample_id"), interf_label("interface");
+
+  // Rather than hard override, rely on output_precision user spec
+  //int save_wp = write_precision;
+  //write_precision = 16; // override
+  std::ofstream tabular_stream;
+  TabularIO::open_file(tabular_stream, tabular_filename, context_message);
+  TabularIO::write_header_tabular(tabular_stream, vars, no_resp_labels,
+				  cntr_label, interf_label,exportSamplesFormat);
+  for (i=0; i<num_samp; ++i) {
+    sample_to_variables(allSamples[i], vars); // NonDSampling version
+    TabularIO::write_data_tabular(tabular_stream, vars, iface_id, i+1,
+				  exportSamplesFormat);
+  }
+
+  TabularIO::close_file(tabular_stream, tabular_filename, context_message);
+  //write_precision = save_wp; // restore
+}
+
+
+void NonDEnsembleSampling::
+convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom)
+{
+  // Note: raw_mom is numFunctions x 4 and final_mom is the transpose
+  if (final_mom.empty())
+    final_mom.shapeUninitialized(4, numFunctions);
+
+  // Convert uncentered raw moment estimates to central moments
+  if (finalMomentsType == Pecos::CENTRAL_MOMENTS) {
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
+			     raw_mom(qoi,3), final_mom(0,qoi), final_mom(1,qoi),
+			     final_mom(2,qoi), final_mom(3,qoi));
+  }
+  // Convert uncentered raw moment estimates to standardized moments
+  else { //if (finalMomentsType == Pecos::STANDARD_MOMENTS) {
+    Real cm1, cm2, cm3, cm4;
+    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
+			     raw_mom(qoi,3), cm1, cm2, cm3, cm4);
+      centered_to_standard(cm1, cm2, cm3, cm4, final_mom(0,qoi),
+			   final_mom(1,qoi), final_mom(2,qoi),
+			   final_mom(3,qoi));
+    }
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      Cout <<  "raw mom 1 = "   << raw_mom(qoi,0)
+	   << " final mom 1 = " << final_mom(0,qoi) << '\n'
+	   <<  "raw mom 2 = "   << raw_mom(qoi,1)
+	   << " final mom 2 = " << final_mom(1,qoi) << '\n'
+	   <<  "raw mom 3 = "   << raw_mom(qoi,2)
+	   << " final mom 3 = " << final_mom(2,qoi) << '\n'
+	   <<  "raw mom 4 = "   << raw_mom(qoi,3)
+	   << " final mom 4 = " << final_mom(3,qoi) << "\n\n";
 }
 
 } // namespace Dakota
