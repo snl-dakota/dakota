@@ -797,9 +797,6 @@ mode_bits(const Variables& vars, BitArray& active_vars,
 void NonDSampling::
 initialize_sample_driver(bool write_message, size_t num_samples)
 {
-  // keep track of number of LHS executions for this object
-  ++numLHSRuns;
-
   if (outputLevel >= DEBUG_OUTPUT)
     Cout <<  "Initialize: numLHSRuns = " << numLHSRuns << " seedSpec = "
 	 << seedSpec << " randomSeed = " << randomSeed << " varyPattern = "
@@ -813,7 +810,7 @@ initialize_sample_driver(bool write_message, size_t num_samples)
   // vary from one run to the next in a repeatable manner (required for RNG
   // without a persistent state, such as rnum2).
   bool seed_assigned = false, seed_advanced = false;
-  if (numLHSRuns == 1) { // set initial seed
+  if (numLHSRuns == 0) { // set initial seed
     lhsDriver.rng(rngName);
     if (!seedSpec) { // no user specification --> nonrepeatable behavior
       // Generate initial seed from a system clock.  NOTE: the system clock
@@ -827,7 +824,7 @@ initialize_sample_driver(bool write_message, size_t num_samples)
       randomSeed = generate_system_seed();
     }
     lhsDriver.seed(randomSeed);  seed_assigned = true;
-    seed_advanced = seed_updated(); // update seedIndex for ensemble samplers
+    seed_advanced = seed_updated(); // track seedIndex for ensemble samplers
   }
   // We must distinguish two advancement use cases and allow them to co-exist:
   // > an update to NonDSampling::randomSeed due to random_seed_sequence spec
@@ -860,6 +857,7 @@ initialize_sample_driver(bool write_message, size_t num_samples)
   }
 
   lhsDriver.initialize(sample_string, sampleRanksMode, !subIteratorFlag);
+  ++numLHSRuns;
 }
 
 

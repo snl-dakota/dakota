@@ -314,6 +314,7 @@ protected:
   int samplesIncrement;
 
   Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
+  size_t numLHSRuns; ///< counter for number of sample set generations
 
   bool statsFlag;   ///< flags computation/output of statistics
   bool allDataFlag; ///< flags update of allResponses
@@ -390,9 +391,6 @@ private:
   //- Heading: Data
   //
   
-  /// counter for number of executions of get_parameter_sets() for this object
-  size_t numLHSRuns;
-
   /// Matrix of confidence internals on moments, with rows for mean_lower,
   /// mean_upper, sd_lower, sd_upper (calculated in compute_moments())
   RealMatrix momentCIs;
