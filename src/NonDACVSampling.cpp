@@ -136,7 +136,7 @@ void NonDACVSampling::approximate_control_variate()
     const RealVector&         sum_H_1  = sum_H[1];
     const RealSymMatrixArray& sum_LL_1 = sum_LL[1];
     compute_variance(sum_H_1, sum_HH, numH, varH);
-    if (mlmfIter==0) compute_L_variance(sum_L_1, sum_LL_1,      numH, var_L);
+    if (mlmfIter == 0)   compute_L_variance(sum_L_1, sum_LL_1,  numH, var_L);
     compute_LH_covariance(sum_L_1/*baseH*/, sum_H_1, sum_LH[1], numH, covLH);
     compute_LL_covariance(sum_L_1/*baseL*/, sum_LL_1,   /*N_LL*/numH, covLL);
     //Cout << "var_H:\n"<< var_H << "cov_LH:\n"<< cov_LH << "cov_LL:\n"<<cov_LL;
@@ -146,7 +146,6 @@ void NonDACVSampling::approximate_control_variate()
     // variance reduction from application of avg_eval_ratios).
     compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
 		   avgEstVar, avgEstVarRatio);
-
     ++mlmfIter;
   }
 
@@ -203,7 +202,11 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   // variance reduction from application of avg_eval_ratios).
   compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
 		 avgEstVar, avgEstVarRatio);
+  ++mlmfIter;
 
+  // -----------------------------------
+  // Perform "online" sample increments:
+  // -----------------------------------
   // at least 2 samples reqd for variance (+ resetting allSamples from pilot)
   numSamples = std::max(numSamples, (size_t)2);
   shared_increment(mlmfIter); // spans ALL models, blocking
@@ -251,11 +254,15 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   compute_LL_covariance(sum_L_baselineH/*baseL*/, sum_LL, /*N_LL*/numH, covLL);
   //Cout << "var_H:\n"<< var_H << "cov_LH:\n"<< cov_LH << "cov_LL:\n"<<cov_LL;
 
+  // -----------------------------------
+  // Compute "online" sample increments:
+  // -----------------------------------
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
   compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
 		 avgEstVar, avgEstVarRatio);
+  ++mlmfIter;
 
   // No LF increments or final moments for pilot projection
 

@@ -289,14 +289,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   SizetArray delta_N_l;  Sizet2DArray N_l;
 
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations) {
+  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations)
     // loop over levels and compute sample increments
     evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_l, N_l,
 		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
-    ++mlmfIter;
-    Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
-	 << delta_N_l << std::endl;
-  }
 
   // roll up moment contributions
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
@@ -492,6 +488,10 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   else
     compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1, eps_sq_div_2,
 				     var_qoi, cost, N_pilot,N_online,delta_N_l);
+
+  ++mlmfIter;
+  Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
+       << delta_N_l << std::endl;
 }
 
 
