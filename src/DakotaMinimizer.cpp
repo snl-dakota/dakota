@@ -694,15 +694,40 @@ objective_hessian(const RealVector& fn_vals, size_t num_fns,
     internally and return the best results after iteration completion.
     Therfore, perform a search in data_pairs to extract the evalId for
     the best fn eval. */
-void Minimizer::print_best_eval_ids(const String& interface_id,
-				    const Variables& best_vars,
-				    const ActiveSet& active_set,
+void Minimizer::print_best_eval_ids(const String& search_interface_id,
+				    const Variables& search_vars,
+				    const ActiveSet& search_set,
 				    std::ostream& s) const
 {
   PRPCacheHIter cache_it =
-    lookup_by_val(data_pairs, interface_id, best_vars, active_set);
+    lookup_by_val(data_pairs, search_interface_id, search_vars, search_set);
   if (cache_it == data_pairs.get<hashed>().end()) {
     s << "<<<<< Best data not found in evaluation cache\n\n";
+
+    // only match vars/interface ID via hash (don't check search_set)
+    Response search_resp(SIMULATION_RESPONSE, search_set);
+    ParamResponsePair search_pr(search_vars, search_interface_id, search_resp);
+    PRPCacheHIter prp_hash_it0, prp_hash_it1;
+    boost::tuples::tie(prp_hash_it0, prp_hash_it1)
+      = data_pairs.get<hashed>().equal_range(search_pr);
+
+    std::set<int> sorted_eval_ids; // in case hash isn't in eval ID order
+    while (prp_hash_it0 != prp_hash_it1) {
+      sorted_eval_ids.insert(prp_hash_it0->eval_id());
+      ++prp_hash_it0;
+    }
+
+    if (!sorted_eval_ids.empty()) {
+      s << "<<<<< Best data (partial match(es)) in function evaluation(s): ";
+      // gymnastics due to use of set:
+      auto it = sorted_eval_ids.begin();
+      while (it != sorted_eval_ids.end()) {
+	s << *(it++);
+	if (it != sorted_eval_ids.end())
+	  s << ", ";
+      }
+      s << std::endl;
+    }
   }
   else {
     int eval_id = cache_it->eval_id();
