@@ -94,7 +94,7 @@ protected:
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
-  //void init_model(Model& model);
+  void init_model(Model& model);
   void update_model(Model& model);
   void update_from_model(const Model& model);
 

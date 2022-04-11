@@ -43,6 +43,7 @@ void EnsembleSurrModel::init_model(Model& model)
   // currentVariables into the target model
   init_model_mapped_variables(model);
   //init_model_inactive_variables(model);
+  //init_model_inactive_labels(model);
 }
 
 

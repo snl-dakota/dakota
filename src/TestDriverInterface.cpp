@@ -2171,7 +2171,7 @@ int TestDriverInterface::tunable_model()
 
   size_t md_index = find_index(metaDataLabels, "cost_model");
   Real A, xy_pow, active_th, rel_cost;
-  if (numACV == 3 && numADIV == 1) { // x,y,theta1 and model form integer
+  if (numACV == 3 && numADIV >= 1) { // x,y,theta1 and model form integer
     active_th = xCM[VAR_theta]; // one CSV = theta for this MForm only
     switch (xDIM[VAR_MForm]) {  // state variable for ModelForm
     case 0:  A = std::sqrt(11.); xy_pow = 5;  rel_cost = 1.;   break; // HF
@@ -2179,24 +2179,31 @@ int TestDriverInterface::tunable_model()
     case 2:  A = std::sqrt(3.);  xy_pow = 1;  rel_cost = 0.01; break; // LF
     }
   }
-  else if (numACV == 7 && numADSV == 1) {//x,y,theta{,1,2},delta,gamma,MForm str
+  else if (numACV >= 2 && numACV <= 7 && numADSV >= 1) {
+    // at least x,y plus MForm str; optionally theta{,1,2},delta,gamma
     const String& mform = xDSM[VAR_MForm]; // discrete state var for ModelForm
+    std::map<var_t, Real>::iterator xc_iter;
     if (mform == "HF") {
-      A = std::sqrt(11.);  xy_pow = 5;  active_th = xCM[VAR_theta];
-      rel_cost = 1.;
+      A = std::sqrt(11.);  xy_pow = 5;  rel_cost = 1.;
+      xc_iter = xCM.find(VAR_theta);
+      active_th = (xc_iter == xCM.end()) ? PI / 2. : xc_iter->second;
     }
     else {
       Real delta, w_lo = .001, w_hi = 1.; // initial definition for MF
-      Real th = xCM[VAR_theta], th1 = xCM[VAR_theta1], th2 = xCM[VAR_theta2],
-	th_lb = PI / 6., th_ub = PI / 2., th_range = th_ub - th_lb;
-      if (mform == "LF1")
-	{ A = std::sqrt(7.);  xy_pow = 3;  delta = 1.;  active_th = th1; }
+      Real th_lb = PI / 6., th_ub = PI / 2., th_range = th_ub - th_lb;
+      if (mform == "LF1") {
+	A = std::sqrt(7.);  xy_pow = 3;  delta = 1.;
+	xc_iter = xCM.find(VAR_theta1);
+	active_th  = (xc_iter == xCM.end()) ? PI / 3. : xc_iter->second;
+      }
       else if (mform == "LF2") {
-	A = std::sqrt(3.);  xy_pow = 1;  active_th = th2;
-	std::map<var_t, Real>::iterator x_iter = xCM.find(VAR_delta);
-	delta = (x_iter == xCM.end()) ? 2.5  : x_iter->second;
-	x_iter = xCM.find(VAR_gamma);
-	Real gamma = (x_iter == xCM.end()) ? 0.55 : x_iter->second;
+	A = std::sqrt(3.);  xy_pow = 1;
+	xc_iter = xCM.find(VAR_theta2);
+	active_th  = (xc_iter == xCM.end()) ? PI / 6. : xc_iter->second;
+	xc_iter = xCM.find(VAR_delta);
+	delta      = (xc_iter == xCM.end()) ? 2.5     : xc_iter->second;
+	xc_iter = xCM.find(VAR_gamma);
+	Real gamma = (xc_iter == xCM.end()) ? 0.55    : xc_iter->second;
 	w_lo *= gamma;  w_hi *= gamma; // new for LF: reduce MF cost by gamma
       }
       // cost metadata for tunable problem (extended cost model)

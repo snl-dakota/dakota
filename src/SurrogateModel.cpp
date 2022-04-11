@@ -211,6 +211,7 @@ void SurrogateModel::init_model(Model& model)
   // DataFit instantiations, such as local reliability, expansion UQ, SBO, etc.
   // It is therefore not included in the base-class default implementation.
   //init_model_inactive_variables(model);
+  //init_model_inactive_labels(model);
 }
 
 
@@ -312,6 +313,7 @@ void SurrogateModel::init_model_labels(Model& model)
       currentVariables.discrete_string_variable_labels());
     model.discrete_real_variable_labels(
       currentVariables.discrete_real_variable_labels());
+    /* Now supported by init_model_inactive_labels()
     if (!active_all) { // models not in ALL view
       model.inactive_continuous_variable_labels(
         currentVariables.inactive_continuous_variable_labels());
@@ -322,9 +324,9 @@ void SurrogateModel::init_model_labels(Model& model)
       model.inactive_discrete_real_variable_labels(
         currentVariables.inactive_discrete_real_variable_labels());
     }
+    */
   }
-  else if (!active_all && sm_active_all) {
-    // update active model vars using "All" view of currentVariables data
+  else if (!active_all && sm_active_all) { // update active from "All" view
     model.continuous_variable_labels(
       currentVariables.all_continuous_variable_labels());
     model.discrete_int_variable_labels(
@@ -334,8 +336,8 @@ void SurrogateModel::init_model_labels(Model& model)
     model.discrete_real_variable_labels(
       currentVariables.all_discrete_real_variable_labels());
   }
-  else if (!sm_active_all && active_all) {
-    // update "All" view of model vars using active currentVariables data
+  else if (!sm_active_all && active_all) { // update "All" view from active
+    // TO DO: only update the active labels in model (not all labels)
     model.all_continuous_variable_labels(
       currentVariables.continuous_variable_labels());
     model.all_discrete_int_variable_labels(
@@ -377,16 +379,8 @@ void SurrogateModel::init_model_inactive_variables(Model& model)
         userDefinedConstraints.inactive_discrete_int_upper_bounds());
     }
     if (num_idsv && num_idsv == model.idsv()) {  // not enforced previously
-      Cout << "Before currentVariables idsv:\n";
-      write_data(Cout, currentVariables.inactive_discrete_string_variables());
-      Cout << "Before model target idsv:\n";
-      write_data(Cout, model.inactive_discrete_string_variables());
       model.inactive_discrete_string_variables(
         currentVariables.inactive_discrete_string_variables());
-      Cout << "After currentVariables idsv:\n";
-      write_data(Cout, currentVariables.inactive_discrete_string_variables());
-      Cout << "After model target idsv:\n";
-      write_data(Cout, model.inactive_discrete_string_variables());
     }
     if (num_idrv && num_idrv == model.idrv()) { // not enforced previously
       model.inactive_discrete_real_variables(
@@ -396,6 +390,42 @@ void SurrogateModel::init_model_inactive_variables(Model& model)
       model.inactive_discrete_real_upper_bounds(
         userDefinedConstraints.inactive_discrete_real_upper_bounds());
     }
+  }
+}
+
+
+void SurrogateModel::init_model_inactive_labels(Model& model)
+{
+  if (approxBuilds) return;
+
+  short active_view = currentVariables.view().first,
+     sm_active_view = model.current_variables().view().first;
+  bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
+    sm_active_all = (sm_active_view == RELAXED_ALL ||
+		     sm_active_view == MIXED_ALL);
+  if (active_view == sm_active_view && !active_all) { // models not in ALL view
+    // Can't use inactive label matching since that is what we are updating,
+    // so rely only on counts for now.
+    if (model.icv() == currentVariables.icv())
+      model.inactive_continuous_variable_labels(
+        currentVariables.inactive_continuous_variable_labels());
+    if (model.idiv() == currentVariables.idiv())
+      model.inactive_discrete_int_variable_labels(
+        currentVariables.inactive_discrete_int_variable_labels());
+    if (model.idsv() == currentVariables.idsv())
+      model.inactive_discrete_string_variable_labels(
+        currentVariables.inactive_discrete_string_variable_labels());
+    if (model.idrv() == currentVariables.idrv())
+      model.inactive_discrete_real_variable_labels(
+        currentVariables.inactive_discrete_real_variable_labels());
+  }
+  else if (!active_all && sm_active_all) {
+    // nothing to do currenty for this case prior to more fine-grained handling
+    // of active labels (all model labels are currently updated)
+  }
+  else if (!sm_active_all && active_all) {
+    // nothing to do currenty for this case prior to more fine-grained handling
+    // of active labels (all model labels are currently updated)
   }
 }
 

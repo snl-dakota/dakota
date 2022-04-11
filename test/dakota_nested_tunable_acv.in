@@ -25,7 +25,7 @@ method,
 #	  seed = 1234567				#s9
 #	  max_iterations = 50				#s9
 #	  convergence_tolerance = 1.e-4
-#	npsol_sqp					
+#	npsol_sqp					#s10
 #	  convergence_tolerance = 1.e-8
 	output silent
 
@@ -46,7 +46,7 @@ variables,
 	id_variables = 'TUNER_V'
 	continuous_design = 2
 	  initial_point  = 0.55 0.5235987755983		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-#	  initial_point  = 1.0471975511966 0.5235987755983	#s8
+#	  initial_point  = 1.0471975511966 0.5235987755983	#s8,#s10
 	  lower_bounds   = 2 * 0.5235987755983
 	  upper_bounds   = 2 * 1.5707963267949
 	  descriptors    = 'outer_theta1' 'outer_theta2'
@@ -60,10 +60,10 @@ responses,
 	nonlinear_inequality_upper_bounds = 1100.
 	descriptors = 'avgEstVar' 'equivHFEvals'
 	no_gradients			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
-#	numerical_gradients		
-#	  method_source dakota		
-#	  interval_type central		
-#	  fd_step_size = 1.e-4		
+#	numerical_gradients		#s10
+#	  method_source dakota		#s10
+#	  interval_type central		#s10
+#	  fd_step_size = 1.e-4		#s10
 	no_hessians
 
 
@@ -76,11 +76,11 @@ method,
 	model_pointer = 'ENSEMBLE'
 	multilevel_sampling				#s0,#s4
 #	multifidelity_sampling				#s1,#s2,#s5,#s6
-#	approximate_control_variate acv_mf sqp		#s3,#s7,#s8,#s9
+#	approximate_control_variate acv_mf sqp		#s3,#s7,#s8,#s9,#s10
 	  max_function_evaluations = 1000
 	  pilot_samples = 25	     			#s0,#s1,#s2,#s3,#s8
-#	  pilot_samples = 100				#s4,#s5,#s6,#s7,#s9
-#	  solution_mode pilot_projection		#s4,#s5,#s6,#s7,#s9
+#	  pilot_samples = 100				#s4,#s5,#s6,#s7,#s9,#s10
+#	  solution_mode pilot_projection		#s4,#s5,#s6,#s7,#s9,#s10
 	  seed = 8674132
 	  final_statistics estimator_performance
 	output silent
@@ -91,9 +91,9 @@ model,
 	surrogate hierarchical 	       	     		#s0,#s1,#s4,#s5
 	  ordered_model_fidelities = 'LF2' 'LF1' 'HF'	#s0,#s4
 #	  ordered_model_fidelities = 'LF1' 'HF'		#s1,#s5
-#	surrogate model_ensemble			#s2,#s3,#s6,#s7,#s8,#s9
-#	  truth_model = 'HF'				#s2,#s3,#s6,#s7,#s8,#s9
-#	  unordered_model_fidelities = 'LF2' 'LF1' 	#s2,#s3,#s6,#s7,#s8,#s9
+#	surrogate model_ensemble			#s2,#s3,#s6,#s7,#s8,#s9,#s10
+#	  truth_model = 'HF'				#s2,#s3,#s6,#s7,#s8,#s9,#s10
+#	  unordered_model_fidelities = 'LF2' 'LF1' 	#s2,#s3,#s6,#s7,#s8,#s9,#s10
 
 model,
 	id_model = 'LF2' # low-fidelity
@@ -130,7 +130,7 @@ variables,
      	  descriptors     = 'x' 'y'
 	continuous_state  = 5
 	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9,#s10
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
 	  initial_state = 'LF2'
@@ -145,7 +145,7 @@ variables,
      	  descriptors     = 'x' 'y'
 	continuous_state  = 5
 	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9,#s10
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
 	  initial_state = 'LF1'
@@ -160,7 +160,7 @@ variables,
      	  descriptors     = 'x' 'y'
 	continuous_state  = 5
 	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9
+#	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9,#s10
      	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'
 	discrete_state_set string = 1
 	  initial_state = 'HF'

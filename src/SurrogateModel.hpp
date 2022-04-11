@@ -134,6 +134,9 @@ protected:
   /// initialize model with inactive variable values/bounds data that could
   /// change once per set of evaluations (e.g., an outer iterator execution)
   void init_model_inactive_variables(Model& model);
+  /// initialize model with inactive variable labels that could change once
+  /// per set of evaluations (e.g., an outer iterator execution)
+  void init_model_inactive_labels(Model& model);
 
   /// update model with active variable values/bounds data
   void update_model_active_variables(Model& model);
