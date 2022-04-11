@@ -617,7 +617,7 @@ duplication_detect(const Variables& vars, Response& response, bool asynch_flag)
 				  response.active_set(), nearbyTolerance);
     cache_hit = (ord_it != data_pairs.end());
     if (cache_hit) { // ordered-specific updates (shared updates below)
-      response.update(ord_it->response());
+      response.update(ord_it->response(), true); // update metadata
       cache_eval_id = ord_it->eval_id();
       if (cache_eval_id <= 0)
 	{ cache_pr = *ord_it; data_pairs.erase(ord_it); }
@@ -628,7 +628,7 @@ duplication_detect(const Variables& vars, Response& response, bool asynch_flag)
 			    response.active_set());
     cache_hit = (hash_it != data_pairs.get<hashed>().end());
     if (cache_hit) { // hashed-specific updates (shared updates below)
-      response.update(hash_it->response());
+      response.update(hash_it->response(), true); // update metadata
       cache_eval_id = hash_it->eval_id();
       if (cache_eval_id <= 0)
 	{ cache_pr = *hash_it; data_pairs.get<hashed>().erase(hash_it); }
@@ -770,7 +770,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
       // of the beforeSynchCorePRPQueue duplicate response -> use update().
       rawResponseMap[bsd_iter->first] = (bsd_iter->second).second;
       rawResponseMap[bsd_iter->first].update(
-	(bsd_iter->second).first->response());
+        (bsd_iter->second).first->response(), true); // update metadata
     }
     beforeSynchDuplicateMap.clear();
   }
@@ -884,7 +884,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
 	// due to id_vars_set_compare, the desired response set could be
 	// a subset of the duplicate response -> use update().
 	Response& response = (bsd_iter->second).second;
-	response.update(scheduled_pr.response());
+	response.update(scheduled_pr.response(), true); // update metadata
 	rawResponseMap[bsd_iter->first] = response;
       }
     }
@@ -2936,7 +2936,7 @@ receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
   // share the rep among between rawResponseMap and the processing queue, but
   // don't trample raw response sizing with lightweight remote response
   Response raw_response = rawResponseMap[fn_eval_id] = prp_it->response();
-  raw_response.update(remote_response);
+  raw_response.update(remote_response, true); // update metadata
 
   // insert into restart and eval cache ASAP
   if (evalCacheFlag)   data_pairs.insert(*prp_it);

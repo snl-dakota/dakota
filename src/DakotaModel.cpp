@@ -5782,7 +5782,7 @@ bool Model::db_lookup(const Variables& search_vars, const ActiveSet& search_set,
       = lookup_by_val(data_pairs, interface_id(), search_vars, search_set);
     if (cache_it != data_pairs.get<hashed>().end()) {
       found_resp.active_set(search_set);
-      found_resp.update(cache_it->response());
+      found_resp.update(cache_it->response(), true); // update metadata
       return true;
     }
     return false;
