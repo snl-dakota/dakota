@@ -378,10 +378,9 @@ void SurrogateModel::init_model_inactive_variables(Model& model)
       model.inactive_discrete_int_upper_bounds(
         userDefinedConstraints.inactive_discrete_int_upper_bounds());
     }
-    if (num_idsv && num_idsv == model.idsv()) {  // not enforced previously
+    if (num_idsv && num_idsv == model.idsv())  // not enforced previously
       model.inactive_discrete_string_variables(
         currentVariables.inactive_discrete_string_variables());
-    }
     if (num_idrv && num_idrv == model.idrv()) { // not enforced previously
       model.inactive_discrete_real_variables(
         currentVariables.inactive_discrete_real_variables());
