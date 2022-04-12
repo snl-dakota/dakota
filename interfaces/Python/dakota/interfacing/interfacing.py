@@ -475,6 +475,45 @@ class Results(object):
         else:
             self._write_results(stream, my_ignore_asv)
 
+    def return_direct_results_dict(self, ignore_asv=None):
+        """Create and return a direct python interface results dictionary.
+
+        Keyword Args:
+
+        Raises:
+        """
+        my_ignore_asv = self.ignore_asv
+        if ignore_asv is not None:
+            my_ignore_asv = ignore_asv
+
+        ## Confirm that user has provided all info requested by Dakota
+        if not my_ignore_asv and not self._failed:
+            for t, v in self._responses.items():
+                if v.asv.function and v.function is None:
+                    raise ResponseError("Response '" + t + "' is missing "
+                            "requested function result.") 
+                if v.asv.gradient and v.gradient is None:
+                    raise ResponseError("Response '" + t + "' is missing "
+                            "requested gradient result.")
+                if v.asv.hessian and v.hessian is None:
+                    raise ResponseError("Response '" +t + "' is missing "
+                            "requested Hessian result.")
+
+        results_dict = {}
+        results_dict['fns'] = []
+        results_dict['fnGrads'] = []
+        results_dict['fnHessians'] = []
+        for t, v in self._responses.items():
+            if v.asv.function:
+                results_dict['fns'].append(v.function)
+            if v.asv.gradient:
+                results_dict['fnGrads'].append(v.gradient)
+            if v.asv.hessian:
+                results_dict['fnHessians'].append(v.hessian)
+
+        return results_dict
+
+
     def _set_batch(self, flag):
         self._batch = flag
 
