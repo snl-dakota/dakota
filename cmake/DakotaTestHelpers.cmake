@@ -271,7 +271,7 @@ function(dakota_regression_test test_name serpar_string test_props
    # test properties may disable a specific test based on configuration
    set(add_this_test TRUE)
    set(last_subtest -1)
-   set(test_labels DakotaTest)
+   set(test_labels Regression)
    set(test_req_files)  # files mentioned in input file ReqFiles=
 
    # updates above 4 variables

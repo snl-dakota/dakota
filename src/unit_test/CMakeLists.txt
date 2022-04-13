@@ -240,7 +240,7 @@ if(DAKOTA_PYBIND11)
     COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.py
     $<TARGET_FILE_DIR:environment>
     )
-  set_property(TEST dakota_python PROPERTY LABELS UnitTest)
+  set_property(TEST dakota_python PROPERTY LABELS Unit)
 endif()
 
 

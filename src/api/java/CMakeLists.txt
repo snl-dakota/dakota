@@ -89,7 +89,7 @@ if (DAKOTA_ENABLE_TESTS)
 
   add_test(dakota_java_hello
     ${Java_JAVA_EXECUTABLE} -Djava.library.path=. gov.sandia.dart.dakota.tools.HelloDakota)
-
+  set_tests_properties(dakota_java_hello PROPERTIES LABELS Unit )
 endif()
 
 

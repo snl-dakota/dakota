@@ -69,5 +69,5 @@ add_test(NAME dakota_surrogates_jni
 # ../unit/poly_test.surr.*
 set_tests_properties(dakota_surrogates_jni PROPERTIES
   DEPENDS PolynomialRegressionTest
-  LABELS UnitTest
+  LABELS Unit
   )

@@ -44,7 +44,7 @@ if(DAKOTA_PYTHON_SURROGATES)
     COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_surrogate.py
     $<TARGET_FILE_DIR:surrogates>
     )
-  set_tests_properties(surrogates_python PROPERTIES LABELS UnitTest)
+  set_tests_properties(surrogates_python PROPERTIES LABELS Unit)
 endif()
 
 # Rationale: These all include Teuchos headers and need to link to the
