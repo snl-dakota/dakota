@@ -25,7 +25,7 @@ macro(dakota_find_boost)
     set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/boost_libs")
   endif()
 
-  find_package(Boost 1.58 REQUIRED COMPONENTS ${dakota_boost_libs})
+  find_package(Boost 1.69 REQUIRED COMPONENTS ${dakota_boost_libs})
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
     Boost::regex Boost::serialization Boost::system)
 
