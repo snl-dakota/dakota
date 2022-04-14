@@ -1,3 +1,8 @@
+#@ s3: DakotaConfig=HAVE_NPSOL
+#@ s7: DakotaConfig=HAVE_NPSOL
+#@ s8: DakotaConfig=HAVE_NPSOL
+#@ s9: DakotaConfig=HAVE_NPSOL
+
 environment
 	output_precision = 16
 	  method_pointer = 'TUNER'
