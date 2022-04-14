@@ -55,9 +55,9 @@ target_include_directories(SurrogatesToolsTest PRIVATE "${Teuchos_INCLUDE_DIRS}"
 target_include_directories(EvalMetricsCrossValTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 
 target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates
-  ${Teuchos_LIBRARIES} Boost::filesystem Boost::serialization)
+  ${Teuchos_LIBRARIES} Boost::filesystem Boost::serialization Boost::system)
 target_link_libraries(PolynomialRegressionTest PRIVATE dakota_surrogates
-  ${Teuchos_LIBRARIES} Boost::filesystem Boost::serialization Boost::boost)
+  ${Teuchos_LIBRARIES} Boost::filesystem Boost::serialization Boost::boost Boost::system)
 target_link_libraries(SurrogatesToolsTest PRIVATE dakota_surrogates
   ${Teuchos_LIBRARIES})
 target_link_libraries(EvalMetricsCrossValTest PRIVATE dakota_surrogates
