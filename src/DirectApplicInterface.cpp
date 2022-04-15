@@ -394,6 +394,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
       xDSMLabels.resize(numADSV);
       //String label_i;
       // Map labels in a*v_labels to var_t enum in x*Labels through varTypeMap
+      Cout << "ACV labels:\n"; write_data(Cout, acv_labels); // *** OVERWRITTEN GARBAGE ***
       map_labels_to_enum( acv_labels, xCMLabels);
       map_labels_to_enum(adiv_labels,xDIMLabels);
       map_labels_to_enum(adrv_labels,xDRMLabels);

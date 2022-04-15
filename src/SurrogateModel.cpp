@@ -211,7 +211,7 @@ void SurrogateModel::init_model(Model& model)
   // DataFit instantiations, such as local reliability, expansion UQ, SBO, etc.
   // It is therefore not included in the base-class default implementation.
   //init_model_inactive_variables(model);
-  //init_model_inactive_labels(model);
+  init_model_inactive_labels(model);
 }
 
 
@@ -405,16 +405,19 @@ void SurrogateModel::init_model_inactive_labels(Model& model)
   if (active_view == sm_active_view && !active_all) { // models not in ALL view
     // Can't use inactive label matching since that is what we are updating,
     // so rely only on counts for now.
-    if (model.icv() == currentVariables.icv())
+    size_t num_icv = currentVariables.icv(),
+      num_idiv = currentVariables.idiv(), num_idrv = currentVariables.idrv(),
+      num_idsv = currentVariables.idsv();
+    if (num_icv && num_icv == model.icv())
       model.inactive_continuous_variable_labels(
         currentVariables.inactive_continuous_variable_labels());
-    if (model.idiv() == currentVariables.idiv())
+    if (num_idiv && num_idiv == model.idiv())
       model.inactive_discrete_int_variable_labels(
         currentVariables.inactive_discrete_int_variable_labels());
-    if (model.idsv() == currentVariables.idsv())
+    if (num_idsv && num_idsv == model.idsv())
       model.inactive_discrete_string_variable_labels(
         currentVariables.inactive_discrete_string_variable_labels());
-    if (model.idrv() == currentVariables.idrv())
+    if (num_idrv && num_idrv == model.idrv())
       model.inactive_discrete_real_variable_labels(
         currentVariables.inactive_discrete_real_variable_labels());
   }

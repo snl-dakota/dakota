@@ -417,6 +417,7 @@ bool DataFitSurrModel::finalize_mapping()
 }
 
 
+/*
 void DataFitSurrModel::init_model(Model& model)
 {
   SurrogateModel::init_model(model);
@@ -427,8 +428,9 @@ void DataFitSurrModel::init_model(Model& model)
   //init_model_mapped_variables(model);
 
   // retained for now since deactivated at base level for EnsembleSurrModel
-  init_model_inactive_labels(model);
+  //init_model_inactive_labels(model);
 }
+*/
 
 
 void DataFitSurrModel::update_model(Model& model)
