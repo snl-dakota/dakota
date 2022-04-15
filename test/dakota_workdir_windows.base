@@ -5,7 +5,7 @@ Test Number 0 succeeded
                       0.0000000000e+00 x2
 <<<<< Best objective function  =
                       1.0000000000e+00
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2       obj_fn
           x1  1.00000e+00
@@ -31,7 +31,7 @@ Test Number 1 succeeded
                       0.0000000000e+00 x2
 <<<<< Best objective function  =
                       1.0000000000e+00
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2       obj_fn
           x1  1.00000e+00
@@ -57,7 +57,7 @@ Test Number 2 succeeded
                       0.0000000000e+00 x2
 <<<<< Best objective function  =
                       1.0000000000e+00
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2       obj_fn
           x1  1.00000e+00
@@ -83,7 +83,7 @@ Test Number 3 succeeded
                       0.0000000000e+00 x2
 <<<<< Best objective function  =
                       1.0000000000e+00
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2       obj_fn
           x1  1.00000e+00
@@ -109,7 +109,7 @@ Test Number 4 succeeded
                       0.0000000000e+00 x2
 <<<<< Best objective function  =
                       1.0000000000e+00
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2       obj_fn
           x1  1.00000e+00
@@ -135,7 +135,7 @@ Test Number 5 succeeded
                       0.0000000000e+00 x2
 <<<<< Best objective function  =
                       1.0000000000e+00
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2       obj_fn
           x1  1.00000e+00
@@ -161,7 +161,7 @@ Test Number 6 succeeded
                       0.0000000000e+00 x2
 <<<<< Best objective function  =
                       1.0000000000e+00
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2       obj_fn
           x1  1.00000e+00
