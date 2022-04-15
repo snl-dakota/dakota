@@ -1265,7 +1265,7 @@ sub parse_test_output {
 	$_ = <OUTPUT>; # grab next line
       }
     }
-    if (/^<<<<< Best data (captured at|not found in)/) {
+    if (/^<<<<< Best (evaluation ID[: s]|parameters\/responses)/) {
       print;
       print TEST_OUT;
     }
