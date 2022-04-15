@@ -132,9 +132,17 @@ void NonDMultifidelitySampling::multifidelity_mc()
     ++mlmfIter;
   }
 
-  // numH is converged --> finalize with LF increments and post-processing
-  approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH, approxSequence,
-		    eval_ratios, hf_targets);
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS)
+    // numH is converged --> finalize with LF increments and post-processing
+    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH,
+		      approxSequence, eval_ratios, hf_targets);
+  else { // for consistency with pilot projection
+    Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
+    update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
+    finalize_counts(N_L_projected);
+  }
 }
 
 
@@ -190,9 +198,17 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
 			  eval_ratios);
 
-  // numH is converged --> finalize with LF increments and post-processing
-  approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH, approxSequence,
-		    eval_ratios, hf_targets);
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS)
+    // numH is converged --> finalize with LF increments and post-processing
+    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH,
+		      approxSequence, eval_ratios, hf_targets);
+  else { // for consistency with pilot projection
+    Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
+    update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
+    finalize_counts(N_L_projected);
+  }
 }
 
 

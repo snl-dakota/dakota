@@ -294,12 +294,14 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_l, N_l,
 		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
 
-  // roll up moment contributions
-  compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
-  recover_variance(momentStats, varH);
-  // populate finalStatErrors
-  compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
-
+  // Only QOI_STATISTICS requires estimation of moments
+  if (finalStatsType == QOI_STATISTICS) {
+    // roll up moment contributions
+    compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
+    recover_variance(momentStats, varH);
+    // populate finalStatErrors
+    compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
+  }
   compute_ml_estimator_variance(var_Y, N_l, estVar);
   avgEstVar = average(estVar);
   // post final N_l back to NLev (needed for final eval summary)
@@ -360,12 +362,14 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   // ---------------------
   // Final post-processing
   // ---------------------
-  // roll up moment contributions
-  compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_online);
-  recover_variance(momentStats, varH);
-  // populate finalStatErrors
-  compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_online);
-
+  // Only QOI_STATISTICS requires estimation of moments
+  if (finalStatsType == QOI_STATISTICS) {
+    // roll up moment contributions
+    compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_online);
+    recover_variance(momentStats, varH);
+    // populate finalStatErrors
+    compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_online);
+  }
   compute_ml_estimator_variance(var_Y, N_online, estVar);
   avgEstVar = average(estVar);
   // post final N_online back to NLev (needed for final eval summary)
@@ -395,9 +399,11 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   // ---------------------
   // Final post-processing
   // ---------------------
-  compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l); // not reported
-  recover_variance(momentStats, varH); // momentStats only for varH
-
+  // Only QOI_STATISTICS requires estimation of moments
+  if (finalStatsType == QOI_STATISTICS) {
+    compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l); // not reported
+    recover_variance(momentStats, varH); // momentStats only for varH
+  }
   update_projected_samples(delta_N_l, N_l, sequenceCost);
   compute_ml_estimator_variance(var_Y, N_l, estVar);
   avgEstVar = average(estVar);
@@ -1568,7 +1574,6 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
 
 void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
 {
-  Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
@@ -1589,11 +1594,14 @@ void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
     break;
   }
   }
-  s << "\n Equivalent   MC (" << std::setw(5)
-    << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
-    << std::setw(wpp7) << avg_budget_mc_estvar
-    << "\n Equivalent MLMC / MC ratio:         " << std::setw(wpp7)
-    << avgEstVar / avg_budget_mc_estvar << '\n';
+  if (finalStatsType == QOI_STATISTICS) {
+    Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
+    s << "\n Equivalent   MC (" << std::setw(5)
+      << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+      << std::setw(wpp7) << avg_budget_mc_estvar
+      << "\n Equivalent MLMC / MC ratio:         " << std::setw(wpp7)
+      << avgEstVar / avg_budget_mc_estvar << '\n';
+  }
 }
 
 

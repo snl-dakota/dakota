@@ -173,23 +173,31 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
   // -------------------------------------------------------------------
   // Compute new LF increment based on new evaluation ratio for new N_hf
   // -------------------------------------------------------------------
-  // Note: these results do not affect the iteration above and can be performed
-  // after N_hf has converged, which simplifies maxFnEvals / convTol logic
-  // (no need to further interrogate these throttles below)
-  IntRealVectorMap sum_L_refined = sum_L_shared;
-  N_lf = N_hf; // shared to this point, but only N_hf has been updated
-  Pecos::ActiveKey lf_key;  active_key.extract_key(1, lf_key);
-  if (lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
-    accumulate_mf_sums(sum_L_refined, N_lf);
-    increment_mf_equivalent_cost(numSamples, cost_ratio);
-  }
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS) {
+    // Note: these increments do not affect iteration above and can be performed
+    // after N_hf has converged, which simplifies maxFnEvals / convTol logic
+    // (no need to further interrogate these throttles below)
+    IntRealVectorMap sum_L_refined = sum_L_shared;
+    N_lf = N_hf; // shared to this point, but only N_hf has been updated
+    Pecos::ActiveKey lf_key;  active_key.extract_key(1, lf_key);
+    if (lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
+      accumulate_mf_sums(sum_L_refined, N_lf);
+      increment_mf_equivalent_cost(numSamples, cost_ratio);
+    }
 
-  // Compute/apply control variate params to estimate uncentered raw moments
-  RealMatrix H_raw_mom(numFunctions, 4);
-  cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined,
-		 N_lf, H_raw_mom);
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(H_raw_mom, momentStats);
+    // Compute/apply control variate params to estimate uncentered raw moments
+    RealMatrix H_raw_mom(numFunctions, 4);
+    cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined,
+		   N_lf, H_raw_mom);
+    // Convert uncentered raw moment estimates to final moments (central or std)
+    convert_moments(H_raw_mom, momentStats);
+  }
+  else // for consistency with pilot projection
+    update_projected_samples(hf_targets, eval_ratios, cost_ratio, N_hf, N_lf);
+
+  // Both QOI_STATISTICS and ESTIMATOR_PERFORMANCE
   estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 }
 
@@ -226,20 +234,27 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
   accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH, N_hf);
   increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
 
-  IntRealVectorMap sum_L_refined = sum_L_shared;
-  N_lf = N_hf; // shared to this point, but only N_hf has been updated
-  Pecos::ActiveKey lf_key;  active_key.extract_key(1, lf_key);
-  if (lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
-    accumulate_mf_sums(sum_L_refined, N_lf);
-    increment_mf_equivalent_cost(numSamples, cost_ratio);
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS) {
+    IntRealVectorMap sum_L_refined = sum_L_shared;
+    N_lf = N_hf; // shared to this point, but only N_hf has been updated
+    Pecos::ActiveKey lf_key;  active_key.extract_key(1, lf_key);
+    if (lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
+      accumulate_mf_sums(sum_L_refined, N_lf);
+      increment_mf_equivalent_cost(numSamples, cost_ratio);
+    }
+    // Compute/apply control variate params to estimate uncentered raw moments
+    RealMatrix H_raw_mom(numFunctions, 4);
+    cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined,
+		   N_lf, H_raw_mom);
+    // Convert uncentered raw moment estimates to final moments (central or std)
+    convert_moments(H_raw_mom, momentStats);
   }
+  else // for consistency with pilot projection
+    update_projected_samples(hf_targets, eval_ratios, cost_ratio, N_hf, N_lf);
 
-  // Compute/apply control variate params to estimate uncentered raw moments
-  RealMatrix H_raw_mom(numFunctions, 4);
-  cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined,
-		 N_lf, H_raw_mom);
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(H_raw_mom, momentStats);
+  // Both QOI_STATISTICS and ESTIMATOR_PERFORMANCE
   estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
 }
 

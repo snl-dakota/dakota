@@ -526,39 +526,47 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	 << delta_N_hf << std::endl;
   }
 
-  // All CV lf_increment() calls now follow convergence of ML iteration:
-  // > Avoids early mis-estimation of LF increments
-  // > Parallel scheduling benefits from one final large batch of refinements
-  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-    configure_indices(group, lf_form, lev, sequenceType);
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS) {
+    // All CV lf_increment() calls now follow convergence of ML iteration:
+    // > Avoids early mis-estimation of LF increments
+    // > Parallel scheduling benefits from one final large batch of refinements
+    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
+      configure_indices(group, lf_form, lev, sequenceType);
 
-    // now execute additional LF sample increment
-    if (lf_increment(eval_ratios[lev],N_lf[lev],hf_targets[lev],mlmfIter,lev)) {
-      accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, N_lf[lev]);
-      increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
-				   hf_ref_cost);
-      if (outputLevel == DEBUG_OUTPUT)
-	Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_Ll_refined[1]
-	     << sum_Ll_refined[2];
+      // now execute additional LF sample increment
+      if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
+		       mlmfIter, lev)) {
+	accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, N_lf[lev]);
+	increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
+				     hf_ref_cost);
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_Ll_refined[1]
+	       << sum_Ll_refined[2];
+      }
     }
-  }
 
-  // Roll up raw moments from MLCVMC and MLMC levels
-  RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
-  for (lev=0; lev<num_cv_lev; ++lev) {
-    cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
-		   sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
-		   sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
-		   N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
-		   /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
-    Y_mom += Y_cvmc_mom;
+    // Roll up raw moments from MLCVMC and MLMC levels
+    RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
+    for (lev=0; lev<num_cv_lev; ++lev) {
+      cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
+		     sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
+		     sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
+		     N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
+		     /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
+      Y_mom += Y_cvmc_mom;
+    }
+    if (num_hf_lev > num_cv_lev)
+      ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
+		     num_cv_lev, num_hf_lev, Y_mom);
+    convert_moments(Y_mom, momentStats); // raw to final (central or std)
+    recover_variance(momentStats, varH);
   }
-  if (num_hf_lev > num_cv_lev)
-    ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
-		   num_cv_lev, num_hf_lev, Y_mom);
-  convert_moments(Y_mom, momentStats); // raw to final (central or std)
-  recover_variance(momentStats, varH);
+  else // for consistency with pilot projection
+    update_projected_samples(hf_targets, eval_ratios,N_hf,hf_cost,N_lf,lf_cost);
 
+  // Both QOI_STATISTICS and ESTIMATOR_PERFORMANCE
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
   avgEstVar = average(estVar);
 }
@@ -618,7 +626,22 @@ multilevel_control_variate_mc_offline_pilot()
       increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
 				     numSamples, lf_lev_cost, hf_ref_cost);
       // leave evaluation ratios and Lambda at values from Oracle pilot
+    }
+    else {
+      // accumulate H sums for lev = 0, Y sums for lev > 0
+      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_hf[lev]);
+      increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
+    }
+  }
 
+  // --------------------------------------------------------
+  // LF increments and final stats from online sample profile
+  // --------------------------------------------------------
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS) {
+
+    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
       // LF increments from online sample profile
       configure_indices(group, lf_form, lev, sequenceType);
       if (lf_increment(eval_ratios_pilot[lev], N_lf[lev], hf_targets_pilot[lev],
@@ -628,31 +651,26 @@ multilevel_control_variate_mc_offline_pilot()
 				     hf_ref_cost);
       }
     }
-    else {
-      // accumulate H sums for lev = 0, Y sums for lev > 0
-      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_hf[lev]);
-      increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
-    }
-  }
 
-  // --------------------------------------
-  // Final stats from online sample profile
-  // --------------------------------------
-  RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
-  for (lev=0; lev<num_cv_lev; ++lev) {
-    cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
-		   sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
-		   sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
-		   N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
-		   /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
-    Y_mom += Y_cvmc_mom;
+    RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
+    for (lev=0; lev<num_cv_lev; ++lev) {
+      cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
+		     sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
+		     sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
+		     N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
+		     /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
+      Y_mom += Y_cvmc_mom;
+    }
+    if (num_hf_lev > num_cv_lev)
+      ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
+		     num_cv_lev, num_hf_lev, Y_mom);
+    // Convert uncentered raw moment estimates to final moments (central or std)
+    convert_moments(Y_mom, momentStats);
+    recover_variance(momentStats, varH); // online variance
   }
-  if (num_hf_lev > num_cv_lev)
-    ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
-		   num_cv_lev, num_hf_lev, Y_mom);
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mom, momentStats);
-  recover_variance(momentStats, varH); // online variance
+  else // for consistency with pilot projection
+    update_projected_samples(hf_targets_pilot, eval_ratios_pilot,
+			     N_hf, hf_cost, N_lf, lf_cost);
 
   // Retain var_YH and Lambda from "oracle" pilot for computing final estimator
   // variances.  This results in mixing offline var_YH,Lambda with online
@@ -1864,16 +1882,17 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
 	<< std::setw(wpp7) << avgEstVar / avg_mlmc_estvar0 << '\n';
       break;
     }
-    switch (pilotMgmtMode) {
-    case ONLINE_PILOT: case OFFLINE_PILOT:
-      avg_budget_mc_estvar = average(varH) / equivHFEvals;
-      s << " Equivalent     MC (" << std::setw(5)
-	<< (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
-	<< std::setw(wpp7) << avg_budget_mc_estvar
-	<< "\n Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
-	<< avgEstVar / avg_budget_mc_estvar << '\n';
-      break;
-    }
+    if (finalStatsType == QOI_STATISTICS)
+      switch (pilotMgmtMode) {
+      case ONLINE_PILOT: case OFFLINE_PILOT:
+	avg_budget_mc_estvar = average(varH) / equivHFEvals;
+	s << " Equivalent     MC (" << std::setw(5)
+	  << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+	  << std::setw(wpp7) << avg_budget_mc_estvar
+	  << "\n Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
+	  << avgEstVar / avg_budget_mc_estvar << '\n';
+	break;
+      }
     break;
   }
   }
