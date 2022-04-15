@@ -10,7 +10,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 6
+<<<<< Best evaluation ID: 6
 <<<<< Function evaluation summary (I2): 41 total (41 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 cdv_1
@@ -22,4 +22,4 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 31
+<<<<< Best evaluation ID: 31
