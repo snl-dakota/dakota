@@ -17,7 +17,7 @@ Test Number 0 succeeded
                                     21 N_mod
 <<<<< Best objective function  =
                      -8.9965332302e+00
-<<<<< Best data captured at function evaluation 229
+<<<<< Best evaluation ID: 229
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 416 total (291 new, 125 duplicate)
          obj_fn: 416 val (291 n, 125 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -37,7 +37,7 @@ Test Number 1 succeeded
                                     21 N_mod
 <<<<< Best objective function  =
                      -8.9965332302e+00
-<<<<< Best data captured at function evaluation 408
+<<<<< Best evaluation ID: 408
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 302 total (245 new, 57 duplicate)
          obj_fn: 302 val (245 n, 57 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -57,4 +57,4 @@ Test Number 2 succeeded
                                     21 N_mod
 <<<<< Best objective function  =
                      -8.9965332302e+00
-<<<<< Best data captured at function evaluation 294
+<<<<< Best evaluation ID: 294

@@ -9,7 +9,7 @@ Test Number 0 succeeded
                       4.1992349823504881e-04
 <<<<< Best constraint values   =
                       1.0990060825483847e+03
-<<<<< Best data captured at function evaluation 31
+<<<<< Best evaluation ID: 31
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 421138 total (421138 new, 0 duplicate)
 <<<<< Function evaluation summary: 421138 total (421138 new, 0 duplicate)
@@ -20,7 +20,7 @@ Test Number 1 succeeded
                       4.5886086975979674e-04
 <<<<< Best constraint values   =
                       1.0036149578406321e+03
-<<<<< Best data captured at function evaluation 33
+<<<<< Best evaluation ID: 33
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 1208355 total (1208355 new, 0 duplicate)
 <<<<< Function evaluation summary: 1208355 total (1208355 new, 0 duplicate)
@@ -32,7 +32,7 @@ Test Number 2 succeeded
                       4.4789548540767241e-04
 <<<<< Best constraint values   =
                       1.0007327000825569e+03
-<<<<< Best data captured at function evaluation 27
+<<<<< Best evaluation ID: 27
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 969790 total (969790 new, 0 duplicate)
 <<<<< Function evaluation summary: 969790 total (969790 new, 0 duplicate)
@@ -44,7 +44,7 @@ Test Number 3 succeeded
                       2.4305286867380496e-04
 <<<<< Best constraint values   =
                       9.9974821516236022e+02
-<<<<< Best data captured at function evaluation 29
+<<<<< Best evaluation ID: 29
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 25500 total (25500 new, 0 duplicate)
 <<<<< Function evaluation summary: 25500 total (25500 new, 0 duplicate)
@@ -56,7 +56,7 @@ Test Number 4 succeeded
                       6.2626019571626916e-04
 <<<<< Best constraint values   =
                       9.9957664587543309e+02
-<<<<< Best data captured at function evaluation 32
+<<<<< Best evaluation ID: 32
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 10200 total (10200 new, 0 duplicate)
 <<<<< Function evaluation summary: 10200 total (10200 new, 0 duplicate)
@@ -67,7 +67,7 @@ Test Number 5 succeeded
                       5.0536394688153563e-04
 <<<<< Best constraint values   =
                       1.0002807048502954e+03
-<<<<< Best data captured at function evaluation 29
+<<<<< Best evaluation ID: 29
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 15300 total (15300 new, 0 duplicate)
 <<<<< Function evaluation summary: 15300 total (15300 new, 0 duplicate)
@@ -79,7 +79,7 @@ Test Number 6 succeeded
                       4.9292288020090123e-04
 <<<<< Best constraint values   =
                       9.9987875362599709e+02
-<<<<< Best data captured at function evaluation 30
+<<<<< Best evaluation ID: 30
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 15300 total (15300 new, 0 duplicate)
 <<<<< Function evaluation summary: 15300 total (15300 new, 0 duplicate)
@@ -91,7 +91,7 @@ Test Number 7 succeeded
                       2.6433428376710397e-04
 <<<<< Best constraint values   =
                       9.9992345588362082e+02
-<<<<< Best data captured at function evaluation 26
+<<<<< Best evaluation ID: 26
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 656299 total (656299 new, 0 duplicate)
 <<<<< Function evaluation summary: 656299 total (656299 new, 0 duplicate)
@@ -103,7 +103,7 @@ Test Number 8 succeeded
                       2.4428414195109248e-04
 <<<<< Best constraint values   =
                       9.9969272302778745e+02
-<<<<< Best data captured at function evaluation 9
+<<<<< Best evaluation ID: 9
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 9000 total (9000 new, 0 duplicate)
 <<<<< Function evaluation summary: 9000 total (9000 new, 0 duplicate)
@@ -115,4 +115,4 @@ Test Number 9 succeeded
                       2.6286097689641030e-04
 <<<<< Best constraint values   =
                       1.0004458921963873e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

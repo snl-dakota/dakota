@@ -8,7 +8,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -4.1279607468e-05
                      -3.0163603961e-02
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 2400 total (2400 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -19,4 +19,4 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -3.6087477139e-04
                       1.3970345452e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

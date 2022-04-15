@@ -135,7 +135,8 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       1.7248578281e-02
                      -3.0878092916e-08
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 67
 Confidence Intervals on Calibrated Parameters:
             x1: [ 5.3420319477e-02, 1.8191511729e-01 ]
             x2: [ 3.5904183623e-01, 4.3012888214e-01 ]
@@ -276,7 +277,8 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                       5.0004053719e-02
                      -5.0000017169e-02
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 34
 Confidence Intervals on Calibrated Parameters:
             x1: [ 7.8347603479e-02, 2.4487802291e-01 ]
             x2: [ 4.0201527600e-01, 4.9785745861e-01 ]

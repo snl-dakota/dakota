@@ -23,7 +23,7 @@ Test Number 0 succeeded
                       0.0000000000e+00 cdv_20
 <<<<< Best objective function  =
                      -1.7076519863e+02
-<<<<< Best data captured at function evaluation 19
+<<<<< Best evaluation ID: 19
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 0 total (0 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -49,4 +49,4 @@ Test Number 1 succeeded
                       0.0000000000e+00 cdv_20
 <<<<< Best objective function  =
                      -1.7076519860e+02
-<<<<< Best data captured at function evaluation 19
+<<<<< Best evaluation ID: 19

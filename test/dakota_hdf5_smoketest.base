@@ -8,7 +8,7 @@ Test Number 0 succeeded
 <<<<< Best residual terms =
                       3.8795753666e-03
                       1.3541116651e-04
-<<<<< Best data captured at function evaluation 40
+<<<<< Best evaluation ID: 40
 Confidence Intervals on Calibrated Parameters:
              E: [ -9.1248819768e+04, 9.1250344955e+04 ]
              w: [ -2.7848325462e+05, 2.7848558027e+05 ]

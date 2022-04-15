@@ -70,7 +70,7 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary (LF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 4.9997265625000000e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 4.9997265625000000e+02
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589732e-06
   Projected   MC (   25 HF samples):  4.1006897417589732e-06
@@ -115,7 +115,7 @@ Test Number 7 succeeded
 <<<<< Function evaluation summary (LF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5003164062500000e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 2.5003164062500000e+03
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589732e-06
   Projected   MC (   57 HF samples):  1.7985481323504270e-06
@@ -160,7 +160,7 @@ Test Number 10 succeeded
 <<<<< Function evaluation summary (LF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 1.0000000000000000e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0000000000000000e+02
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589732e-06
   Projected   MC (   25 HF samples):  4.1006897417589732e-06
@@ -205,7 +205,7 @@ Test Number 13 succeeded
 <<<<< Function evaluation summary (LF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 4.9990625000000000e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 4.9990625000000000e+02
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589732e-06
   Projected   MC (   32 HF samples):  3.2036638607491974e-06
@@ -250,7 +250,7 @@ Test Number 16 succeeded
 <<<<< Function evaluation summary (LF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5004023437500000e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 2.5004023437500000e+03
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589732e-06
   Projected   MC (  161 HF samples):  6.3675306549052375e-07

@@ -10,7 +10,7 @@ Test Number 0 succeeded
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0759945994e+00
-<<<<< Best data captured at function evaluation 242
+<<<<< Best evaluation ID: 242
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 1000 total (966 new, 34 duplicate)
 <<<<< Best parameters          =
@@ -23,7 +23,7 @@ Test Number 1 succeeded
                       1.6257912333e+00 x7
 <<<<< Best objective function  =
                       7.7070916534e-01
-<<<<< Best data captured at function evaluation 962
+<<<<< Best evaluation ID: 962
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 618 total (618 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -36,7 +36,7 @@ Test Number 2 succeeded
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0760256654e+00
-<<<<< Best data captured at function evaluation 618
+<<<<< Best evaluation ID: 618
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 650 total (650 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -49,7 +49,7 @@ Test Number 3 succeeded
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0760038064e+00
-<<<<< Best data captured at function evaluation 650
+<<<<< Best evaluation ID: 650
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 619 total (619 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -62,7 +62,7 @@ Test Number 4 succeeded
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0760005327e+00
-<<<<< Best data captured at function evaluation 619
+<<<<< Best evaluation ID: 619
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -75,4 +75,4 @@ Test Number 5 succeeded
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0759888899e+00
-<<<<< Best data captured at function evaluation 44
+<<<<< Best evaluation ID: 44

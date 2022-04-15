@@ -11,7 +11,7 @@ Test Number 0 succeeded
                       1.3399571445e+00
 <<<<< Best constraint values   =
                       2.4220883660e-08
-<<<<< Best data captured at function evaluation 44
+<<<<< Best evaluation ID: 44
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 71 total (71 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 7 total (4 new, 3 duplicate)
@@ -25,4 +25,4 @@ Test Number 1 succeeded
                       1.3399560022e+00
 <<<<< Best constraint values   =
                       5.7111102141e-06
-<<<<< Best data captured at function evaluation 6
+<<<<< Best evaluation ID: 6

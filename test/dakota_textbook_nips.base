@@ -8,7 +8,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       4.6629367034e-15
                       8.6597395921e-15
-<<<<< Best data captured at function evaluation 15
+<<<<< Best evaluation ID: 15
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 182 total (45 new, 137 duplicate)
 <<<<< Best parameters          =
@@ -19,7 +19,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                       1.9706458687e-14
                       2.3037127761e-14
-<<<<< Best data captured at function evaluation 170
+<<<<< Best evaluation ID: 170
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 60 total (36 new, 24 duplicate)
 <<<<< Best parameters          =
@@ -30,7 +30,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                       6.3721250498e-13
                       1.1408096690e-12
-<<<<< Best data captured at function evaluation 56
+<<<<< Best evaluation ID: 56
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 294 total (72 new, 222 duplicate)
 <<<<< Best parameters          =
@@ -41,7 +41,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                       6.6602279247e-13
                       1.1103340469e-12
-<<<<< Best data captured at function evaluation 270
+<<<<< Best evaluation ID: 270
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -52,7 +52,7 @@ Test Number 4 succeeded
 <<<<< Best constraint values   =
                       6.3721250498e-13
                       1.1408096690e-12
-<<<<< Best data captured at function evaluation 12
+<<<<< Best evaluation ID: 12
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -63,7 +63,7 @@ Test Number 5 succeeded
                       2.6394993882e-02
 <<<<< Best constraint values   =
                      -4.5257131376e-12
-<<<<< Best data captured at function evaluation 13
+<<<<< Best evaluation ID: 13
 Confidence Intervals on Calibrated Parameters:
             x1: [ -7.8313773415e-01, 1.8501667624e+00 ]
             x2: [ -1.7133513760e+00, 2.7463223477e+00 ]
@@ -77,7 +77,7 @@ Test Number 6 succeeded
                       2.6394993903e-02
 <<<<< Best constraint values   =
                       1.0319523014e-13
-<<<<< Best data captured at function evaluation 4
+<<<<< Best evaluation ID: 4
 Confidence Intervals on Calibrated Parameters:
             x1: [ -7.8313773401e-01, 1.8501667623e+00 ]
             x2: [ -1.7133513760e+00, 2.7463223476e+00 ]
@@ -98,7 +98,7 @@ Test Number 7 succeeded
                       3.5018717821e-02
                      -4.7902545262e-01
                      -9.3585810555e-02
-<<<<< Best data captured at function evaluation 11
+<<<<< Best evaluation ID: 11
 Confidence Intervals on Calibrated Parameters:
             x1: [ 3.9238166996e+00, 4.0785030735e+00 ]
             x2: [ 4.3943429713e-01, 3.5137892648e+00 ]
@@ -119,7 +119,7 @@ Test Number 8 succeeded
                       3.5018717821e-02
                      -4.7902545262e-01
                      -9.3585810555e-02
-<<<<< Best data captured at function evaluation 11
+<<<<< Best evaluation ID: 11
 Confidence Intervals on Calibrated Parameters:
             x1: [ 3.9238166996e+00, 4.0785030735e+00 ]
             x2: [ 4.3943429713e-01, 3.5137892648e+00 ]
@@ -158,7 +158,8 @@ Test Number 9 succeeded
                      -3.4878150029e-01
                      -9.2652280288e-01
                      -5.7140784474e-01
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 11
 Confidence Intervals on Calibrated Parameters:
             x1: [ 3.9930947702e+00, 4.0103656291e+00 ]
             x2: [ 1.9379758268e+00, 2.2234937478e+00 ]
@@ -197,7 +198,7 @@ Test Number 10 succeeded
                      -9.1603778181e-01
                      -1.1050547248e+00
                       4.8911396698e-02
-<<<<< Best data captured at function evaluation 113
+<<<<< Best evaluation ID: 113
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 51 total (51 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -209,7 +210,7 @@ Test Number 11 succeeded
 <<<<< Best constraint values   =
                      -1.2379037390e-01
                       3.5294970375e-01
-<<<<< Best data captured at function evaluation 51
+<<<<< Best evaluation ID: 51
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 1 total (1 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -221,7 +222,7 @@ Test Number 12 succeeded
                       2.2500000000e-01
 <<<<< Best constraint values   =
                      -2.4750000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -248,7 +249,8 @@ Test Number 13 succeeded
 <<<<< Best constraint values   =
                       0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 4
 Confidence Intervals on Calibrated Parameters:
             x1: [ -1.1005364103e+14, 1.1005364103e+14 ]
             x2: [ -1.1005364103e+14, 1.1005364103e+14 ]
