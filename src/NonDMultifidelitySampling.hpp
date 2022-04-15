@@ -179,6 +179,11 @@ private:
   /// ratio of MFMC to MC estimator variance for the same HF samples,
   /// also known as (1 - R^2)
   RealVector estVarRatios;
+
+  /// controls use of numerical solve option: either a fallback in case of
+  /// model misordering (default = NUMERICAL_FALLBACK) or override for
+  /// robustness, e.g., to pilot over-estimation (NUMERICAL_OVERRIDE)
+  unsigned short numericalSolveMode;
 };
 
 

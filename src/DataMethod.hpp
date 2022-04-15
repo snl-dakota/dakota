@@ -230,8 +230,10 @@ enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE,
 enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
        CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
 
-// MFMC modes
+// ML/MF sampling modes
 enum { ONLINE_PILOT, OFFLINE_PILOT, PILOT_PROJECTION };
+// Numerical solution modes
+enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
 
 // ---------------
 // NonDReliability
@@ -1011,6 +1013,15 @@ public:
   /// (e.g. number of supplemental points added) to be added to be
   /// added to the build points for an emulator at each iteration
   IntVector refineSamples;
+
+  /// the method used for solving an optimization sub-problem (e.g.,
+  /// pre-solve for the MAP point)
+  unsigned short optSubProbSolver;
+  /// approach for overriding an analytic solution based on simplifying
+  /// assumptions that might be violated, suggesting a fallback approach,
+  /// or lacking robustness, suggesting an optional override replacement
+  unsigned short numericalSolveMode;
+
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
   /// the \c solution_mode selection for ML/MF sampling methods
@@ -1098,9 +1109,6 @@ public:
   int evidenceSamples;
   /// flag indicating use of Laplace approximation for evidence calc.
   bool modelEvidLaplace;
-  /// the method used for solving an optimization sub-problem (e.g.,
-  /// pre-solve for the MAP point)
-  unsigned short optSubProbSolver;
   /// the type of proposal covariance: user, derivatives, or prior
   String proposalCovType;
   /// optional multiplier for prior-based proposal covariance
