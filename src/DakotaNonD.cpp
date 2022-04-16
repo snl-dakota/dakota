@@ -1219,7 +1219,7 @@ sub_optimizer_select(unsigned short requested_sub_method,
       assigned_sub_method = SUBMETHOD_NIP;
 #endif
       break;
-    case SUBMETHOD_NIP:
+    case SUBMETHOD_NIP: // use SUBMETHOD_NIP if available
 #ifdef HAVE_OPTPP
       assigned_sub_method = SUBMETHOD_NIP;
 #elif HAVE_NPSOL
