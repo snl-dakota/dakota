@@ -2,6 +2,9 @@
 #@ s7: DakotaConfig=HAVE_NPSOL
 #@ s8: DakotaConfig=HAVE_NPSOL
 #@ s9: DakotaConfig=HAVE_NPSOL
+#@ s10: DakotaConfig=HAVE_NPSOL
+#@ s11: DakotaConfig=HAVE_NPSOL
+#@ s15: DakotaConfig=HAVE_NPSOL
 
 environment
 	output_precision = 16
