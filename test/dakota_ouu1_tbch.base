@@ -11,7 +11,8 @@ Test Number 0 succeeded
                      -3.3446883026e-01
                      -2.7739780289e-04
                       1.5964870573e+05
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 30
 Test Number 1 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 19 total (15 new, 4 duplicate)
 <<<<< Function evaluation summary (UQ_I): 950 total (950 new, 0 duplicate)
@@ -25,4 +26,5 @@ Test Number 1 succeeded
                      -3.3207984102e-01
                      -2.9481311561e-03
                       1.6000000000e+05
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 13

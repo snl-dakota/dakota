@@ -5,7 +5,7 @@ Test Number 0 succeeded
                       9.9999401065e-01 x2
 <<<<< Best objective function  =
                       3.3893258019e-10
-<<<<< Best data captured at function evaluation 929
+<<<<< Best evaluation ID: 929
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -13,4 +13,4 @@ Test Number 1 succeeded
                       9.1721169983e-01 x2
 <<<<< Best objective function  =
                      -1.0941295313e+00
-<<<<< Best data captured at function evaluation 493
+<<<<< Best evaluation ID: 493

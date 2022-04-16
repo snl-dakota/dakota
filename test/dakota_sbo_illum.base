@@ -11,7 +11,7 @@ Test Number 0 succeeded
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0759894336e+00
-<<<<< Best data captured at function evaluation 780
+<<<<< Best evaluation ID: 780
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 1532 total (1532 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 862 total (862 new, 0 duplicate)
@@ -25,7 +25,7 @@ Test Number 1 succeeded
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0760048427e+00
-<<<<< Best data captured at function evaluation 862
+<<<<< Best evaluation ID: 862
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 424 total (424 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 504 total (504 new, 0 duplicate)
@@ -39,4 +39,4 @@ Test Number 2 succeeded
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0759888873e+00
-<<<<< Best data captured at function evaluation 504
+<<<<< Best evaluation ID: 504

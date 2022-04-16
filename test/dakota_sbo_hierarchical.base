@@ -6,7 +6,7 @@ Test Number 0 succeeded
                       1.0000000221e+00 x2
 <<<<< Best objective function  =
                       1.1781556400e-15
-<<<<< Best data captured at function evaluation 11
+<<<<< Best evaluation ID: 11
 Test Number 1 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 285 total (254 new, 31 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 59 total (59 new, 0 duplicate)
@@ -15,7 +15,7 @@ Test Number 1 succeeded
                       9.9999984957e-01 x2
 <<<<< Best objective function  =
                       8.9694908814e-15
-<<<<< Best data captured at function evaluation 59
+<<<<< Best evaluation ID: 59
 Test Number 2 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 72 total (67 new, 5 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 11 total (11 new, 0 duplicate)
@@ -24,7 +24,7 @@ Test Number 2 succeeded
                       1.0000000221e+00 x2
 <<<<< Best objective function  =
                       1.1781560692e-15
-<<<<< Best data captured at function evaluation 11
+<<<<< Best evaluation ID: 11
 Test Number 3 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 23 total (23 new, 0 duplicate)
@@ -33,7 +33,7 @@ Test Number 3 succeeded
                       1.0000000224e+00 x2
 <<<<< Best objective function  =
                       1.1816927162e-15
-<<<<< Best data captured at function evaluation 21
+<<<<< Best evaluation ID: 21
 Test Number 4 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 366 total (303 new, 63 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 127 total (127 new, 0 duplicate)
@@ -42,7 +42,7 @@ Test Number 4 succeeded
                       9.9996435771e-01 x2
 <<<<< Best objective function  =
                       3.1799872542e-10
-<<<<< Best data captured at function evaluation 125
+<<<<< Best evaluation ID: 125
 Test Number 5 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 23 total (23 new, 0 duplicate)
@@ -51,7 +51,7 @@ Test Number 5 succeeded
                       1.0000000220e+00 x2
 <<<<< Best objective function  =
                       1.1772889081e-15
-<<<<< Best data captured at function evaluation 21
+<<<<< Best evaluation ID: 21
 Test Number 6 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 518 total (382 new, 136 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 138 total (138 new, 0 duplicate)
@@ -60,7 +60,7 @@ Test Number 6 succeeded
                       9.9999930645e-01 x2
 <<<<< Best objective function  =
                       1.7982697532e-13
-<<<<< Best data captured at function evaluation 138
+<<<<< Best evaluation ID: 138
 Test Number 7 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 390 total (306 new, 84 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 86 total (86 new, 0 duplicate)
@@ -69,7 +69,7 @@ Test Number 7 succeeded
                       9.9998650368e-01 x2
 <<<<< Best objective function  =
                       4.5434850352e-11
-<<<<< Best data captured at function evaluation 86
+<<<<< Best evaluation ID: 86
 Test Number 8 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 433 total (343 new, 90 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 92 total (92 new, 0 duplicate)
@@ -78,7 +78,7 @@ Test Number 8 succeeded
                       1.0000010667e+00 x2
 <<<<< Best objective function  =
                       6.0987681476e-13
-<<<<< Best data captured at function evaluation 92
+<<<<< Best evaluation ID: 92
 Test Number 9 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 412 total (272 new, 140 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 141 total (141 new, 0 duplicate)
@@ -87,7 +87,7 @@ Test Number 9 succeeded
                       4.0160722685e-01 x2
 <<<<< Best objective function  =
                       1.3336149754e-01
-<<<<< Best data captured at function evaluation 136
+<<<<< Best evaluation ID: 136
 Test Number 10 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 690 total (509 new, 181 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 173 total (172 new, 1 duplicate)
@@ -96,7 +96,7 @@ Test Number 10 succeeded
                       9.9821849157e-01 x2
 <<<<< Best objective function  =
                       7.9216708381e-07
-<<<<< Best data captured at function evaluation 173
+<<<<< Best evaluation ID: 173
 Test Number 11 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 592 total (437 new, 155 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 157 total (157 new, 0 duplicate)
@@ -105,7 +105,7 @@ Test Number 11 succeeded
                       9.9998233739e-01 x2
 <<<<< Best objective function  =
                       7.7805774922e-11
-<<<<< Best data captured at function evaluation 157
+<<<<< Best evaluation ID: 157
 Test Number 12 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 615 total (511 new, 104 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 208 total (208 new, 0 duplicate)
@@ -114,7 +114,7 @@ Test Number 12 succeeded
                       9.9997684722e-01 x2
 <<<<< Best objective function  =
                       1.4835024980e-10
-<<<<< Best data captured at function evaluation 208
+<<<<< Best evaluation ID: 208
 Test Number 13 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 1021 total (520 new, 501 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 874 total (873 new, 1 duplicate)
@@ -123,7 +123,7 @@ Test Number 13 succeeded
                       5.1126366456e-01 x2
 <<<<< Best objective function  =
                       8.0845491072e-02
-<<<<< Best data captured at function evaluation 872
+<<<<< Best evaluation ID: 872
 Test Number 14 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 753 total (514 new, 239 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 401 total (401 new, 0 duplicate)
@@ -132,7 +132,7 @@ Test Number 14 succeeded
                       8.0137372572e-02 x2
 <<<<< Best objective function  =
                       1.6461925946e+00
-<<<<< Best data captured at function evaluation 400
+<<<<< Best evaluation ID: 400
 Test Number 15 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 131 total (73 new, 58 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 38 total (12 new, 26 duplicate)
@@ -141,7 +141,7 @@ Test Number 15 succeeded
                       4.4000000869e-01 x2
 <<<<< Best objective function  =
                       4.0399999904e+00
-<<<<< Best data captured at function evaluation 20
+<<<<< Best evaluation ID: 20
 Test Number 16 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 106 total (85 new, 21 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 44 total (23 new, 21 duplicate)
@@ -150,7 +150,7 @@ Test Number 16 succeeded
                      -1.8396401108e-01 x2
 <<<<< Best objective function  =
                       4.7627694185e+00
-<<<<< Best data captured at function evaluation 44
+<<<<< Best evaluation ID: 44
 Test Number 17 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 100 total (76 new, 24 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 35 total (10 new, 25 duplicate)
@@ -159,4 +159,4 @@ Test Number 17 succeeded
                       4.4000000000e-01 x2
 <<<<< Best objective function  =
                       4.0400000000e+00
-<<<<< Best data captured at function evaluation 18
+<<<<< Best evaluation ID: 18

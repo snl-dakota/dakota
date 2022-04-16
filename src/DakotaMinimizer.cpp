@@ -689,6 +689,69 @@ objective_hessian(const RealVector& fn_vals, size_t num_fns,
 }
 
 
+/** Lookup evaluation id where best occurred.  This cannot be
+    catalogued directly because the optimizers track the best iterate
+    internally and return the best results after iteration completion.
+    Therfore, perform a search in data_pairs to extract the evalId for
+    the best fn eval. */
+void Minimizer::print_best_eval_ids(const String& search_interface_id,
+				    const Variables& search_vars,
+				    const ActiveSet& search_set,
+				    std::ostream& s) const
+{
+  const String
+    best_id = "<<<<< Best evaluation ID: ",
+    best_id_restart = "<<<<< Best evaluation ID not found among current execution's evaluations, but\nretrieved from restart file evaluation ID: ",
+    best_id_partial = "<<<<< Best evaluation ID (partial match): ",
+    best_ids_partial = "<<<<< Best evaluation IDs (partial matches): ",
+    id_na = "<<<<< Best evaluation ID not available\n",
+    id_full_na = "<<<<< Best evaluation ID (full match) not available\n",
+    id_warning = "(This warning may occur when the best iterate is comprised of multiple interface\nevaluations or arises from a composite, surrogate, or transformation model.)\n";
+
+  PRPCacheHIter cache_it =
+    lookup_by_val(data_pairs, search_interface_id, search_vars, search_set);
+  if (cache_it == data_pairs.get<hashed>().end()) {
+
+    // no exact match; try to match only vars/interface ID via hash
+    // (don't check search_set)
+    Response search_resp(SIMULATION_RESPONSE, search_set);
+    ParamResponsePair search_pr(search_vars, search_interface_id, search_resp);
+    PRPCacheHIter prp_hash_it0, prp_hash_it1;
+    boost::tuples::tie(prp_hash_it0, prp_hash_it1)
+      = data_pairs.get<hashed>().equal_range(search_pr);
+
+    std::set<int> sorted_eval_ids; // in case hash isn't in eval ID order
+    while (prp_hash_it0 != prp_hash_it1) {
+      sorted_eval_ids.insert(prp_hash_it0->eval_id());
+      ++prp_hash_it0;
+    }
+
+    if (sorted_eval_ids.empty())
+      s << id_na << id_warning;
+    else {
+      s << id_full_na << id_warning;
+      s << ((sorted_eval_ids.size() == 1) ? best_id_partial : best_ids_partial);
+      // gymnastics due to use of set, which lacks .back():
+      auto it = sorted_eval_ids.begin();
+      while (it != sorted_eval_ids.end()) {
+	s << *(it++);
+	if (it != sorted_eval_ids.end())
+	  s << ", ";
+      }
+      s << '\n';
+    }
+  }
+  else {
+    int eval_id = cache_it->eval_id();
+    if (eval_id > 0)
+      s << best_id << eval_id << '\n';
+    else // should not occur
+      s << best_id_restart << -eval_id << '\n';
+  }
+  s << std::endl;
+}
+
+
 void Minimizer::archive_best_variables(const bool active_only) const {
   if(!resultsDB.active()) return;
   // archive the best point in the iterator database

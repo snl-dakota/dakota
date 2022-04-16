@@ -9,7 +9,7 @@ Test Number 0 succeeded
                       4.1137717574e-01
                       5.1513799082e-09
                       3.7427242495e-01
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 12450 total (12450 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -21,4 +21,4 @@ Test Number 1 succeeded
                       4.2438183023e-01
                       8.5128712947e-08
                       3.7103738134e-01
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

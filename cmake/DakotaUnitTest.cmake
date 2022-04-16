@@ -31,7 +31,7 @@ function(dakota_add_unit_test)
   # TODO: support dependencies directly in this call with DEPENDS
   #add_dependencies(${exe_target} ${DAUT_DEPENDS})
   add_test(${DAUT_NAME} ${exe_target})
-  set_property(TEST ${DAUT_NAME} PROPERTY LABELS UnitTest ${DAUT_LABELS})
+  set_property(TEST ${DAUT_NAME} PROPERTY LABELS Unit ${DAUT_LABELS})
 
 endfunction()
 

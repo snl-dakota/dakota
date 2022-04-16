@@ -9,7 +9,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       5.0000000000e-01
                       5.0000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 35 total (35 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -21,7 +21,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                       5.0000000000e-01
                       5.0000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -33,7 +33,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                       5.0000000000e-01
                       5.0000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -45,7 +45,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                       6.1000000000e-01
                       8.9000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -57,7 +57,7 @@ Test Number 4 succeeded
 <<<<< Best constraint values   =
                       1.4000000000e-01
                       6.0000000000e-01
-<<<<< Best data captured at function evaluation 3
+<<<<< Best evaluation ID: 3
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -69,7 +69,7 @@ Test Number 5 succeeded
 <<<<< Best constraint values   =
                      -1.6666666667e+00
                       1.1111111111e+01
-<<<<< Best data captured at function evaluation 32
+<<<<< Best evaluation ID: 32
 Simple Correlation Matrix among all inputs and outputs:
                     cdv_1        cdv_2        cdv_3       obj_fn nln_ineq_con_1 nln_ineq_con_2 
        cdv_1  1.00000e+00 
@@ -110,7 +110,7 @@ Test Number 6 succeeded
 <<<<< Best constraint values   =
                       5.0000000000e-01
                       5.0000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -125,7 +125,7 @@ Test Number 7 succeeded
 <<<<< Best constraint values   =
                       6.1000000000e-01
                       8.9000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -140,7 +140,7 @@ Test Number 8 succeeded
 <<<<< Best constraint values   =
                       3.1000000000e-01
                       5.5000000000e-01
-<<<<< Best data captured at function evaluation 2
+<<<<< Best evaluation ID: 2
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 729 total (729 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -155,7 +155,7 @@ Test Number 9 succeeded
 <<<<< Best constraint values   =
                       0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Simple Correlation Matrix among all inputs and outputs:
                     cdv_1        cdv_2        cdv_3      ddriv_1      ddsiv_1      ddsrv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
        cdv_1  1.00000e+00 
@@ -205,7 +205,7 @@ Test Number 10 succeeded
 <<<<< Best constraint values   =
                       6.1000000000e-01
                       8.9000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -220,4 +220,4 @@ Test Number 11 succeeded
 <<<<< Best constraint values   =
                       6.1000000000e-01
                       8.9000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1

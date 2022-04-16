@@ -28,8 +28,6 @@ static const char rcsId[]="@(#) $Id: DakotaOptimizer.cpp 7031 2010-10-22 16:23:5
 
 namespace Dakota {
 
-extern PRPCache data_pairs; // global container
-
 // initialization of static needed by RecastModel
 Optimizer* Optimizer::optimizerInstance(NULL);
 
@@ -223,7 +221,6 @@ void Optimizer::print_results(std::ostream& s, short results_state)
   const String& interface_id = orig_model.interface_id(); 
   // use asv = 1's
   ActiveSet search_set(orig_model.response_size(), numContinuousVars);
-  int eval_id;
   // -------------------------------------
   // Single and Multipoint results summary
   // -------------------------------------
@@ -280,26 +277,8 @@ void Optimizer::print_results(std::ostream& s, short results_state)
       write_data_partial(s, numUserPrimaryFns, numNonlinearConstraints, 
                          best_fns);
     } 
-    // lookup evaluation id where best occurred.  This cannot be catalogued
-    // directly because the optimizers track the best iterate internally and
-    // return the best results after iteration completion.  Therfore, perform a
-    // search in data_pairs to extract the evalId for the best fn eval.
-    PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
-                                           best_vars, search_set);
-    if (cache_it == data_pairs.get<hashed>().end()) {
-      s << "<<<<< Best data not found in evaluation cache\n\n";
-      eval_id = 0;
-    } else {
-      eval_id = cache_it->eval_id();
-      if (eval_id > 0) {
-	s << "<<<<< Best data captured at function evaluation " << eval_id
-	  << "\n\n";
-      } else {// should not occur
-	s << "<<<<< Best data not found in evaluations from current execution,"
-	  << "\n      but retrieved from restart archive with evaluation id "
-	  << -eval_id << "\n\n";
-      }
-    }
+
+    print_best_eval_ids(interface_id, best_vars, search_set, s);
   }
 }
 

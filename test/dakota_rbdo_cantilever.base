@@ -11,7 +11,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       1.0025556904e-10
                       2.4760081494e-05
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 315 total (285 new, 30 duplicate)
   response_fn_1: 105 val (95 n, 10 d), 105 grad (95 n, 10 d), 0 Hess (0 n, 0 d)
@@ -25,7 +25,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                       1.0025556904e-10
                       2.4760081494e-05
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 691 total (644 new, 47 duplicate)
   response_fn_1: 73 val (71 n, 2 d), 73 grad (71 n, 2 d), 0 Hess (0 n, 0 d)
@@ -39,7 +39,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                       1.0796795326e-03
                       1.0146363953e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 1119 total (1111 new, 8 duplicate)
   response_fn_1: 73 val (71 n, 2 d), 73 grad (71 n, 2 d), 0 Hess (0 n, 0 d)
@@ -53,7 +53,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                       1.0796834162e-03
                       1.0146186298e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 4 succeeded
 <<<<< Function evaluation summary (UQ_I): 48 total (44 new, 4 duplicate)
   response_fn_1: 48 val (44 n, 4 d), 48 grad (44 n, 4 d), 0 Hess (0 n, 0 d)
@@ -67,7 +67,7 @@ Test Number 4 succeeded
 <<<<< Best constraint values   =
                       3.0004352593e+00
                       3.0791448888e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 5 succeeded
 <<<<< Function evaluation summary (UQ_I): 144 total (132 new, 12 duplicate)
   response_fn_1: 48 val (44 n, 4 d), 48 grad (44 n, 4 d), 0 Hess (0 n, 0 d)
@@ -81,7 +81,7 @@ Test Number 5 succeeded
 <<<<< Best constraint values   =
                       3.0004352593e+00
                       3.0791448888e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 6 succeeded
 <<<<< Function evaluation summary (UQ_I): 509 total (500 new, 9 duplicate)
   response_fn_1: 50 val (47 n, 3 d), 50 grad (47 n, 3 d), 0 Hess (0 n, 0 d)
@@ -95,7 +95,7 @@ Test Number 6 succeeded
 <<<<< Best constraint values   =
                       3.0001032413e+00
                       3.0114476789e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 7 succeeded
 <<<<< Function evaluation summary (UQ_I): 874 total (865 new, 9 duplicate)
   response_fn_1: 50 val (47 n, 3 d), 50 grad (47 n, 3 d), 0 Hess (0 n, 0 d)
@@ -109,7 +109,7 @@ Test Number 7 succeeded
 <<<<< Best constraint values   =
                       3.0001031575e+00
                       3.0114483405e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 8 succeeded
 <<<<< Function evaluation summary (UQ_I): 59 total (57 new, 2 duplicate)
   response_fn_1: 59 val (57 n, 2 d), 59 grad (57 n, 2 d), 0 Hess (0 n, 0 d)
@@ -123,7 +123,7 @@ Test Number 8 succeeded
 <<<<< Best constraint values   =
                      -1.1519873849e-04
                      -8.0739483662e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 9 succeeded
 <<<<< Function evaluation summary (UQ_I): 174 total (171 new, 3 duplicate)
   response_fn_1: 58 val (57 n, 1 d), 58 grad (57 n, 1 d), 0 Hess (0 n, 0 d)
@@ -137,7 +137,7 @@ Test Number 9 succeeded
 <<<<< Best constraint values   =
                      -8.2541489636e-05
                      -6.7998342115e-04
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 10 succeeded
 <<<<< Function evaluation summary (UQ_I): 480 total (461 new, 19 duplicate)
   response_fn_1: 58 val (56 n, 2 d), 58 grad (56 n, 2 d), 0 Hess (0 n, 0 d)
@@ -151,7 +151,7 @@ Test Number 10 succeeded
 <<<<< Best constraint values   =
                      -9.4389476350e-05
                      -1.7394841781e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 11 succeeded
 <<<<< Function evaluation summary (UQ_I): 1211 total (1205 new, 6 duplicate)
   response_fn_1: 58 val (56 n, 2 d), 58 grad (56 n, 2 d), 0 Hess (0 n, 0 d)
@@ -165,7 +165,7 @@ Test Number 11 succeeded
 <<<<< Best constraint values   =
                      -9.4389491074e-05
                      -1.7394841979e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 12 succeeded
 <<<<< Function evaluation summary (UQ_I): 59 total (57 new, 2 duplicate)
   response_fn_1: 59 val (57 n, 2 d), 59 grad (57 n, 2 d), 0 Hess (0 n, 0 d)
@@ -179,7 +179,7 @@ Test Number 12 succeeded
 <<<<< Best constraint values   =
                      -1.1518733444e-04
                      -8.0749752640e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 13 succeeded
 <<<<< Function evaluation summary (UQ_I): 174 total (171 new, 3 duplicate)
   response_fn_1: 58 val (57 n, 1 d), 58 grad (57 n, 1 d), 0 Hess (0 n, 0 d)
@@ -193,7 +193,7 @@ Test Number 13 succeeded
 <<<<< Best constraint values   =
                      -8.2559096450e-05
                      -6.8014322044e-04
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 14 succeeded
 <<<<< Function evaluation summary (UQ_I): 480 total (460 new, 20 duplicate)
   response_fn_1: 58 val (56 n, 2 d), 58 grad (56 n, 2 d), 0 Hess (0 n, 0 d)
@@ -207,7 +207,7 @@ Test Number 14 succeeded
 <<<<< Best constraint values   =
                      -9.4388646978e-05
                      -1.7404818682e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 15 succeeded
 <<<<< Function evaluation summary (UQ_I): 1208 total (1202 new, 6 duplicate)
   response_fn_1: 58 val (56 n, 2 d), 58 grad (56 n, 2 d), 0 Hess (0 n, 0 d)
@@ -221,4 +221,4 @@ Test Number 15 succeeded
 <<<<< Best constraint values   =
                      -9.4388661692e-05
                      -1.7404818880e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

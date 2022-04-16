@@ -1006,7 +1006,7 @@ update_best(const Variables& vars, int eval_id, const Response& response)
 void Analyzer::print_results(std::ostream& s, short results_state)
 {
   if (!numObjFns && !numLSqTerms) {
-    s << "<<<<< Best data metrics not defined for generic response functions\n";
+    s << "<<<<< Best parameters/responses are not reported for generic response_functions" << std::endl;
     return;
   }
 
@@ -1041,8 +1041,7 @@ void Analyzer::print_results(std::ostream& s, short results_state)
       if (num_best_map > 1) s << "(set " << i << ") "; s << "=\n";
       write_data_partial(s, offset, num_fns - offset, best_fns);
     }
-    s << "<<<<< Best data captured at function evaluation "
-      << best_pr.eval_id() << std::endl;
+    s << "<<<<< Best evaluation ID: " << best_pr.eval_id() << std::endl;
   }
 }
 
