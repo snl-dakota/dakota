@@ -40,7 +40,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDMultifidelitySampling::
 NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
-  NonDNonHierarchSampling(problem_db, model)
+  NonDNonHierarchSampling(problem_db, model),
+  numericalSolveMode(problem_db.get_ushort("method.nond.numerical_solve_mode"))
 {
   mlmfSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
 }
