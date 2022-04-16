@@ -732,7 +732,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
 
     bool use_adapter   = (optSubProblemSolver != SUBMETHOD_SQP &&
 			  optSubProblemSolver != SUBMETHOD_NIP);
-    bool construct_dfs = (optSubProblemSolver == SUBMETHOD_SBLO &&
+    bool construct_dfs = (optSubProblemSolver == SUBMETHOD_SBLO ||
 			  optSubProblemSolver == SUBMETHOD_SBGO);
     if (use_adapter) {
       // configure the minimization sub-problem
