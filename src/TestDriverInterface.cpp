@@ -2185,16 +2185,13 @@ int TestDriverInterface::tunable_model()
     std::map<var_t, Real>::iterator xc_iter;
     if (mform == "HF") {
       A = std::sqrt(11.);  xy_pow = 5;  rel_cost = 1.;
-      
       xc_iter = xCM.find(VAR_theta);
+#ifdef DEBUG
       if (xc_iter == xCM.end()) {
 	Cerr << "Failed theta find in tunable driver\n";
-	for (xc_iter=xCM.begin(); xc_iter!=xCM.end(); ++xc_iter)
-	  Cerr << "xCM type = " << xc_iter->first << " value = " << xc_iter->second << '\n';
-	//for (size_t i=0; i<xCMLabels.size(); ++i)
-	//  Cerr << "xCMLabel = " << xCMLabels[i] << '\n';
 	abort_handler(-1);
       }
+#endif
       active_th = (xc_iter == xCM.end()) ? PI / 2. : xc_iter->second;
     }
     else {
@@ -2203,19 +2200,39 @@ int TestDriverInterface::tunable_model()
       if (mform == "LF1") {
 	A = std::sqrt(7.);  xy_pow = 3;  active_delta = 1.;
 	xc_iter = xCM.find(VAR_theta1);
-	if (xc_iter == xCM.end()) { Cerr << "Failed theta1 find in Test" << std::endl; abort_handler(-1); }
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed theta1 find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
 	active_th  = (xc_iter == xCM.end()) ? PI / 3. : xc_iter->second;
       }
       else if (mform == "LF2") {
 	A = std::sqrt(3.);  xy_pow = 1;
 	xc_iter = xCM.find(VAR_theta2);
-	if (xc_iter == xCM.end()) { Cerr << "Failed theta2 find in Test" << std::endl; abort_handler(-1); }
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed theta2 find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
 	active_th  = (xc_iter == xCM.end())   ? PI / 6. : xc_iter->second;
 	xc_iter = xCM.find(VAR_delta);
-	if (xc_iter == xCM.end()) { Cerr << "Failed delta find in Test" << std::endl; abort_handler(-1); }
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed delta find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
 	active_delta = (xc_iter == xCM.end()) ? 2.5     : xc_iter->second;
 	xc_iter = xCM.find(VAR_gamma);
-	if (xc_iter == xCM.end()) { Cerr << "Failed gamma find in Test" << std::endl; abort_handler(-1); }
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed gamma find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
 	Real gamma2  = (xc_iter == xCM.end()) ? 0.55    : xc_iter->second;
 	w_lo *= gamma2;  w_hi *= gamma2; // new for LF: reduce MF cost by gamma
       }

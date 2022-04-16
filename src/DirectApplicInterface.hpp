@@ -225,9 +225,23 @@ protected:
   size_t analysisDriverIndex;
 
 private:
+
+  //
+  //- Heading: Methods
+  //
+
   /// map labels in src to var_t in dest
   void map_labels_to_enum(StringMultiArrayConstView &src,
       std::vector<var_t> &dest);
+
+  //
+  //- Heading: Data
+  //
+
+  /// for tracking need to update variables label arrays
+  String prevVarsId;
+  /// for tracking need to update response label arrays
+  String prevRespId;
 };
 
 

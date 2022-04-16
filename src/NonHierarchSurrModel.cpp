@@ -38,14 +38,11 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
     problem_db.set_db_model_nodes(unordered_model_ptrs[i]);
     unorderedModels[i] = problem_db.get_model();
     check_submodel_compatibility(unorderedModels[i]);
-    write_data(Cout, unorderedModels[i].all_continuous_variable_labels());
-    Cout << std::endl;
   }
 
   problem_db.set_db_model_nodes(truth_model_ptr);
   truthModel = problem_db.get_model();
   check_submodel_compatibility(truthModel);
-  write_data(Cout, truthModel.all_continuous_variable_labels());
 
   problem_db.set_db_model_nodes(model_index); // restore
 
