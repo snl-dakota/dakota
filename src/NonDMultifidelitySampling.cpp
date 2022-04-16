@@ -132,9 +132,17 @@ void NonDMultifidelitySampling::multifidelity_mc()
     ++mlmfIter;
   }
 
-  // numH is converged --> finalize with LF increments and post-processing
-  approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH, approxSequence,
-		    eval_ratios, hf_targets);
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS)
+    // numH is converged --> finalize with LF increments and post-processing
+    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH,
+		      approxSequence, eval_ratios, hf_targets);
+  else { // for consistency with pilot projection
+    Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
+    update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
+    finalize_counts(N_L_projected);
+  }
 }
 
 
@@ -190,9 +198,17 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
 			  eval_ratios);
 
-  // numH is converged --> finalize with LF increments and post-processing
-  approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH, approxSequence,
-		    eval_ratios, hf_targets);
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS)
+    // numH is converged --> finalize with LF increments and post-processing
+    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH,
+		      approxSequence, eval_ratios, hf_targets);
+  else { // for consistency with pilot projection
+    Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
+    update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
+    finalize_counts(N_L_projected);
+  }
 }
 
 
@@ -939,11 +955,31 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   // Encounter singularity when models are not sequenced for this graph,
   // which is addressed numerically by introducing a (diagonal) nugget.
 
-  if (ordered_approx_sequence(rho2_LH)) // for all QoI across Approx sequence
-    optSubProblemForm = ANALYTIC_SOLUTION;  
-  else
-    optSubProblemForm = //(for_warm_start) ? REORDERED_ANALYTIC_SOLUTION :
+  // incoming approx_sequence is defined w/i mfmc_reordered_analytic_solution()
+  // based on averaged rho --> we do not use it for logic below
+  bool ordered_rho = true;
+  switch (numericalSolveMode) {
+  case NUMERICAL_OVERRIDE: // specification option
+    optSubProblemForm = N_VECTOR_LINEAR_CONSTRAINT; break;
+  case NUMERICAL_FALLBACK: // default
+    ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
+    optSubProblemForm = (ordered_rho) ? ANALYTIC_SOLUTION :
       N_VECTOR_LINEAR_CONSTRAINT;
+    if (!ordered_rho)
+      Cout << "MFMC: model sequence provided is out of order with respect to "
+	   << "Low-High\n      correlation for at least one QoI.  Switching "
+	   << "to numerical solution.\n";
+    break;
+  case REORDERED_FALLBACK: // not currently in spec, but could be added
+    ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
+    optSubProblemForm = (ordered_rho) ? ANALYTIC_SOLUTION :
+      REORDERED_ANALYTIC_SOLUTION;
+    if (!ordered_rho)
+      Cout << "MFMC: model sequence provided is out of order with respect to "
+	   << "Low-High\n      correlation for at least one QoI.  Switching "
+	   << "to alternate analytic solution.\n";
+    break;
+  }
 
   switch (optSubProblemForm) {
   case ANALYTIC_SOLUTION:
@@ -953,20 +989,14 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     approx_sequence.clear();
     mfmc_analytic_solution(rho2_LH, cost, eval_ratios);
     break;
-  case REORDERED_ANALYTIC_SOLUTION: // inactive (future user override?)
-    Cout << "MFMC: model sequence provided is out of order with respect to "
-	 << "Low-High\n      correlation for at least one QoI.  Switching to "
-	 << "alternate analytic solution.\n";
+  case REORDERED_ANALYTIC_SOLUTION: // inactive (see above)
     mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
 				     eval_ratios, true); // monotonic r for seq
     break;
   default: { // any of several numerical optimization formulations
-    Cout << "MFMC: model sequence provided is out of order with respect to "
-	 << "Low-High\n      correlation for at least one QoI.  Switching to "
-	 << "numerical solution.\n";
     Real avg_hf_target;
-    mfmc_numerical_solution(var_L, rho2_LH, cost, approx_sequence, eval_ratios,
-			    avg_hf_target);
+    mfmc_numerical_solution(var_L, rho2_LH, cost, approx_sequence,
+			    eval_ratios, avg_hf_target);
     if (hf_targets.empty()) hf_targets.sizeUninitialized(numFunctions);
     hf_targets = avg_hf_target; // assign scalar to vector components
     break;
@@ -974,7 +1004,7 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   }
 
   // Numerical solution has updated hf_target from the computed N*.
-  // Analytic solutions scale the profile to target budget | accuracy.
+  // Analytic solutions scale the profile to target budget || accuracy.
   switch (optSubProblemForm) {
   case ANALYTIC_SOLUTION:  case REORDERED_ANALYTIC_SOLUTION:
     if (maxFunctionEvals != SZ_MAX)
@@ -1007,14 +1037,17 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 
     if (equivHFEvals >= budget) // only 1 feasible pt, no need for solve
       { eval_ratios = 1.;  avg_hf_target = avg_N_H;  return; }
-    else { // compute initial estimate of r* from analytic MFMC
+    else { // Compute approx_sequence and r* initial guess from analytic MFMC
 
-      // generate an initial guess using reordered approach (we know ordered
-      // analytic can't be used or we wouldn't be using the numerical option).
-      // Enforce that r increases monotonically across the approx_sequence for
-      // consistency with linear constraints in the numerical soln to follow.
-      mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
-				       eval_ratios, true);// monotonic r for seq
+      if (ordered_approx_sequence(rho2_LH)) {
+	approx_sequence.clear();
+	mfmc_analytic_solution(rho2_LH, cost, eval_ratios);
+      }
+      else // If misordered rho, enforce that r increases monotonically across
+	   // approx_sequence for consistency w/ linear constr in numerical soln
+	mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
+					 eval_ratios, true);// monotonic r
+
       average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "Initial guess from analytic MFMC (average eval ratios):\n"

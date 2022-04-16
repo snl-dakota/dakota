@@ -231,7 +231,7 @@
 	     ' >
 
     <!ENTITY sbgo_sub_problem_solver '
-	    <keyword  id="sbgo" name="sbgo" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SBGO)}" label="sbgo"  >
+	    <keyword  id="sbgo" name="sbgo" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SBGO)}" label="sbgo" >
 	       <!-- &method_gaussian_process; -->
 	       &method_gp_alternatives_no_export;
 	       &method_use_derivatives;
@@ -241,7 +241,7 @@
 	     ' >
 
     <!ENTITY ego_sub_problem_solver '
-	     <keyword  id="ego1" name="ego" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_EGO)}" label="ego"  >
+	     <keyword  id="ego1" name="ego" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_EGO)}" label="ego" >
 	       <!-- &method_gaussian_process; -->
 	       &method_gp_alternatives_with_export;
 	       &method_use_derivatives;
@@ -251,7 +251,7 @@
 	     ' >
 
     <!ENTITY sblo_sub_problem_solver '
-	    <keyword  id="sblo" name="sbgo" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SBLO)}" label="sblo"  >
+	    <keyword  id="sblo" name="sbgo" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SBLO)}" label="sblo" >
 	       &method_export_approx_points_file;
 	     </keyword>
 	     ' >
@@ -259,8 +259,8 @@
     <!ENTITY method_gradient_sub_problem_solver '
              <optional>
 	       <oneOf label="Optimization Solver">
-                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp"  default="sqp" />
-                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip"  default="sqp" />
+                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp" />
+                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip" />
                </oneOf>
              </optional>
 	     ' >
@@ -268,8 +268,8 @@
     <!ENTITY method_local_sub_problem_solver '
              <optional>
 	       <oneOf label="Optimization Solver">
-                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp"  default="sqp" />
-                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip"  default="sqp" />
+                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp" />
+                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip" />
 	         &sblo_sub_problem_solver;
 	         &pattern_search_sub_problem_solver;
 	       </oneOf>
@@ -281,8 +281,8 @@
 	       <oneOf label="Solution Approach">
 	         &sbgo_sub_problem_solver;
 	         &ego_sub_problem_solver;
-	         <keyword  id="ea1" name="ea" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_EA)}" label="ea"   />
-	         <keyword  id="lhs4" name="lhs" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_LHS)}" label="lhs"   />
+	         <keyword  id="ea1" name="ea" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_EA)}" label="ea" />
+	         <keyword  id="lhs4" name="lhs" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_LHS)}" label="lhs" />
 	       </oneOf>
 	     </optional>
 	     ' >
@@ -290,15 +290,27 @@
     <!ENTITY method_sub_problem_solver '
              <optional>
 	       <oneOf label="Optimization Solver">
-                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp"  default="sqp" />
-                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip"  default="sqp" />
+                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp" />
+                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip" />
 	         &sblo_sub_problem_solver;
 	         &pattern_search_sub_problem_solver;
 	         &sbgo_sub_problem_solver;
 	         &ego_sub_problem_solver;
-	         <keyword  id="ea1" name="ea" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_EA)}" label="ea"   />
+	         <keyword  id="ea1" name="ea" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_EA)}" label="ea" />
                </oneOf>
              </optional>
+	     ' >
+
+    <!ENTITY mfmc_numerical_solve '
+	    <keyword  id="numerical_solve" name="numerical_solve" code="{0}" label="numerical_solve" minOccurs="0" >
+               <optional>
+	         <oneOf label="Employ numerical solve">
+                   <keyword  id="fallback" name="fallback" code="{N_mdm(utype,numericalSolveMode_NUMERICAL_FALLBACK)}" label="fallback" />
+                   <keyword  id="override" name="override" code="{N_mdm(utype,numericalSolveMode_NUMERICAL_OVERRIDE)}" label="override" />
+                 </oneOf>
+               </optional>
+               &method_gradient_sub_problem_solver;
+	     </keyword>
 	     ' >
 
     <!ENTITY default_trust_region '
@@ -3038,7 +3050,7 @@
 	  &method_seed_sequence;
 	  &mc_pilot_samples;
 	  &mc_solution_mode;
-	  &method_gradient_sub_problem_solver;
+	  &mfmc_numerical_solve;
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;

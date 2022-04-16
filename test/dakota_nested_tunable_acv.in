@@ -6,7 +6,7 @@
 environment
 	output_precision = 16
 	  method_pointer = 'TUNER'
-	  tabular_data freeform			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+	  tabular_data freeform			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s12,#s13,#s14,#s15
 	    tabular_data_file = 'ps_mlmc.dat' 		#s0
 #	    tabular_data_file = 'ps_cvmc.dat' 		#s1
 #	    tabular_data_file = 'ps_mfmc.dat' 		#s2
@@ -15,6 +15,10 @@ environment
 #	    tabular_data_file = 'ps_cvmc_proj100.dat' 	#s5
 #	    tabular_data_file = 'ps_mfmc_proj100.dat' 	#s6
 #	    tabular_data_file = 'ps_acv_proj100.dat'  	#s7
+#	    tabular_data_file = 'ps_mlmc_off5000.dat' 	#s12
+#	    tabular_data_file = 'ps_cvmc_off5000.dat' 	#s13
+#	    tabular_data_file = 'ps_mfmc_off5000.dat' 	#s14
+#	    tabular_data_file = 'ps_acv_off5000.dat'  	#s15
 
 ##############
 # OUTER LOOP #
@@ -23,8 +27,8 @@ environment
 method,
 	id_method = 'TUNER'
 	model_pointer = 'TUNER_M'
-        vector_parameter_study			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s10,#s11
-	  step_vector = .02 0.  num_steps = 50	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s10,#s11
+        vector_parameter_study			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s10,#s11,#s12,#s13,#s14,#s15
+	  step_vector = .02 0.  num_steps = 50	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s10,#s11,#s12,#s13,#s14,#s15
 #	  step_vector = .01 .01 num_steps = 50		#s8
 #	efficient_global				#s9
 #	  seed = 1234567				#s9
@@ -50,7 +54,7 @@ model,
 variables,
 	id_variables = 'TUNER_V'
 	continuous_design = 2
-	  initial_point  = 0.55 0.5235987755983		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s10,#s11
+	  initial_point  = 0.55 0.5235987755983		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s10,#s11,#s12,#s13,#s14,#s15
 #	  initial_point  = 1.0471975511966 0.5235987755983	#s8
 	  lower_bounds   = 2 * 0.5235987755983
 	  upper_bounds   = 2 * 1.5707963267949
@@ -79,13 +83,15 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'ENSEMBLE'
-	multilevel_sampling			#s0,#s4
-#	multifidelity_sampling			#s1,#s2,#s5,#s6
-#	approximate_control_variate acv_mf sqp	#s3,#s7,#s8,#s9,#s10,#s11
+	multilevel_sampling			#s0,#s4,#s12
+#	multifidelity_sampling			#s1,#s2,#s5,#s6,#s13,#s14
+#	approximate_control_variate acv_mf sqp	#s3,#s7,#s8,#s9,#s10,#s11,#s15
 	  max_function_evaluations = 1000
 	  pilot_samples = 25	     		#s0,#s1,#s2,#s3,#s8
 #	  pilot_samples = 100			#s4,#s5,#s6,#s7,#s9,#s10,#s11
 #	  solution_mode pilot_projection	#s4,#s5,#s6,#s7,#s9,#s10,#s11
+#	  pilot_samples = 5000			#s12,#s13,#s14,#s15
+#	  solution_mode offline_pilot		#s12,#s13,#s14,#s15
 	  seed = 8674132
 	  final_statistics estimator_performance
 	output silent
@@ -94,12 +100,12 @@ model,
 	id_model = 'ENSEMBLE'
 	variables_pointer = 'HF_VARS'			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
 #	variables_pointer = 'ENSEMBLE_VARS'		#s10,#s11
-	surrogate hierarchical 	       	     		#s0,#s1,#s4,#s5
-	  ordered_model_fidelities = 'LF2' 'LF1' 'HF'	#s0,#s4
-#	  ordered_model_fidelities = 'LF1' 'HF'		#s1,#s5
-#	surrogate model_ensemble			#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11
-#	  truth_model = 'HF'				#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11
-#	  unordered_model_fidelities = 'LF2' 'LF1' 	#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11
+	surrogate hierarchical 	       	     		#s0,#s1,#s4,#s5,#s12,#s13
+	  ordered_model_fidelities = 'LF2' 'LF1' 'HF'	#s0,#s4,#s12
+#	  ordered_model_fidelities = 'LF1' 'HF'		#s1,#s5,#s13
+#	surrogate model_ensemble			#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15
+#	  truth_model = 'HF'				#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15
+#	  unordered_model_fidelities = 'LF2' 'LF1' 	#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15
 
 model,
 	id_model = 'LF2' # low-fidelity
@@ -134,10 +140,10 @@ variables,
 	  lower_bounds    = 2*-1.
 	  upper_bounds    = 2* 1.
      	  descriptors     = 'x' 'y'
-	continuous_state  = 5								#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10
-	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s10
+	continuous_state  = 5								#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s12,#s13,#s14,#s15
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s10,#s12,#s13,#s14,#s15
 #	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9
-     	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'	    		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10
+     	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'	    		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s12,#s13,#s14,#s15
 #	continuous_state  = 3	    	     	      	      				#s11
 #	  initial_state   = 0.5235987755983 1. 1.	      				#s11
 #     	  descriptors     = 'theta2' 'delta' 'gamma'	      				#s11
@@ -152,10 +158,10 @@ variables,
 	  lower_bounds    = 2*-1.
 	  upper_bounds    = 2* 1.
      	  descriptors     = 'x' 'y'
-	continuous_state  = 5								#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10
-	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s10
+	continuous_state  = 5								#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s12,#s13,#s14,#s15
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s10,#s12,#s13,#s14,#s15
 #	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9
-     	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'	    		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10
+     	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'	    		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s12,#s13,#s14,#s15
 #	continuous_state  = 1								#s11
 #	  initial_state   = 1.0471975511966						#s11
 #     	  descriptors     = 'theta1'							#s11
@@ -170,10 +176,10 @@ variables,
 	  lower_bounds    = 2*-1.
 	  upper_bounds    = 2* 1.
      	  descriptors     = 'x' 'y'
-	continuous_state  = 5								#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
-	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+	continuous_state  = 5								#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s12,#s13,#s14,#s15
+	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 1. 1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s12,#s13,#s14,#s15
 #	  initial_state   = 1.5707963267949 1.0471975511966 0.5235987755983 2.5 0.55	#s8,#s9
-     	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+     	  descriptors     = 'theta' 'theta1' 'theta2' 'delta' 'gamma'			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s12,#s13,#s14,#s15
 #	continuous_state  = 1								#s10,#s11
 #	  initial_state   = 1.5707963267949	      					#s10,#s11
 #     	  descriptors     = 'theta'		      					#s10,#s11

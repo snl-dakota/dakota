@@ -7064,7 +7064,7 @@ static Method_mp_type
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
-  MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
+	MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
@@ -7242,6 +7242,9 @@ static Method_mp_utype
 	MP2s(methodName,MULTIDIM_PARAMETER_STUDY),
         MP2s(modelExportFormat,TEXT_ARCHIVE),
         MP2s(modelExportFormat,BINARY_ARCHIVE),
+	MP2s(numericalSolveMode,NUMERICAL_FALLBACK),
+	MP2s(numericalSolveMode,NUMERICAL_OVERRIDE),
+      //MP2s(numericalSolveMode,REORDERED_FALLBACK),
 	MP2s(optSubProbSolver,SUBMETHOD_NONE),
 	MP2s(optSubProbSolver,SUBMETHOD_NIP),
 	MP2s(optSubProbSolver,SUBMETHOD_SQP),
