@@ -970,7 +970,7 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 	   << "Low-High\n      correlation for at least one QoI.  Switching "
 	   << "to numerical solution.\n";
     break;
-  case REORDERED_FALLBACK: // not currently in spec, but could be added
+  case REORDERED_FALLBACK: // not currently in XML spec, but could be added
     ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
     optSubProblemForm = (ordered_rho) ? ANALYTIC_SOLUTION :
       REORDERED_ANALYTIC_SOLUTION;
@@ -1039,7 +1039,7 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
       { eval_ratios = 1.;  avg_hf_target = avg_N_H;  return; }
     else { // Compute approx_sequence and r* initial guess from analytic MFMC
 
-      if (ordered_approx_sequence(rho2_LH)) {
+      if (ordered_approx_sequence(rho2_LH)) {// can happen w/ NUMERICAL_OVERRIDE
 	approx_sequence.clear();
 	mfmc_analytic_solution(rho2_LH, cost, eval_ratios);
       }
