@@ -26,7 +26,8 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   oFilterName(problem_db.get_string("interface.application.output_filter")),
   gradFlag(false), hessFlag(false), numFns(0), numVars(0), numDerivVars(0),
   analysisDrivers(
-    problem_db.get_sa("interface.application.analysis_drivers"))
+    problem_db.get_sa("interface.application.analysis_drivers")),
+  prevVarsId("NO_MATCH_DUMMY_ID"), prevRespId("NO_MATCH_DUMMY_ID")
 {
   // "interface direct" always instantiates a TestDriverInterface, but
   // eventually support "interface plugin", which would
@@ -59,8 +60,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
 
 
 DirectApplicInterface::~DirectApplicInterface()
-{ 
-}
+{ }
 
 
 void DirectApplicInterface::
@@ -371,7 +371,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   numVars = numACV + numADIV + numADRV + numADSV;
 
   const String& vars_id = vars.variables_id();
-  bool update_labels = (evalIdCntr == 1 || vars_id != prevVarsId);
+  bool update_labels = (vars_id != prevVarsId);
 
   // Initialize copies of incoming data
   //directFnVars = vars; // shared rep
@@ -504,7 +504,7 @@ void DirectApplicInterface::set_local_data(const Response& response)
   // set labels once (all processors)
   const SharedResponseData& srd = response.shared_data();
   const String& resp_id = srd.responses_id();
-  if (evalIdCntr == 1 || resp_id != prevRespId) {
+  if (resp_id != prevRespId) {
     fnLabels       = srd.function_labels();
     metaDataLabels = srd.metadata_labels();
     prevRespId     = resp_id;
