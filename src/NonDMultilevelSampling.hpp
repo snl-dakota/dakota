@@ -211,9 +211,22 @@ private:
  									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t step, const size_t qoi);
 
-  static Real bootstrap_covariance(const size_t step, const size_t qoi, 
+  static Real compute_bootstrap_covariance(const size_t step, const size_t qoi, 
   								const IntRealMatrixMap& lev_qoisamplematrix_map, const Real N,
   								const bool compute_gradient, Real& grad, int* seed);
+
+  static Real compute_cov_mean_sigma(const IntRealMatrixMap& sum_Ql, 
+                  const IntRealMatrixMap& sum_Qlm1, 
+                  const IntIntPairRealMatrixMap& sum_QlQlm1, 
+                  const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+                  const size_t lev, const bool compute_gradient, Real& grad_g);
+
+
+  static RealVector compute_cov_mean_sigma_fd(const IntRealMatrixMap& sum_Ql, 
+                  const IntRealMatrixMap& sum_Qlm1, 
+                  const IntIntPairRealMatrixMap& sum_QlQlm1, 
+                  const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+                  const size_t lev);
 
   static Real compute_mean(const RealVector& samples);
 
@@ -289,6 +302,23 @@ private:
   								const IntIntPairRealMatrixMap& sum_QlQlm1, 
   								const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
   								const size_t lev, const bool compute_gradient, Real& grad_g);
+
+  static Real compute_cov_meanl_varlmone(const IntRealMatrixMap& sum_Ql, 
+                  const IntRealMatrixMap& sum_Qlm1,
+                  const IntIntPairRealMatrixMap& sum_QlQlm1, 
+                  const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+                  const size_t lev, const bool compute_gradient, Real& grad_g);
+
+  static Real compute_cov_meanlmone_varl(const IntRealMatrixMap& sum_Ql, 
+                  const IntRealMatrixMap& sum_Qlm1,
+                  const IntIntPairRealMatrixMap& sum_QlQlm1, 
+                  const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+                  const size_t lev, const bool compute_gradient, Real& grad_g);
+
+  static Real compute_grad_cov_meanl_vark(const Real cov_mean_var,
+                  const Real var_of_var, const Real var_of_sigma, 
+                  const Real grad_var_of_var, const Real grad_var_of_sigma, 
+                  const Real Nlq);
 
   ///OPTPP definition
   static void target_cost_objective_eval_optpp(int mode, int n, 
@@ -455,6 +485,9 @@ private:
   IntRealMatrixMap levQoisamplesmatrixMap;
   bool storeEvals;
   int bootstrapSeed;
+
+  short cov_approximation_type;
+  enum {COV_BOOTSTRAP, COV_PEARSON, COV_CORRLIFT};
 };
 
 
@@ -526,6 +559,9 @@ variance_Ysum(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq)
   // instead of (Y-mean)^2 since mean is updated on each iteration.
   Real var_Y = (sum_YY / Nlq - mu_Y * mu_Y)
              * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
+  if(var_Y < 0){
+    Cerr << "NonDMultilevelSampling::variance_Ysum: var_Y < 0" << std::endl;
+  }
   check_negative(var_Y);
   return var_Y;
 
@@ -555,6 +591,9 @@ variance_Ysum_static(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq_pilot,
 
   Nlq = Nlq_pilot;  //TODO_SCALARBUGFIX
   Real var_Y = variance_tmp * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
+  if(var_Y < 0){
+    Cerr << "NonDMultilevelSampling::variance_Ysum_static: var_Y < 0" << std::endl;
+  }
   check_negative(var_Y);
   return var_Y;
 
@@ -577,6 +616,9 @@ variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
     - 2. * (   sum_QlQlm1 / Nlq - mu_Ql   * mu_Qlm1 ) // covar_QlQlm1
     +        sum_Qlm1Qlm1 / Nlq - mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
     * (Real)Nlq / (Real)(Nlq - 1);
+  if(var_Q < 0){
+    Cerr << "NonDMultilevelSampling::variance_Qsum: var_Q < 0" << std::endl;
+  }
   check_negative(var_Q);
   return var_Q; // Bessel's correction
 }
@@ -595,6 +637,9 @@ variance_Qsum_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
   if(compute_gradient){
   	grad = variance_tmp * (-1.) / ((Real)(Nlq_pilot - 1.) * (Real)(Nlq_pilot - 1.));
     grad = 0; //TODO_SCALARBUGFIX
+  }
+  if(variance_tmp < 0){
+    Cerr << "NonDMultilevelSampling::variance_Qsum: variance_tmp < 0" << std::endl;
   }
   check_negative(variance_tmp);
 
@@ -632,13 +677,13 @@ var_lev_l_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
   	grad = var_lev_Q * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
     grad = 0;  //TODO_SCALARBUGFIX
   }
-  var_lev_Q *= (Real)Nlq / (Real)(Nlq - 1.);
+  var_lev_Q *= (Real)Nlq_pilot / (Real)(Nlq_pilot - 1.); // Bessel's correction
 
   //if(var_lev_Q < 0){
   //  Cerr << "NonDMultilevelSampling::var_lev_l_static: var_lev_Q < 0: " << var_lev_Q << " But that should be fine.\n";
     //check_negative(var_of_var);
   //}
-  return var_lev_Q; // Bessel's correction
+  return var_lev_Q; 
 }
 
 inline Real NonDMultilevelSampling::
@@ -750,7 +795,7 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 	  	  abort_handler(INTERFACE_ERROR);
 			}
 		}else{
-  	  Cout << "NonDMultilevelSampling::set_convergence_tol: convergenceTolTarget is not known.\n";
+  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolTarget is not known.\n";
   	  abort_handler(INTERFACE_ERROR);
 		}
 
@@ -826,7 +871,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(const IntRealMatrixMap& sum
 
   //Cout << "NonDMultilevelSampling::var_of_var_ml_l0: (Qoi, 0): " << qoi << ", 0" << ") Var[Var]: " << var_of_var << std::endl;
   if(var_of_var < 0){
-    Cerr << "NonDMultilevelSampling::var_of_var_ml_l0: var_of_var < 0.";
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_l0(qoi = " << qoi << "): var_of_var < 0.";
     check_negative(var_of_var);
   }
   return var_of_var;
@@ -861,7 +906,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_lmax(const IntRealMatrixMap& s
   }
 
   if(var_of_var < 0){
-    Cerr << "NonDMultilevelSampling::var_of_var_ml_lmax: var_of_var < 0.";
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_lmax(qoi = " << qoi << "): var_of_var < 0.";
     check_negative(var_of_var);
   }
   return var_of_var;
@@ -958,7 +1003,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_
                        ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2lm1_sq
                      - 2. * (-1. / (Nlq * Nlq) * mu_P2lP2lm1 +
                              (-2. * Nlq + 1.) / ((Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq)) * term);
-    }
+  }
 
   //Cout << "NonDMultilevelSampling::var_of_var_ml_l: (Qoi, lev): " << qoi << ", " << lev << ") Var[Var]: " << var_of_var << std::endl;
   if(var_of_var < 0){
@@ -966,6 +1011,407 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_
     check_negative(var_of_var);
   }
   return var_of_var;
+}
+
+inline Real NonDMultilevelSampling::compute_cov_mean_sigma(const IntRealMatrixMap& sum_Ql, 
+                  const IntRealMatrixMap& sum_Qlm1, 
+                  const IntIntPairRealMatrixMap& sum_QlQlm1, 
+                  const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+                  const size_t lev, const bool compute_gradient, Real& grad_g){
+  Real mu_Q2l = 0, mu_Q2lm1 = 0, cm1l = 0, cm2l = 0, cm3l = 0, cm4l = 0,
+       cm1lm1 = 0, cm2lm1 = 0, cm3lm1 = 0, cm4lm1 = 0;
+
+  Real var_var_l = 0, var_var_lm1 = 0;
+  Real grad_var_var_l = 0, grad_var_var_lm1 = 0;
+  Real var_sigma_l = 0, var_sigma_lm1 = 0;
+  Real grad_var_sigma_l = 0, grad_var_sigma_lm1 = 0;
+  Real cov_meanl_varl = 0, cov_meanlm1_varlm1 = 0, 
+        cov_meanl_varlm1 = 0, cov_meanlm1_varl = 0;
+  Real cov_meanl_sigmal = 0, cov_meanlm1_sigmalm1 = 0, 
+        cov_meanl_sigmalm1 = 0, cov_meanlm1_sigmal = 0, cov_mean_sigma = 0;
+  Real grad_cov_meanl_varl = 0, grad_cov_meanl_varlm1 = 0, 
+        grad_cov_meanlm1_varl = 0, grad_cov_meanlm1_varlm1 = 0;
+
+  const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q1lm1 = sum_Qlm1.at(1),
+      &sum_Q2l = sum_Ql.at(2), &sum_Q2lm1 = sum_Qlm1.at(2),
+      &sum_Q3l = sum_Ql.at(3), &sum_Q3lm1 = sum_Qlm1.at(3),
+      &sum_Q4l = sum_Ql.at(4), &sum_Q4lm1 = sum_Qlm1.at(4);
+
+  mu_Q2l = sum_Q2l(qoi, lev) / Nlq_pilot;
+  uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq_pilot, mu_Q2l,
+                         sum_Q3l(qoi, lev) / Nlq_pilot, sum_Q4l(qoi, lev) / Nlq_pilot,
+                         cm1l, cm2l, cm3l, cm4l, Nlq_pilot);
+  if(lev > 0){
+    mu_Q2lm1 = sum_Q2lm1(qoi, lev) / Nlq_pilot;
+    uncentered_to_centered(sum_Q1lm1(qoi, lev) / Nlq_pilot, mu_Q2lm1,
+                           sum_Q3lm1(qoi, lev) / Nlq_pilot, sum_Q4lm1(qoi, lev) / Nlq_pilot,
+                           cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq_pilot);
+  }
+
+  // Var[var] at level l and lm1
+  const Real cm2l_sq = cm2l * cm2l;
+  var_var_l = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
+  if(compute_gradient) {
+    grad_var_var_l = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
+             ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4l
+             - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
+               ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
+  }
+
+  if(lev > 0){
+    const Real cm2lm1_sq = cm2lm1 * cm2lm1;
+    var_var_lm1 = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
+    if(compute_gradient) {
+      grad_var_var_lm1 =((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
+             ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4lm1
+             - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
+               ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2lm1_sq;
+    }
+  }
+
+  // Var[sigma] at level l and lm1 using delta method
+  var_sigma_l = var_var_l > 0 ? 1./(4.*cm2l)*var_var_l : 0;
+  if(compute_gradient) {
+    grad_var_sigma_l =  1./(4.*cm2l) * grad_var_var_l;
+  }
+  if(lev > 0){
+    var_sigma_lm1 = var_var_lm1 > 0 ? 1./(4.*cm2lm1)*var_var_lm1 : 0;
+    if(compute_gradient){
+      grad_var_sigma_lm1 = var_var_lm1 > 0 ? 1./(4.*cm2lm1)*grad_var_var_lm1 : 0;
+    }
+  } 
+
+  //Cov[mean, var] at level (l, l), (lm1, l), (l, lm1), (lm1, lm1)
+  cov_meanl_varl = cm3l/Nlq;
+  grad_cov_meanl_varl = (-1)*cm3l/(Nlq*Nlq);
+  if(lev > 0){
+    grad_cov_meanlm1_varlm1 = (-1)*cm3lm1/(Nlq*Nlq);
+    cov_meanlm1_varl = compute_cov_meanlmone_varl(sum_Ql, sum_Qlm1, sum_QlQlm1, 
+                                  Nlq_pilot, Nlq, qoi, lev, compute_gradient, grad_cov_meanlm1_varl);
+    cov_meanl_varlm1 = compute_cov_meanl_varlmone(sum_Ql, sum_Qlm1, sum_QlQlm1, 
+                                  Nlq_pilot, Nlq, qoi, lev, compute_gradient, grad_cov_meanl_varlm1);
+    cov_meanlm1_varlm1 = cm3lm1/Nlq;
+  }
+
+  //Compute cov_mean_var to cov_mean_sigma transformation using the assumption 
+  //that pearson correlation is the same for both, i.e. p[mean, sigma] = p[mean, var]
+  cov_meanl_sigmal = var_var_l > 0 ? cov_meanl_varl*std::sqrt(var_sigma_l/var_var_l) : 0;
+  if(lev > 0){
+    cov_meanlm1_sigmal = var_var_l > 0 ? cov_meanlm1_varl*std::sqrt(var_sigma_l/var_var_l) : 0;
+    cov_meanl_sigmalm1 = var_var_lm1 > 0 ? cov_meanl_varlm1*std::sqrt(var_sigma_lm1/var_var_lm1) : 0;
+    cov_meanlm1_sigmalm1 = var_var_lm1 > 0 ? cov_meanlm1_varlm1*std::sqrt(var_sigma_lm1/var_var_lm1) : 0;
+  }
+
+  if(compute_gradient) {
+    grad_cov_meanl_varl = var_var_l > 0 && var_sigma_l > 0 ? compute_grad_cov_meanl_vark(cov_meanl_varl, var_var_l, 
+                  var_sigma_l, grad_var_var_l, grad_var_sigma_l, Nlq) : 0;
+    if(lev > 0){
+      grad_cov_meanlm1_varl = var_var_l > 0 && var_sigma_l > 0 ? compute_grad_cov_meanl_vark(cov_meanlm1_varl, var_var_l, 
+                  var_sigma_l, grad_var_var_l, grad_var_sigma_l, Nlq) : 0;
+      grad_cov_meanl_varlm1 =  var_var_lm1 > 0 && var_sigma_lm1 > 0 ? compute_grad_cov_meanl_vark(cov_meanl_varlm1, var_var_lm1, 
+                  var_sigma_lm1, grad_var_var_lm1, grad_var_sigma_lm1, Nlq) : 0;
+      grad_cov_meanlm1_varlm1 =  var_var_lm1 > 0 && var_sigma_lm1 > 0 ? compute_grad_cov_meanl_vark(cov_meanlm1_varlm1, var_var_lm1, 
+                  var_sigma_lm1, grad_var_var_lm1, grad_var_sigma_lm1, Nlq) : 0;
+    }
+  }
+
+  //Compute final cov_mean_sigma from the term
+  cov_mean_sigma = cov_meanl_sigmal;
+  if(lev > 0){
+    cov_mean_sigma += cov_meanlm1_sigmalm1
+                    - cov_meanlm1_sigmal
+                    - cov_meanl_sigmalm1;
+  }
+
+  if(compute_gradient) {
+    grad_g = grad_cov_meanl_varl;
+    if(lev > 0){
+      grad_g += grad_cov_meanlm1_varlm1 
+              - grad_cov_meanlm1_varl 
+              - grad_cov_meanl_varlm1;
+    }
+  } 
+
+  
+  /*if(compute_gradient){
+    Real h = 1e-8;
+    RealVector cov_mean_sigma_fd_plus = compute_cov_mean_sigma_fd(sum_Ql, sum_Qlm1, 
+                    sum_QlQlm1, Nlq_pilot, Nlq+h, qoi, lev);
+    RealVector cov_mean_sigma_fd_minus = compute_cov_mean_sigma_fd(sum_Ql, sum_Qlm1, 
+                    sum_QlQlm1, Nlq_pilot, Nlq-h, qoi, lev);
+
+    Cout << "QOI LEV: " << qoi << ", " << lev << std::endl;
+    Cout << "\t\t\t var_var_l: " << var_var_l << ", var_var_lm1: " << var_var_lm1 << std::endl;
+    Cout << "\t\t\t var_sigma_l: " << var_sigma_l << ", var_sigma_lm1: " << var_sigma_lm1 << std::endl;
+    Cout << "\t\t\t grad_cov_mean_sigma: " << grad_g << ", " << (cov_mean_sigma_fd_plus[0] - cov_mean_sigma_fd_minus[0])/(2*h) << std::endl;
+    Cout << "\t\t\t grad_cov_meanl_sigmal: " << grad_cov_meanl_varl << ", " << (cov_mean_sigma_fd_plus[1] - cov_mean_sigma_fd_minus[1])/(2*h) << std::endl;
+    Cout << "\t\t\t grad_cov_meanlm1_sigmal: " << grad_cov_meanlm1_varl << ", " << (cov_mean_sigma_fd_plus[2] - cov_mean_sigma_fd_minus[2])/(2*h) << std::endl;
+    Cout << "\t\t\t grad_cov_meanl_sigmalm1: " << grad_cov_meanl_varlm1 << ", " << (cov_mean_sigma_fd_plus[3] - cov_mean_sigma_fd_minus[3])/(2*h) << std::endl;
+    Cout << "\t\t\t grad_cov_meanlm1_sigmalm1: " << grad_cov_meanlm1_varlm1 << ", " << (cov_mean_sigma_fd_plus[4] - cov_mean_sigma_fd_minus[4])/(2*h) << std::endl;
+  }*/
+  
+  /*
+  if(lev > 2){
+    std::ofstream myfile;
+    if(qoi == 0)
+      myfile.open("covariance_file_problem18_4lev.txt", std::ofstream::out | std::ofstream::app); 
+    if(qoi == 1)
+      myfile.open("covariance_file_cantilever_stress.txt", std::ofstream::out | std::ofstream::app); 
+    if(qoi == 2)
+      myfile.open("covariance_file_cantilever_displ.txt", std::ofstream::out | std::ofstream::app);  
+    myfile << std::setprecision(16) << qoi << ", " << lev << ", " << cov_mean_sigma << ",  "
+           << cov_meanl_sigmal;
+    myfile                             << ", " << cov_meanlm1_sigmalm1 << ", " << cov_meanlm1_sigmal << ", " << cov_meanl_sigmalm1;
+    myfile << std::setprecision(16) << ", " << cov_meanl_varl   << ", " << cov_meanlm1_varlm1 << ", " << cov_meanlm1_varl << ", " << cov_meanl_varlm1;
+    myfile << std::setprecision(16) << ", " << cm3l   << ", " << cm3lm1 << ", " << std::sqrt(var_var_l) << ", " << std::sqrt(var_var_lm1);
+    myfile << std::setprecision(16) << ", " << std::sqrt(var_sigma_l) << ", " << std::sqrt(var_sigma_lm1);
+    myfile << std::setprecision(16) << std::endl;
+    myfile.close();
+  }
+  else if(lev > 0){
+    std::ofstream myfile;
+    if(qoi == 0)
+      myfile.open("covariance_file_problem18.txt", std::ofstream::out | std::ofstream::app); 
+    if(qoi == 1)
+      myfile.open("covariance_file_cantilever_stress.txt", std::ofstream::out | std::ofstream::app); 
+    if(qoi == 2)
+      myfile.open("covariance_file_cantilever_displ.txt", std::ofstream::out | std::ofstream::app);  
+    myfile << std::setprecision(16) << qoi << ", " << lev << ", " << cov_mean_sigma << ",  "
+           << cov_meanl_sigmal;
+    myfile                             << ", " << cov_meanlm1_sigmalm1 << ", " << cov_meanlm1_sigmal << ", " << cov_meanl_sigmalm1;
+    myfile << std::setprecision(16) << ", " << cov_meanl_varl   << ", " << cov_meanlm1_varlm1 << ", " << cov_meanlm1_varl << ", " << cov_meanl_varlm1;
+    myfile << std::setprecision(16) << ", " << cm3l   << ", " << cm3lm1 << ", " << std::sqrt(var_var_l) << ", " << std::sqrt(var_var_lm1);
+    myfile << std::setprecision(16) << ", " << std::sqrt(var_sigma_l) << ", " << std::sqrt(var_sigma_lm1);
+    myfile << std::setprecision(16) << std::endl;
+    myfile.close();
+  }*/
+       
+  if(std::isnan(cov_mean_sigma)){
+    Cerr << "Cov_mean_sigma is nan since variance is zero or negative for qoi: " << qoi << " with values: cm2l: " << cm2l << " and cm2lm1: " << cm2lm1;
+    Cerr << ". Setting to zero. \n";
+    cov_mean_sigma = 0;
+  }
+
+  return cov_mean_sigma;
+}
+
+inline RealVector NonDMultilevelSampling::compute_cov_mean_sigma_fd(const IntRealMatrixMap& sum_Ql, 
+                  const IntRealMatrixMap& sum_Qlm1, 
+                  const IntIntPairRealMatrixMap& sum_QlQlm1, 
+                  const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+                  const size_t lev){
+  Real mu_Q2l = 0, mu_Q2lm1 = 0, cm1l = 0, cm2l = 0, cm3l = 0, cm4l = 0,
+       cm1lm1 = 0, cm2lm1 = 0, cm3lm1 = 0, cm4lm1 = 0;
+  RealVector cov_values(5);
+  Real var_var_l = 0, var_var_lm1 = 0;
+  Real var_sigma_l = 0, var_sigma_lm1 = 0;
+  Real cov_meanl_varl = 0, cov_meanlm1_varlm1 = 0, 
+        cov_meanl_varlm1 = 0, cov_meanlm1_varl = 0;
+  Real cov_meanl_sigmal = 0, cov_meanlm1_sigmalm1 = 0, 
+        cov_meanl_sigmalm1 = 0, cov_meanlm1_sigmal = 0, cov_mean_sigma = 0;
+
+  const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q1lm1 = sum_Qlm1.at(1),
+      &sum_Q2l = sum_Ql.at(2), &sum_Q2lm1 = sum_Qlm1.at(2),
+      &sum_Q3l = sum_Ql.at(3), &sum_Q3lm1 = sum_Qlm1.at(3),
+      &sum_Q4l = sum_Ql.at(4), &sum_Q4lm1 = sum_Qlm1.at(4);
+
+  mu_Q2l = sum_Q2l(qoi, lev) / Nlq_pilot;
+  uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq_pilot, mu_Q2l,
+                         sum_Q3l(qoi, lev) / Nlq_pilot, sum_Q4l(qoi, lev) / Nlq_pilot,
+                         cm1l, cm2l, cm3l, cm4l, Nlq_pilot);
+  if(lev > 0){
+    mu_Q2lm1 = sum_Q2lm1(qoi, lev) / Nlq_pilot;
+    uncentered_to_centered(sum_Q1lm1(qoi, lev) / Nlq_pilot, mu_Q2lm1,
+                           sum_Q3lm1(qoi, lev) / Nlq_pilot, sum_Q4lm1(qoi, lev) / Nlq_pilot,
+                           cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq_pilot);
+  }
+
+  // Var[var] at level l and lm1
+  const Real cm2l_sq = cm2l * cm2l;
+  var_var_l = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
+
+  if(lev > 0){
+    const Real cm2lm1_sq = cm2lm1 * cm2lm1;
+    var_var_lm1 = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
+  }
+
+  // Var[sigma] at level l and lm1 using delta method
+  var_sigma_l = var_var_l > 0 ? 1./(4.*cm2l)*var_var_l : 0;
+  if(lev > 0){
+    var_sigma_lm1 = var_var_lm1 > 0 ? 1./(4.*cm2lm1)*var_var_lm1 : 0;
+  } 
+
+  //Cov[mean, var] at level (l, l), (lm1, l), (l, lm1), (lm1, lm1)
+  cov_meanl_varl = cm3l/Nlq;
+  Real dummy_grad = 0;
+  if(lev > 0){
+    cov_meanlm1_varlm1 = cm3lm1/Nlq;
+    cov_meanl_varlm1 = compute_cov_meanl_varlmone(sum_Ql, sum_Qlm1, sum_QlQlm1, 
+                                  Nlq_pilot, Nlq, qoi, lev, false, dummy_grad);
+    cov_meanlm1_varl = compute_cov_meanlmone_varl(sum_Ql, sum_Qlm1, sum_QlQlm1, 
+                                  Nlq_pilot, Nlq, qoi, lev, false, dummy_grad);
+  }
+
+  //Compute cov_mean_var to cov_mean_sigma transformation
+  cov_meanl_sigmal = var_var_l > 0 ? cov_meanl_varl*std::sqrt(var_sigma_l/var_var_l) : 0;
+  if(lev > 0){
+    cov_meanlm1_sigmal = var_var_l > 0 ?  cov_meanlm1_varl*std::sqrt(var_sigma_l/var_var_l) : 0;
+    cov_meanl_sigmalm1 = var_var_lm1 > 0 ?  cov_meanl_varlm1*std::sqrt(var_sigma_lm1/var_var_lm1) : 0;
+    cov_meanlm1_sigmalm1 = var_var_lm1 > 0 ?  cov_meanlm1_varlm1*std::sqrt(var_sigma_lm1/var_var_lm1) : 0;
+  }
+
+  //Compute final cov_mean_sigma from the term
+  cov_mean_sigma = cov_meanl_sigmal;
+  if(lev > 0){
+    cov_mean_sigma += cov_meanlm1_sigmalm1
+                    - cov_meanlm1_sigmal
+                    - cov_meanl_sigmalm1;
+  }
+
+  cov_values[0] = cov_mean_sigma;
+  cov_values[1] = cov_meanl_sigmal;
+  cov_values[2] = cov_meanlm1_sigmal;
+  cov_values[3] = cov_meanl_sigmalm1;
+  cov_values[4] = cov_meanlm1_sigmalm1;
+
+  return cov_values;
+}
+
+inline Real NonDMultilevelSampling::compute_cov_meanl_varlmone(const IntRealMatrixMap& sum_Ql, 
+                  const IntRealMatrixMap& sum_Qlm1,
+                  const IntIntPairRealMatrixMap& sum_QlQlm1, 
+                  const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+                  const size_t lev, const bool compute_gradient, Real& grad_g){
+  const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q1lm1 = sum_Qlm1.at(1), &sum_Q2lm1 = sum_Qlm1.at(2);
+  IntIntPair pr11(1, 1), pr12(1, 2);
+  const RealMatrix &sum_Q1lQ1lm1 = sum_QlQlm1.at(pr11), &sum_Q1lQ2lm1 = sum_QlQlm1.at(pr12);
+
+  Real term1_mu_Q1lQ2lm1 = sum_Q1lQ2lm1(qoi, lev)/Nlq_pilot; // mean(Ql.*(Qlmone).^2)
+  Real term2_mu_Q1l_mu_Q2lm1 = unbiased_mean_product_pair(sum_Q1l(qoi, lev), sum_Q2lm1(qoi, lev),
+                                                    sum_Q1lQ2lm1(qoi, lev), Nlq_pilot); //mean(Ql)*mean(Qlmone.^2)
+  Real term3_mu_Q1lm1_mu_Q1lQ1lm1 = unbiased_mean_product_pair(sum_Q1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
+                                                    sum_Q1lQ2lm1(qoi, lev), Nlq_pilot); //mean(Qlmone)*mean(Ql.*Qlmone)
+  Real term4_mu_Q1l_mu_Q1lm1_mu_Q1lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev), sum_Q1lm1(qoi, lev),
+                                                          sum_Q1lQ1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev), sum_Q2lm1(qoi, lev),
+                                                          sum_Q1lQ2lm1(qoi, lev), Nlq_pilot); //mean(Ql)*mean(Qlmone)^2
+
+  Real cov_numerator = (term1_mu_Q1lQ2lm1 - term2_mu_Q1l_mu_Q2lm1 
+                            - 2.*term3_mu_Q1lm1_mu_Q1lQ1lm1 + 2.*term4_mu_Q1l_mu_Q1lm1_mu_Q1lm1);
+  /*
+  if(lev > 2){
+    std::ofstream myfile;
+    if(qoi == 0)
+      myfile.open("covariance_file_covmeanlvarlmoneterms_problem18_4lev.txt", std::ofstream::out | std::ofstream::app); 
+    if(qoi == 1)
+      myfile.open("covariance_file_covmeanlvarlmoneterms_cantilever_stress.txt", std::ofstream::out | std::ofstream::app);  
+    if(qoi == 2)
+      myfile.open("covariance_file_covmeanlvarlmoneterms_cantilever_displ.txt", std::ofstream::out | std::ofstream::app);  
+    myfile << qoi << ", " << lev;
+    myfile << std::setprecision(16) << ", " << term1_mu_Q1lQ2lm1   << ", " << term2_mu_Q1l_mu_Q2lm1 << ", " << 2.*term3_mu_Q1lm1_mu_Q1lQ1lm1 << ", " << 2.*term4_mu_Q1l_mu_Q1lm1_mu_Q1lm1;
+    myfile << std::endl;
+    myfile.close();
+  }
+  else if(lev > 0){
+    std::ofstream myfile;
+    if(qoi == 0)
+      myfile.open("covariance_file_covmeanlvarlmoneterms_problem18.txt", std::ofstream::out | std::ofstream::app); 
+    if(qoi == 1)
+      myfile.open("covariance_file_covmeanlvarlmoneterms_cantilever_stress.txt", std::ofstream::out | std::ofstream::app);  
+    if(qoi == 2)
+      myfile.open("covariance_file_covmeanlvarlmoneterms_cantilever_displ.txt", std::ofstream::out | std::ofstream::app); 
+    myfile << qoi << ", " << lev;
+    myfile << std::setprecision(16) << ", " << term1_mu_Q1lQ2lm1   << ", " << term2_mu_Q1l_mu_Q2lm1 << ", " << 2.*term3_mu_Q1lm1_mu_Q1lQ1lm1 << ", " << 2.*term4_mu_Q1l_mu_Q1lm1_mu_Q1lm1;
+    myfile << std::endl;
+    myfile.close();
+  }*/
+
+  if(compute_gradient) {
+    grad_g = (-1)*cov_numerator/(Nlq*Nlq);
+  }
+  return cov_numerator/Nlq;
+}
+
+inline Real NonDMultilevelSampling::compute_cov_meanlmone_varl(const IntRealMatrixMap& sum_Ql, 
+                  const IntRealMatrixMap& sum_Qlm1,
+                  const IntIntPairRealMatrixMap& sum_QlQlm1, 
+                  const size_t Nlq_pilot, const Real Nlq, const size_t qoi, 
+                  const size_t lev, const bool compute_gradient, Real& grad_g){
+  const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q1lm1 = sum_Qlm1.at(1), &sum_Q2l = sum_Ql.at(2);
+  IntIntPair pr11(1, 1), pr21(2, 1);
+  const RealMatrix &sum_Q1lQ1lm1 = sum_QlQlm1.at(pr11), &sum_Q2lQ1lm1 = sum_QlQlm1.at(pr21);
+
+  /*
+  cov_meanlmone_varl_term1_unbiased = @(Ql, Qlmone) mean(Qlmone.*(Ql).^2);
+  cov_meanlmone_varl_term2_unbiased = @(Ql, Qlmone) mean_mean_unbiased(Qlmone, Ql.^2, size(Ql, 2));
+  cov_meanlmone_varl_term3_unbiased = @(Ql, Qlmone) 2*mean_mean_unbiased(Ql, Qlmone.*Ql, size(Ql, 2)); 
+  cov_meanlmone_varl_term4_unbiased = @(Ql, Qlmone) 2*mean_mean_mean_unbiased(Qlmone, Ql, Ql, size(Ql, 2));
+  */
+                
+  Real term1_mu_Q2lQ1lm1 = sum_Q2lQ1lm1(qoi, lev)/Nlq_pilot; //mean(Qlmone.*(Ql).^2)
+  Real term2_mu_Q2l_mu_Q1lm1 = unbiased_mean_product_pair(sum_Q2l(qoi, lev), sum_Q1lm1(qoi, lev),
+                                                    sum_Q2lQ1lm1(qoi, lev), Nlq_pilot); //mean(Qlmone)*mean(Ql.^2)
+  Real term3_mu_Q1l_mu_Q1lQ1lm1 = unbiased_mean_product_pair(sum_Q1l(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
+                                                    sum_Q2lQ1lm1(qoi, lev), Nlq_pilot); //mean(Ql)*mean(Qlmone.*Ql)
+  Real term4_mu_Q1l_mu_Q1l_mu_Q1lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev),
+                                                          sum_Q2l(qoi, lev), sum_Q1lQ1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
+                                                          sum_Q2lQ1lm1(qoi, lev), Nlq_pilot); //mean(Qlmone)*mean(Ql)^2
+
+  Real cov_numerator = (term1_mu_Q2lQ1lm1 - term2_mu_Q2l_mu_Q1lm1 
+                            - 2.*term3_mu_Q1l_mu_Q1lQ1lm1 + 2.*term4_mu_Q1l_mu_Q1l_mu_Q1lm1);
+  /*
+  if(lev > 2){
+    std::ofstream myfile;
+    if(qoi == 0)
+      myfile.open("covariance_file_covmeanlmonevarlterms_problem18_4lev.txt", std::ofstream::out | std::ofstream::app); 
+    if(qoi == 1)
+      myfile.open("covariance_file_covmeanlmonevarlterms_cantilever_stress.txt", std::ofstream::out | std::ofstream::app); 
+    if(qoi == 2) 
+      myfile.open("covariance_file_covmeanlmonevarlterms_cantilever_displ.txt", std::ofstream::out | std::ofstream::app); 
+    myfile << qoi << ", " << lev;
+    myfile << std::setprecision(16) << ", " << term1_mu_Q2lQ1lm1   << ", " << term2_mu_Q2l_mu_Q1lm1 << ", " << 2.*term3_mu_Q1l_mu_Q1lQ1lm1 << ", " << 2.*term4_mu_Q1l_mu_Q1l_mu_Q1lm1;
+    myfile << std::endl;
+    myfile.close();
+  }
+  else if(lev > 0){
+    std::ofstream myfile;
+    if(qoi == 0)
+      myfile.open("covariance_file_covmeanlmonevarlterms_problem18.txt", std::ofstream::out | std::ofstream::app);
+    if(qoi == 1)
+      myfile.open("covariance_file_covmeanlmonevarlterms_cantilever_stress.txt", std::ofstream::out | std::ofstream::app); 
+    if(qoi == 2) 
+      myfile.open("covariance_file_covmeanlmonevarlterms_cantilever_displ.txt", std::ofstream::out | std::ofstream::app);  
+    myfile << qoi << ", " << lev;
+    myfile << std::setprecision(16) << ", " << term1_mu_Q2lQ1lm1   << ", " << term2_mu_Q2l_mu_Q1lm1 << ", " << 2.*term3_mu_Q1l_mu_Q1lQ1lm1 << ", " << 2.*term4_mu_Q1l_mu_Q1l_mu_Q1lm1;
+    myfile << std::endl;
+    myfile.close();
+  }*/
+
+  if(compute_gradient) {
+    grad_g = (-1)*cov_numerator/(Nlq*Nlq);
+  }
+  return cov_numerator/Nlq;
+
+}
+
+inline Real NonDMultilevelSampling::compute_grad_cov_meanl_vark(const Real cov_mean_var,
+                  const Real var_of_var, const Real var_of_sigma, 
+                  const Real grad_var_of_var, const Real grad_var_of_sigma, 
+                  const Real Nlq){
+  Real enumerator = 0, denominator = 0;
+  Real term1 = 0, term2 = 0, term3 = 0;
+/*
+  term1 = Nlq * grad_var_of_sigma * std::sqrt(var_of_var/var_of_sigma);
+  term2 = std::sqrt(var_of_var*var_of_sigma);
+  term3 = Nlq * grad_var_of_var / std::sqrt(var_of_var);
+  enumerator = term1 - term2 - term3;
+  denominator = Nlq * var_of_var; 
+*/
+  term1 = Nlq*var_of_var*grad_var_of_sigma;
+  term2 = var_of_sigma*(Nlq * grad_var_of_var + 2.*var_of_var);
+  enumerator = term1 - term2;
+  denominator = 2*Nlq*var_of_var*var_of_var*sqrt(var_of_sigma/var_of_var);
+
+  return cov_mean_var * enumerator/denominator;
 }
 
 inline Real NonDMultilevelSampling::unbiased_mean_product_pair(const Real sumQ1, const Real sumQ2, const Real sumQ1Q2, const size_t Nlq)
@@ -990,7 +1436,7 @@ inline Real NonDMultilevelSampling::unbiased_mean_product_triplet(const Real sum
   mean2 += unbiased_mean_product_pair(sumQ2Q3, sumQ1, sumQ1Q2Q3, Nlq);
   mean2 += unbiased_mean_product_pair(sumQ1Q3, sumQ2, sumQ1Q2Q3, Nlq);
   mean3 = 1./((Real)Nlq) * sumQ1Q2Q3;
-  bessel_corr1 = (Nlq * Nlq)/((Nlq - 1.)*(Nlq - 2.));
+  bessel_corr1 = ((Real)Nlq * (Real)Nlq)/((Nlq - 1.)*(Nlq - 2.));
   bessel_corr2 = 1./(Nlq - 2.);
   bessel_corr3 = 1./((Nlq - 1.)*(Nlq - 2.));
 
@@ -1016,7 +1462,7 @@ inline Real NonDMultilevelSampling::unbiased_mean_product_pairpair(const Real su
 
   mean4 = 1./Nlq * sumQ1sqQ2sq;
 
-  bessel_corr1 = (Nlq * Nlq * Nlq)/((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));
+  bessel_corr1 = ((Real)Nlq * (Real)Nlq * (Real)Nlq)/((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));
   bessel_corr2 = 1./(Nlq - 3.);
   bessel_corr3 = 1./((Nlq - 2.)*(Nlq - 3.));
   bessel_corr4 = 1./((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));

@@ -669,7 +669,7 @@ void NonDLHSSampling::store_evaluations(){
 }
 
 Real NonDLHSSampling::bootstrap_covariance(const size_t qoi){
-  int nb_bs_samples = 100, bs_sample_idx;
+  int nb_bs_samples = 1000, bs_sample_idx;
   RealVector bs_samples(numSamples);
   RealVector mean_bs(nb_bs_samples);
   RealVector sigma_bs(nb_bs_samples);
@@ -751,15 +751,19 @@ void NonDLHSSampling::update_final_statistics()
     finalStatErrors.shape(2*finalStatistics.num_functions()); // init to 0.
   size_t i, cntr = 0;
   Real sqrt2 = std::sqrt(2.), ns = (Real)numSamples, sqrtn = std::sqrt(ns),
-    sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev, qoi_cm4, qoi_exckurt;
+    sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev, qoi_cm4, qoi_exckurt, qoi_skewness, qoi_cm3;
   for (i=0; i<numFunctions; ++i) {
     switch (finalMomentsType) {
     case STANDARD_MOMENTS:
       qoi_stdev = momentStats(1,i);
       // standard error (estimator std-dev) for Monte Carlo mean
       finalStatErrors(2*i, 2*i) = qoi_stdev / sqrtn;
+      if(std::isnan(finalStatErrors(2*i, 2*i)) || std::isinf(finalStatErrors(2*i, 2*i))){
+        Cerr << "NonDLHSSampling::update_final_statistics() std(mean) is nan or inf for qoi = " << i << ": " << finalStatErrors(2*i, 2*i) << ". Reparing to zero.\n";
+        finalStatErrors(2*i, 2*i) = 0;
+      }
       if(outputLevel >= DEBUG_OUTPUT)
-	Cout << "Estimator SE for mean = " << finalStatErrors(2*i, 2*i) << "\n";
+	     Cout << "Estimator SE for mean = " << finalStatErrors(2*i, 2*i) << "\n";
       // standard error (estimator std-dev) for Monte Carlo std-deviation
       // (Harding et al., 2014: assumes normally distributed population): 
       //finalStatErrors[cntr++] = qoi_stdev / (sqrt2*sqrtnm1);
@@ -768,11 +772,26 @@ void NonDLHSSampling::update_final_statistics()
       // and delta method
       qoi_exckurt = momentStats(3, i);
 
-      Cout << "Values for exckurt = " << qoi_stdev << ", " << qoi_exckurt  << "\n";
+      //Cout << "Values for exckurt = " << qoi_stdev << ", " << qoi_exckurt  << "\n";
       finalStatErrors(2*i+1, 2*i+1) = (qoi_stdev == 0) ? 0 : 1. / (2. * qoi_stdev) * std::sqrt(qoi_stdev * qoi_stdev * qoi_stdev * qoi_stdev * (qoi_exckurt/ns + 2./(ns - 1.) ) );
+      if(std::isnan(finalStatErrors(2*i+1, 2*i+1)) || std::isinf(finalStatErrors(2*i+1, 2*i+1))){
+        Cerr << "Values for exckurt = " << qoi_stdev << ", " << qoi_exckurt  << "\n";
+        Cerr << "NonDLHSSampling::update_final_statistics() std(std) is nan or inf for qoi = " << i << ": " << finalStatErrors(2*i+1, 2*i+1) << ". Reparing to zero.\n";
+        finalStatErrors(2*i+1, 2*i+1) = 0;
+      }
       if(outputLevel >= DEBUG_OUTPUT)
-	Cout << "Estimator SE for stddev = " << finalStatErrors(2*i+1, 2*i+1) << "\n\n";
-      finalStatErrors(2*i+1, 2*i) = bootstrap_covariance(i);
+	      Cout << "Estimator SE for stddev = " << finalStatErrors(2*i+1, 2*i+1) << "\n\n";
+
+      qoi_skewness = momentStats(2, i);
+      qoi_cm3 = qoi_skewness*(qoi_stdev*qoi_stdev*qoi_stdev);
+      //finalStatErrors(2*i+1, 2*i) = bootstrap_covariance(i); //COV_BOOTSTRAP
+      //finalStatErrors(2*i+1, 2*i) = finalStatErrors(2*i, 2*i)*finalStatErrors(2*i+1, 2*i+1); //COV_PEARSON
+      finalStatErrors(2*i+1, 2*i) = qoi_cm3/ns; //COV_CORRLIFT
+      if(std::isnan(finalStatErrors(2*i+1, 2*i)) || std::isinf(finalStatErrors(2*i+1, 2*i))){
+        Cerr << "Values for cov(mean, std) = " << qoi_skewness << ", " << qoi_stdev << ", " <<  qoi_cm3 << "\n";
+        Cerr << "NonDLHSSampling::update_final_statistics() cov(mean, std) is nan or inf for qoi = " << i << ": " << finalStatErrors(2*i+1, 2*i) << ". Reparing to zero.\n";
+        finalStatErrors(2*i+1, 2*i) = 0;
+      }
       if(outputLevel >= DEBUG_OUTPUT)
         Cout << "Estimator SE for cov = " << finalStatErrors(2*i+1, 2*i) << "\n\n";
       break;
