@@ -106,3 +106,9 @@ def text_book_dict(dakota_dict):
         retval['fnHessians'] = np.append(retval['fnHessians'], [h], axis=0)
 
     return retval
+
+def text_book_batch(dakota_list):
+    retvals = []
+    for dak_dict in dakota_list:
+        retvals.append(text_book_dict(dak_dict))
+    return retvals
