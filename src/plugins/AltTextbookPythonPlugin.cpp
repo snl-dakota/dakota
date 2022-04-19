@@ -27,7 +27,31 @@ DP::EvalResponse AltTextbookPythonPlugin::evaluate(
   unpack_python_response(num_fns, num_derivs, py_response, response);
 
   return response;
+}
 
+std::vector<DP::EvalResponse> AltTextbookPythonPlugin::evaluate(
+    std::vector<DP::EvalRequest> const& requests) {
+
+  size_t const num_requests = requests.size();
+  std::vector<DP::EvalResponse> responses(num_requests);
+  py::list py_requests;
+
+  for (size_t i = 0; i < num_requests; ++i) {
+    resize_response_arrays(requests[i], responses[i]);
+    py_requests.append(pack_python_request<py::array>(requests[i]));
+  }
+
+  py::module_ textbook = py::module_::import("textbook");
+  py::list py_responses = textbook.attr("text_book_batch")(py_requests);
+
+  for (size_t i = 0; i < num_requests; ++i) {
+    // DTS: these should be the same for all requests
+    size_t const num_fns = requests[i].activeSet.size();
+    size_t const num_derivs = requests[i].derivativeVars.size();
+    unpack_python_response(num_fns, num_derivs, py_responses[i], responses[i]);
+  }
+
+  return responses;
 }
 
 // May want to move this up to the parent class, but API for the

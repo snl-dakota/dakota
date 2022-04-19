@@ -13,6 +13,10 @@ public:
   DakotaPlugins::EvalResponse evaluate(
       DakotaPlugins::EvalRequest const& request) override;
 
+  std::vector<DakotaPlugins::EvalResponse>
+      evaluate(std::vector<DakotaPlugins::EvalRequest> const& requests)
+      override;
+
 private:
 
   void unpack_python_response(size_t const num_fns, size_t const num_derivs,
