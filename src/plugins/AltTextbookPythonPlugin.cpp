@@ -17,13 +17,16 @@ DP::EvalResponse AltTextbookPythonPlugin::evaluate(
   DP::EvalResponse response;
   resize_response_arrays(request, response);
 
+  std::string const py_mod_fn_str = "textbook:text_book_dict";
+  set_python_names(py_mod_fn_str);
+
   py::dict py_request = pack_python_request<py::array>(request);
-  py::module_ textbook = py::module_::import("textbook");
+  py::module_ textbook = py::module_::import(py_module_name.c_str());
 
   size_t const num_fns = request.activeSet.size();
   size_t const num_derivs = request.derivativeVars.size();
 
-  py::dict py_response = textbook.attr("text_book_dict")(py_request);
+  py::dict py_response = textbook.attr(py_function_name.c_str())(py_request);
   unpack_python_response(num_fns, num_derivs, py_response, response);
 
   return response;
@@ -41,8 +44,11 @@ std::vector<DP::EvalResponse> AltTextbookPythonPlugin::evaluate(
     py_requests.append(pack_python_request<py::array>(requests[i]));
   }
 
-  py::module_ textbook = py::module_::import("textbook");
-  py::list py_responses = textbook.attr("text_book_batch")(py_requests);
+  std::string const py_mod_fn_str = "textbook:text_book_batch";
+  set_python_names(py_mod_fn_str);
+
+  py::module_ textbook = py::module_::import(py_module_name.c_str());
+  py::list py_responses = textbook.attr(py_function_name.c_str())(py_requests);
 
   for (size_t i = 0; i < num_requests; ++i) {
     // DTS: these should be the same for all requests

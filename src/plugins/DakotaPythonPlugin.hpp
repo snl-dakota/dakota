@@ -42,6 +42,14 @@ public:
     py::finalize_interpreter();
   }
 
+  void set_python_names(std::string const& py_module_fn_str) {
+    const size_t sep_pos = py_module_fn_str.find(":");
+    const size_t fn_str_length = py_module_fn_str.size() - sep_pos - 1;
+
+    py_module_name = py_module_fn_str.substr(0, sep_pos);
+    py_function_name = py_module_fn_str.substr(sep_pos + 1, fn_str_length);
+  }
+
 protected:
 
   template<typename py_arrayT>
@@ -93,6 +101,9 @@ protected:
 
     return python_request;
   }
+
+  std::string py_module_name = "";
+  std::string py_function_name = "";
 
 private:
 
