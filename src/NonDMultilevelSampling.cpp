@@ -67,7 +67,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     }
   }
   if (allocationTarget == TARGET_SCALARIZATION) {
-    cov_approximation_type = COV_KURTOSIS;
+    cov_approximation_type = COV_CORRLIFT;
     bootstrapSeed = 0;
     storeEvals = true;
     if (finalMomentsType != STANDARD_MOMENTS){
@@ -356,10 +356,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     convergenceTolVec[qoi] = convergenceTol;
   
   //// Cantilever
-  Real w = iteratedModel.current_variables().all_continuous_variables()[0];
+  /*Real w = iteratedModel.current_variables().all_continuous_variables()[0];
   Real t = iteratedModel.current_variables().all_continuous_variables()[1];
-  /*
-  int num_resamples = 1000;
+  
+  int num_resamples = 100;
   RealMatrix estimator_matrix;
   estimator_matrix.shape(num_resamples, 2);
   RealVector mean(3);
@@ -376,8 +376,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
       num_samples_array[step].resize(numFunctions);
     }
     for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-      num_samples_array[0][qoi] = 0;
-      num_samples_array[1][qoi] = numSamples;
+      for (step = 0; step < num_steps-1; ++step) {
+        num_samples_array[step][qoi] = 0;
+      }
+      num_samples_array[num_steps-1][qoi] = numSamples;
     }
 
     for (step = 0; step < num_steps; ++step) {
@@ -436,12 +438,15 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   estim_var[1] = (1./(num_resamples-1.)*estim_var[1]);
   
   //convergenceTol = std::min(estim_std[0], estim_std[1]);
-  */
+  
   convergenceTolVec[0] = 1.;
-  convergenceTolVec[1] = 8.659953812653066e-06; //Mean: 1.423185440473230e-06; //Variance: 4.183718815322915e-09//Sigma: 7.350595822335362e-07 //MeanSigma: 8.659953812653066e-06; 
-  convergenceTolVec[2] = 4.637311854976656e-06; //Mean: 7.575797292600822e-07; //Variance: 1.189555462940623e-09//Sigma: 3.924903845943030e-07 //MeanSigma: 4.637311854976656e-06; 
+  //convergenceTolVec[1] = 8.659953812653066e-06; //Mean: 1.423185440473230e-06; //Variance: 4.183718815322915e-09//Sigma: 7.350595822335362e-07 //MeanSigma: 8.659953812653066e-06; 
+  //convergenceTolVec[2] = 4.637311854976656e-06; //Mean: 7.575797292600822e-07; //Variance: 1.189555462940623e-09//Sigma: 3.924903845943030e-07 //MeanSigma: 4.637311854976656e-06; 
 
-  //Cout << "Convergence Tol: " << convergenceTolVec << std::endl;
+  convergenceTolVec[1] = estim_var[0]; 
+  convergenceTolVec[2] = estim_var[1];
+  Cout << "Convergence Tol: " << convergenceTolVec << std::endl;
+  */
   // now converge on sample counts per level (N_l)
   mlmfIter = 0;  equivHFEvals = 0.;
   while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
@@ -528,7 +533,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   }
   std::ofstream myfile;
   //Cantilever
-  
+  /*
   myfile.open("cantilever_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);   
 
   if(num_steps==2){
@@ -558,7 +563,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
            << "\t" << NTargetQoiFN(2, 0) << "\t" << (NTargetQoiFN(2, 1)) << "\t" << NTargetQoiFN(2, 2) << "\t" << (NTargetQoiFN(2, 3)) 
            << "\t" << noise_qoi[1] << "\t" << noise_qoi[2]
            << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
-  }              
+  }    
+  */          
   /*
   myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app); 
   if(num_steps==2){
@@ -993,7 +999,7 @@ Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntReal
       case COV_PEARSON:
         cov_estim = std::sqrt(var_of_mean_l*var_of_sigma_l);
         break;
-      case COV_KURTOSIS:
+      case COV_CORRLIFT:
         //if(qoi == cur_qoi && step == 1){
           cov_estim = compute_cov_mean_sigma(sum_Ql, sum_Qlm1, sum_QlQlm1, 
                   N_l[step][cur_qoi], N_l[step][cur_qoi], cur_qoi, 
@@ -1743,11 +1749,11 @@ void NonDMultilevelSampling::compute_moments(const IntRealMatrixMap& sum_Ql, con
       }
     }
     if(cm2 < 0){
-      Cout << "NonDMultilevelSampling::compute_moments(qoi) = (" << qoi << "): cm2 < 0" << std::endl; 
+      Cerr << "NonDMultilevelSampling::compute_moments(qoi) = (" << qoi << "): cm2 < 0" << std::endl; 
     }
     check_negative(cm2);
     if(cm4 < 0){
-      Cout << "NonDMultilevelSampling::compute_moments(qoi) = (" << qoi << "): cm4 < 0" << std::endl; 
+      Cerr << "NonDMultilevelSampling::compute_moments(qoi) = (" << qoi << "): cm4 < 0" << std::endl; 
     }
     check_negative(cm4);
     Real *mom_q = momentStats[qoi];
@@ -1860,7 +1866,7 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
         case COV_PEARSON:
           agg_estim_cov_scalarization = std::sqrt(agg_estim_var_mean*agg_estim_var_sigma);
           break;
-        case COV_KURTOSIS:
+        case COV_CORRLIFT:
           for (lev = 0; lev < num_lev; ++lev) {
             agg_estim_cov_scalarization += compute_cov_mean_sigma(sum_Ql, sum_Qlm1, sum_QlQlm1, 
                 num_Q[lev][qoi], num_Q[lev][qoi], qoi, 
@@ -2869,7 +2875,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
             }
           }
           break;
-        case COV_KURTOSIS:
+        case COV_CORRLIFT:
           {
             Real grad_f_kurtosis_cov_tmp = 0;
             for (lev = 0; lev < num_lev; ++lev){
@@ -2893,7 +2899,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
       case COV_BOOTSTRAP:
         f_tmp += cov_scaling * 2.0 * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * f_cov_estimate;
         break;
-      case COV_KURTOSIS:
+      case COV_CORRLIFT:
         f_tmp += cov_scaling * 2.0 * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * f_cov_estimate;
         break;
       case COV_PEARSON:
@@ -2923,7 +2929,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
           case COV_BOOTSTRAP:
             grad_f[lev] +=  cov_scaling * 2.0 * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * grad_f_cov_estimate[lev];
             break;
-          case COV_KURTOSIS:
+          case COV_CORRLIFT:
             grad_f[lev] +=  cov_scaling * 2.0 * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * grad_f_cov_estimate[lev];
             break;
           case COV_PEARSON:
@@ -3033,7 +3039,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp_fd(int mo
             f_cov_estimate = std::sqrt(f_mean * f_sigma);
           }
           break;
-        case COV_KURTOSIS:
+        case COV_CORRLIFT:
           {
             Real grad_f_kurtosis_cov_tmp = 0;
             for (lev = 0; lev < num_lev; ++lev){
@@ -3054,7 +3060,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp_fd(int mo
       case COV_BOOTSTRAP:
         f_tmp += cov_scaling * 2.0 * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * f_cov_estimate;
         break;
-      case COV_KURTOSIS:
+      case COV_CORRLIFT:
         f_tmp += cov_scaling * 2.0 * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * ((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * f_cov_estimate;
         break;
       case COV_PEARSON:

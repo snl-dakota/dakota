@@ -487,7 +487,7 @@ private:
   int bootstrapSeed;
 
   short cov_approximation_type;
-  enum {COV_BOOTSTRAP, COV_PEARSON, COV_KURTOSIS};
+  enum {COV_BOOTSTRAP, COV_PEARSON, COV_CORRLIFT};
 };
 
 
@@ -560,7 +560,7 @@ variance_Ysum(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq)
   Real var_Y = (sum_YY / Nlq - mu_Y * mu_Y)
              * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
   if(var_Y < 0){
-    Cout << "NonDMultilevelSampling::variance_Ysum: var_Y < 0" << std::endl;
+    Cerr << "NonDMultilevelSampling::variance_Ysum: var_Y < 0" << std::endl;
   }
   check_negative(var_Y);
   return var_Y;
@@ -592,7 +592,7 @@ variance_Ysum_static(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq_pilot,
   Nlq = Nlq_pilot;  //TODO_SCALARBUGFIX
   Real var_Y = variance_tmp * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
   if(var_Y < 0){
-    Cout << "NonDMultilevelSampling::variance_Ysum_static: var_Y < 0" << std::endl;
+    Cerr << "NonDMultilevelSampling::variance_Ysum_static: var_Y < 0" << std::endl;
   }
   check_negative(var_Y);
   return var_Y;
@@ -617,7 +617,7 @@ variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
     +        sum_Qlm1Qlm1 / Nlq - mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
     * (Real)Nlq / (Real)(Nlq - 1);
   if(var_Q < 0){
-    Cout << "NonDMultilevelSampling::variance_Qsum: var_Q < 0" << std::endl;
+    Cerr << "NonDMultilevelSampling::variance_Qsum: var_Q < 0" << std::endl;
   }
   check_negative(var_Q);
   return var_Q; // Bessel's correction
@@ -639,7 +639,7 @@ variance_Qsum_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
     grad = 0; //TODO_SCALARBUGFIX
   }
   if(variance_tmp < 0){
-    Cout << "NonDMultilevelSampling::variance_Qsum: variance_tmp < 0" << std::endl;
+    Cerr << "NonDMultilevelSampling::variance_Qsum: variance_tmp < 0" << std::endl;
   }
   check_negative(variance_tmp);
 
@@ -795,7 +795,7 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 	  	  abort_handler(INTERFACE_ERROR);
 			}
 		}else{
-  	  Cout << "NonDMultilevelSampling::set_convergence_tol: convergenceTolTarget is not known.\n";
+  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolTarget is not known.\n";
   	  abort_handler(INTERFACE_ERROR);
 		}
 
@@ -871,7 +871,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(const IntRealMatrixMap& sum
 
   //Cout << "NonDMultilevelSampling::var_of_var_ml_l0: (Qoi, 0): " << qoi << ", 0" << ") Var[Var]: " << var_of_var << std::endl;
   if(var_of_var < 0){
-    Cout << "NonDMultilevelSampling::var_of_var_ml_l0: var_of_var < 0.";
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_l0(qoi = " << qoi << "): var_of_var < 0.";
     check_negative(var_of_var);
   }
   return var_of_var;
@@ -906,7 +906,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_lmax(const IntRealMatrixMap& s
   }
 
   if(var_of_var < 0){
-    Cout << "NonDMultilevelSampling::var_of_var_ml_lmax: var_of_var < 0.";
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_lmax(qoi = " << qoi << "): var_of_var < 0.";
     check_negative(var_of_var);
   }
   return var_of_var;
@@ -1187,7 +1187,8 @@ inline Real NonDMultilevelSampling::compute_cov_mean_sigma(const IntRealMatrixMa
   }*/
        
   if(std::isnan(cov_mean_sigma)){
-    Cout << "Cov_mean_sigma is nan since variance is zero: cm2l: " << cm2l << " and cm2lm1: " << cm2lm1 << std::endl;
+    Cerr << "Cov_mean_sigma is nan since variance is zero or negative for qoi: " << qoi << " with values: cm2l: " << cm2l << " and cm2lm1: " << cm2lm1;
+    Cerr << ". Setting to zero. \n";
     cov_mean_sigma = 0;
   }
 
