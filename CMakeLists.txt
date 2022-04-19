@@ -28,7 +28,7 @@ include(DakotaCxxOptions)
 dakota_cxx_standard()
 
 # Developer convenience options first so take precedence over default options
-if(DevDebug)
+if(DevDebugShared OR DevDebugStatic OR DevDebug)  # DevDebug is deprecated
   include(DakotaDebug)
   include(DakotaDev)
 elseif (DevDistro)
@@ -44,7 +44,7 @@ include(DakotaOptions)
 # -----
 
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 14)
+set(Dakota_VERSION_MINOR 15)
 set(Dakota_VERSION_PATCH 0)
 
 # --- Release time toggles
@@ -55,7 +55,7 @@ set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 
 # If empty, the build date will be used as the release date (could consider 
 # using the Git rev date); use format Mmm dd yyyy, as in asctime()
-#set(Dakota_RELEASE_DATE "May 17 2021")    # Versioned release date Mmm dd yyyy
+#set(Dakota_RELEASE_DATE "Nov. 15 2021")    # Versioned release date Mmm dd yyyy
 set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date
 
 # Define convenience variables used here and in subdirs, such as
@@ -97,22 +97,18 @@ else()
 endif()
 
 
-# More widely distributed packages exclude more content
-# So smaller number implies less content
-set(DAKOTA_InternalFull 3)       # Complete checkout
-set(DAKOTA_InternalSupervised 2) # Less some of local/
-set(DAKOTA_InternalWeb 1)        # Also less DOT
-set(DAKOTA_ExternalWeb 0)        # Also less NPSOL, NLPQL
+
+include(DakotaCPack)
 
 # The permission level of the distribution (to be made an option)
 # TODO: change default to DAKOTA_ExternalWeb?
 # BMA TODO: Publish this option in options directory
-set(DAKOTA_DISTRO ${DAKOTA_InternalFull} CACHE STRING
-  "Dakota Distribution Type")
+if(NOT DEFINED DAKOTA_DISTRO)
+  set(DAKOTA_DISTRO "snlfull" CACHE STRING "Dakota Distribution Type")
+endif()
 
 # Initial CPack settings and source exclusions
 # Depends on DAKOTA_DISTRO for file filtering
-include(DakotaCPack)
 dakota_cpack_initialize()
 
 # Prune local and non-distributable TPLs based on DAKOTA_DISTRO

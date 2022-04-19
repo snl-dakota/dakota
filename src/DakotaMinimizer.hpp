@@ -103,6 +103,10 @@ protected:
 	    size_t num_nln_ineq, size_t num_nln_eq, 
             std::shared_ptr<TraitsBase> traits = 
             std::shared_ptr<TraitsBase>(new TraitsBase()));
+  /// alternate constructor for "on the fly" instantiations
+  Minimizer(Model& model, size_t max_iter, size_t max_eval, Real conv_tol,
+	    std::shared_ptr<TraitsBase> traits = 
+	    std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// destructor
   ~Minimizer();
@@ -191,6 +195,13 @@ protected:
 			 const BoolDeque& max_sense,
 			 const RealVector& primary_wts,
 			 RealSymMatrix& obj_hess) const;
+
+  /// print best evaluation matching vars and set, or partial matches
+  /// with matching variables only.
+  void print_best_eval_ids(const String& interface_id,
+			   const Variables& best_vars,
+			   const ActiveSet& active_set,
+			   std::ostream& s) const;
 
   /// top-level archival method
   virtual void archive_best_results();

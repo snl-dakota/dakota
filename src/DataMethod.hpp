@@ -60,7 +60,7 @@ enum { DEFAULT_METHOD=0,
        BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS,
        IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, MULTILEVEL_SAMPLING,
        MULTIFIDELITY_SAMPLING, MULTILEVEL_MULTIFIDELITY_SAMPLING,
-       LIST_SAMPLING, RANDOM_SAMPLING, MUQ_SAMPLING,
+       APPROXIMATE_CONTROL_VARIATE, LIST_SAMPLING, RANDOM_SAMPLING,
        // Variables::method_view(): epistemic if method_name > RANDOM_SAMPLING
        LOCAL_INTERVAL_EST, LOCAL_EVIDENCE, GLOBAL_INTERVAL_EST, GLOBAL_EVIDENCE,
        //BAYES_CALIBRATION=(ANALYZER_BIT | NOND_BIT | PARALLEL_BIT),
@@ -98,11 +98,22 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_LHS,             SUBMETHOD_RANDOM,
        SUBMETHOD_BOX_BEHNKEN,     SUBMETHOD_CENTRAL_COMPOSITE,
        SUBMETHOD_GRID,            SUBMETHOD_OA_LHS,     SUBMETHOD_OAS,
+       // MFMC and ACV numerical solutions:
+       SUBMETHOD_MFMC, SUBMETHOD_ACV_IS, SUBMETHOD_ACV_MF, SUBMETHOD_ACV_KL,
        // Bayesian inference algorithms:
        SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_MUQ, SUBMETHOD_QUESO,
        SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
-       SUBMETHOD_NIP, SUBMETHOD_SQP, SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBO,
+       SUBMETHOD_NIP, SUBMETHOD_SQP, SUBMETHOD_SBLO,
+       SUBMETHOD_EA,  SUBMETHOD_EGO, SUBMETHOD_SBGO,
+       // Local reliability sub-method selections: (MV is 0)
+       SUBMETHOD_AMV_X,       SUBMETHOD_AMV_U,
+       SUBMETHOD_AMV_PLUS_X,  SUBMETHOD_AMV_PLUS_U,
+       SUBMETHOD_TANA_X,      SUBMETHOD_TANA_U,
+       SUBMETHOD_QMEA_X,      SUBMETHOD_QMEA_U,
+       SUBMETHOD_NO_APPROX,
+       // Global reliability sub-method selections:
+       SUBMETHOD_EGRA_X,      SUBMETHOD_EGRA_U,
        // verification approaches:
        SUBMETHOD_CONVERGE_ORDER,  SUBMETHOD_CONVERGE_QOI,
        SUBMETHOD_ESTIMATE_ORDER };
@@ -145,8 +156,6 @@ enum { PROBABILITIES, RELIABILITIES, GEN_RELIABILITIES };
 enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
 // define special values for distributionType
 enum { CUMULATIVE, COMPLEMENTARY };
-// define special values for finalMomentsType
-enum { NO_MOMENTS=0, STANDARD_MOMENTS, CENTRAL_MOMENTS };
 
 // -------------
 // NonDExpansion (most enums defined by Pecos in pecos_global_defs.hpp)
@@ -197,27 +206,41 @@ enum { DESIGN,            //DESIGN_UNIFORM,
 // (6) ALL_UNIFORM: sample over All variables using uniform distributions.
 // Note that ACTIVE modes will overlap with either UNCERTAIN or ALL modes
 // depending on whether the Model/Variables employ an All or Distinct view.
+
 // Wilks type of confidence interval
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
-// define special values for qoi aggregation norm for sample allocation over levels and QoIs
+// type of final statistics for NonD sampling methods
+enum { NO_FINAL_STATS, QOI_STATISTICS, ESTIMATOR_PERFORMANCE };
+
+// define special values for qoi aggregation norm for sample
+// allocation over levels and QoIs
 enum { QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM };
 
 // target variance for fitting sample allocation
 enum { TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA, TARGET_SCALARIZATION };
 
-// define special values for computation of convergence tolerance, either absolute or relative 
-enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE, CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE };
+// define special values for computation of convergence tolerance,
+// either absolute or relative
+enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE,
+       CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE };
 
-// define optimization formulation for MLMC sample allocation by specifing equality constraint, either variance or cost 
-enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT, CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
+// define optimization formulation for MLMC sample allocation by
+// specifing equality constraint, either variance or cost
+enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
+       CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
+
+// ML/MF sampling modes
+enum { ONLINE_PILOT, OFFLINE_PILOT, PILOT_PROJECTION };
+// Numerical solution modes
+enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
 
 // ---------------
 // NonDReliability
 // ---------------
 // define special values for mppSearchType
-enum { MV=0, AMV_X, AMV_U, AMV_PLUS_X, AMV_PLUS_U, TANA_X, TANA_U,
-       QMEA_X, QMEA_U, NO_APPROX, EGRA_X, EGRA_U };
+//enum { MV=0, AMV_X, AMV_U, AMV_PLUS_X, AMV_PLUS_U, TANA_X, TANA_U,
+//       QMEA_X, QMEA_U, NO_APPROX, EGRA_X, EGRA_U };
 // define special values for secondOrderIntType
 enum { BREITUNG, HOHENRACK, HONG };
 
@@ -974,11 +997,11 @@ public:
   bool dOptimal;
   /// number of candidate designss in D-optimal design selection
   size_t numCandidateDesigns;
-  /// the type of limit state search in \ref MethodNonDLocalRel
-  /// (\c x_taylor_mean, \c x_taylor_mpp, \c x_two_point, \c u_taylor_mean,
-  /// \c u_taylor_mpp, \c u_two_point, or \c no_approx) or
-  /// \ref MethodNonDGlobalRel (\c x_gaussian_process or \c u_gaussian_process)
-  unsigned short reliabilitySearchType;
+  // the type of limit state search in \ref MethodNonDLocalRel
+  // (\c x_taylor_mean, \c x_taylor_mpp, \c x_two_point, \c u_taylor_mean,
+  // \c u_taylor_mpp, \c u_two_point, or \c no_approx) or
+  // \ref MethodNonDGlobalRel (\c x_gaussian_process or \c u_gaussian_process)
+  //unsigned short reliabilitySearchType;
   /// the \c first_order or \c second_order integration selection in
   /// \ref MethodNonDLocalRel
   String reliabilityIntegration;
@@ -990,8 +1013,21 @@ public:
   /// (e.g. number of supplemental points added) to be added to be
   /// added to the build points for an emulator at each iteration
   IntVector refineSamples;
+
+  /// the method used for solving an optimization sub-problem (e.g.,
+  /// pre-solve for the MAP point)
+  unsigned short optSubProbSolver;
+  /// approach for overriding an analytic solution based on simplifying
+  /// assumptions that might be violated, suggesting a fallback approach,
+  /// or lacking robustness, suggesting an optional override replacement
+  unsigned short numericalSolveMode;
+
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
+  /// the \c solution_mode selection for ML/MF sampling methods
+  short ensembleSampSolnMode;
+  /// the \c truth_fixed_by_pilot flag for ACV methods
+  bool truthPilotConstraint;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC
   short allocationTarget;
   /// the \c useTargetVarianceOptimizationFlag selection in \ref MethodMultilevelMC
@@ -1008,7 +1044,10 @@ public:
   Real multilevEstimatorRate;
   /// type of discrepancy emulation in multilevel methods: distinct or recursive
   short multilevDiscrepEmulation;  
-  /// the \c final_moments specification in \ref MethodNonD
+  /// specification of the type of final statistics in \ref MethodNonD
+  short finalStatsType;
+  /// the \c final_moments specification in \ref MethodNonD, subordinate to
+  /// the type of final statistics 
   short finalMomentsType;
   /// the \c distribution \c cumulative or \c complementary specification
   /// in \ref MethodNonD
@@ -1070,8 +1109,6 @@ public:
   int evidenceSamples;
   /// flag indicating use of Laplace approximation for evidence calc.
   bool modelEvidLaplace;
-  /// the method used for performing a pre-solve for the MAP point
-  unsigned short preSolveMethod;
   /// the type of proposal covariance: user, derivatives, or prior
   String proposalCovType;
   /// optional multiplier for prior-based proposal covariance

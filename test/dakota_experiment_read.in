@@ -15,7 +15,7 @@
 # Test 2:  field data calibration.  Diagonal error terms provided. No interpolation.
 # Test 3:  field data calibration.  Full matrix of error terms provided. No interpolation.
 # Test 4:  field data calibration using Bayesian calibration with DREAM, primarily to test the likelihood formulation.  Full matrix of error terms provided. No interpolation.
-# Test 5:  field data calibration. Diagonal error terms provided. This test requires interpolation:  there are 50 simulation responses but only 5 experimental data responses.  The coordinate files are provided. 
+# Test 5:  field data calibration. Diagonal error terms provided. This test requires interpolation:  there are 50 simulation responses but only 5 experimental data responses.  The coordinate files are provided.  The data_directory option is used for the path to the calibration data files.
 # Test 6:  field data calibration. Diagonal error terms provided. This test requires interpolation.  This is the same as Test 5 except there are two different experiments, one with 5 points and one with 3 points. 
 # Test 7.  This tests scalar calibration, where the scalar data is not written in one calibration_data_file but instead is written to individual response.num.dat files. 
 # Test 8.  This tests combined scalar and field calibration, with 2 scalar terms and 5 field terms.  
@@ -66,6 +66,7 @@ responses,
 #        lengths = 50				#s5,#s6
 #        num_coordinates_per_field = 1          #s5,#s6,#s8
 #         read_field_coordinates                #s5,#s6
+#        data_directory = 'dakota_experiment_read.auxdir'       #s5
 #	response_descriptors = 'oscillator'     #s2
 #	response_descriptors = 'oscillatorA'    #s3,#s4
 #	response_descriptors = 'oscillatorB'    #s5,#s6

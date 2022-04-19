@@ -256,9 +256,15 @@ public:
   //- Heading: Set and Inquire functions
   //
 
+  /// return rawResponseMap
+  IntResponseMap& response_map();
+
   /// migrate an unmatched response record from rawResponseMap to
   /// cachedResponseMap
   void cache_unmatched_response(int raw_id);
+  /// migrate all remaining response records from rawResponseMap to
+  /// cachedResponseMap
+  void cache_unmatched_responses();
 
   /// assign letter or replace existing letter with a new one
   void assign_rep(std::shared_ptr<Interface> interface_rep);
@@ -430,6 +436,7 @@ protected:
 
   /// Analysis components for interface types that support them
   String2DArray analysisComponents;
+
 private:
 
   //
@@ -448,7 +455,6 @@ private:
 
   /// return the next available interface ID for on-the-fly methods
   static String no_spec_id();
-
 
   //
   //- Heading: Data
@@ -486,6 +492,10 @@ private:
   /// pointer to an AMPL solver library (ASL) object
   ASL *asl;
 };
+
+
+inline IntResponseMap& Interface::response_map()
+{ return (interfaceRep) ? interfaceRep->rawResponseMap : rawResponseMap; }
 
 
 // nonvirtual functions can access letter attributes directly (only need to fwd

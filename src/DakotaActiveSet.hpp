@@ -81,6 +81,8 @@ public:
   void request_vector(const ShortArray& rv);
   /// set all request vector values
   void request_values(const short rv_val);
+  /// set all request vector values in a range
+  void request_values(const short rv_val, size_t start, size_t end);
   /// get the value of an entry in the request vector
   short request_value(const size_t index) const;
   /// set the value of an entry in the request vector
@@ -207,6 +209,14 @@ inline void ActiveSet::request_values(const short rv_val)
 { requestVector.assign(requestVector.size(), rv_val); }
 
 
+inline void ActiveSet::
+request_values(const short rv_val, size_t start, size_t end)
+{
+  for (size_t i=start; i<end; ++i)
+    requestVector[i] = rv_val;
+}
+
+
 inline short ActiveSet::request_value(const size_t index) const
 { return requestVector[index]; }
 
@@ -290,17 +300,8 @@ inline bool operator!=(const ActiveSet& set1, const ActiveSet& set2)
 } // namespace Dakota
 
 
-// Since we may serialize this class through a temporary, force
-// serialization mode and no tracking
-BOOST_CLASS_IMPLEMENTATION(Dakota::ActiveSet, 
-			   boost::serialization::object_serializable)
+// Since we may serialize this class through a temporary, disallow tracking
 BOOST_CLASS_TRACKING(Dakota::ActiveSet, 
 		     boost::serialization::track_never)
-
-// allow static linking
-// BOOST_CLASS_EXPORT_KEY(Dakota::ActiveSet);
-
-// BOOST_CLASS_IMPLEMENTATION(Dakota::ActiveSet, 
-//  			   boost::serialization::object_serializable)
 
 #endif

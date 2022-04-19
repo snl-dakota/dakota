@@ -50,19 +50,25 @@ public:
   //
 
   /// default constructor
-  Iterator( std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()) );
+  Iterator(std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()) );
   // BMA: Disabled unused ctor when deploying shared_ptr for iteratorRep
-  /// alternate envelope constructor that assigns a representation pointer
-  //  Iterator(std::shared_ptr<Iterator> iterator_rep, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  // alternate envelope constructor that assigns a representation pointer
+  //Iterator(std::shared_ptr<Iterator> iterator_rep, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard envelope constructor, which constructs its own model(s)
-  Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor which uses the ProblemDescDB but
   /// accepts a model from a higher level (meta-iterator) context,
   /// instead of constructing its own
-  Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(ProblemDescDB& problem_db, Model& model,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor for instantiations by name
   /// without the ProblemDescDB
-  Iterator(const String& method_string, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(const String& method_string, Model& model,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// copy constructor
   Iterator(const Iterator& iterator);
 
@@ -174,9 +180,32 @@ public:
   /// return is false.  Override to return true if appropriate.
   virtual bool returns_multiple_points() const;
 
+  /// sets the initial point for this iterator (user-functions mode
+  /// for which Model updating is not used)
+  virtual void initial_point(const Variables& pt);
+  /// sets the initial point (active continuous variables) for this iterator
+  /// (user-functions mode for which Model updating is not used)
+  virtual void initial_point(const RealVector& pt);
   /// sets the multiple initial points for this iterator.  This should
   /// only be used if accepts_multiple_points() returns true.
   virtual void initial_points(const VariablesArray& pts);
+
+  /// assign nonlinear inequality and equality constraint allowables for this
+  /// iterator (user-functions mode for which Model updating is not used)
+  virtual void variable_bounds(const RealVector& cv_lower_bnds,
+			       const RealVector& cv_upper_bnds);
+  /// assign linear inequality and linear equality constraints for this
+  /// iterator (user-functions mode for which Model updating is not used)
+  virtual void linear_constraints(const RealMatrix& lin_ineq_coeffs,
+				  const RealVector& lin_ineq_lb,
+				  const RealVector& lin_ineq_ub,
+				  const RealMatrix& lin_eq_coeffs,
+				  const RealVector& lin_eq_tgt);
+  /// assign nonlinear inequality and equality constraint allowables for this
+  /// iterator (user-functions mode for which Model updating is not used)
+  virtual void nonlinear_constraints(const RealVector& nln_ineq_lb,
+				     const RealVector& nln_ineq_ub,
+				     const RealVector& nln_eq_tgt);
 
   /// initialize the 2D graphics window and the tabular graphics data
   virtual void initialize_graphics(int iterator_server_id = 1);
@@ -202,12 +231,12 @@ public:
   virtual const IntResponseMap& all_responses() const;
 
   /// get the current number of samples
-  virtual int num_samples() const;
+  virtual size_t num_samples() const;
   /// reset sampling iterator to use at least min_samples
-  virtual void sampling_reset(int min_samples, bool all_data_flag, 
+  virtual void sampling_reset(size_t min_samples, bool all_data_flag, 
 			      bool stats_flag);
   /// set reference number of samples, which is a lower bound during reset 
-  virtual void sampling_reference(int samples_ref);
+  virtual void sampling_reference(size_t samples_ref);
 
   /// increment to next in sequence of refinement samples
   virtual void sampling_increment();
@@ -374,13 +403,24 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  Iterator(BaseConstructor, ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(BaseConstructor, ProblemDescDB& problem_db,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(NoDBBaseConstructor, unsigned short method_name,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
+
+  /// alternate envelope constructor for instantiations without ProblemDescDB
+  Iterator(NoDBBaseConstructor, Model& model, size_t max_iter, size_t max_eval,
+	   Real conv_tol, std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   //
   //- Heading: Virtual functions

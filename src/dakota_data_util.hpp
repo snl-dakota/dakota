@@ -1211,13 +1211,27 @@ size_t map_key_to_index(const KeyType& key,
 }
 
 
-/// calculate the map index corresponding to the passed value
+/// calculate the map index corresponding to the passed value (not the key)
 template <typename KeyType, typename ValueType>
 size_t map_value_to_index(const ValueType& value,
 			  const std::map<KeyType, ValueType>& pairs)
 {
   size_t index = 0;
   typename std::map<KeyType, ValueType>::const_iterator cit;
+  for (cit=pairs.begin(); cit!=pairs.end(); ++cit, ++index)
+    if (cit->second == value)
+      return index;
+  return _NPOS;
+}
+
+
+/// calculate the map index corresponding to the passed value (not the key)
+template <typename KeyType, typename ValueType>
+size_t map_value_to_index(const ValueType& value,
+			  const std::multimap<KeyType, ValueType>& pairs)
+{
+  size_t index = 0;
+  typename std::multimap<KeyType, ValueType>::const_iterator cit;
   for (cit=pairs.begin(); cit!=pairs.end(); ++cit, ++index)
     if (cit->second == value)
       return index;
@@ -1250,6 +1264,20 @@ inline ScalarType find_min(const std::vector<ScalarType>& vec)
   size_t i, len = vec.size();
   ScalarType min = (len) ? vec[0] : std::numeric_limits<ScalarType>::max();
   for (i=1; i<len; ++i)
+    if (vec[i] < min)
+      min = vec[i];
+  return min;
+}
+
+
+template <typename OrdinalType, typename ScalarType>
+inline ScalarType find_min(const std::vector<ScalarType>& vec,
+			   OrdinalType start, OrdinalType end)
+{
+  OrdinalType i, len = vec.size(), stop = std::min(len, end);
+  ScalarType min = (start<len) ? vec[start] :
+    std::numeric_limits<ScalarType>::max();
+  for (i=start+1; i<stop; ++i)
     if (vec[i] < min)
       min = vec[i];
   return min;

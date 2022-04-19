@@ -353,7 +353,7 @@ void NonDQuadrature::filter_parameter_sets()
     number of points needed from the quadrature routine in order to
     build a particular global approximation. */
 void NonDQuadrature::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   // tpqDriver tracks the active model key
   UShortArray rqo = tpqDriver->reference_quadrature_order();

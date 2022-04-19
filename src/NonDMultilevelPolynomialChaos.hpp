@@ -152,11 +152,11 @@ inline size_t NonDMultilevelPolynomialChaos::collocation_points() const
 
 
 inline int NonDMultilevelPolynomialChaos::random_seed() const
-{ return NonDExpansion::random_seed(sequenceIndex); }
+{ return NonDExpansion::seed_sequence(sequenceIndex); }
 
 
 inline int NonDMultilevelPolynomialChaos::first_seed() const
-{ return NonDExpansion::random_seed(0); }
+{ return NonDExpansion::seed_sequence(0); }
 
 
 inline size_t NonDMultilevelPolynomialChaos::

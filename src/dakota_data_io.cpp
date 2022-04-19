@@ -111,14 +111,25 @@ read_config_vars_multifile(const std::string& basename, int num_expts, int ncv,
   assert(num_expts == config_vars.size());
   for( int i = 0; i < num_expts; ++i ) {
     std::string filename = basename + "." + std::to_string(i+1) + ".config";
-    if( !boost::filesystem::exists(filename) )
-      throw std::runtime_error("Could not find expected experiment config file \""
-          + filename + "\".");
+    if( !boost::filesystem::exists(filename) ) {
+      Cerr << "Could not find expected experiment config file '"
+	   << filename << "'.\n";
+      abort_handler(IO_ERROR);
+    }
 
-    // BMA TODO: try/catch with better messages
     std::ifstream s;
     TabularIO::open_file(s, filename, "read_config_vars_multifile");
-    config_vars[i].read_tabular(s, INACTIVE_VARS);
+    try {
+      config_vars[i].read_tabular(s, INACTIVE_VARS);
+    }
+    catch (const std::exception& e) {
+      // could catch TabularDataTruncated, but message would be the same
+      Cerr << "\nError: Could not read configuration (state) variable values "
+	   << "for experiment " << i + 1 << "\nfrom file '"
+	   << filename << "'; details:\n" << e.what()
+	   << std::endl;
+      abort_handler(IO_ERROR);
+    }
   }
 }
 
@@ -130,15 +141,27 @@ read_config_vars_singlefile(const std::string& basename, int num_expts, int ncv,
 			    std::vector<Variables>& config_vars){
   assert(num_expts == config_vars.size());
   std::string filename = basename + ".config";
-  if( !boost::filesystem::exists(filename) )
-    throw std::runtime_error("Could not find expected experiment config file \""
-			     + filename + "\".");
+  if( !boost::filesystem::exists(filename) ) {
+    Cerr << "Could not find expected experiment config file '" << filename
+	 << "'.\n";
+    abort_handler(IO_ERROR);
+  }
 
-  // BMA TODO: try/catch
   std::ifstream s;
   TabularIO::open_file(s, filename, "read_config_vars_singlefile");
-  for( int i = 0; i < num_expts; ++i )
-    config_vars[i].read_tabular(s, INACTIVE_VARS);
+  for( int i = 0; i < num_expts; ++i ) {
+    try {
+      config_vars[i].read_tabular(s, INACTIVE_VARS);
+    }
+    catch (const std::exception& e) {
+      // could catch TabularDataTruncated, but message would be the same
+      Cerr << "\nError: Could not read configuration (state) variable values "
+	   << "for experiment " << i + 1 << "\nfrom file '"
+	   << filename << "'; details:\n" << e.what()
+	   << std::endl;
+      abort_handler(IO_ERROR);
+    }
+  }
 }
 
 //----------------------------------------------------------------

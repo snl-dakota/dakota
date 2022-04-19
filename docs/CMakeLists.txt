@@ -259,7 +259,7 @@ add_custom_target(package_docs
   COMMAND ${CMAKE_COMMAND} -E copy
     latex-theory/Theory_Main.pdf Theory-${Dakota_VERSION_STRING}.pdf
   COMMAND ${CMAKE_COMMAND} -E
-    tar czf dakota-${Dakota_VERSION_STRING}.docs.tar.gz
+    tar czf dakota-${Dakota_FINAL_PACKAGE_LABEL}-docs.tar.gz
       html-ref html-ref-${Dakota_VERSION_STRING}.tar.gz
       html-dev html-dev-${Dakota_VERSION_STRING}.tar.gz
       Developers-${Dakota_VERSION_STRING}.pdf

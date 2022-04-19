@@ -70,7 +70,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   NonDReliability(problem_db, model),
   meritFunctionType(AUGMENTED_LAGRANGIAN_MERIT), dataOrder(1)
 {
-  if (mppSearchType < EGRA_X) {
+  if (mppSearchType != SUBMETHOD_EGRA_X && mppSearchType != SUBMETHOD_EGRA_U) {
     Cerr << "Error: only x-space and u-space EGRA are currently supported in "
 	 << "global_reliability."<< std::endl;
     abort_handler(-1); 
@@ -163,7 +163,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   //int symbols = samples; // symbols needed for DDACE
   Iterator dace_iterator;
   // instantiate the Nataf ProbabilityTransform and GP DataFit recursions
-  if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) )
+  if (mppSearchType == SUBMETHOD_EGRA_X) { // Recast( DataFit( iteratedModel ) )
 
     // The following uses on the fly derived ctor:
     auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>
@@ -440,7 +440,7 @@ void NonDGlobalReliability::core_run()
 
 void NonDGlobalReliability::optimize_gaussian_process()
 {
-  if (mppSearchType == EGRA_X) {
+  if (mppSearchType == SUBMETHOD_EGRA_X) {
     // Assign non-default global variable bounds for use in PStudyDACE methods
     // that require a bounded region (NIDR default truncates infinite/semi-
     // infinite tails using 3-sigma by default to allow use outside NonD). As
@@ -651,7 +651,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
           maxIterations = 25*numContinuousVars;
 	if (approxIters >= maxIterations || -exp_fns_star < convergenceTol)
 	  approxConverged = true;
-	else if (mppSearchType == EGRA_X) {
+	else if (mppSearchType == SUBMETHOD_EGRA_X) {
 	  // Evaluate response_star_truth in x-space
 	  x_truth_evaluation(c_vars_u, dataOrder);
 	  // Update the GP approximation in x-space
@@ -699,7 +699,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	const RealVector& sams = gp_data.continuous_variables(i); // view
 	Real true_fn = gp_data.response_function(i);
 	
-	if (mppSearchType == EGRA_X) {
+	if (mppSearchType == SUBMETHOD_EGRA_X) {
 	  RealVector sams_u(num_vars);
 	  uSpaceModel.probability_transformation().trans_X_to_U(sams,sams_u);
 	  
@@ -747,13 +747,14 @@ void NonDGlobalReliability::optimize_gaussian_process()
 		  << u_pt[1] << ' ' << std::setw(13) << gp_fns[respFnCount];
 	    
 	    RealVector variance;
-	    if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) )
-	      // RecastModel::derived_evaluate() propagates u_pt to x_pt
+	    if (mppSearchType == SUBMETHOD_EGRA_X) {
+	      // Recast( DataFit( iteratedModel ) )
+	      // > RecastModel::derived_evaluate() propagates u_pt to x_pt
 	      Model& dfs_model = uSpaceModel.subordinate_model();
 	      variance = dfs_model.approximation_variances(
 		dfs_model.current_variables()); // x_pt
 	    }
-	    else // EGRA_U: DataFit( Recast( iteratedModel ) )
+	    else // SUBMETHOD_EGRA_U: DataFit( Recast( iteratedModel ) )
 	      variance = uSpaceModel.approximation_variances(
 		uSpaceModel.current_variables()); // u_pt
 	    
@@ -786,7 +787,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 
   // (conditionally) export final surrogates after all responses built
   // User might expect x-space, but will get u-space if they requested it
-  if (mppSearchType == EGRA_X) {
+  if (mppSearchType == SUBMETHOD_EGRA_X) {
     // uSpaceModel = Recast(DataFit(iteratedModel))
     Model& dfs_model = uSpaceModel.subordinate_model();
     export_final_surrogates(dfs_model);
@@ -798,7 +799,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 
 void NonDGlobalReliability::importance_sampling()
 {
-  bool x_data_flag = (mppSearchType == EGRA_X);
+  bool x_data_flag = (mppSearchType == SUBMETHOD_EGRA_X);
   size_t i;
   statCount = 0;
   const ShortArray& final_res_asv = finalStatistics.active_set_request_vector();
@@ -924,13 +925,13 @@ expected_improvement(const RealVector& expected_values,
   // Get variance from the GP; Expected values are passed in
   // If GP built in x-space, transform input point to x-space to get variance
   RealVector variances;
-  if (mppSearchType == EGRA_X) { // uSpaceModel = Recast(DataFit(iteratedModel))
+  if (mppSearchType == SUBMETHOD_EGRA_X) { // Recast(DataFit(iteratedModel))
     Model& dfs_model = uSpaceModel.subordinate_model();
     // assume recast_vars have been propagated to GP just prior to call
     variances
       = dfs_model.approximation_variances(dfs_model.current_variables());
   }
-  else                   // EGRA_U: uSpaceModel = DataFit(Recast(iteratedModel))
+  else                   // SUBMETHOD_EGRA_U: DataFit(Recast(iteratedModel))
     variances = uSpaceModel.approximation_variances(recast_vars);
     
   Real mean = expected_values[respFnCount];
@@ -972,13 +973,13 @@ expected_feasibility(const RealVector& expected_values,
   // Get variance from the GP; Expected values are passed in
   // If GP built in x-space, transform input point to x-space to get variance
   RealVector variances;
-  if (mppSearchType == EGRA_X) { // uSpaceModel = Recast(DataFit(iteratedModel))
+  if (mppSearchType == SUBMETHOD_EGRA_X) { // Recast(DataFit(iteratedModel))
     Model& dfs_model = uSpaceModel.subordinate_model();
     // assume recast_vars have been propagated to GP just prior to call
     variances
       = dfs_model.approximation_variances(dfs_model.current_variables());
   }
-  else                   // EGRA_U: uSpaceModel = DataFit(Recast(iteratedModel))
+  else                   // SUBMETHOD_EGRA_U: DataFit(Recast(iteratedModel))
     variances = uSpaceModel.approximation_variances(recast_vars);
   
   Real mean  = expected_values[respFnCount],
@@ -1031,7 +1032,7 @@ void NonDGlobalReliability::get_best_sample()
   for (i=0; i<num_samples; i++) {
     true_vars_x_cv = Teuchos::getCol(Teuchos::View,
       const_cast<RealMatrix&>(true_vars_x), (int)i);
-    if (mppSearchType == EGRA_X)
+    if (mppSearchType == SUBMETHOD_EGRA_X)
       uSpaceModel.probability_transformation().trans_X_to_U(true_vars_x_cv,
 							    true_c_vars_u[i]);
     else

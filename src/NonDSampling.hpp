@@ -172,7 +172,7 @@ public:
 
   /// transform the specified samples matrix from x to u or u to x
   void transform_samples(Pecos::ProbabilityTransformation& nataf,
-			 RealMatrix& sample_matrix, int num_samples = 0,
+			 RealMatrix& sample_matrix, size_t num_samples = 0,
 			 bool x_to_u = true);
 
   /// return sampleType
@@ -190,15 +190,15 @@ protected:
   NonDSampling(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonDSampling(unsigned short method_name, Model& model,
-	       unsigned short sample_type, int samples, int seed,
+	       unsigned short sample_type, size_t samples, int seed,
 	       const String& rng, bool vary_pattern, short sampling_vars_mode);
   /// alternate constructor for sample generation "on the fly"
-  NonDSampling(unsigned short sample_type, int samples, int seed,
+  NonDSampling(unsigned short sample_type, size_t samples, int seed,
 	       const String& rng, const RealVector& lower_bnds,
 	       const RealVector& upper_bnds);
   /// alternate constructor for sample generation of correlated normals
   /// "on the fly"
-  NonDSampling(unsigned short sample_type, int samples, int seed,
+  NonDSampling(unsigned short sample_type, size_t samples, int seed,
                const String& rng, const RealVector& means,
                const RealVector& std_devs, const RealVector& lower_bnds,
                const RealVector& upper_bnds, RealSymMatrix& correl);
@@ -210,13 +210,13 @@ protected:
   void pre_run();
   void core_run();
 
-  int num_samples() const;
+  size_t num_samples() const;
 
   /// resets number of samples and sampling flags
-  void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
 
   /// set reference number of samples, which is a lower bound during reset 
-  void sampling_reference(int samples_ref);
+  void sampling_reference(size_t samples_ref);
 
   /// assign randomSeed
   void random_seed(int seed);
@@ -227,22 +227,18 @@ protected:
   /// Uses lhsDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model.
   void get_parameter_sets(Model& model);
-
   /// Uses lhsDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model and populates
   /// the specified design matrix.
-  void get_parameter_sets(Model& model, const int num_samples, 
+  void get_parameter_sets(Model& model, const size_t num_samples, 
                           RealMatrix& design_matrix);
-
   /// core of get_parameter_sets that accepts message print control
-  void get_parameter_sets(Model& model, const int num_samples,
+  void get_parameter_sets(Model& model, const size_t num_samples,
                           RealMatrix& design_matrix, bool write_msg);
-
   /// Uses lhsDriver to generate a set of uniform samples over
   /// lower_bnds/upper_bnds.
   void get_parameter_sets(const RealVector& lower_bnds,
                           const RealVector& upper_bnds);
-
   /// Uses lhsDriver to generate a set of normal samples 
   void get_parameter_sets(const RealVector& means,
                           const RealVector& std_devs,
@@ -261,11 +257,19 @@ protected:
   const RealSymMatrix& response_error_estimates() const;
 
   //
+  //- Heading: New virtual functions
+  //
+
+  /// detect whether the seed has been updated since the most recent
+  /// sample set generation
+  virtual bool seed_updated();
+
+  //
   //- Heading: Convenience member functions for derived classes
   //
 
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
-  void initialize_lhs(bool write_message, int num_samples);
+  void initialize_sample_driver(bool write_message, size_t num_samples);
 
   /// in the case of sub-iteration, map from finalStatistics.active_set()
   /// requests to activeSet used in evaluate_parameter_sets()
@@ -280,19 +284,6 @@ protected:
   void mode_bits(const Variables& vars, BitArray& active_vars,
 		 BitArray& active_corr) const;
 
-  /// helper to accumulate sum of finite samples
-  static void accumulate_mean(const RealVectorArray& fn_samples, size_t q,
-			      size_t& num_samp, Real& mean);
-  /// helper to accumulate higher order sums of finite samples
-  static void accumulate_moments(const RealVectorArray& fn_samples, size_t q,
-				 short moments_type, Real* moments);
-  /// helper to accumulate gradient sums
-  static void accumulate_moment_gradients(const RealVectorArray& fn_samples,
-					  const RealMatrixArray& grad_samples,
-					  size_t q, short moments_type,
-					  Real mean, Real mom2, Real* mean_grad,
-					  Real* mom2_grad);
-
   //
   //- Heading: Data members
   //
@@ -300,8 +291,8 @@ protected:
   int       seedSpec;    ///< the user seed specification (default is 0)
   int       randomSeed;  ///< the current seed
   const int samplesSpec; ///< initial specification of number of samples
-  int       samplesRef;  ///< reference number of samples updated for refinement
-  int       numSamples;  ///< the current number of samples to evaluate
+  size_t    samplesRef;  ///< reference number of samples updated for refinement
+  size_t    numSamples;  ///< the current number of samples to evaluate
   String    rngName;	 ///< name of the random number generator
   unsigned short sampleType; ///< the sample type: default, random, lhs,
                              ///< incremental random, or incremental lhs
@@ -323,6 +314,7 @@ protected:
   int samplesIncrement;
 
   Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
+  size_t numLHSRuns; ///< counter for number of sample set generations
 
   bool statsFlag;   ///< flags computation/output of statistics
   bool allDataFlag; ///< flags update of allResponses
@@ -399,9 +391,6 @@ private:
   //- Heading: Data
   //
   
-  /// counter for number of executions of get_parameter_sets() for this object
-  size_t numLHSRuns;
-
   /// Matrix of confidence internals on moments, with rows for mean_lower,
   /// mean_upper, sd_lower, sd_upper (calculated in compute_moments())
   RealMatrix momentCIs;
@@ -465,11 +454,11 @@ inline void NonDSampling::print_moments(std::ostream& s) const
 { print_moments(s, "response function", iteratedModel.response_labels()); }
 
 
-inline void NonDSampling::sampling_reference(int samples_ref)
+inline void NonDSampling::sampling_reference(size_t samples_ref)
 { samplesRef = samples_ref; }
 
 
-inline int NonDSampling::num_samples() const
+inline size_t NonDSampling::num_samples() const
 { return numSamples; }
 
 
@@ -481,7 +470,7 @@ inline int NonDSampling::num_samples() const
     approximation) and statsFlag is set to false (statistics
     computations are not needed). */
 inline void NonDSampling::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   // allow sample reduction relative to previous sampling_reset() calls
   // (that is, numSamples may be increased or decreased to match min_samples),
@@ -501,7 +490,16 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 
 
 inline void NonDSampling::random_seed(int seed)
-{ /*seedSpec = */randomSeed = seed; } // lhsDriver assigned in initialize_lhs()
+{ /*seedSpec = */randomSeed = seed; }
+// lhsDriver initialized in initialize_sample_driver()
+
+
+inline bool NonDSampling::seed_updated()
+{
+  // default / base implementation does not involve seed sequencing
+  // > min change from above (more logic could be specialized/isolated)
+  return (seedSpec && seedSpec != randomSeed);
+}
 
 
 inline unsigned short NonDSampling::sampling_scheme() const
@@ -522,7 +520,7 @@ transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
     user-defined model in any of the four sampling modes and populates
     the specified design matrix. */
 inline void NonDSampling::
-get_parameter_sets(Model& model, const int num_samples,
+get_parameter_sets(Model& model, const size_t num_samples,
 		   RealMatrix& design_matrix)
 { get_parameter_sets(model, num_samples, design_matrix, true); }
 

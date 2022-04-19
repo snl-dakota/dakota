@@ -75,7 +75,7 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
 
 NonD::NonD(unsigned short method_name, Model& model):
   Analyzer(method_name, model), totalLevelRequests(0), cdfFlag(true),
-  pdfOutput(false), finalMomentsType(STANDARD_MOMENTS)
+  pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -91,7 +91,7 @@ NonD::NonD(unsigned short method_name, Model& model):
 NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 	   const RealVector& upper_bnds):
   Analyzer(method_name), epistemicStats(false), totalLevelRequests(0),
-  cdfFlag(true), pdfOutput(false), finalMomentsType(STANDARD_MOMENTS)
+  cdfFlag(true), pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.
@@ -313,7 +313,7 @@ void NonD::initialize_final_statistics()
       std::sprintf(resp_tag, "_r%zu", i+1);
       if (finalMomentsType) {
 	stats_labels[cntr++] = String("mean") + String(resp_tag);
-	stats_labels[cntr++] = (finalMomentsType == CENTRAL_MOMENTS) ?
+	stats_labels[cntr++] = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
 	  String("variance") + String(resp_tag) :
 	  String("std_dev")  + String(resp_tag);
       }
@@ -420,9 +420,9 @@ configure_sequence(//unsigned short hierarch_dim,
 {
   // Allow either model forms or discretization levels, but not both
   // (precedence determined by ML/MF calling algorithm)
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  ModelLIter m_iter = --ordered_models.end(); // HF model
-  size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
+  ModelList& sub_models = iteratedModel.subordinate_models(false);
+  ModelLIter m_iter = --sub_models.end(); // HF model
+  size_t num_mf = sub_models.size(), num_hf_lev = m_iter->solution_levels();
 
   //switch (hierarch_dim) {
   //case 1:
@@ -469,25 +469,39 @@ configure_sequence(//unsigned short hierarch_dim,
 bool NonD::
 query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 {
-  bool cost_defined = true;
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  ModelLIter m_iter;
-  if (multilevel) {
-    ModelLIter m_iter = --ordered_models.end(); // HF model
-    cost = m_iter->solution_level_costs();      // can be empty
-    if (cost.length() != num_steps)
-      cost_defined = false;
-  }
+  ModelList& sub_models = iteratedModel.subordinate_models(false);
+  bool cost_defined;
+  if (multilevel) // 1D resolution hierarchy for HF model
+    cost_defined = query_cost(num_steps, sub_models.back(), cost);
   else  {
     cost.sizeUninitialized(num_steps);
-    m_iter = ordered_models.begin();
+    ModelLIter m_iter = sub_models.begin();  cost_defined = true;
     for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
-      cost[i] = m_iter->solution_level_cost(); // cost for active soln index
+      cost[i] = m_iter->solution_level_cost();// active soln index; 0 if unfound
       if (cost[i] <= 0.) cost_defined = false;
     }
+    if (!cost_defined) cost.sizeUninitialized(0);//for compute_equivalent_cost()
   }
-  if (!cost_defined) cost.sizeUninitialized(0); // for compute_equivalent_cost()
   return cost_defined;
+}
+
+
+bool NonD::query_cost(unsigned short num_steps, Model& model, RealVector& cost)
+{
+  cost = model.solution_level_costs(); // can be empty
+  if (cost.length() != num_steps || !valid_cost_values(cost))
+    { cost.sizeUninitialized(0); return false; }
+  return true;
+}
+
+
+bool NonD::valid_cost_values(const RealVector& cost)
+{
+  size_t i, len = cost.length();
+  for (i=0; i<len; ++i)
+    if (cost[i] <= 0.)
+      return false;
+  return true;
 }
 
 
@@ -566,7 +580,7 @@ load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
 
 void NonD::
 inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
-		      size_t fixed_index, Sizet3DArray& N_l_3D)
+		      size_t secondary_index, Sizet3DArray& N_l_3D)
 {
   // 2D array is num_steps x num_qoi
   // 3D array is num_mf x num_lev x num_qoi which we slice as either:
@@ -575,21 +589,21 @@ inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
 
   size_t i, num_mf = N_l_3D.size();  
   if (multilev) // ML case
-    N_l_3D[fixed_index] = N_l_2D;
+    N_l_3D[secondary_index] = N_l_2D;
   else { // MF case
-    if (fixed_index == SZ_MAX) {
-      ModelList& ordered_models = iteratedModel.subordinate_models(false);
-      ModelLIter m_iter = ordered_models.begin();
+    if (secondary_index == SZ_MAX) {
+      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelLIter m_iter = sub_models.begin();
       size_t m_soln_lev, active_lev;
-      for (i=0; i<num_mf && m_iter != ordered_models.end(); ++i, ++m_iter) {
+      for (i=0; i<num_mf && m_iter != sub_models.end(); ++i, ++m_iter) {
 	m_soln_lev = m_iter->solution_level_cost_index();
 	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
 	N_l_3D[i][active_lev] = N_l_2D[i];  // assign vector of qoi samples
       }
     }
-    else // valid fixed_index
+    else // valid secondary_index
       for (i=0; i<num_mf; ++i)
-	N_l_3D[i][fixed_index] = N_l_2D[i]; // assign vector of qoi samples
+	N_l_3D[i][secondary_index] = N_l_2D[i]; // assign vector of qoi samples
   }
 }
 
@@ -1153,15 +1167,84 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
 
 
 void NonD::
-print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp)
+print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp,
+				    String type)
 {
   size_t i, j, num_mf = N_samp.size(), width = write_precision+7;
-  if (num_mf == 1)  s << "<<<<< Final samples per level:\n";
-  else              s << "<<<<< Final samples per model form:\n";
-  for (i=0; i<num_mf; ++i) {
-    if (num_mf > 1) s << "      Model Form " << i+1 << ":\n";
-    print_multilevel_evaluation_summary(s, N_samp[i]);
+  if (num_mf == 1) {
+    s << "<<<<< " << type << " samples per level:\n";
+    print_multilevel_evaluation_summary(s, N_samp[0]);
   }
+  else {
+    ModelList& sub_models = iteratedModel.subordinate_models(false);
+    ModelLIter m_iter = sub_models.begin();
+    s << "<<<<< " << type << " samples per model form:\n";
+    for (i=0; i<num_mf; ++i) {
+      s << "      Model Form ";
+      if (m_iter != sub_models.end())
+	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
+      else s << i+1 << ":\n";
+      print_multilevel_evaluation_summary(s, N_samp[i]);
+    }
+  }
+}
+
+
+unsigned short NonD::
+sub_optimizer_select(unsigned short requested_sub_method,
+		     unsigned short   default_sub_method)
+{
+  unsigned short assigned_sub_method = requested_sub_method;
+  switch (requested_sub_method) {
+  case SUBMETHOD_SQP:
+#ifndef HAVE_NPSOL
+    Cerr << "\nError: this executable not configured with NPSOL SQP."
+	 << "\n       Please select alternate sub-method solver." << std::endl;
+    assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
+#endif
+    break;
+  case SUBMETHOD_NIP:
+#ifndef HAVE_OPTPP
+    Cerr << "\nError: this executable not configured with OPT++ NIP."
+	 << "\n       Please select alternate sub-method solver." << std::endl;
+    assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
+#endif
+    break;
+  case SUBMETHOD_DEFAULT:
+    switch (default_sub_method) {
+    case SUBMETHOD_SQP: // use SUBMETHOD_SQP if available
+#ifdef HAVE_NPSOL
+      assigned_sub_method = SUBMETHOD_SQP;
+#elif HAVE_OPTPP
+      assigned_sub_method = SUBMETHOD_NIP;
+#endif
+      break;
+    case SUBMETHOD_NIP: // use SUBMETHOD_NIP if available
+#ifdef HAVE_OPTPP
+      assigned_sub_method = SUBMETHOD_NIP;
+#elif HAVE_NPSOL
+      assigned_sub_method = SUBMETHOD_SQP;
+#endif
+      break;
+    }
+    if (assigned_sub_method == SUBMETHOD_DEFAULT) {
+      Cerr << "\nError: this executable not configured with an available "
+	   << "sub-method solver." << std::endl;
+      assigned_sub_method = SUBMETHOD_NONE;
+    }
+    break;
+  case SUBMETHOD_NONE:
+    // assigned = requested = SUBMETHOD_NONE is valid for the case where a
+    // sub-method solve is to be suppressed; clients are free to treat this
+    // return value as an error
+    break;
+  default:
+    Cerr << "\nError: sub-method not recognized in NonD::"
+	 << "sub_optimizer_select()." << std::endl;
+    assigned_sub_method = SUBMETHOD_NONE;
+    break;
+  }
+  return assigned_sub_method;
 }
 
 

@@ -428,9 +428,10 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ProbabilityTransformModel.cpp
   ScalingModel.cpp ScalingOptions.cpp WeightingModel.cpp SurrogateModel.cpp
-  DataFitSurrModel.cpp HierarchSurrModel.cpp NonHierarchSurrModel.cpp
-  RandomFieldModel.cpp SubspaceModel.cpp ActiveSubspaceModel.cpp
-  AdaptedBasisModel.cpp DiscrepancyCorrection.cpp)
+  DataFitSurrModel.cpp EnsembleSurrModel.cpp HierarchSurrModel.cpp
+  NonHierarchSurrModel.cpp RandomFieldModel.cpp SubspaceModel.cpp
+  ActiveSubspaceModel.cpp AdaptedBasisModel.cpp AdapterModel.cpp
+  MinimizerAdapterModel.cpp DiscrepancyCorrection.cpp)
 
 ## Constraint sources.
 set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
@@ -505,10 +506,11 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDMultilevelPolynomialChaos.cpp NonDMultilevelStochCollocation.cpp
     NonDSurrogateExpansion.cpp NonDCalibration.cpp NonDBayesCalibration.cpp
     NonDWASABIBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
-    NonDHierarchSampling.cpp NonDMultilevelSampling.cpp
-    NonDMultifidelitySampling.cpp NonDMultilevMultifidSampling.cpp
-    NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp 
-    NonDPOFDarts.cpp NonDRKDDarts.cpp
+    NonDEnsembleSampling.cpp NonDHierarchSampling.cpp NonDMultilevelSampling.cpp
+    NonDControlVariateSampling.cpp NonDMultilevControlVarSampling.cpp
+    NonDNonHierarchSampling.cpp NonDACVSampling.cpp
+    NonDMultifidelitySampling.cpp NonDAdaptImpSampling.cpp
+    NonDGPImpSampling.cpp NonDPOFDarts.cpp NonDRKDDarts.cpp
     DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaTraitsBase.cpp
     DakotaLeastSq.cpp NonlinearCGOptimizer.cpp 
     SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp SurrBasedLevelData.cpp
@@ -838,20 +840,18 @@ endif(HAVE_AMPL)
 # with gslcblas
 if(DAKOTA_HAVE_GSL)
   list(APPEND EXT_TPL_INCDIRS "${GSL_INCLUDE_DIRS}")
-  list(APPEND EXT_TPL_LIBDIRS "${GSL_LIBRARY_DIRS}")
-  # GSL_LIBRARIES may or may not include a CBLAS library, depending on
-  # top-level option GSL_WITHOUT_CBLAS
-  list(APPEND EXT_TPL_LIBS ${GSL_LIBRARIES})
   if(DAKOTA_CBLAS_LIBS) 
-    list(APPEND EXT_TPL_LIBS ${DAKOTA_CBLAS_LIBS})
+    list(APPEND EXT_TPL_LIBS ${GSL_LIBRARY} ${DAKOTA_CBLAS_LIBS})
+  else()
+    list(APPEND EXT_TPL_LIBS ${GSL_LIBRARIES})
   endif()
 endif(DAKOTA_HAVE_GSL)
 
 list(APPEND EXT_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
 # BMA: Should probably use only ATLAS when enabling C3...
-if(HAVE_C3)
+if(HAVE_C3 AND c3_atlas_lib)
   message(WARNING "Dakota/C3: Duplicate include of ATLAS and BLAS/LAPACK")
-  list(INSERT EXT_TPL_LIBS 0 "${atlas_lib}")
+  list(INSERT EXT_TPL_LIBS 0 "${c3_atlas_lib}")
 endif()
 
 # Now that packages and TPLs are processed, set include/link directories
@@ -880,6 +880,9 @@ if(DAKOTA_MODULE_SURROGATES)
 endif()
 
 DakotaApplyMPISettings(dakota_src)
+if(DAKOTA_DISABLE_FPE_TRAPS)
+  target_compile_definitions(dakota_src PUBLIC DAKOTA_DISABLE_FPE_TRAPS)
+endif()
 if(HAVE_AMPL)
   # Enforce AMPL config header creation prior to compiling dakota sources
   add_dependencies(dakota_src amplsolver)

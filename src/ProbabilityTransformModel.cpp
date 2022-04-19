@@ -838,6 +838,8 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
     }
   }
 
+  u_response.metadata(x_response.metadata());
+
 #ifdef DEBUG
   Cout << "\nx_response:\n" << x_response
        << "\nu_response:\n" << u_response << std::endl;

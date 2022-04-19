@@ -89,10 +89,7 @@ inline SimulationResponse::~SimulationResponse()
 } // namespace Dakota
 
 
-// Since we may serialize this class through a temporary, force
-// serialization mode and no tracking
-BOOST_CLASS_IMPLEMENTATION(Dakota::SimulationResponse, 
-			   boost::serialization::object_serializable)
+// Since we may serialize this class through a temporary, disallow tracking
 BOOST_CLASS_TRACKING(Dakota::SimulationResponse, 
 		     boost::serialization::track_never)
 

@@ -58,6 +58,7 @@ public:
   /// native_fns array
   void secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
                                     const ShortArray& asv,
+				    size_t num_native_primary,
                                     RealVector& native_fns) const;
 
   /// map responses from scaled to native space
@@ -77,6 +78,10 @@ protected:
 
   void assign_instance();
 
+  void init_metadata() override { /* no-op to leave metadata intact */}
+
+  bool update_variables_from_model(Model& model) override;
+
   // ---
   // Scaling initialization helper functions
   // ---
@@ -91,7 +96,7 @@ protected:
 
   /// general helper function for initializing scaling types and factors on a 
   /// vector of variables, functions, constraints, etc.
-  void compute_scaling(int object_type, int auto_type, int num_vars,
+  void compute_scaling(int auto_type, int num_vars,
                        RealVector& lbs, RealVector& ubs,
                        RealVector& targets,
                        const UShortArray& spec_types,

@@ -1,0 +1,107 @@
+Blurb:: Multilevel-Multifidelity sampling methods for UQ
+
+Description::
+An adaptive sampling method that utilizes both multilevel and
+multifidelity relationships within a hierarchical surrogate model in
+order to improve efficiency through variance reduction.
+
+In the case of a multilevel relationship, multilevel Monte Carlo
+methods are used to compute an optimal sample allocation per level,
+and in the case of a multifidelity relationship, control variate Monte
+Carlo methods are used to compute an optimal sample allocation per
+fidelity.  These two approaches can also be combined, resulting in the
+multilevel-multifidelity sampling approach below.
+
+<b> Multilevel Control Variate Monte Carlo </b>
+
+If both multilevel and multifidelity structure are included within a
+hierarchical model specification, then an inner control variate can be
+applied across two model fidelities for each level within an outer
+multilevel approach.
+
+On each level, a control variate is active for the discrepancy \f$Y_{\ell}\f$
+based on
+\f[ Y_{\ell}^\star = Y_{\ell} + \alpha_\ell \left( \hat{Y}^{\mathrm{LF}}_\ell - \mathbb{E}\left[ Y^{\mathrm{LF}}_\ell \right] \right), \f]
+where \f$Y^{\mathrm{LF}}_\ell = \gamma_\ell Q^{\mathrm{LF}}_\ell - Q^{\mathrm{HF}}_\ell\f$.
+
+The optimal parameter \f$\gamma_\ell\f$ is computed from the correlation properties 
+between model forms and discretization levels (see the theory manual for further details) 
+and the optimal allocation \f$N_\ell\f$ (per level) is finally obtained from it. 
+
+<b> Default Behavior </b> 
+
+The \c multilevel_multifidelity_sampling method employs Monte Carlo
+sample sets be default, but this default can be overridden to use Latin
+hypercube sample sets using \c sample_type \c lhs.
+
+<b> Expected Output </b> 
+
+The \c multilevel_multifidelity_sampling method reports estimates of
+the first four moments and a summary of the evaluations performed for
+each model fidelity and discretization level.  The method does not
+support any level mappings (response, probability, reliability,
+generalized reliability) at this time.
+
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-sampling_moments (moments only, not confidence intervals)
+
+In addition, the execution group has the attribute \c equiv_hf_evals, which
+records the equivalent number of high-fidelity evaluations.
+
+<b> Usage Tips </b>
+
+The \c multilevel_multifidelity_sampling method must be used in
+combination with a hierarchical model specification.  The highest and
+lowest fidelity model must provide multiple discretization levels, for
+which it is necessary to identify the variable string descriptor that
+controls the resolution levels using \c solution_level_control as well
+as the associated array of relative costs using \c
+solution_level_cost.
+
+Topics::
+Examples::
+The following method block 
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+	multilevel_multifidelity_sampling
+	  pilot_samples = 20 seed = 1237		#s0,#s1,#s2,#s3,#p0,#p1
+	  convergence_tolerance = .01			#s0,#s2,#s3,#p0,#p1
+\endverbatim
+
+specifies a multilevel-multifidelity Monte Carlo study in combination
+with the model identified by the HIERARCH pointer.  This model
+specification provides a two-dimensional hierarchy, comprised of two
+model forms each with four discretization levels:
+
+\verbatim
+model,
+	id_model = 'HIERARCH'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'LF' 'HF'
+
+model,
+	id_model = 'LF'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 375. 10125. 81000. 648000.
+
+model,
+	id_model = 'HF'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8
+\endverbatim
+
+Refer to \c dakota/test/dakota_uq_heat_eq_mlcvmc.in in the source
+distribution for this case as well as additional examples.
+
+
+Theory::
+Faq::
+See_Also::	method-multilevel_sampling, method-multifidelity_sampling

@@ -2763,6 +2763,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ solution_mode {0}
+      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      |
+      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      |
+      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+     ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
       |
@@ -2815,17 +2822,23 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_moments {0}
-      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+    [ final_statistics {0}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-      |
-      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-     ]
-    [ distribution {0}
-      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-      |
-      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
+        [ distribution {0}
+          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+          |
+          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+         ]
+       )
      ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
@@ -2839,6 +2852,25 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ solution_mode {0}
+      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      |
+      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      |
+      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+     ]
+    [ numerical_solve {0}
+      [ 
+        fallback {N_mdm(utype,numericalSolveMode_NUMERICAL_FALLBACK)}
+        |
+        override {N_mdm(utype,numericalSolveMode_NUMERICAL_OVERRIDE)}
+       ]
+      [ 
+        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
+        |
+        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
+       ]
+     ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
       |
@@ -2860,17 +2892,23 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_moments {0}
-      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+    [ final_statistics {0}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-      |
-      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-     ]
-    [ distribution {0}
-      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-      |
-      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
+        [ distribution {0}
+          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+          |
+          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+         ]
+       )
      ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
@@ -2884,6 +2922,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ solution_mode {0}
+      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      |
+      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      |
+      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+     ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
       |
@@ -2905,17 +2950,92 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_moments {0}
-      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+    [ final_statistics {0}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-      |
-      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
+        [ distribution {0}
+          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+          |
+          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+         ]
+       )
      ]
-    [ distribution {0}
-      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
       |
-      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( approximate_control_variate ALIAS acv_sampling {N_mdm(utype,methodName_APPROXIMATE_CONTROL_VARIATE)}
+    acv_independent_sampling ALIAS acv_is {N_mdm(utype,subMethod_SUBMETHOD_ACV_IS)}
+    |
+    acv_multifidelity ALIAS acv_mf {N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}
+    |
+    acv_kl ALIAS acv_adaptive {N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}
+    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ solution_mode {0}
+      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      |
+      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      |
+      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+     ]
+    [ truth_fixed_by_pilot {N_mdm(true,truthPilotConstraint)} ]
+    [ 
+      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
+      |
+      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
+     ]
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
+      [ 
+        ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+          [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+          [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+          [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+         )
+        |
+        annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+        |
+        freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
+    [ final_statistics {0}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+      |
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
+        [ distribution {0}
+          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+          |
+          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+         ]
+       )
      ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
@@ -3200,122 +3320,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ samples INTEGER {N_mdm(int,numSamples)} ]
     [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ 
-      ( sbo {N_mdm(utype,subMethod_SUBMETHOD_SBO)}
-        [ gaussian_process ALIAS kriging {0}
-          surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
-          |
-          dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
-         ]
-        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-        [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-          [ 
-            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
-            annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-            |
-            freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-           ]
-          [ active_only {N_mdm(true,importBuildActive)} ]
-         ]
-        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-          [ 
-            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
-            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-            |
-            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-           ]
-         ]
-       )
-      |
-      ( ego {N_mdm(utype,subMethod_SUBMETHOD_EGO)}
-        [ gaussian_process ALIAS kriging {0}
-          surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
-          |
-          dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
-         ]
-        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-        [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-          [ 
-            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
-            annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-            |
-            freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-           ]
-          [ active_only {N_mdm(true,importBuildActive)} ]
-         ]
-        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-          [ 
-            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
-            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-            |
-            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-           ]
-         ]
-       )
-      |
-      ea {N_mdm(utype,subMethod_SUBMETHOD_EA)}
-      |
-      lhs {N_mdm(utype,subMethod_SUBMETHOD_LHS)}
-     ]
-    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-      [ compute {0}
-        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
-        |
-        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-        [ system {0}
-          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-          |
-          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-         ]
-       ]
-     ]
-    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
-      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
-     ]
-    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
-      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
-     ]
-    [ distribution {0}
-      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-      |
-      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
-     ]
-    [ rng {0}
-      mt19937 {N_mdm(lit,rngName_mt19937)}
-      |
-      rnum2 {N_mdm(lit,rngName_rnum2)}
-     ]
-    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
-   )
-  |
-  ( global_interval_est ALIAS nond_global_interval_est {N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)}
-    [ samples INTEGER {N_mdm(int,numSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ 
-      ( sbo {N_mdm(utype,subMethod_SUBMETHOD_SBO)}
+      ( sbgo {N_mdm(utype,optSubProbSolver_SUBMETHOD_SBGO)}
         [ gaussian_process ALIAS kriging {0}
           surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
           |
@@ -3355,7 +3360,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
        )
       |
-      ( ego {N_mdm(utype,subMethod_SUBMETHOD_EGO)}
+      ( ego {N_mdm(utype,optSubProbSolver_SUBMETHOD_EGO)}
         [ gaussian_process ALIAS kriging {0}
           ( surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
             [ export_model {N_mdm(true,exportSurrogate)}
@@ -3410,9 +3415,147 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
        )
       |
-      ea {N_mdm(utype,subMethod_SUBMETHOD_EA)}
+      ea {N_mdm(utype,optSubProbSolver_SUBMETHOD_EA)}
       |
-      lhs {N_mdm(utype,subMethod_SUBMETHOD_LHS)}
+      lhs {N_mdm(utype,optSubProbSolver_SUBMETHOD_LHS)}
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( global_interval_est ALIAS nond_global_interval_est {N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)}
+    [ samples INTEGER {N_mdm(int,numSamples)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
+    [ 
+      ( sbgo {N_mdm(utype,optSubProbSolver_SUBMETHOD_SBGO)}
+        [ gaussian_process ALIAS kriging {0}
+          surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+          |
+          dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+          |
+          ( experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
+            [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
+           )
+         ]
+        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+        [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+          [ 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+            |
+            annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            |
+            freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+           ]
+          [ active_only {N_mdm(true,importBuildActive)} ]
+         ]
+        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+          [ 
+            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+             )
+            |
+            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+            |
+            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+           ]
+         ]
+       )
+      |
+      ( ego {N_mdm(utype,optSubProbSolver_SUBMETHOD_EGO)}
+        [ gaussian_process ALIAS kriging {0}
+          ( surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+            [ export_model {N_mdm(true,exportSurrogate)}
+              [ filename_prefix STRING {N_mdm(str,modelExportPrefix)} ]
+              ( formats {0}
+                [ text_archive {N_mdm(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+                [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+               )
+             ]
+           )
+          |
+          dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+          |
+          ( experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
+            [ export_model {N_mdm(true,exportSurrogate)}
+              [ filename_prefix STRING {N_mdm(str,modelExportPrefix)} ]
+              ( formats {0}
+                [ text_archive {N_mdm(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+                [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+               )
+             ]
+            [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
+           )
+         ]
+        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+        [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+          [ 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+            |
+            annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            |
+            freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+           ]
+          [ active_only {N_mdm(true,importBuildActive)} ]
+         ]
+        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+          [ 
+            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+             )
+            |
+            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+            |
+            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+           ]
+         ]
+       )
+      |
+      ea {N_mdm(utype,optSubProbSolver_SUBMETHOD_EA)}
+      |
+      lhs {N_mdm(utype,optSubProbSolver_SUBMETHOD_LHS)}
      ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
@@ -4078,11 +4221,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
         multilevel {N_mdm(lit,mcmcType_multilevel)}
        ]
       [ pre_solve {0}
-        sqp {N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}
+        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
         |
-        nip {N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}
+        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
         |
-        none {N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}
+        none {N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}
        ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
         ( prior {N_mdm(lit,proposalCovType_prior)}
@@ -5687,9 +5830,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( local_evidence ALIAS nond_local_evidence {N_mdm(utype,methodName_LOCAL_EVIDENCE)}
     [ 
-      sqp {N_mdm(utype,subMethod_SUBMETHOD_SQP)}
+      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
       |
-      nip {N_mdm(utype,subMethod_SUBMETHOD_NIP)}
+      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
      ]
     [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
       [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
@@ -5720,9 +5863,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( local_interval_est ALIAS nond_local_interval_est {N_mdm(utype,methodName_LOCAL_INTERVAL_EST)}
     [ 
-      sqp {N_mdm(utype,subMethod_SUBMETHOD_SQP)}
+      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
       |
-      nip {N_mdm(utype,subMethod_SUBMETHOD_NIP)}
+      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
@@ -5730,27 +5873,27 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( local_reliability ALIAS nond_local_reliability {N_mdm(utype,methodName_LOCAL_RELIABILITY)}
     [ mpp_search {0}
-      x_taylor_mean {N_mdm(utype,reliabilitySearchType_AMV_X)}
+      x_taylor_mean {N_mdm(utype,subMethod_SUBMETHOD_AMV_X)}
       |
-      u_taylor_mean {N_mdm(utype,reliabilitySearchType_AMV_U)}
+      u_taylor_mean {N_mdm(utype,subMethod_SUBMETHOD_AMV_U)}
       |
-      x_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}
+      x_taylor_mpp {N_mdm(utype,subMethod_SUBMETHOD_AMV_PLUS_X)}
       |
-      u_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}
+      u_taylor_mpp {N_mdm(utype,subMethod_SUBMETHOD_AMV_PLUS_U)}
       |
-      x_two_point {N_mdm(utype,reliabilitySearchType_TANA_X)}
+      x_two_point {N_mdm(utype,subMethod_SUBMETHOD_TANA_X)}
       |
-      u_two_point {N_mdm(utype,reliabilitySearchType_TANA_U)}
+      u_two_point {N_mdm(utype,subMethod_SUBMETHOD_TANA_U)}
       |
-      x_multi_point {N_mdm(utype,reliabilitySearchType_QMEA_X)}
+      x_multi_point {N_mdm(utype,subMethod_SUBMETHOD_QMEA_X)}
       |
-      u_multi_point {N_mdm(utype,reliabilitySearchType_QMEA_U)}
+      u_multi_point {N_mdm(utype,subMethod_SUBMETHOD_QMEA_U)}
       |
-      no_approx {N_mdm(utype,reliabilitySearchType_NO_APPROX)}
+      no_approx {N_mdm(utype,subMethod_SUBMETHOD_NO_APPROX)}
       [ 
-        sqp {N_mdm(utype,subMethod_SUBMETHOD_SQP)}
+        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
         |
-        nip {N_mdm(utype,subMethod_SUBMETHOD_NIP)}
+        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
        ]
       [ integration {0}
         first_order {N_mdm(lit,reliabilityIntegration_first_order)}
@@ -5810,9 +5953,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( global_reliability ALIAS nond_global_reliability {N_mdm(utype,methodName_GLOBAL_RELIABILITY)}
     [ initial_samples INTEGER {N_mdm(int,numSamples)} ]
-    x_gaussian_process ALIAS x_kriging {N_mdm(utype,reliabilitySearchType_EGRA_X)}
+    x_gaussian_process ALIAS x_kriging {N_mdm(utype,subMethod_SUBMETHOD_EGRA_X)}
     |
-    u_gaussian_process ALIAS u_kriging {N_mdm(utype,reliabilitySearchType_EGRA_U)}
+    u_gaussian_process ALIAS u_kriging {N_mdm(utype,subMethod_SUBMETHOD_EGRA_U)}
     [ 
       ( surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
         [ export_model {N_mdm(true,exportSurrogate)}
@@ -5973,8 +6116,11 @@ KEYWORD model {N_mom3(start,0,stop)}
   [ id_model STRING {N_mom(str,idModel)} ]
   ( single ALIAS simulation {N_mom(lit,modelType_simulation)}
     [ interface_pointer STRING {N_mom(str,interfacePointer)} ]
-    [ solution_level_cost REALLIST {N_mom(RealDL,solutionLevelCost)}
-      [ solution_level_control STRING {N_mom(str,solutionLevelControl)} ]
+    [ solution_level_control STRING {N_mom(str,solutionLevelControl)} ]
+    [ 
+      solution_level_cost REALLIST {N_mom(RealDL,solutionLevelCost)}
+      |
+      cost_recovery_metadata STRING {N_mom(str,costRecoveryMetadata)}
      ]
    )
   |
@@ -6272,7 +6418,7 @@ KEYWORD model {N_mom3(start,0,stop)}
            ]
          )
         |
-        actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
+        truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
        ]
       [ reuse_points ALIAS reuse_samples {0}
         all {N_mom(lit,approxPointReuse_all)}
@@ -6359,12 +6505,12 @@ KEYWORD model {N_mom3(start,0,stop)}
       tana {N_mom(lit,surrogateType_multipoint_tana)}
       |
       qmea {N_mom(lit,surrogateType_multipoint_qmea)}
-      actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
+      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
      )
     |
     ( local {N_mom(lit,surrogateType_local_taylor)}
       taylor_series {0}
-      actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
+      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
      )
     |
     ( hierarchical {N_mom(lit,surrogateType_hierarchical)}
@@ -6384,8 +6530,8 @@ KEYWORD model {N_mom3(start,0,stop)}
      )
     |
     ( non_hierarchical ALIAS model_ensemble {N_mom(lit,surrogateType_non_hierarchical)}
-      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,actualModelPointer)}
-      unordered_model_fidelities ALIAS approximation_models STRINGLIST {N_mom(strL,ensembleModelPointers)}
+      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
+      [ unordered_model_fidelities ALIAS approximation_models STRINGLIST {N_mom(strL,ensembleModelPointers)} ]
      )
    )
   |
@@ -6410,7 +6556,7 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( active_subspace ALIAS subspace {N_mom(lit,modelType_active_subspace)}
-    actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+    truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
     [ initial_samples INTEGER {N_mom(int,initialSamples)} ]
     [ sample_type {0}
       lhs {N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}
@@ -6452,7 +6598,7 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( adapted_basis {N_mom(lit,modelType_adapted_basis)}
-    ( actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+    ( truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
       sparse_grid_level INTEGER {N_mom(ushint,adaptedBasisSparseGridLev)}
       |
       ( expansion_order INTEGER {N_mom(ushint,adaptedBasisExpOrder)}
@@ -6829,9 +6975,11 @@ KEYWORD interface {N_ifm3(start,0,stop)}
     |
     matlab {N_ifm(type,interfaceType_MATLAB_INTERFACE)}
     |
-    pybind11 {N_ifm(type,interfaceType_PYBIND11_INTERFACE)}
-    |
     ( python {N_ifm(type,interfaceType_PYTHON_INTERFACE)}
+      [ numpy {N_ifm(true,numpyFlag)} ]
+     )
+    |
+    ( legacy_python {N_ifm(type,interfaceType_LEGACY_PYTHON_INTERFACE)}
       [ numpy {N_ifm(true,numpyFlag)} ]
      )
     |
@@ -6929,6 +7077,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
     [ weights ALIAS calibration_weights ALIAS least_squares_weights REALLIST LEN calibration_terms {N_rem(RealDL,primaryRespFnWeights)} ]
     [ 
       ( calibration_data {N_rem(true,calibrationDataFlag)}
+        [ data_directory STRING {N_rem(str,dataPathPrefix)} ]
         [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
         [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]
         [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,varianceType)} ]
@@ -7093,4 +7242,5 @@ KEYWORD responses {N_rem3(start,0,stop)}
      ]
     [ id_analytic_hessians INTEGERLIST {N_rem(intset,idAnalyticHessians)} ]
    )
+  [ metadata STRINGLIST {N_rem(strL,metadataLabels)} ]
 

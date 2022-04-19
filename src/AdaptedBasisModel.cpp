@@ -54,7 +54,7 @@ AdaptedBasisModel::~AdaptedBasisModel()
 Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
 {
   const String& actual_model_pointer
-    = problem_db.get_string("model.surrogate.actual_model_pointer");
+    = problem_db.get_string("model.surrogate.truth_model_pointer");
   unsigned short ssg_level
     = problem_db.get_ushort("model.adapted_basis.sparse_grid_level");
   unsigned short exp_order

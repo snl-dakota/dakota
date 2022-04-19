@@ -139,9 +139,9 @@ distributions):
   HDF5 (optional)   BSD-style Open Source License (variant)
     zlib            ZLib License
 
-GPL/Other: Dakota may optionally depend on GNU GPL-licensed
-components, which are disabled by default, resulting in an
-LGPL-compatible Dakota.  Optional GPL capabilities include:
+GPL/Other: Dakota may optionally depend on GNU GPL-licensed components, 
+which are disabled by default, resulting in an LGPL-compatible Dakota.
+Optional GPL capabilities include:
 
  * packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/:
    enable with CMake setting HAVE_CDDLIB.
@@ -201,6 +201,8 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
+6.15               11/15/21 (refer to git submodules for TPL SHA1s)
+6.14               05/17/21 (refer to git submodules for TPL SHA1s)
 6.13	    	   11/16/20 (refer to git submodules for TPL SHA1s)
 6.12               05/15/20 (refer to git submodules for TPL SHA1s)
 6.11               11/15/19 (refer to git submodules for TPL SHA1s)

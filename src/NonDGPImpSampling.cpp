@@ -92,7 +92,9 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   //construct sampler to generate one draw from rhoOne distribution, with 
   //seed varying between invocations
   construct_lhs(sampleRhoOne, iteratedModel, sample_type, 1, randomSeed,
-		rngName, vary_pattern); 
+		rngName, vary_pattern);
+
+  initialize_final_statistics();
 }
 
 

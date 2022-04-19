@@ -517,8 +517,10 @@ Figure~\ref{variables:figure01}.
     <int>    derivative_variables
     <int>    DVV_i:label_cdv\(\sb{i}\)            (i = 1 to p) \color{green}
     <int>    analysis_components
-    <string> AC_i:analysis_driver_name\(\sb{i}\)  (i = 1 to q)
-    <string> eval_id
+    <string> AC_i:analysis_driver_name\(\sb{i}\)  (i = 1 to q) \color{black}
+    <string> eval_id \color{blue}
+    <int>    metadata
+    <string> MD_i                       (i = 1 to r)
   \end{alltt}
   \end{bigbox}
   \caption{Parameters file data format - standard option.}
@@ -585,7 +587,7 @@ indicates that the second variable in the list is active for
 derivatives).  The labels are again taken from user-provided or
 default variable descriptors.
 
-The final array for the analysis components (AC) begins with the
+The fourth array for the analysis components (AC) begins with the
 number of analysis components (\texttt{q}) and its identifier string
 ``\texttt{analysis\_components}.'' The next \texttt{q} lines provide
 additional strings for use in specializing a simulation interface
@@ -597,13 +599,18 @@ for a set of \texttt{analysis\_drivers} using the
 analysis components used for a particular analysis driver is the set
 passed in a particular parameters file.
 
-The final entry {\tt eval\_id} in the parameters file is the
+The next entry {\tt eval\_id} in the parameters file is the
 evaluation ID, by default an integer indicating interface evaluation
 ID number.  When hierarchical tagging is enabled as described
 in~\ref{interfaces:file:tagging1}, the identifier will be a
 colon-separated string, e.g., 4:9:2.  Several standard-format
 parameters file examples are shown in
 Section~\ref{interfaces:mappings}.
+
+The final array for the metadata (MD) begins with the number of
+metadata fields requested (\texttt{r}) and its identifier string
+``\texttt{metadata}.'' The next \texttt{r} lines provide the names of
+each metadata field followed by the tags ``\texttt{MD\_i}''
 
 \subsection{Parameters file format (APREPRO)}\label{variables:parameters:aprepro}
 
@@ -658,8 +665,10 @@ with the variables data.
     \{ DAKOTA_DER_VARS = <int> \}
     \{ DVV_i:label_cdv\(\sb{i}\) = <int> \}                   (i = 1 to p) \color{green}
     \{ DAKOTA_AN_COMPS = <int> \}
-    \{ AC_i:analysis_driver_name\(\sb{i}\) = <string> \}      (i = 1 to q)
-    \{ DAKOTA_EVAL_ID = <string> \}
+    \{ AC_i:analysis_driver_name\(\sb{i}\) = <string> \}      (i = 1 to q) \color{black}
+    \{ DAKOTA_EVAL_ID = <string> \} \color{blue}
+    \{ DAKOTA_METADATA = <int> \}
+    \{ MD_i = <string> \}                            (i = 1 to r)
   \end{alltt}
   \end{bigbox}
   \caption{Parameters file data format - APREPRO option.}

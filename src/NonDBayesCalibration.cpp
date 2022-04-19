@@ -63,7 +63,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDCalibration(problem_db, model),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   mcmcModelHasSurrogate(false),
-  mapOptAlgOverride(probDescDB.get_ushort("method.nond.pre_solve_method")),
+  mapOptAlgOverride(probDescDB.get_ushort("method.nond.opt_subproblem_solver")),
   chainSamples(probDescDB.get_int("method.nond.chain_samples")),
   randomSeed(probDescDB.get_int("method.random_seed")),
   mcmcDerivOrder(1),
@@ -1214,11 +1214,11 @@ void NonDBayesCalibration::print_hi2lo_chain_moments()
   copy_data(residualModel.continuous_variable_labels(), 
    	        combined_labels);
   NonDSampling::print_moments(Cout, chainStats, RealMatrix(), 
-  "posterior variable", STANDARD_MOMENTS, combined_labels, false); 
+  "posterior variable", Pecos::STANDARD_MOMENTS, combined_labels, false); 
   // Print response moments
   StringArray resp_labels = mcmcModel.current_response().function_labels();
   NonDSampling::print_moments(Cout, fnStats, RealMatrix(), 
-      "response function", STANDARD_MOMENTS, resp_labels, false); 
+      "response function", Pecos::STANDARD_MOMENTS, resp_labels, false); 
 }
 
 void NonDBayesCalibration::print_hi2lo_batch_status(int num_it, int batch_n, 
@@ -2595,8 +2595,10 @@ void NonDBayesCalibration::compute_statistics()
 
   }
 
-  NonDSampling::compute_moments(filtered_chain, chainStats, STANDARD_MOMENTS);
-  NonDSampling::compute_moments(filteredFnVals,    fnStats, STANDARD_MOMENTS);
+  NonDSampling::compute_moments(filtered_chain, chainStats,
+				Pecos::STANDARD_MOMENTS);
+  NonDSampling::compute_moments(filteredFnVals, fnStats,
+				Pecos::STANDARD_MOMENTS);
   if (!requestedProbLevels[0].empty())
     compute_intervals();
 
@@ -3155,11 +3157,11 @@ void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
   StringArray combined_labels;
   copy_data(residualModel.continuous_variable_labels(), combined_labels);
   NonDSampling::print_moments(s, chainStats, RealMatrix(), 
-      "posterior variable", STANDARD_MOMENTS, combined_labels, false); 
+      "posterior variable", Pecos::STANDARD_MOMENTS, combined_labels, false); 
   // Print response moments
   StringArray resp_labels = mcmcModel.current_response().function_labels();
   NonDSampling::print_moments(s, fnStats, RealMatrix(), 
-      "response function", STANDARD_MOMENTS, resp_labels, false); 
+      "response function", Pecos::STANDARD_MOMENTS, resp_labels, false); 
   
   // Print chain diagnostics for variables
   if (chainDiagnostics)

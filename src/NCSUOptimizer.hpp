@@ -86,6 +86,7 @@ public:
   void core_run();
 
   void declare_sources();
+
 private:
 
   //

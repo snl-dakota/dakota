@@ -107,6 +107,8 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
     }
   }
   qoiSamplesMatrix.shape(numFunctions, 0);
+
+  initialize_final_statistics();
 }
 
 
@@ -179,9 +181,10 @@ void NonDLHSSampling::sampling_increment()
 {
   // if no refinment samples, leave numSamples at baseline
   varyPattern = true;
-  if (refineSamples.length() > 0) {
+  int len = refineSamples.length();
+  if (len > 0) {
     numSamples = refineSamples[samplesIncrement];
-    samplesIncrement = std::min(samplesIncrement + 1, refineSamples.length()-1);
+    samplesIncrement = std::min(samplesIncrement + 1, len - 1);
   }
 }
 
@@ -754,7 +757,7 @@ void NonDLHSSampling::update_final_statistics()
     sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev, qoi_cm4, qoi_exckurt, qoi_skewness, qoi_cm3;
   for (i=0; i<numFunctions; ++i) {
     switch (finalMomentsType) {
-    case STANDARD_MOMENTS:
+    case Pecos::STANDARD_MOMENTS:
       qoi_stdev = momentStats(1,i);
       // standard error (estimator std-dev) for Monte Carlo mean
       finalStatErrors(2*i, 2*i) = qoi_stdev / sqrtn;
@@ -795,7 +798,7 @@ void NonDLHSSampling::update_final_statistics()
       if(outputLevel >= DEBUG_OUTPUT)
         Cout << "Estimator SE for cov = " << finalStatErrors(2*i+1, 2*i) << "\n\n";
       break;
-    case CENTRAL_MOMENTS:
+    case Pecos::CENTRAL_MOMENTS:
       qoi_var = momentStats(1,i); qoi_stdev = std::sqrt(qoi_var);
       qoi_cm4 = momentStats(3,i);
    

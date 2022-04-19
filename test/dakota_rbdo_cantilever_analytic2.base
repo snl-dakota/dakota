@@ -11,7 +11,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       1.0825784441e-03
                       1.0783180203e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 649 total (597 new, 52 duplicate)
   response_fn_1: 39 val (27 n, 12 d), 50 grad (38 n, 12 d), 0 Hess (0 n, 0 d)
@@ -25,7 +25,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                       1.0825785895e-03
                       1.0783175728e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 200 total (156 new, 44 duplicate)
   response_fn_1: 25 val (14 n, 11 d), 33 grad (22 n, 11 d), 25 Hess (14 n, 11 d)
@@ -39,7 +39,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                       3.0005450808e+00
                       3.0297750842e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 407 total (366 new, 41 duplicate)
   response_fn_1: 25 val (14 n, 11 d), 33 grad (22 n, 11 d), 0 Hess (0 n, 0 d)
@@ -53,7 +53,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                       3.0005452298e+00
                       3.0297761370e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 4 succeeded
 <<<<< Function evaluation summary (UQ_I): 230 total (163 new, 67 duplicate)
   response_fn_1: 31 val (21 n, 10 d), 40 grad (30 n, 10 d), 31 Hess (21 n, 10 d)
@@ -67,7 +67,7 @@ Test Number 4 succeeded
 <<<<< Best constraint values   =
                      -8.3307024724e-05
                      -7.0100709811e-04
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 5 succeeded
 <<<<< Function evaluation summary (UQ_I): 2358 total (2313 new, 45 duplicate)
   response_fn_1: 31 val (21 n, 10 d), 40 grad (30 n, 10 d), 0 Hess (0 n, 0 d)
@@ -81,7 +81,7 @@ Test Number 5 succeeded
 <<<<< Best constraint values   =
                      -8.3575446116e-05
                      -6.9484929874e-04
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 6 succeeded
 <<<<< Function evaluation summary (UQ_I): 230 total (163 new, 67 duplicate)
   response_fn_1: 31 val (21 n, 10 d), 40 grad (30 n, 10 d), 31 Hess (21 n, 10 d)
@@ -95,7 +95,7 @@ Test Number 6 succeeded
 <<<<< Best constraint values   =
                      -8.3323360979e-05
                      -7.0110354937e-04
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 7 succeeded
 <<<<< Function evaluation summary (UQ_I): 3328 total (3288 new, 40 duplicate)
   response_fn_1: 31 val (21 n, 10 d), 40 grad (30 n, 10 d), 0 Hess (0 n, 0 d)
@@ -109,4 +109,4 @@ Test Number 7 succeeded
 <<<<< Best constraint values   =
                      -8.3591705513e-05
                      -6.9494036805e-04
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

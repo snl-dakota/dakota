@@ -102,7 +102,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       1.4218529325e+01
                       1.7810733076e+01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                      -7.2744360116e-01 cdv_1
@@ -206,7 +206,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -1.6290853904e+00
                       1.8996059516e+01
-<<<<< Best data captured at function evaluation 1537
+<<<<< Best evaluation ID: 1537
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.7753232798e-01 cdv_1
@@ -310,7 +310,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       8.6921918086e-01
                       1.4056915548e+00
-<<<<< Best data captured at function evaluation 4608
+<<<<< Best evaluation ID: 4608
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                      -1.8223676494e+00 cdv_1
@@ -414,7 +414,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       4.4905846768e+00
                       6.3826739373e+00
-<<<<< Best data captured at function evaluation 6144
+<<<<< Best evaluation ID: 6144
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                      -1.6490714348e-01 cdv_1
@@ -518,7 +518,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -9.7914395280e-02
                       1.4506238031e-01
-<<<<< Best data captured at function evaluation 7394
+<<<<< Best evaluation ID: 7394
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0553301294e+00 cdv_1
@@ -622,7 +622,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       1.1454438910e+00
                      -5.2363987048e-01
-<<<<< Best data captured at function evaluation 7681
+<<<<< Best evaluation ID: 7681
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                      -4.7744473781e+00 cdv_1
@@ -726,7 +726,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       2.0487191724e+01
                       2.3697560946e+01
-<<<<< Best data captured at function evaluation 9217
+<<<<< Best evaluation ID: 9217
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.3210895832e+00 cdv_1
@@ -830,7 +830,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       6.6304669557e+00
                       5.0197516694e+00
-<<<<< Best data captured at function evaluation 11278
+<<<<< Best evaluation ID: 11278
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.4446397787e+00 cdv_1
@@ -934,7 +934,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       1.0718103087e+01
                       3.5441554098e+00
-<<<<< Best data captured at function evaluation 12289
+<<<<< Best evaluation ID: 12289
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.7828028290e+00 cdv_1
@@ -1038,7 +1038,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       9.2179682009e+00
                       7.2990268381e+00
-<<<<< Best data captured at function evaluation 14275
+<<<<< Best evaluation ID: 14275
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                      -2.9970304075e+00 cdv_1
@@ -1142,7 +1142,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       7.5667198280e+00
                       9.5127527449e+00
-<<<<< Best data captured at function evaluation 16646
+<<<<< Best evaluation ID: 16646
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.3085621020e+00 cdv_1
@@ -1246,7 +1246,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       9.4158739898e+00
                       7.7180014853e+00
-<<<<< Best data captured at function evaluation 16897
+<<<<< Best evaluation ID: 16897
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                      -4.9536661124e-01 cdv_1
@@ -1350,7 +1350,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       1.5882970535e+00
                       7.4613013551e+00
-<<<<< Best data captured at function evaluation 19968
+<<<<< Best evaluation ID: 19968
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       8.0372351212e-01 cdv_1
@@ -1454,7 +1454,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       9.6423442823e-01
                       3.3034507946e-03
-<<<<< Best data captured at function evaluation 19969
+<<<<< Best evaluation ID: 19969
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                      -2.0961005236e+00 cdv_1
@@ -1558,7 +1558,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       3.0509895935e+00
                       8.2588628446e+00
-<<<<< Best data captured at function evaluation 21505
+<<<<< Best evaluation ID: 21505
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                      -1.6873548118e-01 cdv_1
@@ -1662,7 +1662,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -5.2976973074e-01
                       1.3309015536e+00
-<<<<< Best data captured at function evaluation 23041
+<<<<< Best evaluation ID: 23041
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.6056050412e+00 cdv_1
@@ -1766,7 +1766,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       3.2316085873e+00
                       9.0618391139e-01
-<<<<< Best data captured at function evaluation 24577
+<<<<< Best evaluation ID: 24577
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.6625282033e+00 cdv_1
@@ -1870,7 +1870,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       2.1712611442e+01
                      -2.3284428336e+00
-<<<<< Best data captured at function evaluation 26113
+<<<<< Best evaluation ID: 26113
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.8278916557e+00 cdv_1
@@ -1974,7 +1974,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       1.2841092414e+01
                       1.1214532632e+01
-<<<<< Best data captured at function evaluation 27649
+<<<<< Best evaluation ID: 27649
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                      -1.7310090758e+00 cdv_1
@@ -2078,7 +2078,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       3.4112716931e+00
                       1.5540037809e+00
-<<<<< Best data captured at function evaluation 30720
+<<<<< Best evaluation ID: 30720
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.5900879263e-01 cdv_1
@@ -2182,7 +2182,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -7.7025740936e-01
                       3.0543405320e+00
-<<<<< Best data captured at function evaluation 30721
+<<<<< Best evaluation ID: 30721
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.3043818483e+00 cdv_1
@@ -2286,7 +2286,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       2.0763030739e+01
                       1.7834567761e+01
-<<<<< Best data captured at function evaluation 32394
+<<<<< Best evaluation ID: 32394
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                      -1.9113530892e+00 cdv_1
@@ -2390,7 +2390,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       2.7791742477e+00
                       4.0118544975e+00
-<<<<< Best data captured at function evaluation 34751
+<<<<< Best evaluation ID: 34751
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.7641803539e+00 cdv_1
@@ -2494,7 +2494,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       8.5096915330e+00
                       1.6385434222e+00
-<<<<< Best data captured at function evaluation 35329
+<<<<< Best evaluation ID: 35329
 <<<<< Results summary:
    set_id          cdv_1          cdv_2          cdv_3          cdv_4          cdv_5          cdv_6          cdv_7          cdv_8          cdv_9         cdv_10         cdv_11         cdv_12         cdv_13         cdv_14         cdv_15         cdv_16         cdv_17         cdv_18         cdv_19         cdv_20         cdv_21         cdv_22         cdv_23         cdv_24         cdv_25         cdv_26         cdv_27         cdv_28         cdv_29         cdv_30         cdv_31         cdv_32         cdv_33         cdv_34         cdv_35         cdv_36         cdv_37         cdv_38         cdv_39         cdv_40         cdv_41         cdv_42         cdv_43         cdv_44         cdv_45         cdv_46         cdv_47         cdv_48         cdv_49         cdv_50         cdv_51         cdv_52         cdv_53         cdv_54         cdv_55         cdv_56         cdv_57         cdv_58         cdv_59         cdv_60         cdv_61         cdv_62         cdv_63         cdv_64         cdv_65         cdv_66         cdv_67         cdv_68         cdv_69         cdv_70         cdv_71         cdv_72         cdv_73         cdv_74         cdv_75         cdv_76         cdv_77         cdv_78         cdv_79         cdv_80         cdv_81         cdv_82         cdv_83         cdv_84         cdv_85         cdv_86         cdv_87         cdv_88         cdv_89         cdv_90         cdv_91         cdv_92         cdv_93         cdv_94         cdv_95         cdv_96         cdv_1*         cdv_2*         cdv_3*         cdv_4*         cdv_5*         cdv_6*         cdv_7*         cdv_8*         cdv_9*        cdv_10*        cdv_11*        cdv_12*        cdv_13*        cdv_14*        cdv_15*        cdv_16*        cdv_17*        cdv_18*        cdv_19*        cdv_20*        cdv_21*        cdv_22*        cdv_23*        cdv_24*        cdv_25*        cdv_26*        cdv_27*        cdv_28*        cdv_29*        cdv_30*        cdv_31*        cdv_32*        cdv_33*        cdv_34*        cdv_35*        cdv_36*        cdv_37*        cdv_38*        cdv_39*        cdv_40*        cdv_41*        cdv_42*        cdv_43*        cdv_44*        cdv_45*        cdv_46*        cdv_47*        cdv_48*        cdv_49*        cdv_50*        cdv_51*        cdv_52*        cdv_53*        cdv_54*        cdv_55*        cdv_56*        cdv_57*        cdv_58*        cdv_59*        cdv_60*        cdv_61*        cdv_62*        cdv_63*        cdv_64*        cdv_65*        cdv_66*        cdv_67*        cdv_68*        cdv_69*        cdv_70*        cdv_71*        cdv_72*        cdv_73*        cdv_74*        cdv_75*        cdv_76*        cdv_77*        cdv_78*        cdv_79*        cdv_80*        cdv_81*        cdv_82*        cdv_83*        cdv_84*        cdv_85*        cdv_86*        cdv_87*        cdv_88*        cdv_89*        cdv_90*        cdv_91*        cdv_92*        cdv_93*        cdv_94*        cdv_95*        cdv_96*         obj_fn nln_ineq_con_1 nln_ineq_con_2 
         1   -4.025650064     3.97465823  -0.8831809604   -1.855457834    1.061216636   -2.835621002    3.233527075    4.881268134    1.198332364   -3.210920605   -1.616630388   -4.467791682    1.968575941   -4.594634206   0.6980140019  0.04502530996   -3.172934787   -3.782130265   -1.828345677   -3.007152591   -3.374173918  0.09278703879  -0.5511287854  -0.9889586289  -0.3128729173  -0.6541342358  -0.2491913029   -2.566598133   -4.375624841    2.939967552   -1.075868728    1.784037635   -2.289685556    4.208743119   -1.931045736    1.702284091    -3.07499268    2.095053498  0.05659952401  0.05984240687    4.772554869    2.681940702   0.1044912088    -4.66610531    2.530645649    4.956543986   -1.790229792    4.978554477   0.4472799324    3.550290546    1.738212704   -2.815786019   -4.477599061    4.724216321    -3.08954951    1.290105081    2.834675047    1.264828896    4.382765663     1.69375105    -1.45270511   -1.096394384   -3.573388459    4.966929879     4.97305929   -3.241608261    2.042045698   -2.871160282    1.339184144    1.182562681    4.464887974    -4.20226675     2.45728246     2.88095599   -2.189245122   -2.296499382   -3.717276795   -3.658112152   0.3342814855    1.308978205    1.280572453   -3.904808477    1.138318383   -3.016115515   -2.328678359   -3.244877566    4.602842753    2.612274071    1.418605871   -2.008655584    3.678269867   -3.072462437   -4.843716135    4.145179504    3.595414807    4.123048581   -4.025650064     3.97465823  -0.8831809604   -1.855457834    1.061216636   -2.835621002    3.233527075    4.881268134    1.198332364   -3.210920605   -1.616630388   -4.467791682    1.968575941   -4.594634206   0.6980140019  0.04502530996   -3.172934787   -3.782130265   -1.828345677   -3.007152591   -3.374173918  0.09278703879  -0.5511287854  -0.9889586289  -0.3128729173  -0.6541342358  -0.2491913029   -2.566598133   -4.375624841    2.939967552   -1.075868728    1.784037635   -2.289685556    4.208743119   -1.931045736    1.702284091    -3.07499268    2.095053498  0.05659952401  0.05984240687    4.772554869    2.681940702   0.1044912088    -4.66610531    2.530645649    4.956543986   -1.790229792    4.978554477   0.4472799324    3.550290546    1.738212704   -2.815786019   -4.477599061    4.724216321    -3.08954951    1.290105081    2.834675047    1.264828896    4.382765663     1.69375105    -1.45270511   -1.096394384   -3.573388459    4.966929879     4.97305929   -3.241608261    2.042045698   -2.871160282    1.339184144    1.182562681    4.464887974    -4.20226675     2.45728246     2.88095599   -2.189245122   -2.296499382   -3.717276795   -3.658112152   0.3342814855    1.308978205    1.280572453   -3.904808477    1.138318383   -3.016115515   -2.328678359   -3.244877566    4.602842753    2.612274071    1.418605871   -2.008655584    3.678269867   -3.072462437   -4.843716135    4.145179504    3.595414807    4.123048581    17123.44292    14.21852933    17.81073308 

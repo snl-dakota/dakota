@@ -18,25 +18,22 @@ Kernel::~Kernel() {}
 SquaredExponentialKernel::SquaredExponentialKernel() {}
 SquaredExponentialKernel::~SquaredExponentialKernel() {}
 
-MatrixXd SquaredExponentialKernel::compute_gram(
-    const std::vector<MatrixXd>& dists2, const VectorXd& theta_values) {
-  MatrixXd gram =
-      exp(2.0 * theta_values(0)) *
-      (-0.5 * compute_Dbar(dists2, theta_values, false).array()).exp();
-  return gram;
+void SquaredExponentialKernel::compute_gram(const std::vector<MatrixXd>& dists2,
+                                            const VectorXd& theta_values,
+                                            MatrixXd& gram) {
+  compute_Dbar(dists2, theta_values, false);
+  gram = exp(2.0 * theta_values(0)) * (-0.5 * Dbar2.array()).exp();
 }
 
-std::vector<MatrixXd> SquaredExponentialKernel::compute_gram_derivs(
+void SquaredExponentialKernel::compute_gram_derivs(
     const MatrixXd& gram, const std::vector<MatrixXd>& dists2,
-    const VectorXd& theta_values) {
+    const VectorXd& theta_values, std::vector<MatrixXd>& gram_derivs) {
   const int num_derivs = dists2.size() + 1;
-  std::vector<MatrixXd> gram_derivs(num_derivs);
   gram_derivs[0] = 2.0 * gram;
   for (int k = 1; k < num_derivs; k++) {
     gram_derivs[k] =
         gram.cwiseProduct(dists2[k - 1]) * exp(-2.0 * theta_values(k));
   }
-  return gram_derivs;
 }
 
 MatrixXd SquaredExponentialKernel::compute_first_deriv_pred_gram(
@@ -63,28 +60,28 @@ MatrixXd SquaredExponentialKernel::compute_second_deriv_pred_gram(
 Matern32Kernel::Matern32Kernel() {}
 Matern32Kernel::~Matern32Kernel() {}
 
-MatrixXd Matern32Kernel::compute_gram(const std::vector<MatrixXd>& dists2,
-                                      const VectorXd& theta_values) {
-  MatrixXd Db, gram;
-  Db = sqrt3 * compute_Dbar(dists2, theta_values);
+void Matern32Kernel::compute_gram(const std::vector<MatrixXd>& dists2,
+                                  const VectorXd& theta_values,
+                                  MatrixXd& gram) {
+  compute_Dbar(dists2, theta_values);
+  Dbar *= sqrt3;
   gram = exp(2.0 * theta_values(0)) *
-         (1.0 + Db.array()).cwiseProduct((-Db).array().exp());
-  return gram;
+         (1.0 + Dbar.array()).cwiseProduct((-Dbar).array().exp());
 }
 
-std::vector<MatrixXd> Matern32Kernel::compute_gram_derivs(
-    const MatrixXd& gram, const std::vector<MatrixXd>& dists2,
-    const VectorXd& theta_values) {
+void Matern32Kernel::compute_gram_derivs(const MatrixXd& gram,
+                                         const std::vector<MatrixXd>& dists2,
+                                         const VectorXd& theta_values,
+                                         std::vector<MatrixXd>& gram_derivs) {
   const int num_derivs = dists2.size() + 1;
   const double sig2 = exp(2.0 * theta_values(0));
-  std::vector<MatrixXd> gram_derivs(num_derivs);
-  MatrixXd Db = sqrt3 * compute_Dbar(dists2, theta_values);
+  compute_Dbar(dists2, theta_values);
+  Dbar *= sqrt3;
   gram_derivs[0] = 2.0 * gram;
   for (int k = 1; k < num_derivs; k++) {
     gram_derivs[k] = sig2 * 3.0 * exp(-2.0 * theta_values(k)) *
-                     (-Db).array().exp() * dists2[k - 1].array();
+                     (-Dbar).array().exp() * dists2[k - 1].array();
   }
-  return gram_derivs;
 }
 
 MatrixXd Matern32Kernel::compute_first_deriv_pred_gram(
@@ -92,11 +89,13 @@ MatrixXd Matern32Kernel::compute_first_deriv_pred_gram(
     const VectorXd& theta_values, const int index) {
   silence_unused_args(pred_gram);
   const double sig2 = exp(2.0 * theta_values(0));
-  MatrixXd exp_Db, first_deriv_pred_gram;
+  MatrixXd first_deriv_pred_gram;
   std::vector<MatrixXd> mixed_dists2 = compute_cw_dists_squared(mixed_dists);
-  exp_Db = (-sqrt3 * compute_Dbar(mixed_dists2, theta_values)).array().exp();
+  compute_Dbar(mixed_dists2, theta_values);
   first_deriv_pred_gram = -3.0 * sig2 *
-                          exp_Db.cwiseProduct(mixed_dists[index]) *
+                          ((-sqrt3 * Dbar).array().exp())
+                              .matrix()
+                              .cwiseProduct(mixed_dists[index]) *
                           exp(-2.0 * theta_values(index + 1));
   return first_deriv_pred_gram;
 }
@@ -113,30 +112,30 @@ MatrixXd Matern32Kernel::compute_second_deriv_pred_gram(
 Matern52Kernel::Matern52Kernel() {}
 Matern52Kernel::~Matern52Kernel() {}
 
-MatrixXd Matern52Kernel::compute_gram(const std::vector<MatrixXd>& dists2,
-                                      const VectorXd& theta_values) {
-  MatrixXd Db, gram;
-  Db = sqrt5 * compute_Dbar(dists2, theta_values);
+void Matern52Kernel::compute_gram(const std::vector<MatrixXd>& dists2,
+                                  const VectorXd& theta_values,
+                                  MatrixXd& gram) {
+  compute_Dbar(dists2, theta_values);
+  Dbar *= sqrt5;
   gram = exp(2.0 * theta_values(0)) *
-         (1.0 + Db.array() + Db.array().square() / 3.0)
-             .cwiseProduct((-Db).array().exp());
-  return gram;
+         (1.0 + Dbar.array() + Dbar.array().square() / 3.0)
+             .cwiseProduct((-Dbar).array().exp());
 }
 
-std::vector<MatrixXd> Matern52Kernel::compute_gram_derivs(
-    const MatrixXd& gram, const std::vector<MatrixXd>& dists2,
-    const VectorXd& theta_values) {
+void Matern52Kernel::compute_gram_derivs(const MatrixXd& gram,
+                                         const std::vector<MatrixXd>& dists2,
+                                         const VectorXd& theta_values,
+                                         std::vector<MatrixXd>& gram_derivs) {
   const int num_derivs = dists2.size() + 1;
   const double sig2 = exp(2.0 * theta_values(0));
-  std::vector<MatrixXd> gram_derivs(num_derivs);
-  MatrixXd Db = sqrt5 * compute_Dbar(dists2, theta_values);
+  compute_Dbar(dists2, theta_values);
+  Dbar *= sqrt5;
   gram_derivs[0] = 2.0 * gram;
   for (int k = 1; k < num_derivs; k++) {
     gram_derivs[k] = sig2 * 5.0 / 3.0 * exp(-2.0 * theta_values(k)) *
-                     (1.0 + Db.array()) * ((-Db).array()).exp() *
+                     (1.0 + Dbar.array()) * ((-Dbar).array()).exp() *
                      dists2[k - 1].array();
   }
-  return gram_derivs;
 }
 
 MatrixXd Matern52Kernel::compute_first_deriv_pred_gram(
@@ -145,14 +144,14 @@ MatrixXd Matern52Kernel::compute_first_deriv_pred_gram(
   silence_unused_args(pred_gram);
 
   const double sig2 = exp(2.0 * theta_values(0));
-  MatrixXd Dbar, Dbar2, exp_Db, first_deriv_pred_gram;
+  MatrixXd first_deriv_pred_gram;
   std::vector<MatrixXd> mixed_dists2 = compute_cw_dists_squared(mixed_dists);
-  Dbar = compute_Dbar(mixed_dists2, theta_values);
-  Dbar2 = compute_Dbar(mixed_dists2, theta_values, false);
-  exp_Db = (-sqrt5 * Dbar).array().exp();
+  compute_Dbar(mixed_dists2, theta_values);
   first_deriv_pred_gram = -5.0 / 3.0 * sig2 *
                           exp(-2.0 * theta_values(index + 1)) *
-                          exp_Db.cwiseProduct(sqrt5 * Dbar2 + Dbar)
+                          ((-sqrt5 * Dbar).array().exp())
+                              .matrix()
+                              .cwiseProduct(sqrt5 * Dbar2 + Dbar)
                               .cwiseProduct(mixed_dists[index])
                               .cwiseQuotient(Dbar);
   return first_deriv_pred_gram;
@@ -164,16 +163,15 @@ MatrixXd Matern52Kernel::compute_second_deriv_pred_gram(
   silence_unused_args(pred_gram);
 
   const double sig2 = exp(2.0 * theta_values(0));
-  MatrixXd Dbar, exp_Db, second_deriv_pred_gram;
+  MatrixXd second_deriv_pred_gram;
   std::vector<MatrixXd> mixed_dists2 = compute_cw_dists_squared(mixed_dists);
-  Dbar = compute_Dbar(mixed_dists2, theta_values);
-  exp_Db = (-sqrt5 * Dbar).array().exp();
+  compute_Dbar(mixed_dists2, theta_values);
   if (index_i == index_j) {
     const double exp_ls = exp(-2.0 * theta_values(index_i + 1));
-    MatrixXd Dbar2 = compute_Dbar(mixed_dists2, theta_values, false);
     second_deriv_pred_gram =
         -5.0 / 3.0 * sig2 * exp_ls *
-        exp_Db
+        ((-sqrt5 * Dbar).array().exp())
+            .matrix()
             .cwiseProduct(Dbar + sqrt5 * Dbar2 -
                           5.0 *
                               Dbar.cwiseProduct(exp_ls * mixed_dists2[index_i]))
@@ -182,7 +180,9 @@ MatrixXd Matern52Kernel::compute_second_deriv_pred_gram(
     second_deriv_pred_gram =
         25.0 / 3.0 * sig2 *
         exp(-2.0 * (theta_values(index_i + 1) + theta_values(index_j + 1))) *
-        exp_Db.cwiseProduct(mixed_dists[index_i])
+        ((-sqrt5 * Dbar).array().exp())
+            .matrix()
+            .cwiseProduct(mixed_dists[index_i])
             .cwiseProduct(mixed_dists[index_j]);
   }
   return second_deriv_pred_gram;
@@ -198,20 +198,21 @@ std::vector<MatrixXd> compute_cw_dists_squared(
   return D2;
 }
 
-MatrixXd compute_Dbar(const std::vector<MatrixXd>& dists2,
-                      const VectorXd& theta_values, bool take_sqrt) {
-  MatrixXd Dbar;
+void Kernel::compute_Dbar(const std::vector<MatrixXd>& dists2,
+                          const VectorXd& theta_values, bool take_sqrt) {
+  const int num_rows = dists2[0].rows();
+  const int num_cols = dists2[0].cols();
   const int num_variables = dists2.size();
+  Dbar2.resize(num_rows, num_cols);
+  Dbar.resize(num_rows, num_cols);
+
   for (int k = 0; k < num_variables; k++) {
     if (k == 0)
-      Dbar = dists2[k] * exp(-2.0 * theta_values(k + 1));
+      Dbar2 = dists2[k] * exp(-2.0 * theta_values(k + 1));
     else
-      Dbar += dists2[k] * exp(-2.0 * theta_values(k + 1));
+      Dbar2 += dists2[k] * exp(-2.0 * theta_values(k + 1));
   }
-  if (take_sqrt)
-    return Dbar.cwiseSqrt();
-  else
-    return Dbar;
+  if (take_sqrt) Dbar = Dbar2.cwiseSqrt();
 }
 
 std::shared_ptr<Kernel> kernel_factory(const std::string& kernel_type) {

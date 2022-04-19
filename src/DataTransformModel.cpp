@@ -147,42 +147,20 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // ---
   init_continuous_vars();
 
+  // TODO: mvDist likely needs size change for hyper-parameters. Its
+  // bounds need updating too; above variable updates bypass mvDist
+  // as sets on constraints object only instead of Model's
+  // setters...
+  mvDist = subModel.multivariate_distribution(); // shared rep
+
 
   // ---
   // Expand any submodel Response data to the expanded residual size
   // ---
 
-  // NOTE: RecastModel pulls ScalingOpts from subModel
-  //
-  //  * CV scales don't change in this recasting; base RecastModel captures them
-  //    BMA TODO: What if there are hyper-parameters active?
-  //  * Overrides are not needed for nonlinear or linear constraints;
-  //    they aren't affected by data transforms
+  // Need to update when multiple experiments and/or interpolation
+  update_expanded_response(subModel);
 
-  // NOTE: The following expansions are conservative.  Could be skipped when
-  // only scalar data present and no replicates.
-  //
-  // For all primary should be able to just leave as 1 or num_elts
-
-  // Preserve weights through data transformations
-  // Weights are always by group, expanded in DakotaModel; just need to replicate
-  expand_primary_array(sub_model.primary_response_fn_weights().length(),
-			sub_model.primary_response_fn_weights(),
-			num_recast_primary, primaryRespFnWts);
-
-  // TODO: Sense is 1 or group, and NOT currently properly expanded for fields in DakotaModel
-  // Preserve sense through data transformations
-  expand_primary_array(sub_model.primary_response_fn_sense().size(),
-		       sub_model.primary_response_fn_sense(),
-		       num_recast_primary, primaryRespFnSense);
-
-  // Adjust each scaling type to right size, leaving as length 1 if needed
-  expand_primary_array(sub_model.scaling_options().priScaleTypes.size(), 
-		       sub_model.scaling_options().priScaleTypes, 
-		       num_recast_primary, scalingOpts.priScaleTypes);
-  expand_primary_array(sub_model.scaling_options().priScales.length(),
-		       sub_model.scaling_options().priScales, 
-		       num_recast_primary, scalingOpts.priScales);
 
   // For this derivation of RecastModel, all resizing can occur at construct
   // time --> Variables/Response are up to date for estimate_message_lengths()
@@ -233,6 +211,178 @@ void DataTransformModel::data_resize()
 
 }
 
+
+void DataTransformModel::init_metadata()
+{
+  // only clear if there are multiple configs, else leave intact
+  if (expData.configuration_variables().size() > 1)
+    currentResponse.reshape_metadata(0);
+}
+
+
+void DataTransformModel::update_from_subordinate_model(size_t depth)
+{
+  // data flows from the bottom-up, so recurse first
+  if (depth == SZ_MAX)
+    subModel.update_from_subordinate_model(depth); // retain special value (inf)
+  else if (depth)
+    subModel.update_from_subordinate_model(depth - 1); // decrement
+  //else depth exhausted --> update this level only
+
+  if (numHyperparams > 0) {
+
+    update_cv_skip_hyperparams(subModel);
+
+    // for discrete, update all
+    update_discrete_variable_values(subModel);
+    update_discrete_variable_bounds(subModel);
+    update_discrete_variable_labels(subModel);
+
+    // TODO: mvDist likely needs size change for hyper-parameters. Its
+    // bounds need updating too; above variable updates bypass mvDist
+    // as sets on constraints object only instead of Model's
+    // setters...
+    mvDist = subModel.multivariate_distribution(); // shared rep
+
+    // Add column of zeroes corresponding to the hyper-parameters
+    expand_linear_constraints(subModel);
+
+  }
+  else {
+    // base class implementation should suffice for variables
+    bool update_active_complement = update_variables_from_model(subModel);
+    if (update_active_complement)
+      update_variables_active_complement_from_model(subModel);
+  }
+
+  // Need to update when multiple experiments and/or interpolation
+  update_expanded_response(subModel);
+}
+
+
+void DataTransformModel::update_cv_skip_hyperparams(const Model& model)
+{
+  // update active cv from submodel, leave hyper params as-is,
+  // update active complement
+  const Variables& sm_vars = model.current_variables();
+  size_t i,  // indexes the model's all continuous variables
+    cv_begin = sm_vars.cv_start(),
+    num_cv  = sm_vars.cv(), // omits any hyper-parameters
+    cv_end = cv_begin + num_cv,
+    num_acv = sm_vars.acv();
+  const RealVector& acv = model.all_continuous_variables();
+  const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
+  const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
+  StringMultiArrayConstView acv_labels
+    = model.all_continuous_variable_labels();
+
+  // active complement [0, cv_begin), followed by active [cv_begin, cv_end)
+  for (i=0; i<cv_end; ++i) {
+    currentVariables.all_continuous_variable(acv[i], i);
+    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
+    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
+    currentVariables.all_continuous_variable_label(acv_labels[i], i);
+  }
+  // skip hyper-parameters on *this
+  // active complement [cv_end, num_acv)
+  for (i=cv_end; i<num_acv; ++i) {
+    currentVariables.all_continuous_variable(acv[i], numHyperparams + i);
+    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i],
+						      numHyperparams + i);
+    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i],
+						      numHyperparams + i);
+    currentVariables.all_continuous_variable_label(acv_labels[i],
+						   numHyperparams + i);
+  }
+}
+
+void DataTransformModel::expand_linear_constraints(const Model& model)
+{
+  if (model.num_linear_ineq_constraints()) {
+
+    const RealMatrix& sm_coeffs = model.linear_ineq_constraint_coeffs();
+    RealMatrix dt_coeffs(sm_coeffs.numRows(),
+			 sm_coeffs.numCols() + numHyperparams);
+    RealMatrix sm_subset(Teuchos::View, dt_coeffs, sm_coeffs.numRows(),
+			 sm_coeffs.numCols(), 0, 0);
+    sm_subset.assign(sm_coeffs);
+    userDefinedConstraints.linear_ineq_constraint_coeffs(dt_coeffs);
+
+    userDefinedConstraints.linear_ineq_constraint_lower_bounds
+      (model.linear_ineq_constraint_lower_bounds());
+    userDefinedConstraints.linear_ineq_constraint_upper_bounds
+      (model.linear_ineq_constraint_upper_bounds());
+  }
+
+  if (model.num_linear_eq_constraints()) {
+
+    const RealMatrix& sm_coeffs = model.linear_eq_constraint_coeffs();
+    RealMatrix dt_coeffs(sm_coeffs.numRows(),
+			 sm_coeffs.numCols() + numHyperparams);
+    RealMatrix sm_subset(Teuchos::View, dt_coeffs, sm_coeffs.numRows(),
+			 sm_coeffs.numCols(), 0, 0);
+    sm_subset.assign(sm_coeffs);
+    userDefinedConstraints.linear_eq_constraint_coeffs(dt_coeffs);
+
+    userDefinedConstraints.linear_eq_constraint_targets
+      (model.linear_eq_constraint_targets());
+  }
+}
+
+
+/** Expand response-related arrays, accounting for multiple
+    experiments and/or interpolation. */
+void DataTransformModel::update_expanded_response(const Model& model)
+{
+  size_t num_recast_primary = expData.num_total_exppoints();
+
+  // TODO: verify that clients of this Model will properly work with
+  // expanded weights, sense, scales.
+
+  // Preserve weights through data transformations
+  // Weights are always by group, expanded in DakotaModel; just replicate
+  expand_primary_array(model.primary_response_fn_weights().length(),
+		       model.primary_response_fn_weights(),
+		       num_recast_primary, primaryRespFnWts);
+
+  // TODO: Sense is 1 or group, and NOT currently properly expanded
+  // for fields in DakotaModel
+  // TODO: Moreover sense does not apply to calibration_terms?!?
+  // Preserve sense through data transformations
+  expand_primary_array(model.primary_response_fn_sense().size(),
+		       model.primary_response_fn_sense(),
+		       num_recast_primary, primaryRespFnSense);
+
+  // Scaling-related notes:
+  //  * RecastModel pulls ScalingOpts from subModel
+  //  * CV scales don't change in this recasting; base RecastModel captures them
+  //  * TODO: What if there are hyper-parameters active?
+
+  // Ideally, disallow per-element response scaling when interpolation
+  // is active, however user might have toggled "scaling" off in
+  // method, so don't make fatal. TODO: needs tighter check
+  if (scalingOpts.priScales.length() == model.num_primary_fns() &&
+      expData.interpolate_flag()) {
+    Cout << "\nWarning: When interpolating simulation to calibration data, "
+	 << "primary\nresponse scales should not be specified per field element,"
+	 << "rather\nper response group, or a single value." << std::endl;
+  }
+
+  // Adjust each scaling type to right size, leaving as length 1 if needed
+  expand_primary_array(model.scaling_options().priScaleTypes.size(),
+		       model.scaling_options().priScaleTypes,
+		       num_recast_primary, scalingOpts.priScaleTypes);
+  expand_primary_array(model.scaling_options().priScales.length(),
+		       model.scaling_options().priScales,
+		       num_recast_primary, scalingOpts.priScales);
+
+  // update primary labels in-place
+  expData.fill_primary_function_labels
+    (currentResponse.shared_data().function_labels());
+
+  // nonlinear constraints aren't affected by data transforms
+  update_secondary_response(model);
+}
 
 
 /** Incorporate the hyper parameters into Variables, assuming they are at the 
@@ -536,6 +686,11 @@ void DataTransformModel::vars_mapping(const Variables& recast_vars,
   RealVector sm_cv = submodel_vars.continuous_variables_view();
   copy_data_partial(recast_vars.continuous_variables(), 0, 
 		    (int)submodel_vars.cv(), sm_cv);
+
+  // this map only supports continuous variables, but rest need to come along
+  submodel_vars.discrete_int_variables(recast_vars.discrete_int_variables());
+  submodel_vars.discrete_string_variables(recast_vars.discrete_string_variables());
+  submodel_vars.discrete_real_variables(recast_vars.discrete_real_variables());
 }
 
 
@@ -601,6 +756,10 @@ primary_resp_differencer(const Variables& submodel_vars,
   // scale by covariance, including hyper-parameter multipliers
   dtModelInstance->scale_response(submodel_vars, recast_vars, recast_response);
 
+  // no sensible way to transform metadata in multi-config case
+  if (dtModelInstance->expData.configuration_variables().size() > 1)
+    recast_response.metadata(submodel_response.metadata());
+
   if (dtModelInstance->outputLevel >= VERBOSE_OUTPUT && 
       dtModelInstance->subordinate_model().num_primary_fns() > 0) {
     Cout << "Calibration data transformation; residuals:\n";
@@ -624,8 +783,7 @@ const IntResponseMap& DataTransformModel::filter_submodel_responses()
   const IntResponseMap& sm_resp_map = subModel.synchronize();
   // Not using BOOST_FOREACH due to potential for iterator invalidation in 
   // erase in cache_unmatched_response (shouldn't be a concern with map?)
-  IntRespMCIter sm_r_it = sm_resp_map.begin();
-  IntRespMCIter sm_r_end = sm_resp_map.end();
+  IntRespMCIter sm_r_it = sm_resp_map.begin(), sm_r_end = sm_resp_map.end();
   while (sm_r_it != sm_r_end) {
     int sm_id = sm_r_it->first;
     IntIntMIter id_it = recastIdMap.find(sm_id);
@@ -648,8 +806,7 @@ cache_submodel_responses(const IntResponseMap& sm_resp_map, bool deep_copy)
 {
   // Not using BOOST_FOREACH due to potential for iterator invalidation in 
   // erase in cache_unmatched_response (shouldn't be a concern with map?)
-  IntRespMCIter sm_r_it = sm_resp_map.begin();
-  IntRespMCIter sm_r_end = sm_resp_map.end();
+  IntRespMCIter sm_r_it = sm_resp_map.begin(), sm_r_end = sm_resp_map.end();
   while (sm_r_it != sm_r_end) {
     int sm_id = sm_r_it->first;
     IntIntMIter id_it = recastIdMap.find(sm_id);
@@ -849,6 +1006,7 @@ expand_primary_array(size_t submodel_size, const T& submodel_array,
     // For num_elements case, just fill the recast_array with copies
     size_t num_exp = expData.num_experiments();
 
+    // TODO: this will fail in general for interpolation-active cases
     assert(submodel_size * num_exp == recast_size);
 
     recast_array.resize(recast_size);

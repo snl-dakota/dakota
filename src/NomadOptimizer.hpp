@@ -117,6 +117,8 @@ public:
   /// Calls the NOMAD solver
   void core_run();
 
+  void initial_point(const RealVector& pt);
+
 private:
   
   // Forward Declaration
@@ -166,6 +168,16 @@ private:
   /// defines use of surrogate in NOMAD
   std::string useSurrogate;
 };
+
+
+inline void NomadOptimizer::initial_point(const RealVector& pt)
+{
+  size_t i, len = pt.length();
+  initialPoint.resize(len);
+  for (i=0; i<len; ++i)
+    initialPoint[i] = pt[i];
+}
+
 
 ///  NOMAD-based Evaluator class.
 

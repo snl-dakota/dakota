@@ -7,8 +7,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDMultifidelitySampling
-//- Description: Implementation of multifidelity Monte Carlo
+//- Class:	 NonDACVSampling
+//- Description: Class for approximate control variate sampling
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
@@ -16,18 +16,20 @@
 #ifndef NOND_MULTIFIDELITY_SAMPLING_H
 #define NOND_MULTIFIDELITY_SAMPLING_H
 
-#include "NonDHierarchSampling.hpp"
-#include "DataMethod.hpp"
+#include "NonDNonHierarchSampling.hpp"
+//#include "DataMethod.hpp"
+
 
 namespace Dakota {
 
-/// Performs Multifidelity Monte Carlo sampling for UQ.
+
+/// Perform Approximate Control Variate Monte Carlo sampling for UQ.
 
 /** Multifidelity Monte Carlo (MFMC) is a variance-reduction technique
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDMultifidelitySampling: public virtual NonDHierarchSampling
+class NonDMultifidelitySampling: public NonDNonHierarchSampling
 {
 public:
 
@@ -40,6 +42,12 @@ public:
   /// destructor
   ~NonDMultifidelitySampling();
 
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  //bool resize();
+
 protected:
 
   //
@@ -50,49 +58,57 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_variance_reduction(std::ostream& s);
 
   //
-  //- Heading: Member functions
+  //- Heading: member functions
   //
 
-  /// perform final LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
-		    const SizetArray& N_hf, size_t iter, size_t lev);
+  void multifidelity_mc();
+  void multifidelity_mc_offline_pilot();
+  void multifidelity_mc_pilot_projection();
 
-  /// compute scalar control variate parameters
-  void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-			  size_t N_shared, Real& beta);
-  /// compute matrix control variate parameters
-  void compute_mf_control(const RealMatrix& sum_L,  const RealMatrix& sum_H,
-			  const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-			  const SizetArray& N_shared, size_t lev,
-			  RealVector& beta);
+  void mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
+			const RealVector& cost,  SizetArray& approx_sequence,
+			RealMatrix& eval_ratios, RealVector& hf_targets);
+                      //bool for_warm_start = false);
+  void mfmc_numerical_solution(const RealMatrix& var_L,
+			       const RealMatrix& rho2_LH,
+			       const RealVector& cost,
+			       SizetArray& approx_sequence,
+			       RealMatrix& eval_ratios, Real& avg_hf_target);
 
-  /// compute scalar variance and correlation parameters for control variates
-  void compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-			      Real sum_HH, size_t N_shared, Real& var_H,
-			      Real& rho2_LH);
+  void approx_increments(IntRealMatrixMap& sum_L_baseline,
+			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
+			 IntRealMatrixMap& sum_LH, const SizetArray& N_H,
+			 const SizetArray& approx_sequence,
+			 const RealMatrix& eval_ratios,
+			 const RealVector& hf_targets);
+  bool mfmc_approx_increment(const RealMatrix& eval_ratios,
+			     const Sizet2DArray& N_L_refined,
+			     const RealVector& hf_targets, size_t iter,
+			     const SizetArray& approx_sequence,
+			     size_t start, size_t end);
 
-  /// apply scalar control variate parameter (beta) to approximate HF moment
-  void apply_mf_control(Real sum_H, Real sum_L_shared, size_t N_shared,
-			Real sum_L_refined, size_t N_refined, Real beta,
-			Real& H_raw_mom);
-  /// apply matrix control variate parameter (beta) to approximate HF moment
-  void apply_mf_control(const RealMatrix& sum_H, const RealMatrix& sum_L_shared,
-			const SizetArray& N_shared,
-			const RealMatrix& sum_L_refined,
-			const SizetArray& N_refined, size_t lev,
-			const RealVector& beta, RealVector& H_raw_mom);
+  void update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
+			 RealVector& hf_targets);
+  void update_hf_targets(const RealMatrix& rho2_LH,
+			 const SizetArray& approx_sequence,
+			 const RealMatrix& eval_ratios, const RealVector& var_H,
+			 const RealVector& estvar_iter0,
+			 RealVector& estvar_ratios, RealVector& hf_targets);
+  //void update_hf_targets(const SizetArray& N_H, RealVector& hf_targets);
 
-  //
-  //- Heading: Data
-  //
+  void update_projected_samples(const RealVector& hf_targets,
+				const RealMatrix& eval_ratios,
+				SizetArray& N_H_projected,
+				Sizet2DArray& N_L_projected);
 
-  /// if defined, complete the final CV refinement when terminating MLCV based
-  /// on maxIterations (the total number of refinements beyond the pilot sample
-  /// will be one more for CV than for ML).  This approach is consistent with
-  /// normal termination based on l1_norm(delta_N_hf) = 0.
-  bool finalCVRefinement;
+  void mfmc_estimator_variance(const RealMatrix& rho2_LH,
+			       const RealVector& var_H, const SizetArray& N_H,
+			       const RealVector& hf_targets,
+			       const SizetArray& approx_sequence,
+			       const RealMatrix& eval_ratios);
 
 private:
 
@@ -100,241 +116,162 @@ private:
   //- Heading: Helper functions
   //
 
-  /// Perform control variate Monte Carlo across two model forms
-  void control_variate_mc();
+  void initialize_mf_sums(IntRealMatrixMap& sum_L_baseline,
+			  IntRealVectorMap& sum_H,
+			  IntRealMatrixMap& sum_LL,
+			  IntRealMatrixMap& sum_LH, RealVector& sum_HH);
 
-  /// perform a shared increment of LF and HF samples for purposes of
-  /// computing/updating the evaluation ratio and the MSE ratio
-  void shared_increment(const Pecos::ActiveKey& agg_key,size_t iter,size_t lev);
-
-  /// perform final LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(const Pecos::ActiveKey& lf_key,
-		    const RealVector& eval_ratios, const SizetArray& N_lf,
-		    const SizetArray& N_hf, size_t iter, size_t lev);
-  /// core parameter set definition and evaluation for LF sample increment
-  bool lf_increment(size_t iter, size_t lev);
-  /// output information header for LF sample increment
-  void lf_increment_samples(const RealVector& eval_ratios,
-			    const SizetArray& N_lf, const SizetArray& N_hf);
-
-  /// update equivHFEvals from HF, LF evaluation counts
-  void compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,
-				  Real cost_ratio);
-  /// update equivHFEvals from HF, LF evaluation increment
-  void increment_mf_equivalent_cost(size_t new_N_hf, size_t new_N_lf,
-				    Real cost_ratio);
-  /// update equivHFEvals from LF evaluation increment
-  void increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio);
-
-  /// initialize the CV accumulators for computing means, variances, and
-  /// covariances across fidelity levels
-  void initialize_mf_sums(IntRealVectorMap& sum_L_shared,
-			  IntRealVectorMap& sum_L_refined,
-			  IntRealVectorMap& sum_H, IntRealVectorMap& sum_LL,
-			  IntRealVectorMap& sum_LH);
-
-  /// update running sums for one model (sum_L) using set of model
-  /// evaluations within allResponses
-  void accumulate_mf_sums(IntRealVectorMap& sum_L, const RealVector& offset,
-			  SizetArray& num_L);
-  /// update running sums for two models (sum_L, sum_H, and sum_LH)
-  /// from set of low/high fidelity model evaluations within allResponses
-  void accumulate_mf_sums(IntRealVectorMap& sum_L_shared,
-			  IntRealVectorMap& sum_L_refined,
-			  IntRealVectorMap& sum_H,  IntRealVectorMap& sum_LL,
-			  IntRealVectorMap& sum_LH, RealVector& sum_HH,
-			  const RealVector& offset, SizetArray& num_L,
-			  SizetArray& num_H);
-
-  /// compute the LF/HF evaluation ratios across the QoI vector
-  void compute_eval_ratios(const RealVector& sum_L_shared,
-			   const RealVector& sum_H,  const RealVector& sum_LL,
-			   const RealVector& sum_LH, const RealVector& sum_HH,
-			   Real cost_ratio, const SizetArray& N_shared,
-			   RealVector& var_H, RealVector& rho2_LH,
-			   RealVector& eval_ratios);
-
-  /// compute ratios of MC and CVMC mean squared errors across the QoI vector
-  void compute_MSE_ratios(const RealVector& eval_ratios,
-			  const RealVector& var_H, const RealVector& rho2_LH,
-			  size_t iter, const SizetArray& N_hf,
-			  RealVector& mse_ratios);
-
-  /// compute control variate parameters for CVMC and estimate raw moments
-  void cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,
-		      IntRealVectorMap& sum_LL, IntRealVectorMap& sum_LH,
-		      const SizetArray& N_shared,
-		      IntRealVectorMap& sum_L_refined,
-		      const SizetArray& N_refined, const RealVector& rho2_LH,
-		      RealMatrix& H_raw_mom);
-
-  /// compute vector control variate parameters
-  void compute_mf_control(const RealVector& sum_L, const RealVector& sum_H,
-			  const RealVector& sum_LL, const RealVector& sum_LH,
-			  const SizetArray& N_shared, RealVector& beta);
-
+  // shared_increment() cases:
+  void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
+			  IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
+			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
+			  SizetArray& N_shared);
+  void accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
+			  RealMatrix& sum_LL, RealMatrix& sum_LH,
+			  RealVector& sum_HH, SizetArray& N_shared);
   /*
-  /// compute vector variance and correlation parameters for control variates
-  void compute_mf_correlation(const RealVector& sum_L, const RealVector& sum_H,
-			      const RealVector& sum_LL,
-			      const RealVector& sum_LH,
-			      const RealVector& sum_HH,
-			      const SizetArray& N_shared,
-			      RealVector& var_H, RealVector& rho2_LH);
+  void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
+			  IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
+			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
+			  Sizet2DArray& num_L_baseline, SizetArray& num_H,
+			  Sizet2DArray& num_LH);
+  void accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
+			  RealMatrix& sum_LL, RealMatrix& sum_LH,
+			  RealVector& sum_HH, Sizet2DArray& num_L_baseline,
+			  SizetArray& num_H,  Sizet2DArray& num_LH);
   */
+  // approx_increment() case:
+  void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  Sizet2DArray& num_L_shared,
+			  Sizet2DArray& num_L_refined,
+			  const SizetArray& approx_sequence,
+			  size_t sequence_start, size_t sequence_end);
 
-  /// apply vector control variate parameter (beta) to approximate HF moment
-  void apply_mf_control(const RealVector& sum_H, const RealVector& sum_L_shared,
-			const SizetArray& N_shared,
-			const RealVector& sum_L_refined,
-			const SizetArray& N_refined, const RealVector& beta,
-			RealVector& H_raw_mom);
+  void compute_LH_correlation(const RealMatrix& sum_L_shared,
+			      const RealVector& sum_H, const RealMatrix& sum_LL,
+			      const RealMatrix& sum_LH,const RealVector& sum_HH,
+			      const SizetArray& N_shared, RealMatrix& var_L,
+			      RealVector& var_H, RealMatrix& rho2_LH);
+  void correlation_sq_to_covariance(const RealMatrix& rho2_LH,
+				    const RealMatrix& var_L,
+				    const RealVector& var_H,
+				    RealMatrix& cov_LH);
+  void matrix_to_diagonal_array(const RealMatrix& var_L,
+				RealSymMatrixArray& cov_LL);
+
+  void mf_raw_moments(IntRealMatrixMap& sum_L_baseline,
+		      IntRealMatrixMap& sum_L_shared,
+		      IntRealMatrixMap& sum_L_refined,
+		      IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
+		      IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
+		      const Sizet2DArray& num_L_shared,
+		      const Sizet2DArray& num_L_refined,
+		      const SizetArray& num_H, RealMatrix& H_raw_mom);
+
+  //void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+  //			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
 
   //
   //- Heading: Data
   //
 
-  /// mean squared error of mean estimator from pilot sample MC on HF model
-  RealVector mcMSEIter0;
+  /// ratio of MFMC to MC estimator variance for the same HF samples,
+  /// also known as (1 - R^2)
+  RealVector estVarRatios;
+
+  /// controls use of numerical solve option: either a fallback in case of
+  /// model misordering (default = NUMERICAL_FALLBACK) or override for
+  /// robustness, e.g., to pilot over-estimation (NUMERICAL_OVERRIDE)
+  unsigned short numericalSolveMode;
 };
 
 
-inline NonDMultifidelitySampling::~NonDMultifidelitySampling()
-{ }
+inline void NonDMultifidelitySampling::
+initialize_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
+		   IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
+		   RealVector& sum_HH)
+{
+  initialize_sums(sum_L_baseline, sum_H, sum_LH, sum_HH);
+  std::pair<int, RealMatrix> mat_pr;
+  for (int i=1; i<=4; ++i) {
+    mat_pr.first = i; // moment number
+    sum_LL.insert(mat_pr).first->second.shape(numFunctions, numApprox);
+  }
+}
 
 
 inline void NonDMultifidelitySampling::
-compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf, Real cost_ratio)
-{ equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio; }
+correlation_sq_to_covariance(const RealMatrix& rho2_LH, const RealMatrix& var_L,
+			     const RealVector& var_H, RealMatrix& cov_LH)
+{
+  if (cov_LH.empty()) cov_LH.shapeUninitialized(numFunctions, numApprox);
+
+  size_t qoi, approx;  Real var_H_q, cov_LH_aq;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    var_H_q = var_H[qoi];
+    for (approx=0; approx<numApprox; ++approx)
+      cov_LH(qoi,approx)
+	= std::sqrt(rho2_LH(qoi,approx) * var_L(qoi,approx) * var_H_q);
+  }
+}
 
 
 inline void NonDMultifidelitySampling::
-increment_mf_equivalent_cost(size_t new_N_hf, size_t new_N_lf, Real cost_ratio)
-{ equivHFEvals += new_N_hf + (Real)new_N_lf / cost_ratio; }
+matrix_to_diagonal_array(const RealMatrix& var_L, RealSymMatrixArray& cov_LL)
+{
+  size_t qoi, approx;
+  if (cov_LL.empty()) {
+    cov_LL.resize(numFunctions);
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      cov_LL[qoi].shape(numApprox); // init to 0 for off-diagonal entries
+  }
+
+  Real cov_LH_aq;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    RealSymMatrix& cov_LL_q = cov_LL[qoi];
+    for (approx=0; approx<numApprox; ++approx)
+      cov_LL_q(approx,approx) = var_L(qoi,approx);
+  }
+}
 
 
-inline void NonDMultifidelitySampling::
-increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio)
-{ equivHFEvals += (Real)new_N_lf / cost_ratio; }
+//inline void NonDMultifidelitySampling::
+//update_hf_targets(const SizetArray& N_H, RealVector& hf_targets)
+//{
+//  size_t i, len = N_H.size();
+//  if (hf_targets.length() != len) hf_targets.sizeUninitialized(len);
+//  for (i=0; i<len; ++i)
+//    hf_targets[i] = (Real)N_H[i];
+//}
 
 
+/* Not active.  See notes in NonDNonHierarchSampling::compute_correlation()
 inline void NonDMultifidelitySampling::
 compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-		   size_t N_shared, Real& beta)
+		   size_t num_L, size_t num_H, size_t num_LH, Real& beta)
 {
   // unbiased mean estimator X-bar = 1/N * sum
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  //Real mu_L = sum_L / N_shared, mu_H = sum_H / N_shared;
-  //Real var_L = (sum_LL / N_shared - mu_L * mu_L) * bessel_corr,
-  //    cov_LH = (sum_LH / N_shared - mu_L * mu_H) * bessel_corr;
 
-  // Cancel repeated N_shared and bessel_corr within beta = cov_LH / var_L:
-  beta = (sum_LH - sum_L * sum_H / N_shared)
-       / (sum_LL - sum_L * sum_L / N_shared);
-}
+  // beta^* = rho_LH sigma_H / sigma_L (same expression as two model case)
+  //        = cov_LH / var_L  (since rho_LH = cov_LH / sigma_H / sigma_L)
 
+  Real mu_L = sum_L / num_L;
+  if (num_L != num_LH || num_H != num_LH) {
+    Real mu_H = sum_H / num_H,
+      var_L  = (sum_LL - mu_L * sum_L) / (Real)(num_L - 1), // bessel corr for L
+    //var_H  = (sum_HH - mu_H * sum_H) / (Real)(num_H - 1), // bessel corr for H
+      cov_LH = (sum_LH - mu_L * mu_H * num_LH) / (Real)(num_LH - 1);// bessel LH
+    beta = cov_LH / var_L;
+  }
+  else // simplify: cancel shared terms
+    beta = (sum_LH - mu_L * sum_H) / (sum_LL - mu_L * sum_L);
 
-inline void NonDMultifidelitySampling::
-compute_mf_control(const RealVector& sum_L, const RealVector& sum_H,
-		   const RealVector& sum_LL, const RealVector& sum_LH,
-		   const SizetArray& N_shared, RealVector& beta)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
-		       N_shared[qoi], beta[qoi]);
-}
-
-
-inline void NonDMultifidelitySampling::
-compute_mf_control(const RealMatrix& sum_L,  const RealMatrix& sum_H,
-		   const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-		   const SizetArray& N_shared, size_t lev, RealVector& beta)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_control(sum_L(qoi,lev), sum_H(qoi,lev), sum_LL(qoi,lev),
-		       sum_LH(qoi,lev), N_shared[qoi], beta[qoi]);
-}
-
-
-inline void NonDMultifidelitySampling::
-compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-		       Real sum_HH, size_t N_shared, Real& var_H, Real& rho2_LH)
-{
-  Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
-
-  // unbiased mean estimator X-bar = 1/N * sum
-  Real mu_L = sum_L / N_shared, mu_H = sum_H / N_shared;
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  Real var_L = (sum_LL / N_shared - mu_L * mu_L) * bessel_corr,
-      cov_LH = (sum_LH / N_shared - mu_L * mu_H) * bessel_corr;
-  var_H      = (sum_HH / N_shared - mu_H * mu_H) * bessel_corr;
-
-  //beta  = cov_LH / var_L;
-  rho2_LH = cov_LH / var_L * cov_LH / var_H;
-}
-
-
-/*
-inline void NonDMultifidelitySampling::
-compute_mf_correlation(const RealVector& sum_L, const RealVector& sum_H,
-		       const RealVector& sum_LL, const RealVector& sum_LH,
-		       const RealVector& sum_HH, const SizetArray& N_shared,
-		       RealVector& var_H, RealVector& rho2_LH)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_correlation(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
-			   sum_HH[qoi], N_shared[qoi], var_H[qoi],
-			   rho2_LH[qoi]);
+  //Cout << "compute_mf_control: num_L = " << num_L << " num_H = " << num_H
+  //     << " num_LH = " << num_LH << " beta = " << beta;
 }
 */
-
-
-inline void NonDMultifidelitySampling::
-apply_mf_control(Real sum_H, Real sum_L_shared, size_t N_shared,
-		 Real sum_L_refined, size_t N_refined, Real beta,
-		 Real& H_raw_mom)
-{
-  // apply control for HF uncentered raw moment estimates:
-  H_raw_mom = sum_H / N_shared                    // mu_H from shared samples
-            - beta * (sum_L_shared  / N_shared -  // mu_L from shared samples
-		      sum_L_refined / N_refined); // refined_mu_L incl increment
-}
-
-
-inline void NonDMultifidelitySampling::
-apply_mf_control(const RealVector& sum_H,     const RealVector& sum_L_shared,
-		 const SizetArray& N_shared,  const RealVector& sum_L_refined,
-		 const SizetArray& N_refined, const RealVector& beta,
-		 RealVector& H_raw_mom)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    Cout << "   QoI " << qoi+1 << ": control variate beta = "
-	 << std::setw(9) << beta[qoi] << '\n';
-    apply_mf_control(sum_H[qoi], sum_L_shared[qoi], N_shared[qoi],
-		     sum_L_refined[qoi], N_refined[qoi], beta[qoi],
-		     H_raw_mom[qoi]);
-  }
-  if (numFunctions > 1) Cout << '\n';
-}
-
-
-inline void NonDMultifidelitySampling::
-apply_mf_control(const RealMatrix& sum_H,    const RealMatrix& sum_L_shared,
-		 const SizetArray& N_shared, const RealMatrix& sum_L_refined,
-		 const SizetArray& N_refined, size_t lev,
-		 const RealVector& beta, RealVector& H_raw_mom)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    Cout << "   QoI " << qoi+1 << ": control variate beta = "
-	 << std::setw(9) << beta[qoi] << '\n';
-    apply_mf_control(sum_H(qoi,lev), sum_L_shared(qoi,lev), N_shared[qoi],
-		     sum_L_refined(qoi,lev), N_refined[qoi], beta[qoi],
-		     H_raw_mom[qoi]);
-  }
-  if (numFunctions > 1) Cout << '\n';
-}
 
 } // namespace Dakota
 

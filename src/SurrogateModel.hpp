@@ -78,6 +78,7 @@ protected:
   Model& subordinate_model();
 
   void active_model_key(const Pecos::ActiveKey& key);
+  const Pecos::ActiveKey& active_model_key() const;
 
   /// return responseMode
   short surrogate_response_mode() const;
@@ -133,6 +134,9 @@ protected:
   /// initialize model with inactive variable values/bounds data that could
   /// change once per set of evaluations (e.g., an outer iterator execution)
   void init_model_inactive_variables(Model& model);
+  /// initialize model with inactive variable labels that could change once
+  /// per set of evaluations (e.g., an outer iterator execution)
+  void init_model_inactive_labels(Model& model);
 
   /// update model with active variable values/bounds data
   void update_model_active_variables(Model& model);
@@ -164,8 +168,8 @@ protected:
   /// aggregate {HF,LF} response data to create a new response with 2x size
   void aggregate_response(const Response& hf_resp, const Response& lf_resp,
 			  Response& agg_resp);
-  /// aggregate response array to create a new response with accumulated size
-  void aggregate_response(const ResponseArray& resp_array, Response& agg_resp);
+  // aggregate response array to create a new response with accumulated size
+  //void aggregate_response(const ResponseArray& resp_array,Response& agg_resp);
   /// insert a single response into an aggregated response in the
   /// specified position
   void insert_response(const Response& response, size_t position,
@@ -318,6 +322,10 @@ inline void SurrogateModel::active_model_key(const Pecos::ActiveKey& key)
   // base implementation (augmented in derived SurrogateModels)
   activeKey = key;//.copy(); // share representations except for entering data into DB storage (reduce overhead of short-term activations)
 }
+
+
+inline const Pecos::ActiveKey& SurrogateModel::active_model_key() const
+{return activeKey; }
 
 
 inline short SurrogateModel::surrogate_response_mode() const

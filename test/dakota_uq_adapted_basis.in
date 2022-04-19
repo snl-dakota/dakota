@@ -7,7 +7,7 @@ method,
 model
   id_model = 'SUBSPACE'
   adapted_basis
-    actual_model_pointer = 'FULLSPACE'
+    truth_model_pointer = 'FULLSPACE'
     sparse_grid_level = 1	#s0,#s1,#s2,#s3
 #   expansion_order = 1		#s4,#s5,#s6,#s7
 #   collocation_ratio = 1.	#s4,#s7

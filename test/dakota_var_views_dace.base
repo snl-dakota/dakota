@@ -14,7 +14,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -9.9943622995e-02
                      -5.5333895071e-03
-<<<<< Best data captured at function evaluation 9
+<<<<< Best evaluation ID: 9
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2       obj_fn nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
@@ -53,7 +53,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -2.6572145062e-02
                      -7.8508420972e-02
-<<<<< Best data captured at function evaluation 49
+<<<<< Best evaluation ID: 49
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2       obj_fn nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
@@ -92,7 +92,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                      -5.5555555556e-01
                       3.6666666667e+00
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -109,7 +109,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                      -4.0000000000e-02
                      -4.0000000000e-02
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -126,7 +126,7 @@ Test Number 4 succeeded
 <<<<< Best constraint values   =
                       6.1000000000e-01
                       8.9000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -143,7 +143,7 @@ Test Number 5 succeeded
 <<<<< Best constraint values   =
                       0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -160,7 +160,7 @@ Test Number 6 succeeded
 <<<<< Best constraint values   =
                       0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2       obj_fn nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
@@ -199,7 +199,7 @@ Test Number 7 succeeded
 <<<<< Best constraint values   =
                      -5.0058131694e-02
                      -6.3962345116e-02
-<<<<< Best data captured at function evaluation 9
+<<<<< Best evaluation ID: 9
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2           x3           x4           x5           x6           x7           x8       obj_fn nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
@@ -262,7 +262,7 @@ Test Number 8 succeeded
 <<<<< Best constraint values   =
                      -2.6572145062e-02
                      -7.8508420972e-02
-<<<<< Best data captured at function evaluation 49
+<<<<< Best evaluation ID: 49
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2           x3           x4           x5           x6           x7           x8       obj_fn nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
@@ -325,7 +325,7 @@ Test Number 9 succeeded
 <<<<< Best constraint values   =
                       1.1111111111e-01
                       1.1111111111e-01
-<<<<< Best data captured at function evaluation 53
+<<<<< Best evaluation ID: 53
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -342,7 +342,7 @@ Test Number 10 succeeded
 <<<<< Best constraint values   =
                      -4.0000000000e-02
                      -4.0000000000e-02
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 6 total (3 new, 3 duplicate)
 <<<<< Best parameters          =
@@ -359,7 +359,7 @@ Test Number 11 succeeded
 <<<<< Best constraint values   =
                       6.1000000000e-01
                       8.9000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -376,7 +376,7 @@ Test Number 12 succeeded
 <<<<< Best constraint values   =
                       0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 31
+<<<<< Best evaluation ID: 31
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 6561 total (6561 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -393,7 +393,7 @@ Test Number 13 succeeded
 <<<<< Best constraint values   =
                       0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 3281
+<<<<< Best evaluation ID: 3281
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2           x3           x4           x5           x6           x7           x8       obj_fn nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 

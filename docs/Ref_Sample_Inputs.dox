@@ -3,7 +3,15 @@
 \page input_file_examples Sample Input Files
 A %Dakota input file is a collection of fields from the
 dakota.input.summary file that describe the problem to be solved by
-%Dakota. Several examples follow.
+%Dakota. Several brief examples follow below.
+
+Dakota 6.14 and newer include a refreshed Examples Library, ranging
+from examples of Dakota input files and basic studies through complete
+case studies. These can be found in binary distributions in \c
+dakota/share/dakota/examples/official (\c dakota/dakota-examples in
+source distributions). Legacy examples, including many from the Dakota
+software manuals appear in other directories in \c
+dakota/share/dakota/examples (\c dakota/examples for source).
 
 <b> Sample 1: Optimization </b>
 

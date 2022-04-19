@@ -93,12 +93,16 @@ if(DAKOTA_H5PY_FOUND)
   dakota_add_h5py_test(pareto)
   dakota_add_h5py_test(dist_params)
   dakota_add_h5py_test(mlmc)
+  dakota_add_h5py_test(sampling_metadata)
   #dakota_add_h5py_test(calibration_with_data)
   #dakota_add_h5py_test(mutlisolution_opt)
 endif()
 
-
-
+dakota_add_unit_test(NAME response_io
+  SOURCES response_io.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(response_io Boost::boost)
 
 # Unit test: experiment data and readers
 # Demonstration of Teuchos test framework to driver several tests related to
@@ -236,7 +240,7 @@ if(DAKOTA_PYBIND11)
     COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.py
     $<TARGET_FILE_DIR:environment>
     )
-  set_property(TEST dakota_python PROPERTY LABELS UnitTest)
+  set_property(TEST dakota_python PROPERTY LABELS Unit)
 endif()
 
 

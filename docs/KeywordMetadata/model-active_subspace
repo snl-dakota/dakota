@@ -3,7 +3,7 @@ Active (variable) subspace model
 
 Description::
 A model that transforms the original model (given by \ref
-model-active_subspace-actual_model_pointer) to one with a reduced set of variables.  This
+model-active_subspace-truth_model_pointer) to one with a reduced set of variables.  This
 reduced model is identified by iteratively sampling the gradient of
 the original model and performing a singular value decomposition of
 the gradient matrix.
@@ -29,7 +29,7 @@ to compute the Bing Li truncation metric.
 model                             
   subspace
     id_model = 'SUBSPACE'
-    actual_model_pointer = 'FULLSPACE'
+    truth_model_pointer = 'FULLSPACE'
     initial_samples  100
     truncation_method bing_li
     bootstrap_samples 150

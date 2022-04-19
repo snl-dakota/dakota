@@ -44,6 +44,8 @@ protected:
 
   void assign_instance();
 
+  void init_metadata() override { /* no-op to leave metadata intact */}
+
   //
   //- Heading: Member functions
   //

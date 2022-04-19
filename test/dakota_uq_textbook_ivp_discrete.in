@@ -10,7 +10,7 @@ method,
 	id_method = 'EPISTEMIC'
 	model_pointer = 'EPIST_M'
 	global_interval_est lhs			#s0
-#	global_interval_est sbo			#s1
+#	global_interval_est sbgo		#s1
 #	global_interval_est ea			#s2
 #	sampling			
         samples = 10 seed = 12347		#s0,#s1

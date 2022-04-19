@@ -66,5 +66,5 @@ if(DAKOTA_PYTHON AND DAKOTA_PYBIND11)
   configure_file(pybind11_example.py pybind11_example.py COPYONLY)
   add_test(NAME dakota_util_pybind11_example
     COMMAND ${Python_EXECUTABLE} pybind11_example.py)
-  set_tests_properties(dakota_util_pybind11_example PROPERTIES LABELS UnitTest)
+  set_tests_properties(dakota_util_pybind11_example PROPERTIES LABELS Unit)
 endif()

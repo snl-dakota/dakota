@@ -12,7 +12,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -7.5683593750e-03
                      -1.0839843750e-01
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 309 total (309 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
@@ -24,7 +24,7 @@ Test Number 1 succeeded
                       1.2000000000e+00 y4
 <<<<< Best objective function  =
                      -4.3194296134e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 246 total (246 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
@@ -39,7 +39,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                      -6.2500000000e-02
                      -6.2500000000e-02
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 373 total (373 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
@@ -58,7 +58,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                      -6.5772056581e-02
                      -1.3916015626e-02
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 6792 total (6792 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 527 total (527 new, 0 duplicate)
@@ -74,7 +74,7 @@ Test Number 4 succeeded
                       1.2000000000e+00 y4
 <<<<< Best objective function  =
                       2.4820032000e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 1010 total (1010 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 561 total (561 new, 0 duplicate)
@@ -91,7 +91,7 @@ Test Number 5 succeeded
 <<<<< Best constraint values   =
                      -7.8687607311e-04
                      -9.1247487580e-04
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 16635 total (16635 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 758 total (758 new, 0 duplicate)
@@ -110,4 +110,4 @@ Test Number 6 succeeded
 <<<<< Best constraint values   =
                      -2.3680446611e-04
                      -4.0371429495e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

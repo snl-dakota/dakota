@@ -11,19 +11,19 @@ Moment statistics for each response function:
  response_fn_3  1.2641752523e-04  5.5722597895e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -4.6347708150e-06  5.0079702376e-05
- response_fn_2  1.3638240181e-04  1.0428410604e-03
- response_fn_3 -4.6347708174e-06  5.0079702371e-05
+ response_fn_1 -4.6347708137e-06  5.0079702374e-05
+ response_fn_2  1.3638240182e-04  1.0428410604e-03
+ response_fn_3 -4.6347708173e-06  5.0079702371e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.6074747464e-07  1.2366705076e-06
- response_fn_2  6.4327673068e-06  1.7955969567e-05
- response_fn_3  1.6074750366e-07  1.2366709656e-06
+ response_fn_1  1.6074753724e-07  1.2366714668e-06
+ response_fn_2  6.4327673145e-06  1.7955969579e-05
+ response_fn_3  1.6074751027e-07  1.2366710692e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -2.0602971233e-09  0.0000000000e+00
- response_fn_2  2.0118383168e-07  4.8406173503e-07
- response_fn_3 -2.0601031093e-09  0.0000000000e+00
+ response_fn_1 -2.0603284898e-09  0.0000000000e+00
+ response_fn_2  2.0118382209e-07  4.8406163349e-07
+ response_fn_3 -2.0601030023e-09  0.0000000000e+00
 <<<<< Function evaluation summary: 3000 total (3000 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 1.4702148438e+02
 Moment statistics for each response function:
@@ -44,25 +44,25 @@ Moment statistics for each response function:
  response_fn_3  1.2026632271e-04  5.4083948115e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -3.3405075298e-07  5.3171675948e-05
- response_fn_2  1.3028134222e-04  1.0600895731e-03
- response_fn_3 -3.3405075245e-07  5.3171675949e-05
+ response_fn_1 -3.3405075035e-07  5.3171675948e-05
+ response_fn_2  1.3028134222e-04  1.0600895730e-03
+ response_fn_3 -3.3405075230e-07  5.3171675950e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  5.3123956145e-07  3.5585089940e-06
- response_fn_2  9.8787923129e-07  5.0246852099e-06
- response_fn_3  5.3123949142e-07  3.5585078449e-06
+ response_fn_1  5.3123937867e-07  3.5585062862e-06
+ response_fn_2  9.8787921925e-07  5.0246851330e-06
+ response_fn_3  5.3123947605e-07  3.5585076312e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -7.6876376572e-09  2.2191617974e-08
- response_fn_2  7.0126642286e-07  1.9688106190e-06
- response_fn_3 -7.6872950896e-09  2.2190075173e-08
+ response_fn_1 -7.6868838348e-09  2.2188451581e-08
+ response_fn_2  7.0126663246e-07  1.9688115039e-06
+ response_fn_3 -7.6872497100e-09  2.2189870789e-08
 <<<<< Function evaluation summary: 1222 total (1222 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 6.2895019531e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5265086680e-02  6.5314184552e-03  6.7271268747e-01 -5.0232447192e-01
- response_fn_2  1.2899330478e-01  1.3493062966e-02  6.6205773590e-01 -7.5458301008e-01
+ response_fn_1  2.5265086681e-02  6.5314184549e-03  6.7271268747e-01 -5.0232447195e-01
+ response_fn_2  1.2899330478e-01  1.3493062966e-02  6.6205773593e-01 -7.5458301004e-01
  response_fn_3  2.5265086680e-02  6.5314184550e-03  6.7271268747e-01 -5.0232447192e-01
 Test Number 2 succeeded
 Moment statistics for each response function:
@@ -77,25 +77,25 @@ Moment statistics for each response function:
  response_fn_3  1.2724851819e-04  5.5752363879e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -4.2760718432e-06  5.0194599226e-05
+ response_fn_1 -4.2760718418e-06  5.0194599223e-05
  response_fn_2  1.3927929226e-04  1.0438198454e-03
- response_fn_3 -4.2760718455e-06  5.0194599222e-05
+ response_fn_3 -4.2760718454e-06  5.0194599222e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -8.2002254455e-07  5.3419057758e-06
- response_fn_2  6.3164935512e-06  8.5971052090e-05
- response_fn_3 -8.2002253797e-07  5.3419057824e-06
+ response_fn_1 -8.2002253087e-07  5.3419058226e-06
+ response_fn_2  6.3164935589e-06  8.5971052088e-05
+ response_fn_3 -8.2002253651e-07  5.3419057857e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -2.1307741189e-07  2.4033154565e-06
- response_fn_2 -4.0218495401e-08  2.9751326644e-06
- response_fn_3 -2.1307723746e-07  2.4033154846e-06
+ response_fn_1 -2.1307747857e-07  2.4033152268e-06
+ response_fn_2 -4.0218532018e-08  2.9751326923e-06
+ response_fn_3 -2.1307723896e-07  2.4033154729e-06
 <<<<< Function evaluation summary: 3000 total (3000 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 1.4702148438e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5261564093e-02  6.5463883001e-03  6.9181877296e-01 -4.5467483243e-01
- response_fn_2  1.2904828900e-01  1.3552026513e-02  6.9097002713e-01 -7.1351629028e-01
+ response_fn_1  2.5261564093e-02  6.5463883002e-03  6.9181877296e-01 -4.5467483248e-01
+ response_fn_2  1.2904828900e-01  1.3552026513e-02  6.9097002714e-01 -7.1351629027e-01
  response_fn_3  2.5261564093e-02  6.5463883002e-03  6.9181877291e-01 -4.5467483248e-01
 Test Number 3 succeeded
 Moment statistics for each response function:
@@ -110,25 +110,25 @@ Moment statistics for each response function:
  response_fn_3  1.3114827580e-04  5.5457426172e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -2.0525153409e-06  4.3431000244e-05
+ response_fn_1 -2.0525153404e-06  4.3431000240e-05
  response_fn_2  1.4554161140e-04  1.0500238822e-03
- response_fn_3 -2.0525153395e-06  4.3431000241e-05
+ response_fn_3 -2.0525153394e-06  4.3431000240e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -5.1027557458e-07  4.0034624341e-06
- response_fn_2  6.6636581366e-06  9.4641938263e-05
- response_fn_3 -5.1027558874e-07  4.0034624404e-06
+ response_fn_1 -5.1027556229e-07  4.0034623871e-06
+ response_fn_2  6.6636581430e-06  9.4641938285e-05
+ response_fn_3 -5.1027558823e-07  4.0034624376e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -1.0039280298e-06  2.2085657721e-06
- response_fn_2 -6.6073281494e-07  3.2979404508e-06
- response_fn_3 -1.0039279289e-06  2.2085658073e-06
+ response_fn_1 -1.0039279445e-06  2.2085654949e-06
+ response_fn_2 -6.6073276916e-07  3.2979401670e-06
+ response_fn_3 -1.0039279222e-06  2.2085657910e-06
 <<<<< Function evaluation summary: 1512 total (1512 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.1598828125e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5308036450e-02  6.6210140378e-03  6.5094911501e-01 -5.8154532585e-01
- response_fn_2  1.2901495558e-01  1.3452826933e-02  6.6419337594e-01 -7.4888157749e-01
+ response_fn_1  2.5308036450e-02  6.6210140380e-03  6.5094911502e-01 -5.8154532592e-01
+ response_fn_2  1.2901495558e-01  1.3452826934e-02  6.6419337594e-01 -7.4888157749e-01
  response_fn_3  2.5308036450e-02  6.6210140379e-03  6.5094911501e-01 -5.8154532586e-01
 Test Number 4 succeeded
 Moment statistics for each response function:
@@ -143,26 +143,26 @@ Moment statistics for each response function:
  response_fn_3  1.2451624684e-04  5.5577327820e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -1.8518244028e-08  5.3433884476e-05
+ response_fn_1 -1.8518243169e-08  5.3433884476e-05
  response_fn_2  1.4270080122e-04  1.0489802489e-03
- response_fn_3 -1.8518241744e-08  5.3433884476e-05
+ response_fn_3 -1.8518241672e-08  5.3433884477e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.2672276727e-08  6.8431408253e-09
- response_fn_2  1.1808740500e-05  3.5320202310e-05
- response_fn_3  3.2672289415e-08  6.8431432782e-09
+ response_fn_1  3.2672294196e-08  6.8431441912e-09
+ response_fn_2  1.1808740515e-05  3.5320202416e-05
+ response_fn_3  3.2672290426e-08  6.8431434723e-09
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -1.1101930914e-09  0.0000000000e+00
- response_fn_2  1.9118776712e-07  2.8190002853e-08
- response_fn_3 -1.1102801490e-09  0.0000000000e+00
+ response_fn_1 -1.1098617460e-09  0.0000000000e+00
+ response_fn_2  1.9118792379e-07  2.8190030735e-08
+ response_fn_3 -1.1102650108e-09  0.0000000000e+00
 <<<<< Function evaluation summary: 3000 total (3000 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 1.4702148438e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5257449558e-02  6.5236565613e-03  7.0376216425e-01 -3.6302854435e-01
+ response_fn_1  2.5257449558e-02  6.5236565613e-03  7.0376216426e-01 -3.6302854433e-01
  response_fn_2  1.2905867323e-01  1.3533782500e-02  6.9767737031e-01 -6.5979729832e-01
- response_fn_3  2.5257449558e-02  6.5236565613e-03  7.0376216424e-01 -3.6302854436e-01
+ response_fn_3  2.5257449558e-02  6.5236565613e-03  7.0376216424e-01 -3.6302854435e-01
 Test Number 5 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -176,25 +176,25 @@ Moment statistics for each response function:
  response_fn_3  1.2781334761e-04  5.6588194852e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -2.1057326197e-06  5.0916447233e-05
- response_fn_2  1.6359913359e-04  1.0908766594e-03
- response_fn_3 -2.1057326170e-06  5.0916447233e-05
+ response_fn_1 -2.1057326096e-06  5.0916447229e-05
+ response_fn_2  1.6359913360e-04  1.0908766594e-03
+ response_fn_3 -2.1057326164e-06  5.0916447232e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.0072180634e-07  1.5883205924e-06
- response_fn_2  1.4210932558e-05  3.3849221587e-05
- response_fn_3  1.0072177671e-07  1.5883190043e-06
+ response_fn_1  1.0072172220e-07  1.5883161789e-06
+ response_fn_2  1.4210932579e-05  3.3849222026e-05
+ response_fn_3  1.0072177151e-07  1.5883187316e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -2.9450365353e-10  0.0000000000e+00
- response_fn_2  2.7057478634e-07  5.3813916431e-07
- response_fn_3 -2.9449631643e-10  0.0000000000e+00
+ response_fn_1 -2.9455581311e-10  0.0000000000e+00
+ response_fn_2  2.7057500409e-07  5.3814028760e-07
+ response_fn_3 -2.9449912098e-10  0.0000000000e+00
 <<<<< Function evaluation summary: 1222 total (1222 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 6.2895019531e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5283408348e-02  6.6092090467e-03  7.2232455529e-01 -3.0270326348e-01
- response_fn_2  1.2907723725e-01  1.3515824614e-02  7.0581433912e-01 -6.6263503294e-01
+ response_fn_1  2.5283408347e-02  6.6092090467e-03  7.2232455528e-01 -3.0270326349e-01
+ response_fn_2  1.2907723725e-01  1.3515824614e-02  7.0581433914e-01 -6.6263503293e-01
  response_fn_3  2.5283408348e-02  6.6092090467e-03  7.2232455529e-01 -3.0270326348e-01
 Test Number 6 succeeded
 Moment statistics for each response function:
@@ -205,29 +205,29 @@ Moment statistics for each response function:
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.2394201712e-04  5.5872233763e-04
- response_fn_2  1.1903485429e-03  7.5662129941e-03
+ response_fn_2  1.1903485432e-03  7.5662129951e-03
  response_fn_3  1.2394201712e-04  5.5872233763e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -5.4337938259e-08  5.3425891334e-05
+ response_fn_1 -5.4337937375e-08  5.3425891335e-05
  response_fn_2  1.4920741871e-04  1.1317676280e-03
- response_fn_3 -5.4337935957e-08  5.3425891335e-05
+ response_fn_3 -5.4337935890e-08  5.3425891335e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.1611591677e-07  7.2004479470e-06
- response_fn_2  1.0222524981e-05  9.1210345579e-05
- response_fn_3  1.1611592916e-07  7.2004479349e-06
+ response_fn_1  1.1611593432e-07  7.2004479092e-06
+ response_fn_2  1.0222524989e-05  9.1210345585e-05
+ response_fn_3  1.1611593018e-07  7.2004479330e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -2.8143614212e-07  3.9021326968e-06
- response_fn_2 -7.9410844662e-08  4.3038688069e-06
- response_fn_3 -2.8143621557e-07  3.9021327139e-06
+ response_fn_1 -2.8143579744e-07  3.9021326378e-06
+ response_fn_2 -7.9410664562e-08  4.3038687558e-06
+ response_fn_3 -2.8143619947e-07  3.9021327087e-06
 <<<<< Function evaluation summary: 3000 total (3000 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 1.4702148438e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5262196016e-02  6.5703336549e-03  7.2341032668e-01 -3.1791179993e-01
- response_fn_2  1.2909930313e-01  1.3565252876e-02  7.4482283472e-01 -5.3157983743e-01
+ response_fn_1  2.5262196017e-02  6.5703336548e-03  7.2341032661e-01 -3.1791180003e-01
+ response_fn_2  1.2909930314e-01  1.3565252875e-02  7.4482283468e-01 -5.3157983797e-01
  response_fn_3  2.5262196016e-02  6.5703336548e-03  7.2341032666e-01 -3.1791179995e-01
 Test Number 7 succeeded
 Moment statistics for each response function:
@@ -238,30 +238,30 @@ Moment statistics for each response function:
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.2882094189e-04  5.6462695694e-04
- response_fn_2  1.1465451242e-03  7.7373412011e-03
+ response_fn_2  1.1465451242e-03  7.7373412012e-03
  response_fn_3  1.2882094189e-04  5.6462695694e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -2.0255319420e-06  5.0815451503e-05
- response_fn_2  1.6271558962e-04  1.0529592005e-03
- response_fn_3 -2.0255319394e-06  5.0815451502e-05
+ response_fn_1 -2.0255319319e-06  5.0815451499e-05
+ response_fn_2  1.6271558963e-04  1.0529592005e-03
+ response_fn_3 -2.0255319388e-06  5.0815451502e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -3.8597735697e-08  5.2326970921e-06
- response_fn_2  5.5676953704e-06  9.8665371397e-05
- response_fn_3 -3.8597703354e-08  5.2326970589e-06
+ response_fn_1 -3.8597702939e-08  5.2326971064e-06
+ response_fn_2  5.5676953878e-06  9.8665371362e-05
+ response_fn_3 -3.8597701465e-08  5.2326970603e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -6.4605166984e-07  4.6465730703e-06
- response_fn_2 -4.0389443248e-07  5.5111080445e-06
- response_fn_3 -6.4605191389e-07  4.6465729873e-06
+ response_fn_1 -6.4605190947e-07  4.6465733789e-06
+ response_fn_2 -4.0389456151e-07  5.5111081848e-06
+ response_fn_3 -6.4605193161e-07  4.6465730011e-06
 <<<<< Function evaluation summary: 1512 total (1512 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.1598828125e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5278103079e-02  6.5682441464e-03  7.0937580487e-01 -3.3449620865e-01
- response_fn_2  1.2909937546e-01  1.3561738808e-02  7.3582546256e-01 -5.7413964068e-01
- response_fn_3  2.5278103079e-02  6.5682441464e-03  7.0937580491e-01 -3.3449620861e-01
+ response_fn_1  2.5278103079e-02  6.5682441462e-03  7.0937580498e-01 -3.3449620851e-01
+ response_fn_2  1.2909937546e-01  1.3561738808e-02  7.3582546259e-01 -5.7413964064e-01
+ response_fn_3  2.5278103079e-02  6.5682441464e-03  7.0937580492e-01 -3.3449620861e-01
 Test Number 8 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -275,55 +275,55 @@ Moment statistics for each response function:
  response_fn_3  1.2026632271e-04  5.4083948115e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -3.3405075298e-07  5.3171675948e-05
- response_fn_2  1.3028134222e-04  1.0600895731e-03
- response_fn_3 -3.3405075245e-07  5.3171675949e-05
+ response_fn_1 -3.3405075035e-07  5.3171675948e-05
+ response_fn_2  1.3028134222e-04  1.0600895730e-03
+ response_fn_3 -3.3405075230e-07  5.3171675950e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  5.3123956145e-07  3.5585089940e-06
- response_fn_2  9.8787923129e-07  5.0246852099e-06
- response_fn_3  5.3123949142e-07  3.5585078449e-06
+ response_fn_1  5.3123937867e-07  3.5585062862e-06
+ response_fn_2  9.8787921925e-07  5.0246851330e-06
+ response_fn_3  5.3123947605e-07  3.5585076312e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -7.6876376572e-09  2.2191617974e-08
- response_fn_2  7.0126642286e-07  1.9688106190e-06
- response_fn_3 -7.6872950896e-09  2.2190075173e-08
+ response_fn_1 -7.6868838348e-09  2.2188451581e-08
+ response_fn_2  7.0126663246e-07  1.9688115039e-06
+ response_fn_3 -7.6872497100e-09  2.2189870789e-08
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5265086680e-02  6.5314184552e-03
+ response_fn_1  2.5265086681e-02  6.5314184549e-03
  response_fn_2  1.2899330478e-01  1.3493062966e-02
  response_fn_3  2.5265086680e-02  6.5314184550e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5272346980e-02  6.5616669404e-03
+ response_fn_1  2.5272346980e-02  6.5616669402e-03
  response_fn_2  1.2901016851e-01  1.3494321847e-02
  response_fn_3  2.5272346980e-02  6.5616669402e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5277392836e-02  6.5708007854e-03
+ response_fn_1  2.5277392836e-02  6.5708007852e-03
  response_fn_2  1.2904205813e-01  1.3556969122e-02
  response_fn_3  2.5277392836e-02  6.5708007853e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5278967828e-02  6.5690174457e-03
+ response_fn_1  2.5278967829e-02  6.5690174455e-03
  response_fn_2  1.2905328200e-01  1.3538898654e-02
  response_fn_3  2.5278967829e-02  6.5690174456e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5278578911e-02  6.5688447735e-03
+ response_fn_1  2.5278578912e-02  6.5688447734e-03
  response_fn_2  1.2905949520e-01  1.3537864109e-02
  response_fn_3  2.5278578911e-02  6.5688447734e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5278584711e-02  6.5688440192e-03
+ response_fn_1  2.5278584711e-02  6.5688440191e-03
  response_fn_2  1.2905930940e-01  1.3537927786e-02
  response_fn_3  2.5278584712e-02  6.5688440191e-03
 <<<<< Function evaluation summary: 1631 total (1631 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 8.4281982422e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5278584711e-02  6.5688440192e-03  7.2088386176e-01 -3.0160983903e-01
- response_fn_2  1.2905930940e-01  1.3537927786e-02  7.0844972682e-01 -6.2330388944e-01
+ response_fn_1  2.5278584711e-02  6.5688440191e-03  7.2088386177e-01 -3.0160983903e-01
+ response_fn_2  1.2905930940e-01  1.3537927786e-02  7.0844972684e-01 -6.2330388942e-01
  response_fn_3  2.5278584712e-02  6.5688440191e-03  7.2088386177e-01 -3.0160983903e-01
 Test Number 9 succeeded
 Moment statistics for each response function:
@@ -338,19 +338,19 @@ Moment statistics for each response function:
  response_fn_3  1.2612524278e-04  5.5350805016e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  7.8653004698e-07  4.9047580822e-05
- response_fn_2  1.3642137279e-04  1.0395676937e-03
- response_fn_3  7.8653004583e-07  4.9047580820e-05
+ response_fn_1  7.8653004608e-07  4.9047580817e-05
+ response_fn_2  1.3642137279e-04  1.0395676938e-03
+ response_fn_3  7.8653004578e-07  4.9047580820e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  5.3231831927e-07  5.5602268427e-06
- response_fn_2  6.8705672909e-06  8.6772117764e-05
- response_fn_3  5.3231831727e-07  5.5602268544e-06
+ response_fn_1  5.3231829531e-07  5.5602268734e-06
+ response_fn_2  6.8705672783e-06  8.6772117756e-05
+ response_fn_3  5.3231831624e-07  5.5602268557e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.0232257780e-07  3.2793579983e-06
- response_fn_2  4.9052224070e-07  3.4532574542e-06
- response_fn_3  3.0232252491e-07  3.2793580879e-06
+ response_fn_1  3.0232259891e-07  3.2793580858e-06
+ response_fn_2  4.9052225084e-07  3.4532575025e-06
+ response_fn_3  3.0232252459e-07  3.2793580959e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5272581713e-02  6.5241900151e-03
@@ -358,7 +358,7 @@ Moment statistics for each response function:
  response_fn_3  2.5272581713e-02  6.5241900152e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5268364179e-02  6.5511734565e-03
+ response_fn_1  2.5268364179e-02  6.5511734564e-03
  response_fn_2  1.2904578927e-01  1.3450460449e-02
  response_fn_3  2.5268364179e-02  6.5511734566e-03
 Moment statistics for each response function:
@@ -385,7 +385,7 @@ Moment statistics for each response function:
 <<<<< Equivalent number of high fidelity evaluations: 4.6605761719e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5267235267e-02  6.5539393434e-03  6.7439622684e-01 -5.2052207866e-01
+ response_fn_1  2.5267235267e-02  6.5539393434e-03  6.7439622684e-01 -5.2052207864e-01
  response_fn_2  1.2901655065e-01  1.3431017861e-02  6.6662723361e-01 -7.5220040483e-01
  response_fn_3  2.5267235267e-02  6.5539393435e-03  6.7439622683e-01 -5.2052207866e-01
 Test Number 10 succeeded
@@ -401,19 +401,19 @@ Moment statistics for each response function:
  response_fn_3  1.2939802209e-04  5.5985502005e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -8.8332268800e-07  4.8844484791e-05
+ response_fn_1 -8.8332269365e-07  4.8844484793e-05
  response_fn_2  1.1644958052e-04  1.0703185197e-03
- response_fn_3 -8.8332269235e-07  4.8844484796e-05
+ response_fn_3 -8.8332269270e-07  4.8844484794e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  6.5857565112e-08  2.8993786505e-07
- response_fn_2  2.5900758378e-06  1.3027694613e-05
- response_fn_3  6.5857616056e-08  2.8993846503e-07
+ response_fn_1  6.5857562514e-08  2.8993784184e-07
+ response_fn_2  2.5900758353e-06  1.3027694585e-05
+ response_fn_3  6.5857616996e-08  2.8993847642e-07
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -2.4911425820e-09  0.0000000000e+00
- response_fn_2  2.9400753619e-07  1.4197543454e-07
- response_fn_3 -2.4911804205e-09  0.0000000000e+00
+ response_fn_1 -2.4909579872e-09  0.0000000000e+00
+ response_fn_2  2.9400760626e-07  1.4197549118e-07
+ response_fn_3 -2.4911675737e-09  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5263779359e-02  6.5602200311e-03
@@ -426,7 +426,7 @@ Moment statistics for each response function:
  response_fn_3  2.5242017596e-02  6.5409164570e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5240955371e-02  6.5399840860e-03
+ response_fn_1  2.5240955372e-02  6.5399840860e-03
  response_fn_2  1.2902348768e-01  1.3463883946e-02
  response_fn_3  2.5240955371e-02  6.5399840860e-03
 Moment statistics for each response function:
@@ -448,7 +448,7 @@ Moment statistics for each response function:
 <<<<< Equivalent number of high fidelity evaluations: 8.7698486328e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5240040662e-02  6.5405811089e-03  6.6611242028e-01 -4.3449921895e-01
+ response_fn_1  2.5240040662e-02  6.5405811089e-03  6.6611242030e-01 -4.3449921893e-01
  response_fn_2  1.2902771884e-01  1.3465740642e-02  6.6281473455e-01 -7.3182977439e-01
  response_fn_3  2.5240040662e-02  6.5405811089e-03  6.6611242027e-01 -4.3449921896e-01
 Test Number 11 succeeded
@@ -464,55 +464,55 @@ Moment statistics for each response function:
  response_fn_3  1.2926799505e-04  5.5002654242e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -1.2655458356e-06  5.1234796089e-05
+ response_fn_1 -1.2655458338e-06  5.1234796091e-05
  response_fn_2  1.4496195718e-04  1.0294628464e-03
- response_fn_3 -1.2655458359e-06  5.1234796088e-05
+ response_fn_3 -1.2655458358e-06  5.1234796088e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -1.7629614166e-07  6.0845187993e-06
- response_fn_2  5.0472439495e-06  8.7007821353e-05
- response_fn_3 -1.7629613854e-07  6.0845188119e-06
+ response_fn_1 -1.7629615560e-07  6.0845188263e-06
+ response_fn_2  5.0472439422e-06  8.7007821356e-05
+ response_fn_3 -1.7629613953e-07  6.0845188133e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.3886381812e-07  5.8019134277e-06
- response_fn_2  4.6167208065e-07  5.5984364775e-06
- response_fn_3  3.3886389078e-07  5.8019133919e-06
+ response_fn_1  3.3886404163e-07  5.8019132977e-06
+ response_fn_2  4.6167219959e-07  5.5984364232e-06
+ response_fn_3  3.3886390562e-07  5.8019133869e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5262965476e-02  6.5403248603e-03
+ response_fn_1  2.5262965476e-02  6.5403248605e-03
  response_fn_2  1.2902644847e-01  1.3468687084e-02
  response_fn_3  2.5262965476e-02  6.5403248603e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5277213508e-02  6.5559435715e-03
+ response_fn_1  2.5277213508e-02  6.5559435716e-03
  response_fn_2  1.2902340926e-01  1.3480112408e-02
  response_fn_3  2.5277213508e-02  6.5559435715e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5278618986e-02  6.5644379446e-03
+ response_fn_1  2.5278618986e-02  6.5644379448e-03
  response_fn_2  1.2903869608e-01  1.3492061881e-02
  response_fn_3  2.5278618986e-02  6.5644379446e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5278637357e-02  6.5657514204e-03
+ response_fn_1  2.5278637357e-02  6.5657514206e-03
  response_fn_2  1.2904164219e-01  1.3470459654e-02
- response_fn_3  2.5278637357e-02  6.5657514204e-03
+ response_fn_3  2.5278637357e-02  6.5657514205e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5278015193e-02  6.5642884638e-03
+ response_fn_1  2.5278015193e-02  6.5642884639e-03
  response_fn_2  1.2904129757e-01  1.3468414816e-02
  response_fn_3  2.5278015193e-02  6.5642884638e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5277457801e-02  6.5653339314e-03
+ response_fn_1  2.5277457801e-02  6.5653339316e-03
  response_fn_2  1.2904074797e-01  1.3469545724e-02
  response_fn_3  2.5277457801e-02  6.5653339314e-03
 <<<<< Function evaluation summary: 6774 total (6774 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 7.8447802734e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5277457801e-02  6.5653339314e-03  7.2781074308e-01 -3.2856239644e-01
- response_fn_2  1.2904074797e-01  1.3469545724e-02  6.7864103543e-01 -6.9153602116e-01
+ response_fn_1  2.5277457801e-02  6.5653339316e-03  7.2781074302e-01 -3.2856239651e-01
+ response_fn_2  1.2904074797e-01  1.3469545724e-02  6.7864103542e-01 -6.9153602117e-01
  response_fn_3  2.5277457801e-02  6.5653339314e-03  7.2781074308e-01 -3.2856239639e-01
 Test Number 12 succeeded
 Moment statistics for each response function:
@@ -527,80 +527,80 @@ Moment statistics for each response function:
  response_fn_3  1.2026632271e-04  5.4083948115e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -3.3405075298e-07  5.3171675948e-05
- response_fn_2  1.3028134222e-04  1.0600895731e-03
- response_fn_3 -3.3405075245e-07  5.3171675949e-05
+ response_fn_1 -3.3405075035e-07  5.3171675948e-05
+ response_fn_2  1.3028134222e-04  1.0600895730e-03
+ response_fn_3 -3.3405075230e-07  5.3171675950e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  5.3123956145e-07  3.5585089940e-06
- response_fn_2  9.8787923129e-07  5.0246852099e-06
- response_fn_3  5.3123949142e-07  3.5585078449e-06
+ response_fn_1  5.3123937867e-07  3.5585062862e-06
+ response_fn_2  9.8787921925e-07  5.0246851330e-06
+ response_fn_3  5.3123947605e-07  3.5585076312e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -7.6876376572e-09  2.2191617974e-08
- response_fn_2  7.0126642286e-07  1.9688106190e-06
- response_fn_3 -7.6872950896e-09  2.2190075173e-08
+ response_fn_1 -7.6868838348e-09  2.2188451581e-08
+ response_fn_2  7.0126663246e-07  1.9688115039e-06
+ response_fn_3 -7.6872497100e-09  2.2189870789e-08
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5265086680e-02  6.5314184552e-03
+ response_fn_1  2.5265086681e-02  6.5314184549e-03
  response_fn_2  1.2899330478e-01  1.3493062966e-02
  response_fn_3  2.5265086680e-02  6.5314184550e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5272346980e-02  6.5616669404e-03
+ response_fn_1  2.5272346980e-02  6.5616669402e-03
  response_fn_2  1.2901016851e-01  1.3494321847e-02
  response_fn_3  2.5272346980e-02  6.5616669402e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5267338834e-02  6.5572148794e-03
+ response_fn_1  2.5267338835e-02  6.5572148793e-03
  response_fn_2  1.2900825680e-01  1.3491029422e-02
  response_fn_3  2.5267338835e-02  6.5572148793e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5272384692e-02  6.5663113992e-03
+ response_fn_1  2.5272384693e-02  6.5663113990e-03
  response_fn_2  1.2904014642e-01  1.3554755285e-02
  response_fn_3  2.5272384692e-02  6.5663113990e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5267947238e-02  6.5646262739e-03
- response_fn_2  1.2905680632e-01  1.3558452699e-02
- response_fn_3  2.5267947238e-02  6.5646262738e-03
+ response_fn_1  2.5267947238e-02  6.5646262737e-03
+ response_fn_2  1.2905680632e-01  1.3558452698e-02
+ response_fn_3  2.5267947238e-02  6.5646262737e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5273584934e-02  6.5668398795e-03
+ response_fn_1  2.5273584935e-02  6.5668398794e-03
  response_fn_2  1.2905597801e-01  1.3589247186e-02
  response_fn_3  2.5273584935e-02  6.5668398794e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5256407483e-02  6.5302299920e-03
+ response_fn_1  2.5256407484e-02  6.5302299919e-03
  response_fn_2  1.2905890649e-01  1.3568840790e-02
  response_fn_3  2.5256407483e-02  6.5302299919e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5254658954e-02  6.5580708041e-03
+ response_fn_1  2.5254658954e-02  6.5580708039e-03
  response_fn_2  1.2905382278e-01  1.3570520055e-02
  response_fn_3  2.5254658954e-02  6.5580708040e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5264614824e-02  6.5496914553e-03
+ response_fn_1  2.5264614825e-02  6.5496914551e-03
  response_fn_2  1.2906123245e-01  1.3577914548e-02
  response_fn_3  2.5264614824e-02  6.5496914552e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5252479950e-02  6.5358305617e-03
+ response_fn_1  2.5252479950e-02  6.5358305615e-03
  response_fn_2  1.2904715340e-01  1.3564840184e-02
  response_fn_3  2.5252479950e-02  6.5358305615e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5255429000e-02  6.5436070867e-03
+ response_fn_1  2.5255429001e-02  6.5436070865e-03
  response_fn_2  1.2906075043e-01  1.3562071594e-02
  response_fn_3  2.5255429001e-02  6.5436070865e-03
 <<<<< Function evaluation summary: 2588 total (2588 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 8.4611328125e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5256620892e-02  6.5416422135e-03  7.0173123379e-01 -3.5138207279e-01
- response_fn_2  1.2907800170e-01  1.3543577952e-02  7.1033668606e-01 -5.9816842285e-01
+ response_fn_1  2.5256620892e-02  6.5416422134e-03  7.0173123380e-01 -3.5138207279e-01
+ response_fn_2  1.2907800170e-01  1.3543577952e-02  7.1033668608e-01 -5.9816842284e-01
  response_fn_3  2.5256620892e-02  6.5416422135e-03  7.0173123380e-01 -3.5138207279e-01
 Test Number 13 succeeded
 Moment statistics for each response function:
@@ -615,19 +615,19 @@ Moment statistics for each response function:
  response_fn_3  1.2612524278e-04  5.5350805016e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  7.8653004698e-07  4.9047580822e-05
- response_fn_2  1.3642137279e-04  1.0395676937e-03
- response_fn_3  7.8653004583e-07  4.9047580820e-05
+ response_fn_1  7.8653004608e-07  4.9047580817e-05
+ response_fn_2  1.3642137279e-04  1.0395676938e-03
+ response_fn_3  7.8653004578e-07  4.9047580820e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  5.3231831927e-07  5.5602268427e-06
- response_fn_2  6.8705672909e-06  8.6772117764e-05
- response_fn_3  5.3231831727e-07  5.5602268544e-06
+ response_fn_1  5.3231829531e-07  5.5602268734e-06
+ response_fn_2  6.8705672783e-06  8.6772117756e-05
+ response_fn_3  5.3231831624e-07  5.5602268557e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.0232257780e-07  3.2793579983e-06
- response_fn_2  4.9052224070e-07  3.4532574542e-06
- response_fn_3  3.0232252491e-07  3.2793580879e-06
+ response_fn_1  3.0232259891e-07  3.2793580858e-06
+ response_fn_2  4.9052225084e-07  3.4532575025e-06
+ response_fn_3  3.0232252459e-07  3.2793580959e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5272581713e-02  6.5241900151e-03
@@ -635,7 +635,7 @@ Moment statistics for each response function:
  response_fn_3  2.5272581713e-02  6.5241900152e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5268364179e-02  6.5511734565e-03
+ response_fn_1  2.5268364179e-02  6.5511734564e-03
  response_fn_2  1.2904578927e-01  1.3450460449e-02
  response_fn_3  2.5268364179e-02  6.5511734566e-03
 Moment statistics for each response function:
@@ -647,7 +647,7 @@ Moment statistics for each response function:
 <<<<< Equivalent number of high fidelity evaluations: 4.6605761719e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5267235267e-02  6.5539393434e-03  6.7439622684e-01 -5.2052207866e-01
+ response_fn_1  2.5267235267e-02  6.5539393434e-03  6.7439622684e-01 -5.2052207864e-01
  response_fn_2  1.2901655065e-01  1.3431017861e-02  6.6662723361e-01 -7.5220040483e-01
  response_fn_3  2.5267235267e-02  6.5539393435e-03  6.7439622683e-01 -5.2052207866e-01
 Test Number 14 succeeded
@@ -663,19 +663,19 @@ Moment statistics for each response function:
  response_fn_3  1.2939802209e-04  5.5985502005e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -8.8332268800e-07  4.8844484791e-05
+ response_fn_1 -8.8332269365e-07  4.8844484793e-05
  response_fn_2  1.1644958052e-04  1.0703185197e-03
- response_fn_3 -8.8332269235e-07  4.8844484796e-05
+ response_fn_3 -8.8332269270e-07  4.8844484794e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  6.5857565112e-08  2.8993786505e-07
- response_fn_2  2.5900758378e-06  1.3027694613e-05
- response_fn_3  6.5857616056e-08  2.8993846503e-07
+ response_fn_1  6.5857562514e-08  2.8993784184e-07
+ response_fn_2  2.5900758353e-06  1.3027694585e-05
+ response_fn_3  6.5857616996e-08  2.8993847642e-07
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -2.4911425820e-09  0.0000000000e+00
- response_fn_2  2.9400753619e-07  1.4197543454e-07
- response_fn_3 -2.4911804205e-09  0.0000000000e+00
+ response_fn_1 -2.4909579872e-09  0.0000000000e+00
+ response_fn_2  2.9400760626e-07  1.4197549118e-07
+ response_fn_3 -2.4911675737e-09  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5263779359e-02  6.5602200311e-03
@@ -698,14 +698,14 @@ Moment statistics for each response function:
  response_fn_3  2.5252133625e-02  6.5638031085e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5251436378e-02  6.5658571731e-03
+ response_fn_1  2.5251436379e-02  6.5658571731e-03
  response_fn_2  1.2909674908e-01  1.3481058532e-02
  response_fn_3  2.5251436378e-02  6.5658571731e-03
 <<<<< Function evaluation summary: 2129 total (2129 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 8.7698486328e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5251670411e-02  6.5658667678e-03  7.0350467812e-01 -3.7268051580e-01
+ response_fn_1  2.5251670411e-02  6.5658667678e-03  7.0350467811e-01 -3.7268051580e-01
  response_fn_2  1.2909726775e-01  1.3481003434e-02  6.7336058819e-01 -7.0823719967e-01
  response_fn_3  2.5251670411e-02  6.5658667678e-03  7.0350467810e-01 -3.7268051582e-01
 Test Number 15 succeeded
@@ -721,79 +721,79 @@ Moment statistics for each response function:
  response_fn_3  1.2926799505e-04  5.5002654242e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -1.2655458356e-06  5.1234796089e-05
+ response_fn_1 -1.2655458338e-06  5.1234796091e-05
  response_fn_2  1.4496195718e-04  1.0294628464e-03
- response_fn_3 -1.2655458359e-06  5.1234796088e-05
+ response_fn_3 -1.2655458358e-06  5.1234796088e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -1.7629614166e-07  6.0845187993e-06
- response_fn_2  5.0472439495e-06  8.7007821353e-05
- response_fn_3 -1.7629613854e-07  6.0845188119e-06
+ response_fn_1 -1.7629615560e-07  6.0845188263e-06
+ response_fn_2  5.0472439422e-06  8.7007821356e-05
+ response_fn_3 -1.7629613953e-07  6.0845188133e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.3886381812e-07  5.8019134277e-06
- response_fn_2  4.6167208065e-07  5.5984364775e-06
- response_fn_3  3.3886389078e-07  5.8019133919e-06
+ response_fn_1  3.3886404163e-07  5.8019132977e-06
+ response_fn_2  4.6167219959e-07  5.5984364232e-06
+ response_fn_3  3.3886390562e-07  5.8019133869e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5262965476e-02  6.5403248603e-03
+ response_fn_1  2.5262965476e-02  6.5403248605e-03
  response_fn_2  1.2902644847e-01  1.3468687084e-02
  response_fn_3  2.5262965476e-02  6.5403248603e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5277213508e-02  6.5559435715e-03
+ response_fn_1  2.5277213508e-02  6.5559435716e-03
  response_fn_2  1.2902340926e-01  1.3480112408e-02
  response_fn_3  2.5277213508e-02  6.5559435715e-03
 <<<<< Function evaluation summary: 6774 total (6774 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 7.8447802734e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5277457801e-02  6.5653339314e-03  7.2781074308e-01 -3.2856239644e-01
- response_fn_2  1.2904074797e-01  1.3469545724e-02  6.7864103543e-01 -6.9153602116e-01
+ response_fn_1  2.5277457801e-02  6.5653339316e-03  7.2781074302e-01 -3.2856239651e-01
+ response_fn_2  1.2904074797e-01  1.3469545724e-02  6.7864103542e-01 -6.9153602117e-01
  response_fn_3  2.5277457801e-02  6.5653339314e-03  7.2781074308e-01 -3.2856239639e-01
 Test Number 16 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5172749931e-02  6.0915087100e-03
+ response_fn_1  2.5187614896e-02  6.0890030031e-03
  response_fn_2  1.2775241736e-01  1.9116664286e-02
- response_fn_3  2.5172647542e-02  6.0915993179e-03
+ response_fn_3  2.5186306721e-02  6.0884899183e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2596181047e-04  5.6605412752e-04
- response_fn_2  1.1456362456e-03  7.6427834660e-03
- response_fn_3  1.2596251484e-04  5.6605882376e-04
+ response_fn_1  1.2595209086e-04  5.6604361422e-04
+ response_fn_2  1.1480869873e-03  7.6425744743e-03
+ response_fn_3  1.2589461606e-04  5.6617243875e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -6.8253242613e-07  5.4644058416e-05
- response_fn_2  1.4056789496e-04  1.1052812008e-03
- response_fn_3 -6.8385919191e-07  5.4630805073e-05
+ response_fn_1 -6.8037014053e-07  5.4718781313e-05
+ response_fn_2  1.4054093163e-04  1.1052306798e-03
+ response_fn_3 -6.8435817278e-07  5.4632934209e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  8.7178651747e-08  3.8573694863e-06
- response_fn_2  5.7854265383e-06  1.0021765080e-04
- response_fn_3  8.7192133519e-08  3.8574033543e-06
+ response_fn_1  8.7224733724e-08  3.8574505976e-06
+ response_fn_2  5.7849805429e-06  1.0021685117e-04
+ response_fn_3  8.7159070560e-08  3.8574495724e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -1.6910177652e-09  3.7436670314e-08
- response_fn_2  2.4921200324e-07  3.0026937379e-06
- response_fn_3 -1.6911701113e-09  3.7436646937e-08
+ response_fn_1 -1.6912821157e-09  3.7436635451e-08
+ response_fn_2  2.4921190176e-07  3.0026937164e-06
+ response_fn_3 -1.6911841250e-09  3.7436645489e-08
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5298114696e-02  6.5607562547e-03
- response_fn_2  1.2904465613e-01  1.3483180140e-02
- response_fn_3  2.5298011699e-02  6.5608469628e-03
+ response_fn_1  2.5312972150e-02  6.5580013133e-03
+ response_fn_2  1.2904707947e-01  1.3484375213e-02
+ response_fn_3  2.5311602447e-02  6.5576090133e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5298011723e-02  6.5611717713e-03
- response_fn_2  1.2904424784e-01  1.3452832607e-02
- response_fn_3  2.5297910658e-02  6.5612623718e-03
+ response_fn_1  2.5312868546e-02  6.5584050617e-03
+ response_fn_2  1.2904666014e-01  1.3454055111e-02
+ response_fn_3  2.5311503174e-02  6.5580173431e-03
 <<<<< Function evaluation summary: 4330 total (4330 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 5.0780175781e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5298019588e-02  6.5611557618e-03  7.2483875459e-01 -3.0810903909e-01
- response_fn_2  1.2904445365e-01  1.3453657310e-02  6.7269558118e-01 -7.6116615985e-01
- response_fn_3  2.5297918313e-02  6.5612463119e-03  7.2485263406e-01 -3.0821488998e-01
+ response_fn_1  2.5312875643e-02  6.5583883493e-03  7.2353473843e-01 -2.9313003554e-01
+ response_fn_2  1.2904686149e-01  1.3454877410e-02  6.7266677026e-01 -7.6093853598e-01
+ response_fn_3  2.5311514488e-02  6.5580041030e-03  7.2663665352e-01 -3.0312294026e-01
 Test Number 17 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -802,58 +802,58 @@ Moment statistics for each response function:
  response_fn_3  2.5143596224e-02  6.1097580993e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2594543186e-04  5.7436195481e-04
- response_fn_2  1.1389069958e-03  7.6257858930e-03
- response_fn_3  1.2594549324e-04  5.7436200181e-04
+ response_fn_1  1.2594542697e-04  5.7436195064e-04
+ response_fn_2  1.1389069971e-03  7.6257858917e-03
+ response_fn_3  1.2594549399e-04  5.7436200236e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -5.0816875270e-07  5.7530711454e-05
- response_fn_2  1.4094579974e-04  1.0990194358e-03
- response_fn_3 -5.0816875446e-07  5.7530711452e-05
+ response_fn_1 -5.0816876111e-07  5.7530711461e-05
+ response_fn_2  1.4094520337e-04  1.0990224298e-03
+ response_fn_3 -5.0816875512e-07  5.7530711453e-05
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.0980709605e-07  3.7048408755e-06
- response_fn_2  1.8211266864e-06  8.2298200629e-05
- response_fn_3  1.0980714996e-07  3.7048409879e-06
+ response_fn_1  1.0980709103e-07  3.7048409065e-06
+ response_fn_2  1.8211266908e-06  8.2298200622e-05
+ response_fn_3  1.0980715061e-07  3.7048409911e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1 -1.5860534516e-09  4.2211673577e-08
- response_fn_2  3.5753609699e-07  3.4809938038e-06
- response_fn_3 -1.5860955167e-09  4.2211794869e-08
+ response_fn_1 -1.5858157816e-09  4.2212403812e-08
+ response_fn_2  3.5753615750e-07  3.4809935027e-06
+ response_fn_3 -1.5860802011e-09  4.2211831310e-08
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5269141708e-02  6.5865647738e-03
- response_fn_2  1.2903270478e-01  1.3502956204e-02
- response_fn_3  2.5269141769e-02  6.5865648417e-03
+ response_fn_1  2.5269141703e-02  6.5865647682e-03
+ response_fn_2  1.2903270419e-01  1.3502954274e-02
+ response_fn_3  2.5269141770e-02  6.5865648425e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5267948999e-02  6.5891586584e-03
- response_fn_2  1.2903489606e-01  1.3505037101e-02
- response_fn_3  2.5267949060e-02  6.5891587265e-03
+ response_fn_1  2.5267948994e-02  6.5891586529e-03
+ response_fn_2  1.2903489547e-01  1.3505035167e-02
+ response_fn_3  2.5267949061e-02  6.5891587273e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5270742616e-02  6.5940118570e-03
- response_fn_2  1.2903477765e-01  1.3505880843e-02
- response_fn_3  2.5270742677e-02  6.5940119247e-03
+ response_fn_1  2.5270742611e-02  6.5940118524e-03
+ response_fn_2  1.2903477705e-01  1.3505878916e-02
+ response_fn_3  2.5270742678e-02  6.5940119257e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5269422664e-02  6.5945120875e-03
- response_fn_2  1.2904839269e-01  1.3526925198e-02
- response_fn_3  2.5269422691e-02  6.5945121503e-03
+ response_fn_1  2.5269422684e-02  6.5945122722e-03
+ response_fn_2  1.2904839209e-01  1.3526923231e-02
+ response_fn_3  2.5269422582e-02  6.5945119792e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5269645469e-02  6.5959601417e-03
- response_fn_2  1.2904923567e-01  1.3527286387e-02
- response_fn_3  2.5269645495e-02  6.5959602046e-03
+ response_fn_1  2.5269645489e-02  6.5959603254e-03
+ response_fn_2  1.2904923507e-01  1.3527284415e-02
+ response_fn_3  2.5269645387e-02  6.5959600332e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5269329642e-02  6.5956389647e-03
- response_fn_2  1.2904128612e-01  1.3552869196e-02
- response_fn_3  2.5269329668e-02  6.5956390276e-03
+ response_fn_1  2.5269329662e-02  6.5956391485e-03
+ response_fn_2  1.2904128176e-01  1.3552875494e-02
+ response_fn_3  2.5269329559e-02  6.5956388561e-03
 <<<<< Function evaluation summary: 2249 total (2249 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 8.7727783203e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5269405295e-02  6.5960675269e-03  7.8256072127e-01 -1.3347627356e-01
- response_fn_2  1.2904380465e-01  1.3549955531e-02  7.2500867532e-01 -5.8353954769e-01
- response_fn_3  2.5269405321e-02  6.5960675898e-03  7.8256062965e-01 -1.3347647248e-01
+ response_fn_1  2.5269405315e-02  6.5960677106e-03  7.8256046089e-01 -1.3347684490e-01
+ response_fn_2  1.2904380029e-01  1.3549961839e-02  7.2501112428e-01 -5.8353822214e-01
+ response_fn_3  2.5269405212e-02  6.5960674183e-03  7.8256092441e-01 -1.3347584685e-01

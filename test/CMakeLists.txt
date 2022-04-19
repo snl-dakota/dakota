@@ -149,9 +149,9 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
   add_custom_target(dakota-diffs
     "${CMAKE_COMMAND}"
-      -D CMAKE_MODULE_PATH:STRING="${Dakota_SOURCE_DIR}/cmake/utilities"
+      -D CMAKE_MODULE_PATH:STRING="${Dakota_SOURCE_DIR}/cmake"
       -D Dakota_BINARY_DIR:FILEPATH="${Dakota_BINARY_DIR}"
-      -P "${Dakota_SOURCE_DIR}/cmake/utilities/DakotaConcatDiffs.cmake"
+      -P "${Dakota_SOURCE_DIR}/cmake/DakotaConcatDiffs.cmake"
     COMMENT "Concatenate all dakota_[p]diffs.out files from test/ subdirs."
     )
 
@@ -239,6 +239,7 @@ if(DAKOTA_PYTHON)
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sys_restart_neutral.py 
     $<TARGET_FILE:dakota> $<TARGET_FILE:dakota_restart_util>
     )
+  set_tests_properties(sys_restart_neutral PROPERTIES LABELS Unit )
 endif()
 
 # If needed, copy files from test/Debug or test/Release into test/.

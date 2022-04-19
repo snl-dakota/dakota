@@ -684,7 +684,7 @@ for the case that the field is a vector."""
         global baseline
         with h5py.File("dist_params.h5","r") as h:
             # contents of md are datasets named for variable types (continuous_design, etc)
-            md = h["models/simulation/NO_MODEL_ID/metadata/variable_parameters"]
+            md = h["models/simulation/NO_MODEL_ID/properties/variable_parameters"]
             for name, data in list(md.items()):
                 # iterate the fields (mean, std_deviation)
                 for f in data.dtype.names:

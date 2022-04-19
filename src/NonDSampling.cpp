@@ -59,9 +59,6 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // initialize finalStatistics using the default statistics set
-  initialize_final_statistics();
-
   if ( wilksFlag ) {
     // Only works with sample_type of random
     // BMA: consider relaxing, despite no theory
@@ -116,7 +113,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     of on-the-fly sample sets. */
 NonDSampling::
 NonDSampling(unsigned short method_name, Model& model,
-	     unsigned short sample_type, int samples, int seed,
+	     unsigned short sample_type, size_t samples, int seed,
 	     const String& rng, bool vary_pattern, short sampling_vars_mode):
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
@@ -149,7 +146,7 @@ NonDSampling(unsigned short method_name, Model& model,
 /** This alternate constructor is used by ConcurrentStrategy for
     generation of uniform, uncorrelated sample sets. */
 NonDSampling::
-NonDSampling(unsigned short sample_type, int samples, int seed,
+NonDSampling(unsigned short sample_type, size_t samples, int seed,
 	     const String& rng, const RealVector& lower_bnds,
 	     const RealVector& upper_bnds):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
@@ -174,7 +171,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 /** This alternate constructor is used by ConcurrentStrategy for
     generation of normal, correlated sample sets. */
 NonDSampling::
-NonDSampling(unsigned short sample_type, int samples, int seed,
+NonDSampling(unsigned short sample_type, size_t samples, int seed,
 	     const String& rng, const RealVector& means, 
              const RealVector& std_devs, const RealVector& lower_bnds,
 	     const RealVector& upper_bnds, RealSymMatrix& correl):
@@ -224,7 +221,7 @@ NonDSampling::~NonDSampling()
 
 void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf,
-		  RealMatrix& sample_matrix, int num_samples, bool x_to_u)
+		  RealMatrix& sample_matrix, size_t num_samples, bool x_to_u)
 {
   if (num_samples == 0)
     num_samples = sample_matrix.numCols();
@@ -246,10 +243,11 @@ transform_samples(Pecos::ProbabilityTransformation& nataf,
 }
 
 
-void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
-                                      RealMatrix& design_matrix, bool write_msg)
+void NonDSampling::
+get_parameter_sets(Model& model, const size_t num_samples,
+		   RealMatrix& design_matrix, bool write_msg)
 {
-  initialize_lhs(write_msg, num_samples);
+  initialize_sample_driver(write_msg, num_samples);
 
   // Invoke LHSDriver to generate samples within the specified distributions
 
@@ -358,7 +356,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
 void NonDSampling::
 get_parameter_sets(const RealVector& lower_bnds, const RealVector& upper_bnds)
 {
-  initialize_lhs(true, numSamples);
+  initialize_sample_driver(true, numSamples);
   RealSymMatrix correl; // uncorrelated
   lhsDriver.generate_uniform_samples(lower_bnds, upper_bnds, correl,
 				     numSamples, allSamples);
@@ -373,7 +371,7 @@ get_parameter_sets(const RealVector& means, const RealVector& std_devs,
                    const RealVector& lower_bnds, const RealVector& upper_bnds,
                    RealSymMatrix& correl)
 {
-  initialize_lhs(true, numSamples);
+  initialize_sample_driver(true, numSamples);
   lhsDriver.generate_normal_samples(means, std_devs, lower_bnds, upper_bnds,
 				    correl, numSamples, allSamples);
 }
@@ -796,14 +794,13 @@ mode_bits(const Variables& vars, BitArray& active_vars,
 }
 
 
-void NonDSampling::initialize_lhs(bool write_message, int num_samples)
+void NonDSampling::
+initialize_sample_driver(bool write_message, size_t num_samples)
 {
-  // keep track of number of LHS executions for this object
-  ++numLHSRuns;
-
-  //Cout << "numLHSRuns = " << numLHSRuns << " seedSpec = " << seedSpec
-  //     << " randomSeed = " << randomSeed << " varyPattern = " << varyPattern
-  //     << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout <<  "Initialize: numLHSRuns = " << numLHSRuns << " seedSpec = "
+	 << seedSpec << " randomSeed = " << randomSeed << " varyPattern = "
+	 << varyPattern << std::endl;
 
   // Set seed value for input to LHS's RNG: a user-specified seed gives
   // repeatable behavior but no specification gives random behavior based on
@@ -813,7 +810,7 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
   // vary from one run to the next in a repeatable manner (required for RNG
   // without a persistent state, such as rnum2).
   bool seed_assigned = false, seed_advanced = false;
-  if (numLHSRuns == 1) { // set initial seed
+  if (numLHSRuns == 0) { // set initial seed
     lhsDriver.rng(rngName);
     if (!seedSpec) { // no user specification --> nonrepeatable behavior
       // Generate initial seed from a system clock.  NOTE: the system clock
@@ -827,12 +824,13 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
       randomSeed = generate_system_seed();
     }
     lhsDriver.seed(randomSeed);  seed_assigned = true;
+    seed_advanced = seed_updated(); // track seedIndex for ensemble samplers
   }
   // We must distinguish two advancement use cases and allow them to co-exist:
   // > an update to NonDSampling::randomSeed due to random_seed_sequence spec
   // > an update to Pecos::LHSDriver::randomSeed using LHSDriver::
   //   advance_seed_sequence() in support of varyPattern for rnum2
-  else if (seedSpec && seedSpec != randomSeed) // random_seed_sequence advance
+  else if (seed_updated()) // random_seed_sequence advance
     { seedSpec = randomSeed; lhsDriver.seed(randomSeed); seed_assigned = true; }
   else if (varyPattern && rngName == "rnum2") // vary pattern by advancing seed
     { lhsDriver.advance_seed_sequence();                 seed_advanced = true; }
@@ -859,6 +857,7 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
   }
 
   lhsDriver.initialize(sample_string, sampleRanksMode, !subIteratorFlag);
+  ++numLHSRuns;
 }
 
 
@@ -1132,14 +1131,14 @@ compute_moments(const RealVectorArray& fn_samples, SizetArray& sample_counts,
   for (i=0; i<num_qoi; ++i) {
     size_t& num_samp = sample_counts[i];
     Real*  moments_i =  moment_stats[i];
-    accumulate_mean(fn_samples, i, num_samp, moments_i[0]);
+    Pecos::accumulate_mean(fn_samples, i, num_samp, moments_i[0]);
     if (num_samp != num_obs)
       Cerr << "Warning: sampling statistics for " << labels[i] << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
 
     if (num_samp)
-      accumulate_moments(fn_samples, i, moments_type, moments_i);
+      Pecos::accumulate_moments(fn_samples, i, moments_type, moments_i);
     else {
       Cerr << "Warning: Number of samples for " << labels[i]
 	   << " must be nonzero for moment calculation in NonDSampling::"
@@ -1169,14 +1168,14 @@ compute_moments(const RealVectorArray& fn_samples, RealMatrix& moment_stats,
   for (i=0; i<num_qoi; ++i) {
 
     Real* moments_i = moment_stats[i];
-    accumulate_mean(fn_samples, i, num_samp, moments_i[0]);
+    Pecos::accumulate_mean(fn_samples, i, num_samp, moments_i[0]);
     if (num_samp != num_obs)
       Cerr << "Warning: sampling statistics for quantity " << i+1 << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
 
     if (num_samp)
-      accumulate_moments(fn_samples, i, moments_type, moments_i);
+      Pecos::accumulate_moments(fn_samples, i, moments_type, moments_i);
     else {
       Cerr << "Warning: Number of samples for quantity " << i+1
 	   << " must be nonzero in NonDSampling::compute_moments().\n";
@@ -1216,7 +1215,7 @@ compute_moment_confidence_intervals(const RealMatrix& moment_stats,
       const Real* moment_i = moment_stats[i];
       Real*    moment_ci_i = moment_conf_ints[i];
       mean = moment_i[0];
-      if (moments_type == CENTRAL_MOMENTS)
+      if (moments_type == Pecos::CENTRAL_MOMENTS)
         { var = moment_i[1]; std_dev = std::sqrt(var); }
       else
         { std_dev = moment_i[1]; var = std_dev * std_dev; }
@@ -1238,7 +1237,7 @@ compute_moment_confidence_intervals(const RealMatrix& moment_stats,
 	Pecos::chi_squared_dist chisq(dof);
 	Real z_975 = bmth::quantile(chisq, 0.975),
 	     z_025 = bmth::quantile(chisq, 0.025);
-	if (moments_type == CENTRAL_MOMENTS) {
+	if (moments_type == Pecos::CENTRAL_MOMENTS) {
 	  moment_ci_i[2] = var*dof/z_975;
 	  moment_ci_i[3] = var*dof/z_025;
 	}
@@ -1267,16 +1266,22 @@ compute_moment_gradients(const RealVectorArray& fn_samples,
     num_deriv_vars = finalStatistics.active_set_derivative_vector().size();
   if (moment_grads.numRows() != num_deriv_vars ||
       moment_grads.numRows() != num_mom)
-    moment_grads.shape(num_deriv_vars, num_mom); // init to 0.
-  else
-    moment_grads = 0.;
+  //moment_grads.shape(num_deriv_vars, num_mom); // init to 0.
+    moment_grads.shapeUninitialized(num_deriv_vars, num_mom);
+  //else
+  //  moment_grads = 0.;
 
   for (q=0; q<numFunctions; ++q) {
     m1_index = 2*q; m2_index = m1_index + 1;
     // Compute moment_grads
-    accumulate_moment_gradients(fn_samples, grad_samples, q, moments_type,
-				moment_stats(0,q), moment_stats(1,q),
-				moment_grads[m1_index], moment_grads[m2_index]);
+    if (std::min(fn_samples.size(), grad_samples.size()) == 0) {
+      Cerr << "Error: empty samples array in NonDSampling::"
+	   << "compute_moment_gradients()" << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    Pecos::accumulate_moment_gradients(fn_samples, grad_samples, q,
+      moments_type, moment_stats(0,q), moment_stats(1,q),
+      moment_grads[m1_index], moment_grads[m2_index]);
     // Assign moment_grads into finalStatistics (could do this in one step,
     // but retain API of moment_stats and moment_grads as their own matrices).
     // > NonDExpansion and NonDLocalReliability do not store moment grads as
@@ -1303,137 +1308,6 @@ compute_moment_gradients(const RealVectorArray& fn_samples,
 
 
 void NonDSampling::
-accumulate_mean(const RealVectorArray& fn_samples, size_t q, size_t& num_samp,
-		Real& mean)
-{
-  num_samp = 0;
-  Real sum = 0., sample;
-  size_t s, num_obs = fn_samples.size();
-  for (s=0; s<num_obs; ++s) {
-    sample = fn_samples[s][q];
-    if (std::isfinite(sample)) { // neither NaN nor +/-Inf
-      sum += sample;
-      ++num_samp;
-    }
-  }
-
-  if (num_samp)
-    mean = sum / (Real)num_samp;
-}
-
-
-void NonDSampling::
-accumulate_moments(const RealVectorArray& fn_samples, size_t q,
-		   short moments_type, Real* moments)
-{
-  // accumulate central moments (e.g., variance)
-  size_t s, num_obs = fn_samples.size(), num_samp = 0;
-  Real& mean = moments[0]; // already computed in accumulate_mean()
-  Real sample, centered_fn, pow_fn, sum2 = 0., sum3 = 0., sum4 = 0.;
-  for (s=0; s<num_obs; ++s) {
-    sample = fn_samples[s][q];
-    if (std::isfinite(sample)) { // neither NaN nor +/-Inf
-      pow_fn  = centered_fn = sample - mean;
-      pow_fn *= centered_fn; sum2 += pow_fn; // variance
-      pow_fn *= centered_fn; sum3 += pow_fn; // 3rd central moment
-      pow_fn *= centered_fn; sum4 += pow_fn; // 4th central moment
-      ++num_samp;
-    }
-  }
-  Real ns = (Real)num_samp, nm1 = ns - 1., nm2 = ns - 2., ns_sq = ns * ns;
-  // biased central moment estimators (bypass and use raw sums below):
-  //biased_cm2 = sum2 / ns; biased_cm3 = sum3 / ns; biased_cm4 = sum4 / ns;
-
-  // unbiased moment estimators (central and standardized):
-  bool central = (moments_type == CENTRAL_MOMENTS), pos_var = (sum2 > 0.);
-  Real cm2 = sum2 / nm1;
-  if (num_samp > 1 && pos_var)
-    moments[1] = (central) ? cm2 : std::sqrt(cm2); // unbiased central : std dev
-  else moments[1] = 0.;
-
-  if (num_samp > 2 && pos_var)
-    moments[2] = (central) ?
-      // unbiased central:
-      sum3 * ns / (nm1 * nm2) :
-      // unbiased standard: cm3 / sigma^3 = N / (nm1 nm2) sum3 / (cm2)^1.5
-      sum3 * ns / (nm1 * nm2 * std::pow(cm2, 1.5));
-  else moments[2] = 0.;
-
-  if (num_samp > 3 && pos_var)
-    moments[3] = (central) ?
-      // unbiased central (non-excess) from "Modeling with Data," Klemens 2009
-      // (Appendix M):  unbiased_cm4 =
-      // ( N^3 biased_cm4 / (N-1) - (6N - 9) unbiased_cm2^2 ) / (N^2 - 3N + 3)
-      //(ns * ns * sum4 / nm1 - (6.*ns - 9.) * cm2 * cm2) / (ns*(ns - 3.) + 3.) :
-      //[fm] above estimator is not unbiased since cm2 * cm2 is biased, unbiased correction:
-      (ns_sq * sum4 / nm1 - (6.*ns - 9.)*(ns_sq - ns)/(ns_sq - 2. * ns + 3) * cm2 * cm2) / ( (ns*(ns - 3.) + 3.) - ( (6.*ns - 9.)*(ns_sq - ns) )/( ns * (ns_sq - 2.*ns + 3) ) ) :
-      // unbiased standard (excess kurtosis) from Wikipedia ("Estimators of
-      // population kurtosis")
-      nm1 * ((ns + 1.) * ns * sum4 / (sum2*sum2) - 3.*nm1) / (nm2*(ns - 3.));
-  else moments[3] = (central) ? 0. : -3.;
-}
-
-
-void NonDSampling::
-accumulate_moment_gradients(const RealVectorArray& fn_samples,
-			    const RealMatrixArray& grad_samples, size_t q,
-			    short moments_type, Real mean, Real mom2,
-			    Real* mean_grad, Real* mom2_grad)
-{
-  size_t s, v, num_deriv_vars,
-    num_obs = std::min(fn_samples.size(), grad_samples.size());
-  if (num_obs)
-    num_deriv_vars = grad_samples[0].numRows(); // functionGradients = V x Q
-  else {
-    Cerr << "Error: emply samples array in NonDSampling::"
-	 << "accumulate_moment_gradients()" << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  //for (v=0; v<num_deriv_vars; ++v)
-  //  mean_grad[v] = mom2_grad[v] = 0.;
-
-  SizetArray num_samp(num_deriv_vars, 0);
-  for (s=0; s<num_obs; ++s) {
-    // manage faults hierarchically as in Pecos::SurrogateData::response_check()
-    Real fn = fn_samples[s][q];
-    if (std::isfinite(fn)) {          // neither NaN nor +/-Inf
-      const Real* grad = grad_samples[s][q];
-      for (v=0; v<num_deriv_vars; ++v)
-	if (std::isfinite(grad[v])) { // neither NaN nor +/-Inf
-	  mean_grad[v] += grad[v];
-	  mom2_grad[v] += fn * grad[v];
-	  ++num_samp[v];
-	}
-    }
-  }
-
-  Real ns, nm1; size_t nsv;
-  bool central_mom = (moments_type == CENTRAL_MOMENTS);
-  for (v=0; v<num_deriv_vars; ++v) {
-    nsv = num_samp[v];
-    if (nsv) {
-      ns = (Real)nsv;
-      // dMean/ds = E[dQ/ds] --> unbiased estimator 1/N Sum(dQ/ds)
-      mean_grad[v] /= ns;
-    }
-    if (nsv > 1) {
-      nm1 = ns - 1.;
-      // dVar/ds = 2 E[(Q - Mean)(dQ/ds - dMean/ds)] --> unbiased var estimator:
-      // = 2/(N-1) [ Sum(Q dQ/ds) - Mean Sum(dQ/ds) -
-      //             dMean/ds Sum(Q) + N Mean Mean/ds ]
-      // = 2/(N-1) [ Sum(Q dQ/ds) - Mean dMean/ds (N + N - N) ]
-      // = 2/(N-1) [ Sum(Q dQ/ds) - N Mean dMean/ds ]
-      // dVar/ds = 2 Sigma dSigma/ds -->
-      // dSigma/ds = [ Sum(Q dQ/ds) - N Mean dMean/ds ] / (Sigma (N-1))
-      mom2_grad[v]  = (central_mom) ?
-	2. * ( mom2_grad[v] - ns * mean * mean_grad[v] ) / nm1 :
-	     ( mom2_grad[v] - ns * mean * mean_grad[v] ) / (mom2 * nm1);
-    }
-  }
-}
-
-
-void NonDSampling::
 archive_moments(size_t inc_id)
 {
   if(!resultsDB.active()) return;
@@ -1442,7 +1316,7 @@ archive_moments(size_t inc_id)
 
   // archive the moments to results DB
   MetaDataType md_moments;
-  md_moments["Row Labels"] = (finalMomentsType == CENTRAL_MOMENTS) ?
+  md_moments["Row Labels"] = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
     make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral") :
     make_metadatavalue("Mean", "Standard Deviation", "Skewness", "Kurtosis");
   md_moments["Column Labels"] = make_metadatavalue(labels);
@@ -1457,7 +1331,7 @@ archive_moments(size_t inc_id)
   for(int i = 0; i < numFunctions; ++i) {
     location.back() = labels[i]; 
     DimScaleMap scales;
-    if(finalMomentsType == CENTRAL_MOMENTS)
+    if(finalMomentsType == Pecos::CENTRAL_MOMENTS)
       scales.emplace(0, 
                      StringScale("moments",
                      {"mean", "variance", "third_central", "fourth_central"},
@@ -1483,7 +1357,7 @@ archive_moment_confidence_intervals(size_t inc_id)
   const StringArray &labels = iteratedModel.response_labels();
   // archive the confidence intervals to results DB
   MetaDataType md;
-  md["Row Labels"] = (finalMomentsType == CENTRAL_MOMENTS) ?
+  md["Row Labels"] = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
     make_metadatavalue("LowerCI_Mean", "UpperCI_Mean",
 		       "LowerCI_Variance", "UpperCI_Variance") :
     make_metadatavalue("LowerCI_Mean", "UpperCI_Mean",
@@ -1495,7 +1369,7 @@ archive_moment_confidence_intervals(size_t inc_id)
   // and lower and upper bounds on the 2nd dimension
   DimScaleMap scales;
   scales.emplace(0, StringScale("bounds", {"lower", "upper"})); 
-  if(finalMomentsType == CENTRAL_MOMENTS)
+  if(finalMomentsType == Pecos::CENTRAL_MOMENTS)
     scales.emplace(1, StringScale("moments", {"mean", "variance"})); 
   else
     scales.emplace(1, StringScale("moments", {"mean", "std_deviation"})); 
@@ -1697,7 +1571,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   IntRespMCIter s_it; std::multiset<Real>::iterator ss_it;
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   bool extrapolated_mappings = false,
-    central_mom = (finalMomentsType == CENTRAL_MOMENTS);
+    central_mom = (finalMomentsType == Pecos::CENTRAL_MOMENTS);
   size_t cntr = 0,
     num_deriv_vars = finalStatistics.active_set_derivative_vector().size(),
     moment_offset = (finalMomentsType) ? 2 : 0;
@@ -1852,7 +1726,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     }
     if (bl_len) {
       Real mean  = momentStats(0,i);
-      Real stdev = (finalMomentsType == CENTRAL_MOMENTS) ?
+      Real stdev = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
 	std::sqrt(momentStats(1,i)) : momentStats(1,i);
       if (!momentGrads.empty()) {
 	int i2 = 2*i;
@@ -1969,7 +1843,7 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
   s << "\nSample moment statistics for each " << qoi_type << ":\n"
     << std::scientific << std::setprecision(write_precision)
     << std::setw(width+15) << "Mean";
-  if (moments_type == CENTRAL_MOMENTS)
+  if (moments_type == Pecos::CENTRAL_MOMENTS)
     s << std::setw(width+1) << "Variance" << std::setw(width+1) << "3rdCentral"
       << std::setw(width+2) << "4thCentral\n";
   else
@@ -1988,7 +1862,7 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
     s << "\n95% confidence intervals for each " << qoi_type << ":\n"
       << std::setw(width+15) << "LowerCI_Mean" << std::setw(width+1)
       << "UpperCI_Mean" << std::setw(width+1);
-    if (moments_type == CENTRAL_MOMENTS)
+    if (moments_type == Pecos::CENTRAL_MOMENTS)
       s << "LowerCI_Variance" << std::setw(width+2) << "UpperCI_Variance\n";
     else
       s << "LowerCI_StdDev"   << std::setw(width+2) << "UpperCI_StdDev\n";

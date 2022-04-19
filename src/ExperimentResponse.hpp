@@ -123,10 +123,7 @@ inline ExperimentResponse::~ExperimentResponse()
 } // namespace Dakota
 
 
-// Since we may serialize this class through a temporary, force
-// serialization mode and no tracking
-BOOST_CLASS_IMPLEMENTATION(Dakota::ExperimentResponse, 
-			   boost::serialization::object_serializable)
+// Since we may serialize this class through a temporary, disallow tracking
 BOOST_CLASS_TRACKING(Dakota::ExperimentResponse, 
 		     boost::serialization::track_never)
 

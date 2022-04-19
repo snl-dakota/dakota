@@ -243,6 +243,8 @@ public:
 
   // Field Data specification
 
+  /// path to prepend to any data file names
+  String dataPathPrefix;
   /// number of entries in each field
   IntVector fieldLengths;
   /// number of coordinates per field
@@ -252,6 +254,9 @@ public:
    /// Array which specifies the sigma type per response (none, one 
   /// constant value, one per response (vector) or a full covariance matrix
   StringArray varianceType; 
+
+  /// descriptors for each metadata field
+  StringArray metadataLabels;
 
 private:
 

@@ -1,0 +1,120 @@
+#@ s*: TimeoutAbsolute=36000
+#@ s*: TimeoutDelay=36000
+
+environment
+	output_precision = 16
+
+method,
+	model_pointer = 'NONHIER'
+	multifidelity_sampling
+	  max_function_evaluations = 100	#s0
+#	  max_function_evaluations = 250	#s1
+#	  max_function_evaluations = 500	#s2
+#	  max_function_evaluations = 1000	#s3
+#	  max_function_evaluations = 2500	#s4
+#	  max_function_evaluations = 5000	#s5
+#	  max_function_evaluations = 10000	#s6
+#	  pilot_samples =   5
+	  pilot_samples =  10
+#	  pilot_samples =  25
+#	  pilot_samples =  50
+#	  pilot_samples = 100
+	  seed = 8674132
+#	  convergence_tolerance = .1
+	output silent
+
+model,
+	id_model = 'NONHIER'
+	variables_pointer = 'HF_VARS'
+	surrogate model_ensemble #non_hierarchical
+	  truth_model = 'HF'
+	  unordered_model_fidelities = 'LF' 'MF'
+
+model,
+	id_model = 'LF'
+	variables_pointer = 'LF_VARS'
+	interface_pointer = 'LF_INT'
+	simulation
+#	  solution_level_control = 'ModelForm'
+	  solution_level_cost = 0.01 # w = 10 case
+
+model,
+	id_model = 'MF'
+	variables_pointer = 'MF_VARS'
+	interface_pointer = 'MF_INT'
+	simulation
+#	  solution_level_control = 'ModelForm'
+	  solution_level_cost = 0.1 # w = 10 case
+
+model,
+	id_model = 'HF'
+	variables_pointer = 'HF_VARS'
+	interface_pointer = 'HF_INT'
+	simulation
+#	  solution_level_control = 'ModelForm'
+	  solution_level_cost = 1.
+
+variables,
+	id_variables = 'LF_VARS'
+	uniform_uncertain = 2
+	  lower_bounds    = 2*-1.
+	  upper_bounds    = 2* 1.
+     	  descriptors     = 'x' 'y'
+	continuous_state  = 1
+	  initial_state   = 0.5235987755983 # pi/6
+     	  descriptors     = 'theta'
+	discrete_state_set integer = 1
+	  initial_state = 2
+	  set_values    = 2
+     	  descriptors   = 'ModelForm'
+
+variables,
+	id_variables = 'MF_VARS'
+	uniform_uncertain = 2
+	  lower_bounds    = 2*-1.
+	  upper_bounds    = 2* 1.
+     	  descriptors     = 'x' 'y'
+	continuous_state  = 1
+	  initial_state   = 1.0471975511966 # pi/3
+     	  descriptors     = 'theta'
+	discrete_state_set integer = 1
+	  initial_state = 1
+	  set_values    = 1
+     	  descriptors   = 'ModelForm'
+
+variables,
+	id_variables = 'HF_VARS'
+	uniform_uncertain = 2
+	  lower_bounds    = 2*-1.
+	  upper_bounds    = 2* 1.
+     	  descriptors     = 'x' 'y'
+	continuous_state  = 1
+	  initial_state   = 1.5707963267949 # pi/2
+     	  descriptors     = 'theta'
+	discrete_state_set integer = 1
+	  initial_state = 0
+	  set_values    = 0
+     	  descriptors   = 'ModelForm'
+
+interface,
+	id_interface = 'LF_INT'
+	direct
+	  analysis_driver = 'tunable_model'
+	  deactivate evaluation_cache restart_file
+
+interface,
+	id_interface = 'MF_INT'
+	direct
+	  analysis_driver = 'tunable_model'
+	  deactivate evaluation_cache restart_file
+
+interface,
+	id_interface = 'HF_INT'
+	direct
+	  analysis_driver = 'tunable_model'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	response_functions = 1
+	no_gradients
+	no_hessians

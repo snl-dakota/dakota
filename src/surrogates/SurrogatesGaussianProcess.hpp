@@ -401,6 +401,18 @@ class GaussianProcess : public Surrogate {
   /// Flag for recomputation of the best Cholesky factorization.
   bool hasBestCholFact;
 
+  /// Gram matrix for the prediction points.
+  MatrixXd predGramMatrix;
+
+  /// Gram matrix for the mixed prediction/build points.
+  MatrixXd predMixedGramMatrix;
+
+  /// Covariance matrix for the prediction points.
+  MatrixXd predCovariance;
+
+  /// Polynomial basis matrix for the prediction points.
+  MatrixXd predBasisMatrix;
+
   /// PolynomialRegression for trend function.
   std::shared_ptr<PolynomialRegression> polyRegression;
 

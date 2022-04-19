@@ -1468,12 +1468,19 @@ themselves, cannot. For these reasons, nongradient-based methods
 deserve consideration when the problem may be nonsmooth, multimodal,
 or poorly behaved.
 
-{\bf Surrogate-based Methods} \\ Approaches that seek to improve the
-effectiveness or efficiency of optimizers and least squares methods
-through the use of surrogate models include the surrogate-based local,
-surrogate-based global, and efficient global
-methods. Section~\ref{adv_meth:sbm} provides further information on
-these approaches. The surrogate-based local approach (see
+{\bf Surrogate-based Methods} \\
+The effectiveness or efficiency of optimization (and calibration)
+methods can often be improved through the use of surrogate models.
+Any Dakota optimization method can be used with a (build-once) global
+surrogate by specifying the \dakotakw{id_model} of a global surrogate
+model with the optimizer's \dakotakw{model_pointer} keyword. This
+approach can be used with surrogates trained from (static) imported
+data or trained online using a Dakota design of experiments.
+
+When online query of the underlying truth model at new design values
+is possible, tailored/adaptive surrogate-based methods may perform
+better as they refine the surrogate as the optimization progresses.
+The surrogate-based local approach (see
 Section~\ref{adv_meth:sbm:sblm}) brings the efficiency of
 gradient-based optimization/least squares methods to nonsmooth or
 poorly behaved problems by smoothing noisy or discontinuous response

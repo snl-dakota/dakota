@@ -245,13 +245,15 @@ protected:
 
   /// set key in subModel
   void active_model_key(const Pecos::ActiveKey& key);
+  /// return key from subModel
+  const Pecos::ActiveKey& active_model_key() const;
   /// remove keys in subModel
   void clear_model_keys();
 
   /// return surrogate model, if present, within subModel
-  Model& surrogate_model();
+  Model& surrogate_model(size_t i = _NPOS);
   /// return surrogate model, if present, within subModel
-  const Model& surrogate_model() const;
+  const Model& surrogate_model(size_t i = _NPOS) const;
 
   /// return truth model, if present, within subModel
   Model& truth_model();
@@ -298,6 +300,8 @@ protected:
   short correction_type();
   /// update subModel's correction type
   void correction_type(short corr_type);
+  /// retrieve subModel's correction order
+  short correction_order();
 
   /// retrieve error estimates corresponding to the subModel
   const RealVector& error_estimates();
@@ -435,6 +439,9 @@ protected:
   /// transformation functions
   virtual void assign_instance();
 
+  /// default clear metadata in Recasts; derived classes can override to no-op
+  virtual void init_metadata();
+
   //
   //- Heading: Member functions
   //
@@ -468,11 +475,28 @@ protected:
   /// update current variables/bounds/labels/constraints from subModel
   void update_from_model(Model& model);
   /// update active variables/bounds/labels from subModel
-  bool update_variables_from_model(Model& model);
+  virtual bool update_variables_from_model(Model& model);
+  /// update all variable values from passed sub-model
+  void update_variable_values(const Model& model);
+  /// update discrete variable values from passed sub-model
+  void update_discrete_variable_values(const Model& model);
+  /// update all variable bounds from passed sub-model
+  void update_variable_bounds(const Model& model);
+  /// update discrete variable bounds from passed sub-model
+  void update_discrete_variable_bounds(const Model& model);
+  /// update all variable labels from passed sub-model
+  void update_variable_labels(const Model& model);
+  /// update discrete variable labels from passed sub-model
+  void update_discrete_variable_labels(const Model& model);
+  /// update linear constraints from passed sub-model
+  void update_linear_constraints(const Model& model);
   /// update complement of active variables/bounds/labels from subModel
   void update_variables_active_complement_from_model(Model& model);
-  /// update nonlinear constraint bounds/targets from subModel
+  /// update labels and nonlinear constraint bounds/targets from subModel
   void update_response_from_model(Model& model);
+  /// update just secondary response from subModel
+  void update_secondary_response(const Model& model);
+
 
   //
   //- Heading: Data members
@@ -713,16 +737,20 @@ inline void RecastModel::active_model_key(const Pecos::ActiveKey& key)
 { subModel.active_model_key(key); }
 
 
+inline const Pecos::ActiveKey& RecastModel::active_model_key() const
+{ return subModel.active_model_key(); }
+
+
 inline void RecastModel::clear_model_keys()
 { subModel.clear_model_keys(); }
 
 
-inline Model& RecastModel::surrogate_model()
-{ return subModel.surrogate_model(); }
+inline Model& RecastModel::surrogate_model(size_t i)
+{ return subModel.surrogate_model(i); }
 
 
-inline const Model& RecastModel::surrogate_model() const
-{ return subModel.surrogate_model(); }
+inline const Model& RecastModel::surrogate_model(size_t i) const
+{ return subModel.surrogate_model(i); }
 
 
 inline Model& RecastModel::truth_model()
@@ -836,6 +864,10 @@ inline short RecastModel::correction_type()
 
 inline void RecastModel::correction_type(short corr_type)
 { subModel.correction_type(corr_type); }
+
+
+inline short RecastModel::correction_order()
+{ return subModel.correction_order(); }
 
 
 inline void RecastModel::build_approximation()

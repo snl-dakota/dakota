@@ -234,7 +234,7 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
     number of points needed from the sparse grid routine in order to
     build a particular global approximation. */
 void NonDSparseGrid::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   // Determine minimum sparse grid level that provides at least min_samples
   //  

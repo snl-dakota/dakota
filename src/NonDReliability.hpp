@@ -73,8 +73,9 @@ protected:
   /// Iterator which optimizes the mppModel
   Iterator mppOptimizer;
 
-  /// the MPP search type selection: MV, x/u-space AMV, x/u-space AMV+,
-  /// x/u-space TANA, x/u-space EGO, or NO_APPROX
+  /// the MPP search type selection:
+  /// Local: MV, x/u-space {AMV,AMV+,TANA,QMEA} or NO_APPROX
+  /// Global x/u-space EGRA
   unsigned short mppSearchType;
 
   /// importance sampling instance used to compute/refine probabilities

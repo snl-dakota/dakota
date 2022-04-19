@@ -33,32 +33,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDHierarchSampling::
 NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
-  NonDSampling(problem_db, model),
-  pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
-  randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
-  mlmfIter(0),
-  exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
-  exportSamplesFormat(
-    problem_db.get_ushort("method.nond.export_samples_format"))
+  NonDEnsembleSampling(problem_db, model)
 {
-  // initialize scalars from sequence
-  seedSpec = randomSeed = random_seed(0);
-
-  // Support multilevel LHS as a specification override.  The estimator variance
-  // is known/correct for MC and an assumption/approximation for LHS.  To get an
-  // accurate LHS estimator variance, one would need:
-  // (a) assumptions about separability -> analytic variance reduction by a
-  //     constant factor
-  // (b) similarly, assumptions about the form relative to MC (e.g., a constant
-  //     factor largely cancels out within the relative sample allocation.)
-  // (c) numerically-generated estimator variance (from, e.g., replicated LHS)
-  if (!sampleType) // SUBMETHOD_DEFAULT
-    sampleType = SUBMETHOD_RANDOM;
-
-  // method-specific default: don't let allocator get stuck in fine-tuning
-  if (maxIterations == SZ_MAX) maxIterations = 25;
-  //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // inf is good
-
   // ensure iteratedModel is a hierarchical surrogate model and set initial
   // response mode (for set_communicators() which precedes core_run()).
   // Note: even though the hierarchy may be multilevel | multifidelity | both,
@@ -73,26 +49,32 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  size_t i, j, num_mf = ordered_models.size(), num_lev, prev_lev = SZ_MAX,
-    pilot_size = pilotSamples.size();
-  ModelLRevIter ml_rit; bool err_flag = false;
+  size_t i, num_mf = ordered_models.size(), num_lev, prev_lev = SZ_MAX,
+    md_index, num_md;
+  ModelLRevIter ml_rit;
+  bool err_flag = false, mlmf = (methodName==MULTILEVEL_MULTIFIDELITY_SAMPLING);
   NLev.resize(num_mf);
+  costMetadataIndices.resize(num_mf);
   for (i=num_mf-1, ml_rit=ordered_models.rbegin();
        ml_rit!=ordered_models.rend(); --i, ++ml_rit) { // high fid to low fid
     // for now, only SimulationModel supports solution_{levels,costs}()
-    num_lev = ml_rit->solution_levels(); // lower bound is 1 soln level
+    num_lev  = ml_rit->solution_levels(); // lower bound is 1 soln level
+    // Note: for ML and MLCV, metadata indices only vary per model form
+    md_index = ml_rit->cost_metadata_index();
+    num_md   = ml_rit->current_response().metadata().size();
 
-    if (num_lev > prev_lev) {
-      Cerr << "\nWarning: unused solution levels in multilevel sampling for "
-	   << "model " << ml_rit->model_id() << ".\n         Ignoring "
-	   << num_lev - prev_lev << " of " << num_lev << " levels."<< std::endl;
+    if (mlmf && num_lev > prev_lev) {
+      Cerr << "\nWarning: unused solution levels in multilevel-multifidelity "
+	   << "sampling for model " << ml_rit->model_id() << ".\n         "
+	   << "Ignoring " << num_lev - prev_lev << " of " << num_lev
+	   << " levels." << std::endl;
       num_lev = prev_lev;
     }
 
     // Ensure there is consistent cost data available as SimulationModel must
     // be allowed to have empty solnCntlCostMap (when optional solution control
     // is not specified).  Passing false bypasses lower bound of 1.
-    if (num_lev > ml_rit->solution_levels(false)) { // default is 0 soln costs
+    if (md_index == SZ_MAX && num_lev > ml_rit->solution_levels(false)) {
       Cerr << "Error: insufficient cost data provided for multilevel sampling."
 	   << "\n       Please provide solution_level_cost estimates for model "
 	   << ml_rit->model_id() << '.' << std::endl;
@@ -103,26 +85,24 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
     NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
     //for (j=0; j<num_lev; ++j)
     //  Nl_i[j].resize(numFunctions); // defer to pre_run()
-
+    costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
     prev_lev = num_lev;
   }
   if (err_flag)
     abort_handler(METHOD_ERROR);
 
+  pilotSamples = problem_db.get_sza("method.nond.pilot_samples");
   if ( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples),
 		     [](int i){ return i > 0; }) ) {
     Cerr << "\nError: Some levels have pilot samples of size 0 in "
        << method_enum_to_string(methodName) << '.' << std::endl;
     abort_handler(METHOD_ERROR);
   }
-
-  switch (pilot_size) {
-    case 0: maxEvalConcurrency *= 100;             break;
-  //case 1: maxEvalConcurrency *= pilotSamples[0]; break;
+  switch (pilotSamples.size()) {
+    case 0:  maxEvalConcurrency *= 100;  break;
     default: {
       size_t max_ps = find_max(pilotSamples);
-      if (max_ps)
-        maxEvalConcurrency *= max_ps;
+      if (max_ps) maxEvalConcurrency *= max_ps;
       break;
     }
   }
@@ -133,15 +113,58 @@ NonDHierarchSampling::~NonDHierarchSampling()
 { }
 
 
-bool NonDHierarchSampling::resize()
+void NonDHierarchSampling::
+accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
+			      size_t step)
 {
-  bool parent_reinit_comms = NonDSampling::resize();
+  // This implementation is for singleton or paired responses, not for
+  // aggregation of a full Model ensemble
 
-  Cerr << "\nError: Resizing is not yet supported in method "
-       << method_enum_to_string(methodName) << "." << std::endl;
-  abort_handler(METHOD_ERROR);
+  // for ML and MLCV, accumulation can span two calls --> init outside
 
-  return parent_reinit_comms;
+  const Pecos::ActiveKey& key = iteratedModel.active_model_key();
+  unsigned short hf_form = key.retrieve_model_form(0),
+    lf_form = (key.data_size() > 1) ? key.retrieve_model_form(1) : USHRT_MAX;
+  size_t hf_form_index = (hf_form == USHRT_MAX) ? 0 : (size_t)hf_form;
+  // costMetadataIndices follows ordered models
+  const SizetSizetPair& hf_cost_mdi = costMetadataIndices[hf_form_index];
+  size_t hf_md_index = hf_cost_mdi.first, hf_md_len = hf_cost_mdi.second,
+    prev_step = (step) ? step - 1 : SZ_MAX, lf_md_index;
+  if (prev_step != SZ_MAX) {
+    size_t lf_form_index = (lf_form == USHRT_MAX) ? 0 : (size_t)lf_form;
+    lf_md_index = costMetadataIndices[lf_form_index].first;
+  }
+
+  using std::isfinite;
+  Real cost;
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+  IntRespMCIter r_cit;
+  for (r_cit=allResponses.begin(); r_cit!=allResponses.end(); ++r_cit) {
+    const std::vector<RespMetadataT>& md = r_cit->second.metadata();//aggregated
+
+    // response metadata is paired {HF,LF} as for fn data
+    cost = md[hf_md_index]; // offset by metadata index
+    if (isfinite(cost)) {
+      accum_cost[step] += cost;
+      ++num_cost[step];
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Metadata:\n" << md << "HF cost: accum_cost = "
+	     << accum_cost[step] << " num_cost = " << num_cost[step]<<std::endl;
+    }
+
+    if (prev_step != SZ_MAX) {
+      cost = md[hf_md_len + lf_md_index]; // offset by metadata index
+      if (isfinite(cost)) {
+	accum_cost[prev_step] += cost;
+	++num_cost[prev_step];
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "LF cost: accum_cost = " << accum_cost[prev_step]
+	       << " num_cost = " << num_cost[prev_step] << std::endl;
+      }
+    }
+  }
+  // averaging is deferred until average_online_cost()
 }
 
 
@@ -164,153 +187,5 @@ void NonDHierarchSampling::core_run()
   // could pair models for CVMC based on estimation of rho2_LH.
 }
 */
-
-
-void NonDHierarchSampling::
-configure_indices(unsigned short group, unsigned short form,
-		  size_t lev, short seq_type)
-{
-  // Notes:
-  // > could consolidate with NonDExpansion::configure_indices() with a passed
-  //   model and virtual *_mode() assignments.  Leaving separate for now...
-  // > group index is assigned based on step in model form/resolution sequence
-  // > CVMC does not use this helper; it requires uncorrected_surrogate_mode()
-
-  Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, lev);
-
-  if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
-       (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0)) {
-    // step 0 in the sequence
-    bypass_surrogate_mode();
-    iteratedModel.active_model_key(hf_key);      // one active fidelity
-  }
-  else {
-    aggregated_models_mode();
-
-    Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
-    lf_key.decrement_key(seq_type); // seq_index defaults to 0
-    // For MLMC/MFMC/MLMFMC, we aggregate levels but don't reduce them
-    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
-    iteratedModel.active_model_key(discrep_key); // two active fidelities
-  }
-}
-
-
-void NonDHierarchSampling::assign_specification_sequence(size_t index)
-{
-  // Note: seedSpec/randomSeed initialized from randomSeedSeqSpec in ctor
-
-  // advance any sequence specifications, as admissible
-  // Note: no colloc pts sequence as load_pilot_sample() handles this separately
-  int seed_i = random_seed(index);
-  if (seed_i) randomSeed = seed_i;// propagate to NonDSampling::initialize_lhs()
-  // else previous value will allow existing RNG to continue for varyPattern
-}
-
-
-void NonDHierarchSampling::
-convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom)
-{
-  // Note: raw_mom is numFunctions x 4 and final_mom is the transpose
-  if (final_mom.empty())
-    final_mom.shapeUninitialized(4, numFunctions);
-
-  // Convert uncentered raw moment estimates to central moments
-  if (finalMomentsType == CENTRAL_MOMENTS) {
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
-			     raw_mom(qoi,3), final_mom(0,qoi), final_mom(1,qoi),
-			     final_mom(2,qoi), final_mom(3,qoi));
-  }
-  // Convert uncentered raw moment estimates to standardized moments
-  else { //if (finalMomentsType == STANDARD_MOMENTS) {
-    Real cm1, cm2, cm3, cm4;
-    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
-			     raw_mom(qoi,3), cm1, cm2, cm3, cm4);
-      centered_to_standard(cm1, cm2, cm3, cm4, final_mom(0,qoi),
-			   final_mom(1,qoi), final_mom(2,qoi),
-			   final_mom(3,qoi));
-    }
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      Cout <<  "raw mom 1 = "   << raw_mom(qoi,0)
-	   << " final mom 1 = " << final_mom(0,qoi) << '\n'
-	   <<  "raw mom 2 = "   << raw_mom(qoi,1)
-	   << " final mom 2 = " << final_mom(1,qoi) << '\n'
-	   <<  "raw mom 3 = "   << raw_mom(qoi,2)
-	   << " final mom 3 = " << final_mom(2,qoi) << '\n'
-	   <<  "raw mom 4 = "   << raw_mom(qoi,3)
-	   << " final mom 4 = " << final_mom(3,qoi) << "\n\n";
-}
-
-
-void NonDHierarchSampling::
-export_all_samples(String root_prepend, const Model& model, size_t iter,
-		   size_t step)
-{
-  String tabular_filename(root_prepend);
-  const String& iface_id = model.interface_id();
-  size_t i, num_samp = allSamples.numCols();
-  if (iface_id.empty()) tabular_filename += "NO_ID_i";
-  else                  tabular_filename += iface_id + "_i";
-  tabular_filename += std::to_string(iter)     +  "_l"
-                   +  std::to_string(step)     +  '_'
-                   +  std::to_string(num_samp) + ".dat";
-  Variables vars(model.current_variables().copy());
-
-  String context_message("NonDHierarchSampling::export_all_samples");
-  StringArray no_resp_labels;
-  String cntr_label("sample_id"), interf_label("interface");
-
-  // Rather than hard override, rely on output_precision user spec
-  //int save_wp = write_precision;
-  //write_precision = 16; // override
-  std::ofstream tabular_stream;
-  TabularIO::open_file(tabular_stream, tabular_filename, context_message);
-  TabularIO::write_header_tabular(tabular_stream, vars, no_resp_labels,
-				  cntr_label, interf_label,exportSamplesFormat);
-  for (i=0; i<num_samp; ++i) {
-    sample_to_variables(allSamples[i], vars); // NonDSampling version
-    TabularIO::write_data_tabular(tabular_stream, vars, iface_id, i+1,
-				  exportSamplesFormat);
-  }
-
-  TabularIO::close_file(tabular_stream, tabular_filename, context_message);
-  //write_precision = save_wp; // restore
-}
-
-
-void NonDHierarchSampling::post_run(std::ostream& s)
-{
-  // Final moments are generated within core_run() by convert_moments().
-  // No addtional stats are currently supported.
-  //if (statsFlag) // calculate statistics on allResponses
-  //  compute_statistics(allSamples, allResponses);
-
-  // NonD::update_aleatory_final_statistics() pushes momentStats into
-  // finalStatistics
-  update_final_statistics();
-
-  Analyzer::post_run(s);
-}
-
-
-void NonDHierarchSampling::print_results(std::ostream& s, short results_state)
-{
-  if (statsFlag) {
-    print_multilevel_evaluation_summary(s, NLev);
-    s << "<<<<< Equivalent number of high fidelity evaluations: "
-      << equivHFEvals << "\n\nStatistics based on multilevel sample set:\n";
-
-  //print_statistics(s);
-    print_moments(s, "response function",
-		  iteratedModel.truth_model().response_labels());
-    archive_moments();
-    archive_equiv_hf_evals(equivHFEvals); 
-  }
-}
 
 } // namespace Dakota

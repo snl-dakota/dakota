@@ -28,8 +28,6 @@ static const char rcsId[]="@(#) $Id: DakotaOptimizer.cpp 7031 2010-10-22 16:23:5
 
 namespace Dakota {
 
-extern PRPCache data_pairs; // global container
-
 // initialization of static needed by RecastModel
 Optimizer* Optimizer::optimizerInstance(NULL);
 
@@ -84,9 +82,22 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
   bool have_lsq = (model.primary_fn_type() == CALIB_TERMS);
   if (methodName == OPTPP_NEWTON) { // || ...) {
     require_hessians = true;
-    if ( ( !have_lsq && iteratedModel.hessian_type()  == "none" ) ||
-	 (  have_lsq && iteratedModel.gradient_type() == "none" ) ) {
-      Cerr << "\nError: full Newton optimization requires objective Hessians."
+    if (have_lsq) {
+      if (iteratedModel.gradient_type() == "none" ) {
+        Cerr << "\nError: full Newton optimization of least-squares problem requires calibration term gradients."
+             << std::endl;
+        err_flag = true;
+      }
+      if (numNonlinearConstraints && ( iteratedModel.hessian_type()  == "none" )) {
+        Cerr << "\nError: full Newton optimization of least-squares problem with nonlinear constraints "
+             << "requires constraint Hessians.  Alternatively, consider using optpp_g_newton."
+             << std::endl;
+        err_flag = true;
+      }
+    }
+    else if (iteratedModel.hessian_type()  == "none") {
+      Cerr << "\nError: full Newton optimization requires objective Hessians. "
+           << "Alternatively, consider using optpp_q_newton."
 	   << std::endl;
       err_flag = true;
     }
@@ -210,7 +221,6 @@ void Optimizer::print_results(std::ostream& s, short results_state)
   const String& interface_id = orig_model.interface_id(); 
   // use asv = 1's
   ActiveSet search_set(orig_model.response_size(), numContinuousVars);
-  int eval_id;
   // -------------------------------------
   // Single and Multipoint results summary
   // -------------------------------------
@@ -267,26 +277,8 @@ void Optimizer::print_results(std::ostream& s, short results_state)
       write_data_partial(s, numUserPrimaryFns, numNonlinearConstraints, 
                          best_fns);
     } 
-    // lookup evaluation id where best occurred.  This cannot be catalogued
-    // directly because the optimizers track the best iterate internally and
-    // return the best results after iteration completion.  Therfore, perform a
-    // search in data_pairs to extract the evalId for the best fn eval.
-    PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
-                                           best_vars, search_set);
-    if (cache_it == data_pairs.get<hashed>().end()) {
-      s << "<<<<< Best data not found in evaluation cache\n\n";
-      eval_id = 0;
-    } else {
-      eval_id = cache_it->eval_id();
-      if (eval_id > 0) {
-	s << "<<<<< Best data captured at function evaluation " << eval_id
-	  << "\n\n";
-      } else {// should not occur
-	s << "<<<<< Best data not found in evaluations from current execution,"
-	  << "\n      but retrieved from restart archive with evaluation id "
-	  << -eval_id << "\n\n";
-      }
-    }
+
+    print_best_eval_ids(interface_id, best_vars, search_set, s);
   }
 }
 
@@ -435,6 +427,10 @@ primary_resp_reducer(const Variables& full_vars, const Variables& reduced_vars,
     objective_reduction(full_response, sub_model.primary_response_fn_sense(),
 			sub_model.primary_response_fn_weights(), 
 			reduced_response);
+  // This is a hack to re-inflate until we specialize this RecastModel
+  reduced_response.shared_data().metadata_labels
+    (full_response.shared_data().metadata_labels());
+  reduced_response.metadata(full_response.metadata());
 }
 
 
@@ -454,11 +450,9 @@ void Optimizer::objective_reduction(const Response& full_response,
     Cout << "Local single objective transformation:\n";
   // BMA TODO: review whether the model should provide all this information
   
-  Cout << "Responses:\n";
   for(int i = 0; i < full_response.function_values().length(); ++i)
     Cout <<  full_response.function_values()[i] << std::endl;
  
-  Cout << "Weights:\n";
   for(int i = 0; i < full_wts.length(); ++i)
     Cout << full_wts[i] << std::endl;
  

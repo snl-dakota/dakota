@@ -25,7 +25,7 @@ namespace Dakota {
 
 NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model),
-  mppSearchType(probDescDB.get_ushort("method.nond.reliability_search_type")),
+  mppSearchType(probDescDB.get_ushort("method.sub_method")),
   integrationRefinement(
     probDescDB.get_ushort("method.nond.integration_refinement")),
   numRelAnalyses(0)

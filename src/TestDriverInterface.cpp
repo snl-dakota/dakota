@@ -100,6 +100,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["steady_state_diffusion_1d"] = STEADY_STATE_DIFFUSION_1D;
   driverTypeMap["ss_diffusion_discrepancy"]  = SS_DIFFUSION_DISCREPANCY;
   driverTypeMap["transient_diffusion_1d"] = TRANSIENT_DIFFUSION_1D;
+  driverTypeMap["tunable_model"]          = TUNABLE_MODEL;
   driverTypeMap["predator_prey"]          = PREDATOR_PREY;
   driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
   driverTypeMap["bayes_linear"]           = BAYES_LINEAR;
@@ -149,10 +150,11 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   for (size_t i=0; i<numAnalysisDrivers; ++i)
     switch (analysisDriverTypes[i]) {
     case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM: case CANTILEVER_BEAM_ML:
-    case ROSENBROCK:   case LF_ROSENBROCK:    case EXTRA_LF_ROSENBROCK:
-    case MF_ROSENBROCK:    case MODIFIED_ROSENBROCK: case PROBLEM18:
-    case SHORT_COLUMN: case LF_SHORT_COLUMN: case MF_SHORT_COLUMN:
-    case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE: 
+    case ROSENBROCK:      case LF_ROSENBROCK:       case EXTRA_LF_ROSENBROCK:
+    case MF_ROSENBROCK:   case MODIFIED_ROSENBROCK: case PROBLEM18:
+    case SHORT_COLUMN:    case LF_SHORT_COLUMN:     case MF_SHORT_COLUMN:
+    case SOBOL_ISHIGAMI:  case STEEL_COLUMN_COST:
+    case STEEL_COLUMN_PERFORMANCE:  case TUNABLE_MODEL:
       localDataView |= VARIABLES_MAP;    break;
     case NO_DRIVER: // assume VARIABLES_VECTOR approach for plug-ins for now
     case CYLINDER_HEAD:       case LOGNORMAL_RATIO:     case MULTIMODAL:
@@ -189,11 +191,12 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
       varTypeMap["b"] = VAR_b; varTypeMap["h"] = VAR_h;
       varTypeMap["P"] = VAR_P; varTypeMap["M"] = VAR_M; varTypeMap["Y"] = VAR_Y;
       //break;
-    //case MF_ROSENBROCK: case MF_SHORT_COLUMN: (add to previous)
+    //case MF_ROSENBROCK: case MF_SHORT_COLUMN:
       varTypeMap["ModelForm"] = VAR_MForm;
     //case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM:
-      varTypeMap["w"] = VAR_w; varTypeMap["t"] = VAR_t; varTypeMap["R"] = VAR_R;
-      varTypeMap["E"] = VAR_E; varTypeMap["X"] = VAR_X; varTypeMap["area_type"] = VAR_area_type;
+      varTypeMap["w"] = VAR_w; varTypeMap["t"] = VAR_t;
+      varTypeMap["R"] = VAR_R; varTypeMap["E"] = VAR_E;
+      varTypeMap["X"] = VAR_X; varTypeMap["area_type"] = VAR_area_type;
       //varTypeMap["Y"] = VAR_Y; break;
     //case STEEL_COLUMN:
       varTypeMap["Fs"] = VAR_Fs; varTypeMap["P1"] = VAR_P1;
@@ -203,8 +206,12 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
       varTypeMap["d"]  = VAR_d;  //varTypeMap["h"] = VAR_h;
       varTypeMap["F0"] = VAR_F0; //varTypeMap["E"] = VAR_E; break;
     //case PROBLEM18:
-      varTypeMap["x"] = VAR_x; varTypeMap["xi"] = VAR_xi; 
+      varTypeMap["x"]  = VAR_x;  varTypeMap["xi"] = VAR_xi; 
       varTypeMap["Af"] = VAR_Af; varTypeMap["Ac"] = VAR_Ac;
+    //case TUNABLE_MODEL:
+      varTypeMap["y"]      = VAR_y;       varTypeMap["theta"]  = VAR_theta;
+      varTypeMap["theta1"] = VAR_theta1;  varTypeMap["theta2"] = VAR_theta2;
+      varTypeMap["delta"]  = VAR_delta;   varTypeMap["gamma"]  = VAR_gamma;   
     //}
   }
 }
@@ -335,6 +342,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = ss_diffusion_discrepancy(); break;
   case TRANSIENT_DIFFUSION_1D:
     fail_code = transient_diffusion_1d(); break;
+  case TUNABLE_MODEL:
+    fail_code = tunable_model(); break;
   case PREDATOR_PREY:
     fail_code = predator_prey(); break;
   case ANISOTROPIC_QUADRATIC_FORM:
@@ -2075,7 +2084,8 @@ int TestDriverInterface::transient_diffusion_1d()
   // Get the number of spatial discretization points and the number of
   // Fourier solution modes from the discrete integer variables
   size_t nx_index = find_index(xDILabels, "N_x"),
-         nm_index = find_index(xDILabels, "N_mod");
+         nm_index = find_index(xDILabels, "N_mod"),
+         md_index = find_index(metaDataLabels, "cost_model");
   int N_x   = ( nx_index == _NPOS ) ? 200 : xDI[nx_index];
   int N_mod = ( nm_index == _NPOS ) ?  21 : xDI[nm_index];
 
@@ -2133,8 +2143,133 @@ int TestDriverInterface::transient_diffusion_1d()
   // QoI is the integral of the solution over the physical space
   fnVals[0] = int_u_n * dx / 2.; // trapezoidal rule
 
+  if (md_index != _NPOS) {
+    switch (N_mod) {
+    case 21: // HF model form
+      switch (N_x) {
+      case 30:  metaData[md_index] =  5.67e+5; break;
+      case 60:  metaData[md_index] = 4.536e+6; break;
+      case 100: metaData[md_index] =   2.1e+7; break;
+      case 200: metaData[md_index] =  1.68e+8; break;
+      }
+      break;
+    case 3: // LF model form
+      switch (N_x) {
+      case 5:  metaData[md_index] =      375.; break;
+      case 15: metaData[md_index] =    10125.; break;
+      case 30: metaData[md_index] =    81000.; break;
+      case 60: metaData[md_index] =   648000.; break;
+      }
+      break;
+    }
+  }
   return 0;
 }
+
+
+int TestDriverInterface::tunable_model()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: tunable_model direct fn does not support multiprocessor "
+	 << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numFns != 1) {
+    Cerr << "Error: unsupported function counts in tunable_model direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (hessFlag || gradFlag) {
+    Cerr << "Error: gradients and Hessians are not supported in tunable_model "
+	 << "direct fn." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  size_t md_index = find_index(metaDataLabels, "cost_model");
+  Real A, xy_pow, active_th, rel_cost;
+  if (numACV == 3 && numADIV >= 1) { // x,y,theta1 and model form integer
+    active_th = xCM[VAR_theta]; // one CSV = theta for this MForm only
+    switch (xDIM[VAR_MForm]) {  // state variable for ModelForm
+    case 0:  A = std::sqrt(11.); xy_pow = 5;  rel_cost = 1.;   break; // HF
+    case 1:  A = std::sqrt(7.);  xy_pow = 3;  rel_cost = 0.1;  break; // MF
+    case 2:  A = std::sqrt(3.);  xy_pow = 1;  rel_cost = 0.01; break; // LF
+    }
+  }
+  else if (numACV >= 2 && numACV <= 7 && numADSV >= 1) {
+    // at least x,y plus MForm str; optionally theta{,1,2},delta,gamma
+    const String& mform = xDSM[VAR_MForm]; // discrete state var for ModelForm
+    std::map<var_t, Real>::iterator xc_iter;
+    if (mform == "HF") {
+      A = std::sqrt(11.);  xy_pow = 5;  rel_cost = 1.;
+      xc_iter = xCM.find(VAR_theta);
+#ifdef DEBUG
+      if (xc_iter == xCM.end()) {
+	Cerr << "Failed theta find in tunable driver\n";
+	abort_handler(-1);
+      }
+#endif
+      active_th = (xc_iter == xCM.end()) ? PI / 2. : xc_iter->second;
+    }
+    else {
+      Real active_delta, w_lo = .001, w_hi = 1.; // initial definition for MF
+      Real th_lb = PI / 6., th_ub = PI / 2., th_range = th_ub - th_lb;
+      if (mform == "LF1") {
+	A = std::sqrt(7.);  xy_pow = 3;  active_delta = 1.;
+	xc_iter = xCM.find(VAR_theta1);
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed theta1 find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
+	active_th  = (xc_iter == xCM.end()) ? PI / 3. : xc_iter->second;
+      }
+      else if (mform == "LF2") {
+	A = std::sqrt(3.);  xy_pow = 1;
+	xc_iter = xCM.find(VAR_theta2);
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed theta2 find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
+	active_th  = (xc_iter == xCM.end())   ? PI / 6. : xc_iter->second;
+	xc_iter = xCM.find(VAR_delta);
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed delta find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
+	active_delta = (xc_iter == xCM.end()) ? 2.5     : xc_iter->second;
+	xc_iter = xCM.find(VAR_gamma);
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed gamma find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
+	Real gamma2  = (xc_iter == xCM.end()) ? 0.55    : xc_iter->second;
+	w_lo *= gamma2;  w_hi *= gamma2; // new for LF: reduce MF cost by gamma
+      }
+      // cost metadata for tunable problem (extended cost model)
+      Real log_w = std::log(w_lo) - std::log(w_lo/w_hi) / th_range *
+	           std::pow(active_th - th_lb, active_delta);
+      rel_cost = std::exp(log_w); // w_i = cost_LF_i / cost HF --> rel_cost
+    }
+  }
+  else {
+    Cerr << "Error: unexpected parameterization in tunable_model direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  fnVals[0] = A * (std::cos(active_th) * std::pow(xCM[VAR_x], xy_pow) +
+		   std::sin(active_th) * std::pow(xCM[VAR_y], xy_pow));
+  if (md_index != _NPOS) metaData[md_index] = rel_cost;
+  return 0;
+}
+
 
 int TestDriverInterface::predator_prey()
 {
@@ -4501,11 +4636,10 @@ int TestDriverInterface::bayes_linear()
     abort_handler(INTERFACE_ERROR);
   }
   
-  /*const Real pi = 3.14159265358979324;
- 
+  /* 
   Real mean_pred = 0.4; int i;
   for (i=1; i<numVars; i++) {
-     mean_pred += 0.4 + 0.5*std::sin(2*pi*i/numVars);
+     mean_pred += 0.4 + 0.5*std::sin(2*PI*i/numVars);
   }
   RealVector n_means, n_std_devs, n_l_bnds, n_u_bnds;
   n_means.resize(numFns); n_std_devs.resize(numFns); 

@@ -133,7 +133,7 @@ void NonDCubature::get_parameter_sets(Model& model)
     number of points needed from the cubature routine in order to
     build a particular global approximation. */
 void NonDCubature::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   // cubature order may be increased ***or decreased*** to provide at least
   // min_samples, but the original user specification (cubIntOrderSpec) is a

@@ -73,7 +73,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   const String& dace_method_pointer
     = problem_db.get_string("model.dace_method_pointer");
   const String& actual_model_pointer
-    = problem_db.get_string("model.surrogate.actual_model_pointer");
+    = problem_db.get_string("model.surrogate.truth_model_pointer");
   bool dace_construct = !dace_method_pointer.empty(),
       model_construct = (dace_construct || !actual_model_pointer.empty());
   size_t method_index = _NPOS, model_index = _NPOS;
@@ -148,7 +148,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     Cerr << "Error: to build a data fit surrogate model, either a global "
 	 << "approximation\n       must be specified with reuse_points or "
 	 << "dace_method_pointer, or a\n       local/multipoint approximation "
-	 << "must be specified with an actual_model_pointer." << std::endl;
+	 << "must be specified with a truth_model_pointer." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 
@@ -208,6 +208,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     if (strbegins(surrogateType, "global_")) update_global_reference();
     else                                     update_local_reference();
   }
+
+  currentResponse.reshape_metadata(0);
 }
 
 
@@ -345,6 +347,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 				import_build_active_only);
   if (export_pts) initialize_export();
   if (import_pts || export_pts) manage_data_recastings();
+
+  currentResponse.reshape_metadata(0);
 }
 
 
@@ -413,16 +417,20 @@ bool DataFitSurrModel::finalize_mapping()
 }
 
 
+/*
 void DataFitSurrModel::init_model(Model& model)
 {
-  init_model_constraints(model);
-  init_model_labels(model);
-  // This push down of vars data can disrupt subsequent calls to
-  // update_from_subordinate_model() in surrogate-based methods with local
-  // DataFit instantiations, such as local reliability, expansion UQ, SBO, etc.
-  // For this reason, we override the SurrogateModel::init_model() default.
+  SurrogateModel::init_model(model);
+
+  // See concern in SurrogateModel::init_model():
   //init_model_inactive_variables(model);
+  // This may be preferred:
+  //init_model_mapped_variables(model);
+
+  // retained for now since deactivated at base level for EnsembleSurrModel
+  //init_model_inactive_labels(model);
 }
+*/
 
 
 void DataFitSurrModel::update_model(Model& model)
@@ -1590,14 +1598,14 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 	actual_response = actualModel.current_response(); // shared rep
       else {
 	currentResponse.active_set(actual_set);
-	currentResponse.update(actualModel.current_response());
+	currentResponse.update(actualModel.current_response(), true);//pull meta
       }
       break;
     }
     case BYPASS_SURROGATE:
       actualModel.evaluate(set);
       currentResponse.active_set(set);
-      currentResponse.update(actualModel.current_response());
+      currentResponse.update(actualModel.current_response(), true); // pull meta
       // TODO: Add to surrogate build data
       //      add_tabular_data(....)
       break;

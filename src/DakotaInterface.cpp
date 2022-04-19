@@ -246,21 +246,21 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
 #endif
   }
 
-  else if (interface_type == PYTHON_INTERFACE) {
+  else if (interface_type == LEGACY_PYTHON_INTERFACE) {
 #ifdef DAKOTA_PYTHON
     return std::make_shared<PythonInterface>(problem_db);
 #else
-    Cerr << "Direct Python interface requested, but not enabled in this "
+    Cerr << "Direct Legacy Python interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
     return std::shared_ptr<Interface>();
 #endif
   }
 
-  else if (interface_type == PYBIND11_INTERFACE) {
+  else if (interface_type == PYTHON_INTERFACE) {
 #ifdef DAKOTA_PYBIND11
     return std::make_shared<Pybind11Interface>(problem_db);
 #else
-    Cerr << "Pybind11 interface requested, but not enabled in this "
+    Cerr << "Python interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
     return std::shared_ptr<Interface>();
 #endif
@@ -859,6 +859,17 @@ void Interface::cache_unmatched_response(int raw_id)
       cachedResponseMap.insert(*rr_it);
       rawResponseMap.erase(rr_it);
     }
+  }
+}
+
+
+void Interface::cache_unmatched_responses()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->cache_unmatched_responses();
+  else { // base definition; not virtual
+    cachedResponseMap.insert(rawResponseMap.begin(), rawResponseMap.end());
+    rawResponseMap.clear();
   }
 }
 

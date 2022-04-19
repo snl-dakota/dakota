@@ -26,7 +26,7 @@ method
 model
   id_model = 'SUBSPACE'
   subspace
-    actual_model_pointer = 'FULLSPACE'
+    truth_model_pointer = 'FULLSPACE'
     initial_samples 50
     truncation_method
       cross_validation

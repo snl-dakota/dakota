@@ -47,6 +47,9 @@ class SharedApproxData;
 class DiscrepancyCorrection;
 class EvaluationStore;
 
+extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
+extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
+
 
 /// Base class for the model class hierarchy.
 
@@ -105,6 +108,10 @@ public:
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models
   virtual void active_model_key(const Pecos::ActiveKey& key);
+  /// return the active model key (used by surrogate data, grid driver,
+  /// and approximation classes to support the management of multiple
+  /// approximation states within surrogate models)
+  virtual const Pecos::ActiveKey& active_model_key() const;
   /// reset by removing all model keys within surrogate data, grid driver,
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models
@@ -114,9 +121,9 @@ public:
   virtual size_t qoi() const;
 
   /// return the active approximation sub-model in surrogate models
-  virtual Model& surrogate_model();
+  virtual Model& surrogate_model(size_t i = _NPOS);
   /// return the active approximation sub-model in surrogate models
-  virtual const Model& surrogate_model() const;
+  virtual const Model& surrogate_model(size_t i = _NPOS) const;
   /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
   /// return the active truth sub-model in surrogate models
@@ -175,6 +182,9 @@ public:
   virtual String solution_level_string_value() const;
   /// return the active (real) value of the solution control
   virtual Real   solution_level_real_value() const;
+
+  /// return index of online cost estimates within metadata
+  virtual size_t cost_metadata_index() const;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
@@ -390,6 +400,9 @@ public:
   /// return the correction type from the DiscrepancyCorrection object
   /// used by SurrogateModels
   virtual short correction_type();
+  /// return the correction order from the DiscrepancyCorrection object
+  /// used by SurrogateModels
+  virtual short correction_order();
 
   /// apply a DiscrepancyCorrection to correct an approximation within
   /// a HierarchSurrModel
@@ -415,6 +428,8 @@ public:
   /// migrate an unmatched response record from active response map (computed
   /// by synchronize() or synhronize_nowait()) to cached response map
   virtual void cache_unmatched_response(int raw_id);
+  /// migrate remaining response records from responseMap to cachedResponseMap
+  virtual void cache_unmatched_responses();
 
   /// return derived model synchronization setting
   virtual short local_eval_synchronization();
@@ -1195,27 +1210,14 @@ protected:
 
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
-  Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-	ParallelLibrary& parallel_lib,
-	const SharedVariablesData& svd, bool share_svd,
-	const SharedResponseData&  srd, bool share_srd,
-	const ActiveSet& set, short output_level);
+  Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
+	const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
+	short output_level, ProblemDescDB& problem_db = dummy_db,
+	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
-  Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-	ParallelLibrary& parallel_lib);
-
-
-  /// return the next available model ID for no-ID user methods
-  static String user_auto_id();
-
-  /// return the next available model ID for on-the-fly methods
-  static String no_spec_id();
-
-  /// Whether to write model evals to the evaluations DB
-  EvaluationsDBState modelEvaluationsDBState;
-  /// Whether to write interface evals to the evaluations DB
-  EvaluationsDBState interfEvaluationsDBState;
+  Model(LightWtBaseConstructor, ProblemDescDB& problem_db = dummy_db,
+	ParallelLibrary& parallel_lib = dummy_lib);
 
   //
   //- Heading: Virtual functions
@@ -1250,6 +1252,14 @@ protected:
   //- Heading: Member functions
   //
 
+  /// return responseMap
+  IntResponseMap& response_map();
+
+  /// return the next available model ID for no-ID user methods
+  static String user_auto_id();
+  /// return the next available model ID for on-the-fly methods
+  static String no_spec_id();
+
   /// initialize distribution types from problemDescDB
   void initialize_distribution(
     Pecos::MultivariateDistribution& mv_dist, bool active_only = false);
@@ -1265,7 +1275,7 @@ protected:
   void assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 			  Variables& vars);
   /// return iterator for longest string value found in string set
-  SSCIter max_string(const StringSet& ss);
+  SSCIter  max_string(const StringSet& ss);
   /// return iterator for longest string value found in string map
   SRMCIter max_string(const StringRealMap& srm);
 
@@ -1281,56 +1291,43 @@ protected:
   Real forward_grad_step(size_t num_deriv_vars, size_t xj_index,
                          Real x0_j, Real lb_j, Real ub_j);
 
-  /*
-  /// rekey jobs from resp_map to resp_map_rekey according to id_map; this
-  /// version selects a loop over response or id map based on the smaller
-  /// array size
-  void rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
-			  IntResponseMap& resp_map_rekey,
-			  bool deep_copy_resp = false);
-  /// rekey jobs from resp_map to resp_map_rekey according to id_map;
-  /// this version iterates over resp_map and searches id_map
-  void rekey_response_map_rloop(const IntResponseMap& resp_map,
-				IntIntMap& id_map,
-				IntResponseMap& resp_map_rekey,
-				bool deep_copy_resp = false);
-  /// rekey jobs from resp_map to resp_map_rekey according to id_map;
-  /// this version iterates over id_map and searches resp_map
-  void rekey_response_map_iloop(const IntResponseMap& resp_map,
-				IntIntMap& id_map, 
-				IntResponseMap& resp_map_rekey,
-				bool deep_copy_resp = false);
-  /// migrate and rekey jobs from resp_map and cached_resp_map to resp_map_rekey
-  /// according to id_map; insert unmatched resp_map jobs into cached_resp_map
-  void rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
-			  IntResponseMap& resp_map_rekey,
-			  IntResponseMap& cached_resp_map, 
-			  bool deep_copy_resp = false);
-  */
-
   /// Return the interface flag for the EvaluationsDB state
   EvaluationsDBState evaluations_db_state(const Interface &interface);
   /// Return the model flag for the EvaluationsDB state
   EvaluationsDBState evaluations_db_state(const Model &model);
 
+  /// Store the response portion of an interface evaluation.
+  /// Called from rekey_response_map()
+  void asynch_eval_store(const Interface &interface, const int &id,
+			 const Response &response);
+  /// Exists to support storage of interface evaluations.
+  /// No-op so that rekey_response_map<Model> can be generated.
+  void asynch_eval_store(const Model &model, const int &id,
+			 const Response &response);
 
-  /// Store the response portion of an interface evaluation. Called from rekey_response_map 
-  void asynch_eval_store(const Interface &interface, const int &id, const Response &response);
-  /// Exists to support storage of interface evaluations. No-op so that
-  ///  rekey_response_map<Model> can be generated.
-  void asynch_eval_store(const Model &model, const int &id, const Response &response);
-
-  /// rekey returned jobs matched in id_map into resp_map_rekey;
-  /// unmatched jobs are cached within the meta_object
+  /// rekey returned jobs matched in array of id_maps into array of
+  /// resp_maps_rekey; unmatched jobs can be cached within the meta_object
   template <typename MetaType>
-  void rekey_response_map(MetaType& meta_object, const IntResponseMap& resp_map,
-			  IntIntMap& id_map, IntResponseMap& resp_map_rekey,
-			  bool deep_copy_resp = false);
+  void rekey_response_map(MetaType& meta_object, IntIntMapArray& id_maps,
+			  IntResponseMapArray& resp_maps_rekey, bool deep_copy);
+  /// rekey returned jobs matched in id_map into resp_map_rekey;
+  /// unmatched jobs can be cached within the meta_object
+  template <typename MetaType>
+  void rekey_response_map(MetaType& meta_object, IntIntMap& id_map,
+			  IntResponseMap& resp_map_rekey, bool deep_copy);
+
+  /// synchronize via meta_object and rekey returned jobs matched in array of
+  /// id_maps into array of resp_maps_rekey; unmatched jobs are cached within
+  /// the meta_object
+  template <typename MetaType>
+  void rekey_synch(MetaType& meta_object, bool block, IntIntMapArray& id_maps,
+		   IntResponseMapArray& resp_maps_rekey,
+		   bool deep_copy = false);
   /// synchronize via meta_object and rekey returned jobs matched in id_map
   /// into resp_map_rekey; unmatched jobs are cached within the meta_object
   template <typename MetaType>
   void rekey_synch(MetaType& meta_object, bool block, IntIntMap& id_map,
-		   IntResponseMap& resp_map_rekey, bool deep_copy_resp = false);
+		   IntResponseMap& resp_map_rekey, bool deep_copy = false);
 
   //
   //- Heading: Data
@@ -1421,6 +1418,11 @@ protected:
   IntSet hessIdAnalytic;  ///< analytic id's for mixed Hessians
   IntSet hessIdNumerical; ///< numerical id's for mixed Hessians
   IntSet hessIdQuasi;     ///< quasi id's for mixed Hessians
+
+  /// Whether to write model evals to the evaluations DB
+  EvaluationsDBState modelEvaluationsDBState;
+  /// Whether to write interface evals to the evaluations DB
+  EvaluationsDBState interfEvaluationsDBState;
 
   /// length of packed MPI buffers containing vars, vars/set, response,
   /// and PRPair
@@ -3729,64 +3731,15 @@ inline SRMCIter Model::max_string(const StringRealMap& srm)
 }
 
 
+inline IntResponseMap& Model::response_map()
+{ return (modelRep) ? modelRep->responseMap : responseMap; }
+
+
 /*
 inline void Model::
 rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
-		   IntResponseMap& resp_map_rekey, bool deep_copy_resp)
-{
-  if (resp_map.size() <= id_map.size()) // e.g., nonblocking synch
-    rekey_response_map_rloop(resp_map, id_map, resp_map_rekey, deep_copy_resp);
-  else                   // e.g., derived_synchronize_same_model()
-    rekey_response_map_iloop(resp_map, id_map, resp_map_rekey, deep_copy_resp);
-}
-
-
-inline void Model::
-rekey_response_map_rloop(const IntResponseMap& resp_map, IntIntMap& id_map,
-			 IntResponseMap& resp_map_rekey, bool deep_copy_resp)
-{
-  // rekey registered evals
-  resp_map_rekey.clear();
-  IntIntMIter id_it; IntRespMCIter r_cit;
-  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
-    id_it = id_map.find(r_cit->first); // Note: no iterator hint accelerator
-    // unfound jobs may be from another Model using a shared Interface instance
-    if (id_it != id_map.end()) {
-      resp_map_rekey[id_it->second] = (deep_copy_resp) ?
-	r_cit->second.copy() : r_cit->second;
-      id_map.erase(id_it);
-    }
-  }
-}
-
-
-inline void Model::
-rekey_response_map_iloop(const IntResponseMap& resp_map, IntIntMap& id_map,
-			 IntResponseMap& resp_map_rekey, bool deep_copy_resp)
-{
-  // rekey registered evals
-  resp_map_rekey.clear();
-  // Immediate erasure relying on iterator invalidation + postfix rules
-  IntIntMIter id_it = id_map.begin(); IntRespMCIter r_cit;
-  while (id_it!=id_map.end()) {
-    r_cit = resp_map.find(id_it->first); // Note: no iterator hint API
-    if (r_cit != resp_map.end()) {
-      resp_map_rekey[id_it->second] = (deep_copy_resp) ?
-	r_cit->second.copy() : r_cit->second;
-      // postfix increment must generate a copy _before_ fn call
-      // --> increment occurs before iterator invalidation
-      id_map.erase(id_it++);
-    }
-    else
-      ++id_it;
-  }
-}
-
-
-inline void Model::
-rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
 		   IntResponseMap& resp_map_rekey,
-		   IntResponseMap& cached_resp_map, bool deep_copy_resp)
+		   IntResponseMap& cached_resp_map, bool deep_copy)
 {
   // rekey registered evals
   resp_map_rekey.clear();
@@ -3796,7 +3749,7 @@ rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
   for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
     id_it = id_map.find(r_cit->first); // Note: no iterator hint API
     if (id_it != id_map.end()) {
-      resp_map_rekey[id_it->second] = (deep_copy_resp) ?
+      resp_map_rekey[id_it->second] = (deep_copy) ?
 	r_cit->second.copy() : r_cit->second;
       id_map.erase(id_it);
     }
@@ -3821,35 +3774,93 @@ rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
 
 
 template <typename MetaType> void Model::
-rekey_response_map(MetaType& meta_object, const IntResponseMap& resp_map,
-		   IntIntMap& id_map, IntResponseMap& resp_map_rekey,
-		   bool deep_copy_resp)
+rekey_response_map(MetaType& meta_object, IntIntMapArray& id_maps,
+		   IntResponseMapArray& resp_maps_rekey, bool deep_copy)
 {
-  // rekey the resp_map evals matched in id_map, else move to cache
-  resp_map_rekey.clear();
-  IntIntMIter id_it; IntRespMCIter r_cit = resp_map.begin();
-  while (r_cit != resp_map.end()) {
-    int raw_id = r_cit->first;
-    id_it = id_map.find(raw_id); // Note: no iterator hint API
-    if (id_it != id_map.end()) {
-      resp_map_rekey[id_it->second] = (deep_copy_resp) ?
-	r_cit->second.copy() : r_cit->second;
-      if(evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
-        asynch_eval_store(meta_object, id_it->first, r_cit->second);
-      id_map.erase(id_it);
-      ++r_cit;
+  // rekey the IntResponseMap evals matched in id_maps, else move to cache
+  IntResponseMap& orig_resp_map = meta_object.response_map();
+  IntRespMIter r_it = orig_resp_map.begin();
+  size_t i, num_maps = id_maps.size(), resp_eval_id;
+  std::vector<IntIntMIter> id_iters(num_maps);  IntIntMIter id_ite;
+  for (i=0; i<num_maps; ++i)
+    id_iters[i] = id_maps[i].begin();
+  resp_maps_rekey.clear();  resp_maps_rekey.resize(num_maps);
+
+  // Single traversal of orig_resp_map and all id_maps
+  bool found, active_id_maps = true;
+  while (r_it != orig_resp_map.end() && active_id_maps) {
+    resp_eval_id = r_it->first;
+    found = active_id_maps = false;
+    for (i=0; i<num_maps; ++i) {
+      IntIntMap&   id_map = id_maps[i];
+      IntIntMIter& id_it  = id_iters[i];  id_ite = id_map.end();
+      while (id_it != id_ite && id_it->first <  resp_eval_id) ++id_it;
+      if    (id_it != id_ite && id_it->first == resp_eval_id) {
+	// process match and increment both iterators
+	Response& resp = r_it->second;
+	resp_maps_rekey[i][id_it->second] = (deep_copy) ? resp.copy() : resp;
+	if (evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
+	  asynch_eval_store(meta_object, id_it->first, resp);
+	id_map.erase(id_it++);      // postfix increment
+	orig_resp_map.erase(r_it++);// postfix increment 
+	found = true;
+      }
+      //if (found) break;// interferes with active_id_maps and only defers ++it
+      if (id_it != id_ite) active_id_maps = true;
     }
-    // insert unmatched resp_map jobs into cache (may be from another Model
-    // using a shared Interface instance).  Neither deep copy nor rekey are
-    // performed until id is matched above (on a subsequent pass).
-    else {
-      // Approach 3: resolve level clarity by passing a meta-object in a
-      // template.  Consistency: use meta-object to synchronize and cache,
-      // requiring renaming of Interface fns and adding nowait variant.
-      ++r_cit; // prior to invalidation from erase()
-      meta_object.cache_unmatched_response(raw_id);// same level as synchronize
+    if (!found) ++r_it; // else already advanced
+  }
+
+  // insert unmatched resp_map jobs into cache (may be from another Model
+  // using a shared Interface instance).  Neither deep copy nor rekey are
+  // performed until id is matched above (on a subsequent pass).
+  if (!orig_resp_map.empty())
+    meta_object.cache_unmatched_responses();
+}
+
+
+template <typename MetaType> void Model::
+rekey_synch(MetaType& meta_object, bool block, IntIntMapArray& id_maps,
+	    IntResponseMapArray& resp_maps_rekey, bool deep_copy)
+{
+  if (block) meta_object.synchronize();
+  else       meta_object.synchronize_nowait();
+  rekey_response_map(meta_object, id_maps, resp_maps_rekey, deep_copy);
+}
+
+
+template <typename MetaType> void Model::
+rekey_response_map(MetaType& meta_object, IntIntMap& id_map,
+		   IntResponseMap& resp_map_rekey, bool deep_copy)
+{
+  // rekey the IntResponseMap evals matched in id_map, else move to cache
+  IntResponseMap& orig_resp_map = meta_object.response_map();
+  IntRespMIter r_it = orig_resp_map.begin();
+  IntIntMIter id_it =        id_map.begin();
+  size_t i, orig_eval_id, resp_eval_id;
+  resp_map_rekey.clear();
+
+  // Single traversal of orig_resp_map and id_map
+  while (id_it != id_map.end() && r_it != orig_resp_map.end()) {
+    orig_eval_id = id_it->first;
+    resp_eval_id =  r_it->first;
+    if      (orig_eval_id < resp_eval_id) ++id_it;
+    else if (orig_eval_id > resp_eval_id)  ++r_it;
+    else { // equal: process match and increment both iterators
+      Response& resp = r_it->second;
+      resp_map_rekey[id_it->second] = (deep_copy) ? resp.copy() : resp;
+      if (evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
+	asynch_eval_store(meta_object, orig_eval_id, resp);
+      id_map.erase(id_it++);      // postfix increment avoids iter invalidation
+      orig_resp_map.erase(r_it++);// postfix increment avoids iter invalidation
     }
   }
+
+  // insert unmatched resp_map jobs into cache (may be from another Model
+  // using a shared Interface instance).  Neither deep copy nor rekey are
+  // performed until id is matched above (on a subsequent pass).
+  if (!orig_resp_map.empty())
+    meta_object.cache_unmatched_responses();
 }
 
 
@@ -3857,9 +3868,9 @@ template <typename MetaType> void Model::
 rekey_synch(MetaType& meta_object, bool block, IntIntMap& id_map,
 	    IntResponseMap& resp_map_rekey, bool deep_copy)
 {
-  const IntResponseMap& resp_map = (block) ? meta_object.synchronize() :
-    meta_object.synchronize_nowait();
-  rekey_response_map(meta_object, resp_map, id_map, resp_map_rekey, deep_copy);
+  if (block) meta_object.synchronize();
+  else       meta_object.synchronize_nowait();
+  rekey_response_map(meta_object, id_map, resp_map_rekey, deep_copy);
 }
 
 

@@ -139,7 +139,8 @@ DataMethodRep::DataMethodRep():
   piecewiseBasis(false), expansionBasisType(Pecos::DEFAULT_BASIS),
   quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
-  expansionSamples(SZ_MAX), allocationTarget(TARGET_MEAN),
+  expansionSamples(SZ_MAX), truthPilotConstraint(false),
+  ensembleSampSolnMode(ONLINE_PILOT), allocationTarget(TARGET_MEAN),
   useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
   convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
   convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
@@ -150,18 +151,20 @@ DataMethodRep::DataMethodRep():
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
-  reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
-  multilevAllocControl(DEFAULT_MLMF_CONTROL), multilevEstimatorRate(2.),
-  multilevDiscrepEmulation(DEFAULT_EMULATION),
-  finalMomentsType(STANDARD_MOMENTS), distributionType(CUMULATIVE),
-  responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
-  chainSamples(0), buildSamples(0), samplesOnEmulator(0), emulatorOrder(0),
-  emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
-  adaptPosteriorRefine(false), logitTransform(false), gpmsaNormalize(false),
-  posteriorStatsKL(false), posteriorStatsMutual(false),
-  posteriorStatsKDE(false), chainDiagnostics(false), chainDiagnosticsCI(false),
-  modelEvidence(false), modelEvidMC(false), modelEvidLaplace(false),
-  preSolveMethod(SUBMETHOD_DEFAULT), priorPropCovMult(1.0),
+  //reliabilitySearchType(MV),
+  integrationRefine(NO_INT_REFINE), optSubProbSolver(SUBMETHOD_DEFAULT),
+  numericalSolveMode(NUMERICAL_FALLBACK),
+  multilevAllocControl(DEFAULT_MLMF_CONTROL),
+  multilevEstimatorRate(2.), multilevDiscrepEmulation(DEFAULT_EMULATION),
+  finalStatsType(QOI_STATISTICS), finalMomentsType(Pecos::STANDARD_MOMENTS),
+  distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
+  responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
+  samplesOnEmulator(0), emulatorOrder(0), emulatorType(NO_EMULATOR),
+  mcmcType("dram"), standardizedSpace(false), adaptPosteriorRefine(false),
+  logitTransform(false), gpmsaNormalize(false), posteriorStatsKL(false),
+  posteriorStatsMutual(false), posteriorStatsKDE(false),
+  chainDiagnostics(false), chainDiagnosticsCI(false), modelEvidence(false),
+  modelEvidMC(false), modelEvidLaplace(false), priorPropCovMult(1.0),
   proposalCovUpdatePeriod(std::numeric_limits<int>::max()),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
   lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE),
@@ -309,20 +312,21 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
-    << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
-    << integrationRefine << refineSamples << pilotSamples
-    << multilevAllocControl << multilevEstimatorRate << multilevDiscrepEmulation
-    << finalMomentsType << distributionType
-    << responseLevelTarget << responseLevelTargetReduce << responseLevels
-    << probabilityLevels << reliabilityLevels << genReliabilityLevels
-    << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
-    << emulatorType << mcmcType << standardizedSpace
+    << numCandidateDesigns //<< reliabilitySearchType
+    << reliabilityIntegration << integrationRefine << refineSamples
+    << optSubProbSolver << numericalSolveMode
+    << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
+    << multilevAllocControl << multilevEstimatorRate
+    << multilevDiscrepEmulation << finalStatsType << finalMomentsType
+    << distributionType << responseLevelTarget << responseLevelTargetReduce
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << chainSamples << buildSamples << samplesOnEmulator
+    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
     << chainDiagnostics << chainDiagnosticsCI
     << modelEvidence << modelEvidLaplace << modelEvidMC
-    << preSolveMethod << proposalCovType << priorPropCovMult
-    << proposalCovUpdatePeriod
+    << proposalCovType << priorPropCovMult << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
     << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
     << batchSelectionType << lipschitzType << calibrateErrorMode
@@ -341,8 +345,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity << qoiAggregation 
-    << allocationTarget << convergenceToleranceType << useTargetVarianceOptimizationFlag
-    << scalarizationRespCoeffs;
+    << allocationTarget << convergenceToleranceType
+    << useTargetVarianceOptimizationFlag << scalarizationRespCoeffs;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -476,20 +480,21 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
     >> tensorGridFlag >> tensorGridOrder
     >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
-    >> numCandidateDesigns >> reliabilitySearchType >> reliabilityIntegration
-    >> integrationRefine >> refineSamples >> pilotSamples
-    >> multilevAllocControl >> multilevEstimatorRate >> multilevDiscrepEmulation
-    >> finalMomentsType >> distributionType
-    >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
-    >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
-    >> chainSamples >> buildSamples >> samplesOnEmulator >> emulatorOrder
-    >> emulatorType >> mcmcType >> standardizedSpace
+    >> numCandidateDesigns //>> reliabilitySearchType
+    >> reliabilityIntegration >> integrationRefine >> refineSamples
+    >> optSubProbSolver >> numericalSolveMode
+    >> pilotSamples >> ensembleSampSolnMode >> truthPilotConstraint
+    >> multilevAllocControl >> multilevEstimatorRate
+    >> multilevDiscrepEmulation >> finalStatsType >> finalMomentsType
+    >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
+    >> responseLevels >> probabilityLevels >> reliabilityLevels
+    >> genReliabilityLevels >> chainSamples >> buildSamples >> samplesOnEmulator
+    >> emulatorOrder >> emulatorType >> mcmcType >> standardizedSpace
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
     >> chainDiagnostics >> chainDiagnosticsCI
     >> modelEvidence >> modelEvidLaplace >> modelEvidMC
-    >> preSolveMethod >> proposalCovType >> priorPropCovMult
-    >> proposalCovUpdatePeriod
+    >> proposalCovType >> priorPropCovMult >> proposalCovUpdatePeriod
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
     >> advancedOptionsFilename >> quesoOptionsFilename >> fitnessMetricType
     >> batchSelectionType >> lipschitzType >> calibrateErrorMode
@@ -508,8 +513,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
     >> generatePosteriorSamples >> evaluatePosteriorDensity >> qoiAggregation 
-    >> allocationTarget >> convergenceToleranceType >> useTargetVarianceOptimizationFlag
-    >> scalarizationRespCoeffs;
+    >> allocationTarget >> convergenceToleranceType
+    >> useTargetVarianceOptimizationFlag >> scalarizationRespCoeffs;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -643,20 +648,21 @@ void DataMethodRep::write(std::ostream& s) const
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
-    << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
-    << integrationRefine << refineSamples << pilotSamples
-    << multilevAllocControl << multilevEstimatorRate << multilevDiscrepEmulation
-    << finalMomentsType << distributionType
-    << responseLevelTarget << responseLevelTargetReduce << responseLevels
-    << probabilityLevels << reliabilityLevels << genReliabilityLevels
-    << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
-    << emulatorType << mcmcType << standardizedSpace
+    << numCandidateDesigns //<< reliabilitySearchType
+    << reliabilityIntegration << integrationRefine << refineSamples
+    << optSubProbSolver << numericalSolveMode
+    << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
+    << multilevAllocControl << multilevEstimatorRate
+    << multilevDiscrepEmulation << finalStatsType << finalMomentsType
+    << distributionType << responseLevelTarget << responseLevelTargetReduce
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << chainSamples << buildSamples << samplesOnEmulator
+    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
     << chainDiagnostics << chainDiagnosticsCI
     << modelEvidence << modelEvidLaplace << modelEvidMC
-    << preSolveMethod << proposalCovType << priorPropCovMult
-    << proposalCovUpdatePeriod
+    << proposalCovType << priorPropCovMult << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
     << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
     << batchSelectionType << lipschitzType << calibrateErrorMode
@@ -675,7 +681,8 @@ void DataMethodRep::write(std::ostream& s) const
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity << qoiAggregation 
-    << allocationTarget << useTargetVarianceOptimizationFlag << scalarizationRespCoeffs;
+    << allocationTarget << convergenceToleranceType
+    << useTargetVarianceOptimizationFlag << scalarizationRespCoeffs;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

@@ -164,6 +164,9 @@ public:
   /// experiment 
   RealMatrix field_coords_view(size_t response, size_t experiment) const;
 
+  /// populate the passed array with num_total_exppoints labels
+  void fill_primary_function_labels(StringArray& expanded_labels) const;
+
   /// whether the specified variance type (enum value) is present and active
   bool variance_type_active(short variance_type) const;
 

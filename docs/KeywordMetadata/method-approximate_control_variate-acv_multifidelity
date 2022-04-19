@@ -1,0 +1,16 @@
+Blurb:: Approximate control variate (ACV) algorithm that mimics MFMC by employing a nested pyramid sample pattern
+
+This ACV variant uses sample set definitions that are similar to
+multifidelity Monte Carlo (MFMC), in that sample sets are nested
+with each new level adding an increment on top of the previous.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Refer to \cite GORODETSKY2020109257 for a helpful sample set diagram.
+
+Faq::
+See_Also::

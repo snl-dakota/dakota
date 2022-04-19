@@ -28,7 +28,7 @@ model,
 	  correction additive first_order
 	  polynomial quadratic
 # 	surrogate local taylor_series
-#	  actual_model_pointer = 'TRUTH'
+#	  truth_model_pointer = 'TRUTH'
 
 method,
 	id_method = 'SAMPLING'

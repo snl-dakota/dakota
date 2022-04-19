@@ -88,6 +88,8 @@ protected:
 
   void assign_instance();
 
+  void init_metadata() override { /* no-op to leave metadata intact */}
+
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 			 const RealVector& x_vars);
   void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,

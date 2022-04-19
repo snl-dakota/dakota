@@ -1,14 +1,28 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 61179 total (61179 new, 0 duplicate)
-<<<<< Function evaluation summary: 61179 total (61179 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.0136515625e+01
+<<<<< Function evaluation summary: 28172 total (28172 new, 0 duplicate)
+<<<<< Function evaluation summary: 28172 total (28172 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.0062839286e+01
+<<<<< Variance for mean estimator:
+      Initial MC (   20 HF samples):  4.5912938601e+02
+      Final   MC (   20 HF samples):  4.5912938601e+02
+      Final CVMC (sample profile):    2.1133841422e+01
+      Final CVMC ratio (1 - R^2):     4.6030252182e-02
+ Equivalent   MC (   20 HF samples):  4.5769133617e+02
+ Equivalent CVMC ratio:               4.6174877590e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.6273299830e+01  1.1290904393e+02  1.8735804304e+00  5.1442980586e+00
+ response_fn_1  4.6323670683e+01  1.1414546082e+02  1.8712214382e+00  5.0995103856e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 268589 total (268589 new, 0 duplicate)
-<<<<< Function evaluation summary: 268589 total (268589 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 9.2599323661e+01
+<<<<< Function evaluation summary: 275494 total (275494 new, 0 duplicate)
+<<<<< Function evaluation summary: 275494 total (275494 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 9.2614736607e+01
+<<<<< Variance for mean estimator:
+      Initial MC (   20 HF samples):  4.5912938601e+02
+      Final   MC (   92 HF samples):  1.0442399316e+02
+      Final CVMC (sample profile):    4.1740133292e+00
+      Final CVMC ratio (1 - R^2):     3.9971784287e-02
+ Equivalent   MC (   93 HF samples):  1.0373087181e+02
+ Equivalent CVMC ratio:               4.0238872538e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.2550124924e+01  1.0915381673e+02  1.9895426873e+00  5.8343145012e+00
+ response_fn_1  4.3480007103e+01  1.0671246407e+02  2.0181324004e+00  6.3986875617e+00

@@ -58,8 +58,11 @@ if [ `uname | grep -c -i "cygwin"` -gt 0 ]; then
   export LC_ALL="C"
 fi
 
+PYTHONPATH="${PYTHONPATH}:${execpath}/../share/dakota/Python"
+export PYTHONPATH
+
 #echo "Appending PATH with ${execpath}:${execpath}/../share/dakota/test:."
 PATH="$PATH:${execpath}:${execpath}/../share/dakota/test:."
 export PATH
 #echo "Launching ${execpath}/dakota with args: $@"
-"${execpath}/dakota" "$@"
+exec "${execpath}/dakota" "$@"

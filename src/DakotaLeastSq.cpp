@@ -32,7 +32,6 @@ static const char rcsId[]="@(#) $Id: DakotaLeastSq.cpp 7031 2010-10-22 16:23:52Z
 using namespace std;
 
 namespace Dakota {
-  extern PRPCache data_pairs; // global container
 
 // initialization of static needed by RecastModel
 LeastSq* LeastSq::leastSqInstance(NULL);
@@ -162,7 +161,6 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   
   // archive the single best point
   size_t num_best = 1, best_ind = 0;
-  int eval_id;
   //if(!calibrationDataFlag)
   //  archive_allocate_residuals(num_best);
 
@@ -232,22 +230,7 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   ActiveSet search_set(orig_model.response_size(), numContinuousVars);
 
   activeSet.request_values(1);
-  PRPCacheHIter cache_it = lookup_by_val(data_pairs,
-    iteratedModel.interface_id(), best_vars, activeSet);
-  if (cache_it == data_pairs.get<hashed>().end()) {
-    s << "<<<<< Best data not found in evaluation cache\n\n";
-    eval_id = 0;
-  }
-  else {
-    eval_id = cache_it->eval_id();
-    if (eval_id > 0)
-      s << "<<<<< Best data captured at function evaluation " << eval_id
-	<< "\n\n";
-    else // should not occur
-      s << "<<<<< Best data not found in evaluations from current execution,"
-	<< "\n      but retrieved from restart archive with evaluation id "
-	<< -eval_id << "\n\n";
-  }
+  print_best_eval_ids(iteratedModel.interface_id(), best_vars, activeSet, s);
  
   // Print confidence intervals for each estimated parameter. 
   // These CIs are based on a linear approximation of the underlying 
@@ -532,17 +515,19 @@ void LeastSq::post_run(std::ostream& s)
 
   // All derived solvers return constraints in best_resp; unscale
   // in-place if needed
-  // BMA TODO: constrained LSQ with scaling test
   if (scaleFlag && numNonlinearConstraints > 0) {
     std::shared_ptr<ScalingModel> scale_model_rep =
       std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
     RealVector best_fns = best_resp.function_values_view();
     // only requesting scaling of constraints, so no need for variable Jacobian
     activeSet.request_values(1);
+    // the size of the Iterator's primary fns may differ from the
+    // user/best size due, e.g., to data transformations, so call with
+    // a start index for number of user primary fns.
     scale_model_rep->
-      secondary_resp_scaled2native(best_resp.function_values(),
+      secondary_resp_scaled2native(iter_resp.function_values(),
 				   activeSet.request_vector(),
-				   best_fns);
+				   numUserPrimaryFns, best_fns);
   }
 
   // confidence intervals require

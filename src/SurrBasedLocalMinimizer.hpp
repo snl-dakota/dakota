@@ -40,7 +40,14 @@ public:
   //
 
   /// constructor
-  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
+  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model,
+			  std::shared_ptr<TraitsBase> traits);
+  /// alternate constructor for instantiations "on the fly"
+  SurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
+			  short constr_relax, const RealVector& tr_factors,
+			  size_t max_iter, size_t max_eval, Real conv_tol,
+			  unsigned short soft_conv_limit,
+			  std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~SurrBasedLocalMinimizer();
 
@@ -89,6 +96,8 @@ protected:
   //- Heading: Member functions
   //
 
+  /// shared constructor initializations
+  void initialize();
   /// construct and initialize approxSubProbModel
   void initialize_sub_model();
   /// construct and initialize approxSubProbMinimizer
@@ -215,10 +224,6 @@ protected:
   short truthSetRequest;
   /// derivative order of surrogate data used within the SBLM process
   short approxSetRequest;
-
-  /// flags the use of surrogate correction techniques at the center
-  /// of each trust region
-  short correctionType;
 
   /// starting point prior to sequence of SBLM iterations
   RealVector initialPoint;

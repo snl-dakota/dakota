@@ -34,8 +34,10 @@
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevelSampling.hpp"
+#include "NonDControlVariateSampling.hpp"
+#include "NonDMultilevControlVarSampling.hpp"
+#include "NonDACVSampling.hpp"
 #include "NonDMultifidelitySampling.hpp"
-#include "NonDMultilevMultifidSampling.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
 #include "NonDLHSEvidence.hpp"
@@ -240,6 +242,26 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
 { /* empty ctor */ }
 
 
+/** This alternate constructor builds base class data for inherited iterators.
+    It is used for on-the-fly instantiations for which DB queries cannot be
+    used, and is not used for construction of meta-iterators. */
+Iterator::
+Iterator(NoDBBaseConstructor, Model& model, size_t max_iter, size_t max_eval,
+	 Real conv_tol, std::shared_ptr<TraitsBase> traits):
+  probDescDB(dummy_db), parallelLib(model.parallel_library()),
+  methodPCIter(parallelLib.parallel_configuration_iterator()),
+  myModelLayers(0), iteratedModel(model), //methodName(method_name),
+  convergenceTol(conv_tol), maxIterations(max_iter), maxFunctionEvals(max_eval),
+  maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
+  outputLevel(model.output_level()), summaryOutputFlag(false), topLevel(false),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
+  execNum(0), methodTraits(traits)
+{
+  //update_from_model(iteratedModel); // variable/response counts & checks
+}
+
+
 /** The default constructor is used in Vector<Iterator> instantiations
     and for initialization of Iterator objects contained in
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
@@ -402,7 +424,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case GLOBAL_RELIABILITY:
     return std::make_shared<NonDGlobalReliability>(problem_db, model); break;
   case GLOBAL_INTERVAL_EST:
-    switch (probDescDB.get_ushort("method.sub_method")) {
+    switch (probDescDB.get_ushort("method.nond.opt_subproblem_solver")) {
     case SUBMETHOD_LHS:
       return std::make_shared<NonDLHSSingleInterval>(problem_db, model); break;
     default:
@@ -411,7 +433,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     }
     break;
   case GLOBAL_EVIDENCE:
-    switch (probDescDB.get_ushort("method.sub_method")) {
+    switch (probDescDB.get_ushort("method.nond.opt_subproblem_solver")) {
     case SUBMETHOD_LHS:
       return std::make_shared<NonDLHSEvidence>(problem_db, model); break;
     default:
@@ -491,18 +513,25 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case ADAPTIVE_SAMPLING:
     return std::make_shared<NonDAdaptiveSampling>(problem_db, model); break;
 #endif
-#ifdef HAVE_MUQ
-  case MUQ_SAMPLING:
-    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model); break;
-#endif
+//#ifdef HAVE_MUQ
+//  case MUQ_SAMPLING:
+//    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model); break;
+//#endif
   case RANDOM_SAMPLING:
     return std::make_shared<NonDLHSSampling>(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
     return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
   case MULTIFIDELITY_SAMPLING:
-    return std::make_shared<NonDMultifidelitySampling>(problem_db, model);break;
+    if (model.surrogate_type() == "hierarchical")
+      return std::make_shared<NonDControlVariateSampling>(problem_db, model);
+    else // non-hierarchical sampling supports #models > 2
+      return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
+    break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
-    return std::make_shared<NonDMultilevMultifidSampling>(problem_db, model);
+    return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
+    break;
+  case APPROXIMATE_CONTROL_VARIATE:
+    return std::make_shared<NonDACVSampling>(problem_db, model);
     break;
   case DATA_FIT_SURROGATE_BASED_LOCAL:
     return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
@@ -837,9 +866,10 @@ static UShortStrBimap method_map =
   (IMPORTANCE_SAMPLING,             "importance_sampling")
   (ADAPTIVE_SAMPLING,               "adaptive_sampling")
   (RANDOM_SAMPLING,                 "random_sampling")
-  (MULTILEVEL_SAMPLING,               "multilevel_sampling")
-  (MULTIFIDELITY_SAMPLING,            "multifidelity_sampling")
+  (MULTILEVEL_SAMPLING,             "multilevel_sampling")
+  (MULTIFIDELITY_SAMPLING,          "multifidelity_sampling")
   (MULTILEVEL_MULTIFIDELITY_SAMPLING, "multilevel_multifidelity_sampling")
+  (APPROXIMATE_CONTROL_VARIATE,     "approximate_control_variate")
   (LIST_SAMPLING,                   "list_sampling")
   (SURROGATE_BASED_LOCAL,           "surrogate_based_local")
   (DATA_FIT_SURROGATE_BASED_LOCAL,  "data_fit_surrogate_based_local")
@@ -908,6 +938,9 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_GRID,              "grid")
   (SUBMETHOD_OA_LHS,            "oa_lhs")
   (SUBMETHOD_OAS,               "oas")
+  (SUBMETHOD_ACV_IS,            "acv_is")
+  (SUBMETHOD_ACV_MF,            "acv_mf")
+  (SUBMETHOD_ACV_KL,            "acv_kl")
   (SUBMETHOD_DREAM,             "dream")
   (SUBMETHOD_WASABI,            "wasabi")
   (SUBMETHOD_GPMSA,             "gpmsa")
@@ -917,7 +950,7 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_SQP,               "sqp")
   (SUBMETHOD_EA,                "ea")
   (SUBMETHOD_EGO,               "ego")
-  (SUBMETHOD_SBO,               "sbo")
+  (SUBMETHOD_SBGO,              "sbgo")
   (SUBMETHOD_CONVERGE_ORDER,    "converge_order")
   (SUBMETHOD_CONVERGE_QOI,      "converge_qoi")
   (SUBMETHOD_ESTIMATE_ORDER,    "estimate_order")
@@ -1417,6 +1450,100 @@ const RealSymMatrix& Iterator::response_error_estimates() const
 }
 
 
+void Iterator::initial_point(const Variables& pt)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->initial_point(pt);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine initial_point() virtual fn."
+	 << "\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void Iterator::initial_point(const RealVector& pt)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->initial_point(pt);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine initial_point() virtual fn."
+	 << "\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void Iterator::initial_points(const VariablesArray& pts)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->initial_points(pts);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine initial_points() virtual fn."
+	 << "\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+const VariablesArray& Iterator::initial_points() const
+{
+  if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine initial_points "
+            "virtual fn.\nNo default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->initial_points(); // envelope fwd to letter
+}
+
+
+void Iterator::
+variable_bounds(const RealVector& cv_lower_bnds,
+		const RealVector& cv_upper_bnds)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->variable_bounds(cv_lower_bnds, cv_upper_bnds);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine variable_bounds() virtual "
+	 << "fn.\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void Iterator::
+linear_constraints(const RealMatrix& lin_ineq_coeffs,
+		   const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
+		   const RealMatrix& lin_eq_coeffs,
+		   const RealVector& lin_eq_tgt)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->linear_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
+				    lin_eq_coeffs, lin_eq_tgt);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine linear_constraints() virtual"
+	 << " fn.\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void Iterator::
+nonlinear_constraints(const RealVector& nln_ineq_lb,
+		      const RealVector& nln_ineq_ub,
+		      const RealVector& nln_eq_tgt)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine nonlinear_constraints() "
+	 << "virtual fn.\n       No default defined at base class."<< std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
 bool Iterator::accepts_multiple_points() const
 {
   if (iteratorRep) // envelope fwd to letter
@@ -1432,30 +1559,6 @@ bool Iterator::returns_multiple_points() const
     return iteratorRep->returns_multiple_points();
   else // default for letter lacking virtual fn redefinition
     return false;
-}
-
-
-void Iterator::initial_points(const VariablesArray& pts)
-{
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->initial_points(pts);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initial_points virtual fn.\n"
-	 << "No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-}
-
-
-const VariablesArray& Iterator::initial_points() const
-{
-  if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initial_points "
-            "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->initial_points(); // envelope fwd to letter
 }
 
 
@@ -1518,7 +1621,7 @@ void Iterator::print_results(std::ostream& s, short results_state)
 }
 
 
-int Iterator::num_samples() const
+size_t Iterator::num_samples() const
 {
   if (iteratorRep) // envelope fwd to letter
     return iteratorRep->num_samples();
@@ -1528,7 +1631,7 @@ int Iterator::num_samples() const
 
 
 void Iterator::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_reset(min_samples, all_data_flag, stats_flag);
@@ -1539,16 +1642,16 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
   }
 }
 
-void Iterator::
-sampling_reference(int samples_ref)
+
+void Iterator::sampling_reference(size_t samples_ref)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_reference(samples_ref);
   // else no-op: iterator does not employ a sampling reference (lower bound)
 }
 
-void Iterator::
-sampling_increment()
+
+void Iterator::sampling_increment()
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_increment();
@@ -1560,12 +1663,14 @@ sampling_increment()
   }
 }
 
+
 void Iterator::random_seed(int seed)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->random_seed(seed);
   // else no-op (don't require support from all Iterators that could be called)
 }
+
 
 unsigned short Iterator::sampling_scheme() const
 {
@@ -1702,16 +1807,20 @@ nested_variable_mappings(const SizetArray& c_index1,
     iteratorRep->
       nested_variable_mappings(c_index1,  di_index1,  ds_index1,  dr_index1,
 			       c_target2, di_target2, ds_target2, dr_target2);
-  //else no-op
+  else // default implementation: pass along to Model hierarchy
+    iteratedModel.nested_variable_mappings(c_index1,  di_index1,  ds_index1,
+					   dr_index1, c_target2, di_target2,
+					   ds_target2, dr_target2);
 }
 
 void Iterator::
-nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs)
+nested_response_mappings(const RealMatrix& primary_coeffs,
+			 const RealMatrix& secondary_coeffs)
 {
   if (iteratorRep)
-    iteratorRep->
-      nested_response_mappings(primary_coeffs,  secondary_coeffs);
-  //esee no-op
+    iteratorRep->nested_response_mappings(primary_coeffs, secondary_coeffs);
+  //else (not implemented currently within Model hierarchy)
+  //  iteratedModel.nested_response_mappings(primary_coeffs, secondary_coeffs)
 }
 
 StrStrSizet Iterator::run_identifier() const

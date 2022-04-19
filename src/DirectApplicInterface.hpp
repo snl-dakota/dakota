@@ -35,8 +35,10 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 	     VAR_w, VAR_t, VAR_R, VAR_E, VAR_X, VAR_area_type, /* VAR_Y, */ // cantilever beam
 	     VAR_Fs, VAR_P1, VAR_P2, VAR_P3, VAR_B, VAR_D, VAR_H,
 	     VAR_F0, VAR_d, /* VAR_b, VAR_h, VAR_E */ // steel column
-	     VAR_MForm, // mf_*() test functions
-       VAR_x, VAR_xi, VAR_Af, VAR_Ac }; //Problem18
+	     VAR_MForm, // mf_*() test functions, tunable model
+	     VAR_x, VAR_xi, VAR_Af, VAR_Ac, //Problem18
+             VAR_y, VAR_theta, VAR_theta1, VAR_theta2,
+	     VAR_delta, VAR_gamma }; // tunable model
 //enum x3_var_t  { X1, X2, X3 }; // generic up to 3 dimensions
 //enum shc_var_t { SHC_B, SHC_H, SHC_P, SHC_M, SHC_Y }; // short column
 //enum cb_var_t  { CB_W, CB_T, CB_R, CB_E, CB_X, CB_Y }; // cantilever beam
@@ -44,25 +46,25 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 //		   STC_F0, STC_E }; // steel column
 
 /// enumeration of possible direct driver types (to index to names)
-enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM, CANTILEVER_BEAM_ML,
-		CYLINDER_HEAD, EXTENDED_ROSENBROCK, GENERALIZED_ROSENBROCK,
-		LF_ROSENBROCK, EXTRA_LF_ROSENBROCK, MF_ROSENBROCK, MODIFIED_ROSENBROCK,
-		ROSENBROCK, LF_POLY_PROD, POLY_PROD,
-		GERSTNER, SCALABLE_GERSTNER, LOGNORMAL_RATIO, MULTIMODAL,
-		PLUGIN_ROSENBROCK, PLUGIN_TEXT_BOOK,
+enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
+                CANTILEVER_BEAM_ML, CYLINDER_HEAD, EXTENDED_ROSENBROCK,
+		GENERALIZED_ROSENBROCK, LF_ROSENBROCK, EXTRA_LF_ROSENBROCK,
+		MF_ROSENBROCK, MODIFIED_ROSENBROCK, ROSENBROCK, LF_POLY_PROD,
+		POLY_PROD, GERSTNER, SCALABLE_GERSTNER, LOGNORMAL_RATIO,
+		MULTIMODAL, PLUGIN_ROSENBROCK, PLUGIN_TEXT_BOOK,
 		SHORT_COLUMN, LF_SHORT_COLUMN, MF_SHORT_COLUMN,
 		SIDE_IMPACT_COST, SIDE_IMPACT_PERFORMANCE,
 		SOBOL_RATIONAL, SOBOL_G_FUNCTION, SOBOL_ISHIGAMI,
 		STEEL_COLUMN_COST, STEEL_COLUMN_PERFORMANCE, TEXT_BOOK,
 		TEXT_BOOK1, TEXT_BOOK2, TEXT_BOOK3, TEXT_BOOK_OUU,
 		SCALABLE_TEXT_BOOK, SCALABLE_MONOMIALS,
-		MOGATEST1, MOGATEST2, MOGATEST3,
-		ILLUMINATION, BARNES, BARNES_LF,
-		HERBIE, SMOOTH_HERBIE, SHUBERT,
+		MOGATEST1, MOGATEST2, MOGATEST3, ILLUMINATION,
+		BARNES, BARNES_LF, HERBIE, SMOOTH_HERBIE, SHUBERT,
 		SALINAS, MODELCENTER, GENZ, DAMPED_OSCILLATOR,
 		ANISOTROPIC_QUADRATIC_FORM , BAYES_LINEAR,
 		STEADY_STATE_DIFFUSION_1D, SS_DIFFUSION_DISCREPANCY,
-		TRANSIENT_DIFFUSION_1D,	PREDATOR_PREY, PROBLEM18};
+		TRANSIENT_DIFFUSION_1D,	PREDATOR_PREY, PROBLEM18,
+		TUNABLE_MODEL };
 
 /// enumeration for how local variables are stored (values must employ
 /// a bit representation)
@@ -134,7 +136,7 @@ protected:
   /// variable, active set, and response attributes; derived classes
   /// reimplementing this likely need to invoke the base class API
   virtual void set_local_data(const Variables& vars, const ActiveSet& set,
-		      const Response& response);
+			      const Response& response);
 
   /// convenience function for local test simulators which overlays
   /// response contributions from multiple analyses using MPI_Reduce
@@ -181,13 +183,17 @@ protected:
   StringMultiArray xDILabels; ///< discrete integer variable labels
   StringMultiArray xDRLabels; ///< discrete real variable labels
   StringMultiArray xDSLabels; ///< discrete string variable labels
+  StringArray      xAllLabels; ///< all variable labels in input spec order
 
-  std::map<String, var_t>    varTypeMap;    ///< map from variable label to enum
+  RealArray   metaData;       ///< real-valued metadata
+  StringArray metaDataLabels; ///< labels for optional metadata
+
+  std::map<String, var_t>       varTypeMap; ///< map from variable label to enum
   std::map<String, driver_t> driverTypeMap; ///< map from driver name to enum
-  std::map<var_t, Real> xCM;  ///< map from var_t enum to continuous value
-  std::map<var_t, int>  xDIM; ///< map from var_t enum to discrete int value
-  std::map<var_t, Real> xDRM; ///< map from var_t enum to discrete real value
-  std::map<var_t, String> xDSM; ///< map from var_t enum to discrete string value
+  std::map<var_t, Real>   xCM;  ///< map from var_t enum to continuous value
+  std::map<var_t, int>    xDIM; ///< map from var_t enum to discrete int value
+  std::map<var_t, Real>   xDRM; ///< map from var_t enum to discrete real value
+  std::map<var_t, String> xDSM; ///< map from var_t enum to discrete string val
 
   /// var_t enumerations corresponding to DVV components
   std::vector<var_t> varTypeDVV;
@@ -219,9 +225,23 @@ protected:
   size_t analysisDriverIndex;
 
 private:
+
+  //
+  //- Heading: Methods
+  //
+
   /// map labels in src to var_t in dest
   void map_labels_to_enum(StringMultiArrayConstView &src,
       std::vector<var_t> &dest);
+
+  //
+  //- Heading: Data
+  //
+
+  /// for tracking need to update variables label arrays
+  String prevVarsId;
+  /// for tracking need to update response label arrays
+  String prevRespId;
 };
 
 

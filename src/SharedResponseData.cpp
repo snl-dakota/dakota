@@ -38,7 +38,8 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
   primaryFnType(GENERIC_FNS),
   responsesId(problem_db.get_string("responses.id")), 
-  simulationVariance(problem_db.get_rv("responses.simulation_variance"))
+  simulationVariance(problem_db.get_rv("responses.simulation_variance")),
+  metadataLabels(problem_db.get_sa("responses.metadata_labels"))
 {
   // scalar-specific response counts
   size_t num_scalar_primary = std::max
@@ -169,13 +170,15 @@ void SharedResponseDataRep::copy_rep(SharedResponseDataRep* srd_rep)
   functionLabels        = srd_rep->functionLabels;
   priFieldLabels        = srd_rep->priFieldLabels;
 
+  simulationVariance 	= srd_rep->simulationVariance;
+
   numScalarResponses    = srd_rep->numScalarResponses;
   numScalarPrimary      = srd_rep->numScalarPrimary;
   priFieldLengths       = srd_rep->priFieldLengths;
 
   coordsPerPriField     = srd_rep->coordsPerPriField;
 
-  simulationVariance 	= srd_rep->simulationVariance;
+  metadataLabels        = srd_rep->metadataLabels;
 }
 
 
@@ -192,6 +195,8 @@ void SharedResponseDataRep::serialize(Archive& ar, const unsigned int version)
   ar & numScalarPrimary;
   ar & priFieldLengths;
   ar & coordsPerPriField;
+  if (version >= 1)
+    ar & metadataLabels;
 #ifdef SERIALIZE_DEBUG  
   Cout << "Serializing SharedResponseDataRep:\n"
        << responseType << '\n'
@@ -214,7 +219,8 @@ bool SharedResponseDataRep::operator==(const SharedResponseDataRep& other)
 	  numScalarResponses == other.numScalarResponses &&
 	  numScalarPrimary == other.numScalarPrimary &&
 	  priFieldLengths == other.priFieldLengths &&
-	  coordsPerPriField == other.coordsPerPriField);
+	  coordsPerPriField == other.coordsPerPriField &&
+	  metadataLabels == other.metadataLabels);
 }
 
 
@@ -337,7 +343,7 @@ reshape_labels(StringArray& resp_labels, size_t num_new)
   size_t num_curr = resp_labels.size();
   bool overwrite = false;
   if (num_new > num_curr) {
-    if (num_new % num_curr) // not a growth factor
+    if (num_curr == 0 || num_new % num_curr) // not a growth factor
       overwrite = true;
     else { // inflate using set replication (no added annotation)
       resp_labels.resize(num_new);
@@ -346,7 +352,7 @@ reshape_labels(StringArray& resp_labels, size_t num_new)
     }
   }
   else if (num_curr > num_new) {
-    if (num_curr % num_new)
+    if (num_new == 0 || num_curr % num_new)
       overwrite = true;
     else // deflate by concatenation (no annotation to remove)
       resp_labels.resize(num_new);

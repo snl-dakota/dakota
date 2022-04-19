@@ -1,0 +1,65 @@
+# Import (anisotropic tensor or random) dataset and perform cross-validation
+# across a sequence of anisotropic expansions.
+
+method,
+	polynomial_chaos
+     	  expansion_order = 8 # upper bound for candidates
+	  dimension_preference = 2 2 2 4 3 4 # anisotropy in interpolant order
+	  import_build_points_file =   	       		        #s0,#s1
+	    'dakota_uq_cantilever_aniso_pce_cv.nc.dat'		#s0,#s1
+#	  import_build_points_file =				#s2,#s3
+#	    'dakota_uq_cantilever_aniso_pce_cv.rnd.dat'		#s2,#s3
+	    annotated						#s0,#s1,#s2,#s3
+#	  import_build_points_file =				#s4,#s5
+#	    'dakota_uq_cantilever_aniso_pce_cv.rnd_shift.dat'	#s4,#s5
+#	    freeform						#s4,#s5
+	  collocation_points = 0  seed = 12347  # no new data
+	  cross_validation orthogonal_matching_pursuit
+#	  cross_validation least_angle_regression
+#	  cross_validation lasso
+# Ensure recovery of PCE mean coefficient:
+# 	  response_scaling					#s1,#s3,#s5
+	  variance_based_decomp
+
+variables,
+#	id_variables = 'ORIGINAL_V'
+	normal_uncertain = 4
+	  means           40000. 29.E+6 500. 1000.
+	  std_deviations  2000. 1.45E+6 100. 100.
+	  descriptors      'R'    'E'   'X'  'Y'
+	uniform_uncertain = 2
+	  initial_point    2.5    2.5
+	  upper_bounds    10.0   10.0
+	  lower_bounds     1.0    1.0
+	  descriptors	   'w'    't'
+
+# To generate aniso TPQ dataset using Newton-Cotes points:
+# Note: using export+import allows altering dataset without modifying driver.
+# In this case, we shift the data by QoI their means for testing mean recovery.
+#
+#environment,
+#	output_precision = 16
+#	tabular_graphics_data
+#	  tabular_data_file = 'dakota_uq_cantilever_aniso_pce_cv.nc.dat'
+#
+#method,
+#	stoch_collocation
+#	  quadrature_order = 5
+#	  dimension_preference = 3 3 3 5 4 5 # anisotropy in points, not order
+#	  piecewise
+#
+#variables,
+#	id_variables = 'BOUNDED_V'
+#	uniform_uncertain = 6
+#	  lower_bounds    34000. 24.65E+6  200.   700.   1.0    1.0
+#	  upper_bounds    46000. 33.35E+6  800.  1300.  10.0   10.0
+#	  descriptors      'R'      'E'     'X'    'Y'    'w'    't'
+
+interface,
+	direct
+	analysis_driver = 'cantilever'		
+
+responses,
+	response_functions = 2 # limit states only	
+	no_gradients
+	no_hessians

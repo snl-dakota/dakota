@@ -56,4 +56,4 @@ If the option \ref method-multilevel_sampling-allocation_target-variance-optimiz
 either OPTPP (default choice) or NPSOL (if available).
 
 Faq::
-See_Also:: \ref method-multilevel_sampling-allocation_target-variance-optimization	
+See_Also:: method-multilevel_sampling-allocation_target-variance-optimization	

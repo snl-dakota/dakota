@@ -244,7 +244,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
   // define tie breaker for hierarchy of model forms versus resolution levels
   if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.multifidelity_precedence(mf, true); // update default keys
+    iteratedModel.multifidelity_precedence(mf);//reassign default keys if needed
 
   // Check for suitable distribution types.
   // Note: prefer warning in Analyzer (active discrete ignored), but
@@ -671,7 +671,7 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
     // needs to precede exp_sampler_rep->requested_levels()
-    exp_sampler_rep->final_moments_type(NO_MOMENTS); // suppress sample moments
+    exp_sampler_rep->final_moments_type(Pecos::NO_MOMENTS); // suppress
 
     // publish level mappings to expansion sampler, but suppress reliability
     // moment mappings (performed locally within compute_statistics())
@@ -708,7 +708,7 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
       imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
 	empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
 	cdfFlag, false); // suppress PDFs (managed locally)
-      //imp_sampler_rep->final_moments_type(NO_MOMENTS); // already off for AIS
+      //imp_sampler_rep->final_moments_type(Pecos::NO_MOMENTS); // already off
     }
   }
   // publish output verbosity
@@ -2002,7 +2002,7 @@ update_u_space_sampler(size_t sequence_index, const UShortArray& approx_orders)
 {
   std::shared_ptr<Iterator> sub_iter_rep =
     uSpaceModel.subordinate_iterator().iterator_rep();
-  int seed = NonDExpansion::random_seed(sequence_index);
+  int seed = NonDExpansion::seed_sequence(sequence_index);
   if (seed) sub_iter_rep->random_seed(seed);
   // replace w/ uSpaceModel.random_seed(seed)? -> u_space_sampler, shared approx
 
@@ -3073,7 +3073,7 @@ void NonDExpansion::compute_analytic_statistics()
       final_mom2_grad_flag = (final_asv[cntr] & 2);
     }
     bool mom2_grad_flag = (final_mom2_grad_flag || moment_grad_mapping_flag);
-    bool std_moments    = (finalMomentsType == STANDARD_MOMENTS);
+    bool std_moments    = (finalMomentsType == Pecos::STANDARD_MOMENTS);
     // *** std dev / variance (Note: computation above not based on final ASV)
     if (final_mom2_flag) {
       if (std_moments) finalStatistics.function_value(sigma, cntr);
@@ -3585,14 +3585,14 @@ void NonDExpansion::archive_moments()
 
   // Set moments labels.
   std::string moment_1 = "Mean";
-  std::string moment_2 = (finalMomentsType == CENTRAL_MOMENTS) ? "Variance" : "Standard Deviation";
-  std::string moment_3 = (finalMomentsType == CENTRAL_MOMENTS) ? "3rd Central" : "Skewness";
-  std::string moment_4 = (finalMomentsType == CENTRAL_MOMENTS) ? "4th Central" : "Kurtosis";
+  std::string moment_2 = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ? "Variance" : "Standard Deviation";
+  std::string moment_3 = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ? "3rd Central" : "Skewness";
+  std::string moment_4 = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ? "4th Central" : "Kurtosis";
 
   std::string moment_1_lower = "mean";
-  std::string moment_2_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "variance" : "std_deviation";
-  std::string moment_3_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "third_central" : "skewness";
-  std::string moment_4_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "fourth_central" : "kurtosis";
+  std::string moment_2_lower = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ? "variance" : "std_deviation";
+  std::string moment_3_lower = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ? "third_central" : "skewness";
+  std::string moment_4_lower = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ? "fourth_central" : "kurtosis";
 
   if (exp_active || num_active) {
     MetaDataType md_moments;
@@ -3907,7 +3907,7 @@ void NonDExpansion::print_moments(std::ostream& s)
 		       (num_int_mom == 2 && num_int_moments[1] <  0.) ||
 		       (exp_mom     >  2 && exp_moments[1]     <= 0.) ||
 		       (num_int_mom >  2 && num_int_moments[1] <= 0.) );
-    if (curr_exception || finalMomentsType == CENTRAL_MOMENTS) {
+    if (curr_exception || finalMomentsType == Pecos::CENTRAL_MOMENTS) {
       if (i==0 || !prev_exception)
 	s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
 	  << std::setw(width+1)  << "3rdCentral" << std::setw(width+2)
@@ -3925,7 +3925,7 @@ void NonDExpansion::print_moments(std::ostream& s)
 	  s << ' ' << std::setw(width) << num_int_moments[j];
       }
       prev_exception = curr_exception;
-      if (curr_exception && finalMomentsType == STANDARD_MOMENTS)
+      if (curr_exception && finalMomentsType == Pecos::STANDARD_MOMENTS)
 	exception = true;
     }
     else {

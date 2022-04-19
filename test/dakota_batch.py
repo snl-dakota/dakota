@@ -12,7 +12,7 @@ to_write = []
 with open(params_file,"r") as pif:
     for line in pif:
         to_write.append(line)
-        if " eval_id" in line:
+        if " metadata" in line:
             with open(params_tmp_file,"w") as pof:
                 pof.writelines(to_write)
             os.system("text_book %s %s" % (params_tmp_file, results_tmp_file))

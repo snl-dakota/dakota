@@ -29,6 +29,7 @@ ExperimentData(const ProblemDescDB& pddb,
   numExperiments(pddb.get_sizet("responses.num_experiments")), 
   numConfigVars(pddb.get_sizet("responses.num_config_vars")),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
+  dataPathPrefix(pddb.get_string("responses.data_directory")),
   scalarDataFilename(pddb.get_string("responses.scalar_data_filename")),
   scalarDataFormat(pddb.get_ushort("responses.scalar_data_format")),
   scalarSigmaPerRow(0), 
@@ -105,6 +106,23 @@ void ExperimentData::initialize(const StringArray& variance_types,
 {
   // only initialize data if needed; TODO: consider always initializing
   if (calibrationDataFlag || !scalarDataFilename.empty()) {
+
+    if (!dataPathPrefix.empty()) {
+      // Disallow scalar_data_file using absolute path together with data_directory spec
+      boost::filesystem::path check_scalar_data_file_path = scalarDataFilename;
+      if( !dataPathPrefix.empty() && check_scalar_data_file_path.is_absolute() ) {
+        Cerr << "\nError: Cannot specify \"data_directory\" together "
+                "with \"scalar_data_filename\" having an absolute path."
+             << std::endl;
+        abort_handler(-1);
+      }
+      if (!scalarDataFilename.empty())
+        scalarDataFilename = dataPathPrefix.string() + "/" + scalarDataFilename;
+
+      if (outputLevel >= VERBOSE_OUTPUT)
+        Cout << "Reading experimental data from directory: \""
+             << dataPathPrefix.string() << "\"." << std::endl;
+    }
 
     if (outputLevel > NORMAL_OUTPUT) {
       Cout << "Constructing ExperimentData with " << numExperiments 
@@ -370,15 +388,12 @@ void ExperimentData::load_data(const std::string& context_message,
       read_config_vars_multifile(config_vars_basepath.string(), numExperiments, 
           numConfigVars, allConfigVars);
     }
-    catch(std::runtime_error & e)
-    {
-      if( numConfigVars > 0 )
-        throw
-          std::runtime_error("Expected to read " +
-                             convert_to_string(numConfigVars) +
-                             " experiment config variables, but required file(s) \"" +
-                             config_vars_basepath.string() +
-                             ".*.config\" not found.");
+    catch(const std::runtime_error& e) {
+      Cerr << "\nError: Cannot read " << convert_to_string(numConfigVars)
+	   << " experiment config variables\nfrom file(s) '"
+	   << config_vars_basepath.string() << ".*.config'; details:\n"
+	   << e.what();
+      abort_handler(IO_ERROR);
     }
   }
 
@@ -396,16 +411,24 @@ void ExperimentData::load_data(const std::string& context_message,
 
     // Need to decide what to do if both scalar_data_file and "experiment.#" files exist - RWH
     if ( (numConfigVars > 0) && scalar_data_file ) {
-      // TODO: try/catch
       scalar_data_stream >> std::ws;
       if ( scalar_data_stream.eof() ) {
-        Cerr << "\nError: End of file '" << scalarDataFilename
-          << "' reached before reading " 
-          << numExperiments << " sets of values."
-          << std::endl;
-        abort_handler(-1);
+	Cerr << "\nError: End of file '" << scalarDataFilename
+	     << "' reached before reading "
+	     << numExperiments << " sets of values.\n";
+	abort_handler(IO_ERROR);
       }
-      allConfigVars[exp_index].read_tabular(scalar_data_stream, INACTIVE_VARS);
+      try {
+	allConfigVars[exp_index].read_tabular(scalar_data_stream, INACTIVE_VARS);
+      }
+      catch (const std::exception& e) {
+	// could catch TabularDataTruncated, but message would be the same
+	Cerr << "\nError: Could not read configuration (state) variable values "
+	     << "for experiment " << exp_index + 1 << "\nfrom file '"
+	     << scalarDataFilename << "'; details:\n" << e.what()
+	     << std::endl;
+	abort_handler(IO_ERROR);
+      }
     }
     // TODO: else validate scalar vs. field configs?
 
@@ -835,6 +858,42 @@ field_coords_view(size_t response, size_t experiment) const
 {
   return(allExperiments[experiment].field_coords_view(response));
 }
+
+
+void ExperimentData::
+fill_primary_function_labels(StringArray& expanded_labels) const
+{
+  const StringArray& all_sim_labels = simulationSRD.function_labels();
+
+  if (interpolateFlag) {
+    // field lengths may differ between simulation and experiment;
+    // need to renumber the residuals
+    size_t dt_ind = 0;
+    for (size_t i=0; i<num_experiments(); ++i) {
+
+      for (size_t j=0; j<num_scalar_primary(); ++j)
+	expanded_labels[dt_ind++] =
+	  all_sim_labels[j] + '_' + std::to_string(i+1);
+
+      const StringArray& field_labels = simulationSRD.field_group_labels();
+      const IntVector field_lens  = field_lengths(i);
+      for (size_t j=0; j<num_fields(); ++j)
+	for (size_t k=0; k<field_lens[j]; ++k)
+	  expanded_labels[dt_ind++] = field_labels[j] + '_' +
+	    std::to_string(k+1) + '_' + std::to_string(i+1);
+
+    }
+  }
+  else {
+    // simulation and each experiment have same length
+    size_t dt_ind = 0;
+    for (size_t i=0; i<num_experiments(); ++i)
+      for (size_t j=0; j<simulationSRD.num_primary_functions(); ++j)
+	expanded_labels[dt_ind++] =
+	  all_sim_labels[j] + '_' + std::to_string(i+1);
+  }
+}
+
 
 bool ExperimentData::variance_type_active(short variance_type) const
 {

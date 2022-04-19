@@ -11,12 +11,12 @@
 
 % Most recent SAND report numbers and report date based on
 % Data should be SAND report date and not reflect updates
-\newcommand{\DakotaSANDDate}{May 2021}
+\newcommand{\DakotaSANDDate}{November 2021}
 %%\newcommand{\DakotaSANDUpdated}{@Dakota_RELEASE_DATE@} % TODO if/else \today
 \newcommand{\DakotaSANDDev}{SAND2020-xxxx}
 \newcommand{\DakotaSANDRef}{SAND2020-xxxx}
-\newcommand{\DakotaSANDUsers}{SAND2021-5822}
-\newcommand{\DakotaSANDTheory}{SAND2021-5821}
+\newcommand{\DakotaSANDUsers}{SAND2021-14253}
+\newcommand{\DakotaSANDTheory}{SAND2021-14254}
 
 
 % Need to manually break line or Eldred gets incorrectly split

@@ -89,8 +89,8 @@ Most users will install from a binary distribution, if available for
 the target platform.  This typically involves unpacking the archive
 and setting the PATH variable, if required.
 
-Dakota binary distributions are provided in archive format (either tar.gz 
-or zip). 
+Dakota binary distributions are provided in archive format (either tar.gz or 
+zip).
  * See Section I below to install tar.gz archive on Unix-like platform.
  * See Section II below to install zip archive on Windows platform.
  * See Section III below to test binary installion.
@@ -241,6 +241,14 @@ III. Test Binary Distribution installation.
 2. Refer to the "Tutorial" section of the User's Manual for instructions
    on using the dakota executables or see the Quick Start page on the Dakota
    web site.
+
+3. For distributions with Graphical User Interface (GUI) support, the
+   GUI can be launched using the following command:
+
+       Windows Command Terminal: $INSTALL_DIR/gui/DakotaUI.exe
+       Linux:                    dakota-ui.sh
+       Mac OS X:                 dakota-ui.sh
+
 
 ==================
 Source Quick Start

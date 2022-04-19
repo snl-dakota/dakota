@@ -1,0 +1,65 @@
+Blurb:: 
+Enable export of multilevel/multifidelity sample sequences to individual files
+
+Description::
+When this option is active, separate output files are written for each
+unique sample increment and are tagged by algorithm type, simulation
+interface, iteration count, level count, and the number of samples as
+described below.  The data content is comprised of the input variables
+only, without corresponding responses, as an intended use case is to
+support evaluation of these sample sets offline.
+
+<b> Default Behavior </b>
+
+If not specified, the \c annotated format is assumed.
+
+<b> Expected Output </b>
+
+Separate output files are generated according to the following format: 
+\c {ml/cv}_{interface_id}_{iteration_number}_{level_number}_{number_of_samples}.dat.
+
+With respect to the algorithm type, interface id, and level counter, the
+following definitions are employed:
+\li Multilevel MC with hierarchical model: \c ml_ is pre-pended for all sample increments and sample sets are tagged with the interface id from the HF model.
+\li Control Variate MC with hierarchical model (deprecated): \c cv_ is prepended for all sample increments, shared sample sets are tagged with the HF interface id, and LF-only refinements are tagged by the LF interface id.
+\li Multilevel-Control Variate MC with hierarchical model: employs a combination of exports from the two cases above.  \c ml_ is pre-pended for all HF sample increments and sample sets are tagged with the interface id from the HF model; \c cv_ is prepended for all LF increments and sample sets are tagged with the LF interface id.  Note that the LF model shares the same \c ml_ sample sets, but a redundant file is not created for this data.
+\li Non-hierarchical approaches (Multifidelity MC, Approximate Control Variate): \c cv_ is prepended for all sample increments and sample sets are tagged with the corresponding model interface id.  The level number corresponds to the index of the approximation model for LF increments and to the id of the truth model (number of LF approximations + 1) for shared increments.
+
+With respect to iteration count, pilot samples are tagged with iteration 0.
+
+
+Examples::
+The following method block 
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  convergence_tolerance = .01
+	  output silent
+	  export_sample_sequence
+\endverbatim
+
+results in enabling the sample output of sample increments for each
+level to individual files using the default \c annotated format.
+
+The following variables block 
+\verbatim
+variables,
+	id_variables = 'LF_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	  descriptors 'u1' 'u2' 'u3' 'u4' 'u5' 'u6' 'u7'
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 4 1
+	    set_values = 5 15 30 60 # number of spatial coords
+	    	       	 3 	    # number of Fourier solution modes
+	    initial_state = 5 3
+	    descriptors 'N_x' 'N_mod'
+\endverbatim
+
+illustrates how to define descriptors for the variables. For this
+case, the descriptors \c u1 through \c u7, \c N_x, and \c N_mod are
+reported in the sample files to help annotate the data.

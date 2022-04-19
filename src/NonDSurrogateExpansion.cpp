@@ -59,7 +59,7 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model):
     //   daceIterator spec points to the actualModel spec (when DACE is active)
     //   and daceIterator should sample in u-space for a u-space approx.  This
     //   requires recasting + reinserting the model + re-initializing DACE (no
-    //   thanks), or instantiating the model first (using actual_model_pointer
+    //   thanks), or instantiating the model first (using truth_model_pointer
     //   or model_pointer from DACE spec) + recasting + instantiating DACE on
     //   recast (similar to lightwt DataFitSurrModel ctor used by PCE/SC).
     //   >> either an option in existing DataFitSurrModel or a specialization

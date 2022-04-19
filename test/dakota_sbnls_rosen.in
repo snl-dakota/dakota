@@ -62,7 +62,7 @@ model,
 	  correction additive first_order 	#s0
 	  polynomial quadratic 			#s0
 # 	surrogate local taylor_series		#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
-#	  actual_model_pointer = 'TRUTH' 	#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+#	  truth_model_pointer = 'TRUTH' 	#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
 
 variables,
 	continuous_design = 2

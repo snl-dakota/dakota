@@ -1163,7 +1163,7 @@ const Interface& ProblemDescDB::get_interface()
   //     model.surrogate.derivative_usage
   // > SurfpackApproximation: model.surrogate.polynomial_order,
   //     model.surrogate.kriging_correlations
-  // > TaylorApproximation: model.surrogate.actual_model_pointer,
+  // > TaylorApproximation: model.surrogate.truth_model_pointer,
   //     responses.hessian_type
   // > OrthogPolyApproximation: method.nond.expansion_{terms,order}
 
@@ -2006,6 +2006,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
     },
     { /* responses */
       { "labels", P_RES responseLabels},
+      { "metadata_labels", P_RES metadataLabels},
       { "nonlinear_equality_scale_types", P_RES nonlinearEqScaleTypes},
       { "nonlinear_inequality_scale_types", P_RES nonlinearIneqScaleTypes},
       { "primary_response_fn_scale_types", P_RES primaryRespFnScaleTypes},
@@ -2127,8 +2128,9 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"optional_interface_responses_pointer", P_MOD optionalInterfRespPointer},
       {"rf.propagation_model_pointer", P_MOD propagationModelPointer},
       {"rf_data_file", P_MOD rfDataFileName},
+      {"simulation.cost_recovery_metadata", P_MOD costRecoveryMetadata},
       {"simulation.solution_level_control", P_MOD solutionLevelControl},
-      {"surrogate.actual_model_pointer", P_MOD actualModelPointer},
+      {"surrogate.truth_model_pointer", P_MOD truthModelPointer},
       {"surrogate.challenge_points_file", P_MOD importChallengePtsFile},
       {"surrogate.decomp_cell_type", P_MOD decompCellType},
       {"surrogate.export_approx_points_file", P_MOD exportApproxPtsFile},
@@ -2158,6 +2160,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"workDir", P_INT workDir}
     },
     { /* responses */
+      {"data_directory", P_RES dataPathPrefix},
       {"fd_gradient_step_type", P_RES fdGradStepType},
       {"fd_hessian_step_type", P_RES fdHessStepType},
       {"gradient_type", P_RES gradientType},
@@ -2358,11 +2361,13 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"nond.covariance_control", P_MET covarianceControl},
       {"nond.distribution", P_MET distributionType},
       {"nond.emulator", P_MET emulatorType},
+      {"nond.ensemble_sampling_solution_mode", P_MET ensembleSampSolnMode},
       {"nond.expansion_basis_type", P_MET expansionBasisType},
       {"nond.expansion_refinement_control", P_MET refinementControl},
       {"nond.expansion_refinement_type", P_MET refinementType},
       {"nond.expansion_type", P_MET expansionType},
       {"nond.final_moments", P_MET finalMomentsType},
+      {"nond.final_statistics", P_MET finalStatsType},
       {"nond.growth_override", P_MET growthOverride},
       {"nond.least_squares_regression_type", P_MET lsRegressionType},
       {"nond.multilevel_allocation_control", P_MET multilevAllocControl},
@@ -2440,7 +2445,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"import_prediction_configs_format", P_MET importPredConfigFormat},
       {"model_export_format", P_MET modelExportFormat},
       {"nond.adapted_basis.advancements", P_MET adaptedBasisAdvancements},
-	//{"nond.adapted_basis.initial_level", P_MET adaptedBasisInitLevel},
+      //{"nond.adapted_basis.initial_level", P_MET adaptedBasisInitLevel},
       {"nond.c3function_train.kick_order", P_MET kickOrder},
       {"nond.c3function_train.max_order", P_MET maxOrder},
       {"nond.c3function_train.start_order", P_MET startOrder},
@@ -2454,9 +2459,10 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"nond.export_discrep_format", P_MET exportDiscrepFormat},
       {"nond.export_samples_format", P_MET exportSamplesFormat},
       {"nond.integration_refinement", P_MET integrationRefine},
-      {"nond.pre_solve_method", P_MET preSolveMethod},
+      {"nond.numerical_solve_mode", P_MET numericalSolveMode},
+      {"nond.opt_subproblem_solver", P_MET optSubProbSolver},
       {"nond.quadrature_order", P_MET quadratureOrder},
-      {"nond.reliability_search_type", P_MET reliabilitySearchType},
+      //{"nond.reliability_search_type", P_MET reliabilitySearchType},
       {"nond.sparse_grid_level", P_MET sparseGridLevel},
       {"nond.vbd_interaction_order", P_MET vbdOrder},
       {"order", P_MET wilksOrder},
@@ -2688,6 +2694,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"nond.response_scaling", P_MET respScalingFlag},
       {"nond.standardized_space", P_MET standardizedSpace},
       {"nond.tensor_grid", P_MET tensorGridFlag},
+      {"nond.truth_fixed_by_pilot", P_MET truthPilotConstraint},
       {"posterior_stats.kde", P_MET posteriorStatsKDE},
       {"posterior_stats.kl_divergence", P_MET posteriorStatsKL},
       {"posterior_stats.mutual_info", P_MET posteriorStatsMutual},

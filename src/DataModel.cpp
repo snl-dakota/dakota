@@ -73,13 +73,13 @@ void DataModelRep::write(MPIPackBuffer& s) const
 {
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << hierarchicalTags << subMethodPointer
-    << solutionLevelControl << solutionLevelCost << surrogateFnIndices
-    << surrogateType << actualModelPointer << ensembleModelPointers
-    << pointsTotal << pointsManagement << approxPointReuse
-    << importBuildPtsFile << importBuildFormat << exportSurrogate
-    << modelExportPrefix << modelExportFormat << importSurrogate
-    << modelImportPrefix << modelImportFormat << importUseVariableLabels
-    << importBuildActive
+    << solutionLevelControl << solutionLevelCost << costRecoveryMetadata
+    << surrogateFnIndices << surrogateType << truthModelPointer
+    << ensembleModelPointers << pointsTotal << pointsManagement
+    << approxPointReuse << importBuildPtsFile << importBuildFormat
+    << exportSurrogate << modelExportPrefix << modelExportFormat
+    << importSurrogate << modelImportPrefix << modelImportFormat
+    << importUseVariableLabels << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat
     << exportApproxVarianceFile << exportApproxVarianceFormat
@@ -123,13 +123,13 @@ void DataModelRep::read(MPIUnpackBuffer& s)
 {
   s >> idModel >> modelType >> variablesPointer >> interfacePointer
     >> responsesPointer >> hierarchicalTags >> subMethodPointer
-    >> solutionLevelControl >> solutionLevelCost >> surrogateFnIndices
-    >> surrogateType >> actualModelPointer >> ensembleModelPointers
-    >> pointsTotal >> pointsManagement >> approxPointReuse
-    >> importBuildPtsFile >> importBuildFormat >> exportSurrogate
-    >> modelExportPrefix >> modelExportFormat >> importSurrogate
-    >> modelImportPrefix >> modelImportFormat >> importUseVariableLabels
-    >> importBuildActive
+    >> solutionLevelControl >> solutionLevelCost >> costRecoveryMetadata
+    >> surrogateFnIndices >> surrogateType >> truthModelPointer
+    >> ensembleModelPointers >> pointsTotal >> pointsManagement
+    >> approxPointReuse >> importBuildPtsFile >> importBuildFormat
+    >> exportSurrogate >> modelExportPrefix >> modelExportFormat
+    >> importSurrogate >> modelImportPrefix >> modelImportFormat
+    >> importUseVariableLabels >> importBuildActive
   //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
     >> exportApproxPtsFile >> exportApproxFormat
     >> exportApproxVarianceFile >> exportApproxVarianceFormat
@@ -173,13 +173,13 @@ void DataModelRep::write(std::ostream& s) const
 {
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << hierarchicalTags << subMethodPointer
-    << solutionLevelControl << solutionLevelCost << surrogateFnIndices
-    << surrogateType << actualModelPointer << ensembleModelPointers
-    << pointsTotal << pointsManagement << approxPointReuse
-    << importBuildPtsFile << importBuildFormat << exportSurrogate
-    << modelExportPrefix << modelExportFormat << importSurrogate
-    << modelImportPrefix << modelImportFormat << importUseVariableLabels
-    << importBuildActive
+    << solutionLevelControl << solutionLevelCost << costRecoveryMetadata
+    << surrogateFnIndices << surrogateType << truthModelPointer
+    << ensembleModelPointers << pointsTotal << pointsManagement
+    << approxPointReuse << importBuildPtsFile << importBuildFormat
+    << exportSurrogate << modelExportPrefix << modelExportFormat
+    << importSurrogate << modelImportPrefix << modelImportFormat
+    << importUseVariableLabels << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat
     << exportApproxVarianceFile << exportApproxVarianceFormat

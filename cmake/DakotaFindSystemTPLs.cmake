@@ -25,7 +25,7 @@ macro(dakota_find_boost)
     set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/boost_libs")
   endif()
 
-  find_package(Boost 1.58 REQUIRED COMPONENTS ${dakota_boost_libs})
+  find_package(Boost 1.69 REQUIRED COMPONENTS ${dakota_boost_libs})
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
     Boost::regex Boost::serialization Boost::system)
 
@@ -110,11 +110,13 @@ macro(dakota_find_gsl)
     # platforms, linking the GSL CBLAS induces numerical DIFFs in other
     # parts of Dakota. (Might prefer to probe for a library containing
     # cblas_ symbols, then conditionally set this option automatically.)
-    if(DAKOTA_CBLAS_LIBS)
-      set(GSL_WITHOUT_CBLAS TRUE CACHE BOOL "Omit GSL CBLAS libraries")
-    endif()
     find_package(GSL REQUIRED)
-    message(STATUS "Found GSL libraries: ${GSL_LIBRARIES}")
+    if(DAKOTA_CBLAS_LIBS)
+      message(STATUS "Using GSL library: ${GSL_LIBRARY} with\n"
+	"DAKOTA_CBLAS_LIBS = ${DAKOTA_CBLAS_LIBS}")
+    else()
+      message(STATUS "Using GSL libraries: ${GSL_LIBRARIES}")
+    endif()
   endif()
 endmacro()
 

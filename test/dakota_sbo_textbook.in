@@ -64,7 +64,7 @@ model,
 #           basis_order 2			 #s9
 #	  mars
 # 	surrogate local taylor_series
-#	  actual_model_pointer = 'TRUTH'
+#	  truth_model_pointer = 'TRUTH'
 
 variables,
 	continuous_design = 2

@@ -6518,8 +6518,8 @@ static Iface_mp_utype
 	MP2s(interfaceType,FORK_INTERFACE),
 	MP2s(interfaceType,GRID_INTERFACE),
 	MP2s(interfaceType,MATLAB_INTERFACE),
+	MP2s(interfaceType,LEGACY_PYTHON_INTERFACE),
 	MP2s(interfaceType,PYTHON_INTERFACE),
-	MP2s(interfaceType,PYBIND11_INTERFACE),
 	MP2s(interfaceType,SCILAB_INTERFACE),
 	MP2s(interfaceType,SYSTEM_INTERFACE),
 	//MP2s(resultsFileFormat,FLEXIBLE_RESULTS), // re-enable when more formats added?
@@ -6920,6 +6920,7 @@ static bool
 	MP_(tensorGridFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
+	MP_(truthPilotConstraint),
 	MP_(vbdFlag),
 	MP_(volQualityFlag),
 	MP_(wilksFlag);
@@ -7020,6 +7021,9 @@ static Method_mp_type
 	MP2s(emulatorType,PCE_EMULATOR),
 	MP2s(emulatorType,SC_EMULATOR),
 	MP2s(emulatorType,VPS_EMULATOR),
+	MP2s(ensembleSampSolnMode,OFFLINE_PILOT),
+	MP2s(ensembleSampSolnMode,ONLINE_PILOT),
+	MP2s(ensembleSampSolnMode,PILOT_PROJECTION),
 	MP2s(evalSynchronize,BLOCKING_SYNCHRONIZATION),
 	MP2s(evalSynchronize,NONBLOCKING_SYNCHRONIZATION),
 	MP2p(expansionBasisType,ADAPTED_BASIS_EXPANDING_FRONT),
@@ -7030,9 +7034,12 @@ static Method_mp_type
 	MP2p(expansionBasisType,TOTAL_ORDER_BASIS),
 	MP2s(expansionType,ASKEY_U),
 	MP2s(expansionType,STD_NORMAL_U),
-	MP2s(finalMomentsType,CENTRAL_MOMENTS),
-	MP2s(finalMomentsType,NO_MOMENTS),
-	MP2s(finalMomentsType,STANDARD_MOMENTS),
+	MP2p(finalMomentsType,CENTRAL_MOMENTS),            // Pecos enumeration
+	MP2p(finalMomentsType,NO_MOMENTS),                 // Pecos enumeration
+	MP2p(finalMomentsType,STANDARD_MOMENTS),           // Pecos enumeration
+	MP2s(finalStatsType,ESTIMATOR_PERFORMANCE),
+	MP2s(finalStatsType,NO_FINAL_STATS),
+	MP2s(finalStatsType,QOI_STATISTICS),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
 	MP2s(iteratorScheduling,MASTER_SCHEDULING),
@@ -7057,7 +7064,7 @@ static Method_mp_type
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
-  MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
+	MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
@@ -7153,6 +7160,7 @@ static Method_mp_utype
 	MP2s(integrationRefine,AIS),
 	MP2s(integrationRefine,IS),
 	MP2s(integrationRefine,MMAIS),
+	MP2s(methodName,APPROXIMATE_CONTROL_VARIATE),
 	MP2s(methodName,ASYNCH_PATTERN_SEARCH),
 	MP2s(methodName,BRANCH_AND_BOUND),
 	MP2s(methodName,C3_FUNCTION_TRAIN),
@@ -7234,27 +7242,38 @@ static Method_mp_utype
 	MP2s(methodName,MULTIDIM_PARAMETER_STUDY),
         MP2s(modelExportFormat,TEXT_ARCHIVE),
         MP2s(modelExportFormat,BINARY_ARCHIVE),
-	MP2s(preSolveMethod,SUBMETHOD_NIP),
-	MP2s(preSolveMethod,SUBMETHOD_NONE),
-	MP2s(preSolveMethod,SUBMETHOD_SQP),
+	MP2s(numericalSolveMode,NUMERICAL_FALLBACK),
+	MP2s(numericalSolveMode,NUMERICAL_OVERRIDE),
+      //MP2s(numericalSolveMode,REORDERED_FALLBACK),
+	MP2s(optSubProbSolver,SUBMETHOD_NONE),
+	MP2s(optSubProbSolver,SUBMETHOD_NIP),
+	MP2s(optSubProbSolver,SUBMETHOD_SQP),
+	MP2s(optSubProbSolver,SUBMETHOD_SBLO),
+	MP2s(optSubProbSolver,SUBMETHOD_EA),
+	MP2s(optSubProbSolver,SUBMETHOD_EGO),
+	MP2s(optSubProbSolver,SUBMETHOD_SBGO),
+	MP2s(optSubProbSolver,SUBMETHOD_LHS),
 	MP2s(pstudyFileFormat,TABULAR_NONE),
         MP2s(pstudyFileFormat,TABULAR_HEADER),
         MP2s(pstudyFileFormat,TABULAR_EVAL_ID),
         MP2s(pstudyFileFormat,TABULAR_IFACE_ID),
         MP2s(pstudyFileFormat,TABULAR_ANNOTATED),
-	MP2s(reliabilitySearchType,AMV_PLUS_U),
-	MP2s(reliabilitySearchType,AMV_PLUS_X),
-	MP2s(reliabilitySearchType,AMV_U),
-	MP2s(reliabilitySearchType,AMV_X),
-	MP2s(reliabilitySearchType,EGRA_U),
-	MP2s(reliabilitySearchType,EGRA_X),
-	MP2s(reliabilitySearchType,NO_APPROX),
-	MP2s(reliabilitySearchType,QMEA_U),
-	MP2s(reliabilitySearchType,QMEA_X),
-	MP2s(reliabilitySearchType,TANA_U),
-	MP2s(reliabilitySearchType,TANA_X),
 	MP2s(sampleType,SUBMETHOD_LHS),
 	MP2s(sampleType,SUBMETHOD_RANDOM),
+	MP2s(subMethod,SUBMETHOD_AMV_PLUS_U),
+	MP2s(subMethod,SUBMETHOD_AMV_PLUS_X),
+	MP2s(subMethod,SUBMETHOD_AMV_U),
+	MP2s(subMethod,SUBMETHOD_AMV_X),
+	MP2s(subMethod,SUBMETHOD_QMEA_U),
+	MP2s(subMethod,SUBMETHOD_QMEA_X),
+	MP2s(subMethod,SUBMETHOD_TANA_U),
+	MP2s(subMethod,SUBMETHOD_TANA_X),
+	MP2s(subMethod,SUBMETHOD_NO_APPROX),
+	MP2s(subMethod,SUBMETHOD_EGRA_U),
+	MP2s(subMethod,SUBMETHOD_EGRA_X),
+	MP2s(subMethod,SUBMETHOD_ACV_IS),
+	MP2s(subMethod,SUBMETHOD_ACV_KL),
+	MP2s(subMethod,SUBMETHOD_ACV_MF),
 	MP2s(subMethod,SUBMETHOD_COLLABORATIVE),
 	MP2s(subMethod,SUBMETHOD_EMBEDDED),
 	MP2s(subMethod,SUBMETHOD_SEQUENTIAL),
@@ -7263,11 +7282,6 @@ static Method_mp_utype
 	MP2s(subMethod,SUBMETHOD_WASABI),
 	MP2s(subMethod,SUBMETHOD_GPMSA),
 	MP2s(subMethod,SUBMETHOD_QUESO),
-	MP2s(subMethod,SUBMETHOD_NIP),
-	MP2s(subMethod,SUBMETHOD_SQP),
-	MP2s(subMethod,SUBMETHOD_EA),
-	MP2s(subMethod,SUBMETHOD_EGO),
-	MP2s(subMethod,SUBMETHOD_SBO),
 	MP2s(subMethod,SUBMETHOD_LHS),
 	MP2s(subMethod,SUBMETHOD_RANDOM),
 	MP2s(subMethod,SUBMETHOD_OA_LHS),
@@ -7439,8 +7453,8 @@ static IntVector
 	MP_(refineSamples);
 
 static String
-	MP_(actualModelPointer),
         MP_(advancedOptionsFilename),
+	MP_(costRecoveryMetadata),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
 	MP_(exportApproxVarianceFile),
@@ -7459,6 +7473,7 @@ static String
 	MP_(rfDataFileName),
 	MP_(solutionLevelControl),
 	MP_(subMethodPointer),
+	MP_(truthModelPointer),
 	MP_(variablesPointer);
 
 static StringArray
@@ -7602,10 +7617,12 @@ static Resp_mp_lit
 	MP2(quasiHessianType,sr1);
 
 static String
+	MP_(dataPathPrefix),
 	MP_(scalarDataFileName),
         MP_(idResponses);
 
 static StringArray
+        MP_(metadataLabels),
 	MP_(nonlinearEqScaleTypes),
 	MP_(nonlinearIneqScaleTypes),
 	MP_(primaryRespFnScaleTypes),
