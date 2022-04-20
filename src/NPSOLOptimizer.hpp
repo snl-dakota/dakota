@@ -130,6 +130,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  void pre_run();
   void core_run();
 
   void declare_sources();

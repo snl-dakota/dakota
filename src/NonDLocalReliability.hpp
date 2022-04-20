@@ -362,8 +362,8 @@ private:
 
 inline unsigned short NonDLocalReliability::uses_method() const
 {
-  if (mppSearchType) return (npsolFlag) ? NPSOL_SQP : OPTPP_Q_NEWTON;
-  else               return DEFAULT_METHOD;
+  if (mppSearchType) return (npsolFlag) ? SUBMETHOD_NPSOL : SUBMETHOD_OPTPP;
+  else               return SUBMETHOD_NONE;
 }
 
 

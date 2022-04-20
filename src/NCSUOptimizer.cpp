@@ -57,7 +57,6 @@ NCSUOptimizer::NCSUOptimizer(ProblemDescDB& problem_db, Model& model):
   solutionTarget(probDescDB.get_real("method.solution_target")),
   userObjectiveEval(NULL)
 { 
-  initialize(); 
   check_inputs();
 }
 
@@ -73,7 +72,6 @@ NCSUOptimizer(Model& model, size_t max_iter, size_t max_eval,
   solutionTarget(solution_target), userObjectiveEval(NULL)
 { 
   maxIterations = max_iter; maxFunctionEvals = max_eval;
-  initialize(); 
   check_inputs();
 }
 
@@ -85,7 +83,6 @@ NCSUOptimizer::NCSUOptimizer(Model& model):
   setUpType(SETUP_MODEL), minBoxSize(-1.),
   volBoxSize(-1.), solutionTarget(-DBL_MAX), userObjectiveEval(NULL)
 { 
-  initialize(); 
   check_inputs();
 }
 
@@ -107,7 +104,7 @@ NCSUOptimizer(const RealVector& var_l_bnds, const RealVector& var_u_bnds,
 }
 
 
-void NCSUOptimizer::initialize()
+void NCSUOptimizer::check_sub_iterator_conflict()
 {
   // Prevent nesting of an instance of a Fortran iterator within another
   // instance of the same iterator (which would result in data clashes since
@@ -115,16 +112,16 @@ void NCSUOptimizer::initialize()
   // sub-models and test each sub-iterator for NCSU presence.
   Iterator sub_iterator = iteratedModel.subordinate_iterator();
   if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name() == NCSU_DIRECT  ||
-	 sub_iterator.uses_method() == NCSU_DIRECT ) )
+       ( sub_iterator.method_name() == NCSU_DIRECT ||
+	 sub_iterator.uses_method() == SUBMETHOD_DIRECT ) )
     sub_iterator.method_recourse();
   ModelList& sub_models = iteratedModel.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
     if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() == NCSU_DIRECT  ||
-	   sub_iterator.uses_method() == NCSU_DIRECT ) )
+	 ( sub_iterator.method_name() == NCSU_DIRECT ||
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT ) )
       sub_iterator.method_recourse();
   }
 }
@@ -254,6 +251,14 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
   }
 
   return 0;
+}
+
+
+void NCSUOptimizer::initialize_run()
+{
+  Optimizer::initialize_run();
+
+  check_sub_iterator_conflict();
 }
 
 

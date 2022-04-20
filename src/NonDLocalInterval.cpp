@@ -64,7 +64,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
   // instantiate the optimizer used to compute the output interval bounds
   switch (sub_optimizer_select(
 	  probDescDB.get_ushort("method.nond.opt_subproblem_solver"))) {
-  case SUBMETHOD_SQP: {
+  case SUBMETHOD_NPSOL: {
 #ifdef HAVE_NPSOL
     int deriv_level = 3;
     minMaxOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
@@ -72,7 +72,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
 #endif // HAVE_NPSOL
     npsolFlag =  true; break;
   }
-  case SUBMETHOD_NIP:
+  case SUBMETHOD_OPTPP:
 #ifdef HAVE_OPTPP
     minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
 			       ("optpp_q_newton", minMaxModel));
@@ -95,8 +95,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
     if (!sub_iterator.is_null() && 
 	 ( sub_iterator.method_name() ==  NPSOL_SQP ||
 	   sub_iterator.method_name() == NLSSOL_SQP ||
-	   sub_iterator.uses_method() ==  NPSOL_SQP ||
-	   sub_iterator.uses_method() == NLSSOL_SQP ) )
+	   sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
       sub_iterator.method_recourse();
     ModelList& sub_models = iteratedModel.subordinate_models();
     for (ModelLIter ml_iter = sub_models.begin();
@@ -105,8 +104,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
       if (!sub_iterator.is_null() && 
 	   ( sub_iterator.method_name() ==  NPSOL_SQP ||
 	     sub_iterator.method_name() == NLSSOL_SQP ||
-	     sub_iterator.uses_method() ==  NPSOL_SQP ||
-	     sub_iterator.uses_method() == NLSSOL_SQP ) )
+	     sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
 	sub_iterator.method_recourse();
     }
   }

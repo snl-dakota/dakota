@@ -83,6 +83,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  void initialize_run();
   void core_run();
 
   void declare_sources();
@@ -109,6 +110,8 @@ private:
   void initialize(); ///< shared code among model-based constructors
 
   void check_inputs(); ///< verify problem respects NCSU DIRECT Fortran limits
+
+  void check_sub_iterator_conflict(); ///< prevent Fortran solver nesting
 
   //
   //- Heading: Data

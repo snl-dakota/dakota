@@ -31,6 +31,17 @@ SOLBase::SOLBase(Model& model):
   boundsArraySize(0), linConstraintMatrixF77(NULL),
   upperFactorHessianF77(NULL), constraintJacMatrixF77(NULL)
 {
+  // Use constructor to populate only the problem_db attributes inherited by 
+  // NPSOL/NLSSOL from SOLBase (none currently).  For attributes inherited by
+  // NPSOL/NLSSOL from the Iterator hierarchy that are needed in SOLBase,
+  // it's a bit cleaner/more flexible to have them passed through member
+  // function parameter lists rather than re-extracted from problem_db.
+  //const ProblemDescDB& problem_db = model.problem_description_db();
+}
+
+
+void SOLBase::check_sub_iterator_conflict(Model& model)
+{
   // Prevent nesting of an instance of a Fortran iterator within another
   // instance of the same iterator (which would result in data clashes since
   // Fortran does not support object independence).  Recurse through all
@@ -42,8 +53,7 @@ SOLBase::SOLBase(Model& model):
   if (!sub_iterator.is_null() && 
       ( sub_iterator.method_name() ==  NPSOL_SQP ||
 	sub_iterator.method_name() == NLSSOL_SQP ||
-	sub_iterator.uses_method() ==  NPSOL_SQP ||
-	sub_iterator.uses_method() == NLSSOL_SQP ) )
+	sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
     sub_iterator.method_recourse();
   ModelList& sub_models = model.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
@@ -52,17 +62,9 @@ SOLBase::SOLBase(Model& model):
     if (!sub_iterator.is_null() && 
 	 ( sub_iterator.method_name() ==  NPSOL_SQP ||
 	   sub_iterator.method_name() == NLSSOL_SQP ||
-	   sub_iterator.uses_method() ==  NPSOL_SQP ||
-	   sub_iterator.uses_method() == NLSSOL_SQP ) )
+	   sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
       sub_iterator.method_recourse();
   }
-
-  // Use constructor to populate only the problem_db attributes inherited by 
-  // NPSOL/NLSSOL from SOLBase (none currently).  For attributes inherited by
-  // NPSOL/NLSSOL from the Iterator hierarchy that are needed in SOLBase,
-  // it's a bit cleaner/more flexible to have them passed through member
-  // function parameter lists rather than re-extracted from problem_db.
-  //const ProblemDescDB& problem_db = model.problem_description_db();
 }
 
 

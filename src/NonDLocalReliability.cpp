@@ -72,8 +72,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     switch (sub_optimizer_select(
 	    probDescDB.get_ushort("method.nond.opt_subproblem_solver"))) {
-    case SUBMETHOD_SQP: npsolFlag =  true; break;
-    case SUBMETHOD_NIP: npsolFlag = false; break;
+    case SUBMETHOD_NPSOL: npsolFlag =  true; break;
+    case SUBMETHOD_OPTPP: npsolFlag = false; break;
     default:
       Cerr << "\nError: invalid MPP optimizer selection in NonDLocalReliability"
 	   << std::endl;
@@ -93,38 +93,6 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     Cerr << "\nError: integration refinement only supported for MPP methods."
 	 << std::endl;
     err_flag = true;
-  }
-
-  // Prevent nesting of an instance of a Fortran iterator within another
-  // instance of the same iterator (which would result in data clashes since
-  // Fortran does not support object independence).  Recurse through all
-  // sub-models and test each sub-iterator for SOL presence.
-  // Note 1: This check is performed for DOT, CONMIN, and SOLBase, but not
-  //         for LHS since it is only active in pre-processing.
-  // Note 2: NPSOL/NLSSOL on the outer loop with NonDLocalReliability on the
-  //         inner loop precludes all NPSOL-based MPP searches;
-  //         NonDLocalReliability on the outer loop with NPSOL/NLSSOL on an
-  //         inner loop is only a problem for the no_approx MPP search (since
-  //         iteratedModel is not invoked w/i an approx-based MPP search).
-  if (mppSearchType == SUBMETHOD_NO_APPROX && npsolFlag) {
-    Iterator sub_iterator = iteratedModel.subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	( sub_iterator.method_name() ==  NPSOL_SQP ||
-	  sub_iterator.method_name() == NLSSOL_SQP ||
-	  sub_iterator.uses_method() ==  NPSOL_SQP ||
-	  sub_iterator.uses_method() == NLSSOL_SQP ) )
-      sub_iterator.method_recourse();
-    ModelList& sub_models = iteratedModel.subordinate_models();
-    for (ModelLIter ml_iter = sub_models.begin();
-	 ml_iter != sub_models.end(); ml_iter++) {
-      sub_iterator = ml_iter->subordinate_iterator();
-      if (!sub_iterator.is_null() && 
-	  ( sub_iterator.method_name() ==  NPSOL_SQP ||
-	    sub_iterator.method_name() == NLSSOL_SQP ||
-	    sub_iterator.uses_method() ==  NPSOL_SQP ||
-	    sub_iterator.uses_method() == NLSSOL_SQP ) )
-	sub_iterator.method_recourse();
-    }
   }
 
   const Variables& curr_vars = iteratedModel.current_variables();
@@ -533,7 +501,37 @@ void NonDLocalReliability::initialize_graphics(int iterator_server_id)
 
 void NonDLocalReliability::pre_run()
 {
-  NonDReliability::pre_run();
+  Analyzer::pre_run();
+
+  // Prevent nesting of an instance of a Fortran iterator within another
+  // instance of the same iterator (which would result in data clashes since
+  // Fortran does not support object independence).  Recurse through all
+  // sub-models and test each sub-iterator for SOL presence.
+  // Note 1: This check is performed for DOT, CONMIN, and SOLBase, but not
+  //         for LHS since it is only active in pre-processing.
+  // Note 2: NPSOL/NLSSOL on the outer loop with NonDLocalReliability on the
+  //         inner loop precludes all NPSOL-based MPP searches;
+  //         NonDLocalReliability on the outer loop with NPSOL/NLSSOL on an
+  //         inner loop is only a problem for the no_approx MPP search (since
+  //         iteratedModel is not invoked w/i an approx-based MPP search).
+  if (mppSearchType == SUBMETHOD_NO_APPROX && npsolFlag) {
+    Iterator sub_iterator = iteratedModel.subordinate_iterator();
+    if (!sub_iterator.is_null() && 
+	( sub_iterator.method_name() ==  NPSOL_SQP ||
+	  sub_iterator.method_name() == NLSSOL_SQP ||
+	  sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
+      sub_iterator.method_recourse();
+    ModelList& sub_models = iteratedModel.subordinate_models();
+    for (ModelLIter ml_iter = sub_models.begin();
+	 ml_iter != sub_models.end(); ml_iter++) {
+      sub_iterator = ml_iter->subordinate_iterator();
+      if (!sub_iterator.is_null() && 
+	  ( sub_iterator.method_name() ==  NPSOL_SQP ||
+	    sub_iterator.method_name() == NLSSOL_SQP ||
+	    sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
+	sub_iterator.method_recourse();
+    }
+  }
 
   // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
   // initialization of Model mappings for iteratedModel, but local recursions

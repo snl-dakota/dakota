@@ -946,8 +946,8 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_GPMSA,             "gpmsa")
   (SUBMETHOD_MUQ,               "muq")
   (SUBMETHOD_QUESO,             "queso")
-  (SUBMETHOD_NIP,               "nip")
-  (SUBMETHOD_SQP,               "sqp")
+  (SUBMETHOD_OPTPP,             "nip")
+  (SUBMETHOD_NPSOL,             "sqp")
   (SUBMETHOD_EA,                "ea")
   (SUBMETHOD_EGO,               "ego")
   (SUBMETHOD_SBGO,              "sbgo")
@@ -1711,7 +1711,7 @@ unsigned short Iterator::uses_method() const
   if (iteratorRep) // envelope fwd to letter
     return iteratorRep->uses_method();
   else // default definition (letter lacking redefinition of virtual fn.)
-    return DEFAULT_METHOD; // 0: no enabling iterator for this iterator
+    return SUBMETHOD_NONE; // no enabling iterator for this iterator
 }
 
 

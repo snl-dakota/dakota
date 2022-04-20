@@ -51,6 +51,9 @@ protected:
   //- Heading: Convenience member functions
   //
 
+  /// check for clash with nested use of Fortran code
+  void check_sub_iterator_conflict(Model& model);
+
   /// Allocates F77 linear constraint arrays for the SOL algorithms
   void allocate_linear_arrays(int num_cv, const RealMatrix& lin_ineq_coeffs,
 			      const RealMatrix& lin_eq_coeffs);

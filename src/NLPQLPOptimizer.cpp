@@ -86,25 +86,6 @@ void NLPQLPOptimizer::initialize()
     abort_handler(-1);
   }
 
-  // Prevent nesting of an instance of a Fortran iterator within another
-  // instance of the same iterator (which would result in data clashes since
-  // Fortran does not support object independence).  Recurse through all
-  // sub-models and test each sub-iterator for NLPQL presence.
-  Iterator sub_iterator = iteratedModel.subordinate_iterator();
-  if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name() == NLPQL_SQP  ||
-	 sub_iterator.uses_method() == NLPQL_SQP ) )
-    sub_iterator.method_recourse();
-  ModelList& sub_models = iteratedModel.subordinate_models();
-  for (ModelLIter ml_iter = sub_models.begin();
-       ml_iter != sub_models.end(); ml_iter++) {
-    sub_iterator = ml_iter->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() == NLPQL_SQP  ||
-	   sub_iterator.uses_method() == NLPQL_SQP ) )
-      sub_iterator.method_recourse();
-  }
-
   // Set NLPQL optimization controls 
   L      = 1;
   ACC    = convergenceTol; // override default=1.0e-9;
@@ -211,12 +192,36 @@ void NLPQLPOptimizer::deallocate_workspace()
 }
 
 
+void NLPQLPOptimizer::check_sub_iterator_conflict()
+{
+  // Prevent nesting of an instance of a Fortran iterator within another
+  // instance of the same iterator (which would result in data clashes since
+  // Fortran does not support object independence).  Recurse through all
+  // sub-models and test each sub-iterator for NLPQL presence.
+  Iterator sub_iterator = iteratedModel.subordinate_iterator();
+  if (!sub_iterator.is_null() && 
+       ( sub_iterator.method_name() == NLPQL_SQP ||
+	 sub_iterator.uses_method() == SUBMETHOD_NLPQL ) )
+    sub_iterator.method_recourse();
+  ModelList& sub_models = iteratedModel.subordinate_models();
+  for (ModelLIter ml_iter = sub_models.begin();
+       ml_iter != sub_models.end(); ml_iter++) {
+    sub_iterator = ml_iter->subordinate_iterator();
+    if (!sub_iterator.is_null() && 
+	 ( sub_iterator.method_name() == NLPQL_SQP ||
+	   sub_iterator.uses_method() == SUBMETHOD_NLPQL ) )
+      sub_iterator.method_recourse();
+  }
+}
+
+
 void NLPQLPOptimizer::initialize_run()
 {
   Optimizer::initialize_run();
 
   allocate_constraints();
   allocate_workspace();
+  check_sub_iterator_conflict();
 
   const RealVector& local_cdv = iteratedModel.continuous_variables();
   for (size_t i=0; i<numContinuousVars; i++)

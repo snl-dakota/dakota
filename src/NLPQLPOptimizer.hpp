@@ -148,6 +148,8 @@ private:
 
   void allocate_constraints(); ///< Allocates constraint mappings
 
+  void check_sub_iterator_conflict(); ///< prevent Fortran solver nesting
+
   /// L :       Number of parallel systems, i.e. function calls during
   ///           line search at predetermined iterates.
   ///           HINT: If only less than 10 parallel function evaluations

@@ -1194,44 +1194,44 @@ unsigned short NonD::
 sub_optimizer_select(unsigned short requested_sub_method,
 		     unsigned short   default_sub_method)
 {
-  unsigned short assigned_sub_method = requested_sub_method;
+  unsigned short assigned_sub_method = SUBMETHOD_NONE;
   switch (requested_sub_method) {
-  case SUBMETHOD_SQP:
-#ifndef HAVE_NPSOL
+  case SUBMETHOD_NPSOL:
+#ifdef HAVE_NPSOL
+    assigned_sub_method = requested_sub_method;
+#else
     Cerr << "\nError: this executable not configured with NPSOL SQP."
 	 << "\n       Please select alternate sub-method solver." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
     break;
-  case SUBMETHOD_NIP:
-#ifndef HAVE_OPTPP
+  case SUBMETHOD_OPTPP:
+#ifdef HAVE_OPTPP
+    assigned_sub_method = requested_sub_method;
+#else
     Cerr << "\nError: this executable not configured with OPT++ NIP."
 	 << "\n       Please select alternate sub-method solver." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
     break;
   case SUBMETHOD_DEFAULT:
     switch (default_sub_method) {
-    case SUBMETHOD_SQP: // use SUBMETHOD_SQP if available
+    case SUBMETHOD_NPSOL: // use SUBMETHOD_NPSOL if available
 #ifdef HAVE_NPSOL
-      assigned_sub_method = SUBMETHOD_SQP;
+      assigned_sub_method = SUBMETHOD_NPSOL;
 #elif HAVE_OPTPP
-      assigned_sub_method = SUBMETHOD_NIP;
+      assigned_sub_method = SUBMETHOD_OPTPP;
 #endif
       break;
-    case SUBMETHOD_NIP: // use SUBMETHOD_NIP if available
+    case SUBMETHOD_OPTPP: // use SUBMETHOD_OPTPP if available
 #ifdef HAVE_OPTPP
-      assigned_sub_method = SUBMETHOD_NIP;
+      assigned_sub_method = SUBMETHOD_OPTPP;
 #elif HAVE_NPSOL
-      assigned_sub_method = SUBMETHOD_SQP;
+      assigned_sub_method = SUBMETHOD_NPSOL;
 #endif
       break;
     }
-    if (assigned_sub_method == SUBMETHOD_DEFAULT) {
+    if (assigned_sub_method == SUBMETHOD_NONE)
       Cerr << "\nError: this executable not configured with an available "
 	   << "sub-method solver." << std::endl;
-      assigned_sub_method = SUBMETHOD_NONE;
-    }
     break;
   case SUBMETHOD_NONE:
     // assigned = requested = SUBMETHOD_NONE is valid for the case where a
@@ -1241,7 +1241,6 @@ sub_optimizer_select(unsigned short requested_sub_method,
   default:
     Cerr << "\nError: sub-method not recognized in NonD::"
 	 << "sub_optimizer_select()." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE;
     break;
   }
   return assigned_sub_method;

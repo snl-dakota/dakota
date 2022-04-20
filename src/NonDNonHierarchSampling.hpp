@@ -70,6 +70,11 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   void print_variance_reduction(std::ostream& s);
 
+  /// return name of active optimizer method
+  unsigned short uses_method() const;
+  /// perform a numerical solver method switch due to a detected conflict
+  void method_recourse();
+
   //
   //- Heading: member functions
   //
@@ -259,6 +264,41 @@ private:
   /// pointer to NonDACV instance used in static member functions
   static NonDNonHierarchSampling* nonHierSampInstance;
 };
+
+
+inline unsigned short NonDNonHierarchSampling::uses_method() const
+{ return optSubProblemSolver; }
+
+
+inline void NonDNonHierarchSampling::method_recourse()
+{
+  bool err_flag = false;
+  switch (optSubProblemSolver) {
+  case SUBMETHOD_NPSOL:
+#ifdef HAVE_OPTPP
+    optSubProblemSolver = SUBMETHOD_OPTPP;
+#else
+    err_flag = true;
+#endif
+    break;
+  case SUBMETHOD_OPTPP:
+#ifdef HAVE_NPSOL
+    optSubProblemSolver = SUBMETHOD_NPSOL;
+#else
+    err_flag = true;
+#endif
+    break;
+  }
+
+  if (err_flag) {
+    Cerr << "\nError: method conflict detected in NonDNonHierarchSampling but "
+	 << "no alternate solver available." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  else
+    Cerr << "\nWarning: method recourse invoked in NonDNonHierarchSampling due "
+	 << "to detected method conflict.\n\n";
+}
 
 
 inline void NonDNonHierarchSampling::
