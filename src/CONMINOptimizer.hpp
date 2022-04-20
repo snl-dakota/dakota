@@ -128,6 +128,8 @@ private:
 
   void allocate_constraints(); ///< Allocates constraint mappings
 
+  void check_sub_iterator_conflict(); ///< prevent Fortran solver nesting
+
   //
   //- Heading: Data members
   //

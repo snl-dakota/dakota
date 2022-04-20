@@ -53,31 +53,6 @@ CONMINOptimizer::CONMINOptimizer(const String& method_string, Model& model):
 
 void CONMINOptimizer::initialize()
 {
-  // Prevent nesting of an instance of a Fortran iterator within another
-  // instance of the same iterator (which would result in data clashes since
-  // Fortran does not support object independence).  Recurse through all
-  // sub-models and test each sub-iterator for CONMIN presence.
-  // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
-  //       for LHS since it is only active in pre-processing.
-  Iterator sub_iterator = iteratedModel.subordinate_iterator();
-  if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name() == CONMIN_FRCG ||
-	 sub_iterator.method_name() == CONMIN_MFD  ||
-	 sub_iterator.uses_method() == CONMIN_FRCG ||
-	 sub_iterator.uses_method() == CONMIN_MFD ) )
-    sub_iterator.method_recourse();
-  ModelList& sub_models = iteratedModel.subordinate_models();
-  for (ModelLIter ml_iter = sub_models.begin();
-       ml_iter != sub_models.end(); ml_iter++) {
-    sub_iterator = ml_iter->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() == CONMIN_FRCG ||
-	   sub_iterator.method_name() == CONMIN_MFD  ||
-	   sub_iterator.uses_method() == CONMIN_FRCG ||
-	   sub_iterator.uses_method() == CONMIN_MFD ) )
-      sub_iterator.method_recourse();
-  }
-
   // Initialize CONMIN specific data
   NFDG   = 0;       // default finite difference flag
   IPRINT = 1;       // default flag to control amount of output info
@@ -258,6 +233,34 @@ void CONMINOptimizer::deallocate_workspace()
 }
 
 
+void CONMINOptimizer::check_sub_iterator_conflict()
+{
+  // Prevent nesting of an instance of a Fortran iterator within another
+  // instance of the same iterator (which would result in data clashes since
+  // Fortran does not support object independence).  Recurse through all
+  // sub-models and test each sub-iterator for CONMIN presence.
+  // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
+  //       for LHS since it is only active in pre-processing.
+  Iterator sub_iterator = iteratedModel.subordinate_iterator();
+  if (!sub_iterator.is_null() && 
+       ( sub_iterator.method_name() == CONMIN_FRCG ||
+	 sub_iterator.method_name() == CONMIN_MFD  ||
+	 sub_iterator.uses_method() == CONMIN_FRCG ||
+	 sub_iterator.uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
+    sub_iterator.method_recourse();
+  ModelList& sub_models = iteratedModel.subordinate_models();
+  for (ModelLIter ml_iter = sub_models.begin();
+       ml_iter != sub_models.end(); ml_iter++) {
+    sub_iterator = ml_iter->subordinate_iterator();
+    if (!sub_iterator.is_null() && 
+	 ( sub_iterator.method_name() == CONMIN_FRCG ||
+	   sub_iterator.method_name() == CONMIN_MFD  ||
+	   sub_iterator.uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
+      sub_iterator.method_recourse();
+  }
+}
+
+
 void CONMINOptimizer::initialize_run()
 {
   Optimizer::initialize_run();
@@ -265,6 +268,7 @@ void CONMINOptimizer::initialize_run()
   // Allocate space for CONMIN arrays
   allocate_constraints();
   allocate_workspace();
+  check_sub_iterator_conflict();
 
   // initialize the IC and ISC vectors
   size_t i;

@@ -1196,7 +1196,7 @@ sub_optimizer_select(unsigned short requested_sub_method,
 {
   unsigned short assigned_sub_method = SUBMETHOD_NONE;
   switch (requested_sub_method) {
-  case SUBMETHOD_SQP:
+  case SUBMETHOD_NPSOL:
 #ifdef HAVE_NPSOL
     assigned_sub_method = requested_sub_method;
 #else
@@ -1204,7 +1204,7 @@ sub_optimizer_select(unsigned short requested_sub_method,
 	 << "\n       Please select alternate sub-method solver." << std::endl;
 #endif
     break;
-  case SUBMETHOD_NIP:
+  case SUBMETHOD_OPTPP:
 #ifdef HAVE_OPTPP
     assigned_sub_method = requested_sub_method;
 #else
@@ -1214,18 +1214,18 @@ sub_optimizer_select(unsigned short requested_sub_method,
     break;
   case SUBMETHOD_DEFAULT:
     switch (default_sub_method) {
-    case SUBMETHOD_SQP: // use SUBMETHOD_SQP if available
+    case SUBMETHOD_NPSOL: // use SUBMETHOD_NPSOL if available
 #ifdef HAVE_NPSOL
-      assigned_sub_method = SUBMETHOD_SQP;
+      assigned_sub_method = SUBMETHOD_NPSOL;
 #elif HAVE_OPTPP
-      assigned_sub_method = SUBMETHOD_NIP;
+      assigned_sub_method = SUBMETHOD_OPTPP;
 #endif
       break;
-    case SUBMETHOD_NIP: // use SUBMETHOD_NIP if available
+    case SUBMETHOD_OPTPP: // use SUBMETHOD_OPTPP if available
 #ifdef HAVE_OPTPP
-      assigned_sub_method = SUBMETHOD_NIP;
+      assigned_sub_method = SUBMETHOD_OPTPP;
 #elif HAVE_NPSOL
-      assigned_sub_method = SUBMETHOD_SQP;
+      assigned_sub_method = SUBMETHOD_NPSOL;
 #endif
       break;
     }

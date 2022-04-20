@@ -259,8 +259,8 @@
     <!ENTITY method_gradient_sub_problem_solver '
              <optional>
 	       <oneOf label="Optimization Solver">
-                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp" />
-                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip" />
+                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp" />
+                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip" />
                </oneOf>
              </optional>
 	     ' >
@@ -268,8 +268,8 @@
     <!ENTITY method_local_sub_problem_solver '
              <optional>
 	       <oneOf label="Optimization Solver">
-                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp" />
-                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip" />
+                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp" />
+                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip" />
 	         &sblo_sub_problem_solver;
 	         &pattern_search_sub_problem_solver;
 	       </oneOf>
@@ -290,8 +290,8 @@
     <!ENTITY method_sub_problem_solver '
              <optional>
 	       <oneOf label="Optimization Solver">
-                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp" />
-                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip" />
+                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp" />
+                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip" />
 	         &sblo_sub_problem_solver;
 	         &pattern_search_sub_problem_solver;
 	         &sbgo_sub_problem_solver;
@@ -3318,8 +3318,8 @@
 	      </optional>
 	      <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve"  minOccurs="0" default="nip pre-solve for emulators" >
 		<oneOf label="Pre-solve Optimizer">
-		  <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp"   />
-		  <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip"   />
+		  <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp"   />
+		  <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip"   />
 		  <keyword  id="none" name="none" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}" label="none"   />
 		</oneOf>
 	      </keyword>

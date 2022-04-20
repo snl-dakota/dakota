@@ -51,7 +51,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
 {
   // default solver to OPT++ NIP based on numerical experience
   optSubProblemSolver = sub_optimizer_select(
-    probDescDB.get_ushort("method.nond.opt_subproblem_solver"), SUBMETHOD_NIP);
+    probDescDB.get_ushort("method.nond.opt_subproblem_solver"),SUBMETHOD_OPTPP);
 
   // check iteratedModel for model form hi1erarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -137,6 +137,31 @@ void NonDNonHierarchSampling::pre_run()
   NonDEnsembleSampling::pre_run();
 
   nonHierSampInstance = this;
+
+  /* Numerical solves do not involve use of iteratedModel
+
+  // Prevent nesting of an instance of a Fortran iterator within another
+  // instance of the same iterator.  Run-time check since NestedModel::
+  // subIterator is constructed in init_communicators().
+  if (optSubProblemSolver == SUBMETHOD_NPSOL) {
+    Iterator sub_iterator = iteratedModel.subordinate_iterator();
+    if (!sub_iterator.is_null() && 
+	( sub_iterator.method_name() ==     NPSOL_SQP ||
+	  sub_iterator.method_name() ==    NLSSOL_SQP ||
+	  sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
+      sub_iterator.method_recourse();
+    ModelList& sub_models = iteratedModel.subordinate_models();
+    for (ModelLIter ml_iter = sub_models.begin();
+	 ml_iter != sub_models.end(); ml_iter++) {
+      sub_iterator = ml_iter->subordinate_iterator();
+      if (!sub_iterator.is_null() && 
+	  ( sub_iterator.method_name() ==     NPSOL_SQP ||
+	    sub_iterator.method_name() ==    NLSSOL_SQP ||
+	    sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
+	sub_iterator.method_recourse();
+    }
+  }
+  */
 
   // assign an aggregate model key that persists for core_run()
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
@@ -730,8 +755,8 @@ nonhierarch_numerical_solution(const RealVector& cost,
 
   if (varianceMinimizer.is_null()) {
 
-    bool use_adapter   = (optSubProblemSolver != SUBMETHOD_SQP &&
-			  optSubProblemSolver != SUBMETHOD_NIP);
+    bool use_adapter   = (optSubProblemSolver != SUBMETHOD_NPSOL &&
+			  optSubProblemSolver != SUBMETHOD_OPTPP);
     bool construct_dfs = (optSubProblemSolver == SUBMETHOD_SBLO ||
 			  optSubProblemSolver == SUBMETHOD_SBGO);
     if (use_adapter) {
@@ -874,7 +899,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
     }
     else { // existing call-back APIs do not require adapter or surrogate
       switch (optSubProblemSolver) {
-      case SUBMETHOD_SQP: {
+      case SUBMETHOD_NPSOL: {
 	int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) ?
 	  2 : 0; // 0 neither, 1 obj, 2 constr, 3 both
 	Real fdss = 1.e-6;
@@ -887,7 +912,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
 #endif
 	break;
       }
-      case SUBMETHOD_NIP: {
+      case SUBMETHOD_OPTPP: {
 	Real max_step = 100000.;
 #ifdef HAVE_OPTPP
 	varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,

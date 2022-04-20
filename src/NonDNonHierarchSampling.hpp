@@ -274,16 +274,16 @@ inline void NonDNonHierarchSampling::method_recourse()
 {
   bool err_flag = false;
   switch (optSubProblemSolver) {
-  case SUBMETHOD_SQP:
+  case SUBMETHOD_NPSOL:
 #ifdef HAVE_OPTPP
-    optSubProblemSolver = SUBMETHOD_NIP;
+    optSubProblemSolver = SUBMETHOD_OPTPP;
 #else
     err_flag = true;
 #endif
     break;
-  case SUBMETHOD_NIP:
+  case SUBMETHOD_OPTPP:
 #ifdef HAVE_NPSOL
-    optSubProblemSolver = SUBMETHOD_SQP;
+    optSubProblemSolver = SUBMETHOD_NPSOL;
 #else
     err_flag = true;
 #endif

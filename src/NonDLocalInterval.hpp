@@ -118,7 +118,7 @@ private:
 
 
 inline unsigned short NonDLocalInterval::uses_method() const
-{ return (npsolFlag) ? SUBMETHOD_SQP : SUBMETHOD_NIP; }
+{ return (npsolFlag) ? SUBMETHOD_NPSOL : SUBMETHOD_OPTPP; }
 
 } // namespace Dakota
 
