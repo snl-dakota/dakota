@@ -19,6 +19,9 @@ void DakotaPythonPlugin::initialize() {
 
   py::initialize_interpreter();
   py::print("DakotaPythonPlugin: interpreter is live.");
+
+  // DTS: assuming a single analysis driver
+  set_python_names(analysisDrivers[0]);
 }
 
 void DakotaPythonPlugin::finalize() {
@@ -39,18 +42,14 @@ DakotaPlugins::EvalResponse DakotaPythonPlugin::evaluate(
 
   DakotaPlugins::EvalResponse response;
   resize_response_arrays(request, response);
-
-  // DTS: set somewhere else
-  std::string const py_mod_fn_str = "textbook:text_book_dict";
-  set_python_names(py_mod_fn_str);
-
   py::dict py_request = pack_python_request<py::array>(request);
-  py::module_ textbook = py::module_::import(py_module_name.c_str());
+
+  py::module_ python_module= py::module_::import(py_module_name.c_str());
+  py::dict py_response =
+      python_module.attr(py_function_name.c_str())(py_request);
 
   size_t const num_fns = request.activeSet.size();
   size_t const num_derivs = request.derivativeVars.size();
-
-  py::dict py_response = textbook.attr(py_function_name.c_str())(py_request);
   unpack_python_response(num_fns, num_derivs, py_response, response);
 
   return response;
@@ -68,12 +67,9 @@ std::vector<DakotaPlugins::EvalResponse> DakotaPythonPlugin::evaluate(
     py_requests.append(pack_python_request<py::array>(requests[i]));
   }
 
-  // DTS: set somewhere else
-  std::string const py_mod_fn_str = "textbook:text_book_batch";
-  set_python_names(py_mod_fn_str);
-
-  py::module_ textbook = py::module_::import(py_module_name.c_str());
-  py::list py_responses = textbook.attr(py_function_name.c_str())(py_requests);
+  py::module_ python_module= py::module_::import(py_module_name.c_str());
+  py::list py_responses =
+      python_module.attr(py_function_name.c_str())(py_requests);
 
   for (size_t i = 0; i < num_requests; ++i) {
     // DTS: these should be the same for all requests
@@ -85,15 +81,11 @@ std::vector<DakotaPlugins::EvalResponse> DakotaPythonPlugin::evaluate(
   return responses;
 }
 
-// May want to move this up to the parent class, but API for the
-// send and return dicts is not consistent with Python direct
-// interface at the moment.
 void DakotaPythonPlugin::unpack_python_response(
     size_t const num_fns,
     size_t const num_derivs,
     py::dict const& py_response,
     DakotaPlugins::EvalResponse& response) {
-
 
   for (auto item : py_response) {
     auto key = item.first.cast<std::string>();
@@ -156,7 +148,7 @@ void DakotaPythonPlugin::unpack_python_response(
   }
 }
 
-
 extern "C" BOOST_SYMBOL_EXPORT DakotaPythonPlugin dakota_interface_plugin;
 DakotaPythonPlugin dakota_interface_plugin;
+
 }

@@ -128,6 +128,7 @@ void PluginInterface::load_plugin()
   }
   if (outputLevel >= VERBOSE_OUTPUT)
     Cout << "Loading plugin interface from '" << pluginPath << "'" << std::endl;
+  pluginInterface->set_analysis_drivers(analysisDrivers);
   pluginInterface->initialize();
 }
 

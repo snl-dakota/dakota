@@ -11,20 +11,20 @@ variables
   descriptors 'x1' 'x2'
 
 interface
-  analysis_drivers 'f_of_x_equals_x'  #s0,#s1
-#  analysis_drivers 'textbook'        #s2,#s3
-#  analysis_drivers 'alt_textbook'    #s4,#s5
+  analysis_drivers 'f_of_x_equals_x'           #s0,#s1
+#  analysis_drivers 'textbook:text_book_dict'  #s2
+#  analysis_drivers 'textbook:text_book_batch' #s3
+
   plugin
-    library_path '/home/user/dakota/source/src/plugins/build/libidentity_map.so'                 #s0,#s1
-#    library_path '/home/user/dakota/source/src/plugins/build/libtextbook_python_plugin.so'      #s2,#s3
-#    library_path '/home/user/dakota/source/src/plugins/build/libalt_textbook_python_plugin.so'  #s4,#s5
-#  batch                              #s1,#s3,#s5
+    library_path '/home/user/dakota/source/src/plugins/build/libidentity_map.so'            #s0,#s1
+#    library_path '/home/user/dakota/source/src/plugins/build/libgeneric_python_plugin.so'  #s2,#s3
+#  batch                                                                                    #s1,#s3
 
 responses
-  descriptors 'f0' 'f2'        #s0,#s1
-  response_functions 1         #s0,#s1
-#  descriptors 'f0' 'c1' 'c2'  #s2,#s3,#s4,#s5
-#  response_functions 3        #s2,#s3,#s4,#s5
+  descriptors 'f0' 'f1'        #s0,#s1
+  response_functions 2         #s0,#s1
+#  descriptors 'f0' 'c1' 'c2'  #s2,#s3
+#  response_functions 3        #s2,#s3
   analytic_gradients
   analytic_hessians
 

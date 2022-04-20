@@ -60,7 +60,14 @@ class DakotaInterfaceAPI
 
 public:
 
+  std::vector<std::string> analysisDrivers;
+
   virtual void initialize() {};
+
+  /// set the analysis drivers from the input file
+  void set_analysis_drivers(std::vector<std::string> const& analysis_drivers) {
+    analysisDrivers = analysis_drivers;
+  }
 
   /// report the supported number of continuous, discrete int/string/real vars
   virtual std::vector<size_t> variable_counts()
