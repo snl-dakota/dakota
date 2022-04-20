@@ -1194,20 +1194,22 @@ unsigned short NonD::
 sub_optimizer_select(unsigned short requested_sub_method,
 		     unsigned short   default_sub_method)
 {
-  unsigned short assigned_sub_method = requested_sub_method;
+  unsigned short assigned_sub_method = SUBMETHOD_NONE;
   switch (requested_sub_method) {
   case SUBMETHOD_SQP:
-#ifndef HAVE_NPSOL
+#ifdef HAVE_NPSOL
+    assigned_sub_method = requested_sub_method;
+#else
     Cerr << "\nError: this executable not configured with NPSOL SQP."
 	 << "\n       Please select alternate sub-method solver." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
     break;
   case SUBMETHOD_NIP:
-#ifndef HAVE_OPTPP
+#ifdef HAVE_OPTPP
+    assigned_sub_method = requested_sub_method;
+#else
     Cerr << "\nError: this executable not configured with OPT++ NIP."
 	 << "\n       Please select alternate sub-method solver." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
     break;
   case SUBMETHOD_DEFAULT:
@@ -1227,11 +1229,9 @@ sub_optimizer_select(unsigned short requested_sub_method,
 #endif
       break;
     }
-    if (assigned_sub_method == SUBMETHOD_DEFAULT) {
+    if (assigned_sub_method == SUBMETHOD_NONE)
       Cerr << "\nError: this executable not configured with an available "
 	   << "sub-method solver." << std::endl;
-      assigned_sub_method = SUBMETHOD_NONE;
-    }
     break;
   case SUBMETHOD_NONE:
     // assigned = requested = SUBMETHOD_NONE is valid for the case where a
@@ -1241,7 +1241,6 @@ sub_optimizer_select(unsigned short requested_sub_method,
   default:
     Cerr << "\nError: sub-method not recognized in NonD::"
 	 << "sub_optimizer_select()." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE;
     break;
   }
   return assigned_sub_method;

@@ -1711,7 +1711,7 @@ unsigned short Iterator::uses_method() const
   if (iteratorRep) // envelope fwd to letter
     return iteratorRep->uses_method();
   else // default definition (letter lacking redefinition of virtual fn.)
-    return DEFAULT_METHOD; // 0: no enabling iterator for this iterator
+    return SUBMETHOD_NONE; // no enabling iterator for this iterator
 }
 
 
