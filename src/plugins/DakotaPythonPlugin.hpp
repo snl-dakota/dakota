@@ -31,7 +31,7 @@ public:
   void initialize() override; 
   void finalize() override;
 
-  void set_python_names(std::string const& py_module_fn_str);
+  void set_python_function(std::string const& py_module_fn_str);
 
   DakotaPlugins::EvalResponse evaluate(
       DakotaPlugins::EvalRequest const& request) override;
@@ -41,6 +41,8 @@ public:
       override;
 
 protected:
+
+  py::function python_function;
 
   template<typename RetT, typename T>
   RetT copy_vector_to_pybind11(std::vector<T> const& src) const {
@@ -97,8 +99,6 @@ protected:
     return python_request;
   }
 
-  std::string py_module_name = "";
-  std::string py_function_name = "";
   void unpack_python_response(size_t const num_fns, size_t const num_derivs,
       pybind11::dict const& py_response,
       DakotaPlugins::EvalResponse& response);

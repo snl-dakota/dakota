@@ -21,7 +21,14 @@ void DakotaPythonPlugin::initialize() {
   py::print("DakotaPythonPlugin: interpreter is live.");
 
   // DTS: assuming a single analysis driver
-  set_python_names(analysisDrivers[0]);
+  const size_t num_drivers = analysisDrivers.size();
+  if (num_drivers != 1) {
+    throw(std::runtime_error("Python plugin supports "
+        "a single analysis driver -- " +
+        std::to_string(num_drivers) + " were provided."));
+  }
+
+  set_python_function(analysisDrivers[0]);
 }
 
 void DakotaPythonPlugin::finalize() {
@@ -29,12 +36,13 @@ void DakotaPythonPlugin::finalize() {
   py::finalize_interpreter();
 }
 
-void DakotaPythonPlugin::set_python_names(std::string const& py_module_fn_str) {
+void DakotaPythonPlugin::set_python_function(std::string const& py_module_fn_str) {
   const size_t sep_pos = py_module_fn_str.find(":");
-  const size_t fn_str_length = py_module_fn_str.size() - sep_pos - 1;
+  std::string const py_module_name = py_module_fn_str.substr(0, sep_pos);
+  std::string const py_function_name = py_module_fn_str.substr(sep_pos + 1);
 
-  py_module_name = py_module_fn_str.substr(0, sep_pos);
-  py_function_name = py_module_fn_str.substr(sep_pos + 1, fn_str_length);
+  py::module_ py_module = py::module_::import(py_module_name.c_str());
+  python_function = py_module.attr(py_function_name.c_str());
 }
 
 DakotaPlugins::EvalResponse DakotaPythonPlugin::evaluate(
@@ -42,11 +50,9 @@ DakotaPlugins::EvalResponse DakotaPythonPlugin::evaluate(
 
   DakotaPlugins::EvalResponse response;
   resize_response_arrays(request, response);
-  py::dict py_request = pack_python_request<py::array>(request);
 
-  py::module_ python_module= py::module_::import(py_module_name.c_str());
-  py::dict py_response =
-      python_module.attr(py_function_name.c_str())(py_request);
+  py::dict py_request = pack_python_request<py::array>(request);
+  py::dict py_response = python_function(py_request);
 
   size_t const num_fns = request.activeSet.size();
   size_t const num_derivs = request.derivativeVars.size();
@@ -67,12 +73,9 @@ std::vector<DakotaPlugins::EvalResponse> DakotaPythonPlugin::evaluate(
     py_requests.append(pack_python_request<py::array>(requests[i]));
   }
 
-  py::module_ python_module= py::module_::import(py_module_name.c_str());
-  py::list py_responses =
-      python_module.attr(py_function_name.c_str())(py_requests);
+  py::list py_responses = python_function(py_requests);
 
   for (size_t i = 0; i < num_requests; ++i) {
-    // DTS: these should be the same for all requests
     size_t const num_fns = requests[i].activeSet.size();
     size_t const num_derivs = requests[i].derivativeVars.size();
     unpack_python_response(num_fns, num_derivs, py_responses[i], responses[i]);
