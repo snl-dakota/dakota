@@ -28,29 +28,24 @@ public:
   DakotaPythonPlugin() {};
   virtual ~DakotaPythonPlugin() { finalize(); };
 
-  void initialize() override {
-    std::cout << "Dynamically loading " << PLUGIN_PYTHON_LIB << std::endl;
-    boost::dll::shared_library python_lib(PLUGIN_PYTHON_LIB,
-        boost::dll::load_mode::rtld_global);
+  void initialize() override; 
+  void finalize() override;
 
-    py::initialize_interpreter();
-    py::print("DakotaPythonPlugin: interpreter is live.");
-  }
+  void set_python_names(std::string const& py_module_fn_str);
 
-  void finalize() override {
-    py::print("DakotaPythonPlugin: interpreter shutting down.");
-    py::finalize_interpreter();
-  }
+  DakotaPlugins::EvalResponse evaluate(
+      DakotaPlugins::EvalRequest const& request) override;
 
-  void set_python_names(std::string const& py_module_fn_str) {
-    const size_t sep_pos = py_module_fn_str.find(":");
-    const size_t fn_str_length = py_module_fn_str.size() - sep_pos - 1;
-
-    py_module_name = py_module_fn_str.substr(0, sep_pos);
-    py_function_name = py_module_fn_str.substr(sep_pos + 1, fn_str_length);
-  }
+  std::vector<DakotaPlugins::EvalResponse>
+      evaluate(std::vector<DakotaPlugins::EvalRequest> const& requests)
+      override;
 
 protected:
+
+  template<typename RetT, typename T>
+  RetT copy_vector_to_pybind11(std::vector<T> const& src) const {
+    return py::cast(src);
+  }
 
   template<typename py_arrayT>
       py::dict pack_python_request(
@@ -104,13 +99,9 @@ protected:
 
   std::string py_module_name = "";
   std::string py_function_name = "";
-
-private:
-
-  template<typename RetT, typename T>
-  RetT copy_vector_to_pybind11(std::vector<T> const& src) const {
-    return py::cast(src);
-  }
+  void unpack_python_response(size_t const num_fns, size_t const num_derivs,
+      pybind11::dict const& py_response,
+      DakotaPlugins::EvalResponse& response);
 
 };
 
