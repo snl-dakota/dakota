@@ -1494,17 +1494,17 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
       for (size_t qoi = 0; qoi < numFunctions ; ++qoi) {
         agg_var_qoi(0, step) += var_qoi(qoi, step);
       }
-      sum_sqrt_var_cost[0] += std::sqrt(agg_var_qoi(0, step) * level_cost(cost, step));
+      sum_sqrt_var_cost[0] += std::sqrt(agg_var_qoi(0, step) * level_cost_vec[step]);
     }
   }else if (qoiAggregation==QOI_AGGREGATION_MAX) {
     for (size_t qoi = 0; qoi < nb_aggregation_qois ; ++qoi) {
       sum_sqrt_var_cost[qoi] = 0;
       for (size_t step = 0; step < num_steps ; ++step) {
-        sum_sqrt_var_cost[qoi] += std::sqrt(var_qoi(qoi, step) * level_cost(cost, step));
+        sum_sqrt_var_cost[qoi] += std::sqrt(var_qoi(qoi, step) * level_cost_vec[step]);
         agg_var_qoi(qoi, step) = var_qoi(qoi, step);
         if (outputLevel == DEBUG_OUTPUT){
           Cout << "\n\tN_target for Qoi: " << qoi << ", with agg_var_qoi_in: " << var_qoi(qoi, step) << std::endl;
-          Cout << "\n\tN_target for Qoi: " << qoi << ", with level_cost: " << level_cost(cost, step) << std::endl;
+          Cout << "\n\tN_target for Qoi: " << qoi << ", with level_cost: " << level_cost_vec[step] << std::endl;
           Cout << "\n\tN_target for Qoi: " << qoi << ", with agg_var_qoi: " << sum_sqrt_var_cost << std::endl;
         }
       }
