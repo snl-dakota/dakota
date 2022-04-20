@@ -656,7 +656,9 @@ void NonDLHSSampling::core_run()
   bool log_best_flag = !numResponseFunctions; // DACE mode w/ opt or NLS
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 
-  store_evaluations();
+  //Needed if we want to do bootstrapping for covariance of 
+  //scalarization term cov[mean,sigma]
+  //store_evaluations(); 
 }
 
 void NonDLHSSampling::store_evaluations(){
