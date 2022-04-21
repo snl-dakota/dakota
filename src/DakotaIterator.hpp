@@ -397,9 +397,8 @@ public:
 
   /// Return whether the iterator is the top level iterator
   bool top_level();
-
   /// Set the iterator's top level flag
-  void top_level(const bool &tflag);
+  void top_level(bool tflag);
 
 protected:
 

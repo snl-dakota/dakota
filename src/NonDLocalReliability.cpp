@@ -433,6 +433,11 @@ void NonDLocalReliability::derived_init_communicators(ParLevLIter pl_iter)
     // TO DO: distinguish gradient concurrency for truth vs. surrogate?
     //        (probably doesn't matter for surrogate)
 
+    // miPLIndex needed in method_recourse() prior to assignment in
+    // NonD::derived_set_communicators().  While derived_init_communicators()
+    // may be invoked multiple times, this captures a consistent state to that
+    // present during the invocation of check_sub_iterator_conflict().
+    if (npsolFlag) miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
     mppOptimizer.init_communicators(pl_iter);
 
     if (integrationRefinement)
