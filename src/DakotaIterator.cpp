@@ -1225,15 +1225,20 @@ void Iterator::init_communicators(ParLevLIter pl_iter)
   }
 }
 
-bool Iterator::top_level() {
-  if(iteratorRep) return iteratorRep->top_level();
+
+bool Iterator::top_level()
+{
+  if (iteratorRep) return iteratorRep->top_level();
   else return topLevel;
 }
 
-void Iterator::top_level(const bool &flag) {
-  if(iteratorRep) iteratorRep->top_level(flag);
+
+void Iterator::top_level(bool flag)
+{
+  if (iteratorRep) iteratorRep->top_level(flag);
   else topLevel = flag;
 }
+
 
 void Iterator::derived_init_communicators(ParLevLIter pl_iter)
 {

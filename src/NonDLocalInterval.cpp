@@ -125,6 +125,11 @@ void NonDLocalInterval::derived_init_communicators(ParLevLIter pl_iter)
 {
   iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
+  // miPLIndex needed in method_recourse() prior to assignment in
+  // NonD::derived_set_communicators().  While derived_init_communicators()
+  // may be invoked multiple times, this captures a consistent state to that
+  // present during the invocation of check_sub_iterator_conflict().
+  if (npsolFlag) miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
   // minMaxOptimizer uses NoDBBaseConstructor, so no need to manage DB
   // list nodes at this level
   minMaxOptimizer.init_communicators(pl_iter);
