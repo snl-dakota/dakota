@@ -254,7 +254,7 @@ protected:
   void variables_to_sample(const Variables& vars, Real* sample_vars);
 
   /// return error estimates associated with each of the finalStatistics
-  const RealVector& response_error_estimates() const;
+  const RealSymMatrix& response_error_estimates() const;
 
   //
   //- Heading: New virtual functions
@@ -308,7 +308,7 @@ protected:
   RealMatrix momentGrads;
 
   /// standard errors (estimator std deviation) for each of the finalStatistics
-  RealVector finalStatErrors;
+  RealSymMatrix finalStatErrors;
 
   /// current increment in a sequence of samples
   int samplesIncrement;
@@ -628,7 +628,7 @@ sample_to_variables(const Real* sample_vars, Variables& vars)
 // default to iteratedModel for dss values
 
 
-inline const RealVector& NonDSampling::response_error_estimates() const
+inline const RealSymMatrix& NonDSampling::response_error_estimates() const
 { return finalStatErrors; }
 
 } // namespace Dakota

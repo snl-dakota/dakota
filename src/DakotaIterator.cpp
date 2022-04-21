@@ -1449,7 +1449,7 @@ void Iterator::response_results_active_set(const ActiveSet& set)
 }
 
 
-const RealVector& Iterator::response_error_estimates() const
+const RealSymMatrix& Iterator::response_error_estimates() const
 {
   // no default implementation if no override
   if (!iteratorRep) {
