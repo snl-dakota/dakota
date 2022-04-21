@@ -272,6 +272,12 @@ inline unsigned short NonDNonHierarchSampling::uses_method() const
 
 inline void NonDNonHierarchSampling::method_recourse()
 {
+  // NonDNonHierarchSampling numerical solves must protect use of Fortran
+  // solvers at this level from conflicting with use at a higher level.
+  // However, it is not necessary to check the other direction by defining
+  // check_sub_iterator_conflict(), since solver execution does not span
+  // any Model evaluations.
+
   bool err_flag = false;
   switch (optSubProblemSolver) {
   case SUBMETHOD_NPSOL:

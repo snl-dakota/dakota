@@ -221,7 +221,7 @@ void NLPQLPOptimizer::initialize_run()
 
   allocate_constraints();
   allocate_workspace();
-  check_sub_iterator_conflict();
+  //check_sub_iterator_conflict(); // now virtual and called from Iterator
 
   const RealVector& local_cdv = iteratedModel.continuous_variables();
   for (size_t i=0; i<numContinuousVars; i++)

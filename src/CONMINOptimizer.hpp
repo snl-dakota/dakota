@@ -111,8 +111,9 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  /// performs run-time set up
   void initialize_run();
+
+  void check_sub_iterator_conflict();
 
 private:
 
@@ -127,8 +128,6 @@ private:
   void deallocate_workspace(); ///< Releases workspace memory
 
   void allocate_constraints(); ///< Allocates constraint mappings
-
-  void check_sub_iterator_conflict(); ///< prevent Fortran solver nesting
 
   //
   //- Heading: Data members

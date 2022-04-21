@@ -1042,11 +1042,11 @@ void Iterator::run()
     ++execNum;
 
     if(evaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-      evaluationsDBState = evaluationsDB.iterator_allocate(method_id(), top_level());
+      evaluationsDBState
+	= evaluationsDB.iterator_allocate(method_id(), top_level());
       if(evaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
     }
-
 
     String method_string = method_enum_to_string(methodName);
     initialize_run();
@@ -1204,6 +1204,18 @@ void Iterator::init_communicators(ParLevLIter pl_iter)
       // don't need to invoke derived_init_communicators() since each unique
       // init only needs to be recursed once (see also Model::init_comms)
     }
+
+    // Ordering: must perform method recourse after construction, and would
+    // prefer to perform recourse before initialization of comms (so that
+    // previous initialization does not need to be freed and then replaced).
+    // But for NestedModel's subIterator, it would be complicated to insert
+    // recourse after ctor and before init_comms (see management of circular
+    // dependency in NestedModel::drived_init_communicators()), so we instead
+    // perform recourse after derived_init_comms above has completed its
+    // recursion (requiring free and re-init for method recourse).  But we do
+    // keep this all within the scope of the init_comms recursion so that we
+    // wrap up all initialization here, prior to set_comms downstream.
+    check_sub_iterator_conflict(); // Note: can pull pl_iter from methodPCIter
 
     // After partitioning is complete, output tags for concurrent
     // iterators are established.  Initialize the eval id prefix for
@@ -1697,15 +1709,22 @@ const Model& Iterator::algorithm_space_model() const
 }
 
 
-/** This is used to avoid clashes in state between non-object-oriented
-    (i.e., F77, C) iterator executions, when such iterators could
-    potentially be executing simulataneously (e.g., nested execution).
-    It is not an issue (and a used method is not reported) in cases
-    where a helper execution is completed before a lower level one
-    could be initiated; an example of this is DIRECT for maximization
-    of expected improvement: the EIF maximization is completed before
-    a new point evaluation (which could include nested iteration) is
-    performed. */
+/** This is used to avoid clashes in state between non-object-oriented (i.e.,
+    F77, C) iterator executions, when such iterators could potentially be
+    executing simultaneously (e.g., nested execution).  It is not an issue
+    (and a used method is not reported) in cases where a helper execution is
+    completed before a lower level one could be initiated; an example of this
+    is DIRECT for maximization of expected improvement: the EIF maximization
+    is completed before a new point evaluation (which could include nested
+    iteration) is performed. */
+void Iterator::check_sub_iterator_conflict()
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->check_sub_iterator_conflict();
+  // else default is no-op
+}
+
+
 unsigned short Iterator::uses_method() const
 {
   if (iteratorRep) // envelope fwd to letter

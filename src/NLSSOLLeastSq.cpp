@@ -146,10 +146,11 @@ least_sq_eval(int& mode, int& m, int& n, int& nrowfj, double* x, double* f,
 }
 
 
-void NLSSOLLeastSq::pre_run()
+void NLSSOLLeastSq::check_sub_iterator_conflict()
 {
   // Run-time check (NestedModel::subIterator is constructed in init_comms())
-  check_sub_iterator_conflict(iteratedModel);
+  //if (setUpType == "model")
+  SOLBase::check_sub_iterator_conflict(iteratedModel);
 }
 
 

@@ -245,7 +245,6 @@ void CONMINOptimizer::check_sub_iterator_conflict()
   if (!sub_iterator.is_null() && 
        ( sub_iterator.method_name() == CONMIN_FRCG ||
 	 sub_iterator.method_name() == CONMIN_MFD  ||
-	 sub_iterator.uses_method() == CONMIN_FRCG ||
 	 sub_iterator.uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
     sub_iterator.method_recourse();
   ModelList& sub_models = iteratedModel.subordinate_models();
@@ -268,7 +267,7 @@ void CONMINOptimizer::initialize_run()
   // Allocate space for CONMIN arrays
   allocate_constraints();
   allocate_workspace();
-  check_sub_iterator_conflict();
+  //check_sub_iterator_conflict(); // now virtual and called from Iterator
 
   // initialize the IC and ISC vectors
   size_t i;

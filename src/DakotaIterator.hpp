@@ -218,6 +218,8 @@ public:
   /// layered on top of iteratedModel by the derived Iterator ctor chain
   virtual const Model& algorithm_space_model() const;
 
+  /// detect any conflicts due to recursive use of the same Fortran solver
+  virtual void check_sub_iterator_conflict();
   /// return name of any enabling iterator used by this iterator
   virtual unsigned short uses_method() const;
   /// perform a method switch, if possible, due to a detected conflict
@@ -277,6 +279,11 @@ public:
   void parallel_configuration_iterator(ParConfigLIter pc_iter);
   /// return methodPCIter
   ParConfigLIter parallel_configuration_iterator() const;
+  /// set methodPCIterMap
+  void parallel_configuration_iterator_map(
+    std::map<size_t, ParConfigLIter> pci_map);
+  /// return methodPCIterMap
+  std::map<size_t, ParConfigLIter> parallel_configuration_iterator_map() const;
 
   /// invoke set_communicators(pl_iter) prior to run()
   void run(ParLevLIter pl_iter);
@@ -599,10 +606,12 @@ private:
 
 };
 
+
 inline std::shared_ptr<TraitsBase> Iterator::traits() const
 {
     return (iteratorRep) ? iteratorRep->traits() : methodTraits;
 }
+
 
 inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
 {
@@ -613,6 +622,19 @@ inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
 
 inline ParConfigLIter Iterator::parallel_configuration_iterator() const
 { return (iteratorRep) ? iteratorRep->methodPCIter : methodPCIter; }
+
+
+inline void Iterator::
+parallel_configuration_iterator_map(std::map<size_t, ParConfigLIter> pci_map)
+{
+  if (iteratorRep) iteratorRep->methodPCIterMap = pci_map;
+  else             methodPCIterMap = pci_map;
+}
+
+
+inline std::map<size_t, ParConfigLIter> Iterator::
+parallel_configuration_iterator_map() const
+{ return (iteratorRep) ? iteratorRep->methodPCIterMap : methodPCIterMap; }
 
 
 inline void Iterator::iterated_model(const Model& model)

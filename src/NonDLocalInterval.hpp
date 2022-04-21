@@ -57,9 +57,8 @@ public:
   /// statistical estimator
   void core_run();
 
-  /// return name of active optimizer method
+  void check_sub_iterator_conflict();
   unsigned short uses_method() const;
-  /// perform an MPP optimizer method switch due to a detected conflict
   void method_recourse();
 
 protected:
