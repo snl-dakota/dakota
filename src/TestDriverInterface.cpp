@@ -732,8 +732,8 @@ int TestDriverInterface::cantilever_ml()
     // distribution parameters (e.g., dakota_rbdo_cantilever_mapvars.in) instead
     // of augmenting the uncertain variables, then the number of variables is 4.
     // Design gradients are not supported for the case of design var insertion.
-    if ( (numVars != 5 && numVars != 7) || (numADIV != 1) || numADRV ||//var count, no dv
-         (gradFlag && numVars == 5 && numDerivVars != 4) ) { // design insertion
+    /*if ( (numVars != 5 && numVars != 7) || (numADIV != 1) || numADRV ||//var count, no dv
+         (gradFlag && numVars == 5 && (numDerivVars != 4 && numDerivVars != 7 ) ) ) { // design insertion
       Cerr << "Error: Bad number of variables in cantilever direct fn."
            << std::endl;
       Cerr << "Num vars:" << numVars << ", " << numDerivVars
@@ -744,7 +744,7 @@ int TestDriverInterface::cantilever_ml()
       Cerr << "Error: Bad number of functions in mod_cantilever direct fn."
            << std::endl;
       abort_handler(INTERFACE_ERROR);
-    }
+    }*/
 
     // Compute the cross-sectional area, stress, and displacement of the
     // cantilever beam.  This simulator is unusual in that it must support both
@@ -761,6 +761,7 @@ int TestDriverInterface::cantilever_ml()
         X = xCM[VAR_X], // horizontal load
         Y = xCM[VAR_Y]; // vertical load
 
+
     // allow f,c1,c2 (optimization) or just c1,c2 (calibration)
     bool objective; size_t c1i, c2i;
     if (numFns == 2) { objective = false; c1i = 0; c2i = 1; }
@@ -773,24 +774,27 @@ int TestDriverInterface::cantilever_ml()
     std::map<var_t, int>::iterator area_type_iter = xDIM.find(VAR_area_type);
     int area_type = (area_type_iter == xDIM.end()) ? 1. : area_type_iter->second; // Correlation Af for objective
 
-    Real D0 = 2.2535, L = 100., area, w_sq, t_sq, R_sq, X_sq, Y_sq;
+    Real D0 = 2.2535, L = 100., w_sq, t_sq, R_sq, X_sq, Y_sq;
     Real stress;
     Real D1, D2, D3, displ;
-    area = w*t;
-    if(area_type == 1){// Rectangle
+    Real area = w*t;
+    if(area_type == 1 || area_type == 5){// Rectangle
+      //Cout << "#Samples: R: " << R << " E: " << E << " X: " << X << " Y: " << Y << std::endl;
+      // 1: Normal model
+      // 5: No horizontal load
       w_sq = w*w; t_sq = t*t;
       R_sq = R*R; X_sq = X*X; Y_sq = Y*Y;
 
-      stress = 6.*L*Y/w/t_sq + 6.*L*X/w_sq/t;
+      stress = area_type == 1 ? 600*Y/w/t_sq + 600*X/w_sq/t : 600*Y/w/t_sq;
 
       D1 = 4.*pow(L, 3)/E/area;
-      D2 = pow(Y/t_sq, 2)+pow(X/w_sq, 2);
+      D2 = area_type == 1 ? pow(Y/t_sq, 2)+pow(X/w_sq, 2) : pow(Y/t_sq, 2);
       D3 = D1/std::sqrt(D2);
       displ = D1*std::sqrt(D2);
     }else if(area_type == 2){// Ellipse
       const Real m_pi = 3.14159265358979323846;
-      Real a = t/2. * 4./m_pi;
-      Real b = w/2.;
+      const Real a = t/2. * 4./m_pi;
+      const Real b = w/2.;
 
       stress = (4.*L)/(m_pi*a*b) * std::sqrt(pow(Y/a, 2) + pow(X/b, 2));
 
@@ -800,6 +804,18 @@ int TestDriverInterface::cantilever_ml()
           pow((pow(L, 3) * X)/(3.*E*I_y), 2) +
           pow((pow(L, 3) * Y)/(3.*E*I_x), 2)
       );
+    }else if(area_type == 3 || area_type == 4){
+      // 3: Circle with radius to be inscribed in rectangle (circ_circ)
+      // 4: Circle with same area as rectangle (circ_area)
+      const Real m_pi = 3.14159265358979323846;
+
+      const Real radius = (area_type == 3) ? std::sqrt(w*t)/2. : std::sqrt(w*t/m_pi);
+
+      const Real I_c = m_pi/4.*pow(radius, 4);
+      const Real C = std::sqrt(X*X + Y*Y);
+
+      stress = (C*L*radius/(2.*I_c));
+      displ = (C*pow(L, 3))/(3.*E*I_c);
     }else{
       Cout << "TestDriverInterface::mod_cantilever_ml(): wrong area type.\n";
       abort_handler(INTERFACE_ERROR);
@@ -810,11 +826,11 @@ int TestDriverInterface::cantilever_ml()
 
     // **** c1:
     if (directFnASV[c1i] & 1)
-      fnVals[c1i] = stress - R; //stress/R - 1.;
+      fnVals[c1i] = stress/R - 1.; //stress - R; //stress/R - 1.;
 
     // **** c2:
     if (directFnASV[c2i] & 1)
-      fnVals[c2i] = displ - D0; //displ/D0 - 1.;
+      fnVals[c2i] = displ/D0 - 1.; //displ - D0; //displ/D0 - 1.;
 
     // **** df/dx:
     if (objective && (directFnASV[0] & 2))
@@ -4750,6 +4766,10 @@ double TestDriverInterface::problem18_Ax(const double &A, const double &x){
     return 0.5/6. * log(x) + 0.4;
   else if(A == -4)
     return 0.69*1./exp(2.*x)+0.3;
+  else if(A== -5)
+    return 0.1/6. * x + 0.5;
+  else if(A== -6)
+    return 0.1/6. * x + 1.2; //Old version: 1.6 New version: 1.2
   else
     throw INTERFACE_ERROR;
 }

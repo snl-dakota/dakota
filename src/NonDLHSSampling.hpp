@@ -144,6 +144,11 @@ protected:
   /// Archive all results
   void archive_results(int num_samples, size_t ind_inc = 0);
   
+  /// Store samples in a matrix for bootstrapping
+  void store_evaluations();
+
+  Real bootstrap_covariance(const size_t qoi);
+
 private:
 
   //
@@ -176,6 +181,9 @@ private:
   /// Threshold to keep number of principal components that explain 
   /// this much variance
   Real percentVarianceExplained;
+
+  /// Datastructure to store samples which can be used for bootstrapping
+  RealMatrix qoiSamplesMatrix;
 };
 
 } // namespace Dakota
