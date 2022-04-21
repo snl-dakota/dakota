@@ -1,5 +1,20 @@
-#@ TODO REVIEW: Do the reliability methods also need NPSOL?
-#@ *: DakotaConfig=HAVE_DOT
+#@ s0: DakotaConfig=HAVE_DOT
+#@ s1: DakotaConfig=HAVE_DOT
+#@ s2: DakotaConfig=HAVE_DOT
+#@ s3: DakotaConfig=HAVE_DOT
+#@ s4: DakotaConfig=HAVE_DOT
+#@ s5: DakotaConfig=HAVE_DOT
+#@ s6: DakotaConfig=HAVE_DOT
+#@ s7: DakotaConfig=HAVE_DOT
+#@ s8: DakotaConfig=HAVE_DOT
+#@ s9: DakotaConfig=HAVE_DOT
+#@ s10: DakotaConfig=HAVE_DOT
+#@ s11: DakotaConfig=HAVE_DOT
+#@ s12: DakotaConfig=HAVE_DOT
+#@ s13: DakotaConfig=HAVE_DOT
+#@ s14: DakotaConfig=HAVE_DOT
+#@ s15: DakotaConfig=HAVE_DOT
+#@ s16: DakotaConfig=HAVE_NPSOL
 # DAKOTA Input File: dakota_rbdo_cantilever.in
 # Bi-level RBDO using the cantilever test function.
 
@@ -12,8 +27,8 @@ environment,
 method,
 	id_method = 'OPTIM'
 	model_pointer = 'OPTIM_M'
-	dot_sqp
-#	npsol_sqp
+	dot_sqp			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
+#	npsol_sqp		#s16 # coverage for method recourse
 	  convergence_tolerance = 1.e-6
 	  output verbose
 	scaling
@@ -50,8 +65,8 @@ responses,
 	objective_functions = 1
 	nonlinear_inequality_constraints = 2
 	nonlinear_inequality_upper_bounds = .00135 .00135 #s0,#s1,#s2,#s3
-#	nonlinear_inequality_lower_bounds = 3. 3.	  #s4,#s5,#s6,#s7
-#	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 #s4,#s5,#s6,#s7
+#	nonlinear_inequality_lower_bounds = 3. 3.	  #s4,#s5,#s6,#s7,#s16
+#	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 #s4,#s5,#s6,#s7,#s16
 	numerical_gradients
 	  method_source dakota
 	  interval_type central
@@ -67,10 +82,10 @@ method,
 	local_reliability #nip
 #	  mpp_search x_taylor_mean		#s1,#s5,#s9,#s13
 #	  mpp_search x_taylor_mpp		#s2,#s6,#s10,#s14
-#	  mpp_search no_approx			#s3,#s7,#s11,#s15
-	  num_response_levels = 0 1 1		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-	  response_levels = 0.0 0.0		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-#	  compute reliabilities			#s4,#s5,#s6,#s7
+#	  mpp_search no_approx			#s3,#s7,#s11,#s15,#s16
+	  num_response_levels = 0 1 1	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s16
+	  response_levels = 0.0 0.0	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s16
+#	  compute reliabilities			#s4,#s5,#s6,#s7,#s16
 #	  num_probability_levels = 0 1 1	#s8,#s9,#s10,#s11
 #	  probability_levels = .00135 .00135	#s8,#s9,#s10,#s11
 #	  num_reliability_levels = 0 1 1	#s12,#s13,#s14,#s15
