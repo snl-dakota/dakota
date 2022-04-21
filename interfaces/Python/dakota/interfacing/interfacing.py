@@ -3,6 +3,7 @@ from __future__ import print_function, unicode_literals
 from io import open
 import io
 import collections
+import functools
 import re
 import sys
 import copy
@@ -513,7 +514,6 @@ class Results(object):
 
         return results_dict
 
-
     def _set_batch(self, flag):
         self._batch = flag
 
@@ -1017,4 +1017,15 @@ def dprepro(template, parameters=None, results=None, include=None,
         with open(output,"w",encoding="utf-8") as f:
             f.write(output_string)
 
+def python_interface(ignore_asv=False, batch=False):
+    """ Decorator factory to wrap direct python callbacks """
+
+    def decorate(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            params, results = read_params_from_dict(*args, ignore_asv=ignore_asv, batch=batch)
+            results = fn(params, results)
+            return results.return_direct_results_dict()
+        return wrapper
+    return decorate
 
