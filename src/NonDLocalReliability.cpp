@@ -466,6 +466,42 @@ void NonDLocalReliability::derived_free_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDLocalReliability::check_sub_iterator_conflict()
+{
+  // Prevent nesting of an instance of a Fortran iterator within another
+  // instance of the same iterator (which would result in data clashes since
+  // Fortran does not support object independence).  Recurse through all
+  // sub-models and test each sub-iterator for SOL presence.
+  // Note 1: This check is performed for DOT, CONMIN, and SOLBase, but not
+  //         for LHS since it is only active in pre-processing.
+  // Note 2: NPSOL/NLSSOL on the outer loop with NonDLocalReliability on the
+  //         inner loop precludes all NPSOL-based MPP searches;
+  //         NonDLocalReliability on the outer loop with NPSOL/NLSSOL on an
+  //         inner loop is only a problem for the no_approx MPP search (since
+  //         iteratedModel is not invoked w/i an approx-based MPP search).
+  // Note 3: forces lower-level to accommodate, even though this level may be
+  //         the more flexible one in its ability to switch away from NPSOL.
+  if (mppSearchType == SUBMETHOD_NO_APPROX && npsolFlag) {
+    Iterator sub_iterator = iteratedModel.subordinate_iterator();
+    if (!sub_iterator.is_null() && 
+	( sub_iterator.method_name() ==  NPSOL_SQP ||
+	  sub_iterator.method_name() == NLSSOL_SQP ||
+	  sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
+      sub_iterator.method_recourse();
+    ModelList& sub_models = iteratedModel.subordinate_models();
+    for (ModelLIter ml_iter = sub_models.begin();
+	 ml_iter != sub_models.end(); ml_iter++) {
+      sub_iterator = ml_iter->subordinate_iterator();
+      if (!sub_iterator.is_null() && 
+	  ( sub_iterator.method_name() ==  NPSOL_SQP ||
+	    sub_iterator.method_name() == NLSSOL_SQP ||
+	    sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
+	sub_iterator.method_recourse();
+    }
+  }
+}
+
+
 void NonDLocalReliability::initialize_graphics(int iterator_server_id)
 {
   // Set up special graphics for CDF/CCDF visualization
@@ -502,36 +538,6 @@ void NonDLocalReliability::initialize_graphics(int iterator_server_id)
 void NonDLocalReliability::pre_run()
 {
   Analyzer::pre_run();
-
-  // Prevent nesting of an instance of a Fortran iterator within another
-  // instance of the same iterator (which would result in data clashes since
-  // Fortran does not support object independence).  Recurse through all
-  // sub-models and test each sub-iterator for SOL presence.
-  // Note 1: This check is performed for DOT, CONMIN, and SOLBase, but not
-  //         for LHS since it is only active in pre-processing.
-  // Note 2: NPSOL/NLSSOL on the outer loop with NonDLocalReliability on the
-  //         inner loop precludes all NPSOL-based MPP searches;
-  //         NonDLocalReliability on the outer loop with NPSOL/NLSSOL on an
-  //         inner loop is only a problem for the no_approx MPP search (since
-  //         iteratedModel is not invoked w/i an approx-based MPP search).
-  if (mppSearchType == SUBMETHOD_NO_APPROX && npsolFlag) {
-    Iterator sub_iterator = iteratedModel.subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	( sub_iterator.method_name() ==  NPSOL_SQP ||
-	  sub_iterator.method_name() == NLSSOL_SQP ||
-	  sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
-      sub_iterator.method_recourse();
-    ModelList& sub_models = iteratedModel.subordinate_models();
-    for (ModelLIter ml_iter = sub_models.begin();
-	 ml_iter != sub_models.end(); ml_iter++) {
-      sub_iterator = ml_iter->subordinate_iterator();
-      if (!sub_iterator.is_null() && 
-	  ( sub_iterator.method_name() ==  NPSOL_SQP ||
-	    sub_iterator.method_name() == NLSSOL_SQP ||
-	    sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
-	sub_iterator.method_recourse();
-    }
-  }
 
   // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
   // initialization of Model mappings for iteratedModel, but local recursions
@@ -2844,12 +2850,34 @@ void NonDLocalReliability::print_results(std::ostream& s, short results_state)
 
 void NonDLocalReliability::method_recourse()
 {
+  // This must now occur at runtime, due to introduction of IteratorScheduler
+  // within NestedModel (there is a circular dependency that is managed within
+  // NestedModel::derived_init_communicators() after construction, so
+  // subIterator is not available for method query until then).  Among several
+  // options, seems best to go with minimal change at higher levels and isolate
+  // additional complexity within method_recourse.
+  // > Option 1: free old and init new as per below (simpler for now)
+  // > Option 2: defer instantiation as in NonDNonHierarchSampling::
+  //   varianceMinimizer (but adding comm parallelism): if null at run time,
+  //   instantiate mppOptimizer w/ latest method and init/set comms
+
+  // Note: for gradient-based solvers with identical config, it is not necessary
+  // to repartition comms; rather we copy the old config to the new Iterator.
+  // In more general cases, we may want to reconfig using resize_communicators()
+  // but again updating existing parallel levels/config.  Avoid free_comms()
+  // followed by re-init, as more disruptive than necessary.
+
   Cerr << "\nWarning: method recourse invoked in NonDLocalReliability due to "
        << "detected method conflict.\n\n";
   if (mppSearchType && npsolFlag) {
 #ifdef HAVE_OPTPP
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    std::map<size_t, ParConfigLIter> pc_iter_map
+      = mppOptimizer.parallel_configuration_iterator_map();
     mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
 			    ("optpp_q_newton", mppModel));
+    mppOptimizer.parallel_configuration_iterator_map(pc_iter_map);
+    mppOptimizer.init_communicators(pl_iter); // restore methodPCIter et al.
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalReliability "
 	 << "(OPT++ NIP unavailable).\n";

@@ -328,11 +328,11 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
 }
 
 
-void NPSOLOptimizer::pre_run()
+void NPSOLOptimizer::check_sub_iterator_conflict()
 {
   // Run-time check (NestedModel::subIterator is constructed in init_comms())
   if (setUpType == "model")
-    check_sub_iterator_conflict(iteratedModel);
+    SOLBase::check_sub_iterator_conflict(iteratedModel);
 }
 
 

@@ -254,14 +254,6 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 }
 
 
-void NCSUOptimizer::initialize_run()
-{
-  Optimizer::initialize_run();
-
-  check_sub_iterator_conflict();
-}
-
-
 void NCSUOptimizer::core_run()
 {
   //------------------------------------------------------------------

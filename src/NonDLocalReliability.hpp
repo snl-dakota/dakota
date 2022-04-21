@@ -73,9 +73,8 @@ public:
   void core_run();
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
-  /// return name of active MPP optimizer
+  void check_sub_iterator_conflict();
   unsigned short uses_method() const;
-  /// perform an MPP optimizer method switch due to a detected conflict
   void method_recourse();
 
 private:

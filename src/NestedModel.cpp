@@ -550,13 +550,15 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 }
 
 
-void NestedModel::declare_sources() {
+void NestedModel::declare_sources()
+{
   evaluationsDB.declare_source(modelId, modelType, subIterator.method_id(),
-      "iterator");
+    "iterator");
   if(!optionalInterface.is_null())
-    evaluationsDB.declare_source(modelId, modelType, optionalInterface.interface_id(),
-      "interface");
+    evaluationsDB.declare_source(modelId, modelType,
+      optionalInterface.interface_id(), "interface");
 }
+
 
 /** Asynchronous flags need to be initialized for the subModel.  In
     addition, max_eval_concurrency is the outer level iterator

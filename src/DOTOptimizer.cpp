@@ -272,7 +272,7 @@ void DOTOptimizer::check_sub_iterator_conflict()
   if (!sub_iterator.is_null() && 
       ( ( sub_iterator.method_name() >= DOT_BFGS &&
 	  sub_iterator.method_name() <= DOT_SQP ) ||
-	sub_iterator.uses_method() >= SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
+	sub_iterator.uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
     sub_iterator.method_recourse();
   ModelList& sub_models = iteratedModel.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
@@ -281,7 +281,7 @@ void DOTOptimizer::check_sub_iterator_conflict()
     if (!sub_iterator.is_null() && 
 	( ( sub_iterator.method_name() >= DOT_BFGS &&
 	    sub_iterator.method_name() <= DOT_SQP ) ||
-	  sub_iterator.uses_method() >= SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
+	  sub_iterator.uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
       sub_iterator.method_recourse();
   }
 }
@@ -293,7 +293,7 @@ void DOTOptimizer::initialize_run()
 
   allocate_constraints();
   allocate_workspace();
-  check_sub_iterator_conflict();
+  //check_sub_iterator_conflict(); // now virtual and called from Iterator
 
   dotInfo = 0; // Initialize to 0 before calling DOT
 

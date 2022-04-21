@@ -84,12 +84,18 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
 
   if (err_flag)
     abort_handler(METHOD_ERROR);
+}
 
+
+void NonDLocalInterval::check_sub_iterator_conflict()
+{
   // Prevent nesting of an instance of a Fortran iterator within another
   // instance of the same iterator (which would result in data clashes since
   // Fortran does not support object independence).  Recurse through all
   // sub-models and test each sub-iterator for SOL presence.
-  // Note: NPSOL/NLSSOL share code modules, so we check for both.
+  // Note 1: NPSOL/NLSSOL share code modules, so we check for both.
+  // Note 2: forces lower-level to accommodate, even though this level may be
+  //         the more flexible one in its ability to switch away from NPSOL.
   if (npsolFlag) {
     Iterator sub_iterator = iteratedModel.subordinate_iterator();
     if (!sub_iterator.is_null() && 
@@ -275,13 +281,19 @@ extract_objective(const Variables& sub_model_vars, const Variables& recast_vars,
 
 void NonDLocalInterval::method_recourse()
 {
+  // see notes in NonDLocalReliability::method_recourse()
+
   Cerr << "\nWarning: method recourse invoked in NonDLocalInterval due to "
        << "detected method conflict.\n\n";
   if (npsolFlag) {
-    // if NPSOL already assigned, then reassign; otherwise just set the flag.
 #ifdef HAVE_OPTPP
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    std::map<size_t, ParConfigLIter> pc_iter_map
+      = minMaxOptimizer.parallel_configuration_iterator_map();
     minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
 			       ("optpp_q_newton", minMaxModel));
+    minMaxOptimizer.parallel_configuration_iterator_map(pc_iter_map);
+    minMaxOptimizer.init_communicators(pl_iter); // restore methodPCIter et al.
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalInterval "
 	 << "(OPT++ NIP unavailable).\n";
