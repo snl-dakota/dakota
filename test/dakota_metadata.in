@@ -1,12 +1,13 @@
-#@ s*: DakotaConfig=UNIX
-#@ s*: ReqFiles=dakota_metadata_wrapper.py
-#@ s*: Label=FastTest
+#@ *: DakotaConfig=UNIX
+#@ *: ReqFiles=dakota_metadata_wrapper.py
+#@ *: Label=FastTest
+#@ p0: MPIProcs=3
 
 environment
   tabular_data tabular_data_file "dakota_metadata.dat"
 
 method,
-	optpp_q_newton	#s0
+	optpp_q_newton	#s0,#p0
 #	conmin_mfd	#s1
 #	optpp_newton	#s2,#s3
 
@@ -22,9 +23,8 @@ interface,
 	  analysis_components = 'text_book'
 	parameters_file = 'p.in'
 	results_file = 'r.out'
-#	file_save
-#	file_tag
-# NOTE: Driver has no asynch support
+	file_tag
+#	asynchronous evaluation_concurrency 3  #s2
 
 responses,
 	descriptors 'f' 'c1' 'c2'
@@ -33,8 +33,8 @@ responses,
 	metadata 'seconds'
 
 # Verify results reading with ASV and combinations of derivatives
-	numerical_gradients	#s0,#s2
+	numerical_gradients	#s0,#s2,#p0
 #	analytic_gradients	#s1,#s3
 
-	no_hessians		#s0,#s1
+	no_hessians		#s0,#s1,#p0
 #	analytic_hessians	#s2,#s3

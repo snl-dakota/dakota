@@ -3,6 +3,7 @@
 # Wrapper around text_book that appends some metadata at end of file
 
 import os
+import re
 import sys
 import time
 
@@ -27,7 +28,9 @@ if __name__ == "__main__":
 
     params_name = sys.argv[1]
     results_name = sys.argv[2]
-    tmp_results = "results.tmp"
+
+    # Leave any file tag to support concurrent evaluations
+    tmp_results = results_name + ".tmp"
 
     driver_exe = wrapped_driver(params_name)
 
@@ -36,3 +39,5 @@ if __name__ == "__main__":
     with open(tmp_results, 'r') as res_in, open(results_name, 'w') as res_out:
         res_out.write(res_in.read())
         insert_metadata(start, res_out)
+
+    os.remove(tmp_results)
