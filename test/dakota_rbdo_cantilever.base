@@ -222,3 +222,17 @@ Test Number 15 succeeded
                      -9.4388661692e-05
                      -1.7404818880e-03
 <<<<< Best evaluation ID not available
+Test Number 16 succeeded
+<<<<< Function evaluation summary (UQ_I): 994 total (994 new, 0 duplicate)
+  response_fn_1: 105 val (105 n, 0 d), 105 grad (105 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 444 val (444 n, 0 d), 444 grad (444 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 445 val (445 n, 0 d), 445 grad (445 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4483876813e+00 w
+                      3.8883751142e+00 t
+<<<<< Best objective function  =
+                      9.5202497297e+00
+<<<<< Best constraint values   =
+                      2.9999983598e+00
+                      2.9999980410e+00
+<<<<< Best evaluation ID not available

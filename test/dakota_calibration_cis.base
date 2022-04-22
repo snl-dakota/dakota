@@ -1,8 +1,8 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 116 total (116 new, 0 duplicate)
-           area: 116 val (116 n, 0 d), 116 grad (116 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 116 val (116 n, 0 d), 116 grad (116 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 116 val (116 n, 0 d), 116 grad (116 n, 0 d), 0 Hess (0 n, 0 d)
+         area_1: 116 val (116 n, 0 d), 116 grad (116 n, 0 d), 0 Hess (0 n, 0 d)
+       stress_1: 116 val (116 n, 0 d), 116 grad (116 n, 0 d), 0 Hess (0 n, 0 d)
+ displacement_1: 116 val (116 n, 0 d), 116 grad (116 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.0910526482e+07 E
                       2.9397954857e+00 w
@@ -29,9 +29,9 @@ Confidence Intervals on Calibrated Parameters:
              t: [ 1.9539926368e+00, 3.3094539988e+00 ]
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 50 total (50 new, 0 duplicate)
-           area: 50 val (50 n, 0 d), 50 grad (50 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 50 val (50 n, 0 d), 50 grad (50 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 50 val (50 n, 0 d), 50 grad (50 n, 0 d), 0 Hess (0 n, 0 d)
+         area_1: 50 val (50 n, 0 d), 50 grad (50 n, 0 d), 0 Hess (0 n, 0 d)
+       stress_1: 50 val (50 n, 0 d), 50 grad (50 n, 0 d), 0 Hess (0 n, 0 d)
+ displacement_1: 50 val (50 n, 0 d), 50 grad (50 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.1000000000e+07 E
                       2.9165018173e+00 w
@@ -58,9 +58,9 @@ Confidence Intervals on Calibrated Parameters:
              t: [ 1.8763663909e+00, 3.4196697537e+00 ]
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)
-           area: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+         area_1: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+       stress_1: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+ displacement_1: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.1000000000e+07 E
                       2.9127663337e+00 w
