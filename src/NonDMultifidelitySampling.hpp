@@ -104,7 +104,8 @@ protected:
 				SizetArray& N_H_projected,
 				Sizet2DArray& N_L_projected);
 
-  void mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
+  void mfmc_estimator_variance(const RealMatrix& rho2_LH,
+			       const RealVector& var_H, const SizetArray& N_H,
 			       const RealVector& hf_targets,
 			       const SizetArray& approx_sequence,
 			       const RealMatrix& eval_ratios);
@@ -178,6 +179,11 @@ private:
   /// ratio of MFMC to MC estimator variance for the same HF samples,
   /// also known as (1 - R^2)
   RealVector estVarRatios;
+
+  /// controls use of numerical solve option: either a fallback in case of
+  /// model misordering (default = NUMERICAL_FALLBACK) or override for
+  /// robustness, e.g., to pilot over-estimation (NUMERICAL_OVERRIDE)
+  unsigned short numericalSolveMode;
 };
 
 

@@ -1,0 +1,31 @@
+environment
+  results_output
+    hdf5
+    results_output_file 'sampling_metadata'
+  write_restart 'sampling_metadata.rst'
+
+method
+  sampling
+    samples 10 
+    seed 1337
+
+variables
+  uniform_uncertain 2
+    lower_bounds -1.0 -1.0
+    upper_bounds  1.0  1.0
+    descriptors 'x1' 'x2'
+
+responses
+  response_functions 1
+    descriptors 'product'
+    no_gradients
+    no_hessians
+  metadata 'sum' 'difference'
+
+interface
+  fork
+    analysis_driver = 'hdf5_sampling_metadata_driver.py'
+      analysis_components = 'text_book'
+    work_directory named 'sampling_metadata/run'
+    directory_tag
+    

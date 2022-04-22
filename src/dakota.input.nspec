@@ -2823,9 +2823,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_statistics {0}
-      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
         [ final_moments {0}
           none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
           |
@@ -2859,10 +2859,17 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
      ]
-    [ 
-      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
-      |
-      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
+    [ numerical_solve {0}
+      [ 
+        fallback {N_mdm(utype,numericalSolveMode_NUMERICAL_FALLBACK)}
+        |
+        override {N_mdm(utype,numericalSolveMode_NUMERICAL_OVERRIDE)}
+       ]
+      [ 
+        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
+        |
+        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+       ]
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -2886,9 +2893,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_statistics {0}
-      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
         [ final_moments {0}
           none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
           |
@@ -2944,9 +2951,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_statistics {0}
-      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
         [ final_moments {0}
           none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
           |
@@ -2985,9 +2992,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ truth_fixed_by_pilot {N_mdm(true,truthPilotConstraint)} ]
     [ 
-      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
+      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
       |
-      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
+      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
      ]
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
@@ -3013,9 +3020,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_statistics {0}
-      algorithm_performance {N_mdm(utype,finalStatsType_ALGORITHM_PERFORMANCE)}
+      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
       |
-      ( algorithm_results {N_mdm(utype,finalStatsType_ALGORITHM_RESULTS)}
+      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
         [ final_moments {0}
           none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
           |
@@ -4214,9 +4221,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
         multilevel {N_mdm(lit,mcmcType_multilevel)}
        ]
       [ pre_solve {0}
-        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
+        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
         |
-        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
+        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
         |
         none {N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}
        ]
@@ -5823,9 +5830,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( local_evidence ALIAS nond_local_evidence {N_mdm(utype,methodName_LOCAL_EVIDENCE)}
     [ 
-      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
+      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
       |
-      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
+      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
      ]
     [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
       [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
@@ -5856,9 +5863,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( local_interval_est ALIAS nond_local_interval_est {N_mdm(utype,methodName_LOCAL_INTERVAL_EST)}
     [ 
-      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
+      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
       |
-      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
+      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
@@ -5884,9 +5891,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       no_approx {N_mdm(utype,subMethod_SUBMETHOD_NO_APPROX)}
       [ 
-        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
+        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
         |
-        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
+        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
        ]
       [ integration {0}
         first_order {N_mdm(lit,reliabilityIntegration_first_order)}

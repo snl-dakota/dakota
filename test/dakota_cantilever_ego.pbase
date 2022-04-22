@@ -12,7 +12,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -1.4204184832e-02
                      -2.3222317036e-04
-<<<<< Best data captured at function evaluation 36
+<<<<< Best evaluation ID: 36
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 42 total (35 new, 7 duplicate)
 <<<<< Best parameters          =
@@ -27,4 +27,4 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -4.2032046272e-02
                      -3.0723690414e-02
-<<<<< Best data captured at function evaluation 25
+<<<<< Best evaluation ID: 25

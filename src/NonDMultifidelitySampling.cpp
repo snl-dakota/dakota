@@ -40,7 +40,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDMultifidelitySampling::
 NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
-  NonDNonHierarchSampling(problem_db, model)
+  NonDNonHierarchSampling(problem_db, model),
+  numericalSolveMode(problem_db.get_ushort("method.nond.numerical_solve_mode"))
 {
   mlmfSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
 }
@@ -126,15 +127,23 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // Compute the ratio of MC and MFMC estimator variance, which incorporates
     // anticipated variance reduction from upcoming application of eval_ratios.
     // > Note: this could be redundant for tol-based targets with m1* > pilot
-    mfmc_estimator_variance(rho2LH, numH, hf_targets, approxSequence,
+    mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
 			    eval_ratios);
 
     ++mlmfIter;
   }
 
-  // numH is converged --> finalize with LF increments and post-processing
-  approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH, approxSequence,
-		    eval_ratios, hf_targets);
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS)
+    // numH is converged --> finalize with LF increments and post-processing
+    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH,
+		      approxSequence, eval_ratios, hf_targets);
+  else { // for consistency with pilot projection
+    Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
+    update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
+    finalize_counts(N_L_projected);
+  }
 }
 
 
@@ -162,6 +171,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // compute r* from rho2 and cost and update the HF targets
   mfmc_eval_ratios(var_L, rho2LH, sequenceCost, approxSequence, eval_ratios,
 		   hf_targets);
+  ++mlmfIter;
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -174,7 +184,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   numSamples = std::max(one_sided_delta(numH, hf_targets, 1),(size_t)2);//numH=0
 
   // As a first cut, don't reuse any of offline pilot for numH
-  shared_increment(++mlmfIter); // spans ALL models, blocking
+  shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, numH);
   increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1);
 
@@ -186,11 +196,20 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   //compute_mc_estimator_variance(varH, numH, estVarIter0);  numHIter0 = numH;
   // Exclude pilot from R^2 benefit, but include any difference between numH
   // and hf_targets:
-  mfmc_estimator_variance(rho2LH, numH, hf_targets, approxSequence,eval_ratios);
+  mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
+			  eval_ratios);
 
-  // numH is converged --> finalize with LF increments and post-processing
-  approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH, approxSequence,
-		    eval_ratios, hf_targets);
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS)
+    // numH is converged --> finalize with LF increments and post-processing
+    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH,
+		      approxSequence, eval_ratios, hf_targets);
+  else { // for consistency with pilot projection
+    Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
+    update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
+    finalize_counts(N_L_projected);
+  }
 }
 
 
@@ -227,6 +246,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // compute r* from rho2 and cost
   mfmc_eval_ratios(var_L, rho2LH, sequenceCost, approxSequence, eval_ratios,
 		   hf_targets);
+  ++mlmfIter;
 
   // ----------------------
   // Compute EstVar ratios:
@@ -238,7 +258,8 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // Compute the ratio of MC and MFMC mean squared errors, which incorporates
   // anticipated variance reduction from upcoming application of eval_ratios.
   // > Note: this could be redundant for tol-based targets with m1* > pilot
-  mfmc_estimator_variance(rho2LH, numH, hf_targets, approxSequence,eval_ratios);
+  mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
+			  eval_ratios);
 
   // No LF increments or final moments for pilot projection
 
@@ -935,11 +956,31 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   // Encounter singularity when models are not sequenced for this graph,
   // which is addressed numerically by introducing a (diagonal) nugget.
 
-  if (ordered_approx_sequence(rho2_LH)) // for all QoI across Approx sequence
-    optSubProblemForm = ANALYTIC_SOLUTION;  
-  else
-    optSubProblemForm = //(for_warm_start) ? REORDERED_ANALYTIC_SOLUTION :
+  // incoming approx_sequence is defined w/i mfmc_reordered_analytic_solution()
+  // based on averaged rho --> we do not use it for logic below
+  bool ordered_rho = true;
+  switch (numericalSolveMode) {
+  case NUMERICAL_OVERRIDE: // specification option
+    optSubProblemForm = N_VECTOR_LINEAR_CONSTRAINT; break;
+  case NUMERICAL_FALLBACK: // default
+    ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
+    optSubProblemForm = (ordered_rho) ? ANALYTIC_SOLUTION :
       N_VECTOR_LINEAR_CONSTRAINT;
+    if (!ordered_rho)
+      Cout << "MFMC: model sequence provided is out of order with respect to "
+	   << "Low-High\n      correlation for at least one QoI.  Switching "
+	   << "to numerical solution.\n";
+    break;
+  case REORDERED_FALLBACK: // not currently in XML spec, but could be added
+    ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
+    optSubProblemForm = (ordered_rho) ? ANALYTIC_SOLUTION :
+      REORDERED_ANALYTIC_SOLUTION;
+    if (!ordered_rho)
+      Cout << "MFMC: model sequence provided is out of order with respect to "
+	   << "Low-High\n      correlation for at least one QoI.  Switching "
+	   << "to alternate analytic solution.\n";
+    break;
+  }
 
   switch (optSubProblemForm) {
   case ANALYTIC_SOLUTION:
@@ -949,20 +990,14 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     approx_sequence.clear();
     mfmc_analytic_solution(rho2_LH, cost, eval_ratios);
     break;
-  case REORDERED_ANALYTIC_SOLUTION: // inactive (future user override?)
-    Cout << "MFMC: model sequence provided is out of order with respect to "
-	 << "Low-High\n      correlation for at least one QoI.  Switching to "
-	 << "alternate analytic solution.\n";
+  case REORDERED_ANALYTIC_SOLUTION: // inactive (see above)
     mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
 				     eval_ratios, true); // monotonic r for seq
     break;
   default: { // any of several numerical optimization formulations
-    Cout << "MFMC: model sequence provided is out of order with respect to "
-	 << "Low-High\n      correlation for at least one QoI.  Switching to "
-	 << "numerical solution.\n";
     Real avg_hf_target;
-    mfmc_numerical_solution(var_L, rho2_LH, cost, approx_sequence, eval_ratios,
-			    avg_hf_target);
+    mfmc_numerical_solution(var_L, rho2_LH, cost, approx_sequence,
+			    eval_ratios, avg_hf_target);
     if (hf_targets.empty()) hf_targets.sizeUninitialized(numFunctions);
     hf_targets = avg_hf_target; // assign scalar to vector components
     break;
@@ -970,7 +1005,7 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   }
 
   // Numerical solution has updated hf_target from the computed N*.
-  // Analytic solutions scale the profile to target budget | accuracy.
+  // Analytic solutions scale the profile to target budget || accuracy.
   switch (optSubProblemForm) {
   case ANALYTIC_SOLUTION:  case REORDERED_ANALYTIC_SOLUTION:
     if (maxFunctionEvals != SZ_MAX)
@@ -1003,14 +1038,17 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 
     if (equivHFEvals >= budget) // only 1 feasible pt, no need for solve
       { eval_ratios = 1.;  avg_hf_target = avg_N_H;  return; }
-    else { // compute initial estimate of r* from analytic MFMC
+    else { // Compute approx_sequence and r* initial guess from analytic MFMC
 
-      // generate an initial guess using reordered approach (we know ordered
-      // analytic can't be used or we wouldn't be using the numerical option).
-      // Enforce that r increases monotonically across the approx_sequence for
-      // consistency with linear constraints in the numerical soln to follow.
-      mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
-				       eval_ratios, true);// monotonic r for seq
+      if (ordered_approx_sequence(rho2_LH)) {// can happen w/ NUMERICAL_OVERRIDE
+	approx_sequence.clear();
+	mfmc_analytic_solution(rho2_LH, cost, eval_ratios);
+      }
+      else // If misordered rho, enforce that r increases monotonically across
+	   // approx_sequence for consistency w/ linear constr in numerical soln
+	mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
+					 eval_ratios, true);// monotonic r
+
       average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
@@ -1046,8 +1084,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 
 
 void NonDMultifidelitySampling::
-mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
-			const RealVector& hf_targets,
+mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
+			const SizetArray& N_H, const RealVector& hf_targets,
 			const SizetArray& approx_sequence,
 			const RealMatrix& eval_ratios)
 {
@@ -1087,6 +1125,9 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
     else
       mfmc_estvar_ratios(rho2_LH, approx_sequence, eval_ratios, estVarRatios);
 
+    // update avgEstVar for final variance report and finalStats
+    estvar_ratios_to_avg_estvar(estVarRatios, var_H, N_H, avgEstVar);
+
     if (outputLevel >= NORMAL_OUTPUT) {
       bool ordered = approx_sequence.empty();
       for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -1112,9 +1153,9 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const SizetArray& N_H,
   // in the objective and returns avg estvar as the final objective.  So estVar
   // is more direct here than estVarRatios, as for NonDACVSampling.
   //default:
-  //  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+  //  if (estVarRatios.empty()) estVarRatios.sizeUninitialized(numFunctions);
   //  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-  //    estvar_ratios[qoi] = avgEstVar / var_H[qoi] * N_H[qoi]; // (1-R^2)
+  //    estVarRatios[qoi] = avgEstVar / var_H[qoi] * N_H[qoi]; // (1-R^2)
   //  break;
   }
 }
@@ -1183,29 +1224,25 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
 	<< (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
 	<< std::setw(wpp7) << average(estVarIter0) << '\n';
 
-    RealVector mc_est_var(numFunctions, false),
-             mfmc_est_var(numFunctions, false);
-    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      mfmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / numH[qoi];
-      mfmc_est_var[qoi] *= estVarRatios[qoi];
-    }
-    Real avg_mfmc_est_var = average(mfmc_est_var),
-         avg_mc_est_var   = average(mc_est_var),
+    RealVector mc_est_var(numFunctions, false);
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      mc_est_var[qoi] = varH[qoi] / numH[qoi];
+    Real avg_mc_est_var        = average(mc_est_var),
          avg_budget_mc_est_var = average(varH) / equivHFEvals;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
     s << "  " << type << "   MC (" << std::setw(5)
       << (size_t)std::floor(average(numH) + .5) << " HF samples): "
       << std::setw(wpp7) << avg_mc_est_var << "\n  " << type
-      << " MFMC (sample profile):   " << std::setw(wpp7) << avg_mfmc_est_var
+      << " MFMC (sample profile):   " << std::setw(wpp7) << avgEstVar
       << "\n  " << type << " MFMC ratio (1 - R^2):    "
       // report ratio of averages rather than average of ratios (consistent
       // with ACV definition which would have to recompute the latter)
-      << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var
+      << std::setw(wpp7) << avgEstVar / avg_mc_est_var
       << "\n Equivalent   MC (" << std::setw(5)
       << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
       << std::setw(wpp7) << avg_budget_mc_est_var
       << "\n Equivalent MFMC ratio:              " << std::setw(wpp7)
-      << avg_mfmc_est_var / avg_budget_mc_est_var << '\n';
+      << avgEstVar / avg_budget_mc_est_var << '\n';
     break;
   }
   // For numerical cases, mfmc_numerical_solution() must incorporate varH/numH

@@ -69,6 +69,12 @@ public:
                                size_t num_best, size_t best_index,
                                std::ostream& s);
 
+  /// print best evaluation matching vars and set, or partial matches
+  /// with matching variables only.
+  static void print_best_eval_ids(const String& interface_id,
+				  const Variables& best_vars,
+				  const ActiveSet& active_set,
+				  std::ostream& s);
 
   // Accessor for data transfer helper/adapters
   std::shared_ptr<TPLDataTransfer> get_data_transfer_helper() const

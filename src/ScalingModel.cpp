@@ -881,6 +881,7 @@ primary_resp_scaler(const Variables& native_vars, const Variables& scaled_vars,
     // could reach this if variables are scaled and only functions are requested
     iterator_response.update_partial(start_offset, num_responses,
                                      native_response, start_offset);
+  iterator_response.metadata(native_response.metadata());
 }
 
 

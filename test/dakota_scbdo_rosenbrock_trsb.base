@@ -7,7 +7,7 @@ Test Number 0 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 3 total (3 new, 0 duplicate)
          obj_fn: 3 val (3 n, 0 d), 3 grad (3 n, 0 d), 0 Hess (0 n, 0 d)
@@ -17,7 +17,7 @@ Test Number 1 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 3 total (3 new, 0 duplicate)
          obj_fn: 3 val (3 n, 0 d), 3 grad (3 n, 0 d), 0 Hess (0 n, 0 d)
@@ -27,7 +27,7 @@ Test Number 2 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 3 total (3 new, 0 duplicate)
          obj_fn: 3 val (3 n, 0 d), 3 grad (3 n, 0 d), 0 Hess (0 n, 0 d)
@@ -37,4 +37,4 @@ Test Number 3 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

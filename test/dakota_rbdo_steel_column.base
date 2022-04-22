@@ -11,7 +11,8 @@ Test Number 0 succeeded
                      -3.1320858932e+00
 <<<<< Best constraint values   =
                       4.0000000114e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 27
 Test Number 1 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 11 total (9 new, 2 duplicate)
  nln_ineq_con_1: 7 val (5 n, 2 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
@@ -25,7 +26,8 @@ Test Number 1 succeeded
                      -3.1320858698e+00
 <<<<< Best constraint values   =
                       4.0000000001e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation IDs (partial matches): 10, 11
 Test Number 2 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 53 total (48 new, 5 duplicate)
  nln_ineq_con_1: 53 val (48 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -39,7 +41,8 @@ Test Number 2 succeeded
                      -5.2202096314e-03
 <<<<< Best constraint values   =
                       3.9999999776e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 46
 Test Number 3 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 26 total (20 new, 6 duplicate)
  nln_ineq_con_1: 17 val (11 n, 6 d), 9 grad (9 n, 0 d), 0 Hess (0 n, 0 d)
@@ -53,4 +56,4 @@ Test Number 3 succeeded
                      -5.2630205719e-03
 <<<<< Best constraint values   =
                       4.0000003176e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

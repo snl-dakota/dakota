@@ -9,7 +9,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       3.2540849098e-02
                       1.4596265983e-02
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 114 total (114 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_I): 2750 total (2750 new, 0 duplicate)
@@ -21,4 +21,4 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -5.7799694475e-08
                      -2.7875644631e-07
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

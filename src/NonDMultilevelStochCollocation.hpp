@@ -96,11 +96,11 @@ private:
 
 
 inline int NonDMultilevelStochCollocation::random_seed() const
-{ return NonDExpansion::random_seed(sequenceIndex); }
+{ return NonDExpansion::seed_sequence(sequenceIndex); }
 
 
 inline int NonDMultilevelStochCollocation::first_seed() const
-{ return NonDExpansion::random_seed(0); }
+{ return NonDExpansion::seed_sequence(0); }
 
 } // namespace Dakota
 

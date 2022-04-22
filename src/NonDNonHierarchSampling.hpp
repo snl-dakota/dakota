@@ -70,6 +70,11 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   void print_variance_reduction(std::ostream& s);
 
+  /// return name of active optimizer method
+  unsigned short uses_method() const;
+  /// perform a numerical solver method switch due to a detected conflict
+  void method_recourse();
+
   //
   //- Heading: member functions
   //
@@ -86,14 +91,15 @@ protected:
 
   void assign_active_key(bool multilev);
 
+  /// recover estimates of simulation cost using aggregated response metadata
+  void recover_online_cost(RealVector& seq_cost);
+
   void initialize_sums(IntRealMatrixMap& sum_L_baseline,
 		       IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LH,
 		       RealVector& sum_HH);
   void initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			 Sizet2DArray& num_LH);
   void finalize_counts(Sizet2DArray& N_L);
-
-  void recover_online_cost(RealVector& seq_cost);
 
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t index);
@@ -199,10 +205,6 @@ protected:
   /// approximations
   SizetArray approxSequence;
 
-  /// Indicates use of user-specified cost ratios, rather than online
-  /// cost recovery
-  bool onlineCost;
-
   /// number of evaluations of HF truth model (length numFunctions)
   SizetArray numH;
   /// covariances between each LF approximation and HF truth (the c
@@ -259,12 +261,50 @@ private:
   //- Heading: Data
   //
 
-  /// indices of cost data within response metadata, one per model form
-  SizetSizetPairArray costMetadataIndices;
-
   /// pointer to NonDACV instance used in static member functions
   static NonDNonHierarchSampling* nonHierSampInstance;
 };
+
+
+inline unsigned short NonDNonHierarchSampling::uses_method() const
+{ return optSubProblemSolver; }
+
+
+inline void NonDNonHierarchSampling::method_recourse()
+{
+  // NonDNonHierarchSampling numerical solves must protect use of Fortran
+  // solvers at this level from conflicting with use at a higher level.
+  // However, it is not necessary to check the other direction by defining
+  // check_sub_iterator_conflict(), since solver execution does not span
+  // any Model evaluations.
+
+  bool err_flag = false;
+  switch (optSubProblemSolver) {
+  case SUBMETHOD_NPSOL:
+#ifdef HAVE_OPTPP
+    optSubProblemSolver = SUBMETHOD_OPTPP;
+#else
+    err_flag = true;
+#endif
+    break;
+  case SUBMETHOD_OPTPP:
+#ifdef HAVE_NPSOL
+    optSubProblemSolver = SUBMETHOD_NPSOL;
+#else
+    err_flag = true;
+#endif
+    break;
+  }
+
+  if (err_flag) {
+    Cerr << "\nError: method conflict detected in NonDNonHierarchSampling but "
+	 << "no alternate solver available." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  else
+    Cerr << "\nWarning: method recourse invoked in NonDNonHierarchSampling due "
+	 << "to detected method conflict.\n\n";
+}
 
 
 inline void NonDNonHierarchSampling::

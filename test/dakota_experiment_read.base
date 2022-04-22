@@ -1,10 +1,10 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
-least_sq_term_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_1_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_2_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_3_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_4_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_5_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.9999999904e-01 x1
                       1.9999999991e-01 x2
@@ -26,17 +26,17 @@ least_sq_term_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       6.1228900422e-11
                       3.8669956126e-10
                      -4.4476949901e-11
-<<<<< Best data captured at function evaluation 16
+<<<<< Best evaluation ID: 16
 Confidence Intervals on Calibrated Parameters:
             x1: [ -7.0489662453e-01, 1.3048966226e+00 ]
             x2: [ -1.6244142761e-01, 5.6244142743e-01 ]
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
-least_sq_term_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_1_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_2_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_3_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_4_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_5_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.0000000000e-01 x1
                       2.0000000001e-01 x2
@@ -58,17 +58,17 @@ least_sq_term_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       1.7244708891e-11
                       7.5095416869e-12
                      -3.0295859709e-12
-<<<<< Best data captured at function evaluation 19
+<<<<< Best evaluation ID: 19
 Confidence Intervals on Calibrated Parameters:
             x1: [ -2.8515476568e-01, 8.8515476569e-01 ]
             x2: [ 9.8334011115e-04, 3.9901665990e-01 ]
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
-   oscillator_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillator_1_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillator_2_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillator_3_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillator_4_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillator_5_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.0000000000e-01 x1
                       2.0000000001e-01 x2
@@ -90,17 +90,17 @@ Test Number 2 succeeded
                       1.7244708891e-11
                       7.5095416869e-12
                      -3.0295859709e-12
-<<<<< Best data captured at function evaluation 19
+<<<<< Best evaluation ID: 19
 Confidence Intervals on Calibrated Parameters:
             x1: [ -2.8515476568e-01, 8.8515476569e-01 ]
             x2: [ 9.8334011115e-04, 3.9901665990e-01 ]
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
-  oscillatorA_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorA_1_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorA_2_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorA_3_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorA_4_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorA_5_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.9999999901e-01 x1
                       1.9999999991e-01 x2
@@ -122,28 +122,28 @@ Test Number 3 succeeded
                       6.3120890650e-10
                       9.9364836675e-10
                       4.4740178609e-11
-<<<<< Best data captured at function evaluation 16
+<<<<< Best evaluation ID: 16
 Confidence Intervals on Calibrated Parameters:
             x1: [ -2.5268721799e-01, 8.5268721600e-01 ]
             x2: [ -1.3625407894e-03, 4.0136254061e-01 ]
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
-  oscillatorA_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_2: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_3: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_4: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_5: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorA_1_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorA_2_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorA_3_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorA_4_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorA_5_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
             x1  2.8341207626e-01  1.2001755341e-01  4.2490870138e-01 -1.1411823700e+00
             x2  2.8960030210e-01  9.6700886776e-02  2.6388320678e-01 -8.3241777558e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- oscillatorA_1  1.8423880557e-01  1.4467713339e-01  2.1616573073e-01 -7.5996228807e-01
- oscillatorA_2 -2.7694111366e-01  1.1846028463e-01 -3.3089137602e-01 -8.7569254199e-01
- oscillatorA_3  6.9421997345e-02  1.0617729835e-01 -8.2837060238e-02 -4.0680855011e-01
- oscillatorA_4  9.9280618320e-02  7.7509602202e-02  3.1783610786e-01 -7.2350476075e-01
- oscillatorA_5 -1.3776238320e-01  6.0784012262e-02 -9.4179590819e-01  2.4146664583e+00
+oscillatorA_1_1  1.8423880557e-01  1.4467713339e-01  2.1616573073e-01 -7.5996228807e-01
+oscillatorA_2_1 -2.7694111366e-01  1.1846028463e-01 -3.3089137602e-01 -8.7569254199e-01
+oscillatorA_3_1  6.9421997345e-02  1.0617729835e-01 -8.2837060238e-02 -4.0680855011e-01
+oscillatorA_4_1  9.9280618320e-02  7.7509602202e-02  3.1783610786e-01 -7.2350476075e-01
+oscillatorA_5_1 -1.3776238320e-01  6.0784012262e-02 -9.4179590819e-01  2.4146664583e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
   oscillatorB_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -262,7 +262,8 @@ Test Number 5 succeeded
                      -4.2222389573e-03
                       4.6647321339e-03
                       3.7529596069e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 16
 Confidence Intervals on Calibrated Parameters:
             x1: [ 2.7753712927e-01, 3.2860105682e-01 ]
             x2: [ 1.9568388811e-01, 2.1113633503e-01 ]
@@ -390,17 +391,18 @@ Test Number 6 succeeded
                      -7.1204198460e-03
                      -9.5600441249e-04
                       2.5605617852e-03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 16
 Confidence Intervals on Calibrated Parameters:
             x1: [ 2.8890155508e-01, 3.1432407121e-01 ]
             x2: [ 1.9742872047e-01, 2.0540928919e-01 ]
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
-   oscB_scalar1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscB_scalar1_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscB_scalar2_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscB_scalar3_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscB_scalar4_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscB_scalar5_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.9999999999e-01 x1
                       2.0000000001e-01 x2
@@ -422,19 +424,19 @@ Test Number 7 succeeded
                       1.3647506736e-11
                       1.8554646451e-11
                      -1.1317434998e-11
-<<<<< Best data captured at function evaluation 19
+<<<<< Best evaluation ID: 19
 Confidence Intervals on Calibrated Parameters:
             x1: [ -4.4713038537e-01, 1.0471303854e+00 ]
             x2: [ -3.0119848898e-02, 4.3011984891e-01 ]
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
-   oscB_scalar1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscB_scalar1_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscB_scalar2_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorC_1_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorC_2_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorC_3_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorC_4_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+oscillatorC_5_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.9999998715e-01 x1
                       1.9999999925e-01 x2
@@ -462,7 +464,7 @@ Test Number 8 succeeded
                       4.5129533791e-09
                       5.8022790461e-09
                      -1.1145922935e-09
-<<<<< Best data captured at function evaluation 16
+<<<<< Best evaluation ID: 16
 Confidence Intervals on Calibrated Parameters:
             x1: [ -2.8008058831e-01, 8.8008056261e-01 ]
             x2: [ 3.1911835732e-03, 3.9680881494e-01 ]

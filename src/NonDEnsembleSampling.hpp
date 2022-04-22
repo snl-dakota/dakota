@@ -68,6 +68,8 @@ protected:
   void initialize_final_statistics();
   void update_final_statistics();
 
+  bool seed_updated();
+
   //
   //- Heading: Member functions
   //
@@ -82,7 +84,7 @@ protected:
   /// advance any sequence specifications
   void assign_specification_sequence(size_t index);
   /// extract current random seed from randomSeedSeqSpec
-  int random_seed(size_t index) const;
+  int seed_sequence(size_t index);
 
   /// increment samples array with a shared scalar
   void increment_samples(SizetArray& N_l, size_t num_samples);
@@ -96,6 +98,11 @@ protected:
   void project_mc_estimator_variance(const RealVector& var_l,
 				     const SizetArray& N_l, size_t new_samp,
 				     RealVector& mc_est_var);
+
+  /// convert estimator variance ratios to average estimator variance
+  void estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
+				   const RealVector& var_H,
+				   const SizetArray& N_H, Real& avg_est_var);
 
   /// compute scalar control variate parameters
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
@@ -168,6 +175,12 @@ protected:
   /// OFFLINE_PILOT, PILOT_PROJECTION
   short pilotMgmtMode;
 
+  /// indicates use of online cost recovery rather than offline
+  /// user-specified cost ratios
+  bool onlineCost;
+  /// indices of cost data within response metadata, one per model form
+  SizetSizetPairArray costMetadataIndices;
+
   /// user specification for seed_sequence
   SizetArray randomSeedSeqSpec;
 
@@ -187,7 +200,7 @@ protected:
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;
 
-  /// ALGORITHM_RESULTS (moments, level mappings) or ALGORITHM_PERFORMANCE
+  /// QOI_STATISTICS (moments, level mappings) or ESTIMATOR_PERFORMANCE
   /// (for model tuning of estVar,equivHFEvals by an outer loop)
   short finalStatsType;
 
@@ -216,6 +229,8 @@ private:
   //- Heading: Helper functions
   //
 
+  /// cache state of seed sequence for use in seed_updated()
+  size_t seedIndex;
 };
 
 
@@ -253,18 +268,37 @@ inline void NonDEnsembleSampling::bypass_surrogate_mode()
 
 
 /** extract an active seed from a seed sequence */
-inline int NonDEnsembleSampling::random_seed(size_t index) const
+inline int NonDEnsembleSampling::seed_sequence(size_t index)
 {
   // return 0 for cases where seed is undefined or will not be updated
 
-  if (randomSeedSeqSpec.empty()) return 0; // no spec -> non-repeatable samples
+  size_t seq_len = randomSeedSeqSpec.size();
+  if (seq_len == 0)
+    seedIndex = SZ_MAX; // no spec -> non-repeatable samples
   else if (!varyPattern) // continually reset seed to specified value
-    return (index < randomSeedSeqSpec.size()) ?
-      randomSeedSeqSpec[index] : randomSeedSeqSpec.back();
-  // only set sequence of seeds for first pass, then let RNG state continue
-  else if (mlmfIter == 0 && index < randomSeedSeqSpec.size()) // pilot iter only
-    return randomSeedSeqSpec[index];
-  else return 0; // seed sequence exhausted, do not update
+    seedIndex = std::min(index, seq_len-1); // use end if sequence exhausted
+  else if (mlmfIter == 0) // pilot sample: only advance until sequence exhausted
+    seedIndex = (index < seq_len) ? index : SZ_MAX;
+  else
+    seedIndex = SZ_MAX;
+
+  return (seedIndex == SZ_MAX) ? 0 : randomSeedSeqSpec[seedIndex];
+}
+
+
+/** extract an active seed from a seed sequence */
+inline bool NonDEnsembleSampling::seed_updated()
+{
+  if   ( seedIndex == SZ_MAX) return false;  // no update
+  else { seedIndex =  SZ_MAX; return true; } // consume most recent update
+
+  /*
+  size_t   seq_len = randomSeedSeqSpec.size();
+  if      (seq_len  == 0) return false; // no spec -> non-repeatable
+  else if (!varyPattern)  return true;  // fixed_seed: always reset to spec val
+  else if (mlmfIter == 0 && index < seq_len) return true; // pilot iter
+  else                    return false; // seed sequence exhausted, no update
+  */
 }
 
 
@@ -280,6 +314,18 @@ compute_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
     N_l_q = N_l[qoi]; // can be zero in offline pilot cases
     mc_est_var[qoi] = (N_l_q) ? var_l[qoi] / N_l_q : DBL_MAX;
   }
+}
+
+
+inline void NonDEnsembleSampling::
+estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
+			    const RealVector& var_H, const SizetArray& N_H,
+			    Real& avg_est_var)
+{
+  RealVector est_var(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    est_var[qoi] = estvar_ratios[qoi] * var_H[qoi] / N_H[qoi];
+  avg_est_var = average(est_var);
 }
 
 

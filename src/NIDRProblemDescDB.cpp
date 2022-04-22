@@ -7037,9 +7037,9 @@ static Method_mp_type
 	MP2p(finalMomentsType,CENTRAL_MOMENTS),            // Pecos enumeration
 	MP2p(finalMomentsType,NO_MOMENTS),                 // Pecos enumeration
 	MP2p(finalMomentsType,STANDARD_MOMENTS),           // Pecos enumeration
-	MP2s(finalStatsType,ALGORITHM_PERFORMANCE),
-	MP2s(finalStatsType,ALGORITHM_RESULTS),
+	MP2s(finalStatsType,ESTIMATOR_PERFORMANCE),
 	MP2s(finalStatsType,NO_FINAL_STATS),
+	MP2s(finalStatsType,QOI_STATISTICS),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
 	MP2s(iteratorScheduling,MASTER_SCHEDULING),
@@ -7064,7 +7064,7 @@ static Method_mp_type
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
-  MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
+	MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
@@ -7242,9 +7242,12 @@ static Method_mp_utype
 	MP2s(methodName,MULTIDIM_PARAMETER_STUDY),
         MP2s(modelExportFormat,TEXT_ARCHIVE),
         MP2s(modelExportFormat,BINARY_ARCHIVE),
+	MP2s(numericalSolveMode,NUMERICAL_FALLBACK),
+	MP2s(numericalSolveMode,NUMERICAL_OVERRIDE),
+      //MP2s(numericalSolveMode,REORDERED_FALLBACK),
 	MP2s(optSubProbSolver,SUBMETHOD_NONE),
-	MP2s(optSubProbSolver,SUBMETHOD_NIP),
-	MP2s(optSubProbSolver,SUBMETHOD_SQP),
+	MP2s(optSubProbSolver,SUBMETHOD_OPTPP),
+	MP2s(optSubProbSolver,SUBMETHOD_NPSOL),
 	MP2s(optSubProbSolver,SUBMETHOD_SBLO),
 	MP2s(optSubProbSolver,SUBMETHOD_EA),
 	MP2s(optSubProbSolver,SUBMETHOD_EGO),

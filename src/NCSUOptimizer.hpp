@@ -83,9 +83,12 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  //void initialize_run();
   void core_run();
 
   void declare_sources();
+
+  void check_sub_iterator_conflict();
 
 private:
 

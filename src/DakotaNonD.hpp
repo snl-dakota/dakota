@@ -140,6 +140,10 @@ protected:
 		      RealVector& cost);
   /// extract cost estimates from model hierarchy, if available
   bool query_cost(unsigned short num_steps, bool multilevel, RealVector& cost);
+  /// extract cost estimates from model hierarchy, if available
+  bool query_cost(unsigned short num_steps, Model& model, RealVector& cost);
+  /// test cost for valid values > 0
+  bool valid_cost_values(const RealVector& cost);
 
   /// distribute pilot sample specification across model forms or levels
   void load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
@@ -198,7 +202,7 @@ protected:
   /// utility for vetting sub-method request against optimizers within
   /// the package configuration
   unsigned short sub_optimizer_select(unsigned short requested_sub_method,
-    unsigned short default_sub_method = SUBMETHOD_SQP);
+    unsigned short default_sub_method = SUBMETHOD_NPSOL);
 
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target

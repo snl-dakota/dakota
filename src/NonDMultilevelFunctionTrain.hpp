@@ -140,11 +140,11 @@ inline size_t NonDMultilevelFunctionTrain::collocation_points() const
 
 
 inline int NonDMultilevelFunctionTrain::random_seed() const
-{ return NonDExpansion::random_seed(sequenceIndex); }
+{ return NonDExpansion::seed_sequence(sequenceIndex); }
 
 
 inline int NonDMultilevelFunctionTrain::first_seed() const
-{ return NonDExpansion::random_seed(0); }
+{ return NonDExpansion::seed_sequence(0); }
 
 
 inline size_t NonDMultilevelFunctionTrain::start_rank(size_t index) const

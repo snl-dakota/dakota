@@ -14,7 +14,8 @@ except ImportError:
 import dakota.interfacing as di
 from dakota.interfacing import parallel
 
-apreproParams = """                    { DAKOTA_VARS     =                      3 }
+# 6.15 and older format
+apreproParamsNoMetadata = """                    { DAKOTA_VARS     =                      3 }
                     { x1              =  7.488318331306800e-01 }
                     { x2              =  2.188638686202466e-01 }
                     { dussv_1         =                      "foo bar" }
@@ -27,11 +28,15 @@ apreproParams = """                    { DAKOTA_VARS     =                      
                     { AC_1:first.sh   =                      "a b" }
                     { AC_2:first.sh   =                      "b" }
                     { DAKOTA_EVAL_ID  =                      1 }
-                    { DAKOTA_METADATA =                      1 }
+"""
+
+# 6.16 and newer format
+apreproParams = apreproParamsNoMetadata + """                    { DAKOTA_METADATA =                      1 }
                     { MD_1            =                      "seconds" }
 """
 
-dakotaParams = """                                          3 variables
+# 6.15 and older format
+dakotaParamsNoMetadata = """                                          3 variables
                       7.488318331306800e-01 x1
                       2.188638686202466e-01 x2
                                     foo bar dussv_1
@@ -44,7 +49,10 @@ dakotaParams = """                                          3 variables
                                         a b AC_1:first.sh
                                           b AC_2:first.sh
                                           1 eval_id
-                                          1 metadata
+"""
+
+# 6.16 and newer format
+dakotaParams = dakotaParamsNoMetadata + """                                          1 metadata
                                     seconds MD_1
 """
 
@@ -99,6 +107,9 @@ def set_gradient(r):
 def set_hessian(r):
     r["response_fn_1"].hessian = [[1.0, 2.0],[2.0,3.0]]
 
+def set_metadata(r, key, value):
+    r.metadata[key] = value
+
 
 class dakotaInterfacingTestCase(unittest.TestCase):
 
@@ -115,6 +126,8 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(p.an_comps[0], "a b")
         self.assertEqual(p.an_comps[1], "b")
         self.assertEqual(p.eval_id, "1")
+        self.assertEqual(p.num_metadata, 1)
+        self.assertEqual(p.metadata[0], "seconds")
         self.assertTrue(p.aprepro_format)
         
         self.assertEqual(r.num_responses, 1)
@@ -124,6 +137,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(r.deriv_vars, ["x1","x2"])
         self.assertTrue(r.aprepro_format)
         self.assertEqual(r.results_file, "results.out")
+
+    def test_metadataless_aprepro_format(self):
+        """Coarse test parsing legacy metadata-less aprepro format Parameters files."""
+        pio = StringIO.StringIO(apreproParamsNoMetadata % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
+        self.assertEqual(p.num_variables, 3)
+        self.assertEqual(p.num_metadata, 0)
+        self.assertTrue(p.aprepro_format)
 
     def test_dakota_format(self):
         """Confirm that Dakota format Parameters files are parsed correctly."""
@@ -138,6 +159,8 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(p.an_comps[0], "a b")
         self.assertEqual(p.an_comps[1], "b")
         self.assertEqual(p.eval_id, "1")
+        self.assertEqual(p.num_metadata, 1)
+        self.assertEqual(p.metadata[0], "seconds")
         self.assertFalse(p.aprepro_format)
         
         self.assertEqual(r.num_responses, 1)
@@ -149,6 +172,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertFalse(r.aprepro_format)
         self.assertEqual(r.results_file, "results.out")
 
+    def test_metadataless_dakota_format(self):
+        """Coarse test parsing legacy metadata-less dakota format Parameters files."""
+        pio = StringIO.StringIO(dakotaParamsNoMetadata % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
+        self.assertEqual(p.num_variables, 3)
+        self.assertEqual(p.num_metadata, 0)
+        self.assertFalse(p.aprepro_format)
+
     def test_asv(self):
         """Results behaves according to the ASV when response data is set."""
         # Function only
@@ -157,6 +188,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         set_function(r)
         self.assertRaises(di.interfacing.ResponseError, set_gradient, r)
         self.assertRaises(di.interfacing.ResponseError, set_hessian, r)
+        set_metadata(r, "seconds", 42.0)
         r.write(StringIO.StringIO())
         # Gradient only
         pio = StringIO.StringIO(dakotaParams % 2)
@@ -164,6 +196,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertRaises(di.interfacing.ResponseError, set_function, r)
         set_gradient(r)
         self.assertRaises(di.interfacing.ResponseError, set_hessian, r)
+        set_metadata(r, 0, 42.0)
         r.write(StringIO.StringIO())
         # Hessian only
         pio = StringIO.StringIO(dakotaParams % 4)
@@ -171,6 +204,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertRaises(di.interfacing.ResponseError, set_function, r)
         self.assertRaises(di.interfacing.ResponseError, set_gradient, r)
         set_hessian(r)
+        set_metadata(r, "seconds", 42.0)
         r.write(StringIO.StringIO())
        
     def test_ignore_asv(self):
@@ -182,14 +216,19 @@ class dakotaInterfacingTestCase(unittest.TestCase):
             set_function(r) 
             set_gradient(r) 
             set_hessian(r)
+            set_metadata(r, 0, 42.0)
             r.write(StringIO.StringIO())
         # Test write-time ignoring
         sio = StringIO.StringIO(dakotaParams % 3)
         p, r = di.interfacing._read_parameters_stream(stream=sio,ignore_asv=False)
         set_function(r)
+        set_metadata(r, "seconds", 42.0)
         rio = StringIO.StringIO()
         r.write(stream=rio,ignore_asv=True)
-        self.assertEqual(rio.getvalue(), "  5.0000000000000000E+00 response_fn_1\n")
+        expected = """  5.0000000000000000E+00 response_fn_1
+  4.2000000000000000E+01 seconds
+"""
+        self.assertEqual(rio.getvalue(), expected)
     
     def test_results_write(self):
         """Verify Written test results"""
@@ -198,12 +237,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         set_function(r) 
         set_gradient(r) 
         set_hessian(r)
+        set_metadata(r, "seconds", 42.0)
         rio = StringIO.StringIO()
         r.write(stream=rio)
         expected = """  5.0000000000000000E+00 response_fn_1
 [   1.0189673084127668E-266 -6.3508646783183408E-264 ]
 [[   1.0000000000000000E+00   2.0000000000000000E+00
      2.0000000000000000E+00   3.0000000000000000E+00 ]]
+  4.2000000000000000E+01 seconds
 """
         self.assertEqual(rio.getvalue(), expected)
         # Test simulation failure flag
@@ -246,16 +287,24 @@ class dakotaInterfacingTestCase(unittest.TestCase):
             r[0].write("foo")
         # Verify writes
         r[0][0].function = 1.0
+        set_metadata(r[0], "seconds", 42.0)
         r[1][0].function = 2.0
+        set_metadata(r[1], 0, 43.0)
         results_file = StringIO.StringIO()
         r.write(results_file)
         results_strings = results_file.getvalue().split("\n")
+        # Eval 1
         self.assertEqual(results_strings[0], "#")
         val, label = results_strings[1].split()
         self.assertAlmostEqual(float(val),1.0)
-        self.assertEqual(results_strings[2], "#")
-        val, label = results_strings[3].split()
+        val, label = results_strings[2].split()
+        self.assertAlmostEqual(float(val),42.0)
+        # Eval 2
+        self.assertEqual(results_strings[3], "#")
+        val, label = results_strings[4].split()
         self.assertAlmostEqual(float(val),2.0)
+        val, label = results_strings[5].split()
+        self.assertAlmostEqual(float(val),43.0)
     
     def test_single_eval_batch(self):
         """Verify that batch objects are returned for batch = True"""
@@ -312,6 +361,19 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertIsInstance(p["x1"], str)
         self.assertIsInstance(p["x2"], str)
         self.assertIsInstance(p["dussv_1"], str)
+
+    def test_results_metadata(self):
+        """Verify metadata by index vs. label"""
+        sio = StringIO.StringIO(dakotaParams % 3)
+        p, r = di.interfacing._read_parameters_stream(stream=sio)
+        set_function(r)
+        set_gradient(r)
+        # set via label, retrieve via index
+        set_metadata(r, "seconds", 1.2)
+        self.assertAlmostEqual(r.metadata[0], 1.2)
+        # set via index, retrieve via label
+        set_metadata(r, 0, 3.4)
+        self.assertAlmostEqual(r.metadata["seconds"], 3.4)
 
     def test_dprepro(self):
         """Verify that templates are substituted correctly"""

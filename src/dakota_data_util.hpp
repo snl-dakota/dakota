@@ -1211,13 +1211,27 @@ size_t map_key_to_index(const KeyType& key,
 }
 
 
-/// calculate the map index corresponding to the passed value
+/// calculate the map index corresponding to the passed value (not the key)
 template <typename KeyType, typename ValueType>
 size_t map_value_to_index(const ValueType& value,
 			  const std::map<KeyType, ValueType>& pairs)
 {
   size_t index = 0;
   typename std::map<KeyType, ValueType>::const_iterator cit;
+  for (cit=pairs.begin(); cit!=pairs.end(); ++cit, ++index)
+    if (cit->second == value)
+      return index;
+  return _NPOS;
+}
+
+
+/// calculate the map index corresponding to the passed value (not the key)
+template <typename KeyType, typename ValueType>
+size_t map_value_to_index(const ValueType& value,
+			  const std::multimap<KeyType, ValueType>& pairs)
+{
+  size_t index = 0;
+  typename std::multimap<KeyType, ValueType>::const_iterator cit;
   for (cit=pairs.begin(); cit!=pairs.end(); ++cit, ++index)
     if (cit->second == value)
       return index;

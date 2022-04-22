@@ -130,9 +130,12 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  //void pre_run();
   void core_run();
 
   void declare_sources();
+
+  void check_sub_iterator_conflict();
 
   // updaters for user-functions mode:
 

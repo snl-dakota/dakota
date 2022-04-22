@@ -15,7 +15,7 @@ Test Number 0 succeeded
                       3.5018717821e-02
                      -4.7902545262e-01
                      -9.3585810555e-02
-<<<<< Best data captured at function evaluation 11
+<<<<< Best evaluation ID: 11
 Confidence Intervals on Calibrated Parameters:
             x1: [ 3.9238166996e+00, 4.0785030735e+00 ]
             x2: [ 4.3943429713e-01, 3.5137892648e+00 ]
@@ -36,7 +36,7 @@ Test Number 1 succeeded
                       3.5018717821e-02
                      -4.7902545262e-01
                      -9.3585810555e-02
-<<<<< Best data captured at function evaluation 11
+<<<<< Best evaluation ID: 11
 Confidence Intervals on Calibrated Parameters:
             x1: [ 3.9238166996e+00, 4.0785030735e+00 ]
             x2: [ 4.3943429713e-01, 3.5137892648e+00 ]
@@ -57,7 +57,7 @@ Test Number 2 succeeded
                       3.5019659870e-02
                      -4.7902417675e-01
                      -9.3591988246e-02
-<<<<< Best data captured at function evaluation 61
+<<<<< Best evaluation ID: 61
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -75,7 +75,7 @@ Test Number 3 succeeded
                       3.5019473472e-02
                      -4.7902422196e-01
                      -9.3591826598e-02
-<<<<< Best data captured at function evaluation 21
+<<<<< Best evaluation ID: 21
 Confidence Intervals on Calibrated Parameters:
             x1: [ 3.9238168992e+00, 4.0785029923e+00 ]
             x2: [ 4.3943152925e-01, 3.5137890041e+00 ]
@@ -96,7 +96,7 @@ Test Number 4 succeeded
                       5.7673019410e-01
                      -4.9012358041e-01
                       1.6080243822e-01
-<<<<< Best data captured at function evaluation 4163
+<<<<< Best evaluation ID: 4163
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 12 total (12 new, 0 duplicate)
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
@@ -115,7 +115,7 @@ Test Number 5 succeeded
                       3.5014712030e-02
                      -4.7900276339e-01
                      -9.3574850428e-02
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Confidence Intervals on Calibrated Parameters:
             x1: [ 3.9238384580e+00, 4.0784873802e+00 ]
             x2: [ 4.3950626736e-01, 3.5137236066e+00 ]
@@ -136,7 +136,7 @@ Test Number 6 succeeded
                       3.5018717821e-02
                      -4.7902545262e-01
                      -9.3585810555e-02
-<<<<< Best data captured at function evaluation 11
+<<<<< Best evaluation ID: 11
 Confidence Intervals on Calibrated Parameters:
             x1: [ 3.9238166996e+00, 4.0785030735e+00 ]
             x2: [ 4.3943429713e-01, 3.5137892648e+00 ]
@@ -157,4 +157,4 @@ Test Number 7 succeeded
                       3.5020473137e-02
                      -4.7902410293e-01
                      -9.3592061737e-02
-<<<<< Best data captured at function evaluation 183
+<<<<< Best evaluation ID: 183

@@ -732,8 +732,8 @@ int TestDriverInterface::cantilever_ml()
     // distribution parameters (e.g., dakota_rbdo_cantilever_mapvars.in) instead
     // of augmenting the uncertain variables, then the number of variables is 4.
     // Design gradients are not supported for the case of design var insertion.
-    if ( (numVars != 5 && numVars != 7) || (numADIV != 1) || numADRV ||//var count, no dv
-         (gradFlag && numVars == 5 && numDerivVars != 4) ) { // design insertion
+    /*if ( (numVars != 5 && numVars != 7) || (numADIV != 1) || numADRV ||//var count, no dv
+         (gradFlag && numVars == 5 && (numDerivVars != 4 && numDerivVars != 7 ) ) ) { // design insertion
       Cerr << "Error: Bad number of variables in cantilever direct fn."
            << std::endl;
       Cerr << "Num vars:" << numVars << ", " << numDerivVars
@@ -744,7 +744,7 @@ int TestDriverInterface::cantilever_ml()
       Cerr << "Error: Bad number of functions in mod_cantilever direct fn."
            << std::endl;
       abort_handler(INTERFACE_ERROR);
-    }
+    }*/
 
     // Compute the cross-sectional area, stress, and displacement of the
     // cantilever beam.  This simulator is unusual in that it must support both
@@ -761,6 +761,7 @@ int TestDriverInterface::cantilever_ml()
         X = xCM[VAR_X], // horizontal load
         Y = xCM[VAR_Y]; // vertical load
 
+
     // allow f,c1,c2 (optimization) or just c1,c2 (calibration)
     bool objective; size_t c1i, c2i;
     if (numFns == 2) { objective = false; c1i = 0; c2i = 1; }
@@ -773,24 +774,27 @@ int TestDriverInterface::cantilever_ml()
     std::map<var_t, int>::iterator area_type_iter = xDIM.find(VAR_area_type);
     int area_type = (area_type_iter == xDIM.end()) ? 1. : area_type_iter->second; // Correlation Af for objective
 
-    Real D0 = 2.2535, L = 100., area, w_sq, t_sq, R_sq, X_sq, Y_sq;
+    Real D0 = 2.2535, L = 100., w_sq, t_sq, R_sq, X_sq, Y_sq;
     Real stress;
     Real D1, D2, D3, displ;
-    area = w*t;
-    if(area_type == 1){// Rectangle
+    Real area = w*t;
+    if(area_type == 1 || area_type == 5){// Rectangle
+      //Cout << "#Samples: R: " << R << " E: " << E << " X: " << X << " Y: " << Y << std::endl;
+      // 1: Normal model
+      // 5: No horizontal load
       w_sq = w*w; t_sq = t*t;
       R_sq = R*R; X_sq = X*X; Y_sq = Y*Y;
 
-      stress = 6.*L*Y/w/t_sq + 6.*L*X/w_sq/t;
+      stress = area_type == 1 ? 600*Y/w/t_sq + 600*X/w_sq/t : 600*Y/w/t_sq;
 
       D1 = 4.*pow(L, 3)/E/area;
-      D2 = pow(Y/t_sq, 2)+pow(X/w_sq, 2);
+      D2 = area_type == 1 ? pow(Y/t_sq, 2)+pow(X/w_sq, 2) : pow(Y/t_sq, 2);
       D3 = D1/std::sqrt(D2);
       displ = D1*std::sqrt(D2);
     }else if(area_type == 2){// Ellipse
       const Real m_pi = 3.14159265358979323846;
-      Real a = t/2. * 4./m_pi;
-      Real b = w/2.;
+      const Real a = t/2. * 4./m_pi;
+      const Real b = w/2.;
 
       stress = (4.*L)/(m_pi*a*b) * std::sqrt(pow(Y/a, 2) + pow(X/b, 2));
 
@@ -800,6 +804,18 @@ int TestDriverInterface::cantilever_ml()
           pow((pow(L, 3) * X)/(3.*E*I_y), 2) +
           pow((pow(L, 3) * Y)/(3.*E*I_x), 2)
       );
+    }else if(area_type == 3 || area_type == 4){
+      // 3: Circle with radius to be inscribed in rectangle (circ_circ)
+      // 4: Circle with same area as rectangle (circ_area)
+      const Real m_pi = 3.14159265358979323846;
+
+      const Real radius = (area_type == 3) ? std::sqrt(w*t)/2. : std::sqrt(w*t/m_pi);
+
+      const Real I_c = m_pi/4.*pow(radius, 4);
+      const Real C = std::sqrt(X*X + Y*Y);
+
+      stress = (C*L*radius/(2.*I_c));
+      displ = (C*pow(L, 3))/(3.*E*I_c);
     }else{
       Cout << "TestDriverInterface::mod_cantilever_ml(): wrong area type.\n";
       abort_handler(INTERFACE_ERROR);
@@ -810,11 +826,11 @@ int TestDriverInterface::cantilever_ml()
 
     // **** c1:
     if (directFnASV[c1i] & 1)
-      fnVals[c1i] = stress - R; //stress/R - 1.;
+      fnVals[c1i] = stress/R - 1.; //stress - R; //stress/R - 1.;
 
     // **** c2:
     if (directFnASV[c2i] & 1)
-      fnVals[c2i] = displ - D0; //displ/D0 - 1.;
+      fnVals[c2i] = displ/D0 - 1.; //displ - D0; //displ/D0 - 1.;
 
     // **** df/dx:
     if (objective && (directFnASV[0] & 2))
@@ -2068,7 +2084,8 @@ int TestDriverInterface::transient_diffusion_1d()
   // Get the number of spatial discretization points and the number of
   // Fourier solution modes from the discrete integer variables
   size_t nx_index = find_index(xDILabels, "N_x"),
-         nm_index = find_index(xDILabels, "N_mod");
+         nm_index = find_index(xDILabels, "N_mod"),
+         md_index = find_index(metaDataLabels, "cost_model");
   int N_x   = ( nx_index == _NPOS ) ? 200 : xDI[nx_index];
   int N_mod = ( nm_index == _NPOS ) ?  21 : xDI[nm_index];
 
@@ -2126,6 +2143,26 @@ int TestDriverInterface::transient_diffusion_1d()
   // QoI is the integral of the solution over the physical space
   fnVals[0] = int_u_n * dx / 2.; // trapezoidal rule
 
+  if (md_index != _NPOS) {
+    switch (N_mod) {
+    case 21: // HF model form
+      switch (N_x) {
+      case 30:  metaData[md_index] =  5.67e+5; break;
+      case 60:  metaData[md_index] = 4.536e+6; break;
+      case 100: metaData[md_index] =   2.1e+7; break;
+      case 200: metaData[md_index] =  1.68e+8; break;
+      }
+      break;
+    case 3: // LF model form
+      switch (N_x) {
+      case 5:  metaData[md_index] =      375.; break;
+      case 15: metaData[md_index] =    10125.; break;
+      case 30: metaData[md_index] =    81000.; break;
+      case 60: metaData[md_index] =   648000.; break;
+      }
+      break;
+    }
+  }
   return 0;
 }
 
@@ -2150,7 +2187,7 @@ int TestDriverInterface::tunable_model()
 
   size_t md_index = find_index(metaDataLabels, "cost_model");
   Real A, xy_pow, active_th, rel_cost;
-  if (numACV == 3 && numADIV == 1) { // x,y,theta1 and model form integer
+  if (numACV == 3 && numADIV >= 1) { // x,y,theta1 and model form integer
     active_th = xCM[VAR_theta]; // one CSV = theta for this MForm only
     switch (xDIM[VAR_MForm]) {  // state variable for ModelForm
     case 0:  A = std::sqrt(11.); xy_pow = 5;  rel_cost = 1.;   break; // HF
@@ -2158,29 +2195,66 @@ int TestDriverInterface::tunable_model()
     case 2:  A = std::sqrt(3.);  xy_pow = 1;  rel_cost = 0.01; break; // LF
     }
   }
-  else if (numACV == 7 && numADSV == 1) {//x,y,theta{,1,2},delta,gamma,MForm str
+  else if (numACV >= 2 && numACV <= 7 && numADSV >= 1) {
+    // at least x,y plus MForm str; optionally theta{,1,2},delta,gamma
     const String& mform = xDSM[VAR_MForm]; // discrete state var for ModelForm
+    std::map<var_t, Real>::iterator xc_iter;
     if (mform == "HF") {
-      A = std::sqrt(11.);  xy_pow = 5;  active_th = xCM[VAR_theta];
-      rel_cost = 1.;
+      A = std::sqrt(11.);  xy_pow = 5;  rel_cost = 1.;
+      xc_iter = xCM.find(VAR_theta);
+#ifdef DEBUG
+      if (xc_iter == xCM.end()) {
+	Cerr << "Failed theta find in tunable driver\n";
+	abort_handler(-1);
+      }
+#endif
+      active_th = (xc_iter == xCM.end()) ? PI / 2. : xc_iter->second;
     }
     else {
-      Real delta, w_lo = .001, w_hi = 1.; // initial definition for MF
-      Real th = xCM[VAR_theta], th1 = xCM[VAR_theta1], th2 = xCM[VAR_theta2],
-	th_lb = PI / 6., th_ub = PI / 2., th_range = th_ub - th_lb;
-      if (mform == "LF1")
-	{ A = std::sqrt(7.);  xy_pow = 3;  delta = 1.;  active_th = th1; }
+      Real active_delta, w_lo = .001, w_hi = 1.; // initial definition for MF
+      Real th_lb = PI / 6., th_ub = PI / 2., th_range = th_ub - th_lb;
+      if (mform == "LF1") {
+	A = std::sqrt(7.);  xy_pow = 3;  active_delta = 1.;
+	xc_iter = xCM.find(VAR_theta1);
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed theta1 find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
+	active_th  = (xc_iter == xCM.end()) ? PI / 3. : xc_iter->second;
+      }
       else if (mform == "LF2") {
-	A = std::sqrt(3.);  xy_pow = 1;  active_th = th2;
-	std::map<var_t, Real>::iterator x_iter = xCM.find(VAR_delta);
-	delta = (x_iter == xCM.end()) ? 2.5  : x_iter->second;
-	x_iter = xCM.find(VAR_gamma);
-	Real gamma = (x_iter == xCM.end()) ? 0.55 : x_iter->second;
-	w_lo *= gamma;  w_hi *= gamma; // new for LF: reduce MF cost by gamma
+	A = std::sqrt(3.);  xy_pow = 1;
+	xc_iter = xCM.find(VAR_theta2);
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed theta2 find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
+	active_th  = (xc_iter == xCM.end())   ? PI / 6. : xc_iter->second;
+	xc_iter = xCM.find(VAR_delta);
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed delta find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
+	active_delta = (xc_iter == xCM.end()) ? 2.5     : xc_iter->second;
+	xc_iter = xCM.find(VAR_gamma);
+#ifdef DEBUG
+	if (xc_iter == xCM.end()) {
+	  Cerr << "Failed gamma find in Test" << std::endl;
+	  abort_handler(-1);
+	}
+#endif
+	Real gamma2  = (xc_iter == xCM.end()) ? 0.55    : xc_iter->second;
+	w_lo *= gamma2;  w_hi *= gamma2; // new for LF: reduce MF cost by gamma
       }
       // cost metadata for tunable problem (extended cost model)
       Real log_w = std::log(w_lo) - std::log(w_lo/w_hi) / th_range *
-	           std::pow(active_th - th_lb, delta);
+	           std::pow(active_th - th_lb, active_delta);
       rel_cost = std::exp(log_w); // w_i = cost_LF_i / cost HF --> rel_cost
     }
   }
@@ -4692,6 +4766,10 @@ double TestDriverInterface::problem18_Ax(const double &A, const double &x){
     return 0.5/6. * log(x) + 0.4;
   else if(A == -4)
     return 0.69*1./exp(2.*x)+0.3;
+  else if(A== -5)
+    return 0.1/6. * x + 0.5;
+  else if(A== -6)
+    return 0.1/6. * x + 1.2; //Old version: 1.6 New version: 1.2
   else
     throw INTERFACE_ERROR;
 }

@@ -5,7 +5,7 @@ Test Number 0 succeeded
                       9.9941343413e-01 x2
 <<<<< Best objective function  =
                       2.4283400701e-07
-<<<<< Best data captured at function evaluation 73
+<<<<< Best evaluation ID: 73
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 48 total (48 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -13,7 +13,7 @@ Test Number 1 succeeded
                       1.0016117795e+00 x2
 <<<<< Best objective function  =
                       8.0899733487e-07
-<<<<< Best data captured at function evaluation 47
+<<<<< Best evaluation ID: 47
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -21,7 +21,7 @@ Test Number 2 succeeded
                       9.9092076660e-01 x2
 <<<<< Best objective function  =
                       2.5459656559e-05
-<<<<< Best data captured at function evaluation 55
+<<<<< Best evaluation ID: 55
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 96 total (96 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -29,7 +29,7 @@ Test Number 3 succeeded
                       9.9991578376e-01 x2
 <<<<< Best objective function  =
                       1.9634328083e-09
-<<<<< Best data captured at function evaluation 95
+<<<<< Best evaluation ID: 95
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 243 total (243 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -37,4 +37,4 @@ Test Number 4 succeeded
                       9.9998244218e-01 x2
 <<<<< Best objective function  =
                       1.0859635793e-10
-<<<<< Best data captured at function evaluation 239
+<<<<< Best evaluation ID: 239

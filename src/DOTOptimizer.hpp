@@ -113,8 +113,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  /// performs run-time set up
   void initialize_run();
+  void check_sub_iterator_conflict();
 
 private:
 

@@ -247,7 +247,7 @@ void NonDSampling::
 get_parameter_sets(Model& model, const size_t num_samples,
 		   RealMatrix& design_matrix, bool write_msg)
 {
-  initialize_lhs(write_msg, num_samples);
+  initialize_sample_driver(write_msg, num_samples);
 
   // Invoke LHSDriver to generate samples within the specified distributions
 
@@ -356,7 +356,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
 void NonDSampling::
 get_parameter_sets(const RealVector& lower_bnds, const RealVector& upper_bnds)
 {
-  initialize_lhs(true, numSamples);
+  initialize_sample_driver(true, numSamples);
   RealSymMatrix correl; // uncorrelated
   lhsDriver.generate_uniform_samples(lower_bnds, upper_bnds, correl,
 				     numSamples, allSamples);
@@ -371,7 +371,7 @@ get_parameter_sets(const RealVector& means, const RealVector& std_devs,
                    const RealVector& lower_bnds, const RealVector& upper_bnds,
                    RealSymMatrix& correl)
 {
-  initialize_lhs(true, numSamples);
+  initialize_sample_driver(true, numSamples);
   lhsDriver.generate_normal_samples(means, std_devs, lower_bnds, upper_bnds,
 				    correl, numSamples, allSamples);
 }
@@ -794,14 +794,13 @@ mode_bits(const Variables& vars, BitArray& active_vars,
 }
 
 
-void NonDSampling::initialize_lhs(bool write_message, size_t num_samples)
+void NonDSampling::
+initialize_sample_driver(bool write_message, size_t num_samples)
 {
-  // keep track of number of LHS executions for this object
-  ++numLHSRuns;
-
-  //Cout << "numLHSRuns = " << numLHSRuns << " seedSpec = " << seedSpec
-  //     << " randomSeed = " << randomSeed << " varyPattern = " << varyPattern
-  //     << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout <<  "Initialize: numLHSRuns = " << numLHSRuns << " seedSpec = "
+	 << seedSpec << " randomSeed = " << randomSeed << " varyPattern = "
+	 << varyPattern << std::endl;
 
   // Set seed value for input to LHS's RNG: a user-specified seed gives
   // repeatable behavior but no specification gives random behavior based on
@@ -811,7 +810,7 @@ void NonDSampling::initialize_lhs(bool write_message, size_t num_samples)
   // vary from one run to the next in a repeatable manner (required for RNG
   // without a persistent state, such as rnum2).
   bool seed_assigned = false, seed_advanced = false;
-  if (numLHSRuns == 1) { // set initial seed
+  if (numLHSRuns == 0) { // set initial seed
     lhsDriver.rng(rngName);
     if (!seedSpec) { // no user specification --> nonrepeatable behavior
       // Generate initial seed from a system clock.  NOTE: the system clock
@@ -825,12 +824,13 @@ void NonDSampling::initialize_lhs(bool write_message, size_t num_samples)
       randomSeed = generate_system_seed();
     }
     lhsDriver.seed(randomSeed);  seed_assigned = true;
+    seed_advanced = seed_updated(); // track seedIndex for ensemble samplers
   }
   // We must distinguish two advancement use cases and allow them to co-exist:
   // > an update to NonDSampling::randomSeed due to random_seed_sequence spec
   // > an update to Pecos::LHSDriver::randomSeed using LHSDriver::
   //   advance_seed_sequence() in support of varyPattern for rnum2
-  else if (seedSpec && seedSpec != randomSeed) // random_seed_sequence advance
+  else if (seed_updated()) // random_seed_sequence advance
     { seedSpec = randomSeed; lhsDriver.seed(randomSeed); seed_assigned = true; }
   else if (varyPattern && rngName == "rnum2") // vary pattern by advancing seed
     { lhsDriver.advance_seed_sequence();                 seed_advanced = true; }
@@ -857,6 +857,7 @@ void NonDSampling::initialize_lhs(bool write_message, size_t num_samples)
   }
 
   lhsDriver.initialize(sample_string, sampleRanksMode, !subIteratorFlag);
+  ++numLHSRuns;
 }
 
 

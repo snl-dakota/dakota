@@ -208,6 +208,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     if (strbegins(surrogateType, "global_")) update_global_reference();
     else                                     update_local_reference();
   }
+
+  currentResponse.reshape_metadata(0);
 }
 
 
@@ -345,6 +347,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 				import_build_active_only);
   if (export_pts) initialize_export();
   if (import_pts || export_pts) manage_data_recastings();
+
+  currentResponse.reshape_metadata(0);
 }
 
 
@@ -411,6 +415,22 @@ bool DataFitSurrModel::finalize_mapping()
 
   return false; // no change to problem size
 }
+
+
+/*
+void DataFitSurrModel::init_model(Model& model)
+{
+  SurrogateModel::init_model(model);
+
+  // See concern in SurrogateModel::init_model():
+  //init_model_inactive_variables(model);
+  // This may be preferred:
+  //init_model_mapped_variables(model);
+
+  // retained for now since deactivated at base level for EnsembleSurrModel
+  //init_model_inactive_labels(model);
+}
+*/
 
 
 void DataFitSurrModel::update_model(Model& model)
@@ -1578,14 +1598,14 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 	actual_response = actualModel.current_response(); // shared rep
       else {
 	currentResponse.active_set(actual_set);
-	currentResponse.update(actualModel.current_response());
+	currentResponse.update(actualModel.current_response(), true);//pull meta
       }
       break;
     }
     case BYPASS_SURROGATE:
       actualModel.evaluate(set);
       currentResponse.active_set(set);
-      currentResponse.update(actualModel.current_response());
+      currentResponse.update(actualModel.current_response(), true); // pull meta
       // TODO: Add to surrogate build data
       //      add_tabular_data(....)
       break;

@@ -64,7 +64,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
   // instantiate the optimizer used to compute the output interval bounds
   switch (sub_optimizer_select(
 	  probDescDB.get_ushort("method.nond.opt_subproblem_solver"))) {
-  case SUBMETHOD_SQP: {
+  case SUBMETHOD_NPSOL: {
 #ifdef HAVE_NPSOL
     int deriv_level = 3;
     minMaxOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
@@ -72,7 +72,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
 #endif // HAVE_NPSOL
     npsolFlag =  true; break;
   }
-  case SUBMETHOD_NIP:
+  case SUBMETHOD_OPTPP:
 #ifdef HAVE_OPTPP
     minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
 			       ("optpp_q_newton", minMaxModel));
@@ -84,19 +84,24 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
 
   if (err_flag)
     abort_handler(METHOD_ERROR);
+}
 
+
+void NonDLocalInterval::check_sub_iterator_conflict()
+{
   // Prevent nesting of an instance of a Fortran iterator within another
   // instance of the same iterator (which would result in data clashes since
   // Fortran does not support object independence).  Recurse through all
   // sub-models and test each sub-iterator for SOL presence.
-  // Note: NPSOL/NLSSOL share code modules, so we check for both.
+  // Note 1: NPSOL/NLSSOL share code modules, so we check for both.
+  // Note 2: forces lower-level to accommodate, even though this level may be
+  //         the more flexible one in its ability to switch away from NPSOL.
   if (npsolFlag) {
     Iterator sub_iterator = iteratedModel.subordinate_iterator();
     if (!sub_iterator.is_null() && 
 	 ( sub_iterator.method_name() ==  NPSOL_SQP ||
 	   sub_iterator.method_name() == NLSSOL_SQP ||
-	   sub_iterator.uses_method() ==  NPSOL_SQP ||
-	   sub_iterator.uses_method() == NLSSOL_SQP ) )
+	   sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
       sub_iterator.method_recourse();
     ModelList& sub_models = iteratedModel.subordinate_models();
     for (ModelLIter ml_iter = sub_models.begin();
@@ -105,8 +110,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
       if (!sub_iterator.is_null() && 
 	   ( sub_iterator.method_name() ==  NPSOL_SQP ||
 	     sub_iterator.method_name() == NLSSOL_SQP ||
-	     sub_iterator.uses_method() ==  NPSOL_SQP ||
-	     sub_iterator.uses_method() == NLSSOL_SQP ) )
+	     sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
 	sub_iterator.method_recourse();
     }
   }
@@ -121,6 +125,11 @@ void NonDLocalInterval::derived_init_communicators(ParLevLIter pl_iter)
 {
   iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
+  // miPLIndex needed in method_recourse() prior to assignment in
+  // NonD::derived_set_communicators().  While derived_init_communicators()
+  // may be invoked multiple times, this captures a consistent state to that
+  // present during the invocation of check_sub_iterator_conflict().
+  if (npsolFlag) miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
   // minMaxOptimizer uses NoDBBaseConstructor, so no need to manage DB
   // list nodes at this level
   minMaxOptimizer.init_communicators(pl_iter);
@@ -277,13 +286,19 @@ extract_objective(const Variables& sub_model_vars, const Variables& recast_vars,
 
 void NonDLocalInterval::method_recourse()
 {
+  // see notes in NonDLocalReliability::method_recourse()
+
   Cerr << "\nWarning: method recourse invoked in NonDLocalInterval due to "
        << "detected method conflict.\n\n";
   if (npsolFlag) {
-    // if NPSOL already assigned, then reassign; otherwise just set the flag.
 #ifdef HAVE_OPTPP
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    std::map<size_t, ParConfigLIter> pc_iter_map
+      = minMaxOptimizer.parallel_configuration_iterator_map();
     minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
 			       ("optpp_q_newton", minMaxModel));
+    minMaxOptimizer.parallel_configuration_iterator_map(pc_iter_map);
+    minMaxOptimizer.init_communicators(pl_iter); // restore methodPCIter et al.
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalInterval "
 	 << "(OPT++ NIP unavailable).\n";

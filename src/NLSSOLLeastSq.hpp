@@ -96,12 +96,16 @@ public:
   ~NLSSOLLeastSq();
 
   //
-  //- Heading: Member functions
+  //- Heading: Virtual function redefinitions
   //
 
+  //void pre_run();
   void core_run();
 
+  void check_sub_iterator_conflict();
+
 protected:
+
   void send_sol_option(std::string sol_option) override;
 
 private:

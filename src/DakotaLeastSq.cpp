@@ -32,7 +32,6 @@ static const char rcsId[]="@(#) $Id: DakotaLeastSq.cpp 7031 2010-10-22 16:23:52Z
 using namespace std;
 
 namespace Dakota {
-  extern PRPCache data_pairs; // global container
 
 // initialization of static needed by RecastModel
 LeastSq* LeastSq::leastSqInstance(NULL);
@@ -162,7 +161,6 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   
   // archive the single best point
   size_t num_best = 1, best_ind = 0;
-  int eval_id;
   //if(!calibrationDataFlag)
   //  archive_allocate_residuals(num_best);
 
@@ -232,22 +230,7 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   ActiveSet search_set(orig_model.response_size(), numContinuousVars);
 
   activeSet.request_values(1);
-  PRPCacheHIter cache_it = lookup_by_val(data_pairs,
-    iteratedModel.interface_id(), best_vars, activeSet);
-  if (cache_it == data_pairs.get<hashed>().end()) {
-    s << "<<<<< Best data not found in evaluation cache\n\n";
-    eval_id = 0;
-  }
-  else {
-    eval_id = cache_it->eval_id();
-    if (eval_id > 0)
-      s << "<<<<< Best data captured at function evaluation " << eval_id
-	<< "\n\n";
-    else // should not occur
-      s << "<<<<< Best data not found in evaluations from current execution,"
-	<< "\n      but retrieved from restart archive with evaluation id "
-	<< -eval_id << "\n\n";
-  }
+  print_best_eval_ids(iteratedModel.interface_id(), best_vars, activeSet, s);
  
   // Print confidence intervals for each estimated parameter. 
   // These CIs are based on a linear approximation of the underlying 

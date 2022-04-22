@@ -108,6 +108,10 @@ public:
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models
   virtual void active_model_key(const Pecos::ActiveKey& key);
+  /// return the active model key (used by surrogate data, grid driver,
+  /// and approximation classes to support the management of multiple
+  /// approximation states within surrogate models)
+  virtual const Pecos::ActiveKey& active_model_key() const;
   /// reset by removing all model keys within surrogate data, grid driver,
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models

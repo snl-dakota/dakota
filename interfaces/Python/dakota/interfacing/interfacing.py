@@ -27,6 +27,9 @@ else:
 class ResponseError(Exception):
     pass
 
+class ResultsError(Exception):
+    pass
+
 class MissingSourceError(Exception):
     pass
 
@@ -70,15 +73,18 @@ class Parameters(object):
         descriptors: List of the variable descriptors (read-only)
         num_variables: Number of variables (read-only)
         num_an_comps: Number of analysis components (read-only)
+        metadata: Names of requested metadata fields
+        num_metadata: Number of requested metadata fields (read-only)
     """
 
     def __init__(self,aprepro_format=None, variables=None, an_comps=None, 
-            eval_id=None, infer_types=True, types=None):
+                 eval_id=None, metadata=None, infer_types=True, types=None):
         self.aprepro_format = aprepro_format
         self._variables = copy.deepcopy(variables)
         self.an_comps = list(an_comps)
         self.eval_id = str(eval_id)
         self.eval_num = int(eval_id.split(":")[-1])
+        self.metadata = list(metadata)
         if isinstance(types, list):
             self._set_types_from_list(types)
         elif isinstance(types, dict):
@@ -147,6 +153,10 @@ class Parameters(object):
     @property
     def num_an_comps(self):
         return len(self.an_comps)
+
+    @property
+    def num_metadata(self):
+        return len(self.metadata)
 
     def __iter__(self):
         for name in self._variables:
@@ -297,6 +307,25 @@ class Response(object):
             self._hessian.append(row)
     
 
+class IndexableOrderedDict(collections.OrderedDict):
+    """Specialization of OrderedDict that allows access via key or index."""
+
+    def __getitem__(self, key):
+        if type(key) is int:
+            key_from_index = list(self.keys())[key]
+            return super(IndexableOrderedDict, self).__getitem__(key_from_index)
+        else:
+            return super(IndexableOrderedDict, self).__getitem__(key)
+
+    def __setitem__(self, key, value):
+        if type(key) is int:
+            # This will only work if the key already exists... raise KeyError?
+            key_from_index = list(self.keys())[key]
+            return super(IndexableOrderedDict, self).__setitem__(key_from_index, value)
+        else:
+            return super(IndexableOrderedDict, self).__setitem__(key, value)
+
+
 class Results(object):
     """Collect response data and write to results file.
 
@@ -310,6 +339,7 @@ class Results(object):
     Attributes:
         eval_id: Evaluation id (a string).
         eval_num: Evaluation number (final token in eval_id) (int).
+        metadata: Dictionary indexable by metadata field name or by index
         aprepro_format: Boolean indicating whether the parameters file was in
             aprepro (True) or Dakota (False) format.
         descriptors: List of the response descriptors (read-only)
@@ -321,8 +351,8 @@ class Results(object):
     """
 
     def __init__(self, aprepro_format=None, responses=None, 
-            deriv_vars=None, eval_id=None, ignore_asv=False, 
-            results_file=None):
+            deriv_vars=None, eval_id=None, metadata=None,
+            ignore_asv=False, results_file=None):
         self.aprepro_format = aprepro_format
         self.ignore_asv = ignore_asv
         self._deriv_vars = deriv_vars[:]
@@ -331,6 +361,9 @@ class Results(object):
         for t, v in responses.items():
             self._responses[t] = Response(t, num_deriv_vars, ignore_asv, 
                     int(v)) 
+        self.metadata = IndexableOrderedDict()
+        for m in metadata:
+            self.metadata[m] = None
         self.results_file = results_file
         self.eval_id = eval_id
         self.eval_num = int(eval_id.split(":")[-1])
@@ -357,6 +390,8 @@ class Results(object):
             num_deriv_vars = len(self._deriv_vars)        
             self._responses.clear()
             self._responses = copy.deepcopy(other._responses)
+            self.metadata.clear()
+            self.metadata = copy.deepcopy(other.metadata)
             self.results_file = other.results_file
             self.eval_id = other.eval_id
             self.eval_num = other.eval_num
@@ -382,6 +417,8 @@ class Results(object):
                 raise ResultsUpdateError("Mismatch between expected responses")           
             self._responses.clear()
             self._responses = copy.deepcopy(other._responses)
+            self.metadata.clear()
+            self.metadata = copy.deepcopy(other.metadata)
             if self.results_file != other.results_file:
                 raise ResultsUpdateError("Mismatch between results file name")
             if self.eval_id != other.eval_id:
@@ -428,6 +465,10 @@ class Results(object):
                     for c in r:
                         print(" %24.16E" % c,file=stream, end="")
                 print(" ]]",file=stream)
+        # Write metadata
+        for k, v in self.metadata.items():
+            print("%24.16E %s" %(v, k), file=stream)
+
 
     def write(self, stream=None, ignore_asv=None):
         """Write the results to the Dakota results file.
@@ -445,6 +486,8 @@ class Results(object):
                 call.
             dakota.interfacing.ResponseError: A result requested by Dakota is 
                 missing (and ignore_asv is False).
+            dakota.interfacing.ResultsError: A metadata result requested by
+                Dakota is missing.
         """
         if self._batch:
             raise BatchWriteError("write() called on Results object in " + \
@@ -465,6 +508,12 @@ class Results(object):
                 if v.asv.hessian and v.hessian is None:
                     raise ResponseError("Response '" +t + "' is missing "
                             "requested Hessian result.")
+
+        if not self._failed:
+            for k, v in self.metadata.items():
+                if v is None:
+                    raise ResultsError("Results object is missing requested "
+                            "metadata field '" + k + "'")
 
         if stream is None:
             if self.results_file is None:
@@ -756,6 +805,22 @@ def _extract_block(stream, numRE, dataRE, handle):
         handle(tag,value)
 
 
+def _extract_optional_block(stream, numRE, dataRE, handle):
+    """Optionally extract a block of information from a Dakota parameters file.
+
+    Same API as _extract_block, except will not raise exception on
+    missing block. Will still raise on poorly formatted item within
+    the block."""
+
+    beginning_pos = stream.tell()
+    line = stream.readline()
+    m = numRE.match(line)
+    stream.seek(beginning_pos)
+    # block appears to exist, try to read in earnest
+    if m is not None:
+        _extract_block(stream, numRE, dataRE, handle)
+
+
 def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, infer_types=True, types=None):
     """Extract the parameters data from the stream."""
 
@@ -811,12 +876,10 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, inf
     metadata = []
     def store_metadata(t, v):
         metadata.append(v)
-    _extract_block(stream, useRE["num_metadata"], useRE["metadata"],
-                   store_metadata)
-    
-    return (Parameters(aprepro_format, variables, an_comps, eval_id, infer_types, types),
-            Results(aprepro_format, responses, deriv_vars, eval_id, ignore_asv,
-                results_file))
+    _extract_optional_block(stream, useRE["num_metadata"], useRE["metadata"],
+                            store_metadata)
+    return (Parameters(aprepro_format, variables, an_comps, eval_id, metadata, infer_types, types),
+            Results(aprepro_format, responses, deriv_vars, eval_id, metadata, ignore_asv, results_file))
 
 def _read_parameters_stream(stream=None, ignore_asv=False, batch=False, 
     results_file=None, infer_types=True, types=None):

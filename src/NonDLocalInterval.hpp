@@ -57,9 +57,8 @@ public:
   /// statistical estimator
   void core_run();
 
-  /// return name of active optimizer method
+  void check_sub_iterator_conflict();
   unsigned short uses_method() const;
-  /// perform an MPP optimizer method switch due to a detected conflict
   void method_recourse();
 
 protected:
@@ -118,7 +117,7 @@ private:
 
 
 inline unsigned short NonDLocalInterval::uses_method() const
-{ return (npsolFlag) ? NPSOL_SQP : OPTPP_Q_NEWTON; }
+{ return (npsolFlag) ? SUBMETHOD_NPSOL : SUBMETHOD_OPTPP; }
 
 } // namespace Dakota
 

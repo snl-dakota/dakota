@@ -84,7 +84,7 @@ of the %Dakota output.
                       1.0000000000e+00 x3
 <<<<< Best objective function  =
                       1.0735377280e-52
-<<<<< Best data captured at function evaluation 658
+<<<<< Best evaluation ID: 658
 \endverbatim
 
 A NOMAD-generated iteration summary is also printed to the screen.

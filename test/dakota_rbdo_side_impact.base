@@ -24,7 +24,8 @@ Test Number 0 succeeded
                       2.4892163867e+01
 <<<<< Best constraint values   =
                       1.2815496349e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 13
 Test Number 1 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 11 total (11 new, 0 duplicate)
          obj_fn: 11 val (11 n, 0 d), 11 grad (11 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51,7 +52,8 @@ Test Number 1 succeeded
                       2.4851541967e+01
 <<<<< Best constraint values   =
                       1.2877641292e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 7
 Test Number 2 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 6 total (6 new, 0 duplicate)
          obj_fn: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
@@ -78,7 +80,8 @@ Test Number 2 succeeded
                       2.1916500000e+01
 <<<<< Best constraint values   =
                       2.1019162344e+01
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 6
 Test Number 3 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 6 total (6 new, 0 duplicate)
          obj_fn: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
@@ -105,4 +108,5 @@ Test Number 3 succeeded
                       2.1916500000e+01
 <<<<< Best constraint values   =
                       2.1049412627e+01
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 6

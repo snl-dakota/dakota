@@ -15,7 +15,8 @@ Test Number 0 succeeded
                      -3.2362356286e+00
 <<<<< Best constraint values   =
                       4.0000000000e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 24
 Test Number 1 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 42 total (31 new, 11 duplicate)
  nln_ineq_con_1: 42 val (31 n, 11 d), 39 grad (31 n, 8 d), 0 Hess (0 n, 0 d)
@@ -33,4 +34,5 @@ Test Number 1 succeeded
                      -3.2362275326e+00
 <<<<< Best constraint values   =
                       3.9999963764e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 31

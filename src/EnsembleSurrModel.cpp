@@ -42,7 +42,7 @@ void EnsembleSurrModel::init_model(Model& model)
   // Rather than map all inactive variables, propagate nested mappings from
   // currentVariables into the target model
   init_model_mapped_variables(model);
-  //init_model_inactive_variables(model);
+  //init_model_mapped_labels(model);
 }
 
 

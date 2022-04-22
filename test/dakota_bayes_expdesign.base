@@ -45,7 +45,7 @@ Sample moment statistics for each posterior variable:
          uuv_3  1.2665293595e+02  6.9827964216e+00 -1.3529886131e+00  7.7133257926e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  4.1139976014e+01  2.5656069615e+00  1.8540209890e+00  1.2454754914e+01
+least_sq_term_1_1  4.1139976014e+01  2.5656069615e+00  1.8540209890e+00  1.2454754914e+01
 Test Number 2 succeeded
 Optimal design:
                       4.0000000000e+01 csv_1

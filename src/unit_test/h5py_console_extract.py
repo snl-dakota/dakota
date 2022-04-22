@@ -603,13 +603,15 @@ def read_restart_file(restart_file):
             data["variables"][t][d] = []
     resp_r = restart_response(file_data[1].split())
     data["response"] = OrderedDict()
+    data["metadata"] = OrderedDict()
     for d, r in list(resp_r["response"].items()):
         data["response"][d] = []
+    for d, m in resp_r["metadata"].items():
+        data["metadata"][d] = []
     data["asv"] = []
     data["eval_id"] = []
     data["dvv"] = []
     data["interface"] = []
-    data["metadata"] = OrderedDict()
 
     for i in range(0,len(file_data),2):
         var_row = file_data[i].split()
@@ -625,6 +627,8 @@ def read_restart_file(restart_file):
         data["eval_id"].append(resp_r["eval_id"])
         data["dvv"].append(resp_r["dvv"][:])
         data["interface"].append(resp_r["interface"])
+        for d, r in resp_r["metadata"].items():
+            data["metadata"][d].append(r)
     return data
 
               

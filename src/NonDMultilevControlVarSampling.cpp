@@ -121,7 +121,7 @@ void NonDMultilevControlVarSampling::core_run()
 /** This function performs "geometrical" MLMC across discretization
     levels for the high fidelity model form where CVMC si employed
     across two model forms to exploit correlation in the discrepancies
-    at each level (Y_l). */
+    at each level (Y_l).
 void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 {
   Model& truth_model = iteratedModel.truth_model();
@@ -307,7 +307,8 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
   for (lev=0; lev<num_cv_lev; ++lev) {
     cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf[lev],
-		   sum_L_refined, N_lf[lev], /*rho2_LH,*/ lev, Y_cvmc_mom);
+		   sum_L_refined, N_lf[lev], //rho2_LH,
+		   lev, Y_cvmc_mom);
     Y_mom += Y_cvmc_mom;
   }
   if (num_hf_lev > num_cv_lev)
@@ -317,7 +318,9 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   recover_variance(momentStats, varH);
 
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
+  avgEstVar = average(estVar);
 }
+*/
 
 
 /** This function performs "geometrical" MLMC across discretization
@@ -331,16 +334,22 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
   Model& surr_model  = iteratedModel.surrogate_model();
   size_t qoi, lev, num_mf = NLev.size(),
     num_hf_lev = truth_model.solution_levels(),
-    num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
+    num_lf_lev =  surr_model.solution_levels(),
+    num_cv_lev = std::min(num_hf_lev, num_lf_lev);
   bool budget_constrained = (maxFunctionEvals != SZ_MAX);
 
   // retrieve cost estimates across solution levels for HF model
-  RealVector hf_targets(num_hf_lev), agg_var_hf(num_hf_lev),
-    hf_cost = truth_model.solution_level_costs(),
-    lf_cost =  surr_model.solution_level_costs();
+  RealVector hf_targets(num_hf_lev), agg_var_hf(num_hf_lev), hf_cost, lf_cost,
+    hf_accum_cost, lf_accum_cost;
+  SizetArray hf_num_cost, lf_num_cost;
+  bool online_hf_cost = !query_cost(num_hf_lev, truth_model, hf_cost),
+       online_lf_cost = !query_cost(num_lf_lev,  surr_model, lf_cost);
+  if (online_hf_cost)
+    { hf_accum_cost.size(num_hf_lev); hf_num_cost.assign(num_hf_lev, 0); }
+  if (online_lf_cost)
+    { lf_accum_cost.size(num_cv_lev); lf_num_cost.assign(num_cv_lev, 0); }
   Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar_iter0 = 0., budget, r_lq,
-    lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
-  if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
+    lf_lev_cost, hf_lev_cost, hf_ref_cost;
   RealVectorArray eval_ratios(num_cv_lev);
 
   // CV requires cross-level covariance combinations in Qcorr approach
@@ -376,37 +385,27 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
   // now converge on sample counts per level (N_hf)
   while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations) {
 
-    sum_sqrt_var_cost = 0.;
+    // FIRST PASS: evaluations, accumulations, cost estimates
+    // NOTE: this will also simplify removing non-essential synchronizations
     for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
       configure_indices(group, hf_form, lev, sequenceType);
-      hf_lev_cost = level_cost(hf_cost, lev);
-
-      // set the number of current samples from the defined increment
       numSamples = delta_N_hf[lev];
-
-      // aggregate variances across QoI for estimating N_hf (justification:
-      // for independent QoI, sum of QoI variances = variance of QoI sum)
-      Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
       if (numSamples) {
-
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(lev);
+	// accumulate online costs for HF model
+	if (online_hf_cost && mlmfIter == 0)
+	  accumulate_paired_online_cost(hf_accum_cost, hf_num_cost, lev);
 
 	// control variate betwen LF and HF for this discretization level:
-	// if unequal number of levels, loop over all HF levels for MLMC and
-	// apply CVMC when LF levels are available.  LF levels are assigned as
-	// control variates to the leading set of HF levels, since these will
-	// tend to have larger variance.      
+	// if unequal number of levels, LF levels are assigned as CV to the
+	// leading set of HF levels, since these tend to have larger variance.
 	if (lev < num_cv_lev) {
-
 	  // store previous allResponses prior to new set of evaluations
 	  IntResponseMap hf_resp = allResponses; // shallow copy is sufficient
 	  // activate LF response (lev 0) or LF response discrepancy (lev > 0)
-	  // within the hierarchical surrogate model.  Level indices & surrogate
-	  // response mode are same as HF above, only the model form changes.
 	  configure_indices(group, lf_form, lev, sequenceType);
-	  lf_lev_cost = level_cost(lf_cost, lev);
 	  // eval allResp w/ LF model reusing allVars from ML step above
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for MLMF sums;
@@ -416,62 +415,82 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 				sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
 				sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
 				sum_Hlm1_Hlm1, lev, N_lf[lev], N_hf[lev]);
-	  if (outputLevel == DEBUG_OUTPUT)
-	    Cout << "Accumulated sums (Ll[1,2], L_refined[1,2], Hl[1,2]):\n"
-		 << sum_Ll[1] << sum_Ll[2] << sum_Ll_refined[1]
-		 << sum_Ll_refined[2] << sum_Hl[1] << sum_Hl[2];
-	  increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
-					 numSamples, lf_lev_cost, hf_ref_cost);
-
-	  // compute the average evaluation ratio and Lambda factor
-	  RealVector& eval_ratios_l = eval_ratios[lev];
-	  compute_eval_ratios(sum_Ll[1], sum_Llm1[1], sum_Hl[1], sum_Hlm1[1],
-			      sum_Ll_Ll[1], sum_Ll_Llm1[1], sum_Llm1_Llm1[1],
-			      sum_Hl_Ll[1], sum_Hl_Llm1[1], sum_Hlm1_Ll[1],
-			      sum_Hlm1_Llm1[1], sum_Hl_Hl[1], sum_Hl_Hlm1[1],
-			      sum_Hlm1_Hlm1[1], hf_lev_cost/lf_lev_cost, lev,
-			      N_hf[lev], var_YH, rho_dot2_LH, eval_ratios_l);
-
-	  // retain Lambda per QoI and level, but apply QoI-average where needed
-	  for (qoi=0; qoi<numFunctions; ++qoi) {
-	    r_lq = eval_ratios_l[qoi];
-	    Lambda(qoi,lev) = 1. - rho_dot2_LH(qoi,lev) * (r_lq - 1.) / r_lq;
-	  }
-	  avg_lambda[lev]      = average(Lambda[lev],      numFunctions);
-	  avg_rho_dot2_LH[lev] = average(rho_dot2_LH[lev], numFunctions);
+	  // accumulate online costs for LF model
+	  if (online_lf_cost && mlmfIter == 0)
+	    accumulate_paired_online_cost(lf_accum_cost, lf_num_cost, lev);
 	}
-	else { // no LF model for this level; accumulate only multilevel
-	       // discrepancy sums (Hl is Yl) as in standard MLMC
-	  RealMatrix& sum_HH1 = sum_Hl_Hl[1];
-	  // accumulate H sums for lev = 0, Y sums for lev > 0
-	  accumulate_ml_Ysums(sum_Hl, sum_HH1, lev, N_hf[lev]);
-	  if (outputLevel == DEBUG_OUTPUT)
-	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n"
-		 << sum_Hl[1] << sum_Hl[2] << sum_HH1;
-	  increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
-	  // compute Y variances for this level and aggregate across QoI:
-	  variance_Ysum(sum_Hl[1][lev], sum_HH1[lev], N_hf[lev], var_YH[lev]);
-	}
-	agg_var_hf_l = sum(var_YH[lev], numFunctions);
+	else // no LF for this level; accumulate only multilevel discrepancies
+	  accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_hf[lev]);
       }
+    }
+    if (mlmfIter == 0) {
+      if (online_hf_cost)
+	average_online_cost(hf_accum_cost, hf_num_cost, hf_cost);
+      if (online_lf_cost)
+	average_online_cost(lf_accum_cost, lf_num_cost, lf_cost);
+      hf_ref_cost = hf_cost[num_hf_lev-1];
+      if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "HF cost:\n" << hf_cost << "LF cost:\n" << lf_cost << std::endl;
+      // Note: could assign these back if needed elsewhere:
+      //if (online_hf_cost) truth_model.solution_level_costs(hf_cost);
+      //if (online_lf_cost)  surr_model.solution_level_costs(lf_cost);
+    }
 
-      // accumulate sum of sqrt's of estimator var * cost used in N_target
+    // SECOND PASS: STATS
+    sum_sqrt_var_cost = 0.;
+    for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
+
+      hf_lev_cost = level_cost(hf_cost, lev);
+      numSamples = delta_N_hf[lev];
+
+      // aggregate variances across QoI for estimating N_hf (justification:
+      // for independent QoI, sum of QoI variances = variance of QoI sum)
+      Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
+      // control variate betwen LF and HF for this discretization level
       if (lev < num_cv_lev) {
-	Real om_rho2 = 1. - avg_rho_dot2_LH[lev];
-	sum_sqrt_var_cost += (budget_constrained) ?
+	lf_lev_cost = level_cost(lf_cost, lev);
+	increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
+				       numSamples, lf_lev_cost, hf_ref_cost);
+
+	// compute the average evaluation ratio and Lambda factor
+	RealVector& eval_ratios_l = eval_ratios[lev];
+	compute_eval_ratios(sum_Ll[1], sum_Llm1[1], sum_Hl[1], sum_Hlm1[1],
+			    sum_Ll_Ll[1], sum_Ll_Llm1[1], sum_Llm1_Llm1[1],
+			    sum_Hl_Ll[1], sum_Hl_Llm1[1], sum_Hlm1_Ll[1],
+			    sum_Hlm1_Llm1[1], sum_Hl_Hl[1], sum_Hl_Hlm1[1],
+			    sum_Hlm1_Hlm1[1], hf_lev_cost/lf_lev_cost, lev,
+			    N_hf[lev], var_YH, rho_dot2_LH, eval_ratios_l);
+
+	// retain Lambda per QoI and level, but apply QoI-average where needed
+	for (qoi=0; qoi<numFunctions; ++qoi) {
+	  r_lq = eval_ratios_l[qoi];
+	  Lambda(qoi,lev) = 1. - rho_dot2_LH(qoi,lev) * (r_lq - 1.) / r_lq;
+	}
+	avg_lambda[lev]      = average(Lambda[lev],      numFunctions);
+	avg_rho_dot2_LH[lev] = average(rho_dot2_LH[lev], numFunctions);
+	agg_var_hf_l         = sum(var_YH[lev],          numFunctions);
+	Real om_rho2         = 1. - avg_rho_dot2_LH[lev];
+	sum_sqrt_var_cost   += (budget_constrained) ?
 	  std::sqrt(agg_var_hf_l / hf_lev_cost * om_rho2) *
 	  (hf_lev_cost + (1. + average(eval_ratios[lev])) * lf_lev_cost) :
 	  std::sqrt(agg_var_hf_l * hf_lev_cost / om_rho2) * avg_lambda[lev];
       }
-      else
+      else {
+	increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
+	// compute Y variances for this level and aggregate across QoI:
+	variance_Ysum(sum_Hl[1][lev], sum_Hl_Hl[1][lev], N_hf[lev],var_YH[lev]);
+	agg_var_hf_l       = sum(var_YH[lev], numFunctions);
 	sum_sqrt_var_cost += std::sqrt(agg_var_hf_l * hf_lev_cost);
-	
+      }
+
       // MSE reference is MLMF MC applied to {HF,LF} pilot sample aggregated
       // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
       // will result in no additional variance reduction beyond MLMC.
       if (mlmfIter == 0 && !budget_constrained)
 	agg_estvar_iter0 += aggregate_mse_Yvar(var_YH[lev], N_hf[lev]);
     }
+
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
     // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
@@ -507,40 +526,49 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	 << delta_N_hf << std::endl;
   }
 
-  // All CV lf_increment() calls now follow convergence of ML iteration:
-  // > Avoids early mis-estimation of LF increments
-  // > Parallel scheduling benefits from one final large batch of refinements
-  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-    configure_indices(group, lf_form, lev, sequenceType);
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS) {
+    // All CV lf_increment() calls now follow convergence of ML iteration:
+    // > Avoids early mis-estimation of LF increments
+    // > Parallel scheduling benefits from one final large batch of refinements
+    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
+      configure_indices(group, lf_form, lev, sequenceType);
 
-    // now execute additional LF sample increment
-    if (lf_increment(eval_ratios[lev],N_lf[lev],hf_targets[lev],mlmfIter,lev)) {
-      accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, N_lf[lev]);
-      increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
-				   hf_ref_cost);
-      if (outputLevel == DEBUG_OUTPUT)
-	Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_Ll_refined[1]
-	     << sum_Ll_refined[2];
+      // now execute additional LF sample increment
+      if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
+		       mlmfIter, lev)) {
+	accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, N_lf[lev]);
+	increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
+				     hf_ref_cost);
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_Ll_refined[1]
+	       << sum_Ll_refined[2];
+      }
     }
-  }
 
-  // Roll up raw moments from MLCVMC and MLMC levels
-  RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
-  for (lev=0; lev<num_cv_lev; ++lev) {
-    cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
-		   sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
-		   sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
-		   N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
-		   /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
-    Y_mom += Y_cvmc_mom;
+    // Roll up raw moments from MLCVMC and MLMC levels
+    RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
+    for (lev=0; lev<num_cv_lev; ++lev) {
+      cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
+		     sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
+		     sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
+		     N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
+		     /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
+      Y_mom += Y_cvmc_mom;
+    }
+    if (num_hf_lev > num_cv_lev)
+      ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
+		     num_cv_lev, num_hf_lev, Y_mom);
+    convert_moments(Y_mom, momentStats); // raw to final (central or std)
+    recover_variance(momentStats, varH);
   }
-  if (num_hf_lev > num_cv_lev)
-    ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
-		   num_cv_lev, num_hf_lev, Y_mom);
-  convert_moments(Y_mom, momentStats); // raw to final (central or std)
-  recover_variance(momentStats, varH);
+  else // for consistency with pilot projection
+    update_projected_samples(hf_targets, eval_ratios,N_hf,hf_cost,N_lf,lf_cost);
 
+  // Both QOI_STATISTICS and ESTIMATOR_PERFORMANCE
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
+  avgEstVar = average(estVar);
 }
 
 
@@ -548,9 +576,7 @@ void NonDMultilevControlVarSampling::
 multilevel_control_variate_mc_offline_pilot()
 {
   // retrieve cost estimates across solution levels for HF model
-  RealVector hf_targets_pilot,
-    hf_cost = iteratedModel.truth_model().solution_level_costs(),
-    lf_cost = iteratedModel.surrogate_model().solution_level_costs();
+  RealVector hf_targets_pilot, hf_cost, lf_cost;
   RealMatrix Lambda_pilot, var_YH_pilot;
   RealVectorArray eval_ratios_pilot;
 
@@ -600,7 +626,22 @@ multilevel_control_variate_mc_offline_pilot()
       increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
 				     numSamples, lf_lev_cost, hf_ref_cost);
       // leave evaluation ratios and Lambda at values from Oracle pilot
+    }
+    else {
+      // accumulate H sums for lev = 0, Y sums for lev > 0
+      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_hf[lev]);
+      increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
+    }
+  }
 
+  // --------------------------------------------------------
+  // LF increments and final stats from online sample profile
+  // --------------------------------------------------------
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS) {
+
+    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
       // LF increments from online sample profile
       configure_indices(group, lf_form, lev, sequenceType);
       if (lf_increment(eval_ratios_pilot[lev], N_lf[lev], hf_targets_pilot[lev],
@@ -610,36 +651,32 @@ multilevel_control_variate_mc_offline_pilot()
 				     hf_ref_cost);
       }
     }
-    else {
-      // accumulate H sums for lev = 0, Y sums for lev > 0
-      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_hf[lev]);
-      increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
-    }
-  }
 
-  // --------------------------------------
-  // Final stats from online sample profile
-  // --------------------------------------
-  RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
-  for (lev=0; lev<num_cv_lev; ++lev) {
-    cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
-		   sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
-		   sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
-		   N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
-		   /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
-    Y_mom += Y_cvmc_mom;
+    RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
+    for (lev=0; lev<num_cv_lev; ++lev) {
+      cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
+		     sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
+		     sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
+		     N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
+		     /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
+      Y_mom += Y_cvmc_mom;
+    }
+    if (num_hf_lev > num_cv_lev)
+      ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
+		     num_cv_lev, num_hf_lev, Y_mom);
+    // Convert uncentered raw moment estimates to final moments (central or std)
+    convert_moments(Y_mom, momentStats);
+    recover_variance(momentStats, varH); // online variance
   }
-  if (num_hf_lev > num_cv_lev)
-    ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
-		   num_cv_lev, num_hf_lev, Y_mom);
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mom, momentStats);
-  recover_variance(momentStats, varH); // online variance
+  else // for consistency with pilot projection
+    update_projected_samples(hf_targets_pilot, eval_ratios_pilot,
+			     N_hf, hf_cost, N_lf, lf_cost);
 
   // Retain var_YH and Lambda from "oracle" pilot for computing final estimator
   // variances.  This results in mixing offline var_YH,Lambda with online
   // varH,N_hf, but is consistent with offline modes for MFMC and ACV.
   compute_mlmf_estimator_variance(var_YH_pilot, N_hf, Lambda_pilot, estVar);
+  avgEstVar = average(estVar);
 }
 
 
@@ -647,11 +684,8 @@ void NonDMultilevControlVarSampling::
 multilevel_control_variate_mc_pilot_projection()
 {
   // retrieve cost estimates across solution levels for HF model
-  RealVector hf_targets,
-    hf_cost = iteratedModel.truth_model().solution_level_costs(),
-    lf_cost = iteratedModel.surrogate_model().solution_level_costs();
-  RealMatrix Lambda, var_YH;
-  RealVectorArray eval_ratios;
+  RealVector hf_targets, hf_cost, lf_cost;
+  RealMatrix Lambda, var_YH;  RealVectorArray eval_ratios;
 
   // Initialize for pilot sample
   unsigned short lf_form = 0, hf_form = NLev.size() - 1;// 2 models @ extremes
@@ -669,17 +703,29 @@ multilevel_control_variate_mc_pilot_projection()
   update_projected_samples(hf_targets, eval_ratios, N_hf, hf_cost,
 			   N_lf, lf_cost);
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
+  avgEstVar = average(estVar);
 }
 
 
 void NonDMultilevControlVarSampling::
-evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
+evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 	       RealVectorArray& eval_ratios, RealMatrix& Lambda,
 	       RealMatrix& var_YH, Sizet2DArray& N_shared,
 	       RealVector& hf_targets, bool accumulate_cost, bool pilot_estvar)
 {
-  size_t qoi, lev, num_mf = NLev.size(), num_hf_lev = hf_cost.length(),
-    num_cv_lev = std::min(num_hf_lev, (size_t)lf_cost.length());
+  Model& truth_model = iteratedModel.truth_model();
+  Model& surr_model  = iteratedModel.surrogate_model();
+  size_t qoi, lev, num_mf = NLev.size(),
+    num_hf_lev = truth_model.solution_levels(),
+    num_lf_lev =  surr_model.solution_levels(),
+    num_cv_lev = std::min(num_hf_lev, num_lf_lev);
+  bool online_hf_cost = !query_cost(num_hf_lev, truth_model, hf_cost),
+       online_lf_cost = !query_cost(num_lf_lev,  surr_model, lf_cost);
+  RealVector hf_accum_cost, lf_accum_cost; SizetArray hf_num_cost, lf_num_cost;
+  if (online_hf_cost)
+    { hf_accum_cost.size(num_hf_lev); hf_num_cost.assign(num_hf_lev, 0); }
+  if (online_lf_cost)
+    { lf_accum_cost.size(num_cv_lev); lf_num_cost.assign(num_cv_lev, 0); }
 
   eval_ratios.resize(num_cv_lev);
   N_shared.resize(num_hf_lev);
@@ -689,9 +735,8 @@ evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
 
   // retrieve cost estimates across solution levels for HF model
   Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar_iter0 = 0., budget, r_lq,
-    lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
+    lf_lev_cost, hf_lev_cost, hf_ref_cost;
   bool budget_constrained = (maxFunctionEvals != SZ_MAX);
-  if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
 
   RealMatrix sum_Ll(numFunctions, num_cv_lev),
     sum_Llm1(numFunctions, num_cv_lev),sum_Ll_refined(numFunctions, num_cv_lev),
@@ -717,24 +762,24 @@ evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_form];
 
-  sum_sqrt_var_cost = 0.;
+  // FIRST PASS: evaluations, accumulations, cost estimates
+  // NOTE: this will also simplify removing non-essential synchronizations
   for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
     configure_indices(group, hf_form, lev, sequenceType);
-    hf_lev_cost = level_cost(hf_cost, lev);
     numSamples = delta_N_hf[lev];
     N_shared[lev].assign(numFunctions, 0);
-    Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
 
     evaluate_ml_sample_increment(lev);
+    if (online_hf_cost) // accumulate online costs for HF model
+      accumulate_paired_online_cost(hf_accum_cost, hf_num_cost, lev);
 
+    // control variate betwen LF and HF for this discretization level
     if (lev < num_cv_lev) {
-
       // store allResponses used for sum_H (and sum_HH)
       IntResponseMap hf_resp = allResponses; // shallow copy is sufficient
       // activate LF response (lev 0) or LF response discrepancy (lev > 0)
       configure_indices(group, lf_form, lev, sequenceType);
-      lf_lev_cost = level_cost(lf_cost, lev);
       // eval allResp w/ LF model reusing allVars from ML step above
       evaluate_parameter_sets(iteratedModel, true, false);
       // process previous and new set of allResponses for MLMF sums;
@@ -743,6 +788,32 @@ evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
 			    sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll,
 			    sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl,
 			    sum_Hl_Hlm1, sum_Hlm1_Hlm1,lev, N_shared[lev]);
+      if (online_lf_cost) // accumulate online costs for LF model
+	accumulate_paired_online_cost(lf_accum_cost, lf_num_cost, lev);
+    }
+    else // no LF for this level; accumulate only multilevel discrepancies
+      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl, lev, N_shared[lev]);
+  }
+  if (online_hf_cost) average_online_cost(hf_accum_cost, hf_num_cost, hf_cost);
+  if (online_lf_cost) average_online_cost(lf_accum_cost, lf_num_cost, lf_cost);
+  hf_ref_cost = hf_cost[num_hf_lev-1];
+  if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
+  if (outputLevel == DEBUG_OUTPUT)
+    Cout << "HF cost:\n" << hf_cost << "LF cost:\n" << lf_cost << std::endl;
+  // Note: could assign these back if needed elsewhere:
+  //if (online_hf_cost) truth_model.solution_level_costs(hf_cost);
+  //if (online_lf_cost)  surr_model.solution_level_costs(lf_cost);
+
+  // SECOND PASS: STATS
+  sum_sqrt_var_cost = 0.;
+  for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
+
+    hf_lev_cost = level_cost(hf_cost, lev);
+    Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
+    numSamples = delta_N_hf[lev];
+
+    if (lev < num_cv_lev) {
+      lf_lev_cost = level_cost(lf_cost, lev);
       if (accumulate_cost)
 	increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
 				       numSamples, lf_lev_cost, hf_ref_cost);
@@ -771,7 +842,6 @@ evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
 	std::sqrt(agg_var_hf_l * hf_lev_cost / om_rho2) * avg_lambda[lev];
     }
     else { // no LF model for this level; accumulate only multilevel discreps
-      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl, lev, N_shared[lev]);
       if (accumulate_cost)
 	increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
       // compute Y variances for this level and aggregate across QoI:
@@ -813,6 +883,8 @@ evaluate_pilot(const RealVector& hf_cost, const RealVector& lf_cost,
       fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
     //delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), hf_targets[lev]);
   }
+
+  ++mlmfIter;
 }
 
 
@@ -1790,7 +1862,6 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
   case MULTIFIDELITY_SAMPLING:
     NonDControlVariateSampling::print_variance_reduction(s); break;
   default: {
-    avgEstVar = average(estVar);
     Real avg_mlmc_estvar0, avg_budget_mc_estvar;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
     size_t wpp7 = write_precision + 7;
@@ -1811,16 +1882,17 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
 	<< std::setw(wpp7) << avgEstVar / avg_mlmc_estvar0 << '\n';
       break;
     }
-    switch (pilotMgmtMode) {
-    case ONLINE_PILOT: case OFFLINE_PILOT:
-      avg_budget_mc_estvar = average(varH) / equivHFEvals;
-      s << " Equivalent     MC (" << std::setw(5)
-	<< (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
-	<< std::setw(wpp7) << avg_budget_mc_estvar
-	<< "\n Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
-	<< avgEstVar / avg_budget_mc_estvar << '\n';
-      break;
-    }
+    if (finalStatsType == QOI_STATISTICS)
+      switch (pilotMgmtMode) {
+      case ONLINE_PILOT: case OFFLINE_PILOT:
+	avg_budget_mc_estvar = average(varH) / equivHFEvals;
+	s << " Equivalent     MC (" << std::setw(5)
+	  << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+	  << std::setw(wpp7) << avg_budget_mc_estvar
+	  << "\n Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
+	  << avgEstVar / avg_budget_mc_estvar << '\n';
+	break;
+      }
     break;
   }
   }

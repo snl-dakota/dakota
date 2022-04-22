@@ -240,7 +240,7 @@ private:
 				 Response& mapped_response);
   /// combine error estimates from the sub-iteration to define
   /// mappedErrorEstimates
-  void iterator_error_estimation(const RealVector& sub_iterator_errors,
+  void iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
 				 RealVector& mapped_errors);
 
   /// locate existing or allocate new entry in nestedResponseMap

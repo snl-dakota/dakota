@@ -1220,6 +1220,7 @@ response_fn_1 Sobol' indices:
 Test Number 45 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters/responses are not reported for generic response_functions
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -1241,6 +1242,7 @@ response_fn_1 Sobol' indices:
 Test Number 46 succeeded
 <<<<< Function evaluation summary: 75 total (75 new, 0 duplicate)
   response_fn_1: 75 val (75 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters/responses are not reported for generic response_functions
 <<<<< Function evaluation summary: 75 total (75 new, 0 duplicate)
   response_fn_1: 75 val (75 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -1262,6 +1264,7 @@ response_fn_1 Sobol' indices:
 Test Number 47 succeeded
 <<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
   response_fn_1: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters/responses are not reported for generic response_functions
 <<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
   response_fn_1: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -1286,6 +1289,7 @@ response_fn_1 Sobol' indices:
 Test Number 48 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters/responses are not reported for generic response_functions
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:

@@ -469,25 +469,39 @@ configure_sequence(//unsigned short hierarch_dim,
 bool NonD::
 query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 {
-  bool cost_defined = true;
   ModelList& sub_models = iteratedModel.subordinate_models(false);
-  ModelLIter m_iter;
-  if (multilevel) {
-    ModelLIter m_iter = --sub_models.end(); // HF model
-    cost = m_iter->solution_level_costs();  // can be empty
-    if (cost.length() != num_steps)
-      cost_defined = false;
-  }
+  bool cost_defined;
+  if (multilevel) // 1D resolution hierarchy for HF model
+    cost_defined = query_cost(num_steps, sub_models.back(), cost);
   else  {
     cost.sizeUninitialized(num_steps);
-    m_iter = sub_models.begin();
+    ModelLIter m_iter = sub_models.begin();  cost_defined = true;
     for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
       cost[i] = m_iter->solution_level_cost();// active soln index; 0 if unfound
       if (cost[i] <= 0.) cost_defined = false;
     }
+    if (!cost_defined) cost.sizeUninitialized(0);//for compute_equivalent_cost()
   }
-  if (!cost_defined) cost.sizeUninitialized(0); // for compute_equivalent_cost()
   return cost_defined;
+}
+
+
+bool NonD::query_cost(unsigned short num_steps, Model& model, RealVector& cost)
+{
+  cost = model.solution_level_costs(); // can be empty
+  if (cost.length() != num_steps || !valid_cost_values(cost))
+    { cost.sizeUninitialized(0); return false; }
+  return true;
+}
+
+
+bool NonD::valid_cost_values(const RealVector& cost)
+{
+  size_t i, len = cost.length();
+  for (i=0; i<len; ++i)
+    if (cost[i] <= 0.)
+      return false;
+  return true;
 }
 
 
@@ -1180,44 +1194,44 @@ unsigned short NonD::
 sub_optimizer_select(unsigned short requested_sub_method,
 		     unsigned short   default_sub_method)
 {
-  unsigned short assigned_sub_method = requested_sub_method;
+  unsigned short assigned_sub_method = SUBMETHOD_NONE;
   switch (requested_sub_method) {
-  case SUBMETHOD_SQP:
-#ifndef HAVE_NPSOL
+  case SUBMETHOD_NPSOL:
+#ifdef HAVE_NPSOL
+    assigned_sub_method = requested_sub_method;
+#else
     Cerr << "\nError: this executable not configured with NPSOL SQP."
 	 << "\n       Please select alternate sub-method solver." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
     break;
-  case SUBMETHOD_NIP:
-#ifndef HAVE_OPTPP
+  case SUBMETHOD_OPTPP:
+#ifdef HAVE_OPTPP
+    assigned_sub_method = requested_sub_method;
+#else
     Cerr << "\nError: this executable not configured with OPT++ NIP."
 	 << "\n       Please select alternate sub-method solver." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
     break;
   case SUBMETHOD_DEFAULT:
     switch (default_sub_method) {
-    case SUBMETHOD_SQP: // use SUBMETHOD_SQP if available
+    case SUBMETHOD_NPSOL: // use SUBMETHOD_NPSOL if available
 #ifdef HAVE_NPSOL
-      assigned_sub_method = SUBMETHOD_SQP;
+      assigned_sub_method = SUBMETHOD_NPSOL;
 #elif HAVE_OPTPP
-      assigned_sub_method = SUBMETHOD_NIP;
+      assigned_sub_method = SUBMETHOD_OPTPP;
 #endif
       break;
-    case SUBMETHOD_NIP:
+    case SUBMETHOD_OPTPP: // use SUBMETHOD_OPTPP if available
 #ifdef HAVE_OPTPP
-      assigned_sub_method = SUBMETHOD_NIP;
+      assigned_sub_method = SUBMETHOD_OPTPP;
 #elif HAVE_NPSOL
-      assigned_sub_method = SUBMETHOD_SQP;
+      assigned_sub_method = SUBMETHOD_NPSOL;
 #endif
       break;
     }
-    if (assigned_sub_method == SUBMETHOD_DEFAULT) {
+    if (assigned_sub_method == SUBMETHOD_NONE)
       Cerr << "\nError: this executable not configured with an available "
 	   << "sub-method solver." << std::endl;
-      assigned_sub_method = SUBMETHOD_NONE;
-    }
     break;
   case SUBMETHOD_NONE:
     // assigned = requested = SUBMETHOD_NONE is valid for the case where a
@@ -1227,7 +1241,6 @@ sub_optimizer_select(unsigned short requested_sub_method,
   default:
     Cerr << "\nError: sub-method not recognized in NonD::"
 	 << "sub_optimizer_select()." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE;
     break;
   }
   return assigned_sub_method;

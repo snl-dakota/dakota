@@ -254,14 +254,22 @@ protected:
   void variables_to_sample(const Variables& vars, Real* sample_vars);
 
   /// return error estimates associated with each of the finalStatistics
-  const RealVector& response_error_estimates() const;
+  const RealSymMatrix& response_error_estimates() const;
+
+  //
+  //- Heading: New virtual functions
+  //
+
+  /// detect whether the seed has been updated since the most recent
+  /// sample set generation
+  virtual bool seed_updated();
 
   //
   //- Heading: Convenience member functions for derived classes
   //
 
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
-  void initialize_lhs(bool write_message, size_t num_samples);
+  void initialize_sample_driver(bool write_message, size_t num_samples);
 
   /// in the case of sub-iteration, map from finalStatistics.active_set()
   /// requests to activeSet used in evaluate_parameter_sets()
@@ -300,12 +308,13 @@ protected:
   RealMatrix momentGrads;
 
   /// standard errors (estimator std deviation) for each of the finalStatistics
-  RealVector finalStatErrors;
+  RealSymMatrix finalStatErrors;
 
   /// current increment in a sequence of samples
   int samplesIncrement;
 
   Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
+  size_t numLHSRuns; ///< counter for number of sample set generations
 
   bool statsFlag;   ///< flags computation/output of statistics
   bool allDataFlag; ///< flags update of allResponses
@@ -382,9 +391,6 @@ private:
   //- Heading: Data
   //
   
-  /// counter for number of executions of get_parameter_sets() for this object
-  size_t numLHSRuns;
-
   /// Matrix of confidence internals on moments, with rows for mean_lower,
   /// mean_upper, sd_lower, sd_upper (calculated in compute_moments())
   RealMatrix momentCIs;
@@ -484,7 +490,16 @@ sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 
 
 inline void NonDSampling::random_seed(int seed)
-{ /*seedSpec = */randomSeed = seed; } // lhsDriver assigned in initialize_lhs()
+{ /*seedSpec = */randomSeed = seed; }
+// lhsDriver initialized in initialize_sample_driver()
+
+
+inline bool NonDSampling::seed_updated()
+{
+  // default / base implementation does not involve seed sequencing
+  // > min change from above (more logic could be specialized/isolated)
+  return (seedSpec && seedSpec != randomSeed);
+}
 
 
 inline unsigned short NonDSampling::sampling_scheme() const
@@ -613,7 +628,7 @@ sample_to_variables(const Real* sample_vars, Variables& vars)
 // default to iteratedModel for dss values
 
 
-inline const RealVector& NonDSampling::response_error_estimates() const
+inline const RealSymMatrix& NonDSampling::response_error_estimates() const
 { return finalStatErrors; }
 
 } // namespace Dakota

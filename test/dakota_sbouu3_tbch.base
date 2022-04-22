@@ -12,7 +12,7 @@ Test Number 0 succeeded
                      -3.3446972656e-01
                      -2.7639399469e-04
                       1.5999490615e+05
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 18 total (17 new, 1 duplicate)
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 90000 total (90000 new, 0 duplicate)
@@ -27,4 +27,4 @@ Test Number 1 succeeded
                      -3.3446967851e-01
                      -2.7644781478e-04
                       1.5999679094e+05
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
