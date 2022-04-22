@@ -86,6 +86,10 @@ protected:
   void resize_maps();
   void resize_response(bool use_virtual_counts = true);
 
+  size_t insert_response_start(size_t position);
+  void insert_metadata(const RealArray& md, size_t position,
+		       Response& agg_response);
+
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
 				const SizetArray& ds_index1,
@@ -272,6 +276,50 @@ private:
 
 inline HierarchSurrModel::~HierarchSurrModel()
 { }
+
+
+inline size_t HierarchSurrModel::insert_response_start(size_t position)
+{
+  bool err_flag = false;
+  switch (position) {
+  case 0: return 0; break; // no offset
+  case 1: // offset by HF size
+    if (responseMode == AGGREGATED_MODELS)
+      return
+	truth_model().current_response().active_set_request_vector().size();
+    else err_flag = true;
+    break;
+  default: err_flag = true; break;
+  }
+  if (err_flag) {
+    Cerr << "Error: invalid position (" << position << ") in HierarchSurrModel"
+	 << "::insert_response_start()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return SZ_MAX;
+}
+
+
+inline void HierarchSurrModel::
+insert_metadata(const RealArray& md, size_t position, Response& agg_response)
+{
+  bool err_flag = false;
+  switch (position) {
+  case 0: agg_response.metadata(md, 0); break; // no offset
+  case 1: // offset by HF size
+    if (responseMode == AGGREGATED_MODELS)
+      agg_response.metadata(md,
+	truth_model().current_response().metadata().size());
+    else err_flag = true;
+    break;
+  default: err_flag = true; break;
+  }
+  if (err_flag) {
+    Cerr << "Error: invalid position (" << position << ") in HierarchSurrModel"
+	 << "::insert_metadata()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
 
 
 inline void HierarchSurrModel::

@@ -108,6 +108,13 @@ protected:
   /// update current variables/labels/bounds/targets with data from model
   virtual void update_from_model(const Model& model);
 
+  /// compute start index for inserting response data into aggregated response
+  virtual size_t insert_response_start(size_t position);
+  /// insert a single response into an aggregated response in the
+  /// specified position
+  virtual void insert_metadata(const RealArray& md, size_t position,
+			       Response& agg_response);
+
   //
   //- Heading: Member functions
   //
