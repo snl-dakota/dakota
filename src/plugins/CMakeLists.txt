@@ -10,14 +10,10 @@
 cmake_minimum_required(VERSION 3.12)
 project(DakotaPlugins CXX)
 
-set(BOOST_ROOT "/projects/sems/install/rhel7-x86_64/sems/tpl/boost/1.69.0/gcc/4.8.5/base")
-
-find_package(Boost 1.69 REQUIRED)
-
-# conflict here? - this is from C++ only version
-option(DAKOTA_PLUGINS_USE_BOOST "Whether to use Boost to build plugins" OFF)
+# Currently Python plugins require Boost DLL headers (to load libpython.so)
+option(DAKOTA_PLUGINS_USE_BOOST "Whether to use Boost to build plugins" ON)
 if(DAKOTA_PLUGINS_USE_BOOST)
-  find_package(Boost REQUIRED)
+  find_package(Boost 1.69 REQUIRED)
 endif()
 
 find_package(Python COMPONENTS Interpreter Development)
@@ -54,6 +50,5 @@ if(DAKOTA_PLUGINS_USE_BOOST)
   target_link_libraries(identity_map Boost::boost)
 endif()
 
-
-# TODO: install whole plugin source dir to share/dakota/ for end users
-#install(...)
+# Only install the plugins Dakota will rely on at runtime
+install(TARGETS generic_python_plugin DESTINATION lib)

@@ -1,4 +1,5 @@
 #@ *: ReqFiles=textbook.py
+#@ *: DakotaConfig=DAKOTA_PLUGIN_DEMOS
 
 method
   centered_parameter_study
@@ -16,8 +17,9 @@ interface
 #  analysis_drivers 'textbook:text_book_batch' #s3
 
   plugin
-    library_path '/home/user/dakota/source/src/plugins/build/libidentity_map.so'            #s0,#s1
-#    library_path '/home/user/dakota/source/src/plugins/build/libgeneric_python_plugin.so'  #s2,#s3
+    # Hard-coded for build tree and Linux for now
+    library_path '../../src/plugins/build/libidentity_map.so'            #s0,#s1
+#    library_path '../../src/plugins/build/libgeneric_python_plugin.so'  #s2,#s3
 #  batch                                                                                    #s1,#s3
 
 responses

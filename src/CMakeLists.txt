@@ -1088,6 +1088,15 @@ if(DAKOTA_ENABLE_TESTS AND BUILD_TESTING)
 endif()
 
 
+if(DAKOTA_PLUGIN_DEMOS)
+  include(DakotaPluginDemos)
+  add_definitions("-DDAKOTA_PLUGIN_DEMOS")
+  # TODO: install build plugins when installing Dakota
+endif()
+install(FILES plugins/DakotaInterfaceAPI.hpp DESTINATION include)
+install(DIRECTORY plugins DESTINATION share/dakota PATTERN "pybind11" EXCLUDE)
+
+
 # --- Pass some data back to Trilinos
 
 if (BUILD_IN_TRILINOS)
