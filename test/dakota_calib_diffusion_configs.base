@@ -41,6 +41,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       8.2656116358e-02 least_sq_term_8
                       5.3768705860e-02 least_sq_term_9
                       1.8820717555e-02 least_sq_term_10
+<<<<< Best evaluation ID: 911
 <<<<< Best configuration variables (experiment 2) =
                                     32 mesh_size
                                 cosine kernel_type
@@ -60,6 +61,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       8.0354646091e-01 least_sq_term_8
                       5.0967954258e-01 least_sq_term_9
                       1.7489316614e-01 least_sq_term_10
+<<<<< Best evaluation ID: 912
 <<<<< Best configuration variables (experiment 3) =
                                      8 mesh_size
                            exponential kernel_type
@@ -79,6 +81,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       4.1987884809e-01 least_sq_term_8
                       2.8758294164e-01 least_sq_term_9
                       8.0943536934e-02 least_sq_term_10
+<<<<< Best evaluation ID: 913
 <<<<< Best configuration variables (experiment 4) =
                                     64 mesh_size
                            exponential kernel_type
@@ -98,6 +101,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       5.7036307174e-02 least_sq_term_8
                       3.6823502014e-02 least_sq_term_9
                       1.3188674453e-02 least_sq_term_10
+<<<<< Best evaluation ID: 914
 <<<<< Best configuration variables (experiment 5) =
                                     16 mesh_size
                            exponential kernel_type
@@ -117,6 +121,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       3.9193028475e-01 least_sq_term_8
                       3.3311084211e-01 least_sq_term_9
                       1.3577605532e-01 least_sq_term_10
+<<<<< Best evaluation ID: 915
 <<<<< Best configuration variables (experiment 6) =
                                      4 mesh_size
                                 cosine kernel_type
@@ -136,6 +141,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       9.2129288831e-02 least_sq_term_8
                       6.2234794483e-02 least_sq_term_9
                       2.2980300780e-02 least_sq_term_10
+<<<<< Best evaluation ID: 916
 <<<<< Best configuration variables (experiment 7) =
                                     32 mesh_size
                            exponential kernel_type
@@ -155,6 +161,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       7.0567214440e-01 least_sq_term_8
                       4.9297723624e-01 least_sq_term_9
                       1.9155623195e-01 least_sq_term_10
+<<<<< Best evaluation ID: 917
 <<<<< Best configuration variables (experiment 8) =
                                      8 mesh_size
                            exponential kernel_type
@@ -174,6 +181,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       7.5404067020e-02 least_sq_term_8
                       5.2004668103e-02 least_sq_term_9
                       1.8507283501e-02 least_sq_term_10
+<<<<< Best evaluation ID: 918
 <<<<< Best configuration variables (experiment 9) =
                                     64 mesh_size
                            exponential kernel_type
@@ -193,6 +201,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       7.8163435943e-02 least_sq_term_8
                       4.7380938404e-02 least_sq_term_9
                       1.5205072969e-02 least_sq_term_10
+<<<<< Best evaluation ID: 919
 <<<<< Best configuration variables (experiment 10) =
                                     16 mesh_size
                                 cosine kernel_type
@@ -212,6 +221,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       8.0315873138e-01 least_sq_term_8
                       5.1006620205e-01 least_sq_term_9
                       1.7489299687e-01 least_sq_term_10
+<<<<< Best evaluation ID: 920
 <<<<< Best configuration variables (experiment 11) =
                                      4 mesh_size
                                 cosine kernel_type
@@ -231,6 +241,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       9.2129288831e-02 least_sq_term_8
                       6.2234794483e-02 least_sq_term_9
                       2.2980300780e-02 least_sq_term_10
+<<<<< Best evaluation ID: 916
 <<<<< Best configuration variables (experiment 12) =
                                     64 mesh_size
                                 cosine kernel_type
@@ -250,6 +261,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       8.2556735064e-02 least_sq_term_8
                       5.3058175950e-02 least_sq_term_9
                       1.8461690873e-02 least_sq_term_10
+<<<<< Best evaluation ID: 922
 <<<<< Best configuration variables (experiment 13) =
                                     16 mesh_size
                            exponential kernel_type
@@ -269,6 +281,7 @@ least_sq_term_10: 1170 val (880 n, 290 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       3.9193028475e-01 least_sq_term_8
                       3.3311084211e-01 least_sq_term_9
                       1.3577605532e-01 least_sq_term_10
+<<<<< Best evaluation ID: 915
 <<<<< Best residual terms =
                       5.0271106722e-12
                      -4.0673714397e-13

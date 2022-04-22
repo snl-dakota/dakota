@@ -11,6 +11,7 @@ Test Number 0 succeeded
 <<<<< Best model responses (experiment 1) =
                      -2.2219015580e+03 stress
                       1.0253776751e-01 displacement
+<<<<< Best evaluation ID: 11
 <<<<< Best configuration variables (experiment 2) =
                       3.0000000000e+00 t
                       4.0000000000e+04 R
@@ -19,6 +20,7 @@ Test Number 0 succeeded
 <<<<< Best model responses (experiment 2) =
                       7.3787664323e+03 stress
                       6.1767741155e-01 displacement
+<<<<< Best evaluation ID: 12
 <<<<< Best residual terms =
                      -1.7257130977e+01
                      -7.0554064792e+00
@@ -66,6 +68,7 @@ Test Number 2 succeeded
 <<<<< Best model responses (experiment 1) =
                      -2.2219015580e+03 stress
                       1.0253776751e-01 displacement
+<<<<< Best evaluation ID: 11
 <<<<< Best configuration variables (experiment 2) =
                       3.0000000000e+00 t
                       4.0000000000e+04 R
@@ -74,6 +77,7 @@ Test Number 2 succeeded
 <<<<< Best model responses (experiment 2) =
                       7.3787664323e+03 stress
                       6.1767741155e-01 displacement
+<<<<< Best evaluation ID: 12
 <<<<< Best residual terms =
                      -1.7257130977e+01
                      -7.0554064792e+00
@@ -101,6 +105,7 @@ Test Number 3 succeeded
 <<<<< Best model responses (experiment 1) =
                      -2.2219015580e+03 stress
                       1.0253776751e-01 displacement
+<<<<< Best evaluation ID: 11
 <<<<< Best configuration variables (experiment 2) =
                       3.0000000000e+00 t
                       4.0000000000e+04 R
@@ -109,6 +114,7 @@ Test Number 3 succeeded
 <<<<< Best model responses (experiment 2) =
                       7.3787664323e+03 stress
                       6.1767741155e-01 displacement
+<<<<< Best evaluation ID: 12
 <<<<< Best residual terms =
                      -1.7257130977e+01
                      -7.0554064792e+00
@@ -156,6 +162,7 @@ Test Number 5 succeeded
 <<<<< Best model responses (experiment 1) =
                      -1.0218391665e+03 least_sq_term_1
                       1.5157123564e-01 least_sq_term_2
+<<<<< Best evaluation ID: 1315
 <<<<< Best configuration variables (experiment 2) =
                       3.0000000000e+00 t
                       4.0000000000e+04 R
@@ -164,6 +171,7 @@ Test Number 5 succeeded
 <<<<< Best model responses (experiment 2) =
                       8.7460737513e+03 least_sq_term_1
                       6.6481437035e-01 least_sq_term_2
+<<<<< Best evaluation ID: 1316
 <<<<< Best residual terms =
                      -1.2756896974e+01
                      -5.4645507028e+00

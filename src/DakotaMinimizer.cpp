@@ -697,7 +697,7 @@ objective_hessian(const RealVector& fn_vals, size_t num_fns,
 void Minimizer::print_best_eval_ids(const String& search_interface_id,
 				    const Variables& search_vars,
 				    const ActiveSet& search_set,
-				    std::ostream& s) const
+				    std::ostream& s)
 {
   const String
     best_id = "<<<<< Best evaluation ID: ",
