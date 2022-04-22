@@ -1406,7 +1406,7 @@ aggregate_response(const ResponseArray& resp_array, Response& agg_response)
 
 void SurrogateModel::
 insert_response(const Response& response, size_t position,
-		Response& agg_response)
+		Response& agg_response)//, bool include_metadata)
 {
   if (agg_response.is_null())
     agg_response = currentResponse.copy();// resize_response() -> aggregate size
@@ -1415,7 +1415,8 @@ insert_response(const Response& response, size_t position,
   // append in order provided (any order customizations need to occur upstream
   // in the definition of resp_array)
   const ShortArray& asv = response.active_set_request_vector();
-  size_t fn, num_fns = asv.size(), cntr = position * num_fns;  short asv_fn;
+  size_t fn, num_fns = asv.size(), cntr = insert_response_start(position);
+  short asv_fn;
   for (fn=0; fn<num_fns; ++fn, ++cntr) {
     agg_asv[cntr] = asv_fn = asv[fn];
     if (asv_fn & 1)
@@ -1426,8 +1427,25 @@ insert_response(const Response& response, size_t position,
       agg_response.function_hessian(response.function_hessian(fn), cntr);
   }
 
-  const RealArray& md = response.metadata();
-  agg_response.metadata(md, position * md.size()); // *** TO DO: allow aggregation of models with different metadata sizes (cost recovery uses this as does aggregate_response())
+  //if (include_metadata)
+  insert_metadata(response.metadata(), position, agg_response);
+}
+
+
+size_t SurrogateModel::insert_response_start(size_t position)
+{
+  // default to be overridden, given knowledge of ensemble response sizes
+  size_t num_fns
+    = truth_model().current_response().active_set_request_vector().size();
+  return position * num_fns;
+}
+
+
+void SurrogateModel::
+insert_metadata(const RealArray& md, size_t position, Response& agg_response)
+{
+  // default to be overridden, given knowledge of ensemble metadata sizes
+  agg_response.metadata(md, position * md.size());
 }
 
 } // namespace Dakota

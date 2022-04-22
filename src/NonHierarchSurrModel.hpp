@@ -78,6 +78,10 @@ protected:
   void resize_maps();
   void resize_response(bool use_virtual_counts = true);
 
+  size_t insert_response_start(size_t position);
+  void insert_metadata(const RealArray& md, size_t position,
+		       Response& agg_response);
+
   /// return the indexed approximate model from unorderedModels
   Model& surrogate_model(size_t i = _NPOS);
   /// return the indexed approximate model from unorderedModels
@@ -266,6 +270,31 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
     sameInterfaceInstance = (sameModelInstance) ? true :
       matching_truth_surrogate_interface_ids();
   }
+}
+
+
+inline size_t NonHierarchSurrModel::insert_response_start(size_t position)
+{
+  size_t i, start = 0, num_unord = unorderedModels.size();
+  for (i=0; i<position; ++i) {
+    unsigned short form = surrModelKeys[i].retrieve_model_form();
+    Model& model_i = (form < num_unord) ? unorderedModels[form] : truthModel;
+    start += model_i.current_response().active_set_request_vector().size();
+  }
+  return start;
+}
+
+
+inline void NonHierarchSurrModel::
+insert_metadata(const RealArray& md, size_t position, Response& agg_response)
+{
+  size_t i, start = 0, num_unord = unorderedModels.size();
+  for (i=0; i<position; ++i) {
+    unsigned short form = surrModelKeys[i].retrieve_model_form();
+    Model& model_i = (form < num_unord) ? unorderedModels[form] : truthModel;
+    start += model_i.current_response().metadata().size();
+  }
+  agg_response.metadata(md, start);
 }
 
 

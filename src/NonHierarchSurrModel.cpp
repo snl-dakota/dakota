@@ -723,9 +723,17 @@ void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 
   switch (responseMode) {
   case AGGREGATED_MODELS: {
-    size_t multiplier = num_approx + 1;
-    numFns   = multiplier * num_truth_fns;
-    num_meta = multiplier * num_truth_md;
+    size_t i, num_unord = unorderedModels.size();
+    numFns = num_truth_fns;  num_meta = num_truth_md;
+    for (i=0; i<num_approx; ++i) {
+      unsigned short form = surrModelKeys[i].retrieve_model_form();
+      Model& model_i = (form < num_unord) ? unorderedModels[form] : truthModel;
+      numFns += (use_virtual_counts) ? model_i.qoi() : model_i.response_size();
+      num_meta += model_i.current_response().metadata().size();
+    }
+    //size_t multiplier = num_approx + 1;
+    //numFns   = multiplier * num_truth_fns;
+    //num_meta = multiplier * num_truth_md;
     break;
   }
   case BYPASS_SURROGATE:
