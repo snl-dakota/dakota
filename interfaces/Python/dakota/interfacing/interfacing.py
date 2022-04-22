@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 from io import open
+import io
 import collections
+import functools
 import re
 import sys
 import copy
@@ -523,6 +525,44 @@ class Results(object):
         else:
             self._write_results(stream, my_ignore_asv)
 
+    def return_direct_results_dict(self, ignore_asv=None):
+        """Create and return a direct python interface results dictionary.
+
+        Keyword Args:
+
+        Raises:
+        """
+        my_ignore_asv = self.ignore_asv
+        if ignore_asv is not None:
+            my_ignore_asv = ignore_asv
+
+        ## Confirm that user has provided all info requested by Dakota
+        if not my_ignore_asv and not self._failed:
+            for t, v in self._responses.items():
+                if v.asv.function and v.function is None:
+                    raise ResponseError("Response '" + t + "' is missing "
+                            "requested function result.") 
+                if v.asv.gradient and v.gradient is None:
+                    raise ResponseError("Response '" + t + "' is missing "
+                            "requested gradient result.")
+                if v.asv.hessian and v.hessian is None:
+                    raise ResponseError("Response '" +t + "' is missing "
+                            "requested Hessian result.")
+
+        results_dict = {}
+        results_dict['fns'] = []
+        results_dict['fnGrads'] = []
+        results_dict['fnHessians'] = []
+        for t, v in self._responses.items():
+            if v.asv.function:
+                results_dict['fns'].append(v.function)
+            if v.asv.gradient:
+                results_dict['fnGrads'].append(v.gradient)
+            if v.asv.hessian:
+                results_dict['fnHessians'].append(v.hessian)
+
+        return results_dict
+
     def _set_batch(self, flag):
         self._batch = flag
 
@@ -861,6 +901,64 @@ def _read_parameters_stream(stream=None, ignore_asv=False, batch=False,
     else:
         return param_sets[0], results_sets[0]
 
+
+def read_params_from_dict(parameters=None, results_file=None, 
+        ignore_asv=False, batch=False, infer_types=True, types=None):
+    """Process parameters and results using Dakota parameters disctionary from python interface driver.
+    
+    Keyword Args:
+
+    Returns:
+            
+    Raises:
+    """
+
+    vars_to_type = {
+                     "cv"  : float,
+                     "div" : int,
+                     "dsv" : str,
+                     "drv" : float
+                   }
+
+    assigned_types = {}
+    dakota_input = []
+    key = "variables"
+    dakota_input.append(str(parameters[key])+" "+key+"\n")
+    for k in parameters.keys():
+        klabel = k+"_labels"
+        if klabel in parameters.keys():
+            for i, label in enumerate(parameters[klabel]):
+                dakota_input.append(str(parameters[k][i])+" "+label+"\n")
+                assigned_types[label] = vars_to_type[k]
+
+    key = "functions"
+    dakota_input.append(str(parameters[key])+" "+key+"\n")
+    for i, val in enumerate(parameters["asv"]):
+        label = "ASV_"+str(i+1)+":response_"+str(i+1)
+        dakota_input.append(str(parameters["asv"][i])+" "+label+"\n")
+
+    key = "dvv"
+    dakota_input.append(str(len(parameters[key]))+" derivative_variables\n")
+    for i, val in enumerate(parameters["dvv"]):
+        label = "DVV_"+str(i)+":"+parameters["all_labels"][parameters["dvv"][i]-1]
+        dakota_input.append(str(parameters["dvv"][i])+" "+label+"\n")
+
+    key = "analysis_components"
+    if not parameters[key]:
+        dakota_input.append("0 "+key+"\n")
+    else:
+        dakota_input.append(str(parameters[key])+" "+key+"\n")
+
+    key = "eval_id"
+    dakota_input.append(str(parameters[key])+" eval_id\n")
+
+    dakota_input.append("0 metadata"+"\n")
+
+    #print("".join(dakota_input))
+    io_stream = io.StringIO("".join(dakota_input))
+    return _read_parameters_stream(io_stream, ignore_asv, batch, results_file, infer_types=False, types=assigned_types)
+
+
 def read_parameters_file(parameters_file=None, results_file=None, 
         ignore_asv=False, batch=False, infer_types=True, types=None):
     """Read and parse the Dakota parameters file.
@@ -982,4 +1080,15 @@ def dprepro(template, parameters=None, results=None, include=None,
         with open(output,"w",encoding="utf-8") as f:
             f.write(output_string)
 
+def python_interface(ignore_asv=False, batch=False):
+    """ Decorator factory to wrap direct python callbacks """
+
+    def decorate(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            params, results = read_params_from_dict(*args, ignore_asv=ignore_asv, batch=batch)
+            results = fn(params, results)
+            return results.return_direct_results_dict()
+        return wrapper
+    return decorate
 
