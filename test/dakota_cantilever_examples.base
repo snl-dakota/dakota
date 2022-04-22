@@ -525,9 +525,9 @@ Test Number 7 succeeded
 <<<<< Best evaluation ID: 23
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
-           area: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
+         area_1: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
+       stress_1: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
+ displacement_1: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.8499999995e+07 E
                       2.5000000002e+00 w
