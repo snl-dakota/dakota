@@ -445,7 +445,8 @@ set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
     SharedPecosApproxData.cpp
     ApplicationInterface.cpp ProcessApplicInterface.cpp
     ProcessHandleApplicInterface.cpp SysCallApplicInterface.cpp
-    CommandShell.cpp DirectApplicInterface.cpp TestDriverInterface.cpp)
+    CommandShell.cpp DirectApplicInterface.cpp TestDriverInterface.cpp
+    PluginInterface.cpp)
 if(HAVE_SYS_WAIT_H AND HAVE_UNISTD_H)
   list(APPEND interface_src ForkApplicInterface.cpp)
 elseif(WIN32)
@@ -1086,6 +1087,15 @@ endif()
 if(DAKOTA_ENABLE_TESTS AND BUILD_TESTING)
   add_subdirectory(unit_test)
 endif()
+
+
+if(DAKOTA_PLUGIN_DEMOS)
+  include(DakotaPluginDemos)
+  add_definitions("-DDAKOTA_PLUGIN_DEMOS")
+  # TODO: install build plugins when installing Dakota
+endif()
+install(FILES plugins/DakotaInterfaceAPI.hpp DESTINATION include)
+install(DIRECTORY plugins DESTINATION share/dakota PATTERN "pybind11" EXCLUDE)
 
 
 # --- Pass some data back to Trilinos

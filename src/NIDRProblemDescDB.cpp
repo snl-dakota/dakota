@@ -6517,8 +6517,9 @@ static Iface_mp_utype
 	MP2s(interfaceType,TEST_INTERFACE),
 	MP2s(interfaceType,FORK_INTERFACE),
 	MP2s(interfaceType,GRID_INTERFACE),
-	MP2s(interfaceType,MATLAB_INTERFACE),
 	MP2s(interfaceType,LEGACY_PYTHON_INTERFACE),
+	MP2s(interfaceType,MATLAB_INTERFACE),
+	MP2s(interfaceType,PLUGIN_INTERFACE),
 	MP2s(interfaceType,PYTHON_INTERFACE),
 	MP2s(interfaceType,SCILAB_INTERFACE),
 	MP2s(interfaceType,SYSTEM_INTERFACE),
@@ -6531,6 +6532,7 @@ static String
 	MP_(inputFilter),
 	MP_(outputFilter),
 	MP_(parametersFile),
+	MP_(pluginLibraryPath),
 	MP_(resultsFile),
 	MP_(workDir);
 

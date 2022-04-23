@@ -37,7 +37,7 @@ enum {
   // external process interfaces
   FORK_INTERFACE=PROCESS_INTERFACE_BIT, SYSTEM_INTERFACE, GRID_INTERFACE,
   // direct coupled interfaces
-  TEST_INTERFACE=DIRECT_INTERFACE_BIT, 
+  TEST_INTERFACE=DIRECT_INTERFACE_BIT, PLUGIN_INTERFACE,
   MATLAB_INTERFACE, LEGACY_PYTHON_INTERFACE, PYTHON_INTERFACE, SCILAB_INTERFACE
 };
 
@@ -233,6 +233,8 @@ public:
   StringArray copyFiles;
   /// whether to replace / overwrite existing files
   bool templateReplace;
+  /// path to plugin to runtime load
+  String pluginLibraryPath;
   /// Python interface: use NumPy data structures (default is list data)
   bool numpyFlag;
 

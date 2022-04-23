@@ -40,6 +40,7 @@
 #include "ScilabInterface.hpp"
 #endif // DAKOTA_SCILAB
 #include "TestDriverInterface.hpp"
+#include "PluginInterface.hpp"
 
 #include "ApproximationInterface.hpp"
 
@@ -230,6 +231,9 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
   // Note: in the case of a plug-in direct interface, this object gets replaced
   // using Interface::assign_rep().  Error checking in DirectApplicInterface::
   // derived_map_ac() should catch if this replacement fails to occur properly.
+
+  else if (interface_type == PLUGIN_INTERFACE)
+    return std::make_shared<PluginInterface>(problem_db);
 
 #ifdef DAKOTA_GRID
   else if (interface_type == GRID_INTERFACE)

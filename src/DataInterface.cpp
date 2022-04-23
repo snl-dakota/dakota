@@ -51,7 +51,7 @@ void DataInterfaceRep::write(MPIPackBuffer& s) const
     << recoveryFnVals << activeSetVectorFlag << evalCacheFlag
     << nearbyEvalCacheFlag << nearbyEvalCacheTol << restartFileFlag
     << useWorkdir << workDir << dirTag << dirSave << linkFiles
-    << copyFiles << templateReplace << numpyFlag;
+    << copyFiles << templateReplace << pluginLibraryPath << numpyFlag;
 }
 
 
@@ -68,7 +68,7 @@ void DataInterfaceRep::read(MPIUnpackBuffer& s)
     >> recoveryFnVals >> activeSetVectorFlag >> evalCacheFlag
     >> nearbyEvalCacheFlag >> nearbyEvalCacheTol >> restartFileFlag
     >> useWorkdir >> workDir >> dirTag >> dirSave >> linkFiles
-    >> copyFiles >> templateReplace >> numpyFlag;
+    >> copyFiles >> templateReplace >> pluginLibraryPath >> numpyFlag;
 }
 
 
@@ -85,7 +85,7 @@ void DataInterfaceRep::write(std::ostream& s) const
     << recoveryFnVals << activeSetVectorFlag << evalCacheFlag
     << nearbyEvalCacheFlag << nearbyEvalCacheTol << restartFileFlag
     << useWorkdir << workDir << dirTag << dirSave << linkFiles
-    << copyFiles << templateReplace << numpyFlag;
+    << copyFiles << templateReplace << pluginLibraryPath << numpyFlag;
 }
 
 
