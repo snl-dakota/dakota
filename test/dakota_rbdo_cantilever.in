@@ -15,6 +15,9 @@
 #@ s14: DakotaConfig=HAVE_DOT
 #@ s15: DakotaConfig=HAVE_DOT
 #@ s16: DakotaConfig=HAVE_NPSOL
+#@ p0: DakotaConfig=HAVE_NPSOL
+#@ p0: MPIProcs=3 CheckOutput='dakota.out.1'
+
 # DAKOTA Input File: dakota_rbdo_cantilever.in
 # Bi-level RBDO using the cantilever test function.
 
@@ -28,7 +31,7 @@ method,
 	id_method = 'OPTIM'
 	model_pointer = 'OPTIM_M'
 	dot_sqp			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
-#	npsol_sqp		#s16 # coverage for method recourse
+#	npsol_sqp		#s16,#p0 # coverage for method recourse
 	  convergence_tolerance = 1.e-6
 	  output verbose
 	scaling
@@ -38,10 +41,11 @@ model,
 	nested
 	  variables_pointer  = 'OPTIM_V'
 	  sub_method_pointer = 'UQ'
+#	    iterator_servers = 3		#p0
 	  responses_pointer  = 'OPTIM_R'
-	  primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
-	  secondary_response_mapping = 0. 0. 0. 0. 1. 0. 0. 0.
-				       0. 0. 0. 0. 0. 0. 0. 1.
+	    primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
+	    secondary_response_mapping = 0. 0. 0. 0. 1. 0. 0. 0.
+				         0. 0. 0. 0. 0. 0. 0. 1.
 
 variables,
 	id_variables = 'OPTIM_V'
@@ -65,8 +69,8 @@ responses,
 	objective_functions = 1
 	nonlinear_inequality_constraints = 2
 	nonlinear_inequality_upper_bounds = .00135 .00135 #s0,#s1,#s2,#s3
-#	nonlinear_inequality_lower_bounds = 3. 3.	  #s4,#s5,#s6,#s7,#s16
-#	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 #s4,#s5,#s6,#s7,#s16
+#	nonlinear_inequality_lower_bounds = 3. 3.	  #s4,#s5,#s6,#s7,#s16,#p0
+#	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 #s4,#s5,#s6,#s7,#s16,#p0
 	numerical_gradients
 	  method_source dakota
 	  interval_type central
@@ -82,10 +86,10 @@ method,
 	local_reliability #nip
 #	  mpp_search x_taylor_mean		#s1,#s5,#s9,#s13
 #	  mpp_search x_taylor_mpp		#s2,#s6,#s10,#s14
-#	  mpp_search no_approx			#s3,#s7,#s11,#s15,#s16
-	  num_response_levels = 0 1 1	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s16
-	  response_levels = 0.0 0.0	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s16
-#	  compute reliabilities			#s4,#s5,#s6,#s7,#s16
+#	  mpp_search no_approx			#s3,#s7,#s11,#s15,#s16,#p0
+	  num_response_levels = 0 1 1	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s16,#p0
+	  response_levels = 0.0 0.0	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s16,#p0
+#	  compute reliabilities			#s4,#s5,#s6,#s7,#s16,#p0
 #	  num_probability_levels = 0 1 1	#s8,#s9,#s10,#s11
 #	  probability_levels = .00135 .00135	#s8,#s9,#s10,#s11
 #	  num_reliability_levels = 0 1 1	#s12,#s13,#s14,#s15
