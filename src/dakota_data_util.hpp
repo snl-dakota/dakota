@@ -1498,7 +1498,6 @@ inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
     da[i] = ma[i];
 }
 
-
 /// return true if the item val appears in container v
 template <typename DakContainerType>
 inline bool contains(const DakContainerType& v,
