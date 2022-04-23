@@ -2199,7 +2199,7 @@ int TestDriverInterface::tunable_model()
     // at least x,y plus MForm str; optionally theta{,1,2},delta,gamma
     const String& mform = xDSM[VAR_MForm]; // discrete state var for ModelForm
     std::map<var_t, Real>::iterator xc_iter;
-    if (mform == "HF") {
+    if (mform == "HF" || mform == "Fine_HF") {
       A = std::sqrt(11.);  xy_pow = 5;  rel_cost = 1.;
       xc_iter = xCM.find(VAR_theta);
 #ifdef DEBUG
@@ -2213,7 +2213,7 @@ int TestDriverInterface::tunable_model()
     else {
       Real active_delta, w_lo = .001, w_hi = 1.; // initial definition for MF
       Real th_lb = PI / 6., th_ub = PI / 2., th_range = th_ub - th_lb;
-      if (mform == "LF1") {
+      if (mform == "LF1" || mform == "Coarse_HF") {
 	A = std::sqrt(7.);  xy_pow = 3;  active_delta = 1.;
 	xc_iter = xCM.find(VAR_theta1);
 #ifdef DEBUG
