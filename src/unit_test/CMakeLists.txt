@@ -80,6 +80,12 @@ dakota_add_unit_test(NAME leja_sampling
   )
 target_link_libraries(leja_sampling Boost::boost)
 
+dakota_add_unit_test(NAME lhs_constants
+  SOURCES lhs_constants.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(lhs_constants Boost::boost)
+
 # Unit test: h5py_hdf5
 if(DAKOTA_H5PY_FOUND)
   dakota_add_h5py_test(mixed_sampling)
