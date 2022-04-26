@@ -2970,7 +2970,7 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
 {
   const ShortArray& asv_in   = original_set.request_vector();
   const SizetArray& orig_dvv = original_set.derivative_vector();
-  
+
   // *_asv_out[i] have all been initialized to zero
 
   // For HierarchSurr and Recast models with no scaling (which contain no
