@@ -1,4 +1,4 @@
-#@ *: DakotaConfig=DAKOTA_PYTHON
+#@ *: DakotaConfig=DAKOTA_PYTHON_DIRECT_INTERFACE
 #@ *: ReqFiles=driver_text_book.py
 
 method,
