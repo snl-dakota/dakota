@@ -191,3 +191,13 @@ def text_book(params):
         return text_book_list(params)
     else:
         return text_book_numpy(params)
+
+
+def text_book_batch(list_of_params):
+    retvals = []
+    for param_dict in list_of_params:
+        if use_list_return_type:
+            retvals.append(text_book_list(param_dict))
+        else:
+            retvals.append(text_book_numpy(param_dict))
+    return retvals

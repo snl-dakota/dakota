@@ -4,7 +4,12 @@
 method,
   output normal
   list_parameter_study
-  list_of_points = 0. 0. 0.
+  list_of_points = 0. 0. 0.		#s0
+#  list_of_points = 0.0  0.0  0.0	#s1
+#                   0.5  0.5  0.5	#s1
+#                   1.0  0.0  0.0 	#s1
+#                   0.0  2.0  0.0 	#s1
+#                   0.0  0.0  3.0 	#s1
 
 variables,
   continuous_design = 3
@@ -34,7 +39,9 @@ variables,
 
 interface,
     python
-      analysis_driver = 'driver_text_book:text_book'
+      analysis_driver = 'driver_text_book:text_book'		#s0
+#      analysis_driver = 'driver_text_book:text_book_batch'	#s1
+#      batch							#s1
 
 responses,
   num_objective_functions = 1
