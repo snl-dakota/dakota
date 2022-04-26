@@ -17,16 +17,21 @@
 #
 # Assuems gui launcher is installed in OS-dependent path ../gui/*...
 
+get_abs_path() {
+  # $1 : relative filename
+  echo "$(cd "$(dirname "$1")" && pwd)"
+}
+
 script_name=`basename ${0}`
 
 # get the path to this wrapper script
 # assume dakota executable lives in same directory
 
 if [ $(uname) == 'Darwin' ]; then
-  if [ -L ${0} ]; then
-    execpath=$( dirname $( readlink "${0}" ) )  
+  if [ -L "${0}" ]; then
+    execpath=$( get_abs_path $( readlink "${0}" ) )
   else
-    execpath=`dirname ${0}`
+    execpath=$( get_abs_path "${0}" )
   fi
 else
   # readlink reliably takes care of the case when dakota.sh is called via a
