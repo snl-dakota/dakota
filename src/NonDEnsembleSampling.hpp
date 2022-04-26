@@ -69,6 +69,7 @@ protected:
   void update_final_statistics();
 
   bool seed_updated();
+  void active_set_mapping();
 
   //
   //- Heading: Member functions

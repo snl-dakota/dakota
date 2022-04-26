@@ -264,16 +264,16 @@ protected:
   /// sample set generation
   virtual bool seed_updated();
 
+  /// in the case of sub-iteration, map from finalStatistics.active_set()
+  /// requests to activeSet used in evaluate_parameter_sets()
+  virtual void active_set_mapping();
+
   //
   //- Heading: Convenience member functions for derived classes
   //
 
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
   void initialize_sample_driver(bool write_message, size_t num_samples);
-
-  /// in the case of sub-iteration, map from finalStatistics.active_set()
-  /// requests to activeSet used in evaluate_parameter_sets()
-  void active_set_mapping();
 
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model

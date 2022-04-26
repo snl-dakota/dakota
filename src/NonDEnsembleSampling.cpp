@@ -189,6 +189,20 @@ void NonDEnsembleSampling::update_final_statistics()
 }
 
 
+void NonDEnsembleSampling::active_set_mapping()
+{
+  switch (finalStatsType) {
+  case ESTIMATOR_PERFORMANCE:
+    // transfer ASV requests from finalStatistics to activeSet; we won't
+    // support derivatives of estimator performance metrics (see also
+    // initialize_final_statistics() above)
+    activeSet.request_values(1);        break;
+  case QOI_STATISTICS: // final stats: moments + level mappings
+    NonDSampling::active_set_mapping(); break;
+  }
+}
+
+
 void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
 {
   if (statsFlag)
