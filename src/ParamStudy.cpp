@@ -176,7 +176,7 @@ void ParamStudy::pre_run()
   if (av_size != numEvals) {
     allVariables.resize(numEvals);
     for (size_t i=av_size; i<numEvals; ++i)
-      allVariables[i] = Variables(svd); // use minimal data ctor
+      allVariables[i] = vars.copy();
     if ( outputLevel > SILENT_OUTPUT &&
 	 ( methodName == VECTOR_PARAMETER_STUDY ||
 	   methodName == CENTERED_PARAMETER_STUDY ) )

@@ -44,8 +44,23 @@ class Pybind11Interface: public DirectApplicInterface
 
   protected:
 
+    // override base class prohibition on asynch (needs tightening)
+    void init_communicators_checks(int max_eval_concurrency) {}
+    // override base class prohibition on asynch (needs tightening)
+    void set_communicators_checks(int max_eval_concurrency) {}
+
+    // load and cache the Python module:function specified by ac_name
+    void initialize_driver(const String& ac_name);
+
     /// execute an analysis code portion of a direct evaluation invocation
     virtual int derived_map_ac(const String& ac_name);
+
+    /// Python supports batch only, not true asynch (this is no-op)
+    virtual void derived_map_asynch(const ParamResponsePair& pair);
+    /// Python supports batch only, not true asynch (this does the work)
+    virtual void wait_local_evaluations(PRPQueue& prp_queue);
+    /// Python supports batch only, not true asynch, so this blocks
+    virtual void test_local_evaluations(PRPQueue& prp_queue);
 
     /// direct interface to Pybind11 via API
     int pybind11_run(const String& ac_name);
@@ -67,9 +82,20 @@ class Pybind11Interface: public DirectApplicInterface
     template<typename RetT, typename OrdinalType, typename ScalarType> 
     RetT copy_array_to_pybind11(const Teuchos::SerialDenseVector<OrdinalType,ScalarType> & src) const;
 
-    /// generalized pythin dictionary packing to support either lists or numpy arrays
+    /// Translate Dakota parameters into returned Python dictionary in
+    /// numpy or array format.
+    py::dict params_to_dict() const;
+
+    /// generalized Python dictionary packing to support either lists
+    /// or numpy arrays
     template<typename T>
     py::dict pack_kwargs() const;
+
+    // populate values, gradients, Hessians
+    void unpack_python_response
+    (const size_t num_fns, const size_t num_derivs,
+     const pybind11::dict& py_response, RealVector& fn_values,
+     RealMatrix& gradients, RealSymMatrixArray& hessians);
 };
 
 
