@@ -82,7 +82,12 @@ class Pybind11Interface: public DirectApplicInterface
     template<typename RetT, typename OrdinalType, typename ScalarType> 
     RetT copy_array_to_pybind11(const Teuchos::SerialDenseVector<OrdinalType,ScalarType> & src) const;
 
-    /// generalized pythin dictionary packing to support either lists or numpy arrays
+    /// Translate Dakota parameters into returned Python dictionary in
+    /// numpy or array format.
+    py::dict params_to_dict() const;
+
+    /// generalized Python dictionary packing to support either lists
+    /// or numpy arrays
     template<typename T>
     py::dict pack_kwargs() const;
 

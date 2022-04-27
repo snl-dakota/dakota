@@ -89,38 +89,30 @@ int Pybind11Interface::derived_map_ac(const String& ac_name)
          << " within Pybind11Interface." << std::endl;
 #endif // MPI_DEBUG
 
-  int fail_code = pybind11_run(ac_name);
+    try  {
+      initialize_driver(ac_name);
 
-  // Failure capturing
-  if (fail_code) {
-    std::string err_msg("Error evaluating Python analysis_driver ");
-    err_msg += ac_name;
-    throw FunctionEvalFailure(err_msg);
-  }
+      py::dict kwargs = params_to_dict();
+
+      py::dict ret_val = py11CallBack(kwargs);
+
+      unpack_python_response(numFns, directFnDVV.size(), ret_val,
+			     fnVals, fnGrads, fnHessians);
+    }
+    catch (const std::runtime_error& e) {
+      // (py::error_already_set is caught here too)
+      std::string err_msg("Error evaluating Python analysis_driver ");
+      err_msg += ac_name + ":\n";
+      err_msg += e.what();
+      throw FunctionEvalFailure(err_msg);
+    }
+    catch (...) {
+      std::string err_msg("Error evaluating Python analysis_driver ");
+      err_msg += ac_name;
+      throw FunctionEvalFailure(err_msg);
+    }
 
   return 0;
-}
-
-
-int Pybind11Interface::pybind11_run(const String& ac_name)
-{
-  // minimal error checking for now (or actually none ... but should be)
-  int fail_code = 0;
-
-  initialize_driver(ac_name);
-
-  py::dict kwargs;
-  if( userNumpyFlag )
-    kwargs = pack_kwargs<py::array>();
-  else
-    kwargs = pack_kwargs<py::list>();
-
-  py::dict ret_val = py11CallBack(kwargs);
-
-  unpack_python_response(numFns, directFnDVV.size(), ret_val,
-			 fnVals, fnGrads, fnHessians);
-
-  return(fail_code);
 }
 
 
@@ -142,12 +134,7 @@ void Pybind11Interface::wait_local_evaluations(PRPQueue& prp_queue)
   py::list py_requests;
   for (const auto& prp : prp_queue) {
     set_local_data(prp.variables(), prp.active_set(), prp.response());
-    py::dict kwargs;
-    if( userNumpyFlag )
-      kwargs = pack_kwargs<py::array>();
-    else
-      kwargs = pack_kwargs<py::list>();
-    py_requests.append(kwargs);
+    py_requests.append(params_to_dict());
   }
 
   py::list py_responses = py11CallBack(py_requests);
@@ -211,6 +198,18 @@ RetT Pybind11Interface::copy_array_to_pybind11(const Teuchos::SerialDenseVector<
   copy_data(src, tmp_vec);
   return py::cast(tmp_vec);
 }
+
+
+py::dict Pybind11Interface::params_to_dict() const
+{
+  py::dict kwargs;
+  if( userNumpyFlag )
+    kwargs = pack_kwargs<py::array>();
+  else
+    kwargs = pack_kwargs<py::list>();
+  return kwargs;
+}
+
 
 template<typename py_arrayT>
 py::dict Pybind11Interface::pack_kwargs() const
