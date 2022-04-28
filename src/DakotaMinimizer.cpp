@@ -1209,7 +1209,7 @@ void Minimizer::archive_best_results() {
     be recasting a single NLS residual into a squared
     objective. Always returns best data in the space of the original
     inbound Model. */
-void Minimizer::
+bool Minimizer::
 local_recast_retrieve(const Variables& vars, Response& response) const
 {
   // TODO: could omit constraints for solvers populating them (there
@@ -1217,11 +1217,13 @@ local_recast_retrieve(const Variables& vars, Response& response) const
   ActiveSet lookup_set(response.active_set());
   PRPCacheHIter cache_it
     = lookup_by_val(data_pairs, iteratedModel.interface_id(), vars, lookup_set);
-  if (cache_it == data_pairs.get<hashed>().end())
+  if (cache_it == data_pairs.get<hashed>().end()) {
     Cerr << "Warning: failure in recovery of final values for locally recast "
 	 << "optimization." << std::endl;
-  else
-    response.update(cache_it->response());
+    return false;
+  }    
+  response.update(cache_it->response());
+  return true;
 }
 
 

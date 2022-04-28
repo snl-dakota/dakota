@@ -499,21 +499,23 @@ void CONMINOptimizer::core_run()
   // conminInfo = 0) which should be the last evaluation (?).
   copy_data(conminDesVars, num_cv, local_cdv);
   bestVariablesArray.front().continuous_variables(local_cdv);
+  RealVector best_fns(bestResponseArray.front().num_functions());
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // used in Optimizer::post_run()
-    RealVector best_fns(numFunctions);
     best_fns[0] = (max_flag) ? -objFnValue : objFnValue;
-    // NOTE: best_fn_vals[i] may be recomputed multiple times, but this
-    // should be OK so long as all of constraintValues is populated
-    // (no active set deletions).
-    for (size_t i=0; i<numConminNlnConstr; i++) {
-      size_t dakota_constr = constraintMapIndices[i];
-      // back out the offset and multiplier
-      best_fns[dakota_constr+1] = ( constraintValues[i] -
-	constraintMapOffsets[i] ) / constraintMapMultipliers[i];
-    }
-    bestResponseArray.front().function_values(best_fns);
+  }  
+  // NOTE: best_fn_vals[i] may be recomputed multiple times, but this
+  // should be OK so long as all of constraintValues is populated
+  // (no active set deletions).
+  for (size_t i=0; i<numConminNlnConstr; i++) {
+    size_t dakota_constr = constraintMapIndices[i];
+    // back out the offset and multiplier
+    best_fns[dakota_constr+numUserPrimaryFns] =
+      ( constraintValues[i] - constraintMapOffsets[i] ) /
+      constraintMapMultipliers[i];
   }
+  bestResponseArray.front().function_values(best_fns);
+
   deallocate_workspace();
 }
 

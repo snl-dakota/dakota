@@ -431,19 +431,19 @@ void NPSOLOptimizer::find_optimum_on_model()
   // (not the final fn. eval) since NPSOL performs this assignment internally 
   // prior to exiting (see "Subroutine npsol" section of NPSOL manual).
   bestVariablesArray.front().continuous_variables(local_des_vars);
+  RealVector best_fns(bestResponseArray.front().num_functions());
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
-    RealVector best_fns(numFunctions, false);
     const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
     best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
       -local_f_val : local_f_val;
-    if (numNonlinearConstraints)
-      //copy_data_partial(local_c_vals, best_fns, 1);
-      std::copy(local_c_vals.values(),
-                local_c_vals.values() + nlnConstraintArraySize,
-                best_fns.values() + 1);
-    bestResponseArray.front().function_values(best_fns);
   }
+  if (numNonlinearConstraints)
+    //copy_data_partial(local_c_vals, best_fns, 1);
+    std::copy(local_c_vals.values(),
+	      local_c_vals.values() + nlnConstraintArraySize,
+	      best_fns.values() + numUserPrimaryFns);
+  bestResponseArray.front().function_values(best_fns);
 
   /*
   // For better post-processing, could append fort.9 to dakota.out line

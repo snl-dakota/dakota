@@ -90,20 +90,19 @@ void APPSOptimizer::core_run()
   // Retrieve the best responses and convert from HOPS vector to
   // DAKOTA vector.
 
-  if (!localObjectiveRecast) {
-    // else local_objective_recast_retrieve() is used in Optimizer::post_run()
-
 //PDH: std::vector<double> -> RealVector
 //     Has to respect Dakota's ordering of inequality and equality constraints.
 //     Has to map format of constraints.
 //     Then populate bestResponseArray.
 
-    set_best_responses<AppsTraits>( optimizer, iteratedModel, 
-                                              constraintMapIndices, 
-                                              constraintMapMultipliers, 
-                                              constraintMapOffsets,
-                                              bestResponseArray);
-  }
+  // else local_objective_recast_retrieve() is used in Optimizer::post_run()
+  bool set_objectives = !localObjectiveRecast;
+  set_best_responses<AppsTraits>( optimizer, iteratedModel,
+				  set_objectives, numUserPrimaryFns,
+				  constraintMapIndices,
+				  constraintMapMultipliers,
+				  constraintMapOffsets,
+				  bestResponseArray);
 }
 
 /** Set all of the HOPS algorithmic parameters as specified in the

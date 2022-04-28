@@ -225,8 +225,9 @@ protected:
   /// account the envelope-letter design pattern and any recasting.
   void resize_best_resp_array(size_t newsize);
 
-  /// infers MOO/NLS solution from the solution of a single-objective optimizer
-  void local_recast_retrieve(const Variables& vars, Response& response) const;
+  /// infers MOO/NLS solution from the solution of a single-objective
+  /// optimizer and returns true if lookup succeeds
+  bool local_recast_retrieve(const Variables& vars, Response& response) const;
 
 
   //

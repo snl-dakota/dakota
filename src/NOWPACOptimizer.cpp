@@ -211,37 +211,37 @@ void NOWPACOptimizer::core_run()
   RealVector c_vars = bestVariablesArray.front().continuous_variables_view();
   nowpacEvaluator.unscale(x_star, c_vars);
   // Publish optimal response
+  RealVector best_fns(bestResponseArray.front().num_functions());
   if (!localObjectiveRecast) {
-    RealVector best_fns(numFunctions);
+    // else local_objective_recast_retrieve() used in Optimizer::post_run()
     const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
     best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -obj_star[0] : obj_star[0];
-
-    // objective and mapped nonlinear inequalities returned from optimize()
-    const SizetList& nln_ineq_map_indices
-      = nowpacEvaluator.nonlinear_inequality_mapping_indices();
-    const RealList&  nln_ineq_map_mult
-      = nowpacEvaluator.nonlinear_inequality_mapping_multipliers();
-    const RealList&  nln_ineq_map_offsets
-      = nowpacEvaluator.nonlinear_inequality_mapping_offsets();
-    StLCIter i_iter; RLCIter m_iter, o_iter;
-    size_t cntr = 0;//numEqConstraints;
-    for (i_iter  = nln_ineq_map_indices.begin(),
+  }
+  // objective and mapped nonlinear inequalities returned from optimize()
+  const SizetList& nln_ineq_map_indices
+    = nowpacEvaluator.nonlinear_inequality_mapping_indices();
+  const RealList&  nln_ineq_map_mult
+    = nowpacEvaluator.nonlinear_inequality_mapping_multipliers();
+  const RealList&  nln_ineq_map_offsets
+    = nowpacEvaluator.nonlinear_inequality_mapping_offsets();
+  StLCIter i_iter; RLCIter m_iter, o_iter;
+  size_t cntr = 0;//numEqConstraints;
+  for (i_iter  = nln_ineq_map_indices.begin(),
 	 m_iter  = nln_ineq_map_mult.begin(),
 	 o_iter  = nln_ineq_map_offsets.begin();
-	 i_iter != nln_ineq_map_indices.end(); ++i_iter, ++m_iter, ++o_iter)
-      best_fns[(*i_iter)+1] = (obj_star[++cntr] - (*o_iter))/(*m_iter);
-    /*
+       i_iter != nln_ineq_map_indices.end(); ++i_iter, ++m_iter, ++o_iter)
+    best_fns[(*i_iter)+numUserPrimaryFns] =
+      (obj_star[++cntr] - (*o_iter))/(*m_iter);
+  /*
     size_t i, offset = iteratedModel.num_nonlinear_ineq_constraints() + 1,
-      num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
+    num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
     const RealVector& nln_eq_targets
-      = iteratedModel.nonlinear_eq_constraint_targets();
+    = iteratedModel.nonlinear_eq_constraint_targets();
     for (i=0; i<num_nln_eq; i++)
-      best_fns[i+offset] = fn_star[++cntr] + nln_eq_targets[i];
-    */
+    best_fns[i+offset] = fn_star[++cntr] + nln_eq_targets[i];
+  */
 
-    bestResponseArray.front().function_values(best_fns);
-  }
-  // else local_objective_recast_retrieve() used in Optimizer::post_run()
+  bestResponseArray.front().function_values(best_fns);
 }
 
 
