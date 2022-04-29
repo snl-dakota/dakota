@@ -91,11 +91,14 @@ class Pybind11Interface: public DirectApplicInterface
     template<typename T>
     py::dict pack_kwargs() const;
 
-    // populate values, gradients, Hessians
+    /// populate values, gradients, Hessians from Python to Dakota
     void unpack_python_response
-    (const size_t num_fns, const size_t num_derivs,
+    (const ShortArray& asv, const size_t num_derivs,
      const pybind11::dict& py_response, RealVector& fn_values,
      RealMatrix& gradients, RealSymMatrixArray& hessians);
+
+    /// return true if the passed asv value is requested for any function
+    bool expect_derivative(const ShortArray& asv, const short deriv_type);
 };
 
 

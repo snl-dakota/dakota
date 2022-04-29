@@ -96,7 +96,7 @@ int Pybind11Interface::derived_map_ac(const String& ac_name)
 
       py::dict ret_val = py11CallBack(kwargs);
 
-      unpack_python_response(numFns, directFnDVV.size(), ret_val,
+      unpack_python_response(directFnASV, directFnDVV.size(), ret_val,
 			     fnVals, fnGrads, fnHessians);
     }
     catch (const std::runtime_error& e) {
@@ -104,11 +104,13 @@ int Pybind11Interface::derived_map_ac(const String& ac_name)
       std::string err_msg("Error evaluating Python analysis_driver ");
       err_msg += ac_name + ":\n";
       err_msg += e.what();
+      Cerr << err_msg << std::endl;
       throw FunctionEvalFailure(err_msg);
     }
     catch (...) {
       std::string err_msg("Error evaluating Python analysis_driver ");
       err_msg += ac_name;
+      Cerr << err_msg << std::endl;
       throw FunctionEvalFailure(err_msg);
     }
 
@@ -144,7 +146,7 @@ void Pybind11Interface::wait_local_evaluations(PRPQueue& prp_queue)
   for (auto& prp : prp_queue) {
     const ActiveSet& active_set = prp.active_set();
     // shallow copy technically violates const-ness
-    unpack_python_response(active_set.request_vector().size(),
+    unpack_python_response(active_set.request_vector(),
 			   active_set.derivative_vector().size(),
 			   py_responses[i], fnVals, fnGrads, fnHessians);
     Response resp = prp.response();
@@ -251,15 +253,16 @@ py::dict Pybind11Interface::pack_kwargs() const
 
 
 void Pybind11Interface::unpack_python_response
-(const size_t num_fns, const size_t num_derivs,
+(const ShortArray& asv, const size_t num_derivs,
  const pybind11::dict& py_response, RealVector& fn_values,
  RealMatrix& gradients, RealSymMatrixArray& hessians)
 {
+  size_t num_fns = asv.size();
   for (auto item : py_response) {
     auto key = item.first.cast<std::string>();
     //Cout << "key: " << key << " = " << value[i] << std::endl;
 
-    if (key == "fns") {
+    if (key == "fns" && expect_derivative(asv, 1)) {
       auto values = item.second.cast<std::vector<double>>();
       if (values.size() != num_fns) {
         throw(std::runtime_error("Pybind11 Direct Interface [\"fns\"]: "
@@ -270,7 +273,7 @@ void Pybind11Interface::unpack_python_response
       }
     }
 
-    else if (key == "fnGrads") {
+    else if (key == "fnGrads" && expect_derivative(asv, 2)) {
       auto grads = item.second.cast<std::vector<std::vector<double>>>();
       if (grads.size() != num_fns) {
         throw(std::runtime_error("Pybind11 Direct Interface [\"fnGrads\"]: "
@@ -288,7 +291,7 @@ void Pybind11Interface::unpack_python_response
       }
     }
 
-    else if (key == "fnHessians") {
+    else if (key == "fnHessians" && expect_derivative(asv, 4)) {
       auto hess = item.second.cast<
           std::vector<std::vector<std::vector<double>>>>();
       if (hess.size() != num_fns) {
@@ -317,6 +320,15 @@ void Pybind11Interface::unpack_python_response
     }
   }
 }
+
+
+bool Pybind11Interface::expect_derivative(const ShortArray& asv,
+					  const short deriv_type)
+{
+  return std::any_of(asv.begin(), asv.end(),
+		     [deriv_type](short a){ return (a & deriv_type); });
+}
+
 
 
 } //namespace Dakota
