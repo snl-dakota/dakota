@@ -94,16 +94,16 @@ std::vector<DakotaPlugins::EvalResponse> DakotaPythonPlugin::evaluate(
 }
 
 void DakotaPythonPlugin::unpack_python_response(
-    size_t const num_fns,
+    const std::vector<short>& active_set,
     size_t const num_derivs,
     py::dict const& py_response,
     DakotaPlugins::EvalResponse& response) {
 
-  for (auto item : py_response) {
-    auto key = item.first.cast<std::string>();
+  size_t num_fns = active_set.size();
 
-    if (key == "fns") {
-      auto values = item.second.cast<Array1D>();
+  if (expect_derivative(asv, 1)) {
+    if (py_response.contains("fns")) {
+      auto values = py_response["fns"].cast<Array1D>();
       if (values.size() != num_fns) {
         throw(std::runtime_error("Python Plugin [\"fns\"]: "
                                  "incorrect size for # of functions"));
@@ -112,9 +112,15 @@ void DakotaPythonPlugin::unpack_python_response(
         response.functions[i] = values[i];
       }
     }
+    else {
+      throw(std::runtime_error("Python Plugin: required key "
+			       "[\"fns\"] absent in dict returned to Dakota"));
+    }
+  }
 
-    else if (key == "fnGrads") {
-      auto grads = item.second.cast<Array2D>();
+  if (expect_derivative(asv, 2)) {
+    if (py_response.contains("fnGrads")) {
+      auto grads = py_response["fnGrads"].cast<Array2D>();
       if (grads.size() != num_fns) {
         throw(std::runtime_error("Python Plugin [\"fnGrads\"]: "
                                  "incorrect size for # of functions"));
@@ -130,9 +136,15 @@ void DakotaPythonPlugin::unpack_python_response(
         }
       }
     }
+    else {
+      throw(std::runtime_error("Python Plugin: required key "
+			       "[\"fnGrads\"] absent in dict returned to Dakota"));
+    }
+  }
 
-    else if (key == "fnHessians") {
-      auto hess = item.second.cast<Array3D>();
+  if (expect_derivative(asv, 4)) {
+    if (py_response.contains("fnHessians")) {
+      auto hess = py_response["fnHessians"].cast<Array3D>();
       if (hess.size() != num_fns) {
         throw(std::runtime_error("Python Plugin [\"fnHessians\"]: "
                                  "incorrect size for # of functions"));
@@ -157,8 +169,22 @@ void DakotaPythonPlugin::unpack_python_response(
         }
       }
     }
+    else {
+      throw(std::runtime_error("Python Plugin: required key "
+			       "[\"fnHessians\"] absent in dict returned to Dakota"));
+    }
   }
+
 }
+
+
+bool DakotaPythonPlugin::expect_derivative(const std::vector<short>& asv,
+					   const short deriv_type) const
+{
+  return std::any_of(asv.begin(), asv.end(),
+		     [deriv_type](short a){ return (a & deriv_type); });
+}
+
 
 extern "C" BOOST_SYMBOL_EXPORT DakotaPythonPlugin dakota_interface_plugin;
 DakotaPythonPlugin dakota_interface_plugin;

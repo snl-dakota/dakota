@@ -258,23 +258,27 @@ void Pybind11Interface::unpack_python_response
  RealMatrix& gradients, RealSymMatrixArray& hessians)
 {
   size_t num_fns = asv.size();
-  for (auto item : py_response) {
-    auto key = item.first.cast<std::string>();
-    //Cout << "key: " << key << " = " << value[i] << std::endl;
 
-    if (key == "fns" && expect_derivative(asv, 1)) {
-      auto values = item.second.cast<std::vector<double>>();
+  if (expect_derivative(asv, 1)) {
+    if (py_response.contains("fns")) {
+      auto values = py_response["fns"].cast<std::vector<double>>();
       if (values.size() != num_fns) {
-        throw(std::runtime_error("Pybind11 Direct Interface [\"fns\"]: "
-                                 "incorrect size for # of functions"));
+	throw(std::runtime_error("Pybind11 Direct Interface [\"fns\"]: "
+				 "incorrect size for # of functions"));
       }
       for (size_t i = 0; i < num_fns; ++i) {
-        fn_values[i] = values[i];
+	fn_values[i] = values[i];
       }
     }
+    else {
+      throw(std::runtime_error("Pybind11 Direct Interface: required key "
+			       "[\"fns\"] absent in dict returned to Dakota"));
+    }
+  }
 
-    else if (key == "fnGrads" && expect_derivative(asv, 2)) {
-      auto grads = item.second.cast<std::vector<std::vector<double>>>();
+  if (expect_derivative(asv, 2)) {
+    if (py_response.contains("fnGrads")) {
+      auto grads = py_response["fnGrads"].cast<std::vector<std::vector<double>>>();
       if (grads.size() != num_fns) {
         throw(std::runtime_error("Pybind11 Direct Interface [\"fnGrads\"]: "
                                  "incorrect size for # of functions"));
@@ -289,11 +293,18 @@ void Pybind11Interface::unpack_python_response
           gradients[i][j] = grads[i][j];
         }
       }
-    }
 
-    else if (key == "fnHessians" && expect_derivative(asv, 4)) {
-      auto hess = item.second.cast<
-          std::vector<std::vector<std::vector<double>>>>();
+    }
+    else {
+      throw(std::runtime_error("Pybind11 Direct Interface: required key "
+			       "[\"fnGrads\"] absent in dict returned to Dakota"));
+    }
+  }
+
+  if (expect_derivative(asv, 4)) {
+    if (py_response.contains("fnHessians")) {
+      auto hess = py_response["fnHessians"].cast<
+	std::vector<std::vector<std::vector<double>>>>();
       if (hess.size() != num_fns) {
         throw(std::runtime_error("Pybind11 Direct Interface [\"fnHessians\"]: "
                                  "incorrect size for # of functions"));
@@ -318,12 +329,17 @@ void Pybind11Interface::unpack_python_response
         }
       }
     }
+    else {
+      throw(std::runtime_error("Pybind11 Direct Interface: required key "
+			       "[\"fnHessians\"] absent in dict returned to Dakota"));
+    }
   }
+
 }
 
 
 bool Pybind11Interface::expect_derivative(const ShortArray& asv,
-					  const short deriv_type)
+					  const short deriv_type) const
 {
   return std::any_of(asv.begin(), asv.end(),
 		     [deriv_type](short a){ return (a & deriv_type); });

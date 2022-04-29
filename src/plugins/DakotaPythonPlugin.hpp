@@ -99,9 +99,13 @@ protected:
     return python_request;
   }
 
-  void unpack_python_response(size_t const num_fns, size_t const num_derivs,
-      pybind11::dict const& py_response,
-      DakotaPlugins::EvalResponse& response);
+  void unpack_python_response(const std::vector<short>& active_set,
+			      size_t const num_derivs,
+			      pybind11::dict const& py_response,
+			      DakotaPlugins::EvalResponse& response);
+
+  bool DakotaPythonPlugin::expect_derivative(const std::vector<short>& asv,
+					     const short deriv_type) const;
 
 };
 

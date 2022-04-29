@@ -98,7 +98,7 @@ class Pybind11Interface: public DirectApplicInterface
      RealMatrix& gradients, RealSymMatrixArray& hessians);
 
     /// return true if the passed asv value is requested for any function
-    bool expect_derivative(const ShortArray& asv, const short deriv_type);
+    bool expect_derivative(const ShortArray& asv, const short deriv_type) const;
 };
 
 
