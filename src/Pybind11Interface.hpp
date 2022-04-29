@@ -95,7 +95,8 @@ class Pybind11Interface: public DirectApplicInterface
     void unpack_python_response
     (const ShortArray& asv, const size_t num_derivs,
      const pybind11::dict& py_response, RealVector& fn_values,
-     RealMatrix& gradients, RealSymMatrixArray& hessians);
+     RealMatrix& gradients, RealSymMatrixArray& hessians,
+     RealArray& metadata);
 
     /// return true if the passed asv value is requested for any function
     bool expect_derivative(const ShortArray& asv, const short deriv_type) const;

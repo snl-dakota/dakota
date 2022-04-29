@@ -97,7 +97,7 @@ int Pybind11Interface::derived_map_ac(const String& ac_name)
       py::dict ret_val = py11CallBack(kwargs);
 
       unpack_python_response(directFnASV, directFnDVV.size(), ret_val,
-			     fnVals, fnGrads, fnHessians);
+			     fnVals, fnGrads, fnHessians, metaData);
     }
     catch (const std::runtime_error& e) {
       // (py::error_already_set is caught here too)
@@ -148,9 +148,11 @@ void Pybind11Interface::wait_local_evaluations(PRPQueue& prp_queue)
     // shallow copy technically violates const-ness
     unpack_python_response(active_set.request_vector(),
 			   active_set.derivative_vector().size(),
-			   py_responses[i], fnVals, fnGrads, fnHessians);
+			   py_responses[i], fnVals, fnGrads, fnHessians,
+			   metaData);
     Response resp = prp.response();
     resp.update(fnVals, fnGrads, fnHessians, active_set);
+    resp.metadata(metaData);
     completionSet.insert(prp.eval_id());
     ++i;
   }
@@ -260,7 +262,8 @@ py::dict Pybind11Interface::pack_kwargs() const
 void Pybind11Interface::unpack_python_response
 (const ShortArray& asv, const size_t num_derivs,
  const pybind11::dict& py_response, RealVector& fn_values,
- RealMatrix& gradients, RealSymMatrixArray& hessians)
+ RealMatrix& gradients, RealSymMatrixArray& hessians,
+ RealArray& metadata)
 {
   size_t num_fns = asv.size();
 
@@ -337,6 +340,24 @@ void Pybind11Interface::unpack_python_response
     else {
       throw(std::runtime_error("Pybind11 Direct Interface: required key "
 			       "[\"fnHessians\"] absent in dict returned to Dakota"));
+    }
+  }
+
+  size_t num_md = metadata.size();
+  if (num_md > 0) {
+    if (py_response.contains("metadata")) {
+      auto md = py_response["metadata"].cast<std::vector<double>>();
+      if (md.size() != num_md) {
+	throw(std::runtime_error("Pybind11 Direct Interface [\"metadata\"]: "
+				 "incorrect size for # of metadata"));
+      }
+      for (size_t i = 0; i < num_md; ++i) {
+	metadata[i] = md[i];
+      }
+    }
+    else {
+      throw(std::runtime_error("Pybind11 Direct Interface: required key "
+			       "[\"metadata\"] absent in dict returned to Dakota"));
     }
   }
 
