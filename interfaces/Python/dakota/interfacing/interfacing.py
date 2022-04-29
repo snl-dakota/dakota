@@ -940,7 +940,7 @@ def read_params_from_dict(parameters=None, results_file=None,
     key = "dvv"
     dakota_input.append(str(len(parameters[key]))+" derivative_variables\n")
     for i, val in enumerate(parameters["dvv"]):
-        label = "DVV_"+str(i)+":"+parameters["all_labels"][parameters["dvv"][i]-1]
+        label = "DVV_"+str(i)+":"+parameters["cv_labels"][parameters["dvv"][i]-1]
         dakota_input.append(str(parameters["dvv"][i])+" "+label+"\n")
 
     key = "analysis_components"

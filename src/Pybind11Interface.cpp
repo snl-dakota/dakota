@@ -216,7 +216,7 @@ py::dict Pybind11Interface::params_to_dict() const
 template<typename py_arrayT>
 py::dict Pybind11Interface::pack_kwargs() const
 {
-  py::list  all_labels   = copy_array_to_pybind11<py::list,StringArray,String>(xAllLabels);
+  py::list  all_var_labels   = copy_array_to_pybind11<py::list,StringArray,String>(xAllLabels);
   py_arrayT cv           = copy_array_to_pybind11<py_arrayT>(xC);
   py::list  cv_labels    = copy_array_to_pybind11<py::list,StringMultiArray,String>(xCLabels);
   py_arrayT div          = copy_array_to_pybind11<py_arrayT>(xDI);
@@ -230,11 +230,16 @@ py::dict Pybind11Interface::pack_kwargs() const
   py_arrayT an_comps     = (analysisComponents.size() > 0)
                           ?  copy_array_to_pybind11<py_arrayT,StringArray,String>(analysisComponents[analysisDriverIndex])
                           :  py_arrayT();
+  py::list fn_labels     = copy_array_to_pybind11<py::list,StringArray,String>(fnLabels);
+  py::list md_labels     = copy_array_to_pybind11<py::list,StringArray,String>(metaDataLabels);
 
   py::dict kwargs = py::dict(
       "variables"_a             = numVars,
       "functions"_a             = numFns,
-      "all_labels"_a            = all_labels,
+      "metadata"_a              = metaData.size(),
+      "variable_labels"_a       = all_var_labels,
+      "function_labels"_a       = fn_labels,
+      "metadata_labels"_a       = md_labels,
       "cv"_a                    = cv,
       "cv_labels"_a             = cv_labels,
       "div"_a                   = div,

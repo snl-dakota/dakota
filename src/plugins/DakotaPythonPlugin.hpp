@@ -63,6 +63,9 @@ protected:
     py_arrayT drv = copy_vector_to_pybind11<py_arrayT, double>(
         request.discreteRealVars);
 
+    py_arrayT all_var_labels =
+        copy_vector_to_pybind11<py_arrayT, std::string>(
+        request.inputOrderedLabels);
     py_arrayT cv_labels =
         copy_vector_to_pybind11<py_arrayT, std::string>(
         request.continuousLabels);
@@ -84,10 +87,16 @@ protected:
     py::int_ eval_id = py::cast(request.functionEvalId);
 
     py::dict python_request = py::dict(
+        // TODO: "variables"
+        // TODO: "functions"
+        // TODO: "metadata"
+        // TODO: "function_labels"
+        // TODO: "metadata_labels"
         "cv"_a = cv,
         "div"_a = div,
         "dsv"_a = dsv,
         "drv"_a = drv,
+        "variable_labels"_a = all_var_labels,
         "cv_labels"_a = cv_labels,
         "div_labels"_a = div_labels,
         "dsv_labels"_a = dsv_labels,
