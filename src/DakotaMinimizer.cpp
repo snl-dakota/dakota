@@ -401,9 +401,8 @@ Model Minimizer::original_model(unsigned short recasts_left) const
 }
 
 
-/** Reads observation data to compute least squares residuals.  Does
-    not change size of responses, and is the first wrapper, therefore
-    sizes are based on iteratedModel.  */
+/** Reads observation data to compute least squares residuals and
+    expands residuals for multiple experiments. */
 void Minimizer::data_transform_model()
 {
   if (outputLevel >= DEBUG_OUTPUT)
@@ -417,6 +416,12 @@ void Minimizer::data_transform_model()
   }
   // TODO: verify: we don't want to weight by missing sigma: all = 1.0
   expData.load_data("Least Squares", iteratedModel.current_variables());
+
+  if (numNonlinearConstraints > 0 && numExperiments > 1 &&
+      expData.num_config_vars() > 0)
+    Cout << "\nWarning: When using nonlinear constraints with multiple "
+	 << "experiment\nconfigurations, the returned constraint values must be"
+	 << " the same across\nconfigurations." << std::endl;
 
   iteratedModel.
     assign_rep(std::make_shared<DataTransformModel>(iteratedModel, expData));
