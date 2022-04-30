@@ -548,6 +548,13 @@ class Results(object):
                 if v.asv.hessian and v.hessian is None:
                     raise ResponseError("Response '" +t + "' is missing "
                             "requested Hessian result.")
+       
+        if not self._failed:
+            for k, v in self.metadata.items():
+                if v is None:
+                    raise ResultsError("Results object is missing requested "
+                            "metadata field '" + k + "'")
+
 
         results_dict = {}
         results_dict['fns'] = []
@@ -560,7 +567,8 @@ class Results(object):
                 results_dict['fnGrads'].append(v.gradient)
             if v.asv.hessian:
                 results_dict['fnHessians'].append(v.hessian)
-
+        
+        results_dict['metadata'] = [value for label, value in self.metadata.items()] 
         return results_dict
 
     def _set_batch(self, flag):
@@ -745,12 +753,12 @@ _pRE = {
                 value="(?P<value>[0-7])", tag="ASV_\d+:(?P<tag>\S+)")),
             "deriv_var":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
-            "an_comp":re.compile(_aprepro_re_base.format(
-                value="\"(?P<value>.+?)\"", tag="AC_\d+:(?P<tag>.+?)")),
-            "metadata":re.compile(_aprepro_re_base.format(
-                value="\"(?P<value>.+?)\"", tag="(?P<tag>MD_\d+)"))
-            },
-        "DAKOTA":{"num_variables":re.compile(_dakota_re_base.format(
+		    "an_comp":re.compile(_aprepro_re_base.format(
+			value="\"(?P<value>.+?)\"", tag="AC_\d+:(?P<tag>.+?)")),
+		    "metadata":re.compile(_aprepro_re_base.format(
+			value="\"(?P<value>.+?)\"", tag="(?P<tag>MD_\d+)"))
+		    },
+		"DAKOTA":{"num_variables":re.compile(_dakota_re_base.format(
             value="(?P<value>\d+)", tag="(?P<tag>variables)")),
             "num_functions":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>functions)")),
@@ -924,17 +932,20 @@ def read_params_from_dict(parameters=None, results_file=None,
     dakota_input = []
     key = "variables"
     dakota_input.append(str(parameters[key])+" "+key+"\n")
-    for k in parameters.keys():
-        klabel = k+"_labels"
-        if klabel in parameters.keys():
-            for i, label in enumerate(parameters[klabel]):
-                dakota_input.append(str(parameters[k][i])+" "+label+"\n")
-                assigned_types[label] = vars_to_type[k]
-
+    for label in parameters["variable_labels"]:
+        for domain, vtype in vars_to_type.items():
+            try:
+                idx = parameters[domain+"_labels"].index(label)
+            except ValueError:
+                continue
+            else:
+                dakota_input.append(str(parameters[domain][idx]) + " " + label + "\n")
+                assigned_types[label] = vtype
+               
     key = "functions"
     dakota_input.append(str(parameters[key])+" "+key+"\n")
     for i, val in enumerate(parameters["asv"]):
-        label = "ASV_"+str(i+1)+":response_"+str(i+1)
+        label = "ASV_"+str(i+1)+":"+parameters["function_labels"][i]
         dakota_input.append(str(parameters["asv"][i])+" "+label+"\n")
 
     key = "dvv"
@@ -944,15 +955,18 @@ def read_params_from_dict(parameters=None, results_file=None,
         dakota_input.append(str(parameters["dvv"][i])+" "+label+"\n")
 
     key = "analysis_components"
-    if not parameters[key]:
-        dakota_input.append("0 "+key+"\n")
-    else:
-        dakota_input.append(str(parameters[key])+" "+key+"\n")
+    num_an_comp = len(parameters[key])
+    dakota_input.append(str(num_an_comp) + " " + key + "\n")
+    for i, an_comp in enumerate(parameters[key]):
+        dakota_input.append(an_comp + " AC_" + str(i+1) + ":python_direct\n")
 
     key = "eval_id"
     dakota_input.append(str(parameters[key])+" eval_id\n")
 
-    dakota_input.append("0 metadata"+"\n")
+    key = "metadata"
+    dakota_input.append(str(parameters[key]) + " metadata\n")
+    for i, md in enumerate(parameters["metadata_labels"]):
+        dakota_input.append(md + " MD_" + str(i+1) + "\n")
 
     #print("".join(dakota_input))
     io_stream = io.StringIO("".join(dakota_input))
@@ -1080,15 +1094,11 @@ def dprepro(template, parameters=None, results=None, include=None,
         with open(output,"w",encoding="utf-8") as f:
             f.write(output_string)
 
-def python_interface(ignore_asv=False, batch=False):
+def python_interface(fn):
     """ Decorator factory to wrap direct python callbacks """
-
-    def decorate(fn):
-        @functools.wraps(fn)
-        def wrapper(*args, **kwargs):
-            params, results = read_params_from_dict(*args, ignore_asv=ignore_asv, batch=batch)
-            results = fn(params, results)
-            return results.return_direct_results_dict()
-        return wrapper
-    return decorate
-
+    @functools.wraps(fn)
+    def wrapper(direct_interface_dict):
+        params, results = read_params_from_dict(direct_interface_dict)
+        results = fn(params, results)
+        return results.return_direct_results_dict()
+    return wrapper

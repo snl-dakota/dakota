@@ -154,7 +154,7 @@ def check_expected_params(params):
     expected_params["div_labels"] = ["z1", "z2", "z3"]
     expected_params["dsv_labels"] = ["s1"]
     expected_params["drv_labels"] = ["y1", "y2"]
-    expected_params["all_labels"] = expected_params["cv_labels"] \
+    expected_params["variable_labels"] = expected_params["cv_labels"] \
         + expected_params["div_labels"] \
         + expected_params["dsv_labels"] \
         + expected_params["drv_labels"]
@@ -167,7 +167,7 @@ def check_expected_params(params):
     expected_params["dvv"] = [1, 2, 3]
 
     single_value_type_keys = ["variables", "functions", "eval_id"]
-    array_type_keys = ["all_labels", "cv", "cv_labels", "div", "div_labels",
+    array_type_keys = ["variable_labels", "cv", "cv_labels", "div", "div_labels",
                        "dsv", "dsv_labels", "drv", "drv_labels", "asv", "dvv"]
 
     for key in single_value_type_keys:

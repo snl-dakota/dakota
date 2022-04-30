@@ -97,6 +97,51 @@ dakotaBatchParams = """                                          2 variables
                                     seconds MD_1
 """
 
+# Dictionaries for testing the direct interface
+direct_dense_params = {
+    "variables": 5, 
+    "functions": 3, 
+    "metadata": 1, 
+    "variable_labels": ["cdv_1", "ddsiv_1", "ddssv_1", "ddsrv_1", "uuv_1"],
+    "function_labels": ["obj_fn", "nln_ineq_con_1", "nln_ineq_con_2"],
+    "metadata_labels": ["baz"],
+    "cv": [0.9414315689355135, 0.5], 
+    "cv_labels": ["cdv_1", "uuv_1"], 
+    "div": [7], 
+    "div_labels": ["ddsiv_1"], 
+    "dsv": ["baz"], 
+    "dsv_labels": ["ddssv_1"], 
+    "drv": [3.14], 
+    "drv_labels": ["ddsrv_1"], 
+    "asv": [7, 7, 7], 
+    "dvv": [1], 
+    "analysis_components": ["foo"],
+    "eval_id": 1
+}
+
+direct_sparse_params = {
+    "variables": 1, 
+    "functions": 1, 
+    "metadata": 0, 
+    "variable_labels": ["cdv_1"],
+    "function_labels": ["obj_fn"],
+    "metadata_labels": [],
+    "cv": [0.5], 
+    "cv_labels": ["cdv_1"], 
+    "div": [], 
+    "div_labels": [], 
+    "dsv": [], 
+    "dsv_labels": [], 
+    "drv": [], 
+    "drv_labels": [], 
+    "asv": [1], 
+    "dvv": [1], 
+    "analysis_components": [],
+    "eval_id": 1
+}
+
+
+
 # Helper functions needed for Python < 2.7
 def set_function(r):
     r["response_fn_1"].function = 5.0
@@ -508,6 +553,157 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertRaises(parallel.ResourceError,parallel._calc_num_tiles,
                     tile_size=16, tasks_per_node=16, num_nodes=1, 
                     dedicated_master='TILE')
+
+
+class PythonDirectInterfaceTest(unittest.TestCase):
+    def test_parameters_from_dict_variable_order(self):
+        params, _ = di.read_params_from_dict(direct_dense_params)
+        labels = [label for label in params]
+        self.assertListEqual(direct_dense_params["variable_labels"], labels)
+        
+    def test_parameters_from_dict_variable_types(self):        
+        params, _ = di.read_params_from_dict(direct_dense_params)
+        expected_types = [float, int, str, float, float]
+        actual_types = [type(value) for label, value in params.items()]
+        self.assertListEqual(expected_types, actual_types)
+
+    def test_parameters_from_dict_variable_types(self):        
+        params, _ = di.read_params_from_dict(direct_dense_params)
+        expected_types = [float, int, str, float, float]
+        actual_types = [type(value) for label, value in params.items()]
+        self.assertListEqual(expected_types, actual_types)
+
+    def test_parameters_from_dict_variable_values(self):
+        params, _ = di.read_params_from_dict(direct_dense_params)
+        expected_values = []
+        expected_values.append(direct_dense_params["cv"][0])
+        expected_values += direct_dense_params["div"]
+        expected_values += direct_dense_params["dsv"]
+        expected_values += direct_dense_params["drv"]
+        expected_values.append(direct_dense_params["cv"][1])
+        actual_values = [value for label, value in params.items()]
+        self.assertListEqual(expected_values, actual_values)
+
+    def test_parameters_from_dict_asv(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        def asv_to_int(asv):
+            r = 0
+            if asv.function:
+                r = r | 1
+            if asv.gradient:
+                r = r | 2
+            if asv.hessian:
+                r = r | 4
+            return r
+
+        expected_asv = direct_dense_params["asv"]
+        actual_asv = [asv_to_int(response.asv) for label, response in results.items()]
+        self.assertListEqual(expected_asv, actual_asv)
+
+    def test_parameters_from_dict_dvv(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        expected_dvv = [direct_dense_params["cv_labels"][id-1] for id in direct_dense_params["dvv"]]
+        self.assertListEqual(expected_dvv, results.deriv_vars)
+    
+    def test_parameters_from_dict_eval_id(self):
+        params, results = di.read_params_from_dict(direct_dense_params)
+        expected_eid = str(direct_dense_params["eval_id"])
+        params_eid = params.eval_id
+        results_eid = results.eval_id
+        self.assertEqual(expected_eid, params_eid)
+        self.assertEqual(expected_eid, results_eid)
+
+    def test_parameters_from_dict_function_labels(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        expected_labels = direct_dense_params["function_labels"] 
+        actual_labels = [label for label in results]
+        self.assertListEqual(expected_labels, actual_labels)
+
+    def test_parameters_from_dict_an_comps(self):
+        params, _ = di.read_params_from_dict(direct_dense_params)
+        expected_ac = direct_dense_params["analysis_components"]
+        actual_ac = params.an_comps
+        self.assertListEqual(expected_ac, actual_ac)
+
+    def test_parameters_from_dict_metadata(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        expected_md = direct_dense_params["metadata_labels"]
+        actual_md = [md for md in results.metadata]
+        self.assertListEqual(expected_md, actual_md)
+
+    def test_parameters_from_dict_num_vars_funcs(self):
+        params, results = di.read_params_from_dict(direct_dense_params)
+        expected_nv = direct_dense_params["variables"]
+        expected_nf = direct_dense_params["functions"]
+        actual_nv = params.num_variables
+        actual_nf = results.num_responses
+        self.assertEqual(expected_nv, actual_nv)
+        self.assertEqual(expected_nf, actual_nf)
+
+    def test_return_direct_results_dict(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        for i in range(3):
+            results[i].function = i + 1.0
+            results[i].gradient = [i + 1.0]
+            results[i].hessian = [[i + 1.0]]
+        results.metadata[0] = "baz"
+        d = results.return_direct_results_dict()
+        self.assertIsInstance(d, dict)
+        
+        expected_fns = [1.0, 2.0, 3.0]
+        expected_grads = [[1.0], [2.0], [3.0]]
+        expected_hess = [ [[1.0]], [[2.0]], [[3.0]] ]
+
+        for i in range(3):
+            self.assertAlmostEqual(expected_fns[i], d["fns"][i])
+            self.assertAlmostEqual(expected_grads[i][0], d["fnGrads"][i][0]) 
+            self.assertAlmostEqual(expected_hess[i][0][0], d["fnHessians"][i][0][0]) 
+ 
+    def test_python_interface_decorator(self):
+        @di.python_interface
+        def driver(params, results):
+            self.assertIsInstance(params, di.Parameters)
+            self.assertIsInstance(results, di.Results)
+            for i in range(3):
+                results[i].function = i + 1.0
+                results[i].gradient = [i + 1.0]
+                results[i].hessian = [[i + 1.0]]
+            results.metadata[0] = "baz"
+            return results
+
+        d = driver(direct_dense_params)
+        self.assertIsInstance(d, dict)
+        self.assertTrue("fns" in d)
+        self.assertIsInstance(d["fns"], list)
+        self.assertTrue("fnGrads" in d)
+        self.assertIsInstance(d["fnGrads"], list)
+        self.assertTrue("fnHessians" in d)
+        self.assertIsInstance(d["fnHessians"], list)
+
+    def test_return_direct_results_dict_asv_problem(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        with self.assertRaises(di.ResponseError):
+            results.return_direct_results_dict()
+
+    def test_return_direct_results_dict_metadata_problem(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        for i in range(3):
+            results[i].function = i + 1.0
+            results[i].gradient = [i + 1.0]
+            results[i].hessian = [[i + 1.0]]
+        with self.assertRaises(di.ResultsError):
+            results.return_direct_results_dict()
+
+    def test_parameters_from_dict_sparse(self):
+        params, results = di.read_params_from_dict(direct_sparse_params)
+        labels = [label for label in params]
+        self.assertListEqual(direct_sparse_params["variable_labels"], labels)
+        self.assertEqual(params[0], direct_sparse_params["cv"][0])
+        self.assertEqual(results.num_responses, direct_sparse_params["functions"])
+        results[0].function = 0.0
+        results.return_direct_results_dict()
+        
+
 # todo: test iteration, integer access
 
 
