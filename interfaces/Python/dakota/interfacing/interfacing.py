@@ -753,12 +753,12 @@ _pRE = {
                 value="(?P<value>[0-7])", tag="ASV_\d+:(?P<tag>\S+)")),
             "deriv_var":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
-		    "an_comp":re.compile(_aprepro_re_base.format(
-			value="\"(?P<value>.+?)\"", tag="AC_\d+:(?P<tag>.+?)")),
-		    "metadata":re.compile(_aprepro_re_base.format(
-			value="\"(?P<value>.+?)\"", tag="(?P<tag>MD_\d+)"))
-		    },
-		"DAKOTA":{"num_variables":re.compile(_dakota_re_base.format(
+	    "an_comp":re.compile(_aprepro_re_base.format(
+		value="\"(?P<value>.+?)\"", tag="AC_\d+:(?P<tag>.+?)")),
+	    "metadata":re.compile(_aprepro_re_base.format(
+		value="\"(?P<value>.+?)\"", tag="(?P<tag>MD_\d+)"))
+	    },
+	"DAKOTA":{"num_variables":re.compile(_dakota_re_base.format(
             value="(?P<value>\d+)", tag="(?P<tag>variables)")),
             "num_functions":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>functions)")),
@@ -968,7 +968,6 @@ def read_params_from_dict(parameters=None, results_file=None,
     for i, md in enumerate(parameters["metadata_labels"]):
         dakota_input.append(md + " MD_" + str(i+1) + "\n")
 
-    #print("".join(dakota_input))
     io_stream = io.StringIO("".join(dakota_input))
     return _read_parameters_stream(io_stream, ignore_asv, batch, results_file, infer_types=False, types=assigned_types)
 
@@ -1095,7 +1094,7 @@ def dprepro(template, parameters=None, results=None, include=None,
             f.write(output_string)
 
 def python_interface(fn):
-    """ Decorator factory to wrap direct python callbacks """
+    """ Decorator to wrap direct python callbacks """
     @functools.wraps(fn)
     def wrapper(direct_interface_dict):
         params, results = read_params_from_dict(direct_interface_dict)
