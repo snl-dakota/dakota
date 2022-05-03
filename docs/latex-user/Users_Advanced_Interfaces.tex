@@ -541,13 +541,15 @@ structures instead of the default lists.
 Whether using the list or array interface, data from Dakota is passed
 (via kwargs) into the user function in a dictionary containing the
 entries shown in Table~\ref{advint:table:pythonparams}. The {\tt
-analysis\_function} must return a dictionary containing the data
+  analysis\_function} must return a dictionary containing the data
 specified by the active set vector with fields ``fns'', ``fnGrads'',
 and ``fnHessians'', corresponding to function values, gradients, and
 Hessians, respectively. The function may optionally include a failure
 code in ``failure'' (zero indicates success, nonzero failure) and
-function labels in ``fnLabels''. See the linked interfaces example
-referenced above for more details.
+function labels in ``fnLabels''. When metadata are active, they must
+be returned as an array of floats in the dictionary field
+``metadata''. See the linked interfaces example referenced above for
+more details.
 
 \begin{table}
 \centering
@@ -557,22 +559,24 @@ referenced above for more details.
 \hline
 \textbf{Entry Name} & \textbf{Description}  \\
 \hline
-functions  & number of functions (responses, constraints) \\
 variables  & total number of variables \\
+functions  & number of functions (responses, constraints) \\
+metadata   & number of metadata fields \\
+variable\_labels & variable labels in input specification order \\
+function\_labels & function (response, constraint) labels \\
+metadata\_labels & metadata field labels \\
 cv         & list/array of continuous variable values \\
-div        & list/array of discrete integer variable values \\
-dsv        & list of discrete string variable values (NumPy not supported)\\
-drv        & list/array of discrete real variable values \\
-av         & single list/array of all numeric variable values (omits string variables) \\
 cv\_labels  & continuous variable labels \\
+div        & list/array of discrete integer variable values \\
 div\_labels & discrete integer variable labels \\
+dsv        & list of discrete string variable values (NumPy not supported)\\
 dsv\_labels & discrete string variable labels \\
+drv        & list/array of discrete real variable values \\
 drv\_labels & discrete real variable labels \\
-av\_labels  & all numeric variable labels \\
 asv        & active set vector \\
-dvv        & derivative variables vector \\
-analysis\_components & list of analysis components as strings \\
-currEvalId & current evaluation ID number \\
+dvv        & derivative variables vector (list of one-based variable IDs)\\
+analysis\_components & list of analysis components strings \\
+eval\_id & one-based evaluation ID number \\
 \hline
 \end{tabular}
 \end{table}
