@@ -8,8 +8,7 @@
 #  _______________________________________________________________________
 
 # Dakota itself requires this CMake version; some TPLs may require even newer
-# For Dakota to find Python NumPy component, need 3.14 or newer
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
