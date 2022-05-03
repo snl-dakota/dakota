@@ -77,7 +77,7 @@ src-dist     cmake	 Scripts supporting CMake builds.
 
 src-dist     docs	 The Users, Reference, and Developers Manuals are 
 	     		 maintained here.  Other references are available from
-			 the Dakota Web site (http://dakota.sandia.gov).
+			 the Dakota Web site (https://dakota.sandia.gov).
 
 src-dist     src	 The main source code repository for Dakota core.
 
