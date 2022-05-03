@@ -63,9 +63,8 @@ DakotaPlugins::EvalResponse DakotaPythonPlugin::evaluate(
   py::dict py_request = pack_python_request<py::array>(request);
   py::dict py_response = python_function(py_request);
 
-  size_t const num_fns = request.activeSet.size();
   size_t const num_derivs = request.derivativeVars.size();
-  unpack_python_response(num_fns, num_derivs, py_response, response);
+  unpack_python_response(request.activeSet, num_derivs, py_response, response);
 
   return response;
 }
@@ -85,9 +84,8 @@ std::vector<DakotaPlugins::EvalResponse> DakotaPythonPlugin::evaluate(
   py::list py_responses = python_function(py_requests);
 
   for (size_t i = 0; i < num_requests; ++i) {
-    size_t const num_fns = requests[i].activeSet.size();
     size_t const num_derivs = requests[i].derivativeVars.size();
-    unpack_python_response(num_fns, num_derivs, py_responses[i], responses[i]);
+    unpack_python_response(requests[i].activeSet, num_derivs, py_responses[i], responses[i]);
   }
 
   return responses;
@@ -101,7 +99,7 @@ void DakotaPythonPlugin::unpack_python_response(
 
   size_t num_fns = active_set.size();
 
-  if (expect_derivative(asv, 1)) {
+  if (expect_derivative(active_set, 1)) {
     if (py_response.contains("fns")) {
       auto values = py_response["fns"].cast<Array1D>();
       if (values.size() != num_fns) {
@@ -118,7 +116,7 @@ void DakotaPythonPlugin::unpack_python_response(
     }
   }
 
-  if (expect_derivative(asv, 2)) {
+  if (expect_derivative(active_set, 2)) {
     if (py_response.contains("fnGrads")) {
       auto grads = py_response["fnGrads"].cast<Array2D>();
       if (grads.size() != num_fns) {
@@ -142,7 +140,7 @@ void DakotaPythonPlugin::unpack_python_response(
     }
   }
 
-  if (expect_derivative(asv, 4)) {
+  if (expect_derivative(active_set, 4)) {
     if (py_response.contains("fnHessians")) {
       auto hess = py_response["fnHessians"].cast<Array3D>();
       if (hess.size() != num_fns) {

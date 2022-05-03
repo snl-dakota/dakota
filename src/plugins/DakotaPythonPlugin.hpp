@@ -109,12 +109,12 @@ protected:
   }
 
   void unpack_python_response(const std::vector<short>& active_set,
-			      size_t const num_derivs,
-			      pybind11::dict const& py_response,
-			      DakotaPlugins::EvalResponse& response);
+      size_t const num_derivs,
+      pybind11::dict const& py_response,
+      DakotaPlugins::EvalResponse& response);
 
-  bool DakotaPythonPlugin::expect_derivative(const std::vector<short>& asv,
-					     const short deriv_type) const;
+  bool expect_derivative(const std::vector<short>& active_set,
+      const short deriv_type) const;
 
 };
 
