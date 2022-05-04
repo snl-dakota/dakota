@@ -3,5 +3,4 @@ Enable the use of numpy in Dakota's Python interface
 Description::
 
 When the \c numpy keyword is used, Dakota expects responses in
-the form of a Python dictionary of numpy arrays. See the example
-in \c dakota/share/dakota/examples/official/drivers/Python/linked.
+the form of a Python dictionary of numpy arrays.
