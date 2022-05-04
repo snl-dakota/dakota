@@ -1,7 +1,7 @@
 name: Derivative Variables Vector
 dataset:
   description: "Values of the derivative variables vector in evaluations"
-  location: "metadata/derivative_variables_vector"
+  location: "properties/derivative_variables_vector"
   shape: "2-dimensional: number of evaluations by number of continuous variables"
   type: Integer
 scales:
