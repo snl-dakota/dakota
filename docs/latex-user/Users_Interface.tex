@@ -1690,7 +1690,7 @@ it instead returns a tuple containing {\tt (BatchParameters, BatchResults)}.
 
 Its signature is:
 
-\phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None},\\\emph{ignore\_asv=False}, \emph{batch=False}}){}
+\phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None},\\\emph{ignore\_asv=False}, \emph{batch=False}, \emph{infer\_types=True}, \emph{types=None}}){}
 
 \emph{parameters\_file} and \emph{results\_file} are the names of the parameters file that is to be read
 and the results file that  ultimately is to be written. The names can be  absolute or relative filepaths or
@@ -1712,11 +1712,26 @@ when setting up or debugging a driver.
 The {\tt batch} argument must be set to {\tt True} when batch evaluation has been requested in the Dakota input
 file, and {\tt False} when not.
 
+The final two arguments, {\tt infer\_types} and {\tt types}, control how types are assigned to parameter values.
+The values initially are read as strings from the Dakota parameters file. If {\tt infer\_types} is {\tt False} and {\tt types}
+is {\tt None}, they remain as type {\tt str}. If {\tt infer\_types} is {\tt True}, an attempt is made to "guess"
+more convenient types. Conversion first to {\tt int} and then to {\tt float} are tried. If both fail, the value
+remains a {\tt str}.
+
+Sometimes automatic type inference does not work as desired; a user may have a string-valued variable with the element "5", 
+for example, that he does not want converted to an {\tt int}. Or, a user may wish to convert to a custom type, such as {\tt np.float64}
+instead of the built-in Python {\tt float}. The {\tt types} argument is useful  
+in these cases. It can be set either to a {\tt list} of types or a {\tt dict} that maps variable labels to types. Types
+communicated using the {\tt types} argument override inferred types. If {\tt types} is a list, it must have a length 
+equal to the number of variables. A dictionary, on the other hand, need not contain types for every
+variable. This permits variable-by-variable control over assignment and inference of types. 
+ 
 \subsection{Parameters objects}
 
 {\tt Parameters} objects make the variables, analysis components, evaluation ID, and evaluation number read from a Dakota parameters file available through a combination of key-value access and object attributes. Although {\tt Parameters} objects may be constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
 
-Variable values can be accessed by Dakota descriptor or by index using {[}{]} on the object itself. Variables types (integer, real, string) are inferred by first attempting to convert to {\tt int} and then, if this fails, to {\tt float}.
+Variable values can be accessed by Dakota descriptor or by index using {[}{]} on the object itself. Variables types are inferred or set as described in the
+previous section.
 
 Analysis components are accessible by index only using the {\tt an\_comps} attribute. Iterating over a {\tt Parameters} 
 object yields the variable descriptors.
