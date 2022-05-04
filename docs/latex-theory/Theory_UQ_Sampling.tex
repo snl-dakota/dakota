@@ -288,31 +288,31 @@ Similarly to the variance case, a numerical optimization problem can be solved t
 \subsection{MLMC extension to the scalarization function}
 Often, especially in the context of optimization, it is necessary to estimate statistics of a metric defined as a linear combination of mean and standard deviation of a QoI. A classical reliability measure $c^{ML}[Q]$ can be defined, for the quantity $Q$, starting from multilevel (ML) statistics, as
 \begin{equation}
- c^{ML}[Q] = \hat{Q}_{L}^{ML}  + \alpha \hat{\sigma}_L^{ML}.
+ c_L^{ML}[Q] = \hat{Q}_{L}^{ML}  + \alpha \hat{\sigma}_L^{ML}.
 \end{equation}
 
-To obtain the sample allocation, in the MLMC context, it is necessary to evaluate the variance of $c^{ML}[Q]$, which can be written as 
+To obtain the sample allocation, in the MLMC context, it is necessary to evaluate the variance of $c_L^{ML}[Q]$, which can be written as 
 \begin{equation}
-\mathbb{V}ar\left[ c^{ML}[Q] \right] = \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] + \alpha^2 \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] 
+\mathbb{V}ar\left[ c_L^{ML}[Q] \right] = \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] + \alpha^2 \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] 
                                         + 2 \alpha \mathbb{C}ov\left[ \hat{Q}_{L}^{ML}, \hat{\sigma}_L^{ML} \right].
 \end{equation}
 This expression requires, in addition to the already available terms $\mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right]$ and $\mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right]$, also the covariance term $\mathbb{C}ov\left[ \hat{Q}_{L}^{ML}, \hat{\sigma}_L^{ML} \right]$. This latter term can be written knowing that shared samples are only present on the same level
 \begin{equation}
 \begin{split}
- \mathbb{C}ov\left[ \hat{Q}_{L}^{ML}, \hat{\sigma}_L^{ML} \right] &= \mathbb{C}ov\left[ \sum_{\ell_i=0}^{L} \hat{Q}_{\ell_i} - \hat{Q}_{\ell_i-1}, \sum_{\ell_i=0}^{L} \hat{\sigma}_{\ell_i} - \hat{\sigma}_{\ell_i-1} \right] \\
-                                                                  &= \sum_{\ell_i=0}^{L} \mathbb{C}ov\left[ \hat{Q}_{\ell_i} - \hat{Q}_{\ell_i-1}, \hat{\sigma}_{\ell_i} - \hat{\sigma}_{\ell_i-1} \right],
+ \mathbb{C}ov\left[ \hat{Q}_{L}^{ML}, \hat{\sigma}_L^{ML} \right] &= \mathbb{C}ov\left[ \sum_{\ell=0}^{L} \hat{Q}_{\ell} - \hat{Q}_{\ell-1}, \sum_{\ell=0}^{L} \hat{\sigma}_{\ell} - \hat{\sigma}_{\ell-1} \right] \\
+                                                                  &= \sum_{\ell=0}^{L} \mathbb{C}ov\left[ \hat{Q}_{\ell} - \hat{Q}_{\ell-1}, \hat{\sigma}_{\ell} - \hat{\sigma}_{\ell-1} \right],
 \end{split}
 \end{equation}
 which leads to the need for evaluating the following four contributions 
 \begin{equation}
- \mathbb{C}ov\left[ \hat{Q}_{\ell_i} - \hat{Q}_{\ell_i-1}, \hat{\sigma}_{\ell_i} - \hat{\sigma}_{\ell_i-1} \right] =
- \mathbb{C}ov\left[ \hat{Q}_{\ell_i} , \hat{\sigma}_{\ell_i} \right] - \mathbb{C}ov\left[ \hat{Q}_{\ell_i} , \hat{\sigma}_{\ell_i-1} \right]
- - \mathbb{C}ov\left[ \hat{Q}_{\ell_i-1}, \hat{\sigma}_{\ell_i} \right] + \mathbb{C}ov\left[ \hat{Q}_{\ell_i-1}, \hat{\sigma}_{\ell_i-1} \right].
+ \mathbb{C}ov\left[ \hat{Q}_{\ell} - \hat{Q}_{\ell-1}, \hat{\sigma}_{\ell} - \hat{\sigma}_{\ell-1} \right] =
+ \mathbb{C}ov\left[ \hat{Q}_{\ell} , \hat{\sigma}_{\ell} \right] - \mathbb{C}ov\left[ \hat{Q}_{\ell} , \hat{\sigma}_{\ell-1} \right]
+ - \mathbb{C}ov\left[ \hat{Q}_{\ell-1}, \hat{\sigma}_{\ell} \right] + \mathbb{C}ov\left[ \hat{Q}_{\ell-1}, \hat{\sigma}_{\ell-1} \right].
 \end{equation}
 
 In Dakota, we adopt the following approximation, for two arbitrary levels $\ell$ and $\kappa \in \left\{ \ell-1, \ell, \ell+1 \right\}$ 
 \begin{equation}
- \rho\left[ \hat{Q}_{L}^{\ell}, \hat{\sigma}_{\kappa} \right] \approx \rho\left[ \hat{Q}_{\ell}, \hat{Q}_{\kappa,2} \right]
+ \rho\left[ \hat{Q}_{\ell}, \hat{\sigma}_{\kappa} \right] \approx \rho\left[ \hat{Q}_{\ell}, \hat{Q}_{\kappa,2} \right]
  \footnote{We indicate with $\hat{Q}_{\kappa,2}$ the second central moment for $Q$ at the level $\kappa$.},
 \end{equation}
 which corresponds to assuming that the correlation between expected value and variance is a good approximation of the correlation between the expected value and the standard deviation. This assumption is particularly convenient because it is possible to obtain in closed form the covariance between expected value and variance and, therefore, we can adopt the following approximation
