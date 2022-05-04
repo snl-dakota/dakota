@@ -19,6 +19,8 @@ def text_book_numpy(params):
 
     retval = {}
 
+    retval["metadata"] = np.array([5., 10.])
+
     if (ASV[0] & 1):  # **** f:
         fn = sum([(val - 1.)**4 for val in x])
         retval["fns"] = np.array([fn])
@@ -78,6 +80,8 @@ def text_book_list(params):
     ASV = params['asv']
 
     retval = {}
+
+    retval["metadata"] = [5., 10.]
 
     if (ASV[0] & 1):  # **** f:
         fn = 0.0
@@ -158,6 +162,9 @@ def check_expected_params(params):
         + expected_params["div_labels"] \
         + expected_params["dsv_labels"] \
         + expected_params["drv_labels"]
+
+    expected_params["function_labels"] = ["f1", "c1", "c2"]
+    expected_params["metadata_labels"] = ["m1", "m2"]
 
     expected_params["cv"] = [0., 0., 0.]
     expected_params["div"] = [2, 4, 6]

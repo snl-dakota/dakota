@@ -44,8 +44,10 @@ interface,
 #      batch							#s1
 
 responses,
+  descriptors = 'f1' 'c1' 'c2'
   num_objective_functions = 1
   nonlinear_inequality_constraints = 2
   nonlinear_inequality_upper_bounds = 0.0 0.0
+  metadata = 'm1' 'm2'
   analytic_gradients
   analytic_hessians
