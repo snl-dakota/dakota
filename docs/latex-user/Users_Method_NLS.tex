@@ -54,7 +54,7 @@ the form:
 \begin{eqnarray}
   \hbox{minimize:} & & f(\mathbf{x}) =
   \sum_{i=1}^{n}[T_i(\mathbf{x})]^2\nonumber\\
-  & & \mathbf{x} \in \Re^{n}\nonumber\\
+  & & \mathbf{x} \in \Re^{p}\nonumber\\
   \hbox{subject to:} & &
   \mathbf{g}_L \leq \mathbf{g(x)} \leq \mathbf{g}_U\nonumber\\
   & & \mathbf{h(x)}=\mathbf{h}_{t}\label{nls:equation02}\\
@@ -223,18 +223,20 @@ true value of the parameters with 95\% confidence. Their calculation
 essentially follows the exposition in ~\cite{Seb03} and is summarized
 here.
 
-Denote the variance estimate at the estimated parameters $\hat{x}$ by
+Denote the variance estimate at the optimal calibrated parameters
+$\hat{x}$ by
 \begin{equation}
 \hat{\sigma}^2 = \frac{1}{N_{dof}}\sum_{i=1}^{n} T_i(\hat{x})^2,
 \end{equation}
-where $N_{dof} = n - p$ denotes the number of degrees of freedom
-(total residuals $n$ less the number of calibrated parameters
+where $T_i$ are the least squares terms (typically residuals)
+discussed above and $N_{dof} = n - p$ denotes the number of degrees of
+freedom (total residuals $n$ less the number of calibrated parameters
 $p$). Let
 \begin{equation}
 J = \left[ \frac{\partial T(\hat{x})}{\partial x} \right]
 \end{equation}
-denote the $N \times p$ matrix of partial derivatives of the residuals
-with respect to the calibrated paramters. Then the standard error $SE$
+denote the $n \times p$ matrix of partial derivatives of the residuals
+with respect to the calibrated paramters. Then the standard error $SE_i$
 for calibrated parameter $x_i$ is given by
 \begin{equation}
 SE_i = \hat{\sigma} \sqrt{\left( J^T J \right)^{-1}_{ii} }.
@@ -247,13 +249,13 @@ the 95\% confidence interval for each parameter is given by
 
 In the case where estimated gradients are extremely inaccurate or the
 model is very nonlinear, the confidence intervals reported are likely
-inaccurate as well.  (Confidence intervals cannot be calculated when
-the number of least-squares terms is less than the number of
-parameters to be estimated, or when using vendor numerical gradients.)
-See~\cite{Vug07} for more details about confidence intervals, and note
-that there are alternative approaches such as Bonferroni confidence
-intervals and joint confidence intervals based on linear
-approximations or F-tests.
+inaccurate as well.  Further, confidence intervals cannot be
+calculated when the number of least-squares terms is less than the
+number of parameters to be estimated, when using vendor numerical
+gradients, or where there are replicate experiments.  See~\cite{Vug07}
+for more details about confidence intervals, and note that there are
+alternative approaches such as Bonferroni confidence intervals and
+joint confidence intervals based on linear approximations or F-tests.
 
 Least squares calibration terms (responses) can be weighted.  When
 observation error variance is provided alongside calibration data, its
