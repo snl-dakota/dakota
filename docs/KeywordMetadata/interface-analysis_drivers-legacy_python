@@ -3,7 +3,7 @@ Run Python through a deprecated C-based direct interface - requires a special Da
 
 Description::
 This interface has been
-superceded by a Pybind11 implementation \ref interface-analysis_drivers-python .
+superseded by a Pybind11 implementation \ref interface-analysis_drivers-python .
 
 %Dakota supports a library-linked interface to Python, but it must be
 explicitly enabled when compiling %Dakota from source.

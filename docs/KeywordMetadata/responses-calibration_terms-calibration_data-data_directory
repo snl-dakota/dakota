@@ -9,8 +9,4 @@ Description::
 The default directory is the path from which the Dakota study is launched,
 i.e. the directory containing the Dakota input file.
 
-Topics::	
-Examples::
-Theory::
-Faq::
-See_Also::	
+See \c dakota/share/dakota/dakota_experiment_read.in
