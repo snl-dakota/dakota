@@ -71,6 +71,25 @@
 \def\IHiLi{\leavevmode\rlap{\hbox to \hsize{\color{yellow!20}\leaders\hrule height .8\baselineskip depth .5ex\hfill}}}
 \def\SHiLi{\leavevmode\rlap{\hbox to \hsize{\color{red!20}\leaders\hrule height .8\baselineskip depth .5ex\hfill}}}
 
+% Lifted from SANDreport.cls: "this page intentionally left blank"
+\def\emptypage@emptypage{%
+  \hbox{}\vspace*{\fill}
+  \begin{center}
+    This page intentionally left blank.
+  \end{center}
+  \vspace{\fill}\newpage%
+}%
+\def\cleardoublepage{%
+  \clearpage%
+  \if@twoside%
+%  \ifodd\c@page%
+%  % no-op
+%  \else\emptypage@emptypage%
+   \emptypage@emptypage%
+%  \fi% odd page
+  \fi% two side
+}%
+
 \begin{document}
 
 \begin{titlepage}

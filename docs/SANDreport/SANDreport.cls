@@ -356,6 +356,7 @@
   % no-op
   \else\emptypage@emptypage%
   \fi% odd page
+%    \emptypage@emptypage%
   \fi% two side
 }%
 \fi
@@ -1744,7 +1745,9 @@
     % Put the Sandia Logo on the back page. Historically for SAND reports this has been required to be
     % an even page to accomdate two-sided printed copies.
     %
-    \cleardoubleevenpageusingstyle{plain.scrheadings} % KOMA-script for always skipping to next even page, keeping using pain page style
+    \cleardoublepage
+%% Hack to avoid blank page
+%%    \cleardoubleevenpageusingstyle{plain.scrheadings} % KOMA-script for always skipping to next even page, keeping using pain page style
     \setlength{\footskip}{1.2\footskip} % reset this length for the back cover
     \DeclarePageStyleByLayers{SANDbackcover-recto}{SANDbackcover-bg,SANDbackcover-mission,SANDcover-header,SANDcover-footer}
     \thispagestyle{SANDbackcover-recto}
