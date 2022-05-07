@@ -9,9 +9,9 @@ multifidelity UQ methods.
 Estimator variance can be minimized when total budget is specified.
 Alternatively, total budget can be minimized when estimator accuracy
 is specified.  This is managed by the nested model response mappings
-that define the outer loop objective and constraints, akin to the RIA
-and PMA formulations for optimization with local reliability (refer
-to RBDO methods in Theory Manual).
+that define the outer loop objective and constraints, sharing conceptual
+similarity to the RIA and PMA formulations for optimization with local
+reliability (refer to RBDO methods in the Theory Manual).
 
 Topics::
 

@@ -1,8 +1,12 @@
 Blurb:: Return the quantity of interest (QoI) statistics as the final results of a UQ method
 
 Description:: In most nested execution contexts, the outer loop is operating
-on the set of moments and level mappings that define the final results of a
-UQ method.  Thus \c qoi_statistics is the default.
+on the set of moments and level mappings returned by an inner loop UQ method.
+Thus \c qoi_statistics is the default.
+
+Sub-specifications include the type of \c final_moments (\c none, \c standard,
+or \c central) and the sense of \c distribution functions (\c cumulative or
+\c complementary).
 
 Topics::
 

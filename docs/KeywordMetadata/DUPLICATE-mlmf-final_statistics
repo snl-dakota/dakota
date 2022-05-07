@@ -2,7 +2,7 @@ Blurb:: Indicate the type of final statistics to be returned by a UQ method
 
 Description:: In nested execution contexts, an inner UQ method may
 return either a final set of QoI statistics (e.g., for optimization of
-moments or probabilities over design parameters within optimization under
+moments or level mappings over design parameters within optimization under
 uncertainty) or a set of performance metrics (e.g., for maximization
 of performance over hyper-parameters within model tuning).
 
