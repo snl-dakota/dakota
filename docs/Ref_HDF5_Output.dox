@@ -551,7 +551,7 @@ of the 'sampling' method could be obtained at the HDF5 path: \c /methods/samplin
 Within each model and interface's "high-level" group, evaluation data are stored according to a "low-level" schema. This section desribes the "low-level" schema.
 
 Data are divided first of all into \c variables, \c responses, and \c properties groups. In addition, if a
-a user specifies metadata responses in his Dakota input, a \metadata dataset will be present.
+a user specifies metadata responses in his Dakota input, a \c metadata dataset will be present.
 
 \subsubsection hdf5_evaluations-low_level-variables Variables
 

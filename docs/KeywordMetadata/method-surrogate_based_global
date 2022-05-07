@@ -36,7 +36,7 @@ method-moga or \ref method-soga.
 
 \li The \ref method-surrogate_based_global-model_pointer keyword must
 identify a surrogate model which includes an underlying truth model,
-typically via \ref model-surrogate-global-actual_model_pointer or \ref
+typically via \ref model-surrogate-global-truth_model_pointer or \ref
 model-surrogate-global-dace_method_pointer
 
 Workflow:
