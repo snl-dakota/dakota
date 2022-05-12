@@ -110,8 +110,8 @@ public class BatchPluginVersionUpdater {
 	private static final boolean UPDATE_FEATURE_XML = true;
 	private static final boolean UPDATE_FEATURE_RELEASENOTES = true;
 	private static final boolean UPDATE_DAKOTAGUI_PRODUCT = true;
-	private static final String GUI_VERSION = "6.15.4";
-	private static final String BUILD_DATE = "2022/03/21";
+	private static final String GUI_VERSION = "6.16.0";
+	private static final String BUILD_DATE = "2022/05/12";
 	
 	////////////
 	// FIELDS //
