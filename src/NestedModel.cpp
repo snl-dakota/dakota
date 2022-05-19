@@ -1925,6 +1925,9 @@ iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
   //       always standard (sqrt of estimator variance of central/std moment)
   // [W]{S}:
   Real sum, term, coeff, coeff2;
+  if(outputLevel >= DEBUG_OUTPUT){
+    Cout << "NestedModel::iterator_error_estimation: mapped_errors Pri: " << std::endl ;
+  }
   for (i=0; i<subIterMappedPri; ++i) {
     if (identityRespMap)
       mapped_errors[i] = sub_iterator_errors(2*i, 2*i);
@@ -1947,11 +1950,17 @@ iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
         }
       }
       mapped_errors[i] = std::sqrt(sum);
+      if(outputLevel >= DEBUG_OUTPUT){
+        Cout << "\t\t( " << i << ", " << mapped_errors[i] << ")" << std::endl; 
+      }
     }
   }
 
   // [A]{S}:
   size_t num_mapped_1 = std::max(numOptInterfPrimary, subIterMappedPri);
+  if(outputLevel >= DEBUG_OUTPUT){
+    Cout << "NestedModel::iterator_error_estimation: mapped_errors Sec: " << std::endl;
+  }
   for (i=0; i<subIterMappedSec; ++i) {
     m_index = num_mapped_1 + numOptInterfIneqCon + i;// {a_l} <= [A]{S} <= {a_u}
     if (i>=numSubIterMappedIneqCon)
@@ -1977,6 +1986,10 @@ iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
         }
       }
       mapped_errors[m_index] = std::sqrt(sum);
+    }
+
+    if(outputLevel >= DEBUG_OUTPUT){
+      Cout << "\t\t( " << m_index << ", " << mapped_errors[m_index] << ")" << std::endl; 
     }
   }
 }

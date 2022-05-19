@@ -752,6 +752,7 @@ void NonDLHSSampling::update_final_statistics()
   size_t i, cntr = 0;
   Real sqrt2 = std::sqrt(2.), ns = (Real)numSamples, sqrtn = std::sqrt(ns),
     sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev, qoi_cm4, qoi_exckurt, qoi_skewness, qoi_cm3;
+  Real se_cov = 0, var_total;
   for (i=0; i<numFunctions; ++i) {
     switch (finalMomentsType) {
     case STANDARD_MOMENTS:
@@ -784,9 +785,24 @@ void NonDLHSSampling::update_final_statistics()
 
       qoi_skewness = momentStats(2, i);
       qoi_cm3 = qoi_skewness*(qoi_stdev*qoi_stdev*qoi_stdev);
+      se_cov = qoi_cm3/ns; //COV_CORRLIFT
+
+      //THIS IS HARDCODED FOR THE CASE: Mean + 3 Sigma
+      var_total = finalStatErrors(2*i, 2*i)*finalStatErrors(2*i, 2*i) + 9*finalStatErrors(2*i+1, 2*i+1)*finalStatErrors(2*i+1, 2*i+1) 
+                    + 2 * 3 * se_cov;
+      if(var_total < 0){
+        /*Cout << "Var Total < 0: " << var_total << " Revert to bootstrap." << std::endl;
+        se_cov = bootstrap_covariance(i);
+        var_total = finalStatErrors(2*i, 2*i)*finalStatErrors(2*i, 2*i) + 9*finalStatErrors(2*i+1, 2*i+1)*finalStatErrors(2*i+1, 2*i+1) 
+                    + 2 * 3 * se_cov;
+        if(var_total < 0){*/
+          Cout << "Var Total < 0: " << var_total << " Revert to Pearson." << std::endl;
+          se_cov = finalStatErrors(2*i, 2*i)*finalStatErrors(2*i+1, 2*i+1);
+        //}
+      }
       //finalStatErrors(2*i+1, 2*i) = bootstrap_covariance(i); //COV_BOOTSTRAP
       //finalStatErrors(2*i+1, 2*i) = finalStatErrors(2*i, 2*i)*finalStatErrors(2*i+1, 2*i+1); //COV_PEARSON
-      finalStatErrors(2*i+1, 2*i) = qoi_cm3/ns; //COV_CORRLIFT
+      finalStatErrors(2*i+1, 2*i) = se_cov; 
       if(std::isnan(finalStatErrors(2*i+1, 2*i)) || std::isinf(finalStatErrors(2*i+1, 2*i))){
         Cerr << "Values for cov(mean, std) = " << qoi_skewness << ", " << qoi_stdev << ", " <<  qoi_cm3 << "\n";
         Cerr << "NonDLHSSampling::update_final_statistics() cov(mean, std) is nan or inf for qoi = " << i << ": " << finalStatErrors(2*i+1, 2*i) << ". Reparing to zero.\n";

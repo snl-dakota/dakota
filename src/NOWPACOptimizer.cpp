@@ -186,7 +186,12 @@ void NOWPACOptimizer::core_run()
   //////////////////////////////////////////////////////////////////////////
   // start optimization (on output: bbdata contains data that allows warmstart
   // and enables post-processing to get model values, gradients and hessians)
-  nowpacSolver.optimize(x_star, obj_star, bb_data);
+  int exit_flag = nowpacSolver.optimize(x_star, obj_star, bb_data);
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\n----------------------------------------"
+     << "\nSolution returned from nowpacSolver:\n  with exit flag: " << exit_flag << std::endl;
+  }
   if (outputLevel >= DEBUG_OUTPUT) {
     // create post-processing object to compute surrogate models
     PostProcessModels<> PPD( bb_data );
