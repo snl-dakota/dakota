@@ -36,11 +36,16 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDNonHierarchSampling(problem_db, model), multiStartACV(true)
 {
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
-  // truthFixedByPilot is a user-specified option for fixing the number of HF
-  // samples (those from the pilot).  In this case, equivHF budget is allocated
-  // by optimizing r* for fixed N.
-  optSubProblemForm = (truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT) ?
-    R_ONLY_LINEAR_CONSTRAINT : N_VECTOR_LINEAR_CONSTRAINT;
+
+  if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
+    optSubProblemForm = N_VECTOR_LINEAR_OBJECTIVE;
+  else                     // budget constraint (maxFunctionEvals)
+    // truthFixedByPilot is a user-specified option for fixing the number of
+    // HF samples (to those in the pilot).  In this case, equivHF budget is
+    // allocated by optimizing r* for fixed N.
+    optSubProblemForm = (truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT) ?
+      R_ONLY_LINEAR_CONSTRAINT : N_VECTOR_LINEAR_CONSTRAINT;
+
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "ACV sub-method selection = " << mlmfSubMethod
 	 << " sub-method formulation = "  << optSubProblemForm
