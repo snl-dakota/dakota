@@ -1022,27 +1022,34 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 
   // incoming approx_sequence is defined w/i mfmc_reordered_analytic_solution()
   // based on averaged rho --> we do not use it for logic below
-  bool ordered_rho = true;
+  bool ordered_rho = true, budget_constr = (maxFunctionEvals != SZ_MAX);
   switch (numericalSolveMode) {
   case NUMERICAL_OVERRIDE: // specification option
-    optSubProblemForm = N_VECTOR_LINEAR_CONSTRAINT; break;
+    optSubProblemForm = (budget_constr) ? N_VECTOR_LINEAR_CONSTRAINT :
+      N_VECTOR_LINEAR_OBJECTIVE;
+    break;
   case NUMERICAL_FALLBACK: // default
     ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
-    optSubProblemForm = (ordered_rho) ? ANALYTIC_SOLUTION :
-      N_VECTOR_LINEAR_CONSTRAINT;
-    if (!ordered_rho)
+    if (ordered_rho)
+      optSubProblemForm = ANALYTIC_SOLUTION;
+    else {
+      optSubProblemForm = (budget_constr) ? N_VECTOR_LINEAR_CONSTRAINT :
+	N_VECTOR_LINEAR_OBJECTIVE;
       Cout << "MFMC: model sequence provided is out of order with respect to "
 	   << "Low-High\n      correlation for at least one QoI.  Switching "
 	   << "to numerical solution.\n";
+    }
     break;
   case REORDERED_FALLBACK: // not currently in XML spec, but could be added
     ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
-    optSubProblemForm = (ordered_rho) ? ANALYTIC_SOLUTION :
-      REORDERED_ANALYTIC_SOLUTION;
-    if (!ordered_rho)
+    if (ordered_rho)
+      optSubProblemForm = ANALYTIC_SOLUTION;
+    else {
+      optSubProblemForm = REORDERED_ANALYTIC_SOLUTION;
       Cout << "MFMC: model sequence provided is out of order with respect to "
 	   << "Low-High\n      correlation for at least one QoI.  Switching "
 	   << "to alternate analytic solution.\n";
+    }
     break;
   }
 
@@ -1087,11 +1094,13 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 			const RealVector& cost,  SizetArray& approx_sequence,
 			RealMatrix& eval_ratios, Real& avg_hf_target)
 {
+  /* *** TO DO ***: carry accuracy-based through this logic
   if (maxFunctionEvals == SZ_MAX) {
     Cerr << "Error: evaluation budget required for numerical MFMC "
 	 << "(convergence tolerance option not yet supported)." << std::endl;
     abort_handler(METHOD_ERROR);
   }
+  */
 
   size_t qoi, approx, num_am1 = numApprox - 1, hf_form_index, hf_lev_index;
   hf_indices(hf_form_index, hf_lev_index);

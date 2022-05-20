@@ -393,7 +393,7 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
     break;
   }
 
-  // Note: objective_function() now calls this fn for MFMC numerical solution.
+  // Note: log_average_estvar() now calls this fn for MFMC numerical solution.
   // ANALYTIC_SOLUTION corresponds to the ordered case of this implementation.
   default: {
     bool ordered = approx_sequence.empty();
@@ -461,7 +461,7 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
     break;
   }
 
-  // Note: objective_function() now calls this fn for MFMC numerical solution.
+  // Note: log_average_estvar() now calls this fn for MFMC numerical solution.
   // ANALYTIC_SOLUTION corresponds to the ordered case of this implementation.
   default: {
     bool ordered = approx_sequence.empty();
@@ -658,7 +658,11 @@ nonhierarch_numerical_solution(const RealVector& cost,
     if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con = numApprox;
     break;
   case N_VECTOR_LINEAR_CONSTRAINT:
-    num_lin_con = num_cdv = numApprox + 1;      break;
+    num_lin_con = num_cdv = numApprox + 1;
+    break;
+  case N_VECTOR_LINEAR_OBJECTIVE:
+    num_cdv = numApprox + 1;  num_nln_con = 1;  num_lin_con = numApprox;
+    break;
   }
   RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false);
   RealVector lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con),
@@ -743,6 +747,38 @@ nonhierarch_numerical_solution(const RealVector& cost,
          // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
       for (approx=1; approx<=numApprox; ++approx) {
 	lin_ineq_coeffs(approx,  approx-1) = -1.;
+	lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
+      }
+    break;
+  }
+  case N_VECTOR_LINEAR_OBJECTIVE: {
+    copy_data_partial(avg_eval_ratios, x0, 0);  x0[numApprox] = 1.;
+    if (mlmfIter) x0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
+    else          x0.scale(avg_hf_target);
+    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? 1. : avg_N_H;
+
+    // nonlinear constraint on estvar
+    nln_ineq_lb = -DBL_MAX;  // no lower bnd
+    nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
+
+    // linear inequality constraints on sample counts:
+    lin_ineq_lb = -DBL_MAX;  // no lower bnds, default-init upper bounds (0)
+    if (mlmfSubMethod == SUBMETHOD_MFMC) {//N_i increases w/ decreasing fidelity
+      approx = (ordered) ? 0 : approx_sequence[0];
+      size_t num_am1 = numApprox - 1;
+      for (i=0; i<num_am1; ++i) {
+	approx_ip1 = (ordered) ? i+1 : approx_sequence[i+1];
+	lin_ineq_coeffs(i, approx)     = -1.;
+	lin_ineq_coeffs(i, approx_ip1) =  1.;
+	approx = approx_ip1;
+      }
+      lin_ineq_coeffs(num_am1,    approx) = -1.;
+      lin_ineq_coeffs(num_am1, numApprox) =  1. + RATIO_NUDGE; // N_im1 > N
+    }
+    else //  N_i >  N (aka r_i > 1) prevents numerical exceptions
+         // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
+      for (approx=0; approx<numApprox; ++approx) {
+	lin_ineq_coeffs(approx,    approx) = -1.;
 	lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
       }
     break;
@@ -896,26 +932,39 @@ nonhierarch_numerical_solution(const RealVector& cost,
     else { // existing call-back APIs do not require adapter or surrogate
       switch (optSubProblemSolver) {
       case SUBMETHOD_NPSOL: {
-	int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) ?
-	  2 : 0; // 0 neither, 1 obj, 2 constr, 3 both
-	Real fdss = 1.e-6;
+	Real fdss = 1.e-6; int deriv_level;// 0 neither, 1 obj, 2 constr, 3 both
+	switch (optSubProblemForm) {
+	case R_AND_N_NONLINEAR_CONSTRAINT: deriv_level = 2;  break;
+	case N_VECTOR_LINEAR_OBJECTIVE:    deriv_level = 1;  break;
+	default:                           deriv_level = 0;  break;
+	}
 #ifdef HAVE_NPSOL
 	varianceMinimizer.assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb,
           x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-          lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-          npsol_objective_evaluator, npsol_constraint_evaluator, deriv_level,
-	  conv_tol, max_iter, fdss));
+          lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, npsol_objective,
+	  npsol_constraint, deriv_level, conv_tol, max_iter, fdss));
 #endif
 	break;
       }
       case SUBMETHOD_OPTPP: {
 	Real max_step = 100000.;
 #ifdef HAVE_OPTPP
-	varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
-	  x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-	  lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	  optpp_objective_evaluator, optpp_constraint_evaluator, max_iter,
-	  max_eval, conv_tol, conv_tol, max_step));
+	switch (optSubProblemForm) {
+	case N_VECTOR_LINEAR_OBJECTIVE:
+	  varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
+	    x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	    lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	    optpp_nlf1_objective, optpp_fdnlf1_constraint, max_iter, max_eval,
+	    conv_tol, conv_tol, max_step));
+	  break;
+	default:
+	  varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
+	    x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	    lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	    optpp_fdnlf1_objective, optpp_nlf1_constraint, max_iter, max_eval,
+	    conv_tol, conv_tol, max_step));
+	  break;
+	}
 #endif
 	break;
       }
@@ -948,14 +997,17 @@ nonhierarch_numerical_solution(const RealVector& cost,
   // shared increment from N* or from targeting specified budget || accuracy.
   const RealVector& cv_star
     = varianceMinimizer.variables_results().continuous_variables();
-  const RealVector& fn_star
+  const RealVector& fn_vals_star
     = varianceMinimizer.response_results().function_values();
-  //Cout << "Minimizer results:\ncv_star =\n"<<cv_star<<"fn_star =\n"<<fn_star;
+  //Cout << "Minimizer results:\ncv_star =\n" << cv_star
+  //     << "fn_vals_star =\n" << fn_vals_star;
 
   // Objective recovery from optimizer provides std::log(average(nh_estvar))
-  // (a QoI-vector prior to averaging would require recomputation from r*,N*)
-  // Note: this value corresponds to N* (_after_ num_samples applied)
-  avg_estvar = std::exp(fn_star(0)); // var_H / N_H (1 - R^2)
+  // = var_H / N_H (1 - R^2).  Notes:
+  // > a QoI-vector prior to averaging would require recomputation from r*,N*)
+  // > this value corresponds to N* (_after_ num_samples applied)
+  avg_estvar = (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) ?
+    std::exp(fn_vals_star(1)) : std::exp(fn_vals_star(0));
 
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
@@ -1019,7 +1071,8 @@ nonhierarch_numerical_solution(const RealVector& cost,
 }
 
 
-Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
+Real NonDNonHierarchSampling::
+average_estimator_variance(const RealVector& r_and_N)
 {
   RealVector estvar_ratios(numFunctions, false);  size_t qoi;
   switch (mlmfSubMethod) {
@@ -1031,7 +1084,7 @@ Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
   //   F_ii   = (r_i - r_{i+1}) / (r_i r_{i+1}).
   case SUBMETHOD_MFMC:
     switch (optSubProblemForm) {
-    case N_VECTOR_LINEAR_CONSTRAINT: {
+    case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT: {
       RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
       r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
       // Compiler can resolve overload with (inherited) vector type:
@@ -1048,7 +1101,7 @@ Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
   default: {
     RealSymMatrix F;
     switch (optSubProblemForm) {
-    case N_VECTOR_LINEAR_CONSTRAINT: {
+    case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT: {
       RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
       r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
       compute_F_matrix(r, F);
@@ -1084,32 +1137,41 @@ Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
   }
   }
 
-  // protect against R_sq blow-up for N_i < N (if not enforced by linear constr)
-  Real avg_est_var = average(est_var), obj_fn = (avg_est_var > 0.) ?
-    std::log(avg_est_var) :
-    std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
+  Real avg_estvar = average(est_var);
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "objective_function(): design vars:\n" << r_and_N
+    Cout << "estvar_objective(): design vars:\n" << r_and_N
 	 << "EstVar ratios:\n" << estvar_ratios
-	 << "obj = log(average((1. - Rsq) varH / N)) = " << obj_fn << '\n';
-  return obj_fn; // maximize R_sq; use log to flatten contours
+	 << "average((1. - Rsq) varH / N) = " << avg_estvar << '\n';
+  return avg_estvar;
 }
 
 
-/*
-void NonDNonHierarchSampling::
-objective_gradient(const RealVector& r_and_N, RealVector& obj_grad)
+
+Real NonDNonHierarchSampling::log_average_estvar(const RealVector& r_and_N)
 {
-  // This would still be called for deriv level 0 to identify the set of terms
-  // that must be numerically estimated.
-
-  Cerr << "Warning: gradient of the objective not supported." << std::endl;
-  abort_handler(METHOD_ERROR);
+  // protect against R_sq blow-up for N_i < N (if not enforced by linear constr)
+  Real avg_est_var = average_estimator_variance(r_and_N);
+  if (avg_est_var > 0.)
+    return std::log(avg_est_var); // use log to flatten contours
+  else
+    return std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
 }
-*/
 
 
-Real NonDNonHierarchSampling::nonlinear_constraint(const RealVector& r_and_N)
+Real NonDNonHierarchSampling::linear_cost(const RealVector& N_vec)
+{
+  // linear objective: N + Sum(w_i N_i) / w
+  Real sum = 0., lin_obj;
+  for (size_t i=0; i<numApprox; ++i)
+    sum += sequenceCost[i] * N_vec[i]; // Sum(w_i N_i)
+  lin_obj = N_vec[numApprox] + sum / sequenceCost[numApprox];// N + Sum / w
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "linear objective = " << lin_obj << std::endl;
+  return lin_obj;
+}
+
+
+Real NonDNonHierarchSampling::nonlinear_cost(const RealVector& r_and_N)
 {
   // nln ineq constraint: N ( w + Sum(w_i r_i) ) <= C, where C = equivHF * w
   // -->  N ( 1 + Sum(w_i r_i) / w ) <= equivHF
@@ -1121,16 +1183,34 @@ Real NonDNonHierarchSampling::nonlinear_constraint(const RealVector& r_and_N)
   Real nln_con
     = r_and_N[numApprox] * (1. + inner_prod);    // N ( 1 + Sum(w_i r_i) / w )
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "nonlinear_constraint: design vars:\n" << r_and_N
+    Cout << "cost constraint: design vars:\n" << r_and_N
 	 << "budget constr = " << nln_con << std::endl;
   return nln_con;
 }
 
 
 void NonDNonHierarchSampling::
-nonlinear_constraint_gradient(const RealVector& r_and_N, RealVector& grad_c)
+linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 {
-  // inequality constraint: N ( 1 + Sum(w_i r_i) / w ) <= equivHF
+  // linear objective: N + Sum(w_i N_i) / w
+  // > grad w.r.t. N_i = w_i / w
+  // > grad w.r.t. N   = w   / w = 1
+  size_t i, len = N_vec.length(), r_len = len-1;
+  //if (grad_c.length() != len) grad_c.sizeUninitialized(len); // don't own
+
+  Real cost_H = sequenceCost[r_len];
+  for (i=0; i<r_len; ++i)
+    grad_c[i] = sequenceCost[i] / cost_H;
+  grad_c[r_len] = 1.;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "linear objective gradient:\n" << grad_c << std::endl;
+}
+
+
+void NonDNonHierarchSampling::
+nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c)
+{
+  // nonlinear inequality constraint: N ( 1 + Sum(w_i r_i) / w ) <= equivHF
   // > grad w.r.t. r_i = N w_i / w
   // > grad w.r.t. N   = 1 + Sum(w_i r_i) / w
   size_t i, len = r_and_N.length(), r_len = len-1;
@@ -1145,89 +1225,157 @@ nonlinear_constraint_gradient(const RealVector& r_and_N, RealVector& grad_c)
     inner_prod += sequenceCost[i] * r_and_N[i]; //     Sum(w_i r_i)
   grad_c[r_len] = 1. + inner_prod / cost_H;     // 1 + Sum(w_i r_i) / w
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "nonlinear_constraint gradient:\n" << grad_c << std::endl;
+    Cout << "cost constraint gradient:\n" << grad_c << std::endl;
 }
 
 
 void NonDNonHierarchSampling::
-npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
-			  double* grad_f, int& nstate)
+npsol_objective(int& mode, int& n, double* x, double& f, double* grad_f,
+		int& nstate)
 {
   // NPSOL mode: 0 = get f, 1 = get grad_f, 2 = get both
   // promote mode to standard asv request codes
   short asv_request = mode + 1;
   RealVector x_rv(Teuchos::View, x, n);
-  if (asv_request & 1)
-    f = nonHierSampInstance->objective_function(x_rv);
-  // NPSOL estimates unspecified components of the obj grad, so ASV grad
-  // request is not an error -- just don't specify anything
-  //if (asv_request & 2) {
-  //  RealVector grad_f_rv(Teuchos::View, grad_f, n);
-  //  nonHierSampInstance->objective_gradient(x_rv, grad_f_rv);
-  //}
+  switch (nonHierSampInstance->optSubProblemForm) {
+  case N_VECTOR_LINEAR_OBJECTIVE:
+    if (asv_request & 1)
+      f = nonHierSampInstance->linear_cost(x_rv);
+    if (asv_request & 2) {
+      RealVector grad_f_rv(Teuchos::View, grad_f, n);
+      nonHierSampInstance->linear_cost_gradient(x_rv, grad_f_rv);
+    }
+    break;
+  default:
+    if (asv_request & 1)
+      f = nonHierSampInstance->log_average_estvar(x_rv);
+    // NPSOL estimates unspecified components of the obj grad, so ASV grad
+    // request is not an error -- just don't specify anything
+    //if (asv_request & 2) {
+    //  RealVector grad_f_rv(Teuchos::View, grad_f, n);
+    //  nonHierSampInstance->log_average_estvar_gradient(x_rv, grad_f_rv);
+    //}
+    break;
+  }
 }
 
 
 void NonDNonHierarchSampling::
-npsol_constraint_evaluator(int& mode, int& ncnln, int& n, int& nrowj,
-			   int* needc, double* x, double* c, double* cjac,
-			   int& nstate)
+npsol_constraint(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
+		 double* x, double* c, double* cjac, int& nstate)
 {
   // NPSOL mode: 0 = get f, 1 = get grad_f, 2 = get both
   // promote mode to standard asv request codes
   short asv_request = mode + 1;
   RealVector x_rv(Teuchos::View, x, n);
-  if (asv_request & 1)
-    c[0] = nonHierSampInstance->nonlinear_constraint(x_rv);
-  if (asv_request & 2) {
-    RealVector grad_c_rv(Teuchos::View, cjac, n);
-    nonHierSampInstance->nonlinear_constraint_gradient(x_rv, grad_c_rv);
+  switch (nonHierSampInstance->optSubProblemForm) {
+  case N_VECTOR_LINEAR_OBJECTIVE:
+    if (asv_request & 1)
+      c[0] = nonHierSampInstance->log_average_estvar(x_rv);
+    // NPSOL estimates unspecified components of the constr grad, so ASV grad
+    // request is not an error -- just don't specify anything
+    //if (asv_request & 2) {
+    //  RealVector grad_c_rv(Teuchos::View, cjac, n);
+    //  nonHierSampInstance->log_average_estvar_gradient(x_rv, grad_c_rv);
+    //}
+    break;
+  default:
+    if (asv_request & 1)
+      c[0] = nonHierSampInstance->nonlinear_cost(x_rv);
+    if (asv_request & 2) {
+      RealVector grad_c_rv(Teuchos::View, cjac, n);
+      nonHierSampInstance->nonlinear_cost_gradient(x_rv, grad_c_rv);
+    }
+    break;
   }
 }
 
 
-/* API for NLF1 objective (see SNLLOptimizer::nlf1_evaluator())
+/** API for NLF1 objective (see SNLLOptimizer::nlf1_evaluator()) */
 void NonDNonHierarchSampling::
-optpp_objective_evaluator(int mode, int n, const RealVector& x, double& f, 
-			  RealVector& grad_f, int& result_mode)
+optpp_nlf1_objective(int mode, int n, const RealVector& x, double& f, 
+		     RealVector& grad_f, int& result_mode)
 {
-  if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
-    f = nonHierSampInstance->objective_function(x);
-    result_mode = OPTPP::NLPFunction;
+  result_mode = OPTPP::NLPNoOp; // 0
+  switch (nonHierSampInstance->optSubProblemForm) {
+  case N_VECTOR_LINEAR_OBJECTIVE:
+    if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
+      f = nonHierSampInstance->linear_cost(x);
+      result_mode = OPTPP::NLPFunction;
+    }
+    if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
+      nonHierSampInstance->linear_cost_gradient(x, grad_f);
+      result_mode |= OPTPP::NLPGradient;
+    }
+    break;
+  default:
+    if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
+      f = nonHierSampInstance->log_average_estvar(x);
+      result_mode = OPTPP::NLPFunction;
+    }
+    if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
+      Cerr << "Error: estimator variance gradient not supported in NonHierarch "
+	   << "numerical solution." << std::endl;
+      abort_handler(METHOD_ERROR);
+      //nonHierSampInstance->log_average_estvar_gradient(x, grad_f);
+      //result_mode |= OPTPP::NLPGradient;
+    }
+    break;
   }
-  if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
-    nonHierSampInstance->objective_gradient(x, grad_f);
-    result_mode |= OPTPP::NLPGradient;
-  }
-}
-*/
-
-
-/** API for FDNLF1 objective (see SNLLOptimizer::nlf0_evaluator()) */
-void NonDNonHierarchSampling::
-optpp_objective_evaluator(int n, const RealVector& x, double& f,
-			  int& result_mode)
-{
-  f = nonHierSampInstance->objective_function(x);
-  result_mode = OPTPP::NLPFunction; // 1 bit
 }
 
 
 /** API for NLF1 constraint (see SNLLOptimizer::constraint1_evaluator()) */
 void NonDNonHierarchSampling::
-optpp_constraint_evaluator(int mode, int n, const RealVector& x, RealVector& c,
-			   RealMatrix& grad_c, int& result_mode)
+optpp_nlf1_constraint(int mode, int n, const RealVector& x, RealVector& c,
+		      RealMatrix& grad_c, int& result_mode)
 {
   result_mode = OPTPP::NLPNoOp; // 0
-  if (mode & OPTPP::NLPFunction) { // 1 bit is present, mode = 1 or 3
-    c[0] = nonHierSampInstance->nonlinear_constraint(x);
-    result_mode |= OPTPP::NLPFunction; // adds 1 bit
+  switch (nonHierSampInstance->optSubProblemForm) {
+  case N_VECTOR_LINEAR_OBJECTIVE:
+    if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
+      c[0] = nonHierSampInstance->log_average_estvar(x);
+      result_mode = OPTPP::NLPFunction;
+    }
+    if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
+      Cerr << "Error: estimator variance gradient not supported in NonHierarch "
+	   << "numerical solution." << std::endl;
+      abort_handler(METHOD_ERROR);
+      //nonHierSampInstance->log_average_estvar_gradient(x, grad_f);
+      //result_mode |= OPTPP::NLPGradient;
+    }
+    break;
+  default:
+    if (mode & OPTPP::NLPFunction) { // 1 bit is present, mode = 1 or 3
+      c[0] = nonHierSampInstance->nonlinear_cost(x);
+      result_mode |= OPTPP::NLPFunction; // adds 1 bit
+    }
+    if (mode & OPTPP::NLPGradient) { // 2 bit is present, mode = 2 or 3
+      RealVector grad_c_rv(Teuchos::View, grad_c[0], n); // 0-th col vec
+      nonHierSampInstance->nonlinear_cost_gradient(x, grad_c_rv);
+      result_mode |= OPTPP::NLPGradient; // adds 2 bit
+    }
+    break;
   }
-  if (mode & OPTPP::NLPGradient) { // 2 bit is present, mode = 2 or 3
-    RealVector grad_c_rv(Teuchos::View, grad_c[0], n); // 0-th col vec
-    nonHierSampInstance->nonlinear_constraint_gradient(x, grad_c_rv);
-    result_mode |= OPTPP::NLPGradient; // adds 2 bit
-  }
+}
+
+
+/** API for FDNLF1 objective (see SNLLOptimizer::nlf0_evaluator()) */
+void NonDNonHierarchSampling::
+optpp_fdnlf1_objective(int n, const RealVector& x, double& f, int& result_mode)
+{
+  f = nonHierSampInstance->log_average_estvar(x);
+  result_mode = OPTPP::NLPFunction; // 1 bit
+}
+
+
+/** API for FDNLF1 constraint (see SNLLOptimizer::constraint0_evaluator()) */
+void NonDNonHierarchSampling::
+optpp_fdnlf1_constraint(int n, const RealVector& x, RealVector& c,
+			int& result_mode)
+{
+  c[0] = nonHierSampInstance->log_average_estvar(x);
+  result_mode |= OPTPP::NLPFunction; // adds 1 bit
 }
 
 
@@ -1243,26 +1391,44 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
   //  if (asv[i] & 2) grad_flag = true;
   //  if (asv[i] & 4) hess_flag = true;
   //}
+  bool nln_con = (num_fns > 1);
 
   const RealVector& c_vars = vars.continuous_variables();
-  if (num_fns) {
+  switch (nonHierSampInstance->optSubProblemForm) {
+  case N_VECTOR_LINEAR_OBJECTIVE:
     if (asv[0] & 1)
-      response.function_value(nonHierSampInstance->
-			      objective_function(c_vars), 0);
+      response.function_value(nonHierSampInstance->linear_cost(c_vars), 0);
     if (asv[0] & 2) {
-      Cerr << "Error: objective grad not supported in NonHierarch" << std::endl;
+      RealVector grad_c = response.function_gradient_view(0);
+      nonHierSampInstance->linear_cost_gradient(c_vars, grad_c);
+    }
+
+    if (nln_con && (asv[1] & 1))
+      response.function_value(nonHierSampInstance->
+			      log_average_estvar(c_vars), 1);
+    if (nln_con && (asv[1] & 2)) {
+      Cerr << "Error: estimator variance gradient not supported in NonHierarch "
+	   << "numerical solution." << std::endl;
       abort_handler(METHOD_ERROR);
     }
-  }
-
-  if (num_fns > 1) {
-    if (asv[1] & 1)
+    break;
+  default:
+    if (asv[0] & 1)
       response.function_value(nonHierSampInstance->
-			      nonlinear_constraint(c_vars), 0);
-    if (asv[1] & 2) {
-      RealVector grad_c = response.function_gradient_view(1);
-      nonHierSampInstance->nonlinear_constraint_gradient(c_vars, grad_c);
+			      log_average_estvar(c_vars), 0);
+    if (asv[0] & 2) {
+      Cerr << "Error: estimator variance gradient not supported in NonHierarch "
+	   << "numerical solution." << std::endl;
+      abort_handler(METHOD_ERROR);
     }
+
+    if (nln_con && (asv[1] & 1))
+      response.function_value(nonHierSampInstance->nonlinear_cost(c_vars), 1);
+    if (nln_con && (asv[1] & 2)) {
+      RealVector grad_c = response.function_gradient_view(1);
+      nonHierSampInstance->nonlinear_cost_gradient(c_vars, grad_c);
+    }
+    break;
   }
 }
 
