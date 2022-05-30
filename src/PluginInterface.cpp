@@ -13,6 +13,14 @@
 #include <boost/dll/import.hpp>
 #include <boost/filesystem.hpp>
 
+// Boost 1.76 and newer avoid the C++20 import keyword
+// RATIONALE: Using preprocessor as isolated to this compilation unit
+#if BOOST_VERSION >= 107600
+#define dakota_boost_dll_import boost::dll::import_symbol
+#else
+#define dakota_boost_dll_import boost::dll::import
+#endif
+
 
 namespace Dakota {
 
