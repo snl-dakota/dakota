@@ -74,6 +74,7 @@ There is now no longer a need to keep track of values by index.  The step vector
 * optpp\_newton
 * optpp\_pds
 * sampling
+* soga
 * vector\_parameter\_study
 
 ## Model Blocks<a name="model"></a>

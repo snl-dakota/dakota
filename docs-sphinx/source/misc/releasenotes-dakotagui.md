@@ -6,6 +6,23 @@
 Dakota GUI Release Notes
 =============
 
+## Version 6.16 - Manic Mincers
+
+*Released May 2022*
+
+* **Chartreuse**
+  * You now have more flexibility in controlling the font size on rendered plots. Font size is configurable from: Window > Preferences > Chartreuse.
+  * You now have the option to use either Dakota's offline copy of the plotly.js script, or the absolute latest online script from Plotly's website. This is configurable from: Window > Preferences > Chartreuse.
+* **Next-Gen Workflow**
+  * New pyprepro node, which is more general-purpose than the dprepro node. (See note below about future deprecation of dprepro node behavior).
+* **Dakota Editors**
+  * New method editor for Dakota's "soga" method.
+  * The ML/MF GUI now supports both ensemble models and hierarchical models
+* **Misc.**
+  * *Deprecation note:* The 6.17 GUI will change the functionality of the dprepro node to ONLY accept Dakota-formatted parameter files. It will no longer be used as a general-purpose parameter processing node. In order to continue using the existing parameter processing logic, we highly recommend replacing any dprepro nodes in your workflows with the more general-purpose pyprepro node.
+  * By default, HTML links will now default to launching in an external browser outside of the Dakota GUI, rather than the GUI's provided docked browser. If you want to continue using the docked browser, this can be adjusted with the following preference: Window > Preferences > General > Web Browser > Use internal web browser.
+
+
 ## Version 6.15 - Lakeside Limbo
 
 *Released November 2021*

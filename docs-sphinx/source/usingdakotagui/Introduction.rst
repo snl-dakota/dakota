@@ -5,6 +5,22 @@ The Dakota GUI is an application that allows you to easily edit Dakota input fil
 
 .. _dakota-gui-quickstart:
 
+-----------------
+Launching the GUI
+-----------------
+
+- **RHEL7 or newer:** Run the ``dakota-ui.sh`` script in the ``bin`` folder of a Dakota install. Alternately, you may directly run ``DakotaUI`` in the ``gui`` folder, but you will have to manage paths to Dakota libraries yourself.
+- **Mac OSX:** Run the ``dakota-ui.sh`` script in the ``bin`` folder of a Dakota install.
+- **Windows:** Double-click ``DakotaUI.exe`` in the ``gui`` folder of a Dakota install.
+- **Ubuntu:** While Dakota GUI does not have out-of-the-box support for Ubuntu, you can easily get it running if you perform the following commands to force the GUI to use the official OpenJDK distribution from apt:
+
+.. code-block::
+
+   $ sudo apt install openjdk-11-jre-headless # Install OpenJDK-11
+   $ cd gui                                   # Go to the "gui" directory of your Dakota install
+   $ mv jre jre.bak                           # Hide the JRE shipped with Dakota GUI
+   $ ./DakotaUI
+
 ---------------
 Getting Started
 ---------------
@@ -18,10 +34,23 @@ Getting Started
 
  - :ref:`Use the Dakota Examples Search dialog.<gui-examples-main>`
  
-- I already have a Dakota study.  How do I import it into the GUI?
+- I already have a Dakota study ready to run.  How do I import it into the GUI?
 
  - :ref:`Use basic file importing functionality.<gui-eclipse-file_import>`
  - :ref:`If the input file has outdated syntax, use the "Dakota Order Input Utility" context menu tool.<gui-context-tools-order-input-util>`
+ 
+- I don't have a Dakota study, but I have a simulation model / black-box model / analysis driver. How do I create a new Dakota study for it?
+
+ - :ref:`Step 1. Read the strategy overview.<couplingtosimulations-main>`
+ - :ref:`Step 2. Create inputs and outputs for your simulation model in the GUI.<bmf-main>`
+ - :ref:`Step 3. Create a new Next-Gen Workflow using the Workflow-Based Dakota Driver wizard.<wizards-newworkflowdriver-main>`
+ - :ref:`Step 4. Design a workflow that will execute your simulation model.<gui-nestedworkflowtutorial-main>`
+ - :ref:`Step 5. Create a new Dakota study using the Dakota Study Wizard, providing your workflow as the analysis driver.<wizards-newdakotastudy>`
+ - :ref:`Step 6. Create an outer wrapper workflow that will run Dakota.<wizards-newwrapperworkflow-main>` 
+ 
+- I already have a driver script for my Dakota study.  How do I get Dakota GUI to acknowledge it?
+
+ - :ref:`Use the "Recognize as Analysis Driver" context menu tool.<gui-context-tools-recognize-driver>` 
  
 - I already have a Dakota study, but I just want to change one block.
 
@@ -30,26 +59,6 @@ Getting Started
 - My Dakota study has long arrays of numbers.  Can I modify these numbers without manually editing the text of the input file?
 
  - :ref:`Use the Dakota Visual Editor for editing long number arrays.<gui-visual-editor-main>`
- 
-- How do I create a new Dakota study from scratch, using a script to communicate with my black-box simulation model?
-
- - :ref:`Step 1. Read the strategy overview.<couplingtosimulations-main>`
- - :ref:`Step 2. Create a parameterized simulation model representing your black box.<bmf-main>`
- - :ref:`Step 3. Create a driver script to wrap the parameterized simulation model.<wizards-scriptdriver-main>`
- - :ref:`Step 4. Create a new Dakota study using the Dakota Study Wizard, providing your driver script as the analysis driver.<wizards-newdakotastudy>`
-
-- How do I create a new Dakota study from scratch, using Next-Gen Workflow to communicate with my black-box simulation model?
-
- - :ref:`Step 1. Read the strategy overview.<couplingtosimulations-main>`
- - :ref:`Step 2. Create a parameterized simulation model representing your black box.<bmf-main>`
- - :ref:`Step 3. Create an empty driver workflow using the Workflow-Based Dakota Driver wizard.<wizards-newworkflowdriver-main>`
- - :ref:`Step 4. Design a workflow that will execute your simulation model.<gui-nestedworkflowtutorial-main>`
- - :ref:`Step 5. Create a new Dakota study using the Dakota Study Wizard, providing your workflow as the analysis driver.<wizards-newdakotastudy>`
- - :ref:`Step 6. Create an outer wrapper workflow that will run Dakota.<wizards-newwrapperworkflow-main>`
-
-- I already have a driver script for my Dakota study.  How do I get Dakota GUI to acknowledge it?
-
- - :ref:`Use the "Recognize as Analysis Driver" context menu tool.<gui-context-tools-recognize-driver>`
 
 - How do I create plots of my Dakota output data?
 
