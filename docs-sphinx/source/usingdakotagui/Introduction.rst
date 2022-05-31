@@ -9,17 +9,11 @@ The Dakota GUI is an application that allows you to easily edit Dakota input fil
 Launching the GUI
 -----------------
 
-- **RHEL7 or newer:** Run the ``dakota-ui.sh`` script in the ``bin`` folder of a Dakota install. Alternately, you may directly run ``DakotaUI`` in the ``gui`` folder, but you will have to manage paths to Dakota libraries yourself.
+- **Linux:** Run the ``dakota-ui.sh`` script in the ``bin`` folder of a Dakota install. Alternately, you may directly run ``DakotaUI`` in the ``gui`` folder, but you will have to manage paths to Dakota libraries yourself.
+ - Dakota GUI has been tested to work on RHEL (7 or newer) and Ubuntu.
 - **Mac OSX:** Run the ``dakota-ui.sh`` script in the ``bin`` folder of a Dakota install.
 - **Windows:** Double-click ``DakotaUI.exe`` in the ``gui`` folder of a Dakota install.
 - **Ubuntu:** While Dakota GUI does not have out-of-the-box support for Ubuntu, you can easily get it running if you perform the following commands to force the GUI to use the official OpenJDK distribution from apt:
-
-.. code-block::
-
-   $ sudo apt install openjdk-11-jre-headless # Install OpenJDK-11
-   $ cd gui                                   # Go to the "gui" directory of your Dakota install
-   $ mv jre jre.bak                           # Hide the JRE shipped with Dakota GUI
-   $ ./DakotaUI
 
 ---------------
 Getting Started
