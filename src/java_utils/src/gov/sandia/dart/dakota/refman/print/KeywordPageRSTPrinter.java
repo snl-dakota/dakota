@@ -6,6 +6,8 @@ import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.StringUtils;
+
 import gov.sandia.dart.dakota.refman.RefManInputSpec;
 import gov.sandia.dart.dakota.refman.RefManMetaData;
 import gov.sandia.dart.dakota.refman.metadata.InputSpecKeywordMetaData;
@@ -229,7 +231,15 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		for(String child : children) {
 			if(child.contains(":: ")) {
 				String[] childTokens = child.split(":: ");
-				sb.append("   ").append(parentHierarchy).append("-").append(childTokens[1]).append("\n");
+				String remainder = childTokens[1].trim();
+				
+				// This if-statement ensure that headers for one-of sections do not get treated
+				// as native Dakota keywords.
+				if(StringUtils.isNotBlank(remainder) &&
+				   !remainder.chars().anyMatch(Character::isUpperCase) &&
+				   !remainder.contains(" ")) {
+					sb.append("   ").append(parentHierarchy).append("-").append(remainder).append("\n");
+				}
 			} else {
 				sb.append("   ").append(parentHierarchy).append("-").append(child.trim()).append("\n");
 			}

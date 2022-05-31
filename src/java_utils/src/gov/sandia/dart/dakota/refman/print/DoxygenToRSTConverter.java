@@ -12,6 +12,7 @@ public class DoxygenToRSTConverter {
 		converted = converted.replaceAll("\\s*\\<\\/em\\>", "*");
 		
 		converted = removeCommentBlocks(converted);
+		converted = convertMultilineLists(converted);
 		converted = convertLists(converted, "\\li");
 		converted = convertLists(converted, "-# ");
 		converted = convertMarkupFlag(converted, "\\c", "``", "``", "");
@@ -19,7 +20,7 @@ public class DoxygenToRSTConverter {
 		converted = convertMarkupBookends(converted, "\\f$", "\\f$", " :math:`", "` ");
 		converted = convertVerbatimBlock(converted);
 		
-		converted = converted.replaceAll("\\\\f\\[", "\n\\.\\.\\smath:: ");
+		converted = converted.replaceAll("\\\\f\\[", "\n\\.\\. math:: ");
 		converted = converted.replaceAll("\\\\f\\]", "\n");
 		return converted;
 	}
@@ -89,7 +90,7 @@ public class DoxygenToRSTConverter {
 							wordWithMarkup = new StringBuilder(newStart);
 							for(int k = 0; k < words[j].length(); k++) {
 								String nextChar = "" + (words[j].charAt(k));
-								if(nextChar.matches("[A-Za-z0-9_\\-\\n]+")) {
+								if(nextChar.matches("[A-Za-z0-9_\\-\\n\\/]+")) {
 									insertedWord.append(nextChar);
 								} else {
 									if(insideMonospaceSection) {
@@ -230,6 +231,38 @@ public class DoxygenToRSTConverter {
 			}
 		}
 		
+		String finalTrimmedString = sb.toString();
+		finalTrimmedString = finalTrimmedString.replaceAll(newStartFlag + "\\s", newStartFlag);
+		finalTrimmedString = finalTrimmedString.replaceAll("\\s" + newEndFlag, newEndFlag);
+		
+		return finalTrimmedString;
+	}
+	
+	private static String convertMultilineLists(String original) {
+		StringBuilder sb = new StringBuilder();
+		String[] lines = original.split("\\n|\\r\\n");
+		boolean inLineSection = false;
+		for(int i = 0; i < lines.length; i++) {
+			String line = lines[i];
+			if(!line.isBlank()) {
+				String firstCharacter = "" + line.charAt(0);
+				
+				if(firstCharacter.equals("-")) {
+					if(!inLineSection) {
+						inLineSection = true;
+					} else {
+						sb.append("\n"); // New list item needs a new line.
+					}
+				} else if(!line.matches("\\s{2}[A-Za-z0-9]+.*") && inLineSection) {
+					inLineSection = false;
+				}
+				
+				sb.append(line);
+			}
+			if(!inLineSection) {
+				sb.append("\n");
+			}
+		}
 		return sb.toString();
 	}
 }

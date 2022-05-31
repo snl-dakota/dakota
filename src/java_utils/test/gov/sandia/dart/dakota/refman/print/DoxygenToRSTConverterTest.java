@@ -114,4 +114,30 @@ public class DoxygenToRSTConverterTest {
 		String expected = "where  :math:`r`  is the uniform refinement rate specified by";
 		assertEquals(expected, DoxygenToRSTConverter.convert(original));
 	}
+	
+	@Test
+	public void testConvert_ListOfCode() {
+		String original = "- \\c /interfaces/truth/truth_m/";
+		String expected = "- ``/interfaces/truth/truth_m/``";
+		assertEquals(expected, DoxygenToRSTConverter.convert(original));
+	}
+	
+	@Test
+	public void testConvert_ListOfCodeWithMath() {
+		String original = "- \\c /models/simulation/truth_m/sources/truth \\f$ \\rightarrow \\f$ \\c /interfaces/truth/truth_m/";
+		String expected = "- ``/models/simulation/truth_m/sources/truth``  :math:`\\rightarrow`  ``/interfaces/truth/truth_m/``";
+		assertEquals(expected, DoxygenToRSTConverter.convert(original));
+	}
+	
+	@Test
+	public void testConvert_MultilineListEntries() {
+		String original = "- In the fork case, Dakota will treat the simulation as a black-box\r\n"
+				        + "  and communication between Dakota and the simulation occurs through\r\n"
+				        + "  parameter and result files. This is the most common case.";
+		String expected = "- In the fork case, Dakota will treat the simulation as a black-box"
+		                + "  and communication between Dakota and the simulation occurs through"
+		                + "  parameter and result files. This is the most common case.";
+		assertEquals(expected, DoxygenToRSTConverter.convert(original));
+	}
+	
 }
