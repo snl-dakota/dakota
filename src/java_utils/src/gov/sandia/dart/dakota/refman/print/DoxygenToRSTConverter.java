@@ -13,6 +13,7 @@ public class DoxygenToRSTConverter {
 		
 		converted = removeCommentBlocks(converted);
 		converted = convertMultilineLists(converted);
+		converted = convertHtmlLists(converted);
 		converted = convertLists(converted, "\\li");
 		converted = convertLists(converted, "-# ");
 		converted = convertMarkupFlag(converted, "\\c", "``", "``", "");
@@ -20,6 +21,7 @@ public class DoxygenToRSTConverter {
 		converted = convertMarkupBookends(converted, "\\f$", "\\f$", " :math:`", "` ");
 		converted = convertVerbatimBlock(converted);
 		
+		converted = converted.replaceAll("\\\\f\\[(\r\n|\n)+", "\n\\.\\. math:: \n\n   ");
 		converted = converted.replaceAll("\\\\f\\[", "\n\\.\\. math:: ");
 		converted = converted.replaceAll("\\\\f\\]", "\n");
 		return converted;
@@ -31,7 +33,6 @@ public class DoxygenToRSTConverter {
 		
 		boolean firstListItemFound = false;
 		boolean insideListItem = false;
-		boolean lastListItemFound = false;
 		for(int i = 0; i < lines.length; i++) {
 			String line = lines[i];
 			if(insideListItem) {
@@ -53,13 +54,13 @@ public class DoxygenToRSTConverter {
 				String replacement = line.replace(itemMarker, "-");
 				sb.append(replacement).append(" ");
 			} else {
-				if(firstListItemFound && !lastListItemFound) {
+				if(firstListItemFound) {
 					sb.append("\n"); // Extra spacer for bottom of list
-					lastListItemFound = true;
+					firstListItemFound = false;
 				}
 				
 				sb.append(line); // Pass through
-				if(i < lines.length - 1) {
+				if(i < lines.length) {
 					sb.append("\n");
 				}
 			}
@@ -90,7 +91,7 @@ public class DoxygenToRSTConverter {
 							wordWithMarkup = new StringBuilder(newStart);
 							for(int k = 0; k < words[j].length(); k++) {
 								String nextChar = "" + (words[j].charAt(k));
-								if(nextChar.matches("[A-Za-z0-9_\\-\\n\\/]+")) {
+								if(nextChar.matches("[A-Za-z0-9_\\-\\n\\/\\{\\}\\*]+")) {
 									insertedWord.append(nextChar);
 								} else {
 									if(insideMonospaceSection) {
@@ -248,21 +249,92 @@ public class DoxygenToRSTConverter {
 				String firstCharacter = "" + line.charAt(0);
 				
 				if(firstCharacter.equals("-")) {
+					sb.append("\n"); // New list item needs a new line.
 					if(!inLineSection) {
 						inLineSection = true;
-					} else {
-						sb.append("\n"); // New list item needs a new line.
 					}
-				} else if(!line.matches("\\s{2}[A-Za-z0-9]+.*") && inLineSection) {
+				} else if(!line.matches("\\s{2}[A-Za-z0-9\\\\]+.*") && inLineSection) {
 					inLineSection = false;
 				}
 				
 				sb.append(line);
+			} else if(inLineSection) {
+				sb.append("\n");
+				inLineSection = false;
 			}
+			
 			if(!inLineSection) {
 				sb.append("\n");
 			}
 		}
 		return sb.toString();
 	}
+	
+	private static String convertHtmlLists(String original) {
+		StringBuilder sb = new StringBuilder();
+		String[] lines = original.split("\\n|\\r\\n");
+		boolean inOrderedList = false;
+		boolean inUnorderedList = false;
+		int listDepth = 0;
+		int listItemCount = 0;
+		
+		for(int i = 0; i < lines.length; i++) {
+			boolean partOfPreviousListItem = false;
+			String line = lines[i];
+			
+			if(line.contains("<ul>")) {
+				inUnorderedList = true;
+				listDepth++;
+			} else if(line.contains("</ul>")) {
+				inUnorderedList = false;
+				listDepth--;
+			} else if(line.contains("<ol>")) {
+				inOrderedList = true;
+				listItemCount = 0;
+				listDepth++;
+			} else if(line.contains("</ol>")) {
+				inOrderedList = false;
+				listDepth--;
+			} else if(line.contains("<li>")) {
+				listItemCount++;
+			} else if(inOrderedList || inUnorderedList) {
+				partOfPreviousListItem = true;
+			}
+			
+			String scrubbedLine  = line.replace("<ul>", "");
+			scrubbedLine = scrubbedLine.replace("</ul>", "");
+			scrubbedLine = scrubbedLine.replace("<ol>", "");
+			scrubbedLine = scrubbedLine.replace("</ol>", "");
+			scrubbedLine = scrubbedLine.replace("<li>", "");
+			scrubbedLine = scrubbedLine.replace("</li>", "");
+			
+			if(inOrderedList || inUnorderedList) {
+				int depthSpace = listDepth-1;
+				for(int j = 0; j < depthSpace; j++) {
+					sb.append("  ");
+				}
+				
+				if(!scrubbedLine.isBlank()) {
+					if(partOfPreviousListItem) {
+						String removePreviousLineBreakString = sb.toString();
+						removePreviousLineBreakString =
+							removePreviousLineBreakString.substring(0, removePreviousLineBreakString.length()-1);
+						sb = new StringBuilder();
+						sb.append(removePreviousLineBreakString).append(" ");
+					} else {
+						if(inOrderedList) {
+							sb.append(listItemCount).append(". ");
+						} else if(inUnorderedList) {
+							sb.append("- ");
+						}
+					}
+				}
+				sb.append(scrubbedLine.trim());
+			} else {
+				sb.append(scrubbedLine);
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
+	}	
 }

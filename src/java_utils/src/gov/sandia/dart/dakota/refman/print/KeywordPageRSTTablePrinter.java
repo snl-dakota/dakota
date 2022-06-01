@@ -98,6 +98,7 @@ public class KeywordPageRSTTablePrinter {
 		if(!tokenChildName.isBlank() && !trimChildName.contains("_Choose_One::")) {
 			description = metadata.getBlurb(parentPrefix + "-" + tokenChildName).trim();
 			description = description.replaceAll("\n|\r\n", " ");
+			description = description.replace("  ", " ");
 		}
 		return description;
 	}

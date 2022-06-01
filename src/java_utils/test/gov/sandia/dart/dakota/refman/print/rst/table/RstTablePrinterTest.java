@@ -609,4 +609,71 @@ public class RstTablePrinterTest {
 						+ "+--------------------------------------------------------+--------------------+---------------------------------------------+\n";
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void testPrintDakotaKeywordTable_BatchSelection() {
+		GenericTable table = new GenericTable();
+		table.setColumnWidth(0, 25);
+		table.setColumnWidth(1, 20);
+		table.setColumnWidth(2, 22);
+		table.setColumnWidth(3, 45);
+		
+		GenericRow header = new GenericRow();
+		header.addCell("Required/Optional");
+		header.addCell("Description of Group");
+		header.addCell("Dakota Keyword");
+		header.addCell("Dakota Keyword Description");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("Required (Choose One)", 1, 3);
+		row1.addCell("Batch Selection Criterion", 1, 3);
+		row1.addCell("`naive`__");
+		row1.addCell("Take the highest scoring candidates");
+		
+		GenericRow row2 = new GenericRow();
+		row2.addSpanHoldCell();
+		row2.addSpanHoldCell();
+		row2.addCell("`distance_penalty`__");
+		row2.addCell("Add a penalty to spread out the points in the batch");
+		
+		GenericRow row3 = new GenericRow();
+		row3.addSpanHoldCell();
+		row3.addSpanHoldCell();
+		row3.addCell("`topology`__");
+		row3.addCell("In this selection strategy, we use information about the topology of the space from the Morse-Smale complex to identify next points to select.");
+		
+		GenericRow row4 = new GenericRow();
+		row4.addSpanHoldCell();
+		row4.addSpanHoldCell();
+		row4.addCell("`constant_liar`__");
+		row4.addCell("Use information from the existing surrogate model to predict what the surrogate upgrade will be with new points.");
+		
+		table.addRow(header);
+		table.addRow(row1);
+		table.addRow(row2);
+		table.addRow(row3);
+		table.addRow(row4);
+		
+		RstTablePrinter printer = new RstTablePrinter();
+		String actual = printer.print(table);
+		String expected = "+-------------------------+--------------------+----------------------+---------------------------------------------+\n"
+						+ "| Required/Optional       | Description of     | Dakota Keyword       | Dakota Keyword Description                  |\n"
+						+ "|                         | Group              |                      |                                             |\n"
+						+ "+=========================+====================+======================+=============================================+\n"
+						+ "| Required (Choose One)   | Batch Selection    | `naive`__            | Take the highest scoring candidates         |\n"
+						+ "|                         | Criterion          +----------------------+---------------------------------------------+\n"
+						+ "|                         |                    | `distance_penalty`__ | Add a penalty to spread out the points in   |\n"
+						+ "|                         |                    |                      | the batch                                   |\n"
+						+ "|                         |                    +----------------------+---------------------------------------------+\n"
+						+ "|                         |                    | `topology`__         | In this selection strategy, we use          |\n"
+						+ "|                         |                    |                      | information about the topology of the space |\n"
+						+ "|                         |                    |                      | from the Morse-Smale complex to identify    |\n"
+						+ "|                         |                    |                      | next points to select.                      |\n"
+						+ "|                         |                    +----------------------+---------------------------------------------+\n"
+						+ "|                         |                    | `constant_liar`__    | Use information from the existing surrogate |\n"
+						+ "|                         |                    |                      | model to predict what the surrogate upgrade |\n"
+						+ "|                         |                    |                      | will be with new points.                    |\n"
+						+ "+-------------------------+--------------------+----------------------+---------------------------------------------+\n";
+		assertEquals(expected, actual);
+	}
 }

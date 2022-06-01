@@ -240,7 +240,7 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 				   !remainder.contains(" ")) {
 					sb.append("   ").append(parentHierarchy).append("-").append(remainder).append("\n");
 				}
-			} else {
+			} else if(!child.contains("::")) {
 				sb.append("   ").append(parentHierarchy).append("-").append(child.trim()).append("\n");
 			}
 		}
