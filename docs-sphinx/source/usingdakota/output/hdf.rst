@@ -1,8 +1,10 @@
 .. _hdf-main:
 
-.. _hdf5_evaluations-hdf5_eval_sources: TODO These links from the Reference Manual need to be put in the right place.
+TODO These links from the Reference Manual need to be put in the right place.
 
 .. _hdf5_output:
+
+.. _hdf5_evaluations-hdf5_eval_sources:
 
 .. _hdf5_results-best_constraints:
 

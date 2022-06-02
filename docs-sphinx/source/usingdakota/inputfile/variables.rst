@@ -3,13 +3,15 @@ Variables
 
 .. _`variables:overview`:
 
-.. _topic-variables: TODO These topics needs a better final location.
+.. _topic-variables:
 
 .. _topic-discrete_variables:
 
 .. _topic-state_variables:
 
 .. _topic-variable_support:
+
+.. _topic-aleatory_uncertain_variables:
 
 Overview
 --------
