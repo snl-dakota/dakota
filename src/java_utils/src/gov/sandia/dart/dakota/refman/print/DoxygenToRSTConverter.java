@@ -1,6 +1,15 @@
 package gov.sandia.dart.dakota.refman.print;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 public class DoxygenToRSTConverter {
+	
+	private enum ListType {
+		NONE,
+		ORDERED,
+		UNORDERED;
+	}
 	
 	public static String convert(String original) {
 		String converted = original.trim();
@@ -16,14 +25,16 @@ public class DoxygenToRSTConverter {
 		converted = convertHtmlLists(converted);
 		converted = convertLists(converted, "\\li");
 		converted = convertLists(converted, "-# ");
-		converted = convertMarkupFlag(converted, "\\c", "``", "``", "");
-		converted = convertMarkupFlag(converted, "\\ref", ":ref:`", "<", ">`");
-		converted = convertMarkupBookends(converted, "\\f$", "\\f$", " :math:`", "` ");
+		converted = convertMarkupFlag(converted, "\\\\e(?![A-Za-z])", "*", "*", "");
+		converted = convertMarkupFlag(converted, "\\\\cite", ":cite:p:`", "`", "");
+		converted = convertMarkupFlag(converted, "\\\\c", "``", "``", "");
+		converted = convertMarkupFlag(converted, "\\\\ref", ":ref:`", "<", ">`");
+		converted = convertMarkupBookends(converted, "\\f$", "\\f$", ":math:`", "` ");
 		converted = convertVerbatimBlock(converted);
 		
 		converted = converted.replaceAll("\\\\f\\[(\r\n|\n)+", "\n\\.\\. math:: \n\n   ");
 		converted = converted.replaceAll("\\\\f\\[", "\n\\.\\. math:: ");
-		converted = converted.replaceAll("\\\\f\\]", "\n");
+		converted = converted.replaceAll("\\\\f\\]\\s*", "\n");
 		return converted;
 	}
 	
@@ -82,8 +93,9 @@ public class DoxygenToRSTConverter {
 			
 			boolean printedCloser = false;
 			for(int j = 0; j < words.length; j++) {
-				if(words[j].contains(key)) {
-					wordWithMarkup = new StringBuilder(words[j].replace(key, ""));
+				String permissiveKey = ".*" + key + ".*";
+				if(words[j].matches(permissiveKey)) {
+					wordWithMarkup = new StringBuilder(words[j].replaceAll(key, ""));
 					insideMonospaceSection = true;
 				} else {
 					if(insideMonospaceSection) {
@@ -213,7 +225,11 @@ public class DoxygenToRSTConverter {
 				while(newWord.indexOf(startFlag) != -1 || newWord.indexOf(endFlag) != -1) {
 					if(!insideSection) {
 						int index = newWord.indexOf(startFlag);
-						newWord = newWord.substring(0, index) + newStartFlag + newWord.substring(index+startFlag.length(), newWord.length());
+						String paddedNewStartFlag = newStartFlag;
+						if(index > 0) {
+							paddedNewStartFlag = " " + newStartFlag;
+						}
+						newWord = newWord.substring(0, index) + paddedNewStartFlag + newWord.substring(index+startFlag.length(), newWord.length());
 						insideSection = true;
 					} else {
 						int index = newWord.indexOf(endFlag);
@@ -272,9 +288,10 @@ public class DoxygenToRSTConverter {
 	
 	private static String convertHtmlLists(String original) {
 		StringBuilder sb = new StringBuilder();
+		Deque<ListType> listStack = new ArrayDeque<>();
+		ListType currentList = ListType.NONE;
+		
 		String[] lines = original.split("\\n|\\r\\n");
-		boolean inOrderedList = false;
-		boolean inUnorderedList = false;
 		int listDepth = 0;
 		int listItemCount = 0;
 		
@@ -283,23 +300,26 @@ public class DoxygenToRSTConverter {
 			String line = lines[i];
 			
 			if(line.contains("<ul>")) {
-				inUnorderedList = true;
+				listStack.push(ListType.UNORDERED);
 				listDepth++;
-			} else if(line.contains("</ul>")) {
-				inUnorderedList = false;
-				listDepth--;
 			} else if(line.contains("<ol>")) {
-				inOrderedList = true;
+				listStack.push(ListType.ORDERED);
 				listItemCount = 0;
 				listDepth++;
-			} else if(line.contains("</ol>")) {
-				inOrderedList = false;
+			} else if(line.contains("</ul>") || line.contains("</ol>")) {
+				listStack.pop();
 				listDepth--;
 			} else if(line.contains("<li>")) {
-				listItemCount++;
-			} else if(inOrderedList || inUnorderedList) {
+				sb.append("\n");
+				if(currentList == ListType.ORDERED) {
+					listItemCount++;
+				}
+			} else if(currentList == ListType.ORDERED || currentList == ListType.UNORDERED) {
 				partOfPreviousListItem = true;
 			}
+			
+			currentList = listStack.peek();
+			if(currentList == null) currentList = ListType.NONE;
 			
 			String scrubbedLine  = line.replace("<ul>", "");
 			scrubbedLine = scrubbedLine.replace("</ul>", "");
@@ -308,7 +328,7 @@ public class DoxygenToRSTConverter {
 			scrubbedLine = scrubbedLine.replace("<li>", "");
 			scrubbedLine = scrubbedLine.replace("</li>", "");
 			
-			if(inOrderedList || inUnorderedList) {
+			if(currentList == ListType.ORDERED || currentList == ListType.UNORDERED) {
 				int depthSpace = listDepth-1;
 				for(int j = 0; j < depthSpace; j++) {
 					sb.append("  ");
@@ -317,14 +337,16 @@ public class DoxygenToRSTConverter {
 				if(!scrubbedLine.isBlank()) {
 					if(partOfPreviousListItem) {
 						String removePreviousLineBreakString = sb.toString();
-						removePreviousLineBreakString =
-							removePreviousLineBreakString.substring(0, removePreviousLineBreakString.length()-1);
+						while(removePreviousLineBreakString.endsWith(" ") || removePreviousLineBreakString.endsWith("\n") || removePreviousLineBreakString.endsWith("\r\n")) {
+							removePreviousLineBreakString =
+								removePreviousLineBreakString.substring(0, removePreviousLineBreakString.length()-1);
+						}
 						sb = new StringBuilder();
 						sb.append(removePreviousLineBreakString).append(" ");
 					} else {
-						if(inOrderedList) {
+						if(currentList == ListType.ORDERED) {
 							sb.append(listItemCount).append(". ");
-						} else if(inUnorderedList) {
+						} else if(currentList == ListType.UNORDERED) {
 							sb.append("- ");
 						}
 					}

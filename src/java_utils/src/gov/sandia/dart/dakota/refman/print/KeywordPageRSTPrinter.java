@@ -138,15 +138,17 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 			sb.append("\n").append(bold("See Also")).append("\n");
 			sb.append("\n");
 			
-			String[] seeAlsoLinks = mdcontents.getSeeAlso().split(",");
+			String[] seeAlsoLinks = mdcontents.getSeeAlso().split("[,\n]");
 			for(String link : seeAlsoLinks) {
-				String lastSegment = link;
-				if(lastSegment.contains("-")) {
-					String[] tokens = link.split("-");
-					lastSegment = tokens[tokens.length-1];
+				if(!link.isBlank()) {
+					String lastSegment = link;
+					if(lastSegment.contains("-")) {
+						String[] tokens = link.split("-");
+						lastSegment = tokens[tokens.length-1];
+					}
+					
+					sb.append("- :ref:`").append(lastSegment.trim()).append(" <").append(link.trim()).append(">` \n");
 				}
-				
-				sb.append("- :ref:`").append(lastSegment.trim()).append(" <").append(link.trim()).append(">` \n");
 			}
 			sb.append("\n\n");
 		}

@@ -114,7 +114,7 @@ public class DoxygenToRSTConverterTest {
 						+ "\\f[\r\n"
 						+ "\\sum_{k=1}^d i_k \\le p\r\n"
 						+ "\\f]";
-		String expected = "Use the traditional total-order index set to construct a polynomial chaos expansion. That is for a given order  :math:`p`  keep all terms with a  :math:`d` -dimensional multi index  :math:`\\mathbf{i}=(i_1,\\ldots,i_d)`  that satisfies\n"
+		String expected = "Use the traditional total-order index set to construct a polynomial chaos expansion. That is for a given order :math:`p`  keep all terms with a :math:`d` -dimensional multi index :math:`\\mathbf{i}=(i_1,\\ldots,i_d)`  that satisfies\n"
 						+ "\n"
 						+ ".. math:: \n"
 						+ "\n"
@@ -126,7 +126,7 @@ public class DoxygenToRSTConverterTest {
 	@Test
 	public void testConvert_InlineMath() {
 		String original = "where \\f$r\\f$ is the uniform refinement rate specified by";
-		String expected = "where  :math:`r`  is the uniform refinement rate specified by";
+		String expected = "where :math:`r`  is the uniform refinement rate specified by";
 		assertEquals(expected, DoxygenToRSTConverter.convert(original));
 	}
 	
@@ -140,7 +140,7 @@ public class DoxygenToRSTConverterTest {
 	@Test
 	public void testConvert_ListOfCodeWithMath() {
 		String original = "- \\c /models/simulation/truth_m/sources/truth \\f$ \\rightarrow \\f$ \\c /interfaces/truth/truth_m/";
-		String expected = "\n- ``/models/simulation/truth_m/sources/truth``  :math:`\\rightarrow`  ``/interfaces/truth/truth_m/``";
+		String expected = "\n- ``/models/simulation/truth_m/sources/truth`` :math:`\\rightarrow`  ``/interfaces/truth/truth_m/``";
 		assertEquals(expected, DoxygenToRSTConverter.convert(original));
 	}
 	
@@ -189,13 +189,20 @@ public class DoxygenToRSTConverterTest {
 						+ "points in Step 1 above. For Step 2, we use a Gaussian process model.";
 		String expected = "At a high-level, the adaptive sampling pipeline is a four-step process:\n"
 						+ "\n"
+						+ "\n"
 						+ "- Evaluate the expensive simulation (referred to as the true model) at initial sample point\n"
 						+ "\n"
+						+ "\n"
 						+ "  1. Fit a surrogate model\n"
+						+ "\n"
 						+ "  2. Create a candidate set and score based on information from surrogate\n"
+						+ "\n"
 						+ "  3. Select a candidate point to evaluate the true model\n"
+						+ "\n"
 						+ "  4. Loop until done\n"
-						+ "\n\n\n"
+						+ "\n"
+						+ "\n"
+						+ "\n"
 						+ "In terms of the Dakota implementation, the adaptive sampling method\n"
 						+ "currently uses Latin Hypercube sampling (LHS) to generate the initial\n"
 						+ "points in Step 1 above. For Step 2, we use a Gaussian process model.";
@@ -215,13 +222,13 @@ public class DoxygenToRSTConverterTest {
 						+ "The user can also specify the following to affect the merit functions:\r\n"
 						+ "\\li \\c constraint_penalty\r\n"
 						+ "\\li \\c smoothing_parameter";
-		String expected = "\n- ``merit_max``: based on  :math:`\\ell_\\infty`  norm\n"
-						+ "- ``merit_max_smooth``: based on smoothed  :math:`\\ell_\\infty`  norm\n"
-						+ "- ``merit1``: based on  :math:`\\ell_1`  norm\n"
-						+ "- ``merit1_smooth``: based on smoothed  :math:`\\ell_1`  norm\n"
-						+ "- ``merit2``: based on  :math:`\\ell_2`  norm\n"
-						+ "- ``merit2_smooth``: based on smoothed  :math:`\\ell_2`  norm\n"
-						+ "- ``merit2_squared``: based on  :math:`\\ell_2^2`  norm\n\n"
+		String expected = "\n- ``merit_max``: based on :math:`\\ell_\\infty`  norm\n"
+						+ "- ``merit_max_smooth``: based on smoothed :math:`\\ell_\\infty`  norm\n"
+						+ "- ``merit1``: based on :math:`\\ell_1`  norm\n"
+						+ "- ``merit1_smooth``: based on smoothed :math:`\\ell_1`  norm\n"
+						+ "- ``merit2``: based on :math:`\\ell_2`  norm\n"
+						+ "- ``merit2_smooth``: based on smoothed :math:`\\ell_2`  norm\n"
+						+ "- ``merit2_squared``: based on :math:`\\ell_2^2`  norm\n\n"
 						+ "The user can also specify the following to affect the merit functions:\n\n"
 						+ "- ``constraint_penalty``\n"
 						+ "- ``smoothing_parameter``";
@@ -267,19 +274,59 @@ public class DoxygenToRSTConverterTest {
 						+ "     scaled, linear constraints are not allowed.\r\n"
 						+ "  </li>\r\n"
 						+ "</ol>";
-		String expected = "1. ``value`` - characteristic value scaling\n\n"
-						+ " The target quantity will be scaled (divided) by the specified characteristic value.\n\n"
-						+ "2. ``auto`` - automatic scaling\n\n"
-						+ " First the quantity is scaled by any characteristic value, then automatic scaling will be attempted according to the following scheme:\n"
+		String expected = "There are three scale types:\n"
+						+ "\n"
+						+ "\n"
+						+ "1. ``value`` - characteristic value scaling The target quantity will be scaled (divided) by the specified characteristic value.\n"
+						+ "\n"
+						+ "\n"
+						+ "2. ``auto`` - automatic scaling First the quantity is scaled by any characteristic value, then automatic scaling will be attempted according to the following scheme:\n"
+						+ "\n"
 						+ "\n"
 						+ "\n"
 						+ "  - two-sided bounds scaled into the interval [0,1];\n"
-						+ "  - one-sided bound or targets are scaled by the characteristic value, moving the bound or target to 1 and changing the sense of inequalities where necessary;\n"
-						+ "  - no bounds or targets: no automatic scaling possible, therefore no scaling for this component\n"
 						+ "\n"
-						+ " Automatic scaling is not available for objective functions nor calibration terms since they lack bound constraints. Futher, when automatically scaled, linear constraints are scaled by characteristic values only, not affinely scaled into [0,1].\n\n"
-						+ "3. ``log`` - logarithmic scaling\n\n"
-						+ " First, any characteristic values from the optional ``*_scales`` specification are applied. Then logarithm base 10 scaling is applied. Logarithmic scaling is not available for linear constraints. When continuous design variables are log scaled, linear constraints are not allowed.";
+						+ "  - one-sided bound or targets are scaled by the characteristic value, moving the bound or target to 1 and changing the sense of inequalities where necessary;\n"
+						+ "\n"
+						+ "  - no bounds or targets: no automatic scaling possible, therefore no scaling for this component Automatic scaling is not available for objective functions nor calibration terms since they lack bound constraints. Futher, when automatically scaled, linear constraints are scaled by characteristic values only, not affinely scaled into [0,1].\n"
+						+ "\n"
+						+ "3. ``log`` - logarithmic scaling First, any characteristic values from the optional ``*_scales`` specification are applied. Then logarithm base 10 scaling is applied. Logarithmic scaling is not available for linear constraints. When continuous design variables are log scaled, linear constraints are not allowed.";
 		assertEquals(expected, DoxygenToRSTConverter.convert(original));		
+	}
+	
+	@Test
+	public void testCitations() {
+		String original = "Multi-dimensional integration by Stroud cubature rules \r\n"
+						+ "\\cite stroud and extensions \r\n"
+						+ "\\cite xiu_cubature, as specified with \\c cubature_integrand. ";
+		String expected = "Multi-dimensional integration by Stroud cubature rules\n"
+						+ ":cite:p:`stroud` and extensions\n"
+						+ ":cite:p:`xiu_cubature`, as specified with ``cubature_integrand``.";
+		assertEquals(expected, DoxygenToRSTConverter.convert(original));
+	}
+	
+	@Test
+	public void testItalics() {
+		String original = "at most,\r\n"
+						+ "two-way interactions. In addition, the random variable set must\r\n"
+						+ "be independent and identically distributed (\\e iid), so the use\r\n"
+						+ "of \\c askey or \\c wiener transformations may be required to\r\n"
+						+ "create \\e iid variable sets in the transformed space (as well as\r\n"
+						+ "to allow usage of the higher order cubature rules for normal and\r\n"
+						+ "uniform). Note that global sensitivity analysis often assumes\r\n"
+						+ "uniform bounded regions, rather than precise probability\r\n"
+						+ "distributions, so the \\e iid restriction would not be problematic\r\n"
+						+ "in that case.";
+		String expected = "at most,\n"
+						+ "two-way interactions. In addition, the random variable set must\n"
+						+ "be independent and identically distributed ( *iid*), so the use\n"
+						+ "of ``askey`` or ``wiener`` transformations may be required to\n"
+						+ "create *iid* variable sets in the transformed space (as well as\n"
+						+ "to allow usage of the higher order cubature rules for normal and\n"
+						+ "uniform). Note that global sensitivity analysis often assumes\n"
+						+ "uniform bounded regions, rather than precise probability\n"
+						+ "distributions, so the *iid* restriction would not be problematic\n"
+						+ "in that case.";
+		assertEquals(expected, DoxygenToRSTConverter.convert(original));
 	}
 }
