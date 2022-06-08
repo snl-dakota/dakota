@@ -158,7 +158,7 @@ public class RefManMetaData {
 		String data = "";
 		
 		while ((line = mdin.readLine()) != null) {
-			if (line.contains("::")) {
+			if(lineStartsWithDakotaSectionHeader(line)) {
 				// encountered a new field; print previous data, then parse
 				if (!field.isEmpty()) {
 					mdcontents.setByField(field, data);
@@ -207,4 +207,14 @@ public class RefManMetaData {
 		}
 	}
 	*/
+	
+	public static boolean lineStartsWithDakotaSectionHeader(String line) {
+		return line.startsWith("Blurb::") ||
+			   line.startsWith("Description::") ||
+			   line.startsWith("Topics::") ||
+			   line.startsWith("Examples::") ||
+			   line.startsWith("Theory::") ||
+			   line.startsWith("Faq::") ||
+			   line.startsWith("See_Also::");
+	}
 }

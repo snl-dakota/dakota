@@ -14,6 +14,24 @@ import gov.sandia.dart.dakota.refman.metadata.InputSpecKeywordMetaData;
 import gov.sandia.dart.dakota.refman.metadata.RefManKeywordMetaData;
 
 public class KeywordPageRSTPrinter implements KeywordPrinter {
+	
+	////////////
+	// FIELDS //
+	////////////
+	
+	private boolean delayedConversion = true;
+	
+	/////////////
+	// SETTERS //
+	/////////////
+	
+	public void setDelayedConversion(boolean delayedConversion) {
+		this.delayedConversion = delayedConversion;
+	}
+	
+	//////////////
+	// OVERRIDE //
+	//////////////
 
 	@Override
 	public void print(String outputDir, RefManInputSpec spec_data, RefManMetaData meta_data) throws IOException {
@@ -112,7 +130,11 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 	@Override
 	public String printBlurb(RefManKeywordMetaData mdcontents) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(DoxygenToRSTConverter.convert(mdcontents.getBlurb()));
+		if(delayedConversion) {
+			sb.append(DoxygenToRSTConverter.convert(mdcontents.getBlurb()));
+		} else {
+			sb.append(mdcontents.getBlurb());
+		}
 		sb.append("\n\n");
 		return sb.toString();
 	}
@@ -124,7 +146,11 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		if(!mdcontents.getTopics().isBlank()) {
 			sb.append("\n").append(bold("Topics")).append("\n");
 			sb.append("\n");
-			sb.append(DoxygenToRSTConverter.convert(mdcontents.getTopics()));
+			if(delayedConversion) {
+				sb.append(DoxygenToRSTConverter.convert(mdcontents.getTopics()));
+			} else {
+				sb.append(mdcontents.getTopics());
+			}
 			sb.append("\n\n");
 		}
 		return sb.toString();
@@ -135,20 +161,24 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		StringBuilder sb = new StringBuilder();
 		
 		if(!mdcontents.getSeeAlso().isBlank()) {
-			sb.append("\n").append(bold("See Also")).append("\n");
-			sb.append("\n");
-			
-			String[] seeAlsoLinks = mdcontents.getSeeAlso().split("[,\n]");
-			for(String link : seeAlsoLinks) {
-				if(!link.isBlank()) {
-					String lastSegment = link;
-					if(lastSegment.contains("-")) {
-						String[] tokens = link.split("-");
-						lastSegment = tokens[tokens.length-1];
+			if(delayedConversion) {
+				sb.append("\n").append(bold("See Also")).append("\n");
+				sb.append("\n");
+				
+				String[] seeAlsoLinks = mdcontents.getSeeAlso().split("[,\n]");
+				for(String link : seeAlsoLinks) {
+					if(!link.isBlank()) {
+						String lastSegment = link;
+						if(lastSegment.contains("-")) {
+							String[] tokens = link.split("-");
+							lastSegment = tokens[tokens.length-1];
+						}
+						
+						sb.append("- :ref:`").append(lastSegment.trim()).append(" <").append(link.trim()).append(">` \n");
 					}
-					
-					sb.append("- :ref:`").append(lastSegment.trim()).append(" <").append(link.trim()).append(">` \n");
 				}
+			} else {
+				sb.append(mdcontents.getSeeAlso());
 			}
 			sb.append("\n\n");
 		}
@@ -161,7 +191,11 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		
 		sb.append("\n").append(bold("Description")).append("\n");
 		sb.append("\n");
-		sb.append(DoxygenToRSTConverter.convert(mdcontents.getDescription())).append("\n\n");
+		if(delayedConversion) {
+			sb.append(DoxygenToRSTConverter.convert(mdcontents.getDescription())).append("\n\n");
+		} else {
+			sb.append(mdcontents.getDescription()).append("\n\n");
+		}
 		return sb.toString();
 	}
 
@@ -172,7 +206,11 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		if(!mdcontents.getExamples().isBlank()) {
 			sb.append("\n").append(bold("Examples")).append("\n");
 			sb.append("\n");
-			sb.append(DoxygenToRSTConverter.convert(mdcontents.getExamples()));
+			if(delayedConversion) {
+				sb.append(DoxygenToRSTConverter.convert(mdcontents.getExamples()));
+			} else {
+				sb.append(mdcontents.getExamples());
+			}
 			sb.append("\n\n");
 		}
 		return sb.toString();
@@ -185,7 +223,11 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		if(!mdcontents.getTheory().isBlank()) {
 			sb.append("\n").append(bold("Theory")).append("\n");
 			sb.append("\n");
-			sb.append(DoxygenToRSTConverter.convert(mdcontents.getTheory()));
+			if(delayedConversion) {
+				sb.append(DoxygenToRSTConverter.convert(mdcontents.getTheory()));
+			} else {
+				sb.append(mdcontents.getTheory());
+			}
 			sb.append("\n\n");
 		}
 		return sb.toString();
@@ -198,7 +240,11 @@ public class KeywordPageRSTPrinter implements KeywordPrinter {
 		if(!mdcontents.getFaq().isBlank()) {
 			sb.append("\n").append(bold("FAQ")).append("\n");
 			sb.append("\n");
-			sb.append(DoxygenToRSTConverter.convert(mdcontents.getFaq()));
+			if(delayedConversion) {
+				sb.append(DoxygenToRSTConverter.convert(mdcontents.getFaq()));
+			} else {
+				sb.append(mdcontents.getFaq());
+			}
 			sb.append("\n\n");
 		}
 		return sb.toString();
