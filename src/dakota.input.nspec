@@ -3779,6 +3779,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
              ]
             [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
            )
+          |
+          import_expansion_file STRING {N_mdm(str,importExpansionFile)}
           [ 
             askey {N_mdm(type,expansionType_ASKEY_U)}
             |
@@ -4530,6 +4532,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
              ]
             [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
            )
+          |
+          import_expansion_file STRING {N_mdm(str,importExpansionFile)}
           [ 
             askey {N_mdm(type,expansionType_ASKEY_U)}
             |
@@ -5180,6 +5184,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
              ]
             [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
            )
+          |
+          import_expansion_file STRING {N_mdm(str,importExpansionFile)}
           [ 
             askey {N_mdm(type,expansionType_ASKEY_U)}
             |
