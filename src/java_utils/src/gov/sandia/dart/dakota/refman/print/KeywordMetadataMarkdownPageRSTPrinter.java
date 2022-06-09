@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import org.apache.commons.io.FileUtils;
 
 import gov.sandia.dart.dakota.refman.RefManMetaData;
+import gov.sandia.dart.dakota.refman.metadata.DuplicateKeywordMetadata;
 import gov.sandia.dart.dakota.refman.metadata.RefManKeywordMetaData;
 
 public class KeywordMetadataMarkdownPageRSTPrinter {
@@ -25,17 +26,22 @@ public class KeywordMetadataMarkdownPageRSTPrinter {
 		
 		for(Entry<String, RefManKeywordMetaData> entry : metadata.entrySet()) {
 			String outputFilename = entry.getKey();
-			RefManKeywordMetaData metadatum = entry.getValue();
+			RefManKeywordMetaData metadatum = entry.getValue();			
 			
 			File destinationFile = new File(outputDir, outputFilename);
 			try(OutputStreamWriter kw_os = new FileWriter(destinationFile)) {
-				kw_os.append(printBlurb(metadatum));
-				kw_os.append(printDescription(metadatum));
-				kw_os.append(printTopics(metadatum));
-				kw_os.append(printExamples(metadatum));
-				kw_os.append(printTheory(metadatum));
-				kw_os.append(printFAQ(metadatum));
-				kw_os.append(printSeeAlso(metadatum));		
+				if(metadatum instanceof DuplicateKeywordMetadata) {
+					DuplicateKeywordMetadata duplicate = (DuplicateKeywordMetadata) metadatum;
+					kw_os.append(duplicate.getDuplicateFileContents());
+				} else {
+					kw_os.append(printBlurb(metadatum));
+					kw_os.append(printDescription(metadatum));
+					kw_os.append(printTopics(metadatum));
+					kw_os.append(printExamples(metadatum));
+					kw_os.append(printTheory(metadatum));
+					kw_os.append(printFAQ(metadatum));
+					kw_os.append(printSeeAlso(metadatum));		
+				}
 			}
 		}
 	}
@@ -51,7 +57,10 @@ public class KeywordMetadataMarkdownPageRSTPrinter {
 			RefManKeywordMetaData metadatum = new RefManKeywordMetaData();
 			
 			for(String line : lines) {
-				if(RefManMetaData.lineStartsWithDakotaSectionHeader(line)) {
+				if(line.startsWith("DUPLICATE-")) {
+					metadatum = new DuplicateKeywordMetadata(fileContents);
+					break;
+				} else if(RefManMetaData.lineStartsWithDakotaSectionHeader(line)) {
 					if(!section.isBlank()) {
 						String converted = DoxygenToRSTConverter.convert(sb.toString()) + "\n";
 						
@@ -71,8 +80,13 @@ public class KeywordMetadataMarkdownPageRSTPrinter {
 							metadatum.setSeeAlso(converted);
 						}
 					}
-					section = line.split("::")[0];
+					String[] tokens = line.split("::");
+					section = tokens[0];
 					sb = new StringBuilder();
+					if(tokens.length > 1) {
+						String remainder = tokens[1];
+						sb.append(remainder).append("\n");
+					}
 				} else {
 					sb.append(line).append("\n");
 				}

@@ -15,7 +15,6 @@ import java.io.FileNotFoundException;
 
 import gov.sandia.dart.dakota.nidr.NIDRToRefManSpec;
 import gov.sandia.dart.dakota.refman.print.KeywordPageRSTPrinter;
-import gov.sandia.dart.dakota.refman.print.KeywordPrinter;
 import gov.sandia.dart.dakota.xml.XMLToRefManSpec;
 
 /**
@@ -63,7 +62,8 @@ public class RefManGenerator {
 		// RefManTopicTree topic_tree = parseTopicTree(topic_tree_file);
 		RefManMetaData meta_data = new RefManMetaData(kw_md_dir, spec_data);
 		
-		KeywordPrinter printer = new KeywordPageRSTPrinter(); // Change this line to change the type of printer
+		KeywordPageRSTPrinter printer = new KeywordPageRSTPrinter(); // Change this line to change the type of printer
+		printer.setDelayedConversion(false);
 		// printTopicPages(topic_tree, meta_data, topic_md_dir, topics_intro_file);
 		printer.print(output_dir, spec_data, meta_data);
 	}
