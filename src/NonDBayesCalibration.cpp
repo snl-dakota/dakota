@@ -293,41 +293,49 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  exp_coeff_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
 	else if (refine_cntl)
 	  exp_coeff_approach = Pecos::INCREMENTAL_SPARSE_GRID;
-	se_rep = std::make_shared<NonDStochCollocation>(inbound_model, exp_coeff_approach,
-	  ssg_level, dim_pref, u_space_type, refine_type, refine_cntl,
-	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
+	se_rep = std::make_shared<NonDStochCollocation>(inbound_model,
+	  exp_coeff_approach, ssg_level, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       }
       else if (tpq_order != USHRT_MAX)
-	se_rep = std::make_shared<NonDStochCollocation>(inbound_model, Pecos::QUADRATURE,
-	  tpq_order, dim_pref, u_space_type, refine_type, refine_cntl,
-	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
+	se_rep = std::make_shared<NonDStochCollocation>(inbound_model,
+	  Pecos::QUADRATURE, tpq_order, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
 
     else if (emulatorType == PCE_EMULATOR) {
+      const String& exp_import_file
+	= probDescDB.get_string("method.nond.import_expansion_file");
+      const String & exp_export_file
+        = probDescDB.get_string("method.nond.export_expansion_file");
       unsigned short ssg_level
 	= probDescDB.get_ushort("method.nond.sparse_grid_level");
       unsigned short tpq_order
 	= probDescDB.get_ushort("method.nond.quadrature_order");
       unsigned short cub_int
 	= probDescDB.get_ushort("method.nond.cubature_integrand");
-      const String & exp_expansion_file
-        = probDescDB.get_string("method.nond.export_expansion_file");
-      if (ssg_level != USHRT_MAX) { // PCE sparse grid
+      if (!exp_import_file.empty())
+	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	  exp_import_file, u_space_type);
+      else if (ssg_level != USHRT_MAX) { // PCE sparse grid
 	short exp_coeff_approach = (refine_cntl) ?
 	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
-	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model, exp_coeff_approach,
-	  ssg_level, dim_pref, u_space_type, refine_type, refine_cntl,
-	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs, exp_expansion_file);
+	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	  exp_coeff_approach, ssg_level, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
+	  exp_export_file);
       }
       else if (tpq_order != USHRT_MAX)
-	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model, Pecos::QUADRATURE,
-	  tpq_order, dim_pref, u_space_type, refine_type, refine_cntl,
-	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs, exp_expansion_file);
+	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	  Pecos::QUADRATURE, tpq_order, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
+	  exp_export_file);
       else if (cub_int != USHRT_MAX)
-	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model, Pecos::CUBATURE,
-	  cub_int, dim_pref, u_space_type, refine_type, refine_cntl,
-	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs, exp_expansion_file);
+	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	  Pecos::CUBATURE, cub_int, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
+          exp_export_file);
       else { // regression PCE: LeastSq/CS, OLI
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
@@ -415,8 +423,9 @@ void NonDBayesCalibration::construct_mcmc_model()
 
     else if (emulatorType == ML_PCE_EMULATOR) {
       SizetArray seed_seq(1, randomSeed); // reuse bayes_calib scalar spec
-      se_rep = std::make_shared<NonDMultilevelPolynomialChaos>(MULTILEVEL_POLYNOMIAL_CHAOS,
-	inbound_model, probDescDB.get_short("method.nond.regression_type"),
+      se_rep = std::make_shared<NonDMultilevelPolynomialChaos>(
+	MULTILEVEL_POLYNOMIAL_CHAOS, inbound_model,
+	probDescDB.get_short("method.nond.regression_type"),
 	probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
 	probDescDB.get_sza("method.nond.collocation_points"), // sequence
 	probDescDB.get_real("method.nond.collocation_ratio"), // scalar
@@ -935,7 +944,8 @@ void NonDBayesCalibration::update_model()
     break;
   case GP_EMULATOR: case KRIGING_EMULATOR:
     if (standardizedSpace)
-      nondInstance = (NonD*)mcmcModel.subordinate_iterator().iterator_rep().get();
+      nondInstance
+	= (NonD*)mcmcModel.subordinate_iterator().iterator_rep().get();
     evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
     if (standardizedSpace)
       nondInstance = this; // restore
