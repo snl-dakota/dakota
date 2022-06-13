@@ -5,14 +5,6 @@ Variables
 
 .. _topic-variables:
 
-.. _topic-discrete_variables:
-
-.. _topic-state_variables:
-
-.. _topic-variable_support:
-
-.. _topic-aleatory_uncertain_variables:
-
 Overview
 --------
 

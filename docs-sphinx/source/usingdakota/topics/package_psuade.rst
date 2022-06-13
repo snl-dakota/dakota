@@ -1,0 +1,14 @@
+.. _`topic-package_psuade`:
+
+Package: PSUADE
+===============
+
+The Problem Solving Environment for Uncertainty Analysis and Design
+Exploration (PSUADE) is a Lawrence Livermore National Laboratory tool
+for metamodeling, sensitivity analysis, uncertainty quantification,
+and optimization. Its features include non-intrusive and parallel
+function evaluations, sampling and analysis methods, an integrated
+design and analysis framework, global optimization, numerical
+integration, response surfaces (MARS and higher order regressions),
+graphical output with Pgplot or Matlab, and fault tolerance
+:cite:p:`Ton05`.

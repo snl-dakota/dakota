@@ -13,6 +13,7 @@ Using Dakota
    output
    studytypes
    methodtypes
+   topics
    advanced
    theory
    reference

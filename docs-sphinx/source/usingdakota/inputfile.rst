@@ -1,5 +1,7 @@
 .. _inputfile-main:
 
+.. _`topic-block`:
+
 """""""""""""""""
 Dakota Input File
 """""""""""""""""
