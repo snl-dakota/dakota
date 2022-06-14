@@ -50,7 +50,8 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 	      sub_model.num_secondary_fns(),
 	      sub_model.num_nonlinear_ineq_constraints(),
               response_order(sub_model, recast_resp_deriv_order)), 
-  expData(exp_data), numHyperparams(num_hyper), obsErrorMultiplierMode(mult_mode)
+  expData(exp_data), numHyperparams(num_hyper),
+  obsErrorMultiplierMode(mult_mode)
 {
   modelId = RecastModel::recast_model_id(root_model_id(), "DATA_TRANSFORM");
   // register state variables as inactive vars if config vars are present
@@ -59,7 +60,9 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // BMA NOTE: This will change the inactive view of any Variables object
   // sharing the same SharedVariables data as the subModel's Variables
   size_t num_config_vars = expData.num_config_vars();
-  if (num_config_vars > 0) {
+  short  active_sm_view  = subModel.current_variables().view().first;
+  if ( num_config_vars &&
+       ( active_sm_view != RELAXED_ALL && active_sm_view != MIXED_ALL ) ) {
     subModel.inactive_view(MIXED_STATE);
     int num_state_vars =
       subModel.icv() + subModel.idiv() + subModel.idsv() + subModel.idrv();
@@ -67,7 +70,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
       Cerr << "\nError: (DataTransformModel) Number of state "
 	   << "variables = " << num_state_vars << " must match\n       number "
 	   << "of configuration variables = " << num_config_vars << "\n";
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
 
@@ -202,7 +205,7 @@ void DataTransformModel::data_resize()
     // allow updates including the whole parameter domain change.
     Cerr << "\nError (DataTransformModel): data updates not supported when "
 	 << "calibrating\nhyper-parameters.";
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // there is no change in variables or derivatives for now
@@ -434,7 +437,7 @@ int DataTransformModel::get_hyperparam_vc_index(const Model& sub_model)
   default:
     Cerr << "\nError: invalid active variables view " << active_view 
 	 << " in DataTransformModel.\n";
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
     break;
 
   }
@@ -849,7 +852,7 @@ void DataTransformModel::collect_residuals(bool collect_all)
       Cerr << "\nError (DataTransformModel): Sub-model returned " 
            << cr_pair->second.size() << "evaluations,\n  but have " << num_exp 
            << " experiment configurations.\n";
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
 
     // populate recastResponseMap with any recast evals that have all
@@ -893,7 +896,7 @@ transform_response_map(const IntResponseMap& submodel_resp,
   if (submodel_resp.size() != num_exp) {
     // unsupported case: could (shouldn't) happen in complex MF workflows
     Cerr << "\nError (DataTransformModel): sub model evals wrong size.\n";
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
   IntRespMCIter sm_eval_it = submodel_resp.begin();
   for (size_t i=0; i<num_exp; ++i, ++sm_eval_it)

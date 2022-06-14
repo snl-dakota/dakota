@@ -40,6 +40,7 @@ RecastModel::
 RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 	    const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	    const BitArray& all_relax_dr, bool nonlinear_vars_mapping,
+	    //const std::pair<short,short>& recast_vars_view,
 	    void (*variables_map)      (const Variables& recast_vars,
 					Variables& sub_model_vars),
 	    void (*set_map)            (const Variables& recast_vars,
@@ -82,6 +83,13 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     reshape_vars = 
       init_variables(vars_comps_totals, all_relax_di, all_relax_dr); 
   }
+  /*
+  else if (recast_vars_view != currentVariables.view()) {
+    currentVariables = subModel.current_variables().copy(true); // svd deep copy
+    currentVariabels.view(recast_vars_view);
+    numDerivVars = currentVariables.cv();
+  }
+  */
   else {
     // variables are not mapped: deep copy of vars to allow independence, but 
     // shallow copy of svd since types/labels/ids can be kept consistent

@@ -137,11 +137,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   scaleFlag(probDescDB.get_bool("method.scaling")),
   weightFlag(!iteratedModel.primary_response_fn_weights().empty())
 {
-  if (randomSeed != 0)
-    Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
+  if (randomSeed)
+    Cout << "NonDBayes Seed (user-specified) = "   << randomSeed << std::endl;
   else {
     randomSeed = generate_system_seed();
-    Cout << " NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
+    Cout << "NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
   }
 
   // NOTE: Burn-in defaults to 0 and sub-sampling to 1. We want to
@@ -312,10 +312,12 @@ void NonDBayesCalibration::construct_mcmc_model()
       unsigned short cub_int
 	= probDescDB.get_ushort("method.nond.cubature_integrand");
       if (!exp_import_file.empty()) {
-	// Imported surrogate must include state config vars (MIXED_ALL).
+	// Imported surrogate will include state config vars for now.
 	// TO DO: expand this override to non-imported cases.
+	if (expData.num_config_vars())
+	  inbound_model.active_view(MIXED_ALL); // allow recursion
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
-	  exp_import_file, u_space_type, MIXED_ALL);
+	  exp_import_file, u_space_type);
       }
       else if (ssg_level != USHRT_MAX) { // PCE sparse grid
 	short exp_coeff_approach = (refine_cntl) ?
@@ -1808,7 +1810,7 @@ void NonDBayesCalibration::build_field_discrepancy()
   compute_col_means(acc_chain_transpose, ave_params); 
   mcmcModel.continuous_variables(ave_params);
   //mcmcModel.evaluate();
- 
+
   int num_exp = expData.num_experiments();
   size_t num_configvars = expData.num_config_vars();
   std::vector<RealVector> config_vars = expData.config_vars_as_real();

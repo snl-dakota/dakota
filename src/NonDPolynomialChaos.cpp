@@ -305,7 +305,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     that import the PCE coefficients rather than compute them. */
 NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, const String& exp_import_file,
-		    short u_space_type, short dfs_view):
+		    short u_space_type):
   NonDExpansion(POLYNOMIAL_CHAOS, model, -1, RealVector(), 0,
 		Pecos::NO_REFINEMENT, Pecos::NO_CONTROL, DEFAULT_COVARIANCE,
 		0., Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
@@ -350,7 +350,6 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
      g_u_model, pce_set, approx_type, exp_orders, corr_type, corr_order,
      data_order, outputLevel, pt_reuse));
-  uSpaceModel.active_view(dfs_view, false);// allow alt DFS view; don't recurse
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
