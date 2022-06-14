@@ -293,29 +293,28 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
   // uses one set of allResponses with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
-  size_t cntr, step, num_steps = numApprox+1;  Real cost;
-  seq_cost.size(num_steps); // init to 0
-  SizetArray num_finite;  num_finite.assign(num_steps, 0);
+  size_t cntr, step, num_steps = numApprox+1, num_finite, md_index;
+  Real cost;  bool ml = (costMetadataIndices.size() == 1);
   IntRespMCIter r_it;
   using std::isfinite;
-  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
 
-    const std::vector<RespMetadataT>& md = r_it->second.metadata();// aggregated
-    if (outputLevel >= DEBUG_OUTPUT) Cout << "Metadata:\n" << md;
+  seq_cost.size(num_steps); // init to 0
+  for (step=0, cntr=0; step<num_steps; ++step) {
+    const SizetSizetPair& cost_mdi = (ml) ? costMetadataIndices[0] :
+      costMetadataIndices[step];
 
-    for (step=0, cntr=0; step<num_steps; ++step) {
-      const SizetSizetPair& cost_mdi = costMetadataIndices[step];
-      cost = md[cntr + cost_mdi.first]; // offset by index
+    md_index = cntr + cost_mdi.first; // index into aggregated metadata
+    num_finite = 0;
+    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+      cost = r_it->second.metadata()[md_index]; // offset by index
       if (isfinite(cost)) {
-	++num_finite[step];
+	++num_finite;
 	seq_cost[step] += cost;
       }
-      cntr += cost_mdi.second; // offset by size of metadata for step
     }
+    seq_cost[step] /= num_finite;
+    cntr += cost_mdi.second; // offset by size of metadata for step
   }
-  // Ensemble average cost
-  for (step=0; step<num_steps; ++step)
-    seq_cost[step] /= num_finite[step];
 }
 
 
