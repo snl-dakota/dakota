@@ -249,20 +249,47 @@ void Constraints::build_inactive_views()
 }
 
 
+void Constraints::active_view(short view1)
+{
+  if (constraintsRep)
+    constraintsRep->active_view(view1);
+  else { // likely redundant with corresponding update from Variables
+
+    sharedVarsData.active_view(view1);
+    // Unconditional update: account for case where Variables::active_view()
+    // already updated SharedVariablesData, but Constraints has not been updated
+    build_active_views();
+
+    if (view1 == RELAXED_ALL || view1 == MIXED_ALL) {
+      if (sharedVarsData.view().second)
+	sharedVarsData.inactive_view(EMPTY_VIEW);
+      build_inactive_views(); // unconditional
+    }
+
+    //check_view_compatibility(); // performed in Variables
+  }
+}
+
+
 void Constraints::inactive_view(short view2)
 {
   if (constraintsRep)
     constraintsRep->inactive_view(view2);
   else {
     short view1 = sharedVarsData.view().first;
-    // If active view is {RELAXED,MIXED}_ALL, outer level active view is
-    // aggregated in inner loop all view and inactive view remains EMPTY_VIEW.
-    // Disallow assignment of an inactive ALL view.
-    if (view1 > MIXED_ALL && view2 > MIXED_ALL) {
-      sharedVarsData.inactive_view(view2); // likely redundant with Variables
-      //check_view_compatibility(); // performed in Variables
-      build_inactive_views();
+    if (view2 == RELAXED_ALL || view2 == MIXED_ALL) {
+      Cerr << "Error: Constraints inactive view may not be ALL." << std::endl;
+      abort_handler(MODEL_ERROR);
     }
+    else if ( (view1 == RELAXED_ALL || view1 == MIXED_ALL) && view2) {
+      Cerr << "Warning: ignoring non-EMPTY inactive view for active ALL view "
+	   << "in Constraints." << std::endl;
+      return; //abort_handler(MODEL_ERROR);
+    }
+
+    sharedVarsData.inactive_view(view2); // likely redundant with Variables
+    build_inactive_views(); // unconditional
+    //check_view_compatibility(); // performed in Variables
   }
 }
 

@@ -209,23 +209,51 @@ Variables::~Variables()
 { /* empty dtor */ }
 
 
+void Variables::active_view(short view1)
+{
+  if (variablesRep)
+    variablesRep->active_view(view1);
+  else {
+
+    sharedVarsData.active_view(view1);
+    build_active_views(); // unconditional: avoid Vars/Cons order dependence
+
+    if (view1 == RELAXED_ALL || view1 == MIXED_ALL) {
+      if (sharedVarsData.view().second)
+	sharedVarsData.inactive_view(EMPTY_VIEW);
+      build_inactive_views(); // unconditional: avoid Vars/Cons order dependence
+    }
+
+    // View assigment checks are performed here (rather than in the
+    // NestedModel ctor or within the Model recursion) so that all
+    // levels of recursion are adequately addressed.
+    check_view_compatibility();
+  }
+}
+
+
 void Variables::inactive_view(short view2)
 {
   if (variablesRep)
     variablesRep->inactive_view(view2);
   else {
     short view1 = sharedVarsData.view().first;
-    // If active view is {RELAXED,MIXED}_ALL, outer level active view is
-    // aggregated in inner loop all view and inactive view remains EMPTY_VIEW.
-    // Disallow assignment of an inactive ALL view.
-    if (view1 > MIXED_ALL && view2 > MIXED_ALL) {
-      sharedVarsData.inactive_view(view2);
-      // View assigment checks are performed here (rather than in the
-      // NestedModel ctor or within the Model recursion) so that all
-      // levels of recursion are adequately addressed.
-      check_view_compatibility();
-      build_inactive_views();
+    if (view2 == RELAXED_ALL || view2 == MIXED_ALL) {
+      Cerr << "Error: Variables inactive view may not be ALL." << std::endl;
+      abort_handler(VARS_ERROR);
     }
+    else if ( (view1 == RELAXED_ALL || view1 == MIXED_ALL) && view2) {
+      Cerr << "Warning: ignoring non-EMPTY inactive view for active ALL view "
+	   << "in Variables." << std::endl;
+      return; //abort_handler(VARS_ERROR);
+    }
+
+    sharedVarsData.inactive_view(view2);
+    build_inactive_views(); // unconditional: avoid Vars/Cons order dependence
+    // View assigment checks are performed here (rather than in the
+    // NestedModel ctor or within the Model recursion) so that all
+    // levels of recursion are adequately addressed.
+    check_view_compatibility();
   }
 }
 

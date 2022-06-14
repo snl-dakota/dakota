@@ -884,6 +884,8 @@ public:
 
   /// retreive the Variables view
   const std::pair<short,short>& view() const;
+  /// set the active Variables view
+  void active_view(short view1);
   /// set the inactive Variables view
   void inactive_view(short view2);
 
@@ -1568,6 +1570,10 @@ inline size_t SharedVariablesData::vc_lookup(unsigned short key) const
 
 inline const std::pair<short,short>& SharedVariablesData::view() const
 { return svdRep->variablesView; }
+
+
+inline void SharedVariablesData::active_view(short view1)
+{ svdRep->variablesView.first = view1; }
 
 
 inline void SharedVariablesData::inactive_view(short view2)

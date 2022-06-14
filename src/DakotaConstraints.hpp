@@ -275,7 +275,9 @@ public:
   void reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 	       size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
 
-  /// sets the inactive view based on higher level (nested) context
+  /// sets the active view based on higher level context
+  void active_view(short view2);
+  /// sets the inactive view based on higher level context
   void inactive_view(short view2);
 
   /// function to check constraintsRep (does this envelope contain a letter)

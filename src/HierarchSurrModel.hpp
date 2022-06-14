@@ -171,8 +171,11 @@ protected:
   /// master; completes when termination message received from stop_servers().
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
 
-  /// update the Model's inactive view based on higher level (nested)
-  /// context and optionally recurse into
+  /// update the Model's active view based on higher level context
+  /// and optionally recurse into orderedModels
+  void active_view(short view, bool recurse_flag = true);
+  /// update the Model's inactive view based on higher level context
+  /// and optionally recurse into orderedModels
   void inactive_view(short view, bool recurse_flag = true);
 
   /// if recurse_flag, return true if orderedModels evaluation cache usage
@@ -735,10 +738,20 @@ inline void HierarchSurrModel::stop_model(size_t ordered_model_index)
 }
 
 
+inline void HierarchSurrModel::active_view(short view, bool recurse_flag)
+{
+  Model::active_view(view);
+  if (recurse_flag) {
+    size_t i, num_models = orderedModels.size();
+    for (i=0; i<num_models; ++i)
+      orderedModels[i].active_view(view, recurse_flag);
+  }
+}
+
+
 inline void HierarchSurrModel::inactive_view(short view, bool recurse_flag)
 {
-  currentVariables.inactive_view(view);
-  userDefinedConstraints.inactive_view(view);
+  Model::inactive_view(view);
   if (recurse_flag) {
     size_t i, num_models = orderedModels.size();
     for (i=0; i<num_models; ++i)

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -140,8 +141,11 @@ protected:
   /// master; completes when termination message received from stop_servers().
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
 
-  /// update the Model's inactive view based on higher level (nested)
-  /// context and optionally recurse into
+  /// update the Model's active view based on higher level context
+  /// and optionally recurse into truthModel and unorderedModels
+  void active_view(short view, bool recurse_flag = true);
+  /// update the Model's inactive view based on higher level context
+  /// and optionally recurse into truthModel and unorderedModels
   void inactive_view(short view, bool recurse_flag = true);
 
   /// if recurse_flag, return true if orderedModels evaluation cache usage
@@ -574,10 +578,21 @@ inline void NonHierarchSurrModel::stop_model(short model_id)
 }
 
 
+inline void NonHierarchSurrModel::active_view(short view, bool recurse_flag)
+{
+  Model::active_view(view);
+  if (recurse_flag) {
+    size_t i, num_unord = unorderedModels.size();
+    for (i=0; i<num_unord; ++i)
+      unorderedModels[i].active_view(view, recurse_flag);
+    truthModel.active_view(view, recurse_flag);
+  }
+}
+
+
 inline void NonHierarchSurrModel::inactive_view(short view, bool recurse_flag)
 {
-  currentVariables.inactive_view(view);
-  userDefinedConstraints.inactive_view(view);
+  Model::inactive_view(view);
   if (recurse_flag) {
     size_t i, num_unord = unorderedModels.size();
     for (i=0; i<num_unord; ++i)

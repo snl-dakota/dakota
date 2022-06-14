@@ -397,8 +397,11 @@ protected:
   /// when RecastModel iteration is complete.
   void stop_servers();
 
-  /// update the Model's inactive view based on higher level (nested)
-  /// context and optionally recurse into subModel
+  /// update the Model's active view based on higher level context
+  /// and optionally recurse into subModel
+  void active_view(short view, bool recurse_flag = true);
+  /// update the Model's inactive view based on higher level context
+  /// and optionally recurse into subModel
   void inactive_view(short view, bool recurse_flag = true);
 
   /// return the subModel interface identifier
@@ -1071,10 +1074,17 @@ inline void RecastModel::stop_servers()
 { subModel.stop_servers(); }
 
 
+inline void RecastModel::active_view(short view, bool recurse_flag)
+{
+  Model::active_view(view);
+  if (recurse_flag)
+    subModel.active_view(view, recurse_flag);
+}
+
+
 inline void RecastModel::inactive_view(short view, bool recurse_flag)
 {
-  currentVariables.inactive_view(view);
-  userDefinedConstraints.inactive_view(view);
+  Model::inactive_view(view);
   if (recurse_flag)
     subModel.inactive_view(view, recurse_flag);
 }

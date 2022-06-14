@@ -302,8 +302,11 @@ protected:
   /// when DataFitSurrModel iteration is complete.
   void stop_servers();
 
-  /// update the Model's inactive view based on higher level (nested)
-  /// context and optionally recurse into actualModel
+  /// update the Model's active view based on higher level context
+  /// and optionally recurse into actualModel
+  void active_view(short view, bool recurse_flag = true);
+  /// update the Model's inactive view based on higher level context
+  /// and optionally recurse into actualModel
   void inactive_view(short view, bool recurse_flag = true);
 
   /// return the approxInterface identifier
@@ -937,10 +940,17 @@ inline void DataFitSurrModel::stop_servers()
 }
 
 
+inline void DataFitSurrModel::active_view(short view, bool recurse_flag)
+{
+  Model::active_view(view);
+  if (recurse_flag && !actualModel.is_null())
+    actualModel.active_view(view, recurse_flag);
+}
+
+
 inline void DataFitSurrModel::inactive_view(short view, bool recurse_flag)
 {
-  currentVariables.inactive_view(view);
-  userDefinedConstraints.inactive_view(view);
+  Model::inactive_view(view);
   if (recurse_flag && !actualModel.is_null())
     actualModel.inactive_view(view, recurse_flag);
 }

@@ -5070,6 +5070,25 @@ ActiveSet Model::default_active_set()
 }
 
 
+void Model::active_view(short view, bool recurse_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->active_view(view, recurse_flag);
+  else { // default does not support recursion (SimulationModel, NestedModel)
+    currentVariables.active_view(view);
+    userDefinedConstraints.active_view(view);
+
+    // TO DO: review other resizing needs in derived Model data
+    numDerivVars = currentVariables.cv(); // update
+    if (!quasiHessians.empty()) {
+      size_t i, num_qh = quasiHessians.size();
+      for (i=0; i<num_qh; ++i)
+	{ quasiHessians[i].reshape(numDerivVars);  quasiHessians[i] = 0.; }
+    }
+  }
+}
+
+
 void Model::inactive_view(short view, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter

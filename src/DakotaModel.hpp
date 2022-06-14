@@ -458,7 +458,9 @@ public:
   virtual void derived_auto_graphics(const Variables& vars,
 				     const Response& resp);
 
-  /// update the Model's inactive view based on higher level (nested) context
+  /// update the Model's active view based on a higher level context
+  virtual void active_view(short view, bool recurse_flag = true);
+  /// update the Model's inactive view based on a higher level context
   virtual void inactive_view(short view, bool recurse_flag = true);
 
   /// return the interface identifier

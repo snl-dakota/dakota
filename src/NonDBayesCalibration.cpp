@@ -311,9 +311,12 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_ushort("method.nond.quadrature_order");
       unsigned short cub_int
 	= probDescDB.get_ushort("method.nond.cubature_integrand");
-      if (!exp_import_file.empty())
+      if (!exp_import_file.empty()) {
+	// Imported surrogate must include state config vars (MIXED_ALL).
+	// TO DO: expand this override to non-imported cases.
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
-	  exp_import_file, u_space_type);
+	  exp_import_file, u_space_type, MIXED_ALL);
+      }
       else if (ssg_level != USHRT_MAX) { // PCE sparse grid
 	short exp_coeff_approach = (refine_cntl) ?
 	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
