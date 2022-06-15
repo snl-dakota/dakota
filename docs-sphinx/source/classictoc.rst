@@ -103,19 +103,7 @@ set of manuals, this set of links may help you find what you're looking for...
   - :ref:`Input Spec Summary <inputspec-summary>`
   
 - :ref:`Keywords Area <keyword-reference-area>`
-- Topics Area
-
-  - admin
-  - dakota_IO
-  - dakota_concepts
-  - models
-  - variables
-  - responses
-  - interface
-  - methods
-  - advanced_topics
-  - packages
-
+- :ref:`Topics Area <topics-reference-area>`
 - :ref:`Dakota HDF5 Output <hdf-main>`
 - :ref:`Test Problems <examples-gettingstarted-main>`
 
