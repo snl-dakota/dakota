@@ -1,6 +1,7 @@
 package gov.sandia.dart.dakota.refman.print.rst.table;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CellFormatter {
@@ -51,7 +52,7 @@ public class CellFormatter {
 			throw new IllegalStateException("Padding excludes contents from being added to cell. Make the prescribed cell width wider.");
 		}
 		
-		String[] words = contents.split(" ");
+		String[] words = splitByLineBreaksAndSpaces(contents);
 		wordIndex = 0;
 		nextWord = words[wordIndex];
 		
@@ -65,6 +66,15 @@ public class CellFormatter {
 	/////////////
 	// PRIVATE //
 	/////////////
+	
+	private String[] splitByLineBreaksAndSpaces(String contents) {
+		List<String> firstSplits = Arrays.asList(contents.split("\n|\r\n"));
+		List<String> finalSplits = new ArrayList<>();
+		for(String firstSplit : firstSplits) {
+			finalSplits.addAll(Arrays.asList(firstSplit.split(" ")));
+		}
+		return finalSplits.toArray(new String[finalSplits.size()]);
+	}
 	
 	private void insertWordsUntilCellIsFilled(int cellWidth, String[] words) {
 		int leftPadding = cell.getLeftPadding();

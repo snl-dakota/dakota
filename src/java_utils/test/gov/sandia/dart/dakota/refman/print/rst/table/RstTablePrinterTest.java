@@ -625,8 +625,8 @@ public class RstTablePrinterTest {
 		header.addCell("Dakota Keyword Description");
 		
 		GenericRow row1 = new GenericRow();
-		row1.addCell("Required (Choose One)", 1, 3);
-		row1.addCell("Batch Selection Criterion", 1, 3);
+		row1.addCell("Required (Choose One)", 1, 4);
+		row1.addCell("Batch Selection Criterion", 1, 4);
 		row1.addCell("`naive`__");
 		row1.addCell("Take the highest scoring candidates");
 		
@@ -674,6 +674,77 @@ public class RstTablePrinterTest {
 						+ "|                         |                    |                      | model to predict what the surrogate upgrade |\n"
 						+ "|                         |                    |                      | will be with new points.                    |\n"
 						+ "+-------------------------+--------------------+----------------------+---------------------------------------------+\n";
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testPrintTableInsideTable() {
+		RstTablePrinter printer = new RstTablePrinter();
+		
+		GenericTable innerTable = new GenericTable();
+		innerTable.setColumnWidth(0, 10);
+		innerTable.setColumnWidth(1, 15);
+		innerTable.setColumnWidth(2, 10);
+		
+		GenericRow header = new GenericRow();
+		header.addCell("Test 1");
+		header.addCell("Test 2");
+		header.addCell("Test 3");
+		
+		GenericRow row1 = new GenericRow();
+		row1.addCell("A");
+		row1.addCell("B");
+		row1.addCell("C");
+		
+		innerTable.addRow(header);
+		innerTable.addRow(row1);
+		String innerTableRendered = printer.print(innerTable);
+		int tableWidth = innerTableRendered.indexOf("\n")+2;
+		
+		GenericTable outerTable = new GenericTable();
+		outerTable.setColumnWidth(0, 25);
+		outerTable.setColumnWidth(1, 20);
+		outerTable.setColumnWidth(2, 22);
+		outerTable.setColumnWidth(3, tableWidth);
+		
+		GenericRow outerHeader = new GenericRow();
+		outerHeader.addCell("Required/Optional");
+		outerHeader.addCell("Description of Group");
+		outerHeader.addCell("Dakota Keyword");
+		outerHeader.addCell("Dakota Keyword Description");
+		
+		GenericRow row2 = new GenericRow();
+		row2.addCell("Dummy text 1");
+		row2.addCell("Dummy text 2");
+		row2.addCell("dummy_text");
+		row2.addCell(innerTableRendered);
+		
+		GenericRow row3 = new GenericRow();
+		row3.addCell("Dummy text 3");
+		row3.addCell("Dummy text 4");
+		row3.addCell("dummy_text_2");
+		row3.addCell("This is some more dummy text to make sure we didn't break text wrapping with the nested table.");
+		
+		outerTable.addRow(outerHeader);
+		outerTable.addRow(row2);
+		outerTable.addRow(row3);
+		
+		String actual = printer.print(outerTable);
+		String expected = "+-------------------------+--------------------+----------------------+-----------------------------------------+\n"
+						+ "| Required/Optional       | Description of     | Dakota Keyword       | Dakota Keyword Description              |\n"
+						+ "|                         | Group              |                      |                                         |\n"
+						+ "+=========================+====================+======================+=========================================+\n"
+						+ "| Dummy text 1            | Dummy text 2       | dummy_text           | +----------+---------------+----------+ |\n"
+						+ "|                         |                    |                      | | Test 1   | Test 2        | Test 3   | |\n"
+						+ "|                         |                    |                      | +==========+===============+==========+ |\n"
+						+ "|                         |                    |                      | | A        | B             | C        | |\n"
+						+ "|                         |                    |                      | +----------+---------------+----------+ |\n"
+						+ "+-------------------------+--------------------+----------------------+-----------------------------------------+\n"
+						+ "| Dummy text 3            | Dummy text 4       | dummy_text_2         | This is some more dummy text to make    |\n"
+						+ "|                         |                    |                      | sure we didn't break text wrapping with |\n"
+						+ "|                         |                    |                      | the nested table.                       |\n"
+						+ "+-------------------------+--------------------+----------------------+-----------------------------------------+\n"
+						+ "";
 		assertEquals(expected, actual);
 	}
 }
