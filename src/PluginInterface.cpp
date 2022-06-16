@@ -119,7 +119,7 @@ void PluginInterface::load_plugin()
 {
   if (pluginInterface) return;
   try {
-    pluginInterface = boost::dll::import<DakotaPlugins::DakotaInterfaceAPI>
+    pluginInterface = dakota_boost_dll_import<DakotaPlugins::DakotaInterfaceAPI>
       (pluginPath,
 	 "dakota_interface_plugin"  // name of the symbol to import
 	 // TODO: append .dll, .so, .dylib via
