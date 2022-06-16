@@ -14,61 +14,62 @@ Download Dakota
 Command Line + GUI
 ------------------
 
-- **6.15.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__
-- **6.14.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__
-- **6.13.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__
+- **6.16.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__
+- **6.15.1** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__
+- **6.14.1** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__
 
-.. __: https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-Darwin.x86_64-gui_cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-Windows.x64-gui_cli.zip
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-rhel7.x86_64-gui_cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-Darwin.x86_64-cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-Windows.x64-cli.zip
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-rhel7.x86_64-cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-Darwin.x86_64-gui.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-Windows.x64-gui.zip
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-linux.x86_64-gui.tar.gz
+.. __: https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-public-darwin.Darwin.x86_64-gui_cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-public-windows.Windows.x64-gui_cli.zip
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-public-rhel7.Linux.x86_64-gui_cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-Darwin.x86_64-gui_cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-windows.Windows.x64-gui_cli.zip
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-rhel7.x86_64-gui_cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-Darwin.x86_64-gui_cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-Windows.x64-gui_cli.zip
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-rhel7.x86_64-gui_cli.tar.gz
+
 
 -----------------
 Command Line Only
 -----------------
 
-- **6.15.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
-- **6.14.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
-- **6.13.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
+- **6.16.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
+- **6.15.1** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
+- **6.14.1** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
 
-.. __: https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-Darwin.x86_64-gui_cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-Windows.x64-gui_cli.zip
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-rhel7.x86_64-gui_cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-src-cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-Darwin.x86_64-cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-Windows.x64-cli.zip
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-rhel7.x86_64-cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-src-cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-Darwin.x86_64-gui.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-Windows.x64-gui.zip
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-linux.x86_64-gui.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-src-cli.tar.gz
+.. __: https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-public-darwin.Darwin.x86_64-cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-public-windows.Windows.x64-cli.zip
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-public-rhel7.Linux.x86_64-cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-public-src-cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-Darwin.x86_64-gui_cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-Windows.x64-gui_cli.zip
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-rhel7.x86_64-gui_cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-src-cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-Darwin.x86_64-cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-Windows.x64-cli.zip
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-rhel7.x86_64-cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-src-cli.tar.gz
 
 --------
 GUI Only
 --------
 
-- **6.15.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
-- **6.14.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
-- **6.13.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
+- **6.16.0** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
+- **6.15.1** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
+- **6.14.1** `Mac OSX`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source`__
 
-.. __:  https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-Darwin.x86_64-gui_cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-Windows.x64-gui_cli.zip
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-rhel7.x86_64-gui_cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-release-public-src-gui.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-Darwin.x86_64-cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-Windows.x64-cli.zip
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-rhel7.x86_64-cli.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.0-release-public-src-gui.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-Darwin.x86_64-gui.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-Windows.x64-gui.zip
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-linux.x86_64-gui.tar.gz
-__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.13.0-release-public-src-gui.tar.gz
+.. __:  https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-release-public-Darwin.x86_64-gui.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-release-public-Windows.x64-gui.zip
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-release-public-Linux.x86_64-gui.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-release-public-src-gui.zip
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-Darwin.x86_64-gui_cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-Windows.x64-gui_cli.zip
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-rhel7.x86_64-gui_cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.1-release-public-src-gui.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-Darwin.x86_64-cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-Windows.x64-cli.zip
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-rhel7.x86_64-cli.tar.gz
+__ https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.14.1-release-public-src-gui.tar.gz
 
 :ref:`Release Notes <releasenotes-main>`
 
