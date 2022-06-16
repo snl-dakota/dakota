@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -86,6 +86,10 @@ protected:
   void resize_maps();
   void resize_response(bool use_virtual_counts = true);
 
+  size_t insert_response_start(size_t position);
+  void insert_metadata(const RealArray& md, size_t position,
+		       Response& agg_response);
+
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
 				const SizetArray& ds_index1,
@@ -98,6 +102,7 @@ protected:
   DiscrepancyCorrection& discrepancy_correction();
   short correction_type();
   void  correction_type(short corr_type);
+  short correction_order();
 
   void create_tabular_datastream();
   void derived_auto_graphics(const Variables& vars, const Response& resp);
@@ -208,13 +213,11 @@ private:
 			  Pecos::ActiveKey& truth_key,
 			  Pecos::ActiveKey& surr_key, short parallel_mode);
 
-  /// helper to select among Variables::all_discrete_{int,string,real}_
-  /// variable_labels() for exporting a solution control variable label
-  const String& solution_control_label();
-  /// helper to select among Model::solution_level_{int,string,real}_value()
-  /// for exporting a scalar solution level value
-  void add_tabular_solution_level_value(Model& model);
-
+  /// check for matching interface ids among active truth/surrogate models
+  /// (varies based on active keys)
+  bool matching_truth_surrogate_interface_ids();
+  /// check for matching interface ids across full set of models (invariant)
+  bool matching_all_interface_ids();
   /// update sameInterfaceInstance based on interface ids for models
   /// identified by current {low,high}FidelityKey
   void check_model_interface_instance();
@@ -275,6 +278,50 @@ inline HierarchSurrModel::~HierarchSurrModel()
 { }
 
 
+inline size_t HierarchSurrModel::insert_response_start(size_t position)
+{
+  bool err_flag = false;
+  switch (position) {
+  case 0: return 0; break; // no offset
+  case 1: // offset by HF size
+    if (responseMode == AGGREGATED_MODELS)
+      return
+	truth_model().current_response().active_set_request_vector().size();
+    else err_flag = true;
+    break;
+  default: err_flag = true; break;
+  }
+  if (err_flag) {
+    Cerr << "Error: invalid position (" << position << ") in HierarchSurrModel"
+	 << "::insert_response_start()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return SZ_MAX;
+}
+
+
+inline void HierarchSurrModel::
+insert_metadata(const RealArray& md, size_t position, Response& agg_response)
+{
+  bool err_flag = false;
+  switch (position) {
+  case 0: agg_response.metadata(md, 0); break; // no offset
+  case 1: // offset by HF size
+    if (responseMode == AGGREGATED_MODELS)
+      agg_response.metadata(md,
+	truth_model().current_response().metadata().size());
+    else err_flag = true;
+    break;
+  default: err_flag = true; break;
+  }
+  if (err_flag) {
+    Cerr << "Error: invalid position (" << position << ") in HierarchSurrModel"
+	 << "::insert_metadata()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 inline void HierarchSurrModel::
 nested_variable_mappings(const SizetArray& c_index1,
 			 const SizetArray& di_index1,
@@ -285,29 +332,15 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  // forward along to actualModel:
+  EnsembleSurrModel::nested_variable_mappings(c_index1, di_index1, ds_index1,
+					      dr_index1, c_target2, di_target2,
+					      ds_target2, dr_target2);
+  // forward along to subordinate models
   size_t i, num_models = orderedModels.size();
   for (i=0; i<num_models; ++i)
     orderedModels[i].nested_variable_mappings(c_index1, di_index1, ds_index1,
 					      dr_index1, c_target2, di_target2,
 					      ds_target2, dr_target2);
-}
-
-
-inline void HierarchSurrModel::check_model_interface_instance()
-{
-  unsigned short lf_form =  surrModelKey.retrieve_model_form(),
-                 hf_form = truthModelKey.retrieve_model_form();
-
-  if (hf_form == USHRT_MAX || lf_form == USHRT_MAX)
-    sameModelInstance = sameInterfaceInstance = false; // including both undef
-  else {
-    sameModelInstance = (lf_form == hf_form);
-    if (sameModelInstance) sameInterfaceInstance = true;
-    else
-      sameInterfaceInstance
-	= (surrogate_model().interface_id() == truth_model().interface_id());
-  }
 }
 
 
@@ -325,6 +358,10 @@ inline void HierarchSurrModel::correction_type(short corr_type)
   for (it=deltaCorr.begin(); it!=deltaCorr.end(); ++it)
     it->second.correction_type(corr_type);
 }
+
+
+inline short HierarchSurrModel::correction_order()
+{ return discrepancy_correction().correction_order(); }
 
 
 inline Model& HierarchSurrModel::surrogate_model(size_t i)
@@ -387,6 +424,36 @@ inline const Model& HierarchSurrModel::truth_model() const
       abort_handler(MODEL_ERROR);
     }
     return orderedModels[hf_form];
+  }
+}
+
+
+inline bool HierarchSurrModel::matching_truth_surrogate_interface_ids()
+{ return (surrogate_model().interface_id() == truth_model().interface_id()); }
+
+
+inline bool HierarchSurrModel::matching_all_interface_ids()
+{
+  size_t m, num_m = orderedModels.size();
+  const String& iface_id0 = orderedModels[0].interface_id();
+  for (m=1; m<num_m; ++m)
+    if (orderedModels[m].interface_id() != iface_id0)
+      return false;
+  return true;
+}
+
+
+inline void HierarchSurrModel::check_model_interface_instance()
+{
+  unsigned short lf_form =  surrModelKey.retrieve_model_form(),
+                 hf_form = truthModelKey.retrieve_model_form();
+
+  if (hf_form == USHRT_MAX || lf_form == USHRT_MAX)
+    sameModelInstance = sameInterfaceInstance = false; // including both undef
+  else {
+    sameModelInstance = (lf_form == hf_form);
+    sameInterfaceInstance = (sameModelInstance) ? true :
+      matching_truth_surrogate_interface_ids();
   }
 }
 

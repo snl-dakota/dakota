@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -31,7 +31,7 @@ const Real REAL_DSET_FILL_VAL = NAN; // not a number, constant defined in <cmath
 const int INT_DSET_FILL_VAL = INT_MAX;
 const String STR_DSET_FILL_VAL = "";
 
-DefaultSet::DefaultSet(const ActiveSet &in_set) : set(in_set) {
+DefaultSet::DefaultSet(const ActiveSet &in_set, const size_t num_metadata) : set(in_set), numMetadata(num_metadata) {
   const ShortArray &asv = set.request_vector();
   numFunctions = asv.size();
   numGradients = std::count_if(asv.begin(),
@@ -189,7 +189,8 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
   if(! (active() && model_active(model_id)))
     return EvaluationsDBState::INACTIVE;
   allocatedModels.emplace(model_id);
-  const auto & ds_pair = modelDefaultSets.emplace(model_id, DefaultSet(set));
+  const size_t num_metadata = response.shared_data().metadata_labels().size();
+  const auto & ds_pair = modelDefaultSets.emplace(model_id, DefaultSet(set, num_metadata));
   const DefaultSet &default_set = (*ds_pair.first).second;
   String root_group = create_model_root(model_id, model_type);
   String scale_root = create_scale_root(root_group);
@@ -204,7 +205,8 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
   // BMA: Left this a raw get() due to default of NULL
   allocate_variables(root_group, variables, mvd_rep.get());
   allocate_response(root_group, response, default_set);
-  allocate_metadata(root_group, variables, response, default_set);
+  allocate_properties(root_group, variables, response, default_set);
+  allocate_metadata(root_group, response);
   return EvaluationsDBState::ACTIVE;
 #else
   return EvaluationsDBState::INACTIVE;
@@ -219,7 +221,8 @@ EvaluationsDBState EvaluationStore::interface_allocate(const String &model_id, c
   if(!(active() && interface_active(interface_type)))
     return EvaluationsDBState::INACTIVE;
   allocatedInterfaces.emplace(make_pair(model_id, interface_id));
-  const auto & ds_pair = interfaceDefaultSets.emplace(std::make_pair(model_id, interface_id), DefaultSet(set));
+  const size_t num_metadata = response.shared_data().metadata_labels().size();
+  const auto & ds_pair = interfaceDefaultSets.emplace(std::make_pair(model_id, interface_id), DefaultSet(set, num_metadata));
   const DefaultSet &default_set = (*ds_pair.first).second;
   String root_group = create_interface_root(model_id, interface_id);
   String scale_root = create_scale_root(root_group);
@@ -230,20 +233,21 @@ EvaluationsDBState EvaluationStore::interface_allocate(const String &model_id, c
   
   allocate_variables(root_group, variables);
   allocate_response(root_group, response, default_set);
-  allocate_metadata(root_group, variables, response, default_set, an_comp);
+  allocate_properties(root_group, variables, response, default_set, an_comp);
+  allocate_metadata(root_group, response);
   return EvaluationsDBState::ACTIVE;
 #else
   return EvaluationsDBState::INACTIVE;
 #endif
 }
 
-/// Store a model evaluation
+/// Store variables and properties for a model evaluation
 void EvaluationStore::store_model_variables(const String &model_id, const String &model_type, 
                             const int &eval_id, const ActiveSet &set, const Variables &variables) {
 #ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return;
-  const DefaultSet &default_set_s = modelDefaultSets[model_id]; 
+  const DefaultSet &default_set_s = modelDefaultSets[model_id];
   if(set.request_vector().size() != default_set_s.numFunctions) {
     if(resizedModels.find(model_id) == resizedModels.end()) {
       resizedModels.insert(model_id);
@@ -261,7 +265,7 @@ void EvaluationStore::store_model_variables(const String &model_id, const String
   String eval_ids_scale = scale_root + "evaluation_ids";
   hdf5Stream->append_scalar(eval_ids_scale, eval_id);
   store_variables(root_group, variables);
-  store_metadata(root_group, set, default_set_s);
+  store_properties(root_group, set, default_set_s);
  
 
   int resp_idx = hdf5Stream->append_empty(root_group + "responses/functions");
@@ -270,13 +274,15 @@ void EvaluationStore::store_model_variables(const String &model_id, const String
     hdf5Stream->append_empty(root_group + "responses/gradients");
   if( default_set_s.numHessians ) 
     hdf5Stream->append_empty(root_group + "responses/hessians");
+  if( default_set_s.numMetadata)
+    hdf5Stream->append_empty(root_group + "metadata");
   modelResponseIndexCache.emplace(std::make_tuple(model_id, eval_id), resp_idx);
 #else
   return;
 #endif
 }
 
-/// Store a response for model evaluation
+/// Store a response (including metadata) for model evaluation
 void EvaluationStore::store_model_response(const String &model_id, const String &model_type, 
                             const int &eval_id, const Response &response) {
 #ifdef DAKOTA_HAVE_HDF5
@@ -289,6 +295,7 @@ void EvaluationStore::store_model_response(const String &model_id, const String 
     return;
   String root_group = create_model_root(model_id, model_type);
   store_response(root_group, response_index, response, default_set_s);
+  store_metadata(root_group, response_index, response);
   auto cache_entry = modelResponseIndexCache.find(key);
   modelResponseIndexCache.erase(cache_entry);
 #else
@@ -310,13 +317,15 @@ void EvaluationStore::store_interface_variables(const String &model_id, const St
   String eval_ids_scale = scale_root + "evaluation_ids";
   hdf5Stream->append_scalar(eval_ids_scale, eval_id);
   store_variables(root_group, variables);
-  store_metadata(root_group, set, default_set_s);
+  store_properties(root_group, set, default_set_s);
   
   int resp_idx = hdf5Stream->append_empty(root_group + "responses/functions");
   if( default_set_s.numGradients) 
     hdf5Stream->append_empty(root_group + "responses/gradients");
   if( default_set_s.numHessians) 
     hdf5Stream->append_empty(root_group + "responses/hessians");
+  if( default_set_s.numMetadata)
+    hdf5Stream->append_empty(root_group + "metadata");
   interfaceResponseIndexCache.emplace(std::make_tuple(model_id, interface_id, eval_id), resp_idx);
 #else
   return;
@@ -333,6 +342,7 @@ void EvaluationStore::store_interface_response(const String &model_id, const Str
   int response_index = interfaceResponseIndexCache[key];
   String root_group = create_interface_root(model_id, interface_id);
   store_response(root_group, response_index, response, interfaceDefaultSets[std::make_pair(model_id, interface_id)]);
+  store_metadata(root_group, response_index, response);
   auto cache_entry = interfaceResponseIndexCache.find(key);
   interfaceResponseIndexCache.erase(cache_entry);
 #else
@@ -1752,7 +1762,7 @@ void EvaluationStore::store_parameters_for_domain(const String &root_group,
 void EvaluationStore::allocate_variable_parameters(const String &root_group,
     const Variables &variables, Pecos::MarginalsCorrDistribution *mvd_rep) {
    
-  String parameters_group = root_group + "metadata/variable_parameters/";
+  String parameters_group = root_group + "properties/variable_parameters/";
   if(variables.acv()) {
     store_parameters_for_domain(parameters_group, 
         variables.all_continuous_variable_types(),
@@ -1848,38 +1858,38 @@ void EvaluationStore::allocate_response(const String &root_group, const Response
   return;
 #endif
 }
-/// Allocate storage for metadata
-void EvaluationStore::allocate_metadata(const String &root_group, const Variables &variables, 
+/// Allocate storage for properties (ASV, DVV, analysis components)
+void EvaluationStore::allocate_properties(const String &root_group, const Variables &variables, 
     const Response &response, const DefaultSet &set_s, const String2DArray &an_comps) {
 #ifdef DAKOTA_HAVE_HDF5
   String scale_root = create_scale_root(root_group);
-  String metadata_root = root_group + "metadata/";
-  String metadata_scale_root = scale_root + "metadata/";
+  String properties_root = root_group + "properties/";
+  String properties_scale_root = scale_root + "properties/";
   String eval_ids = scale_root + "evaluation_ids";
   const ShortArray &asv = set_s.set.request_vector();
   const SizetArray &dvv = set_s.set.derivative_vector();
   const int &num_functions = set_s.numFunctions;
   int num_deriv_vars = dvv.size();
   // ASV
-  String asv_name = metadata_root + "active_set_vector";
+  String asv_name = properties_root + "active_set_vector";
   hdf5Stream->create_empty_dataset(asv_name, {0, num_functions}, ResultsOutputType::INTEGER, HDF5_CHUNK_SIZE);
   hdf5Stream->attach_scale(asv_name, eval_ids, "evaluation_ids", 0);
   hdf5Stream->attach_scale(asv_name, scale_root+"responses/function_descriptors", "responses", 1);
-  hdf5Stream->store_vector(metadata_scale_root + "default_asv", asv);
-  hdf5Stream->attach_scale(asv_name, metadata_scale_root + "default_asv", "default_active_set_vector", 1);
+  hdf5Stream->store_vector(properties_scale_root + "default_asv", asv);
+  hdf5Stream->attach_scale(asv_name, properties_scale_root + "default_asv", "default_active_set_vector", 1);
   // DVV
   // only create a DVV dataset when gradients or hessians are available.
 
   if(set_s.numGradients || set_s.numHessians) {
-    String dvv_name = metadata_root + "derivative_variables_vector";
+    String dvv_name = properties_root + "derivative_variables_vector";
     hdf5Stream->create_empty_dataset(dvv_name, {0, num_deriv_vars}, ResultsOutputType::INTEGER,  HDF5_CHUNK_SIZE);
     hdf5Stream->attach_scale(dvv_name, eval_ids, "evaluation_ids", 0);
     // The ids are 1-based, not 0-based
     StringMultiArrayConstView cont_labels = variables.all_continuous_variable_labels();
-    hdf5Stream->store_vector(metadata_scale_root + "dv_descriptors", cont_labels);
-    hdf5Stream->attach_scale(dvv_name, metadata_scale_root + "dv_descriptors", "variables", 1);
-    hdf5Stream->store_vector(metadata_scale_root + "dvv", dvv);
-    hdf5Stream->attach_scale(dvv_name, metadata_scale_root + "dvv", "variable_ids", 1);
+    hdf5Stream->store_vector(properties_scale_root + "dv_descriptors", cont_labels);
+    hdf5Stream->attach_scale(dvv_name, properties_scale_root + "dv_descriptors", "variables", 1);
+    hdf5Stream->store_vector(properties_scale_root + "dvv", dvv);
+    hdf5Stream->attach_scale(dvv_name, properties_scale_root + "dvv", "variable_ids", 1);
   }
   // Analysis Components
   // TODO: these perhaps should be stored as a 2D dataset, with shape
@@ -1888,13 +1898,35 @@ void EvaluationStore::allocate_metadata(const String &root_group, const Variable
     StringArray all_comps;
     for(const auto &v : an_comps)
       all_comps.insert(all_comps.end(), v.begin(), v.end());
-    hdf5Stream->store_vector(metadata_root + "analysis_components", all_comps);
+    hdf5Stream->store_vector(properties_root + "analysis_components", all_comps);
   }
-#else
   return;
 #endif
 }
 
+/// Allocate storage for metadata results
+void EvaluationStore::allocate_metadata(const String &root_group, const Response &response) {
+#ifdef DAKOTA_HAVE_HDF5
+  const StringArray &metadata_labels = response.shared_data().metadata_labels();
+  if(metadata_labels.empty()) return;
+
+  String scale_root = create_scale_root(root_group);
+  String metadata_root = root_group;
+  String metadata_scale_root = scale_root;
+  String eval_ids = scale_root + "evaluation_ids";
+  String metadata_labels_name = scale_root + "metadata_descriptors";
+  const int num_metadata = metadata_labels.size();
+
+  hdf5Stream->store_vector(metadata_labels_name, metadata_labels);
+
+  String metadata_name = metadata_root + "metadata";
+  hdf5Stream->create_empty_dataset(metadata_name, {0, num_metadata}, ResultsOutputType::REAL, HDF5_CHUNK_SIZE);
+  hdf5Stream->attach_scale(metadata_name, eval_ids, "evaluation_ids", 0);
+  hdf5Stream->attach_scale(metadata_name, metadata_labels_name, "metadata", 1);
+#else
+  return;
+#endif
+}
 
 void EvaluationStore::store_variables(const String &root_group, const Variables &variables) {
 #ifdef DAKOTA_HAVE_HDF5
@@ -2041,14 +2073,12 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
 #endif
 }
 
-void EvaluationStore::store_metadata(const String &root_group, const ActiveSet &set, 
+void EvaluationStore::store_properties(const String &root_group, const ActiveSet &set, 
         const DefaultSet &default_set_s) {
 #ifdef DAKOTA_HAVE_HDF5
-  String metadata_root = root_group + "metadata/";
-  // ASV
-  hdf5Stream->append_vector(metadata_root + "active_set_vector", set.request_vector());
-  // DVV. The dvv in set may be shorter than the default one, and so it has to be aligned
-  // by ID.
+  String properties_root = root_group + "properties/";
+  hdf5Stream->append_vector(properties_root + "active_set_vector", set.request_vector());
+  // DVV. The dvv in set may be shorter than the default one, and so it has to be properties  // by ID.
   const SizetArray &default_dvv = default_set_s.set.derivative_vector();
   const ShortArray &default_asv = default_set_s.set.request_vector();
   // The DVV dataset doesn't exist unless gradients or hessians can be provided
@@ -2076,8 +2106,21 @@ void EvaluationStore::store_metadata(const String &root_group, const ActiveSet &
         }
       }
     }
-    hdf5Stream->append_vector(metadata_root + "derivative_variables_vector", dvv_row);
+    hdf5Stream->append_vector(properties_root + "derivative_variables_vector", dvv_row);
   }
+  return;
+#endif
+}
+
+void EvaluationStore::store_metadata(const String &root_group, const int &resp_idx,
+                                     const Response &response) {
+#ifdef DAKOTA_HAVE_HDF5
+  const auto &metadata = response.metadata();
+  if(metadata.empty()) return;
+  const size_t num_metadata = metadata.size();
+  String metadata_name = root_group + "metadata";
+  
+  hdf5Stream->set_vector(metadata_name, metadata, resp_idx);
 #else
   return;
 #endif

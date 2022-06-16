@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -44,7 +44,9 @@ Minimizer* Minimizer::minimizerInstance(NULL);
 
 /** This constructor extracts inherited data for the optimizer and least
     squares branches and performs sanity checking on constraint settings. */
-Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits): 
+Minimizer::
+Minimizer(ProblemDescDB& problem_db, Model& model,
+	  std::shared_ptr<TraitsBase> traits): 
   Iterator(BaseConstructor(), problem_db, traits),
   constraintTol(probDescDB.get_real("method.constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
@@ -72,9 +74,11 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
 }
 
 
-Minimizer::Minimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
-  Iterator(NoDBBaseConstructor(), method_name, model, traits), constraintTol(0.),
-  bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
+Minimizer::
+Minimizer(unsigned short method_name, Model& model,
+	  std::shared_ptr<TraitsBase> traits):
+  Iterator(NoDBBaseConstructor(), method_name, model, traits),
+  constraintTol(0.), bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(false)
@@ -83,8 +87,23 @@ Minimizer::Minimizer(unsigned short method_name, Model& model, std::shared_ptr<T
 }
 
 
-Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
-		     size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits):
+Minimizer::
+Minimizer(Model& model, size_t max_iter, size_t max_eval, Real conv_tol,
+	  std::shared_ptr<TraitsBase> traits):
+  Iterator(NoDBBaseConstructor(), model, max_iter, max_eval, conv_tol, traits),
+  constraintTol(0.), bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
+  boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
+  calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
+  scaleFlag(false)
+{
+  update_from_model(iteratedModel); // variable,constraint counts & checks
+}
+
+
+Minimizer::
+Minimizer(unsigned short method_name, size_t num_lin_ineq, size_t num_lin_eq,
+	  size_t num_nln_ineq, size_t num_nln_eq,
+	  std::shared_ptr<TraitsBase> traits):
   Iterator(NoDBBaseConstructor(), method_name, traits),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   numNonlinearIneqConstraints(num_nln_ineq),
@@ -382,9 +401,8 @@ Model Minimizer::original_model(unsigned short recasts_left) const
 }
 
 
-/** Reads observation data to compute least squares residuals.  Does
-    not change size of responses, and is the first wrapper, therefore
-    sizes are based on iteratedModel.  */
+/** Reads observation data to compute least squares residuals and
+    expands residuals for multiple experiments. */
 void Minimizer::data_transform_model()
 {
   if (outputLevel >= DEBUG_OUTPUT)
@@ -398,6 +416,12 @@ void Minimizer::data_transform_model()
   }
   // TODO: verify: we don't want to weight by missing sigma: all = 1.0
   expData.load_data("Least Squares", iteratedModel.current_variables());
+
+  if (numNonlinearConstraints > 0 && numExperiments > 1 &&
+      expData.num_config_vars() > 0)
+    Cout << "\nWarning: When using nonlinear constraints with multiple "
+	 << "experiment\nconfigurations, the returned constraint values must be"
+	 << " the same across\nconfigurations." << std::endl;
 
   iteratedModel.
     assign_rep(std::make_shared<DataTransformModel>(iteratedModel, expData));
@@ -667,6 +691,69 @@ objective_hessian(const RealVector& fn_vals, size_t num_fns,
 	  }
     }
   }
+}
+
+
+/** Lookup evaluation id where best occurred.  This cannot be
+    catalogued directly because the optimizers track the best iterate
+    internally and return the best results after iteration completion.
+    Therfore, perform a search in data_pairs to extract the evalId for
+    the best fn eval. */
+void Minimizer::print_best_eval_ids(const String& search_interface_id,
+				    const Variables& search_vars,
+				    const ActiveSet& search_set,
+				    std::ostream& s)
+{
+  const String
+    best_id = "<<<<< Best evaluation ID: ",
+    best_id_restart = "<<<<< Best evaluation ID not found among current execution's evaluations, but\nretrieved from restart file evaluation ID: ",
+    best_id_partial = "<<<<< Best evaluation ID (partial match): ",
+    best_ids_partial = "<<<<< Best evaluation IDs (partial matches): ",
+    id_na = "<<<<< Best evaluation ID not available\n",
+    id_full_na = "<<<<< Best evaluation ID (full match) not available\n",
+    id_warning = "(This warning may occur when the best iterate is comprised of multiple interface\nevaluations or arises from a composite, surrogate, or transformation model.)\n";
+
+  PRPCacheHIter cache_it =
+    lookup_by_val(data_pairs, search_interface_id, search_vars, search_set);
+  if (cache_it == data_pairs.get<hashed>().end()) {
+
+    // no exact match; try to match only vars/interface ID via hash
+    // (don't check search_set)
+    Response search_resp(SIMULATION_RESPONSE, search_set);
+    ParamResponsePair search_pr(search_vars, search_interface_id, search_resp);
+    PRPCacheHIter prp_hash_it0, prp_hash_it1;
+    boost::tuples::tie(prp_hash_it0, prp_hash_it1)
+      = data_pairs.get<hashed>().equal_range(search_pr);
+
+    std::set<int> sorted_eval_ids; // in case hash isn't in eval ID order
+    while (prp_hash_it0 != prp_hash_it1) {
+      sorted_eval_ids.insert(prp_hash_it0->eval_id());
+      ++prp_hash_it0;
+    }
+
+    if (sorted_eval_ids.empty())
+      s << id_na << id_warning;
+    else {
+      s << id_full_na << id_warning;
+      s << ((sorted_eval_ids.size() == 1) ? best_id_partial : best_ids_partial);
+      // gymnastics due to use of set, which lacks .back():
+      auto it = sorted_eval_ids.begin();
+      while (it != sorted_eval_ids.end()) {
+	s << *(it++);
+	if (it != sorted_eval_ids.end())
+	  s << ", ";
+      }
+      s << '\n';
+    }
+  }
+  else {
+    int eval_id = cache_it->eval_id();
+    if (eval_id > 0)
+      s << best_id << eval_id << '\n';
+    else // should not occur
+      s << best_id_restart << -eval_id << '\n';
+  }
+  s << std::endl;
 }
 
 
@@ -1127,7 +1214,7 @@ void Minimizer::archive_best_results() {
     be recasting a single NLS residual into a squared
     objective. Always returns best data in the space of the original
     inbound Model. */
-void Minimizer::
+bool Minimizer::
 local_recast_retrieve(const Variables& vars, Response& response) const
 {
   // TODO: could omit constraints for solvers populating them (there
@@ -1135,11 +1222,13 @@ local_recast_retrieve(const Variables& vars, Response& response) const
   ActiveSet lookup_set(response.active_set());
   PRPCacheHIter cache_it
     = lookup_by_val(data_pairs, iteratedModel.interface_id(), vars, lookup_set);
-  if (cache_it == data_pairs.get<hashed>().end())
+  if (cache_it == data_pairs.get<hashed>().end()) {
     Cerr << "Warning: failure in recovery of final values for locally recast "
 	 << "optimization." << std::endl;
-  else
-    response.update(cache_it->response());
+    return false;
+  }    
+  response.update(cache_it->response());
+  return true;
 }
 
 

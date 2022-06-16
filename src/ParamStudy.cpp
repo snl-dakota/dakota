@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -176,7 +176,7 @@ void ParamStudy::pre_run()
   if (av_size != numEvals) {
     allVariables.resize(numEvals);
     for (size_t i=av_size; i<numEvals; ++i)
-      allVariables[i] = Variables(svd); // use minimal data ctor
+      allVariables[i] = vars.copy();
     if ( outputLevel > SILENT_OUTPUT &&
 	 ( methodName == VECTOR_PARAMETER_STUDY ||
 	   methodName == CENTERED_PARAMETER_STUDY ) )

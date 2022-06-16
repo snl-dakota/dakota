@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -6517,9 +6517,10 @@ static Iface_mp_utype
 	MP2s(interfaceType,TEST_INTERFACE),
 	MP2s(interfaceType,FORK_INTERFACE),
 	MP2s(interfaceType,GRID_INTERFACE),
+	MP2s(interfaceType,LEGACY_PYTHON_INTERFACE),
 	MP2s(interfaceType,MATLAB_INTERFACE),
+	MP2s(interfaceType,PLUGIN_INTERFACE),
 	MP2s(interfaceType,PYTHON_INTERFACE),
-	MP2s(interfaceType,PYBIND11_INTERFACE),
 	MP2s(interfaceType,SCILAB_INTERFACE),
 	MP2s(interfaceType,SYSTEM_INTERFACE),
 	//MP2s(resultsFileFormat,FLEXIBLE_RESULTS), // re-enable when more formats added?
@@ -6531,6 +6532,7 @@ static String
 	MP_(inputFilter),
 	MP_(outputFilter),
 	MP_(parametersFile),
+	MP_(pluginLibraryPath),
 	MP_(resultsFile),
 	MP_(workDir);
 
@@ -7037,6 +7039,9 @@ static Method_mp_type
 	MP2p(finalMomentsType,CENTRAL_MOMENTS),            // Pecos enumeration
 	MP2p(finalMomentsType,NO_MOMENTS),                 // Pecos enumeration
 	MP2p(finalMomentsType,STANDARD_MOMENTS),           // Pecos enumeration
+	MP2s(finalStatsType,ESTIMATOR_PERFORMANCE),
+	MP2s(finalStatsType,NO_FINAL_STATS),
+	MP2s(finalStatsType,QOI_STATISTICS),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
 	MP2s(iteratorScheduling,MASTER_SCHEDULING),
@@ -7061,7 +7066,7 @@ static Method_mp_type
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
-  MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
+	MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
@@ -7239,9 +7244,17 @@ static Method_mp_utype
 	MP2s(methodName,MULTIDIM_PARAMETER_STUDY),
         MP2s(modelExportFormat,TEXT_ARCHIVE),
         MP2s(modelExportFormat,BINARY_ARCHIVE),
-	MP2s(optSubProbSolver,SUBMETHOD_NIP),
+	MP2s(numericalSolveMode,NUMERICAL_FALLBACK),
+	MP2s(numericalSolveMode,NUMERICAL_OVERRIDE),
+      //MP2s(numericalSolveMode,REORDERED_FALLBACK),
 	MP2s(optSubProbSolver,SUBMETHOD_NONE),
-	MP2s(optSubProbSolver,SUBMETHOD_SQP),
+	MP2s(optSubProbSolver,SUBMETHOD_OPTPP),
+	MP2s(optSubProbSolver,SUBMETHOD_NPSOL),
+	MP2s(optSubProbSolver,SUBMETHOD_SBLO),
+	MP2s(optSubProbSolver,SUBMETHOD_EA),
+	MP2s(optSubProbSolver,SUBMETHOD_EGO),
+	MP2s(optSubProbSolver,SUBMETHOD_SBGO),
+	MP2s(optSubProbSolver,SUBMETHOD_LHS),
 	MP2s(pstudyFileFormat,TABULAR_NONE),
         MP2s(pstudyFileFormat,TABULAR_HEADER),
         MP2s(pstudyFileFormat,TABULAR_EVAL_ID),
@@ -7271,11 +7284,6 @@ static Method_mp_utype
 	MP2s(subMethod,SUBMETHOD_WASABI),
 	MP2s(subMethod,SUBMETHOD_GPMSA),
 	MP2s(subMethod,SUBMETHOD_QUESO),
-	MP2s(subMethod,SUBMETHOD_NIP),
-	MP2s(subMethod,SUBMETHOD_SQP),
-	MP2s(subMethod,SUBMETHOD_EA),
-	MP2s(subMethod,SUBMETHOD_EGO),
-	MP2s(subMethod,SUBMETHOD_SBO),
 	MP2s(subMethod,SUBMETHOD_LHS),
 	MP2s(subMethod,SUBMETHOD_RANDOM),
 	MP2s(subMethod,SUBMETHOD_OA_LHS),
@@ -7448,6 +7456,7 @@ static IntVector
 
 static String
         MP_(advancedOptionsFilename),
+	MP_(costRecoveryMetadata),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
 	MP_(exportApproxVarianceFile),
@@ -7615,6 +7624,7 @@ static String
         MP_(idResponses);
 
 static StringArray
+        MP_(metadataLabels),
 	MP_(nonlinearEqScaleTypes),
 	MP_(nonlinearIneqScaleTypes),
 	MP_(primaryRespFnScaleTypes),

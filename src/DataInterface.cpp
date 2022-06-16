@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -51,7 +51,7 @@ void DataInterfaceRep::write(MPIPackBuffer& s) const
     << recoveryFnVals << activeSetVectorFlag << evalCacheFlag
     << nearbyEvalCacheFlag << nearbyEvalCacheTol << restartFileFlag
     << useWorkdir << workDir << dirTag << dirSave << linkFiles
-    << copyFiles << templateReplace << numpyFlag;
+    << copyFiles << templateReplace << pluginLibraryPath << numpyFlag;
 }
 
 
@@ -68,7 +68,7 @@ void DataInterfaceRep::read(MPIUnpackBuffer& s)
     >> recoveryFnVals >> activeSetVectorFlag >> evalCacheFlag
     >> nearbyEvalCacheFlag >> nearbyEvalCacheTol >> restartFileFlag
     >> useWorkdir >> workDir >> dirTag >> dirSave >> linkFiles
-    >> copyFiles >> templateReplace >> numpyFlag;
+    >> copyFiles >> templateReplace >> pluginLibraryPath >> numpyFlag;
 }
 
 
@@ -85,7 +85,7 @@ void DataInterfaceRep::write(std::ostream& s) const
     << recoveryFnVals << activeSetVectorFlag << evalCacheFlag
     << nearbyEvalCacheFlag << nearbyEvalCacheTol << restartFileFlag
     << useWorkdir << workDir << dirTag << dirSave << linkFiles
-    << copyFiles << templateReplace << numpyFlag;
+    << copyFiles << templateReplace << pluginLibraryPath << numpyFlag;
 }
 
 

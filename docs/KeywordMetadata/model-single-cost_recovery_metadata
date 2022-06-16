@@ -1,0 +1,44 @@
+Blurb:: Identify metadata by label for capturing online cost estimates
+
+Description:: Metadata can be used for a variety of response annotation
+purposes, including the online recovery of simulation cost (using facilities
+either implemented in a user's analysis driver or codified in an embedded
+test driver).  This information can then be used by certain algorithms that
+allocate resources based on relative cost, e.g. multifidelity UQ methods.
+
+Cost estimates may be provided a priori, e.g. using \c solution_level_cost,
+in cases where they can be assumed fixed for each model form and/or
+resolution.  In cases such as model tuning over a set of hyper-parameters,
+costs will generally be a function of these hyper-parameters and need to
+be captured online during initialization of the algorithm (e.g. during
+evaluation of the pilot sample).
+
+<b> Default Behavior </b>
+No recovery of cost estimates from the response metadata.
+
+<b> Usage Tips </b>
+It is common to employ total CPU time, aggregated across all computing
+cores involved in a (parallel) simulation instance.  Wall time, even when
+the number of cores is fixed, can be subject to additional variability
+due to system load.
+
+Topics::
+
+Examples::
+\verbatim
+model,
+	id_model = 'TUNABLE_LF'
+	simulation
+	  cost_recovery_metadata = 'core_time'
+
+responses,
+	response_functions = 1
+	descriptors = 'Q'
+	no_gradients
+	no_hessians
+	metadata 'core_time'
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	responses-metadata

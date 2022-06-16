@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -44,8 +44,23 @@ class Pybind11Interface: public DirectApplicInterface
 
   protected:
 
+    // override base class prohibition on asynch (needs tightening)
+    void init_communicators_checks(int max_eval_concurrency) {}
+    // override base class prohibition on asynch (needs tightening)
+    void set_communicators_checks(int max_eval_concurrency) {}
+
+    // load and cache the Python module:function specified by ac_name
+    void initialize_driver(const String& ac_name);
+
     /// execute an analysis code portion of a direct evaluation invocation
     virtual int derived_map_ac(const String& ac_name);
+
+    /// Python supports batch only, not true asynch (this is no-op)
+    virtual void derived_map_asynch(const ParamResponsePair& pair);
+    /// Python supports batch only, not true asynch (this does the work)
+    virtual void wait_local_evaluations(PRPQueue& prp_queue);
+    /// Python supports batch only, not true asynch, so this blocks
+    virtual void test_local_evaluations(PRPQueue& prp_queue);
 
     /// direct interface to Pybind11 via API
     int pybind11_run(const String& ac_name);
@@ -60,12 +75,31 @@ class Pybind11Interface: public DirectApplicInterface
     bool py11Active;
 
     /// copy Dakota arrays to pybind11 lists via std::vector<> copy
-    template<class ArrayT, typename T>
-    py::list copy_array_to_pybind11(const ArrayT & src);
+    template<typename RetT, class ArrayT, typename T>
+    RetT copy_array_to_pybind11(const ArrayT & src) const;
 
     /// specialized copy Dakota arrays to pybind11 lists via std::vector<> copy
-    template<typename OrdinalType, typename ScalarType> 
-    py::list copy_array_to_pybind11(const Teuchos::SerialDenseVector<OrdinalType,ScalarType> & src);
+    template<typename RetT, typename OrdinalType, typename ScalarType> 
+    RetT copy_array_to_pybind11(const Teuchos::SerialDenseVector<OrdinalType,ScalarType> & src) const;
+
+    /// Translate Dakota parameters into returned Python dictionary in
+    /// numpy or array format.
+    py::dict params_to_dict() const;
+
+    /// generalized Python dictionary packing to support either lists
+    /// or numpy arrays
+    template<typename T>
+    py::dict pack_kwargs() const;
+
+    /// populate values, gradients, Hessians from Python to Dakota
+    void unpack_python_response
+    (const ShortArray& asv, const size_t num_derivs,
+     const pybind11::dict& py_response, RealVector& fn_values,
+     RealMatrix& gradients, RealSymMatrixArray& hessians,
+     RealArray& metadata);
+
+    /// return true if the passed asv value is requested for any function
+    bool expect_derivative(const ShortArray& asv, const short deriv_type) const;
 };
 
 

@@ -5,7 +5,7 @@ Test Number 0 succeeded
                       1.0000015825e+00 x2
 <<<<< Best objective function  =
                       6.2463431044e-13
-<<<<< Best data captured at function evaluation 139
+<<<<< Best evaluation ID: 139
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 48 total (48 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -20,7 +20,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -1.6008977484e-02
                      -7.8748119137e-13
-<<<<< Best data captured at function evaluation 48
+<<<<< Best evaluation ID: 48
 Test Number 2 failed with exit code 255
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
@@ -33,7 +33,7 @@ Test Number 3 succeeded
                       3.8835104478e-01
                       4.4408920985e-16
                       3.8005650668e-01
-<<<<< Best data captured at function evaluation 34
+<<<<< Best evaluation ID: 34
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 42 total (42 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -45,4 +45,4 @@ Test Number 4 succeeded
                       3.8835099257e-01
                       4.4408920985e-16
                       3.8005651988e-01
-<<<<< Best data captured at function evaluation 42
+<<<<< Best evaluation ID: 42

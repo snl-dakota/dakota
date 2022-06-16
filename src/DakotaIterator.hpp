@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -50,19 +50,25 @@ public:
   //
 
   /// default constructor
-  Iterator( std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()) );
+  Iterator(std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()) );
   // BMA: Disabled unused ctor when deploying shared_ptr for iteratorRep
-  /// alternate envelope constructor that assigns a representation pointer
-  //  Iterator(std::shared_ptr<Iterator> iterator_rep, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  // alternate envelope constructor that assigns a representation pointer
+  //Iterator(std::shared_ptr<Iterator> iterator_rep, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard envelope constructor, which constructs its own model(s)
-  Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor which uses the ProblemDescDB but
   /// accepts a model from a higher level (meta-iterator) context,
   /// instead of constructing its own
-  Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(ProblemDescDB& problem_db, Model& model,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor for instantiations by name
   /// without the ProblemDescDB
-  Iterator(const String& method_string, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(const String& method_string, Model& model,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// copy constructor
   Iterator(const Iterator& iterator);
 
@@ -165,7 +171,7 @@ public:
   virtual void response_results_active_set(const ActiveSet& set);
 
   /// return error estimates associated with the final iterator solution
-  virtual const RealVector& response_error_estimates() const;
+  virtual const RealSymMatrix& response_error_estimates() const;
 
   /// indicates if this iterator accepts multiple initial points.  Default
   /// return is false.  Override to return true if appropriate.
@@ -212,6 +218,8 @@ public:
   /// layered on top of iteratedModel by the derived Iterator ctor chain
   virtual const Model& algorithm_space_model() const;
 
+  /// detect any conflicts due to recursive use of the same Fortran solver
+  virtual void check_sub_iterator_conflict();
   /// return name of any enabling iterator used by this iterator
   virtual unsigned short uses_method() const;
   /// perform a method switch, if possible, due to a detected conflict
@@ -225,12 +233,12 @@ public:
   virtual const IntResponseMap& all_responses() const;
 
   /// get the current number of samples
-  virtual int num_samples() const;
+  virtual size_t num_samples() const;
   /// reset sampling iterator to use at least min_samples
-  virtual void sampling_reset(int min_samples, bool all_data_flag, 
+  virtual void sampling_reset(size_t min_samples, bool all_data_flag, 
 			      bool stats_flag);
   /// set reference number of samples, which is a lower bound during reset 
-  virtual void sampling_reference(int samples_ref);
+  virtual void sampling_reference(size_t samples_ref);
 
   /// increment to next in sequence of refinement samples
   virtual void sampling_increment();
@@ -271,6 +279,11 @@ public:
   void parallel_configuration_iterator(ParConfigLIter pc_iter);
   /// return methodPCIter
   ParConfigLIter parallel_configuration_iterator() const;
+  /// set methodPCIterMap
+  void parallel_configuration_iterator_map(
+    std::map<size_t, ParConfigLIter> pci_map);
+  /// return methodPCIterMap
+  std::map<size_t, ParConfigLIter> parallel_configuration_iterator_map() const;
 
   /// invoke set_communicators(pl_iter) prior to run()
   void run(ParLevLIter pl_iter);
@@ -384,9 +397,8 @@ public:
 
   /// Return whether the iterator is the top level iterator
   bool top_level();
-
   /// Set the iterator's top level flag
-  void top_level(const bool &tflag);
+  void top_level(bool tflag);
 
 protected:
 
@@ -397,13 +409,24 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  Iterator(BaseConstructor, ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(BaseConstructor, ProblemDescDB& problem_db,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(NoDBBaseConstructor, unsigned short method_name,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
+
+  /// alternate envelope constructor for instantiations without ProblemDescDB
+  Iterator(NoDBBaseConstructor, Model& model, size_t max_iter, size_t max_eval,
+	   Real conv_tol, std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   //
   //- Heading: Virtual functions
@@ -582,10 +605,12 @@ private:
 
 };
 
+
 inline std::shared_ptr<TraitsBase> Iterator::traits() const
 {
     return (iteratorRep) ? iteratorRep->traits() : methodTraits;
 }
+
 
 inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
 {
@@ -596,6 +621,19 @@ inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
 
 inline ParConfigLIter Iterator::parallel_configuration_iterator() const
 { return (iteratorRep) ? iteratorRep->methodPCIter : methodPCIter; }
+
+
+inline void Iterator::
+parallel_configuration_iterator_map(std::map<size_t, ParConfigLIter> pci_map)
+{
+  if (iteratorRep) iteratorRep->methodPCIterMap = pci_map;
+  else             methodPCIterMap = pci_map;
+}
+
+
+inline std::map<size_t, ParConfigLIter> Iterator::
+parallel_configuration_iterator_map() const
+{ return (iteratorRep) ? iteratorRep->methodPCIterMap : methodPCIterMap; }
 
 
 inline void Iterator::iterated_model(const Model& model)

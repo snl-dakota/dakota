@@ -8,7 +8,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       1.3461454174e-14
                      -2.6922908347e-14
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -19,7 +19,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                       1.3461454174e-14
                      -2.6922908347e-14
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -30,7 +30,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                       1.3461454174e-14
                      -2.6922908347e-14
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -41,7 +41,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                       1.3461454174e-14
                      -2.6922908347e-14
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -52,7 +52,7 @@ Test Number 4 succeeded
 <<<<< Best constraint values   =
                       1.3461454174e-14
                      -2.6922908347e-14
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -63,7 +63,7 @@ Test Number 5 succeeded
 <<<<< Best constraint values   =
                       1.3461454174e-14
                      -2.6922908347e-14
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -74,7 +74,7 @@ Test Number 6 succeeded
 <<<<< Best constraint values   =
                       1.3461454174e-14
                      -2.6922908347e-14
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -85,7 +85,7 @@ Test Number 7 succeeded
 <<<<< Best constraint values   =
                       1.3461454174e-14
                      -2.6922908347e-14
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -96,7 +96,7 @@ Test Number 8 succeeded
 <<<<< Best constraint values   =
                       1.2406742300e-14
                      -2.4813484600e-14
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 32 total (24 new, 8 duplicate)
 <<<<< Best parameters          =
@@ -107,7 +107,7 @@ Test Number 9 succeeded
 <<<<< Best constraint values   =
                       0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 24
+<<<<< Best evaluation ID: 24
 Test Number 10 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 7696 total (7696 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 200 total (111 new, 89 duplicate)
@@ -119,7 +119,7 @@ Test Number 10 succeeded
 <<<<< Best constraint values   =
                       1.9810177475e+00
                       4.0206408376e-03
-<<<<< Best data captured at function evaluation 190
+<<<<< Best evaluation ID: 190
 Test Number 11 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 255 total (255 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 506 total (506 new, 0 duplicate)
@@ -131,4 +131,4 @@ Test Number 11 succeeded
 <<<<< Best constraint values   =
                       2.6000000000e-01
                       7.6000000000e-01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1

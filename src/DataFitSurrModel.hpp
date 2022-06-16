@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -89,11 +89,12 @@ protected:
   DiscrepancyCorrection& discrepancy_correction();
   short correction_type();
   void  correction_type(short corr_type);
+  short correction_order();
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
-  void init_model(Model& model);
+  //void init_model(Model& model);
   void update_model(Model& model);
   void update_from_model(const Model& model);
 
@@ -537,6 +538,10 @@ inline short DataFitSurrModel::correction_type()
 
 inline void DataFitSurrModel::correction_type(short corr_type)
 { deltaCorr.correction_type(corr_type); }
+
+
+inline short DataFitSurrModel::correction_order()
+{ return deltaCorr.correction_order(); }
 
 
 inline void DataFitSurrModel::total_points(int points)

@@ -9,7 +9,7 @@ environment,
 
 method,									 
 	global_interval_est lhs		#s0
-#	global_interval_est sbo		#s1
+#	global_interval_est sbgo	#s1
 #	global_interval_est ea 		#s2
 #        max_iterations = 10            #s2
 	seed = 3452 samples=1000        #s0

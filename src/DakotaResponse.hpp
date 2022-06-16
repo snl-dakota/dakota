@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -24,6 +24,7 @@
 namespace Dakota {
 
 class ProblemDescDB;
+using RespMetadataT = double;
 
 
 /// Container class for response functions and their derivatives.  
@@ -219,24 +220,36 @@ public:
   /// unrolled labels available through function_labels()
   const StringArray& field_group_labels();
 
-  /// read a response object of specified format from an std::istream 
+  /// get the (possibly empty) response metadata;
+  /// (get labels through shared_data())
+  const std::vector<RespMetadataT>& metadata() const;
+  /// set the response metadata
+  /// (set labels through shared_data())
+  void metadata(const std::vector<RespMetadataT>& md);
+  /// set a portion of the response metadata starting from given position
+  void metadata(const std::vector<RespMetadataT>& md, size_t start);
+
+  /// read a response object of specified format from a std::istream 
   void read(std::istream& s, const unsigned short format = FLEXIBLE_RESULTS);
  
-  /// write a response object to an std::ostream
+  /// write a response object to a std::ostream
   void write(std::ostream& s) const;
 
-  /// read a response object in annotated format from an std::istream
+  /// read a response object in annotated format from a std::istream
   void read_annotated(std::istream& s);
-  /// write a response object in annotated format to an std::ostream
+  /// write a response object in annotated format to a std::ostream
   void write_annotated(std::ostream& s) const;
 
-  /// read responseRep::functionValues in tabular format from an std::istream
+  /// read responseRep::functionValues in tabular format from a std::istream
   void read_tabular(std::istream& s);
-  /// write responseRep::functionValues in tabular format to an std::ostream
-  void write_tabular(std::ostream& s) const;
-
-  /// write the labels to a tabular data stream
-  void write_tabular_labels(std::ostream& s) const;
+  /// write responseRep::functionValues in tabular format to a std::ostream
+  void write_tabular(std::ostream& s, bool eol = true) const;
+  /// write portion of responseRep::functionValues in tabular format
+  /// to a std::ostream
+  void write_tabular_partial(std::ostream& s, size_t start_index,
+			     size_t num_items) const;
+  /// write the response labels in tabular format to a std::ostream
+  void write_tabular_labels(std::ostream& s, bool eol = true) const;
 
   /// read a response object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);
@@ -261,7 +274,7 @@ public:
   /// desired (functionValues/functionGradients/functionHessians are
   /// updated, ASV/labels/id's/etc. are not).  Care is taken to allow
   /// different derivative array sizing between the two response objects.
-  void update(const Response& response);
+  void update(const Response& response, bool pull_metadata = false);
   /// Overloaded form which allows update from components of a response
   /// object.  Care is taken to allow different derivative array sizing.
   void update(const RealVector& source_fn_vals,
@@ -284,6 +297,8 @@ public:
   /// rehapes response data arrays
   void reshape(size_t num_fns, size_t num_params, bool grad_flag,
 	       bool hess_flag);
+  /// rehapes response metadata arrays
+  void reshape_metadata(size_t num_meta);
   /// resets all response data to zero
   void reset();
   /// resets all inactive response data to zero
@@ -379,6 +394,9 @@ protected:
   /// copy of the ActiveSet used by the Model to generate a Response instance
   ActiveSet responseActiveSet;
 
+  /// metadata storage
+  std::vector<RespMetadataT> metaData;
+
 private:
 
   friend class boost::serialization::access;
@@ -426,9 +444,9 @@ private:
   /// Used by read functions to instantiate a new letter class
   std::shared_ptr<Response> get_response(short type) const;
 
-  /// read a letter object in annotated format from an std::istream
+  /// read a letter object in annotated format from a std::istream
   void read_annotated_rep(std::istream& s);
-  /// write a letter object in annotated format to an std::ostream
+  /// write a letter object in annotated format to a std::ostream
   void write_annotated_rep(std::ostream& s) const;
   /// read a letter object from a packed MPI buffer
   void read_rep(MPIUnpackBuffer& s);
@@ -441,25 +459,30 @@ private:
   void reshape_rep(size_t num_fns, size_t num_params, bool grad_flag,
 		   bool hess_flag);
 
+  void read_core(std::istream& s, const unsigned short formats,
+		 std::ostringstream& errors);
+
+  bool expect_derivatives(const ShortArray& asv);
+
   /// Read gradients from a freeform stream. Insert error messages
   // into errors stream.
-  void read_gradients(std::istream& s, const ShortArray &asv, 
-      std::ostringstream &error);
+  void read_gradients(std::istream& s, const ShortArray &asv,
+		      bool expect_metadata, std::ostringstream &error);
 
   /// Read Hessians from a freeform stream. Insert error messages
   // into errors stream.
   void read_hessians(std::istream& s, const ShortArray &asv,
-       std::ostringstream &error);
+		     bool expect_metadata, std::ostringstream &error);
 
   /// Read function values from an annotated stream. Insert error messages
   // into errors stream. 
   void read_labeled_fn_vals(std::istream &s, const ShortArray &asv,
-      std::ostringstream &errors);
+			    size_t num_metadata, std::ostringstream &errors);
 
   /// Read function values from a stream in a "flexible" way -- ignoring 
   /// any labels. Insert error messages into errors stream.
   void read_flexible_fn_vals(std::istream &s, const ShortArray &asv,
-      std::ostringstream &errors);
+			    size_t num_metadata, std::ostringstream &errors);
 
 /*  /// Read function values from a freeform stream. Insert error messages
   // into errors stream.
@@ -832,6 +855,42 @@ inline const StringArray& Response::field_group_labels()
 }
 
 
+inline const std::vector<RespMetadataT>& Response::metadata() const
+{
+  if (responseRep)
+    return responseRep->metaData;
+  else
+    return metaData;
+}
+
+
+inline void Response::metadata(const std::vector<RespMetadataT>& md)
+{
+  if (responseRep)
+    responseRep->metaData = md;
+  else
+    metaData = md;
+}
+
+
+inline void Response::
+metadata(const std::vector<RespMetadataT>& md, size_t start)
+{
+  if (responseRep)
+    responseRep->metadata(md, start);
+  else {
+    size_t i, num_md = md.size(), end = start + num_md, cntr;
+    if (metaData.size() < end) {
+      Cerr << "Error: insufficient size (" << metaData.size()
+	   << ") in partial metadata update." << std::endl;
+      abort_handler(RESP_ERROR);
+    }
+    for (i=0, cntr=start; i<num_md; ++i, ++cntr)
+      metaData[cntr] = md[i];
+  }
+}
+
+
 inline const ActiveSet& Response::active_set() const
 { return (responseRep) ? responseRep->responseActiveSet : responseActiveSet; }
 
@@ -877,11 +936,12 @@ inline SizetArray& Response::active_set_derivative_vector()
 }
 
 
-inline void Response::update(const Response& response)
+inline void Response::update(const Response& response, bool pull_metadata)
 {
   // rep forward handled downstream
   update(response.function_values(), response.function_gradients(),
-        response.function_hessians(), response.active_set());
+	 response.function_hessians(), response.active_set());
+  if (pull_metadata) metadata(response.metadata());
 }
 
 
@@ -969,12 +1029,10 @@ inline bool operator!=(const Response& resp1, const Response& resp2)
 } // namespace Dakota
 
 
-// Since we may serialize this class through a temporary, force
-// serialization mode and no tracking
-BOOST_CLASS_IMPLEMENTATION(Dakota::Response, 
-			   boost::serialization::object_serializable)
+// Since we may serialize this class through a temporary, disallow tracking
 BOOST_CLASS_TRACKING(Dakota::Response, 
 		     boost::serialization::track_never)
-
+// Version 1 adds metadata
+BOOST_CLASS_VERSION(Dakota::Response, 1)
 
 #endif // !DAKOTA_RESPONSE_H

@@ -1265,7 +1265,7 @@ sub parse_test_output {
 	$_ = <OUTPUT>; # grab next line
       }
     }
-    if (/^<<<<< Best data (captured at|not found in)/) {
+    if (/^<<<<< Best (evaluation ID[: s]|parameters\/responses)/) {
       print;
       print TEST_OUT;
     }
@@ -1310,7 +1310,7 @@ sub parse_test_output {
     # ***********************************************
     # *** UQ sampling/reliability results summary ***
     # ***********************************************
-    if (/^<<<<< Equivalent number of high fidelity evaluations/) {
+    if (/^<<<<< (Equivalent number of|Projected number of equivalent) high fidelity evaluations/) {
       print;
       print TEST_OUT;
     }

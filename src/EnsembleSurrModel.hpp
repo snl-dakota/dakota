@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -70,6 +70,17 @@ protected:
 
   size_t qoi() const;
 
+  void init_model(Model& model);
+
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+
   const SizetArray& nested_acv1_indices() const;
   const ShortArray& nested_acv2_targets() const;
   short query_distribution_parameter_derivatives() const;
@@ -86,7 +97,7 @@ protected:
   bool multilevel_multifidelity() const;
 
   bool multifidelity_precedence() const;
-  void multifidelity_precedence(bool mf_prec, bool update_default = false);
+  void multifidelity_precedence(bool mf_prec, bool update_default = true);
 
   /// set responseMode and pass any bypass request on to the high
   /// fidelity model for any lower-level surrogate recursions
@@ -106,9 +117,21 @@ protected:
   //- Heading: member functions
   //
 
+  /// initialize model variables that corresponsd to nested mappings that could
+  /// change once per set of evaluations (e.g., an outer iterator execution)
+  void init_model_mapped_variables(Model& model);
+
   /// called from derived_synchronize() for case of distinct models/interfaces
   /// with competing LF/HF job queues
   void derived_synchronize_competing();
+
+  /// helper to select among Variables::all_discrete_{int,string,real}_
+  /// variable_labels() for exporting a solution control variable label
+  const String& solution_control_label();
+
+  /// helper to select among Model::solution_level_{int,string,real}_value()
+  /// for exporting a scalar solution level value
+  void add_tabular_solution_level_value(Model& model);
 
   //
   //- Heading: Data members
@@ -125,6 +148,8 @@ protected:
   /// employ the same interface instance, requiring modifications to evaluation
   /// scheduling processes
   bool sameInterfaceInstance;
+  /// index of solution control variable within all variables
+  size_t solnCntlAVIndex;
   /// tie breaker for type of model hierarchy when forms and levels are present
   bool mfPrecedence;
 
@@ -140,6 +165,31 @@ protected:
   /// could not be returned since corresponding response portions were
   /// still pending, blocking response aggregation
   IntResponseMapArray cachedRespMaps;
+
+  /// "primary" all continuous variable mapping indices flowed down
+  /// from higher level iteration
+  SizetArray primaryACVarMapIndices;
+  /// "primary" all discrete int variable mapping indices flowed down from
+  /// higher level iteration
+  SizetArray primaryADIVarMapIndices;
+  /// "primary" all discrete string variable mapping indices flowed down from
+  /// higher level iteration
+  SizetArray primaryADSVarMapIndices;
+  /// "primary" all discrete real variable mapping indices flowed down from
+  /// higher level iteration
+  SizetArray primaryADRVarMapIndices;
+  // "secondary" all continuous variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryACVarMapTargets;
+  // "secondary" all discrete int variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADIVarMapTargets;
+  // "secondary" all discrete string variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADSVarMapTargets;
+  // "secondary" all discrete real variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADRVarMapTargets;
 
 private:
 
@@ -169,12 +219,33 @@ inline size_t EnsembleSurrModel::qoi() const
 }
 
 
+inline void EnsembleSurrModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  primaryACVarMapIndices  = c_index1;
+  primaryADIVarMapIndices = di_index1;
+  primaryADSVarMapIndices = ds_index1;
+  primaryADRVarMapIndices = dr_index1;
+  //secondaryACVarMapTargets  = c_target2;
+  //secondaryADIVarMapTargets = di_target2;
+  //secondaryADSVarMapTargets = ds_target2;
+  //secondaryADRVarMapTargets = dr_target2;
+}
+
+
 inline const SizetArray& EnsembleSurrModel::nested_acv1_indices() const
-{ return truth_model().nested_acv1_indices(); }
+{ return primaryACVarMapIndices; }
 
 
 inline const ShortArray& EnsembleSurrModel::nested_acv2_targets() const
-{ return truth_model().nested_acv2_targets(); }
+{ return truth_model().nested_acv2_targets(); }//secondaryACVarMapTargets
 
 
 inline short EnsembleSurrModel::
@@ -224,8 +295,10 @@ inline bool EnsembleSurrModel::multifidelity_precedence() const
 inline void EnsembleSurrModel::
 multifidelity_precedence(bool mf_prec, bool update_default)
 {
-  mfPrecedence = mf_prec;
-  if (update_default) assign_default_keys();
+  if (mfPrecedence != mf_prec) {
+    mfPrecedence = mf_prec;
+    if (update_default) assign_default_keys();
+  }
 }
 
 

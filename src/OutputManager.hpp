@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -280,12 +280,18 @@ public:
   // the tabular data file for the evaluation interface id
   //void add_tabular_data(const String& iface);
   /// adds data to each window in the 2d graphics and adds a row to
-  /// the tabular data file for the evaluation response
-  void add_tabular_data(const Response& response);
+  /// the tabular data file for the response functions
+  void add_tabular_data(const Response& response, bool eol = true);
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file for a portion of the response functions
+  void add_tabular_data(const Response& response, size_t start_index,
+			size_t num_items);
   /// augments the data set for a row in the tabular data file
   template<class T> 
   void add_tabular_scalar(T val);
-  
+  /// complete tabular row with EOL
+  void add_eol();
+
   /// close tabular datastream
   void close_tabular_datastream();
 
@@ -413,6 +419,13 @@ void OutputManager::add_tabular_scalar(T val)
   // whether the file is open, not whether the user asked
   if (tabularDataFStream.is_open())
     TabularIO::write_scalar_tabular(tabularDataFStream, val);
+}
+
+
+inline void OutputManager::add_eol()
+{
+  if (tabularDataFStream.is_open())
+    TabularIO::write_eol(tabularDataFStream);
 }
 
 } //namespace Dakota

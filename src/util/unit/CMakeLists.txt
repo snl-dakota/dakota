@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020
+#  Copyright 2014-2022
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -66,5 +66,5 @@ if(DAKOTA_PYTHON AND DAKOTA_PYBIND11)
   configure_file(pybind11_example.py pybind11_example.py COPYONLY)
   add_test(NAME dakota_util_pybind11_example
     COMMAND ${Python_EXECUTABLE} pybind11_example.py)
-  set_tests_properties(dakota_util_pybind11_example PROPERTIES LABELS UnitTest)
+  set_tests_properties(dakota_util_pybind11_example PROPERTIES LABELS Unit)
 endif()

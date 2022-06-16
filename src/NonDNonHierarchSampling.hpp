@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -70,6 +70,11 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   void print_variance_reduction(std::ostream& s);
 
+  /// return name of active optimizer method
+  unsigned short uses_method() const;
+  /// perform a numerical solver method switch due to a detected conflict
+  void method_recourse();
+
   //
   //- Heading: member functions
   //
@@ -84,8 +89,10 @@ protected:
   // seq_type defines the active dimension for a model sequence.
   //void configure_indices(size_t group,size_t form,size_t lev,short seq_type);
 
-  void assign_active_key(size_t num_steps, size_t secondary_index,
-			 bool multilev);
+  void assign_active_key(bool multilev);
+
+  /// recover estimates of simulation cost using aggregated response metadata
+  void recover_online_cost(RealVector& seq_cost);
 
   void initialize_sums(IntRealMatrixMap& sum_L_baseline,
 		       IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LH,
@@ -94,8 +101,8 @@ protected:
 			 Sizet2DArray& num_LH);
   void finalize_counts(Sizet2DArray& N_L);
 
-  void increment_samples(SizetArray& N_l, size_t num_samples);
-
+  void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+				 size_t index);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t start, size_t end);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
@@ -134,7 +141,7 @@ protected:
   void nonhierarch_numerical_solution(const RealVector& cost,
 				      const SizetArray& approx_sequence,
 				      RealVector& avg_eval_ratios,
-				      Real& avg_hf_target, int& num_samples,
+				      Real& avg_hf_target, size_t& num_samples,
 				      Real& avg_estvar, Real& avg_estvar_ratio);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
@@ -194,19 +201,10 @@ protected:
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
 
-  /// type of model sequence enumerated with primary MF/ACV loop over steps
-  short sequenceType;
-  /// setting for the inactive model dimension not traversed by primary MF/ACV
-  /// loop over steps
-  size_t secondaryIndex;
-  /// relative costs of models within sequence of steps
-  RealVector sequenceCost;
   /// tracks ordering of a metric (correlations, eval ratios) across set of
   /// approximations
   SizetArray approxSequence;
 
-  /// variances for HF truth (length numFunctions)
-  RealVector varH;
   /// number of evaluations of HF truth model (length numFunctions)
   SizetArray numH;
   /// covariances between each LF approximation and HF truth (the c
@@ -218,12 +216,8 @@ protected:
   /// squared Pearson correlations among approximations and truth
   RealMatrix rho2LH;
 
-  /// initial estimator variance from shared pilot (no CV reduction)
-  RealVector estVarIter0;
   /// number of successful pilot evaluations of HF truth model (exclude faults)
   SizetArray numHIter0;
-  /// final estimator variance (optimizer result), averaged across QoI
-  Real avgEstVar;
   /// ratio of final estimator variance (optimizer result averaged across QoI)
   /// and final MC estimator variance  (final varH / numH averaged across QoI)
   Real avgEstVarRatio;
@@ -258,6 +252,10 @@ private:
   static void optpp_constraint_evaluator(int mode, int n, const RealVector& x,
 					 RealVector& g, RealMatrix& grad_g,
 					 int& result_mode);
+  /// static function used by MinimizerAdapterModel for response data
+  /// (objective and nonlinear constraint, if present)
+  static void response_evaluator(const Variables& vars, const ActiveSet& set,
+				 Response& response);
 
   //
   //- Heading: Data
@@ -266,6 +264,47 @@ private:
   /// pointer to NonDACV instance used in static member functions
   static NonDNonHierarchSampling* nonHierSampInstance;
 };
+
+
+inline unsigned short NonDNonHierarchSampling::uses_method() const
+{ return optSubProblemSolver; }
+
+
+inline void NonDNonHierarchSampling::method_recourse()
+{
+  // NonDNonHierarchSampling numerical solves must protect use of Fortran
+  // solvers at this level from conflicting with use at a higher level.
+  // However, it is not necessary to check the other direction by defining
+  // check_sub_iterator_conflict(), since solver execution does not span
+  // any Model evaluations.
+
+  bool err_flag = false;
+  switch (optSubProblemSolver) {
+  case SUBMETHOD_NPSOL:
+#ifdef HAVE_OPTPP
+    optSubProblemSolver = SUBMETHOD_OPTPP;
+#else
+    err_flag = true;
+#endif
+    break;
+  case SUBMETHOD_OPTPP:
+#ifdef HAVE_NPSOL
+    optSubProblemSolver = SUBMETHOD_NPSOL;
+#else
+    err_flag = true;
+#endif
+    break;
+  }
+
+  if (err_flag) {
+    Cerr << "\nError: method conflict detected in NonDNonHierarchSampling but "
+	 << "no alternate solver available." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  else
+    Cerr << "\nWarning: method recourse invoked in NonDNonHierarchSampling due "
+	 << "to detected method conflict.\n\n";
+}
 
 
 inline void NonDNonHierarchSampling::
@@ -310,13 +349,12 @@ inline void NonDNonHierarchSampling::finalize_counts(Sizet2DArray& N_L)
 
 
 inline void NonDNonHierarchSampling::
-increment_samples(SizetArray& N_l, size_t new_samples)
+increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+			  size_t index)
 {
-  if (new_samples) {
-    size_t q, nq = N_l.size();
-    for (q=0; q<nq; ++q)
-      N_l[q] += new_samples;
-  }
+  size_t len = cost.length(), hf_index = len-1;
+  equivHFEvals += (index == hf_index) ? new_samp :
+    (Real)new_samp * cost[index] / cost[hf_index];
 }
 
 
@@ -324,12 +362,12 @@ inline void NonDNonHierarchSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  size_t start, size_t end)
 {
-  size_t i, len = cost.length(), hf_index = len-1;
+  size_t index, len = cost.length(), hf_index = len-1;
   Real cost_ref = cost[hf_index];
   if (end == len)
     { equivHFEvals += new_samp; --end; }
-  for (i=start; i<end; ++i)
-    equivHFEvals += (Real)new_samp * cost[i] / cost_ref;
+  for (index=start; index<end; ++index)
+    equivHFEvals += (Real)new_samp * cost[index] / cost_ref;
 }
 
 
@@ -453,13 +491,9 @@ inline void NonDNonHierarchSampling::
 compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
 		 //size_t num_QQ, // this count is the same as num_Q
 {
-  Real bessel_corr_Q = (Real)num_Q / (Real)(num_Q - 1); // num_QQ same as num_Q
-
-  // unbiased mean estimator
-  Real mu_Q = sum_Q / num_Q;
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  var_Q = (sum_QQ / num_Q - mu_Q * mu_Q) * bessel_corr_Q;
+  // unbiased sample variance estimator = 1/(N-1) sum[(Q_i - Q-bar)^2]
+  // = 1/(N-1) [ sum_QQ - N Q-bar^2 ] = 1/(N-1) [ sum_QQ - sum_Q^2 / N ]
+  var_Q = (sum_QQ - sum_Q * sum_Q / num_Q) / (num_Q - 1);
 
   //Cout << "compute_variance: sum_Q = " << sum_Q << " sum_QQ = " << sum_QQ
   //     << " num_Q = " << num_Q << " var_Q = " << var_Q << std::endl;
@@ -484,16 +518,16 @@ compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
 {
   // unbiased mean estimator
   Real mu_Q1 = sum_Q1 / N_shared, mu_Q2 = sum_Q2 / N_shared,
-    bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
+     num_sm1 = (Real)(N_shared - 1);
   // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
-  // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel [RawMom_XY - X-bar Y-bar]
-  var_Q1 = (sum_Q1Q1 / N_shared - mu_Q1 * mu_Q1);       // * bessel_corr,
-  var_Q2 = (sum_Q2Q2 / N_shared - mu_Q2 * mu_Q2);       // * bessel_corr;
-  Real cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2);// * bessel_corr;
+  // = 1/(N-1) [ sum_XY - N X-bar Y-bar ] = 1/(N-1) [ sum_XY - sum_X sum_Y / N ]
+  var_Q1 = (sum_Q1Q1 - mu_Q1 * sum_Q1);       // / num_sm1;
+  var_Q2 = (sum_Q2Q2 - mu_Q2 * sum_Q2);       // / num_sm1;
+  Real cov_Q1Q2 = (sum_Q1Q2 - mu_Q1 * sum_Q2);// / num_sm1;
 
-  rho2_Q1Q2 = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // bessel corrs cancel
-  var_Q1   *= bessel_corr; // now apply correction where required
-  var_Q2   *= bessel_corr; // now apply correction where required
+  rho2_Q1Q2 = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // divisors cancel
+  var_Q1   /= num_sm1; // now apply divisor
+  var_Q2   /= num_sm1; // now apply divisor
 
   //Cout << "compute_correlation: rho2_Q1Q2 = " << rho2_Q1Q2;
 }

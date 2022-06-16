@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -97,12 +97,12 @@ def test_lib():
 
         interface,
           id_interface = 'I1'
-          pybind11
+          python
             analysis_driver = 'interface_id_1'
 
         interface,
           id_interface = 'I2'
-          pybind11
+          python
             analysis_driver = 'interface_id_2'
 
         interface,

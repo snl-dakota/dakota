@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -53,31 +53,6 @@ CONMINOptimizer::CONMINOptimizer(const String& method_string, Model& model):
 
 void CONMINOptimizer::initialize()
 {
-  // Prevent nesting of an instance of a Fortran iterator within another
-  // instance of the same iterator (which would result in data clashes since
-  // Fortran does not support object independence).  Recurse through all
-  // sub-models and test each sub-iterator for CONMIN presence.
-  // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
-  //       for LHS since it is only active in pre-processing.
-  Iterator sub_iterator = iteratedModel.subordinate_iterator();
-  if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name() == CONMIN_FRCG ||
-	 sub_iterator.method_name() == CONMIN_MFD  ||
-	 sub_iterator.uses_method() == CONMIN_FRCG ||
-	 sub_iterator.uses_method() == CONMIN_MFD ) )
-    sub_iterator.method_recourse();
-  ModelList& sub_models = iteratedModel.subordinate_models();
-  for (ModelLIter ml_iter = sub_models.begin();
-       ml_iter != sub_models.end(); ml_iter++) {
-    sub_iterator = ml_iter->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() == CONMIN_FRCG ||
-	   sub_iterator.method_name() == CONMIN_MFD  ||
-	   sub_iterator.uses_method() == CONMIN_FRCG ||
-	   sub_iterator.uses_method() == CONMIN_MFD ) )
-      sub_iterator.method_recourse();
-  }
-
   // Initialize CONMIN specific data
   NFDG   = 0;       // default finite difference flag
   IPRINT = 1;       // default flag to control amount of output info
@@ -258,6 +233,33 @@ void CONMINOptimizer::deallocate_workspace()
 }
 
 
+void CONMINOptimizer::check_sub_iterator_conflict()
+{
+  // Prevent nesting of an instance of a Fortran iterator within another
+  // instance of the same iterator (which would result in data clashes since
+  // Fortran does not support object independence).  Recurse through all
+  // sub-models and test each sub-iterator for CONMIN presence.
+  // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
+  //       for LHS since it is only active in pre-processing.
+  Iterator sub_iterator = iteratedModel.subordinate_iterator();
+  if (!sub_iterator.is_null() && 
+       ( sub_iterator.method_name() == CONMIN_FRCG ||
+	 sub_iterator.method_name() == CONMIN_MFD  ||
+	 sub_iterator.uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
+    sub_iterator.method_recourse();
+  ModelList& sub_models = iteratedModel.subordinate_models();
+  for (ModelLIter ml_iter = sub_models.begin();
+       ml_iter != sub_models.end(); ml_iter++) {
+    sub_iterator = ml_iter->subordinate_iterator();
+    if (!sub_iterator.is_null() && 
+	 ( sub_iterator.method_name() == CONMIN_FRCG ||
+	   sub_iterator.method_name() == CONMIN_MFD  ||
+	   sub_iterator.uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
+      sub_iterator.method_recourse();
+  }
+}
+
+
 void CONMINOptimizer::initialize_run()
 {
   Optimizer::initialize_run();
@@ -265,6 +267,7 @@ void CONMINOptimizer::initialize_run()
   // Allocate space for CONMIN arrays
   allocate_constraints();
   allocate_workspace();
+  //check_sub_iterator_conflict(); // now virtual and called from Iterator
 
   // initialize the IC and ISC vectors
   size_t i;
@@ -496,21 +499,23 @@ void CONMINOptimizer::core_run()
   // conminInfo = 0) which should be the last evaluation (?).
   copy_data(conminDesVars, num_cv, local_cdv);
   bestVariablesArray.front().continuous_variables(local_cdv);
+  RealVector best_fns(bestResponseArray.front().num_functions());
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // used in Optimizer::post_run()
-    RealVector best_fns(numFunctions);
     best_fns[0] = (max_flag) ? -objFnValue : objFnValue;
-    // NOTE: best_fn_vals[i] may be recomputed multiple times, but this
-    // should be OK so long as all of constraintValues is populated
-    // (no active set deletions).
-    for (size_t i=0; i<numConminNlnConstr; i++) {
-      size_t dakota_constr = constraintMapIndices[i];
-      // back out the offset and multiplier
-      best_fns[dakota_constr+1] = ( constraintValues[i] -
-	constraintMapOffsets[i] ) / constraintMapMultipliers[i];
-    }
-    bestResponseArray.front().function_values(best_fns);
+  }  
+  // NOTE: best_fn_vals[i] may be recomputed multiple times, but this
+  // should be OK so long as all of constraintValues is populated
+  // (no active set deletions).
+  for (size_t i=0; i<numConminNlnConstr; i++) {
+    size_t dakota_constr = constraintMapIndices[i];
+    // back out the offset and multiplier
+    best_fns[dakota_constr+numUserPrimaryFns] =
+      ( constraintValues[i] - constraintMapOffsets[i] ) /
+      constraintMapMultipliers[i];
   }
+  bestResponseArray.front().function_values(best_fns);
+
   deallocate_workspace();
 }
 

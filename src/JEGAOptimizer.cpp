@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -998,19 +998,19 @@ JEGAOptimizer::LoadDakotaResponses(
 
     // BMA TODO: Could always populate constraints and just get
     // primary responses from the DB, as in SNLL
+    RealVector fn_vals(resp.num_functions());
     if (!localObjectiveRecast) {  // else local_recast_retrieve
-      RealVector fn_vals(this->numFunctions);
       for(size_t i=0; i<this->numObjectiveFns; i++)
 	fn_vals[i]= des.GetObjective(i);
-
-      // JEGA constraint ordering is nonlinear inequality, nonlinear equality,
-      // linear inequality, linear equality
-      // (see JEGAOptimizer::LoadTheConstraints()).
-      for(size_t i=0; i<static_cast<size_t>(this->numNonlinearConstraints); ++i)
-        fn_vals[i+this->numObjectiveFns] = des.GetConstraint(i);
-
-      resp.function_values(fn_vals);
     }
+
+    // JEGA constraint ordering is nonlinear inequality, nonlinear equality,
+    // linear inequality, linear equality
+    // (see JEGAOptimizer::LoadTheConstraints()).
+    for(size_t i=0; i<static_cast<size_t>(this->numNonlinearConstraints); ++i)
+      fn_vals[i+this->numUserPrimaryFns] = des.GetConstraint(i);
+
+    resp.function_values(fn_vals);
 }
 
 void

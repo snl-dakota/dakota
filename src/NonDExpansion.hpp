@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -275,7 +275,7 @@ protected:
   /// return number of collocation points for index within model sequence
   size_t collocation_points(size_t index) const;
   /// return random seed for index within model sequence
-  int random_seed(size_t index) const;
+  int seed_sequence(size_t index) const;
 
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
@@ -670,7 +670,7 @@ inline int NonDExpansion::first_seed() const
 
 
 /** extract an active seed from a seed sequence */
-inline int NonDExpansion::random_seed(size_t index) const
+inline int NonDExpansion::seed_sequence(size_t index) const
 {
   // return 0 for cases where seed is undefined or will not be updated
 

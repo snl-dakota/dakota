@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -104,7 +104,9 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_MUQ, SUBMETHOD_QUESO,
        SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
-       SUBMETHOD_NIP, SUBMETHOD_SQP, SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBO,
+       SUBMETHOD_CONMIN, SUBMETHOD_DOT, SUBMETHOD_NLPQL, SUBMETHOD_NPSOL,
+       SUBMETHOD_OPTPP, SUBMETHOD_EA, SUBMETHOD_DIRECT, SUBMETHOD_EGO,
+       SUBMETHOD_SBLO, SUBMETHOD_SBGO,
        // Local reliability sub-method selections: (MV is 0)
        SUBMETHOD_AMV_X,       SUBMETHOD_AMV_U,
        SUBMETHOD_AMV_PLUS_X,  SUBMETHOD_AMV_PLUS_U,
@@ -209,22 +211,30 @@ enum { DESIGN,            //DESIGN_UNIFORM,
 // Wilks type of confidence interval
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
-// define special values for qoi aggregation norm for sample allocation over levels and QoIs
+// type of final statistics for NonD sampling methods
+enum { NO_FINAL_STATS=0, QOI_STATISTICS, ESTIMATOR_PERFORMANCE };
+
+// define special values for qoi aggregation norm for sample
+// allocation over levels and QoIs
 enum { QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM };
 
 // target variance for fitting sample allocation
 enum { TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA, TARGET_SCALARIZATION };
 
-// define special values for computation of convergence tolerance, either absolute or relative 
+// define special values for computation of convergence tolerance,
+// either absolute or relative
 enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE,
        CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE };
 
-// define optimization formulation for MLMC sample allocation by specifing equality constraint, either variance or cost 
+// define optimization formulation for MLMC sample allocation by
+// specifing equality constraint, either variance or cost
 enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
        CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
 
-// MFMC modes
+// ML/MF sampling modes
 enum { ONLINE_PILOT, OFFLINE_PILOT, PILOT_PROJECTION };
+// Numerical solution modes
+enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
 
 // ---------------
 // NonDReliability
@@ -1004,6 +1014,15 @@ public:
   /// (e.g. number of supplemental points added) to be added to be
   /// added to the build points for an emulator at each iteration
   IntVector refineSamples;
+
+  /// the method used for solving an optimization sub-problem (e.g.,
+  /// pre-solve for the MAP point)
+  unsigned short optSubProbSolver;
+  /// approach for overriding an analytic solution based on simplifying
+  /// assumptions that might be violated, suggesting a fallback approach,
+  /// or lacking robustness, suggesting an optional override replacement
+  unsigned short numericalSolveMode;
+
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
   /// the \c solution_mode selection for ML/MF sampling methods
@@ -1026,7 +1045,10 @@ public:
   Real multilevEstimatorRate;
   /// type of discrepancy emulation in multilevel methods: distinct or recursive
   short multilevDiscrepEmulation;  
-  /// the \c final_moments specification in \ref MethodNonD
+  /// specification of the type of final statistics in \ref MethodNonD
+  short finalStatsType;
+  /// the \c final_moments specification in \ref MethodNonD, subordinate to
+  /// the type of final statistics 
   short finalMomentsType;
   /// the \c distribution \c cumulative or \c complementary specification
   /// in \ref MethodNonD
@@ -1088,9 +1110,6 @@ public:
   int evidenceSamples;
   /// flag indicating use of Laplace approximation for evidence calc.
   bool modelEvidLaplace;
-  /// the method used for solving an optimization sub-problem (e.g.,
-  /// pre-solve for the MAP point)
-  unsigned short optSubProbSolver;
   /// the type of proposal covariance: user, derivatives, or prior
   String proposalCovType;
   /// optional multiplier for prior-based proposal covariance

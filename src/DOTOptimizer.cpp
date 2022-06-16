@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -96,31 +96,6 @@ DOTOptimizer* new_DOTOptimizer(Model& model)
 
 void DOTOptimizer::initialize()
 {
-  // Prevent nesting of an instance of a Fortran iterator within another
-  // instance of the same iterator (which would result in data clashes since
-  // Fortran does not support object independence).  Recurse through all
-  // sub-models and test each sub-iterator for DOT presence.
-  // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
-  //       for LHS since it is only active in pre-processing.
-  Iterator sub_iterator = iteratedModel.subordinate_iterator();
-  if (!sub_iterator.is_null() && 
-      ( ( sub_iterator.method_name() >= DOT_BFGS &&
-	  sub_iterator.method_name() <= DOT_SQP ) ||
-	( sub_iterator.uses_method() >= DOT_BFGS &&
-	  sub_iterator.uses_method() <= DOT_SQP ) ) )
-    sub_iterator.method_recourse();
-  ModelList& sub_models = iteratedModel.subordinate_models();
-  for (ModelLIter ml_iter = sub_models.begin();
-       ml_iter != sub_models.end(); ml_iter++) {
-    sub_iterator = ml_iter->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	( ( sub_iterator.method_name() >= DOT_BFGS &&
-	    sub_iterator.method_name() <= DOT_SQP ) ||
-	  ( sub_iterator.uses_method() >= DOT_BFGS &&
-	    sub_iterator.uses_method() <= DOT_SQP ) ) )
-      sub_iterator.method_recourse();
-  }
-
   // Initialize DOT specific data
 
   intCntlParmArray[1] = -1;            // IPRM(2)=ISCAL, turn off default scaling
@@ -284,12 +259,41 @@ void DOTOptimizer::allocate_workspace()
 }
 
 
+void DOTOptimizer::check_sub_iterator_conflict()
+{
+  // Prevent nesting of an instance of a Fortran iterator within another
+  // instance of the same iterator (which would result in data clashes since
+  // Fortran does not support object independence).  Recurse through all
+  // sub-models and test each sub-iterator for DOT presence.
+  // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
+  //       for LHS since it is only active in pre-processing.
+  // Run-time check since NestedModel::subIterator is constructed in init_comms
+  Iterator sub_iterator = iteratedModel.subordinate_iterator();
+  if (!sub_iterator.is_null() && 
+      ( ( sub_iterator.method_name() >= DOT_BFGS &&
+	  sub_iterator.method_name() <= DOT_SQP ) ||
+	sub_iterator.uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
+    sub_iterator.method_recourse();
+  ModelList& sub_models = iteratedModel.subordinate_models();
+  for (ModelLIter ml_iter = sub_models.begin();
+       ml_iter != sub_models.end(); ml_iter++) {
+    sub_iterator = ml_iter->subordinate_iterator();
+    if (!sub_iterator.is_null() && 
+	( ( sub_iterator.method_name() >= DOT_BFGS &&
+	    sub_iterator.method_name() <= DOT_SQP ) ||
+	  sub_iterator.uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
+      sub_iterator.method_recourse();
+  }
+}
+
+
 void DOTOptimizer::initialize_run()
 {
   Optimizer::initialize_run();
 
   allocate_constraints();
   allocate_workspace();
+  //check_sub_iterator_conflict(); // now virtual and called from Iterator
 
   dotInfo = 0; // Initialize to 0 before calling DOT
 
@@ -477,21 +481,22 @@ void DOTOptimizer::core_run()
 
   // Set best data using DAKOTA constraint values (not DOT constraints):
   bestVariablesArray.front().continuous_variables(designVars);
+  RealVector best_fns(bestResponseArray.front().num_functions());
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
-    RealVector best_fns(numFunctions);
     best_fns[0] = objFnValue;
-    // NOTE: best_fn_vals[i] may be recomputed multiple times, but this
-    // should be OK so long as all of constraintValues is populated
-    // (no active set deletions).
-    for (size_t i=0; i<numDotNlnConstr; ++i) {
-      size_t dakota_constr = constraintMapIndices[i];
-      // back out the offset and multiplier
-      best_fns[dakota_constr+1] = ( constraintValues[i] -
-        constraintMapOffsets[i] ) / constraintMapMultipliers[i];
-    }
-    bestResponseArray.front().function_values(best_fns);
   }
+  // NOTE: best_fn_vals[i] may be recomputed multiple times, but this
+  // should be OK so long as all of constraintValues is populated
+  // (no active set deletions).
+  for (size_t i=0; i<numDotNlnConstr; ++i) {
+    size_t dakota_constr = constraintMapIndices[i];
+    // back out the offset and multiplier
+    best_fns[dakota_constr+numUserPrimaryFns] =
+      ( constraintValues[i] - constraintMapOffsets[i] ) /
+      constraintMapMultipliers[i];
+  }
+  bestResponseArray.front().function_values(best_fns);
 }
 
 } // namespace Dakota

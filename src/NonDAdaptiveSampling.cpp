@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -54,6 +54,8 @@ namespace Dakota
 	        // Enforce an LHS default for this method.
 	        if (!sampleType)
 		  sampleType = SUBMETHOD_LHS;
+
+		initialize_final_statistics();
 
 		AMSC = NULL;
 

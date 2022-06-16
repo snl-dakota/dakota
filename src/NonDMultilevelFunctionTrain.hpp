@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -140,11 +140,11 @@ inline size_t NonDMultilevelFunctionTrain::collocation_points() const
 
 
 inline int NonDMultilevelFunctionTrain::random_seed() const
-{ return NonDExpansion::random_seed(sequenceIndex); }
+{ return NonDExpansion::seed_sequence(sequenceIndex); }
 
 
 inline int NonDMultilevelFunctionTrain::first_seed() const
-{ return NonDExpansion::random_seed(0); }
+{ return NonDExpansion::seed_sequence(0); }
 
 
 inline size_t NonDMultilevelFunctionTrain::start_rank(size_t index) const

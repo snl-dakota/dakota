@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -16,12 +16,15 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 //#include "dakota_tabular_io.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDNonHierarchSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
-#include "DakotaIterator.hpp"
+#include "MinimizerAdapterModel.hpp"
+#include "DataFitSurrModel.hpp"
+#include "DataFitSurrBasedLocalMinimizer.hpp"
+#include "EffGlobalMinimizer.hpp"
+#include "NonDLHSSampling.hpp"
 
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
@@ -48,7 +51,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
 {
   // default solver to OPT++ NIP based on numerical experience
   optSubProblemSolver = sub_optimizer_select(
-    probDescDB.get_ushort("method.nond.opt_subproblem_solver"), SUBMETHOD_NIP);
+    probDescDB.get_ushort("method.nond.opt_subproblem_solver"),SUBMETHOD_OPTPP);
 
   // check iteratedModel for model form hi1erarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -62,22 +65,26 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
-  size_t i, num_mf = model_ensemble.size(), num_lev;
+  size_t i, num_mf = model_ensemble.size(), num_lev, md_index, num_md;
   ModelLIter ml_it;
   NLev.resize(num_mf);
+  costMetadataIndices.resize(num_mf);
   for (i=0, ml_it=model_ensemble.begin(); ml_it!=model_ensemble.end();
        ++i, ++ml_it) {
-    // for now, only SimulationModel supports solution_{levels,costs}()
-    num_lev = ml_it->solution_levels(); // lower bound is 1 soln level
+    // only SimulationModel supports solution_{levels,costs} and cost metadata
+    num_lev  = ml_it->solution_levels(); // lower bound is 1 soln level
+    md_index = ml_it->cost_metadata_index();
+    num_md   = ml_it->current_response().metadata().size();
 
     // Ensure there is consistent cost data available as SimulationModel must
     // be allowed to have empty solnCntlCostMap (when optional solution control
     // is not specified).  Passing false bypasses lower bound of 1.
     // > For ACV, only require 1 solution cost, neglecting resolutions for now
-    //if (num_lev > ml_it->solution_levels(false)) { // 
-    if (ml_it->solution_levels(false) == 0) { // default is 0 soln costs
-      Cerr << "Error: insufficient cost data provided for ACV sampling."
-	   << "\n       Please provide solution_level_cost estimates for model "
+    //if (num_lev > ml_it->solution_levels(false)) {
+    if (md_index == _NPOS && ml_it->solution_levels(false) == 0) {
+      Cerr << "Error: insufficient cost data provided for non-hierarchical "
+	   << "sampling.\n       Please provide offline solution_level_cost "
+	   << "estimates or activate\n       online cost recovery for model "
 	   << ml_it->model_id() << '.' << std::endl;
       err_flag = true;
     }
@@ -86,18 +93,21 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
     NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
     //for (j=0; j<num_lev; ++j)
     //  Nl_i[j].resize(numFunctions); // defer
+    costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
   }
 
   if (err_flag)
     abort_handler(METHOD_ERROR);
 
-  size_t num_steps;
-  configure_sequence(num_steps, secondaryIndex, sequenceType);
-  numApprox = num_steps - 1;
+  iteratedModel.multifidelity_precedence(true); // prefer MF, reassign keys
+  configure_sequence(numSteps, secondaryIndex, sequenceType);
+  numApprox = numSteps - 1;
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  configure_cost(num_steps, multilev, sequenceCost);
+  // Precedence: if solution costs provided, then we use them; else we rely
+  /// on online cost recovery through response metadata
+  onlineCost = !query_cost(numSteps, multilev, sequenceCost);
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
-		    num_steps, pilotSamples);
+		    numSteps, pilotSamples);
 
   size_t max_ps = find_max(pilotSamples);
   if (max_ps) maxEvalConcurrency *= max_ps;
@@ -128,34 +138,64 @@ void NonDNonHierarchSampling::pre_run()
 
   nonHierSampInstance = this;
 
-  // prefer MF over ML if both available
-  iteratedModel.multifidelity_precedence(true);
+  /* Numerical solves do not involve use of iteratedModel
+
+  // Prevent nesting of an instance of a Fortran iterator within another
+  // instance of the same iterator.  Run-time check since NestedModel::
+  // subIterator is constructed in init_communicators().
+  if (optSubProblemSolver == SUBMETHOD_NPSOL) {
+    Iterator sub_iterator = iteratedModel.subordinate_iterator();
+    if (!sub_iterator.is_null() && 
+	( sub_iterator.method_name() ==     NPSOL_SQP ||
+	  sub_iterator.method_name() ==    NLSSOL_SQP ||
+	  sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
+      sub_iterator.method_recourse();
+    ModelList& sub_models = iteratedModel.subordinate_models();
+    for (ModelLIter ml_iter = sub_models.begin();
+	 ml_iter != sub_models.end(); ml_iter++) {
+      sub_iterator = ml_iter->subordinate_iterator();
+      if (!sub_iterator.is_null() && 
+	  ( sub_iterator.method_name() ==     NPSOL_SQP ||
+	    sub_iterator.method_name() ==    NLSSOL_SQP ||
+	    sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
+	sub_iterator.method_recourse();
+    }
+  }
+  */
+
   // assign an aggregate model key that persists for core_run()
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  assign_active_key(numApprox+1, secondaryIndex, multilev);
+  assign_active_key(multilev);
 }
 
 
-void NonDNonHierarchSampling::
-assign_active_key(size_t num_steps, size_t secondary_index, bool multilev)
+void NonDNonHierarchSampling::assign_active_key(bool multilev)
 {
   // For M-model control variate, select fidelities/resolutions
   Pecos::ActiveKey active_key, truth_key;
   std::vector<Pecos::ActiveKey> approx_keys(numApprox);
   //unsigned short truth_form;  size_t truth_lev;
   if (multilev) {
-    unsigned short fixed_form = (secondary_index == SZ_MAX) ?
-      USHRT_MAX : secondary_index;
+    unsigned short fixed_form = (secondaryIndex == SZ_MAX) ?
+      USHRT_MAX : secondaryIndex;
     truth_key.form_key(0, fixed_form, numApprox);
     for (size_t approx=0; approx<numApprox; ++approx)
       approx_keys[approx].form_key(0, fixed_form, approx);
     //truth_form = fixed_form;  truth_lev = numApprox;
   }
-  else {
-    truth_key.form_key(0, numApprox, secondary_index);
+  else if (secondaryIndex == SZ_MAX) { // MF with default resolution level(s)
+    truth_key.form_key(0, numApprox,
+      iteratedModel.truth_model().solution_level_cost_index());
     for (unsigned short approx=0; approx<numApprox; ++approx)
-      approx_keys[approx].form_key(0, approx, secondary_index);
-    //truth_form = numApprox;  truth_lev = secondary_index;
+      approx_keys[approx].form_key(0, approx,
+	iteratedModel.surrogate_model(approx).solution_level_cost_index());
+    //truth_form = numApprox;  truth_lev = secondaryIndex;
+  }
+  else { // MF with assigned resolution level
+    truth_key.form_key(0, numApprox, secondaryIndex);
+    for (unsigned short approx=0; approx<numApprox; ++approx)
+      approx_keys[approx].form_key(0, approx, secondaryIndex);
+    //truth_form = numApprox;  truth_lev = secondaryIndex;
   }
   active_key.aggregate_keys(truth_key, approx_keys, Pecos::RAW_DATA);
   aggregated_models_mode();
@@ -245,6 +285,36 @@ ensemble_sample_increment(size_t iter, size_t step)
 
   // compute allResponses from allVariables using non-hierarchical model
   evaluate_parameter_sets(iteratedModel, true, false);
+}
+
+
+void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+
+  size_t cntr, step, num_steps = numApprox+1, num_finite, md_index;
+  Real cost;  bool ml = (costMetadataIndices.size() == 1);
+  IntRespMCIter r_it;
+  using std::isfinite;
+
+  seq_cost.size(num_steps); // init to 0
+  for (step=0, cntr=0; step<num_steps; ++step) {
+    const SizetSizetPair& cost_mdi = (ml) ? costMetadataIndices[0] :
+      costMetadataIndices[step];
+
+    md_index = cntr + cost_mdi.first; // index into aggregated metadata
+    num_finite = 0;
+    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+      cost = r_it->second.metadata()[md_index]; // offset by index
+      if (isfinite(cost)) {
+	++num_finite;
+	seq_cost[step] += cost;
+      }
+    }
+    seq_cost[step] /= num_finite;
+    cntr += cost_mdi.second; // offset by size of metadata for step
+  }
 }
 
 
@@ -556,7 +626,7 @@ void NonDNonHierarchSampling::
 nonhierarch_numerical_solution(const RealVector& cost,
 			       const SizetArray& approx_sequence,
 			       RealVector& avg_eval_ratios,
-			       Real& avg_hf_target, int& num_samples,
+			       Real& avg_hf_target, size_t& num_samples,
 			       Real& avg_estvar, Real& avg_estvar_ratio)
 {
   // --------------------------------------
@@ -576,8 +646,8 @@ nonhierarch_numerical_solution(const RealVector& cost,
   //   >> No need for a priori model sequence, only for post-proc of opt result
   // > ACV-IS is unconstrained in model order --> retain N_i > N
 
-  size_t i, num_cdv, num_lin_con = 0, num_nln_con = 0,
-    approx, approx_im1, approx_ip1, max_iter = 100000;
+  size_t i, num_cdv, num_lin_con = 0, num_nln_con = 0, approx, approx_im1,
+    approx_ip1, max_iter = 100000, max_eval = 500000;
   Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
     avg_N_H = average(numH), conv_tol = 1.e-8; // tight convergence
   bool ordered = approx_sequence.empty();
@@ -682,38 +752,179 @@ nonhierarch_numerical_solution(const RealVector& cost,
   }
   }
 
-  if (varianceMinimizer.is_null())
-    switch (optSubProblemSolver) {
-    case SUBMETHOD_SQP: {
-      int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) ?
-	2 : 0; // 0 neither, 1 obj, 2 constr, 3 both
-      Real fdss = 1.e-6;
+  if (varianceMinimizer.is_null()) {
+
+    bool use_adapter   = (optSubProblemSolver != SUBMETHOD_NPSOL &&
+			  optSubProblemSolver != SUBMETHOD_OPTPP);
+    bool construct_dfs = (optSubProblemSolver == SUBMETHOD_SBLO ||
+			  optSubProblemSolver == SUBMETHOD_SBGO);
+    if (use_adapter) {
+      // configure the minimization sub-problem
+      MinimizerAdapterModel adapt_model(x0, x_lb, x_ub, lin_ineq_coeffs,
+					lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+					lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
+					nln_eq_tgt, response_evaluator);
+
+      //////////////////////////////////////////////////////////////////////////
+      // For nested optimization, we emulate EstVar*(hp) at the top level,
+      // eliminating all lower level quantities through the lower level solve.
+      // > Conceptually simple but repeated optim's required --> top level is
+      //   noisy if lower-level is numerical; less efficient than 1 solve
+      // > Best option for analytic cases like MLMC, ordered MFMC, et al.
+      //   >> numerical opt still relevant for misordered models or
+      //      over-estimated pilots
+      // > Want to support this in any case, so start with this as lower risk
+      //   option --> main needs are recovering cost(hp) from metadata, ...
+      //////////////////////////////////////////////////////////////////////////
+
+      //////////////////////////////////////////////////////////////////////////
+      // For integrated optimization, pilot computed for each model at each hp.
+      // Main loop:
+      // > shared incr --> counts, sums --> varL, covLL, covLH
+      // > Solve r*,N* from min EstVar = varH/N (1-Rsq) where Rsq defined:
+      //   >> MFMC: R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, i)
+      //   >> ACV: form F(r), A(F,c), invert CF, triple product --> R_sq
+      // > Apply delta-N* and continue
+      // Post-process: apply r*, compute LF incr, roll up final stats
+
+      // response_evaluator():
+      //   --> objective = min_{N,r_i} Estvar(corr(hp),cost(hp))
+      //   --> constraints = lin/nln budget = fn(N,r_i,cost(hp))
+      // > change in hyper-parameters must reset sample counts/accumulators
+      //   >> track high-level metrics over hp, but don't retain low level
+      // > Costs for each model = ensemble average over pilot for each hp
+
+      // Solution of approx sub-problem uses DataFitSurrModel::approxInterface
+      // to query either the low-level (cost, corr) or high-level (estvar)
+      // surrogates over the hyper-parameters
+      // > low-level: minimal emulated set = cost + {corr/covar terms(N,r)} ?
+      //   >> simplifications can be made for 3 model case, but not in general
+      // > high-level:
+      //   >> EstVar = emulated over (hp,N,r_i) --> surrogate emulation extent
+      //      can be pointwise(N,r_i) for each hp or combined(hp,N,r_i)
+      //   >> EstVar* = emulated only over hp, but requires nested opt
+      // DataFitSurrModel::actualModel evaluations compute corr,cost from
+      // scratch for each hp (initial surrogate build, validation, refinement)
+
+      // TRMM/EGO must solve multiple approx sub-problems and perform multiple
+      // surrogate refinements to converge to EstVar*(hp)
+
+      // Iterated ACV,MFMC would then be outer-loop around this pilot-based
+      // solution --> perform N* increment to update correlations/covariances
+      // > can we integrate this upstream to eliminate this loop? --> would
+      //   require performing N* increment as part of optimization, which would
+      //   not be inconsistent with updating N* after a converged sub-problem
+      //   (both can overshoot).  Key would be doing this at a major iteration
+      //   step (SBLO validation), not during exploration (EGO).
+      // > or restrict to offline pilot mode (no iteration)
+
+      // Then r* over-sampling occurs after all iteration is done -> final stats
+      //////////////////////////////////////////////////////////////////////////
+      
+      Model sub_prob_model;
+      if (construct_dfs) {
+	int samples = 100, seed = 12347;      // TO DO: spec
+	unsigned short sample_type = SUBMETHOD_DEFAULT;
+	String rng; // empty string: use default
+	bool vary_pattern = false, use_derivs = false;
+	short corr_type = ADDITIVE_CORRECTION, corr_order = 1, data_order = 1;
+	if (use_derivs) { // Would also need to verify surrogate support
+	  if (adapt_model.gradient_type() != "none") data_order |= 2;
+	  if (adapt_model.hessian_type()  != "none") data_order |= 4;
+	}
+	Iterator dace_iterator;
+	dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(adapt_model,
+	  sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM));
+	dace_iterator.active_set_request_values(data_order);
+
+	String approx_type("global_kriging"), point_reuse("none");// TO DO: spec
+	UShortArray approx_order; // empty
+	ActiveSet dfs_set = adapt_model.current_response().active_set();// copy
+	dfs_set.request_values(1);
+	sub_prob_model = DataFitSurrModel(dace_iterator, adapt_model, dfs_set,
+					  approx_type, approx_order, corr_type,
+					  corr_order, data_order, SILENT_OUTPUT,
+					  point_reuse);
+      }
+      else
+	sub_prob_model = adapt_model;
+
+      // select the sub-problem solver
+      switch (optSubProblemSolver) {
+      case SUBMETHOD_SBLO: {
+	short merit_fn = AUGMENTED_LAGRANGIAN_MERIT, accept_logic = FILTER,
+	  constr_relax = NO_RELAX;
+	unsigned short soft_conv_limit = 5;
+	Real tr_factor = .5;
+	varianceMinimizer.assign_rep(
+	  std::make_shared<DataFitSurrBasedLocalMinimizer>(sub_prob_model,
+	  merit_fn, accept_logic, constr_relax, tr_factor, max_iter, max_eval,
+	  conv_tol, soft_conv_limit, false));
+	break;
+      }
+      case SUBMETHOD_EGO: {
+	// EGO builds its own GP in initialize_sub_problem(), so a DFSModel
+	// does not need to be constructed here as for SBLO/SBGO
+	// > TO DO: pure global opt may need subsequent local refinement
+	int samples = 100, seed = 12347;      // TO DO: spec
+	String approx_type("global_kriging"); // TO DO: spec
+	bool use_derivs = false;
+	varianceMinimizer.assign_rep(std::make_shared<EffGlobalMinimizer>(
+	  sub_prob_model, approx_type, samples, seed, use_derivs, max_iter,
+	  max_eval, conv_tol));
+	break;
+      }
+      /*
+      case SUBMETHOD_CPS: { // may need to be combined with local refinement
+        break;
+      }
+      case SUBMETHOD_SBGO: { // for NonDGlobalInterval, was EAminlp + GP ...
+        varianceMinimizer.assign_rep(std::make_shared<SurrBasedGlobalMinimizer>(
+	  sub_prob_model, max_iter, max_eval, conv_tol));
+        break;
+      }
+      case SUBMETHOD_EA: { // may need to be combined with local refinement
+        varianceMinimizer.assign_rep(std::make_shared<COLINOptimizer>(
+	  sub_prob_model, max_iter, max_eval, conv_tol));
+        break;
+      }
+      */
+      default: // SUBMETHOD_NONE, ...
+	Cerr << "Error: sub-problem solver undefined in NonDNonHierarchSampling"
+	     << std::endl;
+	abort_handler(METHOD_ERROR);
+	break;
+      }
+    }
+    else { // existing call-back APIs do not require adapter or surrogate
+      switch (optSubProblemSolver) {
+      case SUBMETHOD_NPSOL: {
+	int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) ?
+	  2 : 0; // 0 neither, 1 obj, 2 constr, 3 both
+	Real fdss = 1.e-6;
 #ifdef HAVE_NPSOL
-      varianceMinimizer.assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb,
-        x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-        lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-        npsol_objective_evaluator, npsol_constraint_evaluator, deriv_level,
-	conv_tol, max_iter, fdss));
+	varianceMinimizer.assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb,
+          x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+          lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+          npsol_objective_evaluator, npsol_constraint_evaluator, deriv_level,
+	  conv_tol, max_iter, fdss));
 #endif
-      break;
-    }
-    case SUBMETHOD_NIP: {
-      size_t max_eval = 500000;  Real max_step = 100000.;
+	break;
+      }
+      case SUBMETHOD_OPTPP: {
+	Real max_step = 100000.;
 #ifdef HAVE_OPTPP
-      varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
-	x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-	lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	optpp_objective_evaluator, optpp_constraint_evaluator, max_iter,
-	max_eval, conv_tol, conv_tol, max_step));
+	varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
+	  x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	  lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	  optpp_objective_evaluator, optpp_constraint_evaluator, max_iter,
+	  max_eval, conv_tol, conv_tol, max_step));
 #endif
-      break;
+	break;
+      }
+      }
     }
-    default: // SUBMETHOD_NONE, ...
-      Cerr << "Error: sub-problem solver undefined in NonDNonHierarchSampling."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-      break;
-    }
+  }
   else {
     varianceMinimizer.initial_point(x0);
     //if (x_bounds_update)
@@ -1020,15 +1231,51 @@ optpp_constraint_evaluator(int mode, int n, const RealVector& x, RealVector& c,
 }
 
 
+/** API for MinimizerAdapterModel */
+void NonDNonHierarchSampling::
+response_evaluator(const Variables& vars, const ActiveSet& set,
+		   Response& response)
+{
+  const ShortArray& asv = set.request_vector();
+  size_t i, num_fns = asv.size();//, num_deriv_vars = dvv.size();
+  //bool grad_flag = false, hess_flag = false;
+  //for (i=0; i<num_fns; ++i) {
+  //  if (asv[i] & 2) grad_flag = true;
+  //  if (asv[i] & 4) hess_flag = true;
+  //}
+
+  const RealVector& c_vars = vars.continuous_variables();
+  if (num_fns) {
+    if (asv[0] & 1)
+      response.function_value(nonHierSampInstance->
+			      objective_function(c_vars), 0);
+    if (asv[0] & 2) {
+      Cerr << "Error: objective grad not supported in NonHierarch" << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+  }
+
+  if (num_fns > 1) {
+    if (asv[1] & 1)
+      response.function_value(nonHierSampInstance->
+			      nonlinear_constraint(c_vars), 0);
+    if (asv[1] & 2) {
+      RealVector grad_c = response.function_gradient_view(1);
+      nonHierSampInstance->nonlinear_constraint_gradient(c_vars, grad_c);
+    }
+  }
+}
+
+
 void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
 {
   size_t wpp7 = write_precision + 7;
-  s << "<<<<< Variance for mean estimator:";
+  s << "<<<<< Variance for mean estimator:\n";
 
   if (pilotMgmtMode != OFFLINE_PILOT)
-    s << "\n      Initial MC (" << std::setw(4)
+    s << "    Initial   MC (" << std::setw(5)
       << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
-      << std::setw(wpp7) << average(estVarIter0);
+      << std::setw(wpp7) << average(estVarIter0) << '\n';
 
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   //String method = method_enum_to_string(methodName); // string too verbose
@@ -1040,13 +1287,19 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   //   avgEstVar from the optimizer obj fn), but difference is usually small.
   RealVector final_mc_estvar;
   compute_mc_estimator_variance(varH, numH, final_mc_estvar);
-  s << "\n  " << type << "   MC (" << std::setw(4)
+  Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
+  s << "  " << type << "   MC (" << std::setw(5)
     << (size_t)std::floor(average(numH) + .5) << " HF samples): "
     << std::setw(wpp7) << average(final_mc_estvar) // avgEstVar / avgEstVarRatio
-    << "\n  " << type << method << " (sample profile):  "
+    << "\n  " << type << method << " (sample profile):   "
     << std::setw(wpp7) << avgEstVar
-    << "\n  " << type << method << " ratio (1 - R^2):   "
-    << std::setw(wpp7) << avgEstVarRatio << '\n';
+    << "\n  " << type << method << " ratio (1 - R^2):    "
+    << std::setw(wpp7) << avgEstVarRatio
+    << "\n Equivalent   MC (" << std::setw(5)
+    << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+    << std::setw(wpp7) << avg_budget_mc_estvar
+    << "\n Equivalent" << method << " ratio:              "
+    << std::setw(wpp7) << avgEstVar / avg_budget_mc_estvar << '\n';
 }
 
 } // namespace Dakota

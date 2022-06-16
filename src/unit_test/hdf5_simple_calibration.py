@@ -100,6 +100,13 @@ class EvaluationsStructure(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             h["/interfaces/NO_ID/NO_MODEL_ID"]
 
+    def test_interface_members(self):
+        expected = {"variables", "responses", "properties"}
+        with h5py.File(_TEST_NAME + ".h5", "r") as f:
+            h = f["/interfaces/NO_ID/NO_MODEL_ID"]
+            actual = {item for item in h}
+        self.assertEquals(expected, actual)
+
     def test_model_presence(self):
         expected_model_types = ["simulation"] #, "recast"]
         expected_sim_models = ["NO_MODEL_ID"]
@@ -111,6 +118,13 @@ class EvaluationsStructure(unittest.TestCase):
             self.assertListEqual(expected_sim_models, sim_models)
             #recast_models = [k for k in h["/models/recast"]]
             #self.assertItemsEqual(expected_recast_models, recast_models)
+
+    def test_model_members(self):
+        expected = {"variables", "responses", "properties", "sources"}
+        with h5py.File(_TEST_NAME + ".h5", "r") as f:
+            h = f["/models/simulation/NO_MODEL_ID"]
+            actual = {item for item in h}
+        self.assertEquals(expected, actual)
 
     def test_sources(self):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
@@ -140,7 +154,7 @@ class TabularData(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/models/simulation/NO_MODEL_ID/variables/continuous"]
-            hasv = h["/models/simulation/NO_MODEL_ID/metadata/active_set_vector"]
+            hasv = h["/models/simulation/NO_MODEL_ID/properties/active_set_vector"]
             self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
             hindex = 0
             for i, eid in enumerate(tdata["%eval_id"]):
@@ -187,7 +201,7 @@ class RestartData(unittest.TestCase):
                 for eid, tr, hr in zip(rdata["eval_id"], rdata["response"][r], hresps[:,i]):
                     self.assertAlmostEqual(tr["function"], hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
             # ASV
-            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/NO_MODEL_ID/metadata/active_set_vector"]):
+            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/NO_MODEL_ID/properties/active_set_vector"]):
                 for r_a, h_a in zip(r_asv, h_asv):
                     self.assertEqual(r_a, h_a)
 

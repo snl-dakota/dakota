@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -50,6 +50,9 @@ protected:
   //
   //- Heading: Convenience member functions
   //
+
+  /// check for clash with nested use of Fortran code
+  void check_sub_iterator_conflict(Model& model);
 
   /// Allocates F77 linear constraint arrays for the SOL algorithms
   void allocate_linear_arrays(int num_cv, const RealMatrix& lin_ineq_coeffs,

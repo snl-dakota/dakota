@@ -8,7 +8,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       4.3474822345e+00
                       2.3899299050e+01
-<<<<< Best data captured at function evaluation 3
+<<<<< Best evaluation ID: 3
 Test Number 1 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 450 total (450 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -19,7 +19,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                       1.2555206647e+00
                       2.4045025305e+01
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Test Number 2 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 500 total (500 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -30,7 +30,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                       2.6979873891e+00
                       2.4031824604e+01
-<<<<< Best data captured at function evaluation 5
+<<<<< Best evaluation ID: 5
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
        mean_f1  3.5948195024e+07  1.9643856214e+07  1.0059254789e+00 -1.1185892612e-02
@@ -73,7 +73,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                       2.5031097812e+03
                       1.6472463584e+03
-<<<<< Best data captured at function evaluation 4
+<<<<< Best evaluation ID: 4
 Test Number 4 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 200 total (200 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -88,4 +88,4 @@ Test Number 4 succeeded
 <<<<< Best constraint values   =
                       9.3421766758e+00
                       1.2510052650e+01
-<<<<< Best data captured at function evaluation 4
+<<<<< Best evaluation ID: 4

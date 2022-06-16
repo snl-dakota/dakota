@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -258,6 +258,9 @@ public:
 
   /// for use when a deep copy is needed (the representation is _not_ shared)
   Constraints copy() const;
+  /// for use when only data updates are desired between existing
+  /// Constraints objects
+  void update(const Constraints& cons);
 
   /// shape the lower/upper bound arrays based on sharedVarsData
   void shape();

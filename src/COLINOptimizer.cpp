@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -1138,9 +1138,12 @@ void COLINOptimizer::post_run(std::ostream& s)
   ResponseArray::size_type index = 0;
   for( ; var_best_it != var_best_end; ++var_best_it, ++resp_best_it, ++index) {
     bestVariablesArray[index] = var_best_it->second.copy();
-    if (!localObjectiveRecast) {  // else local_recast_retrieve
+    if (localObjectiveRecast)  // local_recast_retrieve used for objective...
+      for (size_t i=numUserPrimaryFns;
+	   i<(numUserPrimaryFns + numNonlinearConstraints); ++i)
+	bestResponseArray[index].function_value(resp_best_it->second.function_value(i), i);
+    else
       bestResponseArray[index] = resp_best_it->second.copy();
-    }
   }
 
   ps->clear();

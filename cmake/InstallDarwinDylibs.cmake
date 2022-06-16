@@ -15,8 +15,10 @@ function(dakota_install_dll dakota_dll)
   if (EXISTS "${dakota_dll}")
     get_filename_component(dll_filename "${dakota_dll}" NAME)
     message("-- Installing: ${CMAKE_INSTALL_PREFIX}/bin/${dll_filename}")
-    file(COPY "${dakota_dll}" DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" FILE_PERMISSIONS
-      OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE) 
+    file(COPY "${dakota_dll}" DESTINATION "${CMAKE_INSTALL_PREFIX}/bin"
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+      GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+      FOLLOW_SYMLINK_CHAIN)
   else()
     message(WARNING "Install couldn't find dynamic dependency ${dakota_dll}")
   endif()

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -144,6 +144,11 @@ protected:
   /// Archive all results
   void archive_results(int num_samples, size_t ind_inc = 0);
   
+  /// Store samples in a matrix for bootstrapping
+  void store_evaluations();
+
+  Real bootstrap_covariance(const size_t qoi);
+
 private:
 
   //
@@ -176,6 +181,9 @@ private:
   /// Threshold to keep number of principal components that explain 
   /// this much variance
   Real percentVarianceExplained;
+
+  /// Datastructure to store samples which can be used for bootstrapping
+  RealMatrix qoiSamplesMatrix;
 };
 
 } // namespace Dakota

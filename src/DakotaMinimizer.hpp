@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -69,6 +69,12 @@ public:
                                size_t num_best, size_t best_index,
                                std::ostream& s);
 
+  /// print best evaluation matching vars and set, or partial matches
+  /// with matching variables only.
+  static void print_best_eval_ids(const String& interface_id,
+				  const Variables& best_vars,
+				  const ActiveSet& active_set,
+				  std::ostream& s);
 
   // Accessor for data transfer helper/adapters
   std::shared_ptr<TPLDataTransfer> get_data_transfer_helper() const
@@ -103,6 +109,10 @@ protected:
 	    size_t num_nln_ineq, size_t num_nln_eq, 
             std::shared_ptr<TraitsBase> traits = 
             std::shared_ptr<TraitsBase>(new TraitsBase()));
+  /// alternate constructor for "on the fly" instantiations
+  Minimizer(Model& model, size_t max_iter, size_t max_eval, Real conv_tol,
+	    std::shared_ptr<TraitsBase> traits = 
+	    std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// destructor
   ~Minimizer();
@@ -215,8 +225,9 @@ protected:
   /// account the envelope-letter design pattern and any recasting.
   void resize_best_resp_array(size_t newsize);
 
-  /// infers MOO/NLS solution from the solution of a single-objective optimizer
-  void local_recast_retrieve(const Variables& vars, Response& response) const;
+  /// infers MOO/NLS solution from the solution of a single-objective
+  /// optimizer and returns true if lookup succeeds
+  bool local_recast_retrieve(const Variables& vars, Response& response) const;
 
 
   //

@@ -1,72 +1,120 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (UQ_I): 424 total (200 new, 224 duplicate)
-  response_fn_1: 424 val (200 n, 224 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 424 val (200 n, 224 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 1.3240000000e+02
+<<<<< Function evaluation summary (UQ_I): 120 total (110 new, 10 duplicate)
+  response_fn_1: 120 val (110 n, 10 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 120 val (110 n, 10 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 2.1000000000e+01
+<<<<< Variance for mean estimator:
+    Initial MLMC (pilot samples):     1.0574324570e-05
+      Final MLMC (sample profile):    1.0574324570e-05
+      Final MLMC / pilot ratio:       1.0000000000e+00
+ Equivalent   MC (   21 HF samples):  4.1112112815e-05
+ Equivalent MLMC / MC ratio:          2.5720703329e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.3862943611e+00  0.0000000000e+00  1.3142902065e-13  0.0000000000e+00
- response_fn_2 -1.4126165484e+00  4.5839715270e-02 -2.8079985749e-02  1.3422285652e+00
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  1.2450243772e-13  0.0000000000e+00
+ response_fn_2 -1.4135968493e+00  4.1553685014e-02 -1.4487032058e+00  4.0443506646e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary (UQ_I): 2770 total (1962 new, 808 duplicate)
-  response_fn_1: 2770 val (1962 n, 808 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 2770 val (1962 n, 808 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 4.9840000000e+02
+<<<<< Function evaluation summary (UQ_I): 1421 total (989 new, 432 duplicate)
+  response_fn_1: 1421 val (989 n, 432 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1421 val (989 n, 432 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 2.5190000000e+02
+<<<<< Variance for mean estimator:
+    Initial MLMC (pilot samples):     1.0574324570e-05
+      Final MLMC (sample profile):    1.0203731553e-06
+      Final MLMC / pilot ratio:       9.6495350470e-02
+ Equivalent   MC (  252 HF samples):  3.9631758289e-06
+ Equivalent MLMC / MC ratio:          2.5746350891e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.3862943611e+00  3.5521363270e-07 -2.4327302904e+07  1.9984923284e+14
- response_fn_2 -1.4146161940e+00  4.6849384406e-02 -2.2422901745e-01  1.5920773180e+00
+ response_fn_1  2.3862943611e+00  6.6200022735e-07 -8.2317526450e+06  5.9284479970e+13
+ response_fn_2 -1.4134675999e+00  4.4683867135e-02 -1.4400337530e-02  1.5896347590e+00
 Test Number 2 succeeded
-<<<<< Function evaluation summary (UQ_I): 28482 total (21420 new, 7062 duplicate)
-  response_fn_1: 28482 val (21420 n, 7062 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 28482 val (21420 n, 7062 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 5.1900000000e+03
+<<<<< Function evaluation summary (UQ_I): 15260 total (10885 new, 4375 duplicate)
+  response_fn_1: 15260 val (10885 n, 4375 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 15260 val (10885 n, 4375 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 2.7590000000e+03
+<<<<< Variance for mean estimator:
+    Initial MLMC (pilot samples):     1.0574324570e-05
+      Final MLMC (sample profile):    1.0455957827e-07
+      Final MLMC / pilot ratio:       9.8880621247e-03
+ Equivalent   MC ( 2759 HF samples):  4.0063052101e-07
+ Equivalent MLMC / MC ratio:          2.6098755035e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.3862943611e+00  1.8468220418e-06 -1.3337681778e+06  3.6476378368e+12
- response_fn_2 -1.4133336521e+00  4.7330711169e-02 -6.5478288391e-03  8.9652554869e-01
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  1.7272103298e-11  0.0000000000e+00
+ response_fn_2 -1.4136110205e+00  4.7017860595e-02 -2.1753044250e-02  8.4267253235e-01
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 24825 total (7463 new, 17362 duplicate)
-  response_fn_1: 24825 val (7463 n, 17362 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 24825 val (7463 n, 17362 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 6.2688000000e+03
+<<<<< Function evaluation summary (UQ_I): 25171 total (7410 new, 17761 duplicate)
+  response_fn_1: 25171 val (7410 n, 17761 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 25171 val (7410 n, 17761 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 6.3907000000e+03
+<<<<< Variance for mean estimator:
+    Initial MLMC (pilot samples):     4.8152800137e-06
+      Final MLMC (sample profile):    5.4169036075e-08
+      Final MLMC / pilot ratio:       1.1249405210e-02
+ Equivalent   MC ( 6391 HF samples):  1.7250787500e-07
+ Equivalent MLMC / MC ratio:          3.1400906235e-01
 Sample moment statistics for each response function:
                             Mean          Variance        3rdCentral        4thCentral
- response_fn_1  2.3862943611e+00  0.0000000000e+00  1.0183938995e-11  0.0000000000e+00
- response_fn_2 -1.4139842185e+00  2.1839915955e-03 -2.5016148518e-06  1.8689396630e-05
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  9.8019360029e-12  0.0000000000e+00
+ response_fn_2 -1.4140739013e+00  2.2048921535e-03 -3.6877776030e-06  1.9078468991e-05
 Test Number 4 succeeded
-<<<<< Function evaluation summary (UQ_I): 527 total (298 new, 229 duplicate)
-  response_fn_1: 527 val (298 n, 229 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 527 val (298 n, 229 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 1.4270000000e+02
+<<<<< Function evaluation summary (UQ_I): 350 total (202 new, 148 duplicate)
+  response_fn_1: 350 val (202 n, 148 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 350 val (202 n, 148 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 6.0200000000e+01
+<<<<< Variance for mean estimator:
+    Initial MLMC (pilot samples):     1.0574324570e-05
+      Final MLMC (sample profile):    3.5897054921e-06
+      Final MLMC / pilot ratio:       3.3947373834e-01
+ Equivalent   MC (   60 HF samples):  1.4318149896e-05
+ Equivalent MLMC / MC ratio:          2.5071014887e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.3862943611e+00  0.0000000000e+00  2.9580717300e-13  0.0000000000e+00
- response_fn_2 -1.4099261428e+00  4.4177942374e-02  1.6304917291e-01  1.5591848563e+00
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  2.5304252592e-13  0.0000000000e+00
+ response_fn_2 -1.4133105833e+00  4.1519937952e-02 -7.9495887786e-01  2.8497109087e+00
 Test Number 5 succeeded
-<<<<< Function evaluation summary (UQ_I): 587 total (190 new, 397 duplicate)
-  response_fn_1: 587 val (190 n, 397 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 587 val (190 n, 397 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 1.5590000000e+02
+<<<<< Function evaluation summary (UQ_I): 590 total (190 new, 400 duplicate)
+  response_fn_1: 590 val (190 n, 400 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 590 val (190 n, 400 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.5710000000e+02
+<<<<< Variance for mean estimator:
+    Initial MLMC (pilot samples):     4.8152800137e-06
+      Final MLMC (sample profile):    1.7818346921e-06
+      Final MLMC / pilot ratio:       3.7003760674e-01
+ Equivalent   MC (  157 HF samples):  5.4956366380e-06
+ Equivalent MLMC / MC ratio:          3.2422716592e-01
 Sample moment statistics for each response function:
                             Mean          Variance        3rdCentral        4thCentral
- response_fn_1  2.3862943611e+00  0.0000000000e+00  3.3667261383e-13  0.0000000000e+00
- response_fn_2 -1.4156610524e+00  1.7224527008e-03 -7.9652872408e-05  2.0102813859e-05
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  3.3666526258e-13  0.0000000000e+00
+ response_fn_2 -1.4155263293e+00  1.7267290317e-03 -7.9752861661e-05  2.0073788831e-05
 Test Number 6 succeeded
-<<<<< Function evaluation summary (UQ_I): 5848 total (3608 new, 2240 duplicate)
-  response_fn_1: 5848 val (3608 n, 2240 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 5848 val (3608 n, 2240 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 8.4580000000e+02
+<<<<< Function evaluation summary (UQ_I): 230 total (190 new, 40 duplicate)
+  response_fn_1: 230 val (190 n, 40 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 230 val (190 n, 40 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 5.9000000000e+01
+<<<<< Variance for mean estimator:
+    Initial MLMC (pilot samples):     4.8152800137e-06
+      Final MLMC (sample profile):    4.8152800137e-06
+      Final MLMC / pilot ratio:       1.0000000000e+00
+ Equivalent   MC (   59 HF samples):  1.4360730705e-05
+ Equivalent MLMC / MC ratio:          3.3530884414e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.3862943611e+00  0.0000000000e+00  1.8875657510e-12  0.0000000000e+00
- response_fn_2 -1.4127811109e+00  4.4723761856e-02  2.9909174847e-02  1.4254465420e+00
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  2.7186669386e-14  0.0000000000e+00
+ response_fn_2 -1.4090132824e+00  4.1165109294e-02  4.6621827709e-02  2.2878252357e+00
 Test Number 7 succeeded
-<<<<< Function evaluation summary (UQ_I): 1723 total (301 new, 1422 duplicate)
-  response_fn_1: 1723 val (301 n, 1422 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 1723 val (301 n, 1422 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 4.3960000000e+02
+<<<<< Function evaluation summary (UQ_I): 230 total (190 new, 40 duplicate)
+  response_fn_1: 230 val (190 n, 40 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 230 val (190 n, 40 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 5.9000000000e+01
+<<<<< Variance for mean estimator:
+    Initial MLMC (pilot samples):     4.8152800137e-06
+      Final MLMC (sample profile):    4.8152800137e-06
+      Final MLMC / pilot ratio:       1.0000000000e+00
+ Equivalent   MC (   59 HF samples):  1.4360730705e-05
+ Equivalent MLMC / MC ratio:          3.3530884414e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.3862943611e+00  6.4707255962e-07 -8.3423374539e+06  6.1987576324e+13
- response_fn_2 -1.4114433031e+00  4.1607401438e-02 -1.5953717607e-01  2.4926935908e+00
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  2.7186669386e-14  0.0000000000e+00
+ response_fn_2 -1.4090132824e+00  4.1165109294e-02  4.6621827709e-02  2.2878252357e+00

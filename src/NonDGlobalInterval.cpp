@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -50,7 +50,8 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
   bool err_flag = false;
 
   // Define optimization sub-problem solver
-  unsigned short opt_alg = probDescDB.get_ushort("method.sub_method");
+  unsigned short opt_alg
+    = probDescDB.get_ushort("method.nond.opt_subproblem_solver");
   bool discrete
     = (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars);
   if (opt_alg == SUBMETHOD_EGO) {
@@ -61,7 +62,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
       err_flag = true;
     }
   }
-  else if (opt_alg == SUBMETHOD_SBO)
+  else if (opt_alg == SUBMETHOD_SBGO)
     { eifFlag = false; gpModelFlag = true; }
   else if (opt_alg == SUBMETHOD_EA)
     eifFlag = gpModelFlag = false;
@@ -186,7 +187,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     convergenceTol = 1.e-12; distanceTol = 1.e-8;
     if (maxIterations == SZ_MAX) // default value
       maxIterations  = 25*numContinuousVars;
-    
+
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
     size_t max_direct_iter = 1000, max_direct_eval = 10000; // 10*defaults
 #ifdef HAVE_NCSU

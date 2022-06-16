@@ -150,7 +150,7 @@ Optional GPL capabilities include:
    with CMake setting HAVE_FFTW
 
  * GNU Scientific Library: external third-party library; enable with
-   CMake setting Dakota_HAVE_GSL and pointer to gsl-config
+   CMake setting DAKOTA_HAVE_GSL and pointer to gsl-config
 
  * cURL/libcurl: external third-party library, MIT/modified-BSD
    license, but its dependencies have numerous licenses that make it
@@ -158,8 +158,8 @@ Optional GPL capabilities include:
    include libcurl.
 
 Utilities required to compile and deploy Dakota and its documentation
-are not included here.  These may include compilers, MPI, X Windows,
-system runtimes, Doxygen, LaTeX, CMake, etc.
+are not included here.  These may include compilers, MPI, system
+runtimes, Doxygen, LaTeX, CMake, etc.
 
 ------------------------------------------------------------------------------
 Overview
@@ -192,7 +192,7 @@ Dakota operates on most systems running Unix or Linux operating
 systems as well as on Windows (with or without the help of a Cygwin
 emulation layer).  Dakota is developed and most extensively tested on
 Redhat Enterprise Linux with GNU compilers, but additional operating
-systems / compiler combinations are tested nightly as well.  See the
+systems / compiler combinations are regularly tested as well.  See the
 Dakota website for more information on supported platforms for
 particular Dakota versions.
 
@@ -201,6 +201,7 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
+6.16               05/16/22 (refer to git submodules for TPL SHA1s)
 6.15               11/15/21 (refer to git submodules for TPL SHA1s)
 6.14               05/17/21 (refer to git submodules for TPL SHA1s)
 6.13	    	   11/16/20 (refer to git submodules for TPL SHA1s)

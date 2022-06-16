@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -40,6 +40,7 @@
 #include "ScilabInterface.hpp"
 #endif // DAKOTA_SCILAB
 #include "TestDriverInterface.hpp"
+#include "PluginInterface.hpp"
 
 #include "ApproximationInterface.hpp"
 
@@ -231,6 +232,9 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
   // using Interface::assign_rep().  Error checking in DirectApplicInterface::
   // derived_map_ac() should catch if this replacement fails to occur properly.
 
+  else if (interface_type == PLUGIN_INTERFACE)
+    return std::make_shared<PluginInterface>(problem_db);
+
 #ifdef DAKOTA_GRID
   else if (interface_type == GRID_INTERFACE)
     return std::make_shared<GridApplicInterface>(problem_db);
@@ -246,21 +250,21 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
 #endif
   }
 
-  else if (interface_type == PYTHON_INTERFACE) {
+  else if (interface_type == LEGACY_PYTHON_INTERFACE) {
 #ifdef DAKOTA_PYTHON
     return std::make_shared<PythonInterface>(problem_db);
 #else
-    Cerr << "Direct Python interface requested, but not enabled in this "
+    Cerr << "Direct Legacy Python interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
     return std::shared_ptr<Interface>();
 #endif
   }
 
-  else if (interface_type == PYBIND11_INTERFACE) {
+  else if (interface_type == PYTHON_INTERFACE) {
 #ifdef DAKOTA_PYBIND11
     return std::make_shared<Pybind11Interface>(problem_db);
 #else
-    Cerr << "Pybind11 interface requested, but not enabled in this "
+    Cerr << "Python interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
     return std::shared_ptr<Interface>();
 #endif

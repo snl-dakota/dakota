@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -245,6 +245,8 @@ protected:
 
   /// set key in subModel
   void active_model_key(const Pecos::ActiveKey& key);
+  /// return key from subModel
+  const Pecos::ActiveKey& active_model_key() const;
   /// remove keys in subModel
   void clear_model_keys();
 
@@ -298,6 +300,8 @@ protected:
   short correction_type();
   /// update subModel's correction type
   void correction_type(short corr_type);
+  /// retrieve subModel's correction order
+  short correction_order();
 
   /// retrieve error estimates corresponding to the subModel
   const RealVector& error_estimates();
@@ -434,6 +438,9 @@ protected:
   /// assign static pointer instance to this for use in static
   /// transformation functions
   virtual void assign_instance();
+
+  /// default clear metadata in Recasts; derived classes can override to no-op
+  virtual void init_metadata();
 
   //
   //- Heading: Member functions
@@ -730,6 +737,10 @@ inline void RecastModel::active_model_key(const Pecos::ActiveKey& key)
 { subModel.active_model_key(key); }
 
 
+inline const Pecos::ActiveKey& RecastModel::active_model_key() const
+{ return subModel.active_model_key(); }
+
+
 inline void RecastModel::clear_model_keys()
 { subModel.clear_model_keys(); }
 
@@ -853,6 +864,10 @@ inline short RecastModel::correction_type()
 
 inline void RecastModel::correction_type(short corr_type)
 { subModel.correction_type(corr_type); }
+
+
+inline short RecastModel::correction_order()
+{ return subModel.correction_order(); }
 
 
 inline void RecastModel::build_approximation()

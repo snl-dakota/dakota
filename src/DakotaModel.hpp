@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -46,6 +46,9 @@ class Approximation;
 class SharedApproxData;
 class DiscrepancyCorrection;
 class EvaluationStore;
+
+extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
+extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
 
 
 /// Base class for the model class hierarchy.
@@ -105,6 +108,10 @@ public:
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models
   virtual void active_model_key(const Pecos::ActiveKey& key);
+  /// return the active model key (used by surrogate data, grid driver,
+  /// and approximation classes to support the management of multiple
+  /// approximation states within surrogate models)
+  virtual const Pecos::ActiveKey& active_model_key() const;
   /// reset by removing all model keys within surrogate data, grid driver,
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models
@@ -175,6 +182,9 @@ public:
   virtual String solution_level_string_value() const;
   /// return the active (real) value of the solution control
   virtual Real   solution_level_real_value() const;
+
+  /// return index of online cost estimates within metadata
+  virtual size_t cost_metadata_index() const;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
@@ -390,6 +400,9 @@ public:
   /// return the correction type from the DiscrepancyCorrection object
   /// used by SurrogateModels
   virtual short correction_type();
+  /// return the correction order from the DiscrepancyCorrection object
+  /// used by SurrogateModels
+  virtual short correction_order();
 
   /// apply a DiscrepancyCorrection to correct an approximation within
   /// a HierarchSurrModel
@@ -1197,15 +1210,14 @@ protected:
 
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
-  Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-	ParallelLibrary& parallel_lib,
-	const SharedVariablesData& svd, bool share_svd,
-	const SharedResponseData&  srd, bool share_srd,
-	const ActiveSet& set, short output_level);
+  Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
+	const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
+	short output_level, ProblemDescDB& problem_db = dummy_db,
+	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
-  Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-	ParallelLibrary& parallel_lib);
+  Model(LightWtBaseConstructor, ProblemDescDB& problem_db = dummy_db,
+	ParallelLibrary& parallel_lib = dummy_lib);
 
   //
   //- Heading: Virtual functions

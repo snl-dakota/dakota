@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -51,15 +51,6 @@ protected:
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
-  void nested_variable_mappings(const SizetArray& c_index1,
-				const SizetArray& di_index1,
-				const SizetArray& ds_index1,
-				const SizetArray& dr_index1,
-				const ShortArray& c_target2,
-				const ShortArray& di_target2,
-				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
-
   void derived_evaluate(const ActiveSet& set);
   void derived_evaluate_nowait(const ActiveSet& set);
 
@@ -70,10 +61,26 @@ protected:
   void derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
     IntResponseMap& combined_resp_map);
 
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+
+  void create_tabular_datastream();
+  void derived_auto_graphics(const Variables& vars, const Response& resp);
+
   size_t num_approximation_models() const;
   void assign_default_keys();
   void resize_maps();
   void resize_response(bool use_virtual_counts = true);
+
+  size_t insert_response_start(size_t position);
+  void insert_metadata(const RealArray& md, size_t position,
+		       Response& agg_response);
 
   /// return the indexed approximate model from unorderedModels
   Model& surrogate_model(size_t i = _NPOS);
@@ -164,6 +171,11 @@ private:
   /// assign the resolution level for the i-th model key
   void assign_key(size_t i);
 
+  /// check for matching interface ids among active truth/surrogate models
+  /// (varies based on active keys)
+  bool matching_truth_surrogate_interface_ids();
+  /// check for matching interface ids across full set of models (invariant)
+  bool matching_all_interface_ids();
   /// update sameInterfaceInstance based on interface ids for models
   /// identified by current {low,high}FidelityKey
   void check_model_interface_instance();
@@ -203,6 +215,10 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
+  // cache attributes for use in SurrogateModel::init_model_mapped_variables()
+  EnsembleSurrModel::nested_variable_mappings(c_index1, di_index1, ds_index1,
+					      dr_index1, c_target2, di_target2,
+					      ds_target2, dr_target2);
   // forward along to subordinate models:
   size_t i, num_unord = unorderedModels.size();
   for (i=0; i<num_unord; ++i)
@@ -212,6 +228,30 @@ nested_variable_mappings(const SizetArray& c_index1,
   truthModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
 				      dr_index1, c_target2, di_target2,
 				      ds_target2, dr_target2);
+}
+
+
+inline bool NonHierarchSurrModel::matching_all_interface_ids()
+{
+  size_t i, num_approx = unorderedModels.size();
+  const String& hf_id  = truthModel.interface_id();
+  for (i=0; i<num_approx; ++i)
+    if (unorderedModels[i].interface_id() != hf_id)
+      return false;
+  return true;
+}
+
+
+inline bool NonHierarchSurrModel::matching_truth_surrogate_interface_ids()
+{
+  size_t i, num_approx = surrModelKeys.size();  unsigned short lf_form;
+  const String& hf_id  = truthModel.interface_id();
+  for (i=0; i<num_approx; ++i) {
+    lf_form = surrModelKeys[i].retrieve_model_form();
+    if (unorderedModels[lf_form].interface_id() != hf_id)
+      return false;
+  }
+  return true;
 }
 
 
@@ -227,16 +267,34 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
     for (i=0; i<num_approx; ++i)
       if (surrModelKeys[i].retrieve_model_form() != hf_form)
 	{ sameModelInstance = false; break; }
+    sameInterfaceInstance = (sameModelInstance) ? true :
+      matching_truth_surrogate_interface_ids();
   }
+}
 
-  if (sameModelInstance) sameInterfaceInstance = true;
-  else { // approximations are separate models
-    const String& hf_id = truthModel.interface_id();
-    sameInterfaceInstance = true;
-    for (i=0; i<num_approx; ++i)
-      if (unorderedModels[i].interface_id() != hf_id)
-	{ sameInterfaceInstance = false; break; }
+
+inline size_t NonHierarchSurrModel::insert_response_start(size_t position)
+{
+  size_t i, start = 0, num_unord = unorderedModels.size();
+  for (i=0; i<position; ++i) {
+    unsigned short form = surrModelKeys[i].retrieve_model_form();
+    Model& model_i = (form < num_unord) ? unorderedModels[form] : truthModel;
+    start += model_i.current_response().active_set_request_vector().size();
   }
+  return start;
+}
+
+
+inline void NonHierarchSurrModel::
+insert_metadata(const RealArray& md, size_t position, Response& agg_response)
+{
+  size_t i, start = 0, num_unord = unorderedModels.size();
+  for (i=0; i<position; ++i) {
+    unsigned short form = surrModelKeys[i].retrieve_model_form();
+    Model& model_i = (form < num_unord) ? unorderedModels[form] : truthModel;
+    start += model_i.current_response().metadata().size();
+  }
+  agg_response.metadata(md, start);
 }
 
 
@@ -351,6 +409,26 @@ inline void NonHierarchSurrModel::clear_model_keys()
     unorderedModels[i].clear_model_keys();
   truthModel.clear_model_keys();
 }
+
+
+/*
+inline bool NonHierarchSurrModel::multilevel_from_keys() const
+{
+  bool ml = true;
+  unsigned short hf_form = truthModelKey.retrieve_model_form();
+  //if (hf_lev == SZ_MAX) return false;
+
+  size_t         hf_lev  = truthModelKey.retrieve_resolution_level(),
+    i, num_approx = surrModelKeys.size();
+  for (i=0; i<num_approx; ++i) {
+    const Pecos::ActiveKey& surr_key = surrModelKeys[i];
+    if (surr_key.retrieve_model_form()       == hf_form &&
+	surr_key.retrieve_resolution_level() != hf_lev)
+      return true;
+  }
+  return false;
+}
+*/
 
 
 inline void NonHierarchSurrModel::resize_maps()

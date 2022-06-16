@@ -11,7 +11,7 @@ Test Number 0 succeeded
                       1.6000000000e+01
                      -1.5875000000e+04
                      -1.3576394321e+00
-<<<<< Best data captured at function evaluation 11
+<<<<< Best evaluation ID: 11
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -25,7 +25,7 @@ Test Number 1 succeeded
                       6.2500000000e+00
                       9.9200000000e+03
                       1.0776712687e+00
-<<<<< Best data captured at function evaluation 22
+<<<<< Best evaluation ID: 22
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
 Simple Correlation Matrix among all inputs and outputs:
@@ -522,12 +522,12 @@ Test Number 7 succeeded
 <<<<< Best constraint values   =
                       6.0212958488e-05
                       5.6521134327e-02
-<<<<< Best data captured at function evaluation 23
+<<<<< Best evaluation ID: 23
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
-           area: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
+         area_1: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
+       stress_1: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
+ displacement_1: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.8499999995e+07 E
                       2.5000000002e+00 w
@@ -547,7 +547,7 @@ Test Number 8 succeeded
                      -2.3943602656e-10
                       2.9442885534e-06
                       7.0639355476e-10
-<<<<< Best data captured at function evaluation 17
+<<<<< Best evaluation ID: 17
 Confidence Intervals on Calibrated Parameters:
              E: [ 2.8499511022e+07, 2.8500488969e+07 ]
              w: [ 2.4999189436e+00, 2.5000810568e+00 ]

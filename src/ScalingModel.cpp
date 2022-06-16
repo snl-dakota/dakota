@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -881,6 +881,7 @@ primary_resp_scaler(const Variables& native_vars, const Variables& scaled_vars,
     // could reach this if variables are scaled and only functions are requested
     iterator_response.update_partial(start_offset, num_responses,
                                      native_response, start_offset);
+  iterator_response.metadata(native_response.metadata());
 }
 
 

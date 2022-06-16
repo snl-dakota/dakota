@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -93,6 +93,8 @@ Response(BaseConstructor, const Variables& vars,
       }  
     }
   }
+
+  metaData.resize(sharedRespData.metadata_labels().size());
 }
 
 
@@ -108,6 +110,7 @@ Response(BaseConstructor, const SharedResponseData& srd, const ActiveSet& set):
   sharedRespData(srd), responseActiveSet(set)
 {
   shape_rep(set);
+  metaData.resize(sharedRespData.metadata_labels().size());
 }
 
 
@@ -123,6 +126,7 @@ Response::Response(BaseConstructor, const ActiveSet& set):
   responseActiveSet(set)
 {
   shape_rep(set);
+  metaData.resize(sharedRespData.metadata_labels().size());
 }
 
 
@@ -338,10 +342,11 @@ Response Response::copy(bool deep_srd) const
 void Response::copy_rep(std::shared_ptr<Response> source_resp_rep)
 {
   functionValues    = source_resp_rep->functionValues;
-  fieldCoords       = source_resp_rep->fieldCoords;
   functionGradients = source_resp_rep->functionGradients;
   functionHessians  = source_resp_rep->functionHessians;
+  fieldCoords       = source_resp_rep->fieldCoords;
   responseActiveSet = source_resp_rep->responseActiveSet;
+  metaData          = source_resp_rep->metaData;
 }
 
 
@@ -380,26 +385,59 @@ void Response::read(std::istream& s, const unsigned short format)
   // below). The arrays have been properly sized by the Response constructor.
   reset();
   
-  const ShortArray& asv = responseActiveSet.request_vector();
   std::ostringstream errors; // all helper funcs can append messages to errors
-  switch(format) { // future formats go here
-    case FLEXIBLE_RESULTS:
-      read_flexible_fn_vals(s, asv, errors);
-      break;
-    case LABELED_RESULTS:
-      read_labeled_fn_vals(s, asv, errors);
-      break;
-  }
-  read_gradients(s, asv, errors);
-  read_hessians(s, asv, errors);
+
+  read_core(s, format, errors);
 
   if(!errors.str().empty())
     throw ResultsFileError(errors.str());
 }
 
 
+void Response::read_core(std::istream& s, const unsigned short format,
+			 std::ostringstream& errors)
+{
+  // std::function is overkill, but perhaps clearer than bind or lambda
+  std::function<void(Response&, std::istream& s, const ShortArray &asv,
+		     size_t, std::ostringstream &errors)> value_reader;
+  switch(format) { // future formats go here
+    case FLEXIBLE_RESULTS:
+      value_reader = &Response::read_flexible_fn_vals;
+      break;
+    case LABELED_RESULTS:
+      value_reader = &Response::read_labeled_fn_vals;
+      break;
+  }
+
+  // A segmented parser until we do an all-at-once parse of the file.
+  // This implementation is fragile w.r.t. kinds of errors it can detect.
+  // Error messages don't differentiate functions from metadata.
+  // ASV (populated or empty) and num_metadata control how many fns
+  // and/or metadata are read.
+  const ShortArray& asv = responseActiveSet.request_vector();
+  if(expect_derivatives(asv)) {
+    value_reader(*this, s, asv, 0, errors); // fns only
+    read_gradients(s, asv, !metaData.empty(), errors);
+    read_hessians(s, asv, !metaData.empty(), errors);
+    value_reader(*this, s, ShortArray(), metaData.size(), errors); // md only
+  }
+  else {
+    value_reader(*this, s, asv, metaData.size(), errors); // fns and md
+    // TODO: validate that derivatives don't errantly appear after metadata:
+    read_gradients(s, asv, false, errors);
+    read_hessians(s, asv, false, errors);
+  }
+}
+
+
+bool Response::expect_derivatives(const ShortArray& asv){
+  return std::any_of(asv.begin(), asv.end(),
+		     [](short a){ return (a & 2 || a & 4); });
+}
+
+
 void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv, 
-          std::ostringstream &errors) {
+          size_t num_metadata, std::ostringstream &errors) {
   const StringArray fn_labels = sharedRespData.function_labels();
   const size_t nf = asv.size();
   // "metadata" for each expected response. First item is the index
@@ -411,6 +449,8 @@ void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv,
     if(asv[i] & 1)
       expected_responses[fn_labels[i]] = Rmeta(i, false);
   }
+  for(size_t i=0; i<num_metadata; ++i)
+    expected_responses[shared_data().metadata_labels()[i]] = Rmeta(nf+i, false);
   // Use std::map.find() to learn whether a token extracted from s is an
   // expected label. find() returns an iterator to the first matching item.
   // If no match was found, the iterator refers to the end.
@@ -446,8 +486,10 @@ void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv,
         max_index = expected_responses[token2].first;
       expected_responses[token2].second = true;
       num_found++;
-      functionValues[expected_responses[token2].first] =
-        std::atof(token1.c_str());
+      if (expected_responses[token2].first < nf)
+	functionValues[expected_responses[token2].first] = std::stod(token1);
+      else
+	metaData[expected_responses[token2].first - nf] = std::stod(token1);
       token1.clear(); token2.clear();
       pos1 = s.tellg();
       s >> token1;
@@ -509,15 +551,17 @@ void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv,
 
 
 void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv, 
-          std::ostringstream &errors) {
+          size_t num_metadata, std::ostringstream &errors) {
   String token1, token2;
   size_t pos1, pos2;
   size_t nf = asv.size();
   size_t num_expected = 0, num_found = 0;
   for(size_t i=0; i<nf; ++i) // count the requested responses for error checking
     if(asv[i] & 1) ++num_expected;
+  num_expected += num_metadata;
 
   size_t asv_idx = 0; //functionValues/asv index; advanced as fn vals are stored
+  size_t md_idx = 0;
   pos1 = s.tellg();
   s >> token1;
   pos2 = s.tellg();
@@ -530,8 +574,12 @@ void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv,
 
     if(isfloat(token1)) {
       ++num_found;
-      if(num_found <= num_expected)
-        functionValues[asv_idx] = std::atof(token1.c_str());
+      if(num_found <= num_expected) {
+	if(asv_idx < nf)
+	  functionValues[asv_idx] = std::stod(token1);
+	else
+	  metaData[md_idx++] = std::stod(token1);
+      }
     } else {
       throw ResultsFileError("Item \"" + token1 + "\" found while reading "
           "function values is not a valid floating point number.");
@@ -605,8 +653,9 @@ void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv,
   }
 }
 */
-void Response::read_gradients(std::istream& s, const ShortArray &asv, 
-          std::ostringstream &errors) {
+void Response::read_gradients(std::istream& s, const ShortArray &asv,
+			      bool expect_metadata, std::ostringstream &errors)
+{
   size_t nf = asv.size();
   size_t num_expected = 0, num_found = 0;
   for(size_t i=0; i<nf; ++i)
@@ -657,8 +706,9 @@ void Response::read_gradients(std::istream& s, const ShortArray &asv,
   // (eof). If they don't, there was unexpected junk following the last 
   // gradient. The case of no gradients + unexpected junk following the last 
   // fn val is handled by the fn val reading functions.
-  if( ! ((l_bracket1 == '[' && l_bracket2 == '[') ||
-         (l_bracket1 == '\0' && l_bracket2 == '\0') ) ) { 
+  bool hessian_follows = (l_bracket1 == '[' && l_bracket2 == '[');
+  bool at_eof = (l_bracket1 == '\0' && l_bracket2 == '\0');
+  if( ! (hessian_follows || at_eof || expect_metadata) ) {
     throw ResultsFileError("Unexpected data found after reading " +
 			   std::to_string(num_found) +
 			   " function gradient(s).");
@@ -673,8 +723,9 @@ void Response::read_gradients(std::istream& s, const ShortArray &asv,
   }
 }
 
-void Response::read_hessians(std::istream& s, const ShortArray &asv, 
-          std::ostringstream &errors) {
+void Response::read_hessians(std::istream& s, const ShortArray &asv,
+			     bool expect_metadata, std::ostringstream &errors)
+{
   size_t nf = asv.size();
   size_t num_expected = 0, num_found = 0;
   for(size_t i=0; i<nf; ++i)
@@ -688,6 +739,7 @@ void Response::read_hessians(std::istream& s, const ShortArray &asv,
   
   char l_bracket[2] = {'\0','\0'};
   char r_bracket[2] = {'\0','\0'};
+  size_t pos1 = s.tellg();
   size_t asv_idx = 0;
   s >> l_bracket[0] >> l_bracket[1];
   // Keep reading until we run out of Hessians 
@@ -710,9 +762,12 @@ void Response::read_hessians(std::istream& s, const ShortArray &asv,
     }
     asv_idx++;
     l_bracket[0] = '\0'; l_bracket[1] = '\0';
+    pos1 = s.tellg();
     s >> l_bracket[0] >> l_bracket[1];
   }
-  if(l_bracket[0] != '\0')
+  s.seekg(pos1);
+  bool at_eof = (l_bracket[0] == '\0');
+  if( ! (at_eof || expect_metadata) )
     throw ResultsFileError("Unexpected data found after reading " +
 			   std::to_string(num_found) + " function Hessian(s).");
 
@@ -805,6 +860,12 @@ void Response::write(std::ostream& s) const
       s << fn_labels[i] << " Hessian\n";
     }
   }
+
+  // Write the metadata
+  for (i=0; i<metaData.size(); ++i)
+    s << "                     " << std::setw(write_precision+7)
+      << metaData[i] << ' ' << sharedRespData.metadata_labels()[i] << '\n';
+
   s << std::endl;
 }
 
@@ -844,16 +905,16 @@ void Response::write_annotated(std::ostream& s) const
 void Response::read_annotated_rep(std::istream& s)
 {
   // Read sizing data
-  size_t i, num_fns, num_params;
+  size_t i, num_fns, num_params, num_metadata;
   bool grad_flag, hess_flag;
-  s >> num_fns >> num_params >> grad_flag >> hess_flag;
+  s >> num_fns >> num_params >> grad_flag >> hess_flag >> num_metadata;
 
   // Read responseActiveSet and SharedResponseData::functionLabels
   responseActiveSet.reshape(num_fns, num_params);
   s >> responseActiveSet;
   if (sharedRespData.is_null())
     sharedRespData = SharedResponseData(responseActiveSet);
-  s >> sharedRespData.function_labels();
+  sharedRespData.read_annotated(s, num_metadata);
 
   // reshape response arrays and reset all data to zero
   reshape(num_fns, num_params, grad_flag, hess_flag);
@@ -876,6 +937,9 @@ void Response::read_annotated_rep(std::istream& s)
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       read_lower_triangle(s, functionHessians[i]); // fault tolerant
+
+  metaData.resize(num_metadata);
+  s >> metaData;
 }
 
 
@@ -890,12 +954,14 @@ void Response::write_annotated_rep(std::ostream& s) const
 
   // Write Response sizing data
   s << num_fns << ' ' << responseActiveSet.derivative_vector().size() << ' '
-    << !functionGradients.empty() << ' ' << !functionHessians.empty() << ' ';
+    << !functionGradients.empty() << ' ' << !functionHessians.empty() << ' '
+    << metaData.size() << ' ';
 
   // Write responseActiveSet and function labels.  Don't separately annotate
   // arrays with sizing data since Response handles this all at once.
   responseActiveSet.write_annotated(s);
   array_write_annotated(s, sharedRespData.function_labels(), false);
+  array_write_annotated(s, sharedRespData.metadata_labels(), false);
 
   // Write the function values if present
   for (i=0; i<num_fns; ++i)
@@ -911,6 +977,8 @@ void Response::write_annotated_rep(std::ostream& s) const
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       write_lower_triangle(s, functionHessians[i], false);
+
+  array_write_annotated(s, metaData, false);
 }
 
 
@@ -941,11 +1009,10 @@ void Response::read_tabular(std::istream& s)
 
 /** write_tabular is used for output of functionValues in a tabular
     format for convenience in post-processing/plotting of DAKOTA results. */
-void Response::write_tabular(std::ostream& s) const
+void Response::write_tabular(std::ostream& s, bool eol) const
 {
-  // if envelope, forward to letter
-  if (responseRep)
-    responseRep->write_tabular(s);
+  if (responseRep) // envelope forward to letter
+    responseRep->write_tabular(s, eol);
   else {
     // Print a field for each of the function values, even if inactive (since
     // this is a table and the header associations must be preserved). Dropouts
@@ -960,26 +1027,64 @@ void Response::write_tabular(std::ostream& s) const
       if (asv[i] & 1)
 	s << std::setw(write_precision+4) << functionValues[i] << ' ';
       else
-	s << "               "; // blank field for inactive data
+	s << std::setw(write_precision+4) << "N/A" << ' '; // N/A for inactive
       // BMA TODO: write something that can be read back in for tabular...
       //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
       //s << "EMPTY"; // inactive data
-    s << std::endl; // table row completed
+    // TODO: Unclear if we want metadata in tabular files and if yes,
+    // need to make sure re-imports still work.
+    //if (eol) ?!?
+    //  for (const auto& md : metaData)
+    //    s << std::setw(write_precision+4) << md << ' ';
+    if (eol) s << std::endl; // table row completed
   }
 }
 
 
-void Response::write_tabular_labels(std::ostream& s) const
+/** write_tabular is used for output of functionValues in a tabular
+    format for convenience in post-processing/plotting of DAKOTA results. */
+void Response::
+write_tabular_partial(std::ostream& s, size_t start_index,
+		      size_t num_items) const
+{
+  if (responseRep) // envelope forward to letter
+    responseRep->write_tabular_partial(s, start_index, num_items);
+  else {
+    size_t i, num_fns = functionValues.length(),
+      end = std::min(num_fns, start_index + num_items);
+    const ShortArray& asv = responseActiveSet.request_vector();
+    s << std::setprecision(write_precision) 
+      << std::resetiosflags(std::ios::floatfield);
+    for (i=start_index; i<end; ++i)
+      if (asv[i] & 1)
+	s << std::setw(write_precision+4) << functionValues[i] << ' ';
+      else
+	s << std::setw(write_precision+4) << "N/A" << ' '; // N/A for inactive
+      // BMA TODO: write something that can be read back in for tabular...
+      //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
+      //s << "EMPTY"; // inactive data
+    // TODO: Unclear if we want metadata in tabular files and if yes,
+    // need to make sure re-imports still work.
+    //for (const auto& md : metaData)
+    //  s << std::setw(write_precision+4) << md << ' ';
+  }
+}
+
+
+void Response::write_tabular_labels(std::ostream& s, bool eol) const
 {
   // if envelope, forward to letter
   if (responseRep)
-    responseRep->write_tabular_labels(s);
+    responseRep->write_tabular_labels(s, eol);
   else {
-    const StringArray& fn_labels = sharedRespData.function_labels();
-    size_t num_fns = fn_labels.size();
-    for (size_t j=0; j<num_fns; ++j)
-      s << std::setw(14) << fn_labels[j] << ' ';
-    s << std::endl; // table row completed
+    for (const auto& fn_label : sharedRespData.function_labels())
+      s << std::setw(14) << fn_label << ' ';
+    // TODO: Unclear if we want metadata in tabular files and if yes,
+    // need to make sure re-imports still work.
+    //if (eol)
+    //  for (const auto& md_label : sharedRespData.metadata_labels())
+    //    s << std::setw(14) << md_label << ' ';
+    if (eol) s << std::endl; // table row completed
   }
 }
 
@@ -1025,7 +1130,8 @@ void Response::read_rep(MPIUnpackBuffer& s)
 {
   // Read derivative sizing data and responseActiveSet
   bool grad_flag, hess_flag;
-  s >> grad_flag >> hess_flag >> responseActiveSet;
+  size_t num_metadata;
+  s >> grad_flag >> hess_flag >> responseActiveSet >> num_metadata;
 
   // build shared counts and (default) functionLabels
   if (sharedRespData.is_null())
@@ -1052,6 +1158,9 @@ void Response::read_rep(MPIUnpackBuffer& s)
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       read_lower_triangle(s, functionHessians[i]);
+
+  metaData.resize(num_metadata);
+  s >> metaData;
 }
 
 
@@ -1062,7 +1171,7 @@ void Response::write_rep(MPIPackBuffer& s) const
 {
   // Write sizing data and responseActiveSet
   s << !functionGradients.empty() << !functionHessians.empty()
-    << responseActiveSet;
+    << responseActiveSet << metaData.size();
 
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, num_fns = asv.size();
@@ -1081,6 +1190,8 @@ void Response::write_rep(MPIPackBuffer& s) const
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       write_lower_triangle(s, functionHessians[i]);
+
+  s << metaData;
 }
 
 
@@ -1395,6 +1506,20 @@ reshape(size_t num_fns, size_t num_params, bool grad_flag, bool hess_flag)
 }
 
 
+/** Reshape functionValues, functionGradients, and functionHessians
+    according to num_fns, num_params, grad_flag, and hess_flag. */
+void Response::reshape_metadata(size_t num_meta)
+{
+  if (responseRep)
+    responseRep->reshape_metadata(num_meta);
+  else {
+    // resizes scalars for now (needs additional data for field reshape)
+    sharedRespData.reshape_metadata(num_meta);
+    metaData.resize(num_meta);
+  }
+}
+
+
 void Response::field_lengths(const IntVector& field_lens)
 {
   if (responseRep) 
@@ -1489,6 +1614,7 @@ void Response::reset()
     size_t nh = functionHessians.size();
     for (size_t i=0; i<nh; i++)
       functionHessians[i] = 0.;
+    std::fill(metaData.begin(), metaData.end(), RespMetadataT());
   }
 }
 
@@ -1776,6 +1902,9 @@ void Response::load_rep(Archive& ar, const unsigned int version)
   for (size_t i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       ar & functionHessians[i];
+
+  if (version >= 1)
+    ar & metaData;
 }
 
 
@@ -1816,6 +1945,8 @@ void Response::save_rep(Archive& ar, const unsigned int version) const
   for (size_t i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       ar & functionHessians[i];
+
+  ar & metaData;
 }
 
 /// convenience fnction to write a serial dense matrix column to an Archive

@@ -525,7 +525,8 @@ def restart_response(row):
     num_deriv_vars = int(row[3])
     grad_flag = row[4] == "1"
     hess_flag = row[5] == "1"
-    asv_start_index = 6
+    num_metadata = int(row[6])
+    asv_start_index = 7
     asv_end_index = asv_start_index + num_functions
     data["asv"] = [int(a) for a in row[asv_start_index:asv_end_index]]
     dvv_start_index = asv_end_index 
@@ -534,10 +535,13 @@ def restart_response(row):
     labels_start_index = dvv_end_index 
     labels_end_index = labels_start_index + num_functions
     labels = row[labels_start_index:labels_end_index]
+    md_labels_start_index = labels_end_index
+    md_labels_end_index = md_labels_start_index + num_metadata
+    md_labels = row[md_labels_start_index:md_labels_end_index]
     data["response"] = OrderedDict()
     for d in labels:
         data["response"][d] = {}
-    fv_index = labels_end_index 
+    fv_index = md_labels_end_index
     for a, d in zip(data["asv"], labels):
         if a & 1:
             data["response"][d]["function"] = float(row[fv_index])
@@ -556,6 +560,10 @@ def restart_response(row):
                 h_end = fv_index + sum(range(num_deriv_vars+1))
                 data["response"][d]["hessian"] = [float(c) for c in row[h_start:h_end]]
                 fv_index = h_end 
+    md_start_index = fv_index
+    md_end_index = md_start_index + num_metadata
+    md_values = [float(a) for a in row[md_start_index:md_end_index]]
+    data["metadata"] = OrderedDict(zip(md_labels, md_values))
     data["eval_id"] = int(row[-1])
     return data
 
@@ -581,7 +589,7 @@ def read_restart_file(restart_file):
     #    "eval_id":[],
     #    "dvv":[ [] ],
     #    "interface":[],
-    #
+    #    "metadata":{"label":float_value}
     #}
     with open(neutral_file,"r") as f:
         file_data = f.readlines()
@@ -595,8 +603,11 @@ def read_restart_file(restart_file):
             data["variables"][t][d] = []
     resp_r = restart_response(file_data[1].split())
     data["response"] = OrderedDict()
+    data["metadata"] = OrderedDict()
     for d, r in list(resp_r["response"].items()):
         data["response"][d] = []
+    for d, m in resp_r["metadata"].items():
+        data["metadata"][d] = []
     data["asv"] = []
     data["eval_id"] = []
     data["dvv"] = []
@@ -616,6 +627,8 @@ def read_restart_file(restart_file):
         data["eval_id"].append(resp_r["eval_id"])
         data["dvv"].append(resp_r["dvv"][:])
         data["interface"].append(resp_r["interface"])
+        for d, r in resp_r["metadata"].items():
+            data["metadata"][d].append(r)
     return data
 
               

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -70,6 +70,16 @@ protected:
   /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
   void uncorrected_surrogate_mode();
 
+  /// average costs once accumulations are complete
+  void average_online_cost(const RealVector& accum_cost,
+			   const SizetArray& num_cost, RealVector& seq_cost);
+  /// recover partial estimates of simulation cost using aggregated (paired)
+  /// response metadata
+  void accumulate_paired_online_cost(RealVector& accum_cost,
+				     SizetArray& num_cost, size_t step);
+  /// accumulate cost and counts and then perform averaging
+  void recover_paired_online_cost(RealVector& seq_cost, size_t step);
+
   //
   //- Heading: Data
   //
@@ -89,6 +99,32 @@ inline void NonDHierarchSampling::uncorrected_surrogate_mode()
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
     activeSet.reshape(numFunctions);// synch with model.response_size()
   }
+}
+
+
+inline void NonDHierarchSampling::
+average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
+		    RealVector& seq_cost)
+{
+  // Finalize the average cost for the ensemble
+  size_t step, num_steps = accum_cost.length();
+  if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
+  for (step=0; step<num_steps; ++step)
+    seq_cost[step] = accum_cost[step] / num_cost[step];
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Averaged cost: accum_cost:\n" << accum_cost << " num_cost:\n"
+	 << num_cost << " seq_cost:\n" << seq_cost << std::endl;
+}
+
+
+inline void NonDHierarchSampling::
+recover_paired_online_cost(RealVector& seq_cost, size_t step)
+{
+  int len = seq_cost.length();
+  RealVector accum_cost(len);                    // init to 0
+  SizetArray num_cost;  num_cost.assign(len, 0); // init to 0
+  accumulate_paired_online_cost(accum_cost, num_cost, step);
+  average_online_cost(accum_cost, num_cost, seq_cost);
 }
 
 } // namespace Dakota

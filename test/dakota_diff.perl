@@ -248,14 +248,14 @@ sub compare_output {
     # together in the output; if not true, output will be missed
 
     # single quotes must be escaped here:
-    my $best_re = '^<<<<< Best [ \w\(\)]+=$';
+    my $best_equals_re = '^<<<<< Best [ \w\(\)]+=$';
     my $conf_int_re = '^Confidence Intervals';
     my $surr_re = '^Surrogate quality metrics';
     my $pce_re = 'of Polynomial Chaos Expansion for';
     my $uq_re = '^(\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|95% confidence intervals) for each (response function|posterior variable):|\s+Coverage Level\s+.+)$';
     my $opt_des_re = '^Optimal design:$';
 
-    while ( ($base =~ /${best_re}/) && ($test =~ /${best_re}/) ||
+    while ( ($base =~ /${best_equals_re}/) && ($test =~ /${best_equals_re}/) ||
             ($base =~ /${conf_int_re}/) && ($test =~ /${conf_int_re}/) ||
             ($base =~ /${surr_re}/) && ($test =~ /${surr_re}/) ||
             ($base =~ /${pce_re}/)  && ($test =~ /${pce_re}/)  ||
@@ -263,7 +263,7 @@ sub compare_output {
             ($base =~ /${opt_des_re}/)   && ($test =~ /${opt_des_re}/)) {
 
       # General
-      while ( ($base =~ /${best_re}/) && ($test =~ /${best_re}/) ||
+      while ( ($base =~ /${best_equals_re}/) && ($test =~ /${best_equals_re}/) ||
 	      ($base =~ /${opt_des_re}/) && ($test =~ /${opt_des_re}/) ) {
         if ($base != $test) {
           print "Error: mismatch in data header between baseline and test\n";
@@ -598,6 +598,9 @@ sub compare_output {
     # pointer has been advanced at the end of the vector extraction
     ###############################################################
 
+    my $best_single_id_re = '^<<<<< Best evaluation ID(:| \(partial match\):) (\d+)$';
+    my $best_general_id_re = '^<<<<< Best (evaluation ID[: s]|parameters\/responses)';
+
     # General
     if ( ( ($t_tev, $t_nev, $t_dev) = $test =~
 	   /^<<<<< Function evaluation summary[ \w\(\)]*: (\d+) total \((\d+) new, (\d+) duplicate\)$/ ) &&
@@ -635,25 +638,25 @@ sub compare_output {
       }
     }
     elsif ( ( ($t_bd) = $test =~
-	      /^<<<<< Best data captured at function evaluation (\d+)$/ ) &&
+	      /${best_single_id_re}/ ) &&
 	    ( ($b_bd) = $base =~
-	      /^<<<<< Best data captured at function evaluation (\d+)$/ ) ) {
+	      /${best_single_id_re}/ ) ) {
+      # Preserve historical numerical diff of single eval ID
       if ( diff($t_bd, $b_bd) ) {
 	$test_diff = 1;
 	push @base_diffs, $base;
 	push @test_diffs, $test;
       }
     }
-    elsif (
-      $test =~ /^<<<<< Best data captured at function evaluation \d+$/ &&
-      $base =~ /^<<<<< Best data not found in evaluation cache$/ ) {
+    elsif ( ($base =~ /${best_general_id_re}/ &&
+	     $test =~ /${best_general_id_re}/) &&
+	    $base ne $test ) {
       $test_diff = 1;
       push @base_diffs, $base;
       push @test_diffs, $test;
     }
-    elsif (
-      $test =~ /^<<<<< Best data not found in evaluation cache$/ &&
-      $base =~ /^<<<<< Best data captured at function evaluation \d+$/ ) {
+    elsif ( ($base =~ /^<<<<< Best data/ && $test =~ /${best_general_id_re}/) ) {
+      # detect old baseline containing Best data and raise a DIFF
       $test_diff = 1;
       push @base_diffs, $base;
       push @test_diffs, $test;
@@ -703,9 +706,9 @@ sub compare_output {
       }
     }
     elsif ( ( ($t_eq) = $test =~
-	      /^<<<<< Equivalent number of high fidelity evaluations:\s+($e)\s+$/ ) &&
+	      /^<<<<< (Equivalent number of|Projected number of equivalent) high fidelity evaluations:\s+($e)\s+$/ ) &&
 	    ( ($b_eq) = $base =~
-	      /^<<<<< Equivalent number of high fidelity evaluations:\s+($e)\s+$/ ) ) {
+	      /^<<<<< (Equivalent number of|Projected number of equivalent) high fidelity evaluations:\s+($e)\s+$/ ) ) {
       if ( diff($t_eq, $b_eq) ) {
 	$test_diff = 1;
 	push @base_diffs, $base;
@@ -713,9 +716,9 @@ sub compare_output {
       }
     }
     elsif ( ( ($t_ev) = $test =~
-	      /^\s+(?:Initial|Final|Projected)\s+(?:MC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) &&
+	      /^\s+(?:Initial|Final|Projected|Equivalent)\s+(?:MC|MLMC|CVMC|MLCVMC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) &&
 	    ( ($b_ev) = $base =~
-	      /^\s+(?:Initial|Final|Projected)\s+(?:MC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) ) {
+	      /^\s+(?:Initial|Final|Projected|Equivalent)\s+(?:MC|MLMC|CVMC|MLCVMC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) ) {
       if ( diff($t_ev, $b_ev) ) {
 	$test_diff = 1;
 	push @base_diffs, $base;

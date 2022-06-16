@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -133,13 +133,17 @@ protected:
   void push_level_mappings(const RealVector& level_maps, size_t offset);
 
   /// configure fidelity/level counts from model hierarchy
-  void configure_sequence(size_t& num_steps, size_t& fixed_index,
+  void configure_sequence(size_t& num_steps, size_t& secondary_index,
 			  short& seq_type);
   /// extract cost estimates from model hierarchy (forms or resolutions)
   void configure_cost(unsigned short num_steps, bool multilevel,
 		      RealVector& cost);
   /// extract cost estimates from model hierarchy, if available
   bool query_cost(unsigned short num_steps, bool multilevel, RealVector& cost);
+  /// extract cost estimates from model hierarchy, if available
+  bool query_cost(unsigned short num_steps, Model& model, RealVector& cost);
+  /// test cost for valid values > 0
+  bool valid_cost_values(const RealVector& cost);
 
   /// distribute pilot sample specification across model forms or levels
   void load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
@@ -150,7 +154,7 @@ protected:
   /// update the relevant slice of N_l_3D from the final 2D multilevel
   /// or 2D multifidelity sample profile
   void inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
-			     size_t fixed_index, Sizet3DArray& N_l_3D);
+			     size_t secondary_index, Sizet3DArray& N_l_3D);
 
   /// resizes finalStatistics::functionGradients based on finalStatistics ASV
   void resize_final_statistics_gradients();
@@ -198,7 +202,7 @@ protected:
   /// utility for vetting sub-method request against optimizers within
   /// the package configuration
   unsigned short sub_optimizer_select(unsigned short requested_sub_method,
-    unsigned short default_sub_method = SUBMETHOD_SQP);
+    unsigned short default_sub_method = SUBMETHOD_NPSOL);
 
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
@@ -207,6 +211,9 @@ protected:
   /// move current sampling level to a new target
   size_t one_sided_delta(const SizetArray& current, const RealVector& targets,
 			 size_t power);
+  /// compute a one-sided sample increment for multilevel methods to
+  /// move current sampling level to a new target
+  size_t one_sided_delta(const SizetArray& current, Real target, size_t power);
   //size_t one_sided_delta(const Sizet2DArray& current,
   //			   const RealMatrix& targets, size_t power);
 
@@ -459,6 +466,34 @@ one_sided_delta(const SizetArray& current, const RealVector& targets,
   }
   }
   */
+
+  return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
+}
+
+
+inline size_t NonD::
+one_sided_delta(const SizetArray& current, Real target,	size_t power)
+{
+  size_t i, len = current.size();
+  Real diff, pow_mean = 0.;
+  switch (power) {
+  case 1: // average difference same as difference of averages
+    for (i=0; i<len; ++i)
+      pow_mean += target - (Real)current[i]; // Note: not one-sided 
+    pow_mean /= len;
+    break;
+  case SZ_MAX: // find max difference
+    for (i=0; i<len; ++i) {
+      diff = target - (Real)current[i];
+      if (diff > pow_mean) pow_mean = diff;
+    }
+    break;
+  default:
+    Cerr << "Error: power " << power << " not supported in NonD::"
+	 << "one_sided_delta()." << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
 
   return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
 }

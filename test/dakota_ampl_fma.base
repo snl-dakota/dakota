@@ -8,7 +8,7 @@ Test Number 0 succeeded
                      -5.0000000000e+01
 <<<<< Best constraint values   =
                       2.0000003489e+01
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 23 total (23 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -22,7 +22,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -1.3798814791e+00
                       1.9999999999e+01
-<<<<< Best data captured at function evaluation 23
+<<<<< Best evaluation ID: 23
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 147 total (147 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -33,7 +33,7 @@ Test Number 2 succeeded
                      -5.0000000000e+01
 <<<<< Best constraint values   =
                       2.0000003489e+01
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 253 total (253 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -47,7 +47,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                      -1.3798817176e+00
                       1.9999999999e+01
-<<<<< Best data captured at function evaluation 243
+<<<<< Best evaluation ID: 243
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -58,7 +58,7 @@ Test Number 4 succeeded
                       6.0000000000e+00
 <<<<< Best constraint values   =
                       2.4000000000e+01
-<<<<< Best data captured at function evaluation 2
+<<<<< Best evaluation ID: 2
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -72,7 +72,7 @@ Test Number 5 succeeded
 <<<<< Best constraint values   =
                      -1.0000000000e+00
                       1.3000000000e+01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -83,7 +83,7 @@ Test Number 6 succeeded
                       6.0000000000e+00
 <<<<< Best constraint values   =
                       2.4000000000e+01
-<<<<< Best data captured at function evaluation 2
+<<<<< Best evaluation ID: 2
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -97,4 +97,4 @@ Test Number 7 succeeded
 <<<<< Best constraint values   =
                      -1.0000000000e+00
                       1.3000000000e+01
-<<<<< Best data captured at function evaluation 1
+<<<<< Best evaluation ID: 1

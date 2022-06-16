@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -87,6 +87,8 @@ protected:
   void deactivate_distribution_parameter_derivatives();
 
   void assign_instance();
+
+  void init_metadata() override { /* no-op to leave metadata intact */}
 
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 			 const RealVector& x_vars);

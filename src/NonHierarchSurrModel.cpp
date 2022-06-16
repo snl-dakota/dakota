@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -55,11 +55,13 @@ void NonHierarchSurrModel::assign_default_keys()
   // default key data values, to be overridden at run time
   unsigned short id = 0, num_unord = unorderedModels.size();
   if (multifidelity()) { // first and last model form (no soln levels)
-    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord, SZ_MAX);
+    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord,
+				     truthModel.solution_level_cost_index());
     //if (responseMode == AGGREGATED_MODELS) {
       surrModelKeys.resize(num_unord);
       for (unsigned short i=0; i<num_unord; ++i)
-	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, SZ_MAX);
+	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i,
+	  unorderedModels[i].solution_level_cost_index());
     //}
   }
   else if (multilevel()) { // first and last solution level (last model)
@@ -77,7 +79,7 @@ void NonHierarchSurrModel::assign_default_keys()
   activeKey.aggregate_keys(truthModelKey, surrModelKeys, Pecos::RAW_DATA);
 
   if (parallelLib.mpirun_flag()) {
-    MPIPackBuffer send_buff;  short mode;
+    MPIPackBuffer send_buff;  short mode(0);
     send_buff << mode << activeKey; // serve_run() recvs single | aggregate key
     modeKeyBufferSize = send_buff.size();
   }
@@ -279,8 +281,6 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
   }
   */
 
-  if (sameModelInstance) update_model(truthModel);
-
   currentResponse.active_set(set);
   size_t num_unord = unorderedModels.size();
   switch (responseMode) {
@@ -290,13 +290,14 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
     asv_split(set.request_vector(), indiv_asv);
     size_t i, num_steps = indiv_asv.size();
     ActiveSet set_i(set); // copy DVV
+    if (sameModelInstance) update_model(truthModel);
     for (i=0; i<num_steps; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       if (test_asv(asv_i)) {
 	Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
 	component_parallel_mode(i+1); // index to id (0 is reserved)
-	if (sameModelInstance) assign_key(i);
-	else                   update_model(model_i);
+	assign_key(i);
+	if (!sameModelInstance) update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate(set_i);
 	// insert i-th contribution to currentResponse asrv/fns/grads/hessians
@@ -312,10 +313,10 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
       abort_handler(MODEL_ERROR);
     }
     component_parallel_mode(num_unord+1); // truth model id
-    if (sameModelInstance) assign_key(truthModelKey);
-    else                   update_model(truthModel);
+    assign_key(truthModelKey);
+    update_model(truthModel);
     truthModel.evaluate(set);
-    currentResponse.update(truthModel.current_response());
+    currentResponse.update(truthModel.current_response(), true);// pull metadata
     break;
   }
 }
@@ -337,8 +338,6 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 
   // For notes on repetitive use of assign_key(), see derived_evaluate() above
 
-  if (sameModelInstance) update_model(truthModel);
-
   switch (responseMode) {
   case AGGREGATED_MODELS: {
     // define eval reqmts, with unorderedModels followed by truthModel at end
@@ -348,12 +347,13 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     ActiveSet set_i(set); // copy DVV
 
     // first pass for nonblocking models
+    if (sameModelInstance) update_model(truthModel);
     for (i=0; i<num_steps; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
       if (model_i.asynch_flag() && test_asv(asv_i)) {
-	if (sameModelInstance) assign_key(i);
-	else                   update_model(model_i);
+	assign_key(i);
+	if (!sameModelInstance) update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate_nowait(set_i);
 	modelIdMaps[i][model_i.evaluation_id()] = surrModelEvalCntr;
@@ -365,8 +365,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
       if (!model_i.asynch_flag() && test_asv(asv_i)) {
 	component_parallel_mode(i+1); // model id (0 is reserved)
-	if (sameModelInstance) assign_key(i);
-	else                   update_model(model_i);
+	assign_key(i);
+	if (!sameModelInstance) update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate(set_i);
 	cachedRespMaps[i][surrModelEvalCntr]
@@ -381,8 +381,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 	   << "NonHierarchSurrModel::derived_evaluate()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    if (sameModelInstance) assign_key(truthModelKey);
-    else                   update_model(truthModel);
+    assign_key(truthModelKey);
+    update_model(truthModel);
     truthModel.evaluate_nowait(set); // no need to test for blocking eval
     modelIdMaps[0][truthModel.evaluation_id()] = surrModelEvalCntr;
     break;
@@ -530,16 +530,214 @@ derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
 }
 
 
+void NonHierarchSurrModel::create_tabular_datastream()
+{
+  // This function is invoked early at run time, for which the results of
+  // assign_default_keys() are available (defined from basic multifidelity()
+  // and multilevel() logic) --> create_tabular_datastream() has to be fairly
+  // inclusive of possible ensembles and derived_auto_graphics() can then
+  // be more specialized to specific active keys.
+
+  OutputManager& mgr = parallelLib.output_manager();
+  mgr.open_tabular_datastream();
+
+  switch (responseMode) {
+  case AGGREGATED_MODELS: { // two models/resolutions
+
+    // --------------------
+    // {eval,interface} ids
+    // --------------------
+    // To flatten into one composite tabular format, we must rely on invariant
+    // quantities rather than run-time flags like same{Model,Interface}Instance
+    StringArray iface_ids;
+    bool one_iface_id = matching_all_interface_ids();
+    size_t l, num_l, m, num_m = unorderedModels.size() + 1;
+    if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
+      iface_ids.push_back("interface");
+    else
+      for (m=1; m<=num_m; ++m)
+	iface_ids.push_back("interf_M" + std::to_string(m));
+    mgr.create_tabular_header(iface_ids); // includes graphics cntr
+
+    // ---------
+    // Variables
+    // ---------
+    // FUTURE: manage solution level control variables
+    // For now, enumerate model instances
+    Model&     hf_model = truth_model();
+    Variables& hf_vars  = hf_model.current_variables();
+    solnCntlAVIndex = (multifidelity()) ? _NPOS :
+      hf_model.solution_control_variable_index();
+    if (solnCntlAVIndex == _NPOS)
+      mgr.append_tabular_header(hf_vars);
+    else {
+      num_l = hf_model.solution_levels();
+      mgr.append_tabular_header(hf_vars, 0, solnCntlAVIndex); // leading set
+
+      // output paired solution control values
+      const String& soln_cntl_label = solution_control_label();
+      StringArray tab_labels(num_l);
+      for (l=0; l<num_l; ++l)
+	tab_labels[l] = soln_cntl_label + "_L" + std::to_string(l+1);
+      mgr.append_tabular_header(tab_labels);
+
+      size_t start = solnCntlAVIndex + 1;
+      mgr.append_tabular_header(hf_vars, start, hf_vars.tv() - start);
+    }
+
+    // --------
+    // Response
+    // --------
+    //mgr.append_tabular_header(currentResponse);
+    // Add HF/LF/Del prepends
+    StringArray labels = currentResponse.function_labels(); // copy
+    size_t q, num_qoi = qoi(), num_labels = labels.size(), cntr;
+    if (solnCntlAVIndex == _NPOS)
+      for (m=1, cntr=0; m<=num_m; ++m) {
+	String postpend = "_M" + std::to_string(m);
+	for (q=0; q<num_qoi; ++q, ++cntr)
+	  labels[cntr].append(postpend);
+      }
+    else
+      for (l=1, cntr=0; l<=num_l; ++l) {
+	String postpend = "_L" + std::to_string(l);
+	for (q=0; q<num_qoi; ++q, ++cntr)
+	  labels[cntr].append(postpend);
+      }
+    mgr.append_tabular_header(labels, true); // with endl
+    break;
+  }
+  case BYPASS_SURROGATE: //case NO_SURROGATE:
+    mgr.create_tabular_header(truth_model().current_variables(),
+			      currentResponse);
+    break;
+  }
+}
+
+
+void NonHierarchSurrModel::
+derived_auto_graphics(const Variables& vars, const Response& resp)
+{
+  //parallelLib.output_manager().add_tabular_data(vars, interface_id(), resp);
+
+  // As called from Model::evaluate() et al., passed data are top-level Model::
+  // currentVariables (neglecting inactive specializations among {HF,LF} vars)
+  // and final reduced/aggregated Model::currentResponse.  Active input/output
+  // components are shared among the ordered models, but inactive components
+  // must be managed to provide sensible composite tabular output.
+  // > Differences in solution control are handled via specialized handling for
+  //   a solution control index.
+  // > Other uncontrolled inactive variables must be rely on the correct
+  //   subordinate model Variables instance.
+
+  Model& hf_model = truth_model();
+  OutputManager& output_mgr = parallelLib.output_manager();
+  switch (responseMode) {
+  case AGGREGATED_MODELS: { // use same #Cols since commonly alternated
+
+    // Output interface id(s)
+    bool one_iface_id = matching_all_interface_ids(),
+      truth_key = !truthModelKey.empty(), surr_keys = !surrModelKeys.empty();
+    StringArray iface_ids;  size_t i, num_approx = unorderedModels.size();
+    if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
+      iface_ids.push_back(hf_model.interface_id());
+    else {
+      for (i=0; i<num_approx; ++i) {
+	if (surr_keys && !surrModelKeys[i].empty())
+	  iface_ids.push_back(unorderedModels[i].interface_id());
+	else iface_ids.push_back("N/A");
+      }
+      if (truth_key) iface_ids.push_back(hf_model.interface_id());
+      else           iface_ids.push_back("N/A");//preserve row len
+    }
+    output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
+
+    // Output Variables data
+    // capture correct inactive: bypass NonHierarchSurrModel::currentVariables
+    Variables& export_vars = hf_model.current_variables();
+    if (solnCntlAVIndex == _NPOS)
+      output_mgr.add_tabular_data(export_vars);
+    else {
+      // output leading set of variables in spec order
+      output_mgr.add_tabular_data(export_vars, 0, solnCntlAVIndex);
+
+      // output solution control values (flags are not invariant, but data
+      // count is). If sameModelInstance, desired soln cntl was overwritten
+      // by last model's value and must be temporarily restored.
+      for (i=0; i<num_approx; ++i) {
+	if (surr_keys && !surrModelKeys[i].empty()) {
+	  if (sameModelInstance) assign_key(i);
+	  add_tabular_solution_level_value(unorderedModels[i]);
+	}
+	else output_mgr.add_tabular_scalar("N/A");
+      }
+      if (truth_key) {
+	if (sameModelInstance) assign_key(truthModelKey);
+	add_tabular_solution_level_value(hf_model);
+      }
+      else
+	output_mgr.add_tabular_scalar("N/A");
+
+      // output trailing variables in spec order
+      size_t start = solnCntlAVIndex + 1;
+      output_mgr.add_tabular_data(export_vars, start, export_vars.tv() - start);
+    }
+
+    // Output Response data
+    output_mgr.add_tabular_data(resp);
+    /* This block no longer necessary with Response tabular change to
+       output N/A for inactive functions
+    size_t q, num_qoi = hf_model.qoi(), cntr = 0;
+    for (i=0; i<num_approx; ++i) {
+      if (surr_keys && !surrModelKeys[i].empty())
+	output_mgr.add_tabular_data(resp, cntr, num_qoi);
+      else
+	for (q=0; q<num_qoi; ++q)
+	  output_mgr.add_tabular_scalar("N/A");
+      cntr += num_qoi;
+    }
+    if (truth_key)
+      output_mgr.add_tabular_data(resp, cntr, num_qoi);
+    else
+      for (q=0; q<num_qoi; ++q)
+	output_mgr.add_tabular_scalar("N/A");
+    output_mgr.add_eol();
+    */
+    break;
+  }
+  case BYPASS_SURROGATE: //case NO_SURROGATE:
+    output_mgr.add_tabular_data(hf_model.current_variables(),
+				hf_model.interface_id(), resp);
+    break;
+  }
+}
+
+
 void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 {
   size_t num_approx = surrModelKeys.size(), // model forms or resolutions
-    num_truth = (use_virtual_counts) ?
+    num_meta, num_truth_md = truthModel.current_response().metadata().size(),
+    num_truth_fns = (use_virtual_counts) ?
     truthModel.qoi() : // allow models to consume lower-level aggregations
     truthModel.response_size(); // raw counts align w/ currentResponse raw count
 
   switch (responseMode) {
-  case AGGREGATED_MODELS: numFns = (num_approx + 1) * num_truth;  break;
-  case BYPASS_SURROGATE:  numFns =                    num_truth;  break;
+  case AGGREGATED_MODELS: {
+    size_t i, num_unord = unorderedModels.size();
+    numFns = num_truth_fns;  num_meta = num_truth_md;
+    for (i=0; i<num_approx; ++i) {
+      unsigned short form = surrModelKeys[i].retrieve_model_form();
+      Model& model_i = (form < num_unord) ? unorderedModels[form] : truthModel;
+      numFns += (use_virtual_counts) ? model_i.qoi() : model_i.response_size();
+      num_meta += model_i.current_response().metadata().size();
+    }
+    //size_t multiplier = num_approx + 1;
+    //numFns   = multiplier * num_truth_fns;
+    //num_meta = multiplier * num_truth_md;
+    break;
+  }
+  case BYPASS_SURROGATE:
+    numFns = num_truth_fns;  num_meta = num_truth_md;  break;
   }
 
   // gradient and Hessian settings are based on independent spec (not LF, HF)
@@ -560,6 +758,8 @@ void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
     //     Response object.  Expansion by combination only happens on
     //     iteratorCommRank 0 within derived_synchronize_combine{,_nowait}().
   }
+  if (currentResponse.metadata().size() != num_meta)
+    currentResponse.reshape_metadata(num_meta);
 }
 
 

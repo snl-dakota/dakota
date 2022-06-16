@@ -5,3 +5,6 @@ tags
 .DS_Store
 docs-sphinx/build
 docs-sphinx/source/usingdakota/reference/*
+.vscode
+__pycache__
+*.pyc

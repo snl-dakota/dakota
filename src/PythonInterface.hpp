@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -14,8 +14,8 @@
 //-               finalize of Python for the whole set of function evaluations.
 //- Owner:        Brian Adams
 //- Version: $Id$
-#ifndef PYTHON_INTERFACE_H
-#define PYTHON_INTERFACE_H
+#ifndef LEGACY_PYTHON_INTERFACE_H
+#define LEGACY_PYTHON_INTERFACE_H
 
 #include "DirectApplicInterface.hpp"
 
@@ -86,4 +86,4 @@ protected:
 
 } // namespace Dakota
 
-#endif  // PYTHON_INTERFACE_H
+#endif  // LEGACY_PYTHON_INTERFACE_H

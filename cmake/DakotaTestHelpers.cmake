@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020
+#  Copyright 2014-2022
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -271,7 +271,7 @@ function(dakota_regression_test test_name serpar_string test_props
    # test properties may disable a specific test based on configuration
    set(add_this_test TRUE)
    set(last_subtest -1)
-   set(test_labels DakotaTest)
+   set(test_labels Regression)
    set(test_req_files)  # files mentioned in input file ReqFiles=
 
    # updates above 4 variables

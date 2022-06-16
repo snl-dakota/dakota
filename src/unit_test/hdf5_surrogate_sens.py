@@ -216,11 +216,11 @@ class RestartData(unittest.TestCase):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
             hresps_f = h["/interfaces/NO_ID/truth_m/responses/functions"]
             hresps_g = h["/interfaces/NO_ID/truth_m/responses/gradients"]
-            hasv = h["/interfaces/NO_ID/truth_m/metadata/active_set_vector"]
-            hdvv = h["/interfaces/NO_ID/truth_m/metadata/derivative_variables_vector"]
-            hac = h["/interfaces/NO_ID/truth_m/metadata/analysis_components"]
+            hasv = h["/interfaces/NO_ID/truth_m/properties/active_set_vector"]
+            hdvv = h["/interfaces/NO_ID/truth_m/properties/derivative_variables_vector"]
+            hac = h["/interfaces/NO_ID/truth_m/properties/analysis_components"]
             # ASV
-            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/truth_m/metadata/active_set_vector"]):
+            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/truth_m/properties/active_set_vector"]):
                 for r_a, h_a in zip(r_asv, h_asv):
                     self.assertEqual(r_a, h_a)
             #DVV
