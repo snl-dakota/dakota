@@ -30,7 +30,6 @@ public class HdfYamlTableToRSTTablePrinter {
 		
 		GenericRow headerRow = getHeaderFromYamlMap(map);
 		List<GenericRow> datasetRows = getDatasetRowsFromYamlMap(map);
-		GenericRow innerTableRow = getScalesInnerTableFromYamlMap(map);
 		
 		GenericTable outerTable = new GenericTable();
 		outerTable.setColumnWidth(0, 20);
@@ -39,10 +38,15 @@ public class HdfYamlTableToRSTTablePrinter {
 		for(GenericRow datasetRow : datasetRows) {
 			outerTable.addRow(datasetRow);
 		}
-		outerTable.addRow(innerTableRow);
+		
+		int innerTableWidth = 60; // some arbitrary default value
+		if(map.containsKey("scales")) {
+			GenericRow innerTableRow = getScalesInnerTableFromYamlMap(map);
+			outerTable.addRow(innerTableRow);
+			innerTableWidth = innerTableRow.getData().get(1).getContents().indexOf("\n")+2;
+		}
 		
 		outerTable.setColumnWidth(0, 30);
-		int innerTableWidth = innerTableRow.getData().get(1).getContents().indexOf("\n")+2;
 		outerTable.setColumnWidth(1, innerTableWidth);
 		
 		RstTablePrinter printer = new RstTablePrinter();
