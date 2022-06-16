@@ -10,6 +10,7 @@ Development Practices and Guidance
    developmentpractices/codingstyle
    developmentpractices/modifyingdakotainput
    developmentpractices/interfacinglibrary
+   developmentpractices/iteratorflow
    developmentpractices/performingfunctionevaluations
    developmentpractices/workingwithvariablecontainers
    developmentpractices/demotpl

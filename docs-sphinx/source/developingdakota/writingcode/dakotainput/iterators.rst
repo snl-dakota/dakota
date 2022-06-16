@@ -4,27 +4,44 @@
 Iterators
 """""""""
 
-Class hierarchy: **Iterator.** **Iterator** implementations may choose to split operations up into run-time phases as described in **Understanding Iterator Flow.**
+Class hierarchy: `Iterator. <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1Iterator.html>`_
+`Iterator <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1Iterator.html>`_ implementations may choose to split operations up into run-time
+phases as described in :ref:`Understanding Iterator Flow.<developer-understanding-iterator-flow>`
 
-The iterator hierarchy contains a variety of iterative algorithms for optimization, uncertainty quantification, nonlinear least squares, design of experiments, and parameter studies. The hierarchy is divided into MetaIterator, Minimizer, and Analyzer branches.
+The iterator hierarchy contains a variety of iterative algorithms for optimization, uncertainty quantification, nonlinear least squares, design of experiments, and parameter studies.
+The hierarchy is divided into `MetaIterator <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1MetaIterator.html>`_,
+`Minimizer <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1Minimizer.html>`_, and
+`Analyzer <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1Analyzer.html>`_ branches.
 
-The MetaIterator classes manage sequencing and collaboration among multiple methods with support for concurrent iterator parallelism. Methods include:
+The `MetaIterator <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1MetaIterator.html>`_ classes manage sequencing and collaboration among multiple
+methods with support for concurrent iterator parallelism. Methods include:
 
-- SeqHybridMetaIterator: hybrid minimization using a set of iterators employing a corresponding set of models of varying fidelity. The sequential hybrid passes the best solutions from one method in as the starting points of the next method in the sequence.
+ - `SeqHybridMetaIterator <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1SeqHybridMetaIterator.html>`_: hybrid minimization using a set of iterators
+   employing a corresponding set of models of varying fidelity. The sequential hybrid passes the best solutions from one method in as the starting points of the next method in the sequence.
+ - `CollabHybridMetaIterator <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1CollabHybridMetaIterator.html>`_: hybrid minimization employing collaboration and
+   sharing of response data among methods during the course if iteration. This class is currently a placeholder.
+ - `EmbedHybridMetaIterator <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1EmbedHybridMetaIterator.html>`_: hybrid minimization involving periodic use of a
+   local search method for refinement during the iteration of an outer global method. This class is currently a placeholder.
+ - `ConcurrentMetaIterator <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1ConcurrentMetaIterator.html>`_: two similar algorithms are available: (1)
+   multi-start iteration from several different starting points, and (2) pareto set optimization for several different multi-objective weightings. Employs a single iterator with a single model, but
+   runs multiple instances of the iterator concurrently for different settings within the model.
 
-- CollabHybridMetaIterator: hybrid minimization employing collaboration and sharing of response data among methods during the course if iteration. This class is currently a placeholder.
+The `Minimizer <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1Minimizer.html>`_ classes address optimization and deterministic calibration and are grouped into:
 
-- EmbedHybridMetaIterator: hybrid minimization involving periodic use of a local search method for refinement during the iteration of an outer global method. This class is currently a placeholder.
-
-- ConcurrentMetaIterator: two similar algorithms are available: (1) multi-start iteration from several different starting points, and (2) pareto set optimization for several different multi-objective weightings. Employs a single iterator with a single model, but runs multiple instances of the iterator concurrently for different settings within the model.
-
-The Minimizer classes address optimization and deterministic calibration and are grouped into:
-
-- Optimization: Optimizer provides a base class for gradient-based (e.g., CONMINOptimizer and SNLLOptimizer) and derivative-free (e.g., NCSUOptimizer, JEGAOptimizer) optimization solvers. Most of these are wrappers for third-party libraries that implement the optimization algorithms. Classes APPSEvalMgr and COLINApplication provide the function evaluation interface for APPSOptimizer and COLINOptimizer, respectively.
-
-- Parameter estimation: LeastSq provides a base class for NL2SOLLeastSq, a least-squares solver based on NL2SOL, SNLLLeastSq, a Gauss-Newton least-squares solver, and NLSSOLLeastSq, an SQP-based least-squares solver.
-
-- Surrogate-based minimization (both optimization and nonlinear least squares): SurrBasedMinimizer provides a base class for SurrBasedLocalMinimizer, SurrBasedGlobalMinimizer, and EffGlobalMinimizer. The surrogate-based local and global methods employ a single iterator with any of the available SurrogateModel capabilities (local, multipoint, or global data fits or hierarchical approximations) and perform a sequence of approximate optimizations, each involving build, optimize, and verify steps. The efficient global method, on the other hand, hard-wires a recursion involving Gaussian process surrogate models coupled with the DIRECT global optimizer to maximize an expected improvement function.
+ - Optimization: `Optimizer <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1Optimizer.html>`_ provides a base class for gradient-based
+   (e.g., `CONMINOptimizer <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1CONMINOptimizer.html>`_ and
+   `SNLLOptimizer <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1SNLLOptimizer.html>`_) and derivative-free (e.g.,
+   `NCSUOptimizer <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1NCSUOptimizer.html>`_,
+   `JEGAOptimizer <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1JEGAOptimizer.html>`_) optimization solvers. Most of these are wrappers for third-party libraries
+   that implement the optimization algorithms. Classes `APPSEvalMgr <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1APPSEvalMgr.html>`_ and
+   `COLINApplication <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1COLINApplication.html>`_ provide the function evaluation interface for
+   `APPSOptimizer <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1APPSOptimizer.html>`_ and
+   `COLINOptimizer <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1COLINOptimizer.html>`_, respectively.
+ - Parameter estimation: `LeastSq <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1LeastSq.html>`_ provides a base class for
+   `NL2SOLLeastSq <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1NL2SOLLeastSq.html>`_, a least-squares solver based on NL2SOL,
+   `SNLLLeastSq <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1SNLLLeastSq.html>`_, a Gauss-Newton least-squares solver, and
+   `NLSSOLLeastSq <https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1NLSSOLLeastSq.html>`_, an SQP-based least-squares solver.
+ - Surrogate-based minimization (both optimization and nonlinear least squares): SurrBasedMinimizer provides a base class for SurrBasedLocalMinimizer, SurrBasedGlobalMinimizer, and EffGlobalMinimizer. The surrogate-based local and global methods employ a single iterator with any of the available SurrogateModel capabilities (local, multipoint, or global data fits or hierarchical approximations) and perform a sequence of approximate optimizations, each involving build, optimize, and verify steps. The efficient global method, on the other hand, hard-wires a recursion involving Gaussian process surrogate models coupled with the DIRECT global optimizer to maximize an expected improvement function.
 
 The Analyzer classes are grouped into:
 
