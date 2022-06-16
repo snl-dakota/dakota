@@ -1,4 +1,4 @@
-.. _`topic-package_dot`:
+.. _topic-package_dot:
 
 Package: DOT
 ============

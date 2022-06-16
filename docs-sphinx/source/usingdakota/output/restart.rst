@@ -34,9 +34,11 @@ If no -read_restart specification is used, then Dakota will not read restart inf
 
 To read in only a portion of a restart file, the -stop_restart control (may be abbreviated as -s) is used to specify the number of entries to be read from the database. Note that this integer value corresponds to the restart record processing counter (as can be seen when using the print utility (see The Dakota Restart Utility) which may differ from the evaluation numbers used in the previous run if, for example, any duplicates were detected (since these duplicates are not recorded in the restart file). In the case of a -stop_restart specification, it is usually desirable to specify a new restart file using -write_restart so as to remove the records of erroneous or corrupted function evaluations. For example, to read in the first 50 evaluations from dakota.rst:
 
+.. code_block:
+
     dakota -i dakota.in -r dakota.rst -s 50 -w dakota_new.rst
 
-The dakota_new.rst file will contain the 50 processed evaluations from dakota.rst as well as any new evaluations. All evaluations following the $50^{\mathrm{th}}$ in dakota.rst have been removed from the latest restart record.
+The dakota_new.rst file will contain the 50 processed evaluations from dakota.rst as well as any new evaluations. All evaluations following the :math:`50^{\mathrm{th}}` in dakota.rst have been removed from the latest restart record.
 
 ===========================
 Appending to a Restart File

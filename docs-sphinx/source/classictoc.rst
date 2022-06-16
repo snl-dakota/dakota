@@ -92,8 +92,8 @@ set of manuals, this set of links may help you find what you're looking for...
   - :ref:`Usage <command-line-main>`
   - :ref:`Examples <running-examples-main>`
   - :ref:`Execution Phases <execution-phases-main>`
-  - Restarting Dakota Studies
-  - The Dakota Restart Utility
+  - :ref:`Restarting Dakota Studies <dakota_restart>`
+  - :ref:`The Dakota Restart Utility <dakota_restart_utility>`
   
 - Dakota Input Specification
 
@@ -104,7 +104,7 @@ set of manuals, this set of links may help you find what you're looking for...
   
 - :ref:`Keywords Area <keyword-reference-area>`
 - :ref:`Topics Area <topics-reference-area>`
-- :ref:`Dakota HDF5 Output <hdf-main>`
+- :ref:`Dakota HDF5 Output <hdf5_output>`
 - :ref:`Test Problems <examples-gettingstarted-main>`
 
 **Developer's Manual**

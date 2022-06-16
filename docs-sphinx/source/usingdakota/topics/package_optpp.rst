@@ -1,4 +1,4 @@
-.. _`topic-package_optpp`:
+.. _topic-package_optpp:
 
 Package: OPT++
 ==============

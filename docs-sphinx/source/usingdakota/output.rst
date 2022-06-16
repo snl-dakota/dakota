@@ -6,4 +6,5 @@ Dakota Output
    
    output/classicoutput
    output/restart
+   output/restartutility
    output/hdf
