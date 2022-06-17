@@ -30,12 +30,12 @@ StringStringPairIntMap RecastModel::recastModelIdCounters;
 
 
 /** Default recast model constructor.  Requires full definition of the
-    transformation; if any mappings are NULL, they are assumed to
-    remain so in later initialization or updates.  Parameter
-    vars_comps_totals indicates the number of each type of variable {4
-    types} x {3 domains} in the recast variable space.  Note:
-    recast_secondary_offset is the start index for equality
-    constraints, typically num nonlinear ineq constraints. */
+    transformation; if any mappings are NULL, they are assumed to remain
+    so in later initialization or updates.  Parameter vars_comps_totals
+    indicates the number of each type of variable {4 types} x {3 domains}
+    in the recast variable space.  Note: recast_secondary_offset is the
+    start index for nonlinear equality constraints, typically defined as
+    the number of nonlinear inequality constraints. */
 RecastModel::
 RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 	    const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
@@ -948,6 +948,34 @@ void RecastModel::update_linear_constraints(const Model& model)
 
 void RecastModel::update_variables_active_complement_from_model(Model& model)
 {
+  // Note: this implementation works for different variable views so long
+  // as the number of variables within the variablesMapping does not change
+  // (e.g. one-to-one or active-to-active).
+  // > cases like SubspaceModel can compute an offset for {c,di,ds,dr}v_end
+  //   if views are the same
+
+  short active_view = currentVariables.view().first,
+     sm_active_view = model.current_variables().view().first;
+  bool same_active_view = (active_view == sm_active_view);
+  int cv_offset = 0, div_offset = 0, dsv_offset = 0, drv_offset = 0, offset_i;
+  if (same_active_view) {
+    cv_offset  = model.cv()  - currentVariables.cv(); // > 0 if dim reduction
+    div_offset = model.div() - currentVariables.div();
+    dsv_offset = model.dsv() - currentVariables.dsv();
+    drv_offset = model.drv() - currentVariables.drv();
+  }
+  else if (currentVariables.acv()  != model.acv()  ||
+	   currentVariables.adiv() != model.adiv() ||
+	   currentVariables.adsv() != model.adsv() ||
+	   currentVariables.adrv() != model.adrv()) {
+    // Disallow change in both view and active size
+    Cerr << "Error: recasting of view and active sizes not supported in "
+	 << "RecastModel::update_variables_active_complement_from_model()."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  // else retain offsets = 0
+    
   size_t i, cv_begin = currentVariables.cv_start(),
     num_cv  = currentVariables.cv(), cv_end = cv_begin + num_cv,
     num_acv = currentVariables.acv();
@@ -963,10 +991,11 @@ void RecastModel::update_variables_active_complement_from_model(Model& model)
     currentVariables.all_continuous_variable_label(acv_labels[i], i);
   }
   for (i=cv_end; i<num_acv; ++i) {
-    currentVariables.all_continuous_variable(acv[i], i);
-    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
-    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
-    currentVariables.all_continuous_variable_label(acv_labels[i], i);
+    offset_i = i + cv_offset;
+    currentVariables.all_continuous_variable(acv[offset_i], i);
+    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[offset_i], i);
+    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[offset_i], i);
+    currentVariables.all_continuous_variable_label(acv_labels[offset_i], i);
   }
 
   size_t div_begin = currentVariables.div_start(),
@@ -984,10 +1013,13 @@ void RecastModel::update_variables_active_complement_from_model(Model& model)
     currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
   }
   for (i=div_end; i<num_adiv; ++i) {
-    currentVariables.all_discrete_int_variable(adiv[i], i);
-    userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
-    userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
-    currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
+    offset_i = i + div_offset;
+    currentVariables.all_discrete_int_variable(adiv[offset_i], i);
+    userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[offset_i],
+							i);
+    userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[offset_i],
+							i);
+    currentVariables.all_discrete_int_variable_label(adiv_labels[offset_i], i);
   }
 
   size_t dsv_begin = currentVariables.dsv_start(),
@@ -1001,8 +1033,10 @@ void RecastModel::update_variables_active_complement_from_model(Model& model)
     currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
   }
   for (i=dsv_end; i<num_adsv; ++i) {
-    currentVariables.all_discrete_string_variable(adsv[i], i);
-    currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
+    offset_i = i + dsv_offset;
+    currentVariables.all_discrete_string_variable(adsv[offset_i], i);
+    currentVariables.all_discrete_string_variable_label(adsv_labels[offset_i],
+							i);
   }
 
   size_t drv_begin = currentVariables.drv_start(),
@@ -1020,10 +1054,13 @@ void RecastModel::update_variables_active_complement_from_model(Model& model)
     currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
   }
   for (i=drv_end; i<num_adrv; ++i) {
-    currentVariables.all_discrete_real_variable(adrv[i], i);
-    userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
-    userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
-    currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
+    offset_i = i + drv_offset;
+    currentVariables.all_discrete_real_variable(adrv[offset_i], i);
+    userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[offset_i],
+							 i);
+    userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[offset_i],
+							 i);
+    currentVariables.all_discrete_real_variable_label(adrv_labels[offset_i], i);
   }
 }
 
@@ -1055,9 +1092,8 @@ void RecastModel::update_response_from_model(Model& model)
     // mappings, so secondaryRespMapping could potentially be used to
     // update currentResponse from model secondary fns
   }
-  else {
+  else
     update_secondary_response(model);
-  }
 }
 
 
@@ -1248,16 +1284,15 @@ void RecastModel::assign_instance()
 
 
 void RecastModel::init_metadata()
+{ currentResponse.reshape_metadata(0); }
+
+
+String RecastModel::root_model_id()
+{ return subModel.root_model_id(); }
+
+
+ActiveSet RecastModel::default_active_set()
 {
-  currentResponse.reshape_metadata(0);
-}
-
-String RecastModel::root_model_id() {
-  return subModel.root_model_id();
-}
-
-
-ActiveSet RecastModel::default_active_set() {
   // The "base class" implementation assumes that supportsEstimDerivs is false
   // and that gradients/hessians, if available, are computed by a submodel and
   // hence can be provided by this model.
@@ -1266,11 +1301,13 @@ ActiveSet RecastModel::default_active_set() {
   bool has_deriv_vars = set.derivative_vector().size() != 0;
   ShortArray asv(numFns, 1);
   if(has_deriv_vars) {
-    if(gradientType != "none")// && (gradientType == "analytic" || supportsEstimDerivs))
+    if(gradientType != "none")
+      // && (gradientType == "analytic" || supportsEstimDerivs))
         for(auto &a : asv)
           a |=  2;
 
-    if(hessianType != "none") // && (hessianType == "analytic" || supportsEstimDerivs))
+    if(hessianType != "none")
+      // && (hessianType == "analytic" || supportsEstimDerivs))
         for(auto &a : asv)
           a |=  4;
   }
@@ -1279,8 +1316,10 @@ ActiveSet RecastModel::default_active_set() {
 }
 
 
-void RecastModel::declare_sources() {
-  evaluationsDB.declare_source(modelId, modelType, subModel.model_id(), subModel.model_type());
+void RecastModel::declare_sources()
+{
+  evaluationsDB.declare_source(modelId, modelType, subModel.model_id(),
+			       subModel.model_type());
 }
 
 } // namespace Dakota

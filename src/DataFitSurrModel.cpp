@@ -46,7 +46,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   exportFormat(problem_db.get_ushort("model.surrogate.export_approx_format")),
   exportVarianceFile(
     problem_db.get_string("model.surrogate.export_approx_variance_file")),
-  exportVarianceFormat(problem_db.get_ushort("model.surrogate.export_approx_variance_format")),
+  exportVarianceFormat(
+    problem_db.get_ushort("model.surrogate.export_approx_variance_format")),
   autoRefine(problem_db.get_bool("model.surrogate.auto_refine")),
   maxIterations(problem_db.get_sizet("model.max_iterations")),
   maxFuncEvals(problem_db.get_sizet("model.max_function_evals")),

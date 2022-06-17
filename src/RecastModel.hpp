@@ -559,10 +559,11 @@ private:
   //- Heading: Data members
   //
 
-  /// For each subModel variable, identifies the indices of the recast
-  /// variables used to define it (maps RecastModel variables to
-  /// subModel variables; data is packed with only the variable indices
-  /// employed rather than a sparsely filled N_sm x N_r matrix).
+  /// For each subModel variable (leading index), identifies the indices of the
+  /// recast variables used to define it (trailing index); used for forward
+  /// iterator-driven mapping of RecastModel variables to subModel variables.
+  /// Note: data is packed with only the variable indices employed, rather
+  /// than a sparsely populated N_sm x N_r matrix.
   Sizet2DArray varsMapIndices;
 
   /// For each recast primary function, identifies the indices of the
