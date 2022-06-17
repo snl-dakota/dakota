@@ -30,8 +30,7 @@ namespace Dakota {
     and merge continuous and discrete domains to create aggregate
     arrays and views.  */
 RelaxedVariables::
-RelaxedVariables(const ProblemDescDB& problem_db,
-		const std::pair<short,short>& view):
+RelaxedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
   Variables(BaseConstructor(), problem_db, view)
 {
   const RealVector& cdv  = problem_db.get_rv(

@@ -289,9 +289,10 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 1; // nongradient-based optimizers
+  const ShortShortPair& mpp_view = iteratedModel.current_variables().view();
   mppModel.assign_rep(std::make_shared<RecastModel>
 		      (uSpaceModel, recast_vars_comps_total, all_relax_di,
-		       all_relax_dr, 1, 0, 0, recast_resp_order));
+		       all_relax_dr, mpp_view, 1, 0, 0, recast_resp_order));
 
   // For formulations with one objective and one equality constraint,
   // use the following instead:

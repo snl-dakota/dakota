@@ -56,7 +56,7 @@ public:
   /// standard constructor
   Constraints(const ProblemDescDB& prob_db, const SharedVariablesData& svd);
   // alternate constructor for minimal instantiations on the fly (reshape reqd)
-  //Constraints(const std::pair<short,short>& view);
+  //Constraints(const ShortShortPair& view);
   /// alternate constructor for instantiations on the fly
   Constraints(const SharedVariablesData& svd);
   /// copy constructor
@@ -993,7 +993,7 @@ inline bool Constraints::is_null() const
 inline void Constraints::build_views()
 {
   // called only from letters
-  const std::pair<short,short>& view = sharedVarsData.view();
+  const ShortShortPair& view = sharedVarsData.view();
   if (view.first  != EMPTY_VIEW)
     build_active_views();
   if (view.second != EMPTY_VIEW)

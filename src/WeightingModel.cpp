@@ -23,11 +23,10 @@ WeightingModel::WeightingModel(Model& sub_model
 	      SizetArray(), // no change in vars size
 	      BitArray(),   // default discrete int relaxation
 	      BitArray(),   // default discrete real relaxation
-	      sub_model.num_primary_fns(),
-	      sub_model.num_secondary_fns(),
+	      sub_model.current_variables().view(),
+	      sub_model.num_primary_fns(), sub_model.num_secondary_fns(),
 	      sub_model.num_nonlinear_ineq_constraints(),
-	      response_order(sub_model)
-	      )
+	      response_order(sub_model) )
 {
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Info: Constructing WeightingModel" << std::endl;

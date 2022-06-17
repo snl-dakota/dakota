@@ -59,14 +59,14 @@ private:
 
   /// standard constructor
   SharedVariablesDataRep(const ProblemDescDB& problem_db,
-			 const std::pair<short,short>& view);
+			 const ShortShortPair& view);
   /// medium weight constructor providing detailed variable counts
-  SharedVariablesDataRep(const std::pair<short,short>& view,
+  SharedVariablesDataRep(const ShortShortPair& view,
 			 const std::map<unsigned short, size_t>& vars_comps,
 			 const BitArray& all_relax_di,
 			 const BitArray& all_relax_dr);
   /// lightweight constructor providing variable count totals
-  SharedVariablesDataRep(const std::pair<short,short>& view,
+  SharedVariablesDataRep(const ShortShortPair& view,
 			 const SizetArray& vars_comps_totals,
 			 const BitArray& all_relax_di,
 			 const BitArray& all_relax_dr);
@@ -234,7 +234,7 @@ private:
 
   /// the variables view pair containing active (first) and inactive (second)
   /// view enumerations
-  std::pair<short, short> variablesView;
+  ShortShortPair variablesView;
   /// start index of active continuous variables within allContinuousVars
   size_t cvStart;
   /// start index of active discrete integer variables within allDiscreteIntVars
@@ -547,14 +547,14 @@ public:
   SharedVariablesData();
   /// standard constructor
   SharedVariablesData(const ProblemDescDB& problem_db,
-		      const std::pair<short,short>& view);
+		      const ShortShortPair& view);
   /// medium weight constructor providing detailed variable counts
-  SharedVariablesData(const std::pair<short,short>& view,
+  SharedVariablesData(const ShortShortPair& view,
 		      const std::map<unsigned short, size_t>& vars_comps,
 		      const BitArray& all_relax_di = BitArray(),
 		      const BitArray& all_relax_dr = BitArray());
   /// lightweight constructor providing variable count totals
-  SharedVariablesData(const std::pair<short,short>& view,
+  SharedVariablesData(const ShortShortPair& view,
 		      const SizetArray& vars_comps_totals,
 		      const BitArray& all_relax_di = BitArray(),
 		      const BitArray& all_relax_dr = BitArray());
@@ -883,7 +883,7 @@ public:
   size_t vc_lookup(unsigned short key) const;
 
   /// retreive the Variables view
-  const std::pair<short,short>& view() const;
+  const ShortShortPair& view() const;
   /// set the active Variables view
   void active_view(short view1);
   /// set the inactive Variables view
@@ -945,13 +945,13 @@ inline SharedVariablesData::SharedVariablesData()
 
 inline SharedVariablesData::
 SharedVariablesData(const ProblemDescDB& problem_db,
-		    const std::pair<short,short>& view):
+		    const ShortShortPair& view):
   svdRep(new SharedVariablesDataRep(problem_db, view))
 { /* empty ctor */ }
 
 
 inline SharedVariablesData::
-SharedVariablesData(const std::pair<short,short>& view,
+SharedVariablesData(const ShortShortPair& view,
 		    const std::map<unsigned short, size_t>& vars_comps,
 		    const BitArray& all_relax_di, const BitArray& all_relax_dr):
   svdRep(new SharedVariablesDataRep(view, vars_comps, all_relax_di,
@@ -960,7 +960,7 @@ SharedVariablesData(const std::pair<short,short>& view,
 
 
 inline SharedVariablesData::
-SharedVariablesData(const std::pair<short,short>& view,
+SharedVariablesData(const ShortShortPair& view,
 		    const SizetArray& vars_comps_totals,
 		    const BitArray& all_relax_di, const BitArray& all_relax_dr):
   svdRep(new SharedVariablesDataRep(view, vars_comps_totals, all_relax_di,
@@ -1568,7 +1568,7 @@ inline size_t SharedVariablesData::vc_lookup(unsigned short key) const
 { return svdRep->vc_lookup(key); }
 
 
-inline const std::pair<short,short>& SharedVariablesData::view() const
+inline const ShortShortPair& SharedVariablesData::view() const
 { return svdRep->variablesView; }
 
 

@@ -312,12 +312,18 @@ void NonDBayesCalibration::construct_mcmc_model()
       unsigned short cub_int
 	= probDescDB.get_ushort("method.nond.cubature_integrand");
       if (!exp_import_file.empty()) {
+	// While upstream update allows NonD ctor chain to use updated number
+	// of active CV, we should avoid modifying the original calibration
+	// configuration provided by the incoming iteratedModel.  Rather, we
+	// must adjust downstream within the PCE ctor.
+	//if (expData.num_config_vars())
+	//  inbound_model.active_view(MIXED_ALL); // allow recursion
+
 	// Imported surrogate will include state config vars for now.
 	// TO DO: expand this override to non-imported cases.
-	if (expData.num_config_vars())
-	  inbound_model.active_view(MIXED_ALL); // allow recursion
+	short dfs_view = MIXED_ALL;
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
-	  exp_import_file, u_space_type);
+	  exp_import_file, u_space_type, dfs_view);
       }
       else if (ssg_level != USHRT_MAX) { // PCE sparse grid
 	short exp_coeff_approach = (refine_cntl) ?
@@ -650,12 +656,11 @@ void NonDBayesCalibration::construct_map_model()
   }
 
   // RecastModel for bound-constrained argmin(misfit - log prior)
-  negLogPostModel.assign_rep(std::make_shared<RecastModel>
-    (residualModel, vars_map_indices, recast_vc_totals,
-     all_relax_di, all_relax_dr, nonlinear_vars_map, nullptr,
-     set_recast, primary_resp_map_indices,
-     secondary_resp_map_indices, 0, nlp_resp_order,
-     nonlinear_resp_map, neg_log_post_resp_mapping, nullptr));
+  negLogPostModel.assign_rep(std::make_shared<RecastModel>(residualModel,
+    vars_map_indices, recast_vc_totals, all_relax_di, all_relax_dr,
+    nonlinear_vars_map, iteratedModel.current_variables().view(), nullptr,
+    set_recast, primary_resp_map_indices, secondary_resp_map_indices, 0,
+    nlp_resp_order, nonlinear_resp_map, neg_log_post_resp_mapping, nullptr));
 }
 
 void NonDBayesCalibration::construct_map_optimizer() 
@@ -1666,7 +1671,7 @@ void NonDBayesCalibration::build_scalar_discrepancy()
 
   // Construct config var information
   Variables vars_copy = mcmcModel.current_variables().copy();
-  std::pair<short, short> view(MIXED_STATE, EMPTY_VIEW);
+  ShortShortPair view(MIXED_STATE, EMPTY_VIEW);
   SizetArray vars_comps_totals(NUM_VC_TOTALS, 0);
   vars_comps_totals = mcmcModel.current_variables().shared_data().
     		      inactive_components_totals();

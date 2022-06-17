@@ -60,7 +60,7 @@ public:
 		      bool import_build_active_only);
   /// alternate constructor for coefficient import
   NonDPolynomialChaos(Model& model, const String& exp_import_file,
-		      short u_space_type);
+		      short u_space_type, short dfs_view);
 
   /// destructor
   ~NonDPolynomialChaos();

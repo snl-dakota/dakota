@@ -10,7 +10,7 @@
 //- Class:       ProbabilityTransformModel
 //- Description: Specialization of RecastModel to transform a sub-model to
 //-              u-space.
-//- Owner:       Brian Adams
+//- Owner:       Michael Eldred
 //- Checked by:
 //- Version: $Id$
 
@@ -202,7 +202,8 @@ private:
   // from higher level iteration
   //ShortArray secondaryADRVarMapTargets;
 
-  /// static pointer to this class for use in static callbacks
+  /// static pointer to an active instance of this class for use in
+  /// static function callbacks
   static ProbabilityTransformModel* ptmInstance;
 };
 

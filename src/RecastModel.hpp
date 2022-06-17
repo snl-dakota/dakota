@@ -59,6 +59,7 @@ public:
   RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 	      const SizetArray& vars_comps_total, const BitArray& all_relax_di,
 	      const BitArray& all_relax_dr, bool nonlinear_vars_mapping,
+	      const ShortShortPair& recast_vars_view,
 	      void (*variables_map)      (const Variables& recast_vars,
 					  Variables& sub_model_vars),
 	      void (*set_map)            (const Variables& recast_vars,
@@ -82,9 +83,10 @@ public:
   /// requires subsequent init_maps() call.
   RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	      const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
-	      const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
-	      size_t num_recast_secondary_fns, size_t recast_secondary_offset,
-	      short recast_resp_order);
+	      const BitArray& all_relax_dr,
+	      const ShortShortPair& recast_vars_view,
+	      size_t num_recast_primary_fns,  size_t num_recast_secondary_fns,
+	      size_t recast_secondary_offset, short recast_resp_order);
 
   /// Problem DB-based ctor, e.g., for use in subspace model; assumes
   /// mappings to be initialized later; only initializes based on sub-model
@@ -464,7 +466,7 @@ protected:
   /// initialize currentResponse from the passed size info
   void init_response(size_t num_recast_primary_fns, 
 		     size_t num_recast_secondary_fns, 
-		     short recast_resp_order, bool reshape_vars);
+		     short recast_resp_order);
 
   /// Reshape the RecastModel Response, assuming no change in variables
   /// or derivative information
@@ -473,7 +475,7 @@ protected:
 
   /// initialize userDefinedConstraints from the passed size info
   void init_constraints(size_t num_recast_secondary_fns,
-			size_t recast_secondary_offset, bool reshape_vars);
+			size_t recast_secondary_offset, bool copy_values);
 
   /// update current variables/bounds/labels/constraints from subModel
   void update_from_model(Model& model);
@@ -536,6 +538,9 @@ protected:
   /// a BoolDeque for each individual variable, since response gradients and
   /// Hessians are managed per function, not per variable.
   bool nonlinearVarsMapping;
+  /// Active and inactive views of the variables and constraints, which
+  /// may differ from subModel views
+  ShortShortPair varsView;
 
 private:
 

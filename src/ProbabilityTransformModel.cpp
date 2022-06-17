@@ -30,12 +30,14 @@ ProbabilityTransformModel* ProbabilityTransformModel::ptmInstance(NULL);
 
 ProbabilityTransformModel::
 ProbabilityTransformModel(const Model& x_model, short u_space_type,
+			//const ShortShortPair& recast_vars_view,
 			  bool truncate_bnds, Real bnd) :
   RecastModel(x_model), distParamDerivs(NO_DERIVS),
   truncatedBounds(truncate_bnds), boundVal(bnd)
-{
+ {
   modelType = "probability_transform";
   modelId   = recast_model_id(root_model_id(), "PROBABILITY_TRANSFORM");
+  varsView  = x_model.current_variables().view(); // keep same view for now
 
   Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
   SizetArray recast_vars_comps_total; // default: no change in cauv total
@@ -46,7 +48,7 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   const BitArray& active_vars = x_dist.active_variables();
   size_t i, num_active_rv = (active_vars.empty()) ?
     x_dist.random_variables().size() : active_vars.count();
-  // *** TO DO: generalize vars_map across multiple active types
+  // *** TO DO: generalize vars_map across multiple active types, views
   vars_map.resize(num_active_rv);
   for (i=0; i<num_active_rv; ++i)
     { vars_map[i].resize(1);         vars_map[i][0] = i; }
@@ -59,15 +61,13 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   BoolDequeArray nonlinear_resp_map(numFns, BoolDeque(1, false));
   const Response& x_resp = subModel.current_response();
   const SharedVariablesData& svd = subModel.current_variables().shared_data();
-  const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
-  const BitArray& all_relax_dr = svd.all_relaxed_discrete_real();
   short recast_resp_order = 1; // recast resp order to be same as original resp
   if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
 
   // initialize current{Variables,Response}, userDefinedConstraints
-  init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFns,
-	     0, 0, recast_resp_order);
+  init_sizes(recast_vars_comps_total, svd.all_relaxed_discrete_int(),
+	     svd.all_relaxed_discrete_real(), numFns, 0, 0, recast_resp_order);
   // initialize invariant portions of probability transform within mvDist
   // (requires currentVariables)
   initialize_transformation(u_space_type);

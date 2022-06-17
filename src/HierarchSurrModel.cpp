@@ -34,7 +34,7 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   size_t i, num_models = ordered_model_ptrs.size(),
            model_index = problem_db.get_db_model_node(); // for restoration
 
-  //const std::pair<short,short>& cv_view = currentVariables.view();
+  //const ShortShortPair& cv_view = currentVariables.view();
   orderedModels.resize(num_models);
   for (i=0; i<num_models; ++i) {
     problem_db.set_db_model_nodes(ordered_model_ptrs[i]);

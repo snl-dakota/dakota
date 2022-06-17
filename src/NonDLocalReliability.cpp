@@ -259,9 +259,10 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   if (mppSearchType) {
     SizetArray recast_vars_comps_total;  // default: empty; no change in size
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
+    const ShortShortPair& mpp_view = iteratedModel.current_variables().view();
     mppModel.assign_rep(std::make_shared<RecastModel>
 			(uSpaceModel, recast_vars_comps_total, all_relax_di,
-			 all_relax_dr, 1, 1, 0, recast_resp_order));
+			 all_relax_dr, mpp_view, 1, 1, 0, recast_resp_order));
     RealVector nln_eq_targets(1, false); nln_eq_targets = 0.;
     mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
 

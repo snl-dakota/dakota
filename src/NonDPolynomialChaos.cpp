@@ -305,7 +305,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     that import the PCE coefficients rather than compute them. */
 NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, const String& exp_import_file,
-		    short u_space_type):
+		    short u_space_type, short pce_view):
   NonDExpansion(POLYNOMIAL_CHAOS, model, -1, RealVector(), 0,
 		Pecos::NO_REFINEMENT, Pecos::NO_CONTROL, DEFAULT_COVARIANCE,
 		0., Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
@@ -331,8 +331,13 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
+  // retain dist bounds
+  // *** TO DO: including alternate view w/i Recast would allow prob transform
+  // *** to operate on inactive state prior to emulation.
+  // *** In ProbabilityTransformModel::initialize_distribution_types(),
+  // *** "inactive variables are not transformed" (u_types[i] = x_types[i])
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, uSpaceType)); // retain dist bounds
+    (iteratedModel, uSpaceType));//, pce_view)); // defer view change for now
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -348,8 +353,9 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   ShortArray asv(g_u_model.qoi(), 7); // for stand alone mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
-     g_u_model, pce_set, approx_type, exp_orders, corr_type, corr_order,
-     data_order, outputLevel, pt_reuse));
+    g_u_model, pce_set, /*pce_view,*/ approx_type, exp_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse));
+  //uSpaceModel.active_view(pce_view, false); // too far downstream...
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion

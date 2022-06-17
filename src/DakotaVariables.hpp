@@ -525,11 +525,16 @@ public:
   /// a deep variables copy for use in history mechanisms
   /// (SharedVariablesData uses a shallow copy by default)
   Variables copy(bool deep_svd = false) const;
+  /// a deep variables copy that shares an incoming SharedVariablesData
+  Variables copy(const SharedVariablesData& svd) const;
+  /// copy attributes from source to target representation (shared code
+  /// among copy() implementations)
+  void copy_rep(std::shared_ptr<Variables> source_vars_rep);
 
   /// returns variablesView
-  const std::pair<short,short>& view() const;
+  const ShortShortPair& view() const;
   /// defines variablesView from problem_db attributes
-  std::pair<short,short> get_view(const ProblemDescDB& problem_db) const;
+  ShortShortPair get_view(const ProblemDescDB& problem_db) const;
   /// overrides the active view
   void active_view(short view1);
   /// sets the inactive view based on higher level (nested) context
@@ -554,7 +559,7 @@ protected:
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
   Variables(BaseConstructor, const ProblemDescDB& problem_db,
-	    const std::pair<short,short>& view);
+	    const ShortShortPair& view);
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
@@ -1578,7 +1583,7 @@ inline SizetMultiArrayConstView Variables::all_discrete_real_variable_ids() cons
 { return shared_data().all_discrete_real_ids(0, adrv()); }
 
 
-inline const std::pair<short,short>& Variables::view() const
+inline const ShortShortPair& Variables::view() const
 { return shared_data().view(); }
 
 
@@ -1597,7 +1602,7 @@ inline bool Variables::is_null() const
 inline void Variables::build_views()
 {
   // called only from letters
-  const std::pair<short,short>& view = sharedVarsData.view();
+  const ShortShortPair& view = sharedVarsData.view();
   if (view.first  != EMPTY_VIEW)
     build_active_views();
   if (view.second != EMPTY_VIEW)

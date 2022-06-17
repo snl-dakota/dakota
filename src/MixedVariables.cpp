@@ -26,8 +26,7 @@ namespace Dakota {
     state variable types and continuous and discrete domain types are 
     distinct).  Most iterators/strategies use this approach. */
 MixedVariables::
-MixedVariables(const ProblemDescDB& problem_db,
-	       const std::pair<short,short>& view):
+MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
   Variables(BaseConstructor(), problem_db, view)
 {
   int start = 0;

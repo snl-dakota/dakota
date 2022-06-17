@@ -39,7 +39,7 @@ namespace Dakota {
     problems in ~Variables). */
 SharedVariablesDataRep::
 SharedVariablesDataRep(const ProblemDescDB& problem_db,
-		       const std::pair<short,short>& view):
+		       const ShortShortPair& view):
   variablesId(problem_db.get_string("variables.id")),
   variablesCompsTotals(NUM_VC_TOTALS, 0), variablesView(view), cvStart(0), 
   divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0),
@@ -56,7 +56,7 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
 
 
 SharedVariablesDataRep::
-SharedVariablesDataRep(const std::pair<short,short>& view,
+SharedVariablesDataRep(const ShortShortPair& view,
 		       const SizetArray& vars_comps_totals,
 		       const BitArray& all_relax_di,
 		       const BitArray& all_relax_dr):
@@ -73,7 +73,7 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
 
 
 SharedVariablesDataRep::
-SharedVariablesDataRep(const std::pair<short,short>& view,
+SharedVariablesDataRep(const ShortShortPair& view,
 		       const std::map<unsigned short, size_t>& vars_comps,
 		       const BitArray& all_relax_di,
 		       const BitArray& all_relax_dr):

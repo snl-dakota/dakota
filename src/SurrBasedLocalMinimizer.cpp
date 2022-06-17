@@ -212,9 +212,9 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
 
     approxSubProbModel.assign_rep(std::make_shared<RecastModel>(iteratedModel,
       recast_vars_map, recast_vars_comps_total, all_relax_di, all_relax_dr,
-      false, nullptr, set_recast, recast_primary_resp_map,
-      recast_secondary_resp_map, recast_offset, recast_resp_order,
-      nonlinear_resp_map, approx_subprob_objective_eval,
+      false, iteratedModel.current_variables().view(), nullptr, set_recast,
+      recast_primary_resp_map, recast_secondary_resp_map, recast_offset,
+      recast_resp_order, nonlinear_resp_map, approx_subprob_objective_eval,
       approx_subprob_constraint_eval));
 
     // these formulations have converted multiple objectives or
