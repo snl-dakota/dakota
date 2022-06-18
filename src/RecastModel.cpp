@@ -845,9 +845,10 @@ bool RecastModel::update_variables_from_model(Model& model)
   else {
     update_active_complement = false; // can use all view updates below
 
-    update_variable_values(model);
-    update_variable_bounds(model);
-    update_variable_labels(model);
+    update_all_variables(model);
+    //update_variable_values(model);
+    //update_variable_bounds(model);
+    //update_variable_labels(model);
 
     // uncertain variable distribution data
     // > deep copies were used previously for Pecos::DistributionParams
@@ -858,6 +859,7 @@ bool RecastModel::update_variables_from_model(Model& model)
     // > reassignments protected by smart ptr management
     // Note: becomes less important w/ broader use of ProbabilityTransformModel
     mvDist = subModel.multivariate_distribution(); // shared rep
+    // *** TO DO: update set of active_rv's if view has changed
 
     update_linear_constraints(model);
   }
@@ -866,31 +868,79 @@ bool RecastModel::update_variables_from_model(Model& model)
 }
 
 
-void RecastModel::update_variable_values(const Model& model)
+void RecastModel::update_all_variables(const Model& model)
 {
-  currentVariables.all_continuous_variables
-    (model.all_continuous_variables());
-  update_discrete_variable_values(model);
+  // Lacking a variableMapping, all-variable counts should be consistent
+  // regardless of recasting an active view
+  size_t num_acv = currentVariables.acv(), num_sm_acv = model.acv();
+  if (num_acv == num_sm_acv) {
+    currentVariables.all_continuous_variables(model.all_continuous_variables());
+    userDefinedConstraints.all_continuous_lower_bounds(
+      model.all_continuous_lower_bounds());
+    userDefinedConstraints.all_continuous_upper_bounds(
+      model.all_continuous_upper_bounds());
+    currentVariables.all_continuous_variable_labels(
+      model.all_continuous_variable_labels());
+  }
+  else if (num_acv - currentVariables.cv() == num_sm_acv - model.cv())
+    update_continuous_variables_active_complement_from_model(model);
+
+  update_all_discrete_variables(model);
 }
 
 
-void RecastModel::update_discrete_variable_values(const Model& model)
+void RecastModel::update_all_discrete_variables(const Model& model)
 {
-  currentVariables.all_discrete_int_variables
-    (model.all_discrete_int_variables());
-  currentVariables.all_discrete_string_variables
-    (model.all_discrete_string_variables());
-  currentVariables.all_discrete_real_variables
-    (model.all_discrete_real_variables());
+  // Lacking a variableMapping, all-variable counts should be consistent
+  // regardless of recasting an active view
+  size_t num_adiv = currentVariables.adiv(), num_sm_adiv = model.adiv();
+  if (num_adiv == num_sm_adiv) {
+    currentVariables.all_discrete_int_variables(
+      model.all_discrete_int_variables());
+    userDefinedConstraints.all_discrete_int_lower_bounds(
+      model.all_discrete_int_lower_bounds());
+    userDefinedConstraints.all_discrete_int_upper_bounds(
+      model.all_discrete_int_upper_bounds());
+    currentVariables.all_discrete_int_variable_labels(
+      model.all_discrete_int_variable_labels());
+  }
+  else if (num_adiv - currentVariables.div() == num_sm_adiv - model.div())
+    update_discrete_int_variables_active_complement_from_model(model);
+
+  size_t num_adsv = currentVariables.adsv(), num_sm_adsv = model.adsv();
+  if (num_adsv == num_sm_adsv) {
+    currentVariables.all_discrete_string_variables(
+      model.all_discrete_string_variables());
+    currentVariables.all_discrete_string_variable_labels(
+      model.all_discrete_string_variable_labels());
+  }
+  else if (num_adsv - currentVariables.dsv() == num_sm_adsv - model.dsv())
+    update_discrete_string_variables_active_complement_from_model(model);
+
+  size_t num_adrv = currentVariables.adrv(), num_sm_adrv = model.adrv();
+  if (num_adrv == num_sm_adrv) {
+    currentVariables.all_discrete_real_variables(
+      model.all_discrete_real_variables());
+    userDefinedConstraints.all_discrete_real_lower_bounds(
+      model.all_discrete_real_lower_bounds());
+    userDefinedConstraints.all_discrete_real_upper_bounds(
+      model.all_discrete_real_upper_bounds());
+    currentVariables.all_discrete_real_variable_labels(
+      model.all_discrete_real_variable_labels());
+  }
+  else if (num_adrv - currentVariables.drv() == num_sm_adrv - model.drv())
+    update_discrete_real_variables_active_complement_from_model(model);
 }
 
 
+/*
 void RecastModel::update_variable_bounds(const Model& model)
 {
   userDefinedConstraints.all_continuous_lower_bounds
     (model.all_continuous_lower_bounds());
   userDefinedConstraints.all_continuous_upper_bounds
     (model.all_continuous_upper_bounds());
+
   update_discrete_variable_bounds(model);
 }
 
@@ -912,6 +962,7 @@ void RecastModel::update_variable_labels(const Model& model)
 {
   currentVariables.all_continuous_variable_labels
     ( model.all_continuous_variable_labels());
+
   update_discrete_variable_labels(model);
 }
 
@@ -925,28 +976,21 @@ void RecastModel::update_discrete_variable_labels(const Model& model)
   currentVariables.all_discrete_real_variable_labels
     (model.all_discrete_real_variable_labels());
 }
+*/
 
 
-void RecastModel::update_linear_constraints(const Model& model)
+void RecastModel::
+update_variables_active_complement_from_model(const Model& model)
 {
-  if (model.num_linear_ineq_constraints()) {
-    userDefinedConstraints.linear_ineq_constraint_coeffs
-      (model.linear_ineq_constraint_coeffs());
-    userDefinedConstraints.linear_ineq_constraint_lower_bounds
-      (model.linear_ineq_constraint_lower_bounds());
-    userDefinedConstraints.linear_ineq_constraint_upper_bounds
-      (model.linear_ineq_constraint_upper_bounds());
-  }
-  if (model.num_linear_eq_constraints()) {
-    userDefinedConstraints.linear_eq_constraint_coeffs
-      (model.linear_eq_constraint_coeffs());
-    userDefinedConstraints.linear_eq_constraint_targets
-      (model.linear_eq_constraint_targets());
-  }
+  update_continuous_variables_active_complement_from_model(model);
+  update_discrete_int_variables_active_complement_from_model(model);
+  update_discrete_string_variables_active_complement_from_model(model);
+  update_discrete_real_variables_active_complement_from_model(model);
 }
 
 
-void RecastModel::update_variables_active_complement_from_model(Model& model)
+void RecastModel::
+update_continuous_variables_active_complement_from_model(const Model& model)
 {
   // Note: this implementation works for different variable views so long
   // as the number of variables within the variablesMapping does not change
@@ -956,26 +1000,18 @@ void RecastModel::update_variables_active_complement_from_model(Model& model)
 
   short active_view = currentVariables.view().first,
      sm_active_view = model.current_variables().view().first;
-  bool same_active_view = (active_view == sm_active_view);
-  int cv_offset = 0, div_offset = 0, dsv_offset = 0, drv_offset = 0, offset_i;
-  if (same_active_view) {
-    cv_offset  = model.cv()  - currentVariables.cv(); // > 0 if dim reduction
-    div_offset = model.div() - currentVariables.div();
-    dsv_offset = model.dsv() - currentVariables.dsv();
-    drv_offset = model.drv() - currentVariables.drv();
-  }
-  else if (currentVariables.acv()  != model.acv()  ||
-	   currentVariables.adiv() != model.adiv() ||
-	   currentVariables.adsv() != model.adsv() ||
-	   currentVariables.adrv() != model.adrv()) {
+  int cv_offset = 0, offset_i;
+  if (active_view == sm_active_view)
+    cv_offset = model.cv() - currentVariables.cv(); // > 0 if dim reduction
+  else if (currentVariables.acv() != model.acv()) {
     // Disallow change in both view and active size
-    Cerr << "Error: recasting of view and active sizes not supported in "
-	 << "RecastModel::update_variables_active_complement_from_model()."
-	 << std::endl;
+    Cerr << "Error: recasting of both view and active sizes not supported in "
+	 << "RecastModel::update_continuous_variables_active_complement_from_"
+	 << "model()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
   // else retain offsets = 0
-    
+
   size_t i, cv_begin = currentVariables.cv_start(),
     num_cv  = currentVariables.cv(), cv_end = cv_begin + num_cv,
     num_acv = currentVariables.acv();
@@ -997,8 +1033,33 @@ void RecastModel::update_variables_active_complement_from_model(Model& model)
     userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[offset_i], i);
     currentVariables.all_continuous_variable_label(acv_labels[offset_i], i);
   }
+}
 
-  size_t div_begin = currentVariables.div_start(),
+
+void RecastModel::
+update_discrete_int_variables_active_complement_from_model(const Model& model)
+{
+  // Note: this implementation works for different variable views so long
+  // as the number of variables within the variablesMapping does not change
+  // (e.g. one-to-one or active-to-active).
+  // > cases like SubspaceModel can compute an offset for {c,di,ds,dr}v_end
+  //   if views are the same
+
+  short active_view = currentVariables.view().first,
+     sm_active_view = model.current_variables().view().first;
+  int div_offset = 0, offset_i;
+  if (active_view == sm_active_view)
+    div_offset = model.div() - currentVariables.div();
+  else if (currentVariables.adiv() != model.adiv()) {
+    // Disallow change in both view and active size
+    Cerr << "Error: recasting of both view and active sizes not supported in "
+	 << "RecastModel::update_discrete_int_variables_active_complement_"
+	 << "from_model()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  // else retain offsets = 0
+
+  size_t i, div_begin = currentVariables.div_start(),
     num_div  = currentVariables.div(), div_end = div_begin + num_div,
     num_adiv = currentVariables.adiv();
   const IntVector& adiv = model.all_discrete_int_variables();
@@ -1021,8 +1082,34 @@ void RecastModel::update_variables_active_complement_from_model(Model& model)
 							i);
     currentVariables.all_discrete_int_variable_label(adiv_labels[offset_i], i);
   }
+}
 
-  size_t dsv_begin = currentVariables.dsv_start(),
+
+void RecastModel::
+update_discrete_string_variables_active_complement_from_model(
+  const Model& model)
+{
+  // Note: this implementation works for different variable views so long
+  // as the number of variables within the variablesMapping does not change
+  // (e.g. one-to-one or active-to-active).
+  // > cases like SubspaceModel can compute an offset for {c,di,ds,dr}v_end
+  //   if views are the same
+
+  short active_view = currentVariables.view().first,
+     sm_active_view = model.current_variables().view().first;
+  int dsv_offset = 0, offset_i;
+  if (active_view == sm_active_view)
+    dsv_offset = model.dsv() - currentVariables.dsv();
+  else if (currentVariables.adsv() != model.adsv()) {
+    // Disallow change in both view and active size
+    Cerr << "Error: recasting of both view and active sizes not supported in "
+	 << "RecastModel::update_discrete_string_variables_active_complement_"
+	 << "from_model()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  // else retain offsets = 0
+
+  size_t i, dsv_begin = currentVariables.dsv_start(),
     num_dsv  = currentVariables.dsv(), dsv_end = dsv_begin + num_dsv,
     num_adsv = currentVariables.adsv();
   StringMultiArrayConstView adsv = model.all_discrete_string_variables();
@@ -1038,8 +1125,33 @@ void RecastModel::update_variables_active_complement_from_model(Model& model)
     currentVariables.all_discrete_string_variable_label(adsv_labels[offset_i],
 							i);
   }
+}
 
-  size_t drv_begin = currentVariables.drv_start(),
+
+void RecastModel::
+update_discrete_real_variables_active_complement_from_model(const Model& model)
+{
+  // Note: this implementation works for different variable views so long
+  // as the number of variables within the variablesMapping does not change
+  // (e.g. one-to-one or active-to-active).
+  // > cases like SubspaceModel can compute an offset for {c,di,ds,dr}v_end
+  //   if views are the same
+
+  short active_view = currentVariables.view().first,
+     sm_active_view = model.current_variables().view().first;
+  int drv_offset = 0, offset_i;
+  if (active_view == sm_active_view)
+    drv_offset = model.drv() - currentVariables.drv();
+  else if (currentVariables.adrv() != model.adrv()) {
+    // Disallow change in both view and active size
+    Cerr << "Error: recasting of both view and active sizes not supported in "
+	 << "RecastModel::update_discrete_real_variables_active_complement_"
+	 << "from_model()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  // else retain offsets = 0
+
+  size_t i, drv_begin = currentVariables.drv_start(),
     num_drv  = currentVariables.drv(), drv_end = drv_begin + num_drv,
     num_adrv = currentVariables.adrv();
   const RealVector& adrv = model.all_discrete_real_variables();
@@ -1065,7 +1177,26 @@ void RecastModel::update_variables_active_complement_from_model(Model& model)
 }
 
 
-void RecastModel::update_response_from_model(Model& model)
+void RecastModel::update_linear_constraints(const Model& model)
+{
+  if (model.num_linear_ineq_constraints()) {
+    userDefinedConstraints.linear_ineq_constraint_coeffs(
+      model.linear_ineq_constraint_coeffs());
+    userDefinedConstraints.linear_ineq_constraint_lower_bounds(
+      model.linear_ineq_constraint_lower_bounds());
+    userDefinedConstraints.linear_ineq_constraint_upper_bounds(
+      model.linear_ineq_constraint_upper_bounds());
+  }
+  if (model.num_linear_eq_constraints()) {
+    userDefinedConstraints.linear_eq_constraint_coeffs(
+      model.linear_eq_constraint_coeffs());
+    userDefinedConstraints.linear_eq_constraint_targets(
+      model.linear_eq_constraint_targets());
+  }
+}
+
+
+void RecastModel::update_response_from_model(const Model& model)
 {
   if (primaryRespMapping) {
     // response mappings are in opposite direction from variables

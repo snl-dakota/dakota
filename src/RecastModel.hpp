@@ -482,23 +482,33 @@ protected:
   /// update active variables/bounds/labels from subModel
   virtual bool update_variables_from_model(Model& model);
   /// update all variable values from passed sub-model
-  void update_variable_values(const Model& model);
+  void update_all_variables(const Model& model);
   /// update discrete variable values from passed sub-model
-  void update_discrete_variable_values(const Model& model);
-  /// update all variable bounds from passed sub-model
-  void update_variable_bounds(const Model& model);
-  /// update discrete variable bounds from passed sub-model
-  void update_discrete_variable_bounds(const Model& model);
-  /// update all variable labels from passed sub-model
-  void update_variable_labels(const Model& model);
-  /// update discrete variable labels from passed sub-model
-  void update_discrete_variable_labels(const Model& model);
+  void update_all_discrete_variables(const Model& model);
+
+  /// update complement of active variables/bounds/labels from subModel
+  void update_variables_active_complement_from_model(const Model& model);
+  /// update complement of active continuous variables/bounds/labels
+  /// from subModel
+  void update_continuous_variables_active_complement_from_model(
+    const Model& model);
+  /// update complement of active discrete int variables/bounds/labels
+  /// from subModel
+  void update_discrete_int_variables_active_complement_from_model(
+    const Model& model);
+  /// update complement of active discrete string variables/bounds/labels
+  /// from subModel
+  void update_discrete_string_variables_active_complement_from_model(
+    const Model& model);
+  /// update complement of active discrete real variables/bounds/labels
+  /// from subModel
+  void update_discrete_real_variables_active_complement_from_model(
+    const Model& model);
+
   /// update linear constraints from passed sub-model
   void update_linear_constraints(const Model& model);
-  /// update complement of active variables/bounds/labels from subModel
-  void update_variables_active_complement_from_model(Model& model);
   /// update labels and nonlinear constraint bounds/targets from subModel
-  void update_response_from_model(Model& model);
+  void update_response_from_model(const Model& model);
   /// update just secondary response from subModel
   void update_secondary_response(const Model& model);
 

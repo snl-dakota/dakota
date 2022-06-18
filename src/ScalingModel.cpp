@@ -256,9 +256,10 @@ bool ScalingModel::update_variables_from_model(Model& model)
     // number of variables, so pull up all updates, then override
     // select values/bounds.
 
-    update_variable_values(model);
-    update_variable_bounds(model);
-    update_variable_labels(model);
+    update_all_variables(model);
+    //update_variable_values(model);
+    //update_variable_bounds(model);
+    //update_variable_labels(model);
 
     // the mvDist is already copied (has it's own rep) if needed in ctor
     //mvDist = subModel.multivariate_distribution();

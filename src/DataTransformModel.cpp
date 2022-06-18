@@ -237,9 +237,10 @@ void DataTransformModel::update_from_subordinate_model(size_t depth)
     update_cv_skip_hyperparams(subModel);
 
     // for discrete, update all
-    update_discrete_variable_values(subModel);
-    update_discrete_variable_bounds(subModel);
-    update_discrete_variable_labels(subModel);
+    update_all_discrete_variables(subModel);
+    //update_discrete_variable_values(subModel);
+    //update_discrete_variable_bounds(subModel);
+    //update_discrete_variable_labels(subModel);
 
     // TODO: mvDist likely needs size change for hyper-parameters. Its
     // bounds need updating too; above variable updates bypass mvDist
@@ -251,8 +252,7 @@ void DataTransformModel::update_from_subordinate_model(size_t depth)
     expand_linear_constraints(subModel);
 
   }
-  else {
-    // base class implementation should suffice for variables
+  else { // base class implementation should suffice for variables
     bool update_active_complement = update_variables_from_model(subModel);
     if (update_active_complement)
       update_variables_active_complement_from_model(subModel);
