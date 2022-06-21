@@ -8,6 +8,9 @@ if(DAKOTA_ENABLE_TESTS AND Python_Interpreter_FOUND AND
   set_property(TEST dakota_interfacing_test PROPERTY LABELS Unit)
 endif()
 
-install(DIRECTORY "dakota" DESTINATION "share/dakota/Python/")
+install(DIRECTORY "dakota" DESTINATION "share/dakota/Python/"
+  PATTERN "__pycache__" EXCLUDE
+  PATTERN "*.py[cdo]" EXCLUDE
+  )
 install(PROGRAMS "mpitile" DESTINATION "bin/")
 
