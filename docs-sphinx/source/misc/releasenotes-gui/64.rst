@@ -1,0 +1,9 @@
+.. _releasenotes-gui-64:
+
+""""""""""""""""""""""""""""""""""""
+Version 6.4 - Arctic Abyss (2016/05)
+""""""""""""""""""""""""""""""""""""
+
+*(aka GUI Version 0.1)*
+
+The first experimental release of Dakota GUI was created for Dakota version 6.4, but was not advertised.

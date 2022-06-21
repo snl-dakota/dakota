@@ -5,7 +5,7 @@ Developing Dakota
    :maxdepth: 1
    
    devenvironment
-   setupgit
+   gitforversioncontrol
    writingcode
    testingcode
    writingdocs

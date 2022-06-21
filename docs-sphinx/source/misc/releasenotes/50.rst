@@ -1,0 +1,112 @@
+.. _releasenotes-50:
+
+""""""""""""""""""""""""
+Version 5.0 (2009/12/21)
+""""""""""""""""""""""""
+
+**Highlights**
+
+- DAKOTA changes license to the GNU Lesser General Public License to enable library mode users, incorporating license changes for several TPLs
+- All new JAGUAR 2.0 graphical user interface for creating, editing, and running DAKOTA input files (BSD-like license)
+- Additional discrete range and discrete set types within design, uncertain, and state variables. New types supported by parameter studies, nondeterministic sampling, JEGA, and COLINY.
+- Anisotropic sparse grids, numerically-generated orthogonal polynomials, and improved expansion tailoring for stochastic expansion UQ methods
+- New methods for epistemic and mixed aleatory-epistemic uncertainty quantification: local/global interval estimation and local/global evidence.
+- Creation and management of evaluation working directories
+- SNL: DAKOTA modules on compute clusters (module avail dakota)
+
+**Usability/Core Execution**
+
+- JAGUAR 2.0 graphical user interface, based on Eclipse Workbench, with text- and graphical-based editing, templates, sensitivity analysis wizard, and error checking. Available via separate download after registering for DAKOTA download.
+- Capability to specify working directories, template directories, and lightweight linking for system and fork interfaces.
+- DAKOTA input files can use Matlab-style sequence notation (L:S:U and beyond) to specify variable ranges; improved tolerance for whitespace in input files
+- Improved DAKOTA + application parallelism examples; new asynchronous local evaluation static scheduling for improved parallel tiling on clusters.
+- Pre-run (with optional variables output) and post-run (with variables/responses input) modes supported by sampling, paramter study, and DACE methods
+- Examples of Matlab and Python interfaces
+- Automated cleanup of DAKOTA temporary files on unexpected exit
+
+**Variables**
+
+- Refactor of Variables and Constraints hierarchies to manage continuous, discrete integer, and discrete real domains among design, aleatory uncertain, epistemic uncertain, and state types.
+
+  - Additional discrete design variable types: discrete design integer range, discrete design integer set, discrete design real set
+  - New discrete uncertain distibutions: poisson, binomial, negative binomial, geometric, hypergeometric
+  - Additional discrete state variable types: discrete state integer range, discrete state integer set, discrete state real set
+
+- Updates to specification of continuous and discrete histograms
+- Alternate specification for lognormal using lambdas and zetas
+
+**Methods (general)**
+
+- New capability to perform parameter studies and sampling over discrete variables. New discrete variable types also supported in JEGA and COLINY.
+- DACE and parameter study classes (DDACE, FSUDACE, and multi-dimensional parameter study) can have correlations calculated and printed in addition to sampling methods
+- Improved accuracy and robustness in correlation computations
+- PSUADE: use updated (Campolongo 2007) sample generation scheme to improve space-filling properties
+- Improved EGO convergence controls (based on nearest neighbor)
+- Beta capabilities:
+
+  - wrapper class for LANL's GPMSA code (Bayesian calibration)
+  - importance sampling capability
+  - nonlinear conjugate gradient optimization solver using Trilinos vector-matrix utilities
+  
+- Bug fixes:
+
+  - hang in DDACE orthogonal array LHS
+  - OPT++ NIP methods not respecting bound constraints
+
+- New example problems for multifidelity OUU (MVFOSM as low fidelity UQ and stochastic expansion as high fidelity UQ), epistemic UQ, mixed aleatory-epistemic UQ, discrete sampling and parameter studies, etc.
+
+**Uncertainty Quantification (UQ) Capabilities:**
+
+- Stochastic expansions (polynomial chaos expansion (PCE) and stochastic collocation (SC)):
+
+  - Simplified controls for PCE: expansion formulation now inferred or estimated from quadrature_order or sparse_grid_level specifications. Automatic expansion tailoring minimizes performance loss due to poor expansion/integration synchronization.
+  - Addition of numerically-generated orthogonal polynomials for generating optimal basis for non-Askey distribution types (uses Gauss-Wigert or discretized Stieltjes procedures for polynomial recursion coefficients in combination with Golub-Welsch for Gauss point/weight computation)
+  - Addition of analytic variance-based decomposition for global sensitivity analysis using method of Sobol indices
+  - Addition of analytic covariance among multiple response functions.
+  - Addition of anisotropic Smolyak sparse grids, with user-supplied dimension preference.
+  - Revision of Gaussian quadrature rules within sparse grids to use linear growth, providing finer grain control and more uniform integrand coverage.
+  - PCE customizations for sparse grids: exclusive usage of linear growth rules (no Clenshaw-Curtis or Gauss-Patterson), total-order expansions for isotropic, custom expansion for anisotropic.
+  - Addition of Askey and Wiener basis polynomial over-rides.
+  - Modified variable correlation logic to revert to Wiener expansions for de-correlation as needed on a per-variable basis.
+  - all_variables mode now includes epistemic uncertain variables (previously design and state only) using a Legendre basis.
+
+- Epistemic UQ methods:
+
+  - Refactor of NonDInterval hierarchy to generalize and incorporate new methods.
+  
+    - Evidence: new global (LHS or EGO) and local (SQP or NIP) methods to calculate belief and plausibility in evidence theory calculations. Removed dependence on legacy Fortran package.
+    - Interval estimation: new global (LHS or EGO) and local (SQP or NIP) methods to calculate response output intervals.
+
+  - Extension of active Variables/Constraints views to support aleatory, epistemic, or aggregated aleatory-epistemic uncertain views.
+
+- Mixed aleatory-epistemic UQ methods:
+
+  - New nested approaches (e.g. second-order probability, mixed evidence) where the outer loop (e.g. interval estimation or evidence) can leverage analytic moments and their sensitivities with respect to epistemic parameters.
+
+**Framework Enhancements:**
+
+- Eliminated dependence on GSL in favor of Boost (to eliminate GNU GPL dependency)
+- Fully deployed Teuchos for all numerical data types. Boost and STL are used for all bookkeeping types.
+- Better out-of-source (VPATH) builds and documentation, including management of Boost and Teuchos
+- Switched from RNUM2 to Boost MT19937 random number generator for longer period, with run-time selection option
+- Deployed Boost multi-index containers to evaluation queue management, supporting multiple indexing options for optimized lookups.
+- Lightweight active/inactive data views implemented with Teuchos and Boost multi-array to eliminate deep data copies.
+- Updates to third-party libraries: JEGA, PSUADE, AMPL, Boost, Pecos, Teuchos
+- Minimal data mode for variables and responses omits labels, types, ids in some contexts for better scalability
+- Unified bounds checking for debugging and reduced overhead in optimized builds
+
+**Miscellaneous:**
+
+- Binary distributions for Mac OS X and Cygwin, including library dependencies
+- Better detection of MPICH2 and shmem communicators
+- Automatic syncronization of DAKOTA input specification help docs to JAGUAR
+- Surfpack: improved random seed management for repeatability.
+- Better handling of numerical comparisons on 32-bit
+- Finite differencing honors variable bounds; more efficient finite difference Hessians
+- PSUADE generally available under LGPL
+- Surfpack and LHS relicensed under LGPL
+- DLL API improvements for re-entry, error handling, get/set options
+- ModelCenter, MATLAB, and Python interface updates to latest API
+- Updates to Matlab memory management
+- HTTP-based usage tracking (disabled by default; currently used Sandia internally only)
+- Windows: use spawn as alternative to fork

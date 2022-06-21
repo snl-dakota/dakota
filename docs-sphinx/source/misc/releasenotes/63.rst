@@ -1,0 +1,147 @@
+.. _releasenotes-63:
+
+"""""""""""""""""""""
+Version 6.3 (2015/11)
+"""""""""""""""""""""
+
+**Highlights**
+
+- Numerous algorithmic and usability enhancements to Bayesian calibration capabilities.
+- Gaussian process models now exportable in human-readable format.
+- Incremental LHS now works for all discrete variable types including histograms and discrete sets. Support for string variables was also extended to the JEGA, COLIN, and NOMAD optimizers.
+- Updated training materials made available in the Community->Training section of the Dakota website.
+- Improvements in computation and consistency of reporting of PDFs and CDFs across UQ methods.
+- New interface keyword ‘labeled’ enables more rigorous results file validation and error reporting.
+
+**Uncertainty Quantification (UQ)**
+
+- UQ Statistics:
+
+  - Improved computation of PDF values and empirical histogram generation in sampling methods (also PCE/SC and L/G reliability, IS, POF).    
+  - Generalize nonD stats compute/print to accommodate response and variable ensembles
+  - Local reliability: improved computation of importance factors. 
+
+**Optimization and Calibration**
+
+- Increased support for discrete variables
+
+  - All types of discrete variables (integer, real, string) now mapped through to and optimized over by all evolutionary algorithms (soga, moga, coliny_ea) and asynchronous pattern search (asynch_pattern_search)
+  - Experimental branch-and-bound capability added to optimize over mixed continuous-discrete variables when discrete variables can be relaxed
+
+- Consistent support for multiple experiments across least squares calibration, optimizer, and Bayesian methods.  Significant refactor of data and scaling transformations to allow options to work in combination with each other.
+
+- Bayesian calibration algorithms and architecture:
+
+  - Surrogate adaptive preconditioned MCMC using Hessian (or gradient) of simulation or emulator
+
+    - New Hessian preconditioning based on eigenvalue truncation
+	
+  - MAP pre-solve option using deterministic optimizer, including for error hyper-parameters
+  - QUESO now works in when invoking Dakota in serial or parallel execution
+  - Significant improvements to file I/O and final results reporting, including ability to perform forward UQ based on a posterior chain.
+  - Consistent support for PCE regression with least interpolation across Bayesian methods
+  - Observation errors
+  
+    - When providing experimental data, users can also specify the covariance of the associated observation error process
+    - Users may calibrate one or more hyper-parameters multiplying the covariance of the error, where error model hyper-parameters have inverse gamma prior
+	
+  - Update to QUESO v0.54
+  
+- Field data use in calibration: 
+
+  - Changed the way coordinates are read for simulation field responses to be similar to the way they are specified for experimental field data
+  - Now, specify “read_field_coordinates” to read the coordinate file for simulation data, with the file name in the format of “response_descriptor.coords.”
+  - Improved error handling when reading covariance data for the errors in experimental observations
+
+**Methods (general)**
+
+- Implemented new Bootstrap process and the Luo/Li 2015 “ladle” diagnostic to help automatically decide how many principal directions to include in the reduced space model.  Added a new simple verification problem with a known randomly generated subspace of user-controlled size. 
+- Incremental LHS now works for all discrete variable types including histograms and discrete sets. Leverages new RandomVariable capabilities in Pecos.
+- Voronoi Decomposition:
+
+  - Improved domain decomposition capabilities of global surrogate models. Models based on polynomial regression can now use an integer basis order (0, 1, 2, 3 …) as well as classically defined keywords (linear, quadratic, cubic). 
+  - Domain-decomposed global surrogate models can now take advantage of derivatives' information (gradients/Hessians), if available.
+
+**Framework**
+
+*Input/Output*
+
+- Global I/O generalizations to distinguish point sets: import_build_points_file (training points upon which to build an approximation), export_approx_points_file (prediction points from an approximation or surrogate model), import_challenge_points_file (points at which to evaluate the surrogate model)
+
+  - Clarify and standardize existing I/O for NonDBayesCalibration
+  
+    - Remove special option for surrogate point export
+    - Add support for build point import to PCE and SC, consistent with GP
+    - Ensure consistency in PCE spec among QUESO, DREAM, WASABI
+	
+  - Exports acceptance chain in user space
+  - Additional chain statistics added
+  - QUESO output directory renamed to QuesoDiagnostics and better described
+
+- Forward propagation of arbitrary sample sets
+
+  - File import_approx_points_file added for PCE/SC allowing evaluation of user-specified point sets on the surrogate model
+  - Added format support and test coverage in PCE/SC
+
+*Variables*
+
+Add new RandomVariable components in Pecos to manage probability distributions.   Use the new code to improve incremental LHS and to use log prior values and Hessians in QUESO Bayesian calibration.
+
+*Build System / TPLs*
+
+- LHS: fix compile error on array sizes, fix bug in RNG precision
+- Surfpack Boost serialization bug with newer compilers.
+- Suppress Boost signals deprecation warning in Acro
+
+**User Experience**
+
+- Top-level method controls (such as max_iterations, convergence_tolerance) are now properly associated in dakota.xml with the methods that support them, reducing user input errors/surprises.  Reference manual now generated directly from dakota.xml, including flowing default values and more helpful alternation group labels.
+- Surrogate Model Export
+
+  - Can now export surfpack gaussian process models in “algebraic” format (augmenting existing ability to export polynomials, neural networks, and radial basis functions)
+  - Full support for output options with filename to text, binary, algebraic file/console
+
+- Update training materials (slides, examples, exercises) to reflect a more analyst-centric view and to address difficulties encountered by new users. Added training materials to the Dakota website.
+- Improved validation of results files
+
+  - Increased clarity of results file-related error messages
+  - New interface keyword ‘labeled’ enables stricter checking and more verbose error reporting for results files; Requires that function values be correctly labeled with their descriptors
+  - Variable and response descriptors no longer permitted to contain whitespace or to resemble floating point numbers
+
+- ENH: dprepro allows c-style format specifiers on a per-tag basis
+- Removed duplicate user manual tests and automatically generate user manual examples in the User's Manual.
+
+**Miscellaneous Enhancements**
+
+*Architecture*
+
+- ENH: String variables now available in direct interface, together with a textbook string variables tester
+- ENH: Work directories are now uniquely tagged to work with concurrent methods in MPI mode
+- ENH: Acro and DDACE cmake config files moved to new directory to better integrate with CASL VERA
+
+*Examples / Tests*
+
+- Improvements to built-in test drivers
+
+  - Bayes linear tester for testing correctness of inferred posterior parameter distributions.
+  - Flexibility in cantilever testers, added two higher dimensional rosenbrock:  generalized (sums of coupled 2-D Rosenbrock functions in the objective) and extended (sums of uncoupled 2-D Rosenbrock functions).
+  - Damped harmonic oscillator test driver: Returns an analytical time-dependent solution of a damped harmonic oscillator. The problem takes as input 1-6 random variables and returns the solution at a pre-specified number of equidistant time points.
+  - text_book function extended to accept an arbitrary number of discrete string variables.
+  - 1D (spatial) diffusion equation with random coefficients. The problem takes as input d>1 random variables which are coefficients of a KLE like diffusivity field and returns the spatial solution at a pre-specified number of equidistant spatial locations.
+
+- Improvements to cross-platform test performance
+
+  - Changed 30 tests from fork/system to direct interface to reduce testing time and cross-platform differences
+  - Removed 36 duplicate user manual tests
+  - 58 cross-platform improvements and 26 small regressions in eval counts
+
+**Miscellaneous Bug Fixes**
+
+- BUG: COBYLA optimization was ignoring max fn evals
+- BUG: COLINY Beta supports integer domains
+- BUG: patches Teuchos SerialSymDenseMatrix copy constructor
+- BUG: communicator init/set/free would fail when numerical sample integration requested, but no levels specified.
+- BUG: Variable scaling now works with multistart methods.
+- BUG: DDACE and post=run needn't require a seed; verified all post-run
+
+**Known Limitations**

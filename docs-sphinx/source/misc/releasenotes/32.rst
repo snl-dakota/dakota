@@ -1,0 +1,90 @@
+.. _releasenotes-32:
+
+""""""""""""""""""""""""
+Version 3.2 (2004/07/21)
+""""""""""""""""""""""""
+
+**Iterative methods**
+
+- Optimization:
+
+  - Initial release of JEGA: single-objective and multiobjective genetic algorithms supporting mixed variables and general constraints. This capability is in a beta release state (stable and undergoing minor refinements).
+  - Initial release of COLINY: next generation of SGOPT including new APPS and DIRECT algorithms. This capability is in an alpha release state (still stabilizing).
+  - Updated versions of SGOPT, PICO, UTILIB, and OPT++. OPT++ version 2.2 adds limited-memory BFGS for quasi-Newton and disaggregated Hessian nonlinear interior-point methods for constrained Gauss-Newton.
+  - Extensions to optimizers for improved tracking of final solutions in multiobjective optimization problems. Single-objective optimizers, multiobjective optimizers, and least squares solvers are now standardized on reporting the full granularity of results (all objectives or all least squares terms). In cases where a single-objective optimizer is used to solve a multiobjective or least squares problem (via an externally-applied multiobjective or Gauss-Newton reduction), a database search is used to recover the full granularity of data.
+
+- Parameter estimation:
+
+  - New NL2SOL nonlinear least squares solver. This algorithm provides a new capability for problems with large residuals at the solution (i.e., the Gauss-Newton approximation is inaccurate).
+  
+- Uncertainty quantification:
+
+  - New f90 LHS library now distributed with DAKOTA.
+  - New sampling method statistics: simple correlations (input-input, input-output, and output-output) and partial correlations (input-output) for raw and rank data.
+  - Extended reliability methods supporting the reliability index approach (RIA) and the performance measure approach (PMA). These approaches support the use of linearizations in x-space or u-space centered at the mean values (x-/u-space AMV variants), iterated linearizations in x-space or u-space centered at the most probable point estimate (x-/u-space AMV+ variants), and no linearizations (FORM variant). This increases the number of available reliability methods from 4 to 11. The RIA approaches are used for computing probability levels that correspond to user-selected response levels (forward reliability analysis), and the PMA approaches are used for computing the response levels that correspond to user-selected probability levels (inverse reliability analysis). Additional features include:
+
+    - support of NPSOL sequential quadratic programming or OPT++ nonlinear interior point methods for solving the RIA/PMA most probable point searches. With the addition of OPT++ support, DAKOTA's reliability methods are now available to users lacking NPSOL licenses.
+    - analytic objective/constraint gradients are now supported within all NPSOL/OPT++ RIA/PMA evaluation functions.
+    - warm starts are employed for the linearization point and optimizer initial guess for the next AMV+ iteration increment, for the next response/probability/reliability level, or for the next design variable values. In some cases, projections are used to avoid premature convergence (due to KKT condition satisfaction).
+	
+  - UQ standardization: consistent support for response (z), probability (p), and reliability (beta) level specifications in all sampling, reliability, and polynomial chaos methods. Mappings can now be z->p, z->beta, p->z, or beta->z, and the z/p/beta levels may now be mixed within the specifications for each response function. Probabilities and reliabilities may now correspond to either cumulative or complementary cumulative distribution functions (CDF/CCDF). Specific extensions required for standardization include:
+  
+    - the Mean Value reliability method now supports z/p/beta level calculations (previously, only response mean and standard deviation estimates were supported).
+    - MPP search-based reliability methods now support multiple response functions and all z->p/beta and p/beta->z mappings (previously, only z->p mappings for a single response function were supported). The new z->beta mappings are especially important for RBDO since beta is more well-behaved and well-scaled than p for use in optimization constraints.
+    - sampling/PCE methods have added support for p->z, z->beta, and beta->z for CDF/CCDF probabilities/reliabilities (previously, only a single z->p CCDF mapping per response function was supported). The reliability index beta is defined for sampling methods as the number of standard deviations separating the mean from the target response level. This gives an alternative metric for resolving low probabilities with sampling methods for use in OUU.
+    - lognormal distribution parameters have now been standardized within sampling and reliability methods.
+	
+  - Parameter studies/design of experiments:
+  
+    - Addition of a new base class, Dakota::PStudyDACE, which consolidates previously replicated code between parameter study and design of experiments iterators.
+
+**Strategies**
+
+ - Surrogate-based optimization (SBO)
+ 
+   - New hybrid penalty/filter logic eliminates erroneous rejection of SBO iterates. In particular, the penalty parameter is rescaled so as to accept iterates with reductions in constraint violation (penalty levels must increase monotonically). This is less restrictive than a pure penalty approach but more restrictive than a pure filter approach. A pure filter approach will be implemented soon.
+   - New 2nd-order additive and multiplicative local corrections and new 2nd-order combined/multipoint corrections have been added. Improves convergence for SBO employing hierarchical surrogates.
+   - Enhancements to trust region ratio logic and soft/hard convergence controls. The hard convergence check now calculates a projected gradient norm in the presence of active bound constraints.
+   - SBO now overrides the default active set vector within the DACE model. This is important when a specification of 1st/2nd derivative information is needed to support higher order corrections, but the higher order data is not needed for every DACE evaluation in a global surrogate build.
+   - The Taylor series approximation has been extended to automatically use a 2nd-order series whenever analytic Hessians are specified in the truth model response specification.
+   
+ - Optimization under uncertainty (OUU)
+ 
+   - Efficiency of trust-region surrogate-based OUU algorithms has been enhanced. In addition, lower-level approximations can now be temporarily bypassed when performing "truth" verifications across multiple surrogate levels.
+   - New bi-level reliability-based design optimization (RBDO) capabilities. These RBDO methods employ warm started reliability analyses (initial MPP search initial guess and linearization point).
+   - Model calibration under uncertainty: OUU formulations involving least squares data sets are now supported in addition to optimization data sets.
+
+**Facilities**
+
+ - Utilities:
+ 
+   - Graphics extensions for better visualization of SBO and reliability analysis results. Reliability analyses now provide CDF/CCDF plots, which required 2D plotting extensions to admit general x-y plotting (previously restricted to x axis counters), log scale for either/both axes (only y axis supported previously), multiple data sets, and plot markers with variable anchors.
+   - DPREPRO now supports assignments involving expressions and precedence rules for duplicate assignments (allowing default template file assignments to be overridden by parameters file values).
+   - Restart utility extended to support active/inactive variables, response tags, sorting across multiple interfaces, and STL iterator-based list traversals.
+   - DAKOTA library mode extended with improved support for publishing new derived "letter" classes (instantiated outside of DAKOTA) to existing "envelope" class hierarchies.
+   
+ - General enhancements:
+ 
+   - New "Dakota" namespace shortens many DAKOTA class names and avoids name clashes.
+   - utilib::PackBuffer replaced with Dakota::MPIPackBuffer. This eliminates the dependence of DAKOTA MPI executables on UTILIB which had been causing problems for AIX builds.
+   - Redesign and clean up of iterator classes employing function pointer designs. Migrated from a design in which many static member attributes were maintained solely as copies of nonstatic attributes to a design in which these static member copies have been replaced by a single static pointer to the active object instance of the iterator class. This static pointer provides the needed data access from the static member functions used in the function pointer design.
+   - IDR parser updated to use a factor of two buffer growth strategy. This significantly reduces parsing time for large datasets.
+   - Addition of the ability to specify a vector of finite difference step sizes, one per active continuous variable, for use in the DAKOTA finite differencing routine (not supported by vendor routines).
+   
+ - Bug fixes:
+ 
+   - NPSOL modified to prevent moving the initial point to the variable bounds when the initial point is close to the bounds.
+   - Bug with number of correlation coefficients for one uncertain variable corrected within new LHS sampling library.
+   - Bug fix in OPT++ within the line search backtracking routine for the case of zero gradient.
+   - Optional response tag extraction is now more robust (would fail on some platforms).
+   - Bug fix for parallel initialization of high fidelity interfaces in model-hierarchy SBO.
+   - Bug fix for uninitialized pointers in the OPT++ interface classes.
+   - Bug fix in sampling output correlation matrix sizing for OUU.
+   - Clarification of best data point tracking in parameter studies and design of experiments (only optimization and least squares data sets define best data metrics, generic response function data sets do not).
+   - Make recursion bug fixed with addition of checks for missing vendor optimizers/packages.
+
+ - SQA/Porting:
+ 
+   - Automated DAKOTA testing: nightly testing harness is much more thorough and includes new unit test and parallel regression test facilities.
+   - Version of the day (VOTD) distributions are now active for publishing the latest code versions to the user base.
+   - DAKOTA ports and configuration extensions: initial port to Mac OS X completed; configuration support added for GM device of MPI, 64-bit Sun builds, and Sun Cluster Tools MPI (/opt/SUNWhpc); Sun builds updated to Workshop 7.

@@ -49,6 +49,9 @@ Docker permits a complete RHEL 7 test environment to be encapsulated in an "imag
 
 For the most part, you will perform development as usual on your host machine, including cloning Dakota source and creating builds using, as appropriate, the SEMS modules or native build tools on your system. When you are ready to test against RHEL 7 baselines, you'll need a separate build directory, e.g. build.rhel7.  You'll use the Docker container to build and test in this directory.  You can then iteratively edit source files on the host and rebuild in the Docker session.
 
+.. image:: img/docker.png
+   :alt: Docker example
+
 --------------
 Install Docker
 --------------

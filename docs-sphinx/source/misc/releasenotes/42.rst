@@ -1,0 +1,56 @@
+.. _releasenotes-42:
+
+""""""""""""""""""""""""
+Version 4.2 (2008/11/05)
+""""""""""""""""""""""""
+
+**Uncertainty Quantification (UQ) Capabilities:**
+
+- Stochastic collocation using Lagrange interpolation polynomials is now supported for uncertainty quantification. See Stochastic collocation method and Section 6.4 of the v4.2 Users Manual for additional information.
+- Stochastic collocation (SC) and polynomial chaos expansions (PCE) now support Smolyak sparse grids with mixed integration rules for more effective scaling on problems with larger numbers of random variables.
+- PCE/SC capability to numerically generate quadrature points/weights in order to extend numerical integration capabilities beyond order 10 for Hermite, Legendre, and Laguerre and beyond order 2 for generalized Laguerre and Jacobi.
+- Addition of PCE features supporting incremental studies and simplified specification: (1) the point collocation option may now be specified using an oversampling ratio, which eliminates the need for the user to calculate the number of expansion terms each time, and (2) the point collocation and expansion samples options may now reuse previous samples in the surrogate construction.
+- LHS now supports Gumbel and Frechet extreme value distributions.
+- Random variable transformations (and associated Jacobians/Hessians of these transformations) now support transformations from bounded normal and bounded lognormal to standard normal and from triangular and loguniform to uniform.
+- Generalization of incremental random sampling in the Monte Carlo case to allow for increments which are not factors of 2: increments of just one or a few samples are now supported.
+- Increased precision in output of response moments to enable convergence plotting.
+
+**Optimization and Model Calibration Capabilities:**
+
+- Polynomial chaos-based design optimization now supports design sensitivities of moments using either combined variable expansions of response values ("all_variables" mode) or random variable expansions of response derivatives (standard mode). In addition, support for variable insertion (design variables which define distribution parameters of random variables) and mixed design variable insertion/augmentation has been added for both standard and all_variables modes. See Section 11.6.2 of the v4.2 Users Manual for additional information.
+- Stochastic collocation-based design optimization has been added and supports standard or all_variables expansion modes and inserted, augmented, or mixed design variables.
+- The surrogate_based_opt and surrogate_updatestrategies are now the surrogate_based_local and surrogate_based_globalmethods in order to consolidate code with the efficient_global method and to allow componentization of this code for usage elsewhere. As described in Surrogate-Based Methods, all three methods (SBL, SBG, and EG) have been generalized beyond surrogate-based optimization to additionally support surrogate-based multiobjective optimization (MOO) and surrogate-based nonlinear least squares (NLS), with options for the following approximate sub-problem formulations: (1) "original_primary" poses the sub-problem using multiple surrogate objectives or surrogate least squares terms for solution by a MOO or NLS method, and (2) "single_objective" recasts the sub-problem to use a single objective for solution by a standard single-objective optimizer (allowing, e.g., the use of global optimizers for surrogate-based MOO/NLS). The sub-problem minimizer may now be specified by specification pointer (long form) or by name (short form).
+- The surrogate-based global method now supports replacement or appending of points in the surrogate construction iterations. A goodness-of-fit test (currently the R-squared diagnostic) is also used as a new termination control for the method.
+- The hybrid optimization strategy has been refactored into a new hierarchy supporting the existing sequential hybrid as well as planned new capabilities for embedded and collaborative hybrids. As part of this development, the concurrent iterator parallelism level has been generalized and is now supported for all strategies that contain iterator concurrency.
+- Generalized the Pareto set strategy to include both multiobjective optimization and weighted nonlinear least squares. Also enabled weighted least squares and updating handling of primary response function weights (least squares and multiobjective) throughout the Iterator hierarchy.
+- NCSU Direct now supports batch evaluations, enabling parallel executions. For coliny_direct, updated the default box division behavior to better synchronize with parallel configuration.
+- Direct interface to APPSPACK (independent of COLINY) allowing linear constraint support and improved nonlinear constraint support.
+- Addition of the capability to generate confidence intervals on parameters estimated by the nonlinear least squares optimizers.
+- Activated model calibration under uncertainty (MCUU) capabilities based on sampling, reliability, and stochastic expansion approaches to UQ. Added support for analytic sensitivities of response mean for MCUU using the Mean Value reliability method to calibrate mean response values.
+
+**Framework Enhancements:**
+
+- "New IDR" (Dakota/packages/nidr) is now the sole input parser. "Old IDR" had been deprecated but was supported in developmental releases for an amount of time before being removed for the v4.2 DAKOTA release. The new parser provides better error checking, lower software maintenance requirements, and better scoping (so that artificial keyword uniqueness requirements like the prepending of variable type identifiers can be eliminated, and redundant keyword specifications can be grouped). Backwards compatibility in input files has been preserved through a new keyword aliasing capability.
+- Boost multi-index containers are now used for evaluation cache lookups. Hash function lookups are much faster than the previous capability (largely eliminating the need to "deactivate evaluation_cache" for problems with high function evaluation counts). To restore the previous list-based approach, configure the source distribution "--without-boost".
+- Surrogates: addition of moving least squares and radial basis function surrogate models to the Surfpack library. The Gaussian process approximation now supports calculation of analytic derivatives of the response surface with respect to the input variables (mean trend only) for use by gradient-based iterative methods. Implemented use of minimum vs. recommended samples across the hierarchy, where the former is used for bounding and the latter is used for default values (previously the minimum was the default). Addition of a flexible mechanism for computing a variety of surrogate diagnostics (see Global approximations). Refinement of sample reuse facilities: samples_file specification (imported once at startup) is now handled separately from reuse_samples (which may be applied on each approximate subproblem cycle).
+- More complex analysis_driver syntax is now supported directly without need to resort to analysis_usage (now removed). Verbatim command lines (without parameters and results file name augmentation) are also now optionally supported. Refer to Simulation interfaces and Section 13.3.4 in the v4.2 Users Manual for additional information.
+- Additional verbosity is available in NestedModel executions, for variables/response scaling transformations, and for multipoint data return from Optimizers.
+- Encapsulation of nonlinear uncertain variable transformations and interface to LHS within the new PECOS library.
+- Migration from Epetra to Teuchos for serial dense vector/matrix utilities and convenient C++ access to BLAS/LAPACK. UQ methods and Gaussian process surrogates now employ Teuchos.
+- Ability to use external GSL and/or Teuchos, from source or installed. Also, use one copy of each throughout the DAKOTA build tree, including sub-packages.
+- Direct inclusion of AMPL in Dakota/packages instead of through Acro.
+- All parser Data* objects upgraded to referenced-counted idioms instead of copies to improve efficiency for large-scale problems.
+- Major rework of variable mappings in NestedModels to support additional mappings. Specified mappings are now performed using an "All" view for the sub-model variables, allowing access to any of the inner variables (including state). See Nested Model Controls for additional information.
+- Updates to the scaling/weighting machinery: corrected response derivative scaling when variable scaling enabled.
+
+**Interfaces:**
+
+- MATLAB: improved documentation, support for newer 7.3/R2006b as well as legacy MATLAB versions, configuration for Mac and Cygwin. Improved handling of Matlab engine command (via environment variable DAKOTA_MATLAB_ENGINE_CMD), Matlab structure persistence, and memory management of Matlab fields. With thanks to Lee Peterson (CU Boulder).
+- Library mode: support for use of DAKOTA as a service within another application has expanded significantly. Three modes are now supported for data input to DAKOTA as documented here, allowing for more flexible specification of potentially large data sets. To enable these three modes, input checking and default vector generation routines have been extracted and generalized. The dakota_library_mode executable has been added as a test capability for serial and parallel plug-in interfaces (including support for passed-in MPI communicators) and these three data input modes.
+
+**Miscellaneous:**
+
+- Generalization of distribution mechanisms to include internal-full, internal-supervised, internal-web, and external distributions to allow full nightly feature testing while supporting multiple third party library constraints within developmental release distributions.
+- Extensive rework of tutorial examples to assimilate templates for input specification, simulation interfacing, and parallel computing from a variety of sources (see Dakota/examples).
+- Portability: Improved support for Darwin PPC, Cygwin, Intel and PGI compilers. Updated installation guidance for Cygwin and Mac OS X. Support of newer MPI distributions, including OpenMPI.
+- Bug fixes: 66 Bugzilla ids (restricted access) have been closed as part of the v4.2 development cycle.

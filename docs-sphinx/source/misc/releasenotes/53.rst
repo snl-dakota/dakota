@@ -1,0 +1,95 @@
+.. _releasenotes-53:
+
+""""""""""""""""""""""""
+Version 5.3 (2013/01/31)
+""""""""""""""""""""""""
+
+**Uncertainty Quantification (UQ)**
+
+- Addition of sparsity detection methods for UQ. Compressive sensing (CS) algorithms (basis pursuit, basis pursuit denoising, orthogonal matching pursuit, least angle regression, and LASSO) have been added for under-determined solutions of the coefficients of polynomial chaos expansions. Given limited response data, CS algorithms often provide more accurate estimates of the dominant expansion terms than traditional L2 regression methods. Includes support for gradient (adjoint) enhancement, fault tolerance, cross-validation of algorithm parameters, and either structured (sampled tensor product) or unstructured (Latin hypercube) grids.
+- Extension of sparse grid interpolation capabilities for UQ using hierarchical interpolants. Through use of hierarchical surpluses to define error estimates in statistical quantities of interest moments and moment-based metrics), greater precision can be obtained for smaller grid refinements, enabling more sophisticated adaptive collocation strategies. Includes support for gradient (adjoint) enhancement, combined expansions (nonprobabilistic design or epistemic variables included in expansions), variance-based decomposition (for sensitivity analysis), and design sensitivity analysis (for optimization under uncertainty and mixed aleatory-epistemic UQ).
+- Addition of a new method for importance sampling: Gaussian Process Adaptive Importance Sampling (GPAIS). This capability allows the user to estimate a tail probability (e.g. the probability that a response exceeds a particular value) with a relatively small number of samples. GPAIS does involve a Gaussian process, but the GP is used in the construction of the importance density, not as a surrogate for the true function.
+- Modification of the Bayesian calibration approach using the QUESO method to allow for the calibration of the sigma terms defining the error. Also extended the Bayesian calibration capability to allow the user to specify a proposal covariance matrix with a different diagonal element for each variable, so that step size can be adjusted in each variable direction. Cleanup of the output files related to posterior sample generation.
+- Addition of an adaptive sampling class. This class generates an initial set of LHS samples, then adds samples according to a criterion specified by the user. The available criteria are: predicted variance (as calculated by a Gaussian process model: pick points which have maximal predicted variance to reduce overall variance); distance (pick points which have maximal distance to the existing points); and persistence. The adaptive sampling may also be done in a batch mode; there are a variety of choices which govern how the batches are created.
+- Expanded the capability of the epistemic UQ methods (interval analysis and evidence theory) to handle new discrete epistemic variable types (discrete interval, discrete set integer, and discrete set real) using either evolutionary or surrogate-based evolutionary algorithm approaches. This will allow a user to identify interval bounds on an output given discrete inputs (including multiple model forms) or a combination of discrete and continuous input variables.
+- Reformulation of second-order inverse local reliability (second-order performance measure approach (PMA)) to apply its equality constraint based on the generalized reliability index.
+- Basic capabilities for system reliability in series and parallel systems for use when component failures are uncorrelated. Includes support for design sensitivity analysis for use in RBDO.
+
+**Optimization and Nonlinear least squares (NLS):**
+
+- Expanded the capabilities of the surrogate-based global method to handle discrete ranges and sets.
+- Added fault tolerance within surrogate builds for use within surrogate-based minimization methods.
+- Generalized support for objective minimization or maximization, now integrated into the response specification.
+- Unification of scaling and other transforms in Minimizer, with full support for recast from least squares to any optimizer (especially useful for solving multimodal or nonsmooth calibration problems with global optimization methods), including for single least squares term and data transformations.
+- Examples demonstrating data transform combined with surrogate for various least squares problems.
+- Exposed "max_designs" niching operator for moga.
+
+**Methods (general)**
+
+- For iterators that rely on Gaussian process surrogates, we now allow the GP surrogates to be built on points read from a file instead of requiring them to be built from LHS sample points. This opens up many methods to run with points generated off-line or from another analysis. User can still augment with points from a DACE Iterator.
+- Initial implementation of new adaptive surrogate building approach, with option for topology-guided construction (Dan Maljovec, Utah)
+- Surfpack Kriging model support for mixed global/local optimization and additional correlation functions (powered exponential, matern)
+- Surfpack Kriging model can automatically select the best points for build based on highest information content.
+- Restore Surfpack model save/load capability via Boost serialization
+- Added new options for scaling of finite difference step lengths:
+
+  - "absolute" designates no scaling
+  - "bounds" scales according the range of the parameters
+  - "relative" is the default and scales according to magnitude of the parameters
+
+**Framework**
+
+- Input/Output
+
+  - Initial version of Dakota results database, supporting Minimizers and Sampling methods
+  - Capture all Dakota output in output/error files, including echoing input file, with more consistent behavior.
+  
+- Variables
+
+  - Flexibility to override default variable views, allowing iteration over a variety of variable subsets. This also addresses previous view discrepancies when combining DACE for surrogate construction with optimization, calibration, or UQ. Associated generalization of parameter study, evolutionary algorithm, and sampling methods.
+  - New discrete epistemic variable types: integer range, integer sets, and real sets.
+  - Memory footprint optimizations through the use of shared variables data.
+  
+- Interfaces
+
+  - Include wrapper scripts with Dakota that help find the shared libraries
+  - New Scilab direct interface (contributed by Yann Collette and Yann Chapalain)
+  - Allow approximations to append/pop sets of build data using arbitrary sequences, with option to clear.
+  - Allow import of surrogate data in contexts involving variable and response transformations. Data can now be imported in the original space and used to inform the surrogate in the transformed space, with support for arbitrary levels of Model recursion. A primary use case for this is polynomial chaos via regression (including compressive sensing).
+  - Refactor of direct interfaces for flexibility and use by clients; now separate interface classes for Matlab, Scilab, and Python
+  
+- Responses
+
+  - Extend Response input streams to support fault tolerance (import of inf/nan)
+  
+- Build System / TPLs
+
+  - Removal of autotools-based build system, replaced by CMake
+  - Retirement of nightly cron build/test/package system, replaced by CONTINUOUS Jenkins integration server jobs
+  - For Linux and MacOSX, the default SHARED vs STATIC build variant is now SHARED (in previous releases it was STATIC). STATIC is still supported but must be explicitly requested in the CMake build options.
+  -  No longer distribute Boost with Dakota; builders must provide
+  - Update version of Teuchos shipping with Dakota to 11.0.3 and make build system more tolerant of refactored Teuchos libraries.
+
+**Miscellaneous Enhancements**
+
+- Methods
+
+  - ENH: add control over response covariance computations for large-scale output vectors
+  - ENH: for PCE regression on structured grids, migrate from filtering a low-order tensor product grid to sampling the multi-index of a higher-order grid. This preserves matrix conditioning by avoiding sampling at the roots of the polynomial basis.
+  - ENH: Use COLIN cache instead of Dakota DB lookup for final results
+  - ENH: Print distribution mappings to file when high verbosity specified (to be superceded by results DB)
+  - ENH: "initial_delta" and "threshold_delta" are no longer required parameters for coliny_pattern_search, coliny_solis_wets, and coliny_cobyla; they're now optional
+  - ENH: initialization of optimization solver parameters has been consolidated into appropriate constructors
+  
+- Examples/tests
+
+  - ENH: cantilever example used in training classes
+  
+- Jaguar
+
+  - ENH: Better integration of help information
+
+**Miscellaneous Bug Fixes**
+
+- BUG: Fix indexing error in serial plugin example
+- BUG: Fix finite difference logic for inferred vs. distribution bounds

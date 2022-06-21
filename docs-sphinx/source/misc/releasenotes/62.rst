@@ -1,0 +1,119 @@
+.. _releasenotes-62:
+
+"""""""""""""""""""""
+Version 6.2 (2015/05)
+"""""""""""""""""""""
+
+**Highlights**
+
+- New adaptive, surrogated-based, and derivative-informed Bayesian inference with QUESO, including numerous robustness and usability improvements to the core algorithm
+- Users downloading Dakota binaries or compiling from source can now run a subset of Dakota tests to assess build success without running the whole suite and triaging numerical DIFFerences.
+- Deterministic least squares and Bayesian calibration methods support use of field data (and interpolating between simulations and experiments) and error covariance information.
+- New custom_annotated option added for control of tabular export/import formats.  Allows backward-compatibility to Dakota 6.0 (i.e. remove the interface ID) tabular formats, including with restart utility.
+
+**Uncertainty Quantification (UQ)**
+
+- Bayesian inference with QUESO significantly improved for production use. Enhancements include:
+        
+  - New option for user-provided proposal covariance; removed option for proposal scaling
+  - Options for use of logit transform, emulator, scaling, and data (including no data) are consistent and complete
+  - All Dakota uncertain variables types can be used as priors (previously uniform only)
+  - Simplified input specification is more usable
+  - QUESO Updated to v0.52.0
+  - Final results now reported: MAP point
+  - Build system transitioned to CMake to make it easier for cross-platform compilation and consistent build settings
+
+- Extended derivative support in PCE and dakota GP emulators.  Analytic Hessians of the data misfit (negative log likelihood) are now supported for PCE, SC, dakota GP, and surfpack GP leveraging analytic emulator gradients (Gauss-Newton misfit Hessians with SC and dakota GP) and analytic emulator Hessians (full misfit Hessians with PCE and surfpack GP).
+- Reliability method POFDarts now works with any of Dakota's surrogate model types.
+- New option to import/export polynomial chaos coefficients with or without normalization.
+- New capabilities for adaptive, surrogate-based, and derivative-informed Bayesian inference with QUESO:
+
+  - Algorithm framework allows for iterative updating of a surrogate during Bayesian calibration, based on chain filtering
+  - Surrogate order can increase as additional simulation runs are added
+  - Analytic derivatives (gradients for Gauss-Newton or full Hessians), whether from a surrogate or truth model, can be used to update the proposal covariance
+
+**Optimization and Calibration**
+
+- NOMAD optimizer now works with categorical variables (integer, string, real), with optional user-provided adjacency matrix showing relationships among discrete values.
+- Numerous JEGA correctness, compilation, and performance improvements.
+- Deterministic least squares and Bayesian calibration methods support use of field data (and interpolating between simulations and experiments) and error covariance information.
+
+**Methods (general)**
+
+- Capability to build local piecewise surrogates as compared to one global surroate. Polynomial, GP, and radial basis function surrogates now support a piecewise local decomposition, based on approximate Voronoi cells, independent of Dakota surrogate being used.  This now scales better with number of parameters and permits modelling of functions with discontinuities.
+- Changed setting to allow Boost Math utilities to calculate in higher precision, yielding improved statistical calculations.
+- Fixed post-run mode for DDACE; main effects and quality metrics weren't working (seg fault); added tests for all methods supporting post-run.
+
+**Framework**
+
+- Refine parallel partitioning logic for iterator concurrency to reduce the need for explicit user configuration overrides.
+- Restored MPICH parallel launch detection so Dakota will work correctly with MPICH2, MPICH3.
+- Architecture rework in Minimizers and Response to clean up recasts and results reporting.  Results in correct and more helpful output when a user's problem is automatically transformed for presentation to another solver.
+
+*Input/Output*
+
+- New custom_annotated option added for control of tabular export/import formats.  Allows backward-compatibility to Dakota 6.0 tabular formats, including with restart utility.
+- Improve exception management or evaluation failures for tabular or results file reading. Main benefit realized for library users.
+- Tabular data is now correctly ordered when performing incremental sampling.
+- Dakota console output is now properly sequenced when outputting to user-specified file in both serial and MPI modes.
+- Eliminated leading white space in rows of tabular files, for easier import to Excel and other CSV tools
+
+*Variables*
+
+- Issue helpful error if discrete set variables are not specified in increasing order, as required.
+- String variables now work properly with Dakota MPI mode (no MSG TRUNCATE).
+- Lognormal variables can now be specified via alternate distribution parameters without surprising error.
+
+*Interfaces*
+
+- Experimental Java native interface (JNI) to Dakota's library functionality allows tighter integration in Java applications.
+- More robust reading of results files with system/fork interfaces; now throws error on unexpected non-numeric data.
+
+*Build System / TPLs*
+
+- Dakota now requires Boost 1.49 (1.50 on Mac, 1.52 on Windows) or newer.
+- Allow Dakota to link against newer versions of Trilinos/Teuchos when Kokkos is enabled
+- Build system: Improved Dakota's detection and management of MPI to conform to CMake recommended best practices, improving cross-platform configuration consistency.
+- Corrected Teuchos copy constructor, insuring cross-platform reliability of Dakota, most importantly on windows.  Resolves compiler optimization-dependent issues with nested models, relaibility methods, and AMPL interface.
+
+*Documentation*
+
+- Dakota prerequisite and build instructions integrated into Dakota website.
+- Improved reference manual documentation, including consistency, (some) default values, and group labels.
+
+**User Experience**
+
+**Miscellaneous Enhancements**
+
+*Architecture*
+
+- Allow dakota.bat helper script to work when the Dakota installation directory has spaces in it.  Thanks to Kevin Olson and Ernest (Foss) Friedman-Hill (DART Team).
+
+*Build / Test System*
+
+- Made CMake probe for X Windows graphics dependencies more robust and helpful, to avoid errors when a system is missing required headers.
+- Build system: use more descriptive names for LHS libraries to avoid clashes with system libraries.
+- Improved testing infrastructure
+
+  - Unit testing restored and reported in automated testing
+  - Test suites for smoke tests, acceptance tests
+  - Automatic filtering of platform-specific tests
+
+- Build system fix allows Dakota to build in directory using regular expression characters in the name.
+- Dakota and all its TPLs now use consistent Boost include directory settings, preventing surprising compile and link errors.
+- Fix compilation error with MPI when building serial Dakota in library mode; thanks to the Xyce team
+
+*Examples / Tests*
+
+- Added new harmonic oscillator test problem to demonstrate and test time series analysis, e.g., test/dakota_experiment_read.in.
+
+*Methods*
+
+- Correctly calculate least-squares confidence intervals on parameters when calibrating to user-provided data.
+
+**Miscellaneous Bug Fixes**
+
+- Surfpack standalone executable now works correctly with datasets containing multiple responses; previously was ignoring user-specified function index and repeatedly analyzing the 0th one
+- Surfpack neural network model print now includes correct scaling.
+
+**Known Limitations**

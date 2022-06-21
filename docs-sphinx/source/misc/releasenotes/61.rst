@@ -1,0 +1,126 @@
+.. _releasenotes-61:
+
+"""""""""""""""""""""
+Version 6.1 (2014/11)
+"""""""""""""""""""""
+
+**Highlights**
+
+- New capability for adaptive basis selection for high-dimensional compressed sensing using an expanding front approach.
+- New surrogate-based approach for POFDarts, improving the efficiency of adaptive tail probability estimation.
+- Continuing from the "strategy refactor" phase 1 developments released in v6.0, phase 2 has added new parallel recursion capabilities that support an open-ended number of levels of iterator concurrency within meta-iterators and nested models. Notable studies with enhanced parallelism include design and model calibration under uncertainty and mixed aleatory-epistemic uncertainty quantification
+- Initial launch of new Dakota user portal
+
+**Uncertainty Quantification (UQ)**
+
+- PCE/SC:
+
+  - Adaptive basis selection for compressed sensing
+  - Hardening of adaptive importance sampling approaches for evaluating tail probabilities on stochastic expansions.
+  - Refinement of duplication detection within sparse grids for scale-dependent numerically-generated quadrature rules.
+  - Normalization specification now honored for PCE expansion import/export
+
+- Adaptive importance sampling: multi-modal variant now selects multiple representative points even if no failure points are found.
+- LHS: New backfill option to generate improved LHS designs when discrete variables are present; also used in subsampling tensor grids for PCE
+- POFDarts: new option of Voronoi-based piecewise surrogate of variable order and generally improved performance / accuracy
+
+**Optimization and Calibration**
+
+- BUG: Update COBYLA third-party library to properly respect bound constraints
+- BUG: Correctly propagate linear constraints in HOPSPACK (APPSPACK) and SCOLIB (Coliny)
+- ENH: Strategy for determining best point in JEGA methods improved
+- BUG: Fix OPT++ treatment of bound-constrained finite differences
+
+**Methods (general)**
+
+- Improved parallel concurrency: Support for additional parallelism in methods, nested models, and surrogate models.  General support for multiple meta-iterator/iterator/model recursions.  Enables MPI parallel concurrency at outer loop of nested models.
+- Neural network surrogate model: automatically select the best basis set using orthogonal matching pursuit to improve model quality when generalizing to unseen points.
+- Output of surrogate model algebraic form for global polynomials, neural network, and radial basis functions.
+
+**Framework**
+
+*Input/Output*
+
+- Command-line options: Allow command-line options such as -read_restart to be specified in input file, though command-line options take precedence over input file.
+- Tabular output/input: unified to use all (active and inactive) variables by default, always write in input specification order, specify discrete variables by value instead of index, and include a column for interface identifier.  Primarily affects tabular_data, pre/post run, restart to tabular, and surrogate export/import.  Some contexts have options for annotated vs. freeform, or to import active_only.
+- XML specification: New XSD and XML specification defining valid Dakota input file syntax (for developer use), together with Java tools to generate NIDR specification.
+
+*Variables*
+
+- Discrete string variables: Support for string variables in design and state, discrete uncertain set, histogram uncertain.  Support in LHS and parameter studies, including correlation computation.
+- Discrete variables: For discrete integer and real variables, expand options to enforce integrality (categorical) vs. relax
+- Ability to translate or scale nested normal, uniform, and triangular distributions based on outer loop variables.
+
+*Interfaces*
+
+- Work directory: numerous simplification, C++ modernization, and robustness improvements.  User inputs for specifying template files to copy or link require updating, potentially to include wildcards. Analysis drivers are permitted in or relative to the startup directory and any work_directory, including via template files.
+- Improvements to system, fork, and spawn interfaces across all platforms.  Default to vfork() but user-override permitted while building.
+- New environment variables DAKOTA_PARAMETERS_FILE, DAKOTA_RESULTS_FILE are available in the spawned process.
+- Improvements to direct Python interface, with thanks to the OpenMDAO development team, to allow external initialization of Python and more graceful error handling.
+
+*Build System / TPLs*
+
+- Improved support for Cray XE6 systems, e.g., Cielo
+- ENH: New option for relative diff tolerance in dakota_diff.perl
+
+*Documentation*
+
+- Continued improvements to new reference manual.  Review of most keywords, additional topics, improved formatting
+- Best practices "CASL/Dakota" manual for basic use of select sensitivity, surrogates, optimization, and uncertainty quantification methods, with examples.
+
+**User Experience**
+
+**Miscellaneous Enhancements**
+
+- ENH: VERSION and DakotaVersion.cmake files added to Dakota source and binary packages
+
+*Architecture*
+
+- ENH: Improved parse-time validation of histogram variables
+- ENH: More granular error codes returned from abort_handler, including Boost exception containing the error.
+- ENH: Complete re-design and new, Boost.Filesystem-based implementation of the workdir and process management code modules.  Legacy "C" utilities retired and removed from the repository.
+- ENH: Unit test examples for workdir features.
+- ENH: Build DDACE convenience libraries into a single libddace to avoid system clashes with librandom, libsampling, etc.  Same for LHS, where new libraries are liblhs, liblhs_mods, liblhs_mod.
+- ENH: Improve C++ portability of DDACE
+
+*Build / Test System*
+
+- ENH: Support flexible testing with ctest and/or dakota_test.perl
+- ENH: dakota_diff.perl ignores small PCE coefficients and Sobol indices
+- ENH: Disabled random ordering of trial points for blocking case in APPS
+
+*Examples / Tests*
+
+- ENH: Matlab script interface example no longer requires user specification of current directory
+
+*Interfaces*
+
+- ENH: Experimental Java JNI API to Dakota's library mode
+- ENH: Library interface options to more gracefully exit (throw) on error
+- ENH: Library integrators can specify text to prepend to failure messages
+- ENH: Exception handling for file removal and rename operations
+
+*Methods*
+
+- ENH: Allow fixed seed in Pecos cross-validation for reproducibility
+- ENH: PCE coefficients only exported to file for verbose output
+- ENH: Better random number generator for cross-validation to reduce cross-platform differences.
+- ENH: Better duplicate detection in nearby sparse grid points
+
+**Miscellaneous Bug Fixes**
+
+- BUG: Correctly create binary Surfpack surrogate files on Windows
+- BUG: Fix bug in Genz test function
+- BUG: Correct surrogate export/import in user-defined space (instead of the method's transformed space)
+- BUG: Tweaks to local reliability to avoid errors due to overly aggressive optimization on some platforms
+- BUG: Properly define analysisComm for dedicated master so plug-in interfaces work
+- BUG: Properly close graphics and output streams when running in parallel
+- BUG: Portability: remove explicit template arguments to make_pair for C++11 compatibility
+- BUG: Usage tracking; properly report method usage data instead of uninitialized data.  Also better encapsulate to eliminate conditional compilation.
+- BUG: Improved handling of copy constructed Teuchos Views in DakotaVariables.  Known limitation: there many still be platform-specific issues with DakotaResponses.
+- BUG: spurious directory creation when using work_directory
+- BUG: Avoid multiple CMake target exports from Dakota TPLs to facilitate Trilinos integration
+- BUG: Removed race condition in documentation building
+- BUG: Permit reading empty restart files
+
+**Known Limitations**

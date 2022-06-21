@@ -1,0 +1,124 @@
+.. _releasenotes-60:
+
+"""""""""""""""""""""
+Version 6.0 (2014/05)
+"""""""""""""""""""""
+
+**Highlights**
+
+- New Boost requirement: Dakota now recommends Boost 1.49 or newer (1.52 or newer on Cygwin or Windows) and supports Boost 1.46 or newer when needed.
+- First look at our new reference manual format, currently in beta
+- Native Windows binaries, including system and fork interfaces
+- Parallel scheduling changes enabling improved concurrency in multifidelity and some method contexts as well as more dynamic evaluation scheduling
+- Surrogate model export, evaluation at user-supplised points, and additional diagnostics
+- Optimization: New direct search mixed integer optimization method (NOMAD); extended Bayesian calibration methods and handling of experimental data
+- UQ: New PoFDarts method for reliability/failure calculations; stochastic expansion improvements related to multifidelity, compressed sensing, orthogonal least interpolation, and extensions to higher dimension
+
+**Uncertainty Quantification (UQ)**
+
+- Stochastic expansion enhancements:
+
+  - Improvements to compressed sensing (CS), including support for re-entrancy, allowing reuse in optimization under uncertainty, mixed aleatory-epistemic UQ, and multifidelity UQ.
+  - New orthogonal least interpolation, including for sub-sampled tensor grids
+  - Sparse PCE: PCE bookkeeping now exploits sparsity in the CS solution vector to better support high dimensional expansions.
+  - Scalable VBD: sets of admissible Sobol' indices are now defined from the expansion definition (and updated in the presence of expansion refinement), eliminating unnecessary overhead for high dimensional expansions. Previous univariate_effects specification replaced with more general interaction_order capability.
+  - PCE normalization: PCE coefficients can now be output for normalized basis polynomials.
+
+- Mixed aleatory/epistemic UQ capability leveraing optional interface together with hierarchical tagging; permits simulations over outer epistemic variables, with aleatory-based post-processing in inner loop. IVP PLOAS.
+- New probability of failure calculation method PoFDarts, based on computational geometry approaches.
+- Support multifidelity PCE for all coefficient estimation approaches. Previous tensor and sparse grid approaches augmented with expansion samples, least squares, compressed sensing, and least interpolation approaches, including anisotropic, collocation points or ratio, and uniform refinement variations.
+
+**Optimization and Calibration**
+
+- BUG: Resolved minor numerical differences in NCSU Direct optimizer return values.
+- Bayesian calibration: Experimental version of DREAM algorithm with thanks to Burkhardt, Webster, Guannan
+- Bayesian calibration: update to QUESO 0.46, remove dependence on Grvy library, simplify build process
+- Allow multiple experiments, each with 1 or more replicates in calibration problems. Correctly report instal residual norm when data or scaling is present.
+- Mixed-integer optimization: new NOMAD algorithm of Dennis,et al.
+
+**Methods (general)**
+
+- BUG: fixed Gaussian process model construction over discrete variables
+- BUG: fixed RNG linkage for LHS
+- Multifidelity, HOPSPACK/APPSPACK, and COLIN methods now support better parallel concurrency; see Interfaces below.
+- New option for file-based list parameter study, using freeform or annotated data file.
+
+**Framework**
+
+*Input/Output*
+
+- Allow processing of restart file containing duplicates into tabular data file.
+- Allow export of Surfpack surrogate models to file for later evaluation with newly restored Surfpack executable.
+- New capability to export approximate function evaluations on surrogate models, including PCE, via export_points_file keyword.
+
+*Interfaces*
+
+- Allow models to hierarchically tag their interface evaluations via hierarchical_tagging keyword. Lets a driver script distinguish relationships in nested contexts.
+- Refactor of fork/system/spawn interface classes; support for fork interface on Windows via native spawn calls.
+- Considerable improvements to parallel scheduling and evaluation concurrency, motivated by supporting concurrent hybrid scheduled evaluations in hierarchical surrogate models:
+
+  - BUG: Allow asynch local to work correctly and simultaneous fork on multiple interfaces
+  - ENH: Default dynamic schedules for MPI mode
+  - ENH: Support nonblocking message passing schedulers
+
+- Improved work directory features (see docs), with better cross-platform support.
+
+  - Simplify file_tag, directory_tag
+  - Support relative or absolute paths
+  - More helpful error messages and consistent removal
+  - Use Boost filesystem utilities
+
+- Improvements to AMPL interface for algebraic mappings to allow different response orderings between Dakota and AMPL and allow spaces in variable names. Example of interfacing to a Pyomo-generated model using AMPL.
+
+*Build System / TPLs*
+
+- New automated acceptance test process and cross-platform gold standards for assessing release quality.
+- Native Windows support for MSVS 2008/2010 with Intel Fortran, including installing needed DLLs and example build script.
+- Improve test script and copy executables needed to run some tests on native Windows; overall improved Windows test coverage.
+
+*Documentation*
+
+- Beta version of new reference manual format, with improved organization, navigation, and search.
+- Update installation instructions on web, including for Windows-like variables
+- Reference: clarified order of responses in results files
+
+**User Experience**
+
+**Miscellaneous Enhancements**
+
+- ENH: Replace Dakota String with std::string to simplify interfaces.
+- ENH: Improve dakota.sh to better locate the Dakota binary
+- ENH: Warn when Dakota built without graphics support, but user requests.
+- ENH: Standardize on Boost filesystem V3 throughout.
+- ENH: Improve restart output annotation when restarting Dakota.
+- ENH: Support a list of extensions when locating an analysis driver on Windows.
+
+*Build / Test System*
+
+- ENH: Testing for histogram_point_uncertain variables.
+- ENH: Significant changes to dakota_diff.perl to more meaningfully report testing differences.
+- ENH: Support QUESO builds on platforms that use lib64/ instead of lib/, thanks to Jason Hite, NCSU.
+- ENH: Testing for work directory feature.
+
+*Examples / Tests*
+
+- ENH: Allow Matlab example to work when spaces in filenames
+
+*Methods*
+
+- ENH: More fine-grained control of output verbosity for stochastic expansion methods
+- ENH: Constrain incremental LHS sampling to supported distribution types
+- ENH: More modular handling of and bug fixes for layered recastings and final points retrieval in Minimizer branch
+- Improved Surfpack surrogate diagnostic metrics and cross-validation, including with separate challenge data file.
+
+**Miscellaneous Bug Fixes**
+
+- BUG: Fix parallel initialization for iterators that alternate between serial and parallel model evaluations for gradients; fixes seg fault reported by Rich Drake, SNL.
+- BUG: Python interface was incorrectly passing ASV to Python DVV, thanks to Scott Townsend (NASA).
+- BUG: Only store response mappings in ResultsDB when requested, preventing insertion into unallocated array.
+- BUG: Corrected use of DAKOTA_HAVE_MPI in build templates
+- BUG: Fix export targets when linking against external Teuchos.
+- BUG: Fix Intel compiler issue with static initializers for results DB, thanks to Rich Drake, SNL.
+- BUG: Refine use of Cout vs. cout in Strategies in lieu of a better output manager.
+
+**Known Limitations**

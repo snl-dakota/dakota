@@ -1,0 +1,118 @@
+.. _releasenotes-31:
+
+""""""""""""""""""""""""
+Version 3.1 (2003/04/04)
+""""""""""""""""""""""""
+
+**New iterative methods**
+
+- Optimization:
+
+  - NPSOL v5.0 update.
+  - OPT++ method consolidation (from 15 down to 6) and additional constraint coverage (added BCFDNewton and GNewton NIPS).
+  - Initial rSQP++/MOOCHO interface (large-scale optimization).
+  - Initial COLINY interface for access to APPS and DIRECT optimizers.
+
+- Uncertainty quantification:
+  
+  - New f90 LHS library (not yet publicly available).
+
+    - restricted pairing: enforces the desired correlation in the sample set, whether inducing a user-specified correlation or minimizing correlation for the default uncorrelated case.
+    - bounded normal and bounded lognormal distributions
+    - bin-based and point-based histogram distributions
+    - additional output: sample histograms and achieved correlation in f90 output, coefficient of variation and confidence interval statistics in DAKOTA output.
+    - consolidation of old/new sampling for LHS/PCE
+	
+  - MV/AMV/AMV+/FORM reorganization.
+  
+- Parameter estimation:
+
+  - New NLSSOL SQP-based generally-constrained nonlinear least squares.
+  - New least squares iterator branch to support NLSSOL and OPT++ GNewton.
+    
+- Sensitivity/statistical analysis:
+
+  - Distribution of DDACE under LGPL.
+  - Consolidation of function evaluation management routines among design of experiments, UQ sampling, and parameter studies.
+
+**New strategies**
+
+- Surrogate-based optimization
+
+  - Enhancements to penalty function consistency.
+  - Enhancements to trust region management and convergence controls.
+  - New 1st-order additive correction (thanks to Natalia Alexandrov and Michael Lewis for formulation). Improves convergence in SBO test cases employing hierarchical surrogates.
+
+- Optimization under uncertainty (OUU)
+
+  - New trust-region surrogate-based OUU (paper).
+  - Enhanced data flow in Layered/Nested models.
+
+- Concurrent (Pareto set, Multi-start)
+
+  - New random starts capability (in place of or in combination with user-specified starts).
+  - New results/timing summaries.
+  - Parallel scheduling enhancements.
+
+**New DAKOTA facilities**
+
+- New library mode:
+
+  - Library creation (libdakota.a et al.) and consolidation in Dakota/lib.
+  - New API for cases when command line arguments are not directly accessible.
+  - Access to final strategy results.
+  - Library mode documentation.
+
+- New surrogates:
+
+  - Linear and cubic polynomials to supplement existing quadratic polynomial.
+  
+- Enhanced random seed control for multiple sampling sets in DDACE and LHS
+
+  - 4 seed selections: combinations of fixed vs. sequenced and user-specified vs. system-generated.
+  - Sequenced seeds result in variable sampling patterns which enhance reliability and accelerate convergence in SBO, OUU, and SBOUU.
+
+- New error checking in approximation classes, uncertain variables, PCE, submodel compatibility, and method constraint support.
+- Efficiency enhancements:
+
+  - Dropped pre-ANSI C++ mode which allowed for STL streamlining and optimization.
+  - Additional output control: debug/verbose/normal/quiet/silent settings, -i/-o/-e command line options.
+  - Evaluation cache and restart deactivation option.
+  - New MPI intra-communicators to streamline message broadcasts for large parallel runs.
+  - Streamlined communicator repartitioning in strategies.
+  
+- New utilities:
+
+  - Restart repair by evaluation id.
+  - 3D graphics fonts (PLplot) distributed with executables.
+  
+- SQA:
+  - Automated DAKOTA testing: nightly build verifications, new regression test facilities employing test matrices, unit testing under development.
+  - Nightly library testing for SGOPT, PICO, and UTILIB (OPT++, DDACE to follow).
+  - Requirements/issue tracking (Bugzilla, restricted access), design tracking, release management (automated posting of nightly builds available shortly).
+
+**Contributions from the user community**
+
+- Distributed testing/issue identification:
+
+  - SGOPT: problem size limitations removed (identified by Michel Beaulieu), real-valued GA bound constraint bug resolved (identified by Hongman Kim), multi_step keyword mismatch resolved (identified by Don Flaggs).
+  - OPT++: bound constraints fixed in PDS (identified by Don Flaggs), final solution returned properly (identified by Michel Beaulieu).
+  - DOT/CONMIN: registration of automatic method switches for consistency in output headers (identified by Don Flaggs).
+  - SBO fraction of cauchy decrease bug resolved (identified by Myles Baker).
+  - LINUX graphics configuration generalized (identified by Constantine Orogo).
+  - IBM POE: replaced short hand checks for MPI_REQUEST_NULL (identified by Scott Brandon).
+  - DEC asynchronous evaluations: activated usleep() function in asynch schedulers as OSF 5.1 is now supporting it (identified by Scott Brandon).
+  
+- Enhancement suggestions:
+
+  - Surrogate builds from files (requested by Srinivas Kodiyalam)
+  - Output of surrogate functional forms (requested by Srinivas Kodiyalam).
+  - Seed output from SGOPT to allow run recreation (requested by Don Flaggs).
+  - Response function descriptors (requested by Hongman Kim).
+
+- Contributed code:
+
+  - Cygwin evaluation and initial port (contributed by Hongman Kim).
+  - Mac OSX evaluation (contributed by Carl Hagelberg).
+  - Linear polynomial surrogate model (contributed by Myles Baker).
+  - Direct interface to Phoenix Integration's ModelCenter and merged variable descriptors (contributed by Hongman Kim).

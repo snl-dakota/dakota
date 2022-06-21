@@ -1,0 +1,19 @@
+.. _releasenotes-gui-67:
+
+"""""""""""""""""""""""""""""""""""""
+Version 6.7 - Doorstop Dash (2017/11)
+"""""""""""""""""""""""""""""""""""""
+
+- GUI plotting enhancements:
+
+  - Support for log scales
+  - Ability to show multiple plot "canvases" together on a grid
+  - User-created plots are now top-level Dakota project components
+  
+- GUI enhancements/bugfixes:
+  
+  - Driver script is automatically created and connected if a Dakota study is created using the wizard and a known simulation model
+  - Improved controls for determining Dakota's working directory
+  - Improved support in the GUI for shipped Dakota examples
+  - Support for renaming Dakota projects
+  - Reorganized GUI menu options

@@ -1,0 +1,118 @@
+.. _releasenotes-52:
+
+""""""""""""""""""""""""
+Version 5.2 (2011/11/30)
+""""""""""""""""""""""""
+
+**Highlights**
+
+- New UQ method options emphasizing adaptivity (PCE, SC), gradient-enhancement (PCE, SC, GEK), and multifidelity models (PCE, SC). GEK (gradient-enhanced Kriging) also impacts optimization, nonlinear least-squares, and nondeterministic calibration.
+- Transition to CMake as primary build system. Autotools are deprecated and will not be supported in releases following 5.2.
+- Extended capabilities for deterministic and nondeterministic calibration, including data file management.
+- Unified tabular input/output and standardized on annotated default format. Warning: requires input specification change to recover historical behavior.
+- Improved download and getting started process on http://dakota-new.sandia.gov, for both external and internal users.
+
+**Uncertainty Quantification (UQ)**
+
+- Adjoint-enhanced methods
+
+  - refinements to PCE regression (originally in 5.1)
+  - SC with type1 + type2 interpolation: local cubic splines and global Hermite interpolants
+  - global reliability analysis and interval estimation can leverage derivative data when available
+
+- Adaptive refinement of stochastic expansions
+
+  - dimension-adaptive h-refinement: use of local piecewise basis polynomials in SC within global tensor/sparse grids, with extended support fo variable transformations to std uniform domains
+  - dimension-adaptive refinement of PCE using spectral decay rate estimation
+  - uniform refinement of regression-based PCE, including point reuse
+  - cost normalization of trial index sets within generalized sparse grids
+
+- Multifidelity UQ with stochastic expansions
+
+  - PCE or SC, additive or multiplicative, value-based or gradient-enhanced; with support for non-basis gradients (used in mixed UQ and OUU). Also includes product expansion estimation based on new univariate basis triple product evaluation and fast lookups.
+
+- Other stochastic expansions
+
+  - extension of regression PCE to support probabilistic collocation (filtered tensor grids), to provide fault tolerance (exclusion of inf/nan samples), and to support alternative oversampling rule orders (to tame condition number growth)
+  - refined control of order growth in nested rules (resticted or unrestricted)
+  - extended numerical integration with nested rules: Genz-Keister level 5, addition of 511 point Gauss-Patterson rule
+  - Refinements to output:
+
+    - output of approximation-based samples (output >= verbose)
+    - tabulation of collocation points and weights (output >= verbose) in dakota_{quadrature,cubature,sparse}_tabular.dat
+    - output of SC expansion moments (augments numerical moments) to assess effects of any interpolation errors
+    - revert to output of central moments (averting numerical exceptions) when poorly converged integration results in negative variance
+
+  - Output of PDFs (output >= normal) in addition to CDFs/CCDFs
+
+**Optimization and Nonlinear least squares (NLS):**
+
+- Automatically reformulate least-squares problems for solution with any DAKOTA optimizer, including support for approximate or exact Hessians. Mirros capability in surrogate-based minimizers ("approx_subproblem single_objective").
+- Reformulation of weighted NLS, with connection of weights to experimental data uncertainties when provided. Also distinguished weights from scales.
+- Efficient global optimiztion supports use of derivative data.
+- OPT++ replaced NEWMAT with Teuchos for numerical data.
+
+**Methods (general)**
+
+- Bayesian inference with GPMSA and QUESO (not available in publicly released DAKOTA at this time), including emulation with PCE, SC, or GP.
+- An improved Gaussian process/Kriging model (the "surfpack" version which is now the default):
+
+  - Can be built from function values plus gradients. Beneficial if accurate and inexpensive derivative info is available from the simulation, e.g. automatic differentiation or continuous adjoint gradients.
+  - Handles ill-conditioned correlation matrices using a new pivoted Cholesky approach which discards the points that contain the least unique information.
+  - Improves the performance of methods based on efficient global optimization (EGO).
+
+**Framework**
+
+- Unified tabular input/output and standardized on annotated default format.
+- Build system and libraries:
+
+  - CMake build system for UNIX and Cygwin platforms. CMake is now the primary build tool for DAKOTA. Autotools build files are provided in the source distribution, but are deprecated as of DAKOTA 5.2.
+  - Default to shared library builds for DAKOTA and its TPLs.
+  - Migrated away from configuration header files (CMake build only) in DAKOTA and PECOS which drastically reduces macro-redefintion warnings during builds.
+  - Leverage Boost components: Boost.Filesystem (Version2) for improved portability and maintainability of working directories; Boost.Regex.
+
+- Refactoring for consolidation and/or capability extension:
+
+  - Consolidation of shared UQ code for "u-space" model generation and LHS sampler construction.
+  - Refactor of local corrections in SurrogateModel to consolidate code with TaylorApproximation (code is shorter, simpler, more efficient). Results in reusable DiscrepancyCorrection component.
+  - Extension of surrogate models (data fits and hierarchical) to support additional evaluation modes and unify previous modes:
+
+    - UNCORRECTED_SURROGATE (approx)
+    - AUTO_CORRECTED_SURROGATE (approx plus or times delta; default setting)
+    - BYPASS_SURROGATE (truth)
+    - ADDITIVE_DISCREPANCY (truth - approx)
+    - MULTIPLICATIVE_DISCREPANCY (truth / approx)
+	
+  - Refactor of response data sets for nondeterministic calibration methods, extending calibration response data sets into the UQ branch and incorporating observations, weights, experimental uncertainties.
+  - Refactor of the initialization of polynomial bases in order to improve management of distinctions between quadrature rules used in integration and the bases used in approximation, given growth in supported interpolant polynomials.
+
+- Refactoring for efficiency:
+
+  - Refactor of surrogate data management to more flexibly support shallow or deep copies of data. Useful for sharing variables data among multiple response function surrogates (allowing greater scalability with respect to output dimension), sharing of surrogate input and output data among DAKOTA and PECOS (eliminates copy of data sets), and sharing data among surrogate build data and the evaluation cache.
+  - Rework of view/copy semantics for Response data. Direct updating of views of gradients/Hessians has been deployed to non-const updates throughout the code, eliminating inefficient copy/update/restore blocks.
+  - lightweight constructors for PCE/SC, enabling their use as Bayesian emulator models
+
+**Miscellaneous Enhancements**
+
+- ENH: Documentation: new DAKOTA Theory Manual (previous Users Manual content migrated and extended)
+- ENH: Examples of Python script interface for Windows and Unix; VisualBasic interface to Excel; updated generic for Windows
+- ENH/BUG: Improvements to dprepro to handle escaped literals and inline default assignments; thanks to Roy Stogner (U Texas, Austin); added regression tests for dprepro and options for delimiter and precision
+- ENH: Enable CMake-based build of DAKOTA in Trilinos' TriKota; thanks to Eric Phipps (SNL)
+- ENH: CDashboard posting of DAKOTA (Public) builds http://dakota-new.sandia.gov/cdash/
+- ENH: Migrated OPT++ library from NEWMAT to Teuchos linear algebra package; thanks to Jed Gohlke (Rice)
+- ENH: Addition of new test functions: Gerstner-Griebel, scalable text_book, scalable Gerstner-Griebel, low fidelity short_column, herbie, smooth_herbie, and shubert
+- ENH: PGI Compiler support: Non-optimized PGI builds are now supported (requires pgCC >= 9.0-4, Boost >= 1.45 (with SNL patch for large filesystems), and CMake >= 2.8.4).
+- ENH: Activate COMM_SPLIT_TO_SINGLE by default, to simplify parallel direct interface plug-ins in library mode
+- ENH: Perl script for developer testing flexibility on directories, test numbers, multiple tests, etc.
+
+**Miscellaneous Bug Fixes**
+
+- BUG: Parallel partitioning for large processors_per_analysis (Ticket #3097); thanks to Rich Drake (SNL)
+- BUG: Evaluation ids for parallel direct interface evaluations (Ticket #3100); thanks to Rich Drake (SNL)
+- BUG: Correct DVV initialization for gradient-enhanced PCE
+- BUG: Correct numerical differencing for inactive variables in the presence of bounds (RBDO)
+- BUG: Correct incremental updates applied over both halves of real symmetric Hessian matrices (introduced during transition to Teuchos data types)
+- BUG: DDACE RNG was not respecting user-specified seed
+- BUG: Use std::string instead of const char* in library interface to fix memory leak
+- BUG: Fix openmpi relative node example
+- BUG: Fix size estimation for total-order polynomial chaos expansions for large random dimension; thanks to Maciej Mazur (RMIT University)
