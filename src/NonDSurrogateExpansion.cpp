@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -59,7 +59,7 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model):
     //   daceIterator spec points to the actualModel spec (when DACE is active)
     //   and daceIterator should sample in u-space for a u-space approx.  This
     //   requires recasting + reinserting the model + re-initializing DACE (no
-    //   thanks), or instantiating the model first (using actual_model_pointer
+    //   thanks), or instantiating the model first (using truth_model_pointer
     //   or model_pointer from DACE spec) + recasting + instantiating DACE on
     //   recast (similar to lightwt DataFitSurrModel ctor used by PCE/SC).
     //   >> either an option in existing DataFitSurrModel or a specialization

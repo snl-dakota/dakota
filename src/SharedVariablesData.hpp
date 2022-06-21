@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -1704,12 +1704,9 @@ inline void SharedVariablesData::idrv_start(size_t idrvs)
 } // namespace Dakota
 
 
-// Since we may serialize this class through a temporary, force
-// serialization mode and no tracking.  We allow tracking on
-// SharedVariablesDataRep as we want to serialize each unique pointer
-// exactly once (may need to revisit this).
-BOOST_CLASS_IMPLEMENTATION(Dakota::SharedVariablesData, 
- 			   boost::serialization::object_serializable)
+// Since we may serialize this class through a temporary, disallow tracking.
+// We allow tracking on SharedVariablesDataRep as we want to serialize each
+// unique pointer exactly once (may need to revisit this).
 BOOST_CLASS_TRACKING(Dakota::SharedVariablesData, 
   		     boost::serialization::track_never)
 

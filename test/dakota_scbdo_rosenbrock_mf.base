@@ -7,7 +7,7 @@ Test Number 0 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 40 total (40 new, 0 duplicate)
   response_fn_1: 40 val (40 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -17,7 +17,7 @@ Test Number 1 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 23 total (20 new, 3 duplicate)
   response_fn_1: 23 val (20 n, 3 d), 18 grad (16 n, 2 d), 0 Hess (0 n, 0 d)
@@ -27,7 +27,7 @@ Test Number 2 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 23 total (20 new, 3 duplicate)
   response_fn_1: 23 val (20 n, 3 d), 18 grad (16 n, 2 d), 0 Hess (0 n, 0 d)
@@ -37,7 +37,7 @@ Test Number 3 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 4 succeeded
 <<<<< Function evaluation summary (UQ_I): 26 total (26 new, 0 duplicate)
   response_fn_1: 26 val (26 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
@@ -47,7 +47,7 @@ Test Number 4 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 5 succeeded
 <<<<< Function evaluation summary (UQ_I): 26 total (26 new, 0 duplicate)
   response_fn_1: 26 val (26 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
@@ -57,7 +57,7 @@ Test Number 5 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 6 succeeded
 <<<<< Function evaluation summary (UQ_I): 17 total (14 new, 3 duplicate)
   response_fn_1: 17 val (14 n, 3 d), 14 grad (12 n, 2 d), 0 Hess (0 n, 0 d)
@@ -67,7 +67,7 @@ Test Number 6 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 7 succeeded
 <<<<< Function evaluation summary (UQ_I): 17 total (14 new, 3 duplicate)
   response_fn_1: 17 val (14 n, 3 d), 14 grad (12 n, 2 d), 0 Hess (0 n, 0 d)
@@ -77,4 +77,4 @@ Test Number 7 succeeded
                      -2.0000000000e+00 x1
 <<<<< Best objective function  =
                      -2.0913244317e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

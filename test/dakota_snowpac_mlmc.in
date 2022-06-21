@@ -65,6 +65,7 @@ method,
 #	  convergence_tolerance =  .001
 #	  convergence_tolerance = .0001
 	output silent
+	final_statistics qoi_statistics
 	final_moments central
 
 model,

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -36,8 +36,6 @@ static const char rcsId[]="@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z m
 namespace Dakota 
 {
 extern PRPCache        data_pairs;
-extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
-extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
 extern EvaluationStore evaluation_store_db; // defined in dakota_global_defs.cpp
 
 // These globals defined here rather than in dakota_global_defs.cpp in order to
@@ -139,11 +137,13 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     }
   }
 
+  bool estimating_derivs = false;
   // Promote fdGradStepSize/fdHessByFnStepSize/fdHessByGradStepSize to defaults
   // if needed.  Note: the fdStepSize arrays specialize by variable, whereas
   // mixed grads/Hessians specialize by function.
   if ( gradientType == "numerical" ||
        ( gradientType == "mixed" && !gradIdNumerical.empty() ) ) {
+    estimating_derivs = true;
     if (fdGradStepSize.empty()) {
       fdGradStepSize.resize(1);
       fdGradStepSize[0] = 0.001;
@@ -151,6 +151,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   }
   if ( hessianType == "numerical" ||
        ( hessianType == "mixed" && !hessIdNumerical.empty() ) ) {
+    estimating_derivs = true;
     // fdHessByFnStepSize and fdHessByGradStepSize can only differ currently
     // in the case of assignment of default values, since the same
     // fd_hessian_step_size input is reused for both first- and second-order
@@ -166,6 +167,14 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
       fdHessByGradStepSize[0] = 0.001;
     }
   }
+
+  // TODO: Tried to be aggressive and swallow metadata when numerical
+  // derivatives are active, even though they may be active for some
+  // evals and inactive for others. Causes problems with reading the
+  // results files for the underlying finite difference evals if they
+  // contain metadata...
+  //  if (estimating_derivs)
+  //  currentResponse.reshape_metadata(0);
 
   /*
   // Populate gradient/Hessian attributes for use within the iterator hierarchy.
@@ -217,11 +226,10 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
 
 
 Model::
-Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-      ParallelLibrary& parallel_lib,
-      const SharedVariablesData& svd, bool share_svd,
-      const SharedResponseData&  srd, bool share_srd,
-      const ActiveSet& set, short output_level):
+Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
+      const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
+      short output_level, ProblemDescDB& problem_db,
+      ParallelLibrary& parallel_lib):
   numDerivVars(set.derivative_vector().size()),
   numFns(set.request_vector().size()), evaluationsDB(evaluation_store_db),
   fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
@@ -251,11 +259,14 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 
   currentResponse = (share_srd) ?
     Response(srd, set) : Response(srd.response_type(), set);
+
+  // TODO: unsure if this is too aggressive due to supportsEstimDerivs = true:
+  //  currentResponse.reshape_metadata(0)
 }
 
 
 /** This constructor also builds the base class data for inherited models.
-    However, it is used for recast models which are instantiated on the fly.
+    However, it is used for derived models which are instantiated on the fly.
     Therefore it only initializes a small subset of attributes. */
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
@@ -276,11 +287,9 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 { /* empty ctor */ }
 
 
-/** The default constructor is used in vector<Model> instantiations
-    and for initialization of Model objects contained in Iterator and
-    derived Strategy classes.  modelRep is NULL in this case (a
-    populated problem_db is needed to build a meaningful Model
-    object). */
+/** The default constructor is used in vector<Model> instantiations and for
+    default initialization of Model objects.  modelRep is NULL in this case
+    (a populated problem_db is needed to build a meaningful Model object). */
 Model::Model():
   probDescDB(dummy_db), parallelLib(dummy_lib),
   evaluationsDB(evaluation_store_db)
@@ -2961,7 +2970,7 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
 {
   const ShortArray& asv_in   = original_set.request_vector();
   const SizetArray& orig_dvv = original_set.derivative_vector();
-  
+
   // *_asv_out[i] have all been initialized to zero
 
   // For HierarchSurr and Recast models with no scaling (which contain no
@@ -3333,6 +3342,19 @@ void Model::active_model_key(const Pecos::ActiveKey& key)
 }
 
 
+const Pecos::ActiveKey& Model::active_model_key() const
+{
+  if (!modelRep) {
+    Cerr << "Error: Letter lacking redefinition of virtual active_model_key() "
+	 << "function.\n       model keys are not available from this Model "
+	 << "class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->active_model_key();
+}
+
+
 void Model::clear_model_keys()
 {
   if (modelRep) // envelope fwd to letter
@@ -3623,6 +3645,19 @@ Real Model::solution_level_real_value() const
   }
 
   return modelRep->solution_level_real_value(); // envelope fwd to letter
+}
+
+
+size_t Model::cost_metadata_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual cost_metadata_index"
+	 << "() function.\n       cost_metadata_index() is not supported by "
+	 << "this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->cost_metadata_index(); // envelope fwd
 }
 
 
@@ -4302,6 +4337,15 @@ void Model::correction_type(short corr_type)
 }
 
 
+short Model::correction_order()
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->correction_order();
+  else
+    return -1; // special value for no correction (0 = value correction)
+}
+
+
 void Model::single_apply(const Variables& vars, Response& resp,
 			 const Pecos::ActiveKey& paired_key)
 {
@@ -4371,6 +4415,19 @@ void Model::cache_unmatched_response(int raw_id)
       // not essential due to subsequent clear(), but avoid any redundancy:
       responseMap.erase(rr_it);
     }
+  }
+}
+
+
+void Model::cache_unmatched_responses()
+{
+  if (modelRep)
+    modelRep->cache_unmatched_responses();
+  else {
+    // cache all remaining entries in responseMap, as they were not successfuly
+    // migrated to another bookkeeping construct (e.g. in rekey_response_map())
+    cachedResponseMap.insert(responseMap.begin(), responseMap.end());
+    responseMap.clear();
   }
 }
 
@@ -5725,7 +5782,7 @@ bool Model::db_lookup(const Variables& search_vars, const ActiveSet& search_set,
       = lookup_by_val(data_pairs, interface_id(), search_vars, search_set);
     if (cache_it != data_pairs.get<hashed>().end()) {
       found_resp.active_set(search_set);
-      found_resp.update(cache_it->response());
+      found_resp.update(cache_it->response(), true); // update metadata
       return true;
     }
     return false;

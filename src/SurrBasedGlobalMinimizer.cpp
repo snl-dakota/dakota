@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -44,7 +44,7 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 
   if (iteratedModel.truth_model().is_null()) {
     Cerr << "Method surrogate_based_global requires a surrogate model that "
-            "has an underlying truth model via actual_model_pointer or indirectly "
+            "has an underlying truth model via truth_model_pointer or indirectly "
             "through dace_method_pointer. To optimize on build-once surrogates, "
             "e.g., from imported training data, apply a normal global optimizer "
             "like the moga or soga method to the surrogate model directly.\n";

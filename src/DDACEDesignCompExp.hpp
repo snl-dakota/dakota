@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -67,12 +67,12 @@ protected:
   void core_run();
   void post_input();
   void post_run(std::ostream& s);
-  int num_samples() const;
-  void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
+  size_t num_samples() const;
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
   unsigned short sampling_scheme() const;
   void vary_pattern(bool pattern_flag);
   void get_parameter_sets(Model& model);
-  void get_parameter_sets(Model& model, const int num_samples, 
+  void get_parameter_sets(Model& model, const size_t num_samples, 
 			  RealMatrix& design_matrix);
 private:
 
@@ -102,10 +102,10 @@ private:
   /// initial specification of number of symbols
   int symbolsSpec;
   /// current number of samples to be evaluated
-  int numSamples;
+  size_t numSamples;
   /// current number of symbols to be used in generating the sample set
   /// (inversely related to number of replications)
-  int numSymbols;
+  size_t numSymbols;
   /// the user seed specification for the random number generator
   /// (allows repeatable results)
   const int seedSpec;
@@ -127,12 +127,12 @@ private:
 };
 
 
-inline int DDACEDesignCompExp::num_samples() const
+inline size_t DDACEDesignCompExp::num_samples() const
 { return numSamples; }
 
 
 inline void DDACEDesignCompExp::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   // allow sample reduction relative to previous sampling_reset() calls
   // (that is, numSamples may be increased or decreased to match min_samples),

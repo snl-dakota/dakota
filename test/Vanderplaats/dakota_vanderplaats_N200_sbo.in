@@ -53,7 +53,7 @@ model,
 	responses_pointer = 'SURROGATE_RESP'
  	surrogate local taylor_series					#s0
 # 	surrogate multipoint tana						#s1
-	  actual_model_pointer = 'TRUTH'
+	  truth_model_pointer = 'TRUTH'
 
 model,
 	id_model = 'TRUTH'

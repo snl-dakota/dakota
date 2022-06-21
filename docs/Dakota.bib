@@ -6,7 +6,7 @@
 % --- Dakota Manuals ---
 
 % NOTE: The citations lag by one Dakota version due to R&A
-% TODO: Add Coomber, W.~P. when updating to Dakota 6.13
+% Updated for Dakota 6.16
 
 @string{DakotaAuthorsCode =
 "Adams, B.~M. and Bohnhoff, W.~J. and Canfield, R.~A. and Dalbey, K.~R. and
@@ -34,42 +34,42 @@ Tran, A. and {(with Menhorn, F. and Zeng, X.)}"
 
 @manual{DevMan,
   author = 	 DakotaAuthorsCode,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.12 Developers Manual},
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.15 Developers Manual},
   organization =  {Sandia National Laboratories},
-  month =        {May},
-  year = 	 2020,
+  month =        {November},
+  year = 	 2021,
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
 
 @manual{RefMan,
   author = 	 DakotaAuthorsCode,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.12 Reference Manual},
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.15 Reference Manual},
   organization =  {Sandia National Laboratories},
-  month =        {May},
-  year = 	 2020,
+  month =        {November},
+  year = 	 2021,
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
 
 @TechReport{TheoMan,
   author = 	 DakotaAuthorsTheory,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.12 Theory Manual},
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.15 Theory Manual},
   institution =  {Sandia National Laboratories},
-  number =       {SAND2020-4987},
-  month =        {May},
-  year = 	 2020,
+  number =       {SAND2021-14254},
+  month =        {November},
+  year = 	 2021,
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
 
 @TechReport{UsersMan,
   author = 	 DakotaAuthorsUsers,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.12 Users Manual},
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.15 Users Manual},
   institution =  {Sandia National Laboratories},
-  number =       {SAND2020-5001},
-  month =        {May},
-  year = 	 2020,
+  number =       {SAND2021-14253},
+  month =        {November},
+  year = 	 2021,
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
@@ -1283,6 +1283,19 @@ pages={259–328}
   pages =	 {295--347}
 }
 
+
+@article{GORODETSKY2020109257,
+  author = {Alex A. Gorodetsky and Gianluca Geraci and Michael S. Eldred and John D. Jakeman},
+  title = {A generalized approximate control variate framework for multifidelity uncertainty quantification},
+  journal = {Journal of Computational Physics},
+  volume = {408},
+  pages = {109257},
+  year = {2020},
+  issn = {0021-9991},
+  doi = {https://doi.org/10.1016/j.jcp.2020.109257},
+  url = {https://www.sciencedirect.com/science/article/pii/S0021999120300310}
+}
+
 @article{GrKo06,
   author = {Gray, G.~A. and Kolda, T.~G.},
   title = {Algorithm 856: {APPSPACK} 4.0: Asynchronous Parallel Pattern Search for Derivative-Free Optimization},
@@ -1344,7 +1357,7 @@ pages={259–328}
         Journal = {Statistics and Computing},
         Pages = {339-354},
         Publisher = {Springer Netherlands},
-        Title = {DRAM: Efficient adaptive MCMC},
+        Title = {{DRAM}: Efficient adaptive {MCMC}},
         Url = {http://dx.doi.org/10.1007/s11222-006-9438-0},
         Volume = {16},
         Year = {2006}
@@ -3008,6 +3021,17 @@ ensitivity analysis of computationally demanding models},
   pages={225--240},
   year={2013},
   organization={Springer}
+}
+
+@article{tran2022aphbo,
+  title={{aphBO-2GP-3B}: a budgeted asynchronous parallel multi-acquisition functions for constrained {B}ayesian optimization on high-performing computing architecture},
+  author={Tran, Anh and Eldred, Mike and Wildey, Tim and McCann, Scott and Sun, Jing and Visintainer, Robert J},
+  journal={Structural and Multidisciplinary Optimization},
+  volume={65},
+  number={4},
+  pages={1--45},
+  year={2022},
+  publisher={Springer}
 }
 
 @misc{pybind11,

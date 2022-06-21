@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -130,6 +130,8 @@ primary_resp_weighter(const Variables& sub_model_vars,
     }
 
   }
+
+  weighted_response.metadata(sub_model_response.metadata());
 
   if (weightModelInstance->outputLevel > NORMAL_OUTPUT)
     Cout << "Least squares weight-transformed response:\n" << weighted_response 

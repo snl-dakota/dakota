@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -59,9 +59,6 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // initialize finalStatistics using the default statistics set
-  initialize_final_statistics();
-
   if ( wilksFlag ) {
     // Only works with sample_type of random
     // BMA: consider relaxing, despite no theory
@@ -116,7 +113,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     of on-the-fly sample sets. */
 NonDSampling::
 NonDSampling(unsigned short method_name, Model& model,
-	     unsigned short sample_type, int samples, int seed,
+	     unsigned short sample_type, size_t samples, int seed,
 	     const String& rng, bool vary_pattern, short sampling_vars_mode):
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
@@ -149,7 +146,7 @@ NonDSampling(unsigned short method_name, Model& model,
 /** This alternate constructor is used by ConcurrentStrategy for
     generation of uniform, uncorrelated sample sets. */
 NonDSampling::
-NonDSampling(unsigned short sample_type, int samples, int seed,
+NonDSampling(unsigned short sample_type, size_t samples, int seed,
 	     const String& rng, const RealVector& lower_bnds,
 	     const RealVector& upper_bnds):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
@@ -174,7 +171,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 /** This alternate constructor is used by ConcurrentStrategy for
     generation of normal, correlated sample sets. */
 NonDSampling::
-NonDSampling(unsigned short sample_type, int samples, int seed,
+NonDSampling(unsigned short sample_type, size_t samples, int seed,
 	     const String& rng, const RealVector& means, 
              const RealVector& std_devs, const RealVector& lower_bnds,
 	     const RealVector& upper_bnds, RealSymMatrix& correl):
@@ -224,7 +221,7 @@ NonDSampling::~NonDSampling()
 
 void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf,
-		  RealMatrix& sample_matrix, int num_samples, bool x_to_u)
+		  RealMatrix& sample_matrix, size_t num_samples, bool x_to_u)
 {
   if (num_samples == 0)
     num_samples = sample_matrix.numCols();
@@ -246,10 +243,11 @@ transform_samples(Pecos::ProbabilityTransformation& nataf,
 }
 
 
-void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
-                                      RealMatrix& design_matrix, bool write_msg)
+void NonDSampling::
+get_parameter_sets(Model& model, const size_t num_samples,
+		   RealMatrix& design_matrix, bool write_msg)
 {
-  initialize_lhs(write_msg, num_samples);
+  initialize_sample_driver(write_msg, num_samples);
 
   // Invoke LHSDriver to generate samples within the specified distributions
 
@@ -358,7 +356,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
 void NonDSampling::
 get_parameter_sets(const RealVector& lower_bnds, const RealVector& upper_bnds)
 {
-  initialize_lhs(true, numSamples);
+  initialize_sample_driver(true, numSamples);
   RealSymMatrix correl; // uncorrelated
   lhsDriver.generate_uniform_samples(lower_bnds, upper_bnds, correl,
 				     numSamples, allSamples);
@@ -373,7 +371,7 @@ get_parameter_sets(const RealVector& means, const RealVector& std_devs,
                    const RealVector& lower_bnds, const RealVector& upper_bnds,
                    RealSymMatrix& correl)
 {
-  initialize_lhs(true, numSamples);
+  initialize_sample_driver(true, numSamples);
   lhsDriver.generate_normal_samples(means, std_devs, lower_bnds, upper_bnds,
 				    correl, numSamples, allSamples);
 }
@@ -796,14 +794,13 @@ mode_bits(const Variables& vars, BitArray& active_vars,
 }
 
 
-void NonDSampling::initialize_lhs(bool write_message, int num_samples)
+void NonDSampling::
+initialize_sample_driver(bool write_message, size_t num_samples)
 {
-  // keep track of number of LHS executions for this object
-  ++numLHSRuns;
-
-  //Cout << "numLHSRuns = " << numLHSRuns << " seedSpec = " << seedSpec
-  //     << " randomSeed = " << randomSeed << " varyPattern = " << varyPattern
-  //     << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout <<  "Initialize: numLHSRuns = " << numLHSRuns << " seedSpec = "
+	 << seedSpec << " randomSeed = " << randomSeed << " varyPattern = "
+	 << varyPattern << std::endl;
 
   // Set seed value for input to LHS's RNG: a user-specified seed gives
   // repeatable behavior but no specification gives random behavior based on
@@ -813,7 +810,7 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
   // vary from one run to the next in a repeatable manner (required for RNG
   // without a persistent state, such as rnum2).
   bool seed_assigned = false, seed_advanced = false;
-  if (numLHSRuns == 1) { // set initial seed
+  if (numLHSRuns == 0) { // set initial seed
     lhsDriver.rng(rngName);
     if (!seedSpec) { // no user specification --> nonrepeatable behavior
       // Generate initial seed from a system clock.  NOTE: the system clock
@@ -827,12 +824,13 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
       randomSeed = generate_system_seed();
     }
     lhsDriver.seed(randomSeed);  seed_assigned = true;
+    seed_advanced = seed_updated(); // track seedIndex for ensemble samplers
   }
   // We must distinguish two advancement use cases and allow them to co-exist:
   // > an update to NonDSampling::randomSeed due to random_seed_sequence spec
   // > an update to Pecos::LHSDriver::randomSeed using LHSDriver::
   //   advance_seed_sequence() in support of varyPattern for rnum2
-  else if (seedSpec && seedSpec != randomSeed) // random_seed_sequence advance
+  else if (seed_updated()) // random_seed_sequence advance
     { seedSpec = randomSeed; lhsDriver.seed(randomSeed); seed_assigned = true; }
   else if (varyPattern && rngName == "rnum2") // vary pattern by advancing seed
     { lhsDriver.advance_seed_sequence();                 seed_advanced = true; }
@@ -859,6 +857,7 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
   }
 
   lhsDriver.initialize(sample_string, sampleRanksMode, !subIteratorFlag);
+  ++numLHSRuns;
 }
 
 

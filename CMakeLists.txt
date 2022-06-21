@@ -1,15 +1,14 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020
+#  Copyright 2014-2022
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
 # Dakota itself requires this CMake version; some TPLs may require even newer
-# For Dakota to find Python NumPy component, need 3.14 or newer
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
@@ -28,7 +27,7 @@ include(DakotaCxxOptions)
 dakota_cxx_standard()
 
 # Developer convenience options first so take precedence over default options
-if(DevDebug)
+if(DevDebugShared OR DevDebugStatic OR DevDebug)  # DevDebug is deprecated
   include(DakotaDebug)
   include(DakotaDev)
 elseif (DevDistro)
@@ -44,7 +43,7 @@ include(DakotaOptions)
 # -----
 
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 14)
+set(Dakota_VERSION_MINOR 16)
 set(Dakota_VERSION_PATCH 0)
 
 # --- Release time toggles
@@ -55,7 +54,7 @@ set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 
 # If empty, the build date will be used as the release date (could consider 
 # using the Git rev date); use format Mmm dd yyyy, as in asctime()
-#set(Dakota_RELEASE_DATE "May 17 2021")    # Versioned release date Mmm dd yyyy
+#set(Dakota_RELEASE_DATE "May 16 2022")    # Versioned release date Mmm dd yyyy
 set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date
 
 # Define convenience variables used here and in subdirs, such as

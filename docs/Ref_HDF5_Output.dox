@@ -548,11 +548,10 @@ of the 'sampling' method could be obtained at the HDF5 path: \c /methods/samplin
 
 \subsection hdf5_evaluations-low_level Low-Level Organization of Evaluation Data
 
-The evaluation data for each interface and model are stored using the same schema in a collection of 
-groups and datasets that reside within that interface or model's high-level location in the HDF5 file. 
-This section describes that "low-level" schema.
+Within each model and interface's "high-level" group, evaluation data are stored according to a "low-level" schema. This section desribes the "low-level" schema.
 
-Data are divided first of all into \c variables, \c responses, and \c metadata groups.
+Data are divided first of all into \c variables, \c responses, and \c properties groups. In addition, if a
+a user specifies metadata responses in his Dakota input, a \c metadata dataset will be present.
 
 \subsubsection hdf5_evaluations-low_level-variables Variables
 
@@ -598,11 +597,11 @@ be smaller in the response dimension than the \c functions dataset, and unreques
 
 \htmlinclude evaluation_hessians_table.html
 
-\subsubsection hdf5_evaluations-low_level-metadata Metadata
+\subsubsection hdf5_evaluations-low_level-properties Properties
 
-The \c metadata group contains up to three datasets.
+The \c properties group contains up to four members.
 
-<b>Active Set Vector:</b> The first is the \c active_set_vector. It is two dimensional, with
+<b>Active Set Vector:</b> The first is the \c active_set_vector dataset. It is two dimensional, with
 rows corresponding to evaluations and columns corresponding to responses. Each element contains an integer in
 the range 0-7, which indicates the request (function, gradient, Hessian) for the corresponding response for 
 that evaluation. The 0th dimension has the evaluations Ids scale, and the 1st dimension has two scales: the 
@@ -611,7 +610,7 @@ the information (function, gradient, Hessian) that possibly could have been requ
 
 \htmlinclude evaluation_asv_table.html
 
-<b>Derivative Variables Vector:</b> The second dataset in the metadata group is the \c derivative_variables_vector 
+<b>Derivative Variables Vector:</b> The second item in the properties group is the \c derivative_variables_vector 
 dataset. It is included only when gradients or Hessians are available. Like the ASV, it is two-dimensional. Each 
 column of the DVV dataset corresponds to a continuous variable and contains a 0 or 1, indicating whether gradients 
 and Hessians were computed with respect to that variaable for the evaluation. The 0th dimension has the evaluation 
@@ -620,10 +619,20 @@ contains the variable Ids of the continuous variables.
 
 \htmlinclude evaluation_dvv_table.html
 
-<b>Analysis Components:</b> The final dataset in the metadata group is the \c analysis_components dataset. It is a 1D 
+<b>Analysis Components:</b> The third member of the properties group is the \c analysis_components dataset. It is a 1D 
 dataset that is present only when the user specified analysis components, and it contains those components as strings.
 
 \htmlinclude evaluation_an_comps_table.html
+
+The final possible member of the properties group is the \c variable_parameters group. It is included only for models,
+which possess variables, and is described in a separate section below.
+
+\subsubsection hdf5_evaluations-low_level-metadata Metadata
+
+Beginning with release 6.16, Dakota supports response \ref responses-metadata. If configured, metadata values 
+are stored in the \c metadata dataset.
+
+\htmlinclude evaluation_metadata_table.html
 
 \subsection hdf5_evaluations-selection Selecting Models and Interfaces to Store
 
@@ -667,7 +676,7 @@ scales and transforms variables, normalizes empirical distributions (e.g. for
 (lambda and zeta vs mean and standard deviation for a \c lognormal_uncertain).
 
 Beginning with release 6.11, models write their variable’s parameters to HDF5.
-The information is located in each model's \c metadata/variable_parameters subgroup. 
+The information is located in each model's \c properties/variable_parameters subgroup. 
 Within this group, parameters are stored by Dakota variable type (e.g.
 \c normal_uncertain), with one 1D dataset per type. The datasets have the same
 names as their variable types and have one element per variable. Parameters are

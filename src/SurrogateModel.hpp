@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -78,6 +78,7 @@ protected:
   Model& subordinate_model();
 
   void active_model_key(const Pecos::ActiveKey& key);
+  const Pecos::ActiveKey& active_model_key() const;
 
   /// return responseMode
   short surrogate_response_mode() const;
@@ -107,6 +108,13 @@ protected:
   /// update current variables/labels/bounds/targets with data from model
   virtual void update_from_model(const Model& model);
 
+  /// compute start index for inserting response data into aggregated response
+  virtual size_t insert_response_start(size_t position);
+  /// insert a single response into an aggregated response in the
+  /// specified position
+  virtual void insert_metadata(const RealArray& md, size_t position,
+			       Response& agg_response);
+
   //
   //- Heading: Member functions
   //
@@ -133,6 +141,9 @@ protected:
   /// initialize model with inactive variable values/bounds data that could
   /// change once per set of evaluations (e.g., an outer iterator execution)
   void init_model_inactive_variables(Model& model);
+  /// initialize model with inactive variable labels that could change once
+  /// per set of evaluations (e.g., an outer iterator execution)
+  void init_model_inactive_labels(Model& model);
 
   /// update model with active variable values/bounds data
   void update_model_active_variables(Model& model);
@@ -318,6 +329,10 @@ inline void SurrogateModel::active_model_key(const Pecos::ActiveKey& key)
   // base implementation (augmented in derived SurrogateModels)
   activeKey = key;//.copy(); // share representations except for entering data into DB storage (reduce overhead of short-term activations)
 }
+
+
+inline const Pecos::ActiveKey& SurrogateModel::active_model_key() const
+{return activeKey; }
 
 
 inline short SurrogateModel::surrogate_response_mode() const

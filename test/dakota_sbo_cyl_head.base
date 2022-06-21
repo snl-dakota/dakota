@@ -10,7 +10,7 @@ Test Number 0 succeeded
                       8.1817880981e-07
                      -3.3471647490e-01
                      -1.5356205196e-10
-<<<<< Best data captured at function evaluation 97
+<<<<< Best evaluation ID: 97
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 65 total (65 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 108 total (101 new, 7 duplicate)
@@ -23,7 +23,7 @@ Test Number 1 succeeded
                      -4.4086847942e-01
                      -3.3471647533e-01
                       3.2697178298e-10
-<<<<< Best data captured at function evaluation 61
+<<<<< Best evaluation ID: 61
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 137 total (137 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 168 total (166 new, 2 duplicate)
@@ -36,4 +36,4 @@ Test Number 2 succeeded
                      -4.9178929263e-01
                      -3.3471649055e-01
                       1.7376697858e-08
-<<<<< Best data captured at function evaluation 168
+<<<<< Best evaluation ID: 168

@@ -70,6 +70,24 @@
   \expandafter\ifx\string_#1\string_\allowbreak\else#1\fi
   \expandafter\dodakotakw\fi}
 
+% Lifted from SANDreport.cls: "this page intentionally left blank"
+\def\emptypage@emptypage{%
+  \hbox{}\vspace*{\fill}
+  \begin{center}
+    This page intentionally left blank.
+  \end{center}
+  \vspace{\fill}\newpage%
+}%
+\def\cleardoublepage{%
+  \clearpage%
+  \if@twoside%
+  \ifodd\c@page%
+  % no-op
+  \else\emptypage@emptypage%
+  \fi% odd page
+  \fi% two side
+}%
+
 \begin{document}
 
 \begin{titlepage}

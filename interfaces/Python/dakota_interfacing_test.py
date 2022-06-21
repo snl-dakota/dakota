@@ -4,7 +4,7 @@ import unittest
 import os
 
 __author__ = 'J. Adam Stephens'
-__copyright__ = 'Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
+__copyright__ = 'Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
 __license__ = 'GNU Lesser General Public License'
 
 try: # Python 2/3 compatible import of StringIO
@@ -14,7 +14,8 @@ except ImportError:
 import dakota.interfacing as di
 from dakota.interfacing import parallel
 
-apreproParams = """                    { DAKOTA_VARS     =                      3 }
+# 6.15 and older format
+apreproParamsNoMetadata = """                    { DAKOTA_VARS     =                      3 }
                     { x1              =  7.488318331306800e-01 }
                     { x2              =  2.188638686202466e-01 }
                     { dussv_1         =                      "foo bar" }
@@ -29,7 +30,13 @@ apreproParams = """                    { DAKOTA_VARS     =                      
                     { DAKOTA_EVAL_ID  =                      1 }
 """
 
-dakotaParams = """                                          3 variables
+# 6.16 and newer format
+apreproParams = apreproParamsNoMetadata + """                    { DAKOTA_METADATA =                      1 }
+                    { MD_1            =                      "seconds" }
+"""
+
+# 6.15 and older format
+dakotaParamsNoMetadata = """                                          3 variables
                       7.488318331306800e-01 x1
                       2.188638686202466e-01 x2
                                     foo bar dussv_1
@@ -44,6 +51,11 @@ dakotaParams = """                                          3 variables
                                           1 eval_id
 """
 
+# 6.16 and newer format
+dakotaParams = dakotaParamsNoMetadata + """                                          1 metadata
+                                    seconds MD_1
+"""
+
 dakotaSingleEvalBatchParams = """                                          3 variables
                       7.488318331306800e-01 x1
                       2.188638686202466e-01 x2
@@ -55,6 +67,7 @@ dakotaSingleEvalBatchParams = """                                          3 var
                                           2 DVV_2:x2
                                           0 analysis_components
                                         2:1 eval_id
+                                          0 metadata
 """
 
 
@@ -68,6 +81,8 @@ dakotaBatchParams = """                                          2 variables
                                           2 DVV_2:x2
                                           0 analysis_components
                                         1:1 eval_id
+                                          1 metadata
+                                    seconds MD_1
                                           2 variables
                       3.222614371054804e-01 x1
                       4.946014218730854e-02 x2
@@ -78,7 +93,54 @@ dakotaBatchParams = """                                          2 variables
                                           2 DVV_2:x2
                                           0 analysis_components
                                         1:2 eval_id
+                                          1 metadata
+                                    seconds MD_1
 """
+
+# Dictionaries for testing the direct interface
+direct_dense_params = {
+    "variables": 5, 
+    "functions": 3, 
+    "metadata": 1, 
+    "variable_labels": ["cdv_1", "ddsiv_1", "ddssv_1", "ddsrv_1", "uuv_1"],
+    "function_labels": ["obj_fn", "nln_ineq_con_1", "nln_ineq_con_2"],
+    "metadata_labels": ["baz"],
+    "cv": [0.9414315689355135, 0.5], 
+    "cv_labels": ["cdv_1", "uuv_1"], 
+    "div": [7], 
+    "div_labels": ["ddsiv_1"], 
+    "dsv": ["baz"], 
+    "dsv_labels": ["ddssv_1"], 
+    "drv": [3.14], 
+    "drv_labels": ["ddsrv_1"], 
+    "asv": [7, 7, 7], 
+    "dvv": [1], 
+    "analysis_components": ["foo"],
+    "eval_id": 1
+}
+
+direct_sparse_params = {
+    "variables": 1, 
+    "functions": 1, 
+    "metadata": 0, 
+    "variable_labels": ["cdv_1"],
+    "function_labels": ["obj_fn"],
+    "metadata_labels": [],
+    "cv": [0.5], 
+    "cv_labels": ["cdv_1"], 
+    "div": [], 
+    "div_labels": [], 
+    "dsv": [], 
+    "dsv_labels": [], 
+    "drv": [], 
+    "drv_labels": [], 
+    "asv": [1], 
+    "dvv": [1], 
+    "analysis_components": [],
+    "eval_id": 1
+}
+
+
 
 # Helper functions needed for Python < 2.7
 def set_function(r):
@@ -89,6 +151,9 @@ def set_gradient(r):
 
 def set_hessian(r):
     r["response_fn_1"].hessian = [[1.0, 2.0],[2.0,3.0]]
+
+def set_metadata(r, key, value):
+    r.metadata[key] = value
 
 
 class dakotaInterfacingTestCase(unittest.TestCase):
@@ -106,6 +171,8 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(p.an_comps[0], "a b")
         self.assertEqual(p.an_comps[1], "b")
         self.assertEqual(p.eval_id, "1")
+        self.assertEqual(p.num_metadata, 1)
+        self.assertEqual(p.metadata[0], "seconds")
         self.assertTrue(p.aprepro_format)
         
         self.assertEqual(r.num_responses, 1)
@@ -115,6 +182,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(r.deriv_vars, ["x1","x2"])
         self.assertTrue(r.aprepro_format)
         self.assertEqual(r.results_file, "results.out")
+
+    def test_metadataless_aprepro_format(self):
+        """Coarse test parsing legacy metadata-less aprepro format Parameters files."""
+        pio = StringIO.StringIO(apreproParamsNoMetadata % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
+        self.assertEqual(p.num_variables, 3)
+        self.assertEqual(p.num_metadata, 0)
+        self.assertTrue(p.aprepro_format)
 
     def test_dakota_format(self):
         """Confirm that Dakota format Parameters files are parsed correctly."""
@@ -129,6 +204,8 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(p.an_comps[0], "a b")
         self.assertEqual(p.an_comps[1], "b")
         self.assertEqual(p.eval_id, "1")
+        self.assertEqual(p.num_metadata, 1)
+        self.assertEqual(p.metadata[0], "seconds")
         self.assertFalse(p.aprepro_format)
         
         self.assertEqual(r.num_responses, 1)
@@ -140,6 +217,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertFalse(r.aprepro_format)
         self.assertEqual(r.results_file, "results.out")
 
+    def test_metadataless_dakota_format(self):
+        """Coarse test parsing legacy metadata-less dakota format Parameters files."""
+        pio = StringIO.StringIO(dakotaParamsNoMetadata % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
+        self.assertEqual(p.num_variables, 3)
+        self.assertEqual(p.num_metadata, 0)
+        self.assertFalse(p.aprepro_format)
+
     def test_asv(self):
         """Results behaves according to the ASV when response data is set."""
         # Function only
@@ -148,6 +233,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         set_function(r)
         self.assertRaises(di.interfacing.ResponseError, set_gradient, r)
         self.assertRaises(di.interfacing.ResponseError, set_hessian, r)
+        set_metadata(r, "seconds", 42.0)
         r.write(StringIO.StringIO())
         # Gradient only
         pio = StringIO.StringIO(dakotaParams % 2)
@@ -155,6 +241,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertRaises(di.interfacing.ResponseError, set_function, r)
         set_gradient(r)
         self.assertRaises(di.interfacing.ResponseError, set_hessian, r)
+        set_metadata(r, 0, 42.0)
         r.write(StringIO.StringIO())
         # Hessian only
         pio = StringIO.StringIO(dakotaParams % 4)
@@ -162,6 +249,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertRaises(di.interfacing.ResponseError, set_function, r)
         self.assertRaises(di.interfacing.ResponseError, set_gradient, r)
         set_hessian(r)
+        set_metadata(r, "seconds", 42.0)
         r.write(StringIO.StringIO())
        
     def test_ignore_asv(self):
@@ -173,14 +261,19 @@ class dakotaInterfacingTestCase(unittest.TestCase):
             set_function(r) 
             set_gradient(r) 
             set_hessian(r)
+            set_metadata(r, 0, 42.0)
             r.write(StringIO.StringIO())
         # Test write-time ignoring
         sio = StringIO.StringIO(dakotaParams % 3)
         p, r = di.interfacing._read_parameters_stream(stream=sio,ignore_asv=False)
         set_function(r)
+        set_metadata(r, "seconds", 42.0)
         rio = StringIO.StringIO()
         r.write(stream=rio,ignore_asv=True)
-        self.assertEqual(rio.getvalue(), "  5.0000000000000000E+00 response_fn_1\n")
+        expected = """  5.0000000000000000E+00 response_fn_1
+  4.2000000000000000E+01 seconds
+"""
+        self.assertEqual(rio.getvalue(), expected)
     
     def test_results_write(self):
         """Verify Written test results"""
@@ -189,12 +282,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         set_function(r) 
         set_gradient(r) 
         set_hessian(r)
+        set_metadata(r, "seconds", 42.0)
         rio = StringIO.StringIO()
         r.write(stream=rio)
         expected = """  5.0000000000000000E+00 response_fn_1
 [   1.0189673084127668E-266 -6.3508646783183408E-264 ]
 [[   1.0000000000000000E+00   2.0000000000000000E+00
      2.0000000000000000E+00   3.0000000000000000E+00 ]]
+  4.2000000000000000E+01 seconds
 """
         self.assertEqual(rio.getvalue(), expected)
         # Test simulation failure flag
@@ -237,16 +332,24 @@ class dakotaInterfacingTestCase(unittest.TestCase):
             r[0].write("foo")
         # Verify writes
         r[0][0].function = 1.0
+        set_metadata(r[0], "seconds", 42.0)
         r[1][0].function = 2.0
+        set_metadata(r[1], 0, 43.0)
         results_file = StringIO.StringIO()
         r.write(results_file)
         results_strings = results_file.getvalue().split("\n")
+        # Eval 1
         self.assertEqual(results_strings[0], "#")
         val, label = results_strings[1].split()
         self.assertAlmostEqual(float(val),1.0)
-        self.assertEqual(results_strings[2], "#")
-        val, label = results_strings[3].split()
+        val, label = results_strings[2].split()
+        self.assertAlmostEqual(float(val),42.0)
+        # Eval 2
+        self.assertEqual(results_strings[3], "#")
+        val, label = results_strings[4].split()
         self.assertAlmostEqual(float(val),2.0)
+        val, label = results_strings[5].split()
+        self.assertAlmostEqual(float(val),43.0)
     
     def test_single_eval_batch(self):
         """Verify that batch objects are returned for batch = True"""
@@ -264,6 +367,58 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         with self.assertRaises(di.interfacing.BatchSettingError):
             p, r = di.interfacing._read_parameters_stream(stream=pio, 
                            batch=True, results_file="results.out")
+
+    def test_type_inference(self):
+        """With infer_types set to False, verify variables are all strings"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", infer_types=True)
+        self.assertIsInstance(p["x1"], float)
+        self.assertIsInstance(p["x2"], float)
+        self.assertIsInstance(p["dussv_1"], str)
+
+    def test_no_type_inference(self):
+        """With infer_types set to False, verify variables are all strings"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", infer_types=False)
+        self.assertIsInstance(p["x1"], str)
+        self.assertIsInstance(p["x2"], str)
+        self.assertIsInstance(p["dussv_1"], str)
+
+    def test_types_list(self):
+        """With infer_types set to False, verify variables are all strings"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", types=[str]*3)
+        self.assertIsInstance(p["x1"], str)
+        self.assertIsInstance(p["x2"], str)
+        self.assertIsInstance(p["dussv_1"], str)
+
+    def test_types_list_wrong_length(self):
+        """With infer_types set to False, verify variables are all strings"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        with self.assertRaises(di.BadTypesOverride):
+            di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", types=[str]*2)
+
+    def test_types_list(self):
+        """With infer_types set to False, verify variables are all strings"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        types = {"x1": str, "x2": str, "dussv_1": str}
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", types=types)
+        self.assertIsInstance(p["x1"], str)
+        self.assertIsInstance(p["x2"], str)
+        self.assertIsInstance(p["dussv_1"], str)
+
+    def test_results_metadata(self):
+        """Verify metadata by index vs. label"""
+        sio = StringIO.StringIO(dakotaParams % 3)
+        p, r = di.interfacing._read_parameters_stream(stream=sio)
+        set_function(r)
+        set_gradient(r)
+        # set via label, retrieve via index
+        set_metadata(r, "seconds", 1.2)
+        self.assertAlmostEqual(r.metadata[0], 1.2)
+        # set via index, retrieve via label
+        set_metadata(r, 0, 3.4)
+        self.assertAlmostEqual(r.metadata["seconds"], 3.4)
 
     def test_dprepro(self):
         """Verify that templates are substituted correctly"""
@@ -398,6 +553,157 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertRaises(parallel.ResourceError,parallel._calc_num_tiles,
                     tile_size=16, tasks_per_node=16, num_nodes=1, 
                     dedicated_master='TILE')
+
+
+class PythonDirectInterfaceTest(unittest.TestCase):
+    def test_parameters_from_dict_variable_order(self):
+        params, _ = di.read_params_from_dict(direct_dense_params)
+        labels = [label for label in params]
+        self.assertListEqual(direct_dense_params["variable_labels"], labels)
+        
+    def test_parameters_from_dict_variable_types(self):        
+        params, _ = di.read_params_from_dict(direct_dense_params)
+        expected_types = [float, int, str, float, float]
+        actual_types = [type(value) for label, value in params.items()]
+        self.assertListEqual(expected_types, actual_types)
+
+    def test_parameters_from_dict_variable_types(self):        
+        params, _ = di.read_params_from_dict(direct_dense_params)
+        expected_types = [float, int, str, float, float]
+        actual_types = [type(value) for label, value in params.items()]
+        self.assertListEqual(expected_types, actual_types)
+
+    def test_parameters_from_dict_variable_values(self):
+        params, _ = di.read_params_from_dict(direct_dense_params)
+        expected_values = []
+        expected_values.append(direct_dense_params["cv"][0])
+        expected_values += direct_dense_params["div"]
+        expected_values += direct_dense_params["dsv"]
+        expected_values += direct_dense_params["drv"]
+        expected_values.append(direct_dense_params["cv"][1])
+        actual_values = [value for label, value in params.items()]
+        self.assertListEqual(expected_values, actual_values)
+
+    def test_parameters_from_dict_asv(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        def asv_to_int(asv):
+            r = 0
+            if asv.function:
+                r = r | 1
+            if asv.gradient:
+                r = r | 2
+            if asv.hessian:
+                r = r | 4
+            return r
+
+        expected_asv = direct_dense_params["asv"]
+        actual_asv = [asv_to_int(response.asv) for label, response in results.items()]
+        self.assertListEqual(expected_asv, actual_asv)
+
+    def test_parameters_from_dict_dvv(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        expected_dvv = [direct_dense_params["cv_labels"][id-1] for id in direct_dense_params["dvv"]]
+        self.assertListEqual(expected_dvv, results.deriv_vars)
+    
+    def test_parameters_from_dict_eval_id(self):
+        params, results = di.read_params_from_dict(direct_dense_params)
+        expected_eid = str(direct_dense_params["eval_id"])
+        params_eid = params.eval_id
+        results_eid = results.eval_id
+        self.assertEqual(expected_eid, params_eid)
+        self.assertEqual(expected_eid, results_eid)
+
+    def test_parameters_from_dict_function_labels(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        expected_labels = direct_dense_params["function_labels"] 
+        actual_labels = [label for label in results]
+        self.assertListEqual(expected_labels, actual_labels)
+
+    def test_parameters_from_dict_an_comps(self):
+        params, _ = di.read_params_from_dict(direct_dense_params)
+        expected_ac = direct_dense_params["analysis_components"]
+        actual_ac = params.an_comps
+        self.assertListEqual(expected_ac, actual_ac)
+
+    def test_parameters_from_dict_metadata(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        expected_md = direct_dense_params["metadata_labels"]
+        actual_md = [md for md in results.metadata]
+        self.assertListEqual(expected_md, actual_md)
+
+    def test_parameters_from_dict_num_vars_funcs(self):
+        params, results = di.read_params_from_dict(direct_dense_params)
+        expected_nv = direct_dense_params["variables"]
+        expected_nf = direct_dense_params["functions"]
+        actual_nv = params.num_variables
+        actual_nf = results.num_responses
+        self.assertEqual(expected_nv, actual_nv)
+        self.assertEqual(expected_nf, actual_nf)
+
+    def test_return_direct_results_dict(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        for i in range(3):
+            results[i].function = i + 1.0
+            results[i].gradient = [i + 1.0]
+            results[i].hessian = [[i + 1.0]]
+        results.metadata[0] = "baz"
+        d = results.return_direct_results_dict()
+        self.assertIsInstance(d, dict)
+        
+        expected_fns = [1.0, 2.0, 3.0]
+        expected_grads = [[1.0], [2.0], [3.0]]
+        expected_hess = [ [[1.0]], [[2.0]], [[3.0]] ]
+
+        for i in range(3):
+            self.assertAlmostEqual(expected_fns[i], d["fns"][i])
+            self.assertAlmostEqual(expected_grads[i][0], d["fnGrads"][i][0]) 
+            self.assertAlmostEqual(expected_hess[i][0][0], d["fnHessians"][i][0][0]) 
+ 
+    def test_python_interface_decorator(self):
+        @di.python_interface
+        def driver(params, results):
+            self.assertIsInstance(params, di.Parameters)
+            self.assertIsInstance(results, di.Results)
+            for i in range(3):
+                results[i].function = i + 1.0
+                results[i].gradient = [i + 1.0]
+                results[i].hessian = [[i + 1.0]]
+            results.metadata[0] = "baz"
+            return results
+
+        d = driver(direct_dense_params)
+        self.assertIsInstance(d, dict)
+        self.assertTrue("fns" in d)
+        self.assertIsInstance(d["fns"], list)
+        self.assertTrue("fnGrads" in d)
+        self.assertIsInstance(d["fnGrads"], list)
+        self.assertTrue("fnHessians" in d)
+        self.assertIsInstance(d["fnHessians"], list)
+
+    def test_return_direct_results_dict_asv_problem(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        with self.assertRaises(di.ResponseError):
+            results.return_direct_results_dict()
+
+    def test_return_direct_results_dict_metadata_problem(self):
+        _, results = di.read_params_from_dict(direct_dense_params)
+        for i in range(3):
+            results[i].function = i + 1.0
+            results[i].gradient = [i + 1.0]
+            results[i].hessian = [[i + 1.0]]
+        with self.assertRaises(di.ResultsError):
+            results.return_direct_results_dict()
+
+    def test_parameters_from_dict_sparse(self):
+        params, results = di.read_params_from_dict(direct_sparse_params)
+        labels = [label for label in params]
+        self.assertListEqual(direct_sparse_params["variable_labels"], labels)
+        self.assertEqual(params[0], direct_sparse_params["cv"][0])
+        self.assertEqual(results.num_responses, direct_sparse_params["functions"])
+        results[0].function = 0.0
+        results.return_direct_results_dict()
+        
+
 # todo: test iteration, integer access
 
 

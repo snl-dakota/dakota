@@ -11,8 +11,8 @@ macro(dakota_find_boost)
   endif()
 
   # Dakota requires the specified compiled Boost library components
-  # Dakota requires Boost 1.58 or newer (1.69 recommended);
-  # enforce for all libs in the build
+  # Dakota requires Boost 1.69 or newer (this can possibly be relaxed to 1.58
+  # if not building unit tests); enforce for all libs in the build
   set(dakota_boost_libs filesystem program_options regex serialization system)
 
   if(DAKOTA_APPLE_FIX_BOOSTLIBS)
@@ -25,7 +25,7 @@ macro(dakota_find_boost)
     set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/boost_libs")
   endif()
 
-  find_package(Boost 1.58 REQUIRED COMPONENTS ${dakota_boost_libs})
+  find_package(Boost 1.69 REQUIRED COMPONENTS ${dakota_boost_libs})
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
     Boost::regex Boost::serialization Boost::system)
 

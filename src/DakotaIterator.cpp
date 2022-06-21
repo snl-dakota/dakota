@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -242,6 +242,26 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
 { /* empty ctor */ }
 
 
+/** This alternate constructor builds base class data for inherited iterators.
+    It is used for on-the-fly instantiations for which DB queries cannot be
+    used, and is not used for construction of meta-iterators. */
+Iterator::
+Iterator(NoDBBaseConstructor, Model& model, size_t max_iter, size_t max_eval,
+	 Real conv_tol, std::shared_ptr<TraitsBase> traits):
+  probDescDB(dummy_db), parallelLib(model.parallel_library()),
+  methodPCIter(parallelLib.parallel_configuration_iterator()),
+  myModelLayers(0), iteratedModel(model), //methodName(method_name),
+  convergenceTol(conv_tol), maxIterations(max_iter), maxFunctionEvals(max_eval),
+  maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
+  outputLevel(model.output_level()), summaryOutputFlag(false), topLevel(false),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
+  execNum(0), methodTraits(traits)
+{
+  //update_from_model(iteratedModel); // variable/response counts & checks
+}
+
+
 /** The default constructor is used in Vector<Iterator> instantiations
     and for initialization of Iterator objects contained in
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
@@ -404,7 +424,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case GLOBAL_RELIABILITY:
     return std::make_shared<NonDGlobalReliability>(problem_db, model); break;
   case GLOBAL_INTERVAL_EST:
-    switch (probDescDB.get_ushort("method.sub_method")) {
+    switch (probDescDB.get_ushort("method.nond.opt_subproblem_solver")) {
     case SUBMETHOD_LHS:
       return std::make_shared<NonDLHSSingleInterval>(problem_db, model); break;
     default:
@@ -413,7 +433,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     }
     break;
   case GLOBAL_EVIDENCE:
-    switch (probDescDB.get_ushort("method.sub_method")) {
+    switch (probDescDB.get_ushort("method.nond.opt_subproblem_solver")) {
     case SUBMETHOD_LHS:
       return std::make_shared<NonDLHSEvidence>(problem_db, model); break;
     default:
@@ -926,11 +946,11 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_GPMSA,             "gpmsa")
   (SUBMETHOD_MUQ,               "muq")
   (SUBMETHOD_QUESO,             "queso")
-  (SUBMETHOD_NIP,               "nip")
-  (SUBMETHOD_SQP,               "sqp")
+  (SUBMETHOD_OPTPP,             "nip")
+  (SUBMETHOD_NPSOL,             "sqp")
   (SUBMETHOD_EA,                "ea")
   (SUBMETHOD_EGO,               "ego")
-  (SUBMETHOD_SBO,               "sbo")
+  (SUBMETHOD_SBGO,              "sbgo")
   (SUBMETHOD_CONVERGE_ORDER,    "converge_order")
   (SUBMETHOD_CONVERGE_QOI,      "converge_qoi")
   (SUBMETHOD_ESTIMATE_ORDER,    "estimate_order")
@@ -1022,11 +1042,11 @@ void Iterator::run()
     ++execNum;
 
     if(evaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-      evaluationsDBState = evaluationsDB.iterator_allocate(method_id(), top_level());
+      evaluationsDBState
+	= evaluationsDB.iterator_allocate(method_id(), top_level());
       if(evaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
     }
-
 
     String method_string = method_enum_to_string(methodName);
     initialize_run();
@@ -1185,6 +1205,18 @@ void Iterator::init_communicators(ParLevLIter pl_iter)
       // init only needs to be recursed once (see also Model::init_comms)
     }
 
+    // Ordering: must perform method recourse after construction, and would
+    // prefer to perform recourse before initialization of comms (so that
+    // previous initialization does not need to be freed and then replaced).
+    // But for NestedModel's subIterator, it would be complicated to insert
+    // recourse after ctor and before init_comms (see management of circular
+    // dependency in NestedModel::drived_init_communicators()), so we instead
+    // perform recourse after derived_init_comms above has completed its
+    // recursion (requiring free and re-init for method recourse).  But we do
+    // keep this all within the scope of the init_comms recursion so that we
+    // wrap up all initialization here, prior to set_comms downstream.
+    check_sub_iterator_conflict(); // Note: can pull pl_iter from methodPCIter
+
     // After partitioning is complete, output tags for concurrent
     // iterators are established.  Initialize the eval id prefix for
     // this Iterator and its underlying Model.  This may get appended
@@ -1193,15 +1225,20 @@ void Iterator::init_communicators(ParLevLIter pl_iter)
   }
 }
 
-bool Iterator::top_level() {
-  if(iteratorRep) return iteratorRep->top_level();
+
+bool Iterator::top_level()
+{
+  if (iteratorRep) return iteratorRep->top_level();
   else return topLevel;
 }
 
-void Iterator::top_level(const bool &flag) {
-  if(iteratorRep) iteratorRep->top_level(flag);
+
+void Iterator::top_level(bool flag)
+{
+  if (iteratorRep) iteratorRep->top_level(flag);
   else topLevel = flag;
 }
+
 
 void Iterator::derived_init_communicators(ParLevLIter pl_iter)
 {
@@ -1417,7 +1454,7 @@ void Iterator::response_results_active_set(const ActiveSet& set)
 }
 
 
-const RealVector& Iterator::response_error_estimates() const
+const RealSymMatrix& Iterator::response_error_estimates() const
 {
   // no default implementation if no override
   if (!iteratorRep) {
@@ -1601,7 +1638,7 @@ void Iterator::print_results(std::ostream& s, short results_state)
 }
 
 
-int Iterator::num_samples() const
+size_t Iterator::num_samples() const
 {
   if (iteratorRep) // envelope fwd to letter
     return iteratorRep->num_samples();
@@ -1611,7 +1648,7 @@ int Iterator::num_samples() const
 
 
 void Iterator::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_reset(min_samples, all_data_flag, stats_flag);
@@ -1622,16 +1659,16 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
   }
 }
 
-void Iterator::
-sampling_reference(int samples_ref)
+
+void Iterator::sampling_reference(size_t samples_ref)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_reference(samples_ref);
   // else no-op: iterator does not employ a sampling reference (lower bound)
 }
 
-void Iterator::
-sampling_increment()
+
+void Iterator::sampling_increment()
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_increment();
@@ -1643,12 +1680,14 @@ sampling_increment()
   }
 }
 
+
 void Iterator::random_seed(int seed)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->random_seed(seed);
   // else no-op (don't require support from all Iterators that could be called)
 }
+
 
 unsigned short Iterator::sampling_scheme() const
 {
@@ -1675,21 +1714,28 @@ const Model& Iterator::algorithm_space_model() const
 }
 
 
-/** This is used to avoid clashes in state between non-object-oriented
-    (i.e., F77, C) iterator executions, when such iterators could
-    potentially be executing simulataneously (e.g., nested execution).
-    It is not an issue (and a used method is not reported) in cases
-    where a helper execution is completed before a lower level one
-    could be initiated; an example of this is DIRECT for maximization
-    of expected improvement: the EIF maximization is completed before
-    a new point evaluation (which could include nested iteration) is
-    performed. */
+/** This is used to avoid clashes in state between non-object-oriented (i.e.,
+    F77, C) iterator executions, when such iterators could potentially be
+    executing simultaneously (e.g., nested execution).  It is not an issue
+    (and a used method is not reported) in cases where a helper execution is
+    completed before a lower level one could be initiated; an example of this
+    is DIRECT for maximization of expected improvement: the EIF maximization
+    is completed before a new point evaluation (which could include nested
+    iteration) is performed. */
+void Iterator::check_sub_iterator_conflict()
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->check_sub_iterator_conflict();
+  // else default is no-op
+}
+
+
 unsigned short Iterator::uses_method() const
 {
   if (iteratorRep) // envelope fwd to letter
     return iteratorRep->uses_method();
   else // default definition (letter lacking redefinition of virtual fn.)
-    return DEFAULT_METHOD; // 0: no enabling iterator for this iterator
+    return SUBMETHOD_NONE; // no enabling iterator for this iterator
 }
 
 
@@ -1785,16 +1831,20 @@ nested_variable_mappings(const SizetArray& c_index1,
     iteratorRep->
       nested_variable_mappings(c_index1,  di_index1,  ds_index1,  dr_index1,
 			       c_target2, di_target2, ds_target2, dr_target2);
-  //else no-op
+  else // default implementation: pass along to Model hierarchy
+    iteratedModel.nested_variable_mappings(c_index1,  di_index1,  ds_index1,
+					   dr_index1, c_target2, di_target2,
+					   ds_target2, dr_target2);
 }
 
 void Iterator::
-nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs)
+nested_response_mappings(const RealMatrix& primary_coeffs,
+			 const RealMatrix& secondary_coeffs)
 {
   if (iteratorRep)
-    iteratorRep->
-      nested_response_mappings(primary_coeffs,  secondary_coeffs);
-  //esee no-op
+    iteratorRep->nested_response_mappings(primary_coeffs, secondary_coeffs);
+  //else (not implemented currently within Model hierarchy)
+  //  iteratedModel.nested_response_mappings(primary_coeffs, secondary_coeffs)
 }
 
 StrStrSizet Iterator::run_identifier() const

@@ -3,3 +3,6 @@
 cscope*
 tags
 .DS_Store
+.vscode
+__pycache__
+*.pyc

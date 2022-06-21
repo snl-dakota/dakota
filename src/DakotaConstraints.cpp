@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -304,46 +304,55 @@ Constraints Constraints::copy() const
     // new letter: allocate a constraintsRep
     con.constraintsRep = get_constraints(constraintsRep->sharedVarsData);
 
-    // nonlinear constraints
-    con.constraintsRep->numNonlinearIneqCons
-      = constraintsRep->numNonlinearIneqCons;
-    con.constraintsRep->numNonlinearEqCons = constraintsRep->numNonlinearEqCons;
-    con.constraintsRep->nonlinearIneqConLowerBnds
-      = constraintsRep->nonlinearIneqConLowerBnds;
-    con.constraintsRep->nonlinearIneqConUpperBnds
-      = constraintsRep->nonlinearIneqConUpperBnds;
-    con.constraintsRep->nonlinearEqConTargets
-      = constraintsRep->nonlinearEqConTargets;
-    // linear constraints
-    con.constraintsRep->numLinearIneqCons  = constraintsRep->numLinearIneqCons;
-    con.constraintsRep->numLinearEqCons    = constraintsRep->numLinearEqCons;
-    con.constraintsRep->linearIneqConCoeffs
-      = constraintsRep->linearIneqConCoeffs;
-    con.constraintsRep->linearEqConCoeffs  = constraintsRep->linearEqConCoeffs;
-    con.constraintsRep->linearIneqConLowerBnds
-      = constraintsRep->linearIneqConLowerBnds;
-    con.constraintsRep->linearIneqConUpperBnds
-      = constraintsRep->linearIneqConUpperBnds;
-    con.constraintsRep->linearEqConTargets = constraintsRep->linearEqConTargets;
-    // bounds
-    con.constraintsRep->allContinuousLowerBnds
-      = constraintsRep->allContinuousLowerBnds;
-    con.constraintsRep->allContinuousUpperBnds
-      = constraintsRep->allContinuousUpperBnds;
-    con.constraintsRep->allDiscreteIntLowerBnds
-      = constraintsRep->allDiscreteIntLowerBnds;
-    con.constraintsRep->allDiscreteIntUpperBnds
-      = constraintsRep->allDiscreteIntUpperBnds;
-    con.constraintsRep->allDiscreteRealLowerBnds
-      = constraintsRep->allDiscreteRealLowerBnds;
-    con.constraintsRep->allDiscreteRealUpperBnds
-      = constraintsRep->allDiscreteRealUpperBnds;
-
-    // update active and inactive views
-    con.constraintsRep->build_views();
+    con.update(*this);
   }
 
   return con;
+}
+
+
+/** Deep copies are used for history mechanisms that catalogue
+    permanent copies (should not change as the representation within
+    userDefinedConstraints changes). */
+void Constraints::update(const Constraints& cons)
+{
+  // nonlinear constraints
+  constraintsRep->numNonlinearIneqCons
+    = cons.constraintsRep->numNonlinearIneqCons;
+  constraintsRep->numNonlinearEqCons = cons.constraintsRep->numNonlinearEqCons;
+  constraintsRep->nonlinearIneqConLowerBnds
+    = cons.constraintsRep->nonlinearIneqConLowerBnds;
+  constraintsRep->nonlinearIneqConUpperBnds
+    = cons.constraintsRep->nonlinearIneqConUpperBnds;
+  constraintsRep->nonlinearEqConTargets
+    = cons.constraintsRep->nonlinearEqConTargets;
+  // linear constraints
+  constraintsRep->numLinearIneqCons  = cons.constraintsRep->numLinearIneqCons;
+  constraintsRep->numLinearEqCons    = cons.constraintsRep->numLinearEqCons;
+  constraintsRep->linearIneqConCoeffs
+    = cons.constraintsRep->linearIneqConCoeffs;
+  constraintsRep->linearEqConCoeffs  = cons.constraintsRep->linearEqConCoeffs;
+  constraintsRep->linearIneqConLowerBnds
+    = cons.constraintsRep->linearIneqConLowerBnds;
+  constraintsRep->linearIneqConUpperBnds
+    = cons.constraintsRep->linearIneqConUpperBnds;
+  constraintsRep->linearEqConTargets = cons.constraintsRep->linearEqConTargets;
+  // bounds
+  constraintsRep->allContinuousLowerBnds
+    = cons.constraintsRep->allContinuousLowerBnds;
+  constraintsRep->allContinuousUpperBnds
+    = cons.constraintsRep->allContinuousUpperBnds;
+  constraintsRep->allDiscreteIntLowerBnds
+    = cons.constraintsRep->allDiscreteIntLowerBnds;
+  constraintsRep->allDiscreteIntUpperBnds
+    = cons.constraintsRep->allDiscreteIntUpperBnds;
+  constraintsRep->allDiscreteRealLowerBnds
+    = cons.constraintsRep->allDiscreteRealLowerBnds;
+  constraintsRep->allDiscreteRealUpperBnds
+    = cons.constraintsRep->allDiscreteRealUpperBnds;
+
+  // update active and inactive views
+  constraintsRep->build_views();
 }
 
 

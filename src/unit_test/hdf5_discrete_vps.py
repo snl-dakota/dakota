@@ -179,7 +179,7 @@ class EvaluationsStructure(unittest.TestCase):
             contents = set(model_group.keys())
             self.assertTrue("variables" in contents)
             self.assertTrue("responses" in contents)
-            self.assertTrue("metadata" in contents)
+            self.assertTrue("properties" in contents)
             self.assertTrue("sources" in contents)
 
             variables_group = model_group["variables"]
@@ -193,7 +193,7 @@ class EvaluationsStructure(unittest.TestCase):
             contents = set(interface_group.keys())
             self.assertTrue("variables" in contents)
             self.assertTrue("responses" in contents)
-            self.assertTrue("metadata" in contents)
+            self.assertTrue("properties" in contents)
 
             variables_group = interface_group["variables"]
             contents = set(variables_group.keys())

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -78,6 +78,13 @@ public:
 
   /// constructor
   DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model);
+  /// alternate constructor for instantiations "on the fly"
+  DataFitSurrBasedLocalMinimizer(Model& model, short merit_fn,
+				 short accept_logic, short constr_relax,
+				 Real tr_factor, size_t max_iter,
+				 size_t max_eval, Real conv_tol,
+				 unsigned short soft_conv_limit,
+				 bool use_derivs);
   /// destructor
   ~DataFitSurrBasedLocalMinimizer();
 
@@ -112,6 +119,10 @@ protected:
   //
   //- Heading: Convenience member functions
   //
+
+  /// helper for shared ctor code
+  void initialize_trust_region_data(const String& approx_type,
+				    short corr_order);
 
   /// retrieve responseCenterTruth if possible, evaluate it if not
   void find_center_truth();

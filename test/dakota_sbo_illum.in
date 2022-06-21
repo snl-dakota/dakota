@@ -44,7 +44,7 @@ model,
            trend constant
 #	  mars
 # 	surogate local taylor_series
-#	  actual_model_pointer = 'TRUTH'
+#	  truth_model_pointer = 'TRUTH'
 
 variables,
         continuous_design = 7

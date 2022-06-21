@@ -23,7 +23,6 @@
 % Variables
 \newboolean{blankSAND}			% Mark blank pages
 \newboolean{relaxedSAND}
-\newboolean{strictSAND}
 \newboolean{reportSAND}
 \newboolean{SANDmainProvided}
 \newboolean{SANDnumProvided}
@@ -43,13 +42,6 @@
 \setcounter{SANDreDistCnt}{1}
   
 
-\DeclareOption{strict}{
-  \setboolean{strictSAND}{true}
-}
-\ifthenelse{\boolean{relaxedSAND} \and \boolean{strictSAND}}   {
-  \ClassWarning{SANDreport.cls}{Both, "strict" and "relax" options given}
-}{
-}
 \DeclareOption{report}{
   \SAND@typeout{Option "report": Using the report class as a base.}
   \setboolean{reportSAND}{true}
@@ -62,8 +54,8 @@
   \ClassError{SANDreport.cls}{"NM" option is obsolete}{Use
     \@backslashchar begin{SANDdistribution}[NM] instead.}
 }
-
-
+\DeclareOption{relaxed}{\setboolean{relaxedSAND}{true}}
+  
 
 % Manage some options using KOMA's keyval wrappers
 \DefineFamily{SAND}
@@ -205,7 +197,6 @@
 \RequirePackage{booktabs}
 \RequirePackage{xspace}
 \RequirePackage{graphicx}
-\RequirePackage{amsmath}
 \RequirePackage[normalem]{ulem} %The normalem option stops ulem from redefining the \emph{} command 
 
 
@@ -225,7 +216,6 @@
 \newtoggle{SAND@FOIA@ECEAR}
 \newtoggle{SAND@FOIA@ECITAR}
 \newtoggle{SAND@FOIA@PATENT}
-
 \newtoggle{SAND@SP}
 
 \newtoggle{SAND@CLASS}
@@ -343,6 +333,11 @@
 
 % Header/footer mark
 \newcommand{\SAND@marks@headfoot}{\relax}
+\ifthenelse{\boolean{relaxedSAND}}{
+  \newcommand{\SAND@marks@pagemark}{{\color{SANDlblue}\rule[.6ex]{3in}{.5pt}\hfill\pagemark\hfill\rule[.6ex]{3in}{.5pt}}}
+  }{
+  \newcommand{\SAND@marks@pagemark}{\pagemark}
+}
 
 % Implement "this page intentionally left blank" if the user asks for it
 \if@SAND@marks@blank
@@ -361,6 +356,7 @@
   % no-op
   \else\emptypage@emptypage%
   \fi% odd page
+%    \emptypage@emptypage%
   \fi% two side
 }%
 \fi
@@ -529,16 +525,37 @@
 % Use smaller dots in TOC entries
 \renewcommand{\@dotsep}{2}
 
-% Set fonts of headings
-\ifthenelse{\boolean{reportSAND}}{
-  \setkomafont{chapter}{\sffamily\large\bfseries}
-  \setkomafont{section}{\sffamily\normalsize\bfseries}
-  \setkomafont{subsection}{\normalsize\itshape\sffamily}
-  \setkomafont{subsubsection}{\small\bfseries\sffamily}
+% Set colors used
+\definecolor{SANDblue}{RGB}{0,83,118}
+\definecolor{SANDlblue}{RGB}{128,214,232}
+\ifthenelse{\boolean{relaxedSAND}}{
+  \definecolor{SANDrowcolor}{RGB}{98,208,255}
 }{
-  \setkomafont{section}{\sffamily\large\bfseries\MakeUppercase}
-  \setkomafont{subsection}{\sffamily\normalsize\bfseries}
-  \setkomafont{subsubsection}{\normalsize\itshape\sffamily}
+  \definecolor{SANDrowcolor}{RGB}{162,213,199}
+}
+
+% Set fonts of headings
+\ifthenelse{\boolean{relaxedSAND}}{
+  \ifthenelse{\boolean{reportSAND}}{
+    \setkomafont{chapter}{\color{SANDblue}\sffamily\large\bfseries}
+    \setkomafont{section}{\color{SANDblue}\sffamily\normalsize\bfseries}
+    \setkomafont{subsection}{\color{SANDblue}\normalsize\itshape\sffamily}
+    \setkomafont{subsubsection}{\color{SANDblue}\small\bfseries\sffamily}
+  }{
+    \setkomafont{section}{\color{SANDblue}\sffamily\large\bfseries\MakeUppercase}
+    \setkomafont{subsection}{\color{SANDblue}\sffamily\normalsize\bfseries}
+    \setkomafont{subsubsection}{\color{SANDblue}\normalsize\itshape\sffamily}
+  }}{
+  \ifthenelse{\boolean{reportSAND}}{
+    \setkomafont{chapter}{\sffamily\large\bfseries}
+    \setkomafont{section}{\sffamily\normalsize\bfseries}
+    \setkomafont{subsection}{\normalsize\itshape\sffamily}
+    \setkomafont{subsubsection}{\small\bfseries\sffamily}
+  }{
+    \setkomafont{section}{\sffamily\large\bfseries\MakeUppercase}
+    \setkomafont{subsection}{\sffamily\normalsize\bfseries}
+    \setkomafont{subsubsection}{\normalsize\itshape\sffamily}
+  }
 }
 
 
@@ -564,17 +581,18 @@
   }
 }{}
 
-
+% Use this to reset the figure/table counters at each section.
 \ifthenelse{\boolean{reportSAND}}{
-  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
-  \renewcommand{\thetable}{\thechapter-\arabic{table}}
   \@addtoreset{figure}{chapter}
   \@addtoreset{table}{chapter}
+  % Then change the figure/table numbering format
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \renewcommand{\thetable}{\thechapter-\arabic{table}}
 }{
-  \renewcommand{\thefigure}{\thesection-\arabic{figure}}
-  \renewcommand{\thetable}{\thesection-\arabic{table}}
   \@addtoreset{figure}{section}
   \@addtoreset{table}{section}
+  \renewcommand{\thefigure}{\thesection-\arabic{figure}}
+  \renewcommand{\thetable}{\thesection-\arabic{table}}
 }
   
 % Always number sections down through subsubsection
@@ -594,15 +612,15 @@
 
 % \renewcommand*{\figureformat}{\figurename~\thesection-\thefigure\autodot}
 % \renewcommand*{\tableformat}{\tablename~\thesection-\thetable\autodot}
+
 \newenvironment{SANDinlinenote}{%
-  \par\hspace*{.25in}\begin{minipage}{\dimexpr\textwidth-.5in}
-    \rule{\dimexpr\textwidth-.25in}{.4pt}\vspace{.25\baselineskip}
+  \par\hspace*{.25in}\begin{minipage}{\dimexpr\linewidth-.5in}
+    \rule{\dimexpr\textwidth}{.4pt}\vspace{.25\baselineskip}
     \SAND@text@justification{\bfseries\sffamily NOTE:}%
 }{%
-  \rule[.25\baselineskip]{\dimexpr\textwidth-.25in}{.4pt}
+  \rule[.25\baselineskip]{\dimexpr\linewidth}{.4pt}
   \end{minipage}
 }
-
 
 
 % 
@@ -612,33 +630,33 @@
 
 \newlength{\SANDUCIboxwidth}
 \setlength{\SANDUCIboxwidth}{3.5in}
-\newcommand{\SANDOUOcategory}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information \textendash{} EAR.}}
+\newcommand{\SANDOUOcategory}{\uline{3. Statutory Exemption \textendash{} Export Controlled Information \textendash{} EAR.}}
 \newcommand{\SANDOUOnameorg}{NAME / ORG}
 \newcommand{\SANDOUOdate}{\today}
 \newcommand{\SANDOUOguidance}{N/A}
 
-\newcommand{\SANDUCIcatIII}{\uline{category 3: Statutory Exemption}}
-\newcommand{\SANDUCIcatIIIEC}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information / AEA}}
-\newcommand{\SANDUCIcatIIIEAR}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information / EAR}}
-\newcommand{\SANDUCIcatIIICRADA}{\uline{category 3: Statutory Exemption}}
-\newcommand{\SANDUCIcatIIIPATENT}{\uline{category 3: Statutory Exemption \textendash{} Patent Caution}}
-\newcommand{\SANDUCIcatIIIITAR}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information / ITAR}}
+\newcommand{\SANDUCIcatIII}{\uline{3. Statutory Exemption}}
+\newcommand{\SANDUCIcatIIIEC}{\uline{3. Statutory Exemption \textendash{} Export Controlled Information / AEA}}
+\newcommand{\SANDUCIcatIIIEAR}{\uline{3. Statutory Exemption \textendash{} Export Controlled Information / EAR}}
+\newcommand{\SANDUCIcatIIICRADA}{\uline{3. Statutory Exemption}}
+\newcommand{\SANDUCIcatIIIPATENT}{\uline{3. Statutory Exemption \textendash{} Patent Caution}}
+\newcommand{\SANDUCIcatIIIITAR}{\uline{3. Statutory Exemption \textendash{} Export Controlled Information / ITAR}}
 \newcommand{\SANDCRADAdate}[1][\today]{{#1}}
 \newcommand{\SANDCRADAnumber}{999999}
 \newcommand{\SANDCRADAembargo}{100 years}
 
-\newcommand{\SANDUCNIcatIIICRADA}{\uline{category 3: Statutory Exemption}}
-\newcommand{\SANDUCNIcatIIIITAR}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information / ITAR}}
-\newcommand{\SANDUCNIcatIIIEAR}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information / EAR}}
-\newcommand{\SANDUCNIcatIIIDOE}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information / DOE}}
-\newcommand{\SANDUCNIcatIIIPATENT}{\uline{category 3: Statutory Exemption \textendash{} Patent Caution}}
+\newcommand{\SANDUCNIcatIIICRADA}{\uline{3. Statutory Exemption}}
+\newcommand{\SANDUCNIcatIIIITAR}{\uline{3. Statutory Exemption \textendash{} Export Controlled Information / ITAR}}
+\newcommand{\SANDUCNIcatIIIEAR}{\uline{3. Statutory Exemption \textendash{} Export Controlled Information / EAR}}
+\newcommand{\SANDUCNIcatIIIDOE}{\uline{3. Statutory Exemption \textendash{} Export Controlled Information / DOE}}
+\newcommand{\SANDUCNIcatIIIPATENT}{\uline{3. Statutory Exemption \textendash{} Patent Caution}}
 
-\newcommand{\SANDUCIcatIV}{\uline{category 4: Commercial/Proprietary}}
+\newcommand{\SANDUCIcatIV}{\uline{4. Commercial/Proprietary}}
 
-\newcommand{\SANDUCIcatV}{\uline{category 5: Privileged Information}}
+\newcommand{\SANDUCIcatV}{\uline{5. Privileged Information}}
 \newcommand{\SANDUCIPIApprovals}{N/A}
-\newcommand{\SANDUCIcatVI}{\uline{category 6: Personal Privacy}}
-\newcommand{\SANDUCIcatVII}{\uline{category 7: Law Enforcement}}
+\newcommand{\SANDUCIcatVI}{\uline{6. Personal Privacy}}
+\newcommand{\SANDUCIcatVII}{\uline{7. Law Enforcement}}
 \newcommand{\SANDUCIwhichBox}{\relax}
 \newcommand{\SANDUCIwhichExtraBox}{\relax}
 \newcommand{\SANDUCIwhichBonusBox}{\relax}
@@ -809,7 +827,7 @@
       \scriptsize\sffamily
       \parbox{#2}{\bfseries\centering OFFICIAL USE ONLY}
       \vspace{.05in}\par\raggedright
-      May be exempt from public release under the Freedom of Information Act (5 U.S.C. 552), and \SANDOUOcategory\xspace{}.
+      May be exempt from public release under the Freedom of Information Act (5 U.S.C. 552), exemption number and category: \SANDOUOcategory\xspace{}.
       \par\vspace{.5\baselineskip}
       Department of Energy review required before public release.
       \par\vspace{.5\baselineskip}
@@ -872,17 +890,14 @@
 
 \newcommand{\makeClassDCBox}{%
     \framebox{%
-      \begin{minipage}[t][][c]{3in}
-        \scriptsize\sffamily
-        Classified by: \SANDClassDCName, \SANDClassDCPosition, \SANDClassDCOrg \par
-        Derived from: \SANDClassDCGuide \par
-        Date classified: \SANDClassDCDate
-        \iftoggle{SAND@CLASS@NSI}{\par Declassify on: \SANDClassDCDeclassify}{}
-      \end{minipage}%
-    }
-%    \iftoggle{SAND@CLASS@NSI}{
-%      DERIVATIVE DECLASSIFIER REVIEW REQUIRED PRIOR TO DECLASSIFICATION
-%    }{}
+        \begin{minipage}[t][][c]{3in}
+            \scriptsize\sffamily
+            Classified by: \SANDClassDCName, \SANDClassDCPosition, \SANDClassDCOrg \par
+            Derived from: \SANDClassDCGuide \par
+            Date classified: \SANDClassDCDate
+            \iftoggle{SAND@CLASS@NSI}{\par Declassify on: \SANDClassDCDeclassify}{}
+        \end{minipage}%
+    }%
 }
 
 \newcommand{\makeClassWarningBox}[1]{%
@@ -895,13 +910,13 @@
 
 \newcommand{\makeClassWarningBoxNSI}[1]{%
         \begin{minipage}[t][][c]{3in}
-            \scriptsize\sffamily\raggedright #1%
+            \scriptsize\sffamily\raggedright #1
         \end{minipage}%
 }
 
 \newcommand{\makeClassExtraBox}[1]{%
     \begin{minipage}[t][][c]{3in}
-      \scriptsize\sffamily\raggedright #1%
+        \scriptsize\raggedright #1%
     \end{minipage}%
 }
 
@@ -945,7 +960,7 @@
   \renewcommand{\SANDOUOcategory}{\SANDUCIcatIII}
   \renewcommand{\SAND@marks@releaseType}{Official Use Only}
   \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY}
-  \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{3in}}  
+  \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{3in}}
 
   \iftoggle{SAND@FOIA@custom}{
     \renewcommand{\SANDOUOcategory}{\SAND@marks@FOIAcustom}
@@ -978,7 +993,7 @@
     \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{3in}}
     \renewcommand{\SANDUCIwhichExtraBox}{\makeUCIextrabox{2.75in}{\SANDUCIcatIIIECDOEextraBox}}
     \renewcommand{\SANDOUOcategory}{\SANDUCIcatIIIEC}
-    \renewcommand{\SAND@marks@releaseType}{Official Use Only / Export Controlled Information}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only: Exemption 3. Statutory Exemption \textendash{}\\Export Controlled Information/AEA}
     \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY / EXPORT CONTROLLED INFORMATION}
   }{}
   \iftoggle{SAND@FOIA@CRADA}{
@@ -997,14 +1012,14 @@
     \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{3in}}
     \renewcommand{\SANDUCIwhichExtraBox}{\makeUCIextrabox{2.75in}{\SANDUCIcatIIIECEARextraBox}}
     \renewcommand{\SANDOUOcategory}{\SANDUCIcatIIIEAR}
-    \renewcommand{\SAND@marks@releaseType}{Official Use Only / Export Controlled Information}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only: Exemption 3. Statutory Exemption \textendash{}\\Export Controlled Information/EAR}
     \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY / EXPORT CONTROLLED INFORMATION}
   }{}
   \iftoggle{SAND@FOIA@ECITAR}{
     \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{3in}}
     \renewcommand{\SANDUCIwhichExtraBox}{\makeUCIextrabox{2.75in}{\SANDUCIcatIIIITARextraBox}}
     \renewcommand{\SANDOUOcategory}{\SANDUCIcatIIIITAR}
-    \renewcommand{\SAND@marks@releaseType}{Official Use Only / Export Controlled Information}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only: Exemption 3. Statutory Exemption \textendash{}\\Export Controlled Information/ITAR}
     \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY / EXPORT CONTROLLED INFORMATION}
   }{}
 
@@ -1036,7 +1051,7 @@
       \renewcommand{\SANDUCIwhichBonusBox}{\makeUCNIbottombox{\SANDUCNIPATENTbottomBox}}
       \renewcommand{\SANDOUOcategory}{\SANDUCNIcatIIIPATENT}
       \renewcommand{\SAND@marks@releaseType}{Official Use Only / UCNI / Patent Caution}
-      \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY / UCNI/ Patent Caution}
+      \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY / UCNI / Patent Caution}
     }{}
     \iftoggle{SAND@FOIA@ECEAR}{
       \renewcommand{\SANDUCIwhichBonusBox}{\makeUCNIbottombox{\SANDUCNIEARbottomBox}}
@@ -1053,13 +1068,12 @@
   }{} % statutory
 } % UCNI
 
-% Add SP marks if needed
 \iftoggle{SAND@SP}{
-  \ifx\SAND@marks@headfoot\empty
-  \def\SAND@marks@headfoot{\SAND@SP@text}
-  \else
-  \g@addto@macro\SAND@marks@headfoot{ / \SAND@SP@text}
-  \fi
+    \ifx\SAND@marks@headfoot\empty
+    \def\SAND@marks@headfoot{\SAND@SP@text}
+    \else
+    \g@addto@macro\SAND@marks@headfoot{ / \SAND@SP@text}
+    \fi
 }{}
 
 \iftoggle{SAND@CLASS@CONFIDENTIAL}{
@@ -1091,12 +1105,10 @@
 }{}
 
 \iftoggle{SAND@CLASS}{
-  \renewcommand{\SANDClassWhichDCBox}{\makeClassDCBox}
-  \iftoggle{SAND@CLASS@NSI}{
-    \renewcommand{\SANDClassWhichExtraBox}{\makeClassExtraBox{\SANDClassWarningNSI}
+    \renewcommand{\SANDClassWhichDCBox}{\makeClassDCBox}
+    \iftoggle{SAND@CLASS@NSI}{
+        \renewcommand{\SANDClassWhichExtraBox}{\makeClassExtraBox}{\SANDClassWarningNSI}
     }{}
-}{}
-
 }{}
 
 \iftoggle{SAND@CLASS@NF}{
@@ -1133,17 +1145,21 @@
 %% Begin definition of cover page layers
 %%
 %%
-\iftoggle{SAND@OUO}{
-  \newcommand{\SANDcoverBackground}{SANDOUO-cover-bg}
-  \newcommand{\SANDbackcoverBackground}{SANDOUO-back-bg}
-}{   
-  \iftoggle{SAND@CLASS}{  
-      \newcommand{\SANDcoverBackground}{SANDclass-cover-bg}
-      \newcommand{\SANDbackcoverBackground}{SANDclass-back-bg}
-  }{  
-      \newcommand{\SANDcoverBackground}{SANDcover-bg}
-      \newcommand{\SANDbackcoverBackground}{SANDbackcover-bg}
-  }   
+\ifthenelse{\boolean{relaxedSAND}}{
+  \newcommand{\SANDcoverBackground}{SANDrelaxed-bg}
+}{
+  \iftoggle{SAND@OUO}{
+    \newcommand{\SANDcoverBackground}{SANDOUO-cover-bg}
+    \newcommand{\SANDbackcoverBackground}{SANDOUO-back-bg}
+  }{   
+    \iftoggle{SAND@CLASS}{  
+        \newcommand{\SANDcoverBackground}{SANDclass-cover-bg}
+        \newcommand{\SANDbackcoverBackground}{SANDclass-back-bg}
+    }{  
+        \newcommand{\SANDcoverBackground}{SANDcover-bg}
+        \newcommand{\SANDbackcoverBackground}{SANDbackcover-bg}
+    }   
+  }
 }
 
 % background image layer to apply to cover page
@@ -1152,16 +1168,29 @@
 
 
 % cover content layer with SANDA REPORT, SAND number, printed date 
-\DeclareNewLayer[foreground,mode=text,area={1in}{1.5in}{4in}{1.5in},contents={%
-  % 
-  \color{white}\sffamily
-  {\huge\bfseries SANDIA REPORT}\\\SANDnumVar\\\ifdefempty{\SAND@marks@releaseType}{}{\SAND@marks@releaseType\\}Printed \SAND@marks@printDate}]{SANDcover-fg}
-% 
+\ifthenelse{\boolean{relaxedSAND}}{
+  \DeclareNewLayer[foreground,mode=text,area={.5in}{10in}{2.75in}{.5in},contents={%
+    \includegraphics[keepaspectratio=true,height=.3in]{DOE_white_logo}\hfill\includegraphics[keepaspectratio=true,height=.27in]{NNSA_white_logo}
+    }]{SANDcover-fg}
+}{
+  \DeclareNewLayer[foreground,mode=text,area={1in}{1.4in}{6in}{1.5in},contents={%
+    \color{white}\sffamily
+    {\huge\bfseries SANDIA REPORT}\\\SANDnumVar\\\ifdefempty{\SAND@marks@releaseType}{}{{\bfseries\SAND@marks@releaseType}\\}Printed \SAND@marks@printDate}]{SANDcover-fg}
+}
 
-\DeclareNewLayer[foreground,mode=text,area={6in}{9.75in}{2in}{1in},contents={%
-  \raggedright\sffamily\scriptsize Prepared by \newline Sandia National Laboratories \newline
-  Albuquerque, New Mexico 87185 \newline Livermore, California 94550\vfill}
-]{SANDcover-prepared}
+\ifthenelse{\boolean{relaxedSAND}}{
+  \DeclareNewLayer[foreground,mode=text,area={4.25in}{9.5in}{3.75in}{1in},contents={%
+    \begin{flushright}\sffamily\scriptsize\color{white}
+        Sandia National Laboratories is a multimission laboratory managed and operated by National Technology and Engineering Solutions of Sandia, LLC, a wholly owned subsidiary of Honeywell International Inc., for the U.S. Department of Energy’s National Nuclear Security Administration under contract DE-NA0003525.
+    \end{flushright}
+    }
+  ]{SANDcover-prepared}
+}{
+  \DeclareNewLayer[foreground,mode=text,area={6in}{9.75in}{2in}{1in},contents={%
+    \raggedright\sffamily\scriptsize Prepared by \newline Sandia National Laboratories \newline
+    Albuquerque, New Mexico 87185 \newline Livermore, California 94550\vfill}
+  ]{SANDcover-prepared}
+}
 
 
 % 
@@ -1169,11 +1198,21 @@
 % 
 \renewcommand{\maketitle}{%
   % 
-  \DeclareNewLayer[foreground,mode=text,align=lt,area={1in}{3in}{6.5in}{4in},contents={%
-    \parbox[t]{6.5in}{\raggedright\linespread{2}\fontfamily{phv}\selectfont\sffamily {\bfseries\huge \@title}}%
-    \vspace{0.2in}
-    \parbox[b]{6.5in}{\fontfamily{phv}\selectfont\sffamily {\large \SANDauthorVar }}%
-  }]{SANDcover-title}
+  \ifthenelse{\boolean{relaxedSAND}}{
+    \DeclareNewLayer[foreground,mode=text,align=lt,area={1in}{3.75in}{6.5in}{4in},contents={%
+      \parbox[t]{6.5in}{\raggedright\linespread{2}\fontfamily{phv}\selectfont\sffamily {\color{SANDblue}\bfseries\huge \@title}}%
+      \vspace{0.2in}
+      \parbox[b]{6.5in}{\fontfamily{phv}\selectfont\sffamily {\large \SANDauthorVar }}%
+      \bigskip
+      {\par\fontfamily{phv}\selectfont\sffamily \SAND@marks@printDate\\\SANDnumVar}%
+    }]{SANDcover-title}
+  }{
+    \DeclareNewLayer[foreground,mode=text,align=lt,area={1in}{3in}{6.5in}{4in},contents={%
+      \parbox[t]{6.5in}{\raggedright\linespread{2}\fontfamily{phv}\selectfont\sffamily {\bfseries\huge \@title}}%
+      \vspace{0.2in}
+      \parbox[b]{6.5in}{\fontfamily{phv}\selectfont\sffamily {\large \SANDauthorVar }}%
+    }]{SANDcover-title}
+  }
   \DeclarePageStyleByLayers{SANDcover}{SANDcover-bg,SANDcover-fg,SANDcover-prepared,SANDcover-title}
   % 
   \iftoggle{SAND@OUOorCLASS}{
@@ -1198,7 +1237,11 @@
         \ModifyLayer[addcontents={\\\vspace{.2in}\SANDClassWhichExtraBox}]{SAND@layer@uciboxes}
     }%
     % 
-    \DeclareNewLayer[foreground,mode=text,head,contents={\parbox{\textwidth}{\sffamily\bfseries\centering\color{white} \SAND@marks@headfoot}}]{SANDcover-header}%
+    \ifthenelse{\boolean{relaxedSAND}}{
+      \DeclareNewLayer[foreground,mode=text,head,contents={\parbox{\textwidth}{\sffamily\bfseries\centering\color{black} \SAND@marks@headfoot}}]{SANDcover-header}%
+    }{
+      \DeclareNewLayer[foreground,mode=text,head,contents={\parbox{\textwidth}{\sffamily\bfseries\centering\color{white} \SAND@marks@headfoot}}]{SANDcover-header}%
+    }
     \DeclareNewLayer[foreground,mode=text,foot,contents={\parbox{\textwidth}{\sffamily\bfseries\centering\color{white} \SAND@marks@headfoot}}]{SANDcover-footer}%
     \AddLayersToPageStyle{SANDcover}{SANDcover-header,SANDcover-footer}%
   }%
@@ -1217,77 +1260,79 @@
   
   % For clarity a separate if-then to deal with headings
   \iftoggle{SAND@OUOorCLASS}{ % we have to add the document classification type tag in the header/footer
-    \setlength{\footskip}{.5\footskip}      
+    \setlength{\footheight}{30pt}      
     \setkomafont{pageheadfoot}{\sffamily\bfseries}
     \chead*{\SAND@marks@headfoot}
-    \cfoot*{\pagemark\\\SAND@marks@headfoot}
+    \cfoot*{\SAND@marks@pagemark\\\SAND@marks@headfoot}
   }{
     % Since we are a two-sided document, we have to reset the page numbers to the center even if not
     % an OUO/CLASS report
-    \setlength{\footskip}{.5\footskip}
+    \setlength{\footheight}{30pt}      
     \setkomafont{pageheadfoot}{\sffamily\bfseries}
-    \cfoot*{\pagemark}
+    \cfoot*{\SAND@marks@pagemark}
   }
 
-  \footnotesize\begin{flushleft}
-  Issued by Sandia National Laboratories, operated for the United States Department of Energy by
-  National Technology \& Engineering Solutions of Sandia, LLC.
+  \ifthenelse{\boolean{relaxedSAND}}{
+  }{
+    \footnotesize\begin{flushleft}
+    Issued by Sandia National Laboratories, operated for the United States Department of Energy by
+    National Technology \& Engineering Solutions of Sandia, LLC.
 
-  {\bfseries NOTICE:} This report was prepared as an account of work sponsored by an agency of the
-  United States Government. Neither the United States Government, nor any agency thereof, nor any of
-  their employees, nor any of their contractors, subcontractors, or their employees, make any
-  warranty, express or implied, or assume any legal liability or responsibility for the accuracy,
-  completeness, or usefulness of any information, apparatus, product, or process disclosed, or
-  represent that its use would not infringe privately owned rights. Reference herein to any specific
-  commercial product, process, or service by trade name, trademark, manufacturer, or otherwise, does
-  not necessarily constitute or imply its endorsement, recommendation, or favoring by the United
-  States Government, any agency thereof, or any of their contractors or subcontractors. The views and
-  opinions expressed herein do not necessarily state or reflect those of the United States
-  Government, any agency thereof, or any of their contractors.
+    {\bfseries NOTICE:} This report was prepared as an account of work sponsored by an agency of the
+    United States Government. Neither the United States Government, nor any agency thereof, nor any of
+    their employees, nor any of their contractors, subcontractors, or their employees, make any
+    warranty, express or implied, or assume any legal liability or responsibility for the accuracy,
+    completeness, or usefulness of any information, apparatus, product, or process disclosed, or
+    represent that its use would not infringe privately owned rights. Reference herein to any specific
+    commercial product, process, or service by trade name, trademark, manufacturer, or otherwise, does
+    not necessarily constitute or imply its endorsement, recommendation, or favoring by the United
+    States Government, any agency thereof, or any of their contractors or subcontractors. The views and
+    opinions expressed herein do not necessarily state or reflect those of the United States
+    Government, any agency thereof, or any of their contractors.
 
-  Printed in the United States of America. This report has been reproduced directly from the best
-  available copy.
+    Printed in the United States of America. This report has been reproduced directly from the best
+    available copy.
 
-  \iftoggle{SAND@OUOorCLASS}{}{
-    Available to DOE and DOE contractors from
+    \iftoggle{SAND@OUOorCLASS}{}{
+      Available to DOE and DOE contractors from
+      
+      \hspace*{.2in} % Don't separate this from the line below
+      \begin{tabular}{ll}
+          \multicolumn{2}{l}{U.S. Department of Energy} \\
+          \multicolumn{2}{l}{Office of Scientific and Technical Information} \\
+          \multicolumn{2}{l}{P.O. Box 62} \\
+          \multicolumn{2}{l}{Oak Ridge, TN 37831} \\
+          \\
+          Telephone: & (865) 576-8401 \\
+          Facsimile: & (865) 576-5728 \\
+          E-Mail: & reports@osti.gov \\
+          Online ordering: & http://www.osti.gov/scitech \\
+      \end{tabular}
+
+      Available to the public from
+
+      \hspace*{.2in} % same!
+      \begin{tabular}{ll}
+        \multicolumn{2}{l}{U.S. Department of Commerce} \\
+        \multicolumn{2}{l}{National Technical Information Service} \\
+        \multicolumn{2}{l}{5301 Shawnee Road} \\
+        \multicolumn{2}{l}{Alexandria, VA 22312} \\
+                                   & \\
+        Telephone: & (800) 553-6847 \\
+        Facsimile: &  (703) 605-6900 \\
+        E-Mail: & orders@ntis.gov \\
+        Online order: & https://classic.ntis.gov/help/order-methods \\
+      \end{tabular}
+    }
     
-    \hspace*{.2in} % Don't separate this from the line below
-    \begin{tabular}{ll}
-        \multicolumn{2}{l}{U.S. Department of Energy} \\
-        \multicolumn{2}{l}{Office of Scientific and Technical Information} \\
-        \multicolumn{2}{l}{P.O. Box 62} \\
-        \multicolumn{2}{l}{Oak Ridge, TN 37831} \\
-        \\
-        Telephone: & (865) 576-8401 \\
-        Facsimile: & (865) 576-5728 \\
-        E-Mail: & reports@osti.gov \\
-        Online ordering: & http://www.osti.gov/scitech \\
-    \end{tabular}
-
-    Available to the public from
-
-    \hspace*{.2in} % same!
-    \begin{tabular}{ll}
-      \multicolumn{2}{l}{U.S. Department of Commerce} \\
-      \multicolumn{2}{l}{National Technical Information Service} \\
-      \multicolumn{2}{l}{5301 Shawnee Road} \\
-      \multicolumn{2}{l}{Alexandria, VA 22312} \\
-                                 & \\
-      Telephone: & (800) 553-6847 \\
-      Facsimile: &  (703) 605-6900 \\
-      E-Mail: & orders@ntis.gov \\
-      Online order: & https://classic.ntis.gov/help/order-methods \\
-    \end{tabular}
+    \includegraphics[height=1in]{DOEbwlogo}\includegraphics[height=0.45in]{NNSA_logo}
+    \end{flushleft}
+    \clearpage
   }
-  
-  \includegraphics[height=1in]{DOEbwlogo}\includegraphics[height=0.45in]{NNSA_logo}
-  \end{flushleft}
-  \clearpage
   %
   % Generate the inner title page if the user asked for one
   %
   \if@SAND@innertitle
-  %
   \SAND@typeout{Generating inner title page}
   \begin{center}%
     \let\footnote\thanks
@@ -1301,7 +1346,6 @@
     \SANDnumVar\par
   \end{center}%
   \clearpage
- %
   \fi
   \normalsize
   \SAND@text@justification
@@ -1310,7 +1354,11 @@
 \renewenvironment{abstract}{%
   \setlength{\parskip}{1ex}
   \setlength{\parindent}{0pt}
-  {\bfseries\sffamily\MakeUppercase{\abstractname}}\par
+  \ifthenelse{\boolean{relaxedSAND}}{
+    {\color{SANDblue}\bfseries\sffamily\MakeUppercase{\abstractname}}\par
+  }{
+    {\bfseries\sffamily\MakeUppercase{\abstractname}}\par
+  }
 }{}
 
 % 
@@ -1394,7 +1442,7 @@
     \oldacl@pp{##1}{##2}{##3}%
     \fi}%
 
-  \setcounter{secnumdepth}{2}
+  \setcounter{secnumdepth}{\subsubsectionnumdepth}
 }
 
 % ------------------------------------------------------------------------ %
@@ -1581,47 +1629,49 @@
   
   % borrowed a little latex-fu to set up the table columns from
   % https://tex.stackexchange.com/questions/12703/how-to-create-fixed-width-table-columns-with-text-raggedright-centered-raggedlef
-  \newcolumntype{D}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{##1}}
+  % accounted for the tabcolsep and arrayrulewidth
+  % https://tex.stackexchange.com/questions/514339/overfull-hbox-in-longtable
+  \newcolumntype{D}[2]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{\dimexpr ##1 -\tabcolsep*(##2/2) -\arrayrulewidth*(##2+1)/2\relax}}
   \renewcommand{\arraystretch}{1.5}
   \small\sffamily
   \par
-  \iftoggle{EHpresent}{
-    {\bfseries Hardcopy\textemdash{}External}\par
+  \iftoggle{ISpresent}{
+    {\bfseries Email\textemdash{}Internal}\par
     \vspace{.015in}
-    \begin{longtable}{|D{1in}|D{2.5in}|D{2.5in}|}
-      \hline
-      \rowcolor[gray]{.5}\bfseries Number of \newline Copies & \bfseries Name(s) & \bfseries Company Name
-      and \newline Company Mailing Address \\\hline
-      \endhead
-      \the\EHtoks
+    \begin{longtable}{|D{.423\textwidth}{3}|D{.154\textwidth}{3}|D{.423\textwidth}{3}|} \hline 
+      \rowcolor{SANDrowcolor}\bfseries Name & \bfseries Org. & \bfseries Sandia Email Address \\\hline\endhead
+      \the\IStoks 
+    \end{longtable}
+  }{}
+  \par
+  \iftoggle{ESpresent}{
+    {\bfseries Email\textemdash{}External}\par
+    \vspace{.015in}
+    \begin{longtable}{|D{.333\textwidth}{3}|D{.333\textwidth}{3}|D{.334\textwidth}{3}|} \hline 
+      \rowcolor{SANDrowcolor}\bfseries Name & \bfseries Company Email Address & \bfseries Company Name \\\hline\endhead
+      \the\EStoks 
     \end{longtable}
   }{}
   \par
   \iftoggle{IHpresent}{
     {\bfseries Hardcopy\textemdash{}Internal}\par
     \vspace{.015in}
-    \begin{longtable}{|D{1in}|D{2.5in}|D{1in}|D{1in}|}
+    \begin{longtable}{|D{.154\textwidth}{4}|D{.538\textwidth}{4}|D{.154\textwidth}{4}|D{.154\textwidth}{4}|}
       \hline 
-      \rowcolor[gray]{.5}\bfseries Number of \newline Copies & \bfseries Name & \bfseries Org. & \bfseries Mailstop \\\hline\endhead
+      \rowcolor{SANDrowcolor}\bfseries Number of \newline Copies & \bfseries Name & \bfseries Org. & \bfseries Mailstop \\\hline\endhead
       \the\IHtoks 
     \end{longtable}
   }{}
   \par
-  \iftoggle{ESpresent}{
-    {\bfseries Email\textemdash{}External (encrypt for OUO)}\par
+  \iftoggle{EHpresent}{
+    {\bfseries Hardcopy\textemdash{}External}\par
     \vspace{.015in}
-    \begin{longtable}{|D{2.0in}|D{2.0in}|D{2.0in}|} \hline 
-      \rowcolor[gray]{.5}\bfseries Name & \bfseries Company Email \newline Address & \bfseries Company Name \\\hline\endhead
-      \the\EStoks 
-    \end{longtable}
-  }{}
-  \par
-  \iftoggle{ISpresent}{
-    {\bfseries Email\textemdash{}Internal (encrypt for OUO)}\par
-    \vspace{.015in}
-    \begin{longtable}{|D{2.5in}|D{1in}|D{2.5in}|} \hline 
-      \rowcolor[gray]{.5}\bfseries Name & \bfseries Org. & \bfseries Sandia Email Address \\\hline\endhead
-      \the\IStoks 
+    \begin{longtable}{|D{.154\textwidth}{3}|D{.423\textwidth}{3}|D{.423\textwidth}{3}|}
+      \hline
+      \rowcolor{SANDrowcolor}\bfseries Number of \newline Copies & \bfseries Name(s) & \bfseries Company Name
+      and \newline Company Mailing Address \\\hline
+      \endhead
+      \the\EHtoks
     \end{longtable}
   }{}
   
@@ -1695,8 +1745,9 @@
     % Put the Sandia Logo on the back page. Historically for SAND reports this has been required to be
     % an even page to accomdate two-sided printed copies.
     %
-    \cleardoubleevenemptypage % KOMA-script for always skipping to next even page.
-    
+    \cleardoublepage
+%% Hack to avoid blank page
+%%    \cleardoubleevenpageusingstyle{plain.scrheadings} % KOMA-script for always skipping to next even page, keeping using pain page style
     \setlength{\footskip}{1.2\footskip} % reset this length for the back cover
     \DeclarePageStyleByLayers{SANDbackcover-recto}{SANDbackcover-bg,SANDbackcover-mission,SANDcover-header,SANDcover-footer}
     \thispagestyle{SANDbackcover-recto}

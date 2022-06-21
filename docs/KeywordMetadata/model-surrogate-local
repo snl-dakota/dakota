@@ -10,7 +10,7 @@ approximation is the \c taylor_series selection.
 
 The truth model to be used to generate the value/gradient/Hessian data
 used in the series expansion is identified through the required \c
-actual_model_pointer specification. The use of a model pointer (as
+truth_model_pointer specification. The use of a model pointer (as
 opposed to an interface pointer) allows additional flexibility in
 defining the approximation. In particular, the derivative
 specification for the truth model may differ from the derivative

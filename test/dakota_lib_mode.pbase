@@ -8,7 +8,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -6.5914342853e-07
                      -6.5914342853e-07
-<<<<< Best data captured at function evaluation 9
+<<<<< Best evaluation ID: 9
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 8 total (8 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -19,7 +19,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -5.6063269127e-05
                      -5.6063269127e-05
-<<<<< Best data captured at function evaluation 8
+<<<<< Best evaluation ID: 8
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 51 total (51 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -30,7 +30,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                       2.8939017086e-02
                       1.5845336159e-01
-<<<<< Best data captured at function evaluation 51
+<<<<< Best evaluation ID: 51
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 51 total (51 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -41,7 +41,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                       2.8939017086e-02
                       1.5845336159e-01
-<<<<< Best data captured at function evaluation 51
+<<<<< Best evaluation ID: 51
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:

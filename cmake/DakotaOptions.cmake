@@ -49,6 +49,10 @@ else()
   set(PECOS_ENABLE_TESTS    OFF CACHE BOOL "Enable PECOS tests.")
 endif()
 
+
+option(DAKOTA_PLUGIN_DEMOS "Build Dakota plugin demos in src/plugins." OFF)
+
+
 # The Dakota DLL API should build on all platforms, though the
 # ModelCenter portion will not
 option(DAKOTA_DLL_API "Enable DAKOTA DLL API." ON)
@@ -206,7 +210,6 @@ option(HAVE_NOWPAC "Build the SNOWPAC package (experimental)." OFF)
 option(HAVE_NPSOL "Build the NPSOL package." ON)
 option(HAVE_OPTPP "Build the OPTPP package." ON)
 option(HAVE_PECOS "Build the Pecos package." ON)
-option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
 option(HAVE_PSUADE "Build the PSUADE package." ON)
 
 # QUESO: Affect both packages and src

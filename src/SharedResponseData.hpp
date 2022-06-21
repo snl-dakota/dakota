@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -16,6 +16,7 @@
 #ifndef SHARED_RESPONSE_DATA_H
 #define SHARED_RESPONSE_DATA_H
 
+#include "dakota_data_io.hpp"
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 #include "DataResponses.hpp"
@@ -127,7 +128,9 @@ private:
 
   /// number of independent coordinates, e.g., x, t, for each field f(x,t)
   IntVector coordsPerPriField;
-  
+
+  /// descriptors for metadata fields (empty if none)
+  StringArray metadataLabels;
 };
 
 
@@ -254,10 +257,20 @@ public:
   /// retrieve simulation variance
   const RealVector& simulation_error() const;
 
+  /// get labels for metadata fields
+  const StringArray& metadata_labels() const;
+  /// set labels for metadata fields
+  void metadata_labels(const StringArray& md_labels);
+
+  /// read metadata labels from annotated (neutral) file
+  void read_annotated(std::istream& s, size_t num_md);
+
   /// create a deep copy of the current object and return by value
   SharedResponseData copy() const;
   /// reshape the data, disconnecting a shared rep if necessary
   void reshape(size_t num_fns);
+  /// reshape the shared metadata (labels only at this time)
+  void reshape_metadata(size_t num_meta);
   /// reshape the response labels using inflation/deflation if possible
   void reshape_labels(StringArray& resp_labels, size_t num_fns);
 
@@ -400,6 +413,26 @@ inline const StringArray& SharedResponseData::field_group_labels() const
 { return srdRep->priFieldLabels; }
 
 
+inline const StringArray& SharedResponseData::metadata_labels() const
+{ return srdRep->metadataLabels; }
+
+
+inline void SharedResponseData::metadata_labels(const StringArray& md_labels)
+{ srdRep->metadataLabels = md_labels; }
+
+
+inline void SharedResponseData::reshape_metadata(size_t num_meta)
+{ reshape_labels(srdRep->metadataLabels, num_meta); }
+
+
+inline void SharedResponseData::read_annotated(std::istream& s, size_t num_md)
+{
+  s >> srdRep->functionLabels;
+  srdRep->metadataLabels.resize(num_md);
+  s >> srdRep->metadataLabels;
+}
+
+
 inline bool SharedResponseData::is_null() const
 { return (srdRep == NULL); }
 
@@ -502,13 +535,12 @@ void expand_for_fields_stl(const SharedResponseData& srd, const T& src_array,
 } // namespace Dakota
 
 
-// Since we may serialize this class through a temporary, force
-// serialization mode and no tracking.  We allow tracking on
-// SharedResponseDataRep as we want to serialize each unique pointer
-// exactly once (may need to revisit this).
-BOOST_CLASS_IMPLEMENTATION(Dakota::SharedResponseData, 
- 			   boost::serialization::object_serializable)
+// Since we may serialize this class through a temporary, disallow tracking.
+// We allow tracking on SharedResponseDataRep as we want to serialize each
+// unique pointer exactly once (may need to revisit this).
 BOOST_CLASS_TRACKING(Dakota::SharedResponseData, 
   		     boost::serialization::track_never)
+// Version 1 adds metadata
+BOOST_CLASS_VERSION(Dakota::SharedResponseDataRep, 1)
 
 #endif

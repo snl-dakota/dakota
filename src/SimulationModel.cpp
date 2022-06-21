@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -28,7 +28,8 @@ namespace Dakota {
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   userDefinedInterface(problem_db.get_interface()), solnCntlVarType(EMPTY_TYPE),
-  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), simModelEvalCntr(0)
+  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
+  simModelEvalCntr(0)
 {
   componentParallelMode = INTERFACE_MODE;
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
@@ -37,6 +38,22 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   initialize_solution_control(
     problem_db.get_string("model.simulation.solution_level_control"),
     problem_db.get_rv("model.simulation.solution_level_cost"));
+
+  initialize_solution_recovery(
+    probDescDB.get_string("model.simulation.cost_recovery_metadata"));
+
+  // Error checks can encompass a model ensemble at a higher level
+  //if (solnCntlCostMap.empty() && costMetadataIndex == _NPOS)
+  //  Cerr << "Error: insufficient cost data provided." << std::endl;
+}
+
+
+void SimulationModel::
+initialize_solution_recovery(const String& cost_label)
+{
+  // returns _NPOS if no metadata label match
+  costMetadataIndex = find_index(
+    currentResponse.shared_data().metadata_labels(), cost_label);
 }
 
 
@@ -45,7 +62,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
 {
   solnCntlCostMap.clear();
 
-  size_t cost_len = cost.length();
+  size_t i, cost_len = cost.length(), num_lev;
   if (control.empty()) {
     // cost_len of 0: empty map for no solution control
     // cost_len of 1: nominal cost for model w/o any soln levels
@@ -116,7 +133,6 @@ initialize_solution_control(const String& control, const RealVector& cost)
   }
 
   // get size of corresponding set values
-  size_t i, num_lev;
   std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mvDist.multivar_dist_rep());
@@ -171,15 +187,23 @@ initialize_solution_control(const String& control, const RealVector& cost)
   //       solution_level_control = 'dssiv1'
   //       solution_level_cost = 10. # scalar multiplier
   // results in solnCntlCostMap = { {1., 0}, {10., 1}, {100., 2} }
-  if (cost.length() == num_lev)
+  if (cost_len == num_lev)
     for (i=0; i<num_lev; ++i)
       solnCntlCostMap.insert(std::pair<Real, size_t>(cost[i], i));
-  else if (cost.length() == 1) {
+  else if (cost_len == 1) {
     Real multiplier = cost[0], prod = 1.;
     for (i=0; i<num_lev; ++i) { // assume increasing cost
       solnCntlCostMap.insert(std::pair<Real, size_t>(prod, i));
       prod *= multiplier;
     }
+  }
+  else if (cost_len == 0) {
+    Cerr << "Warning: solution level costs not provided for solution control.\n"
+	 << "         Relying on online metadata recovery where required."
+	 << std::endl;
+    // populate solnCntlCostMap with the correct length but with dummy costs
+    for (i=0; i<num_lev; ++i)
+      solnCntlCostMap.insert(std::pair<Real, size_t>(0., i));
   }
   else {
     Cerr << "Error: solution_level_cost specification of length "
@@ -197,13 +221,8 @@ initialize_solution_control(const String& control, const RealVector& cost)
   // to the discrete variable value index (val_index below).
   // Most often, these two indices will be the same, but we always order with
   // increasing cost in case the discrete values are not monotonic.
-  if (cost_index == _NPOS) { // just return quietly to simplify calling code
-    return;                  // (rather than always checking index validity)
-
-    //Cerr << "Error: _NPOS passed to SimulationModel::solution_level_"
-    //     << "cost_index()." << std::endl;
-    //abort_handler(MODEL_ERROR);
-  }
+  if (cost_index == _NPOS) // just return quietly to simplify calling code
+    return;
 
   std::map<Real, size_t>::const_iterator c_cit = solnCntlCostMap.begin();
   std::advance(c_cit, cost_index);
@@ -342,6 +361,8 @@ size_t SimulationModel::solution_level_cost_index() const
   }
 
   // convert val_index to cost_index and return
+  // Note: while the keys (costs) could be non-unique within solnCntlCostMap,
+  // the values within solnCntlCostMap correspond to unique cost indices.
   return map_value_to_index(val_index, solnCntlCostMap);
 }
 

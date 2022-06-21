@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -147,6 +147,8 @@ private:
   void deallocate_workspace(); ///< Releases workspace memory
 
   void allocate_constraints(); ///< Allocates constraint mappings
+
+  void check_sub_iterator_conflict(); ///< prevent Fortran solver nesting
 
   /// L :       Number of parallel systems, i.e. function calls during
   ///           line search at predetermined iterates.

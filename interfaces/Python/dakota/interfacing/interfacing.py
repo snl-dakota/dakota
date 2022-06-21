@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 from io import open
+import io
 import collections
+import functools
 import re
 import sys
 import copy
 from . import dprepro as dprepro_mod
 
 __author__ = 'J. Adam Stephens'
-__copyright__ = 'Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
+__copyright__ = 'Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
 __license__ = 'GNU Lesser General Public License'
 
 PYTHON3 = True if sys.version_info[0] == 3 else False 
@@ -25,6 +27,9 @@ else:
 class ResponseError(Exception):
     pass
 
+class ResultsError(Exception):
+    pass
+
 class MissingSourceError(Exception):
     pass
 
@@ -38,6 +43,9 @@ class BatchWriteError(Exception):
     pass
 
 class ResultsUpdateError(Exception):
+    pass
+
+class BadTypesOverride(Exception):
     pass
 
 # Constant used to specify an unnamed results file
@@ -65,29 +73,62 @@ class Parameters(object):
         descriptors: List of the variable descriptors (read-only)
         num_variables: Number of variables (read-only)
         num_an_comps: Number of analysis components (read-only)
+        metadata: Names of requested metadata fields
+        num_metadata: Number of requested metadata fields (read-only)
     """
 
     def __init__(self,aprepro_format=None, variables=None, an_comps=None, 
-            eval_id=None):
+                 eval_id=None, metadata=None, infer_types=True, types=None):
         self.aprepro_format = aprepro_format
         self._variables = copy.deepcopy(variables)
         self.an_comps = list(an_comps)
         self.eval_id = str(eval_id)
         self.eval_num = int(eval_id.split(":")[-1])
+        self.metadata = list(metadata)
+        if isinstance(types, list):
+            self._set_types_from_list(types)
+        elif isinstance(types, dict):
+            self._set_types_from_dict(infer_types, types)
+        elif infer_types:
+            self._infer_types()
+        self._batch = False
+
+    def _set_types_from_list(self, types):
+        if len(types) != len(self._variables):
+            raise BadTypesOverride("Length of types list is %d but number of variables is %d" %(len(types), len(self._variables)))
+        for t, (k, v) in zip(types, self._variables.items()):
+            self._variables[k] = t(v)
+
+    def _set_types_from_dict(self, infer_types, types):
+        for k, v in self._variables.items():
+            if k in types:
+                self._variables[k] = types[k](v)
+            elif infer_types:
+                self._variables[k] = self._infer_single_type(v)
+
+    def _infer_types(self):
         # Convert variables to the appropriate type. The possible types
         # are int, float, and string. The variables are already strings.
         # TODO: Consider a user option to override this behavior and keep
         # everything as a string, or provide access to the original strings
         for k, v in self._variables.items():
+            self._variables[k] = self._infer_single_type(v)
+
+    def _infer_single_type(self, v):
+        # string variables often contain underscores and might be mistaken for
+        # floats or ints
+        converted = v
+        if '_' not in v:    
             try:
-                self._variables[k] = int(v)
+                converted = int(v)
             except ValueError:
                 try:
-                    self._variables[k] = float(v)
+                    converted = float(v)
                 except ValueError:
                     pass
                 pass
-        self._batch = False
+        return converted    
+
 
     @property
     def descriptors(self):
@@ -112,6 +153,10 @@ class Parameters(object):
     @property
     def num_an_comps(self):
         return len(self.an_comps)
+
+    @property
+    def num_metadata(self):
+        return len(self.metadata)
 
     def __iter__(self):
         for name in self._variables:
@@ -262,6 +307,25 @@ class Response(object):
             self._hessian.append(row)
     
 
+class IndexableOrderedDict(collections.OrderedDict):
+    """Specialization of OrderedDict that allows access via key or index."""
+
+    def __getitem__(self, key):
+        if type(key) is int:
+            key_from_index = list(self.keys())[key]
+            return super(IndexableOrderedDict, self).__getitem__(key_from_index)
+        else:
+            return super(IndexableOrderedDict, self).__getitem__(key)
+
+    def __setitem__(self, key, value):
+        if type(key) is int:
+            # This will only work if the key already exists... raise KeyError?
+            key_from_index = list(self.keys())[key]
+            return super(IndexableOrderedDict, self).__setitem__(key_from_index, value)
+        else:
+            return super(IndexableOrderedDict, self).__setitem__(key, value)
+
+
 class Results(object):
     """Collect response data and write to results file.
 
@@ -275,6 +339,7 @@ class Results(object):
     Attributes:
         eval_id: Evaluation id (a string).
         eval_num: Evaluation number (final token in eval_id) (int).
+        metadata: Dictionary indexable by metadata field name or by index
         aprepro_format: Boolean indicating whether the parameters file was in
             aprepro (True) or Dakota (False) format.
         descriptors: List of the response descriptors (read-only)
@@ -286,8 +351,8 @@ class Results(object):
     """
 
     def __init__(self, aprepro_format=None, responses=None, 
-            deriv_vars=None, eval_id=None, ignore_asv=False, 
-            results_file=None):
+            deriv_vars=None, eval_id=None, metadata=None,
+            ignore_asv=False, results_file=None):
         self.aprepro_format = aprepro_format
         self.ignore_asv = ignore_asv
         self._deriv_vars = deriv_vars[:]
@@ -296,6 +361,9 @@ class Results(object):
         for t, v in responses.items():
             self._responses[t] = Response(t, num_deriv_vars, ignore_asv, 
                     int(v)) 
+        self.metadata = IndexableOrderedDict()
+        for m in metadata:
+            self.metadata[m] = None
         self.results_file = results_file
         self.eval_id = eval_id
         self.eval_num = int(eval_id.split(":")[-1])
@@ -322,6 +390,8 @@ class Results(object):
             num_deriv_vars = len(self._deriv_vars)        
             self._responses.clear()
             self._responses = copy.deepcopy(other._responses)
+            self.metadata.clear()
+            self.metadata = copy.deepcopy(other.metadata)
             self.results_file = other.results_file
             self.eval_id = other.eval_id
             self.eval_num = other.eval_num
@@ -347,6 +417,8 @@ class Results(object):
                 raise ResultsUpdateError("Mismatch between expected responses")           
             self._responses.clear()
             self._responses = copy.deepcopy(other._responses)
+            self.metadata.clear()
+            self.metadata = copy.deepcopy(other.metadata)
             if self.results_file != other.results_file:
                 raise ResultsUpdateError("Mismatch between results file name")
             if self.eval_id != other.eval_id:
@@ -393,6 +465,10 @@ class Results(object):
                     for c in r:
                         print(" %24.16E" % c,file=stream, end="")
                 print(" ]]",file=stream)
+        # Write metadata
+        for k, v in self.metadata.items():
+            print("%24.16E %s" %(v, k), file=stream)
+
 
     def write(self, stream=None, ignore_asv=None):
         """Write the results to the Dakota results file.
@@ -410,6 +486,8 @@ class Results(object):
                 call.
             dakota.interfacing.ResponseError: A result requested by Dakota is 
                 missing (and ignore_asv is False).
+            dakota.interfacing.ResultsError: A metadata result requested by
+                Dakota is missing.
         """
         if self._batch:
             raise BatchWriteError("write() called on Results object in " + \
@@ -431,6 +509,12 @@ class Results(object):
                     raise ResponseError("Response '" +t + "' is missing "
                             "requested Hessian result.")
 
+        if not self._failed:
+            for k, v in self.metadata.items():
+                if v is None:
+                    raise ResultsError("Results object is missing requested "
+                            "metadata field '" + k + "'")
+
         if stream is None:
             if self.results_file is None:
                 raise MissingSourceError("No stream specified and no "
@@ -440,6 +524,52 @@ class Results(object):
                     self._write_results(ofp, my_ignore_asv)
         else:
             self._write_results(stream, my_ignore_asv)
+
+    def return_direct_results_dict(self, ignore_asv=None):
+        """Create and return a direct python interface results dictionary.
+
+        Keyword Args:
+
+        Raises:
+        """
+        my_ignore_asv = self.ignore_asv
+        if ignore_asv is not None:
+            my_ignore_asv = ignore_asv
+
+        ## Confirm that user has provided all info requested by Dakota
+        if not my_ignore_asv and not self._failed:
+            for t, v in self._responses.items():
+                if v.asv.function and v.function is None:
+                    raise ResponseError("Response '" + t + "' is missing "
+                            "requested function result.") 
+                if v.asv.gradient and v.gradient is None:
+                    raise ResponseError("Response '" + t + "' is missing "
+                            "requested gradient result.")
+                if v.asv.hessian and v.hessian is None:
+                    raise ResponseError("Response '" +t + "' is missing "
+                            "requested Hessian result.")
+       
+        if not self._failed:
+            for k, v in self.metadata.items():
+                if v is None:
+                    raise ResultsError("Results object is missing requested "
+                            "metadata field '" + k + "'")
+
+
+        results_dict = {}
+        results_dict['fns'] = []
+        results_dict['fnGrads'] = []
+        results_dict['fnHessians'] = []
+        for t, v in self._responses.items():
+            if v.asv.function:
+                results_dict['fns'].append(v.function)
+            if v.asv.gradient:
+                results_dict['fnGrads'].append(v.gradient)
+            if v.asv.hessian:
+                results_dict['fnHessians'].append(v.hessian)
+        
+        results_dict['metadata'] = [value for label, value in self.metadata.items()] 
+        return results_dict
 
     def _set_batch(self, flag):
         self._batch = flag
@@ -612,6 +742,8 @@ _pRE = {
                 value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_DER_VARS)")),
             "num_an_comps":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_AN_COMPS)")),
+            "num_metadata":re.compile(_aprepro_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_METADATA)")),
             "eval_id":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+(?::\d+)*)",
                 tag="(?P<tag>DAKOTA_EVAL_ID)")),
@@ -621,10 +753,12 @@ _pRE = {
                 value="(?P<value>[0-7])", tag="ASV_\d+:(?P<tag>\S+)")),
             "deriv_var":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
-            "an_comp":re.compile(_aprepro_re_base.format(
-                value="\"(?P<value>.+?)\"", tag="AC_\d+:(?P<tag>.+?)"))
-            },
-        "DAKOTA":{"num_variables":re.compile(_dakota_re_base.format(
+	    "an_comp":re.compile(_aprepro_re_base.format(
+		value="\"(?P<value>.+?)\"", tag="AC_\d+:(?P<tag>.+?)")),
+	    "metadata":re.compile(_aprepro_re_base.format(
+		value="\"(?P<value>.+?)\"", tag="(?P<tag>MD_\d+)"))
+	    },
+	"DAKOTA":{"num_variables":re.compile(_dakota_re_base.format(
             value="(?P<value>\d+)", tag="(?P<tag>variables)")),
             "num_functions":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>functions)")),
@@ -632,6 +766,8 @@ _pRE = {
                 value="(?P<value>\d+)", tag="(?P<tag>derivative_variables)")),
             "num_an_comps":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>analysis_components)")),
+            "num_metadata":re.compile(_dakota_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>metadata)")),
             "eval_id":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+(?::\d+)*)", tag="(?P<tag>eval_id)")),
             # A lookahead assertion is required to catch string variables with
@@ -642,7 +778,9 @@ _pRE = {
             "deriv_var":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
             "an_comp":re.compile(_dakota_re_base.format(
-                value="(?P<value>.+?)", tag="AC_\d+:(?P<tag>.+?)"))
+                value="(?P<value>.+?)", tag="AC_\d+:(?P<tag>.+?)")),
+            "metadata":re.compile(_dakota_re_base.format(
+                value="(?P<value>.+?)", tag="(?P<tag>MD_\d+)"))
             }
         }
 
@@ -675,7 +813,23 @@ def _extract_block(stream, numRE, dataRE, handle):
         handle(tag,value)
 
 
-def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None):
+def _extract_optional_block(stream, numRE, dataRE, handle):
+    """Optionally extract a block of information from a Dakota parameters file.
+
+    Same API as _extract_block, except will not raise exception on
+    missing block. Will still raise on poorly formatted item within
+    the block."""
+
+    beginning_pos = stream.tell()
+    line = stream.readline()
+    m = numRE.match(line)
+    stream.seek(beginning_pos)
+    # block appears to exist, try to read in earnest
+    if m is not None:
+        _extract_block(stream, numRE, dataRE, handle)
+
+
+def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, infer_types=True, types=None):
     """Extract the parameters data from the stream."""
 
     # determine format (dakota or aprepro) by examining the first line
@@ -725,18 +879,23 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None):
     # Read eval_id
     m = useRE["eval_id"].match(stream.readline())
     eval_id = m.group("value")
-    
-    return (Parameters(aprepro_format, variables, an_comps, eval_id),
-            Results(aprepro_format, responses, deriv_vars, eval_id, ignore_asv,
-                results_file))
+
+    # Read metadata requests
+    metadata = []
+    def store_metadata(t, v):
+        metadata.append(v)
+    _extract_optional_block(stream, useRE["num_metadata"], useRE["metadata"],
+                            store_metadata)
+    return (Parameters(aprepro_format, variables, an_comps, eval_id, metadata, infer_types, types),
+            Results(aprepro_format, responses, deriv_vars, eval_id, metadata, ignore_asv, results_file))
 
 def _read_parameters_stream(stream=None, ignore_asv=False, batch=False, 
-    results_file=None):
+    results_file=None, infer_types=True, types=None):
     """Extract all evaluations from stream"""
     param_sets = [] # list of Parameters objects
     results_sets = [] # list of Results objects
     while True:
-        p, r = _read_eval_from_stream(stream, ignore_asv, results_file)
+        p, r = _read_eval_from_stream(stream, ignore_asv, results_file, infer_types, types)
         if p and r: # p and r == None indicates end of stream
             param_sets.append(p)
             results_sets.append(r)
@@ -750,8 +909,71 @@ def _read_parameters_stream(stream=None, ignore_asv=False, batch=False,
     else:
         return param_sets[0], results_sets[0]
 
+
+def read_params_from_dict(parameters=None, results_file=None, 
+        ignore_asv=False, batch=False, infer_types=True, types=None):
+    """Process parameters and results using Dakota parameters disctionary from python interface driver.
+    
+    Keyword Args:
+
+    Returns:
+            
+    Raises:
+    """
+
+    vars_to_type = {
+                     "cv"  : float,
+                     "div" : int,
+                     "dsv" : str,
+                     "drv" : float
+                   }
+
+    assigned_types = {}
+    dakota_input = []
+    key = "variables"
+    dakota_input.append(str(parameters[key])+" "+key+"\n")
+    for label in parameters["variable_labels"]:
+        for domain, vtype in vars_to_type.items():
+            try:
+                idx = parameters[domain+"_labels"].index(label)
+            except ValueError:
+                continue
+            else:
+                dakota_input.append(str(parameters[domain][idx]) + " " + label + "\n")
+                assigned_types[label] = vtype
+               
+    key = "functions"
+    dakota_input.append(str(parameters[key])+" "+key+"\n")
+    for i, val in enumerate(parameters["asv"]):
+        label = "ASV_"+str(i+1)+":"+parameters["function_labels"][i]
+        dakota_input.append(str(parameters["asv"][i])+" "+label+"\n")
+
+    key = "dvv"
+    dakota_input.append(str(len(parameters[key]))+" derivative_variables\n")
+    for i, val in enumerate(parameters["dvv"]):
+        label = "DVV_"+str(i)+":"+parameters["cv_labels"][parameters["dvv"][i]-1]
+        dakota_input.append(str(parameters["dvv"][i])+" "+label+"\n")
+
+    key = "analysis_components"
+    num_an_comp = len(parameters[key])
+    dakota_input.append(str(num_an_comp) + " " + key + "\n")
+    for i, an_comp in enumerate(parameters[key]):
+        dakota_input.append(an_comp + " AC_" + str(i+1) + ":python_direct\n")
+
+    key = "eval_id"
+    dakota_input.append(str(parameters[key])+" eval_id\n")
+
+    key = "metadata"
+    dakota_input.append(str(parameters[key]) + " metadata\n")
+    for i, md in enumerate(parameters["metadata_labels"]):
+        dakota_input.append(md + " MD_" + str(i+1) + "\n")
+
+    io_stream = io.StringIO("".join(dakota_input))
+    return _read_parameters_stream(io_stream, ignore_asv, batch, results_file, infer_types=False, types=assigned_types)
+
+
 def read_parameters_file(parameters_file=None, results_file=None, 
-        ignore_asv=False, batch=False):
+        ignore_asv=False, batch=False, infer_types=True, types=None):
     """Read and parse the Dakota parameters file.
     
     Keyword Args:
@@ -763,7 +985,13 @@ def read_parameters_file(parameters_file=None, results_file=None,
             and a stream must be specified in the call to Results.write().
         ignore_asv: If True, ignore the active set vector when setting
             responses on the returned Results object.
-        batch: Set to True when performing batch evaluations.  
+        batch: Set to True when performing batch evaluations.
+        infer_types: If True, variable types will be guessed. Otherwise, they
+            will remain strings. Settings provided using the `types` argument
+            override type inference.
+        types: A dict or list of type overrides. If a list, the length
+            must equal the number of variables. If a dict, variables will be
+            matched by descriptor. Extra keys will be ignored.
 
     Returns:
         Two cases:
@@ -799,7 +1027,7 @@ def read_parameters_file(parameters_file=None, results_file=None,
 
     ### Open and parse the parameters file
     with open(parameters_file, "r", encoding='utf8') as ifp:
-        return _read_parameters_stream(ifp, ignore_asv, batch, results_file)
+        return _read_parameters_stream(ifp, ignore_asv, batch, results_file, infer_types, types)
 
 
 def dprepro(template, parameters=None, results=None, include=None,
@@ -865,4 +1093,11 @@ def dprepro(template, parameters=None, results=None, include=None,
         with open(output,"w",encoding="utf-8") as f:
             f.write(output_string)
 
-
+def python_interface(fn):
+    """ Decorator to wrap direct python callbacks """
+    @functools.wraps(fn)
+    def wrapper(direct_interface_dict):
+        params, results = read_params_from_dict(direct_interface_dict)
+        results = fn(params, results)
+        return results.return_direct_results_dict()
+    return wrapper

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -1163,7 +1163,7 @@ const Interface& ProblemDescDB::get_interface()
   //     model.surrogate.derivative_usage
   // > SurfpackApproximation: model.surrogate.polynomial_order,
   //     model.surrogate.kriging_correlations
-  // > TaylorApproximation: model.surrogate.actual_model_pointer,
+  // > TaylorApproximation: model.surrogate.truth_model_pointer,
   //     responses.hessian_type
   // > OrthogPolyApproximation: method.nond.expansion_{terms,order}
 
@@ -2006,6 +2006,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
     },
     { /* responses */
       { "labels", P_RES responseLabels},
+      { "metadata_labels", P_RES metadataLabels},
       { "nonlinear_equality_scale_types", P_RES nonlinearEqScaleTypes},
       { "nonlinear_inequality_scale_types", P_RES nonlinearIneqScaleTypes},
       { "primary_response_fn_scale_types", P_RES primaryRespFnScaleTypes},
@@ -2127,8 +2128,9 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"optional_interface_responses_pointer", P_MOD optionalInterfRespPointer},
       {"rf.propagation_model_pointer", P_MOD propagationModelPointer},
       {"rf_data_file", P_MOD rfDataFileName},
+      {"simulation.cost_recovery_metadata", P_MOD costRecoveryMetadata},
       {"simulation.solution_level_control", P_MOD solutionLevelControl},
-      {"surrogate.actual_model_pointer", P_MOD actualModelPointer},
+      {"surrogate.truth_model_pointer", P_MOD truthModelPointer},
       {"surrogate.challenge_points_file", P_MOD importChallengePtsFile},
       {"surrogate.decomp_cell_type", P_MOD decompCellType},
       {"surrogate.export_approx_points_file", P_MOD exportApproxPtsFile},
@@ -2155,9 +2157,11 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"application.results_file", P_INT resultsFile},
       {"failure_capture.action", P_INT failAction},
       {"id", P_INT idInterface},
+      {"plugin_library_path", P_INT pluginLibraryPath},
       {"workDir", P_INT workDir}
     },
     { /* responses */
+      {"data_directory", P_RES dataPathPrefix},
       {"fd_gradient_step_type", P_RES fdGradStepType},
       {"fd_hessian_step_type", P_RES fdHessStepType},
       {"gradient_type", P_RES gradientType},
@@ -2364,6 +2368,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"nond.expansion_refinement_type", P_MET refinementType},
       {"nond.expansion_type", P_MET expansionType},
       {"nond.final_moments", P_MET finalMomentsType},
+      {"nond.final_statistics", P_MET finalStatsType},
       {"nond.growth_override", P_MET growthOverride},
       {"nond.least_squares_regression_type", P_MET lsRegressionType},
       {"nond.multilevel_allocation_control", P_MET multilevAllocControl},
@@ -2455,6 +2460,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"nond.export_discrep_format", P_MET exportDiscrepFormat},
       {"nond.export_samples_format", P_MET exportSamplesFormat},
       {"nond.integration_refinement", P_MET integrationRefine},
+      {"nond.numerical_solve_mode", P_MET numericalSolveMode},
       {"nond.opt_subproblem_solver", P_MET optSubProbSolver},
       {"nond.quadrature_order", P_MET quadratureOrder},
       //{"nond.reliability_search_type", P_MET reliabilitySearchType},

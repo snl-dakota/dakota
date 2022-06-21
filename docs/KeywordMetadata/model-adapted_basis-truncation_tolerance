@@ -17,7 +17,7 @@ The following block
 model
   id_model = 'SUBSPACE'
   adapted_basis
-    actual_model_pointer = 'FULLSPACE'
+    truth_model_pointer = 'FULLSPACE'
     sparse_grid_level = 1
     truncation_tolerance = 0.9 
 \endverbatim

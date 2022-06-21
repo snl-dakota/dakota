@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -84,25 +84,6 @@ void NLPQLPOptimizer::initialize()
     Cerr << "\nError: vendor numerical gradients not supported by nlpql_sqp."
 	 << "\n       Please select dakota numerical instead." << std::endl;
     abort_handler(-1);
-  }
-
-  // Prevent nesting of an instance of a Fortran iterator within another
-  // instance of the same iterator (which would result in data clashes since
-  // Fortran does not support object independence).  Recurse through all
-  // sub-models and test each sub-iterator for NLPQL presence.
-  Iterator sub_iterator = iteratedModel.subordinate_iterator();
-  if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name() == NLPQL_SQP  ||
-	 sub_iterator.uses_method() == NLPQL_SQP ) )
-    sub_iterator.method_recourse();
-  ModelList& sub_models = iteratedModel.subordinate_models();
-  for (ModelLIter ml_iter = sub_models.begin();
-       ml_iter != sub_models.end(); ml_iter++) {
-    sub_iterator = ml_iter->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() == NLPQL_SQP  ||
-	   sub_iterator.uses_method() == NLPQL_SQP ) )
-      sub_iterator.method_recourse();
   }
 
   // Set NLPQL optimization controls 
@@ -211,12 +192,36 @@ void NLPQLPOptimizer::deallocate_workspace()
 }
 
 
+void NLPQLPOptimizer::check_sub_iterator_conflict()
+{
+  // Prevent nesting of an instance of a Fortran iterator within another
+  // instance of the same iterator (which would result in data clashes since
+  // Fortran does not support object independence).  Recurse through all
+  // sub-models and test each sub-iterator for NLPQL presence.
+  Iterator sub_iterator = iteratedModel.subordinate_iterator();
+  if (!sub_iterator.is_null() && 
+       ( sub_iterator.method_name() == NLPQL_SQP ||
+	 sub_iterator.uses_method() == SUBMETHOD_NLPQL ) )
+    sub_iterator.method_recourse();
+  ModelList& sub_models = iteratedModel.subordinate_models();
+  for (ModelLIter ml_iter = sub_models.begin();
+       ml_iter != sub_models.end(); ml_iter++) {
+    sub_iterator = ml_iter->subordinate_iterator();
+    if (!sub_iterator.is_null() && 
+	 ( sub_iterator.method_name() == NLPQL_SQP ||
+	   sub_iterator.uses_method() == SUBMETHOD_NLPQL ) )
+      sub_iterator.method_recourse();
+  }
+}
+
+
 void NLPQLPOptimizer::initialize_run()
 {
   Optimizer::initialize_run();
 
   allocate_constraints();
   allocate_workspace();
+  //check_sub_iterator_conflict(); // now virtual and called from Iterator
 
   const RealVector& local_cdv = iteratedModel.continuous_variables();
   for (size_t i=0; i<numContinuousVars; i++)
@@ -423,31 +428,31 @@ void NLPQLPOptimizer::core_run()
   RealVector local_cdv(N, false);
   copy_data(X, N, local_cdv); // Note: X is [NMAX,L]
   bestVariablesArray.front().continuous_variables(local_cdv);
+  RealVector best_fns(bestResponseArray.front().num_functions());
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
-    RealVector best_fns(numFunctions);
     best_fns[0] = (max_flag) ? -F[0] : F[0];
-
-    auto my_i_iter = constraintMapIndices.begin();
-    auto my_m_iter = constraintMapMultipliers.begin(),
-         my_o_iter = constraintMapOffsets.begin();
-    size_t  cntr = numEqConstraints;
-    for ( ;
-	 my_i_iter != constraintMapIndices.end();
-	 my_i_iter++, my_m_iter++, my_o_iter++)   // nonlinear ineq
-      best_fns[(*my_i_iter)+1] = (G[cntr++] - (*my_o_iter))/(*my_m_iter);
-
-    size_t i, 
-      num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-      num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
-    if( num_nln_eq )  {
-      // This is a bit ungainly but is needed to use the adapter (for now) - RWH
-      const RealVector viewG(Teuchos::View, G, num_nln_eq);
-      get_nonlinear_eq_constraints(iteratedModel, viewG, best_fns, 1.0, num_nln_ineq+1);
-    }
-
-    bestResponseArray.front().function_values(best_fns);
   }
+
+  auto my_i_iter = constraintMapIndices.begin();
+  auto my_m_iter = constraintMapMultipliers.begin(),
+    my_o_iter = constraintMapOffsets.begin();
+  size_t  cntr = numEqConstraints;
+  for ( ;
+	my_i_iter != constraintMapIndices.end();
+	my_i_iter++, my_m_iter++, my_o_iter++)   // nonlinear ineq
+    best_fns[(*my_i_iter)+numUserPrimaryFns] =
+      (G[cntr++] - (*my_o_iter))/(*my_m_iter);
+
+  if( num_nln_eq )  {
+    // This is a bit ungainly but is needed to use the adapter (for now) - RWH
+    const RealVector viewG(Teuchos::View, G, num_nln_eq);
+    get_nonlinear_eq_constraints(iteratedModel, viewG, best_fns, 1.0,
+				 num_nln_ineq+numUserPrimaryFns);
+  }
+
+  bestResponseArray.front().function_values(best_fns);
+
   deallocate_workspace();
 }
 

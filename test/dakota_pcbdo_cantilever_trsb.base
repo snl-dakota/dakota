@@ -15,7 +15,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       2.6056030951e+00
                       2.3271721506e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 167 total (167 new, 0 duplicate)
          obj_fn: 167 val (167 n, 0 d), 167 grad (167 n, 0 d), 0 Hess (0 n, 0 d)
@@ -33,7 +33,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                       2.9999999857e+00
                       3.2644321910e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 16 total (16 new, 0 duplicate)
          obj_fn: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51,7 +51,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                       2.5882475368e+00
                       2.2765348096e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 159 total (159 new, 0 duplicate)
          obj_fn: 159 val (159 n, 0 d), 159 grad (159 n, 0 d), 0 Hess (0 n, 0 d)
@@ -69,4 +69,4 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                       2.9999999802e+00
                       3.2769008978e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

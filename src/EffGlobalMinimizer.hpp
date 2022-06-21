@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -71,8 +71,11 @@ public:
   /// standard constructor
   EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for instantiations "on the fly"
-  //EffGlobalMinimizer(Model& model, size_t max_iter, size_t max_eval);
-  ~EffGlobalMinimizer(); /// destructor
+  EffGlobalMinimizer(Model& model, const String& approx_type, int samples,
+		     int seed, bool use_derivs, size_t max_iter,
+		     size_t max_eval, Real conv_tol);
+  /// destructor
+  ~EffGlobalMinimizer();
 
   //
   //- Heading: Virtual function redefinitions
@@ -95,6 +98,18 @@ private:
   //
   //- Heading: Convenience member functions
   //
+
+  /// shared ctor code for initializing Models and Minimizers for solving an
+  /// approximate sub-problem 
+  void initialize_sub_problem(const String& approx_type, int samples, int seed,
+    bool use_derivs, const String& sample_reuse,
+    const String& import_build_points_file = String(),
+    unsigned short import_build_format = TABULAR_ANNOTATED,
+    bool import_build_active_only = false,
+    const String& export_approx_points_file = String(),
+    unsigned short export_approx_format = TABULAR_ANNOTATED);
+  /// initialize Lagrange multipliers in the case of nonlinear constraints
+  void initialize_multipliers();
 
   /// function that checks if model supports asynchronous parallelism
   void check_parallelism();

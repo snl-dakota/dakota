@@ -1,0 +1,40 @@
+#@ *: DakotaConfig=UNIX
+#@ *: ReqFiles=dakota_metadata_wrapper.py
+#@ *: Label=FastTest
+#@ p0: MPIProcs=3
+
+environment
+  tabular_data tabular_data_file "dakota_metadata.dat"
+
+method,
+	optpp_q_newton	#s0,#p0
+#	conmin_mfd	#s1
+#	optpp_newton	#s2,#s3
+
+variables,
+	continuous_design = 2
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+interface,
+	fork
+        analysis_driver = 'dakota_metadata_wrapper.py'
+	  analysis_components = 'text_book'
+	parameters_file = 'p.in'
+	results_file = 'r.out'
+	file_tag
+#	asynchronous evaluation_concurrency 3  #s2
+
+responses,
+	descriptors 'f' 'c1' 'c2'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	metadata 'seconds'
+
+# Verify results reading with ASV and combinations of derivatives
+	numerical_gradients	#s0,#s2,#p0
+#	analytic_gradients	#s1,#s3
+
+	no_hessians		#s0,#s1,#p0
+#	analytic_hessians	#s2,#s3

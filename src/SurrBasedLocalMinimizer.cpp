@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -41,8 +41,9 @@ SurrBasedLocalMinimizer* SurrBasedLocalMinimizer::sblmInstance(NULL);
 
 
 SurrBasedLocalMinimizer::
-SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
-  SurrBasedMinimizer(problem_db, model, traits), 
+SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model,
+			std::shared_ptr<TraitsBase> traits):
+  SurrBasedMinimizer(problem_db, model, traits),
   approxSubProbObj(probDescDB.get_short("method.sbl.subproblem_objective")),
   approxSubProbCon(probDescDB.get_short("method.sbl.subproblem_constraints")),
   meritFnType(probDescDB.get_short("method.sbl.merit_function")),
@@ -60,8 +61,27 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr
   gammaContract(
     probDescDB.get_real("method.trust_region.contraction_factor")),
   gammaExpand(probDescDB.get_real("method.trust_region.expansion_factor")),
-  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
-  correctionType(probDescDB.get_short("model.surrogate.correction_type"))
+  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit"))
+{ initialize(); }
+
+
+SurrBasedLocalMinimizer::
+SurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
+			short constr_relax, const RealVector& tr_factors,
+			size_t max_iter, size_t max_eval, Real conv_tol,
+			unsigned short soft_conv_limit,
+			std::shared_ptr<TraitsBase> traits):
+  SurrBasedMinimizer(model, max_iter, max_eval, conv_tol, traits),
+  approxSubProbObj(ORIGINAL_PRIMARY), approxSubProbCon(ORIGINAL_CONSTRAINTS),
+  meritFnType(merit_fn), acceptLogic(accept_logic),
+  trConstraintRelax(constr_relax), minimizeCycles(0), penaltyIterOffset(-200), 
+  origTrustRegionFactor(tr_factors), minTrustRegionFactor(1.e-6),
+  trRatioContractValue(0.25), trRatioExpandValue(0.75), gammaContract(0.25),
+  gammaExpand(2.), softConvLimit(soft_conv_limit)
+{ initialize(); }
+
+
+void SurrBasedLocalMinimizer::initialize()
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
@@ -100,10 +120,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr
 #endif
 
   // historical default convergence tolerance
-  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
-
-  bestVariablesArray.push_back(
-    iteratedModel.truth_model().current_variables().copy());
+  if (convergenceTol < 0.) convergenceTol = 1.e-4;
 
   // Note: There are checks in ProblemDescDB.cpp to verify that the trust region
   // user-defined values (e.g., gammaExpand, trRationExpandValue, etc.) are 
@@ -112,6 +129,9 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr
   // Set method-specific default for softConvLimit
   if (!softConvLimit)
     softConvLimit = 5;
+
+  bestVariablesArray.push_back(
+    iteratedModel.truth_model().current_variables().copy());
 }
 
 

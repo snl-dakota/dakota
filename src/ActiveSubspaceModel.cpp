@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -120,7 +120,7 @@ ActiveSubspaceModel::~ActiveSubspaceModel()
 Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
 {
   const String& actual_model_pointer
-    = problem_db.get_string("model.surrogate.actual_model_pointer");
+    = problem_db.get_string("model.surrogate.truth_model_pointer");
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
 

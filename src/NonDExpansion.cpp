@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -244,7 +244,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
   // define tie breaker for hierarchy of model forms versus resolution levels
   if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.multifidelity_precedence(mf, true); // update default keys
+    iteratedModel.multifidelity_precedence(mf);//reassign default keys if needed
 
   // Check for suitable distribution types.
   // Note: prefer warning in Analyzer (active discrete ignored), but
@@ -2002,7 +2002,7 @@ update_u_space_sampler(size_t sequence_index, const UShortArray& approx_orders)
 {
   std::shared_ptr<Iterator> sub_iter_rep =
     uSpaceModel.subordinate_iterator().iterator_rep();
-  int seed = NonDExpansion::random_seed(sequence_index);
+  int seed = NonDExpansion::seed_sequence(sequence_index);
   if (seed) sub_iter_rep->random_seed(seed);
   // replace w/ uSpaceModel.random_seed(seed)? -> u_space_sampler, shared approx
 

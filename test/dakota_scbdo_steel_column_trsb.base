@@ -14,7 +14,8 @@ Test Number 0 succeeded
                      -3.2362356286e+00
 <<<<< Best constraint values   =
                       4.0000000000e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation IDs (partial matches): 4, 5
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 29 total (29 new, 0 duplicate)
          obj_fn: 29 val (29 n, 0 d), 29 grad (29 n, 0 d), 0 Hess (0 n, 0 d)
@@ -31,4 +32,5 @@ Test Number 1 succeeded
                      -3.2362300507e+00
 <<<<< Best constraint values   =
                       3.9999975034e+03
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID (full match) not available
+<<<<< Best evaluation ID (partial match): 6

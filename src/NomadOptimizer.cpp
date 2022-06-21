@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -317,34 +317,33 @@ void NomadOptimizer::core_run()
 
   // Retrieve the best responses and convert from NOMAD to
   // DAKOTA vector.h
+  RealVector best_fns(bestResponseArray.front().num_functions());
+  const NOMAD::Point & bestFs = bestX->get_bb_outputs();
   if (!localObjectiveRecast) {
     // else local_objective_recast_retrieve() is used in Optimizer::post_run()
-    const NOMAD::Point & bestFs = bestX->get_bb_outputs();
-    RealVector best_fns(numFunctions);
-    std::vector<double> bestIneqs(constraintMapIndices.size()-numNonlinearEqConstraints);
-    std::vector<double> bestEqs(numNonlinearEqConstraints);
     const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
-
     // Map objective appropriately based on minimizing or maximizing.
     best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
       -bestFs[0].value() : bestFs[0].value();
+  }
 
-    // Map linear and nonlinear constraints according to constraint map.
-    if (numNonlinearIneqConstraints > 0) {
-      for (int i=0; i<numNomadNonlinearIneqConstraints; i++) {
-	best_fns[constraintMapIndices[i]+1] = (bestFs[i+1].value() -
-		 constraintMapOffsets[i]) / constraintMapMultipliers[i];
-      }
+  // Map linear and nonlinear constraints according to constraint map.
+  if (numNonlinearIneqConstraints > 0) {
+    for (int i=0; i<numNomadNonlinearIneqConstraints; i++) {
+	best_fns[constraintMapIndices[i]+numUserPrimaryFns] =
+	  (bestFs[i+1].value() - constraintMapOffsets[i]) /
+	  constraintMapMultipliers[i];
     }
-    if (numNonlinearEqConstraints > 0) {
-      for (int i=0; i<numNonlinearEqConstraints; i++)
-	best_fns[constraintMapIndices[i+numNomadNonlinearIneqConstraints]+1] = 
+  }
+  if (numNonlinearEqConstraints > 0) {
+    for (int i=0; i<numNonlinearEqConstraints; i++)
+	best_fns[constraintMapIndices[i+numNomadNonlinearIneqConstraints] + 
+		 numUserPrimaryFns] = 
 	  (bestFs[i+numNomadNonlinearIneqConstraints+1].value() -
 	   constraintMapOffsets[i+numNomadNonlinearIneqConstraints]) /
 	  constraintMapMultipliers[i+numNomadNonlinearIneqConstraints];
-    }
-    bestResponseArray.front().function_values(best_fns);
   }
+  bestResponseArray.front().function_values(best_fns);
 
   // Stop NOMAD output.  Required.
   NOMAD::Slave::stop_slaves ( out );

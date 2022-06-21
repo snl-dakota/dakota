@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -38,8 +38,14 @@ protected:
   //- Heading: Constructor and destructor
   //
 
-  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits); ///< constructor
-  ~SurrBasedMinimizer();                                       ///< destructor
+  /// constructor
+  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model,
+		     std::shared_ptr<TraitsBase> traits);
+  /// alternate constructor for instantiations "on the fly"
+  SurrBasedMinimizer(Model& model, size_t max_iter, size_t max_eval,
+		     Real conv_tol, std::shared_ptr<TraitsBase> traits);
+  /// destructor
+  ~SurrBasedMinimizer();
     
   //
   //- Heading: Virtual function redefinitions
@@ -55,9 +61,13 @@ protected:
   //- Heading: Utility member functions
   //
 
+  /// helper for shared ctor code
+  void initialize_from_model(Model& model);
+
   /// initialize and update Lagrange multipliers for basic Lagrangian
   void update_lagrange_multipliers(const RealVector& fn_vals,
-				   const RealMatrix& fn_grads, SurrBasedLevelData& tr_data);
+				   const RealMatrix& fn_grads,
+				   SurrBasedLevelData& tr_data);
 
   /// initialize and update the Lagrange multipliers for augmented Lagrangian
   void update_augmented_lagrange_multipliers(const RealVector& fn_vals);

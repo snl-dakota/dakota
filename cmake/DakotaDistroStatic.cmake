@@ -17,7 +17,6 @@ set(CMAKE_CXX_FLAGS_RELEASE_OVERRIDE "-O2" CACHE STRING "Dakota Dev Release Flag
 set(CMAKE_Fortran_FLAGS_RELEASE_OVERRIDE "-O2" CACHE STRING "Dakota Dev Release Flags")
 
 # Use shared libraries and don't use static
-set(BUILD_STATIC_LIBS TRUE CACHE BOOL "Build static libs?")
 set(BUILD_SHARED_LIBS FALSE  CACHE BOOL "Build shared libs?")
 
 # No bounds checking in Teuchos

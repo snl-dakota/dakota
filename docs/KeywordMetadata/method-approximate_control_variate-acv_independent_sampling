@@ -1,0 +1,17 @@
+Blurb:: Approximate control variate (ACV) algorithm that employs independent samples per model
+
+Description::
+This ACV variant uses sample set definitions that are similar to
+multilevel Monte Carlo (MLMC), in that independent sample sets are defined
+for each level and span a pair of consecutive models within a sequence.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Refer to \cite GORODETSKY2020109257 for a helpful sample set diagram.
+
+Faq::
+See_Also::

@@ -15,7 +15,7 @@ method
 model,                                         
         id_model = 'SURR'    			 
         surrogate global,			 
-	  actual_model_pointer = 'TRUTH'
+	  truth_model_pointer = 'TRUTH'
           reuse_samples all
 #	  gaussian_process surfpack		     	     
 	  polynomial basis_order = 2		  	     		    

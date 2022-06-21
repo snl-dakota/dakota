@@ -34,8 +34,8 @@ In the context of optimization, capabilities for low-fidelity model
 tuning are under development.
 
 In multifidelity uncertainty quantification (UQ), non-hierarchical
-sampling approaches such as approximate control variates (ACV) are
-under development.
+sampling approaches such as multifidelity Monte Carlo (MFMC) and
+approximate control variate (ACV) sampling are now available.
 
 In Bayesian inference, capabilities for low-fidelity model selection
 are under development.

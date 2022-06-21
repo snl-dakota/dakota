@@ -1,0 +1,53 @@
+#@ *: DakotaConfig=DAKOTA_PYTHON_DIRECT_INTERFACE
+#@ *: ReqFiles=driver_text_book.py
+
+method,
+  output normal
+  list_parameter_study
+  list_of_points = 0. 0. 0.		#s0
+#  list_of_points = 0.0  0.0  0.0	#s1
+#                   0.5  0.5  0.5	#s1
+#                   1.0  0.0  0.0 	#s1
+#                   0.0  2.0  0.0 	#s1
+#                   0.0  0.0  3.0 	#s1
+
+variables,
+  continuous_design = 3
+    initial_point  0.0 0.0 0.0
+    upper_bounds  10.0   10.0  10.0
+    lower_bounds     -10.0  -10.0 -10.0
+    descriptors 'x1'  'x2'  'x3'
+
+ discrete_state_set
+   integer = 3
+     elements_per_variable = 2 2 2
+     elements = 1 2 3 4 5 6
+     initial_state 2 4 6
+   descriptors 'z1' 'z2' 'z3'
+
+   string = 1
+     elements_per_variable = 4
+     elements = 'four' 'one' 'three' 'two'
+     initial_state 'two'
+   descriptors 's1'
+
+   real = 2
+     elements_per_variable = 2 2
+     elements = 1.2 2.2 3.2 4.2
+     initial_state 1.2 3.2
+   descriptors 'y1' 'y2'
+
+interface,
+    python
+      analysis_driver = 'driver_text_book:text_book'		#s0
+#      analysis_driver = 'driver_text_book:text_book_batch'	#s1
+#      batch							#s1
+
+responses,
+  descriptors = 'f1' 'c1' 'c2'
+  num_objective_functions = 1
+  nonlinear_inequality_constraints = 2
+  nonlinear_inequality_upper_bounds = 0.0 0.0
+  metadata = 'm1' 'm2'
+  analytic_gradients
+  analytic_hessians

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -36,7 +36,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
     "  id_model 'SurrogateModel' \n"
     "  surrogate \n"
     "    global \n"
-    "      actual_model_pointer 'SimulationModel' \n"
+    "      truth_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
     "        trend none \n"
     "        find_nugget 1 \n"
@@ -111,7 +111,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read)
     "  id_model 'SurrogateModel' \n"
     "  surrogate \n"
     "    global \n"
-    "      actual_model_pointer 'SimulationModel' \n"
+    "      truth_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
     "        options_file 'gauss_proc_test_files/GP_test_parameterlist_1.yaml' \n"
     "      import_points_file 'gauss_proc_test_files/gauss_proc_build_points.dat' \n"
@@ -188,7 +188,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read_alternate_parameters)
     "  id_model 'SurrogateModel' \n"
     "  surrogate \n"
     "    global \n"
-    "      actual_model_pointer 'SimulationModel' \n"
+    "      truth_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
     "        options_file 'gauss_proc_test_files/GP_test_parameterlist_2.yaml' \n"
     "      import_points_file 'gauss_proc_test_files/gauss_proc_build_points.dat' \n"
@@ -263,7 +263,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp, reduced_quadratic)
     "  id_model 'SurrogateModel' \n"
     "  surrogate \n"
     "    global \n"
-    "      actual_model_pointer 'SimulationModel' \n"
+    "      truth_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
     "        trend reduced_quadratic \n"
     "        find_nugget 1 \n"

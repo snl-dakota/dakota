@@ -12,7 +12,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -9.0315504189e-02
                      -3.2779750972e-03
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -27,7 +27,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -1.7250222970e-02
                      -1.1222890521e-04
-<<<<< Best data captured at function evaluation 15
+<<<<< Best evaluation ID: 15
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 16 total (15 new, 1 duplicate)
 <<<<< Best parameters          =
@@ -41,7 +41,7 @@ Test Number 2 succeeded
                       4.3400710511e+00
                       1.3716053939e+00
                       2.2583705918e+00
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -56,7 +56,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                      -5.3256606239e-02
                      -3.8965363712e-03
-<<<<< Best data captured at function evaluation 16
+<<<<< Best evaluation ID: 16
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 50 total (37 new, 13 duplicate)
 <<<<< Best parameters          =
@@ -71,7 +71,7 @@ Test Number 4 succeeded
 <<<<< Best constraint values   =
                      -1.7256156343e-02
                      -5.4618090316e-03
-<<<<< Best data captured at function evaluation 43
+<<<<< Best evaluation ID: 43
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 40 total (34 new, 6 duplicate)
 <<<<< Best parameters          =
@@ -86,4 +86,4 @@ Test Number 5 succeeded
 <<<<< Best constraint values   =
                      -1.4267888961e-02
                      -1.2272009698e-04
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14

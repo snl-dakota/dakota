@@ -5,7 +5,7 @@ Test Number 0 succeeded
                       1.0000000229e+00 x2
 <<<<< Best objective function  =
                       1.3209461836e-16
-<<<<< Best data captured at function evaluation 44
+<<<<< Best evaluation ID: 44
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 29 total (29 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -14,7 +14,7 @@ Test Number 1 succeeded
 <<<<< Best residual terms =
                      -1.6598357466e-07
                       3.3186106952e-06
-<<<<< Best data captured at function evaluation 29
+<<<<< Best evaluation ID: 29
 Confidence Intervals on Calibrated Parameters:
             x1: [ 9.9995446173e-01, 1.0000389010e+00 ]
             x2: [ 9.9990880168e-01, 1.0000778907e+00 ]
@@ -25,7 +25,7 @@ Test Number 2 succeeded
                       9.9999997088e-01 x2
 <<<<< Best objective function  =
                       2.6190315827e-15
-<<<<< Best data captured at function evaluation 26
+<<<<< Best evaluation ID: 26
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -34,7 +34,7 @@ Test Number 3 succeeded
 <<<<< Best residual terms =
                      -4.7950734494e-08
                       9.5622502239e-07
-<<<<< Best data captured at function evaluation 3
+<<<<< Best evaluation ID: 3
 Confidence Intervals on Calibrated Parameters:
             x1: [ 9.9998687852e-01, 1.0000112090e+00 ]
             x2: [ 9.9997372187e-01, 1.0000224436e+00 ]
@@ -49,7 +49,7 @@ Test Number 4 succeeded
                       1.8407497748e-13
                      -3.3471647504e-01
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 51
+<<<<< Best evaluation ID: 51
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -64,4 +64,4 @@ Test Number 5 succeeded
 <<<<< Best constraint values   =
                      -1.6009000260e-02
                      -3.7083558446e-11
-<<<<< Best data captured at function evaluation 31
+<<<<< Best evaluation ID: 31

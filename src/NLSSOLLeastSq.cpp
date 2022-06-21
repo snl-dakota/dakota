@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -143,6 +143,14 @@ least_sq_eval(int& mode, int& m, int& n, int& nrowfj, double* x, double* f,
       for (size_t i=0; i<m; i++)
 	gradf[cntr++] = local_fn_grads(j,i);
   }
+}
+
+
+void NLSSOLLeastSq::check_sub_iterator_conflict()
+{
+  // Run-time check (NestedModel::subIterator is constructed in init_comms())
+  //if (setUpType == "model")
+  SOLBase::check_sub_iterator_conflict(iteratedModel);
 }
 
 

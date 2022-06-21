@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -58,8 +58,8 @@ protected:
   void core_run();
   void post_run(std::ostream& s);
 
-  int num_samples() const;
-  void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
+  size_t num_samples() const;
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
   unsigned short sampling_scheme() const;
   void vary_pattern(bool pattern_flag);
   void get_parameter_sets(Model& model);
@@ -80,7 +80,7 @@ private:
   /// initial specification of number of samples
   int samplesSpec;
   /// current number of samples to be evaluated
-  int numSamples;
+  size_t numSamples;
   /// number of partitions in each variable direction
   const UShortArray& varPartitionsSpec;
   /// number of partitions to pass to PSUADE (levels = partitions + 1)
@@ -107,12 +107,12 @@ private:
 };
 
 
-inline int PSUADEDesignCompExp::num_samples() const
+inline size_t PSUADEDesignCompExp::num_samples() const
 { return numSamples; }
 
 
 inline void PSUADEDesignCompExp::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   // allow sample reduction relative to previous sampling_reset() calls
   // (that is, numSamples may be increased or decreased by min_samples), but

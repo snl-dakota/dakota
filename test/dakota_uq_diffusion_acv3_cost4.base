@@ -1,325 +1,410 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (LF_INT): 5878 total (5878 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 73 total (73 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 73 total (73 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 1.0052343750000000e+02
+<<<<< Function evaluation summary (LF_INT): 5 total (5 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 1520 total (1520 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 5 total (5 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 1.0001953125000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (   5 pilot samples):  1.8087937766295283e-05
-      Final   MC (  73 HF samples):     1.3115134481862733e-06
-      Final  ACV (sample profile):      1.1343195297045006e-07
-      Final  ACV ratio (1 - R^2):       8.6489355581765570e-02
+    Initial   MC (    5 HF samples):  1.8087937766295052e-05
+      Final   MC (    5 HF samples):  1.8087937766295052e-05
+      Final  ACV (sample profile):    5.9983213526538808e-08
+      Final  ACV ratio (1 - R^2):     3.3161996852018776e-03
+ Equivalent   MC (  100 HF samples):  9.0422028279076989e-07
+ Equivalent  ACV ratio:               6.6336947609057881e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5471991551449875e-02  6.8245846885649749e-03  8.0534089197252512e-01 -2.5110098668664627e-01
- response_fn_2  1.2903874093107459e-01  1.4984427951168146e-02  7.7014618723834527e-01 -8.1647409521926306e-01
- response_fn_3  2.5471991551566483e-02  6.8245846883272466e-03  8.0534089214523252e-01 -2.5110098629220268e-01
+ response_fn_1  2.5159919357596799e-02  6.4979504623490598e-03  8.0240407917354095e-01 -9.7885377990160283e-02
+ response_fn_2  1.2868959145203171e-01  1.3212869061404427e-02  7.7869273893837332e-01 -4.4040304812000164e-01
+ response_fn_3  2.5159919358459099e-02  6.4979504614111876e-03  8.0240407894724886e-01 -9.7885379069955647e-02
 Test Number 1 succeeded
 <<<<< Function evaluation summary (LF_INT): 3734 total (3734 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 967 total (967 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 1.0002343750000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (  25 pilot samples):  4.1006897417589495e-06
-      Final   MC (  25 HF samples):     4.1006897417589495e-06
-      Final  ACV (sample profile):      7.6139108954296461e-08
-      Final  ACV ratio (1 - R^2):       1.8567390792563927e-02
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+      Final   MC (   25 HF samples):  4.1006897417589732e-06
+      Final  ACV (sample profile):    7.6139108954320270e-08
+      Final  ACV ratio (1 - R^2):     1.8567390792569624e-02
+ Equivalent   MC (  100 HF samples):  1.0249322169513951e-06
+ Equivalent  ACV ratio:               7.4286970099146546e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5078770519148242e-02  6.5335476651875862e-03  8.2612808676986438e-01 -1.1163584542196547e-01
- response_fn_2  1.2852823225388516e-01  1.3565785459097228e-02  8.0720457908769072e-01 -4.4271750517677910e-01
- response_fn_3  2.5078770519190399e-02  6.5335476653789696e-03  8.2612808714313113e-01 -1.1163584470764576e-01
+ response_fn_1  2.5078770519113266e-02  6.5335476648739187e-03  8.2612808657089287e-01 -1.1163584623904388e-01
+ response_fn_2  1.2852823225102461e-01  1.3565785459569470e-02  8.0720457961503911e-01 -4.4271750358645878e-01
+ response_fn_3  2.5078770519155413e-02  6.5335476650654842e-03  8.2612808694331286e-01 -1.1163584551830708e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary (LF_INT): 100 total (100 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 100 total (100 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 100 total (100 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 1.0664062500000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC ( 100 pilot samples):  1.0415816416813242e-06
-      Final   MC ( 100 HF samples):     1.0415816416813242e-06
-      Final  ACV (sample profile):      1.0415816416813242e-06
-      Final  ACV ratio (1 - R^2):       1.0000000000000000e+00
+    Initial   MC (  100 HF samples):  1.0415816416813113e-06
+      Final   MC (  100 HF samples):  1.0415816416813113e-06
+      Final  ACV (sample profile):    1.0415816416813113e-06
+      Final  ACV ratio (1 - R^2):     1.0000000000000000e+00
+ Equivalent   MC (  107 HF samples):  9.7672124641177903e-07
+ Equivalent  ACV ratio:               1.0664062500000000e+00
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  2.5806515443333025e-02  7.1751806426590238e-03  9.1839095503749679e-01 -3.2157773682462309e-02
  response_fn_2  1.2943462324415214e-01  1.4366047231784716e-02  7.4311074624778628e-01 -5.9115595364920859e-01
  response_fn_3  2.5806515443452832e-02  7.1751806429312392e-03  9.1839095499121171e-01 -3.2157773894841313e-02
 Test Number 3 succeeded
-<<<<< Function evaluation summary (LF_INT): 29401 total (29401 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 363 total (363 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 362 total (362 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 4.9953515625000000e+02
+<<<<< Function evaluation summary (LF_INT): 94 total (94 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 7850 total (7850 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 9 total (9 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 4.9999218750000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (   5 pilot samples):  1.8087937766295283e-05
-      Final   MC ( 362 HF samples):     2.4912524692117334e-07
-      Final  ACV (sample profile):      1.8837426084744384e-08
-      Final  ACV ratio (1 - R^2):       7.5614279634632159e-02
+    Initial   MC (    5 HF samples):  1.8087937766295052e-05
+      Final   MC (    9 HF samples):  1.2393421644364797e-05
+      Final  ACV (sample profile):    1.4415686057736536e-08
+      Final  ACV ratio (1 - R^2):     1.1631724047968018e-03
+ Equivalent   MC (  500 HF samples):  2.2308507530286796e-07
+ Equivalent  ACV ratio:               6.4619679457109835e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5343318826697808e-02  6.6512722579016694e-03  7.8642101222751293e-01 -1.6177851152036293e-01
- response_fn_2  1.2914520266859603e-01  1.3786754546218451e-02  6.6450319906645616e-01 -9.0432954238720420e-01
- response_fn_3  2.5343318826547768e-02  6.6512722578564842e-03  7.8642101233805184e-01 -1.6177851125021103e-01
+ response_fn_1  2.5460112265104549e-02  6.7492821896546311e-03  7.3609936486327354e-01 -2.6354090681678022e-01
+ response_fn_2  1.2941014062186079e-01  1.3765219965371897e-02  6.9154660293889092e-01 -6.7528121860140988e-01
+ response_fn_3  2.5460112265375222e-02  6.7492821892678754e-03  7.3609936476760585e-01 -2.6354090666688323e-01
 Test Number 4 succeeded
 <<<<< Function evaluation summary (LF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 4.9997265625000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (  25 pilot samples):  4.1006897417589495e-06
-  Projected   MC (  38 HF samples):     2.6978221985256243e-06
-  Projected  ACV (sample profile):      1.3901996777529233e-08
-  Projected  ACV ratio (1 - R^2):       5.1530441053998137e-03
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+  Projected   MC (   25 HF samples):  4.1006897417589732e-06
+  Projected  ACV (sample profile):    1.3630439174423841e-08
+  Projected  ACV ratio (1 - R^2):     3.3239381745025958e-03
+ Equivalent   MC (  500 HF samples):  2.0504570052469609e-07
+ Equivalent  ACV ratio:               6.6475127932673558e-02
 Test Number 5 succeeded
-<<<<< Function evaluation summary (LF_INT): 18269 total (18269 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 6336 total (6336 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 139 total (139 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 4.9972265625000000e+02
+<<<<< Function evaluation summary (LF_INT): 111 total (111 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 7916 total (7916 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 111 total (111 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 4.9954296875000000e+02
 <<<<< Variance for mean estimator:
-      Final   MC (  39 HF samples):     2.6707221581572413e-06
-      Final  ACV (sample profile):      1.3994716311236232e-08
-      Final  ACV ratio (1 - R^2):       5.2400495006535534e-03
+      Final   MC (   11 HF samples):  9.4689240152846459e-06
+      Final  ACV (sample profile):    1.3640480588646292e-08
+      Final  ACV ratio (1 - R^2):     1.4405523337844891e-03
+ Equivalent   MC (  500 HF samples):  2.0850691668979900e-07
+ Equivalent  ACV ratio:               6.5419799041676774e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5398148773040162e-02  6.6913270027372908e-03  7.6179582599066376e-01 -2.1032141380674263e-01
- response_fn_2  1.2944969136881843e-01  1.3767770832432219e-02  5.8508895297122521e-01  2.0987688747938771e-01
- response_fn_3  2.5398148773218290e-02  6.6913270027024949e-03  7.6179582468113882e-01 -2.1032140817372325e-01
+ response_fn_1  2.5415166040128150e-02  6.6479989459546441e-03  7.2173023557627303e-01 -2.6713059357761226e-01
+ response_fn_2  1.2929523171642174e-01  1.3652197226486513e-02  6.8320745671786376e-01 -6.0401945984370364e-01
+ response_fn_3  2.5415166040340442e-02  6.6479989458276805e-03  7.2173023534579062e-01 -2.6713059165946040e-01
 Test Number 6 succeeded
-<<<<< Function evaluation summary (LF_INT): 147167 total (147167 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 1812 total (1812 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 1812 total (1812 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5001210937500000e+03
+<<<<< Function evaluation summary (LF_INT): 65 total (65 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 38956 total (38956 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 65 total (65 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.5000039062500000e+03
 <<<<< Variance for mean estimator:
-      Initial MC (   5 pilot samples):  1.8087937766295283e-05
-      Final   MC (1812 HF samples):     4.8140889278434396e-08
-      Final  ACV (sample profile):      3.8799446628455975e-09
-      Final  ACV ratio (1 - R^2):       8.0595616761564279e-02
+    Initial   MC (    5 HF samples):  1.8087937766295052e-05
+      Final   MC (   65 HF samples):  1.2785259642613847e-06
+      Final  ACV (sample profile):    2.1899418044490771e-09
+      Final  ACV ratio (1 - R^2):     1.7128645531373507e-03
+ Equivalent   MC ( 2500 HF samples):  3.3241623130759867e-08
+ Equivalent  ACV ratio:               6.5879508826469799e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5284611174709943e-02  6.6007928200307276e-03  7.9892572560491248e-01 -7.2357321182318302e-02
- response_fn_2  1.2906879525928078e-01  1.3503705709390926e-02  7.1018534194835914e-01 -6.4222671853000435e-01
- response_fn_3  2.5284611174697276e-02  6.6007928200617627e-03  7.9892572563753828e-01 -7.2357321043009293e-02
+ response_fn_1  2.5317023646109726e-02  6.6311371630352811e-03  7.8569984608872445e-01 -9.6403172795807457e-02
+ response_fn_2  1.2912085662273817e-01  1.3581546419023450e-02  7.2684780833402263e-01 -5.7381592229499390e-01
+ response_fn_3  2.5317023645995723e-02  6.6311371627322960e-03  7.8569984609929400e-01 -9.6403172694992989e-02
 Test Number 7 succeeded
 <<<<< Function evaluation summary (LF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 2.5003164062500000e+03
 <<<<< Variance for mean estimator:
-      Initial MC (  25 pilot samples):  4.1006897417589495e-06
-  Projected   MC ( 188 HF samples):     5.4530448693603045e-07
-  Projected  ACV (sample profile):      2.7803993555412414e-09
-  Projected  ACV ratio (1 - R^2):       5.0988015359341972e-03
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+  Projected   MC (   57 HF samples):  1.7985481323504270e-06
+  Projected  ACV (sample profile):    2.6838435161768743e-09
+  Projected  ACV ratio (1 - R^2):     1.4922277963556648e-03
+ Equivalent   MC ( 2500 HF samples):  4.1001708138903396e-08
+ Equivalent  ACV ratio:               6.5456870896321989e-02
 Test Number 8 succeeded
-<<<<< Function evaluation summary (LF_INT): 39179 total (39179 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 157 total (157 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 39179 total (39179 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 157 total (157 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.6520898437500000e+03
+<<<<< Equivalent number of high fidelity evaluations: 2.4996601562500000e+03
 <<<<< Variance for mean estimator:
-      Final   MC (  57 HF samples):     1.8273362134760073e-06
-      Final  ACV (sample profile):      2.7280961177751238e-09
-      Final  ACV ratio (1 - R^2):       1.4929360550380967e-03
+      Final   MC (   57 HF samples):  1.8273362134759845e-06
+      Final  ACV (sample profile):    2.7280961177287566e-09
+      Final  ACV ratio (1 - R^2):     1.4929360550127412e-03
+ Equivalent   MC ( 2500 HF samples):  4.1668930037429411e-08
+ Equivalent  ACV ratio:               6.5470750395515920e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5347065188581243e-02  6.6346606360206126e-03  7.6606966123740217e-01 -1.9298776963869546e-01
- response_fn_2  1.2919620280109068e-01  1.3603220947561010e-02  6.3557490774354575e-01  4.4245468358171802e-01
- response_fn_3  2.5347065188445837e-02  6.6346606363715628e-03  7.6606966001733745e-01 -1.9298776535326212e-01
+ response_fn_1  2.5347071008719666e-02  6.6346972364778453e-03  7.6608857774587147e-01 -1.9285637996812710e-01
+ response_fn_2  1.2919716566710299e-01  1.3586876155186863e-02  6.6796518765732371e-01  4.7565353941593891e-02
+ response_fn_3  2.5347071008581384e-02  6.6346972368467195e-03  7.6608857651395235e-01 -1.9285637562272884e-01
 Test Number 9 succeeded
-<<<<< Function evaluation summary (LF_INT): 1932 total (1932 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 1372 total (1372 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 2495 total (2495 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 1060 total (1060 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 24 total (24 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 1.1729687500000000e+02
+<<<<< Equivalent number of high fidelity evaluations: 9.9996093750000000e+01
 <<<<< Variance for mean estimator:
-      Initial MC (   5 pilot samples):  1.8087937766295283e-05
-      Final   MC (  24 HF samples):     3.2272374741851665e-06
-      Final  ACV (sample profile):      4.5567351166930265e-08
-      Final  ACV ratio (1 - R^2):       1.4119615160466430e-02
+    Initial   MC (    5 HF samples):  1.8087937766295052e-05
+      Final   MC (   24 HF samples):  3.2272374741851334e-06
+      Final  ACV (sample profile):    4.8614303909630325e-08
+      Final  ACV ratio (1 - R^2):     1.5063751675697578e-02
+ Equivalent   MC (  100 HF samples):  7.7456725033764825e-07
+ Equivalent  ACV ratio:               6.2763180199573956e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5434606743289467e-02  6.6673343462169488e-03  7.3406719026588030e-01 -2.2750802921281998e-01
- response_fn_2  1.2928448012951366e-01  1.3670396447620629e-02  6.4177344216629661e-01 -6.7340176657759887e-01
- response_fn_3  2.5434606743156368e-02  6.6673343460045579e-03  7.3406718978704544e-01 -2.2750803001386899e-01
+ response_fn_1  2.5454146785245754e-02  6.7435017536248360e-03  7.6503454932971893e-01 -2.1761216016786955e-01
+ response_fn_2  1.2941997594252852e-01  1.4047468962075755e-02  5.4750906186655623e-01 -9.4592963054655410e-01
+ response_fn_3  2.5454146785103882e-02  6.7435017533033137e-03  7.6503454888125211e-01 -2.1761216086714752e-01
 Test Number 10 succeeded
 <<<<< Function evaluation summary (LF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0000000000000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (  25 pilot samples):  4.1006897417589495e-06
-  Projected   MC (  25 HF samples):     4.1006897417589495e-06
-  Projected  ACV (sample profile):      6.7442134783987318e-08
-  Projected  ACV ratio (1 - R^2):       1.6446534371327176e-02
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+  Projected   MC (   25 HF samples):  4.1006897417589732e-06
+  Projected  ACV (sample profile):    6.7442134784005039e-08
+  Projected  ACV ratio (1 - R^2):     1.6446534371331402e-02
+ Equivalent   MC (  100 HF samples):  1.0251724354397431e-06
+ Equivalent  ACV ratio:               6.5786137485325621e-02
 Test Number 11 succeeded
 <<<<< Function evaluation summary (LF_INT): 1877 total (1877 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 1480 total (1480 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 107 total (107 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 1.0019140625000000e+02
 <<<<< Variance for mean estimator:
-      Final   MC (   7 HF samples):     1.4879737738304629e-05
-      Final  ACV (sample profile):      6.2244249268525950e-08
-      Final  ACV ratio (1 - R^2):       4.1831549966295269e-03
+      Final   MC (    7 HF samples):  1.4879737738304446e-05
+      Final  ACV (sample profile):    6.2244249268529046e-08
+      Final  ACV ratio (1 - R^2):     4.1831549966297871e-03
+ Equivalent   MC (  100 HF samples):  1.0395917980054414e-06
+ Equivalent  ACV ratio:               5.9873740239150340e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5433302313454916e-02  6.6656646009288657e-03  8.0668639408538356e-01 -5.7954101732725150e-01
- response_fn_2  1.2958669186998875e-01  1.3478336565569963e-02  2.1051781283423940e+00 -1.5922659876176159e+01
- response_fn_3  2.5433302313283040e-02  6.6656646004424136e-03  8.0668639517869190e-01 -5.7954102067886604e-01
+ response_fn_1  2.5433302589296471e-02  6.6656654854174860e-03  8.0668586997109959e-01 -5.7953843759474788e-01
+ response_fn_2  1.2958669048260765e-01  1.3478338410266274e-02  2.1051677374224962e+00 -1.5922551704251299e+01
+ response_fn_3  2.5433302589124643e-02  6.6656654849305864e-03  8.0668587106566791e-01 -5.7953844095177010e-01
 Test Number 12 succeeded
-<<<<< Function evaluation summary (LF_INT): 10006 total (10006 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 6687 total (6687 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 10868 total (10868 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 6345 total (6345 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 61 total (61 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 5.1802343750000000e+02
+<<<<< Equivalent number of high fidelity evaluations: 5.0001562500000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (   5 pilot samples):  1.8087937766295283e-05
-      Final   MC (  61 HF samples):     1.6130828373100549e-06
-      Final  ACV (sample profile):      1.1574329864217465e-08
-      Final  ACV ratio (1 - R^2):       7.1752854822499934e-03
+    Initial   MC (    5 HF samples):  1.8087937766295052e-05
+      Final   MC (   61 HF samples):  1.6130828373100650e-06
+      Final  ACV (sample profile):    1.1619173496016237e-08
+      Final  ACV ratio (1 - R^2):     7.2030854381862179e-03
+ Equivalent   MC (  500 HF samples):  1.9678995646568837e-07
+ Equivalent  ACV ratio:               5.9043528972181653e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5352372504509401e-02  6.6904437245351410e-03  7.9881755155284995e-01 -2.0188576848448259e-01
- response_fn_2  1.2927905892749053e-01  1.3779257358442133e-02  6.9831409038430770e-01 -9.3722352197572567e-01
- response_fn_3  2.5352372504632674e-02  6.6904437241249786e-03  7.9881755159464152e-01 -2.0188576824151827e-01
+ response_fn_1  2.5348412596521500e-02  6.6934892809310522e-03  7.9726049299746193e-01 -1.8257115075150931e-01
+ response_fn_2  1.2925878980030739e-01  1.3841016963076980e-02  6.9661873285352816e-01 -1.0576516527025603e+00
+ response_fn_3  2.5348412596637938e-02  6.6934892805197805e-03  7.9726049306287228e-01 -1.8257115044769989e-01
 Test Number 13 succeeded
 <<<<< Function evaluation summary (LF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 4.9990625000000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (  25 pilot samples):  4.1006897417589495e-06
-  Projected   MC (  32 HF samples):     3.2036638607491792e-06
-  Projected  ACV (sample profile):      1.2343660266448205e-08
-  Projected  ACV ratio (1 - R^2):       3.8529823361560882e-03
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+  Projected   MC (   32 HF samples):  3.2036638607491974e-06
+  Projected  ACV (sample profile):    1.2343660266507408e-08
+  Projected  ACV ratio (1 - R^2):     3.8529823361745461e-03
+ Equivalent   MC (  500 HF samples):  2.0507293826387312e-07
+ Equivalent  ACV ratio:               6.0191560968539268e-02
 Test Number 14 succeeded
 <<<<< Function evaluation summary (LF_INT): 8984 total (8984 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 6998 total (6998 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 134 total (134 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 4.9982812500000000e+02
 <<<<< Variance for mean estimator:
-      Final   MC (  34 HF samples):     3.0634754167097769e-06
-      Final  ACV (sample profile):      1.2448849853710772e-08
-      Final  ACV ratio (1 - R^2):       4.0636362824419342e-03
+      Final   MC (   34 HF samples):  3.0634754167097388e-06
+      Final  ACV (sample profile):    1.2448849853695514e-08
+      Final  ACV ratio (1 - R^2):     4.0636362824370042e-03
+ Equivalent   MC (  500 HF samples):  2.0838796169809596e-07
+ Equivalent  ACV ratio:               5.9738814815660533e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5368783096853892e-02  6.6306369874716935e-03  7.6809476352076400e-01 -1.4920748608092982e-01
- response_fn_2  1.2938018877283292e-01  1.3704789638574313e-02  5.9317412744636910e-01  4.7944877452472445e-01
- response_fn_3  2.5368783097200198e-02  6.6306369869968814e-03  7.6809476520028164e-01 -1.4920749063343841e-01
+ response_fn_1  2.5368783391665577e-02  6.6306377525780676e-03  7.6809441274798929e-01 -1.4920769425246139e-01
+ response_fn_2  1.2938018869343715e-01  1.3704789687518442e-02  5.9317452388913083e-01  4.7944275413634685e-01
+ response_fn_3  2.5368783392011852e-02  6.6306377521033700e-03  7.6809441442751292e-01 -1.4920769881042339e-01
 Test Number 15 succeeded
-<<<<< Function evaluation summary (LF_INT): 44416 total (44416 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 34198 total (34198 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 54171 total (54171 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 31750 total (31750 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 304 total (304 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.6148750000000000e+03
+<<<<< Equivalent number of high fidelity evaluations: 2.4999804687500000e+03
 <<<<< Variance for mean estimator:
-      Initial MC (   5 pilot samples):  1.8087937766295283e-05
-      Final   MC ( 304 HF samples):     2.8425406069154235e-07
-      Final  ACV (sample profile):      2.0750301550612089e-09
-      Final  ACV ratio (1 - R^2):       7.2999138517599689e-03
+    Initial   MC (    5 HF samples):  1.8087937766295052e-05
+      Final   MC (  304 HF samples):  2.8425406069154653e-07
+      Final  ACV (sample profile):    2.0919843483606597e-09
+      Final  ACV ratio (1 - R^2):     7.3595583587132678e-03
+ Equivalent   MC ( 2500 HF samples):  3.4565563823559431e-08
+ Equivalent  ACV ratio:               6.0522211037529521e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5313959786533481e-02  6.6353692022891684e-03  7.8390077240324296e-01 -1.7995026081617649e-01
- response_fn_2  1.2917305542545329e-01  1.3583529405804980e-02  7.1306537019210747e-01 -6.3519034948544828e-01
- response_fn_3  2.5313959786519739e-02  6.6353692023200586e-03  7.8390077251309465e-01 -1.7995026055025676e-01
+ response_fn_1  2.5314054882406130e-02  6.6432503949702898e-03  7.9152098496448908e-01 -1.5422845819063058e-01
+ response_fn_2  1.2919107342881092e-01  1.3601294925297712e-02  7.1122156916915091e-01 -6.5706015525188866e-01
+ response_fn_3  2.5314054882391517e-02  6.6432503950027508e-03  7.9152098508320645e-01 -1.5422845790519135e-01
 Test Number 16 succeeded
 <<<<< Function evaluation summary (LF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 2.5004023437500000e+03
 <<<<< Variance for mean estimator:
-      Initial MC (  25 pilot samples):  4.1006897417589495e-06
-  Projected   MC ( 161 HF samples):     6.3675306549052004e-07
-  Projected  ACV (sample profile):      2.4687320533011499e-09
-  Projected  ACV ratio (1 - R^2):       3.8770634757751381e-03
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+  Projected   MC (  161 HF samples):  6.3675306549052375e-07
+  Projected  ACV (sample profile):    2.4687320532987821e-09
+  Projected  ACV ratio (1 - R^2):     3.8770634757713971e-03
+ Equivalent   MC ( 2500 HF samples):  4.1000298931980358e-08
+ Equivalent  ACV ratio:               6.0212537898672820e-02
 Test Number 17 succeeded
 <<<<< Function evaluation summary (LF_INT): 44518 total (44518 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 34588 total (34588 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 271 total (271 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5000078125000000e+03
 <<<<< Variance for mean estimator:
-      Final   MC ( 171 HF samples):     6.0911207115866905e-07
-      Final  ACV (sample profile):      2.4897699707443677e-09
-      Final  ACV ratio (1 - R^2):       4.0875400252834617e-03
+      Final   MC (  171 HF samples):  6.0911207115866153e-07
+      Final  ACV (sample profile):    2.4897699707482596e-09
+      Final  ACV ratio (1 - R^2):     4.0875400252899010e-03
+ Equivalent   MC ( 2500 HF samples):  4.1663135469954103e-08
+ Equivalent  ACV ratio:               5.9759543842872527e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5302397385192622e-02  6.6057089085688712e-03  7.5088845172926411e-01 -2.0840815227446186e-02
- response_fn_2  1.2914102167259986e-01  1.3576749899207608e-02  7.5639054975777031e-01 -8.8368009973035244e-01
- response_fn_3  2.5302397384861591e-02  6.6057089086883998e-03  7.5088845160917195e-01 -2.0840814444921474e-02
+ response_fn_1  2.5302397309000354e-02  6.6057089085322781e-03  7.5088840823442904e-01 -2.0840518718828083e-02
+ response_fn_2  1.2914102170587596e-01  1.3576749875538809e-02  7.5639059693262556e-01 -8.8368087350092273e-01
+ response_fn_3  2.5302397308669324e-02  6.6057089086517988e-03  7.5088840811441027e-01 -2.0840517937512626e-02
 Test Number 18 succeeded
-<<<<< Function evaluation summary (LF_INT): 17888 total (17888 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 6238 total (6238 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 41 total (41 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 5.0075000000000000e+02
+<<<<< Function evaluation summary (LF_INT): 18915 total (18915 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 5993 total (5993 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 51 total (51 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 4.9944921875000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (  25 pilot samples):  4.1006897417589495e-06
-      Final   MC (  41 HF samples):     2.3204453238880167e-06
-      Final  ACV (sample profile):      1.3069842903068567e-08
-      Final  ACV ratio (1 - R^2):       5.6324718227660810e-03
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+      Final   MC (   51 HF samples):  1.9988376021907133e-06
+      Final  ACV (sample profile):    1.3593630227429725e-08
+      Final  ACV ratio (1 - R^2):     6.8007677124600780e-03
+ Equivalent   MC (  499 HF samples):  2.0410627123786323e-07
+ Equivalent  ACV ratio:               6.6600747468400209e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5338194056130418e-02  6.6121454682250211e-03  7.8662766184981392e-01 -1.4098715513666971e-01
- response_fn_2  1.2930959672162129e-01  1.3705162980403309e-02  6.8063480758846906e-01 -6.5902928498688018e-01
- response_fn_3  2.5338194056418812e-02  6.6121454685797894e-03  7.8662766197319922e-01 -1.4098715471372492e-01
+ response_fn_1  2.5297528172606703e-02  6.6754977113678672e-03  7.7050337086239640e-01 -2.0412711927848592e-01
+ response_fn_2  1.2934397234830691e-01  1.3810892562854336e-02  6.5415676033858206e-01 -6.6671693328825166e-01
+ response_fn_3  2.5297528172611026e-02  6.6754977115964986e-03  7.7050337072490238e-01 -2.0412711964653152e-01
 Test Number 19 succeeded
-<<<<< Function evaluation summary (LF_INT): 203222 total (203222 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 23928 total (23928 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 209 total (209 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.4983359375000000e+03
+<<<<< Function evaluation summary (LF_INT): 175782 total (175782 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 22457 total (22457 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 405 total (405 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.4952109375000000e+03
 <<<<< Variance for mean estimator:
-      Initial MC ( 100 pilot samples):  1.0415816416813242e-06
-      Final   MC ( 209 HF samples):     4.7968955136848584e-07
-      Final  ACV (sample profile):      3.0628602264023383e-09
-      Final  ACV ratio (1 - R^2):       6.3850884757953039e-03
+    Initial   MC (  100 HF samples):  1.0415816416813113e-06
+      Final   MC (  405 HF samples):  2.3801517251893626e-07
+      Final  ACV (sample profile):    2.8549938124550862e-09
+      Final  ACV ratio (1 - R^2):     1.2083859546982222e-02
+ Equivalent   MC ( 2495 HF samples):  3.8632463260501069e-08
+ Equivalent  ACV ratio:               7.3901417913832937e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5306889627796744e-02  6.6180020618835465e-03  8.0259946299837182e-01 -1.6748243772773863e-01
- response_fn_2  1.2922250004973315e-01  1.3621600945601591e-02  7.1334766000113459e-01 -7.0225456598625335e-01
- response_fn_3  2.5306889627724469e-02  6.6180020617956619e-03  8.0259946301870411e-01 -1.6748243773304061e-01
+ response_fn_1  2.5306666241983675e-02  6.5899987488873355e-03  7.7697372695289402e-01 -1.4086262983863218e-01
+ response_fn_2  1.2917056567037377e-01  1.3543973602504892e-02  7.0515159697889351e-01 -4.9956531559390660e-01
+ response_fn_3  2.5306666242113050e-02  6.5899987489415127e-03  7.7697372695607092e-01 -1.4086262980482411e-01
 Test Number 20 succeeded
-<<<<< Function evaluation summary (LF_INT): 20640 total (20640 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 5715 total (5715 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 78 total (78 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 5.1581250000000000e+02
+<<<<< Function evaluation summary (LF_INT): 7108 total (7108 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 6910 total (6910 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 40 total (40 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 4.9964062500000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (  25 pilot samples):  4.1006897417589495e-06
-      Final   MC (  78 HF samples):     1.1543412588430138e-06
-      Final  ACV (sample profile):      1.1642117414303106e-08
-      Final  ACV ratio (1 - R^2):       1.0085507491928252e-02
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+      Final   MC (   40 HF samples):  2.1627718261707851e-06
+      Final  ACV (sample profile):    1.0630597269464242e-08
+      Final  ACV ratio (1 - R^2):     4.9152652817222283e-03
+ Equivalent   MC (  500 HF samples):  1.7314619492126249e-07
+ Equivalent  ACV ratio:               6.1396655435012375e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5302951710829129e-02  6.5798253433006649e-03  7.8566113902107237e-01 -1.2532825214321353e-01
- response_fn_2  1.2938667006013546e-01  1.3789624336057871e-02  6.9285020249938523e-01 -8.1220023694421384e-01
- response_fn_3  2.5302951710701831e-02  6.5798253436854023e-03  7.8566113906660762e-01 -1.2532825204151843e-01
+ response_fn_1  2.5343853099231695e-02  6.6311765733007193e-03  7.8687385989590131e-01 -1.0540559111319681e-01
+ response_fn_2  1.2936169665867650e-01  1.3808701683959819e-02  6.7444348153480382e-01 -7.1800802332905489e-01
+ response_fn_3  2.5343853099849267e-02  6.6311765735726129e-03  7.8687386018050964e-01 -1.0540559054025156e-01
 Test Number 21 succeeded
-<<<<< Function evaluation summary (LF_INT): 203011 total (203011 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 23780 total (23780 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 221 total (221 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5002617187500000e+03
+<<<<< Function evaluation summary (LF_INT): 171948 total (171948 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 22082 total (22082 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 443 total (443 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.4947968750000000e+03
 <<<<< Variance for mean estimator:
-      Initial MC ( 100 pilot samples):  1.0415816416813242e-06
-      Final   MC ( 221 HF samples):     4.4732472892884787e-07
-      Final  ACV (sample profile):      2.9608683002881788e-09
-      Final  ACV ratio (1 - R^2):       6.6190579433830915e-03
+    Initial   MC (  100 HF samples):  1.0415816416813113e-06
+      Final   MC (  443 HF samples):  2.1248699536733881e-07
+      Final  ACV (sample profile):    2.7188858924742846e-09
+      Final  ACV ratio (1 - R^2):     1.2882191719807378e-02
+ Equivalent   MC ( 2495 HF samples):  3.7731223688393904e-08
+ Equivalent  ACV ratio:               7.2059308622704751e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5308744731015527e-02  6.6087217031170920e-03  7.9877179030503287e-01 -1.2885622629320181e-01
- response_fn_2  1.2923299515393910e-01  1.3602579322496526e-02  7.2135520342218939e-01 -6.8927269422694293e-01
- response_fn_3  2.5308744730996903e-02  6.6087217033473367e-03  7.9877179027354739e-01 -1.2885622636344651e-01
+ response_fn_1  2.5265841543386271e-02  6.5770437710671375e-03  7.9399959093467343e-01 -6.9134874889292153e-02
+ response_fn_2  1.2905806822192079e-01  1.3565358848701322e-02  7.6645301062526239e-01 -7.3530898304110304e-01
+ response_fn_3  2.5265841543565030e-02  6.5770437712475045e-03  7.9399959088181871e-01 -6.9134875089817971e-02
 Test Number 22 succeeded
-<<<<< Function evaluation summary (LF_INT): 3839 total (3839 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 11 total (11 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 3839 total (3839 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 10 total (10 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.6493359375000000e+02
+<<<<< Equivalent number of high fidelity evaluations: 2.4998046875000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (  10 pilot samples):  1.1083994771787663e-05
-      Final   MC (  10 HF samples):     1.1083994771787663e-05
-      Final  ACV (sample profile):      2.9067286164735239e-08
-      Final  ACV ratio (1 - R^2):       2.6224557808995764e-03
+    Initial   MC (   10 HF samples):  1.1083994771787595e-05
+      Final   MC (   10 HF samples):  1.1083994771787595e-05
+      Final  ACV (sample profile):    2.9067286164653967e-08
+      Final  ACV ratio (1 - R^2):     2.6224557808922602e-03
+ Equivalent   MC (  250 HF samples):  4.4339443106143046e-07
+ Equivalent  ACV ratio:               6.5556272538359453e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5291977645189770e-02  6.6444215735524462e-03  7.8565354912651397e-01 -1.5767688761084608e-01
- response_fn_2  1.2895183544764760e-01  1.3551310627610199e-02  7.1851456676170133e-01 -6.0126219674031534e-01
- response_fn_3  2.5291977646149804e-02  6.6444215729399040e-03  7.8565354955057098e-01 -1.5767688651709255e-01
+ response_fn_1  2.5291838679775126e-02  6.6262236398585833e-03  7.8040027159229575e-01 -1.4838780801645779e-01
+ response_fn_2  1.2896502422521744e-01  1.3570025882004793e-02  7.2283856897483534e-01 -5.9722488867573365e-01
+ response_fn_3  2.5291838680701680e-02  6.6262236391828860e-03  7.8040027200571960e-01 -1.4838780690366926e-01
 Test Number 23 succeeded
-<<<<< Function evaluation summary (LF_INT): 33246 total (33246 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 13122 total (13122 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 33368 total (33368 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 13114 total (13114 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 50 total (50 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 9.9999218750000000e+02
+<<<<< Equivalent number of high fidelity evaluations: 9.9996875000000000e+02
 <<<<< Variance for mean estimator:
-      Initial MC (  50 pilot samples):  2.0977215034625029e-06
-      Final   MC (  50 HF samples):     2.0977215034625029e-06
-      Final  ACV (sample profile):      7.1116926118616152e-09
-      Final  ACV ratio (1 - R^2):       3.3901986513095485e-03
+    Initial   MC (   50 HF samples):  2.0977215034624813e-06
+      Final   MC (   50 HF samples):  2.0977215034624813e-06
+      Final  ACV (sample profile):    7.1116805440391439e-09
+      Final  ACV ratio (1 - R^2):     3.3901928984856494e-03
+ Equivalent   MC ( 1000 HF samples):  1.0488935296540420e-07
+ Equivalent  ACV ratio:               6.7801739099151465e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5371449922271406e-02  6.6356416777584538e-03  7.5213178523536339e-01 -2.3122610212292027e-01
- response_fn_2  1.2925590571850856e-01  1.3622990187134735e-02  6.8321372528201663e-01 -5.9811538123573760e-01
- response_fn_3  2.5371449922538956e-02  6.6356416779655841e-03  7.5213178532122249e-01 -2.3122610220693263e-01
+ response_fn_1  2.5376204345779290e-02  6.6487007584050935e-03  7.6455426450463071e-01 -1.7819820441356349e-01
+ response_fn_2  1.2926448712427238e-01  1.3629613735662360e-02  6.8451571327464067e-01 -5.8814871437763649e-01
+ response_fn_3  2.5376204346046573e-02  6.6487007586117025e-03  7.6455426458517706e-01 -1.7819820451789070e-01
+Test Number 24 succeeded
+<<<<< Function evaluation summary (HF_INT): 24959 total (24959 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 4.9944921875000000e+02
+<<<<< Variance for mean estimator:
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+      Final   MC (   51 HF samples):  1.9988376021907133e-06
+      Final  ACV (sample profile):    1.3593630227429725e-08
+      Final  ACV ratio (1 - R^2):     6.8007677124600780e-03
+ Equivalent   MC (  499 HF samples):  2.0410627123786323e-07
+ Equivalent  ACV ratio:               6.6600747468400209e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5297528172606703e-02  6.6754977113678672e-03  7.7050337086239640e-01 -2.0412711927848592e-01
+ response_fn_2  1.2934397234830691e-01  1.3810892562854336e-02  6.5415676033858206e-01 -6.6671693328825166e-01
+ response_fn_3  2.5297528172611026e-02  6.6754977115964986e-03  7.7050337072490238e-01 -2.0412711964653152e-01
+Test Number 25 succeeded
+<<<<< Function evaluation summary (MF_INT): 6034 total (6034 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 18019 total (18019 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 52 total (52 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 4.9951171875000000e+02
+<<<<< Variance for mean estimator:
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+      Final   MC (   52 HF samples):  1.5619141201860745e-06
+      Final  ACV (sample profile):    1.1070728441401486e-08
+      Final  ACV ratio (1 - R^2):     7.0879239122843734e-03
+ Equivalent   MC (  500 HF samples):  1.6259785546758182e-07
+ Equivalent  ACV ratio:               6.8086558765276764e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5301848806867581e-02  6.6050556373141219e-03  7.8598311567748969e-01 -2.5260726640158992e-02
+ response_fn_2  1.2923457405522454e-01  1.3698660457892061e-02  7.0047031639021617e-01 -6.7819422848800137e-01
+ response_fn_3  2.5301848807049918e-02  6.6050556373806841e-03  7.8598311597161485e-01 -2.5260725712456633e-02

@@ -1,0 +1,18 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+             f0: 5 val (5 n, 0 d), 5 grad (5 n, 0 d), 5 Hess (5 n, 0 d)
+             f1: 5 val (5 n, 0 d), 5 grad (5 n, 0 d), 5 Hess (5 n, 0 d)
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+             f0: 5 val (5 n, 0 d), 5 grad (5 n, 0 d), 5 Hess (5 n, 0 d)
+             f1: 5 val (5 n, 0 d), 5 grad (5 n, 0 d), 5 Hess (5 n, 0 d)
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+             f0: 5 val (5 n, 0 d), 5 grad (5 n, 0 d), 5 Hess (5 n, 0 d)
+             c1: 5 val (5 n, 0 d), 5 grad (5 n, 0 d), 5 Hess (5 n, 0 d)
+             c2: 5 val (5 n, 0 d), 5 grad (5 n, 0 d), 5 Hess (5 n, 0 d)
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+             f0: 5 val (5 n, 0 d), 5 grad (5 n, 0 d), 5 Hess (5 n, 0 d)
+             c1: 5 val (5 n, 0 d), 5 grad (5 n, 0 d), 5 Hess (5 n, 0 d)
+             c2: 5 val (5 n, 0 d), 5 grad (5 n, 0 d), 5 Hess (5 n, 0 d)

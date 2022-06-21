@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -30,6 +30,9 @@
 #include "nested_sampling.hpp"
 #include "BasisPolynomial.hpp"
 #include "OrthogPolyApproximation.hpp"
+
+#include "boost/random.hpp"
+#include "boost/generator_iterator.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDLHSSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -103,6 +106,9 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
 	     << "final design will not." << std::endl;
     }
   }
+  qoiSamplesMatrix.shape(numFunctions, 0);
+
+  initialize_final_statistics();
 }
 
 
@@ -175,9 +181,10 @@ void NonDLHSSampling::sampling_increment()
 {
   // if no refinment samples, leave numSamples at baseline
   varyPattern = true;
-  if (refineSamples.length() > 0) {
+  int len = refineSamples.length();
+  if (len > 0) {
     numSamples = refineSamples[samplesIncrement];
-    samplesIncrement = std::min(samplesIncrement + 1, refineSamples.length()-1);
+    samplesIncrement = std::min(samplesIncrement + 1, len - 1);
   }
 }
 
@@ -648,8 +655,66 @@ void NonDLHSSampling::core_run()
   bool log_resp_flag = (allDataFlag || statsFlag);
   bool log_best_flag = !numResponseFunctions; // DACE mode w/ opt or NLS
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+
+  //Needed if we want to do bootstrapping for covariance of 
+  //scalarization term cov[mean,sigma]
+  //store_evaluations(); 
 }
 
+void NonDLHSSampling::store_evaluations(){
+  int eval_index = 0; //qoiSamplesMatrix.numCols(); //old size
+  qoiSamplesMatrix.reshape(numFunctions, numSamples);
+  for (IntRespMCIter r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it){
+    const RealVector& fn_vals = r_it->second.function_values();
+    for (size_t qoi=0; qoi < numFunctions; ++qoi) {
+      qoiSamplesMatrix(qoi, eval_index) = fn_vals[qoi];
+    }
+    eval_index++;
+  }
+}
+
+Real NonDLHSSampling::bootstrap_covariance(const size_t qoi){
+  int nb_bs_samples = 1000, bs_sample_idx;
+  RealVector bs_samples(numSamples);
+  RealVector mean_bs(nb_bs_samples);
+  RealVector sigma_bs(nb_bs_samples);
+  Real mean_mean_bs = 0, mean_sigma_bs = 0, covmeansigma = 0;
+  typedef boost::mt19937 RNGType;
+
+  RNGType rng(randomSeed);
+  boost::uniform_int<> rand_int_range( 0, numSamples-1);
+  boost::variate_generator< RNGType, boost::uniform_int<> >
+    rand_int(rng, rand_int_range);
+
+  for(int bs_resample = 0; bs_resample < nb_bs_samples; ++bs_resample){
+    for(int resample = 0; resample < numSamples; ++resample){
+      bs_sample_idx = rand_int();
+      bs_samples[resample] = qoiSamplesMatrix(qoi, bs_sample_idx);
+    }
+    mean_bs[bs_resample] = 0;
+    for(int resample = 0; resample < numSamples; ++resample){
+      mean_bs[bs_resample] += bs_samples[resample];
+    }
+    mean_bs[bs_resample] /= numSamples;
+    mean_mean_bs += mean_bs[bs_resample];
+    sigma_bs[bs_resample] = 0;
+    for(int resample = 0; resample < numSamples; ++resample){
+      sigma_bs[bs_resample] += (bs_samples[resample] - mean_bs[bs_resample]) 
+                                * (bs_samples[resample] - mean_bs[bs_resample]);
+    }        
+    sigma_bs[bs_resample] /= (numSamples - 1.);
+    mean_sigma_bs += sigma_bs[bs_resample];
+  }
+  mean_mean_bs /= numSamples;
+  mean_sigma_bs /= numSamples;
+
+  for(int bs_resample = 0; bs_resample < nb_bs_samples; ++bs_resample){
+    covmeansigma += (mean_bs[bs_resample] - mean_mean_bs) 
+                    * (sigma_bs[bs_resample] - mean_sigma_bs);
+  }
+  covmeansigma /= (numSamples - 1.);
+  return covmeansigma;
+}
 
 void NonDLHSSampling::post_run(std::ostream& s)
 {
@@ -688,18 +753,22 @@ void NonDLHSSampling::update_final_statistics()
 
   // if MC sampling, assign standard errors for moments within finalStatErrors
   if (finalStatErrors.empty())
-    finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
+    finalStatErrors.shape(2*finalStatistics.num_functions()); // init to 0.
   size_t i, cntr = 0;
   Real sqrt2 = std::sqrt(2.), ns = (Real)numSamples, sqrtn = std::sqrt(ns),
-    sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev, qoi_cm4, qoi_exckurt;
+    sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev, qoi_cm4, qoi_exckurt, qoi_skewness, qoi_cm3;
   for (i=0; i<numFunctions; ++i) {
     switch (finalMomentsType) {
     case Pecos::STANDARD_MOMENTS:
       qoi_stdev = momentStats(1,i);
       // standard error (estimator std-dev) for Monte Carlo mean
-      finalStatErrors[cntr++] = qoi_stdev / sqrtn;
+      finalStatErrors(2*i, 2*i) = qoi_stdev / sqrtn;
+      if(std::isnan(finalStatErrors(2*i, 2*i)) || std::isinf(finalStatErrors(2*i, 2*i))){
+        Cerr << "NonDLHSSampling::update_final_statistics() std(mean) is nan or inf for qoi = " << i << ": " << finalStatErrors(2*i, 2*i) << ". Reparing to zero.\n";
+        finalStatErrors(2*i, 2*i) = 0;
+      }
       if(outputLevel >= DEBUG_OUTPUT)
-	Cout << "Estimator SE for mean = " << finalStatErrors[cntr-1] << "\n";
+	     Cout << "Estimator SE for mean = " << finalStatErrors(2*i, 2*i) << "\n";
       // standard error (estimator std-dev) for Monte Carlo std-deviation
       // (Harding et al., 2014: assumes normally distributed population): 
       //finalStatErrors[cntr++] = qoi_stdev / (sqrt2*sqrtnm1);
@@ -707,34 +776,54 @@ void NonDLHSSampling::update_final_statistics()
       // https://stats.stackexchange.com/questions/29905/reference-for-mathrmvars2-sigma4-left-frac2n-1-frac-kappan/29945#29945
       // and delta method
       qoi_exckurt = momentStats(3, i);
-      finalStatErrors[cntr++] = 1. / (2. * qoi_stdev) * std::sqrt(qoi_stdev * qoi_stdev * qoi_stdev * qoi_stdev * (qoi_exckurt/ns + 2./(ns - 1.) ) );
+
+      //Cout << "Values for exckurt = " << qoi_stdev << ", " << qoi_exckurt  << "\n";
+      finalStatErrors(2*i+1, 2*i+1) = (qoi_stdev == 0) ? 0 : 1. / (2. * qoi_stdev) * std::sqrt(qoi_stdev * qoi_stdev * qoi_stdev * qoi_stdev * (qoi_exckurt/ns + 2./(ns - 1.) ) );
+      if(std::isnan(finalStatErrors(2*i+1, 2*i+1)) || std::isinf(finalStatErrors(2*i+1, 2*i+1))){
+        Cerr << "Values for exckurt = " << qoi_stdev << ", " << qoi_exckurt  << "\n";
+        Cerr << "NonDLHSSampling::update_final_statistics() std(std) is nan or inf for qoi = " << i << ": " << finalStatErrors(2*i+1, 2*i+1) << ". Reparing to zero.\n";
+        finalStatErrors(2*i+1, 2*i+1) = 0;
+      }
       if(outputLevel >= DEBUG_OUTPUT)
-	Cout << "Estimator SE for stddev = " << finalStatErrors[cntr-1] << "\n\n";
+	      Cout << "Estimator SE for stddev = " << finalStatErrors(2*i+1, 2*i+1) << "\n\n";
+
+      qoi_skewness = momentStats(2, i);
+      qoi_cm3 = qoi_skewness*(qoi_stdev*qoi_stdev*qoi_stdev);
+      //finalStatErrors(2*i+1, 2*i) = bootstrap_covariance(i); //COV_BOOTSTRAP
+      //finalStatErrors(2*i+1, 2*i) = finalStatErrors(2*i, 2*i)*finalStatErrors(2*i+1, 2*i+1); //COV_PEARSON
+      finalStatErrors(2*i+1, 2*i) = qoi_cm3/ns; //COV_CORRLIFT
+      if(std::isnan(finalStatErrors(2*i+1, 2*i)) || std::isinf(finalStatErrors(2*i+1, 2*i))){
+        Cerr << "Values for cov(mean, std) = " << qoi_skewness << ", " << qoi_stdev << ", " <<  qoi_cm3 << "\n";
+        Cerr << "NonDLHSSampling::update_final_statistics() cov(mean, std) is nan or inf for qoi = " << i << ": " << finalStatErrors(2*i+1, 2*i) << ". Reparing to zero.\n";
+        finalStatErrors(2*i+1, 2*i) = 0;
+      }
+      if(outputLevel >= DEBUG_OUTPUT)
+        Cout << "Estimator SE for cov = " << finalStatErrors(2*i+1, 2*i) << "\n\n";
       break;
     case Pecos::CENTRAL_MOMENTS:
       qoi_var = momentStats(1,i); qoi_stdev = std::sqrt(qoi_var);
       qoi_cm4 = momentStats(3,i);
    
       // standard error (estimator std-dev) for Monte Carlo mean
-      finalStatErrors[cntr++] = qoi_stdev / sqrtn;
+      finalStatErrors(2*i, 2*i) = qoi_stdev / sqrtn;
       if(outputLevel >= DEBUG_OUTPUT)
-          Cout << "Estimator SE for mean = " << finalStatErrors[cntr-1] << "\n";
+          Cout << "Estimator SE for mean = " << finalStatErrors(2*i, 2*i) << "\n";
       // standard error (estimator std-dev) for Monte Carlo variance
       // (Harding et al., 2014: assumes normally distributed population): 
       //finalStatErrors[cntr++] = qoi_var * sqrt2 / sqrtnm1;
       //[fm] Introduction to the Theory of Statistics, Var[Var] = bias correction * 1/N (cm4 - (N-3)/(N-1) cm2^2)
-      finalStatErrors[cntr++] = std::sqrt( (ns - 1.)/(ns*ns - 2. * ns + 3.) * (qoi_cm4 - (ns - 3.)/(ns - 1.) * qoi_var * qoi_var ) );
+      finalStatErrors(2*i+1, 2*i+1) = std::sqrt( (ns - 1.)/(ns*ns - 2. * ns + 3.) * (qoi_cm4 - (ns - 3.)/(ns - 1.) * qoi_var * qoi_var ) );
       if(outputLevel >= DEBUG_OUTPUT)
 	    Cout << "QoICM4 = " << qoi_cm4 << "\n";
 	    Cout << "QoICM2 = " << qoi_var << "\n";
 	    Cout << "ns = " << ns << "\n";
-	    Cout << "Estimator SE for variance = " << finalStatErrors[cntr-1] << "\n\n";
+	    Cout << "Estimator SE for variance = " << finalStatErrors(2*i+1, 2*i+1) << "\n\n";
       break;
     }
     // level mapping errors not implemented at this time
-    cntr +=
-      requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
-      requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
+    //cntr +=
+    //  requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
+    //  requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
   }
 }
 

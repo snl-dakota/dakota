@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -29,8 +29,8 @@ namespace Dakota {
     decay across model resolutions with variance reduction from a
     control variate across model fidelities. */
 
-class NonDMultilevControlVarSampling: public NonDMultilevelSampling,
-				      public NonDControlVariateSampling
+class NonDMultilevControlVarSampling: public NonDControlVariateSampling,
+				      public NonDMultilevelSampling
 {
 public:
 
@@ -53,6 +53,7 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_variance_reduction(std::ostream& s);
 
 private:
 
@@ -60,14 +61,25 @@ private:
   //- Heading: Helper functions
   //
 
-  /// Perform multilevel Monte Carlo across levels in combination with
-  /// control variate Monte Carlo across model forms at each level; CV
-  /// computes correlations for Y (LH correlations for level discrepancies)
-  void multilevel_control_variate_mc_Ycorr();
+  // Perform multilevel Monte Carlo across levels in combination with
+  // control variate Monte Carlo across model forms at each level; CV
+  // computes correlations for Y (LH correlations for level discrepancies)
+  //void multilevel_control_variate_mc_Ycorr();
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Q (LH correlations for QoI)
   void multilevel_control_variate_mc_Qcorr();
+  /// Qcorr approach using a pilot sample treated as separate offline cost
+  void multilevel_control_variate_mc_offline_pilot();
+  /// Qcorr approach projecting estimator performance from a pilot sample
+  void multilevel_control_variate_mc_pilot_projection();
+
+  /// helper for shared code among offline-pilot and pilot-projection modes
+  void evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
+		      RealVectorArray& eval_ratios, RealMatrix& Lambda,
+		      RealMatrix& var_YH, Sizet2DArray& N_shared,
+		      RealVector& hf_targets, bool accumulate_cost,
+		      bool pilot_estvar);
 
   /// compute the equivalent number of HF evaluations (includes any sim faults)
   void compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
@@ -78,6 +90,12 @@ private:
   void increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
 				      size_t new_N_lf, Real lf_lev_cost,
 				      Real hf_ref_cost);
+
+  /// compute the variance of the MLMF estimator
+  void compute_mlmf_estimator_variance(const RealMatrix&   var_Y,
+				       const Sizet2DArray& num_Y,
+				       const RealMatrix&  Lambda,
+				       RealVector& mlmf_est_var);
 
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   void compute_eval_ratios(RealMatrix& sum_L_shared, RealMatrix& sum_H,
@@ -103,7 +121,7 @@ private:
 		      IntRealMatrixMap& sum_LL,       IntRealMatrixMap& sum_LH,
 		      const SizetArray& N_shared,
 		      IntRealMatrixMap& sum_L_refined,
-		      const SizetArray& N_refined, const RealMatrix& rho2_LH,
+		      const SizetArray& N_refined, //const RealMatrix& rho2_LH,
 		      size_t lev, RealMatrix& H_raw_mom);
   /// apply control variate parameters for MLMF MC to estimate raw
   /// moment contributions
@@ -123,8 +141,8 @@ private:
 		      IntRealMatrixMap& sum_Ll_refined,
 		      IntRealMatrixMap& sum_Llm1_refined,
 		      const SizetArray& N_refined,
-		      const RealMatrix& rho_dot2_LH, size_t lev,
-		      RealMatrix& H_raw_mom);
+		      //const RealMatrix& rho_dot2_LH,
+		      size_t lev, RealMatrix& H_raw_mom);
 
   /// compute scalar control variate parameters
   void compute_mlmf_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl,
@@ -133,7 +151,7 @@ private:
 			    Real sum_Hl_Llm1, Real sum_Hlm1_Ll,
 			    Real sum_Hlm1_Llm1, Real sum_Hl_Hl,
 			    Real sum_Hl_Hlm1, Real sum_Hlm1_Hlm1,
-			    size_t N_shared, Real& var_YH, Real& rho_dot2_LH,
+			    size_t N_shared, Real& var_YHl, Real& rho_dot2_LH,
 			    Real& beta_dot, Real& gamma);
   /// compute matrix control variate parameters
   void compute_mlmf_control(const RealMatrix& sum_Ll,
@@ -168,6 +186,12 @@ private:
 			  const RealVector& beta_dot, const RealVector& gamma,
 			  RealVector& H_raw_mom);
 
+  /// for pilot projection mode, advance sample counts and accumulated cost
+  void update_projected_samples(const RealVector& hf_targets,
+				const RealVectorArray& eval_ratios,
+				Sizet2DArray& N_hf, const RealVector& hf_cost,
+				Sizet2DArray& N_lf, const RealVector& lf_cost);
+
   /// initialize the MLMF accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_mlmf_sums(IntRealMatrixMap& sum_L_shared,
@@ -200,11 +224,11 @@ private:
   /// using set of model evaluations within allResponses
   void accumulate_mlmf_Qsums(IntRealMatrixMap& sum_Ql,
 			     IntRealMatrixMap& sum_Qlm1, size_t lev,
-			     const RealVector& offset, SizetArray& num_Q);
+			     SizetArray& num_Q);
   /// update running discrepancy sums for one model (sum_Y) using
   /// set of model evaluations within allResponses
   void accumulate_mlmf_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
-			     const RealVector& offset, SizetArray& num_Y);
+			     SizetArray& num_Y);
   /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
   /// and sum_HH) from set of low/high fidelity model evaluations within
   /// {lf,hf}_resp_map; used for level 0 from other accumulators
@@ -214,9 +238,16 @@ private:
 			     IntRealMatrixMap& sum_L_refined,
 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
 			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
-			     size_t lev, const RealVector& lf_offset,
-			     const RealVector& hf_offset, SizetArray& num_L,
-			     SizetArray& num_H);
+			     size_t lev, SizetArray& num_L, SizetArray& num_H);
+  /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
+  /// and sum_HH) from set of low/high fidelity model evaluations within
+  /// {lf,hf}_resp_map; used for level 0 from other accumulators
+  void accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
+			     const IntResponseMap& hf_resp_map,
+			     RealMatrix& sum_L_shared,RealMatrix& sum_L_refined,
+			     RealMatrix& sum_H,  RealMatrix& sum_LL,
+			     RealMatrix& sum_LH, RealMatrix& sum_HH,
+			     size_t lev, SizetArray& N_shared);
   /// update running two-level discrepancy sums for two models (sum_L,
   /// sum_H, sum_LL, sum_LH, and sum_HH) from set of low/high fidelity
   /// model evaluations within {lf,hf}resp_map
@@ -226,9 +257,7 @@ private:
 			     IntRealMatrixMap& sum_L_refined,
 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
 			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
-			     size_t lev, const RealVector& lf_offset,
-			     const RealVector& hf_offset,
-			     SizetArray& num_L, SizetArray& num_H);
+			     size_t lev, SizetArray& num_L, SizetArray& num_H);
   /// update running QoI sums for two models and two levels from set
   /// of low/high fidelity model evaluations within {lf,hf}_resp_map
   void accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
@@ -249,14 +278,38 @@ private:
 			     IntRealMatrixMap& sum_Hl_Hl,
 			     IntRealMatrixMap& sum_Hl_Hlm1,
 			     IntRealMatrixMap& sum_Hlm1_Hlm1, size_t lev,
-			     const RealVector& lf_offset,
-			     const RealVector& hf_offset,
 			     SizetArray& num_L, SizetArray& num_H);
+  /// update running QoI sums for two models and two levels from set
+  /// of low/high fidelity model evaluations within {lf,hf}_resp_map
+  void accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
+			     const IntResponseMap& hf_resp_map,
+			     RealMatrix& sum_Ll,
+			     RealMatrix& sum_Llm1,
+			     RealMatrix& sum_Ll_refined,
+			     RealMatrix& sum_Llm1_refined,
+			     RealMatrix& sum_Hl,
+			     RealMatrix& sum_Hlm1,
+			     RealMatrix& sum_Ll_Ll,
+			     RealMatrix& sum_Ll_Llm1,
+			     RealMatrix& sum_Llm1_Llm1,
+			     RealMatrix& sum_Hl_Ll,
+			     RealMatrix& sum_Hl_Llm1,
+			     RealMatrix& sum_Hlm1_Ll,
+			     RealMatrix& sum_Hlm1_Llm1,
+			     RealMatrix& sum_Hl_Hl,
+			     RealMatrix& sum_Hl_Hlm1,
+			     RealMatrix& sum_Hlm1_Hlm1, size_t lev,
+			     SizetArray& N_shared);
 
   //
   //- Heading: Data
   //
 
+  //RealMatrix varYH;
+
+  /// core_run() can delegate execution to either ML or CV if hierarchy
+  /// does not support MLCV; in this case output must also be delegated
+  short delegateMethod;
 };
 
 
@@ -298,6 +351,29 @@ increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
 
 
 inline void NonDMultilevControlVarSampling::
+compute_mlmf_estimator_variance(const RealMatrix&   var_Y,
+				const Sizet2DArray& num_Y,
+				const RealMatrix&  Lambda,
+				RealVector& mlmf_est_var)
+{
+  mlmf_est_var.size(numFunctions); // init to 0
+  size_t qoi, lev, num_lev = num_Y.size(), num_cv_lev = Lambda.numCols();
+  for (lev=0; lev<num_lev; ++lev) {
+    const Real*       var_Yl = var_Y[lev];
+    const SizetArray& num_Yl = num_Y[lev];
+    if (lev < num_cv_lev) { // control variate with LF model for this level
+      const Real* Lambda_l = Lambda[lev];
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	mlmf_est_var[qoi] += var_Yl[qoi] / num_Yl[qoi] * Lambda_l[qoi];
+    }
+    else // no control variate for this level
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	mlmf_est_var[qoi] += var_Yl[qoi] / num_Yl[qoi];
+  }
+}
+
+
+inline void NonDMultilevControlVarSampling::
 compute_mlmf_control(const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
 		     const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 		     const RealMatrix& sum_Ll_Ll, const RealMatrix& sum_Ll_Llm1,
@@ -310,7 +386,7 @@ compute_mlmf_control(const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
 		     const SizetArray& N_shared, size_t lev,
 		     RealVector& beta_dot, RealVector& gamma)
 {
-  Real var_YH, rho_dot2_LH; // not needed for this context
+  Real var_YHl, rho_dot2_LH; // not needed for this context
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     compute_mlmf_control(sum_Ll(qoi,lev), sum_Llm1(qoi,lev), sum_Hl(qoi,lev),
 			 sum_Hlm1(qoi,lev), sum_Ll_Ll(qoi,lev),
@@ -318,7 +394,7 @@ compute_mlmf_control(const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
 			 sum_Hl_Ll(qoi,lev), sum_Hl_Llm1(qoi,lev),
 			 sum_Hlm1_Ll(qoi,lev), sum_Hlm1_Llm1(qoi,lev),
 			 sum_Hl_Hl(qoi,lev), sum_Hl_Hlm1(qoi,lev),
-			 sum_Hlm1_Hlm1(qoi,lev), N_shared[qoi], var_YH,
+			 sum_Hlm1_Hlm1(qoi,lev), N_shared[qoi], var_YHl,
 			 rho_dot2_LH, beta_dot[qoi], gamma[qoi]);
 }
 

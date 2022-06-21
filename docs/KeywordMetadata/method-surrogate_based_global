@@ -1,25 +1,63 @@
-Blurb::
-Global Surrogate Based Optimization
+Blurb:: Adaptive Global Surrogate-Based Optimization
+
 Description::
-The \c surrogate_based_global specification must identify:
-\li a sub-method, using either \ref method-surrogate_based_global-method_pointer
-    or \ref method-surrogate_based_global-method_name
-\li \ref method-surrogate_based_global-model_pointer must be used to identify a surrogate model
 
-\c surrogate_based_global works in an iterative scheme where
-optimization is performed on a global surrogate using the same bounds
-during each iteration.
-\li In one iteration, the optimal solutions of the surrogate
-model are found, and then a selected set of these optimal surrogate
-solutions are passed to the next iteration. 
-\li At the next iteration,
-these surrogate points are evaluated with the "truth" model, and then
-these points are added back to the set of points upon which the next
-surrogate is constructed. 
+The \c surrogate_based_global method iteratively performs optimization
+on a global surrogate using the same bounds during each iteration.
 
-In this way, the optimization acts on a more accurate surrogate during
-each iteration, presumably driving to optimality quickly.
-  
+\li In one iteration, optimal solutions are found on the surrogate
+    model, and a subset of these are passed to the next iteration.
+
+\li At the next iteration, these surrogate-optimal variable sets are
+    evaluated with the "truth" model, and added to the set of points
+    over which the next surrogate is constructed.
+
+In this way, the optimization operates on a more accurate surrogate
+during each iteration, presumably driving to optimality quickly. In
+contrast to \ref method-surrogate_based_local, this approach has no
+guarantee of convergence.
+
+<b> Usage Tips </b>
+
+<em>Attention:</em> This adaptive method is not recommended for
+"build-once" surrogates trained from (static) imported data or trained
+online using a single Dakota design of experiments. Instead, any
+Dakota optimization method can be used with a (build-once) global
+surrogate by specifying the \c id_model of a global surrogate model
+with the optimizer's \c model_pointer keyword.
+
+Configuring the method:
+
+\li The sub-method, specified with either \ref
+method-surrogate_based_global-method_pointer or \ref
+method-surrogate_based_global-method_name should typically be an
+optimizer that returns multiple final solutions, such as \ref
+method-moga or \ref method-soga.
+
+\li The \ref method-surrogate_based_global-model_pointer keyword must
+identify a surrogate model which includes an underlying truth model,
+typically via \ref model-surrogate-global-truth_model_pointer or \ref
+model-surrogate-global-dace_method_pointer
+
+Workflow:
+
+\li One might first try a single minimization method coupled with a
+surrogate model prior to using this surrogate-based global method.
+This is essentially equivalent to setting \c max_iterations to 1 and
+will allow one to get a sense of what surrogate types are the most
+accurate to use for the problem.
+
+\li Consider starting with a small number of maximum iterations, such
+as 3--5, to get a sense of how the optimization evolves as the
+surrogate gets updated. If it is still changing significantly, then a
+larger number (used in combination with restart) may be needed.
+
+\li Surrogates can be built for all primary functions and constraints
+or for only a subset of these functions and constraints. This allows
+one to use a "truth" model directly for some of the response
+functions, perhaps due to them being much less expensive than other
+functions.
+
 <em>Known Issue: When using discrete variables, there have been
 sometimes significant differences in surrogate behavior observed
 across computing platforms in some cases.  The cause has not yet been
@@ -28,31 +66,6 @@ guidance on appropriate construction and use of surrogates with
 discrete variables is under development.  In the meantime, users
 should therefore be aware that there is a risk of inaccurate results
 when using surrogates with discrete variables.</em>
-
-
-<b> Method Independent Controls </b>
-
-\li \ref method-surrogate_based_global-max_iterations is used as a stopping critierion (see note below)
-
-<b> Notes </b>
-
-We have some cautionary notes before using the surrogate-based global
-method:
-\li <b> This approach has no guarantee of convergence. </b>
-\li One might first try a single minimization method coupled with a
-surrogate model prior to using the surrogate-based global method.
-This is essentially equivalent to setting \c max_iterations to 1 and
-will allow one to get a sense of what surrogate types are the most
-accurate to use for the problem.
-\li Also note that one can specify that surrogates be built for all
-primary functions and constraints or for only a subset of these
-functions and constraints. This allows one to use a "truth" model
-directly for some of the response functions, perhaps due to them being
-much less expensive than other functions.
-\li We initially recommend a small number of maximum iterations, such
-as 3-5, to get a sense of how the optimization is evolving as the
-surrogate gets updated. If it appears to be changing significantly,
-then a larger number (used in combination with restart) may be needed.
 
 <b>Expected HDF5 Output</b> 
 
@@ -81,14 +94,15 @@ surrogate-based methods are to reduce the total number of truth model
 simulations and, in the case of global data fit surrogates, to smooth
 noisy data with an easily navigated analytic function.
 
-It was originally designed for MOGA (a multi-objective genetic
-algorithm). Since genetic algorithms often need thousands or tens of
-thousands of points to produce optimal or near-optimal solutions, the
-use of surrogates can be helpful for reducing the truth model
-evaluations. Instead of creating one set of surrogates for the
-individual objectives and running the optimization algorithm on the
-surrogate once, the idea is to select points along the (surrogate)
-Pareto frontier, which can be used to supplement the existing points.
+The \c surrogate_based_global method was originally designed for MOGA
+(a multi-objective genetic algorithm). Since genetic algorithms often
+need thousands or tens of thousands of points to produce optimal or
+near-optimal solutions, the use of surrogates can be helpful for
+reducing the truth model evaluations. Instead of creating one set of
+surrogates for the individual objectives and running the optimization
+algorithm on the surrogate once, the idea is to select points along
+the (surrogate) Pareto frontier, which can be used to supplement the
+existing points.
 
 In this way, one does not need to use many points initially to get a
 very accurate surrogate. The surrogate becomes more accurate as the

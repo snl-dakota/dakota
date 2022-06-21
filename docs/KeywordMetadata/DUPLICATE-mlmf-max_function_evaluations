@@ -1,0 +1,22 @@
+Blurb:: Stopping criterion based on maximum function evaluations
+
+Description::
+
+For multilevel and multifidelity sampling methods, this specification
+provides a computational budget, indicating that the mean squared
+error (MSE) of the estimator is to be minimized within this budget. In
+these methods, the MSE is typically comprised of known estimator
+variance (stochastic error), neglecting unknown residual bias
+(deterministic error for the highest-fidelity/most-resolved model).
+
+The budget is provided in terms of the equivalent number of
+high-fidelity/fine-resolution evaluations.  Default value is SZ_MAX
+(the maximum storable size_t), which is a special value indicating
+that a budget has not been specified.
+
+
+Topics::	method_independent_controls
+Examples::
+Theory::
+Faq::
+See_Also::	

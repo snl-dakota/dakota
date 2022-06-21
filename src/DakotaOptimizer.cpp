@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -27,8 +27,6 @@ static const char rcsId[]="@(#) $Id: DakotaOptimizer.cpp 7031 2010-10-22 16:23:5
 
 
 namespace Dakota {
-
-extern PRPCache data_pairs; // global container
 
 // initialization of static needed by RecastModel
 Optimizer* Optimizer::optimizerInstance(NULL);
@@ -223,7 +221,6 @@ void Optimizer::print_results(std::ostream& s, short results_state)
   const String& interface_id = orig_model.interface_id(); 
   // use asv = 1's
   ActiveSet search_set(orig_model.response_size(), numContinuousVars);
-  int eval_id;
   // -------------------------------------
   // Single and Multipoint results summary
   // -------------------------------------
@@ -280,26 +277,8 @@ void Optimizer::print_results(std::ostream& s, short results_state)
       write_data_partial(s, numUserPrimaryFns, numNonlinearConstraints, 
                          best_fns);
     } 
-    // lookup evaluation id where best occurred.  This cannot be catalogued
-    // directly because the optimizers track the best iterate internally and
-    // return the best results after iteration completion.  Therfore, perform a
-    // search in data_pairs to extract the evalId for the best fn eval.
-    PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
-                                           best_vars, search_set);
-    if (cache_it == data_pairs.get<hashed>().end()) {
-      s << "<<<<< Best data not found in evaluation cache\n\n";
-      eval_id = 0;
-    } else {
-      eval_id = cache_it->eval_id();
-      if (eval_id > 0) {
-	s << "<<<<< Best data captured at function evaluation " << eval_id
-	  << "\n\n";
-      } else {// should not occur
-	s << "<<<<< Best data not found in evaluations from current execution,"
-	  << "\n      but retrieved from restart archive with evaluation id "
-	  << -eval_id << "\n\n";
-      }
-    }
+
+    print_best_eval_ids(interface_id, best_vars, search_set, s);
   }
 }
 
@@ -448,6 +427,10 @@ primary_resp_reducer(const Variables& full_vars, const Variables& reduced_vars,
     objective_reduction(full_response, sub_model.primary_response_fn_sense(),
 			sub_model.primary_response_fn_weights(), 
 			reduced_response);
+  // This is a hack to re-inflate until we specialize this RecastModel
+  reduced_response.shared_data().metadata_labels
+    (full_response.shared_data().metadata_labels());
+  reduced_response.metadata(full_response.metadata());
 }
 
 
@@ -467,11 +450,9 @@ void Optimizer::objective_reduction(const Response& full_response,
     Cout << "Local single objective transformation:\n";
   // BMA TODO: review whether the model should provide all this information
   
-  Cout << "Responses:\n";
   for(int i = 0; i < full_response.function_values().length(); ++i)
     Cout <<  full_response.function_values()[i] << std::endl;
  
-  Cout << "Weights:\n";
   for(int i = 0; i < full_wts.length(); ++i)
     Cout << full_wts[i] << std::endl;
  
@@ -618,20 +599,22 @@ void Optimizer::post_run(std::ostream& s)
     // this will retrieve primary functions of size best (possibly
     // expanded, but not differenced with replicate data)
     if (localObjectiveRecast) {
-
-      local_recast_retrieve(best_vars, best_resp);
-      // BMA TODO: if retrieved the best fns/cons from DB, why unscaling cons?
-      // Would need this if looking up only primary fns in DB
-      // if (secondaryRespScaleFlag || 
-      // 	  need_resp_trans_byvars(best_resp.active_set_request_vector(),
-      // 				 numUserPrimaryFns, numNonlinearConstraints)) {
-      // 	Response tmp_response = best_resp.copy();
-      // 	response_modify_s2n(best_vars, best_resp, tmp_response,
-      // 			    numUserPrimaryFns, numNonlinearConstraints);
-      // 	best_resp.update_partial(numUserPrimaryFns, numNonlinearConstraints,
-      // 				 tmp_response, numUserPrimaryFns);
-      // }
-      //    }
+      bool resp_found = local_recast_retrieve(best_vars, best_resp);
+      if (!resp_found && scaleFlag && numNonlinearConstraints > 0) {
+	// if the response is not found via lookup, the constraints
+	// still need to be scaled back to native space.
+	std::shared_ptr<ScalingModel> scale_model_rep =
+	  std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
+	RealVector best_fns = best_resp.function_values_view();
+	// only requesting scaling of constraints, so no need for variable Jacobian
+	activeSet.request_values(1);
+	// the size of the Iterator's primary fns may differ from the
+	// user/best size due, e.g., to data transformations, so call with
+	// a start index for number of user primary fns.
+	scale_model_rep->
+	  secondary_resp_scaled2native(best_fns, activeSet.request_vector(),
+				       numUserPrimaryFns, best_fns);
+      }
     }
     // just unscale if needed
     else if (scaleFlag) {

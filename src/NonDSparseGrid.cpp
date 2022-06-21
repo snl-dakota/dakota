@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -234,7 +234,7 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
     number of points needed from the sparse grid routine in order to
     build a particular global approximation. */
 void NonDSparseGrid::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   // Determine minimum sparse grid level that provides at least min_samples
   //  

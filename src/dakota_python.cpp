@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -209,9 +209,9 @@ PYBIND11_MODULE(environment, m) {
                   if( callbacks_map.count(idrv) > 0 )
                     py11_int->register_pybind11_callback_fn(callbacks_map[idrv]);
                   else {
-                    Cerr << "Error: Could not find a pybind11 callback \"" << idrv << "\" needed "
-                                   "by Dakota interface \"" << interface.interface_id() << "\".\n";
-                    Dakota::abort_handler(-1);
+                    Cout << "Warning: Could not find a pybind11 callback \"" << idrv << "\" needed "
+                            "by Dakota interface \"" << interface.interface_id() << "\".\n"
+                            "... will try to use module:function interface specification.\n";
                   }
                 }
               }

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -73,9 +73,8 @@ public:
   void core_run();
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
-  /// return name of active MPP optimizer
+  void check_sub_iterator_conflict();
   unsigned short uses_method() const;
-  /// perform an MPP optimizer method switch due to a detected conflict
   void method_recourse();
 
 private:
@@ -362,8 +361,8 @@ private:
 
 inline unsigned short NonDLocalReliability::uses_method() const
 {
-  if (mppSearchType) return (npsolFlag) ? NPSOL_SQP : OPTPP_Q_NEWTON;
-  else               return DEFAULT_METHOD;
+  if (mppSearchType) return (npsolFlag) ? SUBMETHOD_NPSOL : SUBMETHOD_OPTPP;
+  else               return SUBMETHOD_NONE;
 }
 
 

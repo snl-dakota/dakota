@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -31,7 +31,8 @@ namespace Dakota {
 
 HierarchSurrBasedLocalMinimizer::
 HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
-  SurrBasedLocalMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new HierarchSurrBasedLocalTraits())),
+  SurrBasedLocalMinimizer(problem_db, model,
+    std::shared_ptr<TraitsBase>(new HierarchSurrBasedLocalTraits())),
   minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
@@ -70,8 +71,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // Simpler case than DFSBLM:
-  short corr_order = (correctionType) ?
-    probDescDB.get_short("model.surrogate.correction_order") : -1;
+  short corr_order = model.correction_order();
   approxSetRequest = truthSetRequest = 1;
   if (corr_order >= 1 )// || meritFnType      == LAGRANGIAN_MERIT
                        // || approxSubProbObj == LAGRANGIAN_OBJECTIVE )

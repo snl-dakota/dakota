@@ -1,6 +1,6 @@
 /*  _______________________________________________________________________ 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -760,28 +760,33 @@ void copy_variables( const VectorType1 & source,
 template <typename AdapterT>
 void set_best_responses( typename AdapterT::OptT & optimizer,
                          const Model & model,
+			 bool set_objectives, size_t num_user_primary_fns,
                          const std::vector<int> constraint_map_indices,
                          const std::vector<double> constraint_map_multipliers,
                          const std::vector<double> constraint_map_offsets,
                                ResponseArray & response_array)
 {
-  RealVector best_fns(model.response_size());
-
   size_t num_nl_eq_constr = model.num_nonlinear_eq_constraints();
   size_t num_nl_ineq_constr = model.num_nonlinear_ineq_constraints();
 
+  RealVector best_fns(num_user_primary_fns + num_nl_eq_constr +
+		      num_nl_ineq_constr);
+
   // Get best Objective - assumes single objective only for now
+  if (set_objectives) {
+    const BoolDeque& max_sense = model.primary_response_fn_sense();
+    best_fns[0] = (!max_sense.empty() && max_sense[0]) ?  -AdapterT::getBestObj(optimizer) : AdapterT::getBestObj(optimizer);
+  }
+
   std::vector<double> bestEqs(num_nl_eq_constr);
   std::vector<double> bestIneqs(constraint_map_indices.size()-num_nl_eq_constr);
-  const BoolDeque& max_sense = model.primary_response_fn_sense();
-  best_fns[0] = (!max_sense.empty() && max_sense[0]) ?  -AdapterT::getBestObj(optimizer) : AdapterT::getBestObj(optimizer);
 
   // Get best Nonlinear Equality Constraints
   if (num_nl_eq_constr > 0) {
     optimizer.getBestNonlEqs(bestEqs); // we leave this method name the same for now but could generalize depending on other TPLs
     for (size_t i=0; i<num_nl_eq_constr; i++)
       // Need to figure out how best to generalize use of 2 index arrays, 1 value array and the expression - could use lambdas with c++11
-      best_fns[constraint_map_indices[i]+1] = (bestEqs[i]-constraint_map_offsets[i]) / constraint_map_multipliers[i];
+      best_fns[constraint_map_indices[i]+num_user_primary_fns] = (bestEqs[i]-constraint_map_offsets[i]) / constraint_map_multipliers[i];
   }
 
   // Get best Nonlinear Inequality Constraints
@@ -789,7 +794,7 @@ void set_best_responses( typename AdapterT::OptT & optimizer,
     optimizer.getBestNonlIneqs(bestIneqs); // we leave this method name the same for now but could generalize depending on other TPLs
     for (size_t i=0; i<bestIneqs.size(); i++)
       // Need to figure out how best to generalize use of 2 index arrays, 1 value array and the expression - could use lambdas with c++11
-      best_fns[constraint_map_indices[i+num_nl_eq_constr]+1] = 
+      best_fns[constraint_map_indices[i+num_nl_eq_constr]+num_user_primary_fns] =
         (bestIneqs[i]-constraint_map_offsets[i+num_nl_eq_constr]) / constraint_map_multipliers[i+num_nl_eq_constr];
   }
   response_array.front().function_values(best_fns);

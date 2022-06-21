@@ -1,0 +1,139 @@
+Blurb:: Multifidelity sampling methods for UQ
+
+Description:: An adaptive sampling method that utilizes multifidelity
+relationships in order to improve efficiency through variance reduction.
+
+Two variants are currently supported, with the former now deprecated
+and to be replaced by the latter:
+\li In the case of a hierarchical surrogate model, the two-model approach of Ng and Willcox (2014) is supported and the two most extreme model fidelities or resolutions are employed as the truth model and approximation model.
+\li In the case of a non-hierarchical surrogate model, the multi-model approach of Peherstorfer et al. (2016) is supported for which all model instances can be integrated into the scheme.
+Both methods can be used with either a model form sequence or a
+resolution level sequence.
+
+<b> Control Variate Monte Carlo </b>
+
+In the case of two model fidelities (low fidelity denoted as LF and
+high fidelity denoted as HF), we employ a control variate approach as
+described in Ng and Willcox (2014):
+
+\f[ \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
+- \beta (\hat{Q}_{LF}^{MC} - \mathbb{E}[Q_{LF}]) \f]
+
+As opposed to the traditional control variate approach, we do not know
+\f$\mathbb{E}[Q_{LF}]\f$ precisely, but rather we estimate it more
+accurately than \f$\hat{Q}_{LF}^{MC}\f$ based on a sampling increment
+applied to the LF model.  This sampling increment is based again on
+a total cost minimization procedure that incorporates the relative LF
+and HF costs and the observed Pearson correlation coefficient
+\f$\rho_{LH}\f$ between \f$Q_{LF}\f$ and \f$Q_{HF}\f$.  The
+coefficient \f$\beta\f$ is then determined from the observed LF-HF
+covariance and LF variance.
+
+<b> Multifidelity Monte Carlo </b>
+
+This approach can be extended to a sequence of low-fidelity
+approximations using a recusive sampling approach as in Peherstorfer
+et al. (2016).
+
+\f[ \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
+- \sum_{i=1}^M \beta_i (\hat{Q}_{LF_i}^{MC} - \mathbb{E}[Q_{LF_i}]) \f]
+
+In this case, the variance in the estimate of the \f$i^{th}\f$ control
+mean is reduced by the \f$(i+1)^{th}\f$ control variate, such that the
+variance reduction is limited by the case of an exact estimate of the
+first control mean (referred to as OCV-1 in Gorodetsky et al., 2020).
+
+<b> Default Behavior </b> 
+
+The \c multifidelity_sampling method employs Monte Carlo sample sets by
+default, but this default can be overridden to use Latin hypercube
+sample sets using \c sample_type \c lhs.
+
+<b> Expected Output </b> 
+
+The \c multifidelity_sampling method reports estimates of the first four
+moments and a summary of the evaluations performed for each model
+fidelity and discretization level.  The method does not support any
+level mappings (response, probability, reliability, generalized
+reliability) at this time.
+
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-sampling_moments (moments only, not confidence intervals)
+
+In addition, the execution group has the attribute \c equiv_hf_evals, which
+records the equivalent number of high-fidelity evaluations.
+
+<b> Usage Tips </b>
+
+The \c multifidelity_sampling method can be used in combination with
+either a hierarchical or non-hierarchical model specification for
+either a model form sequence or a discretization level sequence.  For
+a model form sequence, each model must provide a scalar \c
+solution_level_cost.  For a discretization level sequence, it is
+necessary to identify the variable string descriptor that controls the
+resolution levels using \c solution_level_control as well as the
+associated array of relative costs using \c solution_level_cost.
+
+The hierarchical two-model approach is a special case of the
+non-hierarchical multi-model approach.  The latter gives identical
+results to the former when restricted to one approximation model; as
+such, the hierarchical two-model approach is deprecated.
+
+Topics::
+Examples::
+We provide an example of a multifidelity Monte Carlo study using a
+non-hierarchical model specification employing multiple approximations.
+
+The following method block:
+\verbatim
+method,
+	model_pointer = 'NONHIER'
+	multifidelity_sampling				
+	  pilot_samples = 20 seed = 1237
+	  max_iterations = 10
+	  convergence_tolerance = .001
+\endverbatim
+specifies MFMC in combination with the model identified by the
+NONHIER pointer.
+
+This NONHIER model specification provides a one-dimensional sequence,
+here defined by a single truth model and a set of unordered approximation
+models, each with a single (or default) discretization level:
+\verbatim
+model,
+	id_model = 'NONHIER'
+	surrogate non_hierarchical
+	  truth_model = 'HF'
+	  unordered_model_fidelities = 'LF1' 'LF2'
+
+model,
+	id_model = 'LF1'
+	interface_pointer = 'LF1_INT'
+	simulation
+	  solution_level_cost = 0.01
+
+model,
+	id_model = 'LF2'
+	interface_pointer = 'LF2_INT'
+	simulation
+	  solution_level_cost = 0.1
+
+model,
+	id_model = 'HF'
+	interface_pointer = 'HF_INT'
+	simulation
+	  solution_level_cost = 1.
+\endverbatim
+
+Refer to \c dakota/test/dakota_uq_*_cvmc.in and
+\c dakota/test/dakota_uq_*_mfmc.in in the source distribution
+for additional examples.
+
+Theory::
+Faq::
+See_Also::	method-multilevel_sampling, method-multilevel_multifidelity_sampling, method-approximate_control_variate

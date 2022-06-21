@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -240,7 +240,7 @@ private:
 				 Response& mapped_response);
   /// combine error estimates from the sub-iteration to define
   /// mappedErrorEstimates
-  void iterator_error_estimation(const RealVector& sub_iterator_errors,
+  void iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
 				 RealVector& mapped_errors);
 
   /// locate existing or allocate new entry in nestedResponseMap

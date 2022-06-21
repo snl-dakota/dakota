@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -32,7 +32,7 @@ class Response;
 #ifdef DAKOTA_HAVE_HDF5
 class HDF5IOHelper;
 #endif
-// Hold the default/maximal ActiveSet for a model or interface+model
+// Hold the default/maximal ActiveSet (and number of metadata responses) for a model or interface+model
 struct DefaultSet {
     ActiveSet set;
     /// number of functions in the active set
@@ -41,7 +41,9 @@ struct DefaultSet {
     size_t numGradients;
     /// number of hessians in the active set
     size_t numHessians;
-    DefaultSet(const ActiveSet &in_set);
+    /// number of metadata responses
+    size_t numMetadata;
+    DefaultSet(const ActiveSet &in_set, const size_t num_metadata);
     DefaultSet() {};
 };
 
@@ -181,10 +183,13 @@ class EvaluationStore {
     void allocate_response(const String &root_group, const Response &response, 
         const DefaultSet &set_s);
     
-    /// Allocate storage for metadata
-    void allocate_metadata(const String &root_group, const Variables &variables,
+    /// Allocate storage for properties (ASV, DVV, analysis components, distribution parameters)
+    void allocate_properties(const String &root_group, const Variables &variables,
         const Response &response, const DefaultSet &set_s, 
         const String2DArray &an_comps = String2DArray());
+
+    /// Allocate storage for metadata
+    void allocate_metadata(const String &root_group, const Response &response);
 
     /// Store variables
     void store_variables(const String &root_group, const Variables &variables);
@@ -193,9 +198,12 @@ class EvaluationStore {
     void store_response(const String &root_group, const int &resp_idx, 
         const Response &response, const DefaultSet &default_set_s);
 
-    /// Store metadata
-    void store_metadata(const String &root_group, const ActiveSet &set, 
+    /// Store properties information (ASV, DVV, analysis components, distribution parameters)
+    void store_properties(const String &root_group, const ActiveSet &set, 
         const DefaultSet &default_set_s);
+
+    /// Store metadata
+    void store_metadata(const String &root_group, const int &resp_idx, const Response &response);
 
     /// Return true if the model is active
     bool model_active(const String &model_id);

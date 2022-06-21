@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -26,7 +26,8 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   oFilterName(problem_db.get_string("interface.application.output_filter")),
   gradFlag(false), hessFlag(false), numFns(0), numVars(0), numDerivVars(0),
   analysisDrivers(
-    problem_db.get_sa("interface.application.analysis_drivers"))
+    problem_db.get_sa("interface.application.analysis_drivers")),
+  prevVarsId("NO_MATCH_DUMMY_ID"), prevRespId("NO_MATCH_DUMMY_ID")
 {
   // "interface direct" always instantiates a TestDriverInterface, but
   // eventually support "interface plugin", which would
@@ -59,8 +60,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
 
 
 DirectApplicInterface::~DirectApplicInterface()
-{ 
-}
+{ }
 
 
 void DirectApplicInterface::
@@ -370,13 +370,15 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   numADSV = vars.adsv();
   numVars = numACV + numADIV + numADRV + numADSV;
 
+  const String& vars_id = vars.variables_id();
+  bool update_labels = (vars_id != prevVarsId);
+
   // Initialize copies of incoming data
   //directFnVars = vars; // shared rep
   if (localDataView & VARIABLES_MAP) {
     size_t i;
-    // set labels once (all processors)
-    if (xCMLabels.size()  != numACV  || xDIMLabels.size() != numADIV ||
-	xDRMLabels.size() != numADRV || xDSMLabels.size() != numADSV) {
+    // set labels when required (all processors)
+    if (update_labels) {
       StringMultiArrayConstView acv_labels
 	= vars.all_continuous_variable_labels();
       StringMultiArrayConstView adiv_labels
@@ -389,9 +391,8 @@ set_local_data(const Variables& vars, const ActiveSet& set)
       xDIMLabels.resize(numADIV);
       xDRMLabels.resize(numADRV);
       xDSMLabels.resize(numADSV);
-      //String label_i;
       // Map labels in a*v_labels to var_t enum in x*Labels through varTypeMap
-      map_labels_to_enum(acv_labels,xCMLabels);
+      map_labels_to_enum( acv_labels, xCMLabels);
       map_labels_to_enum(adiv_labels,xDIMLabels);
       map_labels_to_enum(adrv_labels,xDRMLabels);
       map_labels_to_enum(adsv_labels,xDSMLabels);
@@ -401,7 +402,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
     const IntVector&  adiv = vars.all_discrete_int_variables();
     const RealVector& adrv = vars.all_discrete_real_variables();
     StringMultiArrayConstView adsv = vars.all_discrete_string_variables();
-    xCM.clear(); xDIM.clear(); xDRM.clear(); xDSM.clear(); // more rigorous than overwrite
+    xCM.clear(); xDIM.clear(); xDRM.clear(); xDSM.clear(); // start over
     for (i=0; i<numACV; ++i)
       xCM[xCMLabels[i]] = acv[i];
     for (i=0; i<numADIV; ++i)
@@ -412,9 +413,8 @@ set_local_data(const Variables& vars, const ActiveSet& set)
       xDSM[xDSMLabels[i]] = adsv[i];
   }
   if (localDataView & VARIABLES_VECTOR) {
-    // set labels once (all processors)
-    if (xCLabels.size()  != numACV  || xDILabels.size() != numADIV ||
-	xDRLabels.size() != numADRV || xDSLabels.size() != numADSV) {
+    // set labels when required (all processors)
+    if (update_labels) {
       xCLabels.resize(boost::extents[numACV]);
       xCLabels = vars.all_continuous_variable_labels();
       xDILabels.resize(boost::extents[numADIV]);
@@ -429,6 +429,12 @@ set_local_data(const Variables& vars, const ActiveSet& set)
     xDR = vars.all_discrete_real_variables(); // view OK
     xDS.resize(boost::extents[numADSV]);
     xDS = vars.all_discrete_string_variables(); // view OK
+  }
+
+  // DTS: was not initialized in demo study when put in conditional above
+  if (update_labels) {
+    xAllLabels = vars.ordered_labels();
+    prevVarsId = vars_id;
   }
 
   // -------------------------
@@ -492,9 +498,17 @@ void DirectApplicInterface::set_local_data(const Response& response)
       fnHessians[i] = 0.;
     }
   }
+
+  metaData = response.metadata();
+
   // set labels once (all processors)
-  if (fnLabels.empty())
-    fnLabels = response.function_labels();
+  const SharedResponseData& srd = response.shared_data();
+  const String& resp_id = srd.responses_id();
+  if (resp_id != prevRespId) {
+    fnLabels       = srd.function_labels();
+    metaDataLabels = srd.metadata_labels();
+    prevRespId     = resp_id;
+  }
 }
 
 
@@ -519,6 +533,7 @@ void DirectApplicInterface::overlay_response(Response& response)
     set.request_vector(directFnASV);
     set.derivative_vector(directFnDVV);
     response.update(fnVals, fnGrads, fnHessians, set);
+    response.metadata(metaData);
   }
 
   // For all master-slave cases & for peer cases in which numAnalysisServers>1,

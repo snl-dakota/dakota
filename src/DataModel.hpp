@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -130,6 +130,11 @@ public:
   /// \c solution_level_control); a scalar input is interpreted as a constant
   /// cost multiplier to be applied recursively
   RealVector solutionLevelCost;
+  /// identifier for response metadata that returns the incurred cost of a
+  /// simulation execution.  This online recovery option (typically averaged
+  /// over a pilot sample) can replace the need for a priori specification
+  /// of solutionLevelCost.
+  String costRecoveryMetadata;
 
   // surrogate models
 
@@ -140,9 +145,8 @@ public:
   /// polynomial,kriging), or hierarchical
   String surrogateType;
   /// pointer to the model specification for constructing the truth model
-  /// used in constructing surrogates (from the \c actual_model_pointer
-  /// specification in \ref ModelSurrL and \ref ModelSurrMP)
-  String actualModelPointer;
+  /// used in constructing surrogates
+  String truthModelPointer;
   /// an ordered (low to high) or unordered (peer) set of model pointers
   /// corresponding to a ensemble of modeling fidelities (from the \c
   /// ordered_model_fidelities specification in \ref ModelSurrH or the

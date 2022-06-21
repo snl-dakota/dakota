@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -49,6 +49,8 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
     sampleType = SUBMETHOD_LHS;
 
   finalMomentsType = Pecos::NO_MOMENTS;
+
+  initialize_final_statistics();
 
   // size of refinement batches is separate from initial LHS size (numSamples)
   const IntVector& db_refine_samples = 
@@ -652,7 +654,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
 
     // center std normals around i-th rep point
     if (num_rep_samples) {
-      initialize_lhs(false, num_rep_samples);
+      initialize_sample_driver(false, num_rep_samples);
       RealSymMatrix correl;
       lhsDriver.generate_normal_samples(repPointsU[i], n_std_devs,
 	n_l_bnds, n_u_bnds, correl, num_rep_samples, lhs_samples_array);

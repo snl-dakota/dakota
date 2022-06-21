@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020
+#  Copyright 2014-2022
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -80,6 +80,12 @@ dakota_add_unit_test(NAME leja_sampling
   )
 target_link_libraries(leja_sampling Boost::boost)
 
+dakota_add_unit_test(NAME lhs_constants
+  SOURCES lhs_constants.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(lhs_constants Boost::boost)
+
 # Unit test: h5py_hdf5
 if(DAKOTA_H5PY_FOUND)
   dakota_add_h5py_test(mixed_sampling)
@@ -93,12 +99,16 @@ if(DAKOTA_H5PY_FOUND)
   dakota_add_h5py_test(pareto)
   dakota_add_h5py_test(dist_params)
   dakota_add_h5py_test(mlmc)
+  dakota_add_h5py_test(sampling_metadata)
   #dakota_add_h5py_test(calibration_with_data)
   #dakota_add_h5py_test(mutlisolution_opt)
 endif()
 
-
-
+dakota_add_unit_test(NAME response_io
+  SOURCES response_io.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(response_io Boost::boost)
 
 # Unit test: experiment data and readers
 # Demonstration of Teuchos test framework to driver several tests related to
@@ -236,7 +246,7 @@ if(DAKOTA_PYBIND11)
     COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.py
     $<TARGET_FILE_DIR:environment>
     )
-  set_property(TEST dakota_python PROPERTY LABELS UnitTest)
+  set_property(TEST dakota_python PROPERTY LABELS Unit)
 endif()
 
 

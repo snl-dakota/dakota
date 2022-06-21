@@ -10,7 +10,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       4.2203569832e+00
                       3.0002887794e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 2968 total (2688 new, 280 duplicate)
 <<<<< Best parameters          =
@@ -23,7 +23,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                       7.7807070258e+00
                       3.0001039784e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 2340 total (2100 new, 240 duplicate)
 <<<<< Best parameters          =
@@ -36,7 +36,7 @@ Test Number 2 succeeded
 <<<<< Best constraint values   =
                       4.2203570359e+00
                       3.0002888396e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 9408 total (5208 new, 4200 duplicate)
 <<<<< Best parameters          =
@@ -49,4 +49,4 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                       7.7807071553e+00
                       3.0001039801e+00
-<<<<< Best data not found in evaluation cache
+<<<<< Best evaluation ID not available

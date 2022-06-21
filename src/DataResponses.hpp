@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -243,6 +243,8 @@ public:
 
   // Field Data specification
 
+  /// path to prepend to any data file names
+  String dataPathPrefix;
   /// number of entries in each field
   IntVector fieldLengths;
   /// number of coordinates per field
@@ -252,6 +254,9 @@ public:
    /// Array which specifies the sigma type per response (none, one 
   /// constant value, one per response (vector) or a full covariance matrix
   StringArray varianceType; 
+
+  /// descriptors for each metadata field
+  StringArray metadataLabels;
 
 private:
 

@@ -1,0 +1,32 @@
+#@ *: ReqFiles=textbook.py
+#@ *: DakotaConfig=DAKOTA_PLUGIN_DEMOS
+
+method
+  centered_parameter_study
+    step_vector 0.5 1.7
+    steps_per_variable 1
+  output verbose
+
+variables
+  continuous_design 2
+  descriptors 'x1' 'x2'
+
+interface
+  analysis_drivers 'f_of_x_equals_x'           #s0,#s1
+#  analysis_drivers 'textbook:text_book_dict'  #s2
+#  analysis_drivers 'textbook:text_book_batch' #s3
+
+  plugin
+    # Hard-coded for build tree and Linux for now
+    library_path '../../src/plugins/build/libidentity_map.so'            #s0,#s1
+#    library_path '../../src/plugins/build/libgeneric_python_plugin.so'  #s2,#s3
+#  batch                                                                                    #s1,#s3
+
+responses
+  descriptors 'f0' 'f1'        #s0,#s1
+  response_functions 2         #s0,#s1
+#  descriptors 'f0' 'c1' 'c2'  #s2,#s3
+#  response_functions 3        #s2,#s3
+  analytic_gradients
+  analytic_hessians
+

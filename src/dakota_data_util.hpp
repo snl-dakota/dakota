@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -1211,13 +1211,27 @@ size_t map_key_to_index(const KeyType& key,
 }
 
 
-/// calculate the map index corresponding to the passed value
+/// calculate the map index corresponding to the passed value (not the key)
 template <typename KeyType, typename ValueType>
 size_t map_value_to_index(const ValueType& value,
 			  const std::map<KeyType, ValueType>& pairs)
 {
   size_t index = 0;
   typename std::map<KeyType, ValueType>::const_iterator cit;
+  for (cit=pairs.begin(); cit!=pairs.end(); ++cit, ++index)
+    if (cit->second == value)
+      return index;
+  return _NPOS;
+}
+
+
+/// calculate the map index corresponding to the passed value (not the key)
+template <typename KeyType, typename ValueType>
+size_t map_value_to_index(const ValueType& value,
+			  const std::multimap<KeyType, ValueType>& pairs)
+{
+  size_t index = 0;
+  typename std::multimap<KeyType, ValueType>::const_iterator cit;
   for (cit=pairs.begin(); cit!=pairs.end(); ++cit, ++index)
     if (cit->second == value)
       return index;
@@ -1483,7 +1497,6 @@ inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
   for (size_t i=0; i<size_ma; ++i)
     da[i] = ma[i];
 }
-
 
 /// return true if the item val appears in container v
 template <typename DakContainerType>

@@ -1,0 +1,33 @@
+Blurb:: Return estimator performance as the final results of a UQ method
+
+Description:: Instead of QoI moments and level mappings, return the
+performance of the estimator in terms of its variance and aggregate
+cost.  These metrics are targeted in the context of model tuning for
+multifidelity UQ methods.
+
+<b> Usage Tips </b>
+Estimator variance can be minimized when total budget is specified.
+Alternatively, total budget can be minimized when estimator accuracy
+is specified.  This is managed by the nested model response mappings
+that define the outer loop objective and constraints, sharing conceptual
+similarity to the RIA and PMA formulations for optimization with local
+reliability (refer to RBDO methods in the Theory Manual).
+
+Topics::
+
+Examples::
+\verbatim
+method,
+	id_method = 'UQ'
+	model_pointer = 'ENSEMBLE'
+	multifidelity_sampling
+	  max_function_evaluations = 1000
+	  pilot_samples = 25
+	  seed = 8674132
+	  solution_mode pilot_projection
+	  final_statistics estimator_performance
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

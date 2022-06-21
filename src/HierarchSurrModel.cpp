@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -24,17 +24,10 @@ extern Model dummy_model; // defined in DakotaModel.cpp
 
 
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db),
+  EnsembleSurrModel(problem_db),
   corrOrder(problem_db.get_short("model.surrogate.correction_order")),
-  correctionMode(SINGLE_CORRECTION), mfPrecedence(true), modeKeyBufferSize(0)
+  correctionMode(SINGLE_CORRECTION)
 {
-  // Hierarchical surrogate models pass through numerical derivatives
-  supportsEstimDerivs = false;
-  // initialize ignoreBounds even though it's irrelevant for pass through
-  ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
-  // initialize centralHess even though it's irrelevant for pass through
-  centralHess = problem_db.get_bool("responses.central_hess");
-
   const StringArray& ordered_model_ptrs
     = problem_db.get_sa("model.surrogate.ensemble_model_pointers");
 
@@ -93,8 +86,10 @@ void HierarchSurrModel::assign_default_keys()
     // with NonDExpansion::configure_{sequence,indices}() and key definition
     // for NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX
     // usage, since this suppresses allocation of a solution level array.
-    truthModelKey = Pecos::ActiveKey(id, r_type, last_m, SZ_MAX);
-    surrModelKey  = Pecos::ActiveKey(id, r_type,      0, SZ_MAX);
+    truthModelKey = Pecos::ActiveKey(id, r_type, last_m,
+      orderedModels[last_m].solution_level_cost_index());
+    surrModelKey  = Pecos::ActiveKey(id, r_type,      0,
+      orderedModels[0].solution_level_cost_index());
   }
   else if (multilevel()) { // first and last solution level (last model)
     size_t truth_soln_lev = orderedModels[last_m].solution_levels();
@@ -105,23 +100,12 @@ void HierarchSurrModel::assign_default_keys()
 			   Pecos::SINGLE_REDUCTION); // default: reduction only
 
   if (parallelLib.mpirun_flag()) {
-    MPIPackBuffer send_buff;  short mode;
+    MPIPackBuffer send_buff;  short mode(0);
     send_buff << mode << activeKey; // serve_run() recvs single | aggregate key
     modeKeyBufferSize = send_buff.size();
   }
 
   check_model_interface_instance();
-}
-
-
-void HierarchSurrModel::check_submodel_compatibility(const Model& sub_model)
-{
-  bool err1 = check_active_variables(sub_model),
-       err2 = check_inactive_variables(sub_model),
-       err3 = check_response_qoi(sub_model);
-
-  if (err1 || err2 || err3)
-    abort_handler(MODEL_ERROR);
 }
 
 
@@ -436,7 +420,7 @@ void HierarchSurrModel::build_approximation()
     truthResponseRef[truthModelKey] = currentResponse.copy();
   ActiveSet hf_set = currentResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
-  if (sameModelInstance) assign_truth_key();
+  assign_truth_key();
   hf_model.evaluate(hf_set);
   truthResponseRef[truthModelKey].update(hf_model.current_response());
 
@@ -543,8 +527,8 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   // ------------------------------
   if (hi_fi_eval) {
     component_parallel_mode(TRUTH_MODEL_MODE); // TO DO: sameModelInstance
-    if (sameModelInstance) assign_truth_key();
-    else                   update_model(hf_model);
+    assign_truth_key();
+    if (!sameModelInstance) update_model(hf_model);
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     case AGGREGATED_MODELS: {
@@ -555,14 +539,14 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
 	  hf_model.current_response().copy() : hf_model.current_response();
       else {
         currentResponse.active_set(hi_fi_set);
-        currentResponse.update(hf_model.current_response());
+        currentResponse.update(hf_model.current_response(), true); // pull meta
       }
       break;
     }
     case BYPASS_SURROGATE:
       hf_model.evaluate(set);
       currentResponse.active_set(set);
-      currentResponse.update(hf_model.current_response());
+      currentResponse.update(hf_model.current_response(), true);// pull metadata
       break;
     case MODEL_DISCREPANCY:
       hf_model.evaluate(set);
@@ -586,8 +570,8 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     }
     // compute the LF response
     component_parallel_mode(SURROGATE_MODEL_MODE); // TO DO: sameModelInstance
-    if (sameModelInstance) assign_surrogate_key();
-    else                   update_model(lf_model);
+    assign_surrogate_key();
+    if (!sameModelInstance) update_model(lf_model);
     ActiveSet lo_fi_set;
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
@@ -609,7 +593,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
       recursive_apply(currentVariables, lo_fi_response);
       if (!mixed_eval) {
         currentResponse.active_set(lo_fi_set);
-        currentResponse.update(lo_fi_response);
+        currentResponse.update(lo_fi_response, true); // pull metadata
       }
       break;
     }
@@ -618,7 +602,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
         lo_fi_response = lf_model.current_response(); // shared rep
       else {
         currentResponse.active_set(lo_fi_set);
-        currentResponse.update(lf_model.current_response());
+        currentResponse.update(lf_model.current_response(), true); // pull meta
       }
       break;
     }
@@ -734,17 +718,17 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // launch nonblocking evals before any blocking ones
   if (hi_fi_eval && asynch_hi_fi) { // HF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
-    if (sameModelInstance) assign_truth_key();
+    assign_truth_key();
     hf_model.evaluate_nowait(hi_fi_set);
     // store map from HF eval id to HierarchSurrModel id
-    truthIdMap[hf_model.evaluation_id()] = surrModelEvalCntr;
+    modelIdMaps[1][hf_model.evaluation_id()] = surrModelEvalCntr;
   }
   if (lo_fi_eval && asynch_lo_fi) { // LF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
-    if (sameModelInstance) assign_surrogate_key();
+    assign_surrogate_key();
     lf_model.evaluate_nowait(lo_fi_set);
     // store map from LF eval id to HierarchSurrModel id
-    surrIdMap[lf_model.evaluation_id()] = surrModelEvalCntr;
+    modelIdMaps[0][lf_model.evaluation_id()] = surrModelEvalCntr;
     // store variables set needed for correction
     if (responseMode == AUTO_CORRECTED_SURROGATE)
       rawVarsMap[surrModelEvalCntr] = currentVariables.copy();
@@ -753,14 +737,14 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // now launch any blocking evals
   if (hi_fi_eval && !asynch_hi_fi) { // execute HF synchronously & cache resp
     component_parallel_mode(TRUTH_MODEL_MODE);
-    if (sameModelInstance) assign_truth_key();
+    assign_truth_key();
     hf_model.evaluate(hi_fi_set);
     // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately
-    cachedTruthRespMap[surrModelEvalCntr] = hf_model.current_response().copy();
+    cachedRespMaps[1][surrModelEvalCntr] = hf_model.current_response().copy();
   }
   if (lo_fi_eval && !asynch_lo_fi) { // execute LF synchronously & cache resp
     component_parallel_mode(SURROGATE_MODEL_MODE);
-    if (sameModelInstance) assign_surrogate_key();
+    assign_surrogate_key();
     lf_model.evaluate(lo_fi_set);
     Response lo_fi_response(lf_model.current_response().copy());
     // correct LF response prior to caching
@@ -770,117 +754,71 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       recursive_apply(currentVariables, lo_fi_response);
     // cache corrected LF response for retrieval during synchronization.
     // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately.
-    cachedApproxRespMap[surrModelEvalCntr] = lo_fi_response;// deep copied above
+    cachedRespMaps[0][surrModelEvalCntr] = lo_fi_response;// deep copied above
   }
-}
-
-
-/** Blocking retrieval of asynchronous evaluations from LF model, HF
-    model, or both (mixed case).  For the LF model portion, apply
-    correction (if active) to each response in the array.
-    derived_synchronize() is designed for the general case where
-    derived_evaluate_nowait() may be inconsistent in its use of low
-    fidelity evaluations, high fidelity evaluations, or both. */
-const IntResponseMap& HierarchSurrModel::derived_synchronize()
-{
-  surrResponseMap.clear();
-
-  if (sameModelInstance  || sameInterfaceInstance ||
-      truthIdMap.empty() || surrIdMap.empty()) { // 1 queue: blocking synch
-    IntResponseMap hf_resp_map_rekey, lf_resp_map_rekey;
-    derived_synchronize_sequential(hf_resp_map_rekey, lf_resp_map_rekey, true);
-    derived_synchronize_combine(hf_resp_map_rekey, lf_resp_map_rekey,
-                                surrResponseMap);
-  }
-  else                               // competing queues: nonblocking synch
-    derived_synchronize_competing();
-
-  return surrResponseMap;
-}
-
-
-/** Nonblocking retrieval of asynchronous evaluations from LF model,
-    HF model, or both (mixed case).  For the LF model portion, apply
-    correction (if active) to each response in the map.
-    derived_synchronize_nowait() is designed for the general case
-    where derived_evaluate_nowait() may be inconsistent in its use of
-    actual evals, approx evals, or both. */
-const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
-{
-  surrResponseMap.clear();
-
-  IntResponseMap hf_resp_map_rekey, lf_resp_map_rekey;
-  derived_synchronize_sequential(hf_resp_map_rekey, lf_resp_map_rekey, false);
-  derived_synchronize_combine_nowait(hf_resp_map_rekey, lf_resp_map_rekey,
-                                     surrResponseMap);
-
-  return surrResponseMap;
 }
 
 
 void HierarchSurrModel::
-derived_synchronize_sequential(IntResponseMap& hf_resp_map_rekey,
-                               IntResponseMap& lf_resp_map_rekey, bool block)
+derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
+			       bool block)
 {
-  // --------------------------
-  // synchronize HF model evals
-  // --------------------------
-  if (!truthIdMap.empty()) { // synchronize HF evals
+  if (sameModelInstance) {
+    // The following approach should be identical in behavior to the original
+    // approach in the else block below, but allows the results of a single
+    // synchronize() to be processed together, reducing the caching of
+    // unmatched responses at the Model base class level).
+
+    // Seems sufficient to do this once and not reassign surrModelKey on
+    // the servers in order to communicate the resolution level
+    // (ApplicationInterface::send_evaluation() includes full variables object
+    // from beforeSynchCorePRPQueue, which synchronizes inactive state).
+    // Otherwise can revert to original approach in else block below.
     component_parallel_mode(TRUTH_MODEL_MODE);
-    rekey_synch(truth_model(), block, truthIdMap, hf_resp_map_rekey);
+
+    rekey_synch(truth_model(), block, modelIdMaps, model_resp_maps_rekey);
   }
+  else {
+    // --------------------------
+    // synchronize HF model evals
+    // --------------------------
+    model_resp_maps_rekey.resize(2);
+    IntIntMap &lf_id_map = modelIdMaps[0], &hf_id_map = modelIdMaps[1];
+    if (!hf_id_map.empty()) { // synchronize HF evals
+      component_parallel_mode(TRUTH_MODEL_MODE);
+      rekey_synch(truth_model(), block, hf_id_map, model_resp_maps_rekey[1]);
+      // Note: for sameModelInstance, unmatched Model::responseMap are moved to
+      //       Model::cachedResponseMap for return on next synchronize()
+    }
+
+    // --------------------------
+    // synchronize LF model evals
+    // --------------------------
+    if (!lf_id_map.empty()) { // synchronize LF evals
+      component_parallel_mode(SURROGATE_MODEL_MODE);
+      // Interface::rawResponseMap should _not_ be corrected directly since
+      // rawResponseMap, beforeSynchCorePRPQueue, and data_pairs all share a
+      // responseRep -> modifying rawResponseMap affects data_pairs.
+      bool deep_copy = (responseMode == AUTO_CORRECTED_SURROGATE);
+      rekey_synch(surrogate_model(), block, lf_id_map,
+		  model_resp_maps_rekey[0], deep_copy);
+    }
+  }
+
   // add cached truth evals from:
-  // (a) recovered HF asynch evals that could not be returned since LF
+  // (a) recovered asynch evals that could not be returned since other
   //     eval portions were still pending, or
-  // (b) synchronous HF evals performed within evaluate_nowait()
-  hf_resp_map_rekey.insert(cachedTruthRespMap.begin(),
-                           cachedTruthRespMap.end());
-  cachedTruthRespMap.clear();
-
-  // --------------------------
-  // synchronize LF model evals
-  // --------------------------
-  if (!surrIdMap.empty()) { // synchronize LF evals
-    component_parallel_mode(SURROGATE_MODEL_MODE);
-    // Interface::rawResponseMap should _not_ be corrected directly since
-    // rawResponseMap, beforeSynchCorePRPQueue, and data_pairs all share a
-    // responseRep -> modifying rawResponseMap affects data_pairs.
-    bool deep_copy = (responseMode == AUTO_CORRECTED_SURROGATE);
-    rekey_synch(surrogate_model(), block, surrIdMap, lf_resp_map_rekey,
-		deep_copy);
-  }
-  // add cached approx evals from:
-  // (a) recovered LF asynch evals that could not be returned since HF
-  //     eval portions were still pending, or
-  // (b) synchronous LF evals performed within evaluate_nowait()
-  lf_resp_map_rekey.insert(cachedApproxRespMap.begin(),
-                           cachedApproxRespMap.end());
-  cachedApproxRespMap.clear();
-}
-
-
-void HierarchSurrModel::derived_synchronize_competing()
-{
-  // in this case, we don't want to starve either LF or HF scheduling by
-  // blocking on one or the other --> leverage derived_synchronize_nowait()
-  IntResponseMap aggregated_map; // accumulate surrResponseMap returns
-  while (!truthIdMap.empty() || !surrIdMap.empty()) {
-    // partial_map is a reference to surrResponseMap, returned by _nowait()
-    const IntResponseMap& partial_map = derived_synchronize_nowait();
-    if (!partial_map.empty())
-      aggregated_map.insert(partial_map.begin(), partial_map.end());
-  }
-
-  // Note: cached response maps and any LF/HF aggregations are managed
-  // within derived_synchronize_nowait()
-
-  std::swap(surrResponseMap, aggregated_map);
+  // (b) synchronous evals performed within evaluate_nowait()
+  IntResponseMap &lf_cached_map = cachedRespMaps[0],
+                 &hf_cached_map = cachedRespMaps[1];
+  model_resp_maps_rekey[0].insert(lf_cached_map.begin(), lf_cached_map.end());
+  model_resp_maps_rekey[1].insert(hf_cached_map.begin(), hf_cached_map.end());
+  hf_cached_map.clear();  lf_cached_map.clear();
 }
 
 
 void HierarchSurrModel::
-derived_synchronize_combine(const IntResponseMap& hf_resp_map,
-                            IntResponseMap& lf_resp_map,
+derived_synchronize_combine(IntResponseMapArray& model_resp_maps,
                             IntResponseMap& combined_resp_map)
 {
   // ------------------------------
@@ -890,24 +828,27 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
   // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY,
   // AGGREGATED_MODELS).
 
-  IntRespMCIter hf_cit = hf_resp_map.begin(), lf_cit = lf_resp_map.begin();
+  IntResponseMap&       lf_resp_map = model_resp_maps[0];
+  const IntResponseMap& hf_resp_map = model_resp_maps[1];
+  IntRespMCIter hf_cit = hf_resp_map.begin();
+  IntRespMIter  lf_it  = lf_resp_map.begin();
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   switch (responseMode) {
   case MODEL_DISCREPANCY: {
     DiscrepancyCorrection& delta_corr = deltaCorr[activeKey];
-    for (; hf_cit != hf_resp_map.end() && lf_cit != lf_resp_map.end();
-	 ++hf_cit, ++lf_cit) {
-      check_key(hf_cit->first, lf_cit->first);
-      delta_corr.compute(hf_cit->second, lf_cit->second,
+    for (; hf_cit != hf_resp_map.end() && lf_it != lf_resp_map.end();
+	 ++hf_cit, ++lf_it) {
+      check_key(hf_cit->first, lf_it->first);
+      delta_corr.compute(hf_cit->second, lf_it->second,
 	combined_resp_map[hf_cit->first], quiet_flag);
     }
     break;
   }
   case AGGREGATED_MODELS:
-    for (; hf_cit != hf_resp_map.end() && lf_cit != lf_resp_map.end();
-	 ++hf_cit, ++lf_cit) {
-      check_key(hf_cit->first, lf_cit->first);
-      aggregate_response(hf_cit->second, lf_cit->second,
+    for (; hf_cit != hf_resp_map.end() && lf_it != lf_resp_map.end();
+	 ++hf_cit, ++lf_it) {
+      check_key(hf_cit->first, lf_it->first);
+      aggregate_response(hf_cit->second, lf_it->second,
                          combined_resp_map[hf_cit->first]);
     }
     break;
@@ -924,12 +865,12 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
     }
     // process combinations of HF and LF completions
     Response empty_resp;
-    while (hf_cit != hf_resp_map.end() || lf_cit != lf_resp_map.end()) {
+    while (hf_cit != hf_resp_map.end() || lf_it != lf_resp_map.end()) {
       // these have been rekeyed already to top-level surrModelEvalCntr:
       int hf_eval_id = (hf_cit == hf_resp_map.end()) ?
                        INT_MAX : hf_cit->first;
-      int lf_eval_id = (lf_cit == lf_resp_map.end()) ?
-                       INT_MAX : lf_cit->first;
+      int lf_eval_id = (lf_it == lf_resp_map.end()) ?
+                       INT_MAX : lf_it->first;
 
       if (hf_eval_id < lf_eval_id) { // only HF available
         response_combine(hf_cit->second, empty_resp,
@@ -937,15 +878,15 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
         ++hf_cit;
       }
       else if (lf_eval_id < hf_eval_id) { // only LF available
-        response_combine(empty_resp, lf_cit->second,
+        response_combine(empty_resp, lf_it->second,
                          combined_resp_map[lf_eval_id]);
-        ++lf_cit;
+        ++lf_it;
       }
       else { // both LF and HF available
-        response_combine(hf_cit->second, lf_cit->second,
+        response_combine(hf_cit->second, lf_it->second,
                          combined_resp_map[hf_eval_id]);
         ++hf_cit;
-        ++lf_cit;
+        ++lf_it;
       }
     }
     break;
@@ -955,10 +896,14 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
 
 
 void HierarchSurrModel::
-derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
-                                   IntResponseMap& lf_resp_map,
+derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
                                    IntResponseMap& combined_resp_map)
 {
+  IntResponseMap&       lf_resp_map = model_resp_maps[0];
+  const IntResponseMap& hf_resp_map = model_resp_maps[1];
+  IntIntMap &lf_id_map = modelIdMaps[0], &hf_id_map = modelIdMaps[1];
+  IntResponseMap &lf_cached_map = cachedRespMaps[0],
+                 &hf_cached_map = cachedRespMaps[1];
   // ------------------------------
   // perform any LF/HF aggregations
   // ------------------------------
@@ -966,23 +911,23 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
   // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY).
 
   // Early return options avoid some overhead:
-  if (lf_resp_map.empty() && surrIdMap.empty()) {// none completed, none pending
+  if (lf_resp_map.empty() && lf_id_map.empty()) {// none completed, none pending
     combined_resp_map = hf_resp_map;  // can't swap w/ const
     return;
   }
   if (responseMode == AUTO_CORRECTED_SURROGATE)
     compute_apply_delta(lf_resp_map);
-  if (hf_resp_map.empty() && truthIdMap.empty()) {//none completed, none pending
+  if (hf_resp_map.empty() && hf_id_map.empty()) {//none completed, none pending
     std::swap(combined_resp_map, lf_resp_map);
     return;
   }
 
-  // invert remaining entries (pending jobs) in truthIdMap and surrIdMap
+  // invert remaining entries (pending jobs) in hf_id_map and lf_id_map
   IntIntMap remain_truth_ids, remain_surr_ids;
-  IntIntMCIter id_it;
-  for (id_it=truthIdMap.begin(); id_it!=truthIdMap.end(); ++id_it)
+  IntIntMIter id_it;
+  for (id_it=hf_id_map.begin(); id_it!=hf_id_map.end(); ++id_it)
     remain_truth_ids[id_it->second] = id_it->first;
-  for (id_it=surrIdMap.begin();  id_it!=surrIdMap.end();  ++id_it)
+  for (id_it=lf_id_map.begin();  id_it!=lf_id_map.end();  ++id_it)
     remain_surr_ids[id_it->second]  = id_it->first;
 
   // process any combination of HF and LF completions
@@ -1002,12 +947,12 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
       switch (responseMode) {
       case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
         // LF contribution is pending -> cache HF response
-        cachedTruthRespMap[hf_eval_id] = hf_cit->second;
+        hf_cached_map[hf_eval_id] = hf_cit->second;
         break;
       default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
         if (remain_surr_ids.find(hf_eval_id) != remain_surr_ids.end())
           // LF contribution is pending -> cache HF response
-          cachedTruthRespMap[hf_eval_id] = hf_cit->second;
+          hf_cached_map[hf_eval_id] = hf_cit->second;
         else // no LF component is pending -> HF contribution is sufficient
           response_combine(hf_cit->second, empty_resp,
                            surrResponseMap[hf_eval_id]);
@@ -1019,12 +964,12 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
       switch (responseMode) {
       case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
         // HF contribution is pending -> cache LF response
-        cachedApproxRespMap[lf_eval_id] = lf_it->second;
+        lf_cached_map[lf_eval_id] = lf_it->second;
         break;
       default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
         if (remain_truth_ids.find(lf_eval_id) != remain_truth_ids.end())
           // HF contribution is pending -> cache LF response
-          cachedApproxRespMap[lf_eval_id] = lf_it->second;
+          lf_cached_map[lf_eval_id] = lf_it->second;
         else // no HF component is pending -> LF contribution is sufficient
           response_combine(empty_resp, lf_it->second,
                            surrResponseMap[lf_eval_id]);
@@ -1065,75 +1010,84 @@ void HierarchSurrModel::create_tabular_datastream()
   case AGGREGATED_MODELS: case MODEL_DISCREPANCY: // two models/resolutions
   case BYPASS_SURROGATE: { // use same row len since commonly alternated
 
-    bool mf = multifidelity();  StringArray iface_ids;
-    if (mf) { // sameInterfaceInstance can't be used since it varies at run time
-      iface_ids.push_back("HF_interf");
-      iface_ids.push_back("LF_interf");
-    }
-    else
+    // --------------------
+    // {eval,interface} ids
+    // --------------------
+    // To flatten into one composite tabular format, we must rely on invariant
+    // quantities rather than run-time flags like same{Model,Interface}Instance
+    bool one_iface_id = matching_all_interface_ids();
+    StringArray iface_ids;
+    if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
       iface_ids.push_back("interface");
+    else {
+      iface_ids.push_back("interf_M");  //("HF_interf");
+      iface_ids.push_back("interf_Mm1");//("LF_interf");
+    }
     mgr.create_tabular_header(iface_ids); // includes graphics cntr
 
+    // ---------
+    // Variables
+    // ---------
     // identify solution level control variable
-    size_t av_index = truth_model().solution_control_variable_index();
-    if (av_index == _NPOS)
-      mgr.append_tabular_header(currentVariables);
+    Model&    hf_model = truth_model();
+    Variables& hf_vars = hf_model.current_variables();
+    // must detect ML versus MF since solution level index can exist for MF
+    // and be one value per model instance
+    solnCntlAVIndex = (multilevel()) ? // either ML or MLCV
+      hf_model.solution_control_variable_index() : _NPOS;
+    if (solnCntlAVIndex == _NPOS)
+      mgr.append_tabular_header(hf_vars);
     else {
-      mgr.append_tabular_header(currentVariables, 0, av_index); // leading set
+      mgr.append_tabular_header(hf_vars, 0, solnCntlAVIndex); // leading set
 
       // output paired solution control values
       const String& soln_cntl_label = solution_control_label();
       StringArray tab_labels(2);
-      tab_labels[0] = "HF_" + soln_cntl_label;
-      tab_labels[1] = "LF_" + soln_cntl_label;
+      tab_labels[0] = soln_cntl_label + "_L";  // = "HF_" + soln_cntl_label;
+      tab_labels[1] = soln_cntl_label + "_Lm1";// = "LF_" + soln_cntl_label;
       mgr.append_tabular_header(tab_labels);
 
-      ++av_index; // output completed for the active soln control
-      mgr.append_tabular_header(currentVariables, av_index,
-				currentVariables.tv() - av_index);
+      size_t start = solnCntlAVIndex + 1;
+      mgr.append_tabular_header(hf_vars, start, hf_vars.tv() - start);
     }
 
+    // --------
+    // Response
+    // --------
     //mgr.append_tabular_header(currentResponse);
-    // Add HF/LF/Del prepends
+    // Add Del_ pre-pend or model/resolution post-pends
     StringArray labels = currentResponse.function_labels(); // copy
     size_t q, num_qoi = qoi(), num_labels = labels.size();
     if (responseMode == MODEL_DISCREPANCY)
       for (q=0; q<num_qoi; ++q)
 	labels[q].insert(0, "Del_");
-    else {
+    // Detection of the correct response label annotation is imperfect.  Basing
+    // label alternation below on active solution level control seems the best
+    // option -- improving it would require either knowledge of methodName
+    // (violates encapsulation) or detection of the changing models/resolutions
+    // (not known until run time)
+    else if (solnCntlAVIndex == _NPOS) {
       for (q=0; q<num_qoi; ++q)
-	labels[q].insert(0, "HF_");
+	labels[q].append("_M");  //labels[q].insert(0, "HF_");
       for (q=num_qoi; q<num_labels; ++q)
-	labels[q].insert(0, "LF_");
+	labels[q].append("_Mm1");//labels[q].insert(0, "LF_");
     }
-    mgr.append_tabular_header(labels, true); // with endl
+    else { // solution levels are present, but they might not be active
+      for (q=0; q<num_qoi; ++q)
+	labels[q].append("_L");  //labels[q].insert(0, "HF_");
+      for (q=num_qoi; q<num_labels; ++q)
+	labels[q].append("_Lm1");//labels[q].insert(0, "LF_");
+    }
+    mgr.append_tabular_header(labels, true); // include EOL
     break;
   }
   case NO_SURROGATE:
+    mgr.create_tabular_header(truth_model().current_variables(),
+			      currentResponse);
+    break;
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    mgr.create_tabular_header(currentVariables, currentResponse);
-    break;
-  }
-}
-
-
-const String& HierarchSurrModel::solution_control_label()
-{
-  Model&  hf_model = truth_model();
-  size_t adv_index = hf_model.solution_control_discrete_variable_index();
-  switch (hf_model.solution_control_variable_type()) {
-  case DISCRETE_DESIGN_RANGE:       case DISCRETE_DESIGN_SET_INT:
-  case DISCRETE_INTERVAL_UNCERTAIN: case DISCRETE_UNCERTAIN_SET_INT:
-  case DISCRETE_STATE_RANGE:        case DISCRETE_STATE_SET_INT:
-    return currentVariables.all_discrete_int_variable_labels()[adv_index];
-    break;
-  case DISCRETE_DESIGN_SET_STRING:  case DISCRETE_UNCERTAIN_SET_STRING:
-  case DISCRETE_STATE_SET_STRING:
-    return currentVariables.all_discrete_string_variable_labels()[adv_index];
-    break;
-  case DISCRETE_DESIGN_SET_REAL:  case DISCRETE_UNCERTAIN_SET_REAL:
-  case DISCRETE_STATE_SET_REAL:
-    return currentVariables.all_discrete_real_variable_labels()[adv_index];
+    mgr.create_tabular_header(surrogate_model().current_variables(),
+			      currentResponse);
     break;
   }
 }
@@ -1144,36 +1098,48 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 {
   //parallelLib.output_manager().add_tabular_data(vars, interface_id(), resp);
 
-  // manage interface id(s) and resolution control
+  // As called from Model::evaluate() et al., passed data are top-level Model::
+  // currentVariables (neglecting inactive specializations among {HF,LF} vars)
+  // and final reduced/aggregated Model::currentResponse.  Active input/output
+  // components are shared among the ordered models, but inactive components
+  // must be managed to provide sensible composite tabular output.
+  // > Differences in solution control are handled via specialized handling for
+  //   a solution control index.
+  // > Other uncontrolled inactive variables must be rely on the correct
+  //   subordinate model Variables instance.
+
   Model &lf_model = surrogate_model(), &hf_model = truth_model();
   OutputManager& output_mgr = parallelLib.output_manager();
-
   switch (responseMode) {
   case AGGREGATED_MODELS: case MODEL_DISCREPANCY: // two models/resolutions
-  case BYPASS_SURROGATE: { // use same row len since commonly alternated
+  case BYPASS_SURROGATE: { // use same #Cols since commonly alternated
 
-    // output interface ids, potentially paired
-    bool mf = multifidelity();  StringArray iface_ids;
-    if (mf) { // sameInterfaceInstance can't be used since it varies at run time
-      if (truthModelKey.empty()) iface_ids.push_back("N/A");//preserve row len
-      else                       iface_ids.push_back(hf_model.interface_id());
-      if ( surrModelKey.empty()) iface_ids.push_back("N/A");//preserve row len
-      else                       iface_ids.push_back(lf_model.interface_id());
-    }
-    else
+    // Output interface ids, potentially paired
+    bool one_iface_id = matching_all_interface_ids(),
+      truth_key = !truthModelKey.empty(), surr_key = !surrModelKey.empty();
+    StringArray iface_ids;
+    if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
       iface_ids.push_back(hf_model.interface_id());
+    else {
+      if (truth_key) iface_ids.push_back(hf_model.interface_id());
+      else           iface_ids.push_back("N/A");//preserve row len
+      if (surr_key)  iface_ids.push_back(lf_model.interface_id());
+      else           iface_ids.push_back("N/A");//preserve row len
+    }
     output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
 
-    // identify solution level control variable
-    size_t av_index = hf_model.solution_control_variable_index();
-    if (av_index == _NPOS)
-      output_mgr.add_tabular_data(vars);
+    // Output Variables data
+    // capture correct inactive: bypass HierarchSurrModel::currentVariables
+    Variables& export_vars = hf_model.current_variables();
+    if (solnCntlAVIndex == _NPOS)
+      output_mgr.add_tabular_data(export_vars);
     else {
-      output_mgr.add_tabular_data(vars, 0, av_index);//leading set in spec order
+      // output leading set of variables in spec order
+      output_mgr.add_tabular_data(export_vars, 0, solnCntlAVIndex);
 
-      // output paired solution control values
-      bool truth_key = !truthModelKey.empty(), surr_key = !surrModelKey.empty();
-      if (sameModelInstance && truth_key && surr_key) {
+      // output paired solution control values (flags are not invariant,
+      // but data count is)
+      if (sameModelInstance && truth_key && surr_key) {//data count is invariant
 	// HF soln cntl was overwritten by LF and must be temporarily restored
 	assign_truth_key();      add_tabular_solution_level_value(hf_model);
 	assign_surrogate_key();  add_tabular_solution_level_value(lf_model);
@@ -1185,11 +1151,21 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 	else output_mgr.add_tabular_scalar("N/A");// preserve consistent row len
       }
 
-      ++av_index; // output completed for the active soln control
-      output_mgr.add_tabular_data(vars, av_index, vars.tv()-av_index);//trailing
+      // output trailing variables in spec order
+      size_t start = solnCntlAVIndex + 1;
+      output_mgr.add_tabular_data(export_vars, start, export_vars.tv() - start);
     }
-     
-    output_mgr.add_tabular_data(resp);
+
+    // Output response data
+    if (surr_key)
+      output_mgr.add_tabular_data(resp);        // include EOL
+    else { // inactive: match header by padding empty cols with "N/A"
+      output_mgr.add_tabular_data(resp, false); // defer EOL
+      size_t qoi, num_qoi = lf_model.qoi();
+      for (qoi=0; qoi<num_qoi; ++qoi) // pad response data
+	output_mgr.add_tabular_scalar("N/A");
+      output_mgr.add_eol(); // now return the row
+    }
     break;
   }
   case NO_SURROGATE:
@@ -1200,24 +1176,6 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
     output_mgr.add_tabular_data(lf_model.current_variables(),
 				lf_model.interface_id(), resp);
     break;
-  }
-}
-
-
-void HierarchSurrModel::add_tabular_solution_level_value(Model& model)
-{
-  OutputManager& output_mgr = parallelLib.output_manager();
-  switch (model.solution_control_variable_type()) {
-  case DISCRETE_DESIGN_RANGE:       case DISCRETE_DESIGN_SET_INT:
-  case DISCRETE_INTERVAL_UNCERTAIN: case DISCRETE_UNCERTAIN_SET_INT:
-  case DISCRETE_STATE_RANGE:        case DISCRETE_STATE_SET_INT:
-    output_mgr.add_tabular_scalar(model.solution_level_int_value());    break;
-  case DISCRETE_DESIGN_SET_STRING:  case DISCRETE_UNCERTAIN_SET_STRING:
-  case DISCRETE_STATE_SET_STRING:
-    output_mgr.add_tabular_scalar(model.solution_level_string_value()); break;
-  case DISCRETE_DESIGN_SET_REAL:  case DISCRETE_UNCERTAIN_SET_REAL:
-  case DISCRETE_STATE_SET_REAL:
-    output_mgr.add_tabular_scalar(model.solution_level_real_value());   break;
   }
 }
 
@@ -1250,6 +1208,7 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
   // corrected evals with the first available LF response would lead to
   // nondeterministic results).
   IntVarsMIter v_it; IntRespMIter lf_it; int lf_eval_id;
+  IntResponseMap& lf_cached_map = cachedRespMaps[0];
   for (lf_it=lf_resp_map.begin(); lf_it!=lf_resp_map.end(); ++lf_it) {
     lf_eval_id = lf_it->first;
     v_it = rawVarsMap.find(lf_eval_id);
@@ -1259,14 +1218,13 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
         rawVarsMap.erase(v_it);
       }
       else // no new corrections can be applied -> cache uncorrected
-        cachedApproxRespMap.insert(*lf_it);
+        lf_cached_map.insert(*lf_it);
     }
     // else correction already applied
   }
   // remove cached responses from lf_resp_map
   if (!corr_comp)
-    for (lf_it =cachedApproxRespMap.begin();
-         lf_it!=cachedApproxRespMap.end(); ++lf_it)
+    for (lf_it=lf_cached_map.begin(); lf_it!=lf_cached_map.end(); ++lf_it)
       lf_resp_map.erase(lf_it->first);
 }
 
@@ -1345,30 +1303,35 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
 
 void HierarchSurrModel::resize_response(bool use_virtual_counts)
 {
-  size_t num_surr, num_truth;
+  Model &hf_model = truth_model(), &lf_model = surrogate_model();
+  size_t num_lf_fns, num_hf_fns, num_meta,
+    num_hf_meta = hf_model.current_response().metadata().size(),
+    num_lf_meta = lf_model.current_response().metadata().size();
   if (use_virtual_counts) { // allow models to consume lower-level aggregations
-    num_surr  = surrogate_model().qoi();
-    num_truth =     truth_model().qoi();
+    num_lf_fns = lf_model.qoi();
+    num_hf_fns = hf_model.qoi();
   }
   else { // raw counts align with currentResponse raw count
-    num_surr  = surrogate_model().response_size();
-    num_truth =     truth_model().response_size();
+    num_lf_fns = lf_model.response_size();
+    num_hf_fns = hf_model.response_size();
   }
 
   switch (responseMode) {
   case AGGREGATED_MODELS:
-    numFns = num_surr + num_truth;  break;
+    numFns   = num_lf_fns  + num_hf_fns;
+    num_meta = num_hf_meta + num_lf_meta;
+    break;
   case MODEL_DISCREPANCY:
-    if (num_surr != num_truth) {
+    if (num_lf_fns != num_hf_fns) {
       Cerr << "Error: mismatch in response sizes for MODEL_DISCREPANCY mode "
 	   << "in HierarchSurrModel::resize_response()." << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    numFns = num_truth;  break;
+    numFns = num_hf_fns;  num_meta = num_hf_meta;  break;
   case BYPASS_SURROGATE:       case NO_SURROGATE:
-    numFns = num_truth;  break;
+    numFns = num_hf_fns;  num_meta = num_hf_meta;  break;
   case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:  default:
-    numFns = num_surr;   break;
+    numFns = num_lf_fns;  num_meta = num_lf_meta;  break;
   }
 
   // gradient and Hessian settings are based on independent spec (not LF, HF)
@@ -1389,6 +1352,8 @@ void HierarchSurrModel::resize_response(bool use_virtual_counts)
     //     Response object.  Expansion by combination only happens on
     //     iteratorCommRank 0 within derived_synchronize_combine{,_nowait}().
   }
+  if (currentResponse.metadata().size() != num_meta)
+    currentResponse.reshape_metadata(num_meta);
 }
 
 
@@ -1476,11 +1441,15 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 
       active_model_key(activeKey); // updates {truth,surr}ModelKey
       if (componentParallelMode == SURROGATE_MODEL_MODE) {
+	assign_surrogate_key(); // may have been deferred
+
 	// serve active LF model:
 	surrogate_model().serve_run(pl_iter, max_eval_concurrency);
 	// Note: ignores erroneous BYPASS_SURROGATE
       }
       else if (componentParallelMode == TRUTH_MODEL_MODE) {
+	assign_truth_key(); // may have been deferred
+
 	// serve active HF model, employing correct iterator concurrency:
 	Model& hf_model = truth_model();
 	switch (responseMode) {

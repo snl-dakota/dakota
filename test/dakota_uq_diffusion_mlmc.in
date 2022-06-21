@@ -9,14 +9,16 @@
 
 method,
 	model_pointer = 'HIERARCH'
-        multilevel_sampling	 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1
+        multilevel_sampling	 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#p0,#p1
 # Ensure MFMC can also work across resolution levels:
 #	multifidelity_sampling				#s10
 #	  sample_type lhs				#s3,#s4,#s5
-	  pilot_samples = 20	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s10,#p0,#p1
-	  seed = 1237		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s10,#p0,#p1
-#	  pilot_samples = 100 50 40 30 20		#s9
-#	  seed_sequence = 1234 2345 3456 4567 5678	#s9
+	  pilot_samples = 20 seed = 1237	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s10,#s12,#p0,#p1
+#	  pilot_samples = 100 50 40 30 20		#s9,#s11
+#	  seed_sequence = 1234 2345 3456 4567 5678	#s9,#s11
+#	  pilot_samples = 500 seed = 1237		#s13
+#	  solution_mode pilot_projection		#s12
+#	  solution_mode offline_pilot			#s13
 	  max_iterations = 5   	    	#s0,#s1,#s2,#s3,#s4,#s5,#s9,#s10,#p0,#p1
 #	  max_iterations = 10		#s6,#s7,#s8
 	  allocation_target = mean	#s0,#s1,#s2,#s3,#s4,#s5,#s9,#p0,#p1
@@ -27,6 +29,8 @@ method,
 #	  convergence_tolerance = .01			#s1,#s4,#s7,#s9,#s10
 #	  convergence_tolerance = .001			#s2,#s5,#s8
 #	  convergence_tolerance_type = relative		#s0,#s6,#s2,#s7
+#	  max_function_evaluations = 100		#s11,#s12
+#	  max_function_evaluations = 5000		#s13
 	output silent
 
 model,
@@ -39,7 +43,8 @@ model,
 	simulation
 	  solution_level_control = 'mesh_size'
 # dense matrices --> direct solvers --> cubic growth in expense
-	  solution_level_cost = 1. 8. 64. 512. 4096.
+	  solution_level_cost = 1. 8. 64. 512. 4096. 	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#p0,#p1
+#	  solution_level_cost = 1. 4. 16. 64. 256.	#s13
 
 variables,
 	uniform_uncertain = 9	 # number of cosine terms in soln expansion
@@ -47,22 +52,22 @@ variables,
 	  upper_bounds      =  9* 1.
 	discrete_state_set
 	  integer = 1 # even poly degree for odd mesh pts including boundary
-      	  set_values = 4 8 16 32 64
-      	  descriptors = 'mesh_size'
-    	real = 4
-      	  elements_per_variable = 2 2 1 1
-      	  set_values = 0.1 1 # field mean
-                       0.5 4 # field std dev
-                       1     # kernel order
-                       0.2   # kernel length
-      	  descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
-      	  initial_state = 1 4 1 0.2
-	string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
-      	  elements_per_variable = 2 2
-	  initial_state = 'cosine' 'off'
-      	  set_values = 'cosine' 'exponential'
-                       'off' 'on'
-      	  descriptors = 'kernel_type' 'positivity'
+	    set_values = 4 8 16 32 64
+	    descriptors = 'mesh_size'
+	  real = 4
+	    elements_per_variable = 2 2 1 1
+	    set_values = 0.1 1 # field mean
+			 0.5 4 # field std dev
+			 1     # kernel order
+			 0.2   # kernel length
+	    descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+	    initial_state = 1 4 1 0.2
+	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+	    elements_per_variable = 2 2
+	    initial_state = 'cosine' 'off'
+	    set_values = 'cosine' 'exponential'
+                         'off' 'on'
+	    descriptors = 'kernel_type' 'positivity'
 
 interface,
 	direct

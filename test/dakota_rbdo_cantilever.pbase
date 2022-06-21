@@ -1,0 +1,14 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 426 total (426 new, 0 duplicate)
+  response_fn_1: 42 val (42 n, 0 d), 42 grad (42 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 191 val (191 n, 0 d), 191 grad (191 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 193 val (193 n, 0 d), 193 grad (193 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4483876732e+00 w
+                      3.8883751258e+00 t
+<<<<< Best objective function  =
+                      9.5202497269e+00
+<<<<< Best constraint values   =
+                      2.9999983555e+00
+                      2.9999979886e+00
+<<<<< Best evaluation ID not available

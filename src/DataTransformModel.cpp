@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -209,6 +209,14 @@ void DataTransformModel::data_resize()
   reshape_response(expData.num_total_exppoints(),
 		   subModel.num_secondary_fns());
 
+}
+
+
+void DataTransformModel::init_metadata()
+{
+  // only clear if there are multiple configs, else leave intact
+  if (expData.configuration_variables().size() > 1)
+    currentResponse.reshape_metadata(0);
 }
 
 
@@ -748,6 +756,10 @@ primary_resp_differencer(const Variables& submodel_vars,
   // scale by covariance, including hyper-parameter multipliers
   dtModelInstance->scale_response(submodel_vars, recast_vars, recast_response);
 
+  // no sensible way to transform metadata in multi-config case
+  if (dtModelInstance->expData.configuration_variables().size() > 1)
+    recast_response.metadata(submodel_response.metadata());
+
   if (dtModelInstance->outputLevel >= VERBOSE_OUTPUT && 
       dtModelInstance->subordinate_model().num_primary_fns() > 0) {
     Cout << "Calibration data transformation; residuals:\n";
@@ -771,8 +783,7 @@ const IntResponseMap& DataTransformModel::filter_submodel_responses()
   const IntResponseMap& sm_resp_map = subModel.synchronize();
   // Not using BOOST_FOREACH due to potential for iterator invalidation in 
   // erase in cache_unmatched_response (shouldn't be a concern with map?)
-  IntRespMCIter sm_r_it = sm_resp_map.begin();
-  IntRespMCIter sm_r_end = sm_resp_map.end();
+  IntRespMCIter sm_r_it = sm_resp_map.begin(), sm_r_end = sm_resp_map.end();
   while (sm_r_it != sm_r_end) {
     int sm_id = sm_r_it->first;
     IntIntMIter id_it = recastIdMap.find(sm_id);
@@ -795,8 +806,7 @@ cache_submodel_responses(const IntResponseMap& sm_resp_map, bool deep_copy)
 {
   // Not using BOOST_FOREACH due to potential for iterator invalidation in 
   // erase in cache_unmatched_response (shouldn't be a concern with map?)
-  IntRespMCIter sm_r_it = sm_resp_map.begin();
-  IntRespMCIter sm_r_end = sm_resp_map.end();
+  IntRespMCIter sm_r_it = sm_resp_map.begin(), sm_r_end = sm_resp_map.end();
   while (sm_r_it != sm_r_end) {
     int sm_id = sm_r_it->first;
     IntIntMIter id_it = recastIdMap.find(sm_id);
@@ -1092,7 +1102,8 @@ recover_submodel_responses(std::ostream& s,
     s << "<<<<< Best model responses ";
   else
     s << "<<<<< Best model response ";
-  if (num_best > 1) s << "(set " << best_ind+1 << ") "; s << "\n";
+  if (num_best > 1) s << "(set " << best_ind+1 << ") ";
+  s << "\n";
 
   // first try cache lookup
 
@@ -1106,6 +1117,7 @@ recover_submodel_responses(std::ostream& s,
   String interface_id = subModel.interface_id();
   Response lookup_resp = subModel.current_response().copy();
   ActiveSet lookup_as = lookup_resp.active_set();
+  // TODO: don't need to lookup constraints here...
   lookup_as.request_values(1);
   lookup_resp.active_set(lookup_as);
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
@@ -1125,6 +1137,8 @@ recover_submodel_responses(std::ostream& s,
     // BMA: why is this necessary?  Should have a reference to same object as PRP
     lookup_pr.variables(lookup_vars);
     PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
+
+    // TODO: allow exact or partial match...
     if (cache_it == data_pairs.get<hashed>().end()) {
 
       // If model is a data fit surrogate, re-evaluate it if needed.
@@ -1147,15 +1161,19 @@ recover_submodel_responses(std::ostream& s,
       else {
         // BMA TODO: Consider NaN so downstream output isn't misleading
         lookup_failure = true;
-        s << "Could not retrieve best model responses (experiment " << i+1 
-          << ")";
+        s << "<<<<< Best model responses (experiment " << i+1
+          << ") not available\n";
       }
     }
     else {
       model_resp = cache_it->response();
     }
 
-    if (!lookup_failure) {
+    if (lookup_failure) {
+      // print eval IDs for any partial matches
+      Minimizer::print_best_eval_ids(interface_id, lookup_vars, lookup_as, s);
+    }
+    else {
       expData.form_residuals(model_resp, i, residual_resp);
 
       // By including labels, this deviates from other summary function output
@@ -1166,6 +1184,7 @@ recover_submodel_responses(std::ostream& s,
       write_data_partial(s, (size_t)0, subModel.num_primary_fns(),
                          model_resp.function_values(),
                          model_resp.function_labels());
+      Minimizer::print_best_eval_ids(interface_id, lookup_vars, lookup_as, s);
     }
   }
 

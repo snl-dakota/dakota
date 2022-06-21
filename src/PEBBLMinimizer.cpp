@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -13,7 +13,6 @@
 
 namespace Dakota 
 {
-extern PRPCache data_pairs; // global container
 
 PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model):
   Minimizer(problem_db, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
@@ -97,7 +96,6 @@ void PebbldMinimizer::print_results(std::ostream& s, short results_state)
   } 
 
   const String& interface_id = iteratedModel.interface_id();
-  int eval_id;
   activeSet.request_values(1);
 
   // -------------------------------------
@@ -127,26 +125,8 @@ void PebbldMinimizer::print_results(std::ostream& s, short results_state)
     //          if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
     //         write_data_partial(s, numUserPrimaryFns, num_cons, best_fns);
     //        }
-    // lookup evaluation id where best occurred.  This cannot be catalogued 
-    // directly because the optimizers track the best iterate internally and 
-    // return the best results after iteration completion.  Therfore, perform a
-    // search in data_pairs to extract the evalId for the best fn eval.
-    PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
-					   bestVariablesArray[i], activeSet);
-    if (cache_it == data_pairs.get<hashed>().end()) {
-      s << "<<<<< Best data not found in evaluation cache\n\n";
-      eval_id = 0;
-    }
-    else {
-      eval_id = cache_it->eval_id();
-      if (eval_id > 0)
-	s << "<<<<< Best data captured at function evaluation " << eval_id
-	  << "\n\n";
-      else // should not occur
-	s << "<<<<< Best data not found in evaluations from current execution,"
-	  << "\n      but retrieved from restart archive with evaluation id "
-	  << -eval_id << "\n\n";
-    }
+
+    print_best_eval_ids(interface_id, bestVariablesArray[i], activeSet, s);
   }
 }
 

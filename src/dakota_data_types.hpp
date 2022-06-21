@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -140,6 +140,7 @@ typedef std::list<Iterator>            IteratorList;
 typedef std::pair<int, int>            IntIntPair;
 typedef std::pair<size_t, int>         SizetIntPair;
 typedef std::pair<int, size_t>         IntSizetPair;
+typedef std::pair<size_t, size_t>      SizetSizetPair;
 typedef std::pair<int, String>         IntStringPair;
 typedef std::pair<Real, Real>          RealRealPair;
 typedef std::pair<String, String>      StringStringPair;
@@ -161,6 +162,7 @@ typedef std::map<int, Real>            IntRealMap;
 typedef std::map<Real, Real>           RealRealMap;
 typedef std::map<String, Real>         StringRealMap;
 typedef std::multimap<Real, int>       RealIntMultiMap;
+typedef std::vector<SizetSizetPair>    SizetSizetPairArray;
 typedef std::vector<RealRealPair>      RealRealPairArray;
 typedef std::vector<IntIntMap>         IntIntMapArray;
 typedef std::vector<IntRealMap>        IntRealMapArray;

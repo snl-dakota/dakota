@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -107,6 +107,8 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   init_constraints(secondaryRespMapIndices.size(), 
 		   recast_secondary_offset, reshape_vars);
 
+  init_metadata();
+
   modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
@@ -200,6 +202,8 @@ init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 
   init_constraints(num_recast_secondary_fns,
 		   recast_secondary_offset, reshape_vars);
+
+  init_metadata();
 }
 
 
@@ -709,6 +713,8 @@ transform_response(const Variables& recast_vars,
     recast_resp.update_partial(num_recast_1_fns, num_recast_2_fns,
 			       sub_model_resp, num_sm_1_fns);
   }
+
+  // NOTE: Response metadata aren't propagated by default, only in special cases
 }
 
 
@@ -741,6 +747,8 @@ inverse_transform_response(const Variables& sub_model_vars,
     sub_model_resp.update_partial(num_sm_1_fns, num_recast_2_fns,
 				  recast_resp, num_recast_1_fns);
   }
+
+  // NOTE: Response metadata aren't propagated by default, only in special cases
 }
 
 
@@ -1220,6 +1228,11 @@ db_lookup(const Variables& search_vars, const ActiveSet& search_set,
 void RecastModel::assign_instance()
 { } // no static instance pointer to assign at base (default is no-op)
 
+
+void RecastModel::init_metadata()
+{
+  currentResponse.reshape_metadata(0);
+}
 
 String RecastModel::root_model_id() {
   return subModel.root_model_id();

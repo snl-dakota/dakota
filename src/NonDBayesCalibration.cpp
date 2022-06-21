@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -570,14 +570,14 @@ void NonDBayesCalibration::init_hyper_parameters()
 void NonDBayesCalibration::init_map_optimizer() 
 {
   switch (mapOptAlgOverride) {
-  case SUBMETHOD_SQP:
+  case SUBMETHOD_NPSOL:
 #ifndef HAVE_NPSOL
     Cerr << "\nWarning: this executable not configured with NPSOL SQP."
 	 << "\n         MAP pre-solve not available." << std::endl;
     mapOptAlgOverride = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
     break;
-  case SUBMETHOD_NIP:
+  case SUBMETHOD_OPTPP:
 #ifndef HAVE_OPTPP
     Cerr << "\nWarning: this executable not configured with OPT++ NIP."
 	 << "\n         MAP pre-solve not available." << std::endl;
@@ -587,9 +587,9 @@ void NonDBayesCalibration::init_map_optimizer()
   case SUBMETHOD_DEFAULT: // use full Newton, if available
     if (emulatorType || calModelEvidLaplace) {
 #ifdef HAVE_OPTPP
-      mapOptAlgOverride = SUBMETHOD_NIP;
+      mapOptAlgOverride = SUBMETHOD_OPTPP;
 #elif HAVE_NPSOL
-      mapOptAlgOverride = SUBMETHOD_SQP;
+      mapOptAlgOverride = SUBMETHOD_NPSOL;
 #else
       mapOptAlgOverride = SUBMETHOD_NONE;
 #endif
@@ -632,7 +632,7 @@ void NonDBayesCalibration::construct_map_model()
   // (avoids error in unsupported Hessian requests in Model::manage_asv())
   short nlp_resp_order = 3; // quasi-Newton optimization
   void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
-  if (mapOptAlgOverride == SUBMETHOD_NIP) {
+  if (mapOptAlgOverride == SUBMETHOD_OPTPP) {
     nlp_resp_order = 7; // size RecastModel response for full Newton Hessian
     if (mcmcDerivOrder == 3) // map asrv for Gauss-Newton approx
       set_recast = gnewton_set_recast;
@@ -654,7 +654,7 @@ void NonDBayesCalibration::construct_map_optimizer()
 
   switch (mapOptAlgOverride) {
 #ifdef HAVE_NPSOL
-  case SUBMETHOD_SQP: {
+  case SUBMETHOD_NPSOL: {
     // SQP with BFGS Hessians
     int npsol_deriv_level = 3;
     mapOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
@@ -663,7 +663,7 @@ void NonDBayesCalibration::construct_map_optimizer()
   }
 #endif
 #ifdef HAVE_OPTPP
-  case SUBMETHOD_NIP:
+  case SUBMETHOD_OPTPP:
     // full Newton (OPTPP::OptBCNewton)
     mapOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
 			    ("optpp_newton", negLogPostModel));

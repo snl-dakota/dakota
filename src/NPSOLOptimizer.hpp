@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -120,10 +120,9 @@ public:
 					double*, int&),
 		 void (*user_con_eval) (int&, int&, int&, int&, int*,
 					double*, double*, double*, int&),
-		 int derivative_level,  Real conv_tol = 0.,
-		 size_t max_iter = 0,   Real fn_precision = 0.,
-		 Real feas_tol = 0.,    Real lin_feas_tol = 0.,
-		 Real nonlin_feas_tol = 0.);
+		 int derivative_level, Real conv_tol = 0., size_t max_iter = 0,
+		 Real fdss = 0., Real fn_precision = 0., Real feas_tol = 0.,
+		 Real lin_feas_tol = 0., Real nonlin_feas_tol = 0.);
 
   ~NPSOLOptimizer(); ///< destructor
     
@@ -131,9 +130,12 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  //void pre_run();
   void core_run();
 
   void declare_sources();
+
+  void check_sub_iterator_conflict();
 
   // updaters for user-functions mode:
 

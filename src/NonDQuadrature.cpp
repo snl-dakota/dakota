@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -353,7 +353,7 @@ void NonDQuadrature::filter_parameter_sets()
     number of points needed from the quadrature routine in order to
     build a particular global approximation. */
 void NonDQuadrature::
-sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
   // tpqDriver tracks the active model key
   UShortArray rqo = tpqDriver->reference_quadrature_order();

@@ -25,7 +25,7 @@ Test Number 1 succeeded
                       1.3000000000e+00 x2
 <<<<< Best objective function  =
                       8.2000000000e-01
-<<<<< Best data captured at function evaluation 11
+<<<<< Best evaluation ID: 11
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -33,7 +33,7 @@ Test Number 2 succeeded
                       9.8744342609e-01 x2
 <<<<< Best objective function  =
                       7.4943502239e-05
-<<<<< Best data captured at function evaluation 136
+<<<<< Best evaluation ID: 136
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 29 total (29 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -42,7 +42,7 @@ Test Number 3 succeeded
 <<<<< Best residual terms =
                      -1.6598357466e-07
                       3.3186106982e-06
-<<<<< Best data captured at function evaluation 29
+<<<<< Best evaluation ID: 29
 Confidence Intervals on Calibrated Parameters:
             x1: [ 9.9995446173e-01, 1.0000389010e+00 ]
             x2: [ 9.9990880168e-01, 1.0000778907e+00 ]
@@ -53,7 +53,7 @@ Test Number 4 succeeded
                       7.8331926736e-01 x2
 <<<<< Best objective function  =
                       1.3176700909e-02
-<<<<< Best data captured at function evaluation 1999
+<<<<< Best evaluation ID: 1999
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 2005 total (2005 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -61,7 +61,7 @@ Test Number 5 succeeded
                       1.4035612403e+00 x2
 <<<<< Best objective function  =
                       3.7960733143e-02
-<<<<< Best data captured at function evaluation 218
+<<<<< Best evaluation ID: 218
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
 Sample moment statistics for each response function:
@@ -102,7 +102,7 @@ Test Number 7 succeeded
                       9.8744342761e-01 x2
 <<<<< Best objective function  =
                       7.4943514585e-05
-<<<<< Best data captured at function evaluation 135
+<<<<< Best evaluation ID: 135
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -111,7 +111,7 @@ Test Number 8 succeeded
 <<<<< Best residual terms =
                       0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 14
+<<<<< Best evaluation ID: 14
 Confidence Intervals on Calibrated Parameters:
             x1: [ 1.0000000000e+00, 1.0000000000e+00 ]
             x2: [ 1.0000000000e+00, 1.0000000000e+00 ]
@@ -123,4 +123,4 @@ Test Number 9 succeeded
                       9.8371783275e-01 x2
 <<<<< Best objective function  =
                       7.6180045513e-05
-<<<<< Best data captured at function evaluation 109
+<<<<< Best evaluation ID: 109

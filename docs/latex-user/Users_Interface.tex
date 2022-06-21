@@ -526,7 +526,7 @@ shows the final solution using the \path{rosenbrock_bb.py} simulator:
                          9.9931682203e-01 x2
    <<<<< Best objective function  =
                       1.1657044253e-07
-   <<<<< Best data captured at function evaluation 130
+   <<<<< Best evaluation ID: 130
 
    <<<<< Iterator npsol_sqp completed.
    <<<<< Single Method Strategy completed.
@@ -1690,7 +1690,7 @@ it instead returns a tuple containing {\tt (BatchParameters, BatchResults)}.
 
 Its signature is:
 
-\phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None},\\\emph{ignore\_asv=False}, \emph{batch=False}}){}
+\phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None},\\\emph{ignore\_asv=False}, \emph{batch=False}, \emph{infer\_types=True}, \emph{types=None}}){}
 
 \emph{parameters\_file} and \emph{results\_file} are the names of the parameters file that is to be read
 and the results file that  ultimately is to be written. The names can be  absolute or relative filepaths or
@@ -1712,11 +1712,26 @@ when setting up or debugging a driver.
 The {\tt batch} argument must be set to {\tt True} when batch evaluation has been requested in the Dakota input
 file, and {\tt False} when not.
 
+The final two arguments, {\tt infer\_types} and {\tt types}, control how types are assigned to parameter values.
+The values initially are read as strings from the Dakota parameters file. If {\tt infer\_types} is {\tt False} and {\tt types}
+is {\tt None}, they remain as type {\tt str}. If {\tt infer\_types} is {\tt True}, an attempt is made to "guess"
+more convenient types. Conversion first to {\tt int} and then to {\tt float} are tried. If both fail, the value
+remains a {\tt str}.
+
+Sometimes automatic type inference does not work as desired; a user may have a string-valued variable with the element "5", 
+for example, that he does not want converted to an {\tt int}. Or, a user may wish to convert to a custom type, such as {\tt np.float64}
+instead of the built-in Python {\tt float}. The {\tt types} argument is useful  
+in these cases. It can be set either to a {\tt list} of types or a {\tt dict} that maps variable labels to types. Types
+communicated using the {\tt types} argument override inferred types. If {\tt types} is a list, it must have a length 
+equal to the number of variables. A dictionary, on the other hand, need not contain types for every
+variable. This permits variable-by-variable control over assignment and inference of types. 
+ 
 \subsection{Parameters objects}
 
 {\tt Parameters} objects make the variables, analysis components, evaluation ID, and evaluation number read from a Dakota parameters file available through a combination of key-value access and object attributes. Although {\tt Parameters} objects may be constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
 
-Variable values can be accessed by Dakota descriptor or by index using {[}{]} on the object itself. Variables types (integer, real, string) are inferred by first attempting to convert to {\tt int} and then, if this fails, to {\tt float}.
+Variable values can be accessed by Dakota descriptor or by index using {[}{]} on the object itself. Variables types are inferred or set as described in the
+previous section.
 
 Analysis components are accessible by index only using the {\tt an\_comps} attribute. Iterating over a {\tt Parameters} 
 object yields the variable descriptors.
@@ -1739,6 +1754,10 @@ object yields the variable descriptors.
   \item\index{num\_variables (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.num_variables}\textbf{\texttt{num\_variables}} Number of variables
 
   \item\index{num\_an\_comps (dakota.interfacing.Parameters attribute)}\phantomsection\label{index:dakota.interfacing.Parameters.num_an_comps}\textbf{\texttt{num\_an\_comps}} Number of analysis components
+
+  \item\index{metadata (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.metadata}\textbf{\texttt{metadata}} Names of requested metadata fields (strings).
+
+  \item\index{num\_metadata (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.num_metadata}\textbf{\texttt{num\_metadata}} Number of requested metadata fields.
 
 \end{itemize}
 
@@ -1785,6 +1804,10 @@ aprepro (True) or Dakota (False) format.
   \item\index{deriv\_vars (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.deriv_vars}\textbf{\texttt{deriv\_vars}} List of the derivative variables (strings)
 
   \item\index{num\_deriv\_vars (dakota.interfacing.Results attribute)}\phantomsection\label{index:dakota.interfacing.Results.num_deriv_vars}\textbf{\texttt{num\_deriv\_vars}}Number of derivative variables (int)
+
+  \item\index{metadata (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.metadata}\textbf{\texttt{metadata}} Dictionary of metadata indexable by field name or index
+
+
 
 \end{itemize}
 
@@ -1834,8 +1857,8 @@ ignore\_asv is False).
 
 \subsection{BatchParameters object}
 
-{\tt BatchParameters} objects are collections of {\tt Parameters} objects. The individuual {\tt Parameters} objects can be
-accesed by index ({[}{]}) or by iterating the {\tt BatchParameters} object. Although {\tt BatchParameters} objects may be 
+{\tt BatchParameters} objects are collections of {\tt Parameters} objects. The individual {\tt Parameters} objects can be
+accessed by index ({[}{]}) or by iterating the {\tt BatchParameters} object. Although {\tt BatchParameters} objects may be 
 constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
 
 {\tt BatchParameters} objects have one attribute.
@@ -1846,10 +1869,10 @@ constructed directly, it is advisable to use the {\tt read\_parameters\_file} fu
 
 {\tt BatchParameters} objects have no methods.
 
-\subsection{ResultsResults object}
+\subsection{BatchResults object}
 
-{\tt BatchResults} objects are collections of {\tt Results} objects. The individuual {\tt Results} objects can be
-accesed by index ({[}{]}) or by iterating the {\tt BatchResults} object. Although {\tt BatchResults} objects may be 
+{\tt BatchResults} objects are collections of {\tt Results} objects. The individual {\tt Results} objects can be
+accessed by index ({[}{]}) or by iterating the {\tt BatchResults} object. Although {\tt BatchResults} objects may be 
 constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
 
 {\tt BatchResults} objects have a single attribute:
@@ -1932,7 +1955,7 @@ For most applications, using {\tt dakota.interfacing} is straightforward. The fi
 \label{diexample:simple}
 \end{figure}
 
-The {\tt Results} object exposes the active set vector read from the parameters file. When analytic gradients or Hessians are available for a response, the ASV should be queried to determine what Dakota has requested for an evaluation. If an attempt is made to addunrequested information to a response, a {\tt dakota.interface.ResponseError} is raised. The same exception results if a requested piece of information is missing when {\tt Results.write()} is called. The \emph{ignore\_asv} option to {\tt read\_parameters\_file} and {\tt Results.write()} overrides ASV checks.
+The {\tt Results} object exposes the active set vector read from the parameters file. When analytic gradients or Hessians are available for a response, the ASV should be queried to determine what Dakota has requested for an evaluation. If an attempt is made to add unrequested information to a response, a {\tt dakota.interface.ResponseError} is raised. The same exception results if a requested piece of information is missing when {\tt Results.write()} is called. The \emph{ignore\_asv} option to {\tt read\_parameters\_file} and {\tt Results.write()} overrides ASV checks.
 
 In Figure~\ref{diexample:asv}, {\tt applic\_module.run()} has been modified to return not only the function value of {\tt f}, but also its gradient and Hessian. The {\tt asv} attribute is examined to determine which of these to add to {\tt results["f"]}.
 
@@ -1966,6 +1989,41 @@ In Figure~\ref{diexample:asv}, {\tt applic\_module.run()} has been modified to r
 \caption{Examining the active set vector}
 \label{diexample:asv}
 \end{figure}
+
+As of the 6.16 release, the direct Python interface can interoperate with
+{\tt dakota.interfacing} using a feature of Python known as a decorator.
+Instead of receiving parameters from the Dakota parameters file and
+writing results to the results file as in Figure~\ref{diexample:asv},
+the decorated Python driver works with the Python dictionary passed from
+the direct Python interface.  An example of the decorator syntax and use
+of the {\tt dakota.interfacing} \texttt{Parameters} and \texttt{Results}
+objects that get created automatically from the direct interface
+Python dictionary is shown in Figure~\ref{linkeddiexample:decorator}.  The
+complete driver including details of the packing functions can be found in
+the \path{dakota/share/dakota/examples/official/drivers/Python/linked_di} folder.
+
+\begin{figure}
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+  from textbook import textbook_list
+  import dakota.interfacing as di
+  
+  @di.python_interface
+  def decorated_driver(params, results):
+  
+      textbook_input = pack_textbook_parameters(params, results)
+      fns, grads, hessians = textbook_list(textbook_input)
+      results = pack_dakota_results(fns, grads, hessians, results)
+  
+      return results
+\end{verbatim}
+\end{small}
+\end{bigbox}
+  \caption{Decorated direct Python callback function using \texttt{Parameters} and \texttt{Results} objects constructed by the {\tt dakota.interfacing} decorator}
+\label{linkeddiexample:decorator}
+\end{figure}
+
 
 \section{Preprocessing with \texttt{dprepro} and \texttt{pyprepro}}\label{interfaces:dprepro-and-pyprepro}
 

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -44,7 +44,7 @@ public:
   const IntResponseMap& all_responses() const;
   bool resize();
 
-  int num_samples() const;
+  size_t num_samples() const;
 
   //
   //- Heading: Virtual functions
@@ -84,7 +84,7 @@ protected:
 
   /// Generate one block of numSamples samples (ndim * num_samples),
   /// populating design_matrix
-  virtual void get_parameter_sets(Model& model, const int num_samples, 
+  virtual void get_parameter_sets(Model& model, const size_t num_samples, 
 				  RealMatrix& design_matrix);
 
   /// update model's current variables with data from sample
@@ -133,10 +133,10 @@ protected:
 			       bool log_best_flag);
 
   /// generate replicate parameter sets for use in variance-based decomposition
-  void get_vbd_parameter_sets(Model& model, int num_samples);
+  void get_vbd_parameter_sets(Model& model, size_t num_samples);
 
   /// compute VBD-based Sobol indices
-  void compute_vbd_stats(const int num_samples, 
+  void compute_vbd_stats(const size_t num_samples, 
 			 const IntResponseMap& resp_samples);
 
   /// archive VBD-based Sobol indices
@@ -241,7 +241,7 @@ inline Analyzer::~Analyzer() { }
 /** Return current number of evaluation points.  Since the calculation
     of samples, collocation points, etc. might be costly, provide a default
     implementation here that backs out from the maxEvalConcurrency. */
-inline int Analyzer::num_samples() const
+inline size_t Analyzer::num_samples() const
 { return maxEvalConcurrency / iteratedModel.derivative_concurrency(); }
 
 
