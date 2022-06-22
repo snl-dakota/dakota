@@ -1,5 +1,121 @@
 .. _releasenotes-65:
 
-"""""""""""""""""""""
-Version 6.5 (2016/11)
-"""""""""""""""""""""
+""""""""""""""""""""""""
+Version 6.5 (2016/11/15)
+""""""""""""""""""""""""
+
+**Highlights**
+
+- Specification of linear constraints has been moved from the method block of the Dakota input file to the variables block. The keywords themselves remain unchanged.
+- Substantial improvements to active subspace methods for input parameter dimension reduction.
+- Considerable improvements in multi-level Monte Carlo, control variate Monte Carlo, and multi-level polynomial regression, including improved fault tolerance.
+- New Bayesian experimental design capability - calibrate a low-fidelity model by adaptively selecting experimental configurations at which to run a high-fidelity model.
+- New interfacing helpers: Python module (dipy) to simplify interfacing Dakota with Python-based simulations and a Bash script to export Dakota parameters as environment variables.
+- The first beta release of the new Dakota GUI is now available for download.
+
+**Uncertainty Quantification (UQ)**
+
+- Sample sizes for random (Monte Carlo) sampling studies can now be selected base on Wilks order statistics.  This represents a standard approach to UQ in the nuclear energy community.
+- Considerable improvements in multi-level Monte Carlo, control variate Monte Carlo, and multi-level polynomial regression, including improved fault tolerance.
+
+**Optimization and Calibration**
+
+- Added capability to adaptively select experimental configurations at which to run a high-fidelity model for the purpose of calibrating with QUESO a low-fidelity model (use "experimental_design").
+- Option to calculate the quantified change in a Bayesian update using the Kullback-Leibler Divergence between the posterior distribution and the prior distribution.
+- New capabilities to reduce the number of simulations required by the mesh_adaptive_search derivative-free optimization method have been exposed through Dakota.  These include the following:
+
+  - Two ways to use surrogate models - 1) construct a surrogate model and complete the optimization directly on that surrogate with no further truth model evaluations (default) and 2) construct a surrogate model and use it to inform a prioritized ordering of truth model evaluations.
+  - Initial and minimum step size control parameters so that the aggressiveness of the method and the stopping criteria can be more consistent with the character of the problem being solved.
+
+- Additionally, Dakota's output verbosity controls are now fully mapped to the mesh_adaptive_search output controls.
+- The optimization method surrogate_based_local now supports linear constraints, provided the underlying optimization method does.
+- Bayesian methods have simpler and more consistent file I/O and improved credible/prediction intervals and chain filtering.
+- Experimental capability to generalize trust region optimization to multiple models and fidelities/levels.
+- Deterministic and Bayesian calibration methods now support experiment configuration variables.  Dakota will run the simulation at state variable values for each experiment configuration specified and create a composite set of residuals, accounting for all the data.
+- Specification of linear constraints has been moved from the method block of the Dakota input file to the variables block. The keywords themselves remain unchanged. This change resolves ambiguity in certain complex Dakota input files.
+
+**Methods (general)**
+
+- Added soft_convergence_limit keyword to surrogate auto-refinement to halt the refinement process when improvement has stalled.
+- D-optimal sampling (for SA or UQ) now works with discrete variables.
+- Substantial improvements to active subspace methods for input parameter dimension reduction:
+
+  - Can now treat multiple quantities of interest (responses) with various options for scaling.
+  - Option to create moving least squares surrogate over the identified subspace variables, using the cached identification samples.
+  - New cross validation metric for subspace identification.
+  - Option to add refinement samples.
+
+**Framework**
+
+Multi-fidelity (hierarchical surrogate) models generalized to support arbitrary numbers of models and levels, along with multiple discrepancy corrections and parallel evaluation management across models.
+
+*Input/Output*
+
+- Parallel launch detection can now be overriden by setting the environment variable DAKOTA_RUN_PARALLEL. If it is set and begins with 1, t, or T, Dakota will attempt to run in parallel. If set to anything else, Dakota will attempt to run in serial mode.
+- Imported tabular data is now published in the function evaluation cache, allowing duplication detection and unification with new simulation interface evaluations.
+- More helpful error validation when importing experiment data.
+
+*Interfaces*
+
+Addition/refinement of test problems for Bayesian experiment design and linear analysis, multi-fidelity Rosbenbrock, predator-prey, diffusion/heat, multilevel sampling, time series trajectory, oscillator.
+
+**User Experience**
+
+- Additional and improved training materials and videos are now available on the Dakota website.
+- The second version of User Guidelines and Best Practices for CASL VUQ Analysis Using Dakota is being released after receiving several updates.
+     
+
+**Miscellaneous Enhancements**
+
+*Architecture*
+
+Fixed a number of uninitialized memory errors and leaks, including one that changes behavior of Surfpack Gaussian Process model when estimate correlation lengths with global optimization.
+
+*Build / Test System*
+
+- Ensured Dakota regression test systems runs clean when exercising the DEBUG build configuration across Linux / Mac platforms.
+- Enhancements to dakota_test.perl enable the regression test suite to run in the Cray Linux Environment. In particular, if dakota_test.perl detects that it was invoked in a submitted job on a Cray system, it launches tests using aprun to place them on compute nodes.
+- Test scripts now recognize "quiet" NaNs in Dakota output on Windows, providing more accurate test results.
+- Migrated Dakota repositories to Git.
+
+*Interfaces*
+
+- A new Python module (dipy) provides convenient Dakota parameter file reading and results file writing for black box simulations written in Python. The module and its documentation are located in interfaces/Python, and the example in examples/script_interfaces/Python was updated to use dipy.
+- A new Bash-based Dakota/simulation interface helper script is now available. The script provides a function that parses a Dakota parameters file and makes its contents available as environment variables. It is located at interfaces/Bash/export_dakota_params.sh. Documentation is at the top of the script.
+- The Dakota team has released the beta of its new GUI. Its features include:
+
+  - Wizard for creating Dakota studies from scratch.
+  - Graphical creation of Dakota/simulation model interfaces. Interfaces created in the GUI can be exported as Python scripts.
+  - Keyword editor for making changes to a Dakota study (no text editing necessary, although a text editor is also provided).
+  - Ability to save the results of multiple Dakota runs and to re-map Dakota study output to your model's parameters and responses.
+
+- The GUI is available from the Downloads section of the site. A tutorial/manual is also available.
+
+*Methods*
+
+- Allow PCE cross validation for cases with fewer than 10 folds (small number of training data points).
+- Initial version of numerically-generated orthogonal polynomials for discrete variables.
+- Bayesian calibration now works (though is not recommended) with small numbers of samples.
+- Variance-based decomposition now works in pre-run/post-run mode
+
+**Miscellaneous Bug Fixes**
+
+- The global optimizers coliny_direct and coliny_ea previously returned the initial variable values as the optimal solutions whenever the user failed to specifiy either lower or upper variable bounds.  This is now fixed by requiring the user to specify both.
+- Test code that crippled surrogate auto-refinement was inadvertantly distributed in Dakota 6.4. The test code was removed and the feature is now working.
+- Formerly, when an insufficient number of training data points existed to perform cross validation on a surrogate, Dakota aborted with an unhelpful error message. Dakota now issues a more descriptive warning and continues.
+- Parallel launch by aprun (on Cray HPCs) is now correctly detected.
+- Multi-start methods now work correctly for cases where the method is specified with method_name and there is no explicit model in the input file.
+- Made the Jenkins-driven build system more modular and increased coverage for various platforms and compilers.
+- Support for new DOE capacity (Common Technology Systems running TOSS3) and Trinity family of capability systems.
+- Input file keywords output_file and error_file now work as expected.
+
+  - Downloadable binary packages now omit debug symbols for order of magnitude smaller archive sizes.
+  - File imports import_build_points and import_approx_points do not work correctly for all cases.
+  - Corrected string passing in legacy Fortran libraries, abiding by ISO C binding standards.
+  - Miscellaneous bug fixes to correct memory / array bounds errors.
+
+**Known Limitations**
+
+- Known Bug: The best point reported by the coliny_cobyla optimization method is not always the best point found by the method.  This bug will not be fixed, as it occurs in third-party code outside the control of Dakota developers and no longer under active development.  The best point can be found by examining the Dakota screen output or the tabular output file (if generated).
+- Known Bug: The coliny_cobyla optimization method does not always respect bound constraints when scaling is turned on.  This bug will not be fixed, as it occurs in third-party code outside the control of Dakota developers and no longer under active development.
+

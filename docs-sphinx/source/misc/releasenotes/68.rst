@@ -1,5 +1,86 @@
 .. _releasenotes-68:
 
-"""""""""""""""""""""
-Version 6.8 (2018/05)
-"""""""""""""""""""""
+""""""""""""""""""""""""
+Version 6.8 (2018/05/15)
+""""""""""""""""""""""""
+
+**New dprepro Simulation Preprocessor**
+
+Dakota's dprepro template processing utility has been rewritten in Python and supports many new features and template expressions, such as:
+
+- Arbitrary Python scripting within templates
+- Additional variables can be made available to templates from the command line and by using JSON-formatted include files
+- Templates can include other templates
+- The mutability of variables can be controlled to support setting and overriding default values
+- Integration with the dakota.interfacing Python module
+
+*Compatibility:* The new dprepro is largely backward compatible with templates and analysis drivers written for the previous version, which remains available in the bin folder as dprepro.perl. One notable exception is the syntax for per-field output formatting, which now must be accomplished using Python string formatting.
+
+*Documentation:* Full documentation is located in Chapter 10 of the User's Manual; also see dprepro --help.
+
+**New ROL Gradient-based Optimization Methods**
+
+Dakota now includes a suite of gradient-based optimization algorithms from the SNL-developed Rapid Optimization Library (ROL). Selected via the method > rol keyword, the library solves unconstrained, bound constrained, and nonlinearly constrained optimization problems and scales better to large numbers of parameters and constraints.
+
+Notable ROL-enabled capabilities include:
+
+- Automated choice of method and algorithmic knobs for a given user-specified problem:
+  
+  - trust-region method for unconstrained and bound-constrained problems
+  - composite-step (Sequential quadratic programming (SQP) with trust regions) for equality-constrained problems
+  - augmented Lagrangian for other problems (including inequality-constrained problems)
+  
+- Support for user-provided analytic gradient and Hessian information
+- Advanced user input through the ROL XML input files
+
+Thanks to ROL developers `Denis Ridzal <http://www.sandia.gov/~dridzal/>`_ and `Drew Kouri <https://cfwebprod.sandia.gov/cfdocs/CompResearch/templates/insert/profile.cfm?dpkouri>`_ for considerable integration help and usage guidance. 
+
+**Bayesian Calibration**
+
+*New Features and Usability Improvements*
+
+- Batch point selection for Hi2Lo: Multiple optimal experimental designs can be selected and concurrently evaluated when using the Hi2Lo algorithm
+- Model discrepancy for field data: Ability to calculate and evaluate an additive model discrepancy function as a function of field coordinates and configuration parameters for field data
+- Option to scale prior-based proposal covariance
+- Print maximum a posteriori probability (MAP) pre-solve result prior to starting MCMC chain (thanks to Teresa Portone)
+
+*Implementation Changes*
+
+- Derivative-informed Bayesian calibration: Derivative-based proposal covariance updates are now managed by customizing QUESO’s transition kernels, resulting in considerable Dakota code cleanup. Control of updates is now based on period (number of samples after which to update) instead of number of updates
+- Bugfix: Error multiplier hyper-parameter bounds weren't set, leading to stochastic behavior.
+- More rigorous regression testing of information gain (KL divergence)
+
+*Documentation:* See Chapter 5.8 for Bayesian calibration and Chapter 5.8.8 and for model discrepancy in the User's Manual.  See Chapter 5.5 of the Theory Manual for an example of field discrepancy construction.
+
+**Miscellaneous Enhancements and Bugfixes**
+
+- Improved multi-level/multi-fidelity optimization and UQ methods.
+- Efficient Global Optimizer (EGO): Fixed bugs to allow user control of convergence tolerance and proper operation with user-specified "maximize" sense and/or weighted objective functions.
+- Optimization TPL setting improvements:
+
+    - NLPQLP ACC convergence criterion: Now properly set to Dakota user input convergence_tolerance                    
+    - DOT internal scaling: Turned off by default (ISCAL=-1). User may use Dakota method scaling instead.
+    - DOT JTMAX for strategy level: Now properly set by Dakota input max_iterations in addition to ITMAX for method (allows increased DOT-SLP and DOT-SQP iterations).
+	
+- Surrogate-based optimization improvements:
+
+  - Lagrange multipliers correctly computed: SurrBasedMinimizer::update_lagrange_multipliers computes correct Lagrange multipliers when there are active side constraints for bound variables.                  
+  - Change to soft_convergence=1: now recognizes slowed convergence, not counting rejected design points (i.e., first feasible accepted point in TR with diminishing return in objective terminates)        
+  
+- Missing method error reporting: Issue more helpful error messages for missing (typically commercial) solvers and suggest alternatives, including in example input files.
+- Installation and binary package organization: Use more conventional install directory structure (bin, include, lib, share) and adjust dependent libraries and relative paths. Obviates the need to set (DY)LD_LIBRARY_PATH.
+- Trilinos TPL: Include Teuchos and ROL packages from Trilinos 12.12.1 or newer (currently master). Fix build errors due to Dakota headers that improperly relied on headers removed from Teuchos include files.
+- Configuring documentation without enabling tests: Dakota now builds with docs enabled, but tests disabled, though user manual will not be built due to dependence on test files.
+
+**Deprecated and Changed**
+
+- dprepro rename: Perl-based dprepro renamed to dprepro.perl (details above).
+- QUESO Bayesian calibration methods: derivative-based proposal covariance updates are now controlled by update_period (number of samples between updates) instead of proposal_updates (number of updates per chain).
+- Optimization methods: remove confusing secondary way to refer to solvers via conmin, dot, or stanford keyword, followed by sub-option for specific solver. Instead use, e.g., conmin_mfd, or dot_sqp.
+- X Windows-based plotting is deprecated. The graphics keyword (in environment block) and corresponding CMake options to enable X-Windows will be removed in a future release. Consider using the Dakota graphical user interface (GUI) for plotting results from Dakota studies.
+- No changes to required compilers or third-party libraries.
+
+**Compatibility**
+
+- No changes to required compilers or third-party libraries.
+

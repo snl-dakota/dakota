@@ -1,5 +1,106 @@
 .. _releasenotes-67:
 
-"""""""""""""""""""""
-Version 6.7 (2017/11)
-"""""""""""""""""""""
+""""""""""""""""""""""""
+Version 6.7 (2017/11/15)
+""""""""""""""""""""""""
+
+**Highlights**
+
+- Dakota now requires a C++11-compliant compiler, together with CMake 3.1 or newer (recommend 3.6 or greater). Dakota was updated to support a number of modern C++11-compliant compilers.
+- Substantial improvements to multi-level and multi-fidelity methods, including greater flexbility in model hierarchies, separate base vs. multi-* methods, recursive PCE emulation of discrepancies, simpler user specifications, and ability to use multi-* methods in nested models.
+
+**Uncertainty Quantification (UQ)**
+
+- Incremental sampling statistics: Dakota console output displayed in GUI
+- Gradients in sampling: Sampling methods can now compute gradients of central/standard moments, e.g., mean/standard deviation/variance, when the underlying model includes gradients of its responses.  Can be used in nested model contexts.
+- UQ moment statistics: New unbiased estimators for central moments to 4th order and none/standard/central options for final moments. 
+- Multilevel standard error estimation: Standard error estimation for multilevel methods extended to include variance and standard deviation, for use in nested contexts (e.g., OUU with SNOWPAC). Estimator variance of response variance requires unbiased 4th central moments (also implemented this release).  Also stabilize multilevel moment estimation for small sample sizes, controlling small negative variances.
+- Multi-level sampling controls: Robustly and flexibly support minimal user specifications for solution level controls and associated costs, e.g., for a simulation model with one implied level.
+- Multi-level/multi-fidelity PCE: New capability for recursive emulation of discrepancies (similar to hierarchical surplus approaches that emulate a surplus relative to the previous emulation level) complements previous capability for distinct emulation of individual discrepancies.
+- Separate ML/MF UQ: Separated multilevel/multifidelity from base UQ methods, e.g., sampling vs. multi-level sampling, PCE vs multi-fidelity/multi-level PCE, SC vs. multi-fidelity SC. This allows greater specialization in input specification, as well as modularization for use as full-featured emulators (base, multilevel, or multifidelity) within Bayesian calibration.
+- Multi-level/multi-fidelity models: Support greater flexibility in modeling hierarchy: multilevel and multifidelity PCE/SC approaches can be configured to use either model form or discretization level hierarchies.  The primary distinction is the use of optimal resource allocation (multilevel) or pre-selected refinement (multifidelity) approaches.
+
+**Optimization and Calibration**
+
+- QUESO / GPMSA Bayesian calibration: Initial experimental support for GPMSA method for Bayesian calibration, scalar and multivariate cases.
+- QUESO advanced options file: Power users can now configure QUESO Bayesian calibration with any option supported by the QUESO TPL through and advanced options_file.
+- Least squares confidence intervals: Corrected calculation and printing of confidence intervals for weighted and/or scaled deterministic calibration cases.  Thanks to Katy Barnhart.
+- Least squares results reporting: Make native vs. transformed (weighted/scaled) residuals correct and more helpfully labeled  when reporting calibration results. 
+- SNOWPAC/NOWPAC scaling: Automatically scale design variables into [0, 1] when using SNOWPAC/NOWPAC.
+
+**Methods (general)**
+
+**Framework**
+
+*Input/Output*
+
+- Correct results output filename: Corrected dakota_results default filename with appropriate initializer and updated the documentation to clearly state that a basename is specified for the results file and the extension is automatically provided (determined by file type, e.g. text formatted results have a .txt extension).
+- Robust restart handling: Restart file processing detects a wider range of error conditions and displays more helpful error messages.
+- Incremental results printing: Enable incremental results printing, e.g., after a refinement iteration, vs. full final results printing.
+
+*Build System / TPLs*
+
+- Update to latest JEGA version
+
+  - Pulled-in JEGA SVN trunk (rev 814) dated 9/5/17.
+  - Fixed compiler errors occurring with newer compilers such as Clang
+  - Eliminated deprecation warnings by leveraging Standard C++-11 features
+  - Fixed an infinite loop bug.  Users can now expect convergence (rather than a hang) when using niching with MOGA
+
+- QUESO TPL update: Update QUESO (Bayesian Calibration) to v0.58.0 to get latest options handling and GPMSA capabilities.
+- Compiler portability: Made a number of small improvements to work on newer GCC, Clang, Intel, and Visual Studio compilers.
+- Improvements to automated testing processes and infrastructure: Updated Jenkins test suite; updated testing and Jenkins scripts; improved reporting and developer notifications;
+
+**User Experience**
+
+- Website improvements: Numerous website improvements, notably Getting Started documentation; consistent look and feel of reference documentation
+- XML improvements: Improve keyword display and validation in Dakota and external graphical user interfaces.  Unrolled/flattened dakota.xml so alternates aren't followed by factored-out dependent children.  Also added more groups and helpful labels.
+- Plotting enhancements: New GUI plots genterated using Dakota GUI plot templates. GUI plots supported: 3D scatter plot, 3D surface plot, colored matrices, bar charts. GUI plot templates supported:  parameter/response comparative line graphs, iteration history, scatter plot matrix, correlation coefficient tables, comparative bar charts
+- Correlation plots: Support for scraping Dakota-generated coefficient matrix tables and plotting them
+- Examples Repo Browser: New browser for easily finding Dakota example input files, and importing them directly into the GUI
+
+**Miscellaneous Enhancements**
+
+*Architecture*
+
+- Traits for Optimization/minimization TPLs:
+
+  - Registering and propagation of traits (constraint and variable support) for all optimization/minimization third-party libraries.
+  - Test suite extended to ensure complete coverage of all traits for all TPLs.
+  - User manual updated to be consistent with TPL capabilities.
+
+- Data transfer adapters for Optimization TPLs: Some new helper functions have been created to simplify the exchange of data between Dakota and TPL data structures, primarily focused on contraint data.  The APPSOptimizer make fullest use of these and serves as an example for use in additional optimization TPLs.
+
+*Build / Test System*
+
+- Updated build requirements:
+
+  - Dakota now requires C++11 compliant compiler: g++ 4.8.1+, Intel C++ 15 or higher, MS Visual Studio 2015 or new
+  - CMake 3.1+ now required
+
+- Upgrade Windows compiler: Continuous Integration and Nightly stable builds for the Windows platform now use the MSVS 2015 compiler.
+
+*Examples / Tests*
+
+- Data files for examples: Install auxiliary data files so users can run examples from an installation package.
+- Testing stability: Improvements to test stability through improved numerics and runtime memory debugging.
+- Example input files: Reordered and cleaned up example input files so they more closely reflect dakota.xml and better operate in graphical user interfaces.
+
+*Methods*
+
+- Surrogate data import/export: Generalized surrogate data I/O to support multilevel data imports based on inactive solution control values.  This also corrects a pre-existing import issue where unexpected variation in inactive variables could be ignored.
+- Sparse grid convergence tolerance: Use relative rather than absolute convergence tolerance in adaptive sparse grids, simplifying user control.
+
+**Miscellaneous Bug Fixes**
+
+- Gradient scaling and calibration: Fixed an issue that caused numerical gradients to be improperly scaled when a calibration_data_file was used.
+- NCSU DiRECT convergence: NCSU Direct solver now properly respects max_function_evaluations when repeat called in a single Dakota study.  James Ramsey identified and reported the bug.
+- Improve reliability statistics: Improve Inf / Nan determinism in local reliability when calculating reliabilities from probabilities. Corrected logic for floating point comparisons / conditional expressions when probabilities are near 0.0 and 1.0.
+- PCE coefficient export: Properly compute and report PCE coefficients when requested, independent of verbosity control
+- Experimental Design - One at a Time Capability: Fixed segmentation fault that occurred when using the one-at-a-time capability within experimental_design caused by attempting to run a non-existent high-fidelity model.
+
+**Known Limitations**
+
+- Surrogates with discrete variables: For polynomial surrogates involving discrete design variables, a further requirement regarding the number of discrete levels is added in the user manual for the well-posedness of polynomial surrogate construction.
+- Executable library paths: Some Dakota executables, including test driver programs, may not correctly find their installed libraries, necessitating setting of LD_LIBRARY_PATH or DYLD_LIBRARY_PATH.
+

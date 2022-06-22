@@ -1,5 +1,116 @@
 .. _releasenotes-614:
 
-""""""""""""""""""""""
-Version 6.14 (2021/05)
-""""""""""""""""""""""
+"""""""""""""""""""""""""
+Version 6.14 (2021/05/17)
+"""""""""""""""""""""""""
+
+**Highlight: Examples Library**
+
+Dakota is launching a new Examples Library with the 6.14 release. The library includes many brand new and refreshed examples that demonstrate a broad range of tried-and-true and cutting-edge Dakota capabilities. Tutorials, runnable Dakota studies, drivers, case studies, and more are available. Each example is accompanied by a detailed README that includes a helpful description, how to run the example, additional resources, and other information.
+
+The Dakota team welcomes community contributions to the Examples Library. Please contact us through the dakota-users mailing list if you have something to add.
+
+*Enabling / Accessing:* In Dakota binary packages, the Examples Library is located in the share/dakota/examples/official folder. In source packages, they are in the dakota-examples folder. The Dakota project soon will make the Library available on the web. Sign up for dakota-announce to be notified.
+
+**Highlight: Batch-parallel EGO**
+
+Efficient global optimization (EGO) is a popular choice for global optimization in Dakota, and users have often requested greater parallel concurrency to better balance the initial Gaussian process model construction and subsequent refinement. Dakota now includes batch-parallel EGO capabilities, with support for blocking and non-blocking approaches and refinement candidate identification from a combination of acquisition and exploration. See some benchmark results and additional details provided below. 
+
+*Enabling / Accessing:* The efficient_global method now admits batch size and parallel synchronization controls in the user input file.
+
+*Documentation:* Refer to efficient_global method documentation in the Dakota 6.14 Reference Manual.
+
+**Highlight: Surrogate Workflows**
+
+Dakota 6.14 features several surrogate model enhancements. Select surrogate models can be exported from Dakota for subsequent reuse in Dakota itself, via the Python dakota.surrogates modules, or as integrated workflow nodes in the GUI, allowing them to be built once and then used as stand-ins for the simulation models they approximate. Experimental Gaussian Process models now feature improved default options, better integration in GP-based meta-methods, and finer-grained user control via advanced options.
+
+*Enabling / Accessing:* New input file keywords enable surrogate export/import and additional power-user controls. The GUI has new special treatment of surrogate models, including a Surrogate block on the workflow palette.
+
+*Documentation:* See the Dakota 6.14 Reference Manual, GUI Manual, and the official/surrogates/ directory in the aforementioned Examples Library for details on use.
+
+**Highlight: Embedded cross validation for greedy refinement**
+
+Various surrogate-based UQ methods rely on regression to solve for approximation coefficients. This release includes new cross-validation capabilities for functional tensor train (FTT) and polynomial chaos expansion (PCE) surrogates that are based on regression. This is motivated by greedy refinement approaches, whether single-fidelity or multifidelity, where it is critical that refinement candidates be greedily selected for high impact due to the right reasons (improved accuracy) rather than the wrong reasons (overfitting). Additional details (refinement saturation, candidate throttling, response scaling) are provided below.
+
+*Enabling / Accessing:* Cross-validation can be activated for both FTT and PCE, across both rank and basis order for FTT and across both basis order and noise tolerance for PCE. For PCE, the systems may be either overdetermined (ordinary least squares) or under-determined (compressed sensing).
+
+*Documentation:* Within the Dakota 6.14 Reference Manual, refer to cross_validation documentation for PCE and adapt_{rank,order} documentation for FTT.
+
+**Improvements by Category**
+
+*Interfaces, Input/Output*
+
+- Top-level Dakota Python Interface: A new (experimental) dakota.environment Python module allows constructing and running a Dakota study by specifying an input file together with (optional) callback to a Python analysis_driver for function evaluations. This has known limitations with re-running study objects or multiply allocating them and will require refinement to be generally useful.
+- Python Direct Interfaces: Demonstrated a new experimental pybind11-based Python interface class. Fixed a limitation where string variables weren't mapped through the existing Python direct interface.
+
+*Models*
+
+- Surrogate Model Export/Import: Can export and later re-import experimental and Surfpack surrogates into Dakota global models. The import supports variable mapping, so subsequent studies can be conducted over a subset of the surrogates variables. Surrogates can also be imported and used directly in the GUI (see separate note). Also related: exported Surfpack surrogates now encode variables labels; a bug was fixed with experimental surrogate exports in binary formats.
+- Experimental Surrogate Models (Gaussian Process, Polynomials): Added new features for Matern kernels in GPs, response standardization, YAML advanced configuration options specification and export, improved default options, and advanced options in meta-methods (EGO, EGRA, EGIE).
+- Adapted Basis Models for Dimension Reduction: The adapted_basis approach to dimension reduction now supports approaches for automatically selecting a dimension truncation.
+
+*Optimization Methods*
+
+- Efficient Global Optimization: Now supports parallel batch evaluation (instead of serial refinment) using a combination of acquisition and exploration refinement candidates.
+- A batch comprises a set of refinement candidates generated by acquisition (e.g., max expected improvement) and exploration (e.g., max prediction variance).
+ 
+  -  Refinement candidates beyond the first involve look-aheads / "liar" iterations where points from max expected improvement/prediction variance solves are evaluated using the current GP approximation and these approximate results are mixed with the GP build data for additional look-ahead iterations.
+  - When candidate evaluations are completed, the approximate liar data is then replaced with truth data within the GP build set.
+
+- Synchronization may be blocking (all concurrent refinement candidates are completed before the algorithm advances) or non-blocking (a partial set of refinement candidates can be completed and the algorithm backfills with additional acquisition/exploration using the most up-to-date state of the GP).
+- Bug fix: NLSSOL least-squares calibration solver was ignoring user-specified controls (thanks Jean-Paul Davis).
+- Bug fix: Properly treat mixtures of field responses and nonlinear constraints (thanks George Orient).
+- Enh (backward incompatible): Calibration experiment configurations now read string variables by string value, not index (thanks Orient, Mersch).
+
+*UQ Methods*
+
+- Multi-Level/Multi-Fidelity Sampling Methods:
+
+  - Goal-oriented MLMC for OUU (Menhorn): sample allocation profiles can be optimized based on the variance of the variance estimator as well as more general "scalarizations" combining moment statistics (e.g., mean + 3 sigma), instead of just mean estimates.
+  - Non-hierarchical Models: New non-hierarchical model management architecture (Dakota::NonHierarchSurrModel) provides an initial step towards new non-hierarchical multifidelity methods, model tuning, and model selection. These general ensembles contrast with more classical hierarchies of levels or fidelities.
+  
+- Surrogate-based Multi-Fidelity (MF) Methods: Greedy multifidelity refinement has been enhanced for regression cases through the use of embedded cross validation (CV) in order to ensure that candidates are greedily selected for high impact due to improved accuracy rather than overfitting. "Saturation" logic has been added to constrain additional refinements when the CV process indicates little benefit from further advancement, max candidate throttling has been added to reduce expense from an expanding candidate pool, and response scaling has been added to mitigate issues with small discrepancy values and absolute regression solver tolerances.
+	
+  - MF Polynomial Chaos Expansions (PCE): cross-validation is supported for over-/under-determined regression using ordinary least squares (OLS)/compressed sensing (CS). Cross-validation occurs over both basis order (OLS/CS) and noise tolerance (CS), and anisotropic basis order candidates are now supported. A refinement candidate can be generated by advancing the upper bound of the cross validation for expansion order (see p_refinement uniform).
+  - MF Functional Tensor Train (FTT): cross-validation is supported for adapting the rank and basis order (adapt_rank and/or adapt_order), with finer-granularity in the former (per dimension) than the latter (same across all dimensions). A refinement candidate can be generated by advancing the upper bound of the cross validation for rank, order, or both (see p_refinement uniform with increment_max_rank, increment_max_order, and increment_max_rank_order). 
+  
+- MUQ Bayesian Inference (experimental): Enabled new delay rejection and DRAM samplers as well as support for specifying proposal covariance. Updated to newer version of MUQ third-party library.
+- Enh: Update definition of anisotropic total-order expansions to enhance consistency with definition of the Smolyak multi-index in anisotropic sparse grids. The new definition is based on relative weightings rather than a truncation based on anisotropic bounds, resulting in a definition that eliminates over-emphasis of interaction terms.
+- Bug fix: For anisotropic sparse grids, a simplifying assumption proved invalid and a more general implementation is now used for updating the Smolyak multi-index and combinatorial coefficients when adapting the anisotropy (based on Sobol' indices or decay rates).
+
+*Architecture/Developer Features*
+
+- Hierarchical/Non-Hierarchical Models: 
+  - new ActiveKey abstraction for managing multifidelity data sets that may involve aggregation (e.g., sample pairing) and data reduction (e.g., discrepancy evaluation).
+  - new consolidated tabular output format binds together multiple model results associated with the same sample. 
+- Data fit surrogates: Ability to replace approximation data in-situ rather than forcing pop + append iterations. Enables asynchronous batch operations for parallel EGO.
+- Bayesian inference architecture: New modular method architecture will facilitate ease of development/maintenance and extension to new methods.
+
+**Miscellaneous Enhancements and Bugfixes**
+
+*Portability*
+
+- 64-bit Windows Binaries: Dakota 6.14 Windows binaries are now built 64-bit (still statically linked) using MSVS 2017 and 64-bit TPLs. Also addressed several issues with compiling with MSVS 2019, including introducing a new DLL version of Trilinos and Dakota surrogates module.
+- Dynamic Mac Binaries: Restored delivery of dynamic libraries for Mac builds, greatly reducing package size.
+- Clang 10 / libc++ / FreeBSD: Fixed Acro/COLIN AppResponse, OPT++ cblas.h, missing sys/wait.h header (thanks Yuri).
+
+*General*
+
+- Enh: Rework MPI buffer I/O templates using iterator traits + tag-dispatch to better distinguish random-access and sorted containers and reduce overhead.
+- Enh: Permit use of external Eigen via Eigen_DIR pointer to EigenConfig.cmake (thanks for the report Yuri)
+- Enh: Specify regression test baselines on a per-test basis, easing maintenance.
+- Enh: Support building from Git clone after removal of .git directory to support integration in other codes (thanks Tim Fuller).
+- Enh: Support for parallel (ctest -j N) testing of HDF5 tests.
+- Enh: Docs build with wider range of LaTeX versions (at least 2017, 2019, likely 2020).
+- Bug fix: HDF5 output for hybrid sequential methods repaired.
+- Bug fix: Trilinos: Skip install permissions modifications, including to fix: make package wihtout previous make install, make package, make DESTDIR (thanks to Mike Coyne for the report)
+
+**Compatibility**
+
+- Enh (backward incompatible): Calibration experiment configurations now read string variables by string value, not index.
+- No mandatory changes to required compilers or third-party libraries. Dakota has been smoke tested on newer gcc-9.x and Clang 10 compilers, but not fully tested.
+
+**Other Notes and Known Issues**
+
+- Top-level Python interface has known limitations with re-running study objects or multiply allocating them.
+

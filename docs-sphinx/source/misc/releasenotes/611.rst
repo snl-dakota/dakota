@@ -1,5 +1,112 @@
 .. _releasenotes-611:
 
-""""""""""""""""""""""
-Version 6.11 (2019/11)
-""""""""""""""""""""""
+"""""""""""""""""""""""""
+Version 6.11 (2019/11/15)
+"""""""""""""""""""""""""
+
+**Highlight: Functional Tensor Train for low rank approximation**
+
+The C3 library (POC: Prof. A. Gorodetsky, University of Michigan) provides a new capability for low rank approximation by functional tensor train decomposition.  C3 has been integrated in Dakota, alongside other stochastic expansion methods for UQ based on projection, regression, or interpolation, enabling an array of approaches for exploiting special structure (e.g., sparsity, low rank, low intrinsic dimension) in an input-output map.
+
+*Enabling / Accessing:* This capability is new and evolving and is not part of the default Dakota build.  To activate, enable HAVE_C3 in your CMake configuration.
+
+*Documentation:* Current keywords are documented in the latest Reference Manual, under method function_train_uq and model surrogate global function_train. This duality reflects a new design for supporting both Iterator-based and Model-based specification of stochastic surrogate models (see "Stochastic expansions as global DataFit surrogates" below).
+
+**Improvements by Category**
+
+*Interfaces*
+
+- *Batched evaluations:* When batch mode is enabled by including the 'batch' interface keyword, Dakota writes multiple evaluations to a single parameters file, runs a single analysis driver for the entire batch, and expects results for the batch to be returned in a single file. The analysis driver exercises complete control over details such as the sequence in which evaluations are performed, where they are performed, and so on.
+- *Preprocess Dakota input:* Dakota now supports a -preproc option that will pre-process the specified input file template into a Dakota-ready input file. Requires pyprepro.py utility on PATH or specification via -preproc /path/to/preproc_tool.py. Thanks to Ken Hu and George Orient for the feature request.
+
+*Surrogate Models*
+
+- *Data import validation:* (model > surrogate > global only.) Variable labels in header-annotated tabular data files are validated against expected imported variable descriptors and warnings/errors generated where possible. Imported columns are permuted to match expected variable order if possible. Each row of a tabular data file must have the correct number of columns for variables and responses. Applies to import_build_points_file and challenge_points_file.
+- *Quadratic multipoint exponential approximation (QMEA):* the QMEA approximation (POC: Prof. R. Canfield, Virginia Tech) has undergone refinement for managing heterogeneous training data sets, as might be expected from a sequence of trust region accept / reject decisions that incur evaluations with / without gradients, respectively.  Outlook: this surrogate extends beyond the current TANA-3 two-point capability to many-point cases, where the most recent sequence of iterates is used to construct higher-order approximations. Both optimization and reliability analysis cases are targeted.
+
+*Optimization Methods*
+
+- NOMAD method now supports asynchronous model evaluations for increased concurrency
+- JEGA (SOGA, MOGA) methods will now work properly with flat file initialization and asynchronous evaluations instead of hanging indefinitely. Thanks to Benoit Paillard for the bug report!
+- The Demo_TPL showing steps to add a new Optimization Third-Party Library (TPL) to Dakota along with working examples is now available in $DAKOTA_SRC/packages/external/demo_tpl and is conditionally enabled by setting -D HAVE_DEMO_TPL:BOOL=ON when building Dakota from source.  See either the README.md file within that directory or the Development Practices and Guidance section of the Developer's Manual for additional details.
+
+*UQ Methods*
+
+- As noted in the highlights above, low rank approximation by functional tensor train (FTT) is now available in Dakota.
+- The latest individual and integrated adaptive refinement strategies for multilevel polynomial chaos and multilevel stochastic collocation are now supported as emulators underneath Bayesian calibration.
+
+*MultivariateDistribution Architecture*
+
+- The main goal in this refactor was to modernize our random variable distribution capabilities so that we can move beyond a description of univariate marginal distributions + correlations to include other types of multivariate distributions, especially joint PDFs for data-driven workflows.
+
+  - new Pecos::MultivariateDistribution base class provides univariate and multivariate stat routines, while Pecos::MarginalsCorrDistribution derived class covers the existing case of a std::vector<Pecos::RandomVariable> plus a correlation matrix
+  - Outlook: new data-driven workflows are under development or planned, including MultivariateNormalDistribution (stubbed out), JointKDEDistribution (planned), et al.
+
+- New RandomVariable derived classes were added to span all types of {continuous, discrete {int,string,real}} and {design, aleatory, epistemic, state} variables, with an emphasis on templates to eliminate previous type enumeration for discrete sets and ranges.
+
+  - This allows a more modular design for some UQ APIs (e.g. LHSDriver), where only a vector of all specified variables, a correlation matrix, and BitArray definition of active subsets need to be supplied.
+  - Allows retirement of Pecos::{Aleatory,Epistemic}DistParams as well as a number of Dakota::Iterator containers for discrete set values, as all random variable data is now consolidated in one place.
+
+    - Outlook: Discrete Askey PCE is now much closer to reality, with various discrete mappings more fully developed.
+  
+  - With Pecos::MultivariateDistribution covering statistical utilities, Pecos::{Probability,Nataf}Transformation now focuses only on the specifics of forward/inverse variable transformations.  The separation of these two concerns is much cleaner than before.
+
+*ProbabilityTransformModel*
+
+- As enabled by the MultivariateDistribution abstraction, this release completes and fully deploys a derived RecastModel for encapsulating the Pecos probability transformation (e.g., Nataf).  This allows promotion of a probability transformation into a full-featured Model recursion.
+
+  - Consolidates previous Dakota::NonD code into a reusable module
+  - Consolidates the ProbabilityTransformation instance so that it no longer needs to be passed around among NonD helpers.
+
+- All Dakota::Models now contain one Pecos::MultivariateDistribution instance which describes a single probability space (original or transformed), where one starts from the original space at the bottom and then encounters transformations as one goes up the Model recursion. In this way, previous explicit management of x-space versus u-space could largely go away as a given level of the hierarchy has only one probability space (e.g., ProbabilityTransformModel consumes the x-space data from the levels below and presents only u-space data to the levels above).
+
+*Stochastic expansions as global DataFit surrogates*
+
+- With probability transformations as part of the Model hierarchy, stochastic expansions can now be fully defined as global data fits without an associated NonD Iterator.  NonDC3FunctionTrain and C3Approximation are the first demonstrator of this new capability (either NonD Iterator or DataFit Surrogate), with PCE and SC to follow.
+
+  - Outlook: This will simplify / unify use of stochastic surrogates in other contexts, e.g., Bayesian inference, and enable new Dakota workflows for surrogate modeling.
+
+*Output*
+
+- HDF5
+
+  - The types of variables (e.g. "continuous_design") were added as a dimension scale to evaluation output.
+  - Results from the 'multi_start' and 'pareto_set' methods are now written.
+  - Add name of the top method as a root attribute
+  - Distribution parameters (e.g. mean and standard deviation of normal_uncertaint variables; lower and upper bounds of continuous_design variables) are now written out as model metadata.
+
+**Miscellaneous Enhancements and Bugfixes**
+
+- Enh/Bug: Cantlever beam training example stress equation now properly depends on beam length. Thanks to Anjali Sandip for reporting the issue and the correct derivation.
+- Bug fix: Header change to resolve Acro/Colin compilation issue with boost::signals2::last_value. Thanks to Sebastian Uharek for reporting bug and fix.
+- Bug fix: Revise JEGA EDDY_ASSERT macro for proper compilation on some platforms.
+- Bug fix: Test script dakota_test.perl will now report SKIP for tests disabled based on Dakota configuraiton options (such as missing TPLs). Thanks to Justin Thomas for reporting.
+- Bug fix: Presence of old, corrupted HDF5 files no longer causes Dakota to abort.
+- Bug fix: HDF5 model_selection behavior was fixed so that it is no longer necessary to specify 'all' to avoid a crash.
+- Bug fix: Specification of response gradients but no continuous variables no longer causes an HDF5-related crash.
+- Bug fix: pyprepro treats templates from stdin properly.
+- Bug fix: fixed issue from previous release with using the multifidelity_stoch_collocation method with gradient-enhanced interpolants.
+- Bug fix: fixed issue with output of uninitialized main effects for the case of Sobol' index-based adaptive p-refinement of polynomial chaos expansions, when variance-based decomposition is not specified.
+- Enh: Clang compiler compatibility misc. fixes to forward declare streaming operators and not use funny pointer to ostringstream data. Also misc. utilib-related fixes. Thanks to multiple users for reporting.
+- Enh: Use std::chrono for system-generated random seeds instead of Utilib; user-specified seed behavior is unchanged.
+- Enh: mpitile utility accepts a new argument, --tile-size, that allows mpitiling applications on a subset of a tile.
+- Enh: mpitile stops parsing command line options after seeing --, allowing users to pass options to their applications that match mpitile options.
+
+**Deprecated and Changed**
+
+- Deprecated X Graphics keywords removed from example files.
+- Migrated the Continuous Integration infrastructure for MacOS to a new Jenkins build / test server, High Sierra (10.13).
+- Tabular data imports for surrogates must have correct number of cols per row.
+- Website training materials do not reflect corrected stress equation for cantilever beam.
+- MacOS Sierra (10.12) deprecated in the Jenkins Continuous Integration build/testing scripts.
+- Migrated to a new CDashboard server for posting build / test results.
+- Enabled MacOS Mojave (10.14) as a build/test alternative for the Mac platform.
+
+**Compatibility**
+
+- HDF5 v1.10.4 or higher is required to compile Dakota with the HDF5-based method results output enabled. HDFView may be helpful in viewing the output database, and Python h5py is necessary to run tests and examples.
+- No mandatory changes to required compilers or third-party libraries. Dakota has been smoke tested on newer gcc-7.x and gcc-8.x compilers, but not fully tested.
+
+**Other Notes and Known Issues**
+
+- HDF5 output is known to be incompatible with some types of studies involving hierarchical surrogate models and interfaces specifying analysis_components.

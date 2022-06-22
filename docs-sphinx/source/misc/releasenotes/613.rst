@@ -1,5 +1,101 @@
 .. _releasenotes-613:
 
-""""""""""""""""""""""
-Version 6.13 (2020/11)
-""""""""""""""""""""""
+"""""""""""""""""""""""""
+Version 6.13 (2020/11/15)
+"""""""""""""""""""""""""
+
+**Highlight: Surrogate Models**
+
+New polynomial and Gaussian proces surrogate models notably gained save/load capability, metrics including cross-validation, and a Python interface and are more widely available in Dakota methods. Details:
+
+- Serialization together with Pybind11-based Python wrappers allow export of surrogates from Dakota for later use directly from Python.
+- New GP, including surrogate export is now available in EGO, EGRA, and global interval methods
+- New minor features: advanced options configuration via external XML file, none/reduced_quadratic trend option, GP performance improvements, verbosity control, MLE estimation history, embed variable/response labels
+
+*Enabling / Accessing:* Most surrogate features are default-enabled in Dakota, however the Python interface must be manually enabled at compile time by specifying DAKOTA_PYTHON_SURROGATES:BOOL=TRUE.
+
+*Documentation:* See Section 8.4.7 in the Dakota 6.13 User's Manual, together with reference manual documentation for global surrogate models and the methods mentioned above.
+
+*Known Limitation in 6.13:* Binary surrogate export. Exporting experimental surrogates from Dakota studies using binary_archive format will cause the surrogate to instead be exported in text_archive format. The surrogate can still be imported using text format even though it was exported as binary, but users likely should use text format for exports. This is fixed in Dakota's devel branch as of Dec 2020.
+
+**Improvements by Category**
+
+*Interfaces, Input/Output*
+
+dakota.interfacing
+
+- Enh: Results objects are now pickelable and assignable
+- Bug: Correct formatting of gradients and Hessians in results files
+- Bug: Properly handled single-evaluation batches in dakota.interfacing
+
+See User's Manual Section 10.7 for full documentation.
+
+*Others*
+
+- Bug: Restored long-absent tabular output for EGO, EGRA, and surrogate-based global methods.
+
+*Surrogate Models*
+
+- Gaussian Process Variance Export: Response variance as predicted by Gaussian process surrogate models can now be exported to a tabular file.
+
+*UQ Methods*
+
+- Functional tensor train (FTT) enhancements:
+
+  - More comprehensive options for adaptive refinement and cross validation, including use within Multilevel / Multifidelity (ML/MF) approaches:
+  
+    - Cross validation can now be used to select the most effective rank (searching in the range start_rank to max_rank using kick_rank increments), for basis order (in the range start_order to max_order using kick_order increments), or both.
+    - Candidate advancements for single- and ML/MF adaptive refinement may involve increments in start_rank or start_order (with or without cross validation) or increments in max_rank, max_order, or both (requiring cross validation to interrogate an expanded range of candidates). All cases induce a sample increment based on a collocation ratio applied to the FTT regression size. In the case of max_* advancements (which are generally preferred when cross validation is affordable), the refinement process "saturates" when the best approximation returned is less than its upper bound, which precludes additional refinement candidates for that level/fidelity. 
+
+  - Based on convergence analyses in model problems, tune/tighten default convergence controls to better achieve desired accuracy in UQ statistics.
+  - Bug: fix random seed management for multi-parameter cross-validation
+
+- ML/MF: Recursive emulation and related refinements for individual adaptation
+
+  - The recursive emulation option for ML/MF surrogate expansions relaxes the typical sample pairing requirement by forming discrepancies using the QoI difference between the current level simulation (Ql) and the previous level emulator (Q-hatl-1), instead of the difference between paired simulations Ql and Ql-1.  This can be very helpful in practice for cases with constraints on sample generation (legacy data, etc.) and for simplifying data import/export.  While this capability has existed for a few releases, it was experimental and not well tested. In this release, it has been more throughly explored and hardened, and has been shown to be competitive with paired discrepancy approaches in terms of accuracy versus aggregate cost, when configured with the individual refinement enhancements below (Note: recursive emulation is not currently supported with integrated refinement due to recursive updating requirements).
+  - To enable more direct comparison between individual and integrated (greedy) refinement strategies in ML/MF methods, workflow components have been reordered to first compute all reference expansions and then perform all individual or integrated refinements.  This is important for several of the following metric options, by providing a more complete initial reference for combined statistics and relative change metrics.
+  - To support additional options for convergence control, specifications for "metric_scale relative | absolute" and "statistics_mode active | combined" have been added.  Previously, individual refinement approaches were restricted to the "active" level statistics and based on "relative" change metrics.  Allowing for use of combined multilevel statistics in individual refinements provides the appropriate ML/MF context for these refinements, and elevates performance to be on par with fully integrated (greedy) refinement approaches. Further, to reduce overhead from multilevel statistic roll-up, the combination of an absolute metric_scale and active statistics is a high performing option when absolute accuracy requirements can be provided (the absolute scale relaxes the need for a combined reference).
+
+- Dimension reduction
+
+  - New SubspaceModel base class for computing reduced dimensional Model recastings: consolidates common operations and deploys recent architectural updates.
+  - Active subspace model: previous tests had been deactivated due to platform portability concerns, but have been restored to active status.
+  - Adapted basis model: this capability is now operational and tested for simple cases of prescribing a reduced dimension.  (Automatic detection of an effective dimension is in process.)
+
+*Architecture/Developer Features*
+
+- C++11 Updates
+
+  - Widespread use of shared_ptr, notably in letter/envelope and handle/body memory management, including in Pecos.
+  - Misc features, e.g., number to string conversions, sleep, range-based for, system_error, isfinite
+  
+- Trilinos: Dakota's included version updated to 13.0
+- Pybind11: New third-party library added in support of Python interfaces
+- (S)NOWPAC: Updated to latest version from upstream
+
+**Miscellaneous Enhancements and Bugfixes**
+
+- Enh: Dakota's CMake now uses Boost imported targets and defines more expressive Python-related options (see cmake/DakotaOptions.cmake)
+- Enh: permit regression testing using a specific Python. Note this may break install testing for some users for specific tests.
+- Bug: Keyword model_pointer_list now has proper list of string datatype
+- Bug: Properly compile select TPL Fortran as fixed format using CMake conventions, at least for CMake-supported compilers.
+- Bug: Clang 9 compiler warnings and at least 1 bug due to invalid numeric comparison
+- Bug: Correct reference docs for Poisson variable PMF, and clean up several formula formats, with thanks to Nik Antolin.
+- Bug: Correct user documentation for MUQ, with thanks to Lloyd Arrowood
+- Bug: Silence find boost CMake warning about quoted varaibles, correct Matlab-->Scilab in comments, with thanks to Tim Meehan
+- Bug: specifying discrete string with 0 partitions could seg fault or give errant results. Thanks to Nik Antolin.
+- Bug: dakota_test.perl incorrectly parsed properties in an install or packaged Dakota, causing fewer tests to run than expected.
+- Bug: dakota.sh on Darwin will now work correctly with symlinks (thanks to Reese Jones)
+
+**Deprecated and Changed**
+
+- Default initial values: Design and state variables are Now initialized to mean (or next lowest value for integers), bound, or zero for range variables and to the middle (or next-lowest) index for set variables including strings. Previous behavior did not initialize bounded variables to their mean and attempted to initialize set variables based on their mean instead of index.
+- Library Mode Interface Plugins: Plugin via raw pointer (Dakota::Interface*) is now deprecated in favor of passing via shared_ptr<Interface>
+- Known Limitation in 6.13: Binary surrogate export. Exporting experimental surrogates from Dakota studies using binary_archive format will cause the surrogate to instead be exported in text_archive format. The surrogate can still be imported using text format even though it was exported as binary, but users likely should use text format for exports. This is fixed in Dakota's devel branch as of Dec 2020.
+
+**Compatibility**
+
+- CMake: Dakota 6.13 requires CMake 3.12 or newer (3.14 or newer when linking NumPy) and makes use of newer CMake Python probes
+- Boost: Dakota 6.13 requires Boost 1.58 at minimum, with 1.69 recommended
+- Python: Test suite is compatible with Python 2 and 3
+- No other mandatory changes to required compilers or third-party libraries. Dakota has been smoke tested on newer gcc-9.x and Clang 9 compilers, and with C++14 standard, but not fully tested.

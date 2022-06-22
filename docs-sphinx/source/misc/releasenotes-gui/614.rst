@@ -34,3 +34,4 @@ Version 6.14 - Koindozer Klamber (2021/05)
 **Misc.**
 
 - *Deprecation note:* Output stream scraping has been removed from Dakota GUI
+- Using GUI surrogates interface may require judicious population of LD_LIBRARY_PATH and/or DYLD_LIBRARY_PATH, inquire on the dakota-users mailing list if you need help.

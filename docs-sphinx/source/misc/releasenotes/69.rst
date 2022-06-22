@@ -1,5 +1,61 @@
 .. _releasenotes-69:
 
-"""""""""""""""""""""
-Version 6.9 (2018/11)
-"""""""""""""""""""""
+""""""""""""""""""""""""
+Version 6.9 (2018/11/15)
+""""""""""""""""""""""""
+
+**Method Results Output**
+
+Final results from most Dakota methods such as statistics from UQ studies and best parameter values from optimizations can now be output to an HDF5 file. Dakota's HDF5 output can be conveniently read and queried using many popular languages, including Python, Perl, and Matlab, obviating the need for scraping or copying and pasting from the console output. Key features:
+
+- Most results that currently are written to the console for sampling, optimization/calibration, parameter studies, and stochastic expansions are also written to HDF5.
+- Dakota makes use of dimension scales and attributes to "document" results.
+- Metadata for the Dakota study including the full input file, run duration, Dakota version, and more, are stored as attributes at a root level.
+
+*Enabling:* The HDF5-based method results output is enabled for internal supported builds, but not downloads on the website. It must be explicitly enabled when compiling from source code (See the HDF5 Results Output section of the Options for Dakota Features page). Requires HDF5 1.10.2 or higher.
+
+*Documentation:* The Dakota HDF5 Output section of the Reference Manual provides a brief introduction to HDF5 and describes the layout of Dakota's output in detail. Example Python scripts and Jupyter notebooks are available at share/dakota/examples/hdf5.
+
+**Bayesian Calibration**
+
+*New Features and Usability Improvements*
+
+- Model evidence calculation with Monte Carlo sampling and 2nd-order local Laplace approximation (see reference manual)
+- Model discrepancy updated to treat field-valued responses in the surrogate-based discrepancy model
+- Some output options made more explicit and verbosity-controlled output improved.
+- Issue more helpful warning when QUESO is not enabled in the Dakota build.
+
+*Documentation:*  See Chapter 5.8 for Bayesian calibration and Chapter 5.8.9 for model discrepancy in the User's Manual.  See Chapter 5.5 of the Theory Manual for an example of field discrepancy construction.
+
+**Examples Library (SNL only)**
+
+(SNL only) Dakota has extablished an online examples library that is accessible through the graphical user interface and a Gitlab repository browser. The activity-based examples help users with common tasks and will be core to future publicly available tutorials and documentation. The library supports Dakota-maintained and user-contributed examples, and the ability to apply access controls as needed.
+
+*Accessing:* See `Dakota@SNL <https://dakota.sandia.gov//content/dakotasnl>`_ after logging in to the Dakota website, or browse through the GUI (SNL only).
+
+**Miscellaneous Enhancements and Bugfixes**
+
+- Python simulation interfacing module dakota.interfacing features more Pythonic iteration of Dakota objects and several bugfixes.
+- Simplified identity response map for most common mixed epistemic/aleatory UQ studies.
+- (MK TODO) ROL optimizer improvements
+- Resolved failures resulting from having COBYLA in two third-party libraries (Acro, NOWPAC).  Libraries can now be enabled together without issue.
+- Adaptive sampling method now properly respects batch selection options for distance penalty and constant liar (were being ignore before)
+- Refactored Pecos math and linear algebra utilities in support of increasing Dakota modularity.
+- Prototype modular surrogate library, with Python interface and Jupyter notebook-based examples.
+- Bug fix: Dakota + JEGA (SOGA/MOGA) optimization algorithms will now terminate when signals, e.g., CTRL-C, are raised by the user or underlying application.
+- Bug fix: Initializing JEGA (SOGA/MOGA) optimization algorithms with the flat_file option will now work with discrete variables.
+- Bug fix: Acro Coliny/SCOLib optimization methods will now work with calibration data that includes configuration variables (previously would seg fault)
+- Bug fix: For UQ methods and variable views, include uncertain discrete set of string variables in the epistemic variable view.
+- Bug fix: Post-run input will again work with freeform-formatted input data
+
+**Deprecated and Changed**
+
+- Unique identifiers in input files: Labels, e.g., those in id_method or id_variables, must be unique among blocks of each top-level type. While a method and a variables block may (perhaps unhelpfully) use the same string identifier, two methods may not. Unlabeled method blocks will now be labeled by Dakota with NO_ID, while Dakota-internally constructed ("helper") methods will be labeled NOSPEC_ID_<num>.
+- X Windows-based plotting is disabled by default.
+- No mandatory changes to required compilers or third-party libraries.
+
+**Compatibility**
+
+- HDF5 v1.10.2 or higher is required to compile Dakota with the HDF5-based method results output enabled. HDFView may be helpful in viewing the output database, and Python h5py is necessary to run tests and examples.
+- Enabling the optional prototype surrogate model library requires Python NumPy and Swig.
+- No mandatory changes to required compilers or third-party libraries.
