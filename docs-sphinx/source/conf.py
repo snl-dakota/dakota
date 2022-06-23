@@ -10,10 +10,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
-
+import os
+import sys
+sys.path.append(os.path.abspath("./_pygments"))
 
 # -- Project information -----------------------------------------------------
 
@@ -32,6 +31,8 @@ release = '6.16.0'
 # ones.
 extensions = ['myst_parser', 'sphinxcontrib.bibtex']
 
+pygments_style = 'style.dakota.DakotaStyle'
+
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown'
@@ -47,7 +48,6 @@ exclude_patterns = []
 
 # -- Options for BibTeX citation input ---------------------------------------
 bibtex_bibfiles = ['Dakota.bib']
-
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
