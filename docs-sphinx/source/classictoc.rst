@@ -35,8 +35,10 @@ set of manuals, this set of links may help you find what you're looking for...
 - Developer Portal
 
   - :ref:`Development Environment <devenvironment-main>`
-  - :ref:`Git for Version Control <setupgit-main>`
+  - :ref:`Git for Version Control <git-main>`
   - :ref:`Adding a unit test (eg for an Optimization TPL) <testingcode-main>`
+
+- :ref:`Release Notes <releasenotes-main>`
 
 **User's Manual**
 
@@ -74,16 +76,16 @@ set of manuals, this set of links may help you find what you're looking for...
 
 **Theory Manual**
 
-- :ref:`Sampling Methods <sampling-theory-main>`
-- :ref:`Reliability Methods <uq:reliability>`
-- :ref:`Stochastic Expansion Methods <uq:expansion>`
-- :ref:`Epistemic Methods <uq:epist>`
-- :ref:`Bayesian Methods <uq:bayes>`
-- :ref:`Surrogate Models <Chap:SurMod>`
-- :ref:`Surrogate-Based Local Minimization <sblm>`
-- :ref:`Efficient Global Optimization <uq:ego>`
-- :ref:`Dimension Reduction Strategies <Chap:DimRed>`
-- :ref:`Optimization Under Uncertainty (OUU) <ouu>`
+- :ref:`Chapter 1: Sampling Methods <sampling-theory-main>`
+- :ref:`Chapter 2: Reliability Methods <uq:reliability>`
+- :ref:`Chapter 3: Stochastic Expansion Methods <uq:expansion>`
+- :ref:`Chapter 4: Epistemic Methods <uq:epist>`
+- :ref:`Chapter 5: Bayesian Methods <uq:bayes>`
+- :ref:`Chapter 6: Surrogate Models <Chap:SurMod>`
+- :ref:`Chapter 7: Surrogate-Based Local Minimization <sblm>`
+- :ref:`Chapter 8: Efficient Global Optimization <uq:ego>`
+- :ref:`Chapter 9: Dimension Reduction Strategies <Chap:DimRed>`
+- :ref:`Chapter 10: Optimization Under Uncertainty (OUU) <ouu>`
 
 **Reference Manual**
 
@@ -144,4 +146,4 @@ set of manuals, this set of links may help you find what you're looking for...
 - :ref:`QOI <qoi-main>`
 - :ref:`Wizards <gui-wizards-main>`
 - :ref:`Further Help Resources <help-main>`
-- :ref:`Release Notes <gui-releasenotes-main>`
+- :ref:`Release Notes <releasenotes-gui-main>`

@@ -6,23 +6,23 @@ Version 6.7 - Doorstop Dash (2017/11)
 
 Graphical user interface supports a number of additional visualization types, an examples repository browser, and considerably improved interoperation with Dakota command-line interface.
 
-- Plotting enhancements:
+**Plotting enhancements**
 
-  - Support for log scales
-  - Ability to show multiple plot "canvases" together on a grid
-  - User-created plots are now top-level Dakota project components
+- Support for log scales
+- Ability to show multiple plot "canvases" together on a grid
+- User-created plots are now top-level Dakota project components
 
-- Integration of CLI and GUI:
+**Integration of CLI and GUI**
 	
-  - Import previously-run Dakota data (output stream, error stream, tabular data, etc) into GUI
-  - Dakota console output displayed in GUI
-  - Improved Dakota keyword support in GUI
-  - Support for path lengths longer than 260 characters on Windows
+- Import previously-run Dakota data (output stream, error stream, tabular data, etc) into GUI
+- Dakota console output displayed in GUI
+- Improved Dakota keyword support in GUI
+- Support for path lengths longer than 260 characters on Windows
 
-- Enhancements/bugfixes:
+**Enhancements/bugfixes**
   
-  - Driver script is automatically created and connected if a Dakota study is created using the wizard and a known simulation model
-  - Improved controls for determining Dakota's working directory
-  - Improved support in the GUI for shipped Dakota examples
-  - Support for renaming Dakota projects
-  - Reorganized GUI menu options
+- Driver script is automatically created and connected if a Dakota study is created using the wizard and a known simulation model
+- Improved controls for determining Dakota's working directory
+- Improved support in the GUI for shipped Dakota examples
+- Support for renaming Dakota projects
+- Reorganized GUI menu options

@@ -1,7 +1,7 @@
 .. _releasenotes-30:
 
 """"""""""""""""""""""""
-Version 3.0 (2002/30/03)
+Version 3.0 (2002/03/30)
 """"""""""""""""""""""""
 
 All Version 3.0 beta additions plus:

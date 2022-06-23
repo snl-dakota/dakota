@@ -24,6 +24,6 @@ The Dakota GUI has added many significant feature improvements over the last yea
 
   - There exists a potential application-crashing bug in the RHEL7 version of Dakota GUI that we are still investigating.  This bug occurs in the BMF model creation dialog, when you are naming variables for your model.  When you are done naming a variable, if you use the mouse to close the editor for that variable name, the GUI can potentially crash.  Instead, use the Enter key to apply your current variable name and close the editor, or the Escape key to cancel your edited variable name and close the editor.
 
-**Enabling / Accessing:**  Dakota GUI ships with Dakota and is available for Windows, Mac, and RHEL7.
+*Enabling / Accessing:*  Dakota GUI ships with Dakota and is available for Windows, Mac, and RHEL7.
 
-**Documentation:**  An enhanced version of the Dakota GUI manual now ships with the GUI, giving you easy access to a wealth of reference material for using the GUI. 
+*Documentation:*  An enhanced version of the Dakota GUI manual now ships with the GUI, giving you easy access to a wealth of reference material for using the GUI. 

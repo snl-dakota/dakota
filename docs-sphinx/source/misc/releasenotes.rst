@@ -49,6 +49,7 @@ Dakota
 Dakota GUI
 ----------
 
+.. _releasenotes-gui-main:
 
 .. toctree::
    :maxdepth: 1

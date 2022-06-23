@@ -22,7 +22,7 @@ New capabilities for model tuning enable the optimization of hyper-parameters un
 
 - New metadata response type collects auxiliary data from simulation interfaces (and induces changes in parameters and results APIs)
 - Python dakota.interfacing:
-
+ 
   - Type handling improvements
   - New "python_interface" decorator to provide seamless integration with Python direct interface
   
