@@ -14,6 +14,8 @@ import os
 import sys
 sys.path.append(os.path.abspath("./_pygments"))
 
+from lexer.dakota import DakotaLexer
+
 # -- Project information -----------------------------------------------------
 
 project = 'dakota'
@@ -31,6 +33,8 @@ release = '6.16.0'
 # ones.
 extensions = ['myst_parser', 'sphinxcontrib.bibtex']
 
+# Dakota input file syntax highlighting
+highlight_language = "dakota"
 pygments_style = 'style.dakota.DakotaStyle'
 
 source_suffix = {
