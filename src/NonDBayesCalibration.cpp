@@ -495,19 +495,19 @@ void NonDBayesCalibration::construct_mcmc_model()
       lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
     // samples in regions of higher prior density
-    auto lhs_rep = std::make_shared<NonDLHSSampling>
-      (lhs_model, sample_type, samples, randomSeed,
-       probDescDB.get_string("method.random_number_generator"));
+    auto lhs_rep = std::make_shared<NonDLHSSampling>(lhs_model, sample_type,
+      samples, randomSeed,
+      probDescDB.get_string("method.random_number_generator"));
     lhs_iterator.assign_rep(lhs_rep);
 
     ActiveSet gp_set = lhs_model.current_response().active_set(); // copy
     gp_set.request_values(mcmcDerivOrder); // for misfit Hessian
-    mcmcModel.assign_rep(std::make_shared<DataFitSurrModel>
-      (lhs_iterator, lhs_model,
-       gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
-       outputLevel, sample_reuse, import_pts_file,
-       probDescDB.get_ushort("method.import_build_format"),
-       probDescDB.get_bool("method.import_build_active_only")));
+    const ShortShortPair& gp_view = lhs_model.current_variables().view();
+    mcmcModel.assign_rep(std::make_shared<DataFitSurrModel>(lhs_iterator,
+      lhs_model, gp_set, gp_view, approx_type, approx_order, corr_type,
+      corr_order, data_order, outputLevel, sample_reuse, import_pts_file,
+      probDescDB.get_ushort("method.import_build_format"),
+      probDescDB.get_bool("method.import_build_active_only")));
     break;
   }
 

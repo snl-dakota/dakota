@@ -884,6 +884,8 @@ public:
 
   /// retreive the Variables view
   const ShortShortPair& view() const;
+  /// assign the Variables view
+  void view(const ShortShortPair& view_pr);
   /// set the active Variables view
   void active_view(short view1);
   /// set the inactive Variables view
@@ -1568,16 +1570,32 @@ inline size_t SharedVariablesData::vc_lookup(unsigned short key) const
 { return svdRep->vc_lookup(key); }
 
 
+inline void SharedVariablesData::active_view(short view1)
+{
+  if (svdRep->variablesView.first != view1) {
+    svdRep->variablesView.first = view1;
+    svdRep->initialize_active_components();
+    svdRep->initialize_active_start_counts();
+  }
+}
+
+
+inline void SharedVariablesData::inactive_view(short view2)
+{
+  if (svdRep->variablesView.second != view2) {
+    svdRep->variablesView.second = view2;
+    svdRep->initialize_inactive_components();
+    svdRep->initialize_inactive_start_counts();
+  }
+}
+
+
 inline const ShortShortPair& SharedVariablesData::view() const
 { return svdRep->variablesView; }
 
 
-inline void SharedVariablesData::active_view(short view1)
-{ svdRep->variablesView.first = view1; }
-
-
-inline void SharedVariablesData::inactive_view(short view2)
-{ svdRep->variablesView.second = view2; }
+inline void SharedVariablesData::view(const ShortShortPair& view_pr)
+{ active_view(view_pr.first); inactive_view(view_pr.second); }
 
 
 inline size_t SharedVariablesData::cv() const

@@ -1212,7 +1212,8 @@ protected:
 
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
-  Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
+  Model(LightWtBaseConstructor, const ShortShortPair& vars_view,
+	const SharedVariablesData& svd, bool share_svd,
 	const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
 	short output_level, ProblemDescDB& problem_db = dummy_db,
 	ParallelLibrary& parallel_lib = dummy_lib);

@@ -55,10 +55,10 @@ public:
   DataFitSurrModel(ProblemDescDB& problem_db);
   /// alternate constructor for instantiations on the fly
   DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
-		   const ActiveSet& set, const String& approx_type,
-		   const UShortArray& approx_order, short corr_type,
-		   short corr_order, short data_order, short output_level,
-		   const String& point_reuse,
+		   const ActiveSet& dfs_set, const ShortShortPair& dfs_view,
+		   const String& approx_type, const UShortArray& approx_order,
+		   short corr_type, short corr_order, short data_order,
+		   short output_level, const String& point_reuse,
 		   const String& import_build_points_file = String(),
 		   unsigned short import_build_format = TABULAR_ANNOTATED,
 		   bool import_build_active_only = false,

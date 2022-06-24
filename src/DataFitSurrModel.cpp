@@ -217,21 +217,21 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 DataFitSurrModel::
 DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 //const SharedVariablesData& svd,const SharedResponseData& srd,
-		 const ActiveSet& set, const String& approx_type,
-		 const UShortArray& approx_order, short corr_type,
-		 short corr_order, short data_order, short output_level,
-		 const String& point_reuse,
+		 const ActiveSet& dfs_set, const ShortShortPair& dfs_view,
+		 const String& approx_type, const UShortArray& approx_order,
+		 short corr_type, short corr_order, short data_order,
+		 short output_level, const String& point_reuse,
 		 const String& import_build_points_file,
 		 unsigned short import_build_format,
 		 bool import_build_active_only,
 		 const String& export_approx_points_file,
 		 unsigned short export_approx_format):
-  // SVD can be shared, but don't share SRD as QoI +aggregations are consumed:
+  // SVD can be shared, but don't share SRD as QoI aggregations are consumed:
   SurrogateModel(actual_model.problem_description_db(),
-		 actual_model.parallel_library(),
+		 actual_model.parallel_library(), dfs_view,
 		 actual_model.current_variables().shared_data(), true,
 		 actual_model.current_response().shared_data(), false,
-		 set, corr_type, output_level),
+		 dfs_set, corr_type, output_level),
   daceIterator(dace_iterator), actualModel(actual_model), pointsTotal(0),
   pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
   exportSurrogate(false), exportPointsFile(export_approx_points_file),
@@ -251,14 +251,14 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   surrogateType = approx_type;
 
   bool import_pts = !importPointsFile.empty(),
-    export_pts = !exportPointsFile.empty() || !exportVarianceFile.empty();
+       export_pts = !exportPointsFile.empty() || !exportVarianceFile.empty();
   if (pointReuse.empty()) // assign default
     pointReuse = (import_pts) ? "all" : "none";
 
   // copy actualModel dist (keep distinct to allow for different active views).
   // ref values for distribution params at construct time are updated at run
   // time via pull_distribution_parameters().
-  mvDist = actualModel.multivariate_distribution().copy();
+  mvDist = actualModel.multivariate_distribution().copy(); // ***
 
   // update constraint counts in userDefinedConstraints.
   userDefinedConstraints.reshape(actualModel.num_nonlinear_ineq_constraints(),
@@ -278,9 +278,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // assign the ApproximationInterface instance which manages the
   // local/multipoint/global approximation.  By instantiating with assign_rep(),
   // Interface::get_interface() does not need special logic for approximations.
-  approxInterface.assign_rep(std::make_shared<ApproximationInterface>(approx_type,
-    approx_order, actualModel.current_variables(), cache,
-    actualModel.interface_id(), numFns, data_order, outputLevel));
+  approxInterface.assign_rep(std::make_shared<ApproximationInterface>(
+    /*dfs_view,*/ approx_type, approx_order, actualModel.current_variables(), // ***
+    cache, actualModel.interface_id(), numFns, data_order, outputLevel));
 
   if (!daceIterator.is_null()) // global DACE approximations
     daceIterator.sub_iterator_flag(true);
@@ -292,7 +292,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 
   // to define derivative settings, we use incoming ASV to define requests
   // and surrogate type to determine analytic derivative support.
-  const ShortArray& asv = set.request_vector();
+  const ShortArray& asv = dfs_set.request_vector();
   size_t i, num_fns = asv.size();
   bool grad_flag = false, hess_flag = false;
   for (i=0; i<num_fns; ++i) {

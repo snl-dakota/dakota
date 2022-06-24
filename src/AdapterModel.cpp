@@ -47,8 +47,9 @@ AdapterModel(const Variables& initial_vars, const Constraints& cons,
 	     const Response& resp,
 	     void (*resp_map) (const Variables& vars, const ActiveSet& set,
 			       Response& response)):
-  Model(LightWtBaseConstructor(), initial_vars.shared_data(), true,
-	resp.shared_data(), true, resp.active_set(), SILENT_OUTPUT),
+  Model(LightWtBaseConstructor(), initial_vars.view(),
+	initial_vars.shared_data(), true, resp.shared_data(), true,
+	resp.active_set(), SILENT_OUTPUT),
   adapterModelEvalCntr(0), respMapping(resp_map)
 {
   modelType   = "adapter";

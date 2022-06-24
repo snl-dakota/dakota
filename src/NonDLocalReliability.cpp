@@ -193,8 +193,9 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     Model g_hat_x_model;  Iterator dace_iterator;
     ActiveSet dfs_set = iteratedModel.current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
+    const ShortShortPair& dfs_view = iteratedModel.current_variables().view();
     g_hat_x_model.assign_rep(std::make_shared<DataFitSurrModel>
-			     (dace_iterator, iteratedModel, dfs_set,
+			     (dace_iterator, iteratedModel, dfs_set, dfs_view,
 			      approx_type, approx_order, corr_type, corr_order,
 			      ai_data_order, outputLevel, sample_reuse));
 
@@ -226,10 +227,11 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     Iterator dace_iterator;
     ActiveSet dfs_set = g_u_model.current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
+    const ShortShortPair& dfs_view = g_u_model.current_variables().view();
     uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
-			   (dace_iterator, g_u_model, dfs_set, approx_type,
-			    approx_order, corr_type, corr_order, ai_data_order,
-			    outputLevel, sample_reuse));
+			   (dace_iterator, g_u_model, dfs_set, dfs_view,
+			    approx_type, approx_order, corr_type, corr_order,
+			    ai_data_order, outputLevel, sample_reuse));
     break;
   }
   case SUBMETHOD_NO_APPROX: { // Recast( iteratedModel )

@@ -883,7 +883,7 @@ void SharedVariablesDataRep::initialize_all_ids()
   if (relax) {
     // include relaxed discrete int/real design/uncertain/state in continuous
     num_acv += allRelaxedDiscreteInt.count() + allRelaxedDiscreteReal.count();
-    // omit relaxed discrete int/real design/uncertain/state from discrete counts
+    // omit relaxed discrete int/real design/uncertain/state from discrete
     num_adiv -= allRelaxedDiscreteInt.count();
     num_adrv -= allRelaxedDiscreteReal.count();
   }

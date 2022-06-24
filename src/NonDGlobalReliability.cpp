@@ -191,10 +191,10 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     //const Variables& curr_vars = iteratedModel.current_variables();
     ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
     gp_set.request_values(1);// no surr deriv evals, but GP may be grad-enhanced
-    g_hat_x_model.assign_rep(std::make_shared<DataFitSurrModel>
-      (dace_iterator, iteratedModel,
-       gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
-      outputLevel, sample_reuse, import_pts_file,
+    const ShortShortPair& gp_view = iteratedModel.current_variables().view();
+    g_hat_x_model.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+      iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
+      corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
        probDescDB.get_ushort("method.import_build_format"),
        probDescDB.get_bool("method.import_build_active_only"),
        probDescDB.get_string("method.export_approx_points_file"),
@@ -249,10 +249,10 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     //const Variables& g_u_vars = g_u_model.current_variables();
     ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
     gp_set.request_values(1);// no surr deriv evals, but GP may be grad-enhanced
-    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
-      (dace_iterator, g_u_model,
-       gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
-       outputLevel, sample_reuse, import_pts_file,
+    const ShortShortPair& gp_view = g_u_model.current_variables().view();
+    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+       g_u_model, gp_set, gp_view, approx_type, approx_order, corr_type,
+       corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
        probDescDB.get_ushort("method.import_build_format"),
        probDescDB.get_bool("method.import_build_active_only"),
        probDescDB.get_string("method.export_approx_points_file"),

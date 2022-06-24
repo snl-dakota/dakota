@@ -878,10 +878,11 @@ nonhierarch_numerical_solution(const RealVector& cost,
 	UShortArray approx_order; // empty
 	ActiveSet dfs_set = adapt_model.current_response().active_set();// copy
 	dfs_set.request_values(1);
-	sub_prob_model = DataFitSurrModel(dace_iterator, adapt_model, dfs_set,
-					  approx_type, approx_order, corr_type,
-					  corr_order, data_order, SILENT_OUTPUT,
-					  point_reuse);
+	const ShortShortPair& dfs_view = adapt_model.current_variables().view();
+	sub_prob_model.assign_rep(std::make_shared<DataFitSurrModel>(
+	  dace_iterator, adapt_model, dfs_set, dfs_view, approx_type,
+	  approx_order, corr_type, corr_order, data_order, SILENT_OUTPUT,
+	  point_reuse));
       }
       else
 	sub_prob_model = adapt_model;

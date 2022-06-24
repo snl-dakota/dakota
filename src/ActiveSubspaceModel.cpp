@@ -927,8 +927,9 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
     asm_model_tmp.assign_rep(std::make_shared<ActiveSubspaceModel>
 			     (subModel, ii, leftSingularVectors, QUIET_OUTPUT));
 
-    String sample_reuse = "", approx_type = "global_moving_least_squares";
-    ActiveSet surr_set = current_response().active_set(); // copy
+    String sample_reuse, approx_type = "global_moving_least_squares";
+    ActiveSet surr_set = currentResponse.active_set(); // copy
+    const ShortShortPair& surr_view = currentVariables.view();
 
     UShortArray approx_order(reducedRank, poly_degree);
     short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
@@ -936,8 +937,8 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
 
     Model cv_surr_model;
     cv_surr_model.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
-      asm_model_tmp, surr_set, approx_type, approx_order, corr_type, corr_order,
-      data_order, QUIET_OUTPUT,sample_reuse));
+      asm_model_tmp, surr_set, surr_view, approx_type, approx_order, corr_type,
+      corr_order, data_order, QUIET_OUTPUT,sample_reuse));
 
     Teuchos::BLAS<int, Real> teuchos_blas;
 
@@ -1119,15 +1120,16 @@ void ActiveSubspaceModel::build_surrogate()
     reducedRank, leftSingularVectors, QUIET_OUTPUT)); // partitioned to W1,W2
 
   String sample_reuse = "", approx_type = "global_moving_least_squares";
-  ActiveSet surr_set = current_response().active_set(); // copy
+  ActiveSet surr_set = currentResponse.active_set(); // copy
+  const ShortShortPair& surr_view = currentVariables.view();
   int poly_degree = 2; // quadratic bases
   UShortArray approx_order(reducedRank, poly_degree);
   short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
   Iterator dace_iterator;
 
   surrogateModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
-    asm_model, surr_set, approx_type, approx_order, corr_type, corr_order,
-    data_order, outputLevel, sample_reuse));
+    asm_model, surr_set, surr_view, approx_type, approx_order, corr_type,
+    corr_order, data_order, outputLevel, sample_reuse));
 
   const RealMatrix& all_vars_x = fullspaceSampler.all_samples();
   const IntResponseMap& all_responses = fullspaceSampler.all_responses();

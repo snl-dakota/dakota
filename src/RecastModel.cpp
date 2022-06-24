@@ -81,18 +81,19 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 
   // recasting of variables; only reshape if change in variable type counts
   bool copy_values = true;
+  const Variables& submodel_vars = subModel.current_variables();
   if (variablesMapping) // reshape as dictated by variable type changes
     copy_values = init_variables(vars_comps_totals, all_relax_di, all_relax_dr);
-  else if (recast_vars_view != currentVariables.view()) {
-    SharedVariablesData recast_svd(recast_vars_view, vars_comps_totals,
-				   all_relax_di, all_relax_dr);//independent svd
-    currentVariables = subModel.current_variables().copy(recast_svd);
+  else if (recast_vars_view != submodel_vars.view()) {
+    SharedVariablesData recast_svd(submodel_vars.shared_data().copy());// *** consider svd.copy(view);
+    recast_svd.view(recast_vars_view);
+    currentVariables = submodel_vars.copy(recast_svd);
     numDerivVars     = currentVariables.cv();
   }
   else {
     // variables are not mapped: deep copy of vars to allow independence, but 
     // shallow copy of svd since types/labels/ids can be kept consistent
-    currentVariables = subModel.current_variables().copy(); // shared svd
+    currentVariables = submodel_vars.copy(); // shared svd
     numDerivVars     = currentVariables.cv();
   }
 
@@ -306,8 +307,8 @@ init_variables(const SizetArray& vars_comps_totals,
     if (varsView == sm_vars.view())
       currentVariables = sm_vars.copy(true); // new independent svd
     else { // avoid building + then updating views
-      SharedVariablesData recast_svd(varsView, vars_comps_totals,
-				     all_relax_di, all_relax_dr);
+      SharedVariablesData recast_svd(sm_vars.shared_data().copy());// *** consider svd.copy(view);
+      recast_svd.view(varsView);
       currentVariables = sm_vars.copy(recast_svd);
     }
   }

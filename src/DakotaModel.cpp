@@ -106,13 +106,13 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
   prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
 {
-  // weights have length group if given; expand if fields present
-  expand_for_fields_sdv(currentResponse.shared_data(),
-			probDescDB.get_rv("responses.primary_response_fn_weights"),
-			"primary response weights", false, primaryRespFnWts);
-
   initialize_distribution(mvDist);
   initialize_distribution_parameters(mvDist);
+
+  // weights have length group if given; expand if fields present
+  expand_for_fields_sdv(currentResponse.shared_data(),
+    probDescDB.get_rv("responses.primary_response_fn_weights"),
+    "primary response weights", false, primaryRespFnWts);
 
   if (modelId.empty())
     modelId = user_auto_id();
@@ -226,9 +226,10 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
 
 
 Model::
-Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
-      const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
-      short output_level, ProblemDescDB& problem_db,
+Model(LightWtBaseConstructor, const ShortShortPair& vars_view,
+      const SharedVariablesData& svd, bool share_svd,
+      const SharedResponseData&  srd, bool share_srd,
+      const ActiveSet& set, short output_level, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
   numDerivVars(set.derivative_vector().size()),
   numFns(set.request_vector().size()), evaluationsDB(evaluation_store_db),
@@ -246,13 +247,14 @@ Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
   modelAutoGraphicsFlag(false), prevDSIView(EMPTY_VIEW),
   prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
 {
-  if (share_svd) {
+  bool same_view = (svd.view() == vars_view);
+  if (share_svd && same_view) {
     currentVariables       =   Variables(svd);
     userDefinedConstraints = Constraints(svd);
   }
-  else {
+  else { // create new svd to be shared by currentVariables/userDefinedConstr
     SharedVariablesData new_svd(svd.copy());
-    //SharedVariablesData new_svd(svd.view(), svd.components_totals()); // alt
+    if (!same_view) new_svd.view(vars_view);
     currentVariables       =   Variables(new_svd);
     userDefinedConstraints = Constraints(new_svd);
   }

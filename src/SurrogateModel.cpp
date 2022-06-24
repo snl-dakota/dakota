@@ -55,12 +55,13 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 
 SurrogateModel::
 SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+	       const ShortShortPair& surr_view,
 	       const SharedVariablesData& svd, bool share_svd,
 	       const SharedResponseData&  srd, bool share_srd,
-	       const ActiveSet& set, short corr_type, short output_level):
+	       const ActiveSet& surr_set, short corr_type, short output_level):
   // Allow DFSModel to employ sizing differences (e.g., consuming aggregations)
-  Model(LightWtBaseConstructor(), svd, share_svd, srd, share_srd, set,
-	output_level, problem_db, parallel_lib),
+  Model(LightWtBaseConstructor(), surr_view, svd, share_svd, srd, share_srd,
+	surr_set, output_level, problem_db, parallel_lib),
   corrType(corr_type), surrModelEvalCntr(0), approxBuilds(0)
 {
   modelType = "surrogate";

@@ -178,9 +178,10 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   //const Variables& curr_vars = iteratedModel.current_variables();
   ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
   gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
+  const ShortShortPair& gp_view = iteratedModel.current_variables().view();
   fHatModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
-    iteratedModel, gp_set, approx_type, approx_order, corr_type, corr_order,
-    dataOrder, outputLevel, sample_reuse, import_build_points_file,
+    iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
+    corr_order, dataOrder, outputLevel, sample_reuse, import_build_points_file,
     import_build_format, import_build_active_only, export_approx_points_file,
     export_approx_format));
 
