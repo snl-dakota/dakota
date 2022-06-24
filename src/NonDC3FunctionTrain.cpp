@@ -69,8 +69,9 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, u_space_type)); // retain dist bnds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type, iteratedModel.current_variables().view()));
+    // retain dist bnds
 
   // -------------------------
   // Construct u_space_sampler

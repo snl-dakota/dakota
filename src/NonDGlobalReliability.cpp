@@ -209,23 +209,24 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     }
 
     // Recast g-hat(x) to G-hat(u); truncate dist bnds
-    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>
-			   (g_hat_x_model, STD_NORMAL_U, true, 5.));
+    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
+      g_hat_x_model, STD_NORMAL_U, g_hat_x_model.current_variables().view(),
+      true, 5.));
   }
   else { // DataFit( Recast( iteratedModel ) )
 
     // Recast g(x) to G(u); truncate dist bnds
     Model g_u_model;
-    g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-			 (iteratedModel, STD_NORMAL_U, true, 5.));
+    g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+      iteratedModel, STD_NORMAL_U, iteratedModel.current_variables().view(),
+      true, 5.));
 
     // For additional generality, could develop on the fly envelope ctor:
     //Iterator dace_iterator(g_u_model, dace_method, ...);
 
     // The following use on-the-fly derived ctors:
-    auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>
-      (g_u_model, sample_type,
-       samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
+    auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>(g_u_model,
+      sample_type, samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
     //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
     //lhs_sampler_rep = new DDACEDesignCompExp(g_u_model, samples, symbols,
     //                                         lhs_seed, dace_method);

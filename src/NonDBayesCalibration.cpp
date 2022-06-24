@@ -321,9 +321,9 @@ void NonDBayesCalibration::construct_mcmc_model()
 
 	// Imported surrogate will include state config vars for now.
 	// TO DO: expand this override to non-imported cases.
-	short dfs_view = MIXED_ALL;
+	ShortShortPair approx_view(MIXED_ALL, EMPTY_VIEW);
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
-	  exp_import_file, u_space_type, dfs_view);
+	  exp_import_file, u_space_type, approx_view);
       }
       else if (ssg_level != USHRT_MAX) { // PCE sparse grid
 	short exp_coeff_approach = (refine_cntl) ?
@@ -481,7 +481,7 @@ void NonDBayesCalibration::construct_mcmc_model()
       = probDescDB.get_string("method.import_build_points_file");
     if (!import_pts_file.empty())
       { samples = 0; sample_reuse = "all"; }
-     
+
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
     Iterator lhs_iterator; Model lhs_model;
     // NKM requires finite bounds for scaling and init of correlation lengths.
@@ -489,8 +489,9 @@ void NonDBayesCalibration::construct_mcmc_model()
     // these purposes, but +/-3 sigma has little to no effect in current tests.
     bool truncate_bnds = (emulatorType == KRIGING_EMULATOR);
     if (standardizedSpace)
-      lhs_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-			   (inbound_model, ASKEY_U, truncate_bnds)); //, 3.)
+      lhs_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+	inbound_model, ASKEY_U, inbound_model.current_variables().view(),
+	truncate_bnds)); //, 3.)
     else
       lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
@@ -519,8 +520,8 @@ void NonDBayesCalibration::construct_mcmc_model()
     // STD_NORMAL space, this is managed by ProbabilityTransformModel::
     // verify_correlation_support() on a variable-by-variable basis.
     if (standardizedSpace)
-      mcmcModel.assign_rep(std::make_shared<ProbabilityTransformModel>
-			   (inbound_model, ASKEY_U));
+      mcmcModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
+	inbound_model, ASKEY_U, inbound_model.current_variables().view()));
     else
       mcmcModel = inbound_model; // shared rep
 

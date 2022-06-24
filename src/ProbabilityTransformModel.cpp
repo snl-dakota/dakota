@@ -30,7 +30,7 @@ ProbabilityTransformModel* ProbabilityTransformModel::ptmInstance(NULL);
 
 ProbabilityTransformModel::
 ProbabilityTransformModel(const Model& x_model, short u_space_type,
-			//const ShortShortPair& recast_vars_view,
+			  const ShortShortPair& recast_vars_view,
 			  bool truncate_bnds, Real bnd) :
   RecastModel(x_model), distParamDerivs(NO_DERIVS),
   truncatedBounds(truncate_bnds), boundVal(bnd)

@@ -51,8 +51,9 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, u_space_type)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type, iteratedModel.current_variables().view()));
+    // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -147,8 +148,9 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, u_space_type)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type, iteratedModel.current_variables().view()));
+    // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler

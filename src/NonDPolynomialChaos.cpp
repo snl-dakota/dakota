@@ -81,8 +81,9 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, uSpaceType)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType, iteratedModel.current_variables().view()));
+    // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -180,8 +181,9 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, uSpaceType)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType, iteratedModel.current_variables().view()));
+    // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -261,8 +263,9 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, uSpaceType)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType, iteratedModel.current_variables().view()));
+    // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -306,7 +309,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     that import the PCE coefficients rather than compute them. */
 NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, const String& exp_import_file,
-		    short u_space_type, short approx_view):
+		    short u_space_type, const ShortShortPair& approx_view):
   NonDExpansion(POLYNOMIAL_CHAOS, model, -1, RealVector(), 0,
 		Pecos::NO_REFINEMENT, Pecos::NO_CONTROL, DEFAULT_COVARIANCE,
 		0., Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
@@ -700,8 +703,9 @@ bool NonDPolynomialChaos::resize()
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, uSpaceType)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType, iteratedModel.current_variables().view()));
+    // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
