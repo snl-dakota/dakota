@@ -84,18 +84,20 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   const Variables& submodel_vars = subModel.current_variables();
   if (variablesMapping) // reshape as dictated by variable type changes
     copy_values = init_variables(vars_comps_totals, all_relax_di, all_relax_dr);
-  else if (recast_vars_view != submodel_vars.view()) {
-    SharedVariablesData recast_svd(submodel_vars.shared_data().copy());// *** consider svd.copy(view);
-    recast_svd.view(recast_vars_view);
-    currentVariables = submodel_vars.copy(recast_svd);
-    numDerivVars     = currentVariables.cv();
-  }
-  else {
+  else if (recast_vars_view == submodel_vars.view()) {
     // variables are not mapped: deep copy of vars to allow independence, but 
     // shallow copy of svd since types/labels/ids can be kept consistent
     currentVariables = submodel_vars.copy(); // shared svd
     numDerivVars     = currentVariables.cv();
   }
+  else {
+    const SharedVariablesData& submodel_svd = submodel_vars.shared_data();
+    SharedVariablesData recast_svd(submodel_svd.copy(recast_vars_view));
+    currentVariables = submodel_vars.copy(recast_svd);
+    numDerivVars     = currentVariables.cv();
+  }
+
+  init_distribution(copy_values);
 
   init_constraints(secondaryRespMapIndices.size(), recast_secondary_offset,
 		   copy_values);
@@ -206,8 +208,8 @@ init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
   init_constraints(num_recast_secondary_fns, recast_secondary_offset,
 		   copy_values);
 
-  // Currently this reshape is subspace-specific and handled in derived classes
-  //init_distribution(rv_types, vars_comps_totals); // reshape mvDist
+  // mapped cases must be handled in derived classes
+  init_distribution(copy_values);
 
   // recasting of response and constraints
   init_response(num_recast_primary_fns, num_recast_secondary_fns, 
@@ -307,8 +309,7 @@ init_variables(const SizetArray& vars_comps_totals,
     if (varsView == sm_vars.view())
       currentVariables = sm_vars.copy(true); // new independent svd
     else { // avoid building + then updating views
-      SharedVariablesData recast_svd(sm_vars.shared_data().copy());// *** consider svd.copy(view);
-      recast_svd.view(varsView);
+      SharedVariablesData recast_svd(sm_svd.copy(varsView));
       currentVariables = sm_vars.copy(recast_svd);
     }
   }
@@ -323,6 +324,31 @@ init_variables(const SizetArray& vars_comps_totals,
   numDerivVars = currentVariables.cv();
 
   return copy_values;
+}
+
+
+void RecastModel::init_distribution(bool copy_values)
+{
+  // check change in character first as mapping may not yet be present...
+  if (copy_values) {
+    // variables are mapped but not resized: deep copies of both vars and
+    // incoming svd, since types may change in transformed space
+    const Variables& sm_vars = subModel.current_variables();
+    if (varsView == sm_vars.view()) {
+      // Share rep rather than copy data
+      // > tramples an mvDist construction from Model(BaseConstructor) ....
+      // > populates mvDist for Model(LightWtBaseConstructor)
+      // Note: becomes less important w/broader use of ProbabilityTransformModel
+      mvDist = subModel.multivariate_distribution(); // shared rep
+    }
+    else {
+      // update MarginalsCorrDistribution::activeVars for change in view
+      // (activeCorr fixed by RV type)
+      mvDist = subModel.multivariate_distribution().copy();
+      initialize_active_types(mvDist);
+    }
+  }
+  // else rely on default mvDist instantiation (no data)
 }
 
 
@@ -852,15 +878,12 @@ bool RecastModel::update_variables_from_model(Model& model)
     //update_variable_labels(model);
 
     // uncertain variable distribution data
-    // > deep copies were used previously for Pecos::DistributionParams
-    //mvDist.update(model.multivariate_distribution());
-    // Current approach: rep is shared
-    // > tramples an mvDist construction from Model(BaseConstructor) ....
-    // > populates mvDist for Model(LightWtBaseConstructor)
-    // > reassignments protected by smart ptr management
-    // Note: becomes less important w/ broader use of ProbabilityTransformModel
-    mvDist = subModel.multivariate_distribution(); // shared rep
-    // *** TO DO: update set of active_rv's if view has changed
+    const Pecos::MultivariateDistribution& sm_mvd
+      = model.multivariate_distribution();
+    if (mvDist.multivar_dist_rep() != sm_mvd.multivar_dist_rep())
+      // Note: deep copies were used previously for Pecos::DistributionParams
+      mvDist.pull_distribution_parameters(sm_mvd);
+    //else rep is shared (no pull required)
 
     update_linear_constraints(model);
   }

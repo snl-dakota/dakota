@@ -153,6 +153,10 @@ private:
   size_t drv_index_to_all_index(size_t drv_index,
 				bool ddv, bool dauv, bool deuv, bool dsv) const;
 
+  /// create a BitArray indicating the active subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray active_to_all_mask(bool cdv,  bool ddv,  bool cauv, bool dauv,
+			      bool ceuv, bool deuv, bool  csv, bool dsv) const;
   /// create a BitArray indicating the active continuous subset of all
   /// {continuous,discrete {int,string,real}} variables
   BitArray cv_to_all_mask(bool cdv, bool cauv, bool ceuv, bool csv) const;
@@ -190,8 +194,10 @@ private:
   /// retrieve the count within variablesComponents corresponding to key
   size_t vc_lookup(unsigned short key) const;
 
-  /// copy the data from svd_rep to the current representation
-  void copy_rep(SharedVariablesDataRep* svd_rep);
+  /// copy the core data from svd_rep to the current representation
+  void copy_rep_data(SharedVariablesDataRep* svd_rep);
+  /// copy the active/inactive view from svd_rep to the current representation
+  void copy_rep_view(SharedVariablesDataRep* svd_rep);
 
   /// serialize the core shared variables data
   template<class Archive>
@@ -570,8 +576,12 @@ public:
   //- Heading: member functions
   //
 
-  /// create a deep copy of the current object and return by value
+  /// create a deep copy of the current object, copy both core and view data,
+  /// and return by value
   SharedVariablesData copy() const;
+  /// create a deep copy of the current object, copy its core data,
+  /// update the view, and return by value
+  SharedVariablesData copy(const ShortShortPair& view) const;
 
   /// compute all variables sums from
   /// SharedVariablesDataRep::variablesCompsTotals and
@@ -695,6 +705,9 @@ public:
   /// variables to index within all discrete real variables
   size_t cdrv_index_to_adrv_index(size_t drv_index) const;
 
+  /// create a BitArray indicating the active subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray active_to_all_mask() const;
   /// create a BitArray indicating the active continuous subset of all
   /// {continuous,discrete {int,string,real}} variables
   BitArray cv_to_all_mask() const;
@@ -885,11 +898,11 @@ public:
   /// retreive the Variables view
   const ShortShortPair& view() const;
   /// assign the Variables view
-  void view(const ShortShortPair& view_pr);
+  void view(const ShortShortPair& view_pr) const;
   /// set the active Variables view
-  void active_view(short view1);
+  void active_view(short view1) const;
   /// set the inactive Variables view
-  void inactive_view(short view2);
+  void inactive_view(short view2) const;
 
   size_t cv()         const; ///< get number of active continuous vars
   size_t cv_start()   const; ///< get start index of active continuous vars
@@ -1189,6 +1202,14 @@ cdrv_index_to_all_index(size_t cdrv_index) const
 inline size_t SharedVariablesData::
 adrv_index_to_all_index(size_t adrv_index) const
 { return svdRep->drv_index_to_all_index(adrv_index, true, true, true, true); }
+
+
+inline BitArray SharedVariablesData::active_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->active_to_all_mask(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+}
 
 
 inline BitArray SharedVariablesData::cv_to_all_mask() const
@@ -1570,7 +1591,7 @@ inline size_t SharedVariablesData::vc_lookup(unsigned short key) const
 { return svdRep->vc_lookup(key); }
 
 
-inline void SharedVariablesData::active_view(short view1)
+inline void SharedVariablesData::active_view(short view1) const
 {
   if (svdRep->variablesView.first != view1) {
     svdRep->variablesView.first = view1;
@@ -1580,7 +1601,7 @@ inline void SharedVariablesData::active_view(short view1)
 }
 
 
-inline void SharedVariablesData::inactive_view(short view2)
+inline void SharedVariablesData::inactive_view(short view2) const
 {
   if (svdRep->variablesView.second != view2) {
     svdRep->variablesView.second = view2;
@@ -1594,7 +1615,7 @@ inline const ShortShortPair& SharedVariablesData::view() const
 { return svdRep->variablesView; }
 
 
-inline void SharedVariablesData::view(const ShortShortPair& view_pr)
+inline void SharedVariablesData::view(const ShortShortPair& view_pr) const
 { active_view(view_pr.first); inactive_view(view_pr.second); }
 
 

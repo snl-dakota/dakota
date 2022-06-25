@@ -1266,6 +1266,8 @@ protected:
   /// initialize distribution types from problemDescDB
   void initialize_distribution(
     Pecos::MultivariateDistribution& mv_dist, bool active_only = false);
+  /// initialize distribution types from problemDescDB
+  void initialize_active_types(Pecos::MultivariateDistribution& mv_dist);
   /// initialize distribution parameters from problemDescDB
   void initialize_distribution_parameters(
     Pecos::MultivariateDistribution& mv_dist, bool active_only = false);

@@ -699,6 +699,20 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
 }
 
 
+/** Build random variable distribution types and active subset.  This
+    function is used when the Model variables are in x-space. */
+void Model::
+initialize_active_types(Pecos::MultivariateDistribution& mv_dist)
+{
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
+
+  mvd_rep->initialize_active_variables(
+    currentVariables.shared_data().active_to_all_mask());
+}
+
+
 void Model::
 initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
 				   bool active_only)

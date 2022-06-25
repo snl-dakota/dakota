@@ -259,7 +259,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // copy actualModel dist (keep distinct to allow for different active views).
   // ref values for distribution params at construct time are updated at run
   // time via pull_distribution_parameters().
-  mvDist = actualModel.multivariate_distribution().copy(); // ***
+  mvDist = actualModel.multivariate_distribution().copy();
+  if (dfs_view != actualModel.current_variables().view())
+    initialize_active_types(mvDist);
 
   // update constraint counts in userDefinedConstraints.
   userDefinedConstraints.reshape(actualModel.num_nonlinear_ineq_constraints(),

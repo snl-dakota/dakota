@@ -463,19 +463,19 @@ protected:
   bool init_variables(const SizetArray& vars_comps_totals,
 		      const BitArray& all_relax_di, 
 		      const BitArray& all_relax_dr);
+  /// initialize userDefinedConstraints from the passed size info
+  void init_constraints(size_t num_recast_secondary_fns,
+			size_t recast_secondary_offset, bool copy_values);
+  /// initialize mvDist from SharedVariablesData
+  void init_distribution(bool copy_values);
   /// initialize currentResponse from the passed size info
   void init_response(size_t num_recast_primary_fns, 
 		     size_t num_recast_secondary_fns, 
 		     short recast_resp_order);
-
   /// Reshape the RecastModel Response, assuming no change in variables
   /// or derivative information
   void reshape_response(size_t num_recast_primary_fns, 
 			size_t num_recast_secondary_fns);
-
-  /// initialize userDefinedConstraints from the passed size info
-  void init_constraints(size_t num_recast_secondary_fns,
-			size_t recast_secondary_offset, bool copy_values);
 
   /// update current variables/bounds/labels/constraints from subModel
   void update_from_model(Model& model);

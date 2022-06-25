@@ -70,7 +70,7 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
 	     svd.all_relaxed_discrete_real(), numFns, 0, 0, recast_resp_order);
   // initialize invariant portions of probability transform within mvDist
   // (requires currentVariables)
-  initialize_transformation(u_space_type);
+  initialize_transformation(u_space_type); // ***
   // initialize Variables/Response/ActiveSet recastings (requires mvDist)
   init_maps(vars_map, nonlinear_variables_mapping(x_dist, mvDist),
 	    vars_u_to_x_mapping, set_u_to_x_mapping, primary_resp_map,
@@ -90,9 +90,9 @@ ProbabilityTransformModel::~ProbabilityTransformModel()
 
 void ProbabilityTransformModel::initialize_dakota_variable_types()
 {
-  // Note: ctor has called initialize_distribution_
-  // {transformation,types,correlations}().  Defining the transformation is
-  // deferred until Model::initialize_mapping() to allow for problem resizing.
+  // Note: ctor has called initialize_distribution_{transformation,types,
+  // correlations}().  Defining the transformation is deferred until
+  // Model::initialize_mapping() to allow for problem resizing.
 
   const SharedVariablesData& x_svd = subModel.current_variables().shared_data();
   bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
