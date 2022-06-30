@@ -836,202 +836,124 @@ Moment statistics for each response function:
    0.0000000000e+00                     -5.8667482255e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                     -5.8482168904e-01
+   0.0000000000e+00                     -5.8444427398e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                     -5.8482168904e-01
+   0.0000000000e+00                     -5.8441199795e-01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.4336690766e+02  7.1054273576e-15
- response_fn_2  5.0515345667e-01  1.3390418488e-01
+ response_fn_1  2.4349230633e+02  7.1054273576e-15
+ response_fn_2  5.0552389059e-01  1.3379375068e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      3.7724993967e+00
+   0.0000000000e+00                      3.7783819349e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      3.7619645988e+00
+   0.0000000000e+00                      3.7631767704e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      3.7619645988e+00
+   0.0000000000e+00                      3.7629780482e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0017428529e+02  7.1054273576e-15
- response_fn_2  3.8475772203e-01  1.7543608654e-01
+ response_fn_1  1.9972180749e+02  7.1054273576e-15
+ response_fn_2  3.8360975494e-01  1.7592101290e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.1931503924e+00
+   0.0000000000e+00                      2.1805795034e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.1853640526e+00
+   0.0000000000e+00                      2.1709267513e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.1853640526e+00
+   0.0000000000e+00                      2.1707943179e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0147187607e+02  0.0000000000e+00
- response_fn_2  4.1521976968e-01  1.6893424769e-01
+ response_fn_1  2.0167307334e+02  0.0000000000e+00
+ response_fn_2  4.1606622892e-01  1.6865725455e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.4578779932e+00
+   0.0000000000e+00                      2.4669334860e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.4487097635e+00
+   0.0000000000e+00                      2.4577379779e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.4487097635e+00
+   0.0000000000e+00                      2.4577379779e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261523201e+02  7.1054273576e-15
- response_fn_2  4.2000070834e-01  1.6737045525e-01
+ response_fn_1  2.0261462487e+02  7.1054273576e-15
+ response_fn_2  4.1999818834e-01  1.6737127906e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5094076951e+00
+   0.0000000000e+00                      2.5093802874e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000847456e+00
+   0.0000000000e+00                      2.4981411531e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000847456e+00
+   0.0000000000e+00                      2.4979851119e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261334909e+02  7.1054273576e-15
- response_fn_2  4.1999289299e-01  1.6737301015e-01
+ response_fn_1  2.0173209973e+02  7.1054273576e-15
+ response_fn_2  4.1631413959e-01  1.6857613912e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5093226955e+00
+   0.0000000000e+00                      2.4695911401e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000000002e+00
+   0.0000000000e+00                      2.4585148266e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000000002e+00
+   0.0000000000e+00                      2.4583609696e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261429055e+02  7.1054273576e-15
- response_fn_2  4.1999680069e-01  1.6737173269e-01
+ response_fn_1  2.0167329948e+02  7.1054273576e-15
+ response_fn_2  4.1606717905e-01  1.6865694366e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5093651953e+00
+   0.0000000000e+00                      2.4669436669e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000423729e+00
+   0.0000000000e+00                      2.4558781987e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000423729e+00
+   0.0000000000e+00                      2.4557244873e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261476128e+02  7.1054273576e-15
- response_fn_2  4.1999875452e-01  1.6737109397e-01
+ response_fn_1  2.0167307334e+02  7.1054273576e-15
+ response_fn_2  4.1606622892e-01  1.6865725455e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5093864452e+00
+   0.0000000000e+00                      2.4669334861e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000635592e+00
+   0.0000000000e+00                      2.4558680596e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000635592e+00
+   0.0000000000e+00                      2.4557143488e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261499665e+02  7.1054273576e-15
- response_fn_2  4.1999973143e-01  1.6737077461e-01
+ response_fn_1  2.0167307334e+02  7.1054273576e-15
+ response_fn_2  4.1606622892e-01  1.6865725455e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5093970701e+00
+   0.0000000000e+00                      2.4669334861e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000741524e+00
+   0.0000000000e+00                      2.4558680596e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000741524e+00
-Moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261511433e+02  0.0000000000e+00
- response_fn_2  4.2000021988e-01  1.6737061493e-01
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5094023826e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000794490e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000794490e+00
-Moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261517317e+02  7.1054273576e-15
- response_fn_2  4.2000046411e-01  1.6737053509e-01
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5094050389e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000820973e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000820973e+00
-Moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261520259e+02  7.1054273576e-15
- response_fn_2  4.2000058622e-01  1.6737049517e-01
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5094063670e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000834215e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000834215e+00
-Moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261521730e+02  7.1054273576e-15
- response_fn_2  4.2000064728e-01  1.6737047521e-01
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5094070310e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000840835e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000840835e+00
-Moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261522466e+02  0.0000000000e+00
- response_fn_2  4.2000067781e-01  1.6737046523e-01
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5094073631e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000844146e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000844146e+00
-Moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.0261522833e+02  0.0000000000e+00
- response_fn_2  4.2000069307e-01  1.6737046024e-01
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5094075291e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000845801e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      2.5000845801e+00
-<<<<< Function evaluation summary (UQ_I): 540 total (540 new, 0 duplicate)
-  response_fn_1: 540 val (540 n, 0 d), 540 grad (540 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 540 val (540 n, 0 d), 540 grad (540 n, 0 d), 0 Hess (0 n, 0 d)
+   0.0000000000e+00                      2.4557143488e+00
+<<<<< Function evaluation summary (UQ_I): 324 total (324 new, 0 duplicate)
+  response_fn_1: 324 val (324 n, 0 d), 324 grad (324 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 324 val (324 n, 0 d), 324 grad (324 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      8.1046092804e+00 b
+                      8.0669229338e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.0261523201e+02
+                      2.0167307334e+02
 <<<<< Best constraint values   =
-                      2.5000847456e+00
+                      2.4577379779e+00
 <<<<< Best evaluation ID not available
 Test Number 5 succeeded
 Moment statistics for each response function:
