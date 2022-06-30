@@ -175,9 +175,9 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   }
   // size approxInterface based on currentResponse, which is constructed from
   // DB response spec, since actualModel could contain response aggregations
-  approxInterface.assign_rep(std::make_shared<ApproximationInterface>
-			     (problem_db, vars, cache, am_interface_id,
-			      currentResponse.function_labels()));
+  approxInterface.assign_rep(std::make_shared<ApproximationInterface>(
+    problem_db, vars, cache, am_interface_id,
+    currentResponse.function_labels()));
 
   // initialize the basis, if needed
   if (basis_expansion)
@@ -441,6 +441,7 @@ void DataFitSurrModel::update_model(Model& model)
 {
   if (model.is_null()) return;
   update_model_active_variables(model);
+  update_model_active_constraints(model);
   update_model_distributions(model);
 }
 
@@ -1636,10 +1637,11 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     //component_parallel_mode(SURROGATE_MODEL_MODE); // does not use parallelism
     //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     //parallelLib.parallel_configuration_iterator(modelPCIter);
-    if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
+    if (interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
-          approxInterface.interface_id(), "approximation", currentVariables, currentResponse,
-          default_interface_active_set(), approxInterface.analysis_components());
+        approxInterface.interface_id(), "approximation", currentVariables,
+	currentResponse, default_interface_active_set(),
+	approxInterface.analysis_components());
     
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
@@ -1647,22 +1649,26 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       approx_set.request_vector(approx_asv);
       approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
       approxInterface.map(currentVariables, approx_set, approx_response);
-      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
-        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
-          approxInterface.evaluation_id(), approx_set, currentVariables);
-        evaluationsDB.store_interface_response(modelId, approxInterface.interface_id(),
-          approxInterface.evaluation_id(), approx_response);
+      if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+        evaluationsDB.store_interface_variables(modelId,
+	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approx_set, currentVariables);
+        evaluationsDB.store_interface_response(modelId,
+	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approx_response);
       }
       break;
     }
     case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       approx_response = currentResponse.copy(); // TO DO
       approxInterface.map(currentVariables, set, approx_response);
-      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
-        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
-          approxInterface.evaluation_id(), set, currentVariables);
-        evaluationsDB.store_interface_response(modelId, approxInterface.interface_id(),
-          approxInterface.evaluation_id(), approx_response);
+      if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+        evaluationsDB.store_interface_variables(modelId,
+	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  set, currentVariables);
+        evaluationsDB.store_interface_response(modelId,
+	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approx_response);
       }
       break;
     }
@@ -1772,11 +1778,10 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       break;
     }
 
-    if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
+    if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
       evaluationsDB.interface_allocate(modelId, approxInterface.interface_id(),
-                                       "approximation", currentVariables, currentResponse, 
-                                       default_interface_active_set(), 
-                                       approxInterface.analysis_components());
+        "approximation", currentVariables, currentResponse,
+	default_interface_active_set(), approxInterface.analysis_components());
 
     // compute the approximate response
     // don't need to set component parallel mode since this only queues the job
@@ -1785,16 +1790,18 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       ActiveSet approx_set = set;
       approx_set.request_vector(approx_asv);
       approxInterface.map(currentVariables, approx_set, currentResponse, true);
-      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
-        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
-          approxInterface.evaluation_id(), approx_set, currentVariables);
+      if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        evaluationsDB.store_interface_variables(modelId,
+	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approx_set, currentVariables);
       break;
     }
     case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       approxInterface.map(currentVariables,        set, currentResponse, true);
       if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
-        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
-          approxInterface.evaluation_id(), set, currentVariables);
+        evaluationsDB.store_interface_variables(modelId,
+	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  set, currentVariables);
       break;
     }
 

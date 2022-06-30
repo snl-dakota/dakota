@@ -147,8 +147,8 @@ protected:
   /// per set of evaluations (e.g., an outer iterator execution)
   void init_model_inactive_labels(Model& model);
 
-  /// update model with active variable values/bounds data
-  void update_model_active_variables(Model& model);
+  /// update incoming (sub-)model with active bounds from userDefinedConstraints
+  void update_model_active_constraints(Model& model);
   /// update model with random variable distribution data
   void update_model_distributions(Model& model);
 

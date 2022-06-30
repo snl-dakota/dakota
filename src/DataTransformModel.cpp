@@ -135,7 +135,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
     (numHyperparams > 0) ? vars_mapping : NULL;
   void (*set_map)  (const Variables&, const ActiveSet&, ActiveSet&) = 
     (numHyperparams > 0) ? set_mapping : NULL;
-  void (*primary_resp_map) (const Variables&, const Variables&, const Response&, 
+  void (*primary_resp_map) (const Variables&, const Variables&, const Response&,
 			    Response&) = primary_resp_differencer;
   void (*secondary_resp_map) (const Variables&, const Variables&,
 			      const Response&, Response&) = NULL;

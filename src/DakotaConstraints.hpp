@@ -81,6 +81,19 @@ public:
   //- Heading: Member functions
   //
 
+  /// copy active {cv,div,drv} {lower,upper} bounds from incoming object
+  void active_bounds(const Constraints& cons);
+  /// copy all {cv,div,drv} {lower,upper} bounds from incoming object
+  void all_bounds(const Constraints& cons);
+  /// copy active {cv,div,drv} {lower,upper} bounds from incoming object
+  /// to all bounds of this instance
+  void active_to_all_bounds(const Constraints& cons);
+  /// copy all {cv,div,drv} {lower,upper} bounds from incoming object
+  /// to active bounds of this instance
+  void all_to_active_bounds(const Constraints& cons);
+  /// copy inactive {cv,div,drv} {lower,upper} bounds from incoming object
+  void inactive_bounds(const Constraints& cons);
+
   // ACTIVE VARIABLES
 
   /// return the active continuous variable lower bounds
@@ -279,6 +292,11 @@ public:
   void active_view(short view2);
   /// sets the inactive view based on higher level context
   void inactive_view(short view2);
+
+  /// return sharedVarsData
+  const SharedVariablesData& shared_data() const;
+  /// return sharedVarsData
+  SharedVariablesData& shared_data();
 
   /// function to check constraintsRep (does this envelope contain a letter)
   bool is_null() const;
@@ -830,6 +848,131 @@ inline void Constraints::all_discrete_real_upper_bound(Real adru_bnd, size_t i)
 }
 
 
+inline void Constraints::active_bounds(const Constraints& cons)
+{
+  if (constraintsRep)
+    constraintsRep->active_bounds(cons);
+  else {
+    const SharedVariablesData& source_svd = cons.shared_data();
+    if (source_svd.cv()  != sharedVarsData.cv()  ||
+	source_svd.div() != sharedVarsData.div() ||
+	source_svd.drv() != sharedVarsData.drv()) {
+      Cerr << "Error: inconsistent counts in Constraints::active_bounds()."
+	   << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+    continuous_lower_bounds(cons.continuous_lower_bounds());
+    continuous_upper_bounds(cons.continuous_upper_bounds());
+    discrete_int_lower_bounds(cons.discrete_int_lower_bounds());
+    discrete_int_upper_bounds(cons.discrete_int_upper_bounds());
+    // no bounds for discrete string vars
+    discrete_real_lower_bounds(cons.discrete_real_lower_bounds());
+    discrete_real_upper_bounds(cons.discrete_real_upper_bounds());
+  }
+}
+
+
+inline void Constraints::all_bounds(const Constraints& cons) 
+{
+  // Set all variables
+  if (constraintsRep)
+    constraintsRep->all_bounds(cons);
+  else {
+    const SharedVariablesData& source_svd = cons.shared_data();
+    if (source_svd.acv()  != sharedVarsData.acv()  ||
+	source_svd.adiv() != sharedVarsData.adiv() ||
+	source_svd.adrv() != sharedVarsData.adrv()) {
+      Cerr << "Error: inconsistent counts in Constraints::all_bounds()."
+	   << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+    all_continuous_lower_bounds(cons.all_continuous_lower_bounds());
+    all_continuous_upper_bounds(cons.all_continuous_upper_bounds());
+    all_discrete_int_lower_bounds(cons.all_discrete_int_lower_bounds());
+    all_discrete_int_upper_bounds(cons.all_discrete_int_upper_bounds());
+    // no bounds for discrete string vars
+    all_discrete_real_lower_bounds(cons.all_discrete_real_lower_bounds());
+    all_discrete_real_upper_bounds(cons.all_discrete_real_upper_bounds());
+  }
+}
+
+
+inline void Constraints::active_to_all_bounds(const Constraints& cons)
+{
+  if (constraintsRep)
+    constraintsRep->active_to_all_bounds(cons);
+  else {
+    const SharedVariablesData& source_svd = cons.shared_data();
+    if (source_svd.cv()  != sharedVarsData.acv()  ||
+	source_svd.div() != sharedVarsData.adiv() ||
+	source_svd.drv() != sharedVarsData.adrv()) {
+      Cerr << "Error: inconsistent counts in Constraints::"
+	   << "active_to_all_bounds()." << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+    all_continuous_lower_bounds(cons.continuous_lower_bounds());
+    all_continuous_upper_bounds(cons.continuous_upper_bounds());
+    all_discrete_int_lower_bounds(cons.discrete_int_lower_bounds());
+    all_discrete_int_upper_bounds(cons.discrete_int_upper_bounds());
+    // no bounds for discrete string vars
+    all_discrete_real_lower_bounds(cons.discrete_real_lower_bounds());
+    all_discrete_real_upper_bounds(cons.discrete_real_upper_bounds());
+  }
+}
+
+
+inline void Constraints::all_to_active_bounds(const Constraints& cons)
+{
+  if (constraintsRep)
+    constraintsRep->all_to_active_bounds(cons);
+  else {
+    const SharedVariablesData& source_svd = cons.shared_data();
+    if (source_svd.acv()  != sharedVarsData.cv()  ||
+	source_svd.adiv() != sharedVarsData.div() ||
+	source_svd.adrv() != sharedVarsData.drv()) {
+      Cerr << "Error: inconsistent counts in Constraints::"
+	   << "all_to_active_bounds()." << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+    continuous_lower_bounds(cons.all_continuous_lower_bounds());
+    continuous_upper_bounds(cons.all_continuous_upper_bounds());
+    discrete_int_lower_bounds(cons.all_discrete_int_lower_bounds());
+    discrete_int_upper_bounds(cons.all_discrete_int_upper_bounds());
+    // no bounds for discrete string vars
+    discrete_real_lower_bounds(cons.all_discrete_real_lower_bounds());
+    discrete_real_upper_bounds(cons.all_discrete_real_upper_bounds());
+  }
+}
+
+
+inline void Constraints::inactive_bounds(const Constraints& cons)
+{
+  if (constraintsRep)
+    constraintsRep->active_bounds(cons);
+  else {
+    const SharedVariablesData& source_svd = cons.shared_data();
+    if (source_svd.icv()  != sharedVarsData.icv()  ||
+	source_svd.idiv() != sharedVarsData.idiv() ||
+	source_svd.idrv() != sharedVarsData.idrv()) {
+      Cerr << "Error: inconsistent counts in Constraints::inactive_bounds()."
+	   << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+    inactive_continuous_lower_bounds(cons.inactive_continuous_lower_bounds());
+    inactive_continuous_upper_bounds(cons.inactive_continuous_upper_bounds());
+    inactive_discrete_int_lower_bounds(
+      cons.inactive_discrete_int_lower_bounds());
+    inactive_discrete_int_upper_bounds(
+      cons.inactive_discrete_int_upper_bounds());
+    // no bounds for discrete string vars
+    inactive_discrete_real_lower_bounds(
+      cons.inactive_discrete_real_lower_bounds());
+    inactive_discrete_real_upper_bounds(
+      cons.inactive_discrete_real_upper_bounds());
+  }
+}
+
+
 // nonvirtual functions can access letter attributes directly (only need to fwd
 // member function call when the function could be redefined).
 inline size_t Constraints::num_linear_ineq_constraints() const
@@ -984,6 +1127,14 @@ nonlinear_eq_constraint_targets(const RealVector& nln_eq_targets)
   if (constraintsRep) constraintsRep->nonlinearEqConTargets = nln_eq_targets;
   else                nonlinearEqConTargets = nln_eq_targets;
 }
+
+
+inline const SharedVariablesData& Constraints::shared_data() const
+{ return (constraintsRep) ? constraintsRep->sharedVarsData : sharedVarsData; }
+
+
+inline SharedVariablesData& Constraints::shared_data()
+{ return (constraintsRep) ? constraintsRep->sharedVarsData : sharedVarsData; }
 
 
 inline bool Constraints::is_null() const

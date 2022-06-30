@@ -2973,6 +2973,48 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 }
 
 
+void Model::update_model_active_variables(Model& sub_model)
+{
+  // Update model variables managing dissimilar view cases
+
+  Variables& sm_vars = sub_model.current_variables();
+  short active_view = currentVariables.view().first,
+     sm_active_view = sm_vars.view().first;
+  bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
+    sm_active_all = (sm_active_view == RELAXED_ALL ||
+		     sm_active_view == MIXED_ALL);
+  // Note 1: inactive vals/bnds/labels and linear/nonlinear constr coeffs/bnds
+  //   updated in init_model()
+  // Note 2: bounds updating isn't strictly required for local/multipoint, but
+  //   is needed for global and could be relevant in cases where model
+  //   involves additional surrogates/nestings.
+  // Note 3: label updating eliminates the need to replicate variable
+  //   descriptors, e.g., in SBOUU input files.  It only needs to be performed
+  //   once (as opposed to the update of vars and bounds).  However, performing
+  //   this updating in the constructor does not propagate properly for multiple
+  //   surrogates/nestings since the sub-model construction (and therefore any
+  //   sub-sub-model constructions) must finish before calling any set functions
+  //   on it.  That is, after-the-fact updating in constructors only propagates
+  //   one level, whereas before-the-fact updating in compute/build functions
+  //   propagates multiple levels.
+  if (active_view == sm_active_view)
+    // update active sub_model vars/cons with active currentVariables data
+    sm_vars.active_variables(currentVariables);
+  else if (!active_all && sm_active_all)
+    // update active sub_model vars using "All" view of currentVariables
+    sm_vars.all_to_active_variables(currentVariables);
+  else if (!sm_active_all && active_all)
+    // update "All" view of sub_model vars using active currentVariables
+    sm_vars.active_to_all_variables(currentVariables);
+  // TO DO: extend for aleatory/epistemic uncertain views
+  else {
+    Cerr << "Error: unsupported variable view differences in Model::"
+	 << "update_model_active_variables()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 /** Splits asv_in total request into map_asv_out, fd_grad_asv_out,
     fd_hess_asv_out, and quasi_hess_asv_out as governed by the
     responses specification.  If the returned use_est_deriv is true,

@@ -178,7 +178,7 @@ void ActiveSubspaceModel::compute_subspace()
          << " full-space samples." << std::endl;
 
   // evaluate samples with fullspaceSampler
-  Cout << "\nSubspace Model: Performing sampling to build reduced space"
+  Cout << "\nSubspace Model: Performing sampling to build reduced space."
        << std::endl;
   generate_fullspace_samples(initialSamples);
 
@@ -1285,7 +1285,7 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
   if (buildSurrogate) {
     ++recastModelEvalCntr;
 
-    surrogateModel.active_variables(currentVariables);
+    update_model_active_variables(surrogateModel);
     surrogateModel.evaluate(set);
 
     currentResponse.active_set(set);
@@ -1309,7 +1309,7 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
   if (buildSurrogate) {
     ++recastModelEvalCntr;
 
-    surrogateModel.active_variables(currentVariables);
+    update_model_active_variables(surrogateModel);
     surrogateModel.evaluate_nowait(set);
 
     // store map from surrogateModel eval id to ActiveSubspaceModel id

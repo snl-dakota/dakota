@@ -239,36 +239,13 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
       am_vars = false;
     else if ( ( actual_active_view == RELAXED_ALL ||
 		actual_active_view == MIXED_ALL ) &&
-	      approx_active_view >= RELAXED_DESIGN ) { // Distinct to All
-      if (vars.acv())
-	actualModelVars.continuous_variables(vars.all_continuous_variables());
-      if (vars.adiv())
-	actualModelVars.discrete_int_variables(
-	  vars.all_discrete_int_variables());
-      if (vars.adsv())
-	actualModelVars.discrete_string_variables(
-	  vars.all_discrete_string_variables());
-      if (vars.adrv())
-	actualModelVars.discrete_real_variables(
-	  vars.all_discrete_real_variables());
-    }
+	      approx_active_view >= RELAXED_DESIGN ) // Distinct to All
+      actualModelVars.all_to_active_variables(vars);
     else if ( ( approx_active_view == RELAXED_ALL ||
 		approx_active_view == MIXED_ALL ) &&
-	      actual_active_view >= RELAXED_DESIGN) { // All to Distinct
-      if (vars.cv())
-	actualModelVars.all_continuous_variables(vars.continuous_variables());
-      if (vars.div())
-	actualModelVars.all_discrete_int_variables(
-	  vars.discrete_int_variables());
-      if (vars.dsv())
-	actualModelVars.all_discrete_string_variables(
-	  vars.discrete_string_variables());
-      if (vars.drv())
-	actualModelVars.all_discrete_real_variables(
-	  vars.discrete_real_variables());
-    }
-    // TO DO: extend for aleatory/epistemic uncertain views
-    else {
+	      actual_active_view >= RELAXED_DESIGN ) // All to Distinct
+      actualModelVars.active_to_all_variables(vars);
+    else { // TO DO: extend for aleatory/epistemic uncertain views
       Cerr << "Error: unsupported variable view differences in "
 	   << "ApproximationInterface::map()" << std::endl;
       abort_handler(-1);

@@ -1045,8 +1045,12 @@ public:
   /// return the current variables (currentVariables) in mutable form
   /// (special cases)
   Variables& current_variables();
-  /// return the user-defined constraints (userDefinedConstraints)
+  /// return the user-defined constraints (userDefinedConstraints) as const
+  /// reference (preferred)
   const Constraints& user_defined_constraints() const;
+  /// return the user-defined constraints (userDefinedConstraints) in
+  /// mutable form (special cases)
+  Constraints& user_defined_constraints();
   /// return the current response (currentResponse)
   const Response& current_response() const;
   /// return the problem description database (probDescDB)
@@ -1254,6 +1258,9 @@ protected:
   //
   //- Heading: Member functions
   //
+
+  /// update incoming (sub-)model with active values from currentVariables
+  void update_model_active_variables(Model& model);
 
   /// return responseMap
   IntResponseMap& response_map();
@@ -3482,6 +3489,13 @@ inline Variables& Model::current_variables()
 
 
 inline const Constraints& Model::user_defined_constraints() const
+{
+  return (modelRep) ? modelRep->userDefinedConstraints
+                    : userDefinedConstraints;
+}
+
+
+inline Constraints& Model::user_defined_constraints()
 {
   return (modelRep) ? modelRep->userDefinedConstraints
                     : userDefinedConstraints;

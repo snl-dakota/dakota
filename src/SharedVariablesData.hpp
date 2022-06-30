@@ -92,7 +92,19 @@ private:
   /// categorical, accounting for empty
   void set_relax(const BitArray& user_cat_spec, size_t ucs_index,
 		 size_t ard_cntr, BitArray& ard_container);
- 
+
+  /// accumulate all continuous variables from variablesCompsTotals,
+  /// allRelaxedDiscreteInt, allRelaxedDiscreteReal
+  size_t acv() const;
+  /// accumulate all discrete int variables from variablesCompsTotals,
+  /// allRelaxedDiscreteInt
+  size_t adiv() const;
+  /// accumulate all discrete string variables from variablesCompsTotals
+  size_t adsv() const;
+  /// accumulate all discrete real variables from variablesCompsTotals,
+  /// allRelaxedDiscreteReal
+  size_t adrv() const;
+
   /// compute all variables sums from variablesCompsTotals
   void all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
 		  size_t& num_adrv) const;
@@ -353,6 +365,37 @@ all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
     num_adiv -= num_relax_int;
     num_adrv -= num_relax_real;
   }
+}
+
+
+inline size_t SharedVariablesDataRep::acv() const
+{
+  return variablesCompsTotals[TOTAL_CDV]  + variablesCompsTotals[TOTAL_CAUV]
+       + variablesCompsTotals[TOTAL_CEUV] + variablesCompsTotals[TOTAL_CSV]
+       + allRelaxedDiscreteInt.count() + allRelaxedDiscreteReal.count();
+}
+
+
+inline size_t SharedVariablesDataRep::adiv() const
+{
+  return variablesCompsTotals[TOTAL_DDIV]  + variablesCompsTotals[TOTAL_DAUIV]
+       + variablesCompsTotals[TOTAL_DEUIV] + variablesCompsTotals[TOTAL_DSIV]
+       - allRelaxedDiscreteInt.count();
+}
+
+
+inline size_t SharedVariablesDataRep::adsv() const
+{
+  return variablesCompsTotals[TOTAL_DDSV]  + variablesCompsTotals[TOTAL_DAUSV]
+       + variablesCompsTotals[TOTAL_DEUSV] + variablesCompsTotals[TOTAL_DSSV];
+}
+
+
+inline size_t SharedVariablesDataRep::adrv() const
+{
+  return variablesCompsTotals[TOTAL_DDRV]  + variablesCompsTotals[TOTAL_DAURV]
+       + variablesCompsTotals[TOTAL_DEURV] + variablesCompsTotals[TOTAL_DSRV]
+       - allRelaxedDiscreteReal.count();
 }
 
 
@@ -912,6 +955,7 @@ public:
   size_t dsv_start()  const; ///< get start index of active discrete string vars
   size_t drv()        const; ///< get number of active discrete real vars
   size_t drv_start()  const; ///< get start index of active discrete real vars
+
   size_t icv()        const; ///< get number of inactive continuous vars
   size_t icv_start()  const; ///< get start index of inactive continuous vars
   size_t idiv()       const; ///< get number of inactive discrete int vars
@@ -920,6 +964,11 @@ public:
   size_t idsv_start() const; ///< get start index of inactive discr string vars
   size_t idrv()       const; ///< get number of inactive discrete real vars
   size_t idrv_start() const; ///< get start index of inactive discrete real vars
+
+  size_t acv()        const; ///< get total number of continuous vars
+  size_t adiv()       const; ///< get total number of discrete int vars
+  size_t adsv()       const; ///< get total number of discrete string vars
+  size_t adrv()       const; ///< get total number of discrete real vars
 
   void cv(size_t ncv);         ///< set number of active continuous vars
   void cv_start(size_t cvs);   ///< set start index of active continuous vars
@@ -1681,6 +1730,22 @@ inline size_t SharedVariablesData::idrv() const
 
 inline size_t SharedVariablesData::idrv_start() const
 { return svdRep->idrvStart; }
+
+
+inline size_t SharedVariablesData::acv() const
+{ return svdRep->acv(); }
+
+
+inline size_t SharedVariablesData::adiv() const
+{ return svdRep->adiv(); }
+
+
+inline size_t SharedVariablesData::adsv() const
+{ return svdRep->adsv(); }
+
+
+inline size_t SharedVariablesData::adrv() const
+{ return svdRep->adrv(); }
 
 
 inline void SharedVariablesData::cv(size_t ncv)

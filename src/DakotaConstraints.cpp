@@ -279,12 +279,12 @@ void Constraints::inactive_view(short view2)
     short view1 = sharedVarsData.view().first;
     if (view2 == RELAXED_ALL || view2 == MIXED_ALL) {
       Cerr << "Error: Constraints inactive view may not be ALL." << std::endl;
-      abort_handler(MODEL_ERROR);
+      abort_handler(CONS_ERROR);
     }
     else if ( (view1 == RELAXED_ALL || view1 == MIXED_ALL) && view2) {
       Cerr << "Warning: ignoring non-EMPTY inactive view for active ALL view "
 	   << "in Constraints." << std::endl;
-      return; //abort_handler(MODEL_ERROR);
+      return; //abort_handler(CONS_ERROR);
     }
 
     sharedVarsData.inactive_view(view2); // likely redundant with Variables

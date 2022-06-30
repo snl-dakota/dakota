@@ -1354,7 +1354,7 @@ void NonDBayesCalibration::choose_batch_from_mutual_info( int random_seed,
 
     for (size_t i=0; i < design_matrix.size(); i++) {
       const Variables& xi_i = design_matrix[i]; // active are config vars
-      mcmcModel.current_variables().inactive_from_active(xi_i);
+      mcmcModel.current_variables().active_to_inactive_variables(xi_i);
 
       build_hi2lo_xmatrix(Xmatrix, batch_n, mi_chain, sim_error_matrix);
 
@@ -1386,7 +1386,7 @@ void NonDBayesCalibration::choose_batch_from_mutual_info( int random_seed,
     if (batchEvals > 1) {
     // Evaluate lofi model at optimal design, update Xmatrix
       RealMatrix lofi_resp_matrix;
-      mcmcModel.current_variables().inactive_from_active(optimal_config);
+      mcmcModel.current_variables().active_to_inactive_variables(optimal_config);
       Model::evaluate(mi_chain, mcmcModel, lofi_resp_matrix);
       if (sim_error_matrix.numRows() > 0)
         lofi_resp_matrix += sim_error_matrix;
