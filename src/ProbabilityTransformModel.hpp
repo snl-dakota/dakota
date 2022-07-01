@@ -392,19 +392,24 @@ vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
   short u_active_view = u_vars.shared_data().view().first,
         x_active_view = x_vars.shared_data().view().first;
 
+  // Note: the cv ids for x and u should be identical following view alignment,
+  // but we pass both for generality
   if (u_active_view == x_active_view)
     ptmInstance->natafTransform.trans_U_to_X(
-      u_vars.continuous_variables(), x_vars.continuous_variables_view());
+      u_vars.continuous_variables(),      u_vars.continuous_variable_ids(),
+      x_vars.continuous_variables_view(), x_vars.continuous_variable_ids());
   else {
     bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
          x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
     if (!u_all && x_all)
       ptmInstance->natafTransform.trans_U_to_X(
-        u_vars.all_continuous_variables(), x_vars.continuous_variables_view());
+        u_vars.all_continuous_variables(), u_vars.all_continuous_variable_ids(),
+	x_vars.continuous_variables_view(), x_vars.continuous_variable_ids());
     else if (!x_all && u_all) {
       RealVector x_acv;
-      ptmInstance->
-	natafTransform.trans_U_to_X(u_vars.continuous_variables(), x_acv);
+      ptmInstance->natafTransform.trans_U_to_X(
+	u_vars.continuous_variables(), u_vars.continuous_variable_ids(),
+	x_acv, x_vars.all_continuous_variable_ids());
       x_vars.all_continuous_variables(x_acv);
     }
     else {
@@ -426,22 +431,25 @@ vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
 
   if (u_active_view == x_active_view)
     ptmInstance->natafTransform.trans_X_to_U(
-      x_vars.continuous_variables(), u_vars.continuous_variables_view());
+      x_vars.continuous_variables(),      x_vars.continuous_variable_ids(),
+      u_vars.continuous_variables_view(), u_vars.continuous_variable_ids());
   else {
     bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
          x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
     if (!u_all && x_all) {
       RealVector u_acv;
-      ptmInstance->
-	natafTransform.trans_X_to_U(x_vars.continuous_variables(), u_acv);
+      ptmInstance->natafTransform.trans_X_to_U(
+	x_vars.continuous_variables(), x_vars.continuous_variable_ids(),
+	u_acv,                         u_vars.all_continuous_variable_ids());
       u_vars.all_continuous_variables(u_acv);
     }
     else if (!x_all && u_all)
       ptmInstance->natafTransform.trans_X_to_U(
-	x_vars.all_continuous_variables(), u_vars.continuous_variables_view());
+	x_vars.all_continuous_variables(), x_vars.all_continuous_variable_ids(),
+	u_vars.continuous_variables_view(), u_vars.continuous_variable_ids());
     else {
       Cerr << "Error: unsupported variable view differences in "
-	   << "ProbabilityTransformModel::vars_u_to_x_mapping()." << std::endl;
+	   << "ProbabilityTransformModel::vars_x_to_u_mapping()." << std::endl;
       abort_handler(MODEL_ERROR);
     }
   }
@@ -453,9 +461,11 @@ inline void ProbabilityTransformModel::
 trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
-  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-  natafTransform.trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars, x_dvv, cv_ids);
+  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+    u_cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
+  natafTransform.trans_grad_X_to_U(fn_grad_x, x_cv_ids, fn_grad_u, u_cv_ids,
+				   x_vars, x_dvv);
 }
 
 
@@ -463,9 +473,11 @@ inline void ProbabilityTransformModel::
 trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
-  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-  natafTransform.trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars, x_dvv, cv_ids);
+  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+    u_cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
+  natafTransform.trans_grad_U_to_X(fn_grad_u, u_cv_ids, fn_grad_x, x_cv_ids,
+				   x_vars, x_dvv);
 }
 
 
@@ -473,11 +485,11 @@ inline void ProbabilityTransformModel::
 trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
-  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-  natafTransform.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv, cv_ids,
-    currentVariables.all_continuous_variable_ids(), primaryACVarMapIndices,
-    secondaryACVarMapTargets);
+  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
+  natafTransform.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv,
+    x_cv_ids, subModel.all_continuous_variable_ids(),
+    primaryACVarMapIndices, secondaryACVarMapTargets);
 }
 
 
@@ -485,10 +497,11 @@ inline void ProbabilityTransformModel::
 trans_hess_X_to_U(const RealSymMatrix& fn_hess_x, RealSymMatrix& fn_hess_u,
 		  const RealVector& x_vars, const RealVector& fn_grad_x)
 {
-  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
-  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-  natafTransform.trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x,
-				   x_dvv, cv_ids);
+  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+    u_cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
+  natafTransform.trans_hess_X_to_U(fn_hess_x, x_cv_ids, fn_hess_u, u_cv_ids,
+				   x_vars, fn_grad_x, x_dvv);
 }
 
 
