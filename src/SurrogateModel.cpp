@@ -316,9 +316,6 @@ void SurrogateModel::init_model_labels(Model& sub_model)
   Variables& sm_vars = sub_model.current_variables();
   short active_view = currentVariables.view().first,
      sm_active_view = sm_vars.view().first;
-  bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
-    sm_active_all = (sm_active_view == RELAXED_ALL ||
-		     sm_active_view == MIXED_ALL);
   if (active_view == sm_active_view) {
     // update active model vars with active currentVariables data
     sm_vars.active_labels(currentVariables);
@@ -326,11 +323,16 @@ void SurrogateModel::init_model_labels(Model& sub_model)
     //if (!active_all) // models not in ALL view
     //  sm_vars.inactive_labels(currentVariables);
   }
-  else if (!active_all && sm_active_all) // update active from "All" view
-    sm_vars.all_to_active_labels(currentVariables);
-  else if (!sm_active_all && active_all) // update "All" view from active
-    // TO DO: only update the active labels in model (not all labels)
-    sm_vars.active_to_all_labels(currentVariables);
+  else {
+    bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
+      sm_active_all = (sm_active_view == RELAXED_ALL ||
+		       sm_active_view == MIXED_ALL);
+    if (!active_all && sm_active_all) // update active from "All" view
+      sm_vars.all_to_active_labels(currentVariables);
+    else if (!sm_active_all && active_all) // update "All" view from active
+      // TO DO: only update the active labels in model (not all labels)
+      sm_vars.active_to_all_labels(currentVariables);
+  }
 }
 
 
@@ -381,12 +383,12 @@ void SurrogateModel::init_model_inactive_labels(Model& sub_model)
     // so rely only on counts for now.
     sm_vars.inactive_labels(currentVariables);
   else if (!active_all && sm_active_all) {
-    // nothing to do currenty for this case prior to more fine-grained handling
-    // of active labels (all model labels are currently updated)
+    // nothing to do currenty for this case prior to more fine-grained
+    // handling of active labels (all model labels are currently updated)
   }
   else if (!sm_active_all && active_all) {
-    // nothing to do currenty for this case prior to more fine-grained handling
-    // of active labels (all model labels are currently updated)
+    // nothing to do currenty for this case prior to more fine-grained
+    // handling of active labels (all model labels are currently updated)
   }
 }
 
@@ -405,20 +407,22 @@ void SurrogateModel::update_model_active_constraints(Model& sub_model)
   Constraints& sm_cons = sub_model.user_defined_constraints();
   short active_view = userDefinedConstraints.shared_data().view().first,
      sm_active_view = sm_cons.shared_data().view().first;
-  bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
-    sm_active_all = (sm_active_view == RELAXED_ALL ||
-		     sm_active_view == MIXED_ALL);
   if (active_view == sm_active_view)
     sm_cons.active_bounds(userDefinedConstraints);
-  else if (!active_all && sm_active_all)
-    sm_cons.all_to_active_bounds(userDefinedConstraints);
-  else if (!sm_active_all && active_all)
-    sm_cons.active_to_all_bounds(userDefinedConstraints);
-  // TO DO: extend for aleatory/epistemic uncertain views
   else {
-    Cerr << "Error: unsupported variable view differences in SurrogateModel::"
-	 << "update_model_active_constraints()." << std::endl;
-    abort_handler(MODEL_ERROR);
+    bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
+      sm_active_all = (sm_active_view == RELAXED_ALL ||
+		       sm_active_view == MIXED_ALL);
+    if (!active_all && sm_active_all)
+      sm_cons.all_to_active_bounds(userDefinedConstraints);
+    else if (!sm_active_all && active_all)
+      sm_cons.active_to_all_bounds(userDefinedConstraints);
+    // TO DO: extend for aleatory/epistemic uncertain views
+    else {
+      Cerr << "Error: unsupported variable view differences in SurrogateModel::"
+	   << "update_model_active_constraints()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
   }
 }
 

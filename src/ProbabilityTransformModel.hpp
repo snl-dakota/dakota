@@ -389,8 +389,30 @@ inline void ProbabilityTransformModel::assign_instance()
 inline void ProbabilityTransformModel::
 vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
 {
-  ptmInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(),
-					   x_vars.continuous_variables_view());
+  short u_active_view = u_vars.shared_data().view().first,
+        x_active_view = x_vars.shared_data().view().first;
+
+  if (u_active_view == x_active_view)
+    ptmInstance->natafTransform.trans_U_to_X(
+      u_vars.continuous_variables(), x_vars.continuous_variables_view());
+  else {
+    bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
+         x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
+    if (!u_all && x_all)
+      ptmInstance->natafTransform.trans_U_to_X(
+        u_vars.all_continuous_variables(), x_vars.continuous_variables_view());
+    else if (!x_all && u_all) {
+      RealVector x_acv;
+      ptmInstance->
+	natafTransform.trans_U_to_X(u_vars.continuous_variables(), x_acv);
+      x_vars.all_continuous_variables(x_acv);
+    }
+    else {
+      Cerr << "Error: unsupported variable view differences in "
+	   << "ProbabilityTransformModel::vars_u_to_x_mapping()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
   // *** TO DO: active discrete {int,string,real}
 }
 
@@ -399,8 +421,30 @@ vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
 inline void ProbabilityTransformModel::
 vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
 {
-  ptmInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(),
-					   u_vars.continuous_variables_view());
+  short u_active_view = u_vars.shared_data().view().first,
+        x_active_view = x_vars.shared_data().view().first;
+
+  if (u_active_view == x_active_view)
+    ptmInstance->natafTransform.trans_X_to_U(
+      x_vars.continuous_variables(), u_vars.continuous_variables_view());
+  else {
+    bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
+         x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
+    if (!u_all && x_all) {
+      RealVector u_acv;
+      ptmInstance->
+	natafTransform.trans_X_to_U(x_vars.continuous_variables(), u_acv);
+      u_vars.all_continuous_variables(u_acv);
+    }
+    else if (!x_all && u_all)
+      ptmInstance->natafTransform.trans_X_to_U(
+	x_vars.all_continuous_variables(), u_vars.continuous_variables_view());
+    else {
+      Cerr << "Error: unsupported variable view differences in "
+	   << "ProbabilityTransformModel::vars_u_to_x_mapping()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
   // *** TO DO: active discrete {int,string,real}
 }
 

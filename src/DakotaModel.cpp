@@ -2980,9 +2980,6 @@ void Model::update_model_active_variables(Model& sub_model)
   Variables& sm_vars = sub_model.current_variables();
   short active_view = currentVariables.view().first,
      sm_active_view = sm_vars.view().first;
-  bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
-    sm_active_all = (sm_active_view == RELAXED_ALL ||
-		     sm_active_view == MIXED_ALL);
   // Note 1: inactive vals/bnds/labels and linear/nonlinear constr coeffs/bnds
   //   updated in init_model()
   // Note 2: bounds updating isn't strictly required for local/multipoint, but
@@ -3000,17 +2997,22 @@ void Model::update_model_active_variables(Model& sub_model)
   if (active_view == sm_active_view)
     // update active sub_model vars/cons with active currentVariables data
     sm_vars.active_variables(currentVariables);
-  else if (!active_all && sm_active_all)
-    // update active sub_model vars using "All" view of currentVariables
-    sm_vars.all_to_active_variables(currentVariables);
-  else if (!sm_active_all && active_all)
-    // update "All" view of sub_model vars using active currentVariables
-    sm_vars.active_to_all_variables(currentVariables);
-  // TO DO: extend for aleatory/epistemic uncertain views
   else {
-    Cerr << "Error: unsupported variable view differences in Model::"
-	 << "update_model_active_variables()." << std::endl;
-    abort_handler(MODEL_ERROR);
+    bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
+      sm_active_all = (sm_active_view == RELAXED_ALL ||
+		       sm_active_view == MIXED_ALL);
+    if (!active_all && sm_active_all)
+      // update active sub_model vars using "All" view of currentVariables
+      sm_vars.all_to_active_variables(currentVariables);
+    else if (!sm_active_all && active_all)
+      // update "All" view of sub_model vars using active currentVariables
+      sm_vars.active_to_all_variables(currentVariables);
+    // TO DO: extend for aleatory/epistemic uncertain views
+    else {
+      Cerr << "Error: unsupported variable view differences in Model::"
+	   << "update_model_active_variables()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
   }
 }
 
