@@ -337,8 +337,8 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   Model g_u_model;
   // Alternate view for PCE approximation is injected in the model upstream of
   // DataFitSurrModel, as it becomes DFS::actualModel.  DFS::currentVariables
-  // needs the original view of the incoming iteratedModel for consistentcy
-  // with original context.
+  // needs the original view of the incoming iteratedModel for consistency
+  // with original context (e.g. NonDBayes uses an active uncertain view).
   // > Note: including alternate view w/i Recast also allows prob transform
   //   to operate on inactive state prior to emulation (see ProbTransformModel::
   //   initialize_distribution_types(): "inactive vars are not transformed"

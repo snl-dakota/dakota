@@ -1755,13 +1755,18 @@ all_discrete_real_variable_types() const
 inline SizetMultiArrayConstView Variables::all_continuous_variable_ids() const
 { return shared_data().all_continuous_ids(0, acv()); }
 
+
 inline SizetMultiArrayConstView Variables::all_discrete_int_variable_ids() const
 { return shared_data().all_discrete_int_ids(0, adiv()); }
 
-inline SizetMultiArrayConstView Variables::all_discrete_string_variable_ids() const
+
+inline SizetMultiArrayConstView Variables::
+all_discrete_string_variable_ids() const
 { return shared_data().all_discrete_string_ids(0, adsv()); }
 
-inline SizetMultiArrayConstView Variables::all_discrete_real_variable_ids() const
+
+inline SizetMultiArrayConstView Variables::
+all_discrete_real_variable_ids() const
 { return shared_data().all_discrete_real_ids(0, adrv()); }
 
 
@@ -1782,14 +1787,7 @@ inline bool Variables::is_null() const
 
 
 inline void Variables::build_views()
-{
-  // called only from letters
-  const ShortShortPair& view = sharedVarsData.view();
-  if (view.first  != EMPTY_VIEW)
-    build_active_views();
-  if (view.second != EMPTY_VIEW)
-    build_inactive_views();
-}
+{ build_active_views(); build_inactive_views(); } // called only from letters
 
 
 /// global comparison function for Variables

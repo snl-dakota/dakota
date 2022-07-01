@@ -195,6 +195,8 @@ void Constraints::build_active_views()
     continuousUpperBnds = RealVector(Teuchos::View,
       &allContinuousUpperBnds[cv_start], num_cv);
   }
+  else // return to default empty initialization
+    continuousLowerBnds = continuousUpperBnds = RealVector();
   if (num_div) {
     size_t div_start = sharedVarsData.div_start();
     discreteIntLowerBnds = IntVector(Teuchos::View,
@@ -202,6 +204,8 @@ void Constraints::build_active_views()
     discreteIntUpperBnds = IntVector(Teuchos::View,
       &allDiscreteIntUpperBnds[div_start], num_div);
   }
+  else // return to default empty initialization
+    discreteIntLowerBnds = discreteIntUpperBnds = IntVector();
   if (num_drv) {
     size_t drv_start = sharedVarsData.drv_start();
     discreteRealLowerBnds = RealVector(Teuchos::View,
@@ -209,6 +213,8 @@ void Constraints::build_active_views()
     discreteRealUpperBnds = RealVector(Teuchos::View,
       &allDiscreteRealUpperBnds[drv_start], num_drv);
   }
+  else // return to default empty initialization
+    discreteRealLowerBnds = discreteRealUpperBnds = RealVector();
 }
 
 
@@ -232,6 +238,8 @@ void Constraints::build_inactive_views()
     inactiveContinuousUpperBnds = RealVector(Teuchos::View,
       &allContinuousUpperBnds[icv_start], num_icv);
   }
+  else // return to default empty initialization
+    inactiveContinuousLowerBnds = inactiveContinuousUpperBnds = RealVector();
   if (num_idiv) {
     size_t idiv_start = sharedVarsData.idiv_start();
     inactiveDiscreteIntLowerBnds = IntVector(Teuchos::View,
@@ -239,6 +247,8 @@ void Constraints::build_inactive_views()
     inactiveDiscreteIntUpperBnds = IntVector(Teuchos::View,
       &allDiscreteIntUpperBnds[idiv_start], num_idiv);
   }
+  else // return to default empty initialization
+    inactiveDiscreteIntLowerBnds = inactiveDiscreteIntUpperBnds = IntVector();
   if (num_idrv) {
     size_t idrv_start = sharedVarsData.idrv_start();
     inactiveDiscreteRealLowerBnds = RealVector(Teuchos::View,
@@ -246,6 +256,9 @@ void Constraints::build_inactive_views()
     inactiveDiscreteRealUpperBnds = RealVector(Teuchos::View,
       &allDiscreteRealUpperBnds[idrv_start], num_idrv);
   }
+  else // return to default empty initialization
+    inactiveDiscreteRealLowerBnds = inactiveDiscreteRealUpperBnds
+      = RealVector();
 }
 
 

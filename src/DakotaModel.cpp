@@ -2975,7 +2975,7 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 
 void Model::update_model_active_variables(Model& sub_model)
 {
-  // Update model variables managing dissimilar view cases
+  // Run-time update of model variables managing dissimilar view cases
 
   Variables& sm_vars = sub_model.current_variables();
   short active_view = currentVariables.view().first,

@@ -414,21 +414,24 @@ void Variables::build_active_views()
 
   size_t num_cv  = sharedVarsData.cv(),    num_div = sharedVarsData.div(),
        /*num_dsv = sharedVarsData.dsv(),*/ num_drv = sharedVarsData.drv();
-  if (num_cv)
-    continuousVars = RealVector(Teuchos::View,
-      &allContinuousVars[sharedVarsData.cv_start()],    num_cv);
-  if (num_div)
-    discreteIntVars = IntVector(Teuchos::View,
-      &allDiscreteIntVars[sharedVarsData.div_start()],  num_div);
+  continuousVars = (num_cv) ?
+    RealVector(Teuchos::View, &allContinuousVars[sharedVarsData.cv_start()],
+	       num_cv) :
+    RealVector(); // return to default empty initialization
+  discreteIntVars = (num_div) ?
+    IntVector(Teuchos::View, &allDiscreteIntVars[sharedVarsData.div_start()],
+	      num_div) :
+    IntVector(); // return to default empty initialization
   // as for label arrays, generate StringMultiArrayViews on the fly
   //if (num_dsv) {
   //  size_t dsv_start = sharedVarsData.dsv_start();
   //  discreteStringVars = allDiscreteStringVars[boost::indices[
   //    idx_range(dsv_start, dsv_start+num_dsv)]];
   //}
-  if (num_drv)
-    discreteRealVars = RealVector(Teuchos::View,
-      &allDiscreteRealVars[sharedVarsData.drv_start()], num_drv);
+  discreteRealVars = (num_drv) ?
+    RealVector(Teuchos::View, &allDiscreteRealVars[sharedVarsData.drv_start()],
+	       num_drv) :
+    RealVector(); // return to default empty initialization
 }
 
 
@@ -448,21 +451,24 @@ void Variables::build_inactive_views()
 
   size_t num_icv  = sharedVarsData.icv(),    num_idiv = sharedVarsData.idiv(),
        /*num_idsv = sharedVarsData.idsv(),*/ num_idrv = sharedVarsData.idrv();
-  if (num_icv)
-    inactiveContinuousVars = RealVector(Teuchos::View,
-      &allContinuousVars[sharedVarsData.icv_start()],    num_icv);
-  if (num_idiv)
-    inactiveDiscreteIntVars = IntVector(Teuchos::View,
-      &allDiscreteIntVars[sharedVarsData.idiv_start()],  num_idiv);
+  inactiveContinuousVars = (num_icv) ?
+    RealVector(Teuchos::View, &allContinuousVars[sharedVarsData.icv_start()],
+	       num_icv) :
+    RealVector(); // return to default empty initialization
+  inactiveDiscreteIntVars = (num_idiv) ?
+    IntVector(Teuchos::View, &allDiscreteIntVars[sharedVarsData.idiv_start()],
+	      num_idiv) :
+    IntVector(); // return to default empty initialization
   // as for label arrays, generate StringMultiArrayViews on the fly
   //if (num_idsv) {
   //  size_t idsv_start = sharedVarsData.idsv_start();
   //  inactiveDiscreteStringVars = allDiscreteStringVars[boost::indices[
   //    idx_range(idsv_start, idsv_start+num_idsv)]];
   //}
-  if (num_idrv)
-    inactiveDiscreteRealVars = RealVector(Teuchos::View,
-      &allDiscreteRealVars[sharedVarsData.idrv_start()], num_idrv);
+  inactiveDiscreteRealVars = (num_idrv) ?
+    RealVector(Teuchos::View, &allDiscreteRealVars[sharedVarsData.idrv_start()],
+	       num_idrv) :
+    RealVector(); // return to default empty initialization
 }
 
 

@@ -182,14 +182,18 @@ initialize_base_recast(
   // Invoke base class resizing routines
   // -----------------------------------
 
+  //bool copy_values =
   RecastModel::
-  init_sizes(vars_comps_total, all_relax_di, all_relax_dr, num_primary,
-             num_secondary, recast_secondary_offset, recast_resp_order);
+    init_sizes(vars_comps_total, all_relax_di, all_relax_dr, num_primary,
+	       num_secondary, recast_secondary_offset, recast_resp_order);
+
+  // suppress this initialization (see uncertain_vars_to_subspace())
+  //RecastModel::init_distribution(copy_values);
 
   RecastModel::
-  init_maps(vars_map_indices, nonlinear_vars_mapping, variables_map,
-            set_map, primary_resp_map_indices, secondary_resp_map_indices,
-            nonlinear_resp_mapping, primary_resp_map, NULL);
+    init_maps(vars_map_indices, nonlinear_vars_mapping, variables_map,
+	      set_map, primary_resp_map_indices, secondary_resp_map_indices,
+	      nonlinear_resp_mapping, primary_resp_map, NULL);
 }
 
 

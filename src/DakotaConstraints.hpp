@@ -1142,14 +1142,7 @@ inline bool Constraints::is_null() const
 
 
 inline void Constraints::build_views()
-{
-  // called only from letters
-  const ShortShortPair& view = sharedVarsData.view();
-  if (view.first  != EMPTY_VIEW)
-    build_active_views();
-  if (view.second != EMPTY_VIEW)
-    build_inactive_views();
-}
+{ build_active_views(); build_inactive_views(); } // called only from letters
 
 
 // Having overloaded operators call read/write means that the operators need 

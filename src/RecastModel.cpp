@@ -77,9 +77,9 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   initialize_data_from_submodel();
 
   // For this constructor, mappings are provided up front and special logic
-  // can be applied when they are NULL.  For deferred mappin
+  // can be applied when they are NULL.  Other constructors must alter logic
+  // for deferred recasting details.
 
-  // recasting of variables; only reshape if change in variable type counts
   bool copy_values = true;
   const Variables& submodel_vars = subModel.current_variables();
   if (variablesMapping) // reshape as dictated by variable type changes
@@ -97,17 +97,16 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     numDerivVars     = currentVariables.cv();
   }
 
-  init_distribution(copy_values);
-
   init_constraints(secondaryRespMapIndices.size(), recast_secondary_offset,
 		   copy_values);
+
+  init_distribution(copy_values);
 
   if (nonlinearRespMapping.size() != 
       primaryRespMapIndices.size() + secondaryRespMapIndices.size()) {
     Cerr << "Error: size mismatch in response mapping configuration." << endl;
     abort_handler(-1);
   }
-
   if (primaryRespMapping || secondaryRespMapping) {
     init_response(primaryRespMapIndices.size(), secondaryRespMapIndices.size(), 
 		  recast_resp_order);
@@ -155,9 +154,13 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   initialize_data_from_submodel();
 
   // initialize Variables, Response, and Constraints based on sizes
-  init_sizes(vars_comps_totals, all_relax_di, all_relax_dr,
-	     num_recast_primary_fns, num_recast_secondary_fns,
-	     recast_secondary_offset, recast_resp_order);
+  bool copy_values
+    = init_sizes(vars_comps_totals, all_relax_di, all_relax_dr,
+		 num_recast_primary_fns, num_recast_secondary_fns,
+		 recast_secondary_offset, recast_resp_order);
+  // initialize mvDist
+  init_distribution(copy_values);
+
   modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
@@ -195,7 +198,7 @@ RecastModel::RecastModel(const Model& sub_model):
 }
 
 
-void RecastModel::
+bool RecastModel::
 init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	   const BitArray& all_relax_dr, size_t num_recast_primary_fns,
 	   size_t num_recast_secondary_fns, size_t recast_secondary_offset,
@@ -208,14 +211,16 @@ init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
   init_constraints(num_recast_secondary_fns, recast_secondary_offset,
 		   copy_values);
 
-  // mapped cases must be handled in derived classes
-  init_distribution(copy_values);
+  // defer this to allow specialized handling in derived classes
+  //init_distribution(copy_values);
 
   // recasting of response and constraints
   init_response(num_recast_primary_fns, num_recast_secondary_fns, 
 		recast_resp_order);
 
   init_metadata();
+
+  return copy_values;
 }
 
 

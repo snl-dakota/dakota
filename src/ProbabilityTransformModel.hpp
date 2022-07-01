@@ -301,6 +301,10 @@ initialize_transformation(short u_space_type)
   if (mvDist.is_null()) // already initialized: no current reason to update
     mvDist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
 
+  // Follows init_sizes() since pulls view from currentVariables.
+  // Precedes initialize_distribution_types() since inactive not transformed.
+  initialize_active_types(mvDist);
+
   const Pecos::MultivariateDistribution& x_dist
     = subModel.multivariate_distribution();
   initialize_distribution_types(u_space_type, x_dist, mvDist);
@@ -344,7 +348,7 @@ nonlinear_variables_mapping(const Pecos::MultivariateDistribution& x_dist,
   const ShortArray& x_types = x_dist.random_variable_types();
   const ShortArray& u_types = u_dist.random_variable_types();
   size_t i, num_types = std::min(x_types.size(), u_types.size());
-  const BitArray& active_v = x_dist.active_variables();
+  const BitArray& active_v = u_dist.active_variables();
   for (i=0; i<num_types; ++i)
     if (active_v[i]) {
       switch (u_types[i]) {
