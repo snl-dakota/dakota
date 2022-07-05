@@ -13,7 +13,7 @@ Launching the GUI
  - Dakota GUI has been tested to work on RHEL (7 or newer) and Ubuntu.
 - **Mac OSX:** Run the ``dakota-ui.sh`` script in the ``bin`` folder of a Dakota install.
 - **Windows:** Double-click ``DakotaUI.exe`` in the ``gui`` folder of a Dakota install.
-- **Ubuntu:** While Dakota GUI does not have out-of-the-box support for Ubuntu, you can easily get it running if you perform the following commands to force the GUI to use the official OpenJDK distribution from apt:
+- **Ubuntu:** While the Dakota GUI is not officially supported on Debian-flavored Linux distros, users have reported that it works on recent versions of Ubuntu.
 
 ---------------
 Getting Started

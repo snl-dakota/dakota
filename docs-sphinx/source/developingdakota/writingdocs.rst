@@ -23,3 +23,10 @@ Building
 
 	cd dakota_source/docs-sphinx
 	sphinx-build -b html <source dir> <build dir>
+	
+	
+===========================================
+Legacy: Convert LaTeX to RST through Pandoc
+===========================================
+	
+pandoc -f latex -t rst <tex file> -o <rst output file>
