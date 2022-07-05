@@ -1,27 +1,31 @@
 Blurb::
 Paths to be linked into each working directory
-
 Description::
 Specifies the paths (files or directories) that will be symbolically
 linked from each working directory.  Wildcards using * and ? are
 permitted.  Linking is space-saving and useful for files not modified
 during the function evaluation.  However, not all filesystems support
 linking, for example, support on Windows varies.
-
 Topics::
-Examples::
 
+Examples::
 Specifying
-\verbatim
-  link_files = 'siminput*.in' '/path/to/simdir1' 'simdir2/*'
-\endverbatim
+
+.. code-block::
+
+      link_files = 'siminput*.in' '/path/to/simdir1' 'simdir2/*'
+
 will create copies
-\verbatim
-  workdir/siminput*.in  # links to each of rundir / siminput*.in
-  workdir/simdir1/      # whole directory simdir1 linked
-  workdir/*             # each entry in directory simdir2 linked
-\endverbatim
+
+.. code-block::
+
+      workdir/siminput*.in  # links to each of rundir / siminput*.in
+      workdir/simdir1/      # whole directory simdir1 linked
+      workdir/*             # each entry in directory simdir2 linked
+
 
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

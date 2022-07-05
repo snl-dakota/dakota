@@ -1,8 +1,8 @@
 Blurb::
 Compute speculative gradients
 Description::
-When performing gradient-based optimization in parallel, \c
-speculative gradients can be selected to address the load imbalance
+When performing gradient-based optimization in parallel,
+``speculative`` gradients can be selected to address the load imbalance
 that can occur between gradient evaluation and line search phases. In
 a typical gradient-based optimization, the line search phase consists
 primarily of evaluating the objective function and any constraints at
@@ -24,11 +24,11 @@ gradients will not be used when a trial point is rejected in the line
 search phase), the run time will usually decrease (since gradient
 evaluations needed at the start of each new optimization cycle were
 already performed in parallel during the line search phase). Refer to
-\cite Byr88 for additional details. The
+:cite:p:`Byr88` for additional details. The
 speculative specification is implemented for the gradient-based
 optimizers in the DOT, CONMIN, and OPT++ libraries, and it can be used
 with dakota numerical or analytic gradient selections in the responses
-specification (refer to \ref responses gradient section for information on these
+specification (refer to :ref:`responses<responses>` gradient section for information on these
 specifications). It should not be selected with vendor numerical
 gradients since vendor internal finite difference algorithms have not
 been modified for this purpose. In full-Newton approaches, the Hessian
@@ -38,21 +38,23 @@ user-supplied gradient mode (dakota numerical or analytic gradients)
 is a superior approach for load-balanced parallel execution.
 
 
-The \c speculative specification enables speculative computation of
+The ``speculative`` specification enables speculative computation of
 gradient and/or Hessian information, where applicable, for parallel
 optimization studies. By speculating that the derivative information
 at the current point will be used later, the complete data set (all
 available gradient/Hessian information) can be computed on every
 function evaluation. While some of these computations will be wasted,
 the positive effects are a consistent parallel load balance and
-usually shorter wall clock time. The \c speculative specification is
+usually shorter wall clock time. The ``speculative`` specification is
 applicable only when parallelism in the gradient calculations can be
-exploited by %Dakota (it will be ignored for \c vendor \c numerical
+exploited by Dakota (it will be ignored for ``vendor`` ``numerical``
 gradients).
-
-
-Topics::	method_independent_controls
+Topics::
+method_independent_controls
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

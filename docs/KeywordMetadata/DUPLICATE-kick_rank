@@ -1,12 +1,14 @@
 Blurb::
 The increment in rank employed during each iteration of the rank adaptation.
-
 Description::
-The \c adapt_rank procedure increments the rank on each iteration, using an
-increment defined by \c kick_rank
+The ``adapt_rank`` procedure increments the rank on each iteration, using an
+increment defined by ``kick_rank``
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 Default is 1.
-
-See_Also::	model-surrogate-global-function_train-adapt_rank
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

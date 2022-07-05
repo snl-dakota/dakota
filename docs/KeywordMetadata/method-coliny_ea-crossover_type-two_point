@@ -6,9 +6,13 @@ three regions, where offspring are created from the combination of the
 middle region from one parent and the end regions from the other
 parent.  Since the SCOLIB EA does not utilize bit representations of
 variable values, the crossover points only occur on coordinate
-boundaries, never within the bits of a particular coordinate.  
+boundaries, never within the bits of a particular coordinate.
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

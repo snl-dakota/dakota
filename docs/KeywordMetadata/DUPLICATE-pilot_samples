@@ -1,19 +1,20 @@
-Blurb:: Initial set of samples for multilevel/multifidelity sampling methods.
-
-Description:: The pilot sample provides initial estimates of variance
+Blurb::
+Initial set of samples for multilevel/multifidelity sampling methods.
+Description::
+The pilot sample provides initial estimates of variance
 and/or correlation within the first iteration of a
 multilevel/multifidelity sampling approach.  These initial estimates
 then guide the algorithm toward additional sample increments in order
 to iteratively achieve a prescribed error at minimum total cost, or
 alternatively, minimum error for a prescribed budget.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 100 samples per model fidelity and/or discretization level.
 
-<!-- <b> Expected Output </b> -->
 
-<b> Usage Tips </b>
+
+*Usage Tips*
 
 The number of specified values can be none (default values used for
 all fidelities and levels), one (all fidelities and levels use the
@@ -21,11 +22,12 @@ same specified value), the number of discretization levels for every
 model (each model uses the same discretization level profile), or the
 aggregate number of discretization levels for all models (samples for
 each discretization level are distinct for each model).
-
-<!-- <b> Additional Discussion </b> -->
-
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
+
 See_Also::

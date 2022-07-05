@@ -1,25 +1,29 @@
-Blurb:: CONMIN method of feasible directions
-
+Blurb::
+CONMIN method of feasible directions
 Description::
 The interpretations of the method independent controls for CONMIN are
-essentially identical to those for DOT.  
+essentially identical to those for DOT.
 
-See \ref topic-package_dot for information related to \c CONMIN
-methods, specifically \ref method-dot_mmfd.
+See :ref:`topic-package_dot<topic-package_dot>` for information related to ``CONMIN``
+methods, specifically :ref:`method-dot_mmfd<method-dot_mmfd>`.
 
-<b>Expected HDF5 Output</b> 
+*Expected HDF5 Output*
 
-If Dakota was built with HDF5 support and run with the 
-\ref environment-results_output-hdf5 keyword, this method 
-writes the following results to HDF5: 
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
 
-- \ref hdf5_results-best_params 
-- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
-- \ref hdf5_results-best_constraints 
-- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
-Topics::	package_conmin
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+Topics::
+package_conmin
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	method-dot_mmfd
+
+See_Also::

@@ -1,16 +1,17 @@
 Blurb::
 This keyword enables the use of deterministic polynomial trend function
-
 Description::
 Enable the use of a deterministic polynomial trend function whose coefficients are
 found through regression. The user may choose a constant, linear, or quadratic
 polynomial.
 
-<b> Default Behavior </b>
+*Default Behavior*
 Defaults to no trend when keyword is absent.
-
 Topics::
 
+Examples::
 Theory::
+
 Faq::
+
 See_Also::

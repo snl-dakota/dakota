@@ -1,23 +1,26 @@
 Blurb::
 List of user-specified weighting sets
 Description::
-The \c pareto_set specification must identify an optimization or least
-squares calibration method using either a \c method_pointer or a \c
-method_name plus optional \c model_pointer.  This minimizer is
+The ``pareto_set`` specification must identify an optimization or least
+squares calibration method using either a ``method_pointer`` or a
+``method_name`` plus optional ``model_pointer``.  This minimizer is
 responsible for computing a set of optimal solutions from a set of
 response weightings (multi-objective weights or least squares term
-weights).  These weightings can be specified as follows: (1) using \c
-random_weight_sets, in which case weightings are selected randomly
-within [0,1] bounds, (2) using \c weight_sets, in which the weighting
-sets are specified in a list, or (3) using both \c random_weight_sets
-and \c weight_sets, for which the combined set of weights will be
+weights).  These weightings can be specified as follows: (1) using
+``random_weight_sets``, in which case weightings are selected randomly
+within [0,1] bounds, (2) using ``weight_sets``, in which the weighting
+sets are specified in a list, or (3) using both ``random_weight_sets``
+and ``weight_sets``, for which the combined set of weights will be
 used.  In aggregate, at least one set of weights must be specified.
 The set of optimal solutions is called the "pareto set," which can
 provide valuable design trade-off information when there are competing
 objectives.
-
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

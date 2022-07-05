@@ -1,7 +1,7 @@
 Blurb::
 Trust-region method for nonlinear least squares
 Description::
-NL2SOL is available as \c nl2sol and addresses unconstrained and
+NL2SOL is available as ``nl2sol`` and addresses unconstrained and
 bound-constrained least squares problems. It uses a trust-region method (and thus
 can be viewed as a generalization of the Levenberg-Marquardt
 algorithm) and adaptively chooses between two Hessian approximations,
@@ -13,95 +13,98 @@ solution. On problems that are not over-parameterized (i.e., that do
 not involve more optimization variables than the data support), NL2SOL
 usually exhibits fast convergence.
 
-Several internal NL2SOL convergence tolerances are adjusted in response to \c
-function_precision, which gives the relative precision to which
-responses are computed. 
+Several internal NL2SOL convergence tolerances are adjusted in response to
+``function_precision``, which gives the relative precision to which
+responses are computed.
 
-These tolerances may also be specified explicitly using: 
-\li \c convergence_tolerance   (NL2SOL's \c rfctol) 
-\li \c x_conv_tol              (NL2SOL's \c xctol) 
-\li \c absolute_conv_tol       (NL2SOL's \c afctol)
-\li \c singular_conv_tol       (NL2SOL's \c sctol)
-\li \c false_conv_tol          (NL2SOL's \c xftol)
-\li \c initial_trust_radius    (NL2SOL's \c lmax0)
+These tolerances may also be specified explicitly using:
+
+- ``convergence_tolerance``   (NL2SOL's ``rfctol``)
+- ``x_conv_tol``              (NL2SOL's ``xctol``)
+- ``absolute_conv_tol``       (NL2SOL's ``afctol``)
+- ``singular_conv_tol``       (NL2SOL's ``sctol``)
+- ``false_conv_tol``          (NL2SOL's ``xftol``)
+- ``initial_trust_radius``    (NL2SOL's ``lmax0``)
 
 The internal NL2SOL defaults can be obtained for many of these
-controls by specifying the value -1. 
-The internal defaults are often functions of machine epsilon 
-(as limited by \c function_precision).
+controls by specifying the value -1.
+The internal defaults are often functions of machine epsilon
+(as limited by ``function_precision``).
 
-<b>Expected HDF5 Output</b> 
+*Expected HDF5 Output*
 
-If Dakota was built with HDF5 support and run with the 
-\ref environment-results_output-hdf5 keyword, this method 
-writes the following results to HDF5: 
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
 
-- \ref hdf5_results-best_params 
-- \ref hdf5_results-best_constraints 
-- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
-- \ref hdf5_results-lsq_confidence_intervals (when 
-\ref responses-calibration_terms-calibration_data-num_experiments equals 1) 
 
-Topics::	nonlinear_least_squares
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-lsq_confidence_intervals<hdf5_results-lsq_confidence_intervals>` (when :ref:`responses-calibration_terms-calibration_data-num_experiments<responses-calibration_terms-calibration_data-num_experiments>` equals 1)
+Topics::
+nonlinear_least_squares
 Examples::
-An example of \c nl2sol is given below, and is discussed in the User's Manual.
+An example of ``nl2sol`` is given below, and is discussed in the User's Manual.
 
-Note that in this usage of \ref responses-calibration_terms, the driver script
-\c rosenbrock, is returning "residuals", which the \c nl2sol method is attempting
-to minimze. Another use case is to provide a data file, which Dakota will 
-attempt to match the model responses to. See \ref responses-calibration_terms-calibration_data_file.
-Finally, as of Dakota 6.2, the field data capability may be used with \c nl2sol.
+Note that in this usage of :ref:`responses-calibration_terms<responses-calibration_terms>`, the driver script
+``rosenbrock``, is returning "residuals", which the ``nl2sol`` method is attempting
+to minimze. Another use case is to provide a data file, which Dakota will
+attempt to match the model responses to. See :ref:`responses-calibration_terms-calibration_data_file<responses-calibration_terms-calibration_data_file>`.
+Finally, as of Dakota 6.2, the field data capability may be used with ``nl2sol``.
 That is, the user can specify field simulation data and field experiment data,
 and Dakota will interpolate and provide the proper residuals for the calibration.
 
-\verbatim
-# Dakota Input File: rosen_opt_nls.in
-environment
-  tabular_data
-    tabular_data_file = 'rosen_opt_nls.dat'
 
-method
-  max_iterations = 100
-  convergence_tolerance = 1e-4
-  nl2sol
+.. code-block::
 
-model
-  single
+    # Dakota Input File: rosen_opt_nls.in
+    environment
+      tabular_data
+        tabular_data_file = 'rosen_opt_nls.dat'
+    
+    method
+      max_iterations = 100
+      convergence_tolerance = 1e-4
+      nl2sol
+    
+    model
+      single
+    
+    variables
+      continuous_design = 2
+        initial_point    -1.2      1.0
+        lower_bounds     -2.0     -2.0
+        upper_bounds      2.0      2.0
+        descriptors       'x1'     "x2"
+    
+    interface
+      analysis_driver = 'rosenbrock'
+        direct
+    
+    responses
+      calibration_terms = 2
+      analytic_gradients
+      no_hessians
+    
 
-variables
-  continuous_design = 2
-    initial_point    -1.2      1.0
-    lower_bounds     -2.0     -2.0
-    upper_bounds      2.0      2.0
-    descriptors       'x1'     "x2"
-
-interface
-  analysis_driver = 'rosenbrock'
-    direct
-
-responses
-  calibration_terms = 2
-  analytic_gradients
-  no_hessians
-
-\endverbatim
 
 Theory::
 NL2SOL has a variety of internal controls as described in AT&T Bell
 Labs CS TR 153 (http://cm.bell-labs.com/cm/cs/cstr/153.ps.gz). A
-number of existing %Dakota controls (method independent controls and
+number of existing Dakota controls (method independent controls and
 responses controls) are mapped into these NL2SOL internal controls.
-In particular, %Dakota's \c convergence_tolerance, \c max_iterations,
-\c max_function_evaluations, and \c fd_gradient_step_size are mapped
-directly into NL2SOL's \c rfctol, \c mxiter, \c mxfcal, and \c dltfdj
-controls, respectively. In addition, %Dakota's \c fd_hessian_step_size
-is mapped into both \c delta0 and \c dltfdc, and %Dakota's \c output
-verbosity is mapped into NL2SOL's \c auxprt and \c outlev (for \c
-normal/\c verbose/\c debug \c output, NL2SOL prints initial guess,
+In particular, Dakota's ``convergence_tolerance``, ``max_iterations``,
+``max_function_evaluations``, and ``fd_gradient_step_size`` are mapped
+directly into NL2SOL's ``rfctol``, ``mxiter``, ``mxfcal``, and ``dltfdj``
+controls, respectively. In addition, Dakota's ``fd_hessian_step_size``
+is mapped into both ``delta0`` and ``dltfdc``, and Dakota's ``output``
+verbosity is mapped into NL2SOL's ``auxprt`` and ``outlev`` (for
+normal/ verbose/ ``debug`` ``output``, NL2SOL prints initial guess,
 final solution, solution statistics, nondefault values, and changes to
-the active bound constraint set on every iteration; for \c quiet \c
-output, NL2SOL prints only the initial guess and final solution; and
-for \c silent \c output, NL2SOL output is suppressed).
-
+the active bound constraint set on every iteration; for ``quiet``
+``output``, NL2SOL prints only the initial guess and final solution; and
+for ``silent`` ``output``, NL2SOL output is suppressed).
 Faq::
-See_Also::	method-nlssol_sqp, method-optpp_g_newton, responses-calibration_terms-field_calibration_terms
+
+See_Also::

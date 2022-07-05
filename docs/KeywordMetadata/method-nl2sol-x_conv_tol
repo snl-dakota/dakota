@@ -1,15 +1,18 @@
 Blurb::
 X-convergence tolerance
 Description::
-\c x_conv_tol maps to the internal NL2SOL control \c xctol. 
+``x_conv_tol`` maps to the internal NL2SOL control ``xctol``.
 It is the X-convergence tolerance (scaled relative
 accuracy of the solution variables).
 
-The internal default is a function of machine epsilon 
-(as limited by \c function_precision). The default is selected with a value of -1.
-
+The internal default is a function of machine epsilon
+(as limited by ``function_precision``). The default is selected with a value of -1.
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

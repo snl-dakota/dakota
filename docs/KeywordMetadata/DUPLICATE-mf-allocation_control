@@ -1,7 +1,6 @@
-Blurb:: Sample allocation approach for multifidelity expansions
-
+Blurb::
+Sample allocation approach for multifidelity expansions
 Description::
-
 Multifidelity surrogate approaches, including polynomial chaos,
 stochastic collocation, and function train, can optionally employ a
 integrated greedy competition across the model sequence, where each
@@ -10,12 +9,11 @@ competed to determine the candidate with the greatest impact on the
 QoI statistics per unit cost.  This greedy competition implicitly
 determines the optimal sample allocation across model indices.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
-The default, when \c allocation_control is not specified, is to
+The default, when ``allocation_control`` is not specified, is to
 compute or adapt separately for each model index (individual instead
 of integrated refinement).
-
 Topics::
 
 Examples::
@@ -23,4 +21,5 @@ Examples::
 Theory::
 
 Faq::
-See_Also::	
+
+See_Also::

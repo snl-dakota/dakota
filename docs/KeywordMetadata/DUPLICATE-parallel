@@ -1,10 +1,13 @@
-Blurb:: Aggregate response statistics assuming a parallel system
-
+Blurb::
+Aggregate response statistics assuming a parallel system
 Description::
-See parent keyword \c system for description.
+See parent keyword ``system`` for description.
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

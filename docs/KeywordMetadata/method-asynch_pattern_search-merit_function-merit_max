@@ -5,10 +5,13 @@ APPS solves nonlinearly constrained problems by solving a sequence of
 linearly constrained merit function-base subproblems. There are
 several exact and smoothed exact penalty functions.
 
-\c merit_max: based on \f$ \ell_\infty\f$ norm
-
+``merit_max``: based on :math:`\ell_\infty`  norm
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

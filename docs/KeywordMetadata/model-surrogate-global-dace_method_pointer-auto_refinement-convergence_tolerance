@@ -1,16 +1,17 @@
 Blurb::
 Cross-validation threshold for surrogate convergence
-
 Description::
-The surrogate model will be refined until the selected \c cross_validation_metric
+The surrogate model will be refined until the selected ``cross_validation_metric``
 falls below this convergence tolerance.
 
-<b> Default Behavior </b>
+*Default Behavior*
 The default is 1e-4.
-
 Topics::
 
 Examples::
+
 Theory::
+
 Faq::
+
 See_Also::

@@ -1,50 +1,44 @@
 Blurb::
 Calculate the mutual information between prior and posterior
-
 Description::
-The mutual information quantifies how much information two random variables 
+The mutual information quantifies how much information two random variables
 contain about each other. It is a measure of the mutual dependence of two
 random variables. The mutual information is a non-negative measure, with zero
-representing complete independence of the two random variables. For continuous 
-random variables \f$X\f$ and \f$Y\f$, the mutual information is
+representing complete independence of the two random variables. For continuous
+random variables :math:`X`  and :math:`Y` , the mutual information is
 
-\f[
-I(X,Y) = \int \int p(x,y) \log \frac{ p(x,y) }{ p(x)p(y) } dx dy. 
-\f]
+
+.. math:: 
+
+   I(X,Y) = \int \int p(x,y) \log \frac{ p(x,y) }{ p(x)p(y) } dx dy.
 
 The mutual information can also be interpreted as the reduction in
-uncertainty of one random variable due to the knowledge of another. By 
-specifying, \c mutual_info, the mutual information between the posterior 
+uncertainty of one random variable due to the knowledge of another. By
+specifying, ``mutual_info``, the mutual information between the posterior
 parameters and the prior parameters is calculated.
 
-The mutual information is calculated using a \f$k\f$-nearest neighbor
+The mutual information is calculated using a :math:`k` -nearest neighbor
 approximation algorithm. As of Dakota 6.6, there are two such algorithms
-available, both of which are derived in \cite Kra04 . By default, Dakota uses
+available, both of which are derived in :cite:p:`Kra04` . By default, Dakota uses
 the first such algorithm; the second may be selected by specifying the keyword
-\c ksg2. Further details can be found in the Dakota Theory Manual 
-\cite TheoMan .
+``ksg2``. Further details can be found in the Dakota Theory Manual
+:cite:p:`TheoMan` .
 
-<b> Expected Output </b>
+*Expected Output*
 
-If \c mutual_information is specified, the calculated value will be reported
+If ``mutual_information`` is specified, the calculated value will be reported
 to the screen at the end of the calibration.
 
-<b> Additional Discussion </b>
+*Additional Discussion*
 
-Due to the necessary approximation of the multidimensional integral above, a 
-negative mutual information may be reported for applications whose true value 
+Due to the necessary approximation of the multidimensional integral above, a
+negative mutual information may be reported for applications whose true value
 is close to or equal to zero.
 As of Dakota 6.6, mutual information calculations are primarily used in the
-implementation of the \ref method-bayes_calibration-experimental_design 
+implementation of the :ref:`method-bayes_calibration-experimental_design<method-bayes_calibration-experimental_design>`
 algorithm.
-
+Topics::
 Examples::
-
-\verbatim
-method
-	bayes_calibration queso
-	  dram
-	  seed = 34785
-	  chain_samples = 1000
-	  posterior_stats mutual_info 
-\endverbatim
+Theory::
+Faq::
+See_Also::

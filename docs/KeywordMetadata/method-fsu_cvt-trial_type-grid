@@ -1,10 +1,13 @@
 Blurb::
 Samples on a regular grid
 Description::
-Points are placed on a regular grid over the hyperspace. 
+Points are placed on a regular grid over the hyperspace.
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also:: method-fsu_cvt-trial_type	
+
+See_Also::

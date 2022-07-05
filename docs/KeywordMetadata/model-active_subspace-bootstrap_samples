@@ -1,17 +1,17 @@
 Blurb::
 Number of bootstrap replicates used in truncation metrics
-
 Description::
-
 The number of bootstrap replicates used to estimate the active subspace size.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 Use 100 replicates.
-
 Topics::
 
 Examples::
+
 Theory::
+
 Faq::
+
 See_Also::

@@ -1,24 +1,25 @@
-Blurb:: Output file for surrogate model variance evaluations
-
+Blurb::
+Output file for surrogate model variance evaluations
 Description::
-
 Specifies a file in which the points (input variable values) at which
 the surrogate model is evaluated and corresponding response
-<b>variance</b> values computed by the surrogate model will be
+*variance* values computed by the surrogate model will be
 written.  The response values are the surrogate's predicted
 approximation to the truth model responses at those points.
 
-<b> Usage Tips </b>
+*Usage Tips*
 
 Dakota exports tabular data in one of three formats:
-\li \c annotated (default)
-\li \c custom_annotated
-\li \c freeform
 
+- ``annotated`` (default)
+- ``custom_annotated``
+- ``freeform``
 Topics::
 
 Examples::
 
 Theory::
+
 Faq::
-See_Also:: model-surrogate-global-export_approx_points_file
+
+See_Also::

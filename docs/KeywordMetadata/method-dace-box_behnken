@@ -6,8 +6,12 @@ design is a quadratic design in that it does not contain an embedded factorial o
 design the treatment combinations are at the midpoints of edges of the process space and at the center, as compared
 with CCD designs where the extra points are placed at ’star points’ on a circle outside of the process space. Box-
 Behken designs are rotatable (or near rotatable) and require 3 levels of each factor.
-Topics::	
+Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

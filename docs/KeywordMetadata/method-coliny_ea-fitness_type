@@ -1,10 +1,13 @@
 Blurb::
 Select fitness type
 Description::
-The \c fitness_type controls how strongly differences in "fitness" (i.e., the objective function) are weighted in the process of selecting "parents" for crossover. It has two options, \c linear_rank and \c merit_function.
-
+The ``fitness_type`` controls how strongly differences in "fitness" (i.e., the objective function) are weighted in the process of selecting "parents" for crossover. It has two options, ``linear_rank`` and ``merit_function``.
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

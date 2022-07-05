@@ -6,39 +6,43 @@ the simulation response data during the course of a refinement study.
 This branch of methods is new and currently only contains one algorithm:
 Richardson extrapolation.
 
-<b> Refinement of the model </b>
+*Refinement of the model*
 
-The model fidelity must be parameterized by one or more continuous state variable(s). 
+The model fidelity must be parameterized by one or more continuous state variable(s).
 
 The refinement path is
-determined from the \c initial_state of the \c continuous_state
+determined from the ``initial_state`` of the ``continuous_state``
 variables specification in combination with the
-\c refinement_rate, where each of the state variables is treated as an
+``refinement_rate``, where each of the state variables is treated as an
 independent refinement factor and each of the initial state values is
 repeatedly divided by the refinement rate value to define new
-discretization states. 
+discretization states.
 
-<b> Results </b>
+*Results*
 
 Three algorithm options are currently provided:
--# \c estimate_order
--# \c converge_order
--# \c converge_qoi
 
-<b> Stopping Criteria </b>
+
+- ``estimate_order``
+- ``converge_order``
+- ``converge_qoi``
+
+*Stopping Criteria*
 
 The method employs the
-\c max_iterations and \c convergence_tolerance method independent
+``max_iterations`` and ``convergence_tolerance`` method independent
 controls as stopping criteria.
-
-
 Topics::
+
 Examples::
+
 Theory::
-In each of these cases, convergence order for a response quantity of 
+In each of these cases, convergence order for a response quantity of
 interest (QoI) is estimated from
-\f[p = ln\left(\frac{QoI_3 - QoI_2}{QoI_2 - QoI_1}\right)/ln(r)\f]
-where \f$r\f$ is the uniform refinement rate specified by \c 
-refinement_rate.
+
+.. math:: p = ln\left(\frac{QoI_3 - QoI_2}{QoI_2 - QoI_1}\right)/ln(r)
+where :math:`r`  is the uniform refinement rate specified by
+``refinement_rate``.
 Faq::
-See_Also::	
+
+See_Also::

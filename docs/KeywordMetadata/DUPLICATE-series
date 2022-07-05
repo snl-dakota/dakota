@@ -1,10 +1,13 @@
-Blurb:: Aggregate response statistics assuming a series system
-
+Blurb::
+Aggregate response statistics assuming a series system
 Description::
-See parent keyword \c system for description.
-
+See parent keyword ``system`` for description.
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

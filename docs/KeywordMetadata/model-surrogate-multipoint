@@ -6,17 +6,19 @@ improve the accuracy of local approximations. The data often
 comes from the current and previous iterates of a minimization algorithm.
 
 Currently, only the
-Two-point Adaptive Nonlinearity %Approximation (TANA-3) method of
-\cite Xu98 is supported with the \c tana keyword.
+Two-point Adaptive Nonlinearity Approximation (TANA-3) method of
+:cite:p:`Xu98` is supported with the ``tana`` keyword.
 
 The
 truth model to be used to generate the value/gradient data used in the
-approximation is identified through the required \c
-truth_model_pointer specification.
-
-
+approximation is identified through the required
+``truth_model_pointer`` specification.
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	model-surrogate-local, model-surrogate-global, model-surrogate-hierarchical
+
+See_Also::

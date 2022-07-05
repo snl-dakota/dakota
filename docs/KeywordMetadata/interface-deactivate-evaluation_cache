@@ -1,6 +1,5 @@
 Blurb::
 Do not retain function evaluation history in memory
-
 Description::
 Do not retain the complete function evaluation history in memory.
 
@@ -15,14 +14,17 @@ performing timing studies).
 However, the downside is that unnecessary computations may be
 performed since duplication in function evaluation requests may not be
 detected. For this reason, this option is not recommended when
-function evaluations are costly. 
+function evaluations are costly.
 
-Note: duplication detection within %Dakota can be deactivated, but
+Note: duplication detection within Dakota can be deactivated, but
 duplication detection features within specific optimizers may still be
 active.
-
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

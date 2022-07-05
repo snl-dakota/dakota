@@ -1,36 +1,38 @@
-Blurb::  Use the Metropolis-Hastings MCMC algorithm
-
-Description::  
+Blurb::
+Use the Metropolis-Hastings MCMC algorithm
+Description::
 This keyword specifies the use of a Metropolis-Hastings algorithm for
 the MCMC chain generation.  This means there is no delayed rejection
 and no adaptive proposal covariance updating as in DRAM.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
-Five MCMC algorithm variants are supported currently in QUESO: \c dram, \c
-delayed_rejection, \c adaptive_metropolis, \c metropolis_hastings, and
-\c multilevel.  The default is \c dram.
+Five MCMC algorithm variants are supported currently in QUESO: ``dram``,
+``delayed_rejection``, ``adaptive_metropolis``, ``metropolis_hastings``, and
+``multilevel``.  The default is ``dram``.
 
-Four MCMC algorithm variants are currently supported in MUQ: \c dram, \c
-delayed_rejection, \c metropolis_hastings and \c adaptive_metropolis.
- 
-<b> Usage Tips </b>
+Four MCMC algorithm variants are currently supported in MUQ: ``dram``,
+``delayed_rejection``, ``metropolis_hastings`` and ``adaptive_metropolis``.
+
+*Usage Tips*
 
 If the user wants to use Metropolis-Hastings, possibly as a comparison
 to the other methods which involve more chain adaptation, this is the
 MCMC type to use.
-
-
-Topics::	bayesian_calibration	
+Topics::
+bayesian_calibration
 Examples::
-Examples::
-\verbatim
-method,
-        bayes_calibration queso
-          metropolis_hastings 
-          samples = 10000 seed = 348
-\endverbatim
+
+.. code-block::
+
+    method,
+            bayes_calibration queso
+              metropolis_hastings
+              samples = 10000 seed = 348
+
 
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

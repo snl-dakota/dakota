@@ -1,23 +1,24 @@
 Blurb::
 Metric that estimates active subspace size
-
 Description::
 Metric that controls how many basis vectors are retained in the active
 subspace.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
-The default is to use the \ref
-model-active_subspace-truncation_method-constantine diagnostic.
+The default is to use the
+:ref:`model-active_subspace-truncation_method-constantine<model-active_subspace-truncation_method-constantine>` diagnostic.
 
-<b> Usage Tips </b>
+*Usage Tips*
 
 If the automated subspace identification methods do not yield desirable results,
-consider using the explicit \ref model-active_subspace-dimension truncation option.
-
+consider using the explicit :ref:`model-active_subspace-dimension<model-active_subspace-dimension>` truncation option.
 Topics::
 
 Examples::
+
 Theory::
+
 Faq::
+
 See_Also::

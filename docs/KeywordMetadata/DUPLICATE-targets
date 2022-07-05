@@ -1,15 +1,21 @@
 Blurb::
 Target values for the nonlinear equality constraint
 Description::
-The \c targets specification provides the targets for nonlinear
+The ``targets`` specification provides the targets for nonlinear
 equalities of the form
-\f[g(x) = g_t\f]
-and the defaults for the equality targets enforce a value of \c 0.0
-for each constraint:
-\f[g(x) = 0.0\f]
 
-Topics::	
+.. math:: g(x) = g_t
+and the defaults for the equality targets enforce a value of ``0``.0
+for each constraint:
+
+.. math:: g(x) = 0.0
+
+Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

@@ -1,12 +1,14 @@
 Blurb::
 Limits the maximum rank that is explored during a rank adaptation.
-
 Description::
-The \c adapt_rank procedure increments the rank on each iteration, and
-the maximum value is limited by \c max_rank
+The ``adapt_rank`` procedure increments the rank on each iteration, and
+the maximum value is limited by ``max_rank``
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 Max rank is unbounded (adaptive sweep will stop when CV error increases).
-
-See_Also::	model-surrogate-global-function_train-adapt_rank
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

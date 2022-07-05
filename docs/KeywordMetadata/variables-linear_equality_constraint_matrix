@@ -1,28 +1,29 @@
 Blurb::
 Define coefficients of the linear equalities
 Description::
-In the equality case, the constraint matrix \f$A\f$
+In the equality case, the constraint matrix :math:`A` 
 provides coefficients for the variables on the left hand side of:
-\f[Ax = a_t\f]
 
+.. math:: Ax = a_t
 The linear_constraints topics page (linked above) outlines a few additional
 things to consider when using linear constraints.
-
-Topics::	linear_constraints
+Topics::
+linear_constraints
 Examples::
-An optimization involving three variables, \c x1, \c x2, and \c x3, is to be
+An optimization involving three variables, ``x1``, ``x2``, and ``x3``, is to be
 performed. These variables must satisfy a pair of linear equality constraints:
 
-\f[ 1.5 \cdot x1 + 1.0 \cdot x2 = 5.0 \f]
-\f[ 3.0 \cdot x1 - 4.0 \cdot x3 = 0.0 \f]
 
+.. math::  1.5 dot ``x1`` + 1.0 dot ``x2`` = 5.0 
+.. math::  3.0 dot ``x1`` - 4.0 dot ``x3`` = 0.0 
 The pair of constraints can be written in matrix form as:
 
-\f[\begin{bmatrix}
+
+.. math:: \begin{bmatrix}
   1.5 & 1.0 & 0.0 \\
-  3.0 & 0.0 & -4.0 
+  3.0 & 0.0 & -4.0
 \end{bmatrix}
-  
+
 \begin{bmatrix}
   x1 \\
   x2 \\
@@ -34,28 +35,30 @@ The pair of constraints can be written in matrix form as:
   0.0
 \end{bmatrix}
 
-\f]
 
-The coefficient matrix and right hand side are expressed to Dakota in the 
-\ref variables section of the input file:
+The coefficient matrix and right hand side are expressed to Dakota in the
+:ref:`variables<variables>` section of the input file:
 
-\verbatim
 
-variables
-  continuous_design 2
-    descriptors 'x1' 'x2'
+.. code-block::
 
-  linear_equality_constraint_matrix = 1.5  1.0  0.0
-                                      3.0  0.0 -4.0
+    
+    variables
+      continuous_design 2
+        descriptors 'x1' 'x2'
+    
+      linear_equality_constraint_matrix = 1.5  1.0  0.0
+                                          3.0  0.0 -4.0
+    
+      linear_equality_targets = 5.0
+                                0.0
+    
 
-  linear_equality_targets = 5.0
-                            0.0
 
-\endverbatim
-
-For related examples, see the \ref variables-linear_inequality_constraint_matrix
+For related examples, see the :ref:`variables-linear_inequality_constraint_matrix<variables-linear_inequality_constraint_matrix>`
 keyword page.
-
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

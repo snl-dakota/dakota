@@ -1,40 +1,44 @@
 Blurb::
 Selection of statistics to compute at each response level
-
 Description::
-The \c compute keyword is used to select which forward stastical mapping is calculated
+The ``compute`` keyword is used to select which forward stastical mapping is calculated
 at each response level.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
-If \c response_levels is not specified, no statistics are computed. If \c response_levels is specified but \c compute is not, probabilities will be computed by default. If both \c response_levels and \c compute are specified, then on of the following must be specified: \c probabilities, \c reliabilities, or \c gen_reliabilities.
+If ``response_levels`` is not specified, no statistics are computed. If ``response_levels`` is specified but ``compute`` is not, probabilities will be computed by default. If both ``response_levels`` and ``compute`` are specified, then on of the following must be specified: ``probabilities``, ``reliabilities``, or ``gen_reliabilities``.
 
-<b> Expected Output </b>
+*Expected Output*
 
-The type of statistics specified by \c compute will be reported for each response level.
+The type of statistics specified by ``compute`` will be reported for each response level.
 
-<b> Usage Tips </b>
+*Usage Tips*
 
 CDF/CCDF probabilities are calculated for specified response levels
-using a simple binning approach. 
+using a simple binning approach.
 
 CDF/CCDF reliabilities are calculated for specified response levels by
 computing the number of sample standard deviations separating the
-sample mean from the response level. 
+sample mean from the response level.
+Topics::
 
-Topics::	
 Examples::
-\verbatim
-method
-  sampling
-    sample_type random
-    samples = 100 seed = 1
-    complementary distribution
-    response_levels = 3.6e+11 4.0e+11 4.4e+11
-                      6.0e+04 6.5e+04 7.0e+04
-                      3.5e+05 4.0e+05 4.5e+05
-    compute reliabilities
-\endverbatim
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        samples = 100 seed = 1
+        complementary distribution
+        response_levels = 3.6e+11 4.0e+11 4.4e+11
+                          6.0e+04 6.5e+04 7.0e+04
+                          3.5e+05 4.0e+05 4.5e+05
+        compute reliabilities
+
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

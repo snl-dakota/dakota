@@ -1,99 +1,87 @@
 Blurb::
 (Experimental) Adaptively select experimental designs for iterative
 Bayesian updating
-
 Description::
 This "experimental design" algorithm uses responses produced by a high-fidelity
-model as data to update the parameters of a low-fidelity model using Bayes' 
-Rule. It is a capability that is under active development and is currently 
-compatible only with \c queso. The user-specified high-fidelity model should 
-depend only on configuration variables (i.e. design conditions), such as 
-temperature or spatial location, while the user-specified low-fidelity model 
-should depend on both configuration variables and its own model parameters to 
-be calibrated. 
+model as data to update the parameters of a low-fidelity model using Bayes'
+Rule. It is a capability that is under active development and is currently
+compatible only with ``queso``. The user-specified high-fidelity model should
+depend only on configuration variables (i.e. design conditions), such as
+temperature or spatial location, while the user-specified low-fidelity model
+should depend on both configuration variables and its own model parameters to
+be calibrated.
 
-The algorithm starts with a preliminary Bayesian calibration using the 
-number of data points specified in \c initial_samples. These data points can
-be read in through the \c calibration_data_file command in the \c responses 
-block. If \c num_experiments is less than \c initial_samples or if no such data
+The algorithm starts with a preliminary Bayesian calibration using the
+number of data points specified in ``initial_samples``. These data points can
+be read in through the ``calibration_data_file`` command in the ``responses``
+block. If ``num_experiments`` is less than ``initial_samples`` or if no such data
 file is provided, Latin Hypercube Samples of the design space (specified in the
-\c variables block) will be run through the user-specified high-fidelity code 
-to  
-supplement the initial data. Once this first calibration is complete, a set of 
-possible experimental design conditions, specified using the configuration 
-variables, is proposed. The user specifies the size of this set using 
-\c num_candidates. The set of candidates itself may be explicitly given through 
-the \c import_candidate_points_file command. If the number of candidates in this 
-file is less than \c num_candidates, or if this file is omitted, the set of
-candidate designs will again be supplemented with a Latin Hypercube Sample of 
-the design space. 
+``variables`` block) will be run through the user-specified high-fidelity code
+to
+supplement the initial data. Once this first calibration is complete, a set of
+possible experimental design conditions, specified using the configuration
+variables, is proposed. The user specifies the size of this set using
+``num_candidates``. The set of candidates itself may be explicitly given through
+the ``import_candidate_points_file`` command. If the number of candidates in this
+file is less than ``num_candidates``, or if this file is omitted, the set of
+candidate designs will again be supplemented with a Latin Hypercube Sample of
+the design space.
 
-For each candidate design \f$\xi_i\f$ in the set of possible design conditions, 
-the mutual information (MI) between the low-fidelity model parameters 
-\f$\boldsymbol{\theta}\f$ and the high-fidelity model response 
-\f$\textbf{y}(\xi_i)\f$,
+For each candidate design :math:`\xi_i`  in the set of possible design conditions,
+the mutual information (MI) between the low-fidelity model parameters
+:math:`\boldsymbol{\theta}`  and the high-fidelity model response
+:math:`\textbf{y}(\xi_i)` ,
 
-\f[
-MI = \iint f(\boldsymbol{\theta}, \textbf{y}(\xi_i) ) \log 
+
+.. math:: 
+
+   MI = \iint f(\boldsymbol{\theta}, \textbf{y}(\xi_i) ) \log
 \frac{ f(\boldsymbol{\theta}, \textbf{y}(\xi_i)) }
 { f(\boldsymbol{\theta}) f(\textbf{y}(\xi_i)) }
 d\boldsymbol{\theta} d\textbf{y},
-\f]
 
 is approximated. The high-fidelity model is replaced by the low-fidelity model
-and a \f$k\f$-nearest neighbor approximation is used in the calculation. The 
-design point \f$\xi^{*}\f$ for which MI is the largest is selected and run
-through the high-fidelity model to yield a new observation \f$y(\xi^{*})\f$.
+and a :math:`k` -nearest neighbor approximation is used in the calculation. The
+design point :math:`\xi^{*}`  for which MI is the largest is selected and run
+through the high-fidelity model to yield a new observation :math:`y(\xi^{*})` .
 This new observation is added to the calibration data, and a subsequent
 Bayesian calibration is performed. A new MI for each remaining candidate design
-is computed, and the process repeats until one of three stopping criteria are 
+is computed, and the process repeats until one of three stopping criteria are
 met. Multiple optimal designs may be selected concurrently by specifying
-\c batch_size.
+``batch_size``.
 
 Of the three stopping criteria, two are automatically checked by Dakota. If
 the relative change in the MI from one iteration to the next is sufficiently
 small or if the set of candidate design conditions has been exhausted, the
 algorithm teriminates. The user may specify the third stopping criteria using
-\c max_hifi_evaluations. This limits the number of high-fidelity model 
+``max_hifi_evaluations``. This limits the number of high-fidelity model
 evaluations that will be performed during this algorithm. It therefore limits
-the number of iterations through the algorithm that will be performed. Any 
-high-fidelity model runs needed to produce the data set for the initial 
+the number of iterations through the algorithm that will be performed. Any
+high-fidelity model runs needed to produce the data set for the initial
 calibration are not included in this allocation.
 
 In the case that the high-fidelity model must be run indepently of Dakota,
-the user may set \c max_hifi_evaluations to zero. The optimal experimental
-design point will be calculated and reported, but the high-fidelity model 
-will not be run. For more details, see the User's Manual. 
+the user may set ``max_hifi_evaluations`` to zero. The optimal experimental
+design point will be calculated and reported, but the high-fidelity model
+will not be run. For more details, see the User's Manual.
 
-<b> Expected Output </b>
+*Expected Output*
 
 Information regarding the progress and termination condition of the experimental
-design algorithm is output to the screen with varying levels of verbosity. 
-Further details can be found, regardless of verbosity, in the output file \c 
-experimental_design_output.txt
+design algorithm is output to the screen with varying levels of verbosity.
+Further details can be found, regardless of verbosity, in the output file
+``experimental_design_output``.txt
 
-<b> Usage Tips </b>
+*Usage Tips*
 
-Due to the optional file read-ins and the supplemental sampling, it is 
-important for the user to check consistency within the input file 
-specifications. For example, if \c num_experiments is less than the number of
-experiments in the \c calibration_data_file, only the first lines of the file
-will be used and the rest will be discarded. The same holds true for the 
-\c import_candidate_points_file and \c num_candidates. 
-
+Due to the optional file read-ins and the supplemental sampling, it is
+important for the user to check consistency within the input file
+specifications. For example, if ``num_experiments`` is less than the number of
+experiments in the ``calibration_data_file``, only the first lines of the file
+will be used and the rest will be discarded. The same holds true for the
+``import_candidate_points_file`` and ``num_candidates``.
+Topics::
 Examples::
-The input file below illustrates the use of \c experimental_design and its
-options
-
-\verbatim
-	bayes_calibration
-	  queso
-	  dram
-	  chain_samples = 1000 seed = 348
- 	experimental_design
-	  initial_samples = 5
-	  num_candidates = 10
-	  import_candidate_points_file = "bayes_experimental_design.cand.dat"
-	    freeform
-	  max_hifi_evaluations = 3
-\endverbatim
+Theory::
+Faq::
+See_Also::

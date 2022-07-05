@@ -1,29 +1,30 @@
 Blurb::
 Filename for a YAML file that specifies polynomial surrogate options
-
 Description::
 The YAML file contains configuration options
 that are used to populate a Teuchos ParameterList used by the polynomial
 that will override other keyword-specified parameters.
 Missing options in the YAML file are set to default values.
+Topics::
 
 Examples::
 
-\verbatim
-# FILE: polynomial_options.yaml
+.. code-block::
 
-Polynomial Parameters:
-  max degree: 3
-  scaler type: none
-  reduced basis: false
-  p-norm: 1.0
-  regression solver type: SVD
-  standardize response: false
-  verbosity: 1
-\endverbatim
+    # FILE: polynomial_options.yaml
+    
+    Polynomial Parameters:
+      max degree: 3
+      scaler type: none
+      reduced basis: false
+      p-norm: 1.0
+      regression solver type: SVD
+      standardize response: false
+      verbosity: 1
 
-Topics::
 
 Theory::
+
 Faq::
+
 See_Also::

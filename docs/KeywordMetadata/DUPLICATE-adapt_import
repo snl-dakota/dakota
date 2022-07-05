@@ -1,15 +1,18 @@
 Blurb::
 Importance sampling option for probability refinement
 Description::
-\c adapt_import centers a sampling 
-density at one of the initial LHS samples identified in the failure region. 
-It then generates the importance samples, weights them by their probability of occurence 
-given the original density, and calculates the required probability (CDF or CCDF level). 
-This continues iteratively until the 
-failure probability estimate converges. 
+``adapt_import`` centers a sampling
+density at one of the initial LHS samples identified in the failure region.
+It then generates the importance samples, weights them by their probability of occurence
+given the original density, and calculates the required probability (CDF or CCDF level).
+This continues iteratively until the
+failure probability estimate converges.
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

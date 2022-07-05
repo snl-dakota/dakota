@@ -1,30 +1,34 @@
-Blurb::  Use the multilevel MCMC algorithm. 
+Blurb::
+Use the multilevel MCMC algorithm.
+Description::
+Selects the multilevel algorithm described in :cite:p:`Prudencio`.
 
-Description::  
-Selects the multilevel algorithm described in \cite Prudencio.
- 
-<b> Default Behavior </b>
+*Default Behavior*
 
-Five MCMC algorithm variants are supported: \c dram, \c
-delayed_rejection, \c adaptive_metropolis, \c metropolis_hastings, and
-\c multilevel.  The default is \c dram.
+Five MCMC algorithm variants are supported: ``dram``,
+``delayed_rejection``, ``adaptive_metropolis``, ``metropolis_hastings``, and
+``multilevel``.  The default is ``dram``.
 
-<b> Usage Tips </b>
+*Usage Tips*
 
 The multilevel algorithm is a more experimental algorithm than the
 other MCMC approaches mentioned above.  It works well in cases where
 the prior can be "evolved" to a posterior in a structured way.
-Currently, the multilevel option is not in production form. 
-
-Topics::	bayesian_calibration	
+Currently, the multilevel option is not in production form.
+Topics::
+bayesian_calibration
 Examples::
-\verbatim
-method,
-        bayes_calibration queso
-          multilevel
-          samples = 10000 seed = 348
-\endverbatim
+
+.. code-block::
+
+    method,
+            bayes_calibration queso
+              multilevel
+              samples = 10000 seed = 348
+
 
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

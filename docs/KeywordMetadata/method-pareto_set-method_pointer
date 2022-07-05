@@ -1,12 +1,15 @@
 Blurb::
 Pointer to optimization or least-squares sub-method
 Description::
-The \c method_pointer keyword is used to specify a pointer to an optimization 
+The ``method_pointer`` keyword is used to specify a pointer to an optimization
 or least-squares sub-method that is responsible for computing a set of optimal
 solutions for a set of response weightings.
-
-Topics::	block_pointer
+Topics::
+block_pointer
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

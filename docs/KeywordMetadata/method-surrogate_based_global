@@ -1,85 +1,64 @@
-Blurb:: Adaptive Global Surrogate-Based Optimization
-
+Blurb::
+Adaptive Global Surrogate-Based Optimization
 Description::
-
-The \c surrogate_based_global method iteratively performs optimization
+The ``surrogate_based_global`` method iteratively performs optimization
 on a global surrogate using the same bounds during each iteration.
 
-\li In one iteration, optimal solutions are found on the surrogate
-    model, and a subset of these are passed to the next iteration.
 
-\li At the next iteration, these surrogate-optimal variable sets are
-    evaluated with the "truth" model, and added to the set of points
-    over which the next surrogate is constructed.
+- In one iteration, optimal solutions are found on the surrogate     model, and a subset of these are passed to the next iteration.
+- At the next iteration, these surrogate-optimal variable sets are     evaluated with the "truth" model, and added to the set of points     over which the next surrogate is constructed.
 
 In this way, the optimization operates on a more accurate surrogate
 during each iteration, presumably driving to optimality quickly. In
-contrast to \ref method-surrogate_based_local, this approach has no
+contrast to :ref:`method-surrogate_based_local<method-surrogate_based_local>`, this approach has no
 guarantee of convergence.
 
-<b> Usage Tips </b>
+*Usage Tips*
 
-<em>Attention:</em> This adaptive method is not recommended for
+*Attention:* This adaptive method is not recommended for
 "build-once" surrogates trained from (static) imported data or trained
 online using a single Dakota design of experiments. Instead, any
 Dakota optimization method can be used with a (build-once) global
-surrogate by specifying the \c id_model of a global surrogate model
-with the optimizer's \c model_pointer keyword.
+surrogate by specifying the ``id_model`` of a global surrogate model
+with the optimizer's ``model_pointer`` keyword.
 
 Configuring the method:
 
-\li The sub-method, specified with either \ref
-method-surrogate_based_global-method_pointer or \ref
-method-surrogate_based_global-method_name should typically be an
-optimizer that returns multiple final solutions, such as \ref
-method-moga or \ref method-soga.
 
-\li The \ref method-surrogate_based_global-model_pointer keyword must
-identify a surrogate model which includes an underlying truth model,
-typically via \ref model-surrogate-global-truth_model_pointer or \ref
-model-surrogate-global-dace_method_pointer
+- The sub-method, specified with either :ref:`method-surrogate_based_global-method_pointer<method-surrogate_based_global-method_pointer>` or :ref:`method-surrogate_based_global-method_name<method-surrogate_based_global-method_name>` should typically be an optimizer that returns multiple final solutions, such as :ref:`method-moga<method-moga>` or :ref:`method-soga<method-soga>`.
+- The :ref:`method-surrogate_based_global-model_pointer<method-surrogate_based_global-model_pointer>` keyword must identify a surrogate model which includes an underlying truth model, typically via :ref:`model-surrogate-global-truth_model_pointer<model-surrogate-global-truth_model_pointer>` or :ref:`model-surrogate-global-dace_method_pointer<model-surrogate-global-dace_method_pointer>`
 
 Workflow:
 
-\li One might first try a single minimization method coupled with a
-surrogate model prior to using this surrogate-based global method.
-This is essentially equivalent to setting \c max_iterations to 1 and
-will allow one to get a sense of what surrogate types are the most
-accurate to use for the problem.
 
-\li Consider starting with a small number of maximum iterations, such
-as 3--5, to get a sense of how the optimization evolves as the
-surrogate gets updated. If it is still changing significantly, then a
-larger number (used in combination with restart) may be needed.
+- One might first try a single minimization method coupled with a surrogate model prior to using this surrogate-based global method. This is essentially equivalent to setting ``max_iterations`` to 1 and will allow one to get a sense of what surrogate types are the most accurate to use for the problem.
+- Consider starting with a small number of maximum iterations, such as 3--5, to get a sense of how the optimization evolves as the surrogate gets updated. If it is still changing significantly, then a larger number (used in combination with restart) may be needed.
+- Surrogates can be built for all primary functions and constraints or for only a subset of these functions and constraints. This allows one to use a "truth" model directly for some of the response functions, perhaps due to them being much less expensive than other functions.
 
-\li Surrogates can be built for all primary functions and constraints
-or for only a subset of these functions and constraints. This allows
-one to use a "truth" model directly for some of the response
-functions, perhaps due to them being much less expensive than other
-functions.
-
-<em>Known Issue: When using discrete variables, there have been
+*Known Issue: When using discrete variables, there have been
 sometimes significant differences in surrogate behavior observed
 across computing platforms in some cases.  The cause has not yet been
 fully diagnosed and is currently under investigation.  In addition,
 guidance on appropriate construction and use of surrogates with
 discrete variables is under development.  In the meantime, users
 should therefore be aware that there is a risk of inaccurate results
-when using surrogates with discrete variables.</em>
+when using surrogates with discrete variables.*
 
-<b>Expected HDF5 Output</b> 
+*Expected HDF5 Output*
 
-If Dakota was built with HDF5 support and run with the 
-\ref environment-results_output-hdf5 keyword, this method 
-writes the following results to HDF5: 
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
 
-- \ref hdf5_results-best_params 
-- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
-- \ref hdf5_results-best_constraints 
-- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
-Topics::	surrogate_based_optimization_methods
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+Topics::
+surrogate_based_optimization_methods
 Examples::
+
 Theory::
 In surrogate-based optimization (SBO) and surrogate-based nonlinear
 least squares (SBNLS), minimization occurs using a set of one or more
@@ -94,7 +73,7 @@ surrogate-based methods are to reduce the total number of truth model
 simulations and, in the case of global data fit surrogates, to smooth
 noisy data with an easily navigated analytic function.
 
-The \c surrogate_based_global method was originally designed for MOGA
+The ``surrogate_based_global`` method was originally designed for MOGA
 (a multi-objective genetic algorithm). Since genetic algorithms often
 need thousands or tens of thousands of points to produce optimal or
 near-optimal solutions, the use of surrogates can be helpful for
@@ -107,6 +86,6 @@ existing points.
 In this way, one does not need to use many points initially to get a
 very accurate surrogate. The surrogate becomes more accurate as the
 iterations progress.
-
 Faq::
-See_Also::	method-efficient_global, method-surrogate_based_local
+
+See_Also::

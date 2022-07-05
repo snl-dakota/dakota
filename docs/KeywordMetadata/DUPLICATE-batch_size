@@ -1,11 +1,10 @@
 Blurb::
 The number of evaluation points to include in each batch.
-
 Description::
 The number of evaluation points to include in each batch, typically
 specified for purposes of concurrent execution of these points.
+Topics::
 
-Topics::	
 Examples::
 In the context of adaptive surrogate refinement, batch size requests the
 generation of multiple refinement candidates that can be evaluated
@@ -14,5 +13,7 @@ concurrently.  This may represent a trade-off between algorithmic efficiency
 (selecting multiple refinement candidates, of decreasing value, to maintain
 a desired concurrency/load balance).
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

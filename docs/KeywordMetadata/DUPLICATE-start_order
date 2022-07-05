@@ -1,11 +1,13 @@
 Blurb::
 (Initial) polynomial order of each univariate function within the functional tensor train.
-
 Description::
-This specifies the initial polynomial order of each univariate function that makes up the functional tensor train decomposition.  In the case of \c adapt_order, polynomial order starts from this value and is then advanced; its maximum value is limited by \c max_order and increments are controlled by \c kick_order.
+This specifies the initial polynomial order of each univariate function that makes up the functional tensor train decomposition.  In the case of ``adapt_order``, polynomial order starts from this value and is then advanced; its maximum value is limited by ``max_order`` and increments are controlled by ``kick_order``.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 Default is 2.
-
-See_Also::	model-surrogate-global-function_train-adapt_order, model-surrogate-global-function_train-kick_order, model-surrogate-global-function_train-max_order
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

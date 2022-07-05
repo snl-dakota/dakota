@@ -1,16 +1,18 @@
 Blurb::
 Real abscissas for a bin histogram
-
 Description::
 A list of real abscissa ("x" coordinate) values characterizing the
-probability density function for each of the \c
-histogram_bin_uncertain variables.  These are paired with either 
-\ref variables-histogram_bin_uncertain-counts or 
-\ref variables-histogram_bin_uncertain-ordinates.  See 
-\ref variables-histogram_bin_uncertain for details and examples.
+probability density function for each of the
+``histogram_bin_uncertain`` variables.  These are paired with either
+:ref:`variables-histogram_bin_uncertain-counts<variables-histogram_bin_uncertain-counts>` or
+:ref:`variables-histogram_bin_uncertain-ordinates<variables-histogram_bin_uncertain-ordinates>`.  See
+:ref:`variables-histogram_bin_uncertain<variables-histogram_bin_uncertain>` for details and examples.
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

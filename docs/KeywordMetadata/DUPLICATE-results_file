@@ -5,15 +5,18 @@ The results file must be written by the analysis driver.
 It is read by Dakota to determine the response values for
 each function evaluation.
 
-The name of the file can be optionally specified using 
-the \c results_file keyword.
+The name of the file can be optionally specified using
+the ``results_file`` keyword.
 
 If this is not specified, the default data transfer files are
-temporary files with system-generated names (e.g., \c
-/tmp/dakota_results_aaaa0886).
-
+temporary files with system-generated names (e.g.,
+``/tmp/dakota_results_aaaa0886``).
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also:: 	
+
+See_Also::

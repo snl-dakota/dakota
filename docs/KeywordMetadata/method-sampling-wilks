@@ -1,11 +1,9 @@
 Blurb::
 Number of samples for random sampling using Wilks statistics
-
 Description::
-
-The \c wilks keyword is used to compute the number of samples to
-execute for a random sampling study using Wilks statistics \cite Wilks
-and \cite Nutt04. In contrast to most sampling studies where the user
+The ``wilks`` keyword is used to compute the number of samples to
+execute for a random sampling study using Wilks statistics :cite:p:`Wilks`
+and :cite:p:`Nutt04`. In contrast to most sampling studies where the user
 specifies the number of samples in advance, Wilks determines the number
 of samples to run to achieve a particular objective.  Specifically,
 Wilks statistics specify a probability level, alpha, and confidence
@@ -21,13 +19,13 @@ such that the statement concerning probability level and confidence
 level applies to the uppermost M outputs (for one-sided M-order Wilks)
 or the lowest M and uppermost M outputs (for two-sided M-order Wilks).
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 By default, Wilks statistics are computed using one-sided first-order
 order statistics with a 95% confidence interval (beta) and 95% probability (alpha).
 This results in a sample size of 59.
 
-<b> Usage Tips </b>
+*Usage Tips*
 
 Wilks sample sizes apply to model outputs considered one-at-a-time.
 Joint variation among multiple outputs requires a generalization of the
@@ -35,21 +33,24 @@ Wilks approach and is not supported in Dakota at this time.
 
 When more than one probability level is specified, the largest sample size
 will be performed and used to subsample for the lower probability levels.
-
 Topics::
 
 Examples::
-\verbatim
-method
-  sampling
-    sample_type random
-    wilks
-      probability_levels = 0.75 0.8 0.95 0.99
-      confidence_level 0.99
-      two_sided
-      order 2
-\endverbatim
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        wilks
+          probability_levels = 0.75 0.8 0.95 0.99
+          confidence_level 0.99
+          two_sided
+          order 2
+
 
 Theory::
+
 Faq::
+
 See_Also::

@@ -1,22 +1,25 @@
 Blurb::
 Whether to minimize or maximize each objective function
-
 Description::
-The \c sense keyword is used to declare whether each objective function
+The ``sense`` keyword is used to declare whether each objective function
 should be minimized or maximized.  The argument options are:
-\li \c "minimization" (can be abbreviated to "min")
-\li \c "maximization" (can be abbreviated to "max")
+
+- ````"minimization" (can be abbreviated to "min")
+- ````"maximization" (can be abbreviated to "max")
 
 If a single string is specified it will apply to each objective
 function.  Otherwise, the number of strings should either be equal to
-the number of objective functions (\ref
-responses-objective_functions). Thus, when scalar and/or field
-responses are specified, the number of \c sense strings must equal the
-number of scalars plus the number of fields, \e not the total elements
+the number of objective functions (
+:ref:`responses-objective_functions<responses-objective_functions>`). Thus, when scalar and/or field
+responses are specified, the number of ``sense`` strings must equal the
+number of scalars plus the number of fields, *not* the total elements
 in the fields.
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

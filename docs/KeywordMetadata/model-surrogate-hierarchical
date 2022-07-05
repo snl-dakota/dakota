@@ -1,11 +1,9 @@
 Blurb::
 Hierarchical surrogates use an ordered hierarchy of model fidelities
 and/or resolutions to trade accuracy versus cost.
-
 Description::
-
 Multifidelity modeling
-<!-- (also known as variable fidelity or variable complexity modeling) -->
+
 involves the use of lower-fidelity physics-based models as surrogates
 for a high-fidelity "truth" model. These low-fidelity models can
 involve variations in model form, resolution, or both.  Model form
@@ -22,7 +20,7 @@ incompressible Euler model on a coarse discretization is used as a
 low-fidelity surrogate for a high-fidelity large eddy simulation model
 on a fine discretization.
 
-The required \c ordered_model_fidelities specification points to a
+The required ``ordered_model_fidelities`` specification points to a
 sequence of model specifications of varying fidelity, ordered from
 lowest to highest fidelity.  The highest fidelity model provides the
 "truth" model, and each of the lower fidelity alternatives provides
@@ -31,26 +29,26 @@ specification defines the sequence of model forms, and each model
 specification identified in this ordered listing may identify a set of
 resolution controls.  Either or both of these sequences may be
 specified, and this is referred to as a "multilevel hierarchy" in the
-case of a hierarchy of resolutions (one entry in \c
-ordered_model_fidelities that includes active resolution control), a
+case of a hierarchy of resolutions (one entry in
+``ordered_model_fidelities`` that includes active resolution control), a
 "multifidelity hierarchy" in the case of a hierarchy of model forms
-(multiple entries in \c ordered_model_fidelities without active
+(multiple entries in ``ordered_model_fidelities`` without active
 resolution control), or a "multilevel-multifidelity hierarchy" in the
 case of two-dimensional hierarchy including both model forms and
-resolutions (multiple entries in \c ordered_model_fidelities with one
+resolutions (multiple entries in ``ordered_model_fidelities`` with one
 or more including active resolution control).  Note that the
 multilevel-multifidelity case can be "ragged" in the sense that not
 all models need to provide the same number of (or any) resolution
 controls.
 
-The \c correction specification identifies what type (\c additive, \c
-multiplicative, \c combined) and order (\c zeroth_order, \c
-first_order, \c second_order) of correction technique will be applied
+The ``correction`` specification identifies what type ( ``additive``,
+``multiplicative``, ``combined``) and order ( ``zeroth_order``,
+``first_order``, ``second_order``) of correction technique will be applied
 to the low fidelity results in order to match high fidelity results
 (value and potentially gradient and Hessian) at one or more points. As
 described below, this is essential in the optimization context.
 
-<b> Use cases </b>
+*Use cases*
 
 In multifidelity surrogate-based optimization (SBO), the search
 algorithm relies primarily on the lower fidelity models, which are
@@ -58,12 +56,12 @@ corrected for consistency with higher fidelity models.  The higher
 fidelity models are used primarily for verifying candidate steps based
 on solution of low fidelity approximate subproblems and for updating
 low fidelity corrections.  In the hierarchical SBO case (as compared
-to SBO with data fits), the \c correction specification is required,
+to SBO with data fits), the ``correction`` specification is required,
 since the omission of a correction technique would effectively
 eliminate the purpose of the high fidelity model (to use a low
-fidelity model without corrections, then a \c single model can be used
-rather than a \c hierarchical model). Refer to \ref
-model-surrogate-global for additional information on available
+fidelity model without corrections, then a ``single`` model can be used
+rather than a ``hierarchical`` model). Refer to
+:ref:`model-surrogate-global<model-surrogate-global>` for additional information on available
 correction approaches.
 
 In multifidelity uncertainty quantification (UQ), response differences
@@ -72,11 +70,11 @@ model/resolution levels or for constructing separate discrepancy
 emulators.  In this context, correction specifications are still valid
 for defining discrepancy emulation details but they are optional with
 the most common cases used as defaults.
-
 Topics::
+
 Examples::
 Theory:
-
-
+Theory::
 Faq::
-See_Also::	model-surrogate-global, model-surrogate-local, model-surrogate-multipoint, method-multilevel_sampling, method-multilevel_polynomial_chaos, method-multifidelity_polynomial_chaos, method-multifidelity_stoch_collocation, method-multilevel_function_train, method-multifidelity_function_train, method-surrogate_based_local
+
+See_Also::

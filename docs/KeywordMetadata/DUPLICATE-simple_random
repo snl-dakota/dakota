@@ -1,12 +1,15 @@
 Blurb::
 Create random initial solutions
 Description::
-\c simple_random creates initial solutions with random variable
+``simple_random`` creates initial solutions with random variable
 values according to a uniform random number distribution. It gives no
-consideration to any previously generated designs. 
+consideration to any previously generated designs.
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

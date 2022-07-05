@@ -1,28 +1,30 @@
-Blurb:: define scaling of statistical metrics when adapting UQ surrogates
-
-Description:: When adapting a UQ surrogate model, e.g., by change in
+Blurb::
+define scaling of statistical metrics when adapting UQ surrogates
+Description::
+When adapting a UQ surrogate model, e.g., by change in
 response covariance matrix or level mappings, this option controls the
-use of scaling.  The \c absolute option indicates that there is no
+use of scaling.  The ``absolute`` option indicates that there is no
 scaling such that the statistical change is compared directly to the
-convergence tolerance.  The \c relative option indicates that the
+convergence tolerance.  The ``relative`` option indicates that the
 change is measured relative to the current reference value (which
 evolves during the refinement), such that the convergence tolerance
 controls the relative change.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
-The default is \c relative.
+The default is ``relative``.
 
-<b> Expected Output </b>
+*Expected Output*
 
-<b> Usage Tips </b>
+*Usage Tips*
 
-<b> Additional Discussion </b>
-
+*Additional Discussion*
 Topics::
 
 Examples::
 
 Theory::
+
 Faq::
+
 See_Also::

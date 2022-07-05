@@ -1,32 +1,36 @@
 Blurb::
 Uses purely random Monte Carlo sampling to sample variables
-
 Description::
-The \c random keyword invokes Monte Carlo sampling as the means of
+The ``random`` keyword invokes Monte Carlo sampling as the means of
 drawing samples of uncertain variables according to their probability
 distributions.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 In most contexts, Monte Carlo sampling is not the default sampling mode
-(exception: multilevel_sampling).  To change this behavior, the \c
-random keyword must be specified in conjuction with the \c sample_type
+(exception: multilevel_sampling).  To change this behavior, the
+``random`` keyword must be specified in conjuction with the ``sample_type``
 keyword.
 
-<b> Usage Tips </b>
+*Usage Tips*
 
 Monte Carlo sampling is more computationally expensive than Latin
 Hypercube Sampling as it requires a larger number of samples to
 accurately estimate statistics.
+Topics::
 
-Topics::	
 Examples::
-\verbatim
-method
-  sampling
-    sample_type random
-    samples = 200
-\endverbatim
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        samples = 200
+
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

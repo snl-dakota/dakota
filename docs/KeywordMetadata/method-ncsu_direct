@@ -4,43 +4,49 @@ Description::
 North Carolina State University (NCSU) has an implementation of the
 DIRECT algorithm (DIviding RECTangles algorithm that is outlined in
 the SCOLIB method section above). This version is documented in
-\cite Gab01 We have found that the NCSU DIRECT
+:cite:p:`Gab01` We have found that the NCSU DIRECT
 implementation works better and is more robust for some problems than
-\c coliny_direct. Currently, we maintain both versions of DIRECT in
-%Dakota; in the future, we may deprecate one.
+``coliny_direct``. Currently, we maintain both versions of DIRECT in
+Dakota; in the future, we may deprecate one.
 
-The NCSU DIRECT method is selected with \c ncsu_direct. We have tried
+The NCSU DIRECT method is selected with ``ncsu_direct``. We have tried
 to maintain consistency between the keywords in SCOLIB and NCSU
 implementation of DIRECT, but the algorithms have different
 parameters, so the keywords sometimes have slightly different meaning.
 
-<b> Stopping Criteria </b>
+*Stopping Criteria*
 
 The algorithm stops based on:
--# \ref method-ncsu_direct-max_iterations - number of iterations
--# \ref method-ncsu_direct-max_function_evaluations - number of function evaluations
--# \ref method-ncsu_direct-solution_target and \ref method-ncsu_direct-convergence_tolerance
--# \ref method-ncsu_direct-min_boxsize_limit
--# \ref method-ncsu_direct-volume_boxsize_limit 
+
+
+- :ref:`method-ncsu_direct-max_iterations<method-ncsu_direct-max_iterations>` - number of iterations
+- :ref:`method-ncsu_direct-max_function_evaluations<method-ncsu_direct-max_function_evaluations>` - number of function evaluations
+- :ref:`method-ncsu_direct-solution_target<method-ncsu_direct-solution_target>` and :ref:`method-ncsu_direct-convergence_tolerance<method-ncsu_direct-convergence_tolerance>`
+- :ref:`method-ncsu_direct-min_boxsize_limit<method-ncsu_direct-min_boxsize_limit>`
+- :ref:`method-ncsu_direct-volume_boxsize_limit<method-ncsu_direct-volume_boxsize_limit>`
 
 This method will always strictly respect the number of iterations, but
 may slightly exceed the number of function evaluations, as it will
 always explore all sub-rectangles at the current level.
 
 
-<b>Expected HDF5 Output</b> 
+*Expected HDF5 Output*
 
-If Dakota was built with HDF5 support and run with the 
-\ref environment-results_output-hdf5 keyword, this method 
-writes the following results to HDF5: 
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
 
-- \ref hdf5_results-best_params 
-- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
-- \ref hdf5_results-best_constraints 
-- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
-Topics::	global_optimization_methods
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+Topics::
+global_optimization_methods
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	method-coliny_direct
+
+See_Also::

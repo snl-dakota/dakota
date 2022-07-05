@@ -1,19 +1,19 @@
-Blurb:: Sample allocation approach for multilevel expansions
-
-Description:: 
+Blurb::
+Sample allocation approach for multilevel expansions
+Description::
 Multilevel expansions, including regression-based polynomial chaos expansion
 (PCE) and function train (FT) expansions, require a sample allocation strategy.
 Three options are currently available:
+
 
 - allocation based on assuming a convergence rate for the estimator variance (for regression PCE)
 - restricted isometry property (RIP) sampling (for regression PCE via compressed sensing)
 - rank sampling (for FT)
 
-<b> Default Behavior </b>
+*Default Behavior*
 
-Current defaults, when \c allocation_control is not specified, are
+Current defaults, when ``allocation_control`` is not specified, are
 estimator variance for PCE and rank sampling for FT.
-
 Topics::
 
 Examples::
@@ -21,4 +21,5 @@ Examples::
 Theory::
 
 Faq::
+
 See_Also::

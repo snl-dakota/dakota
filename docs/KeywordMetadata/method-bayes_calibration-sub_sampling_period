@@ -1,37 +1,40 @@
 Blurb::
 Specify a sub-sampling of the MCMC chain
-
 Description::
-If a \c sub_sampling_period is specified, the MCMC chain is filtered such that 
-only the sample at the beginning of each period is in the final MCMC chain. 
-The \c sub_sampling_period should therefore be greater than or equal to the 
+If a ``sub_sampling_period`` is specified, the MCMC chain is filtered such that
+only the sample at the beginning of each period is in the final MCMC chain.
+The ``sub_sampling_period`` should therefore be greater than or equal to the
 correlation length of the samples.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 If not specified, all MCMC samples are included in the final chain.
 
-<b> Expected Output </b>
+*Expected Output*
 
 If specified, an additional tabular output file containing the final (sub-
 sampled) MCMC chain is generated.
-
+Topics::
 Examples::
 Generate and then filter a 1000 sample MCMC chain, retainining the
 first accepted sample and every 100th sample thereafter.
 
 An example method block of a Dakota input file is given below
 
-\verbatim
-method,
-	bayes_calibration queso
-	  chain_samples = 1000 seed = 348
-	  dram
-	proposal_covariance
-	  diagonal values 1.0e6 1.0e-1
-	sub_sampling_period 100
-\endverbatim
+
+.. code-block::
+
+    method,
+     bayes_calibration queso
+       chain_samples = 1000 seed = 348
+       dram
+     proposal_covariance
+       diagonal values 1.0e6 1.0e-1
+     sub_sampling_period 100
+
 
 Theory::
+
 Faq::
+
 See_Also::

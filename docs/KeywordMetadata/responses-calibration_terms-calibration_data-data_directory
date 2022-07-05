@@ -1,12 +1,9 @@
 Blurb::
 Specify a directory containing the calibration field data files used
 with the mixed case specification
-
 Description::
-
-<b> Default Behavior </b>
-
-The default directory is the path from which the Dakota study is launched,
-i.e. the directory containing the Dakota input file.
-
-See \c dakota/share/dakota/dakota_experiment_read.in
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

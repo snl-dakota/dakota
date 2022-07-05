@@ -1,5 +1,5 @@
-Blurb:: Specify the situations where numerical optimization is used for MFMC sample allocation
-
+Blurb::
+Specify the situations where numerical optimization is used for MFMC sample allocation
 Description::
 Multifidelity Monte Carlo (MFMC) supports an analytic solution for the
 allocation of samples per model instance based on response correlations and
@@ -13,16 +13,17 @@ or is desired as an unconditional override (regardless of the need for
 specific mitigations).
 
 Further, when a numerical solve is employed, it can utilize either the
-\c sqp or \c nip solver options.
+``sqp`` or ``nip`` solver options.
 
-<b> Default Behavior </b>
-Analytic is preferred, with \c fallback to numerical only when mitigation
+*Default Behavior*
+Analytic is preferred, with ``fallback`` to numerical only when mitigation
 is required.
-
 Topics::
 
 Examples::
 
 Theory::
+
 Faq::
+
 See_Also::

@@ -1,35 +1,39 @@
-Blurb:: Generate a D-optimal sampling design
-
+Blurb::
+Generate a D-optimal sampling design
 Description::
-
 This option will generate a sampling design that is approximately
 determinant-optimal (D-optimal) by downselecting from a set of
 candidate sample points.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 If not specified, a standard sampling design (MC or LHS) will be
-generated.  When \c d_optimal is specified, 100 candidate designs will
+generated.  When ``d_optimal`` is specified, 100 candidate designs will
 be generated and the most D-optimal will be selected.
 
-<b> Usage Tips </b>
+*Usage Tips*
 
-D-optimal designs are only supported for \ref
-topic-aleatory_uncertain_variables.  The default candidate-based
-D-optimal strategy works for all submethods except incremental LHS (\c
-lhs with \c refinement_samples).  The Leja sampling option only works
+D-optimal designs are only supported for
+:ref:`topic-aleatory_uncertain_variables<topic-aleatory_uncertain_variables>`.  The default candidate-based
+D-optimal strategy works for all submethods except incremental LHS (
+``lhs`` with ``refinement_samples``).  The Leja sampling option only works
 for continuous variables, and when used with LHS designs, the
 candidates point set will be Latin, but the final design will not be.
+Topics::
 
-Topics::	
 Examples::
-\verbatim
-method
-  sampling
-    sample_type random
-    samples = 20
-    d_optimal
-\endverbatim
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        samples = 20
+        d_optimal
+
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

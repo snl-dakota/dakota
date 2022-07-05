@@ -1,8 +1,7 @@
 Blurb::
 Finds optimal variable values using adaptive mesh-based search
-
-Description:: 
-The mesh adaptive direct search algorithm \cite AuLeTr09a
+Description::
+The mesh adaptive direct search algorithm :cite:p:`AuLeTr09a`
 is a derivative-free generalized pattern
 search in which the set of points evaluated becomes increasingly
 dense, leading to good convergence properties.  It can handle
@@ -10,154 +9,161 @@ unconstrained problems as well as those with bound constraints and
 general nonlinear constraints. Furthermore, it can handle continuous,
 discrete, and categorical variables.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
-By default, \c mesh_adaptive_search operates on design variables.  The
-types of variables can be expanded through the use of the \c active
-keyword in the \ref variables block in the %Dakota input file.
+By default, ``mesh_adaptive_search`` operates on design variables.  The
+types of variables can be expanded through the use of the ``active``
+keyword in the :ref:`variables<variables>` block in the Dakota input file.
 Categorical variables, however, must be limited to design variables.
 
-<b> Expected Outputs </b>
+*Expected Outputs*
 
 The best objective function value achieved and associated parameter
-and constraint values can be found at the end of the %Dakota output.
+and constraint values can be found at the end of the Dakota output.
 The method's internally summarized iteration history will appear in
 the screen output by default, with the option to control the method's
 output through Dakota's output level.  It also generates a history
 file containing a list of all function evaluations done.
 
-<b>Expected HDF5 Output</b> 
+*Expected HDF5 Output*
 
-If Dakota was built with HDF5 support and run with the 
-\ref environment-results_output-hdf5 keyword, this method 
-writes the following results to HDF5: 
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
 
-- \ref hdf5_results-best_params 
-- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
-- \ref hdf5_results-best_constraints 
-- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
-<b> Additional Discussion </b>
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
 
-The mesh adaptive direct search method is made available in %Dakota
-through the NOMAD software \cite Nomad,
+*Additional Discussion*
+
+The mesh adaptive direct search method is made available in Dakota
+through the NOMAD software :cite:p:`Nomad`,
 available to the public under the
 GNU LGPL from http://www.gerad.ca/nomad.
-
 Topics::
 
 Examples::
+The following is an example of a Dakota input file that makes use of
+``mesh_adaptive_search`` to optimize the textbook function.
 
-The following is an example of a %Dakota input file that makes use of
-\c mesh_adaptive_search to optimize the textbook function.
 
-\verbatim
-method,
-        mesh_adaptive_search
-        seed = 1234
+.. code-block::
 
-variables,
-        continuous_design = 3                                   
-          initial_point   -1.0    1.5   2.0                     
-          upper_bounds    10.0   10.0  10.0                     
-          lower_bounds   -10.0  -10.0 -10.0                     
-          descriptors      'x1'  'x2'  'x3'                     
+    method,
+            mesh_adaptive_search
+            seed = 1234
+    
+    variables,
+            continuous_design = 3
+              initial_point   -1.0    1.5   2.0
+              upper_bounds    10.0   10.0  10.0
+              lower_bounds   -10.0  -10.0 -10.0
+              descriptors      'x1'  'x2'  'x3'
+    
+    interface,
+           direct
+              analysis_driver = 'text_book'
+    
+    responses,
+            objective_functions = 1
+            no_gradients
+            no_hessians
 
-interface,
-       direct                                                   
-          analysis_driver = 'text_book'                         
-
-responses,
-        objective_functions = 1
-        no_gradients
-        no_hessians
-\endverbatim
 
 The best function value and associated parameters are found at the end
-of the %Dakota output.
+of the Dakota output.
 
-\verbatim
-<<<<< Function evaluation summary: 674 total (674 new, 0 duplicate)
-<<<<< Best parameters          =
-                      1.0000000000e+00 x1
-                      1.0000000000e+00 x2
-                      1.0000000000e+00 x3
-<<<<< Best objective function  =
-                      1.0735377280e-52
-<<<<< Best evaluation ID: 658
-\endverbatim
+
+.. code-block::
+
+    <<<<< Function evaluation summary: 674 total (674 new, 0 duplicate)
+    <<<<< Best parameters          =
+                          1.0000000000e+00 x1
+                          1.0000000000e+00 x2
+                          1.0000000000e+00 x3
+    <<<<< Best objective function  =
+                          1.0735377280e-52
+    <<<<< Best evaluation ID: 658
+
 
 A NOMAD-generated iteration summary is also printed to the screen.
 
-\verbatim
-MADS run {
 
-	BBE	OBJ
+.. code-block::
 
-	   1	17.0625000000
-	   2	1.0625000000
-	  13	0.0625000000
-	  24	0.0002441406
-	  41	0.0000314713
-	  43	0.0000028610
-	  54	0.0000000037
-	  83	0.0000000000
-	 105	0.0000000000
-	 112	0.0000000000
-	 114	0.0000000000
-	 135	0.0000000000
-	 142	0.0000000000
-	 153	0.0000000000
-	 159	0.0000000000
-	 171	0.0000000000
-	 193	0.0000000000
-	 200	0.0000000000
-	 207	0.0000000000
-	 223	0.0000000000
-	 229	0.0000000000
-	 250	0.0000000000
-	 266	0.0000000000
-	 282	0.0000000000
-	 288	0.0000000000
-	 314	0.0000000000
-	 320	0.0000000000
-	 321	0.0000000000
-	 327	0.0000000000
-	 354	0.0000000000
-	 361	0.0000000000
-	 372	0.0000000000
-	 373	0.0000000000
-	 389	0.0000000000
-	 400	0.0000000000
-	 417	0.0000000000
-	 444	0.0000000000
-	 459	0.0000000000
-	 461	0.0000000000
-	 488	0.0000000000
-	 492	0.0000000000
-	 494	0.0000000000
-	 501	0.0000000000
-	 518	0.0000000000
-	 530	0.0000000000
-	 537	0.0000000000
-	 564	0.0000000000
-	 566	0.0000000000
-	 583	0.0000000000
-	 590	0.0000000000
-	 592	0.0000000000
-	 604	0.0000000000
-	 606	0.0000000000
-	 629	0.0000000000
-	 636	0.0000000000
-	 658	0.0000000000
-	 674	0.0000000000
+    MADS run {
+    
+     BBE OBJ
+    
+        1 17.0625000000
+        2 1.0625000000
+       13 0.0625000000
+       24 0.0002441406
+       41 0.0000314713
+       43 0.0000028610
+       54 0.0000000037
+       83 0.0000000000
+      105 0.0000000000
+      112 0.0000000000
+      114 0.0000000000
+      135 0.0000000000
+      142 0.0000000000
+      153 0.0000000000
+      159 0.0000000000
+      171 0.0000000000
+      193 0.0000000000
+      200 0.0000000000
+      207 0.0000000000
+      223 0.0000000000
+      229 0.0000000000
+      250 0.0000000000
+      266 0.0000000000
+      282 0.0000000000
+      288 0.0000000000
+      314 0.0000000000
+      320 0.0000000000
+      321 0.0000000000
+      327 0.0000000000
+      354 0.0000000000
+      361 0.0000000000
+      372 0.0000000000
+      373 0.0000000000
+      389 0.0000000000
+      400 0.0000000000
+      417 0.0000000000
+      444 0.0000000000
+      459 0.0000000000
+      461 0.0000000000
+      488 0.0000000000
+      492 0.0000000000
+      494 0.0000000000
+      501 0.0000000000
+      518 0.0000000000
+      530 0.0000000000
+      537 0.0000000000
+      564 0.0000000000
+      566 0.0000000000
+      583 0.0000000000
+      590 0.0000000000
+      592 0.0000000000
+      604 0.0000000000
+      606 0.0000000000
+      629 0.0000000000
+      636 0.0000000000
+      658 0.0000000000
+      674 0.0000000000
+    
+    } end of run (mesh size reached NOMAD precision)
+    
+    blackbox evaluations                     : 674
+    best feasible solution                   : ( 1 1 1 ) h=0 f=1.073537728e-52
 
-} end of run (mesh size reached NOMAD precision)
-
-blackbox evaluations                     : 674
-best feasible solution                   : ( 1 1 1 ) h=0 f=1.073537728e-52
-\endverbatim
 
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

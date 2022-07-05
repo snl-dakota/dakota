@@ -4,7 +4,11 @@ Description::
 Uniform crossover creates offspring through random combination of coordinates
 from the two parents.
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

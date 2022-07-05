@@ -4,9 +4,13 @@ Description::
 The distance metric calculates the Euclidean distance in domain space between the
 candidate and its nearest neighbor in the set of points already evaluated on the
 true model. Therefore, the most undersampled area of the domain will always be
-selected. Note that this is a space-filling metric. 
+selected. Note that this is a space-filling metric.
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

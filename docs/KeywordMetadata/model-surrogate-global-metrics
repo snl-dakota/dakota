@@ -1,31 +1,31 @@
 Blurb::
 Compute surrogate quality metrics
-
 Description::
 Diagnostic metrics assess the goodness of fit of a global surrogate to
 its training data.
 
 The default diagnostics are:
-\li \c root_mean_squared
-\li \c mean_abs
-\li \c rsquared
+
+- ``root_mean_squared``
+- ``mean_abs``
+- ``rsquared``
 
 Additional available diagnostics include
-\li \c sum_squared
-\li \c mean_squared
-\li \c sum_abs
-\li \c max_abs
 
-The keywords \c press and \c cross_validation further specify
+- ``sum_squared``
+- ``mean_squared``
+- ``sum_abs``
+- ``max_abs``
+
+The keywords ``press`` and ``cross_validation`` further specify
 leave-one-out or k-fold cross validation, respectively, for all of the
 active metrics from above.
 
-<b>Usage Tips</b>
-When specified, the \c metrics keyword must be followed by a list of
+*Usage Tips*
+When specified, the ``metrics`` keyword must be followed by a list of
 quoted strings, each of which activates a metric.
-
-Topics::	surrogate_models
-
+Topics::
+surrogate_models
 Examples::
 This example input fragment constructs a quadratic polynomial
 surrogate and computes four metrics on the fit, both with and without
@@ -33,28 +33,29 @@ surrogate and computes four metrics on the fit, both with and without
 dakota/share/dakota/test/dakota_surrogate_import.in for additional
 examples.)
 
-\verbatim
-model
-  surrogate global
-    polynomial quadratic
-    metrics = "root_mean_squared" "sum_abs" "mean_abs" "max_abs"
-    cross_validation folds = 5
-\endverbatim
+
+.. code-block::
+
+    model
+      surrogate global
+        polynomial quadratic
+        metrics = "root_mean_squared" "sum_abs" "mean_abs" "max_abs"
+        cross_validation folds = 5
+
 
 Theory::
-
 Most of these diagnostics refer to some operation on the
 residuals (the difference between the surrogate model and the truth
 model at the data points upon which the surrogate is built).
 
-For example, \c sum_squared refers to the sum of the squared
-residuals, and \c mean_abs refers to the mean of the absolute value of
-the residuals. \c rsquared refers to the R-squared value typically
+For example, ``sum_squared`` refers to the sum of the squared
+residuals, and ``mean_abs`` refers to the mean of the absolute value of
+the residuals. ``rsquared`` refers to the R-squared value typically
 used in regression analysis (the proportion of the variability in the
 response that can be accounted for by the surrogate model). Care
 should be taken when interpreting metrics, for example, errors may be
 near zero for interpolatory models or rsquared may not be applicable
 for non-polynomial models.
-
 Faq::
-See_Also::	
+
+See_Also::

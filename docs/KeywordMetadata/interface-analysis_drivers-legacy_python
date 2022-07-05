@@ -1,14 +1,8 @@
 Blurb::
 Run Python through a deprecated C-based direct interface - requires a special Dakota build
-
 Description::
-This interface has been
-superseded by a Pybind11 implementation \ref interface-analysis_drivers-python .
-
-%Dakota supports a library-linked interface to Python, but it must be
-explicitly enabled when compiling %Dakota from source.
-The \ref interface-analysis_drivers keyword specifies a Python module:function
-which implements the parameter to response mapping.  List data
-structures are the default, but NumPy is also supported, if enabled in
-the build.
-
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

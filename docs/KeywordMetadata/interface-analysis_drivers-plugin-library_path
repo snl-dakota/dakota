@@ -1,7 +1,8 @@
-TEMPLATE
 Blurb::
 Path to the plugin shared object file
-
 Description::
-%Dakota 6.16 requires the path to the plugin. We plan to make
-this specification more flexible in a future release.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

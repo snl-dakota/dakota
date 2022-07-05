@@ -1,11 +1,13 @@
 Blurb::
 Number of partitions of each variable
-
 Description::
-Described on the parent page, \ref method-psuade_moat
+Described on the parent page, :ref:`method-psuade_moat<method-psuade_moat>`
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

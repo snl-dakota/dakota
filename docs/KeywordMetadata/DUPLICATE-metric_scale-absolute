@@ -1,21 +1,23 @@
-Blurb:: use of absolute statistical metrics when adapting UQ surrogates
-
-Description:: When adapting a UQ surrogate model,the \c absolute
+Blurb::
+use of absolute statistical metrics when adapting UQ surrogates
+Description::
+When adapting a UQ surrogate model,the ``absolute``
 option indicates that there is no scaling such that the statistical
 change is compared directly to the convergence tolerance.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
-<b> Expected Output </b>
+*Expected Output*
 
-<b> Usage Tips </b>
+*Usage Tips*
 
-<b> Additional Discussion </b>
-
+*Additional Discussion*
 Topics::
 
 Examples::
 
 Theory::
+
 Faq::
+
 See_Also::

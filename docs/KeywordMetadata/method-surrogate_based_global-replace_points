@@ -6,11 +6,14 @@ surrogate model to the current set of truth points or using the
 optimal points from the surrogate model to replace the optimal set of
 points from the previous iteration.  Although appending to the set is
 the default behavior, at this time we strongly recommend using the
-option \c replace_points because it appears to be more accurate and
+option ``replace_points`` because it appears to be more accurate and
 robust.
-
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

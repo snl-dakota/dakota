@@ -32,23 +32,26 @@ construction of a new surrogate model, a minimization, and another
 test for sufficient decrease in the truth model. This cycle continues
 until convergence is attained.
 
-<b>Expected HDF5 Output</b> 
+*Expected HDF5 Output*
 
-If Dakota was built with HDF5 support and run with the 
-\ref environment-results_output-hdf5 keyword, this method 
-writes the following results to HDF5: 
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
 
-- \ref hdf5_results-best_params 
-- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
-- \ref hdf5_results-best_constraints 
-- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
-Topics::	surrogate_based_optimization_methods
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+Topics::
+surrogate_based_optimization_methods
 Examples::
+
 Theory::
 For surrogate_based_local problems with nonlinear constraints, a
-number of algorithm formulations exist as described in \cite Eld06b
+number of algorithm formulations exist as described in :cite:p:`Eld06b`
 and as summarized in the Advanced Examples
-section of the Models chapter of the Users Manual \cite UsersMan.
+section of the Models chapter of the Users Manual :cite:p:`UsersMan`.
 Faq::
-See_Also::	method-efficient_global, method-surrogate_based_global
+
+See_Also::

@@ -1,12 +1,14 @@
 Blurb::
 Quadratic polynomials - main effects only
-
 Description::
 In 2 or more dimensions, this polynomial omits the interaction, or
 mixed, terms.
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

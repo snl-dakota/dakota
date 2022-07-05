@@ -1,30 +1,31 @@
 Blurb::
 Use the Symmetric Rank 1 update method to compute quasi-Hessians
 Description::
-The Symmetric Rank 1 (SR1) update (specified with the keyword \c sr1)
+The Symmetric Rank 1 (SR1) update (specified with the keyword ``sr1``)
 will be used to compute quasi-Hessians.
 
-\f[
-B_{k+1} = B_k + \frac{(y_k - B_k s_k)(y_k - B_k s_k)^T}{(y_k - B_k s_k)^T s_k}
-\f]
 
-where \f$B_k\f$ is the \f$k^{th}\f$ approximation to the Hessian, 
-\f$s_k = x_{k+1} - x_k\f$ is the step and 
-\f$y_k = \nabla f_{k+1} - \nabla f_k\f$ is the corresponding yield 
-in the gradients. 
+.. math:: 
 
-<b> Notes </b>
+   B_{k+1} = B_k + \frac{(y_k - B_k s_k)(y_k - B_k s_k)^T}{(y_k - B_k s_k)^T s_k}
 
-\li Initial scaling of 
-\f$\frac{y_k^T y_k}{y_k^T s_k} I\f$ is used for \f$B_0\f$ prior to the first 
-update. 
-\li Numerical safeguarding is used
-to protect against numerically small denominators within the updates. 
-\li This safeguarding skips the update if 
-\f$|(y_k - B_k s_k)^T s_k| < 10^{-6} ||s_k||_2 ||y_k - B_k s_k||_2\f$ 
+where :math:`B_k`  is the :math:`k^{th}`  approximation to the Hessian,
+:math:`s_k = x_{k+1} - x_k`  is the step and
+:math:`y_k = \nabla f_{k+1} - \nabla f_k`  is the corresponding yield
+in the gradients.
 
-Topics::	
+*Notes*
+
+
+- Initial scaling of :math:`\frac{y_k^T y_k}{y_k^T s_k} I`  is used for :math:`B_0`  prior to the first update.
+- Numerical safeguarding is used to protect against numerically small denominators within the updates.
+- This safeguarding skips the update if :math:`|(y_k - B_k s_k)^T s_k| < 10^{-6} ||s_k||_2 ||y_k - B_k s_k||_2` 
+Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

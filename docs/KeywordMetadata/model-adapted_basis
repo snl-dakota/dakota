@@ -1,68 +1,73 @@
-Blurb:: Basis adaptation model
-
+Blurb::
+Basis adaptation model
 Description::
-A model that transforms the original model (given by \ref
-model-adapted_basis-truth_model_pointer) to one with a rotated set of variables.  
-The current implementation does not support the reduction of the dimension for the new model and only transform 
+A model that transforms the original model (given by
+:ref:`model-adapted_basis-truth_model_pointer<model-adapted_basis-truth_model_pointer>`) to one with a rotated set of variables.
+The current implementation does not support the reduction of the dimension for the new model and only transform
 the variable set in a rotated one in which the variables are arranged in a decreasing importance order.
 
-An initial PCE representation is built with a sparse grid method and the PCE coefficients are then used to 
-build a rotation matrix. This matrix is also reported as a result of the code execution. The new model 
+An initial PCE representation is built with a sparse grid method and the PCE coefficients are then used to
+build a rotation matrix. This matrix is also reported as a result of the code execution. The new model
 can subsequently be used for an UQ workflow.
 
-<b> Expected Output </b>
+*Expected Output*
 A basis adaptation model will perform an initial sparse grid design to
 identify the rotation matrix.
-
+Topics::
 Examples::
 Perform an initial sparse grid design (level 1) to evaluate the PCE expansion and evaluate the rotation matrix.
 Afterwards, 100 samples are generated for the model in the rotated space to obtain its statistics.
 
-\verbatim
-method,
-  sampling
-    model_pointer = 'SUBSPACE'
-    samples = 100 seed = 1234567
 
-model
-  id_model = 'SUBSPACE'
-  adapted_basis
-    truth_model_pointer = 'FULLSPACE'
-    sparse_grid_level = 1
-\endverbatim    
+.. code-block::
+
+    method,
+      sampling
+        model_pointer = 'SUBSPACE'
+        samples = 100 seed = 1234567
+    
+    model
+      id_model = 'SUBSPACE'
+      adapted_basis
+        truth_model_pointer = 'FULLSPACE'
+        sparse_grid_level = 1
+
 
 Theory::
-The idea behind the Basis Adaptation method is to generate a PCE representation and rotate it such that the new set of 
+The idea behind the Basis Adaptation method is to generate a PCE representation and rotate it such that the new set of
 rotated variables are organized in a decreasing importance ordering. Subsequently this rotation matrix can be truncated according to some
 criterion to only include the significant directions.
 
-The first step of the Basis Adaptation is to compute a PCE expansion (we assume here \f$ \xi \f$ to have a standard multivariate Gaussian distribution)
-\f[ Q(\xi) = \sum_{\alpha\in\mathcal{J}_{d,p}}Q_{\alpha}\psi_{\alpha}(\xi), \f]
-where \f$\alpha = (\alpha_1,...,\alpha_d) \in \mathcal{J}_{d,p}:=(\mathbb{N}_0)^d\f$ with \f$|\alpha| = \sum_{i=1}^{d} \alpha_i<= d\f$ is multi-index of dimension \f$d\f$ and order up to \f$p\f$.
+The first step of the Basis Adaptation is to compute a PCE expansion (we assume here :math:`\xi`  to have a standard multivariate Gaussian distribution)
 
-Afterwards, a multivariate Gaussian distribution \f$ \eta \f$ is sought such that 
-\f[ \eta = A \xi, \f]
-where \f$ A \f$ is an isometry such that \f$ A A^\mathrm{T} = I \f$.
+.. math::  Q(\xi) = \sum_{\alpha\in\mathcal{J}_{d,p}}Q_{\alpha}\psi_{\alpha}(\xi), 
+where :math:`\alpha = (\alpha_1,...,\alpha_d) \in \mathcal{J}_{d,p}:=(\mathbb{N}_0)^d`  with :math:`|\alpha| = \sum_{i=1}^{d} \alpha_i<= d`  is multi-index of dimension :math:`d`  and order up to :math:`p` .
 
-The basis adaptation model is obtained by expressing the original model with respect to the rotated set of variables \f$ \eta \f$ as
-\f[ {Q}^{A}(\eta) = \sum_{\beta\in\mathcal{J}_{d,p}}Q_{\beta}^{A}\psi_{\beta}(\eta).\f]
+Afterwards, a multivariate Gaussian distribution :math:`\eta`  is sought such that
 
-Since the basis for both the original and the adapted basis model span the same space, we know that \f$ {Q}^{A}(\eta(\xi)) = Q(\xi) \f$ and
+.. math::  \eta = A \xi, 
+where :math:`A`  is an isometry such that :math:`A A^\mathrm{T} = I` .
+
+The basis adaptation model is obtained by expressing the original model with respect to the rotated set of variables :math:`\eta`  as
+
+.. math::  {Q}^{A}(\eta) = \sum_{\beta\in\mathcal{J}_{d,p}}Q_{\beta}^{A}\psi_{\beta}(\eta).
+Since the basis for both the original and the adapted basis model span the same space, we know that :math:`{Q}^{A}(\eta(\xi)) = Q(\xi)`  and
 therefore a relationships between the PCE coefficients exists
-\f[ Q_{\alpha} = \sum_{\beta\in\mathcal{J}_{d,p}}Q_{\beta}^{A}\langle\psi_{\beta}^{A},\psi_{\alpha}\rangle, \ \alpha\in \mathcal{J}_{d,p}. \f]
 
-The linear adaptation strategy is used at this time in Dakota to obtain the rotation matrix \f$ A \f$.
-The steps to obtain the matrix \f$ A \f$  are the following:
+.. math::  Q_{\alpha} = \sum_{\beta\in\mathcal{J}_{d,p}}Q_{\beta}^{A}\langle\psi_{\beta}^{A},\psi_{\alpha}\rangle, \ \alpha\in \mathcal{J}_{d,p}. 
+The linear adaptation strategy is used at this time in Dakota to obtain the rotation matrix :math:`A` .
+The steps to obtain the matrix :math:`A`   are the following:
 
-1. The first variable \f$ \eta_1 \f$ is obtained by directly combining the first order terms, that is
-\f[ \eta_1 = \sum_{ \alpha \in\mathcal{J}_{d,1}} Q_{ \alpha}\psi_{\alpha}(\xi) = \sum_{i=1}^{d}Q_{e_i} \xi_i, \f]
-where \f$ e_i \f$ is the \f$d-\f$dimensional multi-index with 1 at the \f$i\f$th location and zero elsewhere.
+1. The first variable :math:`\eta_1`  is obtained by directly combining the first order terms, that is
 
-2. The remaining rows of the \f$ A \f$ matrix (\f$ A \in \mathbb{R}^{d \times d} \f$) are obtained by using the largest coefficient, row after row, placed in the column that it occupies in the first row. All other terms are set to zero.
+.. math::  \eta_1 = \sum_{ \alpha \in\mathcal{J}_{d,1}} Q_{ \alpha}\psi_{\alpha}(\xi) = \sum_{i=1}^{d}Q_{e_i} \xi_i, 
+where :math:`e_i`  is the :math:`d-` dimensional multi-index with 1 at the :math:`i` th location and zero elsewhere.
 
-3. As last step, in order to obtain an isometry, the Gram-Schmidt procedure is followed on \f$ A. \f$
+2. The remaining rows of the :math:`A`  matrix ( :math:`A \in \mathbb{R}^{d \times d}` ) are obtained by using the largest coefficient, row after row, placed in the column that it occupies in the first row. All other terms are set to zero.
+
+3. As last step, in order to obtain an isometry, the Gram-Schmidt procedure is followed on :math:`A.` 
 
 See the theory manual for more details.
-
 Faq::
-See_Also:: model-active_subspace
+
+See_Also::

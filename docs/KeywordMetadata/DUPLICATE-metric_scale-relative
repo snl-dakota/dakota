@@ -1,22 +1,24 @@
-Blurb:: relative scaling of statistical metrics when adapting UQ surrogates
-
-Description:: When adapting a UQ surrogate model, the \c relative
+Blurb::
+relative scaling of statistical metrics when adapting UQ surrogates
+Description::
+When adapting a UQ surrogate model, the ``relative``
 option indicates that the change is measured relative to the current
 reference value (which evolves during the refinement), such that the
 convergence tolerance controls the relative change.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
-<b> Expected Output </b>
+*Expected Output*
 
-<b> Usage Tips </b>
+*Usage Tips*
 
-<b> Additional Discussion </b>
-
+*Additional Discussion*
 Topics::
 
 Examples::
 
 Theory::
+
 Faq::
+
 See_Also::

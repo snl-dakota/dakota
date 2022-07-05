@@ -1,8 +1,8 @@
-Blurb:: Compute system reliability (series or parallel)
-
+Blurb::
+Compute system reliability (series or parallel)
 Description::
 With the system probability/reliability option, statistics for
-specified \c response_levels are calculated and reported assuming the
+specified ``response_levels`` are calculated and reported assuming the
 response functions combine either in series or parallel to produce a
 total system response.
 
@@ -13,9 +13,12 @@ product of the individual response success probabilities.
 For a parallel system, the system fails only when all components
 (responses) fail.  The probability of failure is the product of the
 individual response failure probabilities.
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

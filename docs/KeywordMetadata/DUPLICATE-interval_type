@@ -1,28 +1,34 @@
 Blurb::
 Specify how to compute gradients and hessians
-
 Description::
-The \c interval_type setting is used to select between \c forward and
-\c central differences in the numerical gradient calculations. The \c
-dakota, DOT \c vendor, and OPT++ \c vendor routines have both forward
-and central differences available, the CONMIN, NL2SOL and ROL \c vendor
+The ``interval_type`` setting is used to select between ``forward`` and
+``central`` differences in the numerical gradient calculations. The
+``dakota``, DOT ``vendor``, and OPT++ ``vendor`` routines have both forward
+and central differences available, the CONMIN, NL2SOL and ROL ``vendor``
 routines support forward differences only, and the NPSOL and NLSSOL
-\c vendor routines start with forward differences and automatically
+``vendor`` routines start with forward differences and automatically
 switch to central differences as the iteration progresses (the user has
 no control over this). The following forward difference expression
-\f[
-\nabla f ({\bf x}) \cong 
-\frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x})}{h}
-\f]
-and the following central difference expression
-\f[
-\nabla f ({\bf x}) \cong 
-\frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x} - h {\bf e}_i)}{2h}
-\f]
-are used to estimate the \f$i^{th}\f$ component of the gradient vector. 
 
-Topics::	
+.. math:: 
+
+   \nabla f ({\bf x}) ong
+````\frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x})}{h}
+
+and the following central difference expression
+
+.. math:: 
+
+   \nabla f ({\bf x}) ong
+````\frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x} - h {\bf e}_i)}{2h}
+
+are used to estimate the :math:`i^{th}`  component of the gradient vector.
+Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

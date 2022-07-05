@@ -2,13 +2,16 @@ Blurb::
 Don't use constraints
 Description::
 The surrogate constraints in the approximate subproblem can be
-selected to be surrogates of the original constraints (\c
-original_constraints) or linearized approximations to the surrogate
-constraints (\c linearized_constraints), or constraints can be omitted
-from the subproblem (\c no_constraints).
-
+selected to be surrogates of the original constraints (
+``original_constraints``) or linearized approximations to the surrogate
+constraints ( ``linearized_constraints``), or constraints can be omitted
+from the subproblem ( ``no_constraints``).
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

@@ -1,23 +1,26 @@
-Blurb:: Top-level settings for %Dakota execution
+Blurb::
+Top-level settings for Dakota execution
 Description::
-
-The environment section in a %Dakota input file is optional.  It
+The environment section in a Dakota input file is optional.  It
 specifies the top-level solution environment, optionally including run
 modes, output controls, and identification of the primary iterative
-method (\c top_method_pointer).  The output-related keywords address
+method ( ``top_method_pointer``).  The output-related keywords address
 generation of tabular and results data, and precision of
 numerical output.
 
-<b> Run Mode Defaults </b> 
+*Run Mode Defaults*
 
-Dakota run phases include \c check, \c pre_run, \c run, and \c
-post_run.  The default behavior is to \c pre_run, \c run, and \c
-post_run, though any or all of these may be specified to select
-specific run phases.  Specifying \c check will cause Dakota to exit
+Dakota run phases include ``check``, ``pre_run``, ``run``, and
+``post_run``.  The default behavior is to ``pre_run``, ``run``, and
+``post_run``, though any or all of these may be specified to select
+specific run phases.  Specifying ``check`` will cause Dakota to exit
 before any selected run modes.
-
-Topics::	block
+Topics::
+block
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

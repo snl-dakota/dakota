@@ -1,12 +1,14 @@
-Blurb:: 
+Blurb::
 (Experimental) Hook for algorithm-specific adaptive sampling options
-
-Description:: 
+Description::
 The adaptive sampling algorithm is an experimental capability and not
 ready for production use at this time.
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

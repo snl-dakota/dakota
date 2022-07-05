@@ -1,24 +1,26 @@
 Blurb::
 Single-objective Genetic Algorithm (a.k.a Evolutionary Algorithm)
 Description::
-\c soga stands for Single-objective Genetic Algorithm, which is a
+``soga`` stands for Single-objective Genetic Algorithm, which is a
 global optimization method that supports general constraints and a
-mixture of real and discrete variables. \c soga is part of the JEGA
+mixture of real and discrete variables. ``soga`` is part of the JEGA
 library.
 
-<b> Constraints </b>
-\c soga can utilize linear constraints.
+*Constraints*
+``soga`` can utilize linear constraints.
 
-<b> Configuration </b>
+*Configuration*
 
 The genetic algorithm configurations are:
--# fitness
--# replacement
--# convergence
--# initialization
--# crossover
--# mutation
--# population size
+
+
+-fitness
+-replacement
+-convergence
+-initialization
+-crossover
+-mutation
+-population size
 
 The pool of potential members is the current population and the
 current set of offspring.  Choice of fitness assessors is strongly
@@ -26,10 +28,10 @@ related to the type of replacement algorithm being used and can have a
 profound effect on the solutions selected for the next generation.
 
 
-<b> Stopping Criteria </b>
+*Stopping Criteria*
 
-The \c soga method respects the \c max_iterations and \c
-max_function_evaluations method independent controls to provide
+The ``soga`` method respects the ``max_iterations`` and
+``max_function_evaluations`` method independent controls to provide
 integer limits for the maximum number of generations and function
 evaluations, respectively.
 
@@ -38,43 +40,52 @@ repeated assessment of the algorithm's progress in solving the
 problem, until some criterion is met.
 
 
-<b> Expected Outputs </b>
-The \c soga method respects the \c output method independent control
+*Expected Outputs*
+The ``soga`` method respects the ``output`` method independent control
 to vary the amount of information presented to the user during
 execution.
 
 The final results are written to the Dakota tabular output. Additional
-information is also available - see the \c log_file and \c
-print_each_pop keywords.
+information is also available - see the ``log_file`` and
+``print_each_pop`` keywords.
 
-<b>Expected HDF5 Output</b> 
+*Expected HDF5 Output*
 
-If Dakota was built with HDF5 support and run with the 
-\ref environment-results_output-hdf5 keyword, this method 
-writes the following results to HDF5: 
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
 
-- \ref hdf5_results-best_params 
-- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
-- \ref hdf5_results-best_constraints 
-- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
-Topics::	package_jega, global_optimization_methods
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+Topics::
+package_jega, global_optimization_methods
 Examples::
-Theory::
-The basic steps of the \c soga algorithm are as follows: 
-<ol> 
-  <li> Initialize the population
-  <li> Evaluate the population (calculate the values of the objective function and constraints for each population member)
-  <li> Loop until converged, or stopping criteria reached
-  <ol>
-    <li> Perform crossover
-    <li> Perform mutation
-    <li> Evaluate the new population 
-    <li> Assess the fitness of each member in the population
-    <li> Replace the population with members selected to continue in the next generation
-    <li> Test for convergence
-  </ol>
-</ol>
 
+Theory::
+The basic steps of the ``soga`` algorithm are as follows:
+
+
+1. Initialize the population
+
+2. Evaluate the population (calculate the values of the objective function and constraints for each population member)
+
+3. Loop until converged, or stopping criteria reached
+
+
+  1. Perform crossover
+
+  2. Perform mutation
+
+  3. Evaluate the new population
+
+  4. Assess the fitness of each member in the population
+
+  5. Replace the population with members selected to continue in the next generation
+
+  6. Test for convergence
 Faq::
-See_Also::	method-moga
+
+See_Also::

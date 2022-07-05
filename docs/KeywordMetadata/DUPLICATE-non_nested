@@ -4,7 +4,11 @@ Description::
 Enforce use of non-nested quadrature rules if available. For instance if the
 aleatory variables are Gaussian use the non-nested Gauss-Hermite rule
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

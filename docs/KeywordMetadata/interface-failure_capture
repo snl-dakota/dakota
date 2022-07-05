@@ -1,6 +1,5 @@
 Blurb::
 Determine how Dakota responds to analysis driver failure
-
 Description::
 Dakota can deal with analysis failure in a few ways.
 
@@ -14,25 +13,28 @@ beginning with the (case-insensitive) word "fail".  Any file contents
 after "fail" are ignored.
 
 Once Dakota detects analysis failure, the failure can be mitigated in four ways:
-- \ref interface-failure_capture-abort (the default)
-- \ref interface-failure_capture-retry
-- \ref interface-failure_capture-recover
-- \ref interface-failure_capture-continuation
 
-<!-- If no failure -->
-<!-- capturing specification is provided, then the default behavior is -->
-<!-- method dependent. For those iterative algorithms that provide -->
-<!-- internal failure mitigation strategies (currently NL2SOL and MOOCHO), -->
-<!-- the default is to transfer the failure information from the interface -->
-<!-- back to the algorithm for mitigation, with no specific action taken by -->
-<!-- %Dakota. For all other algorithms, the default is to abort. -->
+- :ref:`interface-failure_capture-abort<interface-failure_capture-abort>` (the default)
+- :ref:`interface-failure_capture-retry<interface-failure_capture-retry>`
+- :ref:`interface-failure_capture-recover<interface-failure_capture-recover>`
+- :ref:`interface-failure_capture-continuation<interface-failure_capture-continuation>`
+
+
+
+
+
+
+
+
 
 Refer to the Simulation Code Failure Capturing chapter of the Users
-Manual \cite UsersMan for additional information.
+Manual :cite:p:`UsersMan` for additional information.
+Topics::
 
-
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

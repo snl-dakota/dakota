@@ -1,35 +1,37 @@
 Blurb::
 Define coefficients of the linear inequality constraints
 Description::
-In the inequality case, the constraint matrix \f$A\f$ provides 
+In the inequality case, the constraint matrix :math:`A`  provides
 coefficients for the variables in the two-sided formulation:
-\f[a_l \leq Ax \leq a_u\f]
 
-Where the bounds are optionally specified by \c linear_inequality_lower_bounds, 
-and \c linear_inequality_upper_bounds.
+.. math:: a_l \leq Ax \leq a_u
+Where the bounds are optionally specified by ``linear_inequality_lower_bounds``,
+and ``linear_inequality_upper_bounds``.
 The bounds, if not specified, will default to -infinity, and 0, respectively,
 resulting in one-sided inequalities of the form
-\f[Ax \leq 0.0\f].
+
+.. math:: Ax \leq 0.0
+.
 
 The linear_constraints topics page (linked above) outlines a few additional
 things to consider when using linear constraints.
-
-Topics::	linear_constraints
+Topics::
+linear_constraints
 Examples::
-
-In the first example, an optimization involving two variables, \c x1 and \c x2, 
+In the first example, an optimization involving two variables, ``x1`` and ``x2``,
 is to be performed. These variables must satisfy two constraints:
 
-\f[ 1.5 \cdot x1 + 1.0 \cdot x2 \leq 5.0 \f]
-\f[ x1 \leq x2 \Longrightarrow x1 - x2 \leq 0.0 \f]
 
+.. math::  1.5 dot ``x1`` + 1.0 dot ``x2`` \leq 5.0 
+.. math::  x1 \leq x2 \Longrightarrow x1 - x2 \leq 0.0 
 The pair of constraints can be written in matrix form as:
 
-\f[\begin{bmatrix}
+
+.. math:: \begin{bmatrix}
   1.5 & 1.0 \\
-  1.0 & -1.0 
+  1.0 & -1.0
 \end{bmatrix}
-  
+
 \begin{bmatrix}
   x1 \\
   x2
@@ -40,44 +42,47 @@ The pair of constraints can be written in matrix form as:
   0.0
 \end{bmatrix}
 
-\f]
 
 The coefficient matrix and right hand side of this matrix inequality are expressed
 to Dakota in the variables section of the input file:
 
-\verbatim
 
-variables
-  continuous_design 2
-    descriptors 'x1' 'x2'
+.. code-block::
 
-  linear_inequality_constraint_matrix = 1.5   1.0
-                                        1.0  -1.0
+    
+    variables
+      continuous_design 2
+        descriptors 'x1' 'x2'
+    
+      linear_inequality_constraint_matrix = 1.5   1.0
+                                            1.0  -1.0
+    
+      linear_inequality_upper_bounds = 5.0
+                                       0.0
+    
 
-  linear_inequality_upper_bounds = 5.0
-                                   0.0
-
-\endverbatim
 <hr>
-The second example is more complex in two respects. First, some, but not all, 
-of the constraints are "two sided", with both lower and upper bounds. Second, 
+The second example is more complex in two respects. First, some, but not all,
+of the constraints are "two sided", with both lower and upper bounds. Second,
 not all variables participate in all constraints.
 
-There are four variables, \c x1, \c x2, \c x3, and \c x4, and four constraints.
+There are four variables, ``x1``, ``x2``, ``x3``, and ``x4``, and four constraints.
 
-\f[ -2.0 \leq 5.0 \cdot x1 + 2.0 \cdot x2 \leq 9.0 \f]
-\f[  0.0 \leq x1 + x3 \f]
-\f[ -8.0 \leq x2 + 6.0 \cdot x4 \leq 8.0 \f]
-\f[ x1 + x2 + x3 \leq 9.0 \f]
 
+.. math::  -2.0 \leq 5.0 dot ``x1`` + 2.0 dot ``x2`` \leq 9.0 
+.. math::   0.0 \leq x1 + x3 
+.. math::  -8.0 \leq x2 + 6.0 dot ``x4`` \leq 8.0 
+.. math::  x1 + x2 + x3 \leq 9.0 
 Or, in matrix form,
 
-\f[
-\begin{bmatrix}
+
+.. math:: 
+
+   \begin{bmatrix}
   -2.0 \\
   0.0 \\
   -8.0 \\
-  -\infty  
+  -\infty
 \end{bmatrix}
 
 \leq
@@ -88,7 +93,7 @@ Or, in matrix form,
   0.0 & 1.0 & 0.0 & 6.0 \\
   1.0 & 1.0 & 1.0 & 0.0
 \end{bmatrix}
-  
+
 \begin{bmatrix}
   x1 \\
   x2 \\
@@ -102,33 +107,35 @@ Or, in matrix form,
   8.0 \\
   9.0
 \end{bmatrix}
-\f]
 
 The Dakota specification for this matrix inequality is:
 
-\verbatim
 
-variables
-  continuous_design 4
-    descriptors 'x1' 'x2' 'x3' 'x4'
+.. code-block::
 
-  linear_inequality_constraint_matrix = 5.0  2.0  0.0  0.0
-                                        1.0  0.0  1.0  0.0  
-                                        0.0  1.0  0.0  6.0 
-                                        1.0  1.0  1.0  0.0  
-
-  linear_inequality_lower_bounds =  -2.0                                   
-                                     0.0 
-                                    -8.0 
-                                    -inf
-
-  linear_inequality_upper_bounds = 9.0 
-                                   inf
-                                   8.0 
-                                   9.0
-\endverbatim
+    
+    variables
+      continuous_design 4
+        descriptors 'x1' 'x2' 'x3' 'x4'
+    
+      linear_inequality_constraint_matrix = 5.0  2.0  0.0  0.0
+                                            1.0  0.0  1.0  0.0
+                                            0.0  1.0  0.0  6.0
+                                            1.0  1.0  1.0  0.0
+    
+      linear_inequality_lower_bounds =  -2.0
+                                         0.0
+                                        -8.0
+                                        -inf
+    
+      linear_inequality_upper_bounds = 9.0
+                                       inf
+                                       8.0
+                                       9.0
 
 
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

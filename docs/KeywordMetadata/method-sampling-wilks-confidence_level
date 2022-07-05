@@ -1,26 +1,27 @@
 Blurb::
 The confidence level to be used when determining sample sizes
 for random sampling using Wilks order statistics.
-
 Description::
-
-<b> Default Behavior </b>
+*Default Behavior*
 
 A value of 0.95 (95%) is the default for both confidence level as well
 as probability level resulting in 59 samples for first-order one-sided
 statistics.
-
 Topics::
 
 Examples::
-\verbatim
-method
-  sampling
-    sample_type random
-    wilks
-      confidence_level 0.99
-\endverbatim
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        wilks
+          confidence_level 0.99
+
 
 Theory::
+
 Faq::
-See_Also:: method-sampling-wilks method-sampling-probability_levels
+
+See_Also::

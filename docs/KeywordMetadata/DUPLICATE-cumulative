@@ -1,33 +1,37 @@
 Blurb::
 Computes statistics according to cumulative functions
-
 Description::
 Statistics on model responses will be computed according to a
 cumulative distribution/belief/plausibility function.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 By default, a cumulative distribution/belief/plausibility function
 will be used.  To explicitly specify it in the Dakota input file,
-however, the \c cumulative keyword must be appear in conjunction with
-the \c distribution keyword.
+however, the ``cumulative`` keyword must be appear in conjunction with
+the ``distribution`` keyword.
 
-<b> Expected Outputs </b>
+*Expected Outputs*
 
 Output will be a set of model response-probability pairs determined
 according to a cumulative distribution/belief/plausibility function.
 The probabilities reported are the probabilities that the model
 response falls below given response threshholds.
+Topics::
 
-Topics::	
 Examples::
-\verbatim
-method
-  sampling
-    sample_type lhs
-    samples = 10
-    distribution cumulative
-\endverbatim
+
+.. code-block::
+
+    method
+      sampling
+        sample_type lhs
+        samples = 10
+        distribution cumulative
+
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

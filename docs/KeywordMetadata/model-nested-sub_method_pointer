@@ -1,30 +1,33 @@
 Blurb::
-The \c sub_method_pointer specifies the method block for the sub-iterator
+The ``sub_method_pointer`` specifies the method block for the sub-iterator
 Description::
-The \c sub_method_pointer specifies the method block for the sub-iterator.
+The ``sub_method_pointer`` specifies the method block for the sub-iterator.
 
-See \ref topic-block_pointer for details about pointers.
+See :ref:`topic-block_pointer<topic-block_pointer>` for details about pointers.
 
-A nested model performs an evaluation (variables-to-responses mapping) by running a complete sub-iterator (i.e. method) to completion. The sub-iterator, which is specified using the \c sub_method_pointer, has its own model. This model, referred to here as the sub-model, possesses its own variables and responses. Prior to every execution of the sub-iterator, information about the nested model's variables is injected into the sub-model's variables. After the sub-iterator has completed, its results are passed back up to the nested model as responses.
+A nested model performs an evaluation (variables-to-responses mapping) by running a complete sub-iterator (i.e. method) to completion. The sub-iterator, which is specified using the ``sub_method_pointer``, has its own model. This model, referred to here as the sub-model, possesses its own variables and responses. Prior to every execution of the sub-iterator, information about the nested model's variables is injected into the sub-model's variables. After the sub-iterator has completed, its results are passed back up to the nested model as responses.
 
-Communication of variables information from a nested model to its sub-iterator, and in the opposite direction of sub-iterator results to nested model responses, is called mapping. (This mapping must not be confused with the variables-to-responses mapping that constitutes an evaluation.) Dakota allows considerable power and flexibility in how nested model mappings are performed. They are specified using four keywords: for the variables, \c primary_variable_mapping and \c secondary_variable_mapping; and for the responses, \c primary_response_mapping and \c secondary_response_mapping. They are described below.
+Communication of variables information from a nested model to its sub-iterator, and in the opposite direction of sub-iterator results to nested model responses, is called mapping. (This mapping must not be confused with the variables-to-responses mapping that constitutes an evaluation.) Dakota allows considerable power and flexibility in how nested model mappings are performed. They are specified using four keywords: for the variables, ``primary_variable_mapping`` and ``secondary_variable_mapping``; and for the responses, ``primary_response_mapping`` and ``secondary_response_mapping``. They are described below.
 
-<b>Variable Mappings</b>
+*Variable Mappings*
 
 In the variable mapping case, primary and secondary variable mapping specifications are used to map from the top-level variables into the sub-model variables. These mappings support three possibilities in any combination: (1) insertion of an active top-level variable value into an identified sub-model distribution parameter for an identified active sub-model variable, (2) insertion of an active top-level variable value into an identified active sub-model variable value, and (3) addition of an active top-level variable value as an inactive sub-model variable, augmenting the active sub-model variables.
 
-For the variable mappings, the primary and secondary specifications are lists of strings that are used to target specific sub-model variables and their sub-parameters, respectively. The primary strings are matched to sub-model variable descriptors such as \c 'cdv_1' (either user-supplied or default labels). The secondary strings are matched to random variable distribution parameters such as \c 'mean' or \c 'num_trials' or design/state variable sub-parameters such as \c 'lower_bound' or \c 'upper_bound'.
+For the variable mappings, the primary and secondary specifications are lists of strings that are used to target specific sub-model variables and their sub-parameters, respectively. The primary strings are matched to sub-model variable descriptors such as ````'cdv_1' (either user-supplied or default labels). The secondary strings are matched to random variable distribution parameters such as ``cdv_1'``'mean' or ``mean'``'num_trials' or design/state variable sub-parameters such as ``num_trials'``'lower_bound' or ``lower_bound'``'upper_bound'.
 
 An important limitation is that real-valued top-level variables must map to real-valued sub-model variables or real-valued sub-parameters, and integer-valued top-level variables must map to either integer-valued sub-model variables or integer-valued sub-parameters. However, as long as these real versus integer constraints are satisfied, mappings are free to cross variable types (design, aleatory uncertain, epistemic uncertain, state) and domain types (continuous, discrete).
 
-Both \c primary_variable_mapping and \c secondary_variable_mapping specifications are optional, which is designed to support the following three possibilities:
-<ol>
- <li>If both primary and secondary variable mappings are specified, then an active top-level variable value will be inserted into the identified sub-parameter (the secondary mapping) for the identified sub-model variable (the primary mapping).</li> 
+Both ``primary_variable_mapping`` and ``secondary_variable_mapping`` specifications are optional, which is designed to support the following three possibilities:
 
- <li>If a primary mapping is specified but a secondary mapping is not, then an active top-level variable value will be inserted into the identified sub-model variable value (the primary mapping).</li> 
 
- <li>If a primary mapping is not specified (corresponding secondary mappings, if specified, are ignored), then an active top-level variable value will be inserted into a corresponding sub-model variable, based on matching of variable types (e.g., top-level and sub-model variable specifications both allocate a set of 'continuous_design' variables which are active at the top level). Multiple sub-model variable types may be updated in this manner, provided that they are all active in the top-level variables. Since there is a direct variable correspondence for these default insertions, sub-model bounds and descriptors are also updated from the top-level bounds and labels in order to eliminate the need for redundant input file specifications. Thus, it is typical for the sub-model variables specification to only contain the minimal required information, such as the number of variables of each type, for these insertion targets. The sub-model must allocate enough space for each of the types that will accept default insertions, and the leading set of matching sub-model variables are updated (i.e., the sub-model may allocate more than needed and the trailing set will be unmodified).</li> 
-</ol>
+1. If both primary and secondary variable mappings are specified, then an active top-level variable value will be inserted into the identified sub-parameter (the secondary mapping) for the identified sub-model variable (the primary mapping).
+
+
+2. If a primary mapping is specified but a secondary mapping is not, then an active top-level variable value will be inserted into the identified sub-model variable value (the primary mapping).
+
+
+3. If a primary mapping is not specified (corresponding secondary mappings, if specified, are ignored), then an active top-level variable value will be inserted into a corresponding sub-model variable, based on matching of variable types (e.g., top-level and sub-model variable specifications both allocate a set of 'continuous_design' variables which are active at the top level). Multiple sub-model variable types may be updated in this manner, provided that they are all active in the top-level variables. Since there is a direct variable correspondence for these default insertions, sub-model bounds and descriptors are also updated from the top-level bounds and labels in order to eliminate the need for redundant input file specifications. Thus, it is typical for the sub-model variables specification to only contain the minimal required information, such as the number of variables of each type, for these insertion targets. The sub-model must allocate enough space for each of the types that will accept default insertions, and the leading set of matching sub-model variables are updated (i.e., the sub-model may allocate more than needed and the trailing set will be unmodified).
+
 
 These different variable mapping possibilities may be used in any
 combination by employing empty strings ('') for particular omitted
@@ -32,157 +35,162 @@ mappings (the number of strings in user-supplied primary and secondary
 variable mapping specifications must equal the total number of active
 top-level variables, including both continuous and discrete
 types). The ordering of the active variables is the same as shown in
-\c dakota.input.summary on \subpage input_spec_summary and as
-presented in the \ref variables section of this manual.
+``dakota``.input.summary on \subpage input_spec_summary and as
+presented in the :ref:`variables<variables>` section of this manual.
 
 Inactive nested model variables are treated differently from those in the active view. If inactive variables are present at the outer level, then the default type 3 mapping is used for these variables; that is, outer loop inactive variables are inserted into inner loop variables (active or inactive) based on matching of variable types, top-level bounds and labels are also propagated, the inner loop must allocate sufficient space to receive the outer loop values, and the leading subset within this inner loop allocation is updated. This capability is important for allowing nesting beyond two levels, since an active variable at the outer-most loop may become inactive at the next lower level, but still needs to be further propagated down to lower levels in the recursion.
 
 
-<b>Response Mappings</b>
+*Response Mappings*
 
 For the response mappings, the primary and secondary specifications determine how results from the completed sub-iterator are mapped into nested model responses. The response mapping defines a matrix which scales and combines the results from the inner loop into outer loop responses. Each row of the mapping corresponds to one outer loop response, and each column of the mapping corresponds to a result from the inner loop. The results returned from the sub-model are best thought of as forming a column vector; the nested model responses are then the dot-product of the mapping matrix and results vector. The number and type of results that are available and must be accounted for in the response mapping depends on the sub-iterator type:
 
-optimization: the final objective function(s) and nonlinear constraints 
+optimization: the final objective function(s) and nonlinear constraints
 
-nonlinear least squares: the final least squares terms and nonlinear constraints 
+nonlinear least squares: the final least squares terms and nonlinear constraints
 
-aleatory uncertainty quantification (UQ): for each response function, a mean statistic, a standard deviation statistic, and all probability/reliability/generalized reliability/response level results for any user-specified \c response_levels, \c probability_levels, \c reliability_levels, and/or \c gen_reliability_levels, in that order. 
+aleatory uncertainty quantification (UQ): for each response function, a mean statistic, a standard deviation statistic, and all probability/reliability/generalized reliability/response level results for any user-specified ``response_levels``, ``probability_levels``, ``reliability_levels``, and/or ``gen_reliability_levels``, in that order.
 
-epistemic and mixed aleatory/epistemic UQ using interval estimation methods: lower and upper interval bounds for each response function. 
+epistemic and mixed aleatory/epistemic UQ using interval estimation methods: lower and upper interval bounds for each response function.
 
-epistemic and mixed aleatory/epistemic UQ using evidence methods: for each response function, lower and upper interval bounds (belief and plausibility) for all probability/reliability/generalized reliability/response level results computed from any user-specified \c response_levels, \c probability_levels, \c reliability_levels, and/or \c gen_reliability_levels, in that order. 
-parameter studies and design of experiments: for optimization and least squares response data sets, the best solution found (lowest constraint violation if infeasible, lowest composite objective function if feasible). For generic response data sets, a best solution metric is not defined, so the sub-iterator response vector is empty in this case. 
+epistemic and mixed aleatory/epistemic UQ using evidence methods: for each response function, lower and upper interval bounds (belief and plausibility) for all probability/reliability/generalized reliability/response level results computed from any user-specified ``response_levels``, ``probability_levels``, ``reliability_levels``, and/or ``gen_reliability_levels``, in that order.
+parameter studies and design of experiments: for optimization and least squares response data sets, the best solution found (lowest constraint violation if infeasible, lowest composite objective function if feasible). For generic response data sets, a best solution metric is not defined, so the sub-iterator response vector is empty in this case.
 
-The \c primary_response_mapping matrix maps sub-iterator results into top-level objective functions, least squares terms, or generic response functions, depending on the declared top-level response set. The \c secondary_response_mapping matrix maps sub-iterator results into top-level nonlinear inequality and equality constraints. Alternately, if all the responses of the sub-iterator are to be mapped one-to-one to the top-level nested model responses \ref model-nested-sub_method_pointer-identity_response_mapping may be specified instead.
+The ``primary_response_mapping`` matrix maps sub-iterator results into top-level objective functions, least squares terms, or generic response functions, depending on the declared top-level response set. The ``secondary_response_mapping`` matrix maps sub-iterator results into top-level nonlinear inequality and equality constraints. Alternately, if all the responses of the sub-iterator are to be mapped one-to-one to the top-level nested model responses :ref:`model-nested-sub_method_pointer-identity_response_mapping<model-nested-sub_method_pointer-identity_response_mapping>` may be specified instead.
 
-<b>Summary</b>
+*Summary*
 
-The nested model constructs admit a wide variety of multi-iterator, multi-model solution approaches. For example, optimization within optimization (for hierarchical multidisciplinary optimization), uncertainty quantification within uncertainty quantification (for second-order probability), uncertainty quantification within optimization (for optimization under uncertainty), and optimization within uncertainty quantification (for uncertainty of optima) are all supported, with and without surrogate model indirection. Several examples of nested model usage are provided in the Users Manual, most notably mixed epistemic-aleatory UQ, optimization under uncertainty (OUU), and surrogate-based UQ. 
-
-Topics::	block_pointer
+The nested model constructs admit a wide variety of multi-iterator, multi-model solution approaches. For example, optimization within optimization (for hierarchical multidisciplinary optimization), uncertainty quantification within uncertainty quantification (for second-order probability), uncertainty quantification within optimization (for optimization under uncertainty), and optimization within uncertainty quantification (for uncertainty of optima) are all supported, with and without surrogate model indirection. Several examples of nested model usage are provided in the Users Manual, most notably mixed epistemic-aleatory UQ, optimization under uncertainty (OUU), and surrogate-based UQ.
+Topics::
+block_pointer
 Examples::
 Two examples are provided to illustrate nested models. The first is a relatively simple case. Although it is somewhat contrived, it demonstrates several features of nested models. A step-by-step explanation is provided below.
 
-\verbatim
-environment
-  method_pointer 'opt'
 
-method
-  id_method 'opt'
-  asynch_pattern_search
-  model_pointer 'outer_model'
-  output verbose
+.. code-block::
 
-model
-  id_model 'outer_model'
-  variables_pointer 'outer_vars'
-  responses_pointer 'outer_resps'
-  nested
-    sub_method_pointer 'UQ_method'
-      primary_variable_mapping 'x1' 'x2'
-      secondary_variable_mapping 'mean' 'mean'
-      primary_response_mapping  0 0 0.3 0 0 0.7
+    environment
+      method_pointer 'opt'
+    
+    method
+      id_method 'opt'
+      asynch_pattern_search
+      model_pointer 'outer_model'
+      output verbose
+    
+    model
+      id_model 'outer_model'
+      variables_pointer 'outer_vars'
+      responses_pointer 'outer_resps'
+      nested
+        sub_method_pointer 'UQ_method'
+          primary_variable_mapping 'x1' 'x2'
+          secondary_variable_mapping 'mean' 'mean'
+          primary_response_mapping  0 0 0.3 0 0 0.7
+    
+    variables
+      id_variables 'outer_vars'
+        continuous_design 2
+        descriptors 'x1_mean' 'x2_mean'
+        lower_bounds -2.0 -2.0
+        upper_bounds  2.0  2.0
+    
+    responses
+      id_responses 'outer_resps'
+        objective_functions 1
+        descriptors 'sum_p
+        no_gradients
+        no_hessians
+    
+    method
+      id_method 'UQ_method'
+      sampling samples 30
+      seed 1234
+      model_pointer 'UQ_model'
+      probability_levels 0.9 0.9
+    
+    model
+      id_model 'UQ_model'
+      single
+      variables_pointer 'inner_vars'
+      responses_pointer 'inner_resps'
+      interface_pointer 'inf'
+    
+    variables
+      id_variables 'inner_vars'
+      normal_uncertain 2
+      descriptors 'x1' 'x2'
+      means 0.0 0.0
+      std_deviations 1.0 1.0
+    
+    responses
+      id_responses 'inner_resps'
+      response_functions 2
+      descriptors 'f1' 'f2'
+      no_gradients
+      no_hessians
+    
+    interface
+      id_interface 'inf'
+      direct
+        analysis_drivers 'text_book'
 
-variables
-  id_variables 'outer_vars'
-    continuous_design 2
-    descriptors 'x1_mean' 'x2_mean'
-    lower_bounds -2.0 -2.0
-    upper_bounds  2.0  2.0
-
-responses
-  id_responses 'outer_resps'
-    objective_functions 1
-    descriptors 'sum_p
-    no_gradients
-    no_hessians
-
-method
-  id_method 'UQ_method'
-  sampling samples 30
-  seed 1234
-  model_pointer 'UQ_model'
-  probability_levels 0.9 0.9
-  
-model
-  id_model 'UQ_model'
-  single
-  variables_pointer 'inner_vars'
-  responses_pointer 'inner_resps'
-  interface_pointer 'inf'
-
-variables
-  id_variables 'inner_vars'
-  normal_uncertain 2
-  descriptors 'x1' 'x2'
-  means 0.0 0.0
-  std_deviations 1.0 1.0
-
-responses
-  id_responses 'inner_resps'
-  response_functions 2
-  descriptors 'f1' 'f2'
-  no_gradients
-  no_hessians
-  
-interface
-  id_interface 'inf'
-  direct
-    analysis_drivers 'text_book'
-\endverbatim
 
 The example input is an 'optimization under uncertainty' or OUU. In an OUU, some
 statistic of the simulation response is optimized. In this case, a weighted sum of the 90th
-percentiles of two simulation responses from the \c text_book driver is being minimized.
+percentiles of two simulation responses from the ``text_book`` driver is being minimized.
 The uncertainty in these responses is driven by uncertainty in the input variables, which
 are normally distributed. The means of the uncertain variables are the design variables
 in the optimization.
 
-In Dakota, this is accomplished by nesting an uncertainty quantification method 
-(\ref method-sampling), which computes the 90th percentiles, within an optimizer 
-(\c method-asynch_pattern_search), which iteratively adjusts the variable means to minimize
-the objective. For every evaluation requested by the optimizer, the design variables (\c x1_mean
-and \c x2_mean in the example) are inserted into the means of the uncertain variables (\c x1 and 
-\c x2), then the \c sampling study is run to completion, and finally the resulting statistics for 
-the responses \c f1 and \c f2 are mapped into the responses \c sum_p.
+In Dakota, this is accomplished by nesting an uncertainty quantification method
+( :ref:`method-sampling<method-sampling>`), which computes the 90th percentiles, within an optimizer
+( ``method-asynch_pattern_search``), which iteratively adjusts the variable means to minimize
+the objective. For every evaluation requested by the optimizer, the design variables ( ``x1_mean``
+and ``x2_mean`` in the example) are inserted into the means of the uncertain variables ( ``x1`` and
+``x2``), then the ``,sampling`` study is run to completion, and finally the resulting statistics for
+the responses ``f1`` and ``f2`` are mapped into the responses ``sum_p``.
 
 It may be helpful to sketch out the relationships between blocks as indicated by their
 various pointers in order to understand the nested structure of the study. The top-level
-or outer method, \c 'opt', has a model named \c 'outer_model'. This model refers to 
-variables and responses blocks (\c 'outer_vars' and \c 'outer_resps') that are used by
-the optimizer. The \c 'outer_model' block also refers to a sub-method, \c 'UQ_method' which
-defines the UQ study and has its own model, which in turn possess variables, an interface, and 
+or outer method, ````'opt', has a model named ``opt',``'outer_model'. This model refers to
+variables and responses blocks ( ````'outer_vars' and ``outer_vars'``'outer_resps') that are used by
+the optimizer. The ````'outer_model' block also refers to a sub-method, ``outer_model'``'UQ_method' which
+defines the UQ study and has its own model, which in turn possess variables, an interface, and
 responses.
 
-Next, note the primary and secondary variable mappings in \c 'outer_model', which
-specify that the values of the active design variables \c x1_mean and \c x2_mean are to be
-inserted into the means of the uncertain variables \c x1 and \c x2.
+Next, note the primary and secondary variable mappings in ````'outer_model', which
+specify that the values of the active design variables ``x1_mean`` and ``x2_mean`` are to be
+inserted into the means of the uncertain variables ``x1`` and ``x2``.
 
-The response mapping in \c 'outer_model' is a matrix with a single row and six columns.
+The response mapping in ````'outer_model' is a matrix with a single row and six columns.
 The single row corresponds to the number of responses in the outer method. As
-described above, for each of our two sub-model responses, the \c sampling method returns 
+described above, for each of our two sub-model responses, the ``sampling`` method returns
 a mean, a standard deviation, and a single probability level in that order to the nested
 model. There are a total of six results and accordingly six columns in the mapping matrix.
 The coefficients 0.3 and 0.7 in the matrix result in a weighted sum of the 90th percentiles:
 
-\f[sum\_p = 0.3*(90th\: percentile \:of \:f1) + 0.7*(90th\: percentile\: of\: f2)\f]
+
+.. math:: sum\_p = 0.3*(90th\: percentile \:of \:f1) + 0.7*(90th\: percentile\: of\: f2)
 <hr>
 The next example is a fragment of an input file, showing only the nested model itself. It
 illustrates more complex variable and response mappings.
 
-\verbatim
-primary_variable_mapping  = '' '' 'X'   'Y'
-secondary_variable_mapping = '' '' 'mean' 'mean'
-primary_response_mapping  = 1. 0. 0. 0. 0. 0. 0. 0. 0.
-secondary_response_mapping = 0. 0. 0. 1. 3. 0. 0. 0. 0.
-                             0. 0. 0. 0. 0. 0. 1. 3. 0.
-\endverbatim
+
+.. code-block::
+
+    primary_variable_mapping  = '' '' 'X'   'Y'
+    secondary_variable_mapping = '' '' 'mean' 'mean'
+    primary_response_mapping  = 1. 0. 0. 0. 0. 0. 0. 0. 0.
+    secondary_response_mapping = 0. 0. 0. 1. 3. 0. 0. 0. 0.
+                                 0. 0. 0. 0. 0. 0. 1. 3. 0.
+
 
 The variable mappings correspond to 4 top-level variables, the first
 two of which employ the default mappings from active top-level
 variables to sub-model variables of the same type (option 3 above) and
 the latter two of which are inserted into the mean distribution
-parameters of sub-model variables \c 'X' and \c 'Y' (option 1 above).
+parameters of sub-model variables ````'X' and ``X'``'Y' (option 1 above).
 
 The response mappings define a 3 by 9 matrix corresponding to 9 inner
 loop results and 3 outer loop response functions (one
@@ -191,7 +199,7 @@ objective and two constraints). Each row of the response mapping is a
 vector which is multiplied (i.e, with a dot-product) against the 9
 sub-iterator results to determine the outer loop function.
 
-Consider again a UQ example with 3 response functions, each providing a mean, 
+Consider again a UQ example with 3 response functions, each providing a mean,
 a standard deviation, and one level mapping (if no level mappings are
 specified, the responses would only have a mean and standard
 deviation). The primary response mapping can be seen to extract the
@@ -203,8 +211,8 @@ response specification. The secondary response mapping maps the
 fourth sub-iterator result plus 3 times the fifth
 sub-iterator result (mean plus 3 standard deviations) into
 one top-level nonlinear constraint and the seventh sub-iterator
-result plus 3 times the eighth sub-iterator result (mean plus 3 standard deviations) 
-into another top-level nonlinear constraint, where these top-level nonlinear 
+result plus 3 times the eighth sub-iterator result (mean plus 3 standard deviations)
+into another top-level nonlinear constraint, where these top-level nonlinear
 constraints may be inequality or equality, as dictated by the top-level response
 specification.
 
@@ -212,15 +220,11 @@ Note that a common case is for each sub-iterator result to be mapped
 to a unique outer loop response (for example, in the nested UQ case
 where one wants to determine an interval on each inner loop
 statistic). In these simple cases, the response mapping would define
-an identity matrix and \ref
-model-nested-sub_method_pointer-identity_response_mapping may instead
-be specified. <!-- That is, the primary response mapping will have N
-rows and N columns corresponding to the N sub-iterator response
-values, and the mapping matrix will have a value of one along the
-diagonal and zeros elsewhere. -->
-
-
-
+an identity matrix and
+:ref:`model-nested-sub_method_pointer-identity_response_mapping<model-nested-sub_method_pointer-identity_response_mapping>` may instead
+be specified.
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

@@ -4,11 +4,14 @@ Description::
 The two JEGA methods use different convergence types, which are
 described on their respective pages.
 
-All the convergence types are modified by the optional keywords \c
-percent_change and \c num_generations.
-
+All the convergence types are modified by the optional keywords
+``percent_change`` and ``num_generations``.
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

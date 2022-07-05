@@ -1,28 +1,29 @@
 Blurb::
 Aleatory uncertain variable - exponential
 Description::
-The exponential distribution is often used for modeling failure rates. 
+The exponential distribution is often used for modeling failure rates.
 
-The density function for the exponential distribution is given by: 
-\f[f(x) = \frac{1}{\beta} \exp \left( \frac{-x}{\beta} \right)\f] 
-where 
-\f$\mu_{E} = \beta\f$ and \f$\sigma^2_{E} = \beta^2\f$. 
+The density function for the exponential distribution is given by:
+
+.. math:: f(x) = \frac{1}{\beta} \exp \left( \frac{-x}{\beta} \right)
+where
+:math:`\mu_{E} = \beta`  and :math:`\sigma^2_{E} = \beta^2` .
 
 
-Note that 
+Note that
 this distribution is a special case of the more general gamma distribution.
-
-Topics::	continuous_variables, aleatory_uncertain_variables
+Topics::
+continuous_variables, aleatory_uncertain_variables
 Examples::
-Theory::
 
+Theory::
 When used with some methods such as design of experiments and
 multidimensional parameter studies, distribution bounds are inferred
-to be [0, \f$\mu + 3 \sigma\f$].
+to be [0, :math:`\mu + 3 \sigma` ].
 
 For some methods, including vector and centered parameter studies, an
 initial point is needed for the uncertain variables. When not given
 explicitly, these variables are initialized to their means
-
 Faq::
-See_Also::	
+
+See_Also::

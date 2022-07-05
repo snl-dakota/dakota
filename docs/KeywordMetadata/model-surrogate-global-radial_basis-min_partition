@@ -1,11 +1,13 @@
 Blurb::
 (Inactive) Minimum RBF partition
-
 Description::
 This option currently has no effect and will likely be removed.
-
-Topics::	surrogate_models
+Topics::
+surrogate_models
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

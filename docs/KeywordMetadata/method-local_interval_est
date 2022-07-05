@@ -1,21 +1,23 @@
 Blurb::
 Interval analysis using local optimization
 Description::
-Interval analysis using local methods (\c local_interval_est).
+Interval analysis using local methods ( ``local_interval_est``).
 If the problem is amenable to local optimization
 methods (e.g. can provide derivatives or use finite difference
 method to calculate derivatives), then one can use one of two local
-methods to calculate these bounds. 
-\li \c sqp
-\li \c nip
+methods to calculate these bounds.
 
-<b> Additional Resources </b>
+- ``sqp``
+- ``nip``
 
-Refer to \ref topic-variable_support for information on supported
+*Additional Resources*
+
+Refer to :ref:`topic-variable_support<topic-variable_support>` for information on supported
 variable types.
-
-Topics::         uncertainty_quantification, epistemic_uncertainty_quantification_methods, interval_estimation	
+Topics::
+uncertainty_quantification, epistemic_uncertainty_quantification_methods, interval_estimation
 Examples::
+
 Theory::
 In interval analysis, one assumes that nothing is known about
 an epistemic uncertain variable except that its value lies
@@ -29,6 +31,6 @@ resulting bounds on the output (defining the output interval)
 given interval bounds on the inputs. Again, any output response
 that falls within the output interval is a possible output
 with no frequency information assigned to it.
- 
 Faq::
-See_Also::	method-global_evidence, method-global_interval_est, method-local_evidence
+
+See_Also::

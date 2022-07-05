@@ -1,7 +1,6 @@
-Blurb:: Enable GPMSA-internal normalization
-
-Description:: 
-
+Blurb::
+Enable GPMSA-internal normalization
+Description::
 Normalize variables and data (surrogate model build and experiment)
 when constructing the underlying Gaussian Process emulator.  When
 specified, this option will normalize calibration parameters and
@@ -9,16 +8,10 @@ configuration (scenario) variables based on the min/max of the build
 data.  It will normalize simulation and experiment data by the mean
 and variance of the simulation build data.
 
-<b> Default Behavior </b>
+*Default Behavior*
 No GPMSA-specific scaling used.
-
+Topics::
 Examples::
-
-\verbatim
-method
-  bayes_calibration gpmsa
-    chain_samples 1000
-    seed 2460
-    ...
-    gpmsa_normalize
-\endverbatim
+Theory::
+Faq::
+See_Also::

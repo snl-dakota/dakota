@@ -1,59 +1,60 @@
 Blurb::
 Global surrogate model based on functional tensor train decomposition
-
 Description::
 Tensor train decompositions are approximations that exploit low rank structure
 in an input-output mapping.  The form of the approximation can be written as a
 set of matrix valued products:
-\f[ f_r(x) = F_1(x_1) F_2(x_2) \dots F_d(x_d) \f]
+
+.. math::  f_r(x) = F_1(x_1) F_2(x_2) \dots F_d(x_d) 
 Where the "cores" expand to
-\f[ F_k(x_k) =
+
+.. math::  F_k(x_k) =
 \begin{bmatrix}
-f_k^{11}(x_k)       & \cdots & f_k^{1r_k}(x_k)\\
+f_k^{11}(x_k)       & dots ````& f_k^{1r_k}(x_k)\\
 \vdots              & \ddots & \vdots\\
-f_k^{r_{k-1}1}(x_k) & \cdots & f_k^{r_{k-1}r_k}(x_k)
+f_k^{r_{k-1}1}(x_k) & dots ````& f_k^{r_{k-1}r_k}(x_k)
 \end{bmatrix}
-\f]
 
 An example expansion over four random variables with rank vector (1,7,5,3,1) is
-\f[ f_r(x) =
+
+.. math::  f_r(x) =
 \begin{bmatrix}
-f_1^{11}(x_1)       & \cdots & f_1^{17}(x_1)
+f_1^{11}(x_1)       & dots ````& f_1^{17}(x_1)
 \end{bmatrix}
 \begin{bmatrix}
-f_2^{11}(x_2)       & \cdots & f_2^{15}(x_2)\\
+f_2^{11}(x_2)       & dots ````& f_2^{15}(x_2)\\
 \vdots              & \ddots & \vdots\\
-f_2^{71}(x_2) & \cdots & f_2^{75}(x_2)
+f_2^{71}(x_2) & dots ````& f_2^{75}(x_2)
 \end{bmatrix}
 \begin{bmatrix}
-f_3^{11}(x_3)       & \cdots & f_3^{13}(x_3)\\
+f_3^{11}(x_3)       & dots ````& f_3^{13}(x_3)\\
 \vdots              & \ddots & \vdots\\
-f_3^{51}(x_3) & \cdots & f_3^{53}(x_3)
+f_3^{51}(x_3) & dots ````& f_3^{53}(x_3)
 \end{bmatrix}
 \begin{bmatrix}
 f_4^{11}(x_4) \\
 \vdots \\
 f_4^{31}(x_4)
 \end{bmatrix}
-\f]
 
 In the current implementation, orthogonal polynomial basis functions
-(Hermite and Legendre) are employed as the basis functions \f$f_i^{jk}(x_i)\f$,
+(Hermite and Legendre) are employed as the basis functions :math:`f_i^{jk}(x_i)` ,
 although the C3 library will enable additional options in the future.
 
 The number of coefficients that must be computed by the regression solver
 can be inferred from the construction above.  For each QoI, the regression
 size can be determined as follows:
 
-- For \a v variables, orders \a o is a v-vector and ranks \a r is a v+1-vector 
-- the first core is a \f$ 1 \times r_1 \f$ row vector and contributes \f$ (o_0 + 1) r_1 \f$ terms
-- the  last core is a \f$ r_{v-1} \times 1 \f$ col vector and contributes \f$ (o_{v-1}+1) r_{v-1} \f$ terms
-- the middle v-2 cores are \f$ r_i \times r_{i+1} \f$ matrices that contribute \f$ r_i r_{i+1} (o_i + 1) \f$ terms, \f$ i = 1, ..., v-2 \f$
+
+- For \a v variables, orders \a o is a v-vector and ranks \a r is a v+1-vector
+- the first core is a :math:`1 \times r_1`  row vector and contributes :math:`(o_0 + 1) r_1`  terms
+- the  last core is a :math:`r_{v-1} \times 1`  col vector and contributes :math:`(o_{v-1}+1) r_{v-1}`  terms
+- the middle v-2 cores are :math:`r_i \times r_{i+1}`  matrices that contribute :math:`r_i r_{i+1} (o_i + 1)`  terms, :math:`i = 1, ..., v-2` 
 - neighboring vec/mat dimensions must match, so there are v-1 unique ranks
 
 
 
-<b> Usage Tips </b>
+*Usage Tips*
 
 This new capability is stabilizing and beginning to be embedded in
 higher-level strategies such as multilevel-multifidelity algorithms.
@@ -64,23 +65,26 @@ This capability is also being used as a prototype to explore
 model-based versus method-based specification of stochastic
 expansions.  While the model specification is stand-alone, it
 currently requires a corresponding method specification to exercise
-the model, which can be a generic UQ strategy such as \c
-surrogate_based_uq method or a \c sampling method.  The intent is to
+the model, which can be a generic UQ strategy such as
+``surrogate_based_uq`` method or a ``sampling`` method.  The intent is to
 migrate function train, polynomial chaos, and stochastic collocation
 toward model-only specifications that can then be employed in any
 surrogate/emulator context.
-
 Topics::
 
 Examples::
-\verbatim
-model,
-	id_model = 'FT'
-	surrogate global function_train
-	  start_order = 2
-	  start_rank  = 2  kick_rank = 2  max_rank = 10
-	  adapt_rank
-	dace_method_pointer = 'SAMPLING'
-\endverbatim
 
-See_Also::	method-function_train, method-multilevel_function_train, method-multifidelity_function_train 
+.. code-block::
+
+    model,
+     id_model = 'FT'
+     surrogate global function_train
+       start_order = 2
+       start_rank  = 2  kick_rank = 2  max_rank = 10
+       adapt_rank
+     dace_method_pointer = 'SAMPLING'
+
+
+Theory::
+Faq::
+See_Also::

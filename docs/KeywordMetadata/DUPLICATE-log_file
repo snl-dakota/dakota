@@ -2,17 +2,19 @@ Blurb::
 Specify the name of a log file
 Description::
 New as
-of JEGA v2.0 is the introduction of the \c log_file specification. JEGA now
+of JEGA v2.0 is the introduction of the ``log_file`` specification. JEGA now
 uses a logging library to output messages and status to the user. JEGA can be
 configured at build time to log to both the console window and a text file, one
-or the other, or neither. The \c log_file input is a string name of a file
+or the other, or neither. The ``log_file`` input is a string name of a file
 into which to log. If the build was configured without file logging in JEGA,
-this input is ignored. If file logging is enabled and no \c log_file is
-specified, the default file name of JEGAGlobal.log is used. 
-
-
+this input is ignored. If file logging is enabled and no ``log_file`` is
+specified, the default file name of JEGAGlobal.log is used.
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

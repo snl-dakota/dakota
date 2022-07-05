@@ -1,14 +1,15 @@
 Blurb::
 Use regression to estimate the nugget.
-
 Description::
 Estimate a nugget term in the Gaussian process Gram matrix.
 
-<b> Default Behavior </b>
+*Default Behavior*
 Off by default. The user may alternatively specify a fixed nugget.
-
 Topics::
 
+Examples::
 Theory::
+
 Faq::
+
 See_Also::

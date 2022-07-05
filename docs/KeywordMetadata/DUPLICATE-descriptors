@@ -1,16 +1,18 @@
-Blurb:: 
+Blurb::
 Labels for the variables
-
 Description::
-The optional variable labels specification \c descriptors is a list of
+The optional variable labels specification ``descriptors`` is a list of
 strings which identify the variables.  These are used in console and
 tabular output.
 
 The default descriptor strings use a variable type-dependent root
 string plus a numeric identifier.
+Topics::
 
-Topics::	
 Examples::
+
 Theory::
+
 Faq::
-See_Also::	
+
+See_Also::

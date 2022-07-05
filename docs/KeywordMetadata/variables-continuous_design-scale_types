@@ -1,48 +1,44 @@
 Blurb::
 How to scale each continuous design variable
-
 Description::
-Each string in \c scale_types indicates the scaling type for each
+Each string in ``scale_types`` indicates the scaling type for each
 continuous design variable. They only have effect when the associated
-method specifies \c scaling.
+method specifies ``scaling``.
 
 The options are:
 
-\li <tt>'value'</tt> - characteristic value by which variables will be
-    divided. If this is chosen, then \ref
-    variables-continuous_design-scales must also be specified; 'value'
-    is assumed if scales are given without \c scale_types
 
-\li <tt>'auto'</tt> - automatic scaling based on bounds.
-
-\li <tt>'log'</tt> - logarithmic scaling (can be used together with
-    \ref variables-continuous_design-scales).
+- <tt>'value'</tt> - characteristic value by which variables will be     divided. If this is chosen, then     :ref:`variables-continuous_design-scales<variables-continuous_design-scales>` must also be specified; 'value'     is assumed if scales are given without ``scale_types``
+- <tt>'auto'</tt> - automatic scaling based on bounds.
+- <tt>'log'</tt> - logarithmic scaling (can be used together with     :ref:`variables-continuous_design-scales<variables-continuous_design-scales>`).
 
 If a single string is specified it will apply to all continuous design
 variables. Otherwise, a scale type must be specified for each
 continuous design variable.
 
-<b>Usage Tips:</b>
+*Usage Tips:*
 
 See the scaling information under specific methods, e.g.,
-\c method-*-scaling for details on how to use this keyword.
+``method-*-scaling`` for details on how to use this keyword.
+Topics::
 
-
-Topics::	
-Examples:: 
+Examples::
 Two continuous design variables, one scaled by 4.0, the other by 0.1,
 then further log scaled:
-\verbatim
-  continuous_design = 2
-    initial_point    -1.2      1.0
-    lower_bounds     -2.0      0.001
-    upper_bounds      2.0      2.0
-    descriptors       'x1'     "x2"
-    scale_types =     'value' 'log'
-    scales =          4.0      0.1
-\endverbatim
+
+.. code-block::
+
+      continuous_design = 2
+        initial_point    -1.2      1.0
+        lower_bounds     -2.0      0.001
+        upper_bounds      2.0      2.0
+        descriptors       'x1'     "x2"
+        scale_types =     'value' 'log'
+        scales =          4.0      0.1
+
 
 Theory::
-Faq::
-See_Also::	
 
+Faq::
+
+See_Also::
