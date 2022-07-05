@@ -21,7 +21,7 @@ public class KeywordMarkdownGenerator {
 	// PUBLIC //
 	////////////
 	
-	public void run(String args[]) throws IOException  {
+	public void run(String[] args) throws IOException  {
 		if (args.length < EXPECTED_ARG_COUNT || args.length > EXPECTED_ARG_COUNT) {
 			System.err.println(USAGE_MSG);
 			System.exit(1);
