@@ -11,44 +11,54 @@
 # reference manual generator.  Building these tools requires java
 # development kit, probed for at top-level.
 
-if (${CMAKE_VERSION} VERSION_EQUAL 3.0 OR ${CMAKE_VERSION} VERSION_GREATER 3.0)
-  # CMake 3.0 and newer choke on the absolute path
-  set(DAKOTA_JAVA_UTIL_DIR "gov/sandia/dart/dakota")
-else()
-  # CMake 2.8.9 seems to require it
-  set(DAKOTA_JAVA_UTIL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gov/sandia/dart/dakota")
-endif()
+set(DAKOTA_JAVA_UTIL_DIR "src/gov/sandia/dart/dakota")
 
 # Translates dakota.xml to dakota.input.nspec
 if (ENABLE_SPEC_MAINT)
   add_jar(xml2nidr
-    ${DAKOTA_JAVA_UTIL_DIR}/XMLToNIDRTranslator.java
+    ${DAKOTA_JAVA_UTIL_DIR}/xml/XMLToNIDRTranslator.java
     ${DAKOTA_JAVA_UTIL_DIR}/Indenter.java
     )
 endif()
 
 # The genrefman Java tool takes dakota.xml together with reference
-# metadata files to create reference manual doxygen.
+# metadata files in KeywordMetadata to generate reference manual RST files.
 if (ENABLE_DAKOTA_DOCS)
   set(CMAKE_JAVA_INCLUDE_PATH 
     "${CMAKE_CURRENT_SOURCE_DIR}/antlr-runtime-4.1.jar")
   set(NIDRANTLR_DIR "${DAKOTA_JAVA_UTIL_DIR}/nidr/antlr")
   add_jar(genrefman
-    ${DAKOTA_JAVA_UTIL_DIR}/RefManGenDoxygen.java
-    ${DAKOTA_JAVA_UTIL_DIR}/XMLToRefManSpec.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/RefManGenerator.java
     # don't currently neeed .nspec to .dox translation, but need to compile
-    ${DAKOTA_JAVA_UTIL_DIR}/NIDRToRefManSpec.java   
-    ${DAKOTA_JAVA_UTIL_DIR}/RefManMetaData.java
-    ${DAKOTA_JAVA_UTIL_DIR}/RefManInputSpec.java
-    ${DAKOTA_JAVA_UTIL_DIR}/RefManTopicTree.java
+    ${DAKOTA_JAVA_UTIL_DIR}/nidr/NIDRToRefManSpec.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/RefManMetaData.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/RefManInputSpec.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/metadata/InputSpecKeywordMetaData.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/metadata/RefManKeywordMetaData.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/DoxygenToRSTConverter.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/KeywordPageRSTPrinter.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/KeywordPageRSTTablePrinter.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/KeywordPrinter.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/TableKeyword.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/CellFormatter.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/CellPayload.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/CellUtil.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/GenericCell.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/GenericRow.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/GenericTable.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/RstDividerPrinter.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/RstRowPrinter.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/RstTablePrinter.java
+    ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/SpanHoldCell.java
+    ${DAKOTA_JAVA_UTIL_DIR}/xml/XMLToRefManSpec.java
     # Would prefer to put these all on classpath, can't figure out how
     ${NIDRANTLR_DIR}/NIDRBaseListener.java
-    ${NIDRANTLR_DIR}/NIDRBaseVisitor.java
+    ${NIDRANTLR_DIR}/NIDRBaseVisitor.java  # may not need
     ${NIDRANTLR_DIR}/NIDRLexer.java
-    #${NIDRANTLR_DIR}/NIDRLexer.tokens
+    ${NIDRANTLR_DIR}/NIDRLexer.tokens      # may not need
     ${NIDRANTLR_DIR}/NIDRListener.java
     ${NIDRANTLR_DIR}/NIDRParser.java
-    ${NIDRANTLR_DIR}/NIDR.tokens
+    ${NIDRANTLR_DIR}/NIDR.tokens           # may not need
     ${NIDRANTLR_DIR}/NIDRVisitor.java
     )
 endif()

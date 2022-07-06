@@ -23,28 +23,15 @@ find_package(Perl REQUIRED)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake.in
 	       ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-ref.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-ref)
-
 # create Latex header with Dakota version information
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DakotaDefs.tex.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/DakotaDefs.tex)
 
-# Doxygen reference dependencies
-
+# Keyword reference dependencies
 # BMA: Changed this to an absolute glob as relative was causing
 # DakotaKeywords.dox to depend on src/environment target
 file(GLOB ref_kw_md "KeywordMetadata/*")
 list_filter_emacs_backups(ref_kw_md)
-file(GLOB ref_topic_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "TopicMetadata/*")
-list_filter_emacs_backups(ref_topic_md)
-file(GLOB ref_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Ref_*.dox")
-file(GLOB ref_hdf5 RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "hdf5_tables/*.html")
-file(GLOB ref_images RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "images/*")
-list_filter_emacs_backups(ref_images)
-set(dox_ref_deps ${ref_kw_md} ${ref_topic_md} ${ref_dox} ${ref_hdf5}
-  ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-ref 
-  ${ref_images} header-ref.html header-ref.tex Dakota.bib)
 
 # Doxygen developer dependencies
 file(GLOB dox_dev_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Dev_*.dox")
@@ -52,48 +39,40 @@ set(dox_dev_deps ${dox_dev_dox}
   ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile header-dev.html header-dev.tex)
 
 
-# Generate the doxygen files for ref man keywords and topics,
-# specifying only required dependencies.  The genrefman Java tool
-# takes dakota.xml together with reference metadata files to create
-# reference manual doxygen.
+# TODO: Generate all reference manual to build tree
+
+# Generate the ultimate RST files for ref man keywords, specifying
+# only required dependencies.  The genrefman Java tool takes
+# dakota.xml together with reference metadata files to create
+# reference manual keyword pages.
 get_target_property(genrefman_jar genrefman JAR_FILE)
 add_custom_command( 
-  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
-          ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
+  OUTPUT ${Dakota_SOURCE_DIR}/docs-sphinx/source/usingdakota/reference/environment.rst
   DEPENDS genrefman
           ${Dakota_SOURCE_DIR}/src/dakota.xml
 	  ${ref_kw_md}
-	  ${ref_topic_md}
-	  ${Dakota_SOURCE_DIR}/docs/Ref_TopicTree.txt
-	  ${Dakota_SOURCE_DIR}/docs/Ref_Topics_Intro.dox
+  COMMAND ${CMAKE_COMMAND}
+  ARGS -E make_directory ${Dakota_SOURCE_DIR}/docs-sphinx/source/usingdakota/reference
   COMMAND ${Java_JAVA_EXECUTABLE} 
   ARGS -classpath ${genrefman_jar} 
-    gov.sandia.dart.dakota.RefManGenDoxygen
+    gov.sandia.dart.dakota.refman.RefManGenerator
     ${Dakota_SOURCE_DIR}/src/dakota.xml
     ${Dakota_SOURCE_DIR}/docs/KeywordMetadata
-    ${Dakota_SOURCE_DIR}/docs/Ref_TopicTree.txt
-    ${Dakota_SOURCE_DIR}/docs/TopicMetadata
-    ${Dakota_SOURCE_DIR}/docs/Ref_Topics_Intro.dox
-    ${CMAKE_CURRENT_BINARY_DIR} 
+    ${Dakota_SOURCE_DIR}/docs-sphinx/source/usingdakota/reference
+  COMMENT "Generating keyword reference RST files to ${Dakota_SOURCE_DIR}/docs-sphinx/source/usingdakota/reference/"
+  )
+
+add_custom_target(docs-keywords
+  DEPENDS ${Dakota_SOURCE_DIR}/docs-sphinx/source/usingdakota/reference/environment.rst
+)
+
+# This assumes sphinx-build is available on the PATH
+add_custom_target(docs-sphinx
+  DEPENDS docs-keywords
+  COMMAND sphinx-build -b html -j auto "${Dakota_SOURCE_DIR}/docs-sphinx/source" "${CMAKE_CURRENT_BINARY_DIR}/sphinx-html"
+  COMMENT "Generating Sphinx docs"
 )
  
-# Generate the master DakotaReferenceManual.dox
-add_custom_command(
-  DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/ref_concat_dox.sh 
-    dakota-input-summary
-    ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
-    ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
-    ${ref_dox} ${ref_hdf5}
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/ref_concat_dox.sh 
-  ARGS ${CMAKE_CURRENT_SOURCE_DIR} 
-  ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
-    ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox 
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox
-    ${CMAKE_CURRENT_BINARY_DIR}/DakotaInputSpec.dox 
-) 
-
-
-# BMA: I simplified this as currently reference does not depend on developers
 
 # Generate .dox into doxygen tag files
 add_custom_command(
@@ -101,18 +80,6 @@ add_custom_command(
   DEPENDS ${dox_dev_deps}
   COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
   COMMENT "Doxygen: Developer's Manual (first pass: tag generation)"
-)
-
-# BMA: Added an OUTPUT here for index.html since 2 passes don't work
-# with new manual
-add_custom_command(
-  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/dakota-reference.tag
-          ${CMAKE_CURRENT_BINARY_DIR}/html-ref/index.html
-          ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.tex
-  DEPENDS ${dox_ref_deps}
-          ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox
-  COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile-ref
-  COMMENT "Doxygen: Reference Manual (first pass: tag generation)"
 )
 
 # Generate .tag files into final doxygen-generated docs
@@ -126,21 +93,9 @@ add_custom_command(
   COMMENT "Doxygen: Developer's Manual (final pass)"
 )
 
-# BMA: Running doxygen twice seems to break on the new reference manual
-# I commented this and instead made the above command generate the final index.html dep.
-#add_custom_command(
-#  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/html-ref/index.html
-#  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dakota-developers.tag
-#          ${CMAKE_CURRENT_BINARY_DIR}/dakota-reference.tag
-#  COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile-ref
-#  COMMENT "Doxygen: Reference Manual (final pass)"
-#)
-
 # Target to perform only doxygen generation phase
 add_custom_target(docs-doxygen 
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html-dev/index.html 
-          ${CMAKE_CURRENT_BINARY_DIR}/html-ref/index.html
-)
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html-dev/index.html)
 
 # build PDFs of dev/ref (not portable due to tex modifications)
 
@@ -173,24 +128,6 @@ add_custom_command(
 
 add_custom_target(docs-pdf-dev 
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.pdf)
-
-# Build Reference manual into PDF
-add_custom_command(
-  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.pdf
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.tex
-  COMMAND ${CMAKE_COMMAND} -E echo_append "Building Reference Manual PDF..."
-  COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
-  --reference
-  COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-ref make
-  COMMAND ${CMAKE_COMMAND} -E echo "Done."
-  COMMENT "LaTeX: Reference to PDF"
-)
-
-add_custom_target(docs-pdf-ref 
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.pdf)
-
-
-#              ${CMAKE_CURRENT_BINARY_DIR}/latex-${manual}/${sourcePDFname}.pdf
 
 # Helper function to build a SAND manual
 function(pdf2sand manual sourcePDFname)
@@ -228,14 +165,13 @@ endif()
 
 # Generate PDF Dev/Ref/Theory/Users
 add_custom_target(docs-pdf)
-add_dependencies(docs-pdf docs-pdf-dev docs-pdf-ref docs-pdf-theory)
+add_dependencies(docs-pdf docs-pdf-dev docs-pdf-theory)
 if(DAKOTA_ENABLE_TESTS)
   add_dependencies(docs-pdf docs-pdf-user)
 endif()
 
-# Generate SAND versions of all
+# Generate SAND versions of theory, user
 add_custom_target(docs-sand)
-#add_dependencies(docs-sand docs-sand-dev docs-sand-ref docs-sand-theory)
 add_dependencies(docs-sand docs-sand-theory)
 if(DAKOTA_ENABLE_TESTS)
   add_dependencies(docs-sand docs-sand-user)
@@ -246,24 +182,18 @@ endif()
 # theory, users)
 # TODO: Rework this into custom command(s) and bind into target
 add_custom_target(package_docs
-  COMMAND ${CMAKE_COMMAND} -E 
-    tar czf html-ref-${Dakota_VERSION_STRING}.tar.gz html-ref
   COMMAND ${CMAKE_COMMAND} -E
     tar czf html-dev-${Dakota_VERSION_STRING}.tar.gz html-dev
   COMMAND ${CMAKE_COMMAND} -E copy
     latex-dev/refman.pdf Developers-${Dakota_VERSION_STRING}.pdf
-  COMMAND ${CMAKE_COMMAND} -E copy
-    latex-ref/refman.pdf Reference-${Dakota_VERSION_STRING}.pdf
   COMMAND ${CMAKE_COMMAND} -E copy
     latex-user/Users_Main.pdf Users-${Dakota_VERSION_STRING}.pdf
   COMMAND ${CMAKE_COMMAND} -E copy
     latex-theory/Theory_Main.pdf Theory-${Dakota_VERSION_STRING}.pdf
   COMMAND ${CMAKE_COMMAND} -E
     tar czf dakota-${Dakota_FINAL_PACKAGE_LABEL}-docs.tar.gz
-      html-ref html-ref-${Dakota_VERSION_STRING}.tar.gz
       html-dev html-dev-${Dakota_VERSION_STRING}.tar.gz
       Developers-${Dakota_VERSION_STRING}.pdf
-      Reference-${Dakota_VERSION_STRING}.pdf
       Users-${Dakota_VERSION_STRING}.pdf
       Theory-${Dakota_VERSION_STRING}.pdf
   )
@@ -271,5 +201,5 @@ add_dependencies(package_docs docs-pdf docs-doxygen)
 
 # Remove Doxygen-generated directories on make clean
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
-  "html-dev;html-ref;latex-dev;latex-ref;man-dev;man-ref;SAND-shell-dev.aux;SAND-shell-dev.log;SAND-shell-ref.aux;SAND-shell-ref.log;SAND-shell-theory.aux;SAND-shell-theory.log;SAND-shell-user.aux;SAND-shell-user.log"
+  "html-dev;latex-dev;man-dev;SAND-shell-theory.aux;SAND-shell-theory.log;SAND-shell-user.aux;SAND-shell-user.log"
   )
