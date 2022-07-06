@@ -46,7 +46,7 @@ truth model, called the "training data".
 
     - Radial Basis Functions: :ref:`model-surrogate-global-radial_basis<model-surrogate-global-radial_basis>`
 
-    - Orthogonal polynomials (only supported in PCE/SC for now): :ref:`method-polynomial_chaos<method-polynomial_chaos>` and :ref:`method-stoch_collocation<method-stoch_collocation>` Training data is generated using either a design of experiments method applied to the truth model ( specified by :ref:`model-surrogate-global-dace_method_pointer<model-surrogate-global-dace_method_pointer>`), or from saved data (specified by :ref:`,model-surrogate-global-reuse_points<,model-surrogate-global-reuse_points>` ) in a restart database, or an import file.
+    - Orthogonal polynomials (only supported in PCE/SC for now): :ref:`method-polynomial_chaos<method-polynomial_chaos>` and :ref:`method-stoch_collocation<method-stoch_collocation>` Training data is generated using either a design of experiments method applied to the truth model ( specified by :ref:`model-surrogate-global-dace_method_pointer<model-surrogate-global-dace_method_pointer>`), or from saved data (specified by :ref:`model-surrogate-global-reuse_points<model-surrogate-global-reuse_points>` ) in a restart database, or an import file.
 
 
 - Multifidelity/hierarchical: Multifidelity modeling involves the use of a low-fidelity physics-based model as a surrogate for the original high-fidelity model. The low-fidelity model typically involves a coarser mesh, looser convergence tolerances, reduced element order, or omitted physics. See :ref:`model-surrogate-hierarchical<model-surrogate-hierarchical>`. <!-----

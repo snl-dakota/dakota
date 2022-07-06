@@ -98,8 +98,8 @@ the combination, global accuracy can be addressed as well. This
 involves a convex combination of the additive and multiplicative
 corrections:
 
-.. math::  \hat{f_{hi_{\gamma}}}({\bf x}) = \gamma \hat{f_{hi_{\alpha}}}({\bf x}) +
-(1 - \gamma) \hat{f_{hi_{\beta}}}({\bf x})  
+.. math::  \hat{f_{hi_{\gamma}}}({\bf x}) = \gamma \hat{f_{hi_{\alpha}}}({\bf x}) + (1 - \gamma) \hat{f_{hi_{\beta}}}({\bf x})  
+
 where :math:`\gamma`  is calculated to satisfy an additional matching
 condition, such as matching values at the previous design iterate.
 

@@ -9,6 +9,7 @@ The surrogate model approximation comprises a sum of K weighted radial
 basis functions:
 
 .. math::  \hat{f}({\bf x})=\sum_{k=1}^{K}w_{k}\phi({\parallel {\bf x} - {\bf c_{k}} \parallel}) 
+
 These basis functions take many forms, but Gaussian kernels or splines
 are most common.  The Dakota implementation uses a Gaussian radial
 basis function.  The weights are determined via a linear least squares

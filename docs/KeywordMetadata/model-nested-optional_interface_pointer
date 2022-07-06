@@ -123,15 +123,15 @@ introduced above, including the implicit padding:
     out1 \\
     out2
  \end{array}
-\right\}
-=
+   \right\}
+ =
   \left\{
   \begin{array}{c}
     opt1 \\
     opt2
   \end{array}
   \right\}
-+
+ +
 
   \left\{
   \begin{array}{c}

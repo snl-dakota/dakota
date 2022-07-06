@@ -17,6 +17,7 @@ Theory::
 Using the eigenvalue energy truncation metric, the subspace size is determined using the following equation:
 
 .. math:: n = \inf \left\lbrace d \in \mathbf{Z} \quad\middle|\quad 1 \le d \le N \quad \wedge\quad 1 - \frac{\sum_{i = 1}^{d} \lambda_i}{\sum_{i = 1}^{N} \lambda_i} \,<\, \epsilon \right\rbrace 
+
 where :math:`\epsilon`  is the :ref:`model-active_subspace-truncation_method-energy-truncation_tolerance<model-active_subspace-truncation_method-energy-truncation_tolerance>`, :math:`n`  is the estimated subspace size, :math:`N`  is the size of the full space, and :math:`\lambda_i`  are the eigenvalues of the derivative matrix.
 Faq::
 

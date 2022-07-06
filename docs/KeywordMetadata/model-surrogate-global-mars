@@ -31,6 +31,7 @@ Theory::
 The form of the MARS model is based on the following expression:
 
 .. math::  \hat{f}(\mathbf{x})=\sum_{m=1}^{M}a_{m}B_{m}(\mathbf{x}) 
+
 where the :math:`a_{m}`  are the coefficients of the truncated power basis
 functions :math:`B_{m}` , and :math:`M`  is the number of basis functions. The MARS
 software partitions the parameter space into subregions, and then

@@ -32,11 +32,13 @@ Theory::
 The form of the linear polynomial model is
 
 .. math::  \hat{f}(\mathbf{x}) \approx c_{0}+\sum_{i=1}^{n}c_{i}x_{i} 
+
 the form of the quadratic polynomial model is:
 
 
 .. math::  \hat{f}(\mathbf{x}) \approx c_{0}+\sum_{i=1}^{n}c_{i}x_{i}
  +\sum_{i=1}^{n}\sum_{j \ge i}^{n}c_{ij}x_{i}x_{j} 
+
 and the form of the cubic polynomial model is:
 
 
@@ -44,6 +46,7 @@ and the form of the cubic polynomial model is:
  +\sum_{i=1}^{n}\sum_{j \ge i}^{n}c_{ij}x_{i}x_{j}
  +\sum_{i=1}^{n}\sum_{j \ge i}^{n}\sum_{k \ge j}^{n}
  c_{ijk}x_{i}x_{j}x_{k} 
+
 In all of the polynomial models, :math:`\hat{f}(\mathbf{x})`  is the response
 of the polynomial model; the :math:`x_{i},x_{j},x_{k}`  terms are the
 components of the :math:`n` -dimensional design parameter values; the :math:`c_{0}` 
@@ -54,14 +57,17 @@ the number of design parameters. For the linear polynomial:
 
 
 .. math::  n_{c_{linear}}=n+1 
+
 for the quadratic polynomial:
 
 
 .. math::  n_{c_{quad}}=\frac{(n+1)(n+2)}{2} 
+
 and for the cubic polynomial:
 
 
 .. math::  n_{c_{cubic}}=\frac{(n^{3}+6 n^{2}+11 n+6)}{6} 
+
 There must be at least :math:`n_{c}`  data samples in order to form a fully
 determined linear system and solve for the polynomial coefficients. In
 Dakota, a least-squares approach involving a singular value

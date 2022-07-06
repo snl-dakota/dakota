@@ -6,36 +6,37 @@ in an input-output mapping.  The form of the approximation can be written as a
 set of matrix valued products:
 
 .. math::  f_r(x) = F_1(x_1) F_2(x_2) \dots F_d(x_d) 
-Where the "cores" expand to
+
+where the "cores" expand to
 
 .. math::  F_k(x_k) =
-\begin{bmatrix}
-f_k^{11}(x_k)       & dots ````& f_k^{1r_k}(x_k)\\
-\vdots              & \ddots & \vdots\\
-f_k^{r_{k-1}1}(x_k) & dots ````& f_k^{r_{k-1}r_k}(x_k)
-\end{bmatrix}
+ \begin{bmatrix}
+ f_k^{11}(x_k)       & dots ````& f_k^{1r_k}(x_k)\\
+ \vdots              & \ddots & \vdots\\
+ f_k^{r_{k-1}1}(x_k) & dots ````& f_k^{r_{k-1}r_k}(x_k)
+ \end{bmatrix}
 
 An example expansion over four random variables with rank vector (1,7,5,3,1) is
 
 .. math::  f_r(x) =
-\begin{bmatrix}
-f_1^{11}(x_1)       & dots ````& f_1^{17}(x_1)
-\end{bmatrix}
-\begin{bmatrix}
-f_2^{11}(x_2)       & dots ````& f_2^{15}(x_2)\\
-\vdots              & \ddots & \vdots\\
-f_2^{71}(x_2) & dots ````& f_2^{75}(x_2)
-\end{bmatrix}
-\begin{bmatrix}
-f_3^{11}(x_3)       & dots ````& f_3^{13}(x_3)\\
-\vdots              & \ddots & \vdots\\
-f_3^{51}(x_3) & dots ````& f_3^{53}(x_3)
-\end{bmatrix}
-\begin{bmatrix}
-f_4^{11}(x_4) \\
-\vdots \\
-f_4^{31}(x_4)
-\end{bmatrix}
+ \begin{bmatrix}
+ f_1^{11}(x_1)       & dots ````& f_1^{17}(x_1)
+ \end{bmatrix}
+ \begin{bmatrix}
+ f_2^{11}(x_2)       & dots ````& f_2^{15}(x_2)\\
+ \vdots              & \ddots & \vdots\\
+ f_2^{71}(x_2) & dots ````& f_2^{75}(x_2)
+ \end{bmatrix}
+ \begin{bmatrix}
+ f_3^{11}(x_3)       & dots ````& f_3^{13}(x_3)\\
+ \vdots              & \ddots & \vdots\\
+ f_3^{51}(x_3) & dots ````& f_3^{53}(x_3)
+ \end{bmatrix}
+ \begin{bmatrix}
+ f_4^{11}(x_4) \\
+ \vdots \\
+ f_4^{31}(x_4)
+ \end{bmatrix}
 
 In the current implementation, orthogonal polynomial basis functions
 (Hermite and Legendre) are employed as the basis functions :math:`f_i^{jk}(x_i)` ,

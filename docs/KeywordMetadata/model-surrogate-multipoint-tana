@@ -27,20 +27,22 @@ The form of the TANA model is:
 
 
 .. math::  \hat{f}({\bf x}) \approx f({\bf x}_2) + \sum_{i=1}^n
-\frac{\partial f}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i}
-(x_i^{p_i} - x_{i,2}^{p_i}) + \frac{1}{2} \epsilon({\bf x}) \sum_{i=1}^n
-(x_i^{p_i} - x_{i,2}^{p_i})^2 
+ \frac{\partial f}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i}
+ (x_i^{p_i} - x_{i,2}^{p_i}) + \frac{1}{2} \epsilon({\bf x}) \sum_{i=1}^n
+ (x_i^{p_i} - x_{i,2}^{p_i})^2 
+
 where :math:`n`  is the number of variables and:
 
 
 .. math::  p_i = 1 + \ln \left[ \frac{\frac{\partial f}{\partial x_i}({\bf x}_1)}
-{\frac{\partial f}{\partial x_i}({\bf x}_2)} \right] \left/
-\ln \left[ \frac{x_{i,1}}{x_{i,2}} \right] \right.
-\epsilon({\bf x}) = \frac{H}{\sum_{i=1}^n (x_i^{p_i} - x_{i,1}^{p_i})^2 +
-\sum_{i=1}^n (x_i^{p_i} - x_{i,2}^{p_i})^2}
-H = 2 \left[ f({\bf x}_1) - f({\bf x}_2) - \sum_{i=1}^n
-\frac{\partial f}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i}
-(x_{i,1}^{p_i} - x_{i,2}^{p_i}) \right] 
+ {\frac{\partial f}{\partial x_i}({\bf x}_2)} \right] \left/
+ \ln \left[ \frac{x_{i,1}}{x_{i,2}} \right] \right.
+ \epsilon({\bf x}) = \frac{H}{\sum_{i=1}^n (x_i^{p_i} - x_{i,1}^{p_i})^2 +
+ \sum_{i=1}^n (x_i^{p_i} - x_{i,2}^{p_i})^2}
+ H = 2 \left[ f({\bf x}_1) - f({\bf x}_2) - \sum_{i=1}^n
+ \frac{\partial f}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i}
+ (x_{i,1}^{p_i} - x_{i,2}^{p_i}) \right] 
+
 and :math:`{\bf x}_2`  and :math:`{\bf x}_1`  are the current and previous expansion
 points. Prior to the availability of two expansion points, a
 first-order Taylor series is used.

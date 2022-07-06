@@ -4,7 +4,7 @@ Description::
 An important feature for component-based iterators is that execution
 of sub-iterator runs may be performed concurrently. The optional
 ``iterator_servers`` specification supports user override
- of the automatic parallel configuration for the number of iterator
+of the automatic parallel configuration for the number of iterator
 servers. That is, if the automatic configuration is
 undesirable for some reason, the user can enforce a desired number of
 partitions at the iterator parallelism level. Currently, ``hybrid``,

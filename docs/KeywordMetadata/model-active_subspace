@@ -44,9 +44,11 @@ the input variables, this method can allow significant dimension reduction. Belo
     at several locations sampled from the full input space,
     
 .. math:: \nabla_{\mathbf{x}} f_i = \nabla f(\mathbf{x}_i).
+
 2. Compute the eigendecomposition of the matrix :math:`\hat{\mathbf{C}}` ,
-    
+
 .. math:: \hat{\mathbf{C}} = \frac{1}{M}\sum_{i=1}^{M}\nabla_{\mathbf{x}} f_i\nabla_{\mathbf{x}} f_i^T = \hat{\mathbf{W}}\hat{\mathbf{\Lambda}}\hat{\mathbf{W}}^T,
+
 where :math:`\hat{\mathbf{W}}`  has eigenvectors as columns,
     :math:`\hat{\mathbf{\Lambda}} = \text{diag}(\hat{\lambda}_1,\:\ldots\:,\hat{\lambda}_N)` 
     contains eigenvalues, and :math:`N`  is the total number of parameters.
@@ -56,15 +58,18 @@ where :math:`\hat{\mathbf{W}}`  has eigenvectors as columns,
     split the eigenvectors into active and inactive directions,
     
 .. math:: \hat{\mathbf{W}} = \left[\hat{\mathbf{W}}_1\quad\hat{\mathbf{W}}_2\right].
+
 These eigenvectors are used to rotate the input variables.
 
 4. Next the input variables, :math:`\mathbf{x}` , are expanded in terms of active and
     inactive variables,
     
 .. math:: \mathbf{x} = \hat{\mathbf{W}}_1\mathbf{y} + \hat{\mathbf{W}}_2\mathbf{z}.
+
 5. A surrogate is then built as a function of the active variables,
     
 .. math:: g(\mathbf{y}) \approx f(\mathbf{x})
+
 For additional information, see:
 
 1. Constantine, Paul G. "Active Subspaces: Emerging Ideas for Dimension Reduction in Parameter Studies". Vol. 2. SIAM, 2015.

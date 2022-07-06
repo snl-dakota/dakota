@@ -42,9 +42,8 @@ The form of the neural network model is
 
 
 .. math:: 
-
    \hat{f}(\mathbf{x}) \approx
-\tanh\left\{ \mathbf{A}_{1} \tanh\left( \mathbf{A}_{0}^{T} \mathbf{x} +\theta_{0}^T \right)+\theta_{1} \right\}
+   \tanh\left\{ \mathbf{A}_{1} \tanh\left( \mathbf{A}_{0}^{T} \mathbf{x} +\theta_{0}^T \right)+\theta_{1} \right\}
 
 where :math:`\mathbf{x}`  is the evaluation point in :math:`n` -dimensional
 parameter space; the terms :math:`\mathbf{A}_{0}, \theta_{0}`  are the

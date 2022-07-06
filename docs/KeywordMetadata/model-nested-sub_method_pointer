@@ -13,7 +13,7 @@ Communication of variables information from a nested model to its sub-iterator, 
 
 In the variable mapping case, primary and secondary variable mapping specifications are used to map from the top-level variables into the sub-model variables. These mappings support three possibilities in any combination: (1) insertion of an active top-level variable value into an identified sub-model distribution parameter for an identified active sub-model variable, (2) insertion of an active top-level variable value into an identified active sub-model variable value, and (3) addition of an active top-level variable value as an inactive sub-model variable, augmenting the active sub-model variables.
 
-For the variable mappings, the primary and secondary specifications are lists of strings that are used to target specific sub-model variables and their sub-parameters, respectively. The primary strings are matched to sub-model variable descriptors such as ````'cdv_1' (either user-supplied or default labels). The secondary strings are matched to random variable distribution parameters such as ``cdv_1'``'mean' or ``mean'``'num_trials' or design/state variable sub-parameters such as ``num_trials'``'lower_bound' or ``lower_bound'``'upper_bound'.
+For the variable mappings, the primary and secondary specifications are lists of strings that are used to target specific sub-model variables and their sub-parameters, respectively. The primary strings are matched to sub-model variable descriptors such as ``'cdv_1'`` (either user-supplied or default labels). The secondary strings are matched to random variable distribution parameters such as ``cdv_1'``'mean' or ``mean'``'num_trials' or design/state variable sub-parameters such as ``num_trials'``'lower_bound' or ``lower_bound'``'upper_bound'.
 
 An important limitation is that real-valued top-level variables must map to real-valued sub-model variables or real-valued sub-parameters, and integer-valued top-level variables must map to either integer-valued sub-model variables or integer-valued sub-parameters. However, as long as these real versus integer constraints are satisfied, mappings are free to cross variable types (design, aleatory uncertain, epistemic uncertain, state) and domain types (continuous, discrete).
 
@@ -153,17 +153,17 @@ the responses ``f1`` and ``f2`` are mapped into the responses ``sum_p``.
 
 It may be helpful to sketch out the relationships between blocks as indicated by their
 various pointers in order to understand the nested structure of the study. The top-level
-or outer method, ````'opt', has a model named ``opt',``'outer_model'. This model refers to
-variables and responses blocks ( ````'outer_vars' and ``outer_vars'``'outer_resps') that are used by
-the optimizer. The ````'outer_model' block also refers to a sub-method, ``outer_model'``'UQ_method' which
+or outer method, ``'opt'``, has a model named ``opt',``'outer_model'. This model refers to
+variables and responses blocks ( ``'outer_vars'`` and ``outer_vars'``'outer_resps') that are used by
+the optimizer. The ``'outer_model'`` block also refers to a sub-method, ``outer_model'``'UQ_method' which
 defines the UQ study and has its own model, which in turn possess variables, an interface, and
 responses.
 
-Next, note the primary and secondary variable mappings in ````'outer_model', which
+Next, note the primary and secondary variable mappings in ``'outer_model'``, which
 specify that the values of the active design variables ``x1_mean`` and ``x2_mean`` are to be
 inserted into the means of the uncertain variables ``x1`` and ``x2``.
 
-The response mapping in ````'outer_model' is a matrix with a single row and six columns.
+The response mapping in ``'outer_model'`` is a matrix with a single row and six columns.
 The single row corresponds to the number of responses in the outer method. As
 described above, for each of our two sub-model responses, the ``sampling`` method returns
 a mean, a standard deviation, and a single probability level in that order to the nested
@@ -172,6 +172,7 @@ The coefficients 0.3 and 0.7 in the matrix result in a weighted sum of the 90th 
 
 
 .. math:: sum\_p = 0.3*(90th\: percentile \:of \:f1) + 0.7*(90th\: percentile\: of\: f2)
+
 <hr>
 The next example is a fragment of an input file, showing only the nested model itself. It
 illustrates more complex variable and response mappings.
@@ -190,7 +191,7 @@ The variable mappings correspond to 4 top-level variables, the first
 two of which employ the default mappings from active top-level
 variables to sub-model variables of the same type (option 3 above) and
 the latter two of which are inserted into the mean distribution
-parameters of sub-model variables ````'X' and ``X'``'Y' (option 1 above).
+parameters of sub-model variables ``'X'`` and ``X'``'Y' (option 1 above).
 
 The response mappings define a 3 by 9 matrix corresponding to 9 inner
 loop results and 3 outer loop response functions (one
