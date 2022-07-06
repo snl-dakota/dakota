@@ -1,3 +1,5 @@
+.. _`topic-discrete_variables`:
+
 Discrete Variables
 ==================
 

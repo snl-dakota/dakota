@@ -119,14 +119,6 @@ no gradients and no hessians indicate that no derivatives will be provided to th
 parameter study. At least one responses block is required, and multiple blocks may appear in Dakota input files for advanced
 studies.
 
-.. _topic-block_pointer:
-
-==============
-Block Pointers
-==============
-
-TODO This topic from the old Reference Manual need a better location.
-
 .. _inputfile-videos:
 
 ===============

@@ -1,4 +1,5 @@
 .. _`topic-pointers`:
+.. _`topic-block_pointer`:
 
 Pointers
 ========
