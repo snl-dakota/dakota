@@ -1,15 +1,14 @@
 Blurb::
 Aleatory uncertain variable - lognormal
+
 Description::
-If the logarithm of an uncertain variable X has a normal distribution, that is
-:math:`\log X \sim N(\mu,\sigma)` ,
+If the logarithm of an uncertain variable X has a normal distribution, that is :math:`\log X \sim N(\mu,\sigma)` ,
 then X is distributed with a lognormal distribution.
 The lognormal is often used to model:
 
-
--time to perform some task
--variables which are the product of a large number of other quantities, by the Central Limit Theorem
--quantities which cannot have negative values.
+- time to perform some task
+- variables which are the product of a large number of other quantities, by the Central Limit Theorem
+- quantities which cannot have negative values.
 
 The number of lognormal uncertain variables, their means, and either
 standard deviations or error factors must be specified, while the
@@ -21,50 +20,37 @@ sample data being different from the mean and standard deviation of
 the underlying distribution (see "bounded lognormal" and "bounded
 lognormal-n" distribution types in :cite:p:`Wyss1998`).
 
-For the lognormal variables, one may specify either the mean
-:math:`\mu` 
-and standard deviation
-:math:`\sigma` 
-of the actual lognormal distribution (option 1), the mean
-:math:`\mu` 
- and error factor
-:math:`\epsilon` 
-of the actual lognormal distribution (option 2), or the mean
-:math:`\lambda`  ("lambda")
-and standard deviation
-:math:`\zeta`  ("zeta")
+For the lognormal variables, one may specify either the mean :math:`\mu` and standard deviation :math:`\sigma` 
+of the actual lognormal distribution (option 1), the mean :math:`\mu`  and error factor :math:`\epsilon` 
+of the actual lognormal distribution (option 2), or the mean :math:`\lambda`  ("lambda") and standard deviation :math:`\zeta`  ("zeta")
 of the underlying normal distribution (option 3).
 
-
-The conversion equations from lognormal mean
-:math:`\mu`  and either lognormal error factor
-:math:`\epsilon` 
-or lognormal standard deviation
-:math:`\sigma` 
-to the mean
-:math:`\lambda` 
-and standard deviation
-:math:`\zeta` 
-of the underlying normal distribution are as follows:
-
+The conversion equations from lognormal mean :math:`\mu`  and either lognormal error factor :math:`\epsilon` or lognormal standard deviation :math:`\sigma` 
+to the mean :math:`\lambda`  and standard deviation :math:`\zeta` of the underlying normal distribution are as follows:
 
 .. math:: \zeta = \frac{\ln(\epsilon)}{1.645}
-.. math:: \zeta^2 = \ln\left(\frac{\sigma^2}{\mu^2} + 1\right)
-.. math:: \lambda = \ln(\mu) - \frac{\zeta^2}{2}
-Conversions from :math:`\lambda`  and :math:`\zeta`  back to :math:`\mu` 
-and :math:`\epsilon`  or :math:`\sigma`  are as follows:
 
+.. math:: \zeta^2 = \ln\left(\frac{\sigma^2}{\mu^2} + 1\right)
+
+.. math:: \lambda = \ln(\mu) - \frac{\zeta^2}{2}
+
+Conversions from :math:`\lambda`  and :math:`\zeta`  back to :math:`\mu`  and :math:`\epsilon`  or :math:`\sigma`  are as follows:
 
 .. math:: \mu = \exp \left( \lambda + \frac{\zeta^2}{2} \right) 
+
 .. math:: \sigma^2 = \exp \left( 2\lambda + \zeta^2 \right) \left( \exp \left(\zeta^2\right) - 1\right)
+
 .. math:: \epsilon = \exp \left( 1.645\zeta \right) 
+
 The density function for the lognormal distribution is:
 
-.. math:: f(x) = \frac{1}{\sqrt{2\pi}\zeta x}
- \exp \left( -\frac{1}{2}\left(\frac{\ln(x)-\lambda}{\zeta}\right)^2 \right) 
+.. math::
+   f(x) = \frac{1}{\sqrt{2\pi}\zeta x}
+   \exp \left( -\frac{1}{2}\left(\frac{\ln(x)-\lambda}{\zeta}\right)^2 \right) 
 
 Topics::
 continuous_variables, aleatory_uncertain_variables
+
 Examples::
 
 Theory::
@@ -76,6 +62,7 @@ For some methods, including vector and centered parameter studies, an
 initial point is needed for the uncertain variables. When not given
 explicitly, these variables are initialized to their means, correcting
 to bounds if needed.
+
 Faq::
 
 See_Also::

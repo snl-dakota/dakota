@@ -1,9 +1,9 @@
 Blurb::
 Aleatory uncertain variable - continuous histogram
+
 Description::
 Histogram uncertain variables are typically used to model a set of
-empirical data.  The bin histogram (contrast:
-:ref:`variables-histogram_point_uncertain<variables-histogram_point_uncertain>`) is a continuous aleatory
+empirical data.  The bin histogram (contrast: :ref:`variables-histogram_point_uncertain<variables-histogram_point_uncertain>`) is a continuous aleatory
 distribution characterized by bins of non-zero width where the
 uncertain variable may lie, together with the relative frequencies of
 each bin.  Hence it can be used to specify a marginal probability
@@ -25,12 +25,12 @@ the variables.
 The ``abscissas`` specification defines abscissa values ("x"
 coordinates) for the probability density function of each histogram
 variable.  When paired with ``counts``, the specifications provide sets
-of ````(x,c) pairs for each histogram variable where ``x,c)c`` defines a
+of (x,c) pairs for each histogram variable where ``c`` defines a
 count (i.e., a frequency or relative probability) associated with a
 bin. If using bins of unequal width and specification of probability
 densities is more natural, then the ``counts`` specification can be
 replaced with an ``ordinates`` specification ("y" coordinates) in order
-to support interpretation of the input as ````(x,y) pairs defining the
+to support interpretation of the input as (x,y) pairs defining the
 profile of a "skyline" probability density function.
 
 Conversion between the two specifications is straightforward: a
@@ -42,7 +42,7 @@ values; it is not necessary to scale them as all user inputs will be
 normalized.
 
 To fully specify a bin-based histogram with ``n`` bins (potentially of
-unequal width), ``n``+1 ``1``(x,c) or ``x,c)``(x,y) pairs must be specified
+unequal width), ``n+1`` (x,c) or (x,y) pairs must be specified
 with the following features:
 
 
@@ -51,11 +51,13 @@ with the following features:
 - the ``x`` values must be strictly increasing.
 - all ``c`` or ``y`` values must be positive, except for the last  which must be zero.
 - a minimum of two pairs must be specified for each bin-based  histogram variable.
+
 Topics::
 continuous_variables, aleatory_uncertain_variables
+
 Examples::
 The ``pairs_per_variable`` specification provides for the proper
-association of multiple sets of ````(x,c) or ``x,c)``(x,y) pairs with
+association of multiple sets of (x,c) or (x,y) pairs with
 individual histogram variables. For example, in this input snippet
 
 
@@ -68,14 +70,11 @@ individual histogram variables. For example, in this input snippet
       descriptors        = 'hbu_1'     'hbu_2'
 
 
-``pairs_per_variable`` associates the first 3 ````(x,c) pairs from
-``abscissas`` and ``counts`` ``{``(5,17),(8,21),(10,0)} with one
-bin-based histogram variable, where one bin is defined between 5 and 8
-with a count of 17 and another bin is defined between 8 and 10 with a
-count of 21. The following set of 4 ````(x,c) pairs
-``{``(.1,12),(.2,24),(.3,12),(.4,0)} defines a second bin-based histogram
-variable containing three equal-width bins with counts 12, 24, and 12
-(middle bin is twice as probable as the other two).
+``pairs_per_variable`` associates the first 3 (x,c) pairs from ``abscissas`` and ``counts`` {(5,17),(8,21),(10,0)} with one bin-based histogram variable,
+where one bin is defined between 5 and 8 with a count of 17 and another bin is defined between 8 and 10 with a count of 21. The following set of 4 (x,c)
+pairs {(.1,12),(.2,24),(.3,12),(.4,0)} defines a second bin-based histogram variable containing three equal-width bins with counts 12, 24, and 12 (middle
+bin is twice as probable as the other two).
+
 Theory::
 
 Faq::
@@ -87,4 +86,5 @@ the bin pairs specification defines a
 "continuous linear" distribution and the point pairs specification
 defines a "discrete histogram" distribution (although the points are
 real-valued, the number of possible values is finite).
+
 See_Also::

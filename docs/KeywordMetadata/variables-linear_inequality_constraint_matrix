@@ -1,46 +1,50 @@
 Blurb::
 Define coefficients of the linear inequality constraints
+
 Description::
 In the inequality case, the constraint matrix :math:`A`  provides
 coefficients for the variables in the two-sided formulation:
 
 .. math:: a_l \leq Ax \leq a_u
+
 Where the bounds are optionally specified by ``linear_inequality_lower_bounds``,
 and ``linear_inequality_upper_bounds``.
 The bounds, if not specified, will default to -infinity, and 0, respectively,
 resulting in one-sided inequalities of the form
 
 .. math:: Ax \leq 0.0
-.
 
 The linear_constraints topics page (linked above) outlines a few additional
 things to consider when using linear constraints.
+
 Topics::
 linear_constraints
+
 Examples::
 In the first example, an optimization involving two variables, ``x1`` and ``x2``,
 is to be performed. These variables must satisfy two constraints:
 
+.. math::  1.5 \cdot x1 + 1.0 \cdot x2 \leq 5.0 
 
-.. math::  1.5 dot ``x1`` + 1.0 dot ``x2`` \leq 5.0 
 .. math::  x1 \leq x2 \Longrightarrow x1 - x2 \leq 0.0 
+
 The pair of constraints can be written in matrix form as:
 
 
-.. math:: \begin{bmatrix}
-  1.5 & 1.0 \\
-  1.0 & -1.0
-\end{bmatrix}
-
-\begin{bmatrix}
-  x1 \\
-  x2
-\end{bmatrix}
-\leq
-\begin{bmatrix}
-  5.0 \\
-  0.0
-\end{bmatrix}
+.. math::
+   \begin{bmatrix}
+   1.5 & 1.0 \\
+   1.0 & -1.0
+   \end{bmatrix}
+   \begin{bmatrix}
+   x1 \\
+   x2
+   \end{bmatrix}
+   \leq
+   \begin{bmatrix}
+   5.0 \\
+   0.0
+   \end{bmatrix}
 
 
 The coefficient matrix and right hand side of this matrix inequality are expressed
@@ -61,55 +65,52 @@ to Dakota in the variables section of the input file:
                                        0.0
     
 
-<hr>
 The second example is more complex in two respects. First, some, but not all,
 of the constraints are "two sided", with both lower and upper bounds. Second,
 not all variables participate in all constraints.
 
 There are four variables, ``x1``, ``x2``, ``x3``, and ``x4``, and four constraints.
 
+.. math::  -2.0 \leq 5.0 \cdot x1 + 2.0 \cdot x2 \leq 9.0 
 
-.. math::  -2.0 \leq 5.0 dot ``x1`` + 2.0 dot ``x2`` \leq 9.0 
 .. math::   0.0 \leq x1 + x3 
-.. math::  -8.0 \leq x2 + 6.0 dot ``x4`` \leq 8.0 
-.. math::  x1 + x2 + x3 \leq 9.0 
-Or, in matrix form,
 
+.. math::  -8.0 \leq x2 + 6.0 \cdot x4 \leq 8.0 
+
+.. math::  x1 + x2 + x3 \leq 9.0 
+
+Or, in matrix form,
 
 .. math:: 
 
    \begin{bmatrix}
-  -2.0 \\
-  0.0 \\
-  -8.0 \\
-  -\infty
-\end{bmatrix}
-
-\leq
-
-\begin{bmatrix}
-  5.0 & 2.0 & 0.0 & 0.0 \\
-  1.0 & 0.0 & 1.0 & 0.0 \\
-  0.0 & 1.0 & 0.0 & 6.0 \\
-  1.0 & 1.0 & 1.0 & 0.0
-\end{bmatrix}
-
-\begin{bmatrix}
-  x1 \\
-  x2 \\
-  x3 \\
-  x4
-\end{bmatrix}
-\leq
-\begin{bmatrix}
+   -2.0 \\
+   0.0 \\
+   -8.0 \\
+   -\infty
+   \end{bmatrix}
+   \leq
+   \begin{bmatrix}
+   5.0 & 2.0 & 0.0 & 0.0 \\
+   1.0 & 0.0 & 1.0 & 0.0 \\
+   0.0 & 1.0 & 0.0 & 6.0 \\
+   1.0 & 1.0 & 1.0 & 0.0
+   \end{bmatrix}
+   \begin{bmatrix}
+   x1 \\
+   x2 \\
+   x3 \\
+   x4
+  \end{bmatrix}
+  \leq
+  \begin{bmatrix}
   9.0 \\
   \infty \\
   8.0 \\
   9.0
-\end{bmatrix}
+  \end{bmatrix}
 
 The Dakota specification for this matrix inequality is:
-
 
 .. code-block::
 

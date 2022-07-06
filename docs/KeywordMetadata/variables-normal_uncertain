@@ -1,5 +1,6 @@
 Blurb::
 Aleatory uncertain variable - normal (Gaussian)
+
 Description::
 The number of normal uncertain variables, their means, and standard
 deviations are required specifications, while the distribution lower and
@@ -12,15 +13,17 @@ normal, regardless of the distribution of the original variables.
 
 The density function for the normal distribution is:
 
-.. math::  f(x) = \frac{1}{\sqrt{2\pi}\sigma}
-           \exp \left(-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2 \right) 
-where
-:math:`\mu`  and :math:`\sigma` 
-are the mean and standard deviation of the normal distribution, respectively.
+.. math::
+   f(x) = \frac{1}{\sqrt{2\pi}\sigma}
+   \exp \left(-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2 \right) 
+   
+where :math:`\mu`  and :math:`\sigma` are the mean and standard deviation of the normal distribution, respectively.
 
 Note that if you specify bounds for a normal distribution, the sampling occurs from the underlying distribution with the given mean and standard deviation, but samples are not taken outside the bounds (see "bounded normal" distribution type in  :cite:p:`Wyss1998`).  This can result in the  mean and the standard deviation of the sample data being different from the mean and standard deviation of the underlying distribution. For example, if you are sampling from a normal distribution with a mean of 5 and a standard deviation of 3, but you specify bounds of 1 and 7, the resulting mean of the samples will be around 4.3 and the resulting standard deviation will be around 1.6.  This is because you have bounded the original distribution significantly, and asymetrically, since 7 is closer to the original mean than 1.
+
 Topics::
 continuous_variables, aleatory_uncertain_variables
+
 Examples::
 
 Theory::
@@ -32,6 +35,7 @@ For some methods, including vector and centered parameter studies, an
 initial point is needed for the uncertain variables. When not given
 explicitly, these variables are initialized to their means, correcting
 to bounds if needed.
+
 Faq::
 
 See_Also::

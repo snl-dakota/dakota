@@ -1,5 +1,6 @@
 Blurb::
 Set the active variables view a method will see
+
 Description::
 There are certain situations where the user may want to explicitly
 control the subset of variables that is considered active for a
@@ -18,37 +19,35 @@ specification.
 
 
 - If the user specifies objectivefunctions or calibration terms in the response specification block,
-then we can infer that the active variables should be the design
-variables (since design variables are used within optimization and
-least squares methods).
-
+  then we can infer that the active variables should be the design
+  variables (since design variables are used within optimization and
+  least squares methods).
 - If the user instead specifies the genericresponse type of ``response_functions``, then
-Dakota cannot infer the active variable subset from the response
-specification and will instead infer it from the method selection.
- -# If
-the method is a parameter study, or any of the methods available under
-dace, psuade, or fsu methods, the active view is set to all
-variables.
- -# For uncertainty quantification methods, if the method is
-sampling, then the view is set to aleatory if only aleatory variables
-are present, epistemic if only epistemic variables are present, or
-uncertain (covering both aleatory and epistemic) if both are
-present.
- -# If the uncertainty method involves interval estimation or
-evidence calculations, the view is set to epistemic.
- -# For other
-uncertainty quantification methods not mentioned in the previous
-sentences (e.g., reliability methods or stochastic expansion methods),
-the default view is set to aleatory.
- -# Finally, for verification studies
-using the Richardson extrapolation method, the active view is set to
-state.
- -# Note that in surrogate-based optimization, where the surrogate
-is built on points defined by the method defined by the
-``dace_method_pointer``, the sampling used to generate the points
-is performed only over the design variables as a default unless
-otherwise specified (e.g. state variables will not be sampled
-for surrogate construction).
+  Dakota cannot infer the active variable subset from the response
+  specification and will instead infer it from the method selection.
+  
+  1. If the method is a parameter study, or any of the methods available under
+     dace, psuade, or fsu methods, the active view is set to all
+     variables.
+  2. For uncertainty quantification methods, if the method is
+     sampling, then the view is set to aleatory if only aleatory variables
+     are present, epistemic if only epistemic variables are present, or
+     uncertain (covering both aleatory and epistemic) if both are
+     present.
+  3. If the uncertainty method involves interval estimation or
+     evidence calculations, the view is set to epistemic.
+  4. For other uncertainty quantification methods not mentioned in the previous
+     sentences (e.g., reliability methods or stochastic expansion methods),
+     the default view is set to aleatory.
+  5. Finally, for verification studies
+     using the Richardson extrapolation method, the active view is set to
+     state.
+  6. Note that in surrogate-based optimization, where the surrogate
+     is built on points defined by the method defined by the
+     ``dace_method_pointer``, the sampling used to generate the points
+     is performed only over the design variables as a default unless
+     otherwise specified (e.g. state variables will not be sampled
+     for surrogate construction).
 
 As alluded to in the previous section, the iterative method selected
 for use in Dakota determines what subset, or view, of the variables
@@ -67,12 +66,13 @@ of consolidating the control over various modeling parameters in a
 single file (the Dakota input file). An important related point is
 that the variable set that is active with a particular iterator is the
 same variable set for which derivatives are typically computed.
+
 Topics::
 
 Examples::
 For example, the default behavior
 for a nondeterministic sampling method is to sample the uncertain
-variables. However, if the user specifed ``active`` ``all`` in the
+variables. However, if the user specifed ``active all`` in the
 variables specification block, the sampling would be performed over
 all variables (e.g. design and state variables in addition to the
 uncertain variables). This may be desired in situations such as
@@ -84,6 +84,7 @@ example of this would be performing design of experiments in the
 presence of multiple variable types (for which all types are active by
 default), but only wanting to sample over the design variables for
 purposes of constructing a surrogate model for optimization.
+
 Theory::
 The optional status of the different variable type specifications
 allows the user to specify only those variables which are present
@@ -91,6 +92,7 @@ allows the user to specify only those variables which are present
 type of variables is zero). However, at least one type of variables
 that are active for the iterator in use must have nonzero size or an
 input error message will result.
+
 Faq::
 
 See_Also::

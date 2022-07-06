@@ -1,58 +1,58 @@
 Blurb::
 Specifies the parameter set to be iterated by a particular method.
+
 Description::
 The ``variables`` specification in a Dakota input file specifies the
 parameter set to be iterated by a particular method. In the case of
 
 - An optimization study: These variables are adjusted in order to  locate an optimal design.
-
-
 - Parameter studies/sensitivity analysis/design of experiments: These  parameters are perturbed to explore the parameter space.
-
-
 - Uncertainty analysis: The variables are associated with  distribution/interval characterizations which are used to compute  corresponding distribution/interval characterizations for response  functions.
 
 To accommodate these different studies, Dakota supports different:
 
-- Variable types - design
- - aleatory uncertain
- - epistemic uncertain
- - state
+- Variable types: design
 
-- Variable domains - continuous
- - discrete
-  - discrete range
-  - discrete integer set
-  - discrete string set
-  - discrete real set
+  - aleatory uncertain
+  - epistemic uncertain
+  - state
 
-Use the :ref:`topic-variables<topic-variables>` page to browse the
-available variables by type and domain.
+- Variable domains: continuous
+
+  - discrete
+  
+    - discrete range
+    - discrete integer set
+    - discrete string set
+    - discrete real set
+
+Use the :ref:`topic-variables<topic-variables>` page to browse the available variables by type and domain.
 
 
 *Variable Types*
 
-- Design Variables  - Design variables are those variables which are modified for the
-    purposes of seeking an optimal design.
+- *Design Variables:* Design variables are those variables which are modified for the purposes of seeking an optimal design.
+
   - The most common type of design variables encountered in engineering
     applications are of the continuous type. These variables may assume
     any real value within their bounds.
   - All but a handful of the optimization algorithms in
     Dakota support continuous design variables exclusively.
 
-- Aleatory Uncertain Variables  - Aleatory uncertainty is also known as inherent variability,
-    irreducible uncertainty, or randomness.
-  - Aleatory uncertainty is predominantly characterized using
-    probability theory. This is the only option implemented in Dakota.
+- *Aleatory Uncertain Variables:* Aleatory uncertainty is also known as inherent variability, irreducible uncertainty, or randomness.
 
-- Epistemic Uncertain Variables  - Epistemic uncertainty is uncertainty due to lack of knowledge.
+  - Aleatory uncertainty is predominantly characterized using probability theory. This is the only option implemented in Dakota.
+
+- *Epistemic Uncertain Variables:* Epistemic uncertainty is uncertainty due to lack of knowledge.
+
   - In Dakota, epistemic uncertainty is assessed by interval analysis or the Dempster-Shafer theory of evidence
   - Continuous or discrete interval or set-valued variables are used to define set-valued probabilities or basic probabiliy assignments (BPA) which define a belief structure.
   - Note that epistemic uncertainty can also be modeled with probability density functions (as done with aleatory uncertainty). Dakota does not support this capability.
 
-- State Variables  - State variables consist of "other" variables which are to be mapped through
-    the simulation interface, in that they are not to be used for design and
-    they are not modeled as being uncertain.
+- *State Variables:* State variables consist of "other" variables which are to be mapped through
+  the simulation interface, in that they are not to be used for design and
+  they are not modeled as being uncertain.
+  
   - State variables provide a convenient mechanism for managing additional
     model parameterizations such as mesh density, simulation convergence
     tolerances, and time step controls.
@@ -76,11 +76,33 @@ employed throughout the Dakota software.  The ordering is shown in
 dakota.input.summary (and in the hierarchical order of this reference
 manual) and can be summarized as:
 
+1. design
 
--design -continuous  -# discrete integer  -# discrete string  -# discrete real
--aleatory uncertain -continuous  -# discrete integer  -# discrete string  -# discrete real
--epistemic uncertain -continuous  -# discrete integer  -# discrete string  -# discrete real
--state -continuous  -# discrete integer  -# discrete string  -# discrete real
+   a. continuous
+   b. discrete integer
+   c. discrete string
+   d. discrete real
+   
+2. aleatory uncertain
+
+   a. continuous
+   b. discrete integer
+   c. discrete string
+   d. discrete real
+   
+3. epistemic uncertain
+
+   a. continuous 
+   b. discrete integer
+   c. discrete string
+   d. discrete real
+   
+4. state
+
+   a. continuous
+   b. discrete integer
+   c. discrete string
+   d. discrete real
 
 Ordering of variable types below this granularity (e.g., from normal
 to histogram bin within aleatory uncertain - continuous ) is defined
@@ -141,8 +163,10 @@ satisfy any user-specified distribution bounds, mean values for
 discrete integer range distributions are rounded down to the nearest
 integer, and mean values for discrete set distributions are rounded to
 the nearest set value.
+
 Topics::
 block
+
 Examples::
 Several examples follow. In the first example, two continuous design
 variables are specified:

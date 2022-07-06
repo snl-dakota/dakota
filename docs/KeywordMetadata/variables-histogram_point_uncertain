@@ -1,5 +1,6 @@
 Blurb::
 Aleatory uncertain variable - discrete histogram
+
 Description::
 Histogram uncertain variables are typically used to model a set of
 empirical data.  When the variables take on only discrete values or
@@ -24,19 +25,20 @@ real), and must be specified in increasing order.  These are paired
 with ``counts`` ``c`` which provide the frequency of the given value or
 string, relative to other possible values/strings.
 
-Thus, to fully specify a point-based histogram with ``n`` points, ``n``
-````(x,c) pairs must be specified with the following features:
+Thus, to fully specify a point-based histogram with ``n`` points, ``n`` (x,c) pairs must be specified with the following features:
 
 
-- ``x`` is the point value (integer, string, or real) and ``c`` is the   corresponding count for that value.
-- the ``x`` values must be strictly increasing (lexicographically for   strings).
+- ``x`` is the point value (integer, string, or real) and ``c`` is the corresponding count for that value.
+- the ``x`` values must be strictly increasing (lexicographically for strings).
 - all ``c`` values must be positive.
-- a minimum of one pair must be specified for each point-based   histogram.
+- a minimum of one pair must be specified for each point-based histogram.
+
 Topics::
 discrete_variables, aleatory_uncertain_variables
+
 Examples::
 The ``pairs_per_variable`` specification provides for the proper
-association of multiple sets of ````(x,c) or ``x,c)``(x,y) pairs with
+association of multiple sets of (x,c) or (x,y) pairs with
 individual histogram variables. For example, in the following
 specification,
 
@@ -50,11 +52,12 @@ specification,
       counts             = 1 1   1   2   1
 
 
-``pairs_per_variable`` associates the ````(x,c) pairs {(3,1),(4,1)} with
+``pairs_per_variable`` associates the (x,c) pairs {(3,1),(4,1)} with
 one point-based histogram variable (where the values 3 and 4 are
-equally probable) and associates the ````(x,c) pairs
+equally probable) and associates the (x,c) pairs
 {(100,1),(200,2),(300,1)} with a second point-based histogram variable
 (where the value 200 is twice as probable as either 100 or 300).
+
 Theory::
 
 Faq::
@@ -62,8 +65,8 @@ Faq::
 histogram specifies bins of non-zero width, whereas a (discrete) point
 histogram specifies individual point values, which can be thought of
 as bins with zero width. In the terminology of LHS :cite:p:`Wyss1998`,
-the bin pairs specification defines a
-"continuous linear" distribution and the point pairs specification
+the bin pairs specification defines a "continuous linear" distribution and the point pairs specification
 defines a "discrete histogram" distribution (although the points are
 real-valued, the number of possible values is finite).
+
 See_Also::

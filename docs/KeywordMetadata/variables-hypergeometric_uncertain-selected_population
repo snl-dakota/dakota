@@ -1,9 +1,11 @@
 Blurb::
 Distribution parameter for the hypergeometric distribution describing the size of the population subset of interest
+
 Description::
 The density function for the hypergeometric distribution is given by:
 
 .. math:: f(x) = \frac{\left(\begin{array}{c}m\\x\end{array}\right)\left(\begin{array}{c}{N-m}\\{n-x}\end{array}\right)}{\left(\begin{array}{c}N\\n\end{array}\right)}
+
 where the three distribution parameters are:
 
 - N is the total population
@@ -14,6 +16,7 @@ In addition,
 
 - x, the abscissa of the density function, indicates the number of successes (e.g. drawing a white ball)
 - :math:`\left(\begin{array}{c}a\\b\end{array}\right)`  indicates a binomial coefficient ("a choose b")
+
 Topics::
 
 Examples::

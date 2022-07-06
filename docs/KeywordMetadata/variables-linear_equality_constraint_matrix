@@ -1,47 +1,48 @@
 Blurb::
 Define coefficients of the linear equalities
+
 Description::
 In the equality case, the constraint matrix :math:`A` 
 provides coefficients for the variables on the left hand side of:
 
 .. math:: Ax = a_t
+
 The linear_constraints topics page (linked above) outlines a few additional
 things to consider when using linear constraints.
+
 Topics::
 linear_constraints
+
 Examples::
 An optimization involving three variables, ``x1``, ``x2``, and ``x3``, is to be
 performed. These variables must satisfy a pair of linear equality constraints:
 
+.. math::  1.5 \cdot x1 + 1.0 \cdot x2 = 5.0 
+.. math::  3.0 \cdot x1 - 4.0 \cdot x3 = 0.0 
 
-.. math::  1.5 dot ``x1`` + 1.0 dot ``x2`` = 5.0 
-.. math::  3.0 dot ``x1`` - 4.0 dot ``x3`` = 0.0 
 The pair of constraints can be written in matrix form as:
 
-
-.. math:: \begin{bmatrix}
-  1.5 & 1.0 & 0.0 \\
-  3.0 & 0.0 & -4.0
-\end{bmatrix}
-
-\begin{bmatrix}
-  x1 \\
-  x2 \\
-  x3
-\end{bmatrix}
-=
-\begin{bmatrix}
-  5.0 \\
-  0.0
-\end{bmatrix}
+.. math::
+   \begin{bmatrix}
+   1.5 & 1.0 & 0.0 \\
+   3.0 & 0.0 & -4.0
+   \end{bmatrix}
+   \begin{bmatrix}
+   x1 \\
+   x2 \\
+   x3
+   \end{bmatrix}
+   =
+   \begin{bmatrix}
+   5.0 \\
+   0.0
+   \end{bmatrix}
 
 
 The coefficient matrix and right hand side are expressed to Dakota in the
 :ref:`variables<variables>` section of the input file:
 
-
 .. code-block::
-
     
     variables
       continuous_design 2
@@ -57,6 +58,7 @@ The coefficient matrix and right hand side are expressed to Dakota in the
 
 For related examples, see the :ref:`variables-linear_inequality_constraint_matrix<variables-linear_inequality_constraint_matrix>`
 keyword page.
+
 Theory::
 
 Faq::
