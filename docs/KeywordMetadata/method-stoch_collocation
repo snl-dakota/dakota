@@ -17,6 +17,7 @@ A value-based expansion takes the form
 
 
 .. math:: R = \sum_{i=1}^{N_p} r_i L_i(\xi) 
+
 where :math:`N_p`  is the total number of collocation points, :math:`r_i` 
 is a response value at the :math:`i^{th}`  collocation point, :math:`L_i` 
 is the :math:`i^{th}`  multidimensional interpolation polynomial, and
@@ -224,6 +225,7 @@ As mentioned above, a value-based expansion takes the form
 
 
 .. math:: R = \sum_{i=1}^{N_p} r_i L_i(\xi) 
+
 The :math:`i^{th}`  interpolation polynomial assumes the value of 1 at
 the :math:`i^{th}`  collocation point and 0 at all other collocation
 points, involving either a global Lagrange polynomial basis or local
@@ -235,7 +237,8 @@ basis functions as follows:
 
 
 .. math:: R = \sum_{i=1}^{N_p} [ r_i H^{(1)}_i(\xi)
- + \sum_{j=1}^n \frac{dr_i}{d\xi_j} H^{(2)}_{ij}(\xi) ] 
+   + \sum_{j=1}^n \frac{dr_i}{d\xi_j} H^{(2)}_{ij}(\xi) ] 
+
 where the :math:`i^{th}`  type 1 interpolant produces 1 for the value at
 the :math:`i^{th}`  collocation point, 0 for values at all other
 collocation points, and 0 for derivatives (when differentiated) at all

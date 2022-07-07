@@ -41,8 +41,10 @@ In each of these cases, convergence order for a response quantity of
 interest (QoI) is estimated from
 
 .. math:: p = ln\left(\frac{QoI_3 - QoI_2}{QoI_2 - QoI_1}\right)/ln(r)
+
 where :math:`r`  is the uniform refinement rate specified by
 ``refinement_rate``.
+
 Faq::
 
 See_Also::

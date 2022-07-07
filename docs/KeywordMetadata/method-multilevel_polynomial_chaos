@@ -8,6 +8,7 @@ random variables:
 
 
 .. math:: R = \sum_{i=0}^P \alpha_i \Psi_i(\xi) 
+
 where :math:`\alpha_i`  is a deterministic coefficient, :math:`\Psi_i`  is a
 multidimensional orthogonal polynomial and :math:`\xi`  is a vector of
 standardized random variables.
@@ -20,9 +21,8 @@ high-fidelity (HF) models, we have:
 
 .. math:: R = \sum_{i=0}^{P^{LF}} \alpha^{LF}_i \Psi_i(\xi)
      + \sum_{i=0}^{P^{HF}}      \delta_i \Psi_i(\xi) 
+
 where :math:`\delta_i`  is a coefficient for the discrepancy expansion.
-
-
 
 For the case of regression-based PCE (least squares, compressed sensing,
 or orthogonal least interpolation), an optimal sample allocation procedure

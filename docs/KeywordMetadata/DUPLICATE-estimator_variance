@@ -4,16 +4,16 @@ Description::
 Multilevel Monte Carlo performs optimal resource allocation based on a
 known estimator variance for the mean statistic:
 
-
 .. math::  Var[\hat{Q}] = \frac{\sigma^2_Q}{N} 
+
 Replacing the simple ensemble average estimator in Monte Carlo with a
 polynomial chaos estimator results in a different and unknown
 relationship between the estimator variance and the number of samples.
 In one approach to multilevel PCE, we can employ a parameterized
 estimator variance:
 
-
 .. math::  Var[\hat{Q}] = \frac{\sigma^2_Q}{\gamma N^\kappa} 
+
 for free parameters :math:`\gamma`  and :math:`\kappa` , with default values
 that may be overridden as part of this specification block.
 
@@ -25,6 +25,7 @@ In practice, it can be challenging to estimate a smooth convergence
 rate for estimator variance in the presence of abrupt transitions in
 the quality of sparse recoveries.  As a result, sample allocation by
 greedy refinement is generally preferred.
+
 Topics::
 
 Examples::

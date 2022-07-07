@@ -23,6 +23,7 @@ On each level, a control variate is active for the discrepancy :math:`Y_{\ell}`
 based on
 
 .. math::  Y_{\ell}^\star = Y_{\ell} + \alpha_\ell \left( \hat{Y}^{\mathrm{LF}}_\ell - \mathbb{E}\left[ Y^{\mathrm{LF}}_\ell \right] \right), 
+
 where :math:`Y^{\mathrm{LF}}_\ell = \gamma_\ell Q^{\mathrm{LF}}_\ell - Q^{\mathrm{HF}}_\ell` .
 
 The optimal parameter :math:`\gamma_\ell`  is computed from the correlation properties

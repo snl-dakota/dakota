@@ -15,6 +15,7 @@ high-fidelity (H) models and an additive discrepancy approach, we can denote thi
 
 
 .. math::  Q^H \approx \hat{Q}_{r_L}^L + \hat{\Delta}_{r_{ML}}^{ML} + \hat{\Delta}_{r_{HM}}^{HM} 
+
 where :math:`\Delta^{ij}`  represents a discrepancy expansion computed from
 :math:`Q^i - Q^j`  and reduced rank representations of these discrepancies may
 be targeted ( :math:`r_{HM} < r_{ML} < r_L` ).

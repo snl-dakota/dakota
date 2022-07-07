@@ -14,7 +14,8 @@ high-fidelity (HF) models and an additive discrepancy approach, we have:
 
 
 .. math:: R = \sum_{i=1}^{N_p^{LF}} r^{LF}_i L_i(\xi)
-     + \sum_{i=1}^{N_p^{HF}} \delta_i L_i(\xi) 
+   + \sum_{i=1}^{N_p^{HF}} \delta_i L_i(\xi) 
+
 where :math:`\delta_i`  is a coefficient for the discrepancy expansion.
 
 The same specification options are available as described in

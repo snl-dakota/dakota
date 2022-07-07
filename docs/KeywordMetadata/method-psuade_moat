@@ -47,6 +47,7 @@ characterizes the effect of input :math:`i`  on the output of interest.
 After generating :math:`r`  samples from this distribution, their mean,
 
 .. math::  \mu_i = \frac{1}{r}\sum_{j=1}^{r}{d_i^{(j)}}
+
 modified mean
 
 .. math:: 
@@ -58,7 +59,7 @@ modified mean
 .. math:: 
 
    \sigma_i = \sqrt{ \frac{1}{r}\sum_{j=1}^{r}{ \left(d_i^{(j)} - \mu_i
-\right)^2} }
+   \right)^2} }
 
 are computed for each input :math:`i` . The mean and modified mean give an
 indication of the overall effect of an input on the output. Standard

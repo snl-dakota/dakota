@@ -13,12 +13,14 @@ methods are used to compute an optimal sample allocation per level.
 The Monte Carlo estimator for the mean is defined as
 
 .. math::  \mathbb{E}[Q] \equiv \hat{Q}^{MC} = \frac{1}{N} \sum_{i=1}^N Q^{(i)} 
+
 In a multilevel method with :math:`L`  levels, we replace this estimator
 with a telescoping sum:
 
 .. math::  \mathbb{E}[Q] \equiv \hat{Q}^{ML}
- = \sum_{l=0}^L \frac{1}{N_l} \sum_{i=1}^{N_l} (Q_l^{(i)} - Q_{l-1}^{(i)})
- \equiv \sum_{l=0}^L \hat{Y}^{MC}_l 
+   = \sum_{l=0}^L \frac{1}{N_l} \sum_{i=1}^{N_l} (Q_l^{(i)} - Q_{l-1}^{(i)})
+   \equiv \sum_{l=0}^L \hat{Y}^{MC}_l 
+
 This decomposition forms discrepancies for each level greater than 0,
 seeking reduction in the variance of the discrepancy :math:`Y`  relative
 to the variance of the original response :math:`Q` .  The number of samples
