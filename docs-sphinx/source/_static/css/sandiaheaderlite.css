@@ -1,0 +1,221 @@
+/* --------------------------------------------------------------- */
+/* From Sandia corporate template lite.v2.html */
+/* --------------------------------------------------------------- */
+
+/* class="secondary-links" */
+.secondary-links {
+        color: white;
+        float: right;
+}
+
+/* id="search-text-link" */
+#search-text-link {
+        margin: 0 0 0 0 !important;
+}
+#search-text-link::after {
+        content: "|";
+        margin: 0 .4em 0 .4em;
+}
+
+/* id="directory-text-link" */
+
+/* --------------------------------------------------------------- */
+/* Copied from https://www.sandia.gov/_common/css/styles.css */
+/* --------------------------------------------------------------- */
+
+
+/*class="header-subsite--wrapper-default": checked*/
+.snlheader-subsite--wrapper-default {
+    background: linear-gradient(#032747, rgba(4, 56, 101, 0.95));
+}
+
+/* header: checked */
+snlheader {
+    height: 80px;
+    min-height: 80px;
+}
+
+/* header class="header-subsite": checked */
+.snlheader-subsite {
+    position: fixed;
+    z-index: 990; /* Drupal admin z-index is 999 */
+    width: 100%;
+    background: linear-gradient(#032747, rgba(4, 56, 101, 0.95));
+}
+/* PHONE WIDTH
+================================================================== */
+@media only screen and (min-width: 480px) {
+.snlheader-subsite .core-nav-transparent ul {
+    margin: 0;
+    padding: 0;
+}
+.snlheader-subsite {
+    position: relative;
+}
+.snlheader-subsite {
+    background: #043865 linear-gradient(rgba(0, 0, 0, 0.3), #043865);
+}
+}
+
+/* class="wrapper" */
+.wrapper {
+    position: relative;
+}
+
+/* header class="wrapper": checked  */
+snlheader .wrapper {
+    padding: 0;   /* DMV change to : 0; */
+    margin: 0 20px 0 20px;
+}
+
+/* snlheader class="logo-transparent": checked */
+snlheader .logo-transparent {
+    position: relative;
+    z-index: 2000;    /*change to inherit DMV*/
+    box-sizing: border-box;
+    float: left;
+    padding: 0 10px 0 0;
+    margin: 0 2em 0 0;
+    width: 120px;
+    height: 80px;
+}
+
+/* snlheader class="logo": checked */
+snlheader .logo {
+    background: url('https://www.sandia.gov/_common/images/clf3/svg/snl-logo.svg') no-repeat 0 center;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    height: 80px;
+    background-size: 100%;
+    text-indent: -3000px;
+    box-sizing: border-box;
+}
+
+/* Other snlheader class definitions: checked */
+snlheader a:active .logo-transparent, snlheader a:visited .logo-transparent {
+    outline: none;
+}
+snlheader a:link, snlheader a:visited {
+    text-decoration: none;
+}
+snlheader a:hover {
+    text-decoration: underline;
+}
+snlheader a:focus {
+    outline: #fff solid 2px;
+    outline-offset: 2px;
+}
+snlheader a:hover {
+    outline: none !important;
+}
+snlheader {
+    text-align: left;
+}
+/* _header */
+snlheader .wrapper {
+    padding: 0;
+}
+.snlheader-subsite {
+    background: #043865 linear-gradient(rgba(0, 0, 0, 0.3), #043865);
+}
+.snlheader-subsite, {
+    position: relative;
+}
+snlheader {
+    display: block;
+}
+
+/* class="nav-top": checked */
+nav-top:after {
+    display: block;
+    clear: both;
+    content: '';
+}#newsReleases > p:nth-child(1) > b:nth-child(1)
+.nav-top {
+    text-align: center;
+    position: relative;
+}
+.nav-top {
+    text-align: inherit;
+    line-height: 80px;
+}
+
+/* class="visuallyhidden" */
+/* Hide only visually, but have it available for screenreaders: h5bp.com/v */
+.visuallyhidden {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+/* class="core-nav-transparent core-nav-transparent--visible */
+.core-nav-transparent {
+    display: none;
+    -webkit-transition: all 150ms ease-in-out;
+    -o-transition: all 150ms ease-in-out;
+    transition: all 150ms ease-in-out;
+}
+.core-nav-transparent {
+    display: block;
+    opacity: 1;
+    position: relative;
+    background: transparent;
+    width: inherit;
+}
+.core-nav-transparent.core-nav-transparent--visible {
+    opacity: 1;
+    -webkit-transition: all 150ms ease-in-out;
+    -o-transition: all 150ms ease-in-out;
+    transition: all 150ms ease-in-out;
+}
+.core-nav-transparent ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.core-nav-transparent ul li {
+    float: left;
+    margin: 0 2em 0 0;
+}
+.core-nav-transparent ul li.current {
+    position: relative;
+    overflow: hidden;
+}
+.core-nav-transparent ul li.current:after {
+    content: "\f2ec";
+    font-family: Font Awesome\ 5 Pro;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    z-index: -1;
+    font-size: 24px;
+    color: #e9e9e9;
+    font-weight: 900;
+    width: 90px;
+    -webkit-transform: translateX(-12px);
+    -ms-transform: translateX(-12px);
+    transform: translateX(-12px);
+    line-height: 0;
+}
+.core-nav-transparent ul li.current a {
+    color: #fff;
+}
+.core-nav-transparent ul li a {
+    color: #eee;
+    padding-bottom: 3px;
+    border-bottom: 3px solid transparent;
+    text-decoration: none;
+    -webkit-transition: all 150ms ease-in-out;
+    -o-transition: all 150ms ease-in-out;
+    transition: all 150ms ease-in-out;
+}
+.core-nav-transparent ul li a:hover {
+    color: #fff;
+    border-bottom-color: #fff;
+}

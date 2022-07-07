@@ -64,6 +64,7 @@ html_theme_options = {
 
 html_css_files = [
     'css/dakota_theme.css',
+    'css/sandiaheaderlite.css'
 ]
 
 html_logo = 'img/dakota_Arrow_Name_Tag_horiz_transparent.png'
