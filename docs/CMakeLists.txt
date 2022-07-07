@@ -68,11 +68,17 @@ add_custom_target(docs-keywords
 
 # This assumes sphinx-build is available on the PATH
 add_custom_target(docs-sphinx
-  DEPENDS docs-keywords
   COMMAND sphinx-build -b html -j auto "${Dakota_SOURCE_DIR}/docs-sphinx/source" "${CMAKE_CURRENT_BINARY_DIR}/sphinx-html"
   COMMENT "Generating Sphinx docs"
 )
- 
+add_dependencies(docs-sphinx docs-keywords) 
+
+add_custom_target(docs-sphinx-full
+  COMMAND sphinx-build -a -E -b html -j auto "${Dakota_SOURCE_DIR}/docs-sphinx/source" "${CMAKE_CURRENT_BINARY_DIR}/sphinx-html"
+  COMMENT "Generating Sphinx docs (full rebuild)"
+)
+add_dependencies(docs-sphinx-full docs-keywords) 
+
 
 # Generate .dox into doxygen tag files
 add_custom_command(
