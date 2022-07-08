@@ -69,6 +69,8 @@ Continuous variables are typically defined by bounds. Discrete
 variables can be defined in one of three ways, which are discussed on
 the page :ref:`topic-discrete_variables<topic-discrete_variables>`.
 
+.. _variables-ordering-of-variables:
+
 *Ordering of Variables*
 
 The ordering of variables is important, and a consistent ordering is
