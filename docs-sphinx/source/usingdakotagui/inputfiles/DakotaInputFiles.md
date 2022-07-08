@@ -19,6 +19,10 @@ If the Dakota Visual Editor is not configured as your default editor of Dakota i
 
 For more information, see [the main page about the Dakota Visual Editor.](DakotaVisualEditor.html)
 
+```{eval-rst}
+.. _gui-inputfiles-texteditor:
+```
+
 ## Dakota Text Editor
 
 The Dakota text editor is the most traditional way of editing a Dakota input file.  While not recommended for complex Dakota studies, the text editor can be handy if you just need to make a small adjustment to your Dakota input file.
@@ -26,6 +30,10 @@ The Dakota text editor is the most traditional way of editing a Dakota input fil
 If the Dakota Text Editor is not configured as your default editor of Dakota input files, right-click a Dakota input file and choose "Open With > Dakota Text Editor".  Otherwise, simply double-click the file.
 
 ![alt text](img/DakotaTextEditor.png "Dakota Text Editor")
+
+```{eval-rst}
+.. _gui-inputfiles-errormarkup:
+```
 
 ### Error Markup
 
@@ -73,6 +81,10 @@ However, there are some limitations to using pre-processor markup in the Dakota 
 * % statements are used in pre-processor syntax to insert blocks of Python code that should be executed at runtime.  Single-line % statements are supported in the Dakota text editor, but blocks of Python code surrounded by % characters are not supported yet.
 
 Learn more about Dakota's pre-processing tools in [Section 10.8 of the Dakota User's Manual](https://dakota.sandia.gov/content/manuals). 
+
+```{eval-rst}
+.. _gui-inputfiles-treeview:
+```
 
 ## Tree in the Project Explorer view
 

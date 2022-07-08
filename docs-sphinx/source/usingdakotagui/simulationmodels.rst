@@ -1,7 +1,7 @@
 Simulation Models
-=======================================
+=================
 
-See also: `"Coupling Dakota to a Simulation" <../usingdakota/introduction/couplingtosimulations.html>`_
+See also: :ref:`"Coupling Dakota to a Simulation" <couplingtosimulations-main>`
 
 .. toctree::
    :maxdepth: 1
