@@ -11,7 +11,7 @@ The user is required to specify ``num_steps`` for a vector parameter
 study.  There is no default value.
 
 This study performs function evaluations at both ends, making the
-total number of evaluations equal to ``num_steps``+1.
+total number of evaluations equal to ``num_steps + 1``.
 
 *Usage Tips*
 

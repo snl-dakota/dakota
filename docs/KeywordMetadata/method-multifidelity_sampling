@@ -8,6 +8,7 @@ Two variants are currently supported, with the former now deprecated
 and to be replaced by the latter:
 
 - In the case of a hierarchical surrogate model, the two-model approach of Ng and Willcox (2014) is supported and the two most extreme model fidelities or resolutions are employed as the truth model and approximation model.
+
 - In the case of a non-hierarchical surrogate model, the multi-model approach of Peherstorfer et al. (2016) is supported for which all model instances can be integrated into the scheme. Both methods can be used with either a model form sequence or a resolution level sequence.
 
 *Control Variate Monte Carlo*
@@ -18,8 +19,8 @@ described in Ng and Willcox (2014):
 
 
 .. math::  \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
+   - \beta (\hat{Q}_{LF}^{MC} - \mathbb{E}[Q_{LF}]) 
 
-- \beta (\hat{Q}_{LF}^{MC} - \mathbb{E}[Q_{LF}]) 
 As opposed to the traditional control variate approach, we do not know
 :math:`\mathbb{E}[Q_{LF}]`  precisely, but rather we estimate it more
 accurately than :math:`\hat{Q}_{LF}^{MC}`  based on a sampling increment
@@ -38,8 +39,8 @@ et al. (2016).
 
 
 .. math::  \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
+   - \sum_{i=1}^M \beta_i (\hat{Q}_{LF_i}^{MC} - \mathbb{E}[Q_{LF_i}]) 
 
-- \sum_{i=1}^M \beta_i (\hat{Q}_{LF_i}^{MC} - \mathbb{E}[Q_{LF_i}]) 
 In this case, the variance in the estimate of the :math:`i^{th}`  control
 mean is reduced by the :math:`(i+1)^{th}`  control variate, such that the
 variance reduction is limited by the case of an exact estimate of the
@@ -140,6 +141,7 @@ models, each with a single (or default) discretization level:
 Refer to ``dakota/test/dakota_uq_*_cvmc``.in and
 ``dakota/test/dakota_uq_*_mfmc``.in in the source distribution
 for additional examples.
+
 Theory::
 
 Faq::

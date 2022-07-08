@@ -2,7 +2,7 @@ Blurb::
 Total number of points in search pattern
 Description::
 If ``pattern_basis`` is ``simplex``, then pattern search uses a minimal
-positive basis simplex for the parameter space, for a total of *n*+1
+positive basis simplex for the parameter space, for a total of *n+1*
 function evaluations in the pattern.  Note that the ``simplex`` pattern
 basis can be used for unbounded problems only.  The
 ``total_pattern_size`` specification can be used to augment the basic
