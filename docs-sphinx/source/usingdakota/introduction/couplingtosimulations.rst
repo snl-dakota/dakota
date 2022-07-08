@@ -139,6 +139,8 @@ This run of Dakota takes longer to complete than other examples of gradient-base
 since the fork interface method has additional process creation and file I/O overhead, as compared to the internal communication
 that occurs when the direct interface method is used.
 
+.. _couplingtosimulations-paramformat:
+
 Parameter File Format
 ---------------------
 
