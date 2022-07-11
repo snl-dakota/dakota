@@ -1,6 +1,9 @@
 Blurb::
+
 Markov Chain Monte Carlo algorithms from the QUESO package
+
 Description::
+
 The ``queso`` method supports the following MCMC algorithms: DRAM
 (Delayed Rejection Adaptive Metropolis), delayed rejection (DR) only,
 adaptive metropolis (AM) only, pure Metropolis Hasting (MH)s, and
@@ -44,13 +47,16 @@ the log posterior, (defined as the log-likelihood minus the log_prior).  A deter
 started at the best point found in the optimization.
 The second factor is a ``logit_transform``,
 which performs an internal variable transformation from bounded domains to unbounded domains
- in order to reduce sample rejection due to an out-of-bounds condition.
+in order to reduce sample rejection due to an out-of-bounds condition.
 
 Note that as of Dakota 6.2, the field data capability may be used with QUESO.
 That is, the user can specify field simulation data and field experiment data,
 and Dakota will interpolate and provide the proper residuals to the Bayesian calibration.
+
 Topics::
+
 bayesian_calibration, package_queso
+
 Examples::
 
 Theory::
