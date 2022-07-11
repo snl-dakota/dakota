@@ -29,10 +29,12 @@ also shown below is a contour plot for Rosenbrock’s function.
 
 .. image:: ../img/rosen_3d_surf.png
    :alt: 3D Plot
+   :align: center
    :width: 300
 
 .. image:: ../img/rosen_2d_surf.png
    :alt: Contour Plot
+   :align: center
    :width: 300
 
 An optimization problem using Rosenbrock’s function is formulated as follows:
@@ -61,6 +63,7 @@ Two-Dimensional Grid Parameter Study
 
 .. image:: ../img/rosen_2d_pts.png
    :alt: Fig 2.6
+   :align: center
    :width: 300
 
 Parameter study methods in the Dakota toolkit involve the computation of response data sets at a selection of points in the
@@ -187,18 +190,25 @@ differs by less than the absolute value of the convergence tolerance for three s
 The Dakota command is noted in the file, and copies of the outputs are in the dakota/share/dakota/examples/
 users directory, with .sav appended to the name. When this example problem is executed using Dakota’s legacy X
 Windows-based graphics support enabled, Dakota creates some iteration history graphics similar to the screen capture shown
-in Figure 2.8(a). These plots show how the objective function and design parameters change in value during the optimization
+below. These plots show how the objective function and design parameters change in value during the optimization
 steps. The scaling of the horizontal and vertical axes can be changed by moving the scroll knobs on each plot. Also, the
 “Options” button allows the user to plot the vertical axes using a logarithmic scale. Note that log-scaling is only allowed if the
-values on the vertical axis are strictly greater than zero. Similar plots can also be created in Dakota’s graphical user interface.
+values on the vertical axis are strictly greater than zero.
 
-.. image:: ../img/dak_graphics_grad_opt.png
+:ref:`Similar plots can also be created in Dakota’s graphical user interface <chartreuse-plot-templates-iterhistory>`.
+
+.. figure:: ../img/dak_graphics_grad_opt.png
    :alt: Fig 2.8a
-   :width: 300
+   :align: center
+   
+   Optimization plots (Legacy Dakota graphics plotting)
 
-.. image:: ../img/rosen_grad_opt_pts.png
+.. figure:: ../img/rosen_grad_opt_pts.png
    :alt: Fig 2.8b
+   :align: center
    :width: 300
+   
+   Optimization plot points on Rosenbrock curve
 
 Above, we can see the iteration history of the optimization algorithm. The optimization starts at the point (x1, x2) =
 (−1.2, 1.0) as given in the Dakota input file. Subsequent iterations follow the banana-shaped valley that curves around toward
@@ -384,6 +394,7 @@ sample sites within the parameter space of the Rosenbrock function for this exam
 
 .. image:: ../img/rosen_nond_pts.png
    :alt: Fig 2.11
+   :align: center
    :width: 300
 
 ===========================
