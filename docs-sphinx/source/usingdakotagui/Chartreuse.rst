@@ -10,16 +10,18 @@ Chartreuse
    chartreuse/PlotTraceCreator
    chartreuse/EditingPlotFiles
    chartreuse/PlotManager
-   chartreuse/ColorScales
    chartreuse/PlotTemplates
    chartreuse/ChartreuseSandbox
    chartreuse/ChartreuseWorkflow
+   chartreuse/ColorScales
 
 **Introduction**
 
 Chartreuse is a plotting library provided with the Dakota GUI that allows you to explore the data in Dakota output files by creating graphical plots.  A number of different 2D and 3D plot types are supported.
 
 *Note:*  Currently, the Dakota GUI fully supports Chartreuse plotting on Windows and Mac.  For Linux, only RHEL7 and newer are supported (other comparably new Fedora-based distributions would be supported as well).  In addition, Chartreuse plotting is limited to 2D on Linux.
+
+.. _chartreuse-plot-terminology:
 
 **Plotting Terminology**
 
@@ -35,6 +37,8 @@ Here is an illustration of these plotting terms:
    :alt: Example plot
 
 In this image, we see **two canvases** - the one on the left and the one on the right.  Each of these canvases has **one trace** on it - the left canvas has a red trace and the right canvas has a green trace.  All of this is rendered onto **one plot window**.  The plot window is named "Cantilever Example Plot."
+
+.. _chartreuse-plot-dataset-terminology:
 
 **Plot Dataset Terminology**
 
