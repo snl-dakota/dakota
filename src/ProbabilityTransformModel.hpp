@@ -488,7 +488,8 @@ trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
   SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids();
   SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
   natafTransform.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv,
-    x_cv_ids, subModel.all_continuous_variable_ids(),
+    x_cv_ids, currentVariables.continuous_variable_ids(), // u_cv_ids
+    subModel.all_continuous_variable_ids(),              // x_acv_ids
     primaryACVarMapIndices, secondaryACVarMapTargets);
 }
 

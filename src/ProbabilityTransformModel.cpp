@@ -711,6 +711,7 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 {
   const RealVector&         x_cv      = x_vars.continuous_variables();
   SizetMultiArrayConstView  x_cv_ids  = x_vars.continuous_variable_ids();
+  SizetMultiArrayConstView  u_cv_ids  = u_vars.continuous_variable_ids();
   SizetMultiArrayConstView  x_acv_ids = x_vars.all_continuous_variable_ids();
   const RealVector&         x_fns     = x_response.function_values();
 
@@ -755,13 +756,15 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
     // and is computed outside of the num_fns loop
     if (ptmInstance->distParamDerivs > NO_DERIVS)
       ptmInstance->natafTransform.jacobian_dX_dS(x_cv, jacobian_xs,
-	x_cv_ids, x_acv_ids, ptmInstance->primaryACVarMapIndices,
+	x_cv_ids, u_cv_ids, x_acv_ids, ptmInstance->primaryACVarMapIndices,
 	ptmInstance->secondaryACVarMapTargets);
     else {
       if (u_grad_flag || u_hess_flag)
-        ptmInstance->natafTransform.jacobian_dX_dU(x_cv, jacobian_xu);
+        ptmInstance->natafTransform.jacobian_dX_dU(x_cv, x_cv_ids, u_cv_ids,
+						   jacobian_xu);
       if (u_hess_flag && ptmInstance->nonlinearVarsMapping)
-        ptmInstance->natafTransform.hessian_d2X_dU2(x_cv, hessian_xu);
+        ptmInstance->natafTransform.hessian_d2X_dU2(x_cv, x_cv_ids, u_cv_ids,
+						    hessian_xu);
     }
   }
 
@@ -797,12 +800,12 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
         fn_grad_us = u_response.function_gradient_view(i);
         if (ptmInstance->distParamDerivs > NO_DERIVS) // transform subset
           ptmInstance->natafTransform.trans_grad_X_to_S(fn_grad_x,
-            fn_grad_us, jacobian_xs, x_dvv, x_cv_ids, x_acv_ids,
+            fn_grad_us, jacobian_xs, x_dvv, x_cv_ids, u_cv_ids, x_acv_ids,
             ptmInstance->primaryACVarMapIndices,
             ptmInstance->secondaryACVarMapTargets);
         else // transform subset of components
-          ptmInstance->natafTransform.trans_grad_X_to_U(fn_grad_x,
-            fn_grad_us, jacobian_xu, x_dvv, x_cv_ids);
+          ptmInstance->natafTransform.trans_grad_X_to_U(fn_grad_x, x_cv_ids,
+            fn_grad_us, jacobian_xu, x_dvv);
       }
       else // no transformation: dg/dx = dG/du
         u_response.function_gradient(fn_grad_x, i);
@@ -830,8 +833,8 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
           //  ptmInstance->secondaryACVarMapTargets);
         }
 	else // transform subset of components
-          ptmInstance->natafTransform.trans_hess_X_to_U(fn_hess_x, fn_hess_us,
-              jacobian_xu, hessian_xu, fn_grad_x, x_dvv, x_cv_ids);
+          ptmInstance->natafTransform.trans_hess_X_to_U(fn_hess_x, x_cv_ids,
+	    fn_hess_us, jacobian_xu, hessian_xu, fn_grad_x, x_dvv);
       }
       else // no transformation: d^2g/dx^2 = d^2G/du^2
         u_response.function_hessian(fn_hess_x, i);

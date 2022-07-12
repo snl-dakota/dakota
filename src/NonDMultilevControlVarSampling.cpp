@@ -15,7 +15,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
-#include "dakota_tabular_io.hpp"
+//#include "dakota_tabular_io.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDMultilevControlVarSampling.hpp"
@@ -177,7 +177,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
       if (numSamples) {
 
 	// assign sequence, get samples, export, evaluate
-	evaluate_ml_sample_increment(lev);
+	evaluate_ml_sample_increment("mlcv_", lev);
 
 	// control variate betwen LF and HF for this discretization level:
 	// if unequal number of levels, loop over all HF levels for MLMC and
@@ -196,6 +196,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 	  configure_indices(group, lf_form, lev, sequenceType);
 	  lf_lev_cost = level_cost(lf_cost, lev);
 	  // compute allResp w/ LF model form reusing allVars from MLMC step
+	  // > Note: this CV sample set is not separately exported (see below).
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for CV sums
 	  accumulate_mlmf_Ysums(allResponses, hf_resp, sum_L_shared,
@@ -393,7 +394,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       numSamples = delta_N_hf[lev];
       if (numSamples) {
 	// assign sequence, get samples, export, evaluate
-	evaluate_ml_sample_increment(lev);
+	evaluate_ml_sample_increment("mlcv_", lev);
 	// accumulate online costs for HF model
 	if (online_hf_cost && mlmfIter == 0)
 	  accumulate_paired_online_cost(hf_accum_cost, hf_num_cost, lev);
@@ -407,6 +408,10 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	  // activate LF response (lev 0) or LF response discrepancy (lev > 0)
 	  configure_indices(group, lf_form, lev, sequenceType);
 	  // eval allResp w/ LF model reusing allVars from ML step above
+	  // > Note: this CV sample set is not separately exported using
+	  //   export_all_samples() since it is the same as the ML set.
+	  // > This is why the preceding set is marked as "mlcv_", indicating
+	  //   that the parameter sets should be applied to both ML and CV.
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for MLMF sums;
 	  accumulate_mlmf_Qsums(allResponses, hf_resp, sum_Ll, sum_Llm1,
@@ -610,12 +615,13 @@ multilevel_control_variate_mc_offline_pilot()
     hf_lev_cost = level_cost(hf_cost, lev);
     // use 0 in place of delta_N_hf[lev]; min of 2 samples reqd for online var
     numSamples = std::max(one_sided_delta(0., hf_targets_pilot[lev]),(size_t)2);
-    evaluate_ml_sample_increment(lev);
+    evaluate_ml_sample_increment("mlcv_", lev);
     if (lev < num_cv_lev) {
       IntResponseMap hf_resp = allResponses; // shallow copy is sufficient
       configure_indices(group, lf_form, lev, sequenceType);
       lf_lev_cost = level_cost(lf_cost, lev);
       // eval allResp w/ LF model reusing allVars from ML step above
+      // > Note: this CV sample set is not separately exported (see above).
       evaluate_parameter_sets(iteratedModel, true, false);
       // process previous and new set of allResponses for MLMF sums;
       accumulate_mlmf_Qsums(allResponses, hf_resp, sum_Ll, sum_Llm1,
@@ -770,7 +776,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     numSamples = delta_N_hf[lev];
     N_shared[lev].assign(numFunctions, 0);
 
-    evaluate_ml_sample_increment(lev);
+    evaluate_ml_sample_increment("mlcv_", lev);
     if (online_hf_cost) // accumulate online costs for HF model
       accumulate_paired_online_cost(hf_accum_cost, hf_num_cost, lev);
 
@@ -781,6 +787,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
       // activate LF response (lev 0) or LF response discrepancy (lev > 0)
       configure_indices(group, lf_form, lev, sequenceType);
       // eval allResp w/ LF model reusing allVars from ML step above
+      // > Note: this CV sample set is not separately exported (see above).
       evaluate_parameter_sets(iteratedModel, true, false);
       // process previous and new set of allResponses for MLMF sums;
       accumulate_mlmf_Qsums(allResponses, hf_resp, sum_Ll, sum_Llm1,

@@ -101,7 +101,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     }
   }
 
-  // Want to define this as construct time for use in HierarchSurrModel::
+  // Want to define this at construct time for use in HierarchSurrModel::
   // create_tabular_datastream().  Note that MLCV will have two overlapping
   // assignments, one from the CV ctor (first) that is then overwritten by
   // this ctor (second).  Alternatively we could protect this call with
@@ -231,7 +231,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
       if (numSamples) {
 
 	// assign sequence, get samples, export, evaluate
-	evaluate_ml_sample_increment(step);
+	evaluate_ml_sample_increment("ml_", step);
 
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
@@ -415,7 +415,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 	   << " repaired to minimum of 2." << std::endl;
       numSamples = 2;
     }
-    evaluate_ml_sample_increment(step);
+    evaluate_ml_sample_increment("ml_", step);
     accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_online[step]);
     increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, step),
 				 ref_cost);
@@ -449,7 +449,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
     	// correct profile shape even though it can overshoot.
 
     	// assign sequence, get samples, export, evaluate
-    	evaluate_ml_sample_increment(step);
+    	evaluate_ml_sample_increment("ml_", step);
 
       if(storeEvals) store_evaluations(step);
 
@@ -555,7 +555,7 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     if (numSamples) {
 
       // assign sequence, get samples, export, evaluate
-      evaluate_ml_sample_increment(step);
+      evaluate_ml_sample_increment("ml_", step);
       accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_pilot[step]);
 
       variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
@@ -678,7 +678,8 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
 }
 
 
-void NonDMultilevelSampling::evaluate_ml_sample_increment(unsigned short step)
+void NonDMultilevelSampling::
+evaluate_ml_sample_increment(String prepend, unsigned short step)
 {
   // advance any sequence specifications (seed_sequence)
   assign_specification_sequence(step);
@@ -692,7 +693,7 @@ void NonDMultilevelSampling::evaluate_ml_sample_increment(unsigned short step)
   //     This is correct for bypass_surrogate_mode(), but consider the new
   //     integrated tabular format for aggregated_models_mode().
   if (exportSampleSets)
-    export_all_samples("ml_", iteratedModel.truth_model(), mlmfIter, step);
+    export_all_samples(prepend, iteratedModel.truth_model(), mlmfIter, step);
 
   // compute allResponses from allVariables using hierarchical model
   evaluate_parameter_sets(iteratedModel, true, false);
