@@ -549,9 +549,7 @@ information on use of MOAT sampling, see the Morris example in
 Section `[additional:morris] <#additional:morris>`__, or Saltelli, et
 al. :cite:p:`Sal04`.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Figure 4.1: Dakota input file showing the Morris One-at-a-Time method – see dakota/share/dakota/ examples/users/morris_ps_moat.in
 
 .. _`dace:sa`:
 
@@ -717,20 +715,15 @@ higher order interactions that contribute significantly to the variance.
 There is no requirement that the sum of the total effect indices is one:
 in most cases, the sum of the total effect indices will be greater than
 one. An example of the Main and Total effects indices as calculated by
-Dakota using sampling is shown in
-Figure `[fig:dace:vbd] <#fig:dace:vbd>`__
+Dakota using sampling is shown in the following figure:
 
-.. container:: bigbox
+.. code-block::
 
-   .. container:: small
-
-      ::
-
-         Global sensitivity indices for each response function:
-         response_fn_1 Sobol indices:
-                                           Main             Total
-                               4.7508913283e-01  5.3242162037e-01 uuv_1
-                               3.8112392892e-01  4.9912486515e-01 uuv_2
+   Global sensitivity indices for each response function:
+   response_fn_1 Sobol indices:
+                                       Main             Total
+                           4.7508913283e-01  5.3242162037e-01 uuv_1
+                           3.8112392892e-01  4.9912486515e-01 uuv_2
 
 Finally, we have the capability to calculate a set of quality metrics
 for a particular input sample. These quality metrics measure various
@@ -766,64 +759,61 @@ a broad range of probability distributions.
 To use ``sampling`` in design of experiments mode (as opposed to
 uncertainty quantification mode), an active view override (e.g.,
 ``active all``) can be included in the variables specification (see
-Section `[variables:mixedview] <#variables:mixedview>`__) of the Dakota
+:ref:`"Management of Mixed Variables by Iterator" <variables:mixedview>`) of the Dakota
 input file.
 
 Design of experiments method selection recommendations are summarized in
-Table `1.4 <#dace:usage:table>`__.
+the table below:
 
-.. container::
-   :name: dace:usage:table
-
-   .. table:: Guidelines for selection of parameter study, DOE, DACE,
+.. table:: Guidelines for selection of parameter study, DOE, DACE,
    and sampling methods.
 
-   +--------------------+-----------------------+-----------------------+
-   | **Method**         | **Applications**      | **Applicable          |
-   |                    |                       | Methods**             |
-   +--------------------+-----------------------+-----------------------+
-   | **Classification** |                       |                       |
-   +--------------------+-----------------------+-----------------------+
-   | parameter study    | sensitivity analysis, | cent                  |
-   |                    |                       | ered_parameter_study, |
-   +--------------------+-----------------------+-----------------------+
-   |                    | directed parameter    | list_parameter_study, |
-   |                    | space investigations  |                       |
-   +--------------------+-----------------------+-----------------------+
-   |                    |                       | mult                  |
-   |                    |                       | idim_parameter_study, |
-   +--------------------+-----------------------+-----------------------+
-   |                    |                       | v                     |
-   |                    |                       | ector_parameter_study |
-   +--------------------+-----------------------+-----------------------+
-   |                    |                       |                       |
-   +--------------------+-----------------------+-----------------------+
-   | classical design   | physical experiments  | dace (box_behnken,    |
-   +--------------------+-----------------------+-----------------------+
-   | of experiments     | (parameters are       | central_composite)    |
-   |                    | uniformly             |                       |
-   |                    | distributed)          |                       |
-   +--------------------+-----------------------+-----------------------+
-   |                    |                       |                       |
-   +--------------------+-----------------------+-----------------------+
-   | design of computer | variance analysis,    | dace (grid, random,   |
-   |                    |                       | oas, lhs, oa_lhs),    |
-   +--------------------+-----------------------+-----------------------+
-   | experiments        | space filling designs | fsu_quasi_mc (halton, |
-   |                    |                       | hammersley),          |
-   +--------------------+-----------------------+-----------------------+
-   |                    | (parameters are       | fsu_cvt, psuade_moat  |
-   |                    | uniformly             |                       |
-   |                    | distributed)          |                       |
-   +--------------------+-----------------------+-----------------------+
-   |                    |                       |                       |
-   +--------------------+-----------------------+-----------------------+
-   | sampling           | space filling designs | sampling (Monte Carlo |
-   |                    |                       | or LHS)               |
-   +--------------------+-----------------------+-----------------------+
-   |                    | (parameters have      | with optional active  |
-   |                    | general probability   | view override         |
-   |                    | distributions)        |                       |
-   +--------------------+-----------------------+-----------------------+
-   |                    |                       |                       |
-   +--------------------+-----------------------+-----------------------+
+   +-----------------------+-----------------------+--------------------------------------------------------------------------+
+   | Method Classification | Applications          | Applicable Methods                                                       |
+   +=======================+=======================+==========================================================================+
+   | parameter study       | sensitivity analysis, | :ref:`centered_parameter_study <method-centered_parameter_study>`,       |
+   |                       | directed parameter    | :ref:`list_parameter_study <method-list_parameter_study>`,               |
+   |                       | space investigations  | :ref:`multidim_parameter_study <method-multidim_parameter_study>`,       |
+   |                       |                       | :ref:`vector_parameter_study <method-vector_parameter_study>`            |
+   +-----------------------+-----------------------+--------------------------------------------------------------------------+
+   | classical design      | physical experiments  | :ref:`dace <method-dace>` (:ref:`box_behnken <method-dace-box_behnken>`, |
+   | of experiments        | (parameters are       | :ref:`central_composite <method-dace-central_composite>`)                |
+   |                       | uniformly             |                                                                          |
+   |                       | distributed)          |                                                                          |
+   +-----------------------+-----------------------+--------------------------------------------------------------------------+
+   | design of computer    | variance analysis,    | :ref:`dace <method-dace>` (:ref:`grid <method-dace-grid>`,               |
+   | experiments           | space filling design  | :ref:`random <method-dace-random>`, :ref:`oas <method-dace-oas>`         |
+   |                       | (parameters are       | :ref:`lhs <method-dace-lhs>`, :ref:`oa_lhs <method-dace-oa_lhs>`),       |
+   |                       | uniformly distributed)| :ref:`fsu_quasi_mc <method-fsu_quasi_mc>`                                |
+   |                       |                       | (:ref:`halton <method-fsu_quasi_mc-halton>`,                             |
+   |                       |                       | :ref:`hammersley <method-fsu_quasi_mc-hammersley>`),                     |
+   |                       |                       | :ref:`fsu_cvt <method-fsu_cvt>`, :ref:`psuade_moat <method-psuade_moat>` |
+   +-----------------------+-----------------------+--------------------------------------------------------------------------+
+   | sampling              | space filling designs | :ref:`sampling <method-sampling>`                                        |
+   |                       | (parameters have      | (:ref:`Monte Carlo <method-sampling-sample_type-random>` or              |
+   |                       | general probability   | :ref:`LHS <method-sampling-sample_type-lhs>`) with optional active view  |
+   |                       | distributions)        | override                                                                 |
+   +-----------------------+-----------------------+--------------------------------------------------------------------------+
+   
+Video Resources
+---------------
+
++--------------------------------------+-----------------+----------------+
+| Title                                | Link            | Resources      |
++======================================+=================+================+
+| Sensitivity Analysis                 | |Training|_     | `Slides`__ /   |
+|                                      |                 | `Exercises`__  |
++--------------------------------------+-----------------+----------------+
+| Introduction to Sensitivity Analysis | |Video|_        |                |
++--------------------------------------+-----------------+----------------+
+
+.. __: https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_SensitivityAnalysis.pdf
+__ https://dakota.sandia.gov/sites/default/files/training/sens_analysis-220216.zip
+
+.. |Training| image:: img/SensitivityAnalysisTrainingTeaser.png
+                :alt: Sensitivity Analysis
+.. _Training: https://digitalops.sandia.gov/Mediasite/Play/e273e948e94a4f4a9fbdd385c1ef4c8a1d
+
+.. |Video| image:: img/SensitivityAnalysisScreencastTeaser.png
+             :alt: Introduction to Sensitivity Analysis
+.. _Video: https://www.youtube.com/watch?v=YshRCgm_f1Y
