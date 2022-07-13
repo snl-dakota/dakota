@@ -519,32 +519,38 @@ contains the current parameter values and a set of function requests.
 The standard format for this parameters file is shown in
 Figure `[variables:figure01] <#variables:figure01>`__.
 
-.. container:: bigbox
+TODO: Above figure needs to refer to this code block with
+caption {Parameters file data format - standard option.}
+label {variables:figure01}
 
-   | ``<int>``\ :raw-latex:`\ `\ ``variables``
-   | ``<double>``\ :raw-latex:`\ `\ ``<label_cdv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{cdv}`\ ``)``
-   | ``<int>``\ :raw-latex:`\ `\ ``<label_ddiv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{ddiv}`\ ``)``
-   | ``<string>``\ :raw-latex:`\ `\ ``<label_ddsv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{ddsv}`\ ``)``
-   | ``<double>``\ :raw-latex:`\ `\ ``<label_ddrv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{ddrv}`\ ``)``
-   | ``<double>``\ :raw-latex:`\ `\ ``<label_cauv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{cauv}`\ ``)``
-   | ``<int>``\ :raw-latex:`\ `\ ``<label_dauiv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{dauiv}`\ ``)``
-   | ``<string>``\ :raw-latex:`\ `\ ``<label_dausv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{dausv}`\ ``)``
-   | ``<double>``\ :raw-latex:`\ `\ ``<label_daurv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{daurv}`\ ``)``
-   | ``<double>``\ :raw-latex:`\ `\ ``<label_ceuv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{ceuv}`\ ``)``
-   | ``<int>``\ :raw-latex:`\ `\ ``<label_deuiv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{deuiv}`\ ``)``
-   | ``<string>``\ :raw-latex:`\ `\ ``<label_deusv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{deusv}`\ ``)``
-   | ``<double>``\ :raw-latex:`\ `\ ``<label_deurv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{deurv}`\ ``)``
-   | ``<double>``\ :raw-latex:`\ `\ ``<label_csv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{csv}`\ ``)``
-   | ``<int>``\ :raw-latex:`\ `\ ``<label_dsiv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{dsiv}`\ ``)``
-   | ``<string>``\ :raw-latex:`\ `\ ``<label_dssv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{dssv}`\ ``)``
-   | ``<double>``\ :raw-latex:`\ `\ ``<label_dsrv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{dsrv}`\ ``)``
-   | ``<int>``\ :raw-latex:`\ `\ ``functions``
-   | ``<int>``\ :raw-latex:`\ `\ ``ASV_i:label_response``\ :math:`\sb{i}`\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``m)``
-   | ``<int>``\ :raw-latex:`\ `\ ``derivative_variables``
-   | ``<int>``\ :raw-latex:`\ `\ ``DVV_i:label_cdv``\ :math:`\sb{i}`\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``p)``
-   | ``<int>``\ :raw-latex:`\ `\ ``analysis_components``
-   | ``<string>``\ :raw-latex:`\ `\ ``AC_i:analysis_driver_name``\ :math:`\sb{i}`\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``q)``
-   | ``<string>``\ :raw-latex:`\ `\ ``eval_id``
+.. code-block::
+
+   <int>    variables
+   <double> <label_cdv_i>         (i = 1 to n_cdv)
+   <int>    <label_ddiv_i>        (i = 1 to n_ddiv)
+   <string> <label_ddsv_i>        (i = 1 to n_ddsv)
+   <double> <label_ddrv_i>        (i = 1 to n_ddrv)
+   <double> <label_cauv_i>        (i = 1 to n_cauv)
+   <int>    <label_dauiv_i>       (i = 1 to n_dauiv)
+   <string> <label_dausv_i>       (i = 1 to n_dausv)
+   <double> <label_daurv_i>       (i = 1 to n_daurv)
+   <double> <label_ceuv_i>        (i = 1 to n_ceuv)
+   <int>    <label_deuiv_i>       (i = 1 to n_deuiv)
+   <string> <label_deusv_i>       (i = 1 to n_deusv)
+   <double> <label_deurv_i>       (i = 1 to n_deurv)
+   <double> <label_csv_i>         (i = 1 to n_csv)
+   <int>    <label_dsiv_i>        (i = 1 to n_dsiv)
+   <string> <label_dssv_i>        (i = 1 to n_dssv)
+   <double> <label_dsrv_i>        (i = 1 to n_dsrv)
+   <int>    functions
+   <int>    ASV_i:label_response_i       (i = 1 to m)
+   <int>    derivative_variables
+   <int>    DVV_i:label_cdv_i            (i = 1 to p)
+   <int>    analysis_components
+   <string> AC_i:analysis_driver_name_i  (i = 1 to q)
+   <string> eval_id
+   <int>    metadata
+   <string> MD_i                         (i = 1 to r)
 
 Integer values are denoted by “``<int>``”, “``<double>``” denotes a
 double precision value, and “``<string>``” denotes a string value. Each
@@ -653,32 +659,39 @@ conversely, does not require the use of includes since it processes the
 Dakota parameters file and template simulation file separately to create
 a simulation input file populated with the variables data.
 
-.. container:: bigbox
+TODO: Figure with 
+caption {Parameters file data format - APREPRO option.}
+label {variables:figure02}
 
-   | ``{``\ :raw-latex:`\ `\ ``DAKOTA_VARS``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<int>``\ :raw-latex:`\ `\ ``}``
-   | ``{``\ :raw-latex:`\ `\ ``<label_cdv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{cdv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_ddiv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<int>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{ddiv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_ddsv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<string>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{ddsv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_ddrv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{ddrv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_cauv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{cauv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_dauiv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<int>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{dauiv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_dausv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<string>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{dausv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_daurv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{daurv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_ceuv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{ceuv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_deuiv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<int>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{deuiv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_deusv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<string>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{deusv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_deurv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{deurv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_csv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{csv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_dsiv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<int>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{dsiv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_dssv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<string>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{dssv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``<label_dsrv``\ :math:`\sb{i}`\ ``>``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``n``\ :math:`\sb{dsrv}`\ ``)``
-   | ``{``\ :raw-latex:`\ `\ ``DAKOTA_FNS``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<int>``\ :raw-latex:`\ `\ ``}``
-   | ``{``\ :raw-latex:`\ `\ ``ASV_i:label_response``\ :math:`\sb{i}`\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<int>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``m)``
-   | ``{``\ :raw-latex:`\ `\ ``DAKOTA_DER_VARS``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<int>``\ :raw-latex:`\ `\ ``}``
-   | ``{``\ :raw-latex:`\ `\ ``DVV_i:label_cdv``\ :math:`\sb{i}`\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<int>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``p)``
-   | ``{``\ :raw-latex:`\ `\ ``DAKOTA_AN_COMPS``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<int>``\ :raw-latex:`\ `\ ``}``
-   | ``{``\ :raw-latex:`\ `\ ``AC_i:analysis_driver_name``\ :math:`\sb{i}`\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<string>``\ :raw-latex:`\ `\ ``}``\ :raw-latex:`\ `\ ``(i``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``1``\ :raw-latex:`\ `\ ``to``\ :raw-latex:`\ `\ ``q)``
-   | ``{``\ :raw-latex:`\ `\ ``DAKOTA_EVAL_ID``\ :raw-latex:`\ `\ ``=``\ :raw-latex:`\ `\ ``<string>``\ :raw-latex:`\ `\ ``}``
+.. code-block::
+
+   { DAKOTA_VARS = <int> }
+   { <label_cdv_i = <double> }         (i = 1 to n_cdv)
+   { <label_ddiv_i = <int> }           (i = 1 to n_ddiv)
+   { <label_ddsv_i = <string> }        (i = 1 to n_ddsv)
+   { <label_ddrv_i = <double> }        (i = 1 to n_ddrv)
+   { <label_cauv_i = <double> }        (i = 1 to n_cauv)
+   { <label_dauiv_i = <int> }          (i = 1 to n_dauiv)
+   { <label_dausv_i = <string> }       (i = 1 to n_dausv)
+   { <label_daurv_i = <double> }       (i = 1 to n_daurv)
+   { <label_ceuv_i = <double> }        (i = 1 to n_ceuv)
+   { <label_deuiv_i = <int> }          (i = 1 to n_deuiv)
+   { <label_deusv_i = <string> }       (i = 1 to n_deusv)
+   { <label_deurv_i = <double> }       (i = 1 to n_deurv)
+   { <label_csv_i = <double> }         (i = 1 to n_csv)
+   { <label_dsiv_i = <int> }           (i = 1 to n_dsiv)
+   { <label_dssv_i = <string> }        (i = 1 to n_dssv)
+   { <label_dsrv_i = <double> }        (i = 1 to n_dsrv)
+   { DAKOTA_FNS = <int> }
+   { ASV_i:label_response_i = <int> }              (i = 1 to m)
+   { DAKOTA_DER_VARS = <int> }
+   { DVV_i:label_cdv_i = <int> }                   (i = 1 to p)
+   { DAKOTA_AN_COMPS = <int> }
+   { AC_i:analysis_driver_name_i = <string> }      (i = 1 to q)
+   { DAKOTA_EVAL_ID = <string> }
+   { DAKOTA_METADATA = <int> }
+   { MD_i = <string> }                            (i = 1 to r)
+
 
 .. _`variables:asv`:
 

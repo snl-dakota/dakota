@@ -1409,7 +1409,7 @@ oscillatory function and ``cp`` for the corner peak function
 Elliptic Partial differential equation with uncertain coefficients
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Consider the following problem with :math:`d \ge 1` random dimensions:
+Consider the following problem with :math:`d \ge 1` random dimensions:
 
   .. math::
 
@@ -1424,8 +1424,7 @@ Elliptic Partial differential equation with uncertain coefficients
   We are interested in quantifying the uncertainty in the solution
   :math:`u` at a number of locations :math:`x\in[0,1]` which can be
   specified by the user. This function can be run using dakota by
-  specifying
-| ``analysis_driver=’steady_state_diffusion_1d’``.
+  specifying ``analysis_driver=’steady_state_diffusion_1d’``.
 
 We represent the random diffusivity field :math:`a` using two types of
 expansions. The first option is to use represent the *logarithm* of the

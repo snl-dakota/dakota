@@ -28,7 +28,7 @@ defines the complementary cumulative distribution function (CCDF).
 
 This probability calculation involves a multi-dimensional integral
 over an irregularly shaped domain of interest, :math:`\mathbf{D}` , where
-:math:`g(\mathbf{X}) < z`  as displayed in Figure :ref:`figUQ05<figUQ05>` for the
+:math:`g(\mathbf{X}) < z`  as displayed in Figure :ref:`topic:uq:reliability:cdf_orig` for the
 case of two variables. The reliability methods all involve the
 transformation of the user-specified uncertain variables,
 :math:`\mathbf{X}` , with probability density function, :math:`p(x_1,x_2)` , which
@@ -37,14 +37,14 @@ random variables, :math:`\mathbf{u}` , possessing a mean value of zero and
 unit variance (i.e., standard normal variables). The region of
 interest, :math:`\mathbf{D}` , is also mapped to the transformed space to
 yield, :math:`\mathbf{D_{u}}`  , where :math:`g(\mathbf{U}) < z`  as shown in
-Figure :ref:`figUQ06<figUQ06>`. The Nataf transformation :cite:p:`Der86`,
+Figure :ref:`topic:uq:reliability:cdf_tran`. The Nataf transformation :cite:p:`Der86`,
 which is identical to the Rosenblatt transformation :cite:p:`Ros52` in
 the case of independent random variables, is used in Dakota to
 accomplish this mapping. This transformation is performed to make the
 probability calculation more tractable. In the transformed space,
 probability contours are circular in nature as shown in
-Figure :ref:`figUQ06<figUQ06>` unlike in the original uncertain variable
-space, Figure :ref:`figUQ05<figUQ05>` . Also, the multi-dimensional integrals
+Figure :ref:`topic:uq:reliability:cdf_tran` unlike in the original uncertain variable
+space, Figure :ref:`topic:uq:reliability:cdf_orig` . Also, the multi-dimensional integrals
 can be approximated by simple functions of a single parameter,
 :math:`\beta` , called the reliability index. :math:`\beta`  is the minimum
 Euclidean distance from the origin in the transformed space to the
@@ -58,12 +58,17 @@ of the methods available are local, meaning that a local optimization
 formulation is used to locate one MPP. In contrast, global methods
 can find multiple MPPs if they exist.
 
+.. figure:: ../studytypes/img/cdf_orig_graphic.png
+   :alt: CDF calculation in original variables
+   :name: topic:uq:reliability:cdf_orig
 
-\anchor figUQ05
-\image html cdf_orig_graphic.png "Graphical depiction of calculation of cumulative distribution function in the original uncertain variable space."
-\image html cdf_orig_graphic.eps "Graphical depiction of calculation of cumulative distribution function in the original uncertain variable space."
+   Graphical depiction of calculation of cumulative distribution
+   function in the original uncertain variable space.
 
-\anchor figUQ06
+.. figure:: ../studytypes/img/cdf_tran_graphic.png
+   :alt: CDF calculation in transformed variables
+   :name: topic:uq:reliability:cdf_tran
 
-\image html cdf_tran_graphic.png "Graphical depiction of integration for the calculation of cumulative distribution function in the transformed uncertain variable space."
-\image html cdf_tran_graphic.eps "Graphical depiction of integration for the calculation of cumulative distribution function in the transformed uncertain variable space."
+   Graphical depiction of integration for the calculation of
+   cumulative distribution function in the transformed uncertain
+   variable space.
