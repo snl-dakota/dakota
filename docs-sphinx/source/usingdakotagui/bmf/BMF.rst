@@ -17,7 +17,7 @@ A BMF file is a good starting point for many different operations in Dakota GUI,
 .. note::
    Before beginning, an analyst is assumed to have some *a priori* knowledge about the black-box simulation model of interest, specifically with regards to what
    sorts of input parameters it receives, and what output results to look at.
-   As an example, the classic cantilever beam model has:
+   As an example, the classic cantilever beam model has: 
 
      - **Seven input parameters:** length, width, thickness, density, Young’s modulus, horizontal load, and vertical load
      - **Three output responses:** mass, stress, and displacement

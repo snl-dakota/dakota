@@ -4,10 +4,6 @@
 Examples in the GUI
 """""""""""""""""""
 
-============
-Introduction
-============
-
 The Dakota GUI provides a Google-like search functionality that allows you to browse curated input file examples written by the Dakota team.
 
 You can access the Search dialog by right-clicking on an existing Dakota project and selecting New > Example Dakota project from the context menu.

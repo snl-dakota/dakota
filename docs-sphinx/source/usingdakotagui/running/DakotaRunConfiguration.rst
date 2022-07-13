@@ -1,14 +1,8 @@
-.. _gui-run-configurations-main:
-
-"""""""""""""""""""""""""""""
-Running Dakota within the GUI
-"""""""""""""""""""""""""""""
-
---------------------------------------------------------
-Run Dakota Using the Eclipse Run Configuration Framework
---------------------------------------------------------
-
 .. _gui-run-configurations-eclipse-run-configs:
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Run Dakota Using the Eclipse Run Configuration Framework
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 Creating a run configuration to run Dakota is a straightforward process for most cases, and is designed to save you lots of time in the future.
 
@@ -129,17 +123,3 @@ From left to right:
 - **Pin Console** Pins the console to the front.  If you have multiple consoles open, pinning keeps the current one in focus.
 - **Display Selected Console** Allows you to switch between multiple open consoles.
 - **New Console View** Opens a new console.
-
-------------------------------------
-Run Dakota Using the Workflow Engine
-------------------------------------
-
-.. _gui-run-dakota-using-the-workflow-engine:
-
-You can also execute Dakota via the "dakota" node in :ref:`Next-Gen Workflow. <ngw-main>`
-
-.. image:: img/Run_Using_Workflow_4.png
-   :alt: A two-node workflow that executes Dakota
-
-The most common use case for this is when you need the "dakota" node to
-:ref:`perform a runtime lookup of a nested IWF file as the proper analysis driver for the Dakota study. <wizards-newwrapperworkflow-main>`
