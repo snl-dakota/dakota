@@ -8,7 +8,7 @@ This algorithm is derived in :cite:p:`Kra04` . The mutual information between
 .. math:: 
 
    I_{2}(X_{1}, X_{2}, \ldots, X_{m}) = \psi(k) + (m-1)\psi(N) - (m-1)/k -
-< \psi(n_{x_{1}}) + \psi(n_{x_{2}}) + \ldots + \psi(n_{x_{m}}) >,
+   < \psi(n_{x_{1}}) + \psi(n_{x_{2}}) + \ldots + \psi(n_{x_{m}}) >,
 
 where :math:`\psi`  is the digamma function, :math:`k`  is the number of nearest
 neighbors being used, and :math:`N`  is the

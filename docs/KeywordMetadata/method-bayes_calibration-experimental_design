@@ -1,6 +1,7 @@
 Blurb::
 (Experimental) Adaptively select experimental designs for iterative
 Bayesian updating
+
 Description::
 This "experimental design" algorithm uses responses produced by a high-fidelity
 model as data to update the parameters of a low-fidelity model using Bayes'
@@ -36,9 +37,9 @@ the mutual information (MI) between the low-fidelity model parameters
 .. math:: 
 
    MI = \iint f(\boldsymbol{\theta}, \textbf{y}(\xi_i) ) \log
-\frac{ f(\boldsymbol{\theta}, \textbf{y}(\xi_i)) }
-{ f(\boldsymbol{\theta}) f(\textbf{y}(\xi_i)) }
-d\boldsymbol{\theta} d\textbf{y},
+   \frac{ f(\boldsymbol{\theta}, \textbf{y}(\xi_i)) }
+   { f(\boldsymbol{\theta}) f(\textbf{y}(\xi_i)) }
+   d\boldsymbol{\theta} d\textbf{y},
 
 is approximated. The high-fidelity model is replaced by the low-fidelity model
 and a :math:`k` -nearest neighbor approximation is used in the calculation. The
@@ -80,8 +81,13 @@ specifications. For example, if ``num_experiments`` is less than the number of
 experiments in the ``calibration_data_file``, only the first lines of the file
 will be used and the rest will be discarded. The same holds true for the
 ``import_candidate_points_file`` and ``num_candidates``.
+
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
+
 See_Also::
