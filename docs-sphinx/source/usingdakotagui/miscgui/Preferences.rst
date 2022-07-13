@@ -56,7 +56,7 @@ Dakota GUI which repo you want to clone from, as well as provide credentials if 
 To add a new repository, click "Add."
 
 .. image:: img/DakotaStudyIntro_SearchOnline_2.png
-   :alt: Name it something good
+   :alt: The New Repository dialog
 
 Provide the URL for your Git repo, as well as an optional name for your repo (to make it easier to find later, if you are cloning from a multitude of repos).
 

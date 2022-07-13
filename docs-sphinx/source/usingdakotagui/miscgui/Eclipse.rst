@@ -81,7 +81,7 @@ Views
 Eclipse applications divide their screen real estate into "views."  By default, Dakota GUI arranges its views as follows:
 
 .. image:: img/GettingStarted_EclipseCrashCourse_3.png
-   :alt: Behold your default view arrangement
+   :alt: The default view arrangement
 
 There are three main views shown here:
 
@@ -145,7 +145,7 @@ You can import from elsewhere on your machine in one of three ways:
 For the latter two options, you will be presented with the Eclipse Import wizard.
 
 .. image:: img/DakotaStudyIntro_Import_2.png
-   :alt: He's an importer-exporter
+   :alt: The Import wizard
 
 From this first page, select General > File System. Then select Next.
 
@@ -155,7 +155,7 @@ From this first page, select General > File System. Then select Next.
 Click on Browse (next to "From directory") and browse to the folder where your Dakota input file lives.  After selecting a folder, the Import wizard will populate with files from the folder. Select the one(s) you want.
 
 .. image:: img/DakotaStudyIntro_Import_4.png
-   :alt: This looks like a good choice
+   :alt: Select the files you want in the dialog
 
 Select Browse (next to "Into folder") to tell the Import wizard where to place your Dakota input file. You will need to have already created a project to place the input file in.
 

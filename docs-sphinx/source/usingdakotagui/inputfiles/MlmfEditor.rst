@@ -50,7 +50,7 @@ Using the MLMF Editor
 When you open the MLMF editor, it will look something like this:
 
 .. image:: img/DakotaStudy_MLMF_1.png
-   :alt: Welcome to the land of MLMF
+   :alt: The default MLMF editor
 
 The general process for creating a multi-level / multi-fidelity Dakota study in this editor is as follows:
 

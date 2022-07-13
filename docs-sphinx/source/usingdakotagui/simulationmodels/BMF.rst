@@ -95,4 +95,4 @@ Response Editor Controls
 The responses tab of the editor is a mirror of the variables tab:
 
 .. image:: img/NewDakotaStudy_SimModel_6.png
-   :alt: It feels like we've been here before...
+   :alt: The responses editor

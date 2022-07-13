@@ -7,7 +7,7 @@ Dakota Surrogates in Workflows
 The Dakota GUI supports replacing components of NGW workflows with Dakota-generated surrogates files.  To do this, drag a "surrogate" node onto the canvas (from the Dakota folder in the Palette).
 
 .. image:: img/NGW_Surrogates_1.png
-   :alt: An unassuming surrogate node
+   :alt: The surrogate node
 
 A new surrogate node will have no input or output ports until we associate it with a surrogate file.  Open the Settings Editor for the node and select a Dakota surrogate file (both .bin and .txt formats are supported).
 
@@ -17,9 +17,9 @@ A new surrogate node will have no input or output ports until we associate it wi
 After selecting the surrogate, the node will auto-create the necessary input and output ports to interface with the surrogate as part of a workflow.
 
 .. image:: img/NGW_Surrogates_3.png
-   :alt: Inputs and outputs galore!
+   :alt: The surrogate node with inputs and outputs
 
----
+|
 
 .. image:: img/NGW_Surrogates_4.png
    :alt: An example workflow using a surrogate node

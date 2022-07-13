@@ -13,7 +13,7 @@ If you wish to manually manage the raw transfer of information for these Dakota-
 the resulting analysis driver workflow will be more complex.
 
 .. image:: img/NewDakotaStudy_Drivers_Workflow_21.png
-   :alt: Yikes!
+   :alt: A complex workflow demonstrating manual transfer of Dakota parameters and responses
 
 Let's go through each of the changes:
 
@@ -33,8 +33,8 @@ Let's go through each of the changes:
    One last, but important note: When it comes time to :ref:`make the outer workflow that executes Dakota <wizards-newwrapperworkflow-main>`, you must
    make sure to alter the properties of the dakota node:
 
-.. image:: img/NewDakotaStudy_Drivers_Workflow_22.png
-   :alt: Uncheck these boxes, please
+   .. image:: img/NewDakotaStudy_Drivers_Workflow_22.png
+      :alt: Alter the Dakota node's automatic read and write settings
 
-By default, "automaticallyReadParameters" and "automaticallyWriteResults" will be checked, indicating to Next-Gen Workflow that it should handle the Dakota parameters/results
-files for you.  Unchecking both boxes will indicate that you wish to manually handle these files yourself.
+   By default, "automaticallyReadParameters" and "automaticallyWriteResults" will be checked, indicating to Next-Gen Workflow that it should handle the Dakota parameters/results
+   files for you.  Unchecking both boxes will indicate that you wish to manually handle these files yourself.

@@ -51,7 +51,7 @@ As discussed earlier, this could be a :ref:`BMF <bmf-main>` file, or possibly a 
 number of variables and responses found in that file:
 
 .. image:: img/NewDakotaStudy_Drivers_Python_4.png
-   :alt: It found variables and responses!
+   :alt: It found variables and responses
 
 For the second file selector field (“Select a simulation model file”), you are not required to use resources imported into the Dakota GUI workspace.
 You can browse to anywhere on your file system to get the simulation model file.  You could also simply type in the name of your simulation model executable file
@@ -74,12 +74,12 @@ Text Markup (APREPRO or DPREPRO)
 If you've defined APREPRO or DPREPRO as your preferred pre-processor in the :ref:`global Preferences for Dakota GUI <gui-preferences-highlighter>`, you will see the following page:
 
 .. image:: img/NewDakotaStudy_Drivers_Python_17.png
-   :alt: Time to markup
+   :alt: The pre-processing page
 
 All that is required on this page is to provide a marked-up template file using the "Template File" file selector:
 
 .. image:: img/NewDakotaStudy_Drivers_Python_19.png
-   :alt: I like when everything turns green, don't you?
+   :alt: A previously marked-up template file imported into the wizard
 
 After selecting a marked-up template file, the wizard will perform a check that compares detected markup in your file against the list of variable labels you provided earlier.
 If everything is good, all variables will have green checkmarks next to them in the "Markup Summary" group.  If a variable label could not be matched to any markup in the file,
@@ -101,12 +101,12 @@ Positional Pre-processing
 If you've defined Positional Pre-processing as your preferred pre-processor in the :ref:`global Preferences for Dakota GUI <gui-preferences-highlighter>`, you will see the following page:
 
 .. image:: img/NewDakotaStudy_Drivers_Python_6.png
-   :alt: Time to pre-process
+   :alt: The pre-processing page
 
 The "Template File" file selector allows you to provide an example input file that will be pre-processed at runtime.
 
 .. image:: img/NewDakotaStudy_Drivers_Python_7.png
-   :alt: It's never not a good time to pre-process
+   :alt: Pre-processing table populated
 
 Note that this wizard auto-populates the table with variable labels.  These variable labels came from the variable/response source file that you provided earlier.
 You may add or remove variables from this list if you wish (adding variables is not really recommended, but not disallowed either).
@@ -114,18 +114,18 @@ You may add or remove variables from this list if you wish (adding variables is 
 To add pre-processor information, select a variable from the list and then select "Edit Pre-processor."
 
 .. image:: img/NewDakotaStudy_Drivers_Python_8.png
-   :alt: Be sure to select a good text segment to pre-process
+   :alt: Select a good text segment to pre-process
 
 In this new dialog, highlight the portion of text you want to replace at runtime.  In the example screenshot below, the text "500" will be replaced by whatever value that Dakota
 provides for the input variable "horizontal".
 
 .. image:: img/NewDakotaStudy_Drivers_Python_9.png
-   :alt: How about this one?
+   :alt: A section of text has been selected
 
 When you're done, select OK.  Here is an example of what your wizard page could look like after filling in all of the input variables with positional pre-processor information.
 
 .. image:: img/NewDakotaStudy_Drivers_Python_10.png
-   :alt: Beautiful
+   :alt: All pre-processing variables are now associated with segments of text
    
 .. _wizards-scriptdriver-postpro:
 
@@ -136,7 +136,7 @@ Page 5 (Map Simulation Model Output to Dakota Responses)
 This page of the wizard is concerned with quantity of interest (QOI) extraction.
 
 .. image:: img/NewDakotaStudy_Drivers_Python_11.png
-   :alt: Here be QOI extractors
+   :alt: The post-processing page
 
 Again, the table is pre-populated with response labels extracted from your selected variable/response source file.  Like with the pre-processing page,
 you may add or remove responses (not recommended, but possible).
@@ -153,7 +153,7 @@ For each response label that is imported, click on its row in the table and sele
 When you're done, this page of the wizard will look something like this:
 
 .. image:: img/NewDakotaStudy_Drivers_Python_14.png
-   :alt: Ready to move on
+   :alt: The post-processing page, completed
 
 .. _wizards-scriptdriver-execution:
 
@@ -164,7 +164,7 @@ Page 6 (Execution)
 This last page of the wizard has several controls to help with the task of actually executing your simulation model.
 
 .. image:: img/NewDakotaStudy_Drivers_Python_15.png
-   :alt: We're nearly done!
+   :alt: The execution page
 
 Let’s go through the options one by one:
 

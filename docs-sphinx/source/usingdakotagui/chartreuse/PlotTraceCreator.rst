@@ -62,13 +62,13 @@ When you select the Get Data button from the Plot Trace Creator dialog, the foll
 You must satisfy this two-file requirement by selecting the original Dakota input file in the left tree view, and the tabular data file in the right tree view.
 
 .. image:: img/Plotting_TheBasics_9.png
-   :alt: But we're not quite done yet...
+   :alt: Select both the original Dakota input file and the tabular data file.
 
 In addition, tabular data files can contain more than one set of tabular data, so you will need to expand the tabular data file by clicking on the
 little arrow to its left, and choosing the proper tabular data set contained within.
 
 .. image:: img/Plotting_TheBasics_10.png
-   :alt: Ah, now we're done.
+   :alt: The dialog will allow you to finish once both files are selected.
 
 .. note::
    If you accidentally select the wrong Dakota input file or the wrong tabular data file, this dialog will warn you of a mismatch between the variable and response lists. 
@@ -81,7 +81,7 @@ little arrow to its left, and choosing the proper tabular data set contained wit
 Click OK to return to the Plot Trace Creator.  Note that the tabular data set we selected in the previous dialog, "Tabular Data Set 1", is now in the Plot Data group.
 
 .. image:: img/Plotting_TheBasics_5.png
-   :alt: Selected plot data
+   :alt: The Plot Trace Creator dialog looks like this with selected plot data.
 
 .. _chartreuse-getting-data-from-dakota-hdf5:
 
@@ -100,7 +100,7 @@ Suppose you have right-clicked a .h5 file created by Dakota, and then selected "
 button from the Plot Trace Creator dialog, you will be presented with the following data selection dialog:
 
 .. image:: img/Plotting_TheBasics_11.png
-   :alt: Yikes, this is even more confusing than the last dialog!
+   :alt: An example data selection dialog for Dakota-formatted HDF5 data.
 
 .. _dakota-hdf-discrete-state-set-name:
 
@@ -121,7 +121,7 @@ button from the Plot Trace Creator dialog, you will be presented with the follow
    If you select a dataset that doesn't exist, or is not plottable, this dialog will provide a warning.
 
 .. image:: img/Plotting_TheBasics_12.png
-   :alt: Selected HDF5 data
+   :alt: An example of data selected from a Dakota-formatted HDF5 database.
 
 .. _chartreuse-getting-data-from-hdf5:
 
@@ -145,12 +145,12 @@ Click on the Get Data button, and you'll be presented with this dialog.
 You are responsible for traversing the HDF5 database and locating the dataset you want to plot.
 
 .. image:: img/Plotting_TheBasics_14.png
-   :alt: Well, I found it, but now what?
+   :alt: An individually selected dataset
 
 You also must tell Chartreuse :ref:`how you want the dataset to be interpreted <chartreuse-plot-dataset-terminology>`.
 
 .. image:: img/Plotting_TheBasics_15.png
-   :alt: 1D or 2D, what's your flavor?
+   :alt: You must choose between one-dimensional data and two-dimensional data.
 
 Click OK when you are done.
 

@@ -405,7 +405,7 @@ since they are dependent on the configuration of the primary column.
 When we are done, our "Capture Additional Columns" section may look something like this:
 
 .. image:: img/QOI_20.png
-   :alt: Additional columns: captured!
+   :alt: Additional columns captured
 
 This states that we want to extract columns 1 and 2 as our dependent columns.  The exact values that we will end up keeping from columns 1
 and 2 will be dependent on the value of interest extracted from the main column (which should be a column other than 1 or 2).

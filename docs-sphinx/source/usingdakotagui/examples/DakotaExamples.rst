@@ -13,7 +13,7 @@ The Dakota GUI provides a Google-like search functionality that allows you to br
 You can access the Search dialog by right-clicking on an existing Dakota project and selecting New > Example Dakota project from the context menu.
 
 .. image:: img/DakotaStudyIntro_Search_2.png
-   :alt: Example Dakota project
+   :alt: "New > Example Dakota project" in context menu
 
 .. _gui-examples-offline:
 
@@ -24,10 +24,10 @@ Offline Examples Search
 The Search dialog is straightforward to use. Simply type in a keyword that represents what you're looking for and hit Search.
 
 .. image:: img/DakotaStudyIntro_Search_3.png
-   :alt: "No ''I'm feeling lucky'' button yet
+   :alt: The default search dialog
 
 .. image:: img/DakotaStudyIntro_Search_4.png
-   :alt: Hey, we got some results!
+   :alt: The default search dialog with results
 
 Select the input file you want and click "Import."  The Search dialog will either create a new project to hold this input file, or add it to your currently selected project.
 
@@ -51,7 +51,7 @@ Because the Dakota GUI communicates with the examples repository generically usi
 also :ref:`configure Dakota GUI to use a different Git repository, using the Preferences dialog <gui-preferences-dakota-examples>`.
 
 .. image:: img/DakotaStudyIntro_SearchOnline_3.png
-   :alt: Note the new buttons in the top-right
+   :alt: Note the new buttons in the top-right corner of the dialog
 
 If you have at least one Git repo available to you, and the Preferences dialog is configured to search Git repos, the search dialog works
 exactly the same as described previously – just type in a search term and hit Enter.  In the background, the search dialog will clone Dakota's examples repository,

@@ -91,6 +91,6 @@ Note that the canvas previews in the center of the dialog give us summary inform
 When you’re satisfied that you’re done, hit the Plot button to see your plot in the Plot View.
 
 .. image:: img/Plotting_MainWindow_6.png
-   :alt: Tada!
+   :alt: The finished, rendered plot
 
 If you did something wrong, or if you’re not satisfied with the way your plot looks, you can easily :ref:`go back to edit your plot <chartreuse-editing>`.

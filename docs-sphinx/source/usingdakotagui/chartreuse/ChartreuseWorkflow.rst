@@ -22,7 +22,7 @@ The configuration options for each node vary significantly.  To learn more about
 open the node in the Settings editor view and click on the small "?" button to the right of the Settings editor banner.
 
 .. image:: img/Plotting_HDF_3.png 
-   :alt: Sorry Mario, but your node documentation is in another manual...
+   :alt: Documentation for individual workflow nodes is available by clicking the small blue ? in the top-right corner of the dialog.
 
 ==========================================
 "Data Visualization (Chartreuse)" Category
@@ -102,19 +102,19 @@ Let's make this plot more interesting and add another trace to the same canvas.
   response column data to both scatter plot nodes, but each variable only goes to one of the scatter plot nodes.
 
 .. image:: img/Plotting_Workflow_7.png
-   :alt: Are we there yet?
+   :alt: Example of column extractors
 
 We need to combine the two plot traces onto one canvas so that they can be displayed together, so use a plotCanvas node from the Chartreuse folder.
 A plotCanvas node is somewhat unique in that it does not have any input ports by default, but we can create our own.  Create two new input ports for this node
 (call them trace1 and trace2), and draw connector lines from our two trace nodes' trace output ports to the two input ports you just created:
 
 .. image:: img/Plotting_Workflow_8.png
-   :alt: Almost ready...
+   :alt: Example of PlotCanvas node
 
 Don't forget to add a file node at the end to save our plot to a Chartreuse .plot file, like we did before:
 
 .. image:: img/Plotting_Workflow_14.png
-   :alt: Now it's ready
+   :alt: Final workflow for this tutorial
 
 Now try running this workflow.  We should get a plot where two traces are overlaid on each other on the same canvas:
 
@@ -140,7 +140,7 @@ plotCanvas nodes) we will need a new type of node to aggregate canvases together
 When you're done, your workflow should look something like this:
 
 .. image:: img/Plotting_Workflow_10.png
-   :alt: This is getting complicated...
+   :alt: Example workflow using both PlotCanvas and PlotWindow nodes
 
 Running the workflow should produce the following:
 
@@ -154,7 +154,7 @@ Running the workflow should produce the following:
 In the "Data Visualization (Dakota/Chartreuse Simple Plots)" folder, a library of simple plotting nodes are available.
 
 .. image:: img/Plotting_HDF_1.png
-   :alt: Even more plotting nodes?!
+   :alt: "Data Visualization (Dakota/Chartreuse Simple Plots)" nodes
 
 Note that many of these plot nodes' names are prefixed by "hdf".  *Most nodes in this folder require a Dakota-generated HDF5 database file to work properly.*
 
@@ -163,7 +163,7 @@ If you drag one of these plot nodes onto the workflow canvas, note that only one
 one input port that manages everything leads to much simpler-looking workflows.  For example:
 
 .. image:: img/Plotting_HDF_2.png
-   :alt: No need to wire a bunch of column extractor nodes together...
+   :alt: A simpler HDF-style workflow
 
 These HDF5-based plotting nodes can produce much more sophisticated plots that simply weren't possible with the column-extracting approach.
 

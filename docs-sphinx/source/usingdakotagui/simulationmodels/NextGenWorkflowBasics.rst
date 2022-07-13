@@ -37,7 +37,7 @@ Take a moment to familiarize yourself with the controls in this view that are co
 To learn more about each NGW node's configuration options, click on the small "?" button to the right of the Settings editor banner.
 
 .. image:: img/Plotting_HDF_3.png
-   :alt: Sorry Mario, but your node documentation is in another manual...
+   :alt: Use the small blue ? button in the top-right corner to access node documentation
 
 =================
 Running Workflows

@@ -27,6 +27,7 @@ shown below:
 
 .. image:: img/InputBlocks.png
    :width: 400
+   :align: center
    :alt: Relationship between the six blocks, for a simple study.
 
 It can be summarized as follows: In each iteration of its algorithm, a method block requests a variables-

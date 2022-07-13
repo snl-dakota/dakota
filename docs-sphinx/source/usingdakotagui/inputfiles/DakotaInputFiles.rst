@@ -66,12 +66,12 @@ Suppose we start with an empty environment block.
 With the text cursor on "environment," press Ctrl+Space (Command+Space on Mac.)  The following context menu will appear with recommendations for which keywords to include in your environment block.
 
 .. image:: img/DakotaStudyIntro_Completion_2.png
-   :alt: So many keywords, so little time...
+   :alt: Completion proposals sub-menu
 
 As stated earlier, if you have block pointers specified elsewhere in your study, completion proposals can also recommend which blocks to point at:
 
 .. image:: img/DakotaStudyIntro_Completion_3.png
-   :alt: Point me at the sky
+   :alt: Pointer options
 
 .. _gui-inputfiles-blockrecipes:
 

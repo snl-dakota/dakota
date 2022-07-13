@@ -23,7 +23,7 @@ The Top Level
 When first opened, the Dakota Visual Editor shows you the top level of a Dakota input file:
 
 .. image:: img/DakotaVisualEditor_2.png
-   :alt: The beginning of a beautiful friendship
+   :alt: The top level
 
 The hiearchical relationship of Dakota blocks is made explicit through indentation.  Clicking on any Dakota block will take you to the editor for that block.
 
@@ -61,7 +61,7 @@ that clearly demonstrates the benefits of using the Dakota Visual Editor: center
 Classically, a method block specifying :ref:`centered_parameter_study <method-centered_parameter_study>` would be written as follows in a Dakota input file:
 
 .. image:: img/DakotaVisualEditor_9.png
-   :alt: The old way of doing things... yuck!
+   :alt: The old way of doing things in a method block
 
 The :ref:`step_vector <method-centered_parameter_study-step_vector>` keyword is followed by a series of values, where each value relates to the variable that is
 in that same index in the variables block.  Likewise for the :ref:`steps_per_variable <method-centered_parameter_study-steps_per_variable>` keyword.

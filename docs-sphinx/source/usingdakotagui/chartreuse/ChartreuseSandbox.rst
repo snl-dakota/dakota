@@ -21,7 +21,7 @@ By default, the Chartreuse Sandbox View is hidden.  It can be activated in one o
 - Open the "Show View" dialog by selecting Window > Show View > Other..., then selecting Chartreuse > Sandbox.
 
 .. image:: img/Plotting_Sandbox_1.png
-   :alt: Manually activate the Sandbox View
+   :alt: In the "Show View" dialog, the Sandbox view is located under the Chartreuse folder.
 
 .. _chartreuse-sandbox-main-supported-sources:
 
@@ -58,12 +58,12 @@ to enable the "Auto-Visualize Variable" button.  The variables selected must bel
 Selecting this button will immediately visualize the **probability density function** for each variable in the Sandbox.
 
 .. image:: img/Plotting_Sandbox_2.png
-   :alt: Auto-Visualize Variable" button
+   :alt: The location of the "Auto-Visualize Variable" button near the variables table
 
 For example, suppose we send both x1 and x2 to the Sandbox.  We will see the PDF of their normal uncertainty distributions right away:
 
 .. image:: img/Plotting_Sandbox_4.png
-   :alt: PDF curves for x1 and x2
+   :alt: Example PDF curves for the x1 and x2 variables
 
 .. note::
    Viewing Dakota variables in their category-specific tables allows for quick editing of the variable's properties.  This makes it extremely easy
@@ -71,7 +71,7 @@ For example, suppose we send both x1 and x2 to the Sandbox.  We will see the PDF
    dropdown allows you to switch which variable table you are viewing.
 
 .. image:: img/Plotting_Sandbox_3.png
-   :alt: The table for normal variables
+   :alt: Normal variables in the variables table
 
 ----------------------------------------
 Method 2:  Project Explorer Context Menu
@@ -82,7 +82,7 @@ Select "Chartreuse" in the context menu, then the "Fast plot in sandbox" sub-men
 quickly with no configuration.
 
 .. image:: img/Plotting_Sandbox_5.png
-   :alt: Fast plot context menu
+   :alt: The location of "Fast plot in sandbox" submenu in the Chartreuse context menu
 
 For example, let's continue with the example of two Dakota normal uncertain variables x1 and x2.  Suppose we ran a sampling study in Dakota
 using x1 and x2, and we generated a tabular data file containing data for the variables.  Selecting the histogram option will overlay a histogram
@@ -95,7 +95,7 @@ over each variable curve, showing the rough correspondence between the expected 
    The first time you send file data to the Sandbox, you may see this dialog asking which datasets you want to send to the Sandbox:
 
    .. image:: img/Plotting_Sandbox_7.png
-      :alt: What data should be sent?
+      :alt: The Plot Sandbox Options dialog
 
    Depending on what you want to do, you may want to send all the file data to the Sandbox, or only the data matching labels that are already in the
    Sandbox (what we did in the previous example), or even the data that doesn't match the labels in the Sandbox.  It just depends on what you want to visualize.
@@ -110,7 +110,7 @@ Options
 Once you have some data in the Sandbox view, you have some options for how to manipulate it.
 
 .. image:: img/Plotting_Sandbox_8.png
-   :alt: Sandbox options
+   :alt: Sandbox View options
 
 - **Save** Save the plot to a file.  You can choose .plot (native Chartreuse format), .png (still screenshot), or .html (for web-based viewing of the plot).
 - **Edit** Change the label of any given canvas in the Sandbox.  Note that this will impact data grouping if you later try to automatically combine plots with matching data labels.

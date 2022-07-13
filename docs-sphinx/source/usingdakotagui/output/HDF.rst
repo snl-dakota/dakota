@@ -51,12 +51,12 @@ incorporation of the `HDF Group's HDFView <https://support.hdfgroup.org/products
 Clicking on the small arrow next to our h5 file will expand it to the first level of data contained within. 
 
 .. image:: img/HDF_Browsing_1.png 
-   :alt: The potential is there
+   :alt: A collapsed h5 file
 
 The data contained in HDF5 files are primarily composed of **groups** and **datasets** which roughly correspond to the idea of folders and files in an operating system:
 
 .. image:: img/HDF_Browsing_2.png
-   :alt: Just your average HDF5 file
+   :alt: An expanded h5 file
 
 This is what an average Dakota HDF5 file looks like after expanding a few of the folders.  Groups are designated by folder icons, whereas datasets are designated by page icons.
 

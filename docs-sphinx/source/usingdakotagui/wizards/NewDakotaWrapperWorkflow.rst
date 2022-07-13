@@ -44,4 +44,4 @@ to select the target IWF file.  If you used the context menu option for launchin
 Hitting Finish will generate a run-ready workflow that executes your Dakota study in concert with your chosen IWF file as the analysis driver (via the dakotaWorkflowDriver node):
 
 .. image:: img/WrapperWorkflowWizard_4.png
-   :alt: Run rabbit run
+   :alt: A run-ready workflow

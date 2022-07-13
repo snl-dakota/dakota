@@ -12,7 +12,7 @@ Color scales allow you to customize a gradient of colors for your plot.  Here is
 Color scales are made up of one or more rows of colors.  Each row has its own button bar for individual customization:
 
 .. image:: img/Plotting_ColorScale_2.png
-   :alt: More button icons that need to be explained...
+   :alt: Color scale option buttons
 
 - **Set Color (the color wheel icon)** Choose a color for this row.
 - **Move Up** Move the row upwards in the list of colors.
@@ -33,7 +33,7 @@ Note that color scales do not permit out-of-order color transition values.  The 
 Finally, there are two more buttons to explain:
 
 .. image:: img/Plotting_ColorScale_3.png
-   :alt: I'll throw in two more buttons, just for you
+   :alt: The "Add" and "Color Scale Template" buttons
 
 - **Add (the blue plus icon)** Adds another row to the color scale.
 - **Use Color Scale Template (the wizard icon)** Choose from a library of color scale templates.
@@ -41,9 +41,9 @@ Finally, there are two more buttons to explain:
   - See `Color Map Advice for Scientific Visualization" by Kenneth Moreland. <https://www.kennethmoreland.com/color-advice/>`__
 
 .. image:: img/Plotting_ColorScale_4.png
-   :alt: Pretty colors!
+   :alt: Available color scale templates
   
----
+|
 
 .. image:: img/Plotting_ColorScale_5.png
-   :alt: Color scale templates save you a lot of time.  You're welcome.
+   :alt: Example color scale template, after being applied
