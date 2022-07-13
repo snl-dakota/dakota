@@ -36,7 +36,7 @@ From left to right, the icons represent the following actions:
 * **Save** Saves the currently selected file if there are unsaved changes (grayed out if there are no changes to save).
 * **Save All** Saves all files in the workspace that have unsaved changes (grayed out if there are no changes to save).
 * **Debug** Runs a debug configuration (currently not implemented in the Dakota GUI)
-* **Run** Runs a run configuration.  Refer to the chapter on :ref:`running Dakota <gui-run-configurations-main>` for more information on using run configurations.
+* **Run** Runs a run configuration.  Refer to the section on :ref:`running Dakota <gui-run-configurations-eclipse-run-configs>` for more information on using run configurations.
 * **Back** Eclipse applications keep a history of which files you have viewed. This Back button returns to the last file viewed.
 * **Forward** Go forward in history to the next most recently viewed file.
  
@@ -127,7 +127,7 @@ A "launch configuration" is a template for running an external process (namely, 
 of running Dakota studies in the GUI.  There are two main types of launch configurations in the Eclipse world – "run configurations" and "debug configurations."
 Debug configurations are not implemented currently in the Dakota GUI, so this user manual will focus primarily on run configurations.
 
-For more information on how to set up run configurations, :ref:`refer the manual section on run configurations <gui-run-configurations-main>`.
+For more information on how to set up run configurations, :ref:`refer the manual section on run configurations <gui-run-configurations-eclipse-run-configs>`.
 
 .. _gui-eclipse-file_import:
 

@@ -63,14 +63,14 @@ Then, draw two connector lines from the file node's "dataOut" port to both colum
 Now, open the Chartreuse folder in the Palette and drag "traceScatterPlot2d" onto the canvas.  Note that it has two input ports – "X" and "Y."  We will drag
 connectors from our two column nodes' "stdout" ports to these two input ports.
 
-.. image:: img/Plotting_Workflow_4.png
+.. image:: img/Plotting_Workflow_4.PNG
    :alt: A traceScatterPlot2d node
 
 If you open the Settings editor view for the traceScatterPlot2d, you will notice that many of the
 :ref:`same configuration settings for 2D scatter plots <chartreuse-plot-trace-scatter-2d>` that were available in the
 :ref:`Plot Trace Creator <chartreuse-plot-trace>` dialog are available here as well:
 
-.. image:: img/Plotting_Workflow_5.png
+.. image:: img/Plotting_Workflow_5.PNG
    :alt: The Settings editor
 
 Finally, we need to send our plot to a file to be able to view it.  Drag a "file" node from the "File Operations" folder onto the canvas, and connect the

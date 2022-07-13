@@ -55,8 +55,9 @@ can be viewed if you hover over the red X icons to the left; doing this provides
 Completion Proposals
 --------------------
 
-Completion proposals are context-sensitive recommendations provided by the Dakota text editor.  If you are writing a Dakota text file, completion proposals can tell you which keywords are
-legally allowed to come next.  Completion proposals can also give you clues about values to use for new id_* and *\_pointer keywords.
+Completion proposals are context-sensitive recommendations provided by the Dakota text editor.  If you are writing a Dakota text file,
+completion proposals can tell you which keywords are legally allowed to come next.  Completion proposals can also give you clues
+about values to use for new id\_\* and \*\_pointer keywords.
 
 Suppose we start with an empty environment block.
 

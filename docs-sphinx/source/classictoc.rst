@@ -136,7 +136,7 @@ set of manuals, this set of links may help you find what you're looking for...
 - :ref:`Context Menu Tools <gui-context-tools-main>`
 - :ref:`Dakota Examples <gui-examples-main>`
 - :ref:`Dakota Input Files <gui-inputfiles-main>`
-- :ref:`Dakota Run Configurations <gui-run-configurations-main>`
+- :ref:`Dakota Run Configurations <gui-run-configurations-eclipse-run-configs>`
 - :ref:`Dakota Visual Editor <gui-visual-editor-main>`
 - :ref:`Eclipse <gui-eclipse-main>`
 - :ref:`HDF <gui-hdf-main>`
