@@ -197,8 +197,7 @@ prior covariance into its Cholesky factors, resulting in
          \boldsymbol{L}_{\boldsymbol{0}}^{-1}\end{aligned}
 
 where we again simplify notation to represent
-:math:`\nabla^2_{\boldsymbol{\theta}} 
-  \left[ -\log(\pi_{\rm post}(\boldsymbol{\theta})) \right]` as
+:math:`\nabla^2_{\boldsymbol{\theta}} \left[ -\log(\pi_{\rm post}(\boldsymbol{\theta})) \right]` as
 :math:`\boldsymbol{H_{\rm nlpost}}` and
 :math:`\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta})` as
 :math:`\boldsymbol{H_M}`. The inverse of this matrix is then
@@ -1225,7 +1224,8 @@ posterior will be equal to the prior. Approximating this posterior
 density requires an approximation of the push-forward of the prior,
 which is simply a forward propagation of uncertainty.
 
+TODO: End of this chapter got truncated
+
 .. [1]
    The two-dimensional Rosenbrock test function is defined as
-   :math:`100 (x_2 -
-     x_1^2)^2 + (1 - x_1)^2`
+   :math:`100 (x_2 - x_1^2)^2 + (1 - x_1)^2`

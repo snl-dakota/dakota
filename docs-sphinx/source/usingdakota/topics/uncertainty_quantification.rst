@@ -60,27 +60,10 @@ second-order probability, and Dempster-Shafer theory of
 evidence. These involve advanced model recursions and are described in
 Section<!-- TODO ~{adv_models:mixed_uq}-->.
 
-:ref:`Dakota<Dakota>` contains capabilities for performing nondeterministic analysis
-with both types of input uncertainty. These UQ methods have been
-developed by Sandia Labs, in conjunction with collaborators in
-academia :cite:p:`Gha99`, :cite:p:`Gha91`, :cite:p:`Eld05`, :cite:p:`Tang10a`.
-
-The aleatory UQ methods in Dakota include various sampling-based
-approaches (e.g., Monte Carlo and Latin Hypercube sampling), local and
-global reliability methods, and stochastic expansion (polynomial chaos
-expansions and stochastic collocation) approaches. The epistemic UQ
-methods include local and global interval analysis and Dempster-Shafer
-evidence theory. These are summarized below and then described in more
-depth in subsequent sections of this chapter. Dakota additionally
-supports mixed aleatory/epistemic UQ via interval-valued probability,
-second-order probability, and Dempster-Shafer theory of
-evidence. These involve advanced model recursions and are described in
-Section<!-- TODO ~{adv_models:mixed_uq} :ref:`of<of>` the User manual-->.
-
 The choice of uncertainty quantification method depends on how the
 input uncertainty is characterized, the computational budget, and the
 desired output accuracy.  The recommendations for UQ methods are
-summarized in Table<!-- TODO ~{usage:guideuq}--> :ref:`and<and>` are discussed in the
-remainder of the section.
+summarized in a :ref:`UQ Guidelines Table<usage:guideuq>` are
+discussed in the remainder of the section.
 
 TODO: Put table in Doxygen if still needed

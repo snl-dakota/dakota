@@ -1,4 +1,4 @@
-.. _git-submodules:
+.. _git-helpfulcommands:
 
 """"""""""""""""""""
 Helpful git commands

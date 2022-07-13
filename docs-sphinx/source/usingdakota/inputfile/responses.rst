@@ -178,20 +178,28 @@ reflecting the current parameters and corresponding to the function
 requests in the active set vector. The response data must be in the
 format shown in Figure `[responses:figure01] <#responses:figure01>`__.
 
-.. container:: bigbox
+TODO: Figure with
+caption {Results file data format.}
+label {responses:figure01}
 
-   | ``<double>``\ :raw-latex:`\ `\ ``<fn_label``\ :math:`\sb{1}`\ ``>``
-   | ``<double>``\ :raw-latex:`\ `\ ``<fn_label``\ :math:`\sb{2}`\ ``>``
-   | ``...``
-   | ``<double>``\ :raw-latex:`\ `\ ``<fn_label``\ :math:`\sb{m}`\ ``>``
-   | ``[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]``
-   | ``[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]``
-   | ``...``
-   | ``[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]``
-   | ``[[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]]``
-   | ``[[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]]``
-   | ``...``
-   | ``[[``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``..``\ :raw-latex:`\ `\ ``<double>``\ :raw-latex:`\ `\ ``]]``
+.. code-block::
+
+   <double> <fn_label_1>
+   <double> <fn_label_2>
+   ...
+   <double> <fn_label_m>
+   [ <double> <double> .. <double> ]
+   [ <double> <double> .. <double> ]
+   ...
+   [ <double> <double> .. <double> ]
+   [[ <double> <double> .. <double> ]]
+   [[ <double> <double> .. <double> ]]
+   ...
+   [[ <double> <double> .. <double> ]]
+   <double> <md_label_1>
+   <double> <md_label_2)>
+   ...
+   <double> <md_label_r)>
 
 The first block of data (shown in black) conveys the requested function
 values and is followed by a block of requested gradients (shown in

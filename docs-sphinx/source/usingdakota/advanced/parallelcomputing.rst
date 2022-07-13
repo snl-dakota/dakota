@@ -1348,6 +1348,8 @@ nonblocking synchronization is only supported at the concurrent function
 evaluation level, although it spans asynchronous local, message passing,
 and hybrid parallelism options.
 
+TODO: Table caption not rendering correctly; check table layout
+
 .. container::
    :name: parallel:table01
 
@@ -1355,42 +1357,42 @@ and hybrid parallelism options.
    levels. Shown in parentheses are supported simulation interfaces and
    supported synchronization approaches.
 
-      +----------------+----------------+----------------+----------------+
-      | **Parallelism  | **Asynchronous | **Message      | **Hybrid**     |
-      | Level**        | Local**        | Passing**      |                |
-      +================+================+================+================+
-      | concurrent     |                | **X**          |                |
-      | iterators      |                |                |                |
-      | within a       |                |                |                |
-      +----------------+----------------+----------------+----------------+
-      | meta-iterator  |                | (blocking      |                |
-      | or nested      |                | synch)         |                |
-      | model          |                |                |                |
-      +----------------+----------------+----------------+----------------+
-      | concurrent     | **X**          | **X**          | **X**          |
-      | function       |                |                |                |
-      | evaluations    |                |                |                |
-      +----------------+----------------+----------------+----------------+
-      | within an      | (system, fork) | (system, fork, | (system, fork) |
-      | iterator       |                | direct)        |                |
-      +----------------+----------------+----------------+----------------+
-      |                | (blocking,     | (blocking,     | (blocking,     |
-      |                | nonblocking)   | nonblocking)   | nonblocking)   |
-      +----------------+----------------+----------------+----------------+
-      | concurrent     | **X**          | **X**          | **X**          |
-      | analyses       |                |                |                |
-      +----------------+----------------+----------------+----------------+
-      | within a       | (fork only)    | (system, fork, | (fork only)    |
-      | function       |                | direct)        |                |
-      | evaluation     |                |                |                |
-      +----------------+----------------+----------------+----------------+
-      |                | (blocking      | (blocking      | (blocking      |
-      |                | synch)         | synch)         | synch)         |
-      +----------------+----------------+----------------+----------------+
-      | fine-grained   |                | **X**          |                |
-      | parallel       |                |                |                |
-      | analysis       |                |                |                |
-      +----------------+----------------+----------------+----------------+
+   +----------------+----------------+----------------+----------------+
+   | **Parallelism  | **Asynchronous | **Message      | **Hybrid**     |
+   | Level**        | Local**        | Passing**      |                |
+   +================+================+================+================+
+   | concurrent     |                | **X**          |                |
+   | iterators      |                |                |                |
+   | within a       |                |                |                |
+   +----------------+----------------+----------------+----------------+
+   | meta-iterator  |                | (blocking      |                |
+   | or nested      |                | synch)         |                |
+   | model          |                |                |                |
+   +----------------+----------------+----------------+----------------+
+   | concurrent     | **X**          | **X**          | **X**          |
+   | function       |                |                |                |
+   | evaluations    |                |                |                |
+   +----------------+----------------+----------------+----------------+
+   | within an      | (system, fork) | (system, fork, | (system, fork) |
+   | iterator       |                | direct)        |                |
+   +----------------+----------------+----------------+----------------+
+   |                | (blocking,     | (blocking,     | (blocking,     |
+   |                | nonblocking)   | nonblocking)   | nonblocking)   |
+   +----------------+----------------+----------------+----------------+
+   | concurrent     | **X**          | **X**          | **X**          |
+   | analyses       |                |                |                |
+   +----------------+----------------+----------------+----------------+
+   | within a       | (fork only)    | (system, fork, | (fork only)    |
+   | function       |                | direct)        |                |
+   | evaluation     |                |                |                |
+   +----------------+----------------+----------------+----------------+
+   |                | (blocking      | (blocking      | (blocking      |
+   |                | synch)         | synch)         | synch)         |
+   +----------------+----------------+----------------+----------------+
+   | fine-grained   |                | **X**          |                |
+   | parallel       |                |                |                |
+   | analysis       |                |                |                |
+   +----------------+----------------+----------------+----------------+
 
 .. _`parallel:running`:
 

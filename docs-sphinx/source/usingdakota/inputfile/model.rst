@@ -1055,9 +1055,9 @@ or more of:
 
 -  ``max_abs``: :math:`\max_i \left| o(x_i) - p(x_i) \right|`
 
--  ``rsquared`` :math:`R^2 = \frac{\sum_{i=1}^{n}{\left(p_i -
-           \bar{o}\right)^2}}{ \sum_{i=1}^{n}{\left(o_i -
-           \bar{o}\right)^2}}`
+-  ``rsquared``: :math:`R^2 = \frac{\sum_{i=1}^{n}{\left(p_i -
+   \bar{o}\right)^2}}{ \sum_{i=1}^{n}{\left(o_i -
+   \bar{o}\right)^2}}`
 
 Here, :math:`n` is the number of data points used to create the model,
 and :math:`\bar{o}` is the mean of the true response values.

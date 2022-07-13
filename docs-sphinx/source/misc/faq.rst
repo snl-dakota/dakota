@@ -130,7 +130,7 @@ Feature Additions
     - If you wish to submit a patch or larger changeset, please discuss on the dakota-users mailing list.
     - A Dakota development team member will ask you to submit the changes via email or (if large enough) our file transfer system.
 
-.. _faq-support
+.. _faq-support:
 
 =======
 Support

@@ -579,8 +579,7 @@ indicated by :math:`\rho_\ell` in the previous equations. Assuming the
 vector :math:`r_\ell` as a parameter, the variance is minimized per
 level, mimicking the standard control variate approach, and thus
 obtaining the optimal coefficient as
-:math:`\alpha_\ell = -\rho_\ell \sqrt{ \dfrac{ \mathbb{V}ar\left( Y^{\mathrm{HF}}_{\ell} \right) } 
-                                { \mathbb{V}ar\left( Y^{\mathrm{LF}}_{\ell}  \right)     }}`.
+:math:`\alpha_\ell = -\rho_\ell \sqrt{ \dfrac{ \mathbb{V}ar\left( Y^{\mathrm{HF}}_{\ell} \right) }{ \mathbb{V}ar\left( Y^{\mathrm{LF}}_{\ell}  \right)     }}`.
 By making use of the optimal coefficient :math:`\alpha_\ell`, it is
 possible to show that the variance
 :math:`\mathbb{V}ar\left(Y^{\mathrm{HF},\star}_{\ell}\right)` is
