@@ -96,7 +96,7 @@ Chartreuse
 - **Plotting Library** This setting allows you to control which underlying plotting library is used to render graphical plots.
 - **Default Color Scale** This setting allows you to decide which color scale is used by default for plots requiring a color scale (for instance, heatmaps).
 
-  - See `"Color Map Advice for Scientific Visualization" by Kenneth Moreland. <https://http://www.kennethmoreland.com/color-advice/>`__
+  - See `"Color Map Advice for Scientific Visualization" by Kenneth Moreland. <https://www.kennethmoreland.com/color-advice/>`__
 
 .. _gui-preferences-highlighter:
 

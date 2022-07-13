@@ -10,7 +10,7 @@ This section is intended for users who are new to Dakota, to demonstrate the bas
 First Steps
 ===========
 
-1. Make sure Dakota runs. You should see Dakota version information when you type ``dakota -v``.
+1. After :ref:`downloading Dakota <setupdakota-download>`, make sure that Dakota runs. You should see Dakota version information when you type ``dakota -v``.
 2. Create a working directory.
 3. Copy ``rosen_multidim.in`` from the ``dakota/share/dakota/examples/users/`` directory to your working directory.
 4. From the working directory, run:
