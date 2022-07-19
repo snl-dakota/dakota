@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -598,20 +598,22 @@ void Optimizer::post_run(std::ostream& s)
     // this will retrieve primary functions of size best (possibly
     // expanded, but not differenced with replicate data)
     if (localObjectiveRecast) {
-
-      local_recast_retrieve(best_vars, best_resp);
-      // BMA TODO: if retrieved the best fns/cons from DB, why unscaling cons?
-      // Would need this if looking up only primary fns in DB
-      // if (secondaryRespScaleFlag || 
-      // 	  need_resp_trans_byvars(best_resp.active_set_request_vector(),
-      // 				 numUserPrimaryFns, numNonlinearConstraints)) {
-      // 	Response tmp_response = best_resp.copy();
-      // 	response_modify_s2n(best_vars, best_resp, tmp_response,
-      // 			    numUserPrimaryFns, numNonlinearConstraints);
-      // 	best_resp.update_partial(numUserPrimaryFns, numNonlinearConstraints,
-      // 				 tmp_response, numUserPrimaryFns);
-      // }
-      //    }
+      bool resp_found = local_recast_retrieve(best_vars, best_resp);
+      if (!resp_found && scaleFlag && numNonlinearConstraints > 0) {
+	// if the response is not found via lookup, the constraints
+	// still need to be scaled back to native space.
+	std::shared_ptr<ScalingModel> scale_model_rep =
+	  std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
+	RealVector best_fns = best_resp.function_values_view();
+	// only requesting scaling of constraints, so no need for variable Jacobian
+	activeSet.request_values(1);
+	// the size of the Iterator's primary fns may differ from the
+	// user/best size due, e.g., to data transformations, so call with
+	// a start index for number of user primary fns.
+	scale_model_rep->
+	  secondary_resp_scaled2native(best_fns, activeSet.request_vector(),
+				       numUserPrimaryFns, best_fns);
+      }
     }
     // just unscale if needed
     else if (scaleFlag) {

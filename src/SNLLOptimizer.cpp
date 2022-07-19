@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -1081,18 +1081,19 @@ void SNLLOptimizer::post_run(std::ostream& s)
   snll_post_run(nlfObjective);
 
   // update best response to contain the final objectives/constraints
+  RealVector best_fns(bestResponseArray.front().num_functions());
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
-    RealVector best_fns(numFunctions);
     const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
     // see opt++/libopt/nlp.h
     best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
       -nlfObjective->getF() : nlfObjective->getF();
-    // OPT++ expects nonlinear equations followed by nonlinear inequalities.
-    // Therefore, reorder the constraint values.
-    copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), best_fns, 1);
-    bestResponseArray.front().function_values(best_fns);
   }
+  // OPT++ expects nonlinear equations followed by nonlinear inequalities.
+  // Therefore, reorder the constraint values.
+  copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), best_fns,
+			     numUserPrimaryFns);
+  bestResponseArray.front().function_values(best_fns);
 
   // Best functions now contain objective with correct sense and
   // constraints; this will handle any unscaling:

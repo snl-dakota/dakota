@@ -6979,6 +6979,10 @@ KEYWORD interface {N_ifm3(start,0,stop)}
       [ processors_per_analysis INTEGER > 0 {N_ifm(int,procsPerAnalysis)} ]
      )
     |
+    ( plugin {N_ifm(type,interfaceType_PLUGIN_INTERFACE)}
+      library_path STRING {N_ifm(str,pluginLibraryPath)}
+     )
+    |
     matlab {N_ifm(type,interfaceType_MATLAB_INTERFACE)}
     |
     ( python {N_ifm(type,interfaceType_PYTHON_INTERFACE)}

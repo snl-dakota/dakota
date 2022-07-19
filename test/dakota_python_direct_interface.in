@@ -1,10 +1,15 @@
-#@ *: DakotaConfig=DAKOTA_PYTHON
+#@ *: DakotaConfig=DAKOTA_PYTHON_DIRECT_INTERFACE
 #@ *: ReqFiles=driver_text_book.py
 
 method,
   output normal
   list_parameter_study
-  list_of_points = 0. 0. 0.
+  list_of_points = 0. 0. 0.		#s0
+#  list_of_points = 0.0  0.0  0.0	#s1
+#                   0.5  0.5  0.5	#s1
+#                   1.0  0.0  0.0 	#s1
+#                   0.0  2.0  0.0 	#s1
+#                   0.0  0.0  3.0 	#s1
 
 variables,
   continuous_design = 3
@@ -34,11 +39,15 @@ variables,
 
 interface,
     python
-      analysis_driver = 'driver_text_book:text_book'
+      analysis_driver = 'driver_text_book:text_book'		#s0
+#      analysis_driver = 'driver_text_book:text_book_batch'	#s1
+#      batch							#s1
 
 responses,
+  descriptors = 'f1' 'c1' 'c2'
   num_objective_functions = 1
   nonlinear_inequality_constraints = 2
   nonlinear_inequality_upper_bounds = 0.0 0.0
+  metadata = 'm1' 'm2'
   analytic_gradients
   analytic_hessians

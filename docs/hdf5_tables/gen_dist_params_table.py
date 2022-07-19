@@ -70,7 +70,7 @@ def print_footer():
 
 all_types = {}
 with h5py.File("dist_params.h5","r") as h:
-    md = h["models/simulation/NO_MODEL_ID/metadata/variable_parameters"]
+    md = h["models/simulation/NO_MODEL_ID/properties/variable_parameters"]
     for name, data in md.items():
         all_types[name] = {"first_id":data.dims[0][1][0],
                 "params":[]}

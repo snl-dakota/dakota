@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -1105,7 +1105,8 @@ recover_submodel_responses(std::ostream& s,
     s << "<<<<< Best model responses ";
   else
     s << "<<<<< Best model response ";
-  if (num_best > 1) s << "(set " << best_ind+1 << ") "; s << "\n";
+  if (num_best > 1) s << "(set " << best_ind+1 << ") ";
+  s << "\n";
 
   // first try cache lookup
 
@@ -1119,6 +1120,7 @@ recover_submodel_responses(std::ostream& s,
   String interface_id = subModel.interface_id();
   Response lookup_resp = subModel.current_response().copy();
   ActiveSet lookup_as = lookup_resp.active_set();
+  // TODO: don't need to lookup constraints here...
   lookup_as.request_values(1);
   lookup_resp.active_set(lookup_as);
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
@@ -1138,6 +1140,8 @@ recover_submodel_responses(std::ostream& s,
     // BMA: why is this necessary?  Should have a reference to same object as PRP
     lookup_pr.variables(lookup_vars);
     PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
+
+    // TODO: allow exact or partial match...
     if (cache_it == data_pairs.get<hashed>().end()) {
 
       // If model is a data fit surrogate, re-evaluate it if needed.
@@ -1160,15 +1164,19 @@ recover_submodel_responses(std::ostream& s,
       else {
         // BMA TODO: Consider NaN so downstream output isn't misleading
         lookup_failure = true;
-        s << "Could not retrieve best model responses (experiment " << i+1 
-          << ")";
+        s << "<<<<< Best model responses (experiment " << i+1
+          << ") not available\n";
       }
     }
     else {
       model_resp = cache_it->response();
     }
 
-    if (!lookup_failure) {
+    if (lookup_failure) {
+      // print eval IDs for any partial matches
+      Minimizer::print_best_eval_ids(interface_id, lookup_vars, lookup_as, s);
+    }
+    else {
       expData.form_residuals(model_resp, i, residual_resp);
 
       // By including labels, this deviates from other summary function output
@@ -1179,6 +1187,7 @@ recover_submodel_responses(std::ostream& s,
       write_data_partial(s, (size_t)0, subModel.num_primary_fns(),
                          model_resp.function_values(),
                          model_resp.function_labels());
+      Minimizer::print_best_eval_ids(interface_id, lookup_vars, lookup_as, s);
     }
   }
 

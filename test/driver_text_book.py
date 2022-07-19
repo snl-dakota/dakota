@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -18,6 +18,8 @@ def text_book_numpy(params):
     ASV = params["asv"]
 
     retval = {}
+
+    retval["metadata"] = np.array([5., 10.])
 
     if (ASV[0] & 1):  # **** f:
         fn = sum([(val - 1.)**4 for val in x])
@@ -78,6 +80,8 @@ def text_book_list(params):
     ASV = params['asv']
 
     retval = {}
+
+    retval["metadata"] = [5., 10.]
 
     if (ASV[0] & 1):  # **** f:
         fn = 0.0
@@ -154,10 +158,13 @@ def check_expected_params(params):
     expected_params["div_labels"] = ["z1", "z2", "z3"]
     expected_params["dsv_labels"] = ["s1"]
     expected_params["drv_labels"] = ["y1", "y2"]
-    expected_params["all_labels"] = expected_params["cv_labels"] \
+    expected_params["variable_labels"] = expected_params["cv_labels"] \
         + expected_params["div_labels"] \
         + expected_params["dsv_labels"] \
         + expected_params["drv_labels"]
+
+    expected_params["function_labels"] = ["f1", "c1", "c2"]
+    expected_params["metadata_labels"] = ["m1", "m2"]
 
     expected_params["cv"] = [0., 0., 0.]
     expected_params["div"] = [2, 4, 6]
@@ -167,7 +174,7 @@ def check_expected_params(params):
     expected_params["dvv"] = [1, 2, 3]
 
     single_value_type_keys = ["variables", "functions", "eval_id"]
-    array_type_keys = ["all_labels", "cv", "cv_labels", "div", "div_labels",
+    array_type_keys = ["variable_labels", "cv", "cv_labels", "div", "div_labels",
                        "dsv", "dsv_labels", "drv", "drv_labels", "asv", "dvv"]
 
     for key in single_value_type_keys:
@@ -191,3 +198,13 @@ def text_book(params):
         return text_book_list(params)
     else:
         return text_book_numpy(params)
+
+
+def text_book_batch(list_of_params):
+    retvals = []
+    for param_dict in list_of_params:
+        if use_list_return_type:
+            retvals.append(text_book_list(param_dict))
+        else:
+            retvals.append(text_book_numpy(param_dict))
+    return retvals

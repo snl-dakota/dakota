@@ -102,7 +102,7 @@ usage: dakota [options and <args>]
 	-run [$val] (Perform run (model evaluation) phase)
 	-post_run [$val] (Perform post-run (final results) phase)
 	-read_restart [$val] (Read an existing DAKOTA restart file $val)
-	-stop_restart <$val> (Stop restart file processing at evaluation $val)
+	-stop_restart <$val> (Stop restart file processing at restart record $val)
 	-write_restart [$val] (Write a new DAKOTA restart file $val)
 \endverbatim
 
@@ -133,10 +133,11 @@ standard error (stderr), respectively.
 \li \c read_restart and \c write_restart commands provide the names of
 restart databases to read from and write to, respectively.
 
-\li \c stop_restart command limits the number of function evaluations
-read from the restart database (the default is all the evaluations)
+\li \c stop_restart command limits the number of restart records
+read from the restart database (the default is all the records)
 for those cases in which some evaluations were erroneous or
-corrupted. Restart management is an important technique for retaining
+corrupted. Restart records are recorded in order of completion.
+Restart management is an important technique for retaining
 data from expensive engineering applications.
 
 \li \c -pre_run, \c -run, and \c -post_run instruct Dakota to run one

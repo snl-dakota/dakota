@@ -767,13 +767,19 @@ Figure~\ref{opt:methods:gradientfree:global:example:egm_rosen}.
 \begin{figure}
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{../../test/examples-users/rosen_opt_ego.in}
+      \verbatimtabinput[8]{../../test/examples-users/rosen_opt_ego.in} % default
     \end{small}
   \end{bigbox}
   \caption{Dakota input file for the efficient global optimization example --
-see \protect\path{dakota/share/dakota/examples/users/rosen_opt_ego.in} }
+see \protect\path{dakota/share/dakota/examples/users/dakota_rosenbrock_ego.in} }
   \label{opt:methods:gradientfree:global:example:egm_rosen}
 \end{figure}
+
+There are two types of parallelization within the \texttt{efficient\_global} method: the first one is batch-sequential parallel, which is active by default, and the second one is asynchronous batch parallel. One can activate the asynchronous parallel scheme by adding \texttt{nonblocking synchronization} in the \texttt{method} block of the input script; for example, see \protect\path{dakota/share/dakota/examples/users/dakota_rosenbrock_ego_stoch.in} for how to set up an asynchronous parallel EGO script. 
+Both of these parallel EGO variants are enabled by setting a batch size with the keyword \texttt{batch\_size} in the \texttt{method} block. The whole batch is further divided into two sub-batches: the first batch focuses on querying points corresponding to maximal value of the acquisition function, whereas the second batch focuses on querying points with maximal posterior variances in the GP. The size of the second batch is set with the keyword \texttt{exploration}, which has to be less than or equal to \texttt{batch\_size} minus 1. 
+For further elaboration of the difference between batch-sequential parallel and asynchronous parallel, see Surrogate-Based Minimization chapter in Dakota Theory
+Manual~\cite{TheoMan}. 
+
 
 
 \section{Additional Optimization Capabilities}

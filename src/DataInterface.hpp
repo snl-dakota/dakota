@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -37,7 +37,7 @@ enum {
   // external process interfaces
   FORK_INTERFACE=PROCESS_INTERFACE_BIT, SYSTEM_INTERFACE, GRID_INTERFACE,
   // direct coupled interfaces
-  TEST_INTERFACE=DIRECT_INTERFACE_BIT, 
+  TEST_INTERFACE=DIRECT_INTERFACE_BIT, PLUGIN_INTERFACE,
   MATLAB_INTERFACE, LEGACY_PYTHON_INTERFACE, PYTHON_INTERFACE, SCILAB_INTERFACE
 };
 
@@ -233,6 +233,8 @@ public:
   StringArray copyFiles;
   /// whether to replace / overwrite existing files
   bool templateReplace;
+  /// path to plugin to runtime load
+  String pluginLibraryPath;
   /// Python interface: use NumPy data structures (default is list data)
   bool numpyFlag;
 

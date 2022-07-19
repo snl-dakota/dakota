@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -29,6 +29,18 @@ Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db)
     ownPython(false),
     py11Active(false)
 {
+  // Only supports bulk synchronous batch evals with a single driver
+  if (asynchFlag) {
+    Cerr << "\nError: Python interfaces support single or batch evaluations, "
+	 << "but not\nasynchronous.\n";
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (batchEval && analysisDrivers.size() != 1) {
+    Cerr << "\nError: interface > python only supports batch option with "
+	 << "exactly one\nanalysis_driver string\n";
+    abort_handler(INTERFACE_ERROR);
+  }
+
   if (!Py_IsInitialized()) {
     py::initialize_interpreter();
     ownPython = true;
@@ -77,24 +89,84 @@ int Pybind11Interface::derived_map_ac(const String& ac_name)
          << " within Pybind11Interface." << std::endl;
 #endif // MPI_DEBUG
 
-  int fail_code = pybind11_run(ac_name);
+    try  {
+      initialize_driver(ac_name);
 
-  // Failure capturing
-  if (fail_code) {
-    std::string err_msg("Error evaluating Python analysis_driver ");
-    err_msg += ac_name;
-    throw FunctionEvalFailure(err_msg);
-  }
+      py::dict kwargs = params_to_dict();
+
+      py::dict ret_val = py11CallBack(kwargs);
+
+      unpack_python_response(directFnASV, directFnDVV.size(), ret_val,
+			     fnVals, fnGrads, fnHessians, metaData);
+    }
+    catch (const std::runtime_error& e) {
+      // (py::error_already_set is caught here too)
+      std::string err_msg("Error evaluating Python analysis_driver ");
+      err_msg += ac_name + ":\n";
+      err_msg += e.what();
+      Cerr << err_msg << std::endl;
+      throw FunctionEvalFailure(err_msg);
+    }
+    catch (...) {
+      std::string err_msg("Error evaluating Python analysis_driver ");
+      err_msg += ac_name;
+      Cerr << err_msg << std::endl;
+      throw FunctionEvalFailure(err_msg);
+    }
 
   return 0;
 }
 
 
-int Pybind11Interface::pybind11_run(const String& ac_name)
-{
-  // minimal error checking for now (or actually none ... but should be)
-  int fail_code = 0;
+/** This is a no-op as all work takes place in wait/test_local_evaluations */
+void Pybind11Interface::derived_map_asynch(const ParamResponsePair& pair)
+{ /* no-op*/ }
 
+
+void Pybind11Interface::wait_local_evaluations(PRPQueue& prp_queue)
+{
+  // TODO: refactor to avoid passing through local class members for
+  // variables and responses (inherit directly from ApplicationInterface)
+
+  initialize_driver(analysisDrivers[0]);
+
+  // in this case the user's python function is to be called with
+  // list<dict>, one list entry per eval
+
+  py::list py_requests;
+  for (const auto& prp : prp_queue) {
+    set_local_data(prp.variables(), prp.active_set(), prp.response());
+    py_requests.append(params_to_dict());
+  }
+
+  py::list py_responses = py11CallBack(py_requests);
+
+  const size_t num_requests = prp_queue.size();
+  size_t i = 0;
+  for (auto& prp : prp_queue) {
+    const ActiveSet& active_set = prp.active_set();
+    // shallow copy technically violates const-ness
+    unpack_python_response(active_set.request_vector(),
+			   active_set.derivative_vector().size(),
+			   py_responses[i], fnVals, fnGrads, fnHessians,
+			   metaData);
+    Response resp = prp.response();
+    resp.update(fnVals, fnGrads, fnHessians, active_set);
+    resp.metadata(metaData);
+    completionSet.insert(prp.eval_id());
+    ++i;
+  }
+}
+
+
+void Pybind11Interface::test_local_evaluations(PRPQueue& prp_queue)
+{
+  wait_local_evaluations(prp_queue);
+}
+
+
+void Pybind11Interface::initialize_driver(const String& ac_name)
+{
   // If a python callback has not yet been registered (eg via
   // top-evel Dakota API) then try it here.  This is consistent with how
   // PythonInterface does it, ie a lazy initialization. - RWH
@@ -111,81 +183,8 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
 
   assert( py11Active );
   assert( Py_IsInitialized() );
-
-  py::dict kwargs;
-  if( userNumpyFlag )
-    kwargs = pack_kwargs<py::array>();
-  else
-    kwargs = pack_kwargs<py::list>();
-
-  py::dict ret_val = py11CallBack(kwargs);
-
-  size_t const numDerivs = directFnDVV.size();
-
-  for (auto item : ret_val) {
-    auto key = item.first.cast<std::string>();
-    //Cout << "key: " << key << " = " << value[i] << std::endl;
-
-    if (key == "fns") {
-      auto values = item.second.cast<std::vector<double>>();
-      if (values.size() != numFns) {
-        throw(std::runtime_error("Pybind11 Direct Interface [\"fns\"]: "
-                                 "incorrect size for # of functions"));
-      }
-      for (size_t i = 0; i < numFns; ++i) {
-        fnVals[i] = values[i];
-      }
-    }
-
-    else if (key == "fnGrads") {
-      auto grads = item.second.cast<std::vector<std::vector<double>>>();
-      if (grads.size() != numFns) {
-        throw(std::runtime_error("Pybind11 Direct Interface [\"fnGrads\"]: "
-                                 "incorrect size for # of functions"));
-      }
-      for (size_t i = 0; i < numFns; ++i) {
-        if (grads[i].size() != numDerivs) {
-          throw(std::runtime_error("Pybind11 Direct Interface [\"fnGrads\"]: "
-                                   "gradient dimension != # of derivatives "
-                                   "for response " + std::to_string(i)));
-        }
-        for (size_t j = 0; j < numDerivs; ++j) {
-          fnGrads[i][j] = grads[i][j];
-        }
-      }
-    }
-
-    else if (key == "fnHessians") {
-      auto hess = item.second.cast<
-          std::vector<std::vector<std::vector<double>>>>();
-      if (hess.size() != numFns) {
-        throw(std::runtime_error("Pybind11 Direct Interface [\"fnHessians\"]: "
-                                 "incorrect size for # of functions"));
-      }
-      for (size_t i = 0; i < numFns; ++i) {
-        if (hess[i].size() != numDerivs) {
-          throw(std::runtime_error(
-              "Pybind11 Direct Interface [\"fnHessians\"]: "
-              "Hessian # of rows != # of derivatives "
-              "for response " + std::to_string(i)));
-        }
-        for (size_t j = 0; j < numDerivs; ++j) {
-          if (hess[i][j].size() != numDerivs) {
-            throw(std::runtime_error(
-                "Pybind11 Direct Interface [\"fnHessians\"]: "
-                "Hessian # of columns != # of derivatives "
-                "for response " + std::to_string(i)));
-          }
-          for (size_t k = 0; k <= j; ++k) {
-            fnHessians[i](j, k) = hess[i][j][k];
-          }
-        }
-      }
-    }
-  }
-
-  return(fail_code);
 }
+
 
 template<typename RetT, class ArrayT, typename T>
 RetT Pybind11Interface::copy_array_to_pybind11(const ArrayT & src) const
@@ -204,10 +203,22 @@ RetT Pybind11Interface::copy_array_to_pybind11(const Teuchos::SerialDenseVector<
   return py::cast(tmp_vec);
 }
 
+
+py::dict Pybind11Interface::params_to_dict() const
+{
+  py::dict kwargs;
+  if( userNumpyFlag )
+    kwargs = pack_kwargs<py::array>();
+  else
+    kwargs = pack_kwargs<py::list>();
+  return kwargs;
+}
+
+
 template<typename py_arrayT>
 py::dict Pybind11Interface::pack_kwargs() const
 {
-  py::list  all_labels   = copy_array_to_pybind11<py::list,StringArray,String>(xAllLabels);
+  py::list  all_var_labels   = copy_array_to_pybind11<py::list,StringArray,String>(xAllLabels);
   py_arrayT cv           = copy_array_to_pybind11<py_arrayT>(xC);
   py::list  cv_labels    = copy_array_to_pybind11<py::list,StringMultiArray,String>(xCLabels);
   py_arrayT div          = copy_array_to_pybind11<py_arrayT>(xDI);
@@ -221,11 +232,16 @@ py::dict Pybind11Interface::pack_kwargs() const
   py_arrayT an_comps     = (analysisComponents.size() > 0)
                           ?  copy_array_to_pybind11<py_arrayT,StringArray,String>(analysisComponents[analysisDriverIndex])
                           :  py_arrayT();
+  py::list fn_labels     = copy_array_to_pybind11<py::list,StringArray,String>(fnLabels);
+  py::list md_labels     = copy_array_to_pybind11<py::list,StringArray,String>(metaDataLabels);
 
   py::dict kwargs = py::dict(
       "variables"_a             = numVars,
       "functions"_a             = numFns,
-      "all_labels"_a            = all_labels,
+      "metadata"_a              = metaData.size(),
+      "variable_labels"_a       = all_var_labels,
+      "function_labels"_a       = fn_labels,
+      "metadata_labels"_a       = md_labels,
       "cv"_a                    = cv,
       "cv_labels"_a             = cv_labels,
       "div"_a                   = div,
@@ -241,5 +257,120 @@ py::dict Pybind11Interface::pack_kwargs() const
 
   return kwargs;
 }
+
+
+void Pybind11Interface::unpack_python_response
+(const ShortArray& asv, const size_t num_derivs,
+ const pybind11::dict& py_response, RealVector& fn_values,
+ RealMatrix& gradients, RealSymMatrixArray& hessians,
+ RealArray& metadata)
+{
+  size_t num_fns = asv.size();
+
+  if (expect_derivative(asv, 1)) {
+    if (py_response.contains("fns")) {
+      auto values = py_response["fns"].cast<std::vector<double>>();
+      if (values.size() != num_fns) {
+	throw(std::runtime_error("Pybind11 Direct Interface [\"fns\"]: "
+				 "incorrect size for # of functions"));
+      }
+      for (size_t i = 0; i < num_fns; ++i) {
+	fn_values[i] = values[i];
+      }
+    }
+    else {
+      throw(std::runtime_error("Pybind11 Direct Interface: required key "
+			       "[\"fns\"] absent in dict returned to Dakota"));
+    }
+  }
+
+  if (expect_derivative(asv, 2)) {
+    if (py_response.contains("fnGrads")) {
+      auto grads = py_response["fnGrads"].cast<std::vector<std::vector<double>>>();
+      if (grads.size() != num_fns) {
+        throw(std::runtime_error("Pybind11 Direct Interface [\"fnGrads\"]: "
+                                 "incorrect size for # of functions"));
+      }
+      for (size_t i = 0; i < num_fns; ++i) {
+        if (grads[i].size() != num_derivs) {
+          throw(std::runtime_error("Pybind11 Direct Interface [\"fnGrads\"]: "
+                                   "gradient dimension != # of derivatives "
+                                   "for response " + std::to_string(i)));
+        }
+        for (size_t j = 0; j < num_derivs; ++j) {
+          gradients[i][j] = grads[i][j];
+        }
+      }
+
+    }
+    else {
+      throw(std::runtime_error("Pybind11 Direct Interface: required key "
+			       "[\"fnGrads\"] absent in dict returned to Dakota"));
+    }
+  }
+
+  if (expect_derivative(asv, 4)) {
+    if (py_response.contains("fnHessians")) {
+      auto hess = py_response["fnHessians"].cast<
+	std::vector<std::vector<std::vector<double>>>>();
+      if (hess.size() != num_fns) {
+        throw(std::runtime_error("Pybind11 Direct Interface [\"fnHessians\"]: "
+                                 "incorrect size for # of functions"));
+      }
+      for (size_t i = 0; i < num_fns; ++i) {
+        if (hess[i].size() != num_derivs) {
+          throw(std::runtime_error(
+              "Pybind11 Direct Interface [\"fnHessians\"]: "
+              "Hessian # of rows != # of derivatives "
+              "for response " + std::to_string(i)));
+        }
+        for (size_t j = 0; j < num_derivs; ++j) {
+          if (hess[i][j].size() != num_derivs) {
+            throw(std::runtime_error(
+                "Pybind11 Direct Interface [\"fnHessians\"]: "
+                "Hessian # of columns != # of derivatives "
+                "for response " + std::to_string(i)));
+          }
+          for (size_t k = 0; k <= j; ++k) {
+            hessians[i](j, k) = hess[i][j][k];
+          }
+        }
+      }
+    }
+    else {
+      throw(std::runtime_error("Pybind11 Direct Interface: required key "
+			       "[\"fnHessians\"] absent in dict returned to Dakota"));
+    }
+  }
+
+  size_t num_md = metadata.size();
+  if (num_md > 0) {
+    if (py_response.contains("metadata")) {
+      auto md = py_response["metadata"].cast<std::vector<double>>();
+      if (md.size() != num_md) {
+	throw(std::runtime_error("Pybind11 Direct Interface [\"metadata\"]: "
+				 "incorrect size for # of metadata"));
+      }
+      for (size_t i = 0; i < num_md; ++i) {
+	metadata[i] = md[i];
+      }
+    }
+    else {
+      throw(std::runtime_error("Pybind11 Direct Interface: required key "
+			       "[\"metadata\"] absent in dict returned to Dakota"));
+    }
+  }
+
+}
+
+
+bool Pybind11Interface::expect_derivative(const ShortArray& asv,
+					  const short deriv_type) const
+{
+  return std::any_of(asv.begin(), asv.end(),
+		     [deriv_type](short a){ return (a & deriv_type); });
+}
+
+
 
 } //namespace Dakota

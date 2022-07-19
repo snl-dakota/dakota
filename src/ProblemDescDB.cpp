@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -2157,6 +2157,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"application.results_file", P_INT resultsFile},
       {"failure_capture.action", P_INT failAction},
       {"id", P_INT idInterface},
+      {"plugin_library_path", P_INT pluginLibraryPath},
       {"workDir", P_INT workDir}
     },
     { /* responses */

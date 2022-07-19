@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -401,9 +401,8 @@ Model Minimizer::original_model(unsigned short recasts_left) const
 }
 
 
-/** Reads observation data to compute least squares residuals.  Does
-    not change size of responses, and is the first wrapper, therefore
-    sizes are based on iteratedModel.  */
+/** Reads observation data to compute least squares residuals and
+    expands residuals for multiple experiments. */
 void Minimizer::data_transform_model()
 {
   if (outputLevel >= DEBUG_OUTPUT)
@@ -417,6 +416,12 @@ void Minimizer::data_transform_model()
   }
   // TODO: verify: we don't want to weight by missing sigma: all = 1.0
   expData.load_data("Least Squares", iteratedModel.current_variables());
+
+  if (numNonlinearConstraints > 0 && numExperiments > 1 &&
+      expData.num_config_vars() > 0)
+    Cout << "\nWarning: When using nonlinear constraints with multiple "
+	 << "experiment\nconfigurations, the returned constraint values must be"
+	 << " the same across\nconfigurations." << std::endl;
 
   iteratedModel.
     assign_rep(std::make_shared<DataTransformModel>(iteratedModel, expData));
@@ -697,7 +702,7 @@ objective_hessian(const RealVector& fn_vals, size_t num_fns,
 void Minimizer::print_best_eval_ids(const String& search_interface_id,
 				    const Variables& search_vars,
 				    const ActiveSet& search_set,
-				    std::ostream& s) const
+				    std::ostream& s)
 {
   const String
     best_id = "<<<<< Best evaluation ID: ",
@@ -1209,7 +1214,7 @@ void Minimizer::archive_best_results() {
     be recasting a single NLS residual into a squared
     objective. Always returns best data in the space of the original
     inbound Model. */
-void Minimizer::
+bool Minimizer::
 local_recast_retrieve(const Variables& vars, Response& response) const
 {
   // TODO: could omit constraints for solvers populating them (there
@@ -1217,11 +1222,13 @@ local_recast_retrieve(const Variables& vars, Response& response) const
   ActiveSet lookup_set(response.active_set());
   PRPCacheHIter cache_it
     = lookup_by_val(data_pairs, iteratedModel.interface_id(), vars, lookup_set);
-  if (cache_it == data_pairs.get<hashed>().end())
+  if (cache_it == data_pairs.get<hashed>().end()) {
     Cerr << "Warning: failure in recovery of final values for locally recast "
 	 << "optimization." << std::endl;
-  else
-    response.update(cache_it->response());
+    return false;
+  }    
+  response.update(cache_it->response());
+  return true;
 }
 
 

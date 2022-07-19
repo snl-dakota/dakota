@@ -5443,6 +5443,11 @@
               <param type="INTEGER" constraint="> 0" />
             </keyword>
           </keyword>
+          <keyword id="plugin" name="plugin" code="{N_ifm(type,interfaceType_PLUGIN_INTERFACE)}" label="Plugin Evaluator Interface "  complexity="0">
+	    <keyword id="library_path" name="library_path" code="{N_ifm(str,pluginLibraryPath)}" label="Path to Plugin Library"  minOccurs="1" default="none">
+	      <param type="INPUT_FILE"/>
+	    </keyword>
+          </keyword>
 	      <!-- TODO: processors per analysis? -->
 	      <keyword id="matlab" name="matlab" code="{N_ifm(type,interfaceType_MATLAB_INTERFACE)}" label="Matlab Interface "  complexity="1"/>
 	      <keyword id="python" name="python" code="{N_ifm(type,interfaceType_PYTHON_INTERFACE)}" label="Python Interface "  complexity="1">

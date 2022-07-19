@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020
+    Copyright 2014-2022
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -6517,8 +6517,9 @@ static Iface_mp_utype
 	MP2s(interfaceType,TEST_INTERFACE),
 	MP2s(interfaceType,FORK_INTERFACE),
 	MP2s(interfaceType,GRID_INTERFACE),
-	MP2s(interfaceType,MATLAB_INTERFACE),
 	MP2s(interfaceType,LEGACY_PYTHON_INTERFACE),
+	MP2s(interfaceType,MATLAB_INTERFACE),
+	MP2s(interfaceType,PLUGIN_INTERFACE),
 	MP2s(interfaceType,PYTHON_INTERFACE),
 	MP2s(interfaceType,SCILAB_INTERFACE),
 	MP2s(interfaceType,SYSTEM_INTERFACE),
@@ -6531,6 +6532,7 @@ static String
 	MP_(inputFilter),
 	MP_(outputFilter),
 	MP_(parametersFile),
+	MP_(pluginLibraryPath),
 	MP_(resultsFile),
 	MP_(workDir);
 
