@@ -162,7 +162,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
 
   //int symbols = samples; // symbols needed for DDACE
   Iterator dace_iterator;
-  // instantiate the Nataf ProbabilityTransform and GP DataFit recursions
+  // instantiate the ProbabilityTransform and GP DataFit recursions
   if (mppSearchType == SUBMETHOD_EGRA_X) { // Recast( DataFit( iteratedModel ) )
 
     // The following uses on the fly derived ctor:
@@ -459,11 +459,9 @@ void NonDGlobalReliability::optimize_gaussian_process()
     //   DataFitSurrModel::update_actual_model()
     // Note: since u-space type is STD_NORMAL_U, u-space aleatory variables
     //   are all unbounded and global bounds are set to +/-5.
-    Pecos::ProbabilityTransformation& nataf
-      = uSpaceModel.probability_transformation();
     RealVector x_l_bnds, x_u_bnds;
-    nataf.trans_U_to_X(uSpaceModel.continuous_lower_bounds(), x_l_bnds);
-    nataf.trans_U_to_X(uSpaceModel.continuous_upper_bounds(), x_u_bnds);
+    uSpaceModel.trans_U_to_X(uSpaceModel.continuous_lower_bounds(), x_l_bnds);
+    uSpaceModel.trans_U_to_X(uSpaceModel.continuous_upper_bounds(), x_u_bnds);
     Model& g_hat_x_model = uSpaceModel.subordinate_model();
     g_hat_x_model.continuous_lower_bounds(x_l_bnds);
     g_hat_x_model.continuous_upper_bounds(x_u_bnds);
@@ -703,7 +701,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	
 	if (mppSearchType == SUBMETHOD_EGRA_X) {
 	  RealVector sams_u(num_vars);
-	  uSpaceModel.probability_transformation().trans_X_to_U(sams,sams_u);
+	  uSpaceModel.trans_X_to_U(sams,sams_u);
 	  
 	  samsOut << '\n';
 	  for (size_t j=0; j<num_vars; j++)
@@ -1035,8 +1033,7 @@ void NonDGlobalReliability::get_best_sample()
     true_vars_x_cv = Teuchos::getCol(Teuchos::View,
       const_cast<RealMatrix&>(true_vars_x), (int)i);
     if (mppSearchType == SUBMETHOD_EGRA_X)
-      uSpaceModel.probability_transformation().trans_X_to_U(true_vars_x_cv,
-							    true_c_vars_u[i]);
+      uSpaceModel.trans_X_to_U(true_vars_x_cv, true_c_vars_u[i]);
     else
       true_c_vars_u[i] = true_vars_x_cv; // view OK
   }

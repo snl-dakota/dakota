@@ -784,8 +784,7 @@ void NonDExpansion::initialize_expansion()
   // are invariant in std distribution cases despite updates from above).
   initialPtU.size(numContinuousVars);
   if (allVars)
-    uSpaceModel.probability_transformation().trans_X_to_U(
-      iteratedModel.continuous_variables(), initialPtU);
+    uSpaceModel.trans_X_to_U(iteratedModel.continuous_variables(), initialPtU);
   RealVector u_means = uSpaceModel.multivariate_distribution().means();
   //const SharedVariablesData& svd
   //  = iteratedModel.current_variables().shared_data();
@@ -798,8 +797,7 @@ void NonDExpansion::initialize_expansion()
       numUncertainQuant == 0) {
     std::shared_ptr<NonDSampling> exp_sampler_rep =
       std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
-    exp_sampler_rep->
-      transform_samples(uSpaceModel.probability_transformation());
+    exp_sampler_rep->transform_samples(iteratedModel, uSpaceModel);// src,target
   }
 }
 
@@ -807,11 +805,11 @@ void NonDExpansion::initialize_expansion()
 void NonDExpansion::compute_expansion()
 {
 #ifdef DERIV_DEBUG
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
   // numerical verification of analytic Jacobian/Hessian routines
   RealVector rdv_u;
-  nataf.trans_X_to_U(iteratedModel.continuous_variables(), rdv_u);
+  uSpaceModel.trans_X_to_U(iteratedModel.continuous_variables(), rdv_u);
+  Pecos::ProbabilityTransformation& nataf
+    = uSpaceModel.probability_transformation();
   nataf.verify_trans_jacobian_hessian(rdv_u);//(rdv_x);
   nataf.verify_design_jacobian(rdv_u);
 #endif // DERIV_DEBUG
@@ -3822,10 +3820,10 @@ void NonDExpansion::update_final_statistics_gradients()
       = finalStatistics.active_set_derivative_vector();
     const std::vector<Pecos::RandomVariable>& x_ran_vars
       = iteratedModel.multivariate_distribution().random_variables();
-    Pecos::ProbabilityTransformation& nataf
-      = uSpaceModel.probability_transformation();
+    //Pecos::ProbabilityTransformation& nataf
+    //  = uSpaceModel.probability_transformation();
 
-    RealVector init_x;  nataf.trans_U_to_X(initialPtU, init_x);
+    RealVector init_x;  uSpaceModel.trans_U_to_X(initialPtU, init_x);
     RealMatrix final_stat_grads = finalStatistics.function_gradients_view();
     int num_final_stats = final_stat_grads.numCols();  Real z, x, factor;
     size_t num_final_grad_vars = final_dvv.size(), i, j, rv_index, deriv_j,
@@ -3848,8 +3846,6 @@ void NonDExpansion::update_final_statistics_gradients()
     // This approach is more general, but is overkill for this purpose
     // and incurs additional copying overhead.
     /*
-    Pecos::ProbabilityTransformation& nataf
-      = uSpaceModel.probability_transformation();
     RealVector initial_pt_x_pv, fn_grad_u, fn_grad_x;
     copy_data(initial_pt_x, initial_pt_x_pv);
     RealMatrix jacobian_ux;

@@ -799,15 +799,13 @@ void NonDLocalReliability::mpp_search()
   NonDLocalReliability* prev_instance = nondLocRelInstance;
   nondLocRelInstance = this;
 
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
-
   // initialize initialPtUSpec on first reliability analysis; needs to precede
   // iteratedModel.continuous_variables() assignment in initial_taylor_series()
   // and needs to follow nataf.transform_correlations()
   if (numRelAnalyses == 0) {
     if (initialPtUserSpec)
-      nataf.trans_X_to_U(iteratedModel.continuous_variables(), initialPtUSpec);
+      uSpaceModel.trans_X_to_U(iteratedModel.continuous_variables(),
+			       initialPtUSpec);
     else {
       // don't use the mean uncertain variable defaults from the parser
       // since u ~= 0 can cause problems for some formulations
@@ -940,6 +938,8 @@ void NonDLocalReliability::mpp_search()
       // numerical verification of analytic Jacobian/Hessian routines
       if (mppSearchType == SUBMETHOD_NO_APPROX && levelCount == 0)
         mostProbPointU = ranVarMeansU;//mostProbPointX = ranVarMeansX;
+      Pecos::ProbabilityTransformation& nataf
+	= uSpaceModel.probability_transformation();
       //nataf.verify_trans_jacobian_hessian(mostProbPointU);
       //nataf.verify_trans_jacobian_hessian(mostProbPointX);
       nataf.verify_design_jacobian(mostProbPointU);
@@ -1195,12 +1195,10 @@ void NonDLocalReliability::initialize_class_data()
     prevFnGradULev0.shape(numContinuousVars, numFunctions);
   }
 
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
   // define ranVarMeansU for use in the transformed AMV option
   // (must follow transform_correlations())
   //if (mppSearchType == SUBMETHOD_AMV_U)
-  nataf.trans_X_to_U(ranVarMeansX, ranVarMeansU);
+  uSpaceModel.trans_X_to_U(ranVarMeansX, ranVarMeansU);
   // or ranVarMeansU = u_dist.means();
 
   /*
@@ -1211,7 +1209,7 @@ void NonDLocalReliability::initialize_class_data()
     uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);
   RealVector ep_median_u(numContinuousVars), // inits vals to 0
              ep_median_x(numContinuousVars, false);
-  nataf.trans_U_to_X(ep_median_u, ep_median_x);
+  uSpaceModel.trans_U_to_X(ep_median_u, ep_median_x);
   iteratedModel.continuous_variables(ep_median_x);
   activeSet.request_values(0); // initialize
   for (size_t i=0; i<numFunctions; i++)
@@ -1613,10 +1611,8 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     }
 
     SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
-    Pecos::ProbabilityTransformation& nataf
-      = uSpaceModel.probability_transformation();
     if (mode & 6)
-      nataf.trans_U_to_X(mostProbPointU, mostProbPointX);
+      uSpaceModel.trans_U_to_X(mostProbPointU, mostProbPointX);
     // retrieve previously evaluated gradient information, if possible
     if (mode & 2) { // avail in all RIA/PMA cases (exception: numerical grads)
       // query data_pairs to retrieve the fn gradient at the MPP

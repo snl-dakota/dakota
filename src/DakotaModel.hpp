@@ -230,6 +230,11 @@ public:
   /// deactivate derivative setting w.r.t. distribution parameters
   virtual void deactivate_distribution_parameter_derivatives();
 
+  /// transform u-space variable values to x-space
+  virtual void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
+  /// transform x-space variable values to u-space
+  virtual void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
+
   /// transform x-space gradient vector to u-space
   virtual void trans_grad_X_to_U(const RealVector& fn_grad_x,
 				 RealVector& fn_grad_u,

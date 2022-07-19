@@ -483,7 +483,7 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 		      numContinuousVars);
       RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
 		      numContinuousVars);
-      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+      mcmcModel.trans_U_to_X(u_rv, x_rv);
       // trailing hyperparams are not transformed
 
       // surrogate needs u-space variables for eval

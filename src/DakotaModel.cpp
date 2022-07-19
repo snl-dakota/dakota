@@ -5046,6 +5046,32 @@ void Model::deactivate_distribution_parameter_derivatives()
 
 
 void Model::
+trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars)
+{
+  if (modelRep)
+    modelRep->trans_X_to_U(x_c_vars, u_c_vars);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_X_to_U() "
+         << "function.\n       No default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars)
+{
+  if (modelRep)
+    modelRep->trans_U_to_X(u_c_vars, x_c_vars);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_U_to_X() "
+         << "function.\n       No default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
 trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 		  const RealVector& x_vars)
 {

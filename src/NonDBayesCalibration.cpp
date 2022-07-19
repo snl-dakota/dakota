@@ -3213,7 +3213,7 @@ print_variables(std::ostream& s, const RealVector& c_vars)
   if (standardizedSpace) {
     RealVector u_rv(Teuchos::View, c_vars.values(), numContinuousVars);
     RealVector x_rv;
-    mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+    mcmcModel.trans_U_to_X(u_rv, x_rv);
     write_data(Cout, x_rv, cv_labels);
   }
   else

@@ -173,8 +173,7 @@ initialize(const RealVectorArray& acv_points, bool x_space_data,
     RealVector& init_pt_i = initPointsU[i];
     init_pt_i.sizeUninitialized(numCAUV);
     if (x_space_data) {
-      uSpaceModel.probability_transformation().trans_X_to_U(acv_points[i],
-							    acv_u_point);
+      uSpaceModel.trans_X_to_U(acv_points[i], acv_u_point);
       for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
     }
@@ -219,8 +218,7 @@ initialize(const RealMatrix& acv_points, bool x_space_data, size_t resp_index,
     if (x_space_data) {
       RealVector acv_pt_view(Teuchos::View, const_cast<Real*>(acv_pt_i),
 			     numContinuousVars);
-      uSpaceModel.probability_transformation().trans_X_to_U(acv_pt_view,
-							    acv_u_point);
+      uSpaceModel.trans_X_to_U(acv_pt_view, acv_u_point);
       for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
     }
@@ -258,8 +256,7 @@ initialize(const RealVector& acv_point, bool x_space_data, size_t resp_index,
   init_pt.sizeUninitialized(numCAUV);
   if (x_space_data) {
     RealVector acv_u_point;
-    uSpaceModel.probability_transformation().trans_X_to_U(acv_point,
-							  acv_u_point);
+    uSpaceModel.trans_X_to_U(acv_point, acv_u_point);
     for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
       init_pt[cntr] = acv_u_point[j];
   }

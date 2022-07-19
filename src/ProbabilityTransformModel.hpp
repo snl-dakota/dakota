@@ -91,6 +91,11 @@ protected:
 
   void init_metadata() override { /* no-op to leave metadata intact */}
 
+  void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
+  void trans_U_to_X(const Variables&  u_vars,   Variables&  x_vars);
+  void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
+  void trans_X_to_U(const Variables&  x_vars,   Variables&  u_vars);
+
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 			 const RealVector& x_vars);
   void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
@@ -387,7 +392,42 @@ inline void ProbabilityTransformModel::assign_instance()
 
 /** Map the variables from iterator space (u) to simulation space (x). */
 inline void ProbabilityTransformModel::
-vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
+trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars)
+{
+  const Variables& x_vars = subModel.current_variables();
+  short u_active_view = currentVariables.shared_data().view().first,
+        x_active_view = x_vars.shared_data().view().first;
+
+  // Note: the cv ids for x and u should be identical following view alignment,
+  // but we pass both for generality
+  if (u_active_view == x_active_view)
+    natafTransform.trans_U_to_X(u_c_vars,
+      currentVariables.continuous_variable_ids(), x_c_vars,
+      x_vars.continuous_variable_ids());
+  else {
+    bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
+         x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
+    if (!u_all && x_all)
+      natafTransform.trans_U_to_X(u_c_vars,
+	currentVariables.all_continuous_variable_ids(), x_c_vars,
+	x_vars.continuous_variable_ids());
+    else if (!x_all && u_all)
+      natafTransform.trans_U_to_X(u_c_vars,
+	currentVariables.continuous_variable_ids(), x_c_vars,
+	x_vars.all_continuous_variable_ids());
+    else {
+      Cerr << "Error: unsupported variable view differences in "
+	   << "ProbabilityTransformModel::trans_U_to_X()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
+  // *** TO DO: active discrete {int,string,real}
+}
+
+
+/** Map the variables from iterator space (u) to simulation space (x). */
+inline void ProbabilityTransformModel::
+trans_U_to_X(const Variables& u_vars, Variables& x_vars)
 {
   short u_active_view = u_vars.shared_data().view().first,
         x_active_view = x_vars.shared_data().view().first;
@@ -395,26 +435,26 @@ vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
   // Note: the cv ids for x and u should be identical following view alignment,
   // but we pass both for generality
   if (u_active_view == x_active_view)
-    ptmInstance->natafTransform.trans_U_to_X(
+    natafTransform.trans_U_to_X(
       u_vars.continuous_variables(),      u_vars.continuous_variable_ids(),
       x_vars.continuous_variables_view(), x_vars.continuous_variable_ids());
   else {
     bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
          x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
     if (!u_all && x_all)
-      ptmInstance->natafTransform.trans_U_to_X(
+      natafTransform.trans_U_to_X(
         u_vars.all_continuous_variables(), u_vars.all_continuous_variable_ids(),
 	x_vars.continuous_variables_view(), x_vars.continuous_variable_ids());
     else if (!x_all && u_all) {
       RealVector x_acv;
-      ptmInstance->natafTransform.trans_U_to_X(
+      natafTransform.trans_U_to_X(
 	u_vars.continuous_variables(), u_vars.continuous_variable_ids(),
 	x_acv, x_vars.all_continuous_variable_ids());
       x_vars.all_continuous_variables(x_acv);
     }
     else {
       Cerr << "Error: unsupported variable view differences in "
-	   << "ProbabilityTransformModel::vars_u_to_x_mapping()." << std::endl;
+	   << "ProbabilityTransformModel::trans_U_to_X()." << std::endl;
       abort_handler(MODEL_ERROR);
     }
   }
@@ -424,13 +464,43 @@ vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
 
 /** Map the variables from simulation space (x) to iterator space (u). */
 inline void ProbabilityTransformModel::
-vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
+trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars)
+{
+  const Variables& x_vars = subModel.current_variables();
+  short u_active_view = currentVariables.shared_data().view().first,
+        x_active_view = x_vars.shared_data().view().first;
+
+  if (u_active_view == x_active_view)
+    natafTransform.trans_X_to_U(x_c_vars, x_vars.continuous_variable_ids(),
+      u_c_vars, currentVariables.continuous_variable_ids());
+  else {
+    bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
+         x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
+    if (!u_all && x_all)
+      natafTransform.trans_X_to_U(x_c_vars, x_vars.continuous_variable_ids(),
+	u_c_vars, currentVariables.all_continuous_variable_ids());
+    else if (!x_all && u_all)
+      natafTransform.trans_X_to_U(x_c_vars,x_vars.all_continuous_variable_ids(),
+	u_c_vars, currentVariables.continuous_variable_ids());
+    else {
+      Cerr << "Error: unsupported variable view differences in "
+	   << "ProbabilityTransformModel::trans_X_to_U()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
+  // *** TO DO: active discrete {int,string,real}
+}
+
+
+/** Map the variables from simulation space (x) to iterator space (u). */
+inline void ProbabilityTransformModel::
+trans_X_to_U(const Variables& x_vars, Variables& u_vars)
 {
   short u_active_view = u_vars.shared_data().view().first,
         x_active_view = x_vars.shared_data().view().first;
 
   if (u_active_view == x_active_view)
-    ptmInstance->natafTransform.trans_X_to_U(
+    natafTransform.trans_X_to_U(
       x_vars.continuous_variables(),      x_vars.continuous_variable_ids(),
       u_vars.continuous_variables_view(), u_vars.continuous_variable_ids());
   else {
@@ -438,23 +508,35 @@ vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
          x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
     if (!u_all && x_all) {
       RealVector u_acv;
-      ptmInstance->natafTransform.trans_X_to_U(
+      natafTransform.trans_X_to_U(
 	x_vars.continuous_variables(), x_vars.continuous_variable_ids(),
 	u_acv,                         u_vars.all_continuous_variable_ids());
       u_vars.all_continuous_variables(u_acv);
     }
     else if (!x_all && u_all)
-      ptmInstance->natafTransform.trans_X_to_U(
+      natafTransform.trans_X_to_U(
 	x_vars.all_continuous_variables(), x_vars.all_continuous_variable_ids(),
 	u_vars.continuous_variables_view(), u_vars.continuous_variable_ids());
     else {
       Cerr << "Error: unsupported variable view differences in "
-	   << "ProbabilityTransformModel::vars_x_to_u_mapping()." << std::endl;
+	   << "ProbabilityTransformModel::trans_X_to_U()." << std::endl;
       abort_handler(MODEL_ERROR);
     }
   }
   // *** TO DO: active discrete {int,string,real}
 }
+
+
+/** Map the variables from iterator space (u) to simulation space (x). */
+inline void ProbabilityTransformModel::
+vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
+{ ptmInstance->trans_U_to_X(u_vars, x_vars); }
+
+
+/** Map the variables from simulation space (x) to iterator space (u). */
+inline void ProbabilityTransformModel::
+vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
+{ ptmInstance->trans_X_to_U(x_vars, u_vars); }
 
 
 inline void ProbabilityTransformModel::

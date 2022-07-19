@@ -63,6 +63,9 @@ protected:
   void activate_distribution_parameter_derivatives();
   void deactivate_distribution_parameter_derivatives();
 
+  void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
+  void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
+
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 			 const RealVector& x_vars);
   void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
@@ -295,6 +298,16 @@ inline void SurrogateModel::activate_distribution_parameter_derivatives()
 
 inline void SurrogateModel::deactivate_distribution_parameter_derivatives()
 { truth_model().deactivate_distribution_parameter_derivatives(); }
+
+
+inline void SurrogateModel::
+trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars)
+{ truth_model().trans_X_to_U(x_c_vars, u_c_vars); }
+
+
+inline void SurrogateModel::
+trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars)
+{ truth_model().trans_U_to_X(u_c_vars, x_c_vars); }
 
 
 inline void SurrogateModel::
