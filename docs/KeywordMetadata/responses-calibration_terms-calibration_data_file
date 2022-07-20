@@ -169,7 +169,9 @@ for volts, amps.  An example with two experiments in annotated format:
 Dakota will run the analysis driver, which must return :math:`N_{terms}`  responses. Then the residuals are computed as:
 
 
-.. math::  R_{i} = \frac{y^{Model}_i - y^{Data}_{i}}{\sqrt{{var}_i}} 
+.. math:: 
+   R_{i} = \frac{y^{Model}_i - y^{Data}_{i}}{\sqrt{{var}_i}} 
+
 for :math:`i = 1 \dots N_{terms}` .
 
 *Putting all the options together:* Specifying all these options

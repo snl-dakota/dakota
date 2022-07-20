@@ -13,14 +13,14 @@ no control over this). The following forward difference expression
 .. math:: 
 
    \nabla f ({\bf x}) ong
-````\frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x})}{h}
+   \frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x})}{h}
 
 and the following central difference expression
 
 .. math:: 
 
    \nabla f ({\bf x}) ong
-````\frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x} - h {\bf e}_i)}{2h}
+   \frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x} - h {\bf e}_i)}{2h}
 
 are used to estimate the :math:`i^{th}`  component of the gradient vector.
 Topics::
