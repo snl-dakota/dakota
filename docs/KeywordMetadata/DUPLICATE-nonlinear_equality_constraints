@@ -16,7 +16,7 @@ for each constraint
 
 The ``scale_types`` and ``scales`` keywords are related to scaling of
 :math:`h \left( x \right)` . See the scaling information under specific
-methods, e.g., method-*-scaling for details on how to use this
+methods, e.g., method-\*-scaling for details on how to use this
 keyword.
 Topics::
 nonlinear_constraints

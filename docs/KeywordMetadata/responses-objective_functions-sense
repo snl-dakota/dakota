@@ -4,8 +4,8 @@ Description::
 The ``sense`` keyword is used to declare whether each objective function
 should be minimized or maximized.  The argument options are:
 
-- ````"minimization" (can be abbreviated to "min")
-- ````"maximization" (can be abbreviated to "max")
+- ``"minimization"`` (can be abbreviated to "min")
+- ``"maximization"`` (can be abbreviated to "max")
 
 If a single string is specified it will apply to each objective
 function.  Otherwise, the number of strings should either be equal to

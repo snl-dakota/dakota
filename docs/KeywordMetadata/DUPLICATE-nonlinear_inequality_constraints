@@ -8,10 +8,12 @@ The ``lower_bounds`` and ``upper_bounds`` specifications provide the
 lower and upper bounds for 2-sided nonlinear inequalities of the form
 
 .. math:: g_l \leq g(x) \leq g_u
+
 When constraint bounds are not specified, the problem is assumed to
 have one-sided inequalities bounded above by zero:
 
 .. math:: g(x) \leq 0.0.
+
 This provides backwards compatibility with previous Dakota versions.
 
 In a user bounds specification, any upper bound values greater than
@@ -25,7 +27,7 @@ default lower bounds drop out since ``-DBL_MAX`` <
 
 The ``scale_types`` and ``scales`` keywords are related to scaling of
 :math:`g \left( x \right)` .  See the scaling information under
-specific methods, e.g., method-*-scaling for details on how to use
+specific methods, e.g., method-\*-scaling for details on how to use
 this keyword.
 Topics::
 nonlinear_constraints
