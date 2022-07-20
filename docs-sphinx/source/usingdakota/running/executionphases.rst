@@ -12,12 +12,12 @@ Dakota has three execution phases: pre-run, run, and post-run.
 
 (1) pre-run only with optional tabular output of variables:
 
-..code-block::
+.. code-block::
 
-    dakota -i dakota.in -pre_run [::myvariables.dat]
+   dakota -i dakota.in -pre_run [::myvariables.dat]
 
 (2) post-run only with required tabular input of variables/responses:
 
-..code-block::
+.. code-block::
 
-    dakota -i dakota.in -post_run myvarsresponses.dat::
+   dakota -i dakota.in -post_run myvarsresponses.dat::
