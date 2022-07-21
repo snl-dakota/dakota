@@ -35,37 +35,21 @@ As a simple example (from ), consider algebraic mappings based on
 Newton’s law :math:`F = m a`. The following is an AMPL input file of
 variable and expression declarations and output commands:
 
-.. container:: center
-
-   .. container:: bigbox
-
-      .. container:: small
+TODO: Generated input file likely goes here 
 
 When processed by an AMPL processor, three files are created (as
 requested by the “option auxfiles" command). The first is the file
 containing problem statistics, expression graphs, bounds, etc.:
 
-.. container:: center
-
-   .. container:: bigbox
-
-      .. container:: small
+TODO: Generated input file likely goes here
 
 Next, the file contains the set of variable descriptor strings:
 
-.. container:: center
-
-   .. container:: bigbox
-
-      .. container:: small
+TODO: Generated input file likely goes here
 
 and the file contains the set of response descriptor strings:
 
-.. container:: center
-
-   .. container:: bigbox
-
-      .. container:: small
+TODO: Generated input file likely goes here
 
 The variable and objective function names declared within AMPL should be
 a subset of the variable descriptors and response descriptors used by
@@ -77,37 +61,31 @@ excerpt from , which demonstrates a combined algebraic/simulation-based
 mapping in which algebraic mappings from the ``fma`` definition are
 overlaid with simulation-based mappings from ``text_book``:
 
-.. container:: center
+::
 
-   .. container:: bigbox
+   variables,
+           continuous_design = 5
+             descriptor    'x1' 'mass' 'a' 'x4' 'v'
+             initial_point  0.0  2.0  1.0  0.0  3.0
+             lower_bounds  -3.0  0.0 -5.0 -3.0 -5.0
+             upper_bounds   3.0 10.0  5.0  3.0  5.0
 
-      .. container:: small
+   interface,
+           algebraic_mappings = 'dakota_ampl_fma.nl'
+           system
+             analysis_driver = 'text_book'
+             parameters_file = 'tb.in'
+             results_file    = 'tb.out'
+             file_tag
 
-         ::
-
-            variables,
-                    continuous_design = 5
-                      descriptor    'x1' 'mass' 'a' 'x4' 'v'
-                      initial_point  0.0  2.0  1.0  0.0  3.0
-                      lower_bounds  -3.0  0.0 -5.0 -3.0 -5.0
-                      upper_bounds   3.0 10.0  5.0  3.0  5.0
-
-            interface,
-                    algebraic_mappings = 'dakota_ampl_fma.nl'
-                    system
-                      analysis_driver = 'text_book'
-                      parameters_file = 'tb.in'
-                      results_file    = 'tb.out'
-                      file_tag
-
-            responses,
-                    response_descriptors = 'force' 'ineq1' 'energy'
-                    num_objective_functions = 1
-                    num_nonlinear_inequality_constraints = 1
-                    num_nonlinear_equality_constraints = 1
-                    nonlinear_equality_targets = 20.0
-                    analytic_gradients
-                    no_hessians
+   responses,
+           response_descriptors = 'force' 'ineq1' 'energy'
+           num_objective_functions = 1
+           num_nonlinear_inequality_constraints = 1
+           num_nonlinear_equality_constraints = 1
+           nonlinear_equality_targets = 20.0
+           analytic_gradients
+           no_hessians
 
 Note that the algebraic inputs and outputs are a subset of the total
 inputs and outputs and that Dakota will track the algebraic
@@ -120,11 +98,7 @@ To solve ``text_book`` algebraically (refer to
 Section `[additional:textbook] <#additional:textbook>`__ for
 definition), the following AMPL model file could be used
 
-.. container:: center
-
-   .. container:: bigbox
-
-      .. container:: small
+TODO: Generated input file likely goes here
 
 Note that the nonlinear constraints should not currently be declared as
 constraints within AMPL. Since the Dakota variable bounds and constraint
@@ -192,23 +166,19 @@ member functions. In this case, the following steps are performed:
    passed through the function parameter list. In this case, the
    following function prototype is appropriate:
 
-   .. container:: small
+    ::
 
-      ::
-
-             int function_name();
+           int function_name();
 
    If, however, the new function names are not members of the
    **DirectFnApplicInterface** class, then an ``extern`` declaration may
    additionally be needed and the function prototype should include
    passing of the Variables, ActiveSet, and Response data members:
 
-   .. container:: small
+  ::
 
-      ::
-
-             int function_name(const Dakota::Variables& vars,
-                               const Dakota::ActiveSet& set, Dakota::Response& response);
+         int function_name(const Dakota::Variables& vars,
+                           const Dakota::ActiveSet& set, Dakota::Response& response);
 
 #. The Dakota system must be recompiled and linked with the new function
    object files or libraries.
@@ -325,13 +295,11 @@ interface specification. The Matlab m-file which performs the analysis
 is specified through the ``analysis_drivers`` keyword. Here is a sample
 Dakota ``interface`` specification:
 
-.. container:: small
+::
 
-   ::
-
-        interface,
-          matlab
-            analysis_drivers = 'myanalysis.m'
+     interface,
+       matlab
+         analysis_drivers = 'myanalysis.m'
 
 Multiple Matlab analysis drivers are supported. Multiple analysis
 components are supported as for other interfaces as described in
@@ -349,11 +317,9 @@ that accepts a Matlab structure as its sole argument and returns the
 same structure in a variable called ``Dakota``. A manual execution of
 the call to the analysis in Matlab should therefore look like:
 
-.. container:: small
+::
 
-   ::
-
-        >> Dakota = myanalysis(Dakota)
+     >> Dakota = myanalysis(Dakota)
 
 Note that the structure named Dakota will be pushed into the Matlab
 workspace before the analysis function is called. The structure passed
@@ -362,31 +328,27 @@ information that would be passed to a Dakota direct function included in
 ``DirectApplicInterface.C``, with fields shown in
 Figure `[advint:figure:matlabparams] <#advint:figure:matlabparams>`__.
 
-.. container:: bigbox
+::
 
-   .. container:: small
-
-      ::
-
-         Dakota.
-           numFns              number of functions (responses, constraints)
-           numVars             total number of variables
-           numACV              number active continuous variables
-           numADIV             number active discrete integer variables
-           numADRV             number active discrete real variables
-           numDerivVars        number of derivative variables specified in directFnDVV
-           xC                  continuous variable values ([1 x numACV]) 
-           xDI                 discrete integer variable values ([1 x numADIV])
-           xDR                 discrete real variable values ([1 x numADRV])
-           xCLabels            continuous var labels (cell array of numACV strings)
-           xDILabels           discrete integer var labels (cell array of numADIV strings)
-           xDRLabels           discrete real var labels (cell array of numADIV strings)
-           directFnASV         active set vector ([1 x numFns])
-           directFnDVV         derivative variables vector ([1 x numDerivVars])
-           fnFlag              nonzero if function values requested
-           gradFlag            nonzero if gradients requested
-           hessFlag            nonzero if hessians requested
-           currEvalId          current evaluation ID
+   Dakota.
+     numFns              number of functions (responses, constraints)
+     numVars             total number of variables
+     numACV              number active continuous variables
+     numADIV             number active discrete integer variables
+     numADRV             number active discrete real variables
+     numDerivVars        number of derivative variables specified in directFnDVV
+     xC                  continuous variable values ([1 x numACV]) 
+     xDI                 discrete integer variable values ([1 x numADIV])
+     xDR                 discrete real variable values ([1 x numADRV])
+     xCLabels            continuous var labels (cell array of numACV strings)
+     xDILabels           discrete integer var labels (cell array of numADIV strings)
+     xDRLabels           discrete real var labels (cell array of numADIV strings)
+     directFnASV         active set vector ([1 x numFns])
+     directFnDVV         derivative variables vector ([1 x numDerivVars])
+     fnFlag              nonzero if function values requested
+     gradFlag            nonzero if gradients requested
+     hessFlag            nonzero if hessians requested
+     currEvalId          current evaluation ID
 
 The structure ``Dakota`` returned from the analysis must contain a
 subset of the fields shown in
@@ -394,120 +356,112 @@ Figure `[advint:figure:matlabresponse] <#advint:figure:matlabresponse>`__.
 It may contain additional fields and in fact is permitted to be the
 structure passed in, augmented with any required outputs.
 
-.. container:: bigbox
+::
 
-   .. container:: small
-
-      ::
-
-         Dakota.
-           fnVals      ([1 x numFns], required if function values requested)
-           fnGrads     ([numFns x numDerivVars], required if gradients  requested)
-           fnHessians  ([numFns x numDerivVars x numDerivVars], 
-                        required if hessians requested)
-           fnLabels    (cell array of numFns strings, optional)
-           failure     (optional: zero indicates success, nonzero failure
+   Dakota.
+     fnVals      ([1 x numFns], required if function values requested)
+     fnGrads     ([numFns x numDerivVars], required if gradients  requested)
+     fnHessians  ([numFns x numDerivVars x numDerivVars], 
+                  required if hessians requested)
+     fnLabels    (cell array of numFns strings, optional)
+     failure     (optional: zero indicates success, nonzero failure
 
 An example Matlab analysis driver ``rosenbrock.m`` for the Rosenbrock
 function is shown in Figure
  `[advint:figure:matlabrosen] <#advint:figure:matlabrosen>`__.
 
-.. container:: bigbox
+::
 
-   .. container:: tiny
+   function Dakota = rosenbrock(Dakota)
 
-      ::
+     Dakota.failure = 0;
 
-         function Dakota = rosenbrock(Dakota)
+     if ( Dakota.numVars ~= 2 | Dakota.numADV | ...
+         ( ~isempty( find(Dakota.directFnASM(2,:)) | ...
+         find(Dakota.directFnASM(3,:)) ) & Dakota.numDerivVars ~= 2 ) )
+       
+       sprintf('Error: Bad number of variables in rosenbrock.m fn.\n');
+       Dakota.failure = 1;
 
-           Dakota.failure = 0;
+     elseif (Dakota.numFns > 2) 
+     
+       % 1 fn -> opt, 2 fns -> least sq
+       sprintf('Error: Bad number of functions in rosenbrock.m fn.\n');
+       Dakota.failure = 1;
 
-           if ( Dakota.numVars ~= 2 | Dakota.numADV | ...
-               ( ~isempty( find(Dakota.directFnASM(2,:)) | ...
-               find(Dakota.directFnASM(3,:)) ) & Dakota.numDerivVars ~= 2 ) )
-             
-             sprintf('Error: Bad number of variables in rosenbrock.m fn.\n');
-             Dakota.failure = 1;
+     else
+    
+       if Dakota.numFns > 1 
+         least_sq_flag = true;
+       else
+         least_sq_flag = false;
+       end
 
-           elseif (Dakota.numFns > 2) 
-           
-             % 1 fn -> opt, 2 fns -> least sq
-             sprintf('Error: Bad number of functions in rosenbrock.m fn.\n');
-             Dakota.failure = 1;
+       f0 = Dakota.xC(2)-Dakota.xC(1)*Dakota.xC(1);
+       f1 = 1.-Dakota.xC(1);
+     
+       % **** f:
+       if (least_sq_flag) 
+         if Dakota.directFnASM(1,1)
+           Dakota.fnVals(1) = 10*f0;
+         end
+         if Dakota.directFnASM(1,2)
+           Dakota.fnVals(2) = f1;
+         end
+       else
+         if Dakota.directFnASM(1,1)
+           Dakota.fnVals(1) = 100.*f0*f0+f1*f1;
+         end
+       end
+     
+       % **** df/dx:
+       if (least_sq_flag)
+         if Dakota.directFnASM(2,1)
+           Dakota.fnGrads(1,1) = -20.*Dakota.xC(1);
+           Dakota.fnGrads(1,2) =  10.;
+         end
+         if Dakota.directFnASM(2,2)
+           Dakota.fnGrads(2,1) = -1.;
+           Dakota.fnGrads(2,2) =  0.;
+         end
+     
+       else 
+     
+         if Dakota.directFnASM(2,1)
+           Dakota.fnGrads(1,1) = -400.*f0*Dakota.xC(1) - 2.*f1;
+           Dakota.fnGrads(1,2) =  200.*f0;
+         end
+         
+       end
 
-           else
-          
-             if Dakota.numFns > 1 
-               least_sq_flag = true;
-             else
-               least_sq_flag = false;
-             end
-
-             f0 = Dakota.xC(2)-Dakota.xC(1)*Dakota.xC(1);
-             f1 = 1.-Dakota.xC(1);
-           
-             % **** f:
-             if (least_sq_flag) 
-               if Dakota.directFnASM(1,1)
-                 Dakota.fnVals(1) = 10*f0;
-               end
-               if Dakota.directFnASM(1,2)
-                 Dakota.fnVals(2) = f1;
-               end
-             else
-               if Dakota.directFnASM(1,1)
-                 Dakota.fnVals(1) = 100.*f0*f0+f1*f1;
-               end
-             end
-           
-             % **** df/dx:
-             if (least_sq_flag)
-               if Dakota.directFnASM(2,1)
-                 Dakota.fnGrads(1,1) = -20.*Dakota.xC(1);
-                 Dakota.fnGrads(1,2) =  10.;
-               end
-               if Dakota.directFnASM(2,2)
-                 Dakota.fnGrads(2,1) = -1.;
-                 Dakota.fnGrads(2,2) =  0.;
-               end
-           
-             else 
-           
-               if Dakota.directFnASM(2,1)
-                 Dakota.fnGrads(1,1) = -400.*f0*Dakota.xC(1) - 2.*f1;
-                 Dakota.fnGrads(1,2) =  200.*f0;
-               end
-               
-             end
-
-             % **** d^2f/dx^2:
-             if (least_sq_flag)
-              
-               if Dakota.directFnASM(3,1)
-                 Dakota.fnHessians(1,1,1) = -20.;
-                 Dakota.fnHessians(1,1,2) = 0.;
-                 Dakota.fnHessians(1,2,1) = 0.;
-                 Dakota.fnHessians(1,2,2) = 0.;
-               end
-               if Dakota.directFnASM(3,2)
-                 Dakota.fnHessians(2,1:2,1:2) = 0.;
-               end
-               
-             else
-             
-               if Dakota.directFnASM(3,1) 
-                 fx = Dakota.xC(2) - 3.*Dakota.xC(1)*Dakota.xC(1);
-                 Dakota.fnHessians(1,1,1) = -400.*fx + 2.0;
-                 Dakota.fnHessians(1,1,2) = -400.*Dakota.xC(1); 
-                 Dakota.fnHessians(1,2,1) = -400.*Dakota.xC(1);
-                 Dakota.fnHessians(1,2,2) =  200.;
-               end
-             
-             end
-           
-             Dakota.fnLabels = {'f1'};
-            
-           end
+       % **** d^2f/dx^2:
+       if (least_sq_flag)
+        
+         if Dakota.directFnASM(3,1)
+           Dakota.fnHessians(1,1,1) = -20.;
+           Dakota.fnHessians(1,1,2) = 0.;
+           Dakota.fnHessians(1,2,1) = 0.;
+           Dakota.fnHessians(1,2,2) = 0.;
+         end
+         if Dakota.directFnASM(3,2)
+           Dakota.fnHessians(2,1:2,1:2) = 0.;
+         end
+         
+       else
+       
+         if Dakota.directFnASM(3,1) 
+           fx = Dakota.xC(2) - 3.*Dakota.xC(1)*Dakota.xC(1);
+           Dakota.fnHessians(1,1,1) = -400.*fx + 2.0;
+           Dakota.fnHessians(1,1,2) = -400.*Dakota.xC(1); 
+           Dakota.fnHessians(1,2,1) = -400.*Dakota.xC(1);
+           Dakota.fnHessians(1,2,2) =  200.;
+         end
+       
+       end
+     
+       Dakota.fnLabels = {'f1'};
+      
+     end
 
 .. _`advint:existingdirect:python`:
 
@@ -686,13 +640,11 @@ A few things to note about these examples:
    a direct, internal interface to Scilab using the Dakota data
    structure described above:
 
-   .. container:: small
+   ::
 
-      ::
-
-         interface,
-           scilab
-             analysis_driver = 'rosenbrock.sci'
+      interface,
+        scilab
+          analysis_driver = 'rosenbrock.sci'
 
 Scilab Compiled Interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -709,16 +661,14 @@ input files. Note the difference in the Dakota input file , where the
 analysis driver starts the dakscilab shim program and always evaluates
 functions, gradients, and Hessians.
 
-.. container:: small
+::
 
-   ::
-
-      interface,
-        fork
-          analysis_driver = '../dakscilab -d -fp "exec fp.sci" -fpp "exec fpp.sci"'
-          parameters_file = 'r.in'
-          results_file = 'r.out'
-          deactivate active_set_vector
+   interface,
+     fork
+       analysis_driver = '../dakscilab -d -fp "exec fp.sci" -fpp "exec fpp.sci"'
+       parameters_file = 'r.in'
+       results_file = 'r.out'
+       deactivate active_set_vector
 
 The dakscilab executable results from compiling and has the following
 behavior and options. The driver dakscilab launches a server. This
@@ -726,12 +676,10 @@ server then facilitates communication between Dakota and Scilab via
 named pipes communication. The user can also use the first named pipe
 (``${DAKSCILAB_PIPE}1``) to communicate with the server:
 
-.. container:: small
+::
 
-   ::
-
-          echo dbg scilab_script.sce > ${DAKSCILAB_PIPE}1
-          echo quit > ${DAKSCILAB_PIPE}1
+       echo dbg scilab_script.sce > ${DAKSCILAB_PIPE}1
+       echo quit > ${DAKSCILAB_PIPE}1
 
 The first command, with the keyword ’dbg’, launches the script for
 evaluation in Scilab. It permits to give instructions to Scilab. The
@@ -750,12 +698,10 @@ The dakscilab shim supports the following options for the driver call:
 
 For the included PID example, the driver call is
 
-.. container:: small
+::
 
-   ::
-
-          analysis_driver = '../dakscilab -d -si "exec init_test_automatic.sce;"
-                           -sf "exec visualize_solution.sce;" -f "exec f_pid.sci"'
+       analysis_driver = '../dakscilab -d -si "exec init_test_automatic.sce;"
+                        -sf "exec visualize_solution.sce;" -f "exec f_pid.sci"'
 
 Here there is an initialization script () which is launched before the
 main computation. It initializes a specific Scilab module called xcos. A

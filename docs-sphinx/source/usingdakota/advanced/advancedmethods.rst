@@ -108,9 +108,7 @@ and ‘``I1``’ keyword blocks, but uses the responses keyword block
 (``optpp_newton``) needs analytic gradient and Hessian data to perform
 its search.
 
-.. container:: bigbox
-
-   .. container:: tiny
+TODO: Generated input file likely goes here
 
 .. _`adv_meth:multistart`:
 
@@ -139,9 +137,7 @@ the set of starting points (3 random and 5 listed) that will be used for
 the optimization runs. The other keyword blocks in the input file are
 similar to what would be used in a single optimization run.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 The ``quasi_sine`` test function has multiple local minima, but there is
 an overall trend in the function that tends toward the global minimum at
@@ -154,22 +150,18 @@ identified by the ``x1``, ``x2`` headers), the eight local optima (as
 identified by the ``x1*``, ``x2*`` headers) are all different and only
 one of the local optimizations finds the global minimum.
 
-.. container:: bigbox
+::
 
-   .. container:: footnotesize
-
-      ::
-
-         <<<<< Results summary:
-            set_id             x1             x2            x1*            x2*         obj_fn 
-                 1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
-                 2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
-                 3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
-                 4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
-                 5              0              0  0.03572926375  0.03572926375  0.08730499239 
-                 6  -0.7767971993  0.01810943539  -0.7024118387  0.03572951143   0.3165522387 
-                 7  -0.3291571008  -0.7697378755   0.3167607374  -0.4009188363   0.2471403213 
-                 8   0.8704730469   0.7720679005    0.177092899   0.3167611757  0.08256082751 
+   <<<<< Results summary:
+      set_id             x1             x2            x1*            x2*         obj_fn 
+           1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
+           2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
+           3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
+           4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
+           5              0              0  0.03572926375  0.03572926375  0.08730499239 
+           6  -0.7767971993  0.01810943539  -0.7024118387  0.03572951143   0.3165522387 
+           7  -0.3291571008  -0.7697378755   0.3167607374  -0.4009188363   0.2471403213 
+           8   0.8704730469   0.7720679005    0.177092899   0.3167611757  0.08256082751 
 
 .. _`adv_meth:pareto`:
 
@@ -207,22 +199,17 @@ objectives. Plotting these (:math:`f_1,f_2,f_3`) triplets on a
 3-dimensional plot results in a Pareto surface (not shown), which is
 useful for visualizing the trade-offs in the competing objectives.
 
-.. container:: bigbox
+TODO: Generated input file likely goes here
+(Or possibly other fixed format content)
 
-   .. container:: small
+::
 
-.. container:: bigbox
-
-   .. container:: scriptsize
-
-      ::
-
-         <<<<< Results summary:
-            set_id             w1             w2             w3             x1             x2         obj_fn
-                 1              1              0              0   0.9996554048    0.997046351 7.612301561e-11
-                 2              0              1              0            0.5            2.9           -1.2
-                 3              0              0              1            5.8 1.12747589e-11           -2.9
-                 4          0.333          0.333          0.333            0.5   0.5000000041       0.041625
+   <<<<< Results summary:
+      set_id             w1             w2             w3             x1             x2         obj_fn
+           1              1              0              0   0.9996554048    0.997046351 7.612301561e-11
+           2              0              1              0            0.5            2.9           -1.2
+           3              0              0              1            5.8 1.12747589e-11           -2.9
+           4          0.333          0.333          0.333            0.5   0.5000000041       0.041625
 
 .. _`adv_meth:minlp`:
 
@@ -490,9 +477,7 @@ centered at the design point :math:`(x_1,x_2)=(-1.2,1.0)`, and extends
 :math:`\pm 0.4` (10% of the global bounds) from this point in the
 :math:`x_1` and :math:`x_2` coordinate directions.
 
-.. container:: bigbox
-
-   .. container:: tiny
+TODO: Generated input file likely goes here
 
 If this input file is executed in Dakota, it will converge to the
 optimal design point at :math:`(x_{1},x_{2})=(1,1)` in approximately 800
@@ -544,6 +529,8 @@ and high-fidelity models may differ, requiring the use of a mapping
 between these parameterizations. Space mapping, corrected space mapping,
 POD mapping, and hybrid POD space mapping are being explored for this
 purpose :cite:p:`Rob06a,Rob06b`.
+
+TODO: Possible missing image here
 
 .. container:: wrapfigure
 
@@ -709,9 +696,8 @@ input specification deals with the interface to the actual analysis
 driver and the 2 responses being returned as objective functions from
 that driver.
 
-.. container:: bigbox
 
-   .. container:: scriptsize
+TODO: Generated input file likely goes here and possibly images
 
 .. [1]
    It is also possible to use a hybrid data fit/multifidelity approach

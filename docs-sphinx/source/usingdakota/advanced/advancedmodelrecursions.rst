@@ -131,22 +131,17 @@ defining distribution parameters for the inner loop, they are not
 required to be: they can just be separate uncertain variables in the
 problem.
 
-.. container:: bigbox
 
-   .. container:: tiny
+TODO: Generated input file likely goes here
 
-.. container:: bigbox
+::
 
-   .. container:: small
+   Statistics based on 50 samples:
 
-      ::
-
-         Statistics based on 50 samples:
-
-         Min and Max values for each response function:
-         mean_wt:  Min = 9.5209117200e+00  Max = 9.5209117200e+00
-         ccdf_beta_s:  Min = 1.7627715524e+00  Max = 4.2949468386e+00
-         ccdf_beta_d:  Min = 2.0125192955e+00  Max = 3.9385559339e+00
+   Min and Max values for each response function:
+   mean_wt:  Min = 9.5209117200e+00  Max = 9.5209117200e+00
+   ccdf_beta_s:  Min = 1.7627715524e+00  Max = 4.2949468386e+00
+   ccdf_beta_d:  Min = 2.0125192955e+00  Max = 3.9385559339e+00
 
 As compared to aleatory quantities of interest (e.g., mean, variance,
 probability) that must be integrated over a full probability domain, we
@@ -332,9 +327,7 @@ attributes. As with other complex Dakota input files, the identification
 tags given in each keyword block can be used to follow the relationships
 among the different keyword blocks.
 
-.. container:: bigbox
-
-   .. container:: tiny
+TODO: Generated input file likely goes here
 
 Latin hypercube sampling is used as the UQ method in this example
 problem. Thus, each evaluation of the response functions by the

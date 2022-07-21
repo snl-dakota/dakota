@@ -73,13 +73,11 @@ more rapid testing. See Chapter `[additional] <#additional>`__ for
 additional information on several of these test problems. An example
 input specification for a direct interface follows:
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                  direct
-                    analysis_driver = 'rosenbrock'
+       interface,
+               direct
+                 analysis_driver = 'rosenbrock'
 
 Additional specification examples are provided in
 Section `[tutorial:examples] <#tutorial:examples>`__ and additional
@@ -112,16 +110,14 @@ direct function approach, but this extra overhead is usually
 insignificant compared with the cost of a simulation. An example of a
 system call interface specification follows:
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                  system
-                    analysis_driver = 'text_book'
-                    parameters_file = 'text_book.in'
-                    results_file    = 'text_book.out'
-                    file_tag file_save
+       interface,
+               system
+                 analysis_driver = 'text_book'
+                 parameters_file = 'text_book.in'
+                 results_file    = 'text_book.out'
+                 file_tag file_save
 
 Information on asynchronous usage of the system interface is provided in
 Section `[parallel:SLP:local:system] <#parallel:SLP:local:system>`__.
@@ -143,18 +139,16 @@ code or driver occurs through the file system in exactly the same manner
 as for the system call interface. An example of a fork interface
 specification follows:
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                  fork
-                    input_filter    = 'test_3pc_if'
-                    output_filter   = 'test_3pc_of'
-                    analysis_driver = 'test_3pc_ac'
-                    parameters_file = 'tb.in'
-                    results_file    = 'tb.out'
-                    file_tag
+       interface,
+               fork
+                 input_filter    = 'test_3pc_if'
+                 output_filter   = 'test_3pc_of'
+                 analysis_driver = 'test_3pc_ac'
+                 parameters_file = 'tb.in'
+                 results_file    = 'tb.out'
+                 file_tag
 
 More detailed examples of using the fork call interface are provided in
 Section `[tutorial:examples:user_supply:optimization1] <#tutorial:examples:user_supply:optimization1>`__
@@ -306,9 +300,7 @@ function evaluations. In particular, it identifies as its
 ``analysis_driver``, as shown in
 Figure `[advint:figure01] <#advint:figure01>`__.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 The listed in Figure `[advint:figure02] <#advint:figure02>`__ is a short
 driver shell script that Dakota executes to perform each function
@@ -317,9 +309,7 @@ the script on its command line; they are referenced in the script by
 ``$1`` and ``$2``, respectively. The is divided into three parts:
 pre-processing, analysis, and post-processing.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 In the pre-processing portion, the uses , a template processing utility,
 to extract the current variable values from a parameters file (``$1``)
@@ -360,9 +350,7 @@ numerical values for the variables. As shown in , the names for the
 Dakota parameters file (``$1``), template file (), and generated input
 file () must be specified in the ``dprepro`` command line arguments.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 The second part of the script executes the simulator. The input and
 output file names, and , respectively, are hard-coded into the. When the
@@ -409,28 +397,24 @@ As an example of the data flow on a particular function evaluation,
 consider evaluation 60. The parameters file for this evaluation consists
 of:
 
-.. container:: small
+ ::
 
-   ::
-
-                                                2 variables
-                            4.664752623441543e-01 x1
-                            2.256400864298234e-01 x2
-                                                1 functions
-                                                3 ASV_1:obj_fn
-                                                2 derivative_variables
-                                                1 DVV_1:x1
-                                                2 DVV_2:x2
-                                                0 analysis_components
-                                               60 eval_id
+                                              2 variables
+                          4.664752623441543e-01 x1
+                          2.256400864298234e-01 x2
+                                              1 functions
+                                              3 ASV_1:obj_fn
+                                              2 derivative_variables
+                                              1 DVV_1:x1
+                                              2 DVV_2:x2
+                                              0 analysis_components
+                                             60 eval_id
 
 This file is called if the line
 
-.. container:: small
+::
 
-   ::
-
-            named 'workdir' file_save  directory_save
+         named 'workdir' file_save  directory_save
 
 in Figure `[advint:figure01] <#advint:figure01>`__ is uncommented. The
 first portion of the file indicates that there are two variables,
@@ -444,37 +428,33 @@ variable values from this file, namely ``4.664752623441543e-01`` and
 substitutes them in the ``{x1}`` and ``{x2}`` fields of the file. The
 final three lines of the resulting input file () then appear as follows:
 
-.. container:: small
+::
 
-   ::
-
-      variable 1 0.4664752623
-      variable 2 0.2256400864
-      end
+   variable 1 0.4664752623
+   variable 2 0.2256400864
+   end
 
 where all other lines are identical to the template file. The simulator
 accepts as its input file and generates the following output to the file
 :
 
-.. container:: small
+::
 
-   ::
+    Beginning execution of model: Rosenbrock black box
+    Set up complete.
+    Reading nodes.
+    Reading elements.
+    Reading materials.
+    Checking connectivity...OK
+    *****************************************************
 
-       Beginning execution of model: Rosenbrock black box
-       Set up complete.
-       Reading nodes.
-       Reading elements.
-       Reading materials.
-       Checking connectivity...OK
-       *****************************************************
+    Input value for x1 =  4.6647526230000003e-01
+    Input value for x2 =  2.2564008640000000e-01
 
-       Input value for x1 =  4.6647526230000003e-01
-       Input value for x2 =  2.2564008640000000e-01
-
-       Computing solution...Done
-       *****************************************************
-       Function value =   2.9111427884970176e-01
-       Function gradient = [ -2.5674048470887652e+00   1.6081832124292317e+00 ]
+    Computing solution...Done
+    *****************************************************
+    Function value =   2.9111427884970176e-01
+    Function gradient = [ -2.5674048470887652e+00   1.6081832124292317e+00 ]
 
 Next, the appropriate values are extracted from the raw simulator output
 and returned in the results file. This post-processing is relatively
@@ -487,33 +467,31 @@ ASV.
 After 132 of these function evaluations, the following Dakota output
 shows the final solution using the simulator:
 
-.. container:: footnotesize
+::
 
-   ::
+       Exit NPSOL - Optimal solution found.
 
-          Exit NPSOL - Optimal solution found.
+       Final nonlinear objective value =   0.1165704E-06
 
-          Final nonlinear objective value =   0.1165704E-06
+      NPSOL exits with INFORM code = 0 (see "Interpretation of output" section in NPSOL manual)
 
-         NPSOL exits with INFORM code = 0 (see "Interpretation of output" section in NPSOL manual)
+      NOTE: see Fortran device 9 file (fort.9 or ftn09)
+            for complete NPSOL iteration history.
 
-         NOTE: see Fortran device 9 file (fort.9 or ftn09)
-               for complete NPSOL iteration history.
+      <<<<< Iterator npsol_sqp completed.
+      <<<<< Function evaluation summary: 132 total (132 new, 0 duplicate)
+      <<<<< Best parameters          =
+                            9.9965861667e-01 x1
+                            9.9931682203e-01 x2
+      <<<<< Best objective function  =
+                         1.1657044253e-07
+      <<<<< Best data captured at function evaluation 130
 
-         <<<<< Iterator npsol_sqp completed.
-         <<<<< Function evaluation summary: 132 total (132 new, 0 duplicate)
-         <<<<< Best parameters          =
-                               9.9965861667e-01 x1
-                               9.9931682203e-01 x2
-         <<<<< Best objective function  =
-                            1.1657044253e-07
-         <<<<< Best data captured at function evaluation 130
-
-         <<<<< Iterator npsol_sqp completed.
-         <<<<< Single Method Strategy completed.
-         Dakota execution time in seconds:
-           Total CPU        =       0.12 [parent =   0.116982, child =   0.003018]
-           Total wall clock =    1.47497
+      <<<<< Iterator npsol_sqp completed.
+      <<<<< Single Method Strategy completed.
+      Dakota execution time in seconds:
+        Total CPU        =       0.12 [parent =   0.116982, child =   0.003018]
+        Total wall clock =    1.47497
 
 Adapting These Scripts to Another Simulation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -643,11 +621,9 @@ the ``input_filter`` and ``output_filter`` specifications), then only
 one process will appear in the execution syntax of the simulation
 interface. An example of this syntax in the system call case is:
 
-.. container:: small
+::
 
-   ::
-
-          driver params.in results.out
+       driver params.in results.out
 
 where is the user-specified analysis driver and and are the names of the
 parameters and results files, respectively, passed on the command line.
@@ -657,11 +633,9 @@ since the same file names will be used each time.
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-.. container:: small
+::
 
-   ::
-
-          blocking fork: driver params.in results.out
+       blocking fork: driver params.in results.out
 
 for which only a single blocking fork is needed to perform the
 evaluation.
@@ -669,11 +643,9 @@ evaluation.
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-.. container:: small
+::
 
-   ::
-
-          Direct function: invoking driver
+       Direct function: invoking driver
 
 where this analysis driver must be linked as a function within Dakota’s
 direct interface (see Section `[advint:direct] <#advint:direct>`__).
@@ -684,20 +656,16 @@ Both the system call and fork interfaces support asynchronous
 operations. The asynchronous system call execution syntax involves
 executing the system call in the background:
 
-.. container:: small
+::
 
-   ::
-
-          driver params.in.1 results.out.1 &
+       driver params.in.1 results.out.1 &
 
 and the asynchronous fork execution syntax involves use of a nonblocking
 fork:
 
-.. container:: small
+::
 
-   ::
-
-          nonblocking fork: driver params.in.1 results.out.1
+       nonblocking fork: driver params.in.1 results.out.1
 
 where file tagging (see Section `1.5.2 <#interfaces:file:tagging1>`__)
 has been user-specified in both cases to prevent conflicts between
@@ -715,12 +683,10 @@ Single analysis driver with filters
 When filters are used, the syntax of the system call that Dakota
 performs is:
 
-.. container:: small
+::
 
-   ::
-
-          ifilter params.in results.out; driver params.in results.out;
-               ofilter params.in results.out
+       ifilter params.in results.out; driver params.in results.out;
+            ofilter params.in results.out
 
 in which the input filter (), analysis driver (), and output filter ()
 processes are combined into a single system call through the use of
@@ -731,12 +697,10 @@ line.
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-.. container:: small
+::
 
-   ::
-
-          blocking fork: ifilter params.in results.out;
-               driver params.in results.out; ofilter params.in results.out
+       blocking fork: ifilter params.in results.out;
+            driver params.in results.out; ofilter params.in results.out
 
 where a series of three blocking forks is used to perform the
 evaluation.
@@ -744,11 +708,9 @@ evaluation.
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-.. container:: small
+::
 
-   ::
-
-          Direct function: invoking { ifilter driver ofilter }
+       Direct function: invoking { ifilter driver ofilter }
 
 where each of the three components must be linked as a function within
 Dakota’s direct interface. Since asynchronous operations are not yet
@@ -760,21 +722,17 @@ argument lists.
 Asynchronous executions would appear as follows for the system call
 interface:
 
-.. container:: small
+::
 
-   ::
-
-          (ifilter params.in.1 results.out.1; driver params.in.1 results.out.1;
-               ofilter params.in.1 results.out.1) &
+       (ifilter params.in.1 results.out.1; driver params.in.1 results.out.1;
+            ofilter params.in.1 results.out.1) &
 
 and, for the fork interface, as:
 
-.. container:: small
+::
 
-   ::
-
-          nonblocking fork: ifilter params.in.1 results.out.1;
-               driver params.in.1 results.out.1; ofilter params.in.1 results.out.1
+       nonblocking fork: ifilter params.in.1 results.out.1;
+            driver params.in.1 results.out.1; ofilter params.in.1 results.out.1
 
 where file tagging of evaluations has again been user-specified in both
 cases. For the system call simulation interface, use of parentheses and
@@ -800,12 +758,10 @@ If a list of ``analysis_drivers`` is specified and filters are not
 needed (i.e., neither ``input_filter`` nor ``output_filter`` appears),
 then the system call syntax would appear as:
 
-.. container:: small
+::
 
-   ::
-
-          driver1 params.in results.out.1; driver2 params.in results.out.2;
-               driver3 params.in results.out.3
+       driver1 params.in results.out.1; driver2 params.in results.out.2;
+            driver3 params.in results.out.3
 
 where , , and are the user-specified analysis drivers and and are the
 user-selected names of the parameters and results files. Note that the
@@ -818,12 +774,10 @@ Section `1.5.2 <#interfaces:file:tagging1>`__).
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-.. container:: small
+::
 
-   ::
-
-          blocking fork: driver1 params.in results.out.1;
-               driver2 params.in results.out.2; driver3 params.in results.out.3
+       blocking fork: driver1 params.in results.out.1;
+            driver2 params.in results.out.2; driver3 params.in results.out.3
 
 for which a series of three blocking forks is needed (no reforking of an
 intermediate process is required).
@@ -831,11 +785,9 @@ intermediate process is required).
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-.. container:: small
+::
 
-   ::
-
-          Direct function: invoking { driver1 driver2 driver3 }
+       Direct function: invoking { driver1 driver2 driver3 }
 
 where, again, each of these components must be linked within Dakota’s
 direct interface and no files are involved for parameter and response
@@ -845,21 +797,17 @@ Both the system call and fork interfaces support asynchronous function
 evaluations. The asynchronous system call execution syntax would be
 reported as
 
-.. container:: small
+::
 
-   ::
-
-          (driver1 params.in.1 results.out.1.1; driver2 params.in.1 results.out.1.2;
-               driver3 params.in.1 results.out.1.3) &
+       (driver1 params.in.1 results.out.1.1; driver2 params.in.1 results.out.1.2;
+            driver3 params.in.1 results.out.1.3) &
 
 and the nonblocking fork execution syntax would be reported as
 
-.. container:: small
+::
 
-   ::
-
-          nonblocking fork: driver1 params.in.1 results.out.1.1;
-               driver2 params.in.1 results.out.1.2; driver3 params.in.1 results.out.1.3
+       nonblocking fork: driver1 params.in.1 results.out.1.1;
+            driver2 params.in.1 results.out.1.2; driver3 params.in.1 results.out.1.3
 
 where, in both cases, file tagging of evaluations has been
 user-specified to prevent conflicts between concurrent analysis drivers
@@ -877,15 +825,13 @@ Multiple analysis drivers with filters
 Finally, when combining filters with multiple ``analysis_drivers``, the
 syntax of the system call that Dakota performs is:
 
-.. container:: small
+::
 
-   ::
-
-          ifilter params.in.1 results.out.1;
-               driver1 params.in.1 results.out.1.1;
-               driver2 params.in.1 results.out.1.2;
-               driver3 params.in.1 results.out.1.3;
-               ofilter params.in.1 results.out.1
+       ifilter params.in.1 results.out.1;
+            driver1 params.in.1 results.out.1.1;
+            driver2 params.in.1 results.out.1.2;
+            driver3 params.in.1 results.out.1.3;
+            ofilter params.in.1 results.out.1
 
 in which all processes have again been combined into a single system
 call through the use of semi-colons and parentheses. Note that the
@@ -900,15 +846,13 @@ information).
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-.. container:: small
+::
 
-   ::
-
-          blocking fork: ifilter params.in.1 results.out.1;
-               driver1 params.in.1 results.out.1.1;
-               driver2 params.in.1 results.out.1.2;
-               driver3 params.in.1 results.out.1.3;
-               ofilter params.in.1 results.out.1
+       blocking fork: ifilter params.in.1 results.out.1;
+            driver1 params.in.1 results.out.1.1;
+            driver2 params.in.1 results.out.1.2;
+            driver3 params.in.1 results.out.1.3;
+            ofilter params.in.1 results.out.1
 
 for which a series of five blocking forks is used (no reforking of an
 intermediate process is required).
@@ -916,11 +860,9 @@ intermediate process is required).
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-.. container:: small
+::
 
-   ::
-
-          Direct function: invoking { ifilter driver1 driver2 driver3 ofilter }
+       Direct function: invoking { ifilter driver1 driver2 driver3 ofilter }
 
 where each of these components must be linked as a function within
 Dakota’s direct interface. Since asynchronous operations are not
@@ -932,27 +874,23 @@ through the function argument lists.
 Asynchronous executions would appear as follows for the system call
 interface:
 
-.. container:: small
+::
 
-   ::
-
-          (ifilter params.in.1 results.out.1;
-               driver1 params.in.1 results.out.1.1;
-               driver2 params.in.1 results.out.1.2;
-               driver3 params.in.1 results.out.1.3;
-               ofilter params.in.1 results.out.1) &
+       (ifilter params.in.1 results.out.1;
+            driver1 params.in.1 results.out.1.1;
+            driver2 params.in.1 results.out.1.2;
+            driver3 params.in.1 results.out.1.3;
+            ofilter params.in.1 results.out.1) &
 
 and for the fork interface:
 
-.. container:: small
+::
 
-   ::
-
-          nonblocking fork: ifilter params.in.1 results.out.1;
-               driver1 params.in.1 results.out.1.1;
-               driver2 params.in.1 results.out.1.2;
-               driver3 params.in.1 results.out.1.3;
-               ofilter params.in.1 results.out.1
+       nonblocking fork: ifilter params.in.1 results.out.1;
+            driver1 params.in.1 results.out.1.1;
+            driver2 params.in.1 results.out.1.2;
+            driver3 params.in.1 results.out.1.3;
+            ofilter params.in.1 results.out.1
 
 where, again, user-selected file tagging of evaluations is combined with
 automatic file tagging of analyses. In the fork interface case, an
@@ -995,12 +933,10 @@ their use is complete to reduce clutter. If the method output setting is
 verbose, a file remove notification will follow the function evaluation
 echo, e.g.,
 
-.. container:: small
+::
 
-   ::
-
-          driver /usr/tmp/aaaa20305 /usr/tmp/baaa20305
-          Removing /usr/tmp/aaaa20305 and /usr/tmp/baaa20305
+       driver /usr/tmp/aaaa20305 /usr/tmp/baaa20305
+       Removing /usr/tmp/aaaa20305 and /usr/tmp/baaa20305
 
 However, if ``file_save`` appears in the interface specification, these
 files will not be removed. This latter behavior is often useful for
@@ -1029,16 +965,14 @@ running in a common disk space, since it can prevent conflicts between
 the simulations. An example specification of ``file_tag`` and
 ``file_save`` is shown below:
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                  system
-                    analysis_driver = 'text_book'
-                    parameters_file = 'text_book.in'
-                    results_file    = 'text_book.out'
-                    file_tag file_save
+       interface,
+               system
+                 analysis_driver = 'text_book'
+                 parameters_file = 'text_book.in'
+                 results_file    = 'text_book.out'
+                 file_tag file_save
 
 *Special case:* When a user specifies names for the parameters and
 results files and ``file_save`` is used without ``file_tag``, untagged
@@ -1048,14 +982,12 @@ files for which a ``file_save`` request has been given. If the output
 control is set to verbose, then a notification similar to the following
 will follow the function evaluation echo:
 
-.. container:: small
+::
 
-   ::
-
-          driver params.in results.out
-          Files with non-unique names will be tagged to enable file_save:
-          Moving params.in to params.in.1
-          Moving results.out to results.out.1
+       driver params.in results.out
+       Files with non-unique names will be tagged to enable file_save:
+       Moving params.in to params.in.1
+       Moving results.out to results.out.1
 
 **Hierarchical tagging:** When a model’s specification includes the
 ``hierarchical_tagging`` keyword, the tag applied to parameter and
@@ -1080,22 +1012,18 @@ If ``parameters_file`` and ``results_file`` are not specified by the
 user, temporary files having generated names are used. For example, a
 system call to a single analysis driver might appear as:
 
-.. container:: small
+::
 
-   ::
-
-          driver /tmp/dakota_params_aaaa2035 /tmp/dakota_results_baaa2030
+       driver /tmp/dakota_params_aaaa2035 /tmp/dakota_results_baaa2030
 
 and a system call to an analysis driver with filter programs might
 appear as:
 
-.. container:: small
+::
 
-   ::
-
-          ifilter /tmp/dakota_params_aaaa2490 /tmp/dakota_results_baaa2490;
-               driver /tmp/dakota_params_aaaa2490 tmp/dakota_results_baaa2490;
-               ofilter /tmp/dakota_params_aaaa2490 /tmp/dakota_results_baa22490
+       ifilter /tmp/dakota_params_aaaa2490 /tmp/dakota_results_baaa2490;
+            driver /tmp/dakota_params_aaaa2490 tmp/dakota_results_baaa2490;
+            ofilter /tmp/dakota_params_aaaa2490 /tmp/dakota_results_baa22490
 
 These files have unique names created by Boost filesystem utilities.
 This uniqueness requires the user’s interface to get the names of these
@@ -1126,28 +1054,24 @@ different analysis drivers to the response results, since the same root
 results filename is used for each component. For the system call
 interface, the syntax would be similar to the following:
 
-.. container:: small
+::
 
-   ::
-
-          ifilter /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ;
-               driver1 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.1;
-               driver2 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.2;
-               driver3 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.3;
-               ofilter /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ
+       ifilter /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ;
+            driver1 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.1;
+            driver2 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.2;
+            driver3 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.3;
+            ofilter /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ
 
 and, for the fork interface, similar to:
 
-.. container:: small
+::
 
-   ::
-
-          blocking fork:
-               ifilter /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ;
-               driver1 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.1;
-               driver2 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.2;
-               driver3 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.3;
-               ofilter /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ
+       blocking fork:
+            ifilter /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ;
+            driver1 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.1;
+            driver2 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.2;
+            driver3 /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ.3;
+            ofilter /var/tmp/aaawkaOKZ /var/tmp/baaxkaOKZ
 
 Tagging of results files with an analysis identifier is needed since
 each analysis driver must contribute a user-defined subset of the total
@@ -1196,11 +1120,9 @@ optional tagging and saving as with files). To enable the
 ``work_directory`` feature an interface specification includes the
 keyword
 
-.. container:: small
+::
 
-   ::
-
-             work_directory
+          work_directory
 
 then Dakota will arrange for the simulator and any filters to wake up in
 the work directory, with $PATH adjusted (if necessary) so programs that
@@ -1211,11 +1133,9 @@ for the simulator to have various files, e.g., data files, available in
 the directory where it runs. If, say, is such a directory (as seen from
 Dakota’s directory), the interface specification
 
-.. container:: small
+::
 
-   ::
-
-             work_directory named 'my/special/directory'
+          work_directory named 'my/special/directory'
 
 would cause Dakota to start the simulator and any filters in that
 directory. If the directory did not already exist, Dakota would create
@@ -1235,11 +1155,9 @@ useful in debugging.
 Sometimes it can be helpful for the simulator and filters to start in a
 new directory populated with some files. Adding
 
-.. container:: small
+::
 
-   ::
-
-             link_files 'templatedir/*'
+          link_files 'templatedir/*'
 
 to the work directory specification would cause the contents of
 directory to be linked into the work directory. Linking makes sense if
@@ -1252,24 +1170,20 @@ unless ``replace`` also appears in the specification.
 Here is a summary of possibilities for a work directory specification,
 with ``[...]`` denoting that :math:`...` is optional:
 
-.. container:: small
+::
 
-   ::
-
-        work_directory [ named '...' ]
-          [ directory_tag ]     # (or dir_tag)
-          [ directory_save ]    # (or dir_save)
-          [ link_files '...' '...' ]
-          [ copy_files '...' '...' ]
-          [ replace ]
+     work_directory [ named '...' ]
+       [ directory_tag ]     # (or dir_tag)
+       [ directory_save ]    # (or dir_save)
+       [ link_files '...' '...' ]
+       [ copy_files '...' '...' ]
+       [ replace ]
 
 Figure `[fig:interface:workdir] <#fig:interface:workdir>`__ contains an
 example of these specifications in a Dakota input file for constrained
 optimization.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 .. _`interfaces:batch`:
 
@@ -1312,26 +1226,24 @@ can select the aprepro format.
 The following example parameters file contains parameter sets for two
 evaluations.
 
-.. container:: small
+::
 
-   ::
-
-                                                1 variables
-                           -4.912558193411678e-01 x1
-                                                1 functions
-                                                1 ASV_1:response_fn_1
-                                                1 derivative_variables
-                                                1 DVV_1:x1
-                                                0 analysis_components
-                                              1:1 eval_id
-                                                1 variables
-                           -2.400695372000337e-01 x1
-                                                1 functions
-                                                1 ASV_1:response_fn_1
-                                                1 derivative_variables
-                                                1 DVV_1:x1
-                                                0 analysis_components
-                                              1:2 eval_id    interface,
+                                             1 variables
+                        -4.912558193411678e-01 x1
+                                             1 functions
+                                             1 ASV_1:response_fn_1
+                                             1 derivative_variables
+                                             1 DVV_1:x1
+                                             0 analysis_components
+                                           1:1 eval_id
+                                             1 variables
+                        -2.400695372000337e-01 x1
+                                             1 functions
+                                             1 ASV_1:response_fn_1
+                                             1 derivative_variables
+                                             1 DVV_1:x1
+                                             0 analysis_components
+                                           1:2 eval_id    interface,
 
 Note that the ``eval_id`` contains two pieces of information separated
 by a colon. The second is the evaluation number, and the first is the
@@ -1349,14 +1261,12 @@ The following is an example batch results file corresponding to the
 batch parameters file above. The initial # on the first line is
 optional, and a final # (not shown here) is allowed.
 
-.. container:: small
+::
 
-   ::
-
-      #
-                           4.945481774823024e+00 f
-      #
-                           2.364744129789246e+00 f
+   #
+                        4.945481774823024e+00 f
+   #
+                        2.364744129789246e+00 f
 
 Work Directories, Tagging, and Other Features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1391,21 +1301,19 @@ functions (:math:`m=3`) using the standard parameters file format (see
 Section `[variables:parameters:standard] <#variables:parameters:standard>`__)
 is as follows:
 
-.. container:: small
+::
 
-   ::
-
-                              2 variables
-          1.500000000000000e+00 cdv_1
-          1.500000000000000e+00 cdv_2
-                              3 functions
-                              1 ASV_1
-                              1 ASV_2
-                              1 ASV_3
-                              2 derivative_variables
-                              1 DVV_1
-                              2 DVV_2
-                              0 analysis_components
+                           2 variables
+       1.500000000000000e+00 cdv_1
+       1.500000000000000e+00 cdv_2
+                           3 functions
+                           1 ASV_1
+                           1 ASV_2
+                           1 ASV_3
+                           2 derivative_variables
+                           1 DVV_1
+                           2 DVV_2
+                           0 analysis_components
 
 where numerical values are associated with their tags within
 “``value tag``” constructs. The number of design variables (:math:`n`)
@@ -1437,21 +1345,19 @@ For the APREPRO format option (see
 Section `[variables:parameters:aprepro] <#variables:parameters:aprepro>`__),
 the same set of data appears as follows:
 
-.. container:: small
+::
 
-   ::
-
-          { DAKOTA_VARS     =                      2 }
-          { cdv_1           =  1.500000000000000e+00 }
-          { cdv_2           =  1.500000000000000e+00 }
-          { DAKOTA_FNS      =                      3 }
-          { ASV_1           =                      1 }
-          { ASV_2           =                      1 }
-          { ASV_3           =                      1 }
-          { DAKOTA_DER_VARS =                      2 }
-          { DVV_1           =                      1 }
-          { DVV_2           =                      2 }
-          { DAKOTA_AN_COMPS =                      0 }
+       { DAKOTA_VARS     =                      2 }
+       { cdv_1           =  1.500000000000000e+00 }
+       { cdv_2           =  1.500000000000000e+00 }
+       { DAKOTA_FNS      =                      3 }
+       { ASV_1           =                      1 }
+       { ASV_2           =                      1 }
+       { ASV_3           =                      1 }
+       { DAKOTA_DER_VARS =                      2 }
+       { DVV_1           =                      1 }
+       { DVV_2           =                      2 }
+       { DAKOTA_AN_COMPS =                      0 }
 
 where the numerical values are associated with their tags within
 “``{ tag = value }``” constructs.
@@ -1465,115 +1371,99 @@ Section `[responses:results] <#responses:results>`__. Since the ASV
 contains all ones in this case, the response file corresponding to the
 above input file would contain values for the three functions:
 
-.. container:: small
+::
 
-   ::
-
-          1.250000000000000e-01 f
-          1.500000000000000e+00 c1
-          1.500000000000000e+00 c2
+       1.250000000000000e-01 f
+       1.500000000000000e+00 c1
+       1.500000000000000e+00 c2
 
 Since function tags are optional, the following would be equally
 acceptable:
 
-.. container:: small
+::
 
-   ::
-
-          1.250000000000000e-01
-          1.500000000000000e+00
-          1.500000000000000e+00
+       1.250000000000000e-01
+       1.500000000000000e+00
+       1.500000000000000e+00
 
 For the same parameters with different ASV components,
 
-.. container:: small
+::
 
-   ::
-
-                              2 variables
-          1.500000000000000e+00 cdv_1
-          1.500000000000000e+00 cdv_2
-                              3 functions
-                              3 ASV_1
-                              3 ASV_2
-                              3 ASV_3
-                              2 derivative_variables
-                              1 DVV_1
-                              2 DVV_2
-                              0 analysis_components
+                           2 variables
+       1.500000000000000e+00 cdv_1
+       1.500000000000000e+00 cdv_2
+                           3 functions
+                           3 ASV_1
+                           3 ASV_2
+                           3 ASV_3
+                           2 derivative_variables
+                           1 DVV_1
+                           2 DVV_2
+                           0 analysis_components
 
 the following response data is required:
 
-.. container:: small
+::
 
-   ::
-
-          1.250000000000000e-01 f
-          1.500000000000000e+00 c1
-          1.500000000000000e+00 c2
-          [ 5.000000000000000e-01 5.000000000000000e-01 ]
-          [ 3.000000000000000e+00 -5.000000000000000e-01 ]
-          [ -5.000000000000000e-01 3.000000000000000e+00 ]
+       1.250000000000000e-01 f
+       1.500000000000000e+00 c1
+       1.500000000000000e+00 c2
+       [ 5.000000000000000e-01 5.000000000000000e-01 ]
+       [ 3.000000000000000e+00 -5.000000000000000e-01 ]
+       [ -5.000000000000000e-01 3.000000000000000e+00 ]
 
 Here, we need not only the function values, but also each of their
 gradients. The derivatives are computed with respect to ``cdv_1`` and
 ``cdv_2`` as indicated by the DVV values. Another modification to the
 ASV components yields the following parameters file:
 
-.. container:: small
+::
 
-   ::
-
-                              2 variables
-          1.500000000000000e+00 cdv_1
-          1.500000000000000e+00 cdv_2
-                              3 functions
-                              2 ASV_1
-                              0 ASV_2
-                              2 ASV_3
-                              2 derivative_variables
-                              1 DVV_1
-                              2 DVV_2
-                              0 analysis_components
+                           2 variables
+       1.500000000000000e+00 cdv_1
+       1.500000000000000e+00 cdv_2
+                           3 functions
+                           2 ASV_1
+                           0 ASV_2
+                           2 ASV_3
+                           2 derivative_variables
+                           1 DVV_1
+                           2 DVV_2
+                           0 analysis_components
 
 for which the following results file is needed:
 
-.. container:: small
+::
 
-   ::
-
-          [ 5.000000000000000e-01 5.000000000000000e-01 ]
-          [ -5.000000000000000e-01 3.000000000000000e+00 ]
+       [ 5.000000000000000e-01 5.000000000000000e-01 ]
+       [ -5.000000000000000e-01 3.000000000000000e+00 ]
 
 Here, we need gradients for functions ``f`` and ``c2``, but not for
 ``c1``, presumably since this constraint is inactive.
 
 A full Newton optimizer might make the following request:
 
-.. container:: small
+::
 
-   ::
-
-                              2 variables
-          1.500000000000000e+00 cdv_1
-          1.500000000000000e+00 cdv_2
-                              1 functions
-                              7 ASV_1
-                              2 derivative_variables
-                              1 DVV_1
-                              2 DVV_2
-                              0 analysis_components
+                           2 variables
+       1.500000000000000e+00 cdv_1
+       1.500000000000000e+00 cdv_2
+                           1 functions
+                           7 ASV_1
+                           2 derivative_variables
+                           1 DVV_1
+                           2 DVV_2
+                           0 analysis_components
 
 for which the following results file,
 
-.. container:: small
+::
 
-   ::
-
-          1.250000000000000e-01 f
-          [ 5.000000000000000e-01 5.000000000000000e-01 ]
-          [[ 3.000000000000000e+00 0.000000000000000e+00
-             0.000000000000000e+00 3.000000000000000e+00 ]]
+       1.250000000000000e-01 f
+       [ 5.000000000000000e-01 5.000000000000000e-01 ]
+       [[ 3.000000000000000e+00 0.000000000000000e+00
+          0.000000000000000e+00 3.000000000000000e+00 ]]
 
 containing the objective function, its gradient vector, and its Hessian
 matrix, is needed. Again, the derivatives (gradient vector and Hessian
@@ -1590,48 +1480,44 @@ performed (see Section `[responses:active] <#responses:active>`__). For
 a reliability analysis problem, the uncertain variables are the active
 continuous variables and the following parameters file would be typical:
 
-.. container:: small
+::
 
-   ::
-
-                             12 variables
-          1.500000000000000e+00 cdv_1
-          1.500000000000000e+00 cdv_2
-                              2 ddriv_1
-                              2 ddriv_2
-                              2 ddriv_3
-          5.000000000000000e+00 nuv_1
-          5.000000000000000e+00 nuv_2
-          3.500000000000000e+00 csv_1
-          3.500000000000000e+00 csv_2
-          3.500000000000000e+00 csv_3
-                              4 dsriv_1
-                              4 dsriv_2
-                              3 functions
-                              3 ASV_1
-                              3 ASV_2
-                              3 ASV_3
-                              2 derivative_variables
-                              6 DVV_1
-                              7 DVV_2
-                              2 analysis_components
-                      mesh1.exo AC_1
-                        db1.xml AC_2
+                          12 variables
+       1.500000000000000e+00 cdv_1
+       1.500000000000000e+00 cdv_2
+                           2 ddriv_1
+                           2 ddriv_2
+                           2 ddriv_3
+       5.000000000000000e+00 nuv_1
+       5.000000000000000e+00 nuv_2
+       3.500000000000000e+00 csv_1
+       3.500000000000000e+00 csv_2
+       3.500000000000000e+00 csv_3
+                           4 dsriv_1
+                           4 dsriv_2
+                           3 functions
+                           3 ASV_1
+                           3 ASV_2
+                           3 ASV_3
+                           2 derivative_variables
+                           6 DVV_1
+                           7 DVV_2
+                           2 analysis_components
+                   mesh1.exo AC_1
+                     db1.xml AC_2
 
 Gradients are requested with respect to variable entries 6 and 7, which
 correspond to normal uncertain variables ``nuv_1`` and ``nuv_2``. The
 following response data would be appropriate:
 
-.. container:: small
+::
 
-   ::
-
-          7.943125000000000e+02 f
-          1.500000000000000e+00 c1
-          1.500000000000000e+00 c2
-          [ 2.560000000000000e+02 2.560000000000000e+02 ]
-          [ 0.000000000000000e+00 0.000000000000000e+00 ]
-          [ 0.000000000000000e+00 0.000000000000000e+00 ]
+       7.943125000000000e+02 f
+       1.500000000000000e+00 c1
+       1.500000000000000e+00 c2
+       [ 2.560000000000000e+02 2.560000000000000e+02 ]
+       [ 0.000000000000000e+00 0.000000000000000e+00 ]
+       [ 0.000000000000000e+00 0.000000000000000e+00 ]
 
 In a parameter study, however, no distinction is drawn between different
 types of continuous variables, and derivatives would be needed with
@@ -1641,57 +1527,53 @@ uncertain variables ``nuv_1`` and ``nuv_2``, and the continuous state
 variables ``csv_1``, ``csv_2`` and ``csv_3``). The parameters file would
 appear as
 
-.. container:: small
+::
 
-   ::
-
-                             12 variables
-          1.500000000000000e+00 cdv_1
-          1.500000000000000e+00 cdv_2
-                              2 ddriv_1
-                              2 ddriv_2
-                              2 ddriv_3
-          5.000000000000000e+00 nuv_1
-          5.000000000000000e+00 nuv_2
-          3.500000000000000e+00 csv_1
-          3.500000000000000e+00 csv_2
-          3.500000000000000e+00 csv_3
-                              4 dsriv_1
-                              4 dsriv_2
-                              3 functions
-                              3 ASV_1
-                              3 ASV_2
-                              3 ASV_3
-                              7 derivative_variables
-                              1 DVV_1
-                              2 DVV_2
-                              6 DVV_3
-                              7 DVV_4
-                              8 DVV_5
-                              9 DVV_6
-                             10 DVV_7
-                              2 analysis_components
-                      mesh1.exo AC_1
-                        db1.xml AC_2
+                          12 variables
+       1.500000000000000e+00 cdv_1
+       1.500000000000000e+00 cdv_2
+                           2 ddriv_1
+                           2 ddriv_2
+                           2 ddriv_3
+       5.000000000000000e+00 nuv_1
+       5.000000000000000e+00 nuv_2
+       3.500000000000000e+00 csv_1
+       3.500000000000000e+00 csv_2
+       3.500000000000000e+00 csv_3
+                           4 dsriv_1
+                           4 dsriv_2
+                           3 functions
+                           3 ASV_1
+                           3 ASV_2
+                           3 ASV_3
+                           7 derivative_variables
+                           1 DVV_1
+                           2 DVV_2
+                           6 DVV_3
+                           7 DVV_4
+                           8 DVV_5
+                           9 DVV_6
+                          10 DVV_7
+                           2 analysis_components
+                   mesh1.exo AC_1
+                     db1.xml AC_2
 
 and the corresponding results would appear as
 
-.. container:: small
+::
 
-   ::
-
-          7.943125000000000e+02 f
-          1.500000000000000e+00 c1
-          1.500000000000000e+00 c2
-          [  5.000000000000000e-01  5.000000000000000e-01  2.560000000000000e+02
-             2.560000000000000e+02  6.250000000000000e+01  6.250000000000000e+01
-             6.250000000000000e+01 ]
-          [  3.000000000000000e+00 -5.000000000000000e-01  0.000000000000000e+00
-             0.000000000000000e+00  0.000000000000000e+00  0.000000000000000e+00
-             0.000000000000000e+00 ]
-          [ -5.000000000000000e-01  3.000000000000000e+00  0.000000000000000e+00
-             0.000000000000000e+00  0.000000000000000e+00  0.000000000000000e+00
-             0.000000000000000e+00 ]
+       7.943125000000000e+02 f
+       1.500000000000000e+00 c1
+       1.500000000000000e+00 c2
+       [  5.000000000000000e-01  5.000000000000000e-01  2.560000000000000e+02
+          2.560000000000000e+02  6.250000000000000e+01  6.250000000000000e+01
+          6.250000000000000e+01 ]
+       [  3.000000000000000e+00 -5.000000000000000e-01  0.000000000000000e+00
+          0.000000000000000e+00  0.000000000000000e+00  0.000000000000000e+00
+          0.000000000000000e+00 ]
+       [ -5.000000000000000e-01  3.000000000000000e+00  0.000000000000000e+00
+          0.000000000000000e+00  0.000000000000000e+00  0.000000000000000e+00
+          0.000000000000000e+00 ]
 
 .. _`interfaces:dakota.interfacing`:
 
@@ -2013,26 +1895,22 @@ response. (A common error is leaving off the ``function`` attribute,
 which is needed to distinguish the function value of the response from
 its gradient and Hessian.)
 
-.. container:: bigbox
+::
 
-   .. container:: small
+     import dakota.interfacing as di
+     import applic_module # fictitious application 
 
-      ::
+     params, results = di.read_parameters_file()
 
-           import dakota.interfacing as di
-           import applic_module # fictitious application 
+     # parameters can be accessed by descriptor, as shown here, or by index
+     x1 = params["x1"]
+     x2 = params["x2"]
 
-           params, results = di.read_parameters_file()
+     f = applic_module.run(x1,x2)
 
-           # parameters can be accessed by descriptor, as shown here, or by index
-           x1 = params["x1"]
-           x2 = params["x2"]
-
-           f = applic_module.run(x1,x2)
-
-           # Responses also can be accessed by descriptor or index
-           results["f"].function = f
-           results.write()
+     # Responses also can be accessed by descriptor or index
+     results["f"].function = f
+     results.write()
 
 The ``Results`` object exposes the active set vector read from the
 parameters file. When analytic gradients or Hessians are available for a
@@ -2049,30 +1927,26 @@ has been modified to return not only the function value of ``f``, but
 also its gradient and Hessian. The ``asv`` attribute is examined to
 determine which of these to add to ``results["f"]``.
 
-.. container:: bigbox
+::
 
-   .. container:: small
+     import dakota.interfacing as di
+     import applic_module # fictitious application
 
-      ::
+     params, results = di.read_parameters_file()
 
-           import dakota.interfacing as di
-           import applic_module # fictitious application
+     x1 = params["x1"]
+     x2 = params["x2"]
 
-           params, results = di.read_parameters_file()
+     f, df, df2 = applic_module.run(x1,x2)
 
-           x1 = params["x1"]
-           x2 = params["x2"]
+     if Results.asv.function:
+         results["f"].function = f
+     if Results.asv.gradient:
+         results["f"].gradient = df
+     if Results.asv.hessian:
+         results["f"].hessian = df2
 
-           f, df, df2 = applic_module.run(x1,x2)
-
-           if Results.asv.function:
-               results["f"].function = f
-           if Results.asv.gradient:
-               results["f"].gradient = df
-           if Results.asv.hessian:
-               results["f"].hessian = df2
-
-           results.write()
+     results.write()
 
 .. _`interfaces:dprepro-and-pyprepro`:
 
@@ -2168,9 +2042,7 @@ The remaining options are used to
 
 -  Set the default numerical output format (``--output-format``).
 
-.. container:: bigbox
-
-   .. container:: tiny
+TODO: Generated input file likely goes here
 
 The ``pyprepro`` script accepts largely the same command line options.
 The primary differences are that ``pyprepro`` does not require or accept
@@ -2736,11 +2608,9 @@ compactly written in many cases using *list comprehensions*:
 
 This results in
 
-.. container:: small
+::
 
-   ::
-
-      [0, 0.7071067812, 1, 0.7071067812, 1.224646799e-16, -0.7071067812, -1, -0.7071067812]
+   [0, 0.7071067812, 1, 0.7071067812, 1.224646799e-16, -0.7071067812, -1, -0.7071067812]
 
 Alternatively, if the NumPy package is available on the host system,
 lists can be converted to arrays, which do support MATLAB-style
@@ -2755,11 +2625,9 @@ element-wise operations:
 
 Returns:
 
-.. container:: small
+::
 
-   ::
-
-      [0, 0.7071067812, 1, 0.7071067812, 1.224646799e-16, -0.7071067812, -1, -0.7071067812]
+   [0, 0.7071067812, 1, 0.7071067812, 1.224646799e-16, -0.7071067812, -1, -0.7071067812]
 
 .. _`interfaces:strings`:
 

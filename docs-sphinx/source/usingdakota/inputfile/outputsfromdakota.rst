@@ -38,190 +38,186 @@ Figure `[output:incont] <#output:incont>`__ specifies one equality
 constraint, and that Dakota’s finite difference algorithm will provide
 central difference numerical gradients to the NPSOL optimizer.
 
-.. container:: small
-
-   .. container:: bigbox
+TODO: Generated input file likely goes here
 
 A partial listing of the Dakota output for the container optimization
 example follows:
 
-.. container:: small
+::
 
-   ::
+   Dakota version 5.4+ (stable) released May  2 2014.
+   Subversion revision 2508 built May  2 2014 15:26:14.
+   Running MPI Dakota executable in serial mode.
+   Start time: Fri May  2 15:38:11 2014
 
-      Dakota version 5.4+ (stable) released May  2 2014.
-      Subversion revision 2508 built May  2 2014 15:26:14.
-      Running MPI Dakota executable in serial mode.
-      Start time: Fri May  2 15:38:11 2014
+   ----------------------------------------------------------------
+   Begin DAKOTA input file
+   /home/user/dakota/build/examples/users/container_opt_npsol.in
+   ----------------------------------------------------------------
+   # Dakota Input File: container_opt_npsol.in
+   environment
 
-      ----------------------------------------------------------------
-      Begin DAKOTA input file
-      /home/user/dakota/build/examples/users/container_opt_npsol.in
-      ----------------------------------------------------------------
-      # Dakota Input File: container_opt_npsol.in
-      environment
+   <SNIP>
 
-      <SNIP>
+   ---------------------
+   End DAKOTA input file
+   ---------------------
 
-      ---------------------
-      End DAKOTA input file
-      ---------------------
+   Using Dakota input file '/home/user/dakota/build/examples/users/container_opt_npsol.in'
+   Writing new restart file dakota.rst
 
-      Using Dakota input file '/home/user/dakota/build/examples/users/container_opt_npsol.in'
-      Writing new restart file dakota.rst
+   >>>>> Executing environment.
 
-      >>>>> Executing environment.
+   >>>>> Running npsol_sqp iterator.
 
-      >>>>> Running npsol_sqp iterator.
+   ------------------------------------------
+   Begin Dakota derivative estimation routine
+   ------------------------------------------
 
-      ------------------------------------------
-      Begin Dakota derivative estimation routine
-      ------------------------------------------
+   >>>>> Initial map for analytic portion of response:
 
-      >>>>> Initial map for analytic portion of response:
+   ---------------------
+   Begin Evaluation    1
+   ---------------------
+   Parameters for evaluation 1:
+                         4.5000000000e+00 H
+                         4.5000000000e+00 D
 
-      ---------------------
-      Begin Evaluation    1
-      ---------------------
-      Parameters for evaluation 1:
-                            4.5000000000e+00 H
-                            4.5000000000e+00 D
+   blocking fork: container container.in.1 container.out.1
 
-      blocking fork: container container.in.1 container.out.1
-
-      Active response data for evaluation 1:
-      Active set vector = { 1 1 }
-                            1.0713145108e+02 obj_fn
-                            8.0444076396e+00 nln_eq_con_1
+   Active response data for evaluation 1:
+   Active set vector = { 1 1 }
+                         1.0713145108e+02 obj_fn
+                         8.0444076396e+00 nln_eq_con_1
 
 
-      >>>>> Dakota finite difference gradient evaluation for x[1] + h:
+   >>>>> Dakota finite difference gradient evaluation for x[1] + h:
 
-      ---------------------
-      Begin Evaluation    2
-      ---------------------
-      Parameters for evaluation 2:
-                            4.5045000000e+00 H
-                            4.5000000000e+00 D
+   ---------------------
+   Begin Evaluation    2
+   ---------------------
+   Parameters for evaluation 2:
+                         4.5045000000e+00 H
+                         4.5000000000e+00 D
 
-      blocking fork: container container.in.2 container.out.2
+   blocking fork: container container.in.2 container.out.2
 
-      Active response data for evaluation 2:
-      Active set vector = { 1 1 }
-                            1.0719761302e+02 obj_fn
-                            8.1159770472e+00 nln_eq_con_1
-
-
-      >>>>> Dakota finite difference gradient evaluation for x[1] - h:
-
-      ---------------------
-      Begin Evaluation    3
-      ---------------------
-      Parameters for evaluation 3:
-                            4.4955000000e+00 H
-                            4.5000000000e+00 D
-
-      blocking fork: container container.in.3 container.out.3
-
-      Active response data for evaluation 3:
-      Active set vector = { 1 1 }
-                            1.0706528914e+02 obj_fn
-                            7.9728382320e+00 nln_eq_con_1
+   Active response data for evaluation 2:
+   Active set vector = { 1 1 }
+                         1.0719761302e+02 obj_fn
+                         8.1159770472e+00 nln_eq_con_1
 
 
-      >>>>> Dakota finite difference gradient evaluation for x[2] + h:
+   >>>>> Dakota finite difference gradient evaluation for x[1] - h:
 
-      ---------------------
-      Begin Evaluation    4
-      ---------------------
-      Parameters for evaluation 4:
-                            4.5000000000e+00 H
-                            4.5045000000e+00 D
+   ---------------------
+   Begin Evaluation    3
+   ---------------------
+   Parameters for evaluation 3:
+                         4.4955000000e+00 H
+                         4.5000000000e+00 D
 
-      blocking fork: container container.in.4 container.out.4
+   blocking fork: container container.in.3 container.out.3
 
-      Active response data for evaluation 4:
-      Active set vector = { 1 1 }
-                            1.0727959301e+02 obj_fn
-                            8.1876180243e+00 nln_eq_con_1
-
-
-      >>>>> Dakota finite difference gradient evaluation for x[2] - h:
-
-      ---------------------
-      Begin Evaluation    5
-      ---------------------
-      Parameters for evaluation 5:
-                            4.5000000000e+00 H
-                            4.4955000000e+00 D
-
-      blocking fork: container container.in.5 container.out.5
-
-      Active response data for evaluation 5:
-      Active set vector = { 1 1 }
-                            1.0698339109e+02 obj_fn
-                            7.9013403937e+00 nln_eq_con_1
+   Active response data for evaluation 3:
+   Active set vector = { 1 1 }
+                         1.0706528914e+02 obj_fn
+                         7.9728382320e+00 nln_eq_con_1
 
 
-      >>>>> Total response returned to iterator:
+   >>>>> Dakota finite difference gradient evaluation for x[2] + h:
 
-      Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
-                            1.0713145108e+02 obj_fn
-                            8.0444076396e+00 nln_eq_con_1
-       [  1.4702653619e+01  3.2911324639e+01 ] obj_fn gradient
-       [  1.5904312809e+01  3.1808625618e+01 ] nln_eq_con_1 gradient
+   ---------------------
+   Begin Evaluation    4
+   ---------------------
+   Parameters for evaluation 4:
+                         4.5000000000e+00 H
+                         4.5045000000e+00 D
 
+   blocking fork: container container.in.4 container.out.4
 
-      <SNIP>
-
-
-      >>>>> Dakota finite difference gradient evaluation for x[2] - h:
-
-      ---------------------
-      Begin Evaluation   40
-      ---------------------
-      Parameters for evaluation 40:
-                            4.9873894231e+00 H
-                            4.0230575428e+00 D
-
-      blocking fork: container container.in.40 container.out.40
-
-      Active response data for evaluation 40:
-      Active set vector = { 1 1 }
-                            9.8301287596e+01 obj_fn
-                           -1.2698647501e-01 nln_eq_con_1
+   Active response data for evaluation 4:
+   Active set vector = { 1 1 }
+                         1.0727959301e+02 obj_fn
+                         8.1876180243e+00 nln_eq_con_1
 
 
-      >>>>> Total response returned to iterator:
+   >>>>> Dakota finite difference gradient evaluation for x[2] - h:
 
-      Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
-                            9.8432498116e+01 obj_fn
-                           -9.6918029158e-12 nln_eq_con_1
-       [  1.3157517860e+01  3.2590159623e+01 ] obj_fn gradient
-       [  1.2737124497e+01  3.1548877601e+01 ] nln_eq_con_1 gradient
+   ---------------------
+   Begin Evaluation    5
+   ---------------------
+   Parameters for evaluation 5:
+                         4.5000000000e+00 H
+                         4.4955000000e+00 D
+
+   blocking fork: container container.in.5 container.out.5
+
+   Active response data for evaluation 5:
+   Active set vector = { 1 1 }
+                         1.0698339109e+02 obj_fn
+                         7.9013403937e+00 nln_eq_con_1
+
+
+   >>>>> Total response returned to iterator:
+
+   Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                         1.0713145108e+02 obj_fn
+                         8.0444076396e+00 nln_eq_con_1
+    [  1.4702653619e+01  3.2911324639e+01 ] obj_fn gradient
+    [  1.5904312809e+01  3.1808625618e+01 ] nln_eq_con_1 gradient
+
+
+   <SNIP>
+
+
+   >>>>> Dakota finite difference gradient evaluation for x[2] - h:
+
+   ---------------------
+   Begin Evaluation   40
+   ---------------------
+   Parameters for evaluation 40:
+                         4.9873894231e+00 H
+                         4.0230575428e+00 D
+
+   blocking fork: container container.in.40 container.out.40
+
+   Active response data for evaluation 40:
+   Active set vector = { 1 1 }
+                         9.8301287596e+01 obj_fn
+                        -1.2698647501e-01 nln_eq_con_1
+
+
+   >>>>> Total response returned to iterator:
+
+   Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                         9.8432498116e+01 obj_fn
+                        -9.6918029158e-12 nln_eq_con_1
+    [  1.3157517860e+01  3.2590159623e+01 ] obj_fn gradient
+    [  1.2737124497e+01  3.1548877601e+01 ] nln_eq_con_1 gradient
 
 
 
-      NPSOL exits with INFORM code = 0 (see "Interpretation of output" section in NPSOL manual)
+   NPSOL exits with INFORM code = 0 (see "Interpretation of output" section in NPSOL manual)
 
-      NOTE: see Fortran device 9 file (fort.9 or ftn09)
-            for complete NPSOL iteration history.
-      <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
-      <<<<< Best parameters          =
-                            4.9873894231e+00 H
-                            4.0270846274e+00 D
-      <<<<< Best objective function  =
-                            9.8432498116e+01
-      <<<<< Best constraint values   =
-                           -9.6918029158e-12
-      <<<<< Best data captured at function evaluation 36
+   NOTE: see Fortran device 9 file (fort.9 or ftn09)
+         for complete NPSOL iteration history.
+   <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+   <<<<< Best parameters          =
+                         4.9873894231e+00 H
+                         4.0270846274e+00 D
+   <<<<< Best objective function  =
+                         9.8432498116e+01
+   <<<<< Best constraint values   =
+                        -9.6918029158e-12
+   <<<<< Best data captured at function evaluation 36
 
 
-      <<<<< Iterator npsol_sqp completed.
-      <<<<< Environment execution completed.
-      DAKOTA execution time in seconds:
-        Total CPU        =       0.03 [parent =   0.023997, child =   0.006003]
-        Total wall clock =   0.090703
+   <<<<< Iterator npsol_sqp completed.
+   <<<<< Environment execution completed.
+   DAKOTA execution time in seconds:
+     Total CPU        =       0.03 [parent =   0.023997, child =   0.006003]
+     Total wall clock =   0.090703
 
 The output begins with information on the Dakota version, compilation
 date, and run mode. It then echos the user input file before proceeding
@@ -322,21 +318,17 @@ columns are the design parameter values (labeled in the example as
 (labeled “``obj_fn``”), and the sixth column is the nonlinear equality
 constraint (labeled “``nln_eq_con_1``”).
 
-.. container:: bigbox
+::
 
-   .. container:: small
-
-      ::
-
-         %eval_id interface             H              D         obj_fn   nln_eq_con_1 
-                1     NO_ID           4.5            4.5    107.1314511     8.04440764 
-                2     NO_ID   5.801246882    3.596476363    94.33737399    -4.59103645 
-                3     NO_ID   5.197920019    3.923577479     97.7797214  -0.6780884711 
-                4     NO_ID   4.932877133    4.044776216    98.28930566  -0.1410680284 
-                5     NO_ID   4.989328733    4.026133158     98.4270019 -0.005324671422 
-                6     NO_ID   4.987494493    4.027041977    98.43249058 -7.307058453e-06 
-                7     NO_ID   4.987391669     4.02708372    98.43249809 -2.032538049e-08 
-                8     NO_ID   4.987389423    4.027084627    98.43249812 -9.691802916e-12 
+   %eval_id interface             H              D         obj_fn   nln_eq_con_1 
+          1     NO_ID           4.5            4.5    107.1314511     8.04440764 
+          2     NO_ID   5.801246882    3.596476363    94.33737399    -4.59103645 
+          3     NO_ID   5.197920019    3.923577479     97.7797214  -0.6780884711 
+          4     NO_ID   4.932877133    4.044776216    98.28930566  -0.1410680284 
+          5     NO_ID   4.989328733    4.026133158     98.4270019 -0.005324671422 
+          6     NO_ID   4.987494493    4.027041977    98.43249058 -7.307058453e-06 
+          7     NO_ID   4.987391669     4.02708372    98.43249809 -2.032538049e-08 
+          8     NO_ID   4.987389423    4.027084627    98.43249812 -9.691802916e-12 
 
 **Attention:** The second column labeled “``interface``” is new as of
 Dakota 6.1. It identifies which interface was used to map the variables
@@ -469,22 +461,20 @@ Reference Manual :cite:p:`RefMan`.
 Incorrectly spelled specifications, such as ``“numericl_gradients”``,
 will result in error messages of the form:
 
-.. container:: small
+::
 
-   ::
-
-      Input line 31: unrecognized identifier 'numericl_gradients'.
-      Input line 31: unrecognized identifier 'method_source'.
-      Input line 31: unrecognized identifier 'dakota'.
-      Input line 31: unrecognized identifier 'interval_type'.
-      Input line 31: unrecognized identifier 'central'.
-      Input line 31: unrecognized identifier 'fd_gradient_step_size'.
-      Input line 31: One of the following 4 entities
-      must be specified for responses...
-          analytic_gradients
-          mixed_gradients
-          no_gradients
-          numerical_gradients
+   Input line 31: unrecognized identifier 'numericl_gradients'.
+   Input line 31: unrecognized identifier 'method_source'.
+   Input line 31: unrecognized identifier 'dakota'.
+   Input line 31: unrecognized identifier 'interval_type'.
+   Input line 31: unrecognized identifier 'central'.
+   Input line 31: unrecognized identifier 'fd_gradient_step_size'.
+   Input line 31: One of the following 4 entities
+   must be specified for responses...
+       analytic_gradients
+       mixed_gradients
+       no_gradients
+       numerical_gradients
 
 In this example the line numbers given are approximate, as all input
 following an errant keywords is considered a single line through the end
@@ -497,11 +487,9 @@ specification for a response data set is combined with selection of a
 gradient-based optimization method, then this error must be detected
 during set-up of the optimizer (see last line of listing):
 
-.. container:: small
+::
 
-   ::
-
-      Error: gradient-based minimizers require a gradient specification.
+   Error: gradient-based minimizers require a gradient specification.
 
 Many such errors can be detected earlier by running ``dakota -check``.
 
@@ -515,11 +503,9 @@ indicated by an active set vector containing 3’s), but the user’s
 simulation code only returns function values, then the following error
 message is generated:
 
-.. container:: small
+::
 
-   ::
-
-          At EOF: insufficient data for functionGradient 1
+       At EOF: insufficient data for functionGradient 1
 
 Unfortunately, descriptive error messages are not available for all
 possible failure modes of Dakota. If you encounter core dumps,
@@ -584,11 +570,9 @@ Section `[input:tabularformat] <#input:tabularformat>`__) with data
 columns corresponding to each variable. This file can be generated with
 sampling, parameter study, and DACE methods by invoking
 
-.. container:: small
+::
 
-   ::
-
-          dakota -i dakota.in -pre_run ::variables.dat
+       dakota -i dakota.in -pre_run ::variables.dat
 
 for example, to output the variables (samples) in an LHS study. If a
 user adds the corresponding response values to this file, it may then be

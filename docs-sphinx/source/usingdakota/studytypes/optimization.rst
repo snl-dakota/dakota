@@ -521,9 +521,7 @@ library :cite:p:`Har06`. See the Dakota Reference
 Manual :cite:p:`RefMan` for more information on the *methods*
 block commands that can be used with SCOLIB algorithms.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 For this run, the optimizer was given an initial design point of
 :math:`(x_1,x_2) = (0.0,0.0)` and was limited to 2000 function
@@ -542,6 +540,8 @@ at the start of the algorithm. The coordinate pattern is clearly visible
 at the start of the iteration history, and the decreasing size of the
 coordinate pattern is evident at the design points move toward
 :math:`(x_1,x_2) = (1.0,1.0)`.
+
+TODO: review table/images
 
 .. container:: tabular
 
@@ -665,9 +665,7 @@ are best suited to optimization problems that have multiple local
 optima, and where gradients are either too expensive to compute or are
 not readily available.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 Figure `[opt:methods:gradientfree:global:example:rosenbrock_ea] <#opt:methods:gradientfree:global:example:rosenbrock_ea>`__
 shows a Dakota input file that uses an EA to minimize the Rosenbrock
@@ -741,9 +739,7 @@ maximizing the variance. An example specification for the EGO algorithm
 is shown in
 Figure `[opt:methods:gradientfree:global:example:egm_rosen] <#opt:methods:gradientfree:global:example:egm_rosen>`__.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 .. _`opt:additional`:
 
@@ -894,9 +890,7 @@ that the weights sum to a value of one. The multiobjective optimization
 capability also allows any number of constraints, although none are
 included in this example.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 Figure `[opt:additional:multiobjective:example1:figure02] <#opt:additional:multiobjective:example1:figure02>`__
 shows an excerpt of the results for this multiobjective optimization
@@ -911,45 +905,41 @@ functions employs the user-specified weightings of ``.7``, ``.2``, and
 indicated in this case by the gradient of the composite objective
 function going to zero (no constraints are active).
 
-.. container:: bigbox
+::
 
-   .. container:: small
+      ------------------------------
+      Begin Function Evaluation    9
+      ------------------------------
+      Parameters for function evaluation 9:
+                            5.9388064483e-01 x1
+                            7.4158741198e-01 x2
 
-      ::
+      (text_book /tmp/fileFNNH3v /tmp/fileRktLe9)
+      Removing /tmp/fileFNNH3v and /tmp/fileRktLe9
 
-            ------------------------------
-            Begin Function Evaluation    9
-            ------------------------------
-            Parameters for function evaluation 9:
-                                  5.9388064483e-01 x1
-                                  7.4158741198e-01 x2
-
-            (text_book /tmp/fileFNNH3v /tmp/fileRktLe9)
-            Removing /tmp/fileFNNH3v and /tmp/fileRktLe9
-
-            Active response data for function evaluation 9:
-            Active set vector = { 3 3 3 } Deriv vars vector = { 1 2 }
-                                  3.1662048106e-02 obj_fn_1
-                                 -1.8099485683e-02 obj_fn_2
-                                  2.5301156719e-01 obj_fn_3
-             [ -2.6792982175e-01 -6.9024137415e-02 ] obj_fn_1 gradient
-             [  1.1877612897e+00 -5.0000000000e-01 ] obj_fn_2 gradient
-             [ -5.0000000000e-01  1.4831748240e+00 ] obj_fn_3 gradient
+      Active response data for function evaluation 9:
+      Active set vector = { 3 3 3 } Deriv vars vector = { 1 2 }
+                            3.1662048106e-02 obj_fn_1
+                           -1.8099485683e-02 obj_fn_2
+                            2.5301156719e-01 obj_fn_3
+       [ -2.6792982175e-01 -6.9024137415e-02 ] obj_fn_1 gradient
+       [  1.1877612897e+00 -5.0000000000e-01 ] obj_fn_2 gradient
+       [ -5.0000000000e-01  1.4831748240e+00 ] obj_fn_3 gradient
 
 
 
-            -----------------------------------
-            Post-processing Function Evaluation
-            -----------------------------------
-            Multiobjective transformation:
-                                  4.3844693257e-02 obj_fn
-             [  1.3827084219e-06  5.8620632776e-07  ] obj_fn gradient
+      -----------------------------------
+      Post-processing Function Evaluation
+      -----------------------------------
+      Multiobjective transformation:
+                            4.3844693257e-02 obj_fn
+       [  1.3827084219e-06  5.8620632776e-07  ] obj_fn gradient
 
-                7    1 1.0E+00    9  4.38446933E-02 1.5E-06    2 T TT     
+          7    1 1.0E+00    9  4.38446933E-02 1.5E-06    2 T TT     
 
-             Exit NPSOL - Optimal solution found.
+       Exit NPSOL - Optimal solution found.
 
-             Final nonlinear objective value =   0.4384469E-01
+       Final nonlinear objective value =   0.4384469E-01
 
 By performing multiple optimizations for different sets of weights, a
 family of optimal solutions can be generated which define the trade-offs
@@ -1038,9 +1028,7 @@ Figure `[opt:additional:multiobjective:example2:moga1inp] <#opt:additional:mult
 shows an input file that demonstrates some of the multi-objective
 capabilities available with the moga method.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 In this example, the three best solutions (as specified by
 ``final_solutions`` =3) are written to the output. Additionally, final
@@ -1200,9 +1188,7 @@ scaled by a factor of 50.0, then logarithmically, the first nonlinear
 constraint by a factor of 15.0, and the second nonlinear constraint is
 not scaled.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 .. _`opt:usage`:
 

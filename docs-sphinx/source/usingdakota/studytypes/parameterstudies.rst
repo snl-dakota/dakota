@@ -157,12 +157,10 @@ formulations which are used in conjunction with the Initial Values (see
 Section `1.1.1 <#ps:overview:initial>`__) to define the vector and steps
 of the parameter study:
 
-.. container:: small
+::
 
-   ::
-
-          final_point (vector of reals) and num_steps (integer)
-          step_vector (vector of reals) and num_steps (integer)
+       final_point (vector of reals) and num_steps (integer)
+       step_vector (vector of reals) and num_steps (integer)
 
 In both of these cases, the Initial Values are used as the parameter
 study starting point and the specification selection above defines the
@@ -181,30 +179,28 @@ Three continuous parameters with initial values of (1.0, 1.0, 1.0),
 ``num_steps`` = 4, and either ``final_point`` = (1.0, 2.0, 1.0) or
 ``step_vector`` = (0, .25, 0):
 
-.. container:: small
+::
 
-   ::
-
-          Parameters for function evaluation 1:
-                                1.0000000000e+00 c1   
-                                1.0000000000e+00 c2   
-                                1.0000000000e+00 c3   
-          Parameters for function evaluation 2:
-                                1.0000000000e+00 c1   
-                                1.2500000000e+00 c2   
-                                1.0000000000e+00 c3   
-          Parameters for function evaluation 3:
-                                1.0000000000e+00 c1   
-                                1.5000000000e+00 c2   
-                                1.0000000000e+00 c3   
-          Parameters for function evaluation 4:
-                                1.0000000000e+00 c1   
-                                1.7500000000e+00 c2   
-                                1.0000000000e+00 c3   
-          Parameters for function evaluation 5:
-                                1.0000000000e+00 c1   
-                                2.0000000000e+00 c2   
-                                1.0000000000e+00 c3   
+       Parameters for function evaluation 1:
+                             1.0000000000e+00 c1   
+                             1.0000000000e+00 c2   
+                             1.0000000000e+00 c3   
+       Parameters for function evaluation 2:
+                             1.0000000000e+00 c1   
+                             1.2500000000e+00 c2   
+                             1.0000000000e+00 c3   
+       Parameters for function evaluation 3:
+                             1.0000000000e+00 c1   
+                             1.5000000000e+00 c2   
+                             1.0000000000e+00 c3   
+       Parameters for function evaluation 4:
+                             1.0000000000e+00 c1   
+                             1.7500000000e+00 c2   
+                             1.0000000000e+00 c3   
+       Parameters for function evaluation 5:
+                             1.0000000000e+00 c1   
+                             2.0000000000e+00 c2   
+                             1.0000000000e+00 c3   
 
 Two continuous parameters with initial values of (1.0, 1.0), one
 discrete range parameter with initial value of 5, one discrete real set
@@ -212,35 +208,33 @@ parameter with set values of (10., 12., 18., 30., 50.) and initial value
 of 10., ``num_steps`` = 4, and either ``final_point`` = (2.0, 1.4, 13,
 50.) or ``step_vector`` = (.25, .1, 2, 1):
 
-.. container:: small
+::
 
-   ::
-
-          Parameters for function evaluation 1:
-                                1.0000000000e+00 c1
-                                1.0000000000e+00 c2
-                                               5 di1
-                                1.0000000000e+01 dr1
-          Parameters for function evaluation 2:
-                                1.2500000000e+00 c1   
-                                1.1000000000e+00 c2   
-                                               7 di1
-                                1.2000000000e+01 dr1
-          Parameters for function evaluation 3:
-                                1.5000000000e+00 c1   
-                                1.2000000000e+00 c2   
-                                               9 di1
-                                1.8000000000e+01 dr1
-          Parameters for function evaluation 4:
-                                1.7500000000e+00 c1   
-                                1.3000000000e+00 c2   
-                                              11 di1
-                                3.0000000000e+01 dr1
-          Parameters for function evaluation 5:
-                                2.0000000000e+00 c1   
-                                1.4000000000e+00 c2   
-                                              13 di1
-                                5.0000000000e+01 dr1
+       Parameters for function evaluation 1:
+                             1.0000000000e+00 c1
+                             1.0000000000e+00 c2
+                                            5 di1
+                             1.0000000000e+01 dr1
+       Parameters for function evaluation 2:
+                             1.2500000000e+00 c1   
+                             1.1000000000e+00 c2   
+                                            7 di1
+                             1.2000000000e+01 dr1
+       Parameters for function evaluation 3:
+                             1.5000000000e+00 c1   
+                             1.2000000000e+00 c2   
+                                            9 di1
+                             1.8000000000e+01 dr1
+       Parameters for function evaluation 4:
+                             1.7500000000e+00 c1   
+                             1.3000000000e+00 c2   
+                                           11 di1
+                             3.0000000000e+01 dr1
+       Parameters for function evaluation 5:
+                             2.0000000000e+00 c1   
+                             1.4000000000e+00 c2   
+                                           13 di1
+                             5.0000000000e+01 dr1
 
 An example using a vector parameter study is described in
 Section `1.7 <#ps:example:vector>`__.
@@ -270,15 +264,13 @@ values (not set indices).
 An example specification that would result in the same parameter sets as
 in the second example in Section `1.2 <#ps:vector>`__ would be:
 
-.. container:: small
+::
 
-   ::
-
-          list_of_points = 1.0  1.0  5 10.
-                           1.25 1.1  7 12.
-                           1.5  1.2  9 18.
-                           1.75 1.3 11 30.
-                           2.0  1.4 13 50.
+       list_of_points = 1.0  1.0  5 10.
+                        1.25 1.1  7 12.
+                        1.5  1.2  9 18.
+                        1.75 1.3 11 30.
+                        2.0  1.4 13 50.
 
 For convenience, the points for evaluation in a list parameter study may
 instead be specified via the specification, e.g.,
@@ -319,37 +311,35 @@ For example, with Initial Values of (1.0, 1.0), a ``step_vector`` of
 evaluated followed by four function evaluations (two negative deltas and
 two positive deltas) per variable:
 
-.. container:: small
+::
 
-   ::
-
-          Parameters for function evaluation 1:
-                                1.0000000000e+00 d1
-                                1.0000000000e+00 d2
-          Parameters for function evaluation 2:
-                                8.0000000000e-01 d1
-                                1.0000000000e+00 d2
-          Parameters for function evaluation 3:
-                                9.0000000000e-01 d1
-                                1.0000000000e+00 d2
-          Parameters for function evaluation 4:
-                                1.1000000000e+00 d1
-                                1.0000000000e+00 d2
-          Parameters for function evaluation 5:
-                                1.2000000000e+00 d1
-                                1.0000000000e+00 d2
-          Parameters for function evaluation 6:
-                                1.0000000000e+00 d1
-                                8.0000000000e-01 d2
-          Parameters for function evaluation 7:
-                                1.0000000000e+00 d1
-                                9.0000000000e-01 d2
-          Parameters for function evaluation 8:
-                                1.0000000000e+00 d1
-                                1.1000000000e+00 d2
-          Parameters for function evaluation 9:
-                                1.0000000000e+00 d1
-                                1.2000000000e+00 d2
+       Parameters for function evaluation 1:
+                             1.0000000000e+00 d1
+                             1.0000000000e+00 d2
+       Parameters for function evaluation 2:
+                             8.0000000000e-01 d1
+                             1.0000000000e+00 d2
+       Parameters for function evaluation 3:
+                             9.0000000000e-01 d1
+                             1.0000000000e+00 d2
+       Parameters for function evaluation 4:
+                             1.1000000000e+00 d1
+                             1.0000000000e+00 d2
+       Parameters for function evaluation 5:
+                             1.2000000000e+00 d1
+                             1.0000000000e+00 d2
+       Parameters for function evaluation 6:
+                             1.0000000000e+00 d1
+                             8.0000000000e-01 d2
+       Parameters for function evaluation 7:
+                             1.0000000000e+00 d1
+                             9.0000000000e-01 d2
+       Parameters for function evaluation 8:
+                             1.0000000000e+00 d1
+                             1.1000000000e+00 d2
+       Parameters for function evaluation 9:
+                             1.0000000000e+00 d1
+                             1.2000000000e+00 d2
 
 This set of points in parameter space is depicted in
 Figure `1.1 <#ps:figure01>`__.
@@ -400,46 +390,44 @@ result in the following twelve function evaluations:
 
    Example multidimensional parameter study
 
-.. container:: small
+::
 
-   ::
-
-          Parameters for function evaluation 1:
-                                0.0000000000e+00 d1   
-                                0.0000000000e+00 d2   
-          Parameters for function evaluation 2:
-                                1.0000000000e+00 d1   
-                                0.0000000000e+00 d2   
-          Parameters for function evaluation 3:
-                                2.0000000000e+00 d1   
-                                0.0000000000e+00 d2   
-          Parameters for function evaluation 4:
-                                0.0000000000e+00 d1   
-                                1.0000000000e+00 d2   
-          Parameters for function evaluation 5:
-                                1.0000000000e+00 d1   
-                                1.0000000000e+00 d2   
-          Parameters for function evaluation 6:
-                                2.0000000000e+00 d1   
-                                1.0000000000e+00 d2   
-          Parameters for function evaluation 7:
-                                0.0000000000e+00 d1   
-                                2.0000000000e+00 d2   
-          Parameters for function evaluation 8:
-                                1.0000000000e+00 d1   
-                                2.0000000000e+00 d2   
-          Parameters for function evaluation 9:
-                                2.0000000000e+00 d1   
-                                2.0000000000e+00 d2   
-          Parameters for function evaluation 10:
-                                0.0000000000e+00 d1   
-                                3.0000000000e+00 d2   
-          Parameters for function evaluation 11:
-                                1.0000000000e+00 d1   
-                                3.0000000000e+00 d2   
-          Parameters for function evaluation 12:
-                                2.0000000000e+00 d1   
-                                3.0000000000e+00 d2
+       Parameters for function evaluation 1:
+                             0.0000000000e+00 d1   
+                             0.0000000000e+00 d2   
+       Parameters for function evaluation 2:
+                             1.0000000000e+00 d1   
+                             0.0000000000e+00 d2   
+       Parameters for function evaluation 3:
+                             2.0000000000e+00 d1   
+                             0.0000000000e+00 d2   
+       Parameters for function evaluation 4:
+                             0.0000000000e+00 d1   
+                             1.0000000000e+00 d2   
+       Parameters for function evaluation 5:
+                             1.0000000000e+00 d1   
+                             1.0000000000e+00 d2   
+       Parameters for function evaluation 6:
+                             2.0000000000e+00 d1   
+                             1.0000000000e+00 d2   
+       Parameters for function evaluation 7:
+                             0.0000000000e+00 d1   
+                             2.0000000000e+00 d2   
+       Parameters for function evaluation 8:
+                             1.0000000000e+00 d1   
+                             2.0000000000e+00 d2   
+       Parameters for function evaluation 9:
+                             2.0000000000e+00 d1   
+                             2.0000000000e+00 d2   
+       Parameters for function evaluation 10:
+                             0.0000000000e+00 d1   
+                             3.0000000000e+00 d2   
+       Parameters for function evaluation 11:
+                             1.0000000000e+00 d1   
+                             3.0000000000e+00 d2   
+       Parameters for function evaluation 12:
+                             2.0000000000e+00 d1   
+                             3.0000000000e+00 d2
 
 The first example shown in this User’s Manual is a multi-dimensional
 parameter study. See
@@ -488,9 +476,7 @@ section, the ``vector_parameter_study`` keyword is used. The
 study, and ``num_steps`` specifies the number of steps taken between the
 initial and final points in the parameter study.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 Figure `[additional:rosenbrock_vector_graphics] <#additional:rosenbrock_vector_graphics>`__\ (a)
 shows the legacy X Windows-based graphics output created by Dakota,

@@ -314,6 +314,8 @@ misfit Hessian-based proposal covariance
 (:math:`\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H}_{\boldsymbol{M}}^{-1}`)
 in Figure `[fig:rosen_prop_covar] <#fig:rosen_prop_covar>`__\ (b).
 
+TODO: Likely needs figures here
+
 .. container:: subfigmatrix
 
    2
@@ -631,7 +633,7 @@ in which the “truth" models for three prediction figurations are
 compared to the corrected model output. In each case, the truth falls
 within the prediction intervals.
 
-.. container:: center
+TODO: Review figures here
 
 .. container:: subfigmatrix
 

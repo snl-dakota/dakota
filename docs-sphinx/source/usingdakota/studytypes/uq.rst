@@ -399,9 +399,7 @@ Figure `[uq:figure02] <#uq:figure02>`__ for the case where ``samples`` =
 5 and ``samples`` = 10 for both ``random`` (:math:`\circ`) and ``lhs``
 (:math:`+`) sample types.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 Latin hypercube sampling ensures full coverage of the range of the input
 variables, which is often a problem with Monte Carlo sampling when the
@@ -435,68 +433,64 @@ Alternatively, Dakota could have provided CCDF pairings, reliability
 levels corresponding to prescribed response levels, or response levels
 corresponding to prescribed probability or reliability levels.
 
-.. container:: bigbox
+::
 
-   .. container:: footnotesize
+   Statistics based on 10 samples:
 
-      ::
+   Sample moment statistics for each response function:
+                               Mean           Std Dev          Skewness          Kurtosis
+    response_fn_1  3.8383990322e-01  4.0281539886e-01  1.2404952971e+00  6.5529797327e-01
+    response_fn_2  7.4798705803e-02  3.4686110941e-01  4.5716015887e-01 -5.8418924529e-01
+    response_fn_3  7.0946176558e-02  3.4153246532e-01  5.2851897926e-01 -8.2527332042e-01
 
-         Statistics based on 10 samples:
+   95% confidence intervals for each response function:
+                       LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+    response_fn_1  9.5683125821e-02  6.7199668063e-01  2.7707061315e-01  7.3538389383e-01
+    response_fn_2 -1.7333078422e-01  3.2292819583e-01  2.3858328290e-01  6.3323317325e-01
+    response_fn_3 -1.7337143113e-01  3.1526378424e-01  2.3491805390e-01  6.2350514636e-01
 
-         Sample moment statistics for each response function:
-                                     Mean           Std Dev          Skewness          Kurtosis
-          response_fn_1  3.8383990322e-01  4.0281539886e-01  1.2404952971e+00  6.5529797327e-01
-          response_fn_2  7.4798705803e-02  3.4686110941e-01  4.5716015887e-01 -5.8418924529e-01
-          response_fn_3  7.0946176558e-02  3.4153246532e-01  5.2851897926e-01 -8.2527332042e-01
+   Probability Density Function (PDF) histograms for each response function:
+   PDF for response_fn_1:
+             Bin Lower          Bin Upper      Density Value
+             ---------          ---------      -------------
+      2.3066424677e-02   1.0000000000e-01   3.8994678038e+00
+      1.0000000000e-01   2.0000000000e-01   2.0000000000e+00
+      2.0000000000e-01   6.0000000000e-01   5.0000000000e-01
+      6.0000000000e-01   1.2250968624e+00   4.7992562123e-01
+   PDF for response_fn_2:
+             Bin Lower          Bin Upper      Density Value
+             ---------          ---------      -------------
+     -3.5261164651e-01   1.0000000000e-01   1.1046998102e+00
+      1.0000000000e-01   2.0000000000e-01   2.0000000000e+00
+      2.0000000000e-01   6.0000000000e-01   5.0000000000e-01
+      6.0000000000e-01   6.9844576220e-01   1.0157877573e+00
+   PDF for response_fn_3:
+             Bin Lower          Bin Upper      Density Value
+             ---------          ---------      -------------
+     -3.8118095128e-01   1.0000000000e-01   1.2469321539e+00
+      1.0000000000e-01   2.0000000000e-01   0.0000000000e+00
+      2.0000000000e-01   6.0000000000e-01   7.5000000000e-01
+      6.0000000000e-01   6.4526450977e-01   2.2092363423e+00
 
-         95% confidence intervals for each response function:
-                             LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
-          response_fn_1  9.5683125821e-02  6.7199668063e-01  2.7707061315e-01  7.3538389383e-01
-          response_fn_2 -1.7333078422e-01  3.2292819583e-01  2.3858328290e-01  6.3323317325e-01
-          response_fn_3 -1.7337143113e-01  3.1526378424e-01  2.3491805390e-01  6.2350514636e-01
-
-         Probability Density Function (PDF) histograms for each response function:
-         PDF for response_fn_1:
-                   Bin Lower          Bin Upper      Density Value
-                   ---------          ---------      -------------
-            2.3066424677e-02   1.0000000000e-01   3.8994678038e+00
-            1.0000000000e-01   2.0000000000e-01   2.0000000000e+00
-            2.0000000000e-01   6.0000000000e-01   5.0000000000e-01
-            6.0000000000e-01   1.2250968624e+00   4.7992562123e-01
-         PDF for response_fn_2:
-                   Bin Lower          Bin Upper      Density Value
-                   ---------          ---------      -------------
-           -3.5261164651e-01   1.0000000000e-01   1.1046998102e+00
-            1.0000000000e-01   2.0000000000e-01   2.0000000000e+00
-            2.0000000000e-01   6.0000000000e-01   5.0000000000e-01
-            6.0000000000e-01   6.9844576220e-01   1.0157877573e+00
-         PDF for response_fn_3:
-                   Bin Lower          Bin Upper      Density Value
-                   ---------          ---------      -------------
-           -3.8118095128e-01   1.0000000000e-01   1.2469321539e+00
-            1.0000000000e-01   2.0000000000e-01   0.0000000000e+00
-            2.0000000000e-01   6.0000000000e-01   7.5000000000e-01
-            6.0000000000e-01   6.4526450977e-01   2.2092363423e+00
-
-         Level mappings for each response function:
-         Cumulative Distribution Function (CDF) for response_fn_1:
-              Response Level  Probability Level  Reliability Index  General Rel Index
-              --------------  -----------------  -----------------  -----------------
-            1.0000000000e-01   3.0000000000e-01
-            2.0000000000e-01   5.0000000000e-01
-            6.0000000000e-01   7.0000000000e-01
-         Cumulative Distribution Function (CDF) for response_fn_2:
-              Response Level  Probability Level  Reliability Index  General Rel Index
-              --------------  -----------------  -----------------  -----------------
-            1.0000000000e-01   5.0000000000e-01
-            2.0000000000e-01   7.0000000000e-01
-            6.0000000000e-01   9.0000000000e-01
-         Cumulative Distribution Function (CDF) for response_fn_3:
-              Response Level  Probability Level  Reliability Index  General Rel Index
-              --------------  -----------------  -----------------  -----------------
-            1.0000000000e-01   6.0000000000e-01
-            2.0000000000e-01   6.0000000000e-01
-            6.0000000000e-01   9.0000000000e-01
+   Level mappings for each response function:
+   Cumulative Distribution Function (CDF) for response_fn_1:
+        Response Level  Probability Level  Reliability Index  General Rel Index
+        --------------  -----------------  -----------------  -----------------
+      1.0000000000e-01   3.0000000000e-01
+      2.0000000000e-01   5.0000000000e-01
+      6.0000000000e-01   7.0000000000e-01
+   Cumulative Distribution Function (CDF) for response_fn_2:
+        Response Level  Probability Level  Reliability Index  General Rel Index
+        --------------  -----------------  -----------------  -----------------
+      1.0000000000e-01   5.0000000000e-01
+      2.0000000000e-01   7.0000000000e-01
+      6.0000000000e-01   9.0000000000e-01
+   Cumulative Distribution Function (CDF) for response_fn_3:
+        Response Level  Probability Level  Reliability Index  General Rel Index
+        --------------  -----------------  -----------------  -----------------
+      1.0000000000e-01   6.0000000000e-01
+      2.0000000000e-01   6.0000000000e-01
+      6.0000000000e-01   9.0000000000e-01
 
 In addition to obtaining statistical summary information of the type
 shown in Figure `[uq:figure03] <#uq:figure03>`__, the results of LHS
@@ -541,37 +535,33 @@ correlation coefficients). This is because we use a default “restricted
 pairing” method in the LHS routine which forces near-zero correlation
 amongst uncorrelated inputs.
 
-.. container:: bigbox
+::
 
-   .. container:: small
+   Simple Correlation Matrix between input and output:
+                          x1           x2 response_fn_1 response_fn_2 response_fn_3
+             x1  1.00000e+00
+             x2 -7.22482e-02  1.00000e+00
+   response_fn_1 -7.04965e-01 -6.27351e-01  1.00000e+00
+   response_fn_2  8.61628e-01 -5.31298e-01 -2.60486e-01  1.00000e+00
+   response_fn_3 -5.83075e-01  8.33989e-01 -1.23374e-01 -8.92771e-01  1.00000e+00
 
-      ::
+   Partial Correlation Matrix between input and output:
+                response_fn_1 response_fn_2 response_fn_3
+             x1 -9.65994e-01  9.74285e-01 -9.49997e-01
+             x2 -9.58854e-01 -9.26578e-01  9.77252e-01
 
-         Simple Correlation Matrix between input and output:
-                                x1           x2 response_fn_1 response_fn_2 response_fn_3
-                   x1  1.00000e+00
-                   x2 -7.22482e-02  1.00000e+00
-         response_fn_1 -7.04965e-01 -6.27351e-01  1.00000e+00
-         response_fn_2  8.61628e-01 -5.31298e-01 -2.60486e-01  1.00000e+00
-         response_fn_3 -5.83075e-01  8.33989e-01 -1.23374e-01 -8.92771e-01  1.00000e+00
+   Simple Rank Correlation Matrix between input and output:
+                          x1           x2 response_fn_1 response_fn_2 response_fn_3
+             x1  1.00000e+00
+             x2 -6.66667e-02  1.00000e+00
+   response_fn_1 -6.60606e-01 -5.27273e-01  1.00000e+00
+   response_fn_2  8.18182e-01 -6.00000e-01 -2.36364e-01  1.00000e+00
+   response_fn_3 -6.24242e-01  7.93939e-01 -5.45455e-02 -9.27273e-01  1.00000e+00
 
-         Partial Correlation Matrix between input and output:
-                      response_fn_1 response_fn_2 response_fn_3
-                   x1 -9.65994e-01  9.74285e-01 -9.49997e-01
-                   x2 -9.58854e-01 -9.26578e-01  9.77252e-01
-
-         Simple Rank Correlation Matrix between input and output:
-                                x1           x2 response_fn_1 response_fn_2 response_fn_3
-                   x1  1.00000e+00
-                   x2 -6.66667e-02  1.00000e+00
-         response_fn_1 -6.60606e-01 -5.27273e-01  1.00000e+00
-         response_fn_2  8.18182e-01 -6.00000e-01 -2.36364e-01  1.00000e+00
-         response_fn_3 -6.24242e-01  7.93939e-01 -5.45455e-02 -9.27273e-01  1.00000e+00
-
-         Partial Rank Correlation Matrix between input and output:
-                      response_fn_1 response_fn_2 response_fn_3
-                   x1 -8.20657e-01  9.74896e-01 -9.41760e-01
-                   x2 -7.62704e-01 -9.50799e-01  9.65145e-01
+   Partial Rank Correlation Matrix between input and output:
+                response_fn_1 response_fn_2 response_fn_3
+             x1 -8.20657e-01  9.74896e-01 -9.41760e-01
+             x2 -7.62704e-01 -9.50799e-01  9.65145e-01
 
 Finally, note that the LHS package can be used for design of experiments
 over design and state variables by including an active view override in
@@ -1052,30 +1042,25 @@ Equation `[additional:textbook_f] <#additional:textbook_f>`__. The
 importance factors are not available for the first response as the
 standard deviation is zero.
 
-.. container:: bigbox
 
-   .. container:: small
+TODO: Generated input file likely goes here
 
-.. container:: bigbox
+::
 
-   .. container:: small
-
-      ::
-
-         MV Statistics for response_fn_1:
-           Approximate Mean Response                  =  0.0000000000e+00
-           Approximate Standard Deviation of Response =  0.0000000000e+00
-           Importance Factors not available.
-         MV Statistics for response_fn_2:
-           Approximate Mean Response                  =  5.0000000000e-01
-           Approximate Standard Deviation of Response =  1.0307764064e+00
-           Importance Factor for TF1ln                =  9.4117647059e-01
-           Importance Factor for TF2ln                =  5.8823529412e-02
-         MV Statistics for response_fn_3:
-           Approximate Mean Response                  =  5.0000000000e-01
-           Approximate Standard Deviation of Response =  1.0307764064e+00
-           Importance Factor for TF1ln                =  5.8823529412e-02
-           Importance Factor for TF2ln                =  9.4117647059e-01
+   MV Statistics for response_fn_1:
+     Approximate Mean Response                  =  0.0000000000e+00
+     Approximate Standard Deviation of Response =  0.0000000000e+00
+     Importance Factors not available.
+   MV Statistics for response_fn_2:
+     Approximate Mean Response                  =  5.0000000000e-01
+     Approximate Standard Deviation of Response =  1.0307764064e+00
+     Importance Factor for TF1ln                =  9.4117647059e-01
+     Importance Factor for TF2ln                =  5.8823529412e-02
+   MV Statistics for response_fn_3:
+     Approximate Mean Response                  =  5.0000000000e-01
+     Approximate Standard Deviation of Response =  1.0307764064e+00
+     Importance Factor for TF1ln                =  5.8823529412e-02
+     Importance Factor for TF2ln                =  9.4117647059e-01
 
 FORM Reliability with Lognormal Ratio
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1115,43 +1100,38 @@ it is a very small error (on the order of e-11), much smaller than the
 error obtained when using a Mean Value method, which will be discussed
 next.
 
-.. container:: bigbox
 
-   .. container:: small
+TODO: Generated input file likely goes here
 
-.. container:: bigbox
+::
 
-   .. container:: small
-
-      ::
-
-         Cumulative Distribution Function (CDF) for response_fn_1:
-              Response Level  Probability Level  Reliability Index
-              --------------  -----------------  -----------------
-            4.0000000000e-01   4.7624085962e-02   1.6683404020e+00
-            5.0000000000e-01   1.0346525475e-01   1.2620507942e+00
-            5.5000000000e-01   1.3818404972e-01   1.0885143628e+00
-            6.0000000000e-01   1.7616275822e-01   9.3008801339e-01
-            6.5000000000e-01   2.1641741368e-01   7.8434989943e-01
-            7.0000000000e-01   2.5803428381e-01   6.4941748143e-01
-            7.5000000000e-01   3.0020938124e-01   5.2379840558e-01
-            8.0000000000e-01   3.4226491013e-01   4.0628960782e-01
-            8.5000000000e-01   3.8365052982e-01   2.9590705956e-01
-            9.0000000000e-01   4.2393548232e-01   1.9183562480e-01
-            1.0000000000e+00   5.0000000000e-01   6.8682233460e-12
-            1.0500000000e+00   5.3539344228e-01  -8.8834907167e-02
-            1.1500000000e+00   6.0043460094e-01  -2.5447217462e-01
-            1.2000000000e+00   6.3004131827e-01  -3.3196278078e-01
-            1.2500000000e+00   6.5773508987e-01  -4.0628960782e-01
-            1.3000000000e+00   6.8356844630e-01  -4.7770089473e-01
-            1.3500000000e+00   7.0761025532e-01  -5.4641676380e-01
-            1.4000000000e+00   7.2994058691e-01  -6.1263331274e-01
-            1.5000000000e+00   7.6981945355e-01  -7.3825238860e-01
-            1.5500000000e+00   7.8755158269e-01  -7.9795460350e-01
-            1.6000000000e+00   8.0393505584e-01  -8.5576118635e-01
-            1.6500000000e+00   8.1906005158e-01  -9.1178881995e-01
-            1.7000000000e+00   8.3301386860e-01  -9.6614373461e-01
-            1.7500000000e+00   8.4588021938e-01  -1.0189229206e+00
+   Cumulative Distribution Function (CDF) for response_fn_1:
+        Response Level  Probability Level  Reliability Index
+        --------------  -----------------  -----------------
+      4.0000000000e-01   4.7624085962e-02   1.6683404020e+00
+      5.0000000000e-01   1.0346525475e-01   1.2620507942e+00
+      5.5000000000e-01   1.3818404972e-01   1.0885143628e+00
+      6.0000000000e-01   1.7616275822e-01   9.3008801339e-01
+      6.5000000000e-01   2.1641741368e-01   7.8434989943e-01
+      7.0000000000e-01   2.5803428381e-01   6.4941748143e-01
+      7.5000000000e-01   3.0020938124e-01   5.2379840558e-01
+      8.0000000000e-01   3.4226491013e-01   4.0628960782e-01
+      8.5000000000e-01   3.8365052982e-01   2.9590705956e-01
+      9.0000000000e-01   4.2393548232e-01   1.9183562480e-01
+      1.0000000000e+00   5.0000000000e-01   6.8682233460e-12
+      1.0500000000e+00   5.3539344228e-01  -8.8834907167e-02
+      1.1500000000e+00   6.0043460094e-01  -2.5447217462e-01
+      1.2000000000e+00   6.3004131827e-01  -3.3196278078e-01
+      1.2500000000e+00   6.5773508987e-01  -4.0628960782e-01
+      1.3000000000e+00   6.8356844630e-01  -4.7770089473e-01
+      1.3500000000e+00   7.0761025532e-01  -5.4641676380e-01
+      1.4000000000e+00   7.2994058691e-01  -6.1263331274e-01
+      1.5000000000e+00   7.6981945355e-01  -7.3825238860e-01
+      1.5500000000e+00   7.8755158269e-01  -7.9795460350e-01
+      1.6000000000e+00   8.0393505584e-01  -8.5576118635e-01
+      1.6500000000e+00   8.1906005158e-01  -9.1178881995e-01
+      1.7000000000e+00   8.3301386860e-01  -9.6614373461e-01
+      1.7500000000e+00   8.4588021938e-01  -1.0189229206e+00
 
 .. figure:: img/cdf_form.png
    :alt: Comparison of the cumulative distribution function (CDF)
@@ -1186,45 +1166,41 @@ solution by as much as 0.11 in CDF estimates. A comprehensive comparison
 of various reliability methods applied to the logratio problem is
 provided in  :cite:p:`Eld06a`.
 
-.. container:: bigbox
+::
 
-   .. container:: small
-
-      ::
-
-         MV Statistics for response_fn_1:
-           Approximate Mean Response                  =  1.0000000000e+00
-           Approximate Standard Deviation of Response =  5.9160798127e-01
-           Importance Factor for TF1ln                =  7.1428570714e-01
-           Importance Factor for TF2ln                =  7.1428572143e-01
-           Importance Factor for TF1ln     TF2ln      = -4.2857142857e-01
-         Cumulative Distribution Function (CDF) for response_fn_1:
-              Response Level  Probability Level  Reliability Index  General Rel Index
-              --------------  -----------------  -----------------  -----------------
-            4.0000000000e-01   1.5524721837e-01   1.0141851006e+00   1.0141851006e+00
-            5.0000000000e-01   1.9901236093e-01   8.4515425050e-01   8.4515425050e-01
-            5.5000000000e-01   2.2343641149e-01   7.6063882545e-01   7.6063882545e-01
-            6.0000000000e-01   2.4948115037e-01   6.7612340040e-01   6.7612340040e-01
-            6.5000000000e-01   2.7705656603e-01   5.9160797535e-01   5.9160797535e-01
-            7.0000000000e-01   3.0604494093e-01   5.0709255030e-01   5.0709255030e-01
-            7.5000000000e-01   3.3630190949e-01   4.2257712525e-01   4.2257712525e-01
-            8.0000000000e-01   3.6765834596e-01   3.3806170020e-01   3.3806170020e-01
-            8.5000000000e-01   3.9992305332e-01   2.5354627515e-01   2.5354627515e-01
-            9.0000000000e-01   4.3288618783e-01   1.6903085010e-01   1.6903085010e-01
-            1.0000000000e+00   5.0000000000e-01   0.0000000000e+00   0.0000000000e+00
-            1.0500000000e+00   5.3367668035e-01  -8.4515425050e-02  -8.4515425050e-02
-            1.1500000000e+00   6.0007694668e-01  -2.5354627515e-01  -2.5354627515e-01
-            1.2000000000e+00   6.3234165404e-01  -3.3806170020e-01  -3.3806170020e-01
-            1.2500000000e+00   6.6369809051e-01  -4.2257712525e-01  -4.2257712525e-01
-            1.3000000000e+00   6.9395505907e-01  -5.0709255030e-01  -5.0709255030e-01
-            1.3500000000e+00   7.2294343397e-01  -5.9160797535e-01  -5.9160797535e-01
-            1.4000000000e+00   7.5051884963e-01  -6.7612340040e-01  -6.7612340040e-01
-            1.5000000000e+00   8.0098763907e-01  -8.4515425050e-01  -8.4515425050e-01
-            1.5500000000e+00   8.2372893005e-01  -9.2966967555e-01  -9.2966967555e-01
-            1.6000000000e+00   8.4475278163e-01  -1.0141851006e+00  -1.0141851006e+00
-            1.6500000000e+00   8.6405064339e-01  -1.0987005257e+00  -1.0987005257e+00
-            1.7000000000e+00   8.8163821351e-01  -1.1832159507e+00  -1.1832159507e+00
-            1.7500000000e+00   8.9755305196e-01  -1.2677313758e+00  -1.2677313758e+00
+   MV Statistics for response_fn_1:
+     Approximate Mean Response                  =  1.0000000000e+00
+     Approximate Standard Deviation of Response =  5.9160798127e-01
+     Importance Factor for TF1ln                =  7.1428570714e-01
+     Importance Factor for TF2ln                =  7.1428572143e-01
+     Importance Factor for TF1ln     TF2ln      = -4.2857142857e-01
+   Cumulative Distribution Function (CDF) for response_fn_1:
+        Response Level  Probability Level  Reliability Index  General Rel Index
+        --------------  -----------------  -----------------  -----------------
+      4.0000000000e-01   1.5524721837e-01   1.0141851006e+00   1.0141851006e+00
+      5.0000000000e-01   1.9901236093e-01   8.4515425050e-01   8.4515425050e-01
+      5.5000000000e-01   2.2343641149e-01   7.6063882545e-01   7.6063882545e-01
+      6.0000000000e-01   2.4948115037e-01   6.7612340040e-01   6.7612340040e-01
+      6.5000000000e-01   2.7705656603e-01   5.9160797535e-01   5.9160797535e-01
+      7.0000000000e-01   3.0604494093e-01   5.0709255030e-01   5.0709255030e-01
+      7.5000000000e-01   3.3630190949e-01   4.2257712525e-01   4.2257712525e-01
+      8.0000000000e-01   3.6765834596e-01   3.3806170020e-01   3.3806170020e-01
+      8.5000000000e-01   3.9992305332e-01   2.5354627515e-01   2.5354627515e-01
+      9.0000000000e-01   4.3288618783e-01   1.6903085010e-01   1.6903085010e-01
+      1.0000000000e+00   5.0000000000e-01   0.0000000000e+00   0.0000000000e+00
+      1.0500000000e+00   5.3367668035e-01  -8.4515425050e-02  -8.4515425050e-02
+      1.1500000000e+00   6.0007694668e-01  -2.5354627515e-01  -2.5354627515e-01
+      1.2000000000e+00   6.3234165404e-01  -3.3806170020e-01  -3.3806170020e-01
+      1.2500000000e+00   6.6369809051e-01  -4.2257712525e-01  -4.2257712525e-01
+      1.3000000000e+00   6.9395505907e-01  -5.0709255030e-01  -5.0709255030e-01
+      1.3500000000e+00   7.2294343397e-01  -5.9160797535e-01  -5.9160797535e-01
+      1.4000000000e+00   7.5051884963e-01  -6.7612340040e-01  -6.7612340040e-01
+      1.5000000000e+00   8.0098763907e-01  -8.4515425050e-01  -8.4515425050e-01
+      1.5500000000e+00   8.2372893005e-01  -9.2966967555e-01  -9.2966967555e-01
+      1.6000000000e+00   8.4475278163e-01  -1.0141851006e+00  -1.0141851006e+00
+      1.6500000000e+00   8.6405064339e-01  -1.0987005257e+00  -1.0987005257e+00
+      1.7000000000e+00   8.8163821351e-01  -1.1832159507e+00  -1.1832159507e+00
+      1.7500000000e+00   8.9755305196e-01  -1.2677313758e+00  -1.2677313758e+00
 
 Additional reliability analysis and design results are provided in
 Sections `[additional:logratio] <#additional:logratio>`__-`[additional:steel_column] <#additional:steel_column>`__.
@@ -1386,9 +1362,7 @@ quadrature in :math:`x_1` and third-order quadrature in :math:`x_2`),
 resulting in a total of 15 function evaluations to compute the PCE
 coefficients.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 The tensor product quadature points upon which the expansion is
 calculated are shown in Figure `1.5 <#uq:examples:rosen_pce_points>`__.
@@ -1426,79 +1400,75 @@ over these two uncertain variables is 0.342. Note that this is a very
 similar estimate to what was obtained using 200 Monte Carlo samples,
 with fewer true function evaluations.
 
-.. container:: bigbox
+::
 
-   .. container:: scriptsize
+   Polynomial Chaos coefficients for response_fn_1:
+           coefficient   u1   u2
+           ----------- ---- ----
+      4.5566666667e+02   P0   P0
+     -4.0000000000e+00   P1   P0
+      9.1695238095e+02   P2   P0
+     -9.9475983006e-14   P3   P0
+      3.6571428571e+02   P4   P0
+     -5.3333333333e+02   P0   P1
+     -3.9968028887e-14   P1   P1
+     -1.0666666667e+03   P2   P1
+     -3.3573144265e-13   P3   P1
+      1.2829737273e-12   P4   P1
+      2.6666666667e+02   P0   P2
+      2.2648549702e-13   P1   P2
+      4.8849813084e-13   P2   P2
+      2.8754776338e-13   P3   P2
+     -2.8477220582e-13   P4   P2
+   -------------------------------------------------------------------
+   Statistics derived analytically from polynomial expansion:
 
-      ::
+   Moment-based statistics for each response function:
+                               Mean           Std Dev          Skewness          Kurtosis
+   response_fn_1
+     expansion:    4.5566666667e+02  6.0656024184e+02
+     numerical:    4.5566666667e+02  6.0656024184e+02  1.9633285271e+00  3.3633861456e+00
 
-         Polynomial Chaos coefficients for response_fn_1:
-                 coefficient   u1   u2
-                 ----------- ---- ----
-            4.5566666667e+02   P0   P0
-           -4.0000000000e+00   P1   P0
-            9.1695238095e+02   P2   P0
-           -9.9475983006e-14   P3   P0
-            3.6571428571e+02   P4   P0
-           -5.3333333333e+02   P0   P1
-           -3.9968028887e-14   P1   P1
-           -1.0666666667e+03   P2   P1
-           -3.3573144265e-13   P3   P1
-            1.2829737273e-12   P4   P1
-            2.6666666667e+02   P0   P2
-            2.2648549702e-13   P1   P2
-            4.8849813084e-13   P2   P2
-            2.8754776338e-13   P3   P2
-           -2.8477220582e-13   P4   P2
-         -------------------------------------------------------------------
-         Statistics derived analytically from polynomial expansion:
+   Covariance among response functions:
+   [[  3.6791532698e+05 ]] 
 
-         Moment-based statistics for each response function:
-                                     Mean           Std Dev          Skewness          Kurtosis
-         response_fn_1
-           expansion:    4.5566666667e+02  6.0656024184e+02
-           numerical:    4.5566666667e+02  6.0656024184e+02  1.9633285271e+00  3.3633861456e+00
+   Local sensitivities for each response function evaluated at uncertain variable means:
+   response_fn_1:
+    [ -2.0000000000e+00  2.4055757386e-13 ] 
 
-         Covariance among response functions:
-         [[  3.6791532698e+05 ]] 
+   Global sensitivity indices for each response function:
+   response_fn_1 Sobol indices:
+                                     Main             Total
+                         4.9746891383e-01  7.0363551328e-01 x1
+                         2.9636448672e-01  5.0253108617e-01 x2
+                              Interaction
+                         2.0616659946e-01 x1 x2 
 
-         Local sensitivities for each response function evaluated at uncertain variable means:
-         response_fn_1:
-          [ -2.0000000000e+00  2.4055757386e-13 ] 
+   Statistics based on 10000 samples performed on polynomial expansion:
 
-         Global sensitivity indices for each response function:
-         response_fn_1 Sobol indices:
-                                           Main             Total
-                               4.9746891383e-01  7.0363551328e-01 x1
-                               2.9636448672e-01  5.0253108617e-01 x2
-                                    Interaction
-                               2.0616659946e-01 x1 x2 
+   Probability Density Function (PDF) histograms for each response function:
+   PDF for response_fn_1:
+             Bin Lower          Bin Upper      Density Value
+             ---------          ---------      -------------
+      6.8311107124e-03   1.0000000000e-01   2.0393073423e-02
+      1.0000000000e-01   1.0000000000e+00   1.3000000000e-02
+      1.0000000000e+00   5.0000000000e+01   4.7000000000e-03
+      5.0000000000e+01   1.0000000000e+02   1.9680000000e-03
+      1.0000000000e+02   5.0000000000e+02   9.2150000000e-04
+      5.0000000000e+02   1.0000000000e+03   2.8300000000e-04
+      1.0000000000e+03   3.5755437782e+03   5.7308286215e-05
 
-         Statistics based on 10000 samples performed on polynomial expansion:
-
-         Probability Density Function (PDF) histograms for each response function:
-         PDF for response_fn_1:
-                   Bin Lower          Bin Upper      Density Value
-                   ---------          ---------      -------------
-            6.8311107124e-03   1.0000000000e-01   2.0393073423e-02
-            1.0000000000e-01   1.0000000000e+00   1.3000000000e-02
-            1.0000000000e+00   5.0000000000e+01   4.7000000000e-03
-            5.0000000000e+01   1.0000000000e+02   1.9680000000e-03
-            1.0000000000e+02   5.0000000000e+02   9.2150000000e-04
-            5.0000000000e+02   1.0000000000e+03   2.8300000000e-04
-            1.0000000000e+03   3.5755437782e+03   5.7308286215e-05
-
-         Level mappings for each response function:
-         Cumulative Distribution Function (CDF) for response_fn_1:
-              Response Level  Probability Level  Reliability Index  General Rel Index
-              --------------  -----------------  -----------------  -----------------
-            1.0000000000e-01   1.9000000000e-03
-            1.0000000000e+00   1.3600000000e-02
-            5.0000000000e+01   2.4390000000e-01
-            1.0000000000e+02   3.4230000000e-01
-            5.0000000000e+02   7.1090000000e-01
-            1.0000000000e+03   8.5240000000e-01
-         -------------------------------------------------------------------
+   Level mappings for each response function:
+   Cumulative Distribution Function (CDF) for response_fn_1:
+        Response Level  Probability Level  Reliability Index  General Rel Index
+        --------------  -----------------  -----------------  -----------------
+      1.0000000000e-01   1.9000000000e-03
+      1.0000000000e+00   1.3600000000e-02
+      5.0000000000e+01   2.4390000000e-01
+      1.0000000000e+02   3.4230000000e-01
+      5.0000000000e+02   7.1090000000e-01
+      1.0000000000e+03   8.5240000000e-01
+   -------------------------------------------------------------------
 
 .. _`uq:stoch_exp:ex:sc`:
 
@@ -1525,9 +1495,7 @@ polynomials in stochastic collocation and the resulting expansion
 exactly reproduces Rosenbrock’s function. The placement of the points
 generated by the sparse grid is shown in Figure `1.6 <#uq:figure11b>`__.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 .. figure:: img/rosen_sc_pts.png
    :alt: Rosenbrock stochastic collocation example: sparse grid points.
@@ -1560,43 +1528,39 @@ ones presented in Section `1.4.1.1 <#uq:stoch_exp:ex:pce>`__ because of
 the different assumptions about the inputs: uniform[-2,2] versus
 lognormals with means of 1.0 and standard deviations of 0.5.
 
-.. container:: bigbox
+::
 
-   .. container:: footnotesize
+   Statistics derived analytically from polynomial expansion:
 
-      ::
+   Moment-based statistics for each response function:
+                               Mean           Std Dev          Skewness          Kurtosis
+   response_fn_1
+     expansion:    2.5671972656e+02  2.0484189184e+03  2.7419241630e+02  1.9594567379e+06
+     numerical:    2.5671972656e+02  2.0484189184e+03  2.7419241630e+02  1.9594567379e+06
 
-         Statistics derived analytically from polynomial expansion:
+   Covariance among response functions:
+   [[  4.1960200651e+06 ]] 
 
-         Moment-based statistics for each response function:
-                                     Mean           Std Dev          Skewness          Kurtosis
-         response_fn_1
-           expansion:    2.5671972656e+02  2.0484189184e+03  2.7419241630e+02  1.9594567379e+06
-           numerical:    2.5671972656e+02  2.0484189184e+03  2.7419241630e+02  1.9594567379e+06
+   Global sensitivity indices for each response function:
+   response_fn_1 Sobol indices:
+                                     Main             Total
+                         9.9391978710e-01  9.9928724777e-01 x1
+                         7.1275222945e-04  6.0802128961e-03 x2
+                              Interaction
+                         5.3674606667e-03 x1 x2 
 
-         Covariance among response functions:
-         [[  4.1960200651e+06 ]] 
+   Statistics based on 10000 samples performed on polynomial expansion:
 
-         Global sensitivity indices for each response function:
-         response_fn_1 Sobol indices:
-                                           Main             Total
-                               9.9391978710e-01  9.9928724777e-01 x1
-                               7.1275222945e-04  6.0802128961e-03 x2
-                                    Interaction
-                               5.3674606667e-03 x1 x2 
-
-         Statistics based on 10000 samples performed on polynomial expansion:
-
-         Level mappings for each response function:
-         Cumulative Distribution Function (CDF) for response_fn_1:
-              Response Level  Probability Level  Reliability Index  General Rel Index
-              --------------  -----------------  -----------------  -----------------
-            1.0000000000e-01   1.8100000000e-02
-            1.0000000000e+00   8.7800000000e-02
-            5.0000000000e+01   5.8410000000e-01
-            1.0000000000e+02   7.2330000000e-01
-            5.0000000000e+02   9.2010000000e-01
-            1.0000000000e+03   9.5660000000e-01
+   Level mappings for each response function:
+   Cumulative Distribution Function (CDF) for response_fn_1:
+        Response Level  Probability Level  Reliability Index  General Rel Index
+        --------------  -----------------  -----------------  -----------------
+      1.0000000000e-01   1.8100000000e-02
+      1.0000000000e+00   8.7800000000e-02
+      5.0000000000e+01   5.8410000000e-01
+      1.0000000000e+02   7.2330000000e-01
+      5.0000000000e+02   9.2010000000e-01
+      1.0000000000e+03   9.5660000000e-01
 
 .. _`uq:importance`:
 
@@ -2066,22 +2030,16 @@ Section `[additional:cantilever] <#additional:cantilever>`__. Given
 input intervals of [1,10] on beam width and beam thickness, we can see
 that the interval estimate of beam weight is approximately [1,100].
 
-.. container:: bigbox
+TODO: Generated input file likely goes here
 
-   .. container:: small
+::
 
-.. container:: bigbox
-
-   .. container:: small
-
-      ::
-
-         ------------------------------------------------------------------
-         Min and Max estimated values for each response function:
-         weight:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
-         stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
-         displ:  Min = -9.9315672724e-01  Max = 6.7429714485e+01
-         -----------------------------------------------------------------
+   ------------------------------------------------------------------
+   Min and Max estimated values for each response function:
+   weight:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
+   stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
+   displ:  Min = -9.9315672724e-01  Max = 6.7429714485e+01
+   -----------------------------------------------------------------
 
 .. _`uq:dempshaf`:
 
@@ -2149,9 +2107,7 @@ case we have shown, the interval bounds on the first interval for the
 first variable are 0.6 and 0.9, and the bounds for the second interval
 for the first variable are 0.1 to 0.5, etc.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 Once the intervals, the BPAs, and the interval bounds are defined, the
 user can run an epistemic analysis by specifying the method as either
@@ -2188,25 +2144,21 @@ analysis: the intervals are usually much larger than expected, giving
 one a truer picture of the total output uncertainty caused by lack of
 knowledge or information about the epistemic input quantities.
 
-.. container:: bigbox
+::
 
-   .. container:: small
-
-      ::
-
-         Belief and Plausibility for each response function:
-         Cumulative Belief/Plausibility Functions (CBF/CPF) for response_fn_1:
-              Response Level  Belief Prob Level   Plaus Prob Level
-              --------------  -----------------   ----------------
-            1.0000000000e-03   0.0000000000e+00   0.0000000000e+00
-            3.0000000000e-02   0.0000000000e+00   2.7000000000e-01
-            2.0000000000e-01   2.7000000000e-01   1.0000000000e+00
-            8.0000000000e-01   9.3000000000e-01   1.0000000000e+00
-           Probability Level  Belief Resp Level   Plaus Resp Level
-           -----------------  -----------------   ----------------
-            2.5000000000e-01   2.6187288772e-01   6.2609206069e-02
-            5.0000000000e-01   2.9829775860e-01   6.3736734971e-02
-            7.5000000000e-01   6.2173551556e-01   8.0596931719e-02
+   Belief and Plausibility for each response function:
+   Cumulative Belief/Plausibility Functions (CBF/CPF) for response_fn_1:
+        Response Level  Belief Prob Level   Plaus Prob Level
+        --------------  -----------------   ----------------
+      1.0000000000e-03   0.0000000000e+00   0.0000000000e+00
+      3.0000000000e-02   0.0000000000e+00   2.7000000000e-01
+      2.0000000000e-01   2.7000000000e-01   1.0000000000e+00
+      8.0000000000e-01   9.3000000000e-01   1.0000000000e+00
+     Probability Level  Belief Resp Level   Plaus Resp Level
+     -----------------  -----------------   ----------------
+      2.5000000000e-01   2.6187288772e-01   6.2609206069e-02
+      5.0000000000e-01   2.9829775860e-01   6.3736734971e-02
+      7.5000000000e-01   6.2173551556e-01   8.0596931719e-02
 
 As in other nondeterministic methods, with ``local_evidence`` or
 ``global_evidence``, one can specify probability levels and response
@@ -2598,6 +2550,8 @@ Table `[tab:bayes_comparison] <#tab:bayes_comparison>`__ compares the
 options available with the QUESO, DREAM, GPMSA, MUQ, and WASABI
 implementations in Dakota.
 
+TODO: review table formatting, caption it, reference it
+
 .. container:: tabulary
 
    | \|L|C|C|C|C|C\| Capability & QUESO & MUQ & GPMSA & DREAM & WASABI
@@ -2644,9 +2598,7 @@ values, one for stress and one for displacement, followed by two
 variance values for the error associated with that experiment for each
 quantity of interest.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 When the input file shown in `[uq:figure18] <#uq:figure18>`__ is run,
 Dakota will run the MCMC algorithm and generate a posterior sample of
@@ -2760,6 +2712,8 @@ blocks denote five response groups (two scalar, three field). The priors
 on the hyper-parameters :math:`m_i` are taken to be inverse gamma
 distributions, with mean and mode approximately 1.0 and standard
 deviation approximately 0.1.
+
+TODO: Likely mising images here
 
 .. container:: subfigmatrix
 

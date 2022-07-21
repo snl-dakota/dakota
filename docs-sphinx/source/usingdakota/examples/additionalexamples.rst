@@ -142,9 +142,7 @@ bounds on these constraints. The commands ``direct`` and
 ``analysis_driver = ’text_book’`` specify that Dakota will use its
 internal version of the textbook problem.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 The ``conmin_mfd`` keyword in
 Figure `[additional:textbook_grad_constr] <#additional:textbook_grad_constr>`__
@@ -290,9 +288,7 @@ in this example. (The Gauss-Newton, NL2SOL, and NLSSOL SQP algorithms
 are currently available for exploiting the special mathematical
 structure of least squares minimization problems).
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 The optimization results at the end of the output file show that the
 least squares minimization approach has found the same optimum design
@@ -383,9 +379,7 @@ and 2.0 for the ``lower_bounds`` and ``upper_bounds``, respectively,
 tells Dakota to repeat them 5 times. The “interesting” region for each
 of these functions is :math:`-2\le x_k \le 2` for all dimensions.
 
-.. container:: small
-
-   .. container:: bigbox
+TODO: Generated input file likely goes here
 
 .. figure:: img/DAK5pt2_2D_shubert.png
    :alt: Plot of the ``shubert`` test function in 2 dimensions. It can
@@ -526,9 +520,7 @@ Constrained Gradient Based Optimization
 
 An example using the cylinder head test problem is shown below:
 
-.. container:: small
-
-   .. container:: bigbox
+TODO: Generated input file likely goes here
 
 The interface keyword specifies use of the ``cyl_head`` executable
 (compiled from ) as the simulator. The variables and responses keywords
@@ -571,26 +563,24 @@ which corresponds to the following optimal response quantities:
 
 The final report from the Dakota output is as follows:
 
-.. container:: small
+::
 
-   ::
-
-          <<<<< Iterator npsol_sqp completed.
-          <<<<< Function evaluation summary: 55 total (55 new, 0 duplicate)
-          <<<<< Best parameters          =
-                                2.1224188322e+00 intake_dia
-                                1.7685568331e+00 flatness
-          <<<<< Best objective function  =
-                               -2.4610312954e+00
-          <<<<< Best constraint values   =
-                                1.8407497748e-13
-                               -3.3471647504e-01
-                                0.0000000000e+00
-          <<<<< Best data captured at function evaluation 51
-          <<<<< Environment execution completed.
-          Dakota execution time in seconds:
-            Total CPU        =       0.04 [parent =   0.031995, child =   0.008005]
-            Total wall clock =   0.232134
+       <<<<< Iterator npsol_sqp completed.
+       <<<<< Function evaluation summary: 55 total (55 new, 0 duplicate)
+       <<<<< Best parameters          =
+                             2.1224188322e+00 intake_dia
+                             1.7685568331e+00 flatness
+       <<<<< Best objective function  =
+                            -2.4610312954e+00
+       <<<<< Best constraint values   =
+                             1.8407497748e-13
+                            -3.3471647504e-01
+                             0.0000000000e+00
+       <<<<< Best data captured at function evaluation 51
+       <<<<< Environment execution completed.
+       Dakota execution time in seconds:
+         Total CPU        =       0.04 [parent =   0.031995, child =   0.008005]
+         Total wall clock =   0.232134
 
 .. _`additional:container`:
 
@@ -730,26 +720,26 @@ problem is :math:`(H,D)=(4.99,4.03)`, with a minimum area of 98.43
 
 The final report from the Dakota output is as follows:
 
-.. container:: small
+::
 
-   ::
-
-          <<<<< Iterator npsol_sqp completed.
-          <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
-          <<<<< Best parameters          =
-                                4.9873894231e+00 H
-                                4.0270846274e+00 D
-          <<<<< Best objective function  =
-                                9.8432498116e+01
-          <<<<< Best constraint values   =
-                               -9.6301439045e-12
-          <<<<< Best data captured at function evaluation 36
-          <<<<< Environment execution completed.
-          Dakota execution time in seconds:
-            Total CPU        =      0.18 [parent =      0.18, child =         0]
-            Total wall clock =  0.809126
+       <<<<< Iterator npsol_sqp completed.
+       <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+       <<<<< Best parameters          =
+                             4.9873894231e+00 H
+                             4.0270846274e+00 D
+       <<<<< Best objective function  =
+                             9.8432498116e+01
+       <<<<< Best constraint values   =
+                            -9.6301439045e-12
+       <<<<< Best data captured at function evaluation 36
+       <<<<< Environment execution completed.
+       Dakota execution time in seconds:
+         Total CPU        =      0.18 [parent =      0.18, child =         0]
+         Total wall clock =  0.809126
 
    [cont_opt_npsol.out]
+
+TODO: Possible missing output file?
 
 .. _`additional:cantilever`:
 
@@ -835,37 +825,33 @@ Constrained Gradient Based Optimization
 
 The test problem is solved using :
 
-.. container:: small
-
-   .. container:: bigbox
+TODO: Generated input file likely goes here
 
 The deterministic solution is :math:`(w,t)=(2.35,3.33)` with an
 objective function of :math:`7.82`. The final report from the Dakota
 output is as follows:
 
-.. container:: small
+::
 
-   ::
-
-          <<<<< Iterator npsol_sqp completed.
-          <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
-          <<<<< Best parameters          =
-                                2.3520341271e+00 beam_width
-                                3.3262784077e+00 beam_thickness
-                                4.0000000000e+04 R
-                                2.9000000000e+07 E
-                                5.0000000000e+02 X
-                                1.0000000000e+03 Y
-          <<<<< Best objective function  =
-                                7.8235203313e+00
-          <<<<< Best constraint values   =
-                               -1.6009000260e-02
-                               -3.7083558446e-11
-          <<<<< Best data captured at function evaluation 31
-          <<<<< Environment execution completed.
-          Dakota execution time in seconds:
-            Total CPU        =       0.03 [parent =   0.027995, child =   0.002005]
-            Total wall clock =   0.281375
+       <<<<< Iterator npsol_sqp completed.
+       <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
+       <<<<< Best parameters          =
+                             2.3520341271e+00 beam_width
+                             3.3262784077e+00 beam_thickness
+                             4.0000000000e+04 R
+                             2.9000000000e+07 E
+                             5.0000000000e+02 X
+                             1.0000000000e+03 Y
+       <<<<< Best objective function  =
+                             7.8235203313e+00
+       <<<<< Best constraint values   =
+                            -1.6009000260e-02
+                            -3.7083558446e-11
+       <<<<< Best data captured at function evaluation 31
+       <<<<< Environment execution completed.
+       Dakota execution time in seconds:
+         Total CPU        =       0.03 [parent =   0.027995, child =   0.002005]
+         Total wall clock =   0.281375
 
 Optimization Under Uncertainty
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -947,9 +933,7 @@ simulator. The Pareto front is shown in
 Figure `1.10 <#additional:moga2front>`__. Note the discontinuous nature
 of the front in this example.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 .. figure:: img/dakota_mogatest2_pareto_front.png
    :alt: Pareto Front showing Tradeoffs between Function F1 and Function
@@ -996,9 +980,7 @@ discontinuous nature of the Pareto set (in the design space) in this
 example. The Pareto front is shown in
 Figure `1.12 <#additional:moga3front>`__.
 
-.. container:: bigbox
-
-   .. container:: small
+TODO: Generated input file likely goes here
 
 .. figure:: img/dakota_mogatest3_pareto_set.png
    :alt: Pareto Set of Design Variables corresponding to the Pareto
@@ -1072,58 +1054,50 @@ Dakota output obtained is shown in
 Figures `[FIG:moat:out_preamble] <#FIG:moat:out_preamble>`__
 and `[FIG:moat:out_results] <#FIG:moat:out_results>`__.
 
-.. container:: bigbox
+::
 
-   .. container:: small
+   Running MPI executable in serial mode.
+   Dakota version 6.0 release.
+   Subversion revision xxxx built May ...
+   Writing new restart file dakota.rst
+   gradientType = none
+   hessianType = none
 
-      ::
+   >>>>> Executing environment.
 
-         Running MPI executable in serial mode.
-         Dakota version 6.0 release.
-         Subversion revision xxxx built May ...
-         Writing new restart file dakota.rst
-         gradientType = none
-         hessianType = none
+   >>>>> Running psuade_moat iterator.
 
-         >>>>> Executing environment.
+   PSUADE DACE method = psuade_moat Samples = 84 Seed (user-specified) = 500
+               Partitions = 3 (Levels = 4)
 
-         >>>>> Running psuade_moat iterator.
+::
 
-         PSUADE DACE method = psuade_moat Samples = 84 Seed (user-specified) = 500
-                     Partitions = 3 (Levels = 4)
+   >>>>>> PSUADE MOAT output for function 0:
 
-.. container:: bigbox
-
-   .. container:: small
-
-      ::
-
-         >>>>>> PSUADE MOAT output for function 0:
-
-         *************************************************************
-         *********************** MOAT Analysis ***********************
-         -------------------------------------------------------------
-         Input   1 (mod. mean & std) =   9.5329e+01   9.0823e+01
-         Input   2 (mod. mean & std) =   6.7297e+01   9.5242e+01
-         Input   3 (mod. mean & std) =   1.0648e+02   1.5479e+02
-         Input   4 (mod. mean & std) =   6.6231e+01   7.5895e+01
-         Input   5 (mod. mean & std) =   9.5717e+01   1.2733e+02
-         Input   6 (mod. mean & std) =   8.0394e+01   9.9959e+01
-         Input   7 (mod. mean & std) =   3.2722e+01   2.7947e+01
-         Input   8 (mod. mean & std) =   4.2013e+01   7.6090e+00
-         Input   9 (mod. mean & std) =   4.1965e+01   7.8535e+00
-         Input  10 (mod. mean & std) =   3.6809e+01   3.6151e+00
-         Input  11 (mod. mean & std) =   8.2655e+00   1.0311e+01
-         Input  12 (mod. mean & std) =   4.9299e+00   7.0591e+00
-         Input  13 (mod. mean & std) =   3.5455e+00   4.4025e+00
-         Input  14 (mod. mean & std) =   3.4151e+00   2.4905e+00
-         Input  15 (mod. mean & std) =   2.5143e+00   5.5168e-01
-         Input  16 (mod. mean & std) =   9.0344e+00   1.0115e+01
-         Input  17 (mod. mean & std) =   6.4357e+00   8.3820e+00
-         Input  18 (mod. mean & std) =   9.1886e+00   2.5373e+00
-         Input  19 (mod. mean & std) =   2.4105e+00   3.1102e+00
-         Input  20 (mod. mean & std) =   5.8234e+00   7.2403e+00
-         <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+   *************************************************************
+   *********************** MOAT Analysis ***********************
+   -------------------------------------------------------------
+   Input   1 (mod. mean & std) =   9.5329e+01   9.0823e+01
+   Input   2 (mod. mean & std) =   6.7297e+01   9.5242e+01
+   Input   3 (mod. mean & std) =   1.0648e+02   1.5479e+02
+   Input   4 (mod. mean & std) =   6.6231e+01   7.5895e+01
+   Input   5 (mod. mean & std) =   9.5717e+01   1.2733e+02
+   Input   6 (mod. mean & std) =   8.0394e+01   9.9959e+01
+   Input   7 (mod. mean & std) =   3.2722e+01   2.7947e+01
+   Input   8 (mod. mean & std) =   4.2013e+01   7.6090e+00
+   Input   9 (mod. mean & std) =   4.1965e+01   7.8535e+00
+   Input  10 (mod. mean & std) =   3.6809e+01   3.6151e+00
+   Input  11 (mod. mean & std) =   8.2655e+00   1.0311e+01
+   Input  12 (mod. mean & std) =   4.9299e+00   7.0591e+00
+   Input  13 (mod. mean & std) =   3.5455e+00   4.4025e+00
+   Input  14 (mod. mean & std) =   3.4151e+00   2.4905e+00
+   Input  15 (mod. mean & std) =   2.5143e+00   5.5168e-01
+   Input  16 (mod. mean & std) =   9.0344e+00   1.0115e+01
+   Input  17 (mod. mean & std) =   6.4357e+00   8.3820e+00
+   Input  18 (mod. mean & std) =   9.1886e+00   2.5373e+00
+   Input  19 (mod. mean & std) =   2.4105e+00   3.1102e+00
+   Input  20 (mod. mean & std) =   5.8234e+00   7.2403e+00
+   <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
 
 The MOAT analysis output reveals that each of the desired observations
 can be made for the test problem. These are also reflected in
