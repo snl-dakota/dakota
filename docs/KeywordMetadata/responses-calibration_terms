@@ -8,7 +8,9 @@ tunes parameters :math:`\theta`  to minimize discrepancies or residuals
 between the model and the data:
 
 
-.. math::  R_{i} = y^{Model}_i(\theta) - y^{Data}_{i}. 
+.. math::
+   R_{i} = y^{Model}_i(\theta) - y^{Data}_{i}. 
+
 Note that the problem specification affects what must be returned to
 Dakota in the :ref:`interface-analysis_drivers-fork-results_file<interface-analysis_drivers-fork-results_file>` :
 

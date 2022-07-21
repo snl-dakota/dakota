@@ -8,7 +8,7 @@ quasi-Hessians.
 .. math:: 
 
    B_{k+1} = B_{k} - \frac{B_k s_k s_k^T B_k}{s_k^T B_k s_k} +
-\frac{y_k y_k^T}{y_k^T s_k}
+   \frac{y_k y_k^T}{y_k^T s_k}
 
 where :math:`B_k`  is the :math:`k^{th}`  approximation to the Hessian,
 :math:`s_k = x_{k+1} - x_k`  is the step and

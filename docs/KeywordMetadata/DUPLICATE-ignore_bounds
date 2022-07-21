@@ -20,7 +20,7 @@ and :math:`x + h_2 e_i`  both satisfy the bounds, and then computes
 .. math:: 
 
    \frac{\partial f}{\partial x_i} ong
-````\frac{h_2^2(f_1 - f_0) - h_1^2(f_2 - f_0)}{h_1 h_2 (h_2 - h_1)} ,
+   \frac{h_2^2(f_1 - f_0) - h_1^2(f_2 - f_0)}{h_1 h_2 (h_2 - h_1)} ,
 
 with :math:`f_0 = f(x)` , :math:`f_1 = f(x + h_1 e_i)` , and
 :math:`f_2 = f(x + h_2 e_i)` .

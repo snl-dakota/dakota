@@ -6,7 +6,7 @@ types of data that can be returned by an interface when invoked during
 Dakota's execution. The specification includes three groups and two
 optional keywords.
 
-*The response type group*indicates the type and number of
+**The response type group** indicates the type and number of
 responses expected by Dakota.  It must be one of three types:
 
 

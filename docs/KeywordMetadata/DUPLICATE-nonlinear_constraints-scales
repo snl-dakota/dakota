@@ -5,8 +5,8 @@ Each real value in ``scales`` is a nonzero characteristic value to be
 used in scaling each nonlinear inequality (equality) constraint. They
 only have effect when the associated method specifies ``scaling``.
 
-This keyword is required for ``scale_types`` of <tt>'value'</tt> and
-optional for <tt>'log'</tt>. When specified in conjunction with log,
+This keyword is required for ``scale_types`` of ``value`` and
+optional for ``log``. When specified in conjunction with log,
 scale values are applied prior to the logarithm, to permit log scaling
 of strictly negative response functions.
 
@@ -24,7 +24,7 @@ Use scale values of 1.0 to selectively avoid scaling a subset of
 response functions.
 
 See the scaling information under specific methods, e.g.,
-method-*-scaling for details on how to use this keyword.
+method-\*-scaling for details on how to use this keyword.
 Topics::
 
 Examples::
