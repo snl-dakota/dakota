@@ -1,4 +1,4 @@
-.. _`uq:expansion`:
+.. _`theory:uq:expansion`:
 
 Stochastic Expansion Methods
 ============================
@@ -10,12 +10,12 @@ which employs bases of multivariate interpolation polynomials. Both
 approaches capture the functional relationship between a set of output
 response metrics and a set of input random variables.
 
-.. _`uq:expansion:orth`:
+.. _`theory:uq:expansion:orth`:
 
 Orthogonal polynomials
 ----------------------
 
-.. _`uq:expansion:orth:askey`:
+.. _`theory:uq:expansion:orth:askey`:
 
 Askey scheme
 ~~~~~~~~~~~~
@@ -37,8 +37,8 @@ the PDF over the support range is one.
    :name: TAB:askey
 
    .. table:: Linkage between standard forms of continuous probability
-   distributions and Askey scheme of continuous hyper-geometric
-   polynomials.
+      distributions and Askey scheme of continuous hyper-geometric
+      polynomials.
 
       +-------------+-------------+-------------+-------------+-------------+
       | D           | Density     | Polynomial  | Weight      | Support     |
@@ -54,23 +54,23 @@ the PDF over the support range is one.
       |             | frac{1}{2}` | :ma         |             | th:`[-1,1]` |
       |             |             | th:`P_n(x)` |             |             |
       +-------------+-------------+-------------+-------------+-------------+
-      | Beta        | :math       | Jacobi      | :m          | :ma         |
-      |             | :`\frac{(1- | :math:`P^   | ath:`(1-x)^ | th:`[-1,1]` |
+      | Beta        | :math:`     | Jacobi      | :math:`     | :math:`     |
+      |             | \frac{(1-   | :math:`P^   | (1-x)^      | [-1,1]`     |
       |             | x)^{\alpha} | {(\alpha,\b | {\alpha}(1+ |             |
       |             | (1+x)^{\bet | eta)}_n(x)` | x)^{\beta}` |             |
       |             | a}}{2^{\alp |             |             |             |
       |             | ha+\beta+1} |             |             |             |
-      |             |  B(\alpha+1 |             |             |             |
+      |             | B(\alpha+1  |             |             |             |
       |             | ,\beta+1)}` |             |             |             |
       +-------------+-------------+-------------+-------------+-------------+
-      | Exponential | :ma         | Laguerre    | :ma         | :math:`[    |
-      |             | th:`e^{-x}` | :ma         | th:`e^{-x}` | 0, \infty]` |
-      |             |             | th:`L_n(x)` |             |             |
+      | Exponential | :math:`     | Laguerre    | :math:`     | :math:`[    |
+      |             | e^{-x}`     | :math:`     | e^{-x}`     | 0, \infty]` |
+      |             |             | L_n(x)`     |             |             |
       +-------------+-------------+-------------+-------------+-------------+
-      | Gamma       | :math:      | Generalized | :ma         | :math:`[    |
-      |             | `\frac{x^{\ | Laguerre    | th:`x^{\alp | 0, \infty]` |
-      |             | alpha} e^{- | :ma         | ha} e^{-x}` |             |
-      |             | x}}{\Gamma( | th:`L^{(\al |             |             |
+      | Gamma       | :math:`     | Generalized | :math:`     | :math:`[    |
+      |             | \frac{x^{\  | Laguerre    | x^{\alp     | 0, \infty]` |
+      |             | alpha} e^{- | :math:`     | ha} e^{-x}` |             |
+      |             | x}}{\Gamma( | L^{(\al     |             |             |
       |             | \alpha+1)}` | pha)}_n(x)` |             |             |
       +-------------+-------------+-------------+-------------+-------------+
 
@@ -86,7 +86,7 @@ orthogonal polynomial conventions :cite:p:`abram_stegun`
 differ from the common statistical PDF conventions. The former
 conventions are used in Table `1.1 <#TAB:askey>`__.
 
-.. _`uq:expansion:orth:beyond_askey`:
+.. _`theory:uq:expansion:orth:beyond_askey`:
 
 Numerically generated orthogonal polynomials
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,7 +96,7 @@ exponential, beta, and gamma distributions, then Askey polynomials can
 be directly applied. If correlation or other distribution types are
 present, then additional techniques are required. One solution is to
 employ nonlinear variable transformations as described in
-Section `1.5 <#uq:expansion:trans>`__ such that an Askey basis can be
+Section `1.5 <#theory:uq:expansion:trans>`__ such that an Askey basis can be
 applied in the transformed space. This can be effective as shown
 in :cite:p:`Eld07`, but convergence rates are typically
 degraded. In addition, correlation coefficients are warped by the
@@ -115,9 +115,9 @@ sets having arbitrary probability density functions and eliminate the
 need to induce additional nonlinearity through variable transformations,
 but performing this process for general joint density functions with
 correlation is a topic of ongoing research (refer to
-Section `1.5 <#uq:expansion:trans>`__ for additional details).
+Section `1.5 <#theory:uq:expansion:trans>`__ for additional details).
 
-.. _`uq:expansion:interp`:
+.. _`theory:uq:expansion:interp`:
 
 Interpolation polynomials
 -------------------------
@@ -129,10 +129,10 @@ and piecewise cubic spline (local gradient-enhanced). Each of these
 combinations can be used within nodal or hierarchical interpolation
 formulations. The subsections that follow describe the one-dimensional
 interpolation polynomials for these cases and
-Section `1.4 <#uq:expansion:sc>`__ describes their use for multivariate
+Section `1.4 <#theory:uq:expansion:sc>`__ describes their use for multivariate
 interpolation within the stochastic collocation algorithm.
 
-.. _`uq:expansion:interp:nodal`:
+.. _`theory:uq:expansion:interp:nodal`:
 
 Nodal interpolation
 ~~~~~~~~~~~~~~~~~~~
@@ -166,7 +166,7 @@ interpolant produces a gradient of 1 for the :math:`i^{th}` collocation
 point, zero gradients for all other points, and zero values for all
 points).
 
-.. _`uq:expansion:interp:Lagrange`:
+.. _`theory:uq:expansion:interp:Lagrange`:
 
 Global value-based
 ^^^^^^^^^^^^^^^^^^
@@ -229,11 +229,11 @@ additional advantage that common factors within the :math:`w_j` can be
 canceled (possible for Clenshaw-Curtis and Newton-Cotes point sets, but
 not for general Gauss points), further reducing the computational
 requirements. Barycentric formulations can also be used for hierarchical
-interpolation (Section `1.2.2 <#uq:expansion:interp:hierarch>`__) with
+interpolation (Section `1.2.2 <#theory:uq:expansion:interp:hierarch>`__) with
 Lagrange interpolation polynomials, but they are not applicable to local
 spline or gradient-enhanced Hermite interpolants.
 
-.. _`uq:expansion:interp:Hermite`:
+.. _`theory:uq:expansion:interp:Hermite`:
 
 Global gradient-enhanced
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -246,7 +246,7 @@ One-dimensional polynomials satisfying the interpolation constraints for
 general point sets are generated using divided differences as described
 in :cite:p:`Burk11`.
 
-.. _`uq:expansion:interp:linear`:
+.. _`theory:uq:expansion:interp:linear`:
 
 Local value-based
 ^^^^^^^^^^^^^^^^^
@@ -287,7 +287,7 @@ the hat function :math:`L_j` over the range :math:`\xi \in [a, b]`. For
 the special case of :math:`m = 1` point, :math:`L_1(\xi) = 1` for
 :math:`\xi_1 = \frac{b+a}{2}` in both cases above.
 
-.. _`uq:expansion:interp:cubic`:
+.. _`theory:uq:expansion:interp:cubic`:
 
 Local gradient-enhanced
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -326,7 +326,7 @@ the special case of :math:`m = 1` point over the range
 :math:`\xi \in [a, b]`, :math:`H_1^{(1)}(\xi) = 1` and
 :math:`H_1^{(2)}(\xi) = \xi` for :math:`\xi_1 = \frac{b+a}{2}`.
 
-.. _`uq:expansion:interp:hierarch`:
+.. _`theory:uq:expansion:interp:hierarch`:
 
 Hierarchical interpolation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -395,15 +395,15 @@ summation of these difference interpolants
 
 We will employ these hierarchical definitions within stochastic
 collocation on sparse grids in
-Section `1.4.3 <#uq:expansion:sc:hierarch>`__.
+Section `1.4.3 <#theory:uq:expansion:sc:hierarch>`__.
 
-.. _`uq:expansion:pce`:
+.. _`theory:uq:expansion:pce`:
 
 Generalized Polynomial Chaos
 ----------------------------
 
-The set of polynomials from `1.1.1 <#uq:expansion:orth:askey>`__
-and `1.1.2 <#uq:expansion:orth:beyond_askey>`__ are used as an
+The set of polynomials from `1.1.1 <#theory:uq:expansion:orth:askey>`__
+and `1.1.2 <#theory:uq:expansion:orth:beyond_askey>`__ are used as an
 orthogonal basis to approximate the functional form between the
 stochastic response output and each of its random inputs. The chaos
 expansion for a response :math:`R` takes the form
@@ -454,7 +454,7 @@ In the case of a mixed basis, the same multi-index definition is
 employed although the one-dimensional polynomials :math:`\psi_{t_i^j}`
 are heterogeneous in type.
 
-.. _`uq:expansion:pce:exp_tnt`:
+.. _`theory:uq:expansion:pce:exp_tnt`:
 
 Expansion truncation and tailoring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -552,14 +552,14 @@ constraint that is analogous to the one used for defining index sets in
 anisotropic sparse grids
 (Eq. `[eq:aniso_smolyak_constr] <#eq:aniso_smolyak_constr>`__). Finally,
 additional tailoring of the expansion form is used in the case of sparse
-grids (see Section `1.6.3 <#uq:expansion:spectral_sparse>`__) through
+grids (see Section `1.6.3 <#theory:uq:expansion:spectral_sparse>`__) through
 the use of a summation of anisotropic tensor expansions. In all cases,
 the specifics of the expansion are codified in the term multi-index, and
 subsequent machinery for estimating response values and statistics from
 the expansion can be performed in a manner that is agnostic to the
 specific expansion form.
 
-.. _`uq:expansion:sc`:
+.. _`theory:uq:expansion:sc`:
 
 Stochastic Collocation
 ----------------------
@@ -569,15 +569,15 @@ interpolation polynomials, one polynomial per interpolated response
 quantity (one response value and potentially multiple response gradient
 components) per unique collocation point.
 
-.. _`uq:expansion:sc:value`:
+.. _`theory:uq:expansion:sc:value`:
 
 Value-Based Nodal
 ~~~~~~~~~~~~~~~~~
 
 For value-based interpolation in multiple dimensions, a tensor-product
 of the one-dimensional polynomials described in
-Section `1.2.1.1 <#uq:expansion:interp:Lagrange>`__ or
-Section `1.2.1.3 <#uq:expansion:interp:linear>`__ is used:
+Section `1.2.1.1 <#theory:uq:expansion:interp:Lagrange>`__ or
+Section `1.2.1.3 <#theory:uq:expansion:interp:linear>`__ is used:
 
 .. math::
 
@@ -620,7 +620,7 @@ reproducing the response values at each of the collocation points and
 smoothly interpolating between these values at other unsampled points.
 When the one-dimensional interpolation polynomials are defined using a
 barycentric formulation as described in
-Section `1.2.1.1 <#uq:expansion:interp:Lagrange>`__ (i.e.,
+Section `1.2.1.1 <#theory:uq:expansion:interp:Lagrange>`__ (i.e.,
 Eq. `[eq:barycentric_lagrange2_1d] <#eq:barycentric_lagrange2_1d>`__),
 additional efficiency in evaluating a tensor interpolant is achieved
 using the procedure in :cite:p:`Klimke05`, which amounts to a
@@ -636,7 +636,7 @@ the interpolation property is preserved, but sparse interpolants based
 on non-nested rules may exhibit some interpolation error at the
 collocation points.
 
-.. _`uq:expansion:sc:gradient`:
+.. _`theory:uq:expansion:sc:gradient`:
 
 Gradient-Enhanced Nodal
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -645,8 +645,8 @@ For gradient-enhanced interpolation in multiple dimensions, we extend
 the formulation in
 Eq `[eq:lagrange_interp_nd] <#eq:lagrange_interp_nd>`__ to use a
 tensor-product of the one-dimensional type 1 and type 2 polynomials
-described in Section `1.2.1.2 <#uq:expansion:interp:Hermite>`__ or
-Section `1.2.1.4 <#uq:expansion:interp:cubic>`__:
+described in Section `1.2.1.2 <#theory:uq:expansion:interp:Hermite>`__ or
+Section `1.2.1.4 <#theory:uq:expansion:interp:cubic>`__:
 
 .. math::
 
@@ -680,7 +680,7 @@ sparse grids involves a weighted sum of the tensor products in
 Eq. `[eq:hermite_interp_nd] <#eq:hermite_interp_nd>`__ with varying
 :math:`\boldsymbol{i}` levels.
 
-.. _`uq:expansion:sc:hierarch`:
+.. _`theory:uq:expansion:sc:hierarch`:
 
 Hierarchical
 ~~~~~~~~~~~~
@@ -688,7 +688,7 @@ Hierarchical
 In the case of multivariate hierarchical interpolation on nested grids,
 we are interested in tensor products of the one-dimensional difference
 interpolants described in
-Section `1.2.2 <#uq:expansion:interp:hierarch>`__, with
+Section `1.2.2 <#theory:uq:expansion:interp:hierarch>`__, with
 
 .. math::
 
@@ -720,7 +720,7 @@ These difference interpolants are particularly useful within sparse grid
 interpolation, for which the :math:`\Delta^l` can be employed directly
 within Eq. `[eq:smolyak1] <#eq:smolyak1>`__.
 
-.. _`uq:expansion:trans`:
+.. _`theory:uq:expansion:trans`:
 
 Transformations to uncorrelated standard variables
 --------------------------------------------------
@@ -735,7 +735,7 @@ variables :math:`\boldsymbol{\xi}` and then applying the stochastic
 expansion in the transformed space. This notion of independent standard
 space is extended over the notion of “u-space” used in reliability
 methods (see
-Section `[uq:reliability:local:mpp] <#uq:reliability:local:mpp>`__) in
+Section `[theory:uq:reliability:local:mpp] <#theory:uq:reliability:local:mpp>`__) in
 that it extends the standardized set beyond standard normals. For
 distributions that are already independent, three different approaches
 are of interest:
@@ -744,7 +744,7 @@ are of interest:
    corresponding Askey basis (Table `1.1 <#TAB:askey>`__). For non-Askey
    types, numerically generate an optimal polynomial basis for each
    independent distribution as described in
-   Section `1.1.2 <#uq:expansion:orth:beyond_askey>`__. These
+   Section `1.1.2 <#theory:uq:expansion:orth:beyond_askey>`__. These
    numerically-generated basis polynomials are not coerced into any
    standardized form, but rather employ the actual distribution
    parameters of the individual random variables. Thus, not even a
@@ -817,7 +817,7 @@ where the original correlation matrix for non-normals in x-space has
 been modified to represent the corresponding “warped” correlation in
 z-space :cite:p:`Der86`.
 
-.. _`uq:expansion:spectral`:
+.. _`theory:uq:expansion:spectral`:
 
 Spectral projection
 -------------------
@@ -868,13 +868,13 @@ where the univariate inner products have simple closed form expressions
 for each polynomial in the Askey scheme :cite:p:`abram_stegun`
 and are readily computed as part of the numerically-generated solution
 procedures described in
-Section `1.1.2 <#uq:expansion:orth:beyond_askey>`__. Thus, the primary
+Section `1.1.2 <#theory:uq:expansion:orth:beyond_askey>`__. Thus, the primary
 computational effort resides in evaluating the numerator, which is
 evaluated numerically using sampling, quadrature, cubature, or sparse
 grid approaches (and this numerical approximation leads to use of the
 term “pseudo-spectral” by some investigators).
 
-.. _`uq:expansion:spectral_samp`:
+.. _`theory:uq:expansion:spectral_samp`:
 
 Sampling
 ~~~~~~~~
@@ -896,7 +896,7 @@ quadrature/sparse grid methods (see following two sections) and little
 effect for fully-resolved sampling, it does have a small but noticeable
 beneficial effect for under-resolved sampling.
 
-.. _`uq:expansion:spectral_quad`:
+.. _`theory:uq:expansion:spectral_quad`:
 
 Tensor product quadrature
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -976,7 +976,7 @@ identical polynomial forms :cite:p:`ConstTPQ`, completely
 eliminating a performance gap that exists between total-order PCE and
 SC :cite:p:`Eld09a`.
 
-.. _`uq:expansion:spectral_sparse`:
+.. _`theory:uq:expansion:spectral_sparse`:
 
 Smolyak sparse grids
 ~~~~~~~~~~~~~~~~~~~~
@@ -1011,8 +1011,8 @@ Smolyak quadrature formula is given by
    \mathscr{A}({\rm w},n) = \sum_{|\mathbf{i}| \leq {\rm w}+n}\left(\Delta^{i_1}\otimes\cdots\otimes\Delta^{i_n}\right).
 
 This form is preferred for use in forming hierarchical interpolants as
-described in Sections `1.2.2 <#uq:expansion:interp:hierarch>`__
-and `1.4.3 <#uq:expansion:sc:hierarch>`__. For nodal interpolants and
+described in Sections `1.2.2 <#theory:uq:expansion:interp:hierarch>`__
+and `1.4.3 <#theory:uq:expansion:sc:hierarch>`__. For nodal interpolants and
 polynomial chaos in sparse grids, the following equivalent
 form :cite:p:`was_woz` is often more convenient since it
 collapses repeated index sets
@@ -1091,7 +1091,7 @@ tensor quadrature grids (for which there is no synchronization issue)
 and then sum them using the Smolyak combinatorial coefficient (from
 Eq. `[eq:smolyak2] <#eq:smolyak2>`__ in the isotropic case). This
 improves accuracy, preserves the PCE/SC consistency property described
-in Section `1.6.2 <#uq:expansion:spectral_quad>`__, and also simplifies
+in Section `1.6.2 <#theory:uq:expansion:spectral_quad>`__, and also simplifies
 PCE for the case of anisotropic sparse grids described next.
 
 For anisotropic Smolyak sparse grids, a dimension preference vector is
@@ -1120,7 +1120,7 @@ index constraint :math:`{\rm w}+1 \leq
 contribution from each of these index sets is modified as described
 in :cite:p:`Burk09`.
 
-.. _`uq:expansion:cubature`:
+.. _`theory:uq:expansion:cubature`:
 
 Cubature
 ~~~~~~~~
@@ -1137,7 +1137,7 @@ allow low-order polynomial chaos expansions (:math:`p=1` or :math:`2`)
 that are useful for global sensitivity analysis including main effects
 and, for :math:`p=2`, all two-way interactions.
 
-.. _`uq:expansion:regress`:
+.. _`theory:uq:expansion:regress`:
 
 Linear regression
 -----------------
@@ -1580,7 +1580,7 @@ interpolant can be extended to new data without the need to completely
 reconstructing the interpolant. The transformed interpolation basis can
 simply be extended to include the new necessary basis functions.
 
-.. _`uq:expansion:moment`:
+.. _`theory:uq:expansion:moment`:
 
 Analytic moments
 ----------------
@@ -1645,7 +1645,7 @@ the response function are as follows:
    \gamma_{2_i} &=& \left\langle \left(\frac{R_i - \mu_i}{\sigma_i}\right)^4 \right\rangle - 3 
    ~~\cong~~ \frac{1}{\sigma_i^4} \left[ \sum_{k=1}^{N_p} (r_{ik}-\mu_i)^4 w_k \right] - 3\label{eq:kurtosis} \end{aligned}
 
-.. _`uq:expansion:rvsa`:
+.. _`theory:uq:expansion:rvsa`:
 
 Local sensitivity analysis: derivatives with respect to expansion variables
 ---------------------------------------------------------------------------
@@ -1706,7 +1706,7 @@ Eq. `[eq:smolyak2] <#eq:smolyak2>`__. Finally, calculation of
 :math:`\frac{dR}{dx_i}` involves the same Jacobian application shown in
 Eq. `[eq:dR_dx] <#eq:dR_dx>`__.
 
-.. _`uq:expansion:vbd`:
+.. _`theory:uq:expansion:vbd`:
 
 Global sensitivity analysis: variance-based decomposition
 ---------------------------------------------------------
@@ -1755,7 +1755,7 @@ first-order main effects, :math:`S_{i}`, we are able to calculate the
 sensitivity indices for higher order interactions such as the two-way
 interaction :math:`S_{i,j}`.
 
-.. _`uq:expansion:refine`:
+.. _`theory:uq:expansion:refine`:
 
 Automated Refinement
 --------------------
@@ -1798,7 +1798,7 @@ approaches that can replace or augment the global grids currently
 supported. The sub-sections that follow enumerate each of the first
 level bullets above.
 
-.. _`uq:expansion:refine:uniform`:
+.. _`theory:uq:expansion:refine:uniform`:
 
 Uniform refinement with unbiased grids
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1809,13 +1809,13 @@ an expansion to synchronize with this increased grid resolution. In the
 case of increasing the order of an isotropic tensor-product quadrature
 grid or the level of an isotropic Smolyak sparse grid, a p-refinement
 approach increases the order of the global basis polynomials
-(Sections `1.1 <#uq:expansion:orth>`__,
-`1.2.1.1 <#uq:expansion:interp:Lagrange>`__,
-and `1.2.1.2 <#uq:expansion:interp:Hermite>`__) in a synchronized manner
+(Sections `1.1 <#theory:uq:expansion:orth>`__,
+`1.2.1.1 <#theory:uq:expansion:interp:Lagrange>`__,
+and `1.2.1.2 <#theory:uq:expansion:interp:Hermite>`__) in a synchronized manner
 and an h-refinement approach reduces the approximation range of fixed
 order local basis polynomials
-(Sections `1.2.1.3 <#uq:expansion:interp:linear>`__
-and `1.2.1.4 <#uq:expansion:interp:cubic>`__). And in the case of
+(Sections `1.2.1.3 <#theory:uq:expansion:interp:linear>`__
+and `1.2.1.4 <#theory:uq:expansion:interp:cubic>`__). And in the case of
 uniform p-refinement with PCE regression, the collocation oversampling
 ratio (refer to Methods specification within Dakota Reference
 Manual :cite:p:`RefMan`) is held fixed, such that an increment
@@ -1870,15 +1870,15 @@ ensure that all previously evaluated points remain in new refined grids.
 Given an anisotropic global grid, the expansion refinement proceeds as
 for the uniform case, in that the p-refinement approach increases the
 order of the global basis polynomials
-(Sections `1.1 <#uq:expansion:orth>`__,
-`1.2.1.1 <#uq:expansion:interp:Lagrange>`__,
-and `1.2.1.2 <#uq:expansion:interp:Hermite>`__) in a synchronized manner
+(Sections `1.1 <#theory:uq:expansion:orth>`__,
+`1.2.1.1 <#theory:uq:expansion:interp:Lagrange>`__,
+and `1.2.1.2 <#theory:uq:expansion:interp:Hermite>`__) in a synchronized manner
 and an h-refinement approach reduces the approximation range of fixed
 order local basis polynomials
-(Sections `1.2.1.3 <#uq:expansion:interp:linear>`__
-and `1.2.1.4 <#uq:expansion:interp:cubic>`__). Also, the same grid
+(Sections `1.2.1.3 <#theory:uq:expansion:interp:linear>`__
+and `1.2.1.4 <#theory:uq:expansion:interp:cubic>`__). Also, the same grid
 change requirements and convergence criteria described for uniform
-refinement (Section `1.11.1 <#uq:expansion:refine:uniform>`__) are
+refinement (Section `1.11.1 <#theory:uq:expansion:refine:uniform>`__) are
 applied in this case.
 
 Goal-oriented dimension-adaptive refinement with greedy adaptation
@@ -1897,7 +1897,7 @@ refinement of stochastic expansions using the following customizations:
    polynomial chaos expansions for each active and accepted index set.
    Pushing and popping index sets then involves increments of tensor
    chaos expansions (as described in
-   Section `1.6.3 <#uq:expansion:spectral_sparse>`__) along with
+   Section `1.6.3 <#theory:uq:expansion:spectral_sparse>`__) along with
    corresponding increments to the Smolyak combinatorial coefficients.
 
 -  Since we support bases for more than uniform distributions on a
@@ -1971,7 +1971,7 @@ Given these customizations, the algorithmic steps can be summarized as:
    combination of tensor expansions to arrive at the final result for
    the statistical QOI.
 
-.. _`uq:expansion:multifid`:
+.. _`theory:uq:expansion:multifid`:
 
 Multifidelity methods
 ---------------------
@@ -2075,7 +2075,7 @@ this combination entails:
       \langle \Psi_i \Psi_j \Psi_k \rangle}{\langle \Psi^2_k \rangle}\end{aligned}
 
    where tensors of one-dimensional basis triple products :math:`\langle
-     \psi_i \psi_j \psi_k \rangle` are typically sparse and can be
+   \psi_i \psi_j \psi_k \rangle` are typically sparse and can be
    efficiently precomputed using one dimensional quadrature for fast
    lookup within the multidimensional triple products.
 

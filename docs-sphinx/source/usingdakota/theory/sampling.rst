@@ -644,7 +644,7 @@ the efficiency of the LF model, i.e. how fast a simulation runs with
 respect to the HF model, but also to the correlation between the LF and
 HF model.
 
-.. _`uq:sampling:mlmf:Ycorr`:
+.. _`uq:sampling:mlmf:Qcorr`:
 
 :math:`Q_l` correlations
 ~~~~~~~~~~~~~~~~~~~~~~~~

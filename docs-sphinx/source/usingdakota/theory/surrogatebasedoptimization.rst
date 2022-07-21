@@ -215,8 +215,8 @@ Section `1.3 <#sbm:sblm_con_hard>`__) are satisfied.
       | Ratio Value    | Surrogate      | Iterate        | Trust Region   |
       |                | Accuracy       | Acceptance     | Sizing         |
       +================+================+================+================+
-      | :math:         | poor           | reject step    | shrink         |
-      | `\rho^k \le 0` |                |                |                |
+      | :math:`\rho^k  | poor           | reject step    | shrink         |
+      | \le 0`         |                |                |                |
       +----------------+----------------+----------------+----------------+
       | :math:`0 < \r  | marginal       | accept step    | shrink         |
       | ho^k \le 0.25` |                |                |                |

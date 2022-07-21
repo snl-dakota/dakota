@@ -1,9 +1,9 @@
-.. _`uq:reliability`:
+.. _`theory:uq:reliability`:
 
 Reliability Methods
 ===================
 
-.. _`uq:reliability:local`:
+.. _`theory:uq:reliability:local`:
 
 Local Reliability Methods
 -------------------------
@@ -13,7 +13,7 @@ of most probable point (MPP) search methods. Each of these methods is
 gradient-based, employing local approximations and/or local optimization
 methods.
 
-.. _`uq:reliability:local:mv`:
+.. _`theory:uq:reliability:local:mv`:
 
 Mean Value
 ~~~~~~~~~~
@@ -127,13 +127,13 @@ can also compute a two-way importance factor as
 
 These two-way factors differ from the Sobol’ interaction terms that are
 computed in variance-based decomposition (refer to
-Section `[uq:expansion:vbd] <#uq:expansion:vbd>`__) due to the
+Section `[theory:uq:expansion:vbd] <#theory:uq:expansion:vbd>`__) due to the
 non-orthogonality of the Taylor series basis. Due to this
 non-orthogonality, two-way importance factors may be negative, and due
 to normalization by the total response variance, the set of importance
 factors will always sum to one.
 
-.. _`uq:reliability:local:mpp`:
+.. _`theory:uq:reliability:local:mpp`:
 
 MPP Search Methods
 ~~~~~~~~~~~~~~~~~~
@@ -259,7 +259,7 @@ level)
 where the limit state at the MPP (:math:`G({\bf u}^*)`) defines the
 desired response level result.
 
-.. _`uq:reliability:local:mpp:approx`:
+.. _`theory:uq:reliability:local:mpp:approx`:
 
 Limit state approximations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -443,7 +443,7 @@ on which approximation has lower error in
 :math:`\frac{\partial g}{\partial x_i}({\bf x}_1)` or
 :math:`\frac{\partial G}{\partial u_i}({\bf u}_1)`.
 
-.. _`uq:reliability:local:mpp:int`:
+.. _`theory:uq:reliability:local:mpp:int`:
 
 Probability integrations
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -591,7 +591,7 @@ occurs. Warm starts were consistently effective in
 :cite:p:`Eld05`, with greater effectiveness for smaller
 parameter changes, and are used by default in Dakota.
 
-.. _`uq:reliability:global`:
+.. _`theory:uq:reliability:global`:
 
 Global Reliability Methods
 --------------------------
@@ -623,7 +623,7 @@ analysis is called efficient global reliability analysis
 describe two capabilities that are incorporated into the EGRA algorithm:
 importance sampling and EGO.
 
-.. _`uq:reliability:global:ais`:
+.. _`theory:uq:reliability:global:ais`:
 
 Importance Sampling
 ~~~~~~~~~~~~~~~~~~~
@@ -665,7 +665,7 @@ process model to provide function evaluations in multimodal AIS for the
 probability integration, results in an accurate and efficient
 reliability analysis tool.
 
-.. _`uq:reliability:global:ego`:
+.. _`theory:uq:reliability:global:ego`:
 
 Efficient Global Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -673,7 +673,7 @@ Efficient Global Optimization
 Chapter `[uq:ego] <#uq:ego>`__ is now rewritten to support EGO/Bayesian
 optimization theory.
 
-.. _`uq:reliability:global:ego:eff`:
+.. _`theory:uq:reliability:global:ego:eff`:
 
 Expected Feasibility Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -742,5 +742,5 @@ the prediction will have large expected feasibility values.
 
 .. [3]
    computed by inverting the second-order probability relationships
-   described in Section `1.1.2.2 <#uq:reliability:local:mpp:int>`__ at
+   described in Section `1.1.2.2 <#theory:uq:reliability:local:mpp:int>`__ at
    the current :math:`{\bf u}^*` iterate.

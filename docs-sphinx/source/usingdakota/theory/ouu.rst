@@ -11,7 +11,7 @@ Reliability-Based Design Optimization (RBDO)
 Reliability-based design optimization (RBDO) methods are used to perform
 design optimization accounting for reliability metrics. The reliability
 analysis capabilities described in
-Section `[uq:reliability:local] <#uq:reliability:local>`__ provide a
+Section `[theory:uq:reliability:local] <#theory:uq:reliability:local>`__ provide a
 substantial foundation for exploring a variety of gradient-based RBDO
 formulations. :cite:p:`Eld05` investigated bi-level,
 fully-analytic bi-level, and first-order sequential RBDO approaches
@@ -102,7 +102,7 @@ correction (Eq. `[eq:p_2nd_breit] <#eq:p_2nd_breit>`__),
 
 where :math:`\nabla_{\bf d} \kappa_i` has been neglected and
 :math:`\beta_p \ge 0` (see
-Section `[uq:reliability:local:mpp:int] <#uq:reliability:local:mpp:int>`__).
+Section `[theory:uq:reliability:local:mpp:int] <#theory:uq:reliability:local:mpp:int>`__).
 Other approaches assume the curvature correction is nearly independent
 of the design variables :cite:p:`Rac02`, which is equivalent
 to neglecting the first term in
@@ -269,7 +269,7 @@ Stochastic Expansion-Based Design Optimization (SEBDO)
 Stochastic Sensitivity Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Section `[uq:expansion:rvsa] <#uq:expansion:rvsa>`__ describes
+Section `[theory:uq:expansion:rvsa] <#theory:uq:expansion:rvsa>`__ describes
 sensitivity analysis of the polynomial chaos expansion with respect to
 the expansion variables. Here we extend this analysis to include
 sensitivity analysis of probabilistic moments with respect to

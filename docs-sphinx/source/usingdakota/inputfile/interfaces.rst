@@ -2804,7 +2804,7 @@ Which returns:
    Single quotes: single
    Double quotes: double
 
-Strings can be enclosed by either single quotes (````) or double quotes
+Strings can be enclosed by either single quotes (``'``) or double quotes
 (``"``). The choice is a matter of convenience or style.
 
 Strings can be joined by adding them:
