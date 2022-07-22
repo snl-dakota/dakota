@@ -47,7 +47,7 @@ PROJECT_BRIEF          = "Explore and Predict with Confidence"
 # exceed 55 pixels and the maximum width should not exceed 200 pixels.
 # Doxygen will copy the logo to the output directory.
 
-PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/images/DAKOTA_Arrow_Name_77x55.png
+PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/DAKOTA_Arrow_Name_77x55.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
@@ -592,7 +592,7 @@ LAYOUT_FILE            =
 # feature you need bibtex and perl available in the search path. Do not use
 # file names with spaces, bibtex cannot handle them.
 
-CITE_BIB_FILES         = @CMAKE_CURRENT_SOURCE_DIR@/Dakota.bib
+CITE_BIB_FILES         = @CMAKE_CURRENT_SOURCE_DIR@/../Dakota.bib
 
 #---------------------------------------------------------------------------
 # configuration options related to warning and progress messages
@@ -661,10 +661,10 @@ INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/Dev_Main.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Dev_Library.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Dev_Fn_Evals.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Dev_Vars_ContViews.dox \
-                         @CMAKE_CURRENT_SOURCE_DIR@/../src \
-                         @CMAKE_CURRENT_SOURCE_DIR@/../src/util \
-                         @CMAKE_CURRENT_SOURCE_DIR@/../src/surrogates \
-                         @CMAKE_CURRENT_SOURCE_DIR@/../packages/external/demo_tpl/README.md
+                         @CMAKE_CURRENT_SOURCE_DIR@/../../src \
+                         @CMAKE_CURRENT_SOURCE_DIR@/../../src/util \
+                         @CMAKE_CURRENT_SOURCE_DIR@/../../src/surrogates \
+                         @CMAKE_CURRENT_SOURCE_DIR@/../../packages/external/demo_tpl/README.md
 ##                        @CMAKE_CURRENT_SOURCE_DIR@/../packages/external/rol/include
 
 
@@ -700,10 +700,7 @@ RECURSIVE              = NO
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = @CMAKE_CURRENT_SOURCE_DIR@/../src/rSQPOptimizer.C \
-                         @CMAKE_CURRENT_SOURCE_DIR@/../src/rSQPOptimizer.H \
-                         @CMAKE_CURRENT_SOURCE_DIR@/../src/NonDUnilevelRBDO.C \
-                         @CMAKE_CURRENT_SOURCE_DIR@/../src/NonDUnilevelRBDO.H
+EXCLUDE                =
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -751,7 +748,7 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see
 # the \image command).
 
-IMAGE_PATH             = @CMAKE_CURRENT_SOURCE_DIR@/images
+IMAGE_PATH             = @CMAKE_CURRENT_SOURCE_DIR@
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -1653,7 +1650,7 @@ SKIP_FUNCTION_MACROS   = YES
 # NOT include the path). If a tag file is not located in the directory in which
 # doxygen is run, you must also specify the path to the tagfile here.
 
-TAGFILES               = dakota-reference.tag=../html-ref
+TAGFILES               =
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create
 # a tag file that is based on the input files it reads.
