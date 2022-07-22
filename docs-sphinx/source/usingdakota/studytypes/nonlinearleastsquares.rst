@@ -170,15 +170,13 @@ the least squares terms. License: LGPL.
 This approach can be selected using the ``optpp_g_newton`` method
 specification. An example specification follows:
 
-.. container:: small
+::
 
-   ::
-
-          method,
-                optpp_g_newton
-                  max_iterations = 50
-                  convergence_tolerance = 1e-4
-                  output debug
+       method,
+             optpp_g_newton
+               max_iterations = 50
+               convergence_tolerance = 1e-4
+               output debug
 
 Refer to the Dakota Reference Manual :cite:p:`RefMan` for more
 detail on the input commands for the Gauss-Newton algorithm.
@@ -209,13 +207,11 @@ NPSOL `[opt:methods:gradient:constrained] <#opt:methods:gradient:constrained>`_
 This approach can be selected using the ``nlssol_sqp`` method
 specification. An example specification follows:
 
-.. container:: small
+::
 
-   ::
-
-          method,
-                nlssol_sqp
-                  convergence_tolerance = 1e-8
+       method,
+             nlssol_sqp
+               convergence_tolerance = 1e-8
 
 Refer to the Dakota Reference Manual :cite:p:`RefMan` for more
 detail on the input commands for NLSSOL.
@@ -285,34 +281,30 @@ that the optimal parameter estimates are printed, followed by the
 residual norm and values of the individual residual terms, followed by
 the confidence intervals on the parameters.
 
-.. container:: bigbox
+::
 
-   .. container:: small
+   <<<<< Iterator nl2sol completed.
+   <<<<< Function evaluation summary: 27 total (26 new, 1 duplicate)
+   <<<<< Best parameters          =
+                         3.7541004764e-01 x1
+                         1.9358463401e+00 x2
+                        -1.4646865611e+00 x3
+                         1.2867533504e-02 x4
+                         2.2122702030e-02 x5
+   <<<<< Best residual norm =  7.3924926090e-03; 0.5 * norm^2 =  2.7324473487e-05
+   <<<<< Best residual terms      =
+                        -2.5698266189e-03
+                         4.4759880011e-03
+                         9.9223430643e-04
+                        -1.0634409194e-03
 
-      ::
+   ...
 
-         <<<<< Iterator nl2sol completed.
-         <<<<< Function evaluation summary: 27 total (26 new, 1 duplicate)
-         <<<<< Best parameters          =
-                               3.7541004764e-01 x1
-                               1.9358463401e+00 x2
-                              -1.4646865611e+00 x3
-                               1.2867533504e-02 x4
-                               2.2122702030e-02 x5
-         <<<<< Best residual norm =  7.3924926090e-03; 0.5 * norm^2 =  2.7324473487e-05
-         <<<<< Best residual terms      =
-                              -2.5698266189e-03
-                               4.4759880011e-03
-                               9.9223430643e-04
-                              -1.0634409194e-03
-
-         ...
-
-         Confidence Interval for x1 is [  3.7116510206e-01,  3.7965499323e-01 ]
-         Confidence Interval for x2 is [  1.4845485507e+00,  2.3871441295e+00 ]
-         Confidence Interval for x3 is [ -1.9189348458e+00, -1.0104382765e+00 ]
-         Confidence Interval for x4 is [  1.1948590669e-02,  1.3786476338e-02 ]
-         Confidence Interval for x5 is [  2.0289951664e-02,  2.3955452397e-02 ]
+   Confidence Interval for x1 is [  3.7116510206e-01,  3.7965499323e-01 ]
+   Confidence Interval for x2 is [  1.4845485507e+00,  2.3871441295e+00 ]
+   Confidence Interval for x3 is [ -1.9189348458e+00, -1.0104382765e+00 ]
+   Confidence Interval for x4 is [  1.1948590669e-02,  1.3786476338e-02 ]
+   Confidence Interval for x5 is [  2.0289951664e-02,  2.3955452397e-02 ]
 
 The analysis driver script (the script being driven by Dakota) has to
 perform several tasks in the case of parameter estimation using

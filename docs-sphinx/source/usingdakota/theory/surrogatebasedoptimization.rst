@@ -237,6 +237,8 @@ Section `1.3 <#sbm:sblm_con_hard>`__) are satisfied.
 Iterate acceptance logic
 ------------------------
 
+TODO: Figure, image, and reference/caption.
+
 .. container:: wrapfigure
 
    r.3 |image|
@@ -542,6 +544,8 @@ Eq. `[eq:NLP_relaxed] <#eq:NLP_relaxed>`__ is solved for
    \tau_i & = 1 + \frac{\min \left\{g_i({\bf x}^k_\ast) - g_{l_{i}}, 
    g_{u_{i}} - g_i({\bf x}^k_\ast)\right\}}{b_{g_{i}}} \\ 
    \tau_j & = 1 - \frac{| h_j({\bf x}^k_\ast) - h_{t_{j}} |}{b_{h_{j}}}\end{aligned}
+
+TODO: Figure, image, and reference/caption.
 
 .. container:: wrapfigure
 

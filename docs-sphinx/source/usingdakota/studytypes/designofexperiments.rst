@@ -216,43 +216,39 @@ design is specified in Dakota with the method command
 As an example, with two input variables or factors, each having two
 levels, the factorial design is shown in Table `1.1 <#dace:table01>`__ .
 
-.. container:: center
+.. container::
+   :name: dace:table01
 
-   .. container::
-      :name: dace:table01
+   .. table:: Simple Factorial Design
 
-      .. table:: Simple Factorial Design
-
-         ======= =======
-         Input 1 Input 2
-         ======= =======
-         -1      -1
-         -1      +1
-         +1      -1
-         +1      +1
-         ======= =======
+      ======= =======
+      Input 1 Input 2
+      ======= =======
+      -1      -1
+      -1      +1
+      +1      -1
+      +1      +1
+      ======= =======
 
 With a CCD, the design in Table `1.1 <#dace:table01>`__ would be
 augmented with the following points shown in
 Table `1.2 <#dace:table02>`__ if :math:`\alpha` = 1.3. These points
 define a circle around the original factorial design.
 
-.. container:: center
+.. container::
+   :name: dace:table02
 
-   .. container::
-      :name: dace:table02
+   .. table:: Additional Points to make the factorial design a CCD
 
-      .. table:: Additional Points to make the factorial design a CCD
-
-         ======= =======
-         Input 1 Input 2
-         ======= =======
-         0       +1.3
-         0       -1.3
-         1.3     0
-         -1.3    0
-         0       0
-         ======= =======
+      ======= =======
+      Input 1 Input 2
+      ======= =======
+      0       +1.3
+      0       -1.3
+      1.3     0
+      -1.3    0
+      0       0
+      ======= =======
 
 Note that the number of sample points specified in a CCD,\ ``samples``,
 is a function of the number of variables in the problem:
@@ -303,25 +299,23 @@ possibilities an equal number of times.
 For example, Table `1.3 <#dace:table03>`__ shows an orthogonal array of
 strength 2 for :math:`m` = 8, with 7 variables:
 
-.. container:: center
+.. container::
+   :name: dace:table03
 
-   .. container::
-      :name: dace:table03
+   .. table:: Orthogonal Array for Seven Variables
 
-      .. table:: Orthogonal Array for Seven Variables
-
-         ======= ======= ======= ======= ======= ======= =======
-         Input 1 Input 2 Input 3 Input 4 Input 5 Input 6 Input 7
-         ======= ======= ======= ======= ======= ======= =======
-         0       0       0       0       0       0       0
-         0       0       0       1       1       1       1
-         0       1       1       0       0       1       1
-         0       1       1       1       1       0       0
-         1       0       1       0       1       0       1
-         1       0       1       1       0       1       0
-         1       1       0       0       1       1       0
-         1       1       0       1       0       0       1
-         ======= ======= ======= ======= ======= ======= =======
+      ======= ======= ======= ======= ======= ======= =======
+      Input 1 Input 2 Input 3 Input 4 Input 5 Input 6 Input 7
+      ======= ======= ======= ======= ======= ======= =======
+      0       0       0       0       0       0       0
+      0       0       0       1       1       1       1
+      0       1       1       0       0       1       1
+      0       1       1       1       1       0       0
+      1       0       1       0       1       0       1
+      1       0       1       1       0       1       0
+      1       1       0       0       1       1       0
+      1       1       0       1       0       0       1
+      ======= ======= ======= ======= ======= ======= =======
 
 If one picks any two columns, say the first and the third, note that
 each of the four possible rows we might see there, 0 0, 0 1, 1 0, 1 1,

@@ -581,120 +581,109 @@ evaluated concurrently using parallel computing. When executing Dakota
 with this input file on a single processor, the following execution
 syntax may be used:
 
-.. container:: small
+::
 
-   ::
-
-          dakota -i dakota_dace.in
+       dakota -i dakota_dace.in
 
 For serial execution (the default), the interface specification within
 would appear similar to
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                  system
-                    analysis_driver = 'text_book'
+       interface,
+               system
+                 analysis_driver = 'text_book'
 
 which results in function evaluation output similar to the following
 (for ``output`` set to ``quiet`` mode):
 
-.. container:: small
+::
 
-   ::
-
-          >>>>> Running dace iterator.
-          
-          DACE method = 12 Samples = 49 Symbols = 7 Seed (user-specified) = 5
-          
-          ------------------------------
-          Begin       I1 Evaluation    1
-          ------------------------------
-          text_book /tmp/fileia6gVb /tmp/filedDo5MH
-          
-          ------------------------------
-          Begin       I1 Evaluation    2
-          ------------------------------
-          text_book /tmp/fileyfkQGd /tmp/fileAbmBAJ
-          
-          <snip>
-          
-          <<<<< Iterator dace completed.
+       >>>>> Running dace iterator.
+       
+       DACE method = 12 Samples = 49 Symbols = 7 Seed (user-specified) = 5
+       
+       ------------------------------
+       Begin       I1 Evaluation    1
+       ------------------------------
+       text_book /tmp/fileia6gVb /tmp/filedDo5MH
+       
+       ------------------------------
+       Begin       I1 Evaluation    2
+       ------------------------------
+       text_book /tmp/fileyfkQGd /tmp/fileAbmBAJ
+       
+       <snip>
+       
+       <<<<< Iterator dace completed.
 
 where it is evident that each function evaluation is being performed
 sequentially.
 
-| For parallel execution using asynchronous local approaches, the Dakota
-  execution syntax is unchanged as Dakota is still launched on a single
-  processor. However, the interface specification is augmented to
-  include the
-| ``asynchronous`` keyword with optional concurrency limiter to indicate
-  that multiple ``analysis_driver`` instances will be executed
-  concurrently:
+For parallel execution using asynchronous local approaches, the Dakota
+execution syntax is unchanged as Dakota is still launched on a single
+processor. However, the interface specification is augmented to
+include the ``asynchronous`` keyword with optional concurrency limiter
+to indicate that multiple ``analysis_driver`` instances will be
+executed concurrently:
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                  system asynchronous evaluation_concurrency = 4
-                    analysis_driver = 'text_book'
+       interface,
+               system asynchronous evaluation_concurrency = 4
+                 analysis_driver = 'text_book'
 
 which results in output excerpts similar to the following:
 
-.. container:: small
+::
 
-   ::
-
-          >>>>> Running dace iterator.
-          
-          DACE method = 12 Samples = 49 Symbols = 7 Seed (user-specified) = 5
-          
-          ------------------------------
-          Begin       I1 Evaluation    1
-          ------------------------------
-          (Asynchronous job 1 added to I1 queue)
-          
-          ------------------------------
-          Begin       I1 Evaluation    2
-          ------------------------------
-          (Asynchronous job 2 added to I1 queue)
-          
-          <snip>
-          
-          ------------------------------
-          Begin       I1 Evaluation   49
-          ------------------------------
-          (Asynchronous job 49 added to I1 queue)
-          
-          Blocking synchronize of 49 asynchronous evaluations
-          First pass: initiating 4 local asynchronous jobs
-          Initiating I1 evaluation 1
-          text_book /tmp/fileuLcfBp /tmp/file6XIhpm &
-          Initiating I1 evaluation 2
-          text_book /tmp/fileeC29dj /tmp/fileIdA22f &
-          Initiating I1 evaluation 3
-          text_book /tmp/fileuhCESc /tmp/fileajLgI9 &
-          Initiating I1 evaluation 4
-          text_book /tmp/filevJHMy6 /tmp/fileHFKip3 &
-          Second pass: scheduling 45 remaining local asynchronous jobs
-          Waiting on completed jobs
-          I1 evaluation 1 has completed
-          I1 evaluation 2 has completed
-          I1 evaluation 3 has completed
-          Initiating I1 evaluation 5
-          text_book /tmp/fileISsjh0 /tmp/fileSaek9W &
-          Initiating I1 evaluation 6
-          text_book /tmp/filefN271T /tmp/fileSNYVUQ &
-          Initiating I1 evaluation 7
-          text_book /tmp/filebAQaON /tmp/fileaMPpHK &
-          I1 evaluation 49 has completed
-          
-          <snip>
-          
-          <<<<< Iterator dace completed.
+       >>>>> Running dace iterator.
+       
+       DACE method = 12 Samples = 49 Symbols = 7 Seed (user-specified) = 5
+       
+       ------------------------------
+       Begin       I1 Evaluation    1
+       ------------------------------
+       (Asynchronous job 1 added to I1 queue)
+       
+       ------------------------------
+       Begin       I1 Evaluation    2
+       ------------------------------
+       (Asynchronous job 2 added to I1 queue)
+       
+       <snip>
+       
+       ------------------------------
+       Begin       I1 Evaluation   49
+       ------------------------------
+       (Asynchronous job 49 added to I1 queue)
+       
+       Blocking synchronize of 49 asynchronous evaluations
+       First pass: initiating 4 local asynchronous jobs
+       Initiating I1 evaluation 1
+       text_book /tmp/fileuLcfBp /tmp/file6XIhpm &
+       Initiating I1 evaluation 2
+       text_book /tmp/fileeC29dj /tmp/fileIdA22f &
+       Initiating I1 evaluation 3
+       text_book /tmp/fileuhCESc /tmp/fileajLgI9 &
+       Initiating I1 evaluation 4
+       text_book /tmp/filevJHMy6 /tmp/fileHFKip3 &
+       Second pass: scheduling 45 remaining local asynchronous jobs
+       Waiting on completed jobs
+       I1 evaluation 1 has completed
+       I1 evaluation 2 has completed
+       I1 evaluation 3 has completed
+       Initiating I1 evaluation 5
+       text_book /tmp/fileISsjh0 /tmp/fileSaek9W &
+       Initiating I1 evaluation 6
+       text_book /tmp/filefN271T /tmp/fileSNYVUQ &
+       Initiating I1 evaluation 7
+       text_book /tmp/filebAQaON /tmp/fileaMPpHK &
+       I1 evaluation 49 has completed
+       
+       <snip>
+       
+       <<<<< Iterator dace completed.
 
 where it is evident that each of the 49 jobs is first queued and then a
 blocking synchronization is performed. This synchronization uses a
@@ -846,95 +835,89 @@ array samples using a message passing approach. In this case, a parallel
 launch utility is used to execute Dakota across multiple processors
 using syntax similar to the following:
 
-.. container:: small
+::
 
-   ::
+       mpirun -np 5 -machinefile machines dakota -i dakota_dace.in
 
-          mpirun -np 5 -machinefile machines dakota -i dakota_dace.in
+Since the asynchronous local parallelism will not be used, the
+interface specification does not include the
+``asynchronous`` keyword and would appear similar to:
 
-| Since the asynchronous local parallelism will not be used, the
-  interface specification does not include the
-| ``asynchronous`` keyword and would appear similar to:
+::
 
-.. container:: small
-
-   ::
-
-          interface,
-                  system
-                    analysis_driver = 'text_book'
+       interface,
+               system
+                 analysis_driver = 'text_book'
 
 The relevant excerpts from the Dakota output for a dedicated master
 partition and dynamic schedule, the default when the maximum concurrency
 (49) exceeds the available capacity (5), would appear similar to the
 following:
 
-.. container:: small
+::
 
-   ::
-
-          Running MPI Dakota executable in parallel on 5 processors.
-          -----------------------------------------------------------------------------
-          DAKOTA parallel configuration:
-          
-          Level                       num_servers    procs_per_server    partition
-          -----                       -----------    ----------------    ---------
-          concurrent evaluations           5                1            peer
-          concurrent analyses              1                1            peer
-          multiprocessor analysis          1               N/A           N/A
-          
-          Total parallelism levels =   1 (1 dakota, 0 analysis)
-          -----------------------------------------------------------------------------
-          >>>>> Executing environment.
-          
-          >>>>> Running dace iterator.
-          
-          DACE method = 12 Samples = 49 Symbols = 7 Seed (user-specified) = 5
-          
-          ------------------------------
-          Begin       I1 Evaluation    1
-          ------------------------------
-          (Asynchronous job 1 added to I1 queue)
-          
-          ------------------------------
-          Begin       I1 Evaluation    2
-          ------------------------------
-          (Asynchronous job 2 added to I1 queue)
-          
-          <snip>
-          
-          ------------------------------
-          Begin       I1 Evaluation   49
-          ------------------------------
-          (Asynchronous job 49 added to I1 queue)
-          
-          Blocking synchronize of 49 asynchronous evaluations
-          Peer dynamic schedule: first pass assigning 4 jobs among 4 remote peers
-          Peer 1 assigning I1 evaluation 1 to peer 2
-          Peer 1 assigning I1 evaluation 2 to peer 3
-          Peer 1 assigning I1 evaluation 3 to peer 4
-          Peer 1 assigning I1 evaluation 4 to peer 5
-          Peer dynamic schedule: first pass launching 1 local jobs
-          Initiating I1 evaluation 5
-          text_book /tmp/file5LRsBu /tmp/fileT2mS65 &
-          Peer dynamic schedule: second pass scheduling 44 remaining jobs
-          Initiating I1 evaluation 5
-          text_book /tmp/file5LRsBu /tmp/fileT2mS65 &
-          Peer dynamic schedule: second pass scheduling 44 remaining jobs
-          I1 evaluation 5 has completed
-          Initiating I1 evaluation 6
-          text_book /tmp/fileZJaODH /tmp/filewoUJaj &
-          I1 evaluation 2 has returned from peer server 3
-          Peer 1 assigning I1 evaluation 7 to peer 3
-          I1 evaluation 4 has returned from peer server 5
-          
-          <snip>
-          
-          I1 evaluation 46 has returned from peer server 2
-          I1 evaluation 49 has returned from peer server 5
-          <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
-          
-          <<<<< Iterator dace completed.
+       Running MPI Dakota executable in parallel on 5 processors.
+       -----------------------------------------------------------------------------
+       DAKOTA parallel configuration:
+       
+       Level                       num_servers    procs_per_server    partition
+       -----                       -----------    ----------------    ---------
+       concurrent evaluations           5                1            peer
+       concurrent analyses              1                1            peer
+       multiprocessor analysis          1               N/A           N/A
+       
+       Total parallelism levels =   1 (1 dakota, 0 analysis)
+       -----------------------------------------------------------------------------
+       >>>>> Executing environment.
+       
+       >>>>> Running dace iterator.
+       
+       DACE method = 12 Samples = 49 Symbols = 7 Seed (user-specified) = 5
+       
+       ------------------------------
+       Begin       I1 Evaluation    1
+       ------------------------------
+       (Asynchronous job 1 added to I1 queue)
+       
+       ------------------------------
+       Begin       I1 Evaluation    2
+       ------------------------------
+       (Asynchronous job 2 added to I1 queue)
+       
+       <snip>
+       
+       ------------------------------
+       Begin       I1 Evaluation   49
+       ------------------------------
+       (Asynchronous job 49 added to I1 queue)
+       
+       Blocking synchronize of 49 asynchronous evaluations
+       Peer dynamic schedule: first pass assigning 4 jobs among 4 remote peers
+       Peer 1 assigning I1 evaluation 1 to peer 2
+       Peer 1 assigning I1 evaluation 2 to peer 3
+       Peer 1 assigning I1 evaluation 3 to peer 4
+       Peer 1 assigning I1 evaluation 4 to peer 5
+       Peer dynamic schedule: first pass launching 1 local jobs
+       Initiating I1 evaluation 5
+       text_book /tmp/file5LRsBu /tmp/fileT2mS65 &
+       Peer dynamic schedule: second pass scheduling 44 remaining jobs
+       Initiating I1 evaluation 5
+       text_book /tmp/file5LRsBu /tmp/fileT2mS65 &
+       Peer dynamic schedule: second pass scheduling 44 remaining jobs
+       I1 evaluation 5 has completed
+       Initiating I1 evaluation 6
+       text_book /tmp/fileZJaODH /tmp/filewoUJaj &
+       I1 evaluation 2 has returned from peer server 3
+       Peer 1 assigning I1 evaluation 7 to peer 3
+       I1 evaluation 4 has returned from peer server 5
+       
+       <snip>
+       
+       I1 evaluation 46 has returned from peer server 2
+       I1 evaluation 49 has returned from peer server 5
+       <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
+       
+       <<<<< Iterator dace completed.
 
 where it is evident that each of the 49 jobs is first queued and then a
 blocking synchronization is performed. This synchronization uses a
@@ -1016,23 +999,19 @@ array samples using a hybrid approach. As for the message passing case,
 a parallel launch utility is used to execute Dakota across multiple
 processors:
 
-.. container:: small
+::
 
-   ::
-
-          mpirun -np 5 -machinefile machines dakota -i dakota_dace.in
+       mpirun -np 5 -machinefile machines dakota -i dakota_dace.in
 
 Since the asynchronous local parallelism will also be used, the
 interface specification includes the ``asynchronous`` keyword and
 appears similar to
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                  system asynchronous evaluation_concurrency = 2
-                    analysis_driver = 'text_book'
+       interface,
+               system asynchronous evaluation_concurrency = 2
+                 analysis_driver = 'text_book'
 
 In the hybrid case, the specification of the desired concurrency level
 must be included, since the default is no longer all available (as it is
@@ -1045,70 +1024,68 @@ dynamic schedule , the default when the maximum concurrency (49) exceeds
 the maximum available capacity (10), would appear similar to the
 following:
 
-.. container:: small
+::
 
-   ::
-
-          Running MPI Dakota executable in parallel on 5 processors.
-          
-          -----------------------------------------------------------------------------
-          DAKOTA parallel configuration:
-          
-          Level           num_servers    procs_per_server    partition
-          -----           -----------    ----------------    ---------
-          concurrent evaluations           5                1            peer
-          concurrent analyses              1                1            peer
-          multiprocessor analysis          1               N/A           N/A
-          
-          Total parallelism levels =   1 (1 dakota, 0 analysis)
-          -----------------------------------------------------------------------------
-          
-          >>>>> Executing environment.
-          
-          >>>>> Running dace iterator.
-          
-          DACE method = 12 Samples = 49 Symbols = 7 Seed (user-specified) = 5
-          
-          ------------------------------
-          Begin       I1 Evaluation    1
-          ------------------------------
-          (Asynchronous job 1 added to I1 queue)
-          
-          ------------------------------
-          Begin       I1 Evaluation    2
-          ------------------------------
-          (Asynchronous job 2 added to I1 queue)
-          
-          <snip>
-          
-          Blocking synchronize of 49 asynchronous evaluations
-          Peer dynamic schedule: first pass assigning 8 jobs among 4 remote peers
-          Peer 1 assigning I1 evaluation 1 to peer 2
-          Peer 1 assigning I1 evaluation 2 to peer 3
-          Peer 1 assigning I1 evaluation 3 to peer 4
-          Peer 1 assigning I1 evaluation 4 to peer 5
-          Peer 1 assigning I1 evaluation 6 to peer 2
-          Peer 1 assigning I1 evaluation 7 to peer 3
-          Peer 1 assigning I1 evaluation 8 to peer 4
-          Peer 1 assigning I1 evaluation 9 to peer 5
-          Peer dynamic schedule: first pass launching 2 local jobs
-          Initiating I1 evaluation 5
-          text_book /tmp/fileJU1Ez2 /tmp/fileVGZzEX &
-          Initiating I1 evaluation 10
-          text_book /tmp/fileKfUgKS /tmp/fileMgZXPN &
-          Peer dynamic schedule: second pass scheduling 39 remaining jobs
-          
-          <snip>
-          
-          I1 evaluation 49 has completed
-          I1 evaluation 43 has returned from peer server 2
-          I1 evaluation 44 has returned from peer server 3
-          I1 evaluation 48 has returned from peer server 4
-          I1 evaluation 47 has returned from peer server 2
-          I1 evaluation 45 has returned from peer server 3
-          <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
-          
-          <<<<< Iterator dace completed.
+       Running MPI Dakota executable in parallel on 5 processors.
+       
+       -----------------------------------------------------------------------------
+       DAKOTA parallel configuration:
+       
+       Level           num_servers    procs_per_server    partition
+       -----           -----------    ----------------    ---------
+       concurrent evaluations           5                1            peer
+       concurrent analyses              1                1            peer
+       multiprocessor analysis          1               N/A           N/A
+       
+       Total parallelism levels =   1 (1 dakota, 0 analysis)
+       -----------------------------------------------------------------------------
+       
+       >>>>> Executing environment.
+       
+       >>>>> Running dace iterator.
+       
+       DACE method = 12 Samples = 49 Symbols = 7 Seed (user-specified) = 5
+       
+       ------------------------------
+       Begin       I1 Evaluation    1
+       ------------------------------
+       (Asynchronous job 1 added to I1 queue)
+       
+       ------------------------------
+       Begin       I1 Evaluation    2
+       ------------------------------
+       (Asynchronous job 2 added to I1 queue)
+       
+       <snip>
+       
+       Blocking synchronize of 49 asynchronous evaluations
+       Peer dynamic schedule: first pass assigning 8 jobs among 4 remote peers
+       Peer 1 assigning I1 evaluation 1 to peer 2
+       Peer 1 assigning I1 evaluation 2 to peer 3
+       Peer 1 assigning I1 evaluation 3 to peer 4
+       Peer 1 assigning I1 evaluation 4 to peer 5
+       Peer 1 assigning I1 evaluation 6 to peer 2
+       Peer 1 assigning I1 evaluation 7 to peer 3
+       Peer 1 assigning I1 evaluation 8 to peer 4
+       Peer 1 assigning I1 evaluation 9 to peer 5
+       Peer dynamic schedule: first pass launching 2 local jobs
+       Initiating I1 evaluation 5
+       text_book /tmp/fileJU1Ez2 /tmp/fileVGZzEX &
+       Initiating I1 evaluation 10
+       text_book /tmp/fileKfUgKS /tmp/fileMgZXPN &
+       Peer dynamic schedule: second pass scheduling 39 remaining jobs
+       
+       <snip>
+       
+       I1 evaluation 49 has completed
+       I1 evaluation 43 has returned from peer server 2
+       I1 evaluation 44 has returned from peer server 3
+       I1 evaluation 48 has returned from peer server 4
+       I1 evaluation 47 has returned from peer server 2
+       I1 evaluation 45 has returned from peer server 3
+       <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
+       
+       <<<<< Iterator dace completed.
 
 where it is evident that each of the 49 jobs is first queued and then a
 blocking synchronization is performed. This synchronization uses a
@@ -1414,11 +1391,9 @@ The command for running Dakota on a single-processor and exploiting
 asynchronous local parallelism is the same as for running Dakota on a
 single-processor for a serial study, e.g.:
 
-.. container:: small
+::
 
-   ::
-
-          dakota -i dakota.in > dakota.out
+       dakota -i dakota.in > dakota.out
 
 See
 Section `[tutorial:installation:running] <#tutorial:installation:running>`__
@@ -1434,12 +1409,10 @@ executable loading facility such as ``mpirun``, ``mpiexec``, ``poe``, or
 ``yod``. On a network of workstations, the ``mpirun`` script is commonly
 used to initiate a parallel Dakota job, e.g.:
 
-.. container:: small
+::
 
-   ::
-
-          mpirun -np 12 dakota -i dakota.in > dakota.out
-          mpirun -machinefile machines -np 12 dakota -i dakota.in > dakota.out
+       mpirun -np 12 dakota -i dakota.in > dakota.out
+       mpirun -machinefile machines -np 12 dakota -i dakota.in > dakota.out
 
 where both examples specify the use of 12 processors, the former
 selecting them from a default system resources file and the latter
@@ -1450,11 +1423,9 @@ On a massively parallel computer, the familiar mpirun/mpiexec options
 may be replaced with other launch scripts as dictated by the particular
 software stack, e.g.:
 
-.. container:: small
+::
 
-   ::
-
-          yod -sz 512 dakota -i dakota.in > dakota.out
+       yod -sz 512 dakota -i dakota.in > dakota.out
 
 In each of these cases, MPI command line arguments are used by MPI
 (extracted first in the call to ``MPI_Init``) and Dakota command line
@@ -1467,20 +1438,16 @@ multiprocessor ``mpirun`` command syntax might be contained within an
 executable script file which is submitted to the batch queue. For
 example, a command
 
-.. container:: small
+::
 
-   ::
-
-          qsub -l size=512 run_dakota
+       qsub -l size=512 run_dakota
 
 could be submitted to a PBS queue for execution. The NQS syntax is
 similar:
 
-.. container:: small
+::
 
-   ::
-
-          qsub -q snl -lP 512 -lT 6:00:00 run_dakota
+       qsub -q snl -lP 512 -lT 6:00:00 run_dakota
 
 These commands allocate 512 compute nodes for the study, and execute the
 script on a service node. If this script contains a single-processor
@@ -1513,11 +1480,9 @@ large number of HPC vendors and MPI implementations, parallel launch is
 not always detected properly. A parallel launch is indicated by the
 status message
 
-.. container:: small
+::
 
-   ::
-
-        Running MPI Dakota executable in parallel on N processors. 
+     Running MPI Dakota executable in parallel on N processors. 
 
 which is written to the console near the beginning of the Dakota run.
 
@@ -1658,32 +1623,30 @@ Example 1
 For example, the following specification runs an NPSOL optimization
 which will perform asynchronous finite differencing:
 
-.. container:: small
+::
 
-   ::
+       method,
+               npsol_sqp
 
-          method,
-                  npsol_sqp
+       variables,
+               continuous_design = 5
+                 initial_point  0.2  0.05 0.08 0.2  0.2
+                 lower_bounds   0.15 0.02 0.05 0.1  0.1
+                 upper_bounds   2.0  2.0  2.0  2.0  2.0
 
-          variables,
-                  continuous_design = 5
-                    initial_point  0.2  0.05 0.08 0.2  0.2
-                    lower_bounds   0.15 0.02 0.05 0.1  0.1
-                    upper_bounds   2.0  2.0  2.0  2.0  2.0
+       interface,
+               system,
+                 asynchronous
+                 analysis_drivers = 'text_book'
 
-          interface,
-                  system,
-                    asynchronous
-                    analysis_drivers = 'text_book'
-
-          responses,
-                  num_objective_functions = 1
-                  num_nonlinear_inequality_constraints = 2
-                  numerical_gradients
-                    interval_type central
-                    method_source dakota
-                    fd_gradient_step_size = 1.e-4
-                  no_hessians
+       responses,
+               num_objective_functions = 1
+               num_nonlinear_inequality_constraints = 2
+               numerical_gradients
+                 interval_type central
+                 method_source dakota
+                 fd_gradient_step_size = 1.e-4
+               no_hessians
 
 Note that ``method_source`` ``dakota`` selects Dakota’s internal finite
 differencing routine so that the concurrency in finite difference
@@ -1698,11 +1661,9 @@ included if it is necessary to limit the maximum number of simultaneous
 evaluations. For example, if a maximum of six compute processors were
 available, the command
 
-.. container:: small
+::
 
-   ::
-
-          evaluation_concurrency = 6
+       evaluation_concurrency = 6
 
 could be added to the ``asynchronous`` specification within the
 ``interface`` keyword from the preceding example.
@@ -1717,34 +1678,32 @@ function evaluation (e.g., from multiple load cases or disciplinary
 analyses that must be evaluated to compute the response data set), then
 an input specification similar to the following could be used:
 
-.. container:: small
+::
 
-   ::
+       method,
+               npsol_sqp
 
-          method,
-                  npsol_sqp
+       variables,
+               continuous_design = 5
+                 initial_point  0.2  0.05 0.08 0.2  0.2
+                 lower_bounds   0.15 0.02 0.05 0.1  0.1
+                 upper_bounds   2.0  2.0  2.0  2.0  2.0
 
-          variables,
-                  continuous_design = 5
-                    initial_point  0.2  0.05 0.08 0.2  0.2
-                    lower_bounds   0.15 0.02 0.05 0.1  0.1
-                    upper_bounds   2.0  2.0  2.0  2.0  2.0
+       interface,
+               fork
+                 asynchronous
+                   evaluation_concurrency = 6
+                   analysis_concurrency = 3
+                 analysis_drivers = 'text_book1' 'text_book2' 'text_book3'
 
-          interface,
-                  fork
-                    asynchronous
-                      evaluation_concurrency = 6
-                      analysis_concurrency = 3
-                    analysis_drivers = 'text_book1' 'text_book2' 'text_book3'
-
-          responses,
-                  num_objective_functions = 1
-                  num_nonlinear_inequality_constraints = 2
-                  numerical_gradients
-                    method_source dakota
-                    interval_type central
-                    fd_gradient_step_size = 1.e-4
-                  no_hessians
+       responses,
+               num_objective_functions = 1
+               num_nonlinear_inequality_constraints = 2
+               numerical_gradients
+                 method_source dakota
+                 interval_type central
+                 fd_gradient_step_size = 1.e-4
+               no_hessians
 
 In this case, the default concurrency with just an ``asynchronous``
 specification would be all 11 function evaluations and all 3 analyses,
@@ -1777,67 +1736,58 @@ keyword would be removed (since the servers will execute their
 evaluations synchronously), resulting in the following interface
 specification:
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                  system,
-                    analysis_drivers = 'text_book'
+       interface,
+               system,
+                 analysis_drivers = 'text_book'
 
 Running Dakota on 4 processors (syntax:
 ``mpirun -np 4 dakota -i dakota.in``) would result in the following
 parallel configuration report from the Dakota output:
 
-.. container:: small
+::
 
-   ::
+       -----------------------------------------------------------------------------
+       Dakota parallel configuration:
 
-          -----------------------------------------------------------------------------
-          Dakota parallel configuration:
+       Level                   num_servers    procs_per_server    partition
+       -----                   -----------    ----------------    ---------
+       concurrent evaluations       4                1            peer
+       concurrent analyses          1                1            peer
+       multiprocessor analysis      1               N/A           N/A
 
-          Level                   num_servers    procs_per_server    partition
-          -----                   -----------    ----------------    ---------
-          concurrent evaluations       4                1            peer
-          concurrent analyses          1                1            peer
-          multiprocessor analysis      1               N/A           N/A
-
-          Total parallelism levels =   1 (1 dakota, 0 analysis)
-          -----------------------------------------------------------------------------
+       Total parallelism levels =   1 (1 dakota, 0 analysis)
+       -----------------------------------------------------------------------------
 
 In this case, a peer partition and dynamic scheduling algorithm are
 automatically selected for the concurrent evaluations. If a dedicated
-master is desired instead, then this logic could be overriden by adding
-:
+master is desired instead, then this logic could be overriden by adding:
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                  system,
-                    evaluation_scheduling master
-                    analysis_drivers = 'text_book'
+       interface,
+               system,
+                 evaluation_scheduling master
+                 analysis_drivers = 'text_book'
 
 Running Dakota again on 4 processors (syntax:
 ``mpirun -np 4 dakota -i dakota.in``) would now result in this parallel
 configuration report:
 
-.. container:: small
+::
 
-   ::
+       -----------------------------------------------------------------------------
+       Dakota parallel configuration:
 
-          -----------------------------------------------------------------------------
-          Dakota parallel configuration:
+       Level                   num_servers    procs_per_server    partition
+       -----                   -----------    ----------------    ---------
+       concurrent evaluations       3                1            ded. master
+       concurrent analyses          1                1            peer
+       multiprocessor analysis      1               N/A           N/A
 
-          Level                   num_servers    procs_per_server    partition
-          -----                   -----------    ----------------    ---------
-          concurrent evaluations       3                1            ded. master
-          concurrent analyses          1                1            peer
-          multiprocessor analysis      1               N/A           N/A
-
-          Total parallelism levels =   1 (1 dakota, 0 analysis)
-          -----------------------------------------------------------------------------
+       Total parallelism levels =   1 (1 dakota, 0 analysis)
+       -----------------------------------------------------------------------------
 
 Now the 11 jobs will be dynamically distributed among 3 slave servers,
 under the control of 1 dedicated master.
@@ -1850,14 +1800,12 @@ Figure `1.1 <#parallel:figure03>`__\ c) would be a good choice. To
 specify hybrid parallelism, one uses the same ``asynchronous``
 specification as was used for the single-processor examples, e.g.:
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                   system
-                     asynchronous evaluation_concurrency = 3
-                     analysis_drivers = `text_book'
+       interface,
+                system
+                  asynchronous evaluation_concurrency = 3
+                  analysis_drivers = `text_book'
 
 With 3 function evaluations concurrent on each server, the capacity of a
 4 processor Dakota execution (syntax:
@@ -1865,21 +1813,19 @@ With 3 function evaluations concurrent on each server, the capacity of a
 Since all 11 jobs can now be scheduled in a single pass, a peer static
 scheduler is sufficient.
 
-.. container:: small
+::
 
-   ::
+       -----------------------------------------------------------------------------
+       Dakota parallel configuration:
 
-          -----------------------------------------------------------------------------
-          Dakota parallel configuration:
+       Level                   num_servers    procs_per_server    partition
+       -----                   -----------    ----------------    ---------
+       concurrent evaluations       4                1            peer
+       concurrent analyses          1                1            peer
+       multiprocessor analysis      1               N/A           N/A
 
-          Level                   num_servers    procs_per_server    partition
-          -----                   -----------    ----------------    ---------
-          concurrent evaluations       4                1            peer
-          concurrent analyses          1                1            peer
-          multiprocessor analysis      1               N/A           N/A
-
-          Total parallelism levels =   1
-          -----------------------------------------------------------------------------
+       Total parallelism levels =   1
+       -----------------------------------------------------------------------------
 
 .. _`parallel:spec:multi:example4`:
 
@@ -1889,66 +1835,58 @@ Example 4
 To run Example 2 using a message-passing approach, the ``asynchronous``
 specification is again removed:
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                   fork
-                     analysis_drivers = `text_book1' `text_book2' `text_book3'
+       interface,
+                fork
+                  analysis_drivers = `text_book1' `text_book2' `text_book3'
 
 Running this example on 6 processors (syntax:
 ``mpirun -np 6 dakota -i dakota.in``) would result in the following
 parallel configuration report:
 
-.. container:: small
+::
 
-   ::
+       -----------------------------------------------------------------------------
+       Dakota parallel configuration:
 
-          -----------------------------------------------------------------------------
-          Dakota parallel configuration:
+       Level                   num_servers    procs_per_server    partition
+       -----                   -----------    ----------------    ---------
+       concurrent evaluations       6                1            peer
+       concurrent analyses          1                1            peer
+       multiprocessor analysis      1               N/A           N/A
 
-          Level                   num_servers    procs_per_server    partition
-          -----                   -----------    ----------------    ---------
-          concurrent evaluations       6                1            peer
-          concurrent analyses          1                1            peer
-          multiprocessor analysis      1               N/A           N/A
-
-          Total parallelism levels =   1
-          -----------------------------------------------------------------------------
+       Total parallelism levels =   1
+       -----------------------------------------------------------------------------
 
 in which all of the processors have been assigned to support evaluation
 concurrency due to the “push up” automatic configuration logic. To
 assign some of the available processors to the concurrent analysis
 level, the following input could be used:
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                   fork
-                     analysis_drivers = `text_book1' `text_book2' `text_book3'
-                     evaluation_scheduling peer static
-                     evaluation_servers = 2
+       interface,
+                fork
+                  analysis_drivers = `text_book1' `text_book2' `text_book3'
+                  evaluation_scheduling peer static
+                  evaluation_servers = 2
 
 which results in the following 2-level parallel configuration:
 
-.. container:: small
+::
 
-   ::
+       -----------------------------------------------------------------------------
+       Dakota parallel configuration:
 
-          -----------------------------------------------------------------------------
-          Dakota parallel configuration:
+       Level                   num_servers    procs_per_server    partition
+       -----                   -----------    ----------------    ---------
+       concurrent evaluations       2                3            peer
+       concurrent analyses          3                1            peer
+       multiprocessor analysis      1               N/A           N/A
 
-          Level                   num_servers    procs_per_server    partition
-          -----                   -----------    ----------------    ---------
-          concurrent evaluations       2                3            peer
-          concurrent analyses          3                1            peer
-          multiprocessor analysis      1               N/A           N/A
-
-          Total parallelism levels =   2
-          -----------------------------------------------------------------------------
+       Total parallelism levels =   2
+       -----------------------------------------------------------------------------
 
 The six processors available have been split into two evaluation servers
 of three processors each, where the three processors in each evaluation
@@ -1964,36 +1902,31 @@ case, the ``processors_per_analysis`` keyword is added and the ``fork``
 interface is changed to a ``direct`` interface since the fine-grained
 parallelism of the three simulations is managed internally:
 
-.. container:: small
+::
 
-   ::
+       interface,
+                direct
+                  analysis_drivers = `text_book1' `text_book2' `text_book3'
+                  evaluation_scheduling peer static
+                  evaluation_servers = 2
+                  processors_per_analysis = 2
 
-          interface,
-                   direct
-                     analysis_drivers = `text_book1' `text_book2' `text_book3'
-                     evaluation_scheduling peer static
-                     evaluation_servers = 2
-                     processors_per_analysis = 2
+This results in the following parallel configuration for a 12
+processor Dakota run (syntax: ``mpirun -np 12 dakota -i dakota.in``):
 
-| This results in the following parallel configuration for a 12
-  processor Dakota run
-| (syntax: ``mpirun -np 12 dakota -i dakota.in``):
+::
 
-.. container:: small
+       -----------------------------------------------------------------------------
+       Dakota parallel configuration:
 
-   ::
+       Level                   num_servers    procs_per_server    partition
+       -----                   -----------    ----------------    ---------
+       concurrent evaluations       2                6            peer
+       concurrent analyses          3                2            peer
+       multiprocessor analysis      2               N/A           N/A
 
-          -----------------------------------------------------------------------------
-          Dakota parallel configuration:
-
-          Level                   num_servers    procs_per_server    partition
-          -----                   -----------    ----------------    ---------
-          concurrent evaluations       2                6            peer
-          concurrent analyses          3                2            peer
-          multiprocessor analysis      2               N/A           N/A
-
-          Total parallelism levels =   3 (2 dakota, 1 analysis)
-          -----------------------------------------------------------------------------
+       Total parallelism levels =   3 (2 dakota, 1 analysis)
+       -----------------------------------------------------------------------------
 
 An important point to recognize is that, since each of the parallel
 configuration inputs has been tied to the interface specification up to
@@ -2002,23 +1935,21 @@ interface in a multi-iterator/multi-model study. For example, a Dakota
 execution on 40 processors might involve the following two interface
 specifications:
 
-.. container:: small
+::
 
-   ::
+       interface,
+               direct,
+                 id_interface = 'COARSE'
+                 analysis_driver = 'sim1'
+                 evaluation_scheduling peer dynamic
+                 processors_per_analysis = 5
 
-          interface,
-                  direct,
-                    id_interface = 'COARSE'
-                    analysis_driver = 'sim1'
-                    evaluation_scheduling peer dynamic
-                    processors_per_analysis = 5
-
-          interface,
-                  direct,
-                    id_interface = 'FINE'
-                    analysis_driver = 'sim2'
-                    evaluation_scheduling peer dynamic
-                    processors_per_analysis = 10
+       interface,
+               direct,
+                 id_interface = 'FINE'
+                 analysis_driver = 'sim2'
+                 evaluation_scheduling peer dynamic
+                 processors_per_analysis = 10
 
 for which the coarse model would employ 8 evaluation servers of 5
 processors each and the fine model would employ 4 evaluation servers of
@@ -2029,38 +1960,34 @@ Pareto set optimization meta-iterator. In this case,
 ``iterator_servers`` and ``iterator_scheduling peer`` requests are
 included in the method specification:
 
-.. container:: small
+::
 
-   ::
+       method,
+                pareto_set
+                  iterator_servers = 2
+                  iterator_scheduling peer
+                  opt_method_pointer = 'NLP'
+                  random_weight_sets = 4
 
-          method,
-                   pareto_set
-                     iterator_servers = 2
-                     iterator_scheduling peer
-                     opt_method_pointer = 'NLP'
-                     random_weight_sets = 4
+Adding this ``pareto_set`` method specification to the input file from
+the previous 12 processor example results in the following parallel
+configuration for a 24 processor Dakota run
+(syntax: ``mpirun -np 24 dakota -i dakota.in``):
 
-| Adding this ``pareto_set`` method specification to the input file from
-  the previous 12 processor example results in the following parallel
-  configuration for a 24 processor Dakota run
-| (syntax: ``mpirun -np 24 dakota -i dakota.in``):
+::
 
-.. container:: small
+       -----------------------------------------------------------------------------
+       Dakota parallel configuration:
 
-   ::
+       Level                   num_servers    procs_per_server    partition
+       -----                   -----------    ----------------    ---------
+       concurrent iterators         2               12            peer
+       concurrent evaluations       2                6            peer
+       concurrent analyses          3                2            peer
+       multiprocessor analysis      2               N/A           N/A
 
-          -----------------------------------------------------------------------------
-          Dakota parallel configuration:
-
-          Level                   num_servers    procs_per_server    partition
-          -----                   -----------    ----------------    ---------
-          concurrent iterators         2               12            peer
-          concurrent evaluations       2                6            peer
-          concurrent analyses          3                2            peer
-          multiprocessor analysis      2               N/A           N/A
-
-          Total parallelism levels =   4 (3 dakota, 1 analysis)
-          -----------------------------------------------------------------------------
+       Total parallelism levels =   4 (3 dakota, 1 analysis)
+       -----------------------------------------------------------------------------
 
 Note that for this example, the parallel configuration is written to the
 file because of the use of concurrent iterators.
@@ -2074,66 +2001,56 @@ As a final example, consider a multi-start optimization conducted on 384
 processors. A job of this size must be submitted to the batch queue,
 using syntax similar to:
 
-.. container:: small
+::
 
-   ::
-
-          qsub -q snl -lP 384 -lT 6:00:00 run_dakota
+       qsub -q snl -lP 384 -lT 6:00:00 run_dakota
 
 where the script appears as
 
-.. container:: small
+::
 
-   ::
-
-          #!/bin/sh
-          cd /scratch/<some_workdir>
-          yod -sz 384 dakota -i dakota.in > dakota.out
+       #!/bin/sh
+       cd /scratch/<some_workdir>
+       yod -sz 384 dakota -i dakota.in > dakota.out
 
 the interface specifications from the input file appears as
 
-.. container:: small
+::
 
-   ::
-
-          interface,
-                  direct,
-                    analysis_drivers = 'text_book1' 'text_book2' 'text_book3'
-                    evaluation_servers = 8
-                    evaluation_scheduling peer dynamic
-                    processors_per_analysis = 2
+       interface,
+               direct,
+                 analysis_drivers = 'text_book1' 'text_book2' 'text_book3'
+                 evaluation_servers = 8
+                 evaluation_scheduling peer dynamic
+                 processors_per_analysis = 2
 
 and finally, an additional method section is added
 
-.. container:: small
-
-   ::
+::
 
 
-          method,
-                  multi_start
-                    method_pointer = 'CPS'
-                    iterator_servers = 8
-                    random_starts = 8
+       method,
+               multi_start
+                 method_pointer = 'CPS'
+                 iterator_servers = 8
+                 random_starts = 8
 
 The resulting parallel configuration is reported as
 
-.. container:: small
+::
 
-   ::
+       -----------------------------------------------------------------------------
+       Dakota parallel configuration:
 
-          -----------------------------------------------------------------------------
-          Dakota parallel configuration:
+       Level                   num_servers    procs_per_server    partition
+       -----                   -----------    ----------------    ---------
+       concurrent iterators         8               48            peer
+       concurrent evaluations       8                6            peer
+       concurrent analyses          3                2            peer
+       multiprocessor analysis      2               N/A           N/A
 
-          Level                   num_servers    procs_per_server    partition
-          -----                   -----------    ----------------    ---------
-          concurrent iterators         8               48            peer
-          concurrent evaluations       8                6            peer
-          concurrent analyses          3                2            peer
-          multiprocessor analysis      2               N/A           N/A
-
-          Total parallelism levels =   4 (3 dakota, 1 analysis)
-          -----------------------------------------------------------------------------
+       Total parallelism levels =   4 (3 dakota, 1 analysis)
+       -----------------------------------------------------------------------------
 
 Since the concurrency at each of the nested levels has a multiplicative
 effect on the number of processors that can be utilized, it is easy to
@@ -2174,6 +2091,8 @@ allocation (queued job), are preferred. However for particularly
 long-running or large jobs, or platforms that not supporting the first
 scheduling modes, Case 4 may be most appropriate.
 
+TODO: Cleanup table contents and formatting...
+
 [1]>m1 [parallel:application:table01]
 
 .. container:: tabular
@@ -2189,10 +2108,10 @@ scheduling modes, Case 4 may be most appropriate.
    | & Evaluation Submission & serial & parallel & submit *expensive*
      :math:`N` processor application jobs to a scheduler (e.g., qsub)
 
-| Relevant example files for each case are included in directories
-| with the Dakota distribution. These typically include a PBS or SLURM
-  job submission script to launch the Dakota study, a Dakota input file,
-  and a driver script.
+Relevant example files for each case are included in directories with
+the Dakota distribution. These typically include a PBS or SLURM job
+submission script to launch the Dakota study, a Dakota input file, and
+a driver script.
 
 Case 1: Massively Serial — Multiple serial analysis jobs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

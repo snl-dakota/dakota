@@ -354,6 +354,8 @@ compared to the rejection rate for a single 2000-sample chain using
 prior-based proposal covariance
 (:math:`\boldsymbol{\Sigma_{MVN}} = \boldsymbol{\Sigma_0}`).
 
+TODO: Likely needs figures here
+
 .. container:: subfigmatrix
 
    2
@@ -733,9 +735,13 @@ extrapolated temperatures. The difference in shape and point of failure
 between temperatures may also explain the large variance in the
 discrepancy model.
 
+TODO: Likely needs figures here
+
 .. container:: subfigmatrix
 
    2
+
+TODO: Likely needs figures here
 
 .. container:: subfigmatrix
 

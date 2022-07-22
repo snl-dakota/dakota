@@ -57,6 +57,8 @@ fig. `[fig:activesubspace] <#fig:activesubspace>`__\ (b) it is clear
 that all of the variation is along :math:`y_1` and the dimension of the
 rotated input space can be reduced to 1.
 
+TODO: Missing images, figure, caption here
+
 .. container:: subfigmatrix
 
    2
