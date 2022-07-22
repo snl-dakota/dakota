@@ -66,4 +66,4 @@ add_custom_target(docs-dev-pdf
 
 # Remove Doxygen-generated directories on make clean
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
-  "html-dev;latex-dev;man-dev")
+  "dakota-developers.tag;html-dev;latex-dev;man-dev")

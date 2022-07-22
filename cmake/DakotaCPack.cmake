@@ -129,6 +129,7 @@ macro(dakota_cpack_prune_distro)
     ".*\\\\.git/" ".*\\\\.git.*"
     "^${Dakota_SOURCE_DIR}/packages/external/fftw/"
     "^${Dakota_SOURCE_DIR}/packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/"
+    "^${Dakota_SOURCE_DIR}/docs/user/usingdakota/reference"
     )
 
   dakota_distro_as_integer(_dakota_distro_integer)
