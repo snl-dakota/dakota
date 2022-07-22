@@ -8,13 +8,12 @@
 #  _______________________________________________________________________
 
 # TODO: make documentation build cross-platform
-# TODO: dep for latex_modify
 
 include(ListFilterEmacsBackups)
 
 find_package(Doxygen REQUIRED)
-find_package(LATEX REQUIRED)
-# Only required for PDFs of Doxygen, but unconditional currently
+
+# Required for generated included input files
 find_package(Perl REQUIRED)
 
 # TODO: Reduce configured headers
@@ -80,24 +79,12 @@ add_custom_target(docs-sphinx-full
 )
 add_dependencies(docs-sphinx-full docs-keywords) 
 
-
-# Generate .dox into doxygen tag files
-add_custom_command(
-  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/dakota-developers.tag
-  DEPENDS ${dox_dev_deps}
-  COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
-  COMMENT "Doxygen: Developer's Manual (first pass: tag generation)"
-)
-
-# Generate .tag files into final doxygen-generated docs
-# Overstate deps to force the tag phase for both to go first
 add_custom_command(
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/html-dev/index.html
           ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.tex
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dakota-developers.tag
-          ${CMAKE_CURRENT_BINARY_DIR}/dakota-reference.tag
+  DEPENDS ${dox_dev_deps}
   COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
-  COMMENT "Doxygen: Developer's Manual (final pass)"
+  COMMENT "Doxygen: Developer's Manual"
 )
 
 # Target to perform only doxygen generation phase
@@ -108,27 +95,29 @@ add_custom_target(docs-doxygen
 
 # Create (or modify) texmf.cnf to prevent buffer overrun problem 
 # Afterward, strip the trailing newline
-execute_process(COMMAND kpsewhich texmf.cnf OUTPUT_VARIABLE texmf_cnf_src)
-string(REGEX REPLACE "\n$" "" texmf_cnf_src ${texmf_cnf_src})
+##execute_process(COMMAND kpsewhich texmf.cnf OUTPUT_VARIABLE texmf_cnf_src)
+##string(REGEX REPLACE "\n$" "" texmf_cnf_src ${texmf_cnf_src})
 
 # If save_size exists in texmf.cnf, multiply it by 10x and replace. Otherwise, append 
 # save_size = 150000 to the end.
-add_custom_command(
-  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf
-  DEPENDS ${texmf_cnf_src}
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/modify_texmf.sh ${texmf_cnf_src} ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-add_custom_target(docs-texmf-cnf DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf)
+##add_custom_command(
+##  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf
+##  DEPENDS ${texmf_cnf_src}
+##  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/modify_texmf.sh ${texmf_cnf_src} ${CMAKE_CURRENT_BINARY_DIR}
+##)
+##
+##add_custom_target(docs-texmf-cnf DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf)
 
 # Build Developer's Manual into PDF
 add_custom_command(
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.pdf
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.tex ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.tex
+##${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf
   COMMAND ${CMAKE_COMMAND} -E echo_append "Building Developers Manual PDF..."
-  COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
-   --developers
-  COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-dev sh -c 'export TEXMFCNF=${CMAKE_CURRENT_BINARY_DIR}:$$TEXMFCNF && make'
+##  COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
+##   --developers
+##  COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-dev sh -c 'export TEXMFCNF=${CMAKE_CURRENT_BINARY_DIR}:$$TEXMFCNF && make'
+  COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-dev sh -c 'make'
   COMMAND ${CMAKE_COMMAND} -E echo "Done."
   COMMENT "LaTeX: Developers to PDF"
 )
@@ -136,53 +125,13 @@ add_custom_command(
 add_custom_target(docs-pdf-dev 
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.pdf)
 
-# Helper function to build a SAND manual
-function(pdf2sand manual sourcePDFname)
-
-  set(file_tex SAND-shell-${manual})
-  add_custom_command(
-    OUTPUT    ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.pdf
-    DEPENDS   ${CMAKE_CURRENT_SOURCE_DIR}/${file_tex}.tex 
-    COMMAND   sh -c 'export TEXINPUTS=${CMAKE_CURRENT_SOURCE_DIR}:${CMAKE_CURRENT_SOURCE_DIR}/SANDreport:$$TEXINPUTS && ${PDFLATEX_COMPILER} -interaction=batchmode ${CMAKE_CURRENT_SOURCE_DIR}/${file_tex}'
-  )
-  add_custom_target(docs-sand-${manual} DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.pdf)
-  add_dependencies(docs-sand-${manual} docs-pdf-${manual})
-
-endfunction(pdf2sand)
-
-# Developer, Reference manuals now part of code docs; not building SAND
-#pdf2sand(dev refman)
-#pdf2sand(ref refman)
-add_subdirectory(latex-theory)
-pdf2sand(theory Theory_Main)
-if(DAKOTA_ENABLE_TESTS)
-  add_subdirectory(latex-user)
-  pdf2sand(user Users_Main)
-else()
-  message(WARNING
-    "Users Manual will not be built; requires DAKOTA_ENABLE_TESTS")
-endif()
-
 # Generate HTML Dev/Ref, PDF Theory/Users
 add_custom_target(docs)
-add_dependencies(docs docs-doxygen docs-pdf-theory)
-if(DAKOTA_ENABLE_TESTS)
-  add_dependencies(docs docs-pdf-user)
-endif()
+add_dependencies(docs docs-doxygen)
 
 # Generate PDF Dev/Ref/Theory/Users
 add_custom_target(docs-pdf)
-add_dependencies(docs-pdf docs-pdf-dev docs-pdf-theory)
-if(DAKOTA_ENABLE_TESTS)
-  add_dependencies(docs-pdf docs-pdf-user)
-endif()
-
-# Generate SAND versions of theory, user
-add_custom_target(docs-sand)
-add_dependencies(docs-sand docs-sand-theory)
-if(DAKOTA_ENABLE_TESTS)
-  add_dependencies(docs-sand docs-sand-user)
-endif()
+add_dependencies(docs-pdf docs-pdf-dev)
 
 
 # Package docs for nightly builds (HTML and PDF for dev, ref; PDF for
@@ -208,5 +157,8 @@ add_dependencies(package_docs docs-pdf docs-doxygen)
 
 # Remove Doxygen-generated directories on make clean
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
-  "html-dev;latex-dev;man-dev;SAND-shell-theory.aux;SAND-shell-theory.log;SAND-shell-user.aux;SAND-shell-user.log"
-  )
+  "html-dev;latex-dev;man-dev")
+
+if(DAKOTA_DOCS_LEGACY)
+  add_subdirectory(inactive)
+endif()

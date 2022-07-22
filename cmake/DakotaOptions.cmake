@@ -133,7 +133,9 @@ option(DAKOTA_API_JAVA "Unsupported: Enable Dakota library Java API" OFF)
 mark_as_advanced(DAKOTA_API_JAVA)
 
 
-option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
+option(ENABLE_DAKOTA_DOCS "Enable Dakota documentation build." OFF)
+option(DAKOTA_DOCS_LEGACY "Enable pre-2022 Dakota docs build." OFF)
+# TODO: Can probably relax this for Sphinx and Doxygen docs...
 if(ENABLE_DAKOTA_DOCS AND NOT UNIX)
   message(FATAL_ERROR
     "Dakota documentation build only available on UNIX platforms")

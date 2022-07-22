@@ -16,8 +16,8 @@ endforeach()
 
 # Copy the bib file to make latex versions easier to manage
 # Really belongs one dir above, but don't know how to manage the dependency
-add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/../Dakota.bib
-                      ${CMAKE_CURRENT_BINARY_DIR}/../Dakota.bib)
+add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/../../Dakota.bib
+                      ${CMAKE_CURRENT_BINARY_DIR}/../../Dakota.bib)
 
 execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory 
   "${CMAKE_CURRENT_BINARY_DIR}/images")
@@ -43,8 +43,8 @@ add_custom_command(
   OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux"
   DEPENDS   "${CMAKE_CURRENT_SOURCE_DIR}/${file_tex}.tex" 
             ${theory_images_abs} ${theory_inputs_abs}
-	    "${CMAKE_CURRENT_BINARY_DIR}/../DakotaDefs.tex"
-	    "${CMAKE_CURRENT_BINARY_DIR}/../Dakota.bib"
+	    "${CMAKE_CURRENT_BINARY_DIR}/../../DakotaDefs.tex"
+	    "${CMAKE_CURRENT_BINARY_DIR}/../../Dakota.bib"
   COMMAND   "${PDFLATEX_COMPILER}"
   ARGS      -interaction=batchmode "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
   COMMENT   "Latex (first pass): Theory"
