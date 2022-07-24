@@ -13,9 +13,6 @@
 project(DakotaDocs LANGUAGES NONE)
 cmake_minimum_required(VERSION 3.17)
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
-include(ListFilterEmacsBackups)
-
 # TODO: make documentation build cross-platform
 
 # TODO: Should this specify COMPONENTS Development?
@@ -43,6 +40,13 @@ endif()
 if( NOT Dakota_SOURCE_DIR)
   get_filename_component(Dakota_SOURCE_DIR ".." ABSOLUTE) 
 endif()
+
+set(CMAKE_MODULE_PATH "${Dakota_SOURCE_DIR}/cmake"
+  "${Dakota_SOURCE_DIR}/cmake/semsCMake" ${CMAKE_MODULE_PATH})
+include(ListFilterEmacsBackups)
+include(DakotaTestHelpers)
+include(DakotaUsersExamples)
+
 
 set(DAKOTA_JAVA_UTIL_DIR
   "${Dakota_SOURCE_DIR}/src/java_utils/src/gov/sandia/dart/dakota")
@@ -116,18 +120,33 @@ add_custom_target(docs-keywords
   DEPENDS ${DakotaDocs_SOURCE_DIR}/user/usingdakota/reference/environment.rst
 )
 
+# Generated sample input files (duplicate of process in test/ for now
+# so docs can build on their own...)
+dakota_generate_test_properties("${Dakota_SOURCE_DIR}/test"
+  "${CMAKE_CURRENT_BINARY_DIR}" test_props)
+# Each line is "generated file source file test number"
+file(STRINGS "${CMAKE_CURRENT_BINARY_DIR}/dakota_usersexamples.props"
+  users_test_inputs)
+file(MAKE_DIRECTORY "${DakotaDocs_SOURCE_DIR}/user/usingdakota/samples")
+generate_users_examples("${users_test_inputs}"
+  "${DakotaDocs_SOURCE_DIR}/user/usingdakota/samples" _gen_files_var_out)
+add_custom_target(docs-user-samples DEPENDS ${_gen_files_var_out})
+
+# TODO: separate serial and parallel doc build targets
 add_custom_target(docs-user-html
   COMMAND "${_dakota_sphinx_exe}" -b html -j auto "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
-  COMMENT "Generating user-html with Sphinx"
+  COMMENT "Generating user-html with Sphinx:
+  ${_dakota_sphinx_exe} -b html ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
-add_dependencies(docs-user-html docs-keywords) 
+add_dependencies(docs-user-html docs-keywords docs-user-samples) 
 
 add_custom_target(docs-user-html-full
   COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMAND "${_dakota_sphinx_exe}" -a -E -b html -j auto "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
-  COMMENT "Generating user-html with Sphinx (full rebuild)"
+  COMMENT "Generating user-html with Sphinx (full rebuild):
+  ${_dakota_sphinx_exe} -a -E -b html ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
-add_dependencies(docs-user-html-full docs-keywords) 
+add_dependencies(docs-user-html-full docs-keywords docs-user-samples) 
 
 add_subdirectory(dev)
 
