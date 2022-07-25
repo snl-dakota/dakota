@@ -133,26 +133,30 @@ generate_users_examples("${users_test_inputs}"
 add_custom_target(docs-user-samples DEPENDS ${_gen_files_var_out})
 
 # TODO: separate serial and parallel doc build targets
-add_custom_target(docs-user-html
-  COMMAND "${_dakota_sphinx_exe}" -b html -j auto "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+add_custom_target(docs-user
+  COMMAND "${_dakota_sphinx_exe}" -a -E -b html "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx:
-  ${_dakota_sphinx_exe} -b html ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
-)
-add_dependencies(docs-user-html docs-keywords docs-user-samples) 
-
-add_custom_target(docs-user-html-full
-  COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_CURRENT_BINARY_DIR}/user-html"
-  COMMAND "${_dakota_sphinx_exe}" -a -E -b html -j auto "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
-  COMMENT "Generating user-html with Sphinx (full rebuild):
   ${_dakota_sphinx_exe} -a -E -b html ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
-add_dependencies(docs-user-html-full docs-keywords docs-user-samples) 
+add_dependencies(docs-user docs-keywords docs-user-samples)
+
+add_custom_target(docs-user-fast
+  COMMAND "${_dakota_sphinx_exe}" -a -E -b html -j auto "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMENT "Generating user-html with Sphinx (full rebuild):
+  ${_dakota_sphinx_exe} -a -E -b html -j auto ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
+)
+add_dependencies(docs-user-fast docs-keywords docs-user-samples)
+
+add_custom_target(docs-user-clean
+  COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMENT "Cleaning docs/user-html"
+  )
 
 add_subdirectory(dev)
 
 # Generate HTML Dev
 add_custom_target(docs)
-add_dependencies(docs docs-user-html-full docs-dev-html)
+add_dependencies(docs docs-user docs-dev-html)
 
 # Generate PDF Dev
 # TODO: depend on sphinx users
