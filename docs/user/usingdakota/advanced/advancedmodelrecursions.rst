@@ -100,8 +100,7 @@ levels. This interval on a statistic is interpreted simply as a possible
 range, where the statistic could take any of the possible values in the
 range.
 
-A sample input file is shown in
-Figure `[adv_models:2ndprob] <#adv_models:2ndprob>`__, in which the
+A sample input file is shown in :numref:`adv_models:2ndprob`, in which the
 outer epistemic level variables are defined as intervals. Samples will
 be generated from these intervals to select means for :math:`X` and
 :math:`Y` that are employed in an inner level reliability analysis of
@@ -132,7 +131,13 @@ required to be: they can just be separate uncertain variables in the
 problem.
 
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/cantilever_uq_sop_rel.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for the interval-valued probability
+       example -- see
+       ``dakota/share/dakota/examples/users/cantilever_uq_sop_rel.in``
+   :name: adv_models:2ndprob
 
 ::
 
@@ -183,8 +188,7 @@ the Quantification of Margins and Uncertainties
 Rather than employing interval estimation techniques at the outer loop
 in SOP, we instead apply probabilistic methods, potentially the same
 ones as used for the aleatory propagation on the inner loop. The
-previous example in
-Figure `[adv_models:2ndprob] <#adv_models:2ndprob>`__ can be modified to
+previous example in :numref:`adv_models:2ndprob` can be modified to
 define the epistemic outer loop using uniform variables instead of
 interval variables (annotated test ``#1`` in ). The process of
 generating the epistemic values is essentially the same in both cases;
@@ -307,7 +311,7 @@ uncertainty quantification on these response functions.
 
    Formulation 1: Nested OUU.
 
-Figure `[adv_models:figure09] <#adv_models:figure09>`__ shows a Dakota
+:numref:`adv_models:figure09` shows a Dakota
 input file for a nested OUU example problem that is based on the
 textbook test problem. In this example, the objective function contains
 two probability of failure estimates, and an inequality constraint
@@ -327,7 +331,12 @@ attributes. As with other complex Dakota input files, the identification
 tags given in each keyword block can be used to follow the relationships
 among the different keyword blocks.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/textbook_opt_ouu1.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for the nested OUU example -- see
+       ``dakota/share/dakota/examples/users/textbook_opt_ouu1.in``
+   :name: adv_models:figure09
 
 Latin hypercube sampling is used as the UQ method in this example
 problem. Thus, each evaluation of the response functions by the

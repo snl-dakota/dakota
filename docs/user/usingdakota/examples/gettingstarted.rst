@@ -137,44 +137,14 @@ Gradient-based Unconstrained Optimization
 Dakota’s optimization capabilities include a variety of gradient-based and nongradient-based optimization methods. This
 subsection demonstrates the use of one such method through the Dakota interface.
 
-.. code-block::
+.. literalinclude:: ../samples/rosen_grad_opt.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Rosenbrock gradient-based unconstrained optimization
+       example: the Dakota input file.
+   :name: tutorial:rosenbrock_grad
 
-   # Dakota Input File: rosen_grad_opt.in
-   # Usage:
-   # dakota -i rosen_grad_opt.in -o rosen_grad_opt.out > rosen_grad_opt.stdout
-   environment
-     tabular_data
-       tabular_data_file = ’rosen_grad_opt.dat’
-    
-   method
-     conmin_frcg
-       convergence_tolerance = 1e-4
-       max_iterations = 100
-
-   model
-     single
-  
-   variables
-     continuous_design = 2
-     initial_point -1.2 1.0
-     lower_bounds -2.0 -2.0
-     upper_bounds 2.0 2.0
-     descriptors ’x1’ "x2"
-  
-   interface
-     analysis_drivers = ’rosenbrock’
-       direct
-
-   responses
-     objective_functions = 1
-     # analytic_gradients
-     numerical_gradients
-       method_source dakota
-       interval_type forward
-       fd_step_size = 1.e-5
-     no_hessians
-
-The format of the input file is similar to that used for the parameter studies, but there are some new keywords in the responses and method sections.
+The format of the input file in :numref:`tutorial:rosenbrock_grad` is similar to that used for the parameter studies, but there are some new keywords in the responses and method sections.
 First, in the responses block of the input file, the keyword block starting with numerical gradients specifies that a finite
 difference method will be used to compute gradients for the optimization algorithm. Note that the Rosenbrock function evalu-
 ation code inside Dakota has the ability to give analytical gradient values. (To switch from finite difference gradient estimates
@@ -261,40 +231,11 @@ The following sample input file shows single-method optimization of the Textbook
 Uncertainty Quantification with Monte Carlo Sampling
 ====================================================
 
-.. code-block::
-
-   # Dakota Input File: rosen_sampling.in
-   # Usage:
-   # dakota -i rosen_sampling.in -o rosen_sampling.out > rosen_sampling.stdout
-   
-   environment
-     tabular_data
-       tabular_data_file = ’rosen_sampling.dat’
-
-   method
-     sampling
-       sample_type random
-       samples = 200
-       seed = 17
-       response_levels = 100.0
-
-   model
-     single
-
-   variables
-     uniform_uncertain = 2
-     lower_bounds -2.0 -2.0
-     upper_bounds 2.0 2.0
-     descriptors ’x1’ ’x2’
-
-   interface
-     analysis_drivers = ’rosenbrock’
-       direct
-    
-   responses
-     response_functions = 1
-     no_gradients
-     no_hessians
+.. literalinclude:: ../samples/rosen_sampling.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Monte Carlo sampling example: the Dakota input file.
+   :name: tutorial:rosenbrock_mc
 
 Uncertainty quantification (UQ) is the process of determining the effect of input uncertainties on response metrics of interest.
 These input uncertainties may be characterized as either aleatory uncertainties, which are irreducible variabilities inherent in
@@ -304,7 +245,7 @@ statistics based on input probability distribution specifications. Conversely, f
 making the use of probability theory questionable and leading to nonprobabilistic methods based on interval specifications.
 The subsection demonstrates the use of Monte Carlo random sampling for Uncertainty Quantification.
 
-Figure 2.9 shows the Dakota input file for an example problem that demonstrates some of the random sampling capabilities
+:numref:`tutorial:rosenbrock_mc` shows the Dakota input file for an example problem that demonstrates some of the random sampling capabilities
 available in Dakota. In this example, the design parameters, x1 and x2, will be treated as uncertain parameters that have
 uniform distributions over the interval [-2, 2]. This is specified in the variables block of the input file, beginning with the
 keyword uniform uncertain. Another difference from earlier input files such as Figure 2.7 occurs in the responses

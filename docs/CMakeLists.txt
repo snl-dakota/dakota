@@ -22,6 +22,8 @@ if (NOT Java_FOUND)
 endif()
 include(UseJava)
 
+find_package(Python REQUIRED)
+
 # Required for generated included input files
 find_package(Perl REQUIRED)
 
@@ -129,10 +131,12 @@ file(STRINGS "${CMAKE_CURRENT_BINARY_DIR}/dakota_usersexamples.props"
   users_test_inputs)
 file(MAKE_DIRECTORY "${DakotaDocs_SOURCE_DIR}/user/usingdakota/samples")
 generate_users_examples("${users_test_inputs}"
-  "${DakotaDocs_SOURCE_DIR}/user/usingdakota/samples" _gen_files_var_out)
-add_custom_target(docs-user-samples DEPENDS ${_gen_files_var_out})
+  "${DakotaDocs_SOURCE_DIR}/user/usingdakota/samples" _gen_inputs_var_out)
+generate_users_examples_interfacing(
+  "${DakotaDocs_SOURCE_DIR}/user/usingdakota/samples" _gen_interfacing_var_out)
 
-# TODO: separate serial and parallel doc build targets
+add_custom_target(docs-user-samples DEPENDS ${_gen_inputs_var_out} ${_gen_interfacing_var_out})
+
 add_custom_target(docs-user
   COMMAND "${_dakota_sphinx_exe}" -a -E -b html "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx:

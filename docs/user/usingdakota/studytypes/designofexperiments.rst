@@ -529,8 +529,8 @@ deviation indicates nonlinear effects or interactions, since it is an
 indicator of elementary effects varying throughout the input space.
 
 The MOAT method is selected with method keyword ``psuade_moat`` as shown
-in the sample Dakota input deck in
-Figure `[FIG:moat_input] <#FIG:moat_input>`__. The number of samples
+in the sample Dakota input file in
+:numref:`FIG:moat_input`. The number of samples
 (``samples``) must be a positive integer multiple of (number of
 continuous design variables :math:`k` + 1) and will be automatically
 adjusted if misspecified. The number of partitions (``partitions``)
@@ -543,7 +543,13 @@ information on use of MOAT sampling, see the Morris example in
 Section `[additional:morris] <#additional:morris>`__, or Saltelli, et
 al. :cite:p:`Sal04`.
 
-TODO: Figure 4.1: Dakota input file showing the Morris One-at-a-Time method – see dakota/share/dakota/ examples/users/morris_ps_moat.in
+.. literalinclude:: ../samples/morris_ps_moat.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file showing the Morris One-at-a-Time method
+       -- see ``dakota/share/dakota/examples/users/morris_ps_moat.in``
+   :name: FIG:moat_input
+
 
 .. _`dace:sa`:
 

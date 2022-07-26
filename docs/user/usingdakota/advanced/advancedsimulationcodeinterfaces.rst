@@ -35,21 +35,29 @@ As a simple example (from ), consider algebraic mappings based on
 Newton’s law :math:`F = m a`. The following is an AMPL input file of
 variable and expression declarations and output commands:
 
-TODO: Generated input file likely goes here 
+.. literalinclude:: ../samples/dakota_ampl_fma.mod
+   :caption: AMPL input file
+   :name: advint:ampl_imput
 
 When processed by an AMPL processor, three files are created (as
 requested by the “option auxfiles" command). The first is the file
 containing problem statistics, expression graphs, bounds, etc.:
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/dakota_ampl_fma.nl
+   :caption: AMPL .nl file
+   :name: advint:ampl_nl
 
 Next, the file contains the set of variable descriptor strings:
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/dakota_ampl_fma.col
+   :caption: AMPL .col file with variable descriptors
+   :name: advint:ampl_col
 
 and the file contains the set of response descriptor strings:
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/dakota_ampl_fma.row
+   :caption: AMPL .row file with response descriptors
+   :name: advint:ampl_row
 
 The variable and objective function names declared within AMPL should be
 a subset of the variable descriptors and response descriptors used by
@@ -98,7 +106,9 @@ To solve ``text_book`` algebraically (refer to
 Section `[additional:textbook] <#additional:textbook>`__ for
 definition), the following AMPL model file could be used
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/dakota_ampl_tb.mod
+   :caption: AMPL model file for text_book
+   :name: advint:ampl_textbook
 
 Note that the nonlinear constraints should not currently be declared as
 constraints within AMPL. Since the Dakota variable bounds and constraint

@@ -379,7 +379,7 @@ sample sizes to satisfy Wilks’ criteria.
 Uncertainty Quantification Example using Sampling Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The input file in Figure `[uq:figure01] <#uq:figure01>`__ demonstrates
+The input file in :numref:`uq:figure01` demonstrates
 the use of Latin hypercube Monte Carlo sampling for assessing
 probability of failure as measured by specified response levels. The
 two-variable Textbook example problem (see
@@ -399,7 +399,12 @@ Figure `[uq:figure02] <#uq:figure02>`__ for the case where ``samples`` =
 5 and ``samples`` = 10 for both ``random`` (:math:`\circ`) and ``lhs``
 (:math:`+`) sample types.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/textbook_uq_sampling.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for UQ example using LHS --
+       see ``dakota/share/dakota/examples/users/textbook_uq_sampling.in``
+   :name: uq:figure01
 
 Latin hypercube sampling ensures full coverage of the range of the input
 variables, which is often a problem with Monte Carlo sampling when the
@@ -527,7 +532,7 @@ correlation coefficient except that it is calculated on the rank data.
 
 Figure `[uq:figure04] <#uq:figure04>`__ shows an example of the
 correlation output provided by Dakota for the input file in
-Figure `[uq:figure01] <#uq:figure01>`__. Note that these correlations
+:numref:`uq:figure01`. Note that these correlations
 are presently only available when one specifies ``lhs`` as the sampling
 method under ``sampling``. Also note that the simple and partial
 correlations should be similar in most cases (in terms of values of
@@ -1015,7 +1020,7 @@ response variance estimate).
 Mean-value Reliability with Textbook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Figure `[uq:examples:mv_input] <#uq:examples:mv_input>`__ shows the
+:numref:`uq:examples:mv_input` shows the
 Dakota input file for an example problem that demonstrates the simplest
 reliability method, called the mean value method (also referred to as
 the Mean Value First Order Second Moment method). It is specified with
@@ -1043,7 +1048,12 @@ importance factors are not available for the first response as the
 standard deviation is zero.
 
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/textbook_uq_meanvalue.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Mean Value Reliability Method: the Dakota input file -- see
+       ``dakota/share/dakota/examples/users/textbook_uq_meanvalue.in``
+   :name: uq:examples:mv_input
 
 ::
 
@@ -1081,14 +1091,14 @@ and correlation coefficient of ``0.3``.
 
 A Dakota input file showing RIA using FORM (option 7 in limit state
 approximations combined with first-order integration) is listed in
-Figure `[uq:rel_input_form] <#uq:rel_input_form>`__. The user first
+:numref:`uq:rel_input_form`. The user first
 specifies the ``local_reliability`` method, followed by the MPP search
 approach and integration order. In this example, we specify
 ``mpp_search no_approx`` and utilize the default first-order integration
 to select FORM. Finally, the user specifies response levels or
 probability/reliability levels to determine if the problem will be
-solved using an RIA approach or a PMA approach. In the example figure
-of `[uq:rel_input_form] <#uq:rel_input_form>`__, we use RIA by
+solved using an RIA approach or a PMA approach. In the example
+:numref:`uq:rel_input_form`, we use RIA by
 specifying a range of ``response_levels`` for the problem. The resulting
 output for this input is shown in
 Figure `[uq:rel_output_form] <#uq:rel_output_form>`__, with probability
@@ -1100,8 +1110,12 @@ it is a very small error (on the order of e-11), much smaller than the
 error obtained when using a Mean Value method, which will be discussed
 next.
 
-
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/logratio_uq_reliability.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for Reliability UQ example using FORM --
+       see ``dakota/share/dakota/examples/users/logratio_uq_reliability.in``
+   :name: uq:rel_input_form
 
 ::
 
@@ -1350,8 +1364,7 @@ Polynomial Chaos Expansion for Rosenbrock
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A typical Dakota input file for performing an uncertainty quantification
-using PCE is shown in
-Figure `[uq:examples:pce_input] <#uq:examples:pce_input>`__. In this
+using PCE is shown in :numref:`uq:examples:pce_input`. In this
 example, we compute CDF probabilities for six response levels of
 Rosenbrock’s function. Since Rosenbrock is a fourth order polynomial and
 we employ a fourth-order expansion using an optimal basis (Legendre for
@@ -1362,7 +1375,12 @@ quadrature in :math:`x_1` and third-order quadrature in :math:`x_2`),
 resulting in a total of 15 function evaluations to compute the PCE
 coefficients.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/rosen_uq_pce.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for performing UQ using polynomial chaos expansions --
+       see ``dakota/share/dakota/examples/users/rosen_uq_pce.in``
+   :name: uq:examples:pce_input
 
 The tensor product quadature points upon which the expansion is
 calculated are shown in Figure `1.5 <#uq:examples:rosen_pce_points>`__.
@@ -1482,7 +1500,7 @@ polynomials. The uncertain variables are lognormal in this example and
 the orthogonal polynomials are generated from Gauss-Wigert recursion
 coefficients :cite:p:`simpson_gw` in combination with the
 Golub-Welsch procedure :cite:p:`GolubWelsch69`. The input file
-is shown in Figure `[uq:figure11] <#uq:figure11>`__. Note that the
+is shown in :numref:`uq:figure11`. Note that the
 dimension preference of :math:`(2,1)` is inverted to define a
 :math:`\gamma` weighting vector of :math:`(0.5,1)` (and
 :math:`\underline{\gamma}` of :math:`0.5`) for use in the anisotropic
@@ -1495,7 +1513,12 @@ polynomials in stochastic collocation and the resulting expansion
 exactly reproduces Rosenbrock’s function. The placement of the points
 generated by the sparse grid is shown in Figure `1.6 <#uq:figure11b>`__.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/rosen_uq_sc.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for performing UQ using stochastic collocation --
+       see ``dakota/share/dakota/examples/users/rosen_uq_sc.in``
+   :name: uq:figure11
 
 .. figure:: img/rosen_sc_pts.png
    :alt: Rosenbrock stochastic collocation example: sparse grid points.
@@ -2020,8 +2043,7 @@ Section `[adv_models:mixed_uq:ivp] <#adv_models:mixed_uq:ivp>`__ for
 additional details.
 
 An example of interval estimation is shown in
-Figure `[uq:examples:interval_input] <#uq:examples:interval_input>`__,
-with example results in
+:numref:`uq:examples:interval_input`, with example results in
 Figure `[uq:examples:interval_out] <#uq:examples:interval_out>`__. This
 example is a demonstration of calculating interval bounds for three
 outputs of the cantilever beam problem. The cantilever beam problem is
@@ -2030,7 +2052,12 @@ Section `[additional:cantilever] <#additional:cantilever>`__. Given
 input intervals of [1,10] on beam width and beam thickness, we can see
 that the interval estimate of beam weight is approximately [1,100].
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/cantilever_uq_global_interval.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for performing UQ using interval analysis --
+       see ``dakota/share/dakota/examples/users/cantilever_uq_global_interval.in``
+   :name: uq:examples:interval_input
 
 ::
 
@@ -2093,8 +2120,11 @@ overlapping, contiguous, or have gaps. In Dakota, an interval uncertain
 variable is specified as . When one defines an interval type variable in
 Dakota, it is also necessary to specify the number of intervals defined
 for each variable with as well the basic probability assignments per
+
+TODO: something missing below?
+
 interval, , and the associated bounds per each interval, .
-Figure `[uq:figure16] <#uq:figure16>`__ shows the input specification
+:numref:`uq:figure16` shows the input specification
 for interval uncertain variables. The example has two epistemic
 uncertain interval variables. The first uncertain variable has three
 intervals and the second has two. The basic probability assignments for
@@ -2107,7 +2137,12 @@ case we have shown, the interval bounds on the first interval for the
 first variable are 0.6 and 0.9, and the bounds for the second interval
 for the first variable are 0.1 to 0.5, etc.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/textbook_uq_glob_evidence.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for UQ example using Evidence Theory --
+       see ``dakota/share/dakota/examples/users/textbook_uq_glob_evidence.in``
+   :name: uq:figure16
 
 Once the intervals, the BPAs, and the interval bounds are defined, the
 user can run an epistemic analysis by specifying the method as either
@@ -2125,7 +2160,7 @@ bound on a probability estimate that is consistent with the evidence.
 
 Figure `[uq:figure17] <#uq:figure17>`__ shows results for the first
 response function obtained when running the example in
-Figure `[uq:figure16] <#uq:figure16>`__. In this example, there are 6
+:numref:`uq:figure16`. In this example, there are 6
 output intervals (as a result of the 2 interval input variables with 3
 and 2 intervals, respectively). The output intervals are ordered to
 obtain cumulative bound functions for both belief and plausibility. The
@@ -2581,8 +2616,8 @@ Bayesian Calibration Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To run a QUESO-based Bayesian calibration in Dakota, create a Dakota
-input file such as the one shown in
-Figure `[uq:figure18] <#uq:figure18>`__. Here, the QUESO DRAM (delayed
+input file such as the one shown in :numref:`uq:figure18`.
+Here, the QUESO DRAM (delayed
 rejection adaptive metropolis) solver is selected. The number of samples
 = 1000 indicates how many points to generate in the acceptance
 chain [3]_. This example uses the ``mod_cantilever`` algebraic model, so
@@ -2598,9 +2633,13 @@ values, one for stress and one for displacement, followed by two
 variance values for the error associated with that experiment for each
 quantity of interest.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/queso_uq.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for Bayesian calibration
+   :name: uq:figure18
 
-When the input file shown in `[uq:figure18] <#uq:figure18>`__ is run,
+When the input file shown in :numref:`uq:figure18` is run,
 Dakota will run the MCMC algorithm and generate a posterior sample of
 :math:`\boldsymbol{\theta}` in accordance with Bayes
 Theorem `[eq:BayesThm] <#eq:BayesThm>`__ and the likelihood

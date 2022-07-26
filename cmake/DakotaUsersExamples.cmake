@@ -72,3 +72,35 @@ function(generate_users_examples _users_test_inputs _output_dir
   set(${_all_generated_files_out} ${all_generated_files} PARENT_SCOPE)
 
 endfunction()
+
+
+# Generate a few stragglers to specified _output_dir
+function(generate_users_examples_interfacing _output_dir
+    _all_generated_files_out)
+
+  # "Generic" script interface examples in Users_Interface.tex
+  # Directories in which inputs are found
+  set(generic_path "${Dakota_SOURCE_DIR}/dakota-examples/official/drivers/bash")
+  add_file_copy_command("${generic_path}/dakota_rosenbrock.in"
+    "${_output_dir}/dakota_rosenbrock.in")
+  add_file_copy_command("${generic_path}/simulator_script.sh"
+    "${_output_dir}/simulator_script.sh")
+  add_file_copy_command("${generic_path}/templatedir/ros.template"
+    "${_output_dir}/ros.template")
+  add_custom_command(
+    OUTPUT  "${_output_dir}/dprepro_usage"
+    DEPENDS "${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro"
+    COMMAND "${Python_EXECUTABLE}"
+    ARGS    "${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro" --help > "${_output_dir}/dprepro_usage"
+    )
+
+  list(APPEND users_inputs_abs
+    "${_output_dir}/dakota_rosenbrock.in"
+    "${_output_dir}/simulator_script.sh"
+    "${_output_dir}/dprepro_usage"
+    "${_output_dir}/ros.template"
+    )
+
+  set(${_all_generated_files_out} ${users_inputs_abs} PARENT_SCOPE)
+
+endfunction()

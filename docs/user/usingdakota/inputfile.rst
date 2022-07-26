@@ -34,40 +34,14 @@ It can be summarized as follows: In each iteration of its algorithm, a method bl
 to-responses mapping from its model, which the model fulfills through an interface. While most Dakota analyses satisfy this
 relationship, where a single method runs a single model, advanced cases are possible and are discussed in Chapter 14.
 
-.. code-block::
+.. literalinclude:: samples/rosen_multidim.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Rosenbrock 2-D parameter study example: the Dakota input
+             file.
+   :name: tutorial:rosenbrock_multidim
 
-   # Dakota Input File: rosen_multidim.in
-   # Usage:
-   # dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout
-
-   environment
-     tabular_data
-       tabular_data_file = ’rosen_multidim.dat’
-
-   method
-     multidim_parameter_study
-       partitions = 8 8
-	
-   model
-     single
-  
-   variables
-     continuous_design = 2
-     lower_bounds -2.0 -2.0
-     upper_bounds 2.0 2.0
-     descriptors ’x1’ "x2"
-  
-   interface
-     analysis_drivers = ’rosenbrock’
-       direct
-  
-   responses
-     response_functions = 1
-     no_gradients
-     no_hessians
-
-
-As a concrete example, a simple Dakota input file, rosen_multidim.in, is shown above, for a two-dimensional
+As a concrete example, a simple Dakota input file, rosen_multidim.in, is shown above in :numref:`tutorial:rosenbrock_multidim`, for a two-dimensional
 parameter study on Rosenbrock’s function. This input file will be used to describe the basic format and syntax used in all
 Dakota input files. The results are shown later, in Section 2.3.2.
 

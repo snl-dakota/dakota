@@ -68,7 +68,7 @@ following test functions are available: ``cantilever``, ``cyl_head``,
 ``log_ratio``, ``rosenbrock``, ``short_column``, and ``text_book``
 (including ``text_book1``, ``text_book2``, ``text_book3``, and
 ``text_book_ouu``). While these functions are also available as external
-programs in the directory, maintaining internally linked versions allows
+programs in the ``dakota/share/dakota/test`` directory, maintaining internally linked versions allows
 more rapid testing. See Chapter `[additional] <#additional>`__ for
 additional information on several of these test problems. An example
 input specification for a direct interface follows:
@@ -277,7 +277,7 @@ pre- and post-processing functionality may also be compiled or
 interpreted from any number of programming languages (C, C++, F77, F95,
 JAVA, Basic, etc.).
 
-In the directory, a simple example uses the Rosenbrock test function as
+In the ``dakota/share/dakota/examples/official/drivers/bash/`` directory, a simple example uses the Rosenbrock test function as
 a mock engineering simulation code. Several scripts have been included
 to demonstrate ways to accomplish the pre- and post-processing needs.
 Actual simulation codes will, of course, have different pre- and
@@ -290,35 +290,45 @@ Modifications will almost surely be required for new applications.
 Generic Script Interface Files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The directory contains four important files: (the Dakota input file),
-(the simulation driver script), (a template simulation input file), and
-(the Rosenbrock simulator).
+The ``dakota/share/dakota/examples/official/drivers/bash/`` directory
+contains four important files: ``dakota_rosenbrock.in`` (the Dakota
+input file), ``simulator_script.sh`` (the simulation driver script),
+``templatedir/ros.template`` (a template simulation input file), and
+``templatedir/rosenbrock_bb.py`` (the Rosenbrock simulator).
 
-The file specifies the study that Dakota will perform and, in the
-interface section, describes the components to be used in performing
-function evaluations. In particular, it identifies as its
-``analysis_driver``, as shown in
-Figure `[advint:figure01] <#advint:figure01>`__.
+The file ``dakota_rosenbrock.in`` specifies the study that Dakota will
+perform and, in the interface section, describes the components to be
+used in performing function evaluations. In particular, it identifies
+as its ``analysis_driver``, as shown in :numref:`advint:figure01`.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/dakota_rosenbrock.in
+   :language: dakota
+   :tab-width: 2
+   :caption: The ``dakota_rosenbrock.in`` input file.
+   :name: advint:figure01
 
-The listed in Figure `[advint:figure02] <#advint:figure02>`__ is a short
-driver shell script that Dakota executes to perform each function
-evaluation. The names of the parameters and results files are passed to
-the script on its command line; they are referenced in the script by
-``$1`` and ``$2``, respectively. The is divided into three parts:
-pre-processing, analysis, and post-processing.
+The ``simulator_script.sh`` listed in :numref:`advint:figure02` is a
+short driver shell script that Dakota executes to perform each
+function evaluation. The names of the parameters and results files are
+passed to the script on its command line; they are referenced in the
+script by ``$1`` and ``$2``, respectively. The ``simulator_script.sh``
+is divided into three parts: pre-processing, analysis, and
+post-processing.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/simulator_script.sh
+   :language: dakota
+   :tab-width: 2
+   :caption: The ``simulator_script.sh`` sample driver script.
+   :name: advint:figure02
 
-In the pre-processing portion, the uses , a template processing utility,
+In the pre-processing portion, the ``simulator_script.sh`` uses ``dprepro``, a template processing utility,
 to extract the current variable values from a parameters file (``$1``)
-and combine them with the simulator template input file () to create a
-new input file () for the simulator. Internal to Sandia, the APREPRO
+and combine them with the simulator template input file (``ros.template``) to create a
+new input file (``ros.in``) for the simulator. Internal to Sandia, the APREPRO
 utility is often used for this purpose. For external sites where APREPRO
 is not available, ``dprepro`` is an alternative with many of the
 capabilities of APREPRO that is specifically tailored for use with
-Dakota and is distributed with it (in , or in a binary distribution).
+Dakota and is distributed with it (in ``dakota/scripts/pyprepro/``, or in a binary distribution ``dakota/bin``).
 Dakota also provides a second, more general-purpose template processing
 tool named ``pyprepro``, which is as a Python-based alternative to
 APREPRO. This pair of tools, which permit not only parameter
@@ -336,62 +346,65 @@ Section `[variables:parameters:aprepro] <#variables:parameters:aprepro>`__)
 or Dakota’s standard format (see
 Section `[variables:parameters:standard] <#variables:parameters:standard>`__),
 so either option may be selected in the interface section of the Dakota
-input file. The file listed in
-Figure `[advint:figure04] <#advint:figure04>`__ is a template simulation
+input file. The ``ros.template`` file in :numref:`advint:figure04`
+is a template simulation
 input file which contains targets for the incoming variable values,
 identified by the strings “``{x1}``” and “``{x2}``”. These identifiers
-match the variable descriptors specified in . The template input file is
+match the variable descriptors specified in ``dakota_rosenbrock.in``. The template input file is
 contrived as Rosenbrock has nothing to do with finite element analysis;
 it only mimics a finite element code to demonstrate the simulator
 template process. The ``dprepro`` script will search the simulator
 template input file for fields marked with curly brackets and then
-create a new file () by replacing these targets with the corresponding
-numerical values for the variables. As shown in , the names for the
-Dakota parameters file (``$1``), template file (), and generated input
-file () must be specified in the ``dprepro`` command line arguments.
+create a new file (``ros.in``) by replacing these targets with the corresponding
+numerical values for the variables. As shown in ``simulator_script.sh``, the names for the
+Dakota parameters file (``$1``), template file (``ros.template``), and generated input
+file (``ros.in``) must be specified in the ``dprepro`` command line arguments.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/ros.template
+   :language: dakota
+   :tab-width: 2
+   :caption: Listing of the ``ros.template`` file
+   :name: advint:figure04
 
-The second part of the script executes the simulator. The input and
-output file names, and , respectively, are hard-coded into the. When the
-simulator is executed, the values for ``x1`` and ``x2`` are read in from
-, the Rosenbrock function is evaluated, and the function value is
-written out to .
+The second part of the script executes the ``rosenbrock_bb.py`` simulator. The input and
+output file names, ``ros.in`` and ``ros.out``, respectively, are hard-coded into the. When the
+``./rosenbrock_bb.py`` simulator is executed, the values for ``x1`` and ``x2`` are read in from
+``ros.in``, the Rosenbrock function is evaluated, and the function value is
+written out to ``ros.out``.
 
 The third part performs the post-processing and writes the response
 results to a file for Dakota to read. Using the UNIX “``grep``” utility,
 the particular response values of interest are extracted from the raw
 simulator output and saved to a temporary file (). When complete, this
-file is renamed ``$2``, which in this example is always . Note that
+file is renamed ``$2``, which in this example is always ``results.out``. Note that
 moving or renaming the completed results file avoids any problems with
 read race conditions (see
 Section `[parallel:SLP:local:system] <#parallel:SLP:local:system>`__).
 
-Because the Dakota input file
-(Figure `[advint:figure01] <#advint:figure01>`__) specifies
+Because the Dakota input file (:numref:`advint:figure01`) specifies
 ``work_directory`` and ``directory_tag`` in its interface section, each
-invocation of wakes up in its own temporary directory, which Dakota has
-populated with the contents of directory . Having a separate directory
-for each invocation of simplifies the script when the Dakota input file
-specifies ``asynchronous`` (so several instances of might run
-simultaneously), as fixed names such as , , and can be used for
+invocation of ``simulator_script.sh`` wakes up in its own temporary directory, which Dakota has
+populated with the contents of directory ``templatedir/``. Having a separate directory
+for each invocation of ``simulator_script.sh`` simplifies the script when the Dakota input file
+specifies ``asynchronous`` (so several instances of ``simulator_script.sh`` might run
+simultaneously), as fixed names such as ``ros.in``, ``ros.out``, and ``results.tmp`` can be used for
 intermediate files. If neither ``asynchronous`` nor ``file_tag`` is
 specified, and if there is no need (e.g., for debugging) to retain
 intermediate files having fixed names, then ``directory_tag`` offers no
 benefit and can be omitted. An alternative to ``directory_tag`` is to
 proceed as earlier versions of this chapter — prior to Dakota 5.0’s
 introduction of ``work_directory`` — recommended: add two more steps to
-the , an initial one to create a temporary directory explicitly and copy
-to it if needed, and a final step to remove the temporary directory and
+the ``simulator_script.sh``, an initial one to create a temporary directory explicitly and copy
+``templatedir`` to it if needed, and a final step to remove the temporary directory and
 any files in it.
 
 When ``work_directory`` is specified, Dakota adjusts the ``$PATH`` seen
-by so that simple program names (i.e., names not containing a slash)
+by ``simulator_script.sh`` so that simple program names (i.e., names not containing a slash)
 that are visible in Dakota’s directory will also be visible in the work
 directory. Relative path names — involving an intermediate slash but not
-an initial one, such as or — will only be visible in the work directory
+an initial one, such as ``./rosenbrock_bb.py`` or ``a/bc/rosenbrock_bb`` — will only be visible in the work directory
 if a ``link_files`` or ``copy_files`` specification (see
-§\ `1.5.5 <#interfaces:workdir>`__) has made them visible there.
+\ `1.5.5 <#interfaces:workdir>`__) has made them visible there.
 
 As an example of the data flow on a particular function evaluation,
 consider evaluation 60. The parameters file for this evaluation consists
@@ -410,23 +423,23 @@ of:
                                               0 analysis_components
                                              60 eval_id
 
-This file is called if the line
+This file is called ``workdir/workdir.60/params.in`` if the line
 
 ::
 
          named 'workdir' file_save  directory_save
 
-in Figure `[advint:figure01] <#advint:figure01>`__ is uncommented. The
+in :numref:`advint:figure01` is uncommented. The
 first portion of the file indicates that there are two variables,
 followed by new values for variables ``x1`` and ``x2``, and one response
 function (an objective function), followed by an active set vector (ASV)
 value of ``1``. The ASV indicates the need to return the value of the
 objective function for these parameters (see
-Section `[variables:asv] <#variables:asv>`__). The script reads the
+Section `[variables:asv] <#variables:asv>`__). The ``dprepro`` script reads the
 variable values from this file, namely ``4.664752623441543e-01`` and
 ``2.256400864298234e-01`` for ``x1`` and ``x2`` respectively, and
-substitutes them in the ``{x1}`` and ``{x2}`` fields of the file. The
-final three lines of the resulting input file () then appear as follows:
+substitutes them in the ``{x1}`` and ``{x2}`` fields of the ``ros.template`` file. The
+final three lines of the resulting input file (``ros.in``) then appear as follows:
 
 ::
 
@@ -434,9 +447,9 @@ final three lines of the resulting input file () then appear as follows:
    variable 2 0.2256400864
    end
 
-where all other lines are identical to the template file. The simulator
-accepts as its input file and generates the following output to the file
-:
+where all other lines are identical to the template file. The ``rosenbrock_bb`` simulator
+accepts ``ros.in`` as its input file and generates the following output to the file
+``ros.out``:
 
 ::
 
@@ -458,40 +471,40 @@ accepts as its input file and generates the following output to the file
 
 Next, the appropriate values are extracted from the raw simulator output
 and returned in the results file. This post-processing is relatively
-trivial in this case, and the uses the ``grep`` and ``cut`` utilities to
-extract the value from the “\ ``Function value``" line of the output
-file and save it to ``$results``, which is the file for this evaluation.
+trivial in this case, and the ``simulator_script.sh`` uses the ``grep`` and ``cut`` utilities to
+extract the value from the “\ ``Function value``" line of the ``ros.out`` output
+file and save it to ``$results``, which is the ``results.out`` file for this evaluation.
 This single value provides the objective function value requested by the
 ASV.
 
 After 132 of these function evaluations, the following Dakota output
-shows the final solution using the simulator:
+shows the final solution using the ``rosenbrock_bb.py`` simulator:
 
 ::
 
-       Exit NPSOL - Optimal solution found.
-
-       Final nonlinear objective value =   0.1165704E-06
-
-      NPSOL exits with INFORM code = 0 (see "Interpretation of output" section in NPSOL manual)
-
-      NOTE: see Fortran device 9 file (fort.9 or ftn09)
-            for complete NPSOL iteration history.
-
-      <<<<< Iterator npsol_sqp completed.
-      <<<<< Function evaluation summary: 132 total (132 new, 0 duplicate)
-      <<<<< Best parameters          =
-                            9.9965861667e-01 x1
-                            9.9931682203e-01 x2
-      <<<<< Best objective function  =
-                         1.1657044253e-07
-      <<<<< Best data captured at function evaluation 130
-
-      <<<<< Iterator npsol_sqp completed.
-      <<<<< Single Method Strategy completed.
-      Dakota execution time in seconds:
-        Total CPU        =       0.12 [parent =   0.116982, child =   0.003018]
-        Total wall clock =    1.47497
+    Exit NPSOL - Optimal solution found.
+    
+    Final nonlinear objective value =   0.1165704E-06
+    
+    NPSOL exits with INFORM code = 0 (see "Interpretation of output" section in NPSOL manual)
+    
+    NOTE: see Fortran device 9 file (fort.9 or ftn09)
+          for complete NPSOL iteration history.
+    
+    <<<<< Iterator npsol_sqp completed.
+    <<<<< Function evaluation summary: 132 total (132 new, 0 duplicate)
+    <<<<< Best parameters          =
+                          9.9965861667e-01 x1
+                          9.9931682203e-01 x2
+    <<<<< Best objective function  =
+                       1.1657044253e-07
+    <<<<< Best data captured at function evaluation 130
+    
+    <<<<< Iterator npsol_sqp completed.
+    <<<<< Single Method Strategy completed.
+    Dakota execution time in seconds:
+      Total CPU        =       0.12 [parent =   0.116982, child =   0.003018]
+      Total wall clock =    1.47497
 
 Adapting These Scripts to Another Simulation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -506,24 +519,24 @@ need to be performed:
    this template input file to a templatedir that will be used to create
    working directories for the simulation.
 
-#. Modify the ``dprepro`` arguments in to reflect names of the Dakota
-   parameters file (previously “``$1``”), template file name (previously
-   ) and generated input file (previously ). Alternatively, use APREPRO,
+#. Modify the ``dprepro`` arguments in ``simulator_script.sh`` to reflect names of the Dakota
+   parameters file (previously ``$1``), template file name (previously
+   ``ros.template``) and generated input file (previously ``ros.in``). Alternatively, use APREPRO,
    BPREPRO, or JPrePost to perform this step (and adapt the syntax
    accordingly).
 
-#. Modify the analysis section of to replace the function call with the
+#. Modify the analysis section of ``simulator_script.sh`` to replace the ``rosenbrock_bb`` function call with the
    new simulator name and command line syntax (typically including the
    input and output file names).
 
-#. Change the post-processing section in to reflect the revised
+#. Change the post-processing section in ``simulator_script.sh`` to reflect the revised
    extraction process. At a minimum, this would involve changing the
    ``grep`` command to reflect the name of the output file, the string
    to search for, and the characters to cut out of the captured output
    line. For more involved post-processing tasks, invocation of
    additional tools may have to be added to the script.
 
-#. Modify the input file to reflect, at a minimum, updated variables and
+#. Modify the ``dakota_rosbenbrock.in`` input file to reflect, at a minimum, updated variables and
    responses specifications.
 
 These nonintrusive interfacing approaches can be used to rapidly
@@ -553,14 +566,14 @@ Additional Examples
 ~~~~~~~~~~~~~~~~~~~
 
 A variety of additional examples of black-box interfaces to simulation
-codes are maintained in the directory.
+codes are maintained in the ``dakota/share/dakota/examples/official/drivers`` directory.
 
 .. _`interfaces:components`:
 
 Simulation Interface Components
 -------------------------------
 
-Figure `1.1 <#interfaces:bbinterfacecomp>`__ is an extension of
+:numref:`interfaces:bbinterfacecomp` is an extension of
 Figure `[intro:bbinterface] <#intro:bbinterface>`__ that adds details of
 the components that make up each of the simulation interfaces (system
 call, fork, and direct). These components include an ``input_filter``
@@ -625,7 +638,7 @@ interface. An example of this syntax in the system call case is:
 
        driver params.in results.out
 
-where is the user-specified analysis driver and and are the names of the
+where ``driver`` is the user-specified analysis driver and ``params.in`` and ``results.out`` are the names of the
 parameters and results files, respectively, passed on the command line.
 In this case, the user need not retrieve the command line arguments
 since the same file names will be used each time.
@@ -688,7 +701,7 @@ performs is:
        ifilter params.in results.out; driver params.in results.out;
             ofilter params.in results.out
 
-in which the input filter (), analysis driver (), and output filter ()
+in which the input filter (``ifilter``), analysis driver (``driver``), and output filter (``ofilter``)
 processes are combined into a single system call through the use of
 semi-colons (see :cite:p:`And86`). All three portions are
 passed the names of the parameters and results files on the command
@@ -763,7 +776,7 @@ then the system call syntax would appear as:
        driver1 params.in results.out.1; driver2 params.in results.out.2;
             driver3 params.in results.out.3
 
-where , , and are the user-specified analysis drivers and and are the
+where ``driver1``, ``driver2``, and ``driver3`` are the user-specified analysis drivers and ``params.in`` and ``results.out`` are the
 user-selected names of the parameters and results files. Note that the
 results files for the different analysis drivers have been automatically
 tagged to prevent overwriting. This automatic tagging of *analyses* (see
@@ -900,7 +913,7 @@ execution of the input filter, each of the analysis drivers, and the
 output filter.
 
 A complete example of these filters and multi-part drivers can be found
-in .
+in ``dakota/share/dakota/test/dakota_3pc/dakota_3pc.in``.
 
 .. _`interfaces:file`:
 
@@ -1001,7 +1014,7 @@ evaluation identifiers (“tags”) composed of the evaluation IDs of the
 models involved, e.g., outermodel.innermodel.interfaceid = 4.9.2. This
 communicates the outer contexts to the analysis driver when performing a
 function evaluation. For an example of using hierarchical tagging in a
-nested model context, see .
+nested model context, see ``dakota/share/dakota/test/dakota_uq_timeseries_*_optinterf.in``.
 
 .. _`interfaces:file:temporary`:
 
@@ -1077,13 +1090,15 @@ Tagging of results files with an analysis identifier is needed since
 each analysis driver must contribute a user-defined subset of the total
 response results for the evaluation. If an output filter is not
 supplied, Dakota will combine these portions through a simple overlaying
-of the individual contributions (i.e., summing the results in , , and ).
+of the individual contributions (i.e., summing the results in ``/var/tmp/baaxkaOKZ.1``,
+``/var/tmp/baaxkaOKZ.2``, and ``/var/tmp/baaxkaOKZ.3``).
 If this simple approach is inadequate, then an output filter should be
 supplied to perform the combination. This is the reason why the results
 file for the output filter does not use analysis tagging; it is
-responsible for the results combination (i.e., combining , , and into ).
+responsible for the results combination (i.e., combining ``/var/tmp/baaxkaOKZ.1``,
+``/var/tmp/baaxkaOKZ.2``, and ``/var/tmp/baaxkaOKZ.3`` into ``/var/tmp/baaxkaOKZ``).
 In this case, Dakota will read only the results file from the output
-filter (i.e., ) and interpret it as the total response set for the
+filter (i.e., ``/var/tmp/baaxkaOKZ``) and interpret it as the total response set for the
 evaluation.
 
 Parameters files are not currently tagged with an analysis identifier.
@@ -1130,7 +1145,7 @@ could be invoked without a relative path to them (i.e., by a name not
 involving any slashes) from Dakota’s directory can also be invoked from
 the simulator’s (and filter’s) directory. On occasion, it is convenient
 for the simulator to have various files, e.g., data files, available in
-the directory where it runs. If, say, is such a directory (as seen from
+the directory where it runs. If, say, ``my/special/directory/`` is such a directory (as seen from
 Dakota’s directory), the interface specification
 
 ::
@@ -1160,7 +1175,7 @@ new directory populated with some files. Adding
           link_files 'templatedir/*'
 
 to the work directory specification would cause the contents of
-directory to be linked into the work directory. Linking makes sense if
+directory ``templatedir/`` to be linked into the work directory. Linking makes sense if
 files are large, but when practical, it is far more reliable to have
 copies of the files; adding ``copy_files`` to the specification would
 cause the contents of the template directory to be copied to the work
@@ -1179,11 +1194,15 @@ with ``[...]`` denoting that :math:`...` is optional:
        [ copy_files '...' '...' ]
        [ replace ]
 
-Figure `[fig:interface:workdir] <#fig:interface:workdir>`__ contains an
+:numref:`fig:interface:workdir` contains an
 example of these specifications in a Dakota input file for constrained
 optimization.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/workdir_textbook.in
+   :language: dakota
+   :tab-width: 2
+   :caption: The ``workdir_textbook.in`` input file.
+   :name: fig:interface:workdir
 
 .. _`interfaces:batch`:
 
@@ -1881,9 +1900,11 @@ template engine.
 dakota.interfacing Examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| In addition to those in this section, the folder contains a runnable
-  example of a Python analysis driver. This example demonstrates the
-| ``dakota.interfacing`` module.
+In addition to those in this section, the
+``dakota/share/dakota/examples/official/drivers/Python/di``
+folder contains a runnable
+example of a Python analysis driver. This example demonstrates the
+``dakota.interfacing`` module.
 
 For most applications, using ``dakota.interfacing`` is straightforward.
 The first example, in Figure `[diexample:simple] <#diexample:simple>`__,
@@ -2011,7 +2032,7 @@ Usage
 
 Running ``dprepro`` with the ``--help`` option at the command prompt
 causes its options and arguments to be listed. These are shown in
-Figure `[advint:dprepro_usage] <#advint:dprepro_usage>`__.
+:numref:`advint:dprepro_usage`.
 
 ``dprepro`` accepts three positional command line arguments. They are:
 
@@ -2042,7 +2063,11 @@ The remaining options are used to
 
 -  Set the default numerical output format (``--output-format``).
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/dprepro_usage
+   :language: dakota
+   :tab-width: 2
+   :caption: ``dprepro`` usage
+   :name: advint:dprepro_usage
 
 The ``pyprepro`` script accepts largely the same command line options.
 The primary differences are that ``pyprepro`` does not require or accept

@@ -73,7 +73,7 @@ completion may be determined by convergence criteria (e.g.,
 ``convergence_tolerance``) or iteration limits (e.g.,
 ``max_iterations``).
 
-Figure `[adv_meth:figure01] <#adv_meth:figure01>`__ shows a Dakota input
+:numref:`adv_meth:figure01` shows a Dakota input
 file that specifies a sequential hybrid optimization method to solve the
 “textbook” optimization test problem. The file provided in starts with a
 solution which feeds its best point into a optimization which feeds its
@@ -108,7 +108,13 @@ and ‘``I1``’ keyword blocks, but uses the responses keyword block
 (``optpp_newton``) needs analytic gradient and Hessian data to perform
 its search.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/textbook_hybrid_strat.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for a sequential hybrid optimization
+       method -- see
+       ``dakota/share/dakota/examples/users/textbook_hybrid_strat.in``
+   :name: adv_meth:figure01
 
 .. _`adv_meth:multistart`:
 
@@ -131,13 +137,19 @@ concurrently run the local minimizations.
 
 An example input file for multistart local optimization on the
 “quasi_sine” test function (see in ) is shown in
-Figure `[adv_meth:figure02] <#adv_meth:figure02>`__. The method keyword
+:numref:`adv_meth:figure02`. The method keyword
 block in the input file contains the keyword ``multi_start``, along with
 the set of starting points (3 random and 5 listed) that will be used for
 the optimization runs. The other keyword blocks in the input file are
 similar to what would be used in a single optimization run.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/qsf_multistart_strat.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for a multistart local optimization
+       method -- see
+       ``dakota/share/dakota/examples/users/qsf_multistart_strat.in``
+   :name: adv_meth:figure02
 
 The ``quasi_sine`` test function has multiple local minima, but there is
 an overall trend in the function that tends toward the global minimum at
@@ -199,8 +211,13 @@ objectives. Plotting these (:math:`f_1,f_2,f_3`) triplets on a
 3-dimensional plot results in a Pareto surface (not shown), which is
 useful for visualizing the trade-offs in the competing objectives.
 
-TODO: Generated input file likely goes here
-(Or possibly other fixed format content)
+.. literalinclude:: ../samples/textbook_pareto_strat.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for the Pareto optimization method --
+       see
+       ``dakota/share/dakota/examples/users/textbook_pareto_strat.in``
+   :name: adv_meth:figure04
 
 ::
 
@@ -440,7 +457,7 @@ consistency constraint at a single point, the minimum number of samples
 is reduced by :math:`n+1` to :math:`(n^2+n)/2`.
 
 In the local and multipoint data fit cases, the iteration progression
-will appear as in Fig. `[fig:sbo_mh] <#fig:sbo_mh>`__. Both cases
+will appear as in :numref:`fig:sbo_mh`. Both cases
 involve a single new evaluation of the original high-fidelity model per
 trust region, with the distinction that multipoint approximations reuse
 information from previous SBO iterates. Like model hierarchy surrogates,
@@ -477,7 +494,13 @@ centered at the design point :math:`(x_1,x_2)=(-1.2,1.0)`, and extends
 :math:`\pm 0.4` (10% of the global bounds) from this point in the
 :math:`x_1` and :math:`x_2` coordinate directions.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/rosen_opt_sbo.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for the surrogate-based local
+       optimization example -- see
+       ``dakota/share/dakota/examples/users/rosen_opt_sbo.in``
+   :name: sbm:sblm_rosen
 
 If this input file is executed in Dakota, it will converge to the
 optimal design point at :math:`(x_{1},x_{2})=(1,1)` in approximately 800
@@ -503,7 +526,7 @@ global minimum. Due to the random sampling method used within the SBO
 algorithm, the SBO method will solve a given problem a little
 differently each time it is run (unless the user specifies a particular
 random number seed in the dakota input file as is shown in
-Figure `[sbm:sblm_rosen] <#sbm:sblm_rosen>`__). Our experience on the
+:numref:`sbm:sblm_rosen`). Our experience on the
 quasi-sine function mentioned above is that if you run this problem 10
 times with the same starting conditions but different seeds, then you
 will find the global minimum in about 70-80% of the trials. This is good
@@ -517,24 +540,24 @@ SBO with Multifidelity Models
 When performing SBO with model hierarchies, the low-fidelity model is
 normally fixed, requiring only a single high-fidelity evaluation to
 compute a new correction for each new trust region.
-Figure `[fig:sbo_mh] <#fig:sbo_mh>`__ displays this case. This renders
+:numref:`fig:sbo_mh` displays this case. This renders
 the multifidelity SBO technique more scalable to larger numbers of
 design variables since the number of high-fidelity evaluations per
 iteration (assuming no finite differencing for derivatives) is
 independent of the scale of the design problem. However, the ability to
 smooth poorly-behaved response variations in the high-fidelity model is
 lost, and the technique becomes dependent on having a well-behaved
-low-fidelity model [1]_. In addition, the parameterizations for the low
+low-fidelity model [footnote_hybridfit]_. In addition, the parameterizations for the low
 and high-fidelity models may differ, requiring the use of a mapping
 between these parameterizations. Space mapping, corrected space mapping,
 POD mapping, and hybrid POD space mapping are being explored for this
 purpose :cite:p:`Rob06a,Rob06b`.
 
-TODO: Possible missing image here
+.. figure:: img/sbo_mh.png
+   :alt: SBO iteration progression for model hierarchies.
+   :name: fig:sbo_mh
 
-.. container:: wrapfigure
-
-   r.3 |image|
+   SBO iteration progression for model hierarchies.
 
 When applying corrections to the low-fidelity model, there is no concern
 for balancing global accuracy with the local consistency requirements.
@@ -569,7 +592,7 @@ techniques :cite:p:`Wei06`. Closely related techniques include
 tensor singular value decomposition (SVD)
 methods :cite:p:`Lat00`. In the single-point and multipoint
 E-ROM cases, the SBO iteration can appear as in
-Fig. `[fig:sbo_mh] <#fig:sbo_mh>`__, whereas in the S-ROM, global E-ROM,
+:numref:`fig:sbo_mh`, whereas in the S-ROM, global E-ROM,
 and tensor SVD cases, the SBO iteration will appear as in
 Fig. `1.2 <#fig:sbo_df>`__. In addition to the high-fidelity model
 analysis requirements, procedures for updating the system matrices and
@@ -681,7 +704,7 @@ optimization is evolving as the surrogate gets updated globally. If it
 appears to be changing significantly, then a larger number (used in
 combination with restart) may be needed.
 
-Figure `[sbm:sbgm_moga] <#sbm:sbgm_moga>`__ shows a Dakota input file
+:numref:`sbm:sbgm_moga` shows a Dakota input file
 that implements surrogate-based global optimization on a multi-objective
 test function. The first method keyword block contains the keyword
 ``surrogate_based_global``, plus the commands for specifying five as the
@@ -696,12 +719,17 @@ input specification deals with the interface to the actual analysis
 driver and the 2 responses being returned as objective functions from
 that driver.
 
+.. literalinclude:: ../samples/mogatest1_opt_sbo.in
+   :language: dakota
+   :tab-width: 2
+   :caption: MOGA example -- see
+       ``dakota/share/dakota/examples/users/mogatest1_opt_sbo.in``
+   :name: sbm:sbgm_moga
 
-TODO: Generated input file likely goes here and possibly images
 
-.. [1]
+.. rubric:: Footnotes
+
+.. [footnote_hybridfit]
    It is also possible to use a hybrid data fit/multifidelity approach
    in which a smooth data fit of a noisy low fidelity model is used in
    combination with a high fidelity model
-
-.. |image| image:: img/sbo_mh.png

@@ -503,7 +503,7 @@ Example
 ^^^^^^^
 
 The Dakota input file shown in
-Figure `[opt:methods:gradientfree:local:example:ps] <#opt:methods:gradientfree:local:example:ps>`__
+:numref:`opt:methods:gradientfree:local:example:ps`
 applies a pattern search method to minimize the Rosenbrock function. We
 note that this example is used as a means of demonstrating the contrast
 between input files for gradient-based and derivative-free optimization.
@@ -511,7 +511,7 @@ Since derivatives can be computed analytically and efficiently, the
 preferred approach to solving this problem is a gradient-based method.
 
 The Dakota input file shown in
-Figure `[opt:methods:gradientfree:local:example:ps] <#opt:methods:gradientfree:local:example:ps>`__
+:numref:`opt:methods:gradientfree:local:example:ps`
 is similar to the input file for the gradient-based optimization, except
 it has a different set of keywords in the method block of the input
 file, and the gradient specification in the responses block has been
@@ -521,7 +521,13 @@ library :cite:p:`Har06`. See the Dakota Reference
 Manual :cite:p:`RefMan` for more information on the *methods*
 block commands that can be used with SCOLIB algorithms.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/rosen_opt_patternsearch.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Rosenbrock pattern search optimization example: the
+       Dakota input file -- see
+       ``dakota/share/dakota/examples/users/rosen_opt_patternsearch.in``
+   :name: opt:methods:gradientfree:local:example:ps
 
 For this run, the optimizer was given an initial design point of
 :math:`(x_1,x_2) = (0.0,0.0)` and was limited to 2000 function
@@ -665,9 +671,15 @@ are best suited to optimization problems that have multiple local
 optima, and where gradients are either too expensive to compute or are
 not readily available.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/rosen_opt_ea.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Rosenbrock evolutionary algorithm optimization example:
+       the Dakota input file -- see
+       ``dakota/share/dakota/examples/users/rosen_opt_ea.in``
+   :name: opt:methods:gradientfree:global:example:rosenbrock_ea
 
-Figure `[opt:methods:gradientfree:global:example:rosenbrock_ea] <#opt:methods:gradientfree:global:example:rosenbrock_ea>`__
+:numref"`opt:methods:gradientfree:global:example:rosenbrock_ea
 shows a Dakota input file that uses an EA to minimize the Rosenbrock
 function. For this example the EA has a population size of 50. At the
 start of the first generation, a random number generator is used to
@@ -736,10 +748,15 @@ evaluations is possible by adjusting the batch size, which is consisted
 of two smaller batches. The first batch aims at maximizing the
 acquisition function, where the second batch promotes the exploration by
 maximizing the variance. An example specification for the EGO algorithm
-is shown in
-Figure `[opt:methods:gradientfree:global:example:egm_rosen] <#opt:methods:gradientfree:global:example:egm_rosen>`__.
+is shown in :numref:`opt:methods:gradientfree:global:example:egm_rosen`.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/rosen_opt_ego.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for the efficient global optimization
+       example -- see
+       ``dakota/share/dakota/examples/users/dakota_rosenbrock_ego.in``
+   :name: opt:methods:gradientfree:global:example:egm_rosen
 
 .. _`opt:additional`:
 
@@ -890,9 +907,14 @@ that the weights sum to a value of one. The multiobjective optimization
 capability also allows any number of constraints, although none are
 included in this example.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/textbook_opt_multiobj1.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Example Dakota input file for multiobjective optimization --
+       see ``dakota/share/dakota/examples/users/textbook_opt_multiobj1.in``
+   :name: opt:additional:multiobjective:example1:figure01
 
-Figure `[opt:additional:multiobjective:example1:figure02] <#opt:additional:multiobjective:example1:figure02>`__
+:numref:`opt:additional:multiobjective:example1:figure02`
 shows an excerpt of the results for this multiobjective optimization
 problem, with output in verbose mode. The data for function evaluation 9
 show that the simulator is returning the values and gradients of the
@@ -905,7 +927,9 @@ functions employs the user-specified weightings of ``.7``, ``.2``, and
 indicated in this case by the gradient of the composite objective
 function going to zero (no constraints are active).
 
-::
+.. code-block::
+   :caption: Dakota results for the multiobjective optimization example.
+   :name: opt:additional:multiobjective:example1:figure02
 
       ------------------------------
       Begin Function Evaluation    9
@@ -1024,11 +1048,17 @@ The first test problem is a case where :math:`P_{true}` is connected and
 :math:`x_2`, and :math:`x_3`, where the inputs are bounded by
 :math:`-4 \leq x_{i} \leq 4`:
 
-Figure `[opt:additional:multiobjective:example2:moga1inp] <#opt:additional:multiobjective:example2:moga1inp>`__
+:numref:`opt:additional:multiobjective:example2:moga1inp`
 shows an input file that demonstrates some of the multi-objective
 capabilities available with the moga method.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/mogatest1.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Multiple objective genetic algorithm (MOGA) example: the
+       Dakota input file -- see
+       ``dakota/share/dakota/examples/users/mogatest1.in``
+   :name: opt:additional:multiobjective:example2:moga1inp
 
 In this example, the three best solutions (as specified by
 ``final_solutions`` =3) are written to the output. Additionally, final
@@ -1179,7 +1209,7 @@ only, not affinely scaled into the interval :math:`[0,1]`.
 Scaling Example
 ^^^^^^^^^^^^^^^
 
-Figure `[opt:additional:scaling:example:figure01] <#opt:additional:scaling:example:figure01>`__
+:numref:`opt:additional:scaling:example:figure01`
 demonstrates the use of several scaling keywords for the textbook
 optimization problem. The continuous design variable ``x1`` is scaled by
 a characteristic value of 4.0, whereas ``x2`` is scaled automatically
@@ -1188,7 +1218,12 @@ scaled by a factor of 50.0, then logarithmically, the first nonlinear
 constraint by a factor of 15.0, and the second nonlinear constraint is
 not scaled.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/rosen_opt_scaled.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Sample usage of scaling keywords in Dakota input specification --
+       see ``dakota/share/dakota/examples/users/rosen_opt_scaled.in``
+   :name: opt:additional:scaling:example:figure01
 
 .. _`opt:usage`:
 

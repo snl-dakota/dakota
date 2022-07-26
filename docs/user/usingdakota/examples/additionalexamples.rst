@@ -36,6 +36,8 @@ Figure `[additional:textbook_prob] <#additional:textbook_prob>`__\ (a),
 with a close-up view of the feasible region given in
 Figure `[additional:textbook_prob] <#additional:textbook_prob>`__\ (b).
 
+TODO: Missing images
+
 ======= ========
 |image| |image1|
 (a)     (b)
@@ -131,7 +133,7 @@ Gradient-based Constrained Optimization
 This example demonstrates the use of a gradient-based optimization
 algorithm on a nonlinearly constrained problem. The Dakota input file
 for this example is shown in
-Figure `[additional:textbook_grad_constr] <#additional:textbook_grad_constr>`__.
+:numref:`additional:textbook_grad_constr`.
 This input file is similar to the input file for the unconstrained
 gradient-based optimization example involving the Rosenbrock function,
 seen in
@@ -142,10 +144,16 @@ bounds on these constraints. The commands ``direct`` and
 ``analysis_driver = ’text_book’`` specify that Dakota will use its
 internal version of the textbook problem.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/textbook_opt_conmin.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Textbook gradient-based constrained optimization example:
+       the Dakota input file -- see
+       ``dakota/share/dakota/examples/users/textbook_opt_conmin.in``
+   :name: additional:textbook_grad_constr
 
 The ``conmin_mfd`` keyword in
-Figure `[additional:textbook_grad_constr] <#additional:textbook_grad_constr>`__
+:numref:`additional:textbook_grad_constr`
 tells Dakota to use the CONMIN package’s implementation of the Method of
 Feasible Directions (see
 Section `[opt:methods:gradient:constrained] <#opt:methods:gradient:constrained>`__
@@ -254,7 +262,7 @@ for use with least squares methods. Both cases support analytic
 gradients of the function set with respect to the design variables. See
 Figure `[tutorial:rosenbrock_grad] <#tutorial:rosenbrock_grad>`__ (std
 formulation) and
-Figure `[additional:rosenbrock_nls] <#additional:rosenbrock_nls>`__
+:numref:`additional:rosenbrock_nls`
 (least squares formulation) for examples of each usage.
 
 .. _`additional:rosenbrock:examples:nonlinear`:
@@ -276,7 +284,7 @@ least-squares minimization, as well as a discussion on the types of
 engineering design problems (e.g., parameter estimation) that can make
 use of the least-squares approach.
 
-Figure `[additional:rosenbrock_nls] <#additional:rosenbrock_nls>`__ is a
+:numref:`additional:rosenbrock_nls` is a
 listing of the Dakota input file . This differs from the input file
 shown in
 Figure `[tutorial:rosenbrock_grad] <#tutorial:rosenbrock_grad>`__ in
@@ -288,7 +296,13 @@ in this example. (The Gauss-Newton, NL2SOL, and NLSSOL SQP algorithms
 are currently available for exploiting the special mathematical
 structure of least squares minimization problems).
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/rosen_opt_nls.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Rosenbrock nonlinear least squares example: the Dakota
+       input file -- see
+       ``dakota/share/dakota/examples/users/rosen_opt_nls.in``
+   :name: additional:rosenbrock_nls
 
 The optimization results at the end of the output file show that the
 least squares minimization approach has found the same optimum design
@@ -373,13 +387,18 @@ Efficient Global Optimization
 The Dakota input file shows how to use efficient global optimization
 (ego) to minimize the 5D version of any of these 3 separable functions.
 The input file is shown in
-Figure `[additional:herbie_shubert_ego] <#additional:herbie_shubert_ego>`__.
+:numref:`additional:herbie_shubert_ego`.
 Note that in the variables section the ``5*`` preceding the values -2.0
 and 2.0 for the ``lower_bounds`` and ``upper_bounds``, respectively,
 tells Dakota to repeat them 5 times. The “interesting” region for each
 of these functions is :math:`-2\le x_k \le 2` for all dimensions.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/herbie_shubert_opt_ego.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Herbie/Shubert examples: the Dakota input file -- see
+       ``dakota/share/dakota/examples/users/herbie_shubert_opt_ego.in``
+   :name: additional:herbie_shubert_ego
 
 .. figure:: img/DAK5pt2_2D_shubert.png
    :alt: Plot of the ``shubert`` test function in 2 dimensions. It can
@@ -507,20 +526,25 @@ design variables according to the following simple expressions:
    \mathtt{t_{wall}}     &=& \mathtt{offset_{intake}-offset_{exhaust}}-
      \frac{(\mathtt{d_{intake}+d_{exhaust}})}{2}\nonumber\end{aligned}
 
-| where the constants in
-  Equation `[additional:cylheadaltg] <#additional:cylheadaltg>`__ and
-  Equation `[additional:cylheadexp] <#additional:cylheadexp>`__ assume
-  the following values: :math:`\sigma_{\mathtt{yield}}=3000`,
-| :math:`\mathtt{offset_{intake}}=3.25`,
-  :math:`\mathtt{offset_{exhaust}}=1.34`, and
-  :math:`\mathtt{d_{exhaust}}=1.556`.
+where the constants in
+Equation `[additional:cylheadaltg] <#additional:cylheadaltg>`__ and
+Equation `[additional:cylheadexp] <#additional:cylheadexp>`__ assume
+the following values: :math:`\sigma_{\mathtt{yield}}=3000`,
+:math:`\mathtt{offset_{intake}}=3.25`,
+:math:`\mathtt{offset_{exhaust}}=1.34`, and
+:math:`\mathtt{d_{exhaust}}=1.556`.
 
 Constrained Gradient Based Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An example using the cylinder head test problem is shown below:
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/cylhead_opt_npsol.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Cylinder Head Example: the Dakota input file -- see
+       ``dakota/share/dakota/examples/users/cylhead_opt_npsol.in``
+   :name: additional:cylinder_head
 
 The interface keyword specifies use of the ``cyl_head`` executable
 (compiled from ) as the simulator. The variables and responses keywords
@@ -737,10 +761,6 @@ The final report from the Dakota output is as follows:
          Total CPU        =      0.18 [parent =      0.18, child =         0]
          Total wall clock =  0.809126
 
-   [cont_opt_npsol.out]
-
-TODO: Possible missing output file?
-
 .. _`additional:cantilever`:
 
 Cantilever
@@ -825,7 +845,12 @@ Constrained Gradient Based Optimization
 
 The test problem is solved using :
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/cantilever_opt_npsol.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Cantilever Example: the Dakota input file -- see
+       ``dakota/share/dakota/examples/users/cantilever_opt_npsol.in``
+   :name: additional:cant_opt_npsol
 
 The deterministic solution is :math:`(w,t)=(2.35,3.33)` with an
 objective function of :math:`7.82`. The final report from the Dakota
@@ -927,13 +952,18 @@ bounded by :math:`0 \leq x_{i} \leq 1`, and:
    \frac{x_1}{1+10x_2}\sin(8\pi x_1)\right]\end{aligned}
 
 The input file for this example is shown in
-Figure `[additional:moga2inp] <#additional:moga2inp>`__, which
+:numref:`additional:moga2inp`, which
 references the ``mogatest2`` executable (compiled from ) as the
 simulator. The Pareto front is shown in
 Figure `1.10 <#additional:moga2front>`__. Note the discontinuous nature
 of the front in this example.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/mogatest2.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file specifying the use of MOGA on mogatest2
+       -- see ``dakota/share/dakota/examples/users/mogatest2.in``
+   :name: additional:moga2inp
 
 .. figure:: img/dakota_mogatest2_pareto_front.png
    :alt: Pareto Front showing Tradeoffs between Function F1 and Function
@@ -970,8 +1000,8 @@ The constraints are:
    0 &\leq& x_1-3x_2+10\end{aligned}
 
 The input file for this example is shown in
-Figure `[additional:moga3inp] <#additional:moga3inp>`__. It differs from
-Figure `[additional:moga2inp] <#additional:moga2inp>`__ in the variables
+:numref:`additional:moga3inp`. It differs from
+:numref:`additional:moga2inp` in the variables
 and responses specifications, in the use of the ``mogatest3`` executable
 (compiled from ) as the simulator, and in the
 ``max_function_evaluations`` and ``mutation_type`` MOGA controls. The
@@ -980,7 +1010,12 @@ discontinuous nature of the Pareto set (in the design space) in this
 example. The Pareto front is shown in
 Figure `1.12 <#additional:moga3front>`__.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/mogatest3.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file specifying the use of MOGA on mogatest3
+       -- see ``dakota/share/dakota/examples/users/mogatest3.in``
+   :name: additional:moga3inp
 
 .. figure:: img/dakota_mogatest3_pareto_set.png
    :alt: Pareto Set of Design Variables corresponding to the Pareto

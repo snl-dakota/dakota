@@ -464,8 +464,7 @@ Section `[tutorial:examples:param_study] <#tutorial:examples:param_study>`__.
 
 A vector parameter study is a study between any two design points in an
 *n*-dimensional parameter space. An input file for the vector parameter
-study is shown in Figure 
-`[additional:rosenbrock_vector] <#additional:rosenbrock_vector>`__. The
+study is shown in :numref:`additional:rosenbrock_vector`. The
 primary differences between this input file and the input file for the
 multidimensional parameter study are found in the *variables* and
 *method* sections. In the variables section, the keywords for the bounds
@@ -476,7 +475,13 @@ section, the ``vector_parameter_study`` keyword is used. The
 study, and ``num_steps`` specifies the number of steps taken between the
 initial and final points in the parameter study.
 
-TODO: Generated input file likely goes here
+.. literalinclude:: ../samples/rosen_ps_vector.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Rosenbrock vector parameter study example: the Dakota
+       input file -- see
+       ``dakota/share/dakota/examples/users/rosen_ps_vector.in``
+   :name: additional:rosenbrock_vector
 
 Figure `[additional:rosenbrock_vector_graphics] <#additional:rosenbrock_vector_graphics>`__\ (a)
 shows the legacy X Windows-based graphics output created by Dakota,

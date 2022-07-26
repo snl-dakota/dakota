@@ -87,46 +87,14 @@ For this example, the C++ program ``rosenbrock.cpp`` in ``dakota_source/test`` i
 This file is compiled to create the standalone rosenbrock executable that is referenced as the analysis driver in the
 example input file below. This standalone program performs the same function evaluations as Dakota’s internal Rosenbrock test function.
 
-.. code-block::
+.. literalinclude:: ../samples/rosen_syscall.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota input file for gradient-based optimization using
+       the fork call interface to an external rosenbrock simulator.
+   :name: tutorial:rosenbrock_user
 
-	# Dakota Input File: rosen_syscall.in
-	# Usage:
-	# dakota -i rosen_syscall.in -o rosen_syscall.out > rosen_syscall.stdout
-
-	environment
-	  tabular_data
-		tabular_data_file = ’rosen_syscall.dat’
-		
-	method
-	  conmin_frcg
-		convergence_tolerance = 1e-4
-		max_iterations = 100
-		
-	model
-	  single
-	  
-	variables
-	  continuous_design = 2
-	  initial_point -1.2 1.0
-	  lower_bounds -2.0 -2.0
-	  upper_bounds 2.0 2.0
-	  descriptors ’x1’ "x2"
-	  
-	interface
-	  analysis_drivers = ’rosenbrock’
-		fork
-		parameters_file = ’params.in’
-		results_file    = ’results.out’
-
-	responses
-	  objective_functions = 1
-	  numerical_gradients
-		method_source dakota
-		interval_type forward
-	  fd_step_size = 1.e-5
-	  no_hessians
-
-(The input file shown here is ``rosen_syscall.in``, which is provided in the directory ``dakota/share/dakota/examples/users.``)
+(The input file shown in :numref:`tutorial:rosenbrock_user` is ``rosen_syscall.in``, which is provided in the directory ``dakota/share/dakota/examples/users.``)
 
 The keyword ``fork`` indicates that Dakota will use fork calls to create separate Unix processes for
 executions of the user-supplied simulation code. The name of the simulation code (and the names for Dakota’s parameters and
