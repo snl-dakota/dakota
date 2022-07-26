@@ -7,7 +7,8 @@
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
-find_package(Doxygen REQUIRED)
+find_package(Doxygen 1.8.20 REQUIRED)
+find_package(LATEX REQUIRED)
 
 # create Doxygen files with substituted PATH and version information
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake.in
