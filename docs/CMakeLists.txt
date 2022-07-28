@@ -156,17 +156,24 @@ add_custom_target(docs-user-clean
   COMMENT "Cleaning docs/user-html"
   )
 
-add_subdirectory(dev)
+option(DAKOTA_DOCS_DEV "Enable Dakota C++ developer docs" ON)
+if(DAKOTA_DOCS_DEV)
+  add_subdirectory(dev)
+endif()
 
 # Generate HTML Dev
 add_custom_target(docs)
-add_dependencies(docs docs-user docs-dev-html)
+add_dependencies(docs docs-user)
+if(DAKOTA_DOCS_DEV)
+  add_dependencies(docs docs-dev-html)
+endif()
 
 # Generate PDF Dev
 # TODO: depend on sphinx users
 add_custom_target(docs-pdf)
-add_dependencies(docs-pdf docs-dev-pdf)
-
+if(DAKOTA_DOCS_DEV)
+  add_dependencies(docs-pdf docs-dev-pdf)
+endif()
 
 # Package docs for nightly builds (HTML and PDF for dev)
 # TODO: Rework this into custom command(s) and bind into target
