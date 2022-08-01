@@ -1129,8 +1129,9 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
     output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
 
     // Output Variables data
-    // capture correct inactive: bypass HierarchSurrModel::currentVariables
+    // capture correct inactive by using lower-level variables
     Variables& export_vars = hf_model.current_variables();
+    if (asynchEvalFlag) export_vars.active_variables(vars); // reqd for parallel
     if (solnCntlAVIndex == _NPOS)
       output_mgr.add_tabular_data(export_vars);
     else {
