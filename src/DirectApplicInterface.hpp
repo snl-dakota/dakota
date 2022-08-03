@@ -36,7 +36,8 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 	     VAR_Fs, VAR_P1, VAR_P2, VAR_P3, VAR_B, VAR_D, VAR_H,
 	     VAR_F0, VAR_d, /* VAR_b, VAR_h, VAR_E */ // steel column
 	     VAR_MForm, // mf_*() test functions
-       VAR_x, VAR_xi, VAR_Af, VAR_Ac }; //Problem18
+       VAR_x, VAR_xi, VAR_Af, VAR_Ac,  //Problem18
+       VAR_Z1, VAR_Z2, VAR_Z3, VAR_Scalar, VAR_Level, VAR_StochScaling};// Rosenbrock + Ishigami
 //enum x3_var_t  { X1, X2, X3 }; // generic up to 3 dimensions
 //enum shc_var_t { SHC_B, SHC_H, SHC_P, SHC_M, SHC_Y }; // short column
 //enum cb_var_t  { CB_W, CB_T, CB_R, CB_E, CB_X, CB_Y }; // cantilever beam
@@ -46,9 +47,9 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 /// enumeration of possible direct driver types (to index to names)
 enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM, CANTILEVER_BEAM_ML,
 		CYLINDER_HEAD, EXTENDED_ROSENBROCK, GENERALIZED_ROSENBROCK,
-		LF_ROSENBROCK, EXTRA_LF_ROSENBROCK, MF_ROSENBROCK, MODIFIED_ROSENBROCK,
-		ROSENBROCK, LF_POLY_PROD, POLY_PROD,
-		GERSTNER, SCALABLE_GERSTNER, LOGNORMAL_RATIO, MULTIMODAL,
+		LF_ROSENBROCK, EXTRA_LF_ROSENBROCK, MF_ROSENBROCK, ML_ROSENBROCK, 
+    ML_ROSENBROCK_CON, MODIFIED_ROSENBROCK, ROSENBROCK, LF_POLY_PROD, 
+    POLY_PROD, GERSTNER, SCALABLE_GERSTNER, LOGNORMAL_RATIO, MULTIMODAL,
 		PLUGIN_ROSENBROCK, PLUGIN_TEXT_BOOK,
 		SHORT_COLUMN, LF_SHORT_COLUMN, MF_SHORT_COLUMN,
 		SIDE_IMPACT_COST, SIDE_IMPACT_PERFORMANCE,

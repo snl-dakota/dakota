@@ -59,6 +59,8 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["extra_lf_rosenbrock"]    = EXTRA_LF_ROSENBROCK;
   driverTypeMap["mf_rosenbrock"]          = MF_ROSENBROCK;
   driverTypeMap["rosenbrock"]             = ROSENBROCK;
+  driverTypeMap["ml_rosenbrock"]          = ML_ROSENBROCK;
+  driverTypeMap["ml_rosenbrock_con"]      = ML_ROSENBROCK_CON;
   driverTypeMap["modified_rosenbrock"]    = MODIFIED_ROSENBROCK;
   driverTypeMap["lf_poly_prod"]           = LF_POLY_PROD;
   driverTypeMap["poly_prod"]              = POLY_PROD;
@@ -150,9 +152,10 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     switch (analysisDriverTypes[i]) {
     case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM: case CANTILEVER_BEAM_ML:
     case ROSENBROCK:   case LF_ROSENBROCK:    case EXTRA_LF_ROSENBROCK:
-    case MF_ROSENBROCK:    case MODIFIED_ROSENBROCK: case PROBLEM18:
-    case SHORT_COLUMN: case LF_SHORT_COLUMN: case MF_SHORT_COLUMN:
-    case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE: 
+    case MF_ROSENBROCK:    case ML_ROSENBROCK_CON: case ML_ROSENBROCK: 
+    case MODIFIED_ROSENBROCK: case PROBLEM18: case SHORT_COLUMN: 
+    case LF_SHORT_COLUMN: case MF_SHORT_COLUMN: case SOBOL_ISHIGAMI: 
+    case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE: 
       localDataView |= VARIABLES_MAP;    break;
     case NO_DRIVER: // assume VARIABLES_VECTOR approach for plug-ins for now
     case CYLINDER_HEAD:       case LOGNORMAL_RATIO:     case MULTIMODAL:
@@ -178,8 +181,8 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   if (localDataView & VARIABLES_MAP) {
     // define the string to enumeration map
     //switch (ac_name) {
-    //case ROSENBROCK: case LF_ROSENBROCK: case MF_ROSENBROCK:
-    //case SOBOL_ISHIGAMI:
+    //case ROSENBROCK: case LF_ROSENBROCK: case MF_ROSENBROCK: 
+    //case_ML_ROSENBROCK_CONSTR (deterministic variables): case SOBOL_ISHIGAMI:
       varTypeMap["x1"] = VAR_x1; varTypeMap["x2"] = VAR_x2;
       varTypeMap["x3"] = VAR_x3; //varTypeMap["x4"]  = VAR_x4;
       //varTypeMap["x5"] = VAR_x5; varTypeMap["x6"]  = VAR_x6;
@@ -205,6 +208,11 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     //case PROBLEM18:
       varTypeMap["x"] = VAR_x; varTypeMap["xi"] = VAR_xi; 
       varTypeMap["Af"] = VAR_Af; varTypeMap["Ac"] = VAR_Ac;
+    //case_ML_ROSENBROCK: (uncertain variables)
+      varTypeMap["Z1"] = VAR_Z1; varTypeMap["Z2"] = VAR_Z2;  
+      varTypeMap["Z3"] = VAR_Z3; varTypeMap["Scalarization"] = VAR_Scalar;
+      varTypeMap["Level"] = VAR_Level;
+      varTypeMap["StochScaling"] = VAR_StochScaling;
     //}
   }
 }
@@ -253,6 +261,10 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = extra_lf_rosenbrock(); break;
   case MF_ROSENBROCK:
     fail_code = mf_rosenbrock(); break;
+  case ML_ROSENBROCK:
+    fail_code = ml_rosenbrock(); break;
+  case ML_ROSENBROCK_CON:
+    fail_code = ml_rosenbrock_con(); break;
   case LF_POLY_PROD:
     fail_code = lf_poly_prod(); break;
   case POLY_PROD:
@@ -4638,6 +4650,96 @@ double TestDriverInterface::problem18_Ax(const double &A, const double &x){
     return 0.1/6. * x + 1.2; //Old version: 1.6 New version: 1.2
   else
     throw INTERFACE_ERROR;
+}
+
+int TestDriverInterface::ml_rosenbrock(){
+  // This test driver implements the 2D Multilevel Rosenbrock problem
+  // The levels and the problem are inspired by the paper 
+  // https://kiwi.oden.utexas.edu/papers/multi-fidelity-sensitivity-analysis-qian-willcox.pdf
+  
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: problem18 direct fn does not support "
+   << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numACV != 5 || numADIV != 3 || numADRV) { // allow ModelForm discrete int
+    Cerr << "Error: Bad number of variables in ml_rosenbrock direct fn."
+   << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if ( !(numFns == 3 || numFns == 1) ) {
+    Cerr << "Error: Bad number of functions in ml_rosenbrock direct fn."
+   << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  Real x1 = xCM[VAR_x1], x2 = xCM[VAR_x2];
+  Real z1 = xCM[VAR_Z1], z2 = xCM[VAR_Z2], z3 = xCM[VAR_Z3];
+  Real scalarization = xDIM[VAR_Scalar];
+  Real a = 5, b = 0.1;
+  Real x1m1 = (x1 - 1.);
+  //Rosenbrock
+  //Original is (1-x1)^2 but is the same as (x1-1)^2
+  fnVals[0] = (100.*(x2 - x1*x1)*(x2 - x1*x1) + x1m1*x1m1); 
+  Real factor = 1;
+  Real stoch_scaling = std::sqrt(xDIM[VAR_StochScaling]);
+  //Add artificial nose using Ishigami inspired by paper above
+  switch(xDIM[VAR_Level]){
+    case 0:
+      factor = 0.6;
+      fnVals[0] += stoch_scaling*(std::sin(z1) + factor*a*std::sin(z2)*std::sin(z2) 
+                          + 9*b*z3*z3*std::sin(z1)     - a/2. * factor 
+                          - scalarization*3*3.5308115197486662);
+      break;
+    case 1:
+      factor = 0.85;
+      fnVals[0] += stoch_scaling*(std::sin(z1) + factor*a*std::sin(z2)*std::sin(z2) 
+                          + b*z3*z3*z3*z3*std::sin(z1) - a/2. * factor 
+                          - scalarization*3*3.159557547865367);
+      break;
+    case 2:
+      fnVals[0] += stoch_scaling*(std::sin(z1) + a*std::sin(z2)*std::sin(z2) 
+                          + b*z3*z3*z3*z3*std::sin(z1) - a/2. 
+                          - scalarization*3*3.2931121968009616);
+      break;
+    case 3:
+      //Deterministic
+      break;
+  }
+
+  return 0;
+}
+
+int TestDriverInterface::ml_rosenbrock_con(){
+  // This test driver implements the 2D Multilevel Rosenbrock problem
+  // The levels and the problem are inspired by the paper 
+  // https://kiwi.oden.utexas.edu/papers/multi-fidelity-sensitivity-analysis-qian-willcox.pdf
+  
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: problem18 direct fn does not support "
+   << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numACV != 5 || numADIV > 1 || numADRV) { // allow ModelForm discrete int
+    Cerr << "Error: Bad number of variables in ml_rosenbrock_con direct fn."
+   << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns != 3) {
+    Cerr << "Error: Bad number of functions in ml_rosenbrock_con direct fn."
+   << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  Real x1 = xCM[VAR_x1], x2 = xCM[VAR_x2];
+  Real x1m1 = (x1 - 1.);
+
+  ml_rosenbrock();
+
+  fnVals[1] = x1m1*x1m1*x1m1 - x2 + 1.;
+  fnVals[2] = (x1 + x2) - 2.;
+
+  return 0;
 }
 
 

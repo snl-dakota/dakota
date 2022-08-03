@@ -77,6 +77,10 @@ private:
   int extra_lf_rosenbrock(); ///< an extra low fidelity version of the Rosenbrock function
   int mf_rosenbrock(); ///< alternate Rosenbrock formulations for
                        ///< multifidelity or model form studies
+  int ml_rosenbrock_con(); ///< alternate Rosenbrock formulations for
+                       ///< multilevel studies
+  int ml_rosenbrock(); ///< alternate Rosenbrock formulations for
+                                     ///< multilevel studies
 
   int lf_poly_prod(); ///< modified low fidelity Rosenbrock to test SBO with
                       ///< hierarchical approximations

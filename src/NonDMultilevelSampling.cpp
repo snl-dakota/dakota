@@ -69,7 +69,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   if (allocationTarget == TARGET_SCALARIZATION) {
     cov_approximation_type = COV_CORRLIFT;
     bootstrapSeed = 0;
-    storeEvals = true;
+    storeEvals = cov_approximation_type == COV_BOOTSTRAP ? true : false;
     if (finalMomentsType != STANDARD_MOMENTS){
       Cerr << "\nError: Scalarization not available with setting final_"
      << "moments=central. Use final_moments=standard instead." << std::endl;
@@ -587,7 +587,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
          << "\t" << "\n";
   }
   */
-
+  /*
   myfile.open("windse_sampleallocation.txt", std::ofstream::out | std::ofstream::app); 
   if(num_steps==2){
     myfile << N_l[0][0]             << "\t" << N_l[1][0] 
@@ -608,8 +608,15 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
          << "\t" << noise_qoi[0]
          << "\t" << "\n";
   }
+  */
+  myfile.open("rosenbrock_sampleallocation.txt", std::ofstream::out | std::ofstream::app);
+  myfile << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]
+         << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))<< "\t" << NTargetQoi(0, 2)
+         << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1))<< "\t" << NTargetQoiFN(0, 2)
+         << "\t" << noise_qoi[0]
+         << "\t" << "\n";
   myfile.close();
-
+ 
   /////
 }
 

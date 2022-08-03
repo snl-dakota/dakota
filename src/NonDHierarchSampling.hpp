@@ -243,6 +243,11 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
   // the 4th moment is the central moment (non-excess, not cumulant)
   cm4 = rm4 - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));      // using cm
   //  = rm4 - cm1 * (4. * rm3 - cm1 * (6. * rm2 - 3. * cm1 * cm1)); // using rm
+
+  if(cm4 < 0){
+    Cerr << "NonDHierarchSampling::uncentered_to_centered: cm4 < 0" << std::endl; 
+    //check_negative(cm4);
+  }
 }
 
 

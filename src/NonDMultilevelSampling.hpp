@@ -869,7 +869,6 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(const IntRealMatrixMap& sum
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
   }
 
-  //Cout << "NonDMultilevelSampling::var_of_var_ml_l0: (Qoi, 0): " << qoi << ", 0" << ") Var[Var]: " << var_of_var << std::endl;
   if(var_of_var < 0){
     Cerr << "NonDMultilevelSampling::var_of_var_ml_l0(qoi = " << qoi << "): var_of_var < 0.";
     check_negative(var_of_var);
@@ -906,7 +905,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_lmax(const IntRealMatrixMap& s
   }
 
   if(var_of_var < 0){
-    Cerr << "NonDMultilevelSampling::var_of_var_ml_lmax(qoi = " << qoi << "): var_of_var < 0.";
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_lmax(qoi = " << qoi << "): var_of_var < 0."<< std::endl;
     check_negative(var_of_var);
   }
   return var_of_var;
@@ -931,10 +930,12 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_
       &sum_Q2lQ1lm1 = sum_QlQlm1.at(pr21), &sum_Q2lQ2lm1 = sum_QlQlm1.at(pr22);
 
   mu_Q2l = sum_Q2l(qoi, lev) / Nlq_pilot;
+  
   uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq_pilot, mu_Q2l,
                          sum_Q3l(qoi, lev) / Nlq_pilot, sum_Q4l(qoi, lev) / Nlq_pilot,
                          cm1l, cm2l, cm3l, cm4l, Nlq_pilot);
   mu_Q2lm1 = sum_Q2lm1(qoi, lev) / Nlq_pilot;
+
   uncentered_to_centered(sum_Q1lm1(qoi, lev) / Nlq_pilot, mu_Q2lm1,
                          sum_Q3lm1(qoi, lev) / Nlq_pilot, sum_Q4lm1(qoi, lev) / Nlq_pilot,
                          cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq_pilot);
