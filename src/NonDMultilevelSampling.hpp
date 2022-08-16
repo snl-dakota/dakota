@@ -956,8 +956,12 @@ inline void NonDMultilevelSampling::
 increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost, Real ref_cost)
 {
   // increment the equivalent number of HF evaluations
-  if (new_N_l)
+  if (new_N_l) {
     equivHFEvals += new_N_l * lev_cost / ref_cost; // normalize into equiv HF
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "ML incremented by " << new_N_l << " level samples.  "
+	   << "equivHFEvals = " << equivHFEvals << std::endl;
+  }
 }
 
 

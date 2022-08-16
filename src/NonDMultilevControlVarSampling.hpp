@@ -347,6 +347,10 @@ increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
   if (new_N_hf) incr += new_N_hf * hf_lev_cost;
   if (new_N_lf) incr += new_N_lf * lf_lev_cost;
   equivHFEvals += incr / hf_ref_cost; // normalize into equiv HF evals
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "MLMF incremented by " << new_N_hf << " HF and " << new_N_lf
+	 << " LF samples.  equivHFEvals = " << equivHFEvals << std::endl;
 }
 
 

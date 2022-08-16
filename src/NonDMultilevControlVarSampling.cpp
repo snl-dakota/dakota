@@ -276,7 +276,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
       budget / sum_sqrt_var_cost :      // budget constraint
       sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint
     for (lev=0; lev<num_hf_lev; ++lev) {
-      hf_lev_cost = (lev) ? hf_cost[lev] + hf_cost[lev-1] : hf_cost[lev];
+      hf_lev_cost = level_cost(hf_cost, lev);
       hf_targets[lev] = (lev < num_cv_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
@@ -514,7 +514,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       budget / sum_sqrt_var_cost :      //        budget constraint
       sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint
     for (lev=0; lev<num_hf_lev; ++lev) {
-      hf_lev_cost = (lev) ? hf_cost[lev] + hf_cost[lev-1] : hf_cost[lev];
+      hf_lev_cost = level_cost(hf_cost, lev);
       hf_targets[lev] = (lev < num_cv_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
@@ -689,11 +689,15 @@ multilevel_control_variate_mc_pilot_projection()
 
   // Initialize for pilot sample
   unsigned short lf_form = 0, hf_form = NLev.size() - 1;// 2 models @ extremes
+  //SizetArray&    N_alloc_lf = NAllocated[lf_form];
+  //SizetArray&    N_alloc_hf = NAllocated[hf_form];
+  //Sizet2DArray& N_actual_lf = NRecovered[lf_form];
+  //Sizet2DArray& N_actual_hf = NRecovered[hf_form];
   Sizet2DArray& N_lf = NLev[lf_form];
-  Sizet2DArray& N_hf = NLev[hf_form]; 
+  Sizet2DArray& N_hf = NLev[hf_form];
 
-  evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, N_hf,
-		 hf_targets, true, true); // accumulate cost, compute estvar0
+  evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, //N_alloc_hf,
+		 N_hf/*N_actual_hf*/, hf_targets, true, true);
 
   // Unlike NonDMultilevelSampling::multilevel_mc_pilot_projection(), here we
   // cannot readily estimate cv_raw_moments().  Rather than reporting only the
@@ -710,7 +714,8 @@ multilevel_control_variate_mc_pilot_projection()
 void NonDMultilevControlVarSampling::
 evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 	       RealVectorArray& eval_ratios, RealMatrix& Lambda,
-	       RealMatrix& var_YH, Sizet2DArray& N_shared,
+	       RealMatrix& var_YH, //SizetArray& N_alloc,
+	       Sizet2DArray& N_actual,
 	       RealVector& hf_targets, bool accumulate_cost, bool pilot_estvar)
 {
   Model& truth_model = iteratedModel.truth_model();
@@ -728,7 +733,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     { lf_accum_cost.size(num_cv_lev); lf_num_cost.assign(num_cv_lev, 0); }
 
   eval_ratios.resize(num_cv_lev);
-  N_shared.resize(num_hf_lev);
+  N_actual.resize(num_hf_lev);  //N_alloc.resize(num_hf_lev);
   hf_targets.sizeUninitialized(num_hf_lev);
   Lambda.shapeUninitialized(numFunctions, num_cv_lev);
   var_YH.shapeUninitialized(numFunctions, num_hf_lev);
@@ -753,7 +758,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     avg_lambda(num_cv_lev, false);
 
   // Initialize for pilot sample
-  // > Note: N_shared may (pilot projection) or may not (offline pilot)
+  // > Note: N_actual may (pilot projection) or may not (offline pilot)
   //   be the same as N_hf.  We still use N_hf for computing delta_N_hf.
   unsigned short group, lf_form = 0, hf_form = num_mf - 1;// 2 models @ extremes
   //Sizet2DArray&     N_lf =      NLev[lf_form];
@@ -767,8 +772,8 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
   for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
     configure_indices(group, hf_form, lev, sequenceType);
-    numSamples = delta_N_hf[lev];
-    N_shared[lev].assign(numFunctions, 0);
+    numSamples = /*N_alloc[lev] =*/ delta_N_hf[lev];
+    N_actual[lev].assign(numFunctions, 0);
 
     evaluate_ml_sample_increment(lev);
     if (online_hf_cost) // accumulate online costs for HF model
@@ -787,12 +792,12 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 			    sum_Ll_refined, sum_Llm1_refined, sum_Hl, sum_Hlm1,
 			    sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll,
 			    sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl,
-			    sum_Hl_Hlm1, sum_Hlm1_Hlm1,lev, N_shared[lev]);
+			    sum_Hl_Hlm1, sum_Hlm1_Hlm1,lev, N_actual[lev]);
       if (online_lf_cost) // accumulate online costs for LF model
 	accumulate_paired_online_cost(lf_accum_cost, lf_num_cost, lev);
     }
     else // no LF for this level; accumulate only multilevel discrepancies
-      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl, lev, N_shared[lev]);
+      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl, lev, N_actual[lev]);
   }
   if (online_hf_cost) average_online_cost(hf_accum_cost, hf_num_cost, hf_cost);
   if (online_lf_cost) average_online_cost(lf_accum_cost, lf_num_cost, lf_cost);
@@ -824,7 +829,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 			  sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1,
 			  sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
 			  sum_Hlm1_Hlm1, hf_lev_cost/lf_lev_cost, lev,
-			  N_shared[lev], var_YH, rho_dot2_LH, eval_ratios_l);
+			  N_actual[lev], var_YH, rho_dot2_LH, eval_ratios_l);
 
       // retain Lambda per QoI and level, but apply QoI-average where needed
       for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -845,7 +850,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
       if (accumulate_cost)
 	increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
       // compute Y variances for this level and aggregate across QoI:
-      variance_Ysum(sum_Hl[lev], sum_Hl_Hl[lev], N_shared[lev], var_YH[lev]);
+      variance_Ysum(sum_Hl[lev], sum_Hl_Hl[lev], N_actual[lev], var_YH[lev]);
       agg_var_hf_l = sum(var_YH[lev], numFunctions);
       // accumulate sum of sqrt's of estimator var * cost used in N_target
       sum_sqrt_var_cost += std::sqrt(agg_var_hf_l * hf_lev_cost);
@@ -855,14 +860,14 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
     // will result in no additional variance reduction beyond MLMC.
     if (!budget_constrained)
-      agg_estvar_iter0 += aggregate_mse_Yvar(var_YH[lev], N_shared[lev]);
+      agg_estvar_iter0 += aggregate_mse_Yvar(var_YH[lev], N_actual[lev]);
   }
 
   // MLMC estimator variance for final estvar reporting is not aggregated
   // (reduction from control variate is applied subsequently)
   if (pilot_estvar) {
-    compute_ml_estimator_variance(var_YH, N_shared, estVarIter0);
-    //numHIter0 = N_shared;
+    compute_ml_estimator_variance(var_YH, N_actual, estVarIter0);
+    //numHIter0 = N_actual;
   }
   // compute eps^2 / 2 = aggregated estvar0 * rel tol
   if (!budget_constrained) {// eps^2 / 2 = est var * conv tol
@@ -877,7 +882,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     budget / sum_sqrt_var_cost :      //        budget constraint
     sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint
   for (lev=0; lev<num_hf_lev; ++lev) {
-    hf_lev_cost = (lev) ? hf_cost[lev] + hf_cost[lev-1] : hf_cost[lev];
+    hf_lev_cost = level_cost(hf_cost, lev);
     hf_targets[lev] = (lev < num_cv_lev) ? fact *
       std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
       fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
