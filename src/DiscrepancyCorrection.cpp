@@ -254,7 +254,7 @@ compute(const Variables& vars, const Response& truth_response,
       index = *it;
       Real numer = truthFnsPrevCenter[index] - beta_corr_fns[index];
       Real denom =     alpha_corr_fns[index] - beta_corr_fns[index];
-      combineFactors[index] = (std::fabs(denom) > Pecos::SMALL_NUMBER) ?
+      combineFactors[index] = (!Pecos::is_below(std::fabs(denom))) ?
 	numer/denom : 1.;
 #ifdef DEBUG
       Cout << "truth prev = " << truthFnsPrevCenter[index]

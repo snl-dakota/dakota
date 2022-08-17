@@ -483,9 +483,9 @@ void NonDInterval::compute_evidence_statistics()
       }
       else {
 	Real beta;
-	if (prob < Pecos::SMALL_NUMBER_SQ) // see p=0,p=1 assignments above
+	if (Pecos::is_below_sq(prob)) // see p=0,p=1 assignments above
 	  beta =  Pecos::LARGE_NUMBER; // Phi(-Inf) = 0
-	else if (1.- prob < Pecos::SMALL_NUMBER_SQ)
+	else if (Pecos::is_below_sq(1.- prob))
 	  beta = -Pecos::LARGE_NUMBER; // Phi(+Inf) = 1
 	else
 	  beta = -Pecos::NormalRandomVariable::inverse_std_cdf(prob);
@@ -512,9 +512,9 @@ void NonDInterval::compute_evidence_statistics()
       }
       else {
 	Real beta;
-	if (prob < Pecos::SMALL_NUMBER_SQ) // see p=0,p=1 assignments above
+	if (Pecos::is_below_sq(prob)) // see p=0,p=1 assignments above
 	  beta =  Pecos::LARGE_NUMBER; // Phi(-Inf) = 0
-	else if (1.- prob < Pecos::SMALL_NUMBER_SQ)
+	else if (Pecos::is_below_sq(1.- prob))
 	  beta = -Pecos::LARGE_NUMBER; // Phi(+Inf) = 1
 	else
 	  beta = -Pecos::NormalRandomVariable::inverse_std_cdf(prob);
