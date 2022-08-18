@@ -693,8 +693,8 @@ lengths for each dimension of the input space. The smaller a given
 dimension. Lastly, the :math:`\eta^2` parameter determines the size of
 the white noise term.
 
-As of Dakota 6.14, the Matérn :math:`\nu = \frac{1}{2}` and
-:math:`\nu = \frac{3}{2}` kernels may be used in place of the squared
+As of Dakota 6.14, the Matérn :math:`\nu = \frac{3}{2}` and
+:math:`\nu = \frac{5}{2}` kernels may be used in place of the squared
 exponential kernel.
 
 .. math::

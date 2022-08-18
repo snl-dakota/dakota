@@ -344,3 +344,19 @@ proved that including pure exploration (i.e. sampling at
 the efficiency. Tran et al. :cite:p:`tran2019pbo` adopted two
 aforementioned approaches and extended for known and unknown
 constraints.
+
+The asynchronous batch parallel EGO is implemented based on the idea
+of further leveraging computational efficiency when the computational
+query cost varies widely.  In this scenario, the batch-sequential
+parallel EGO finishes one iteration when the last worker of the batch
+finishes.  This mechanism makes the other workers, which might have
+finished the jobs or simulations earlier, wait for the last worker to
+finish, thus creating an unnecessary idle period.  The asynchronous
+batch parallel scheme is, therefore, created to accelerate the
+optimization process by immediately assigning the next jobs to workers
+that have finished earlier jobs, without waiting for each other.  When
+workers finish one query, the objective GP is updated, and the next
+sampling point is found by maximizing the acquisition function.
+Numerical comparison results are shown in one of our previous works
+:cite:p:`tran2022aphbo`, across a number of numerical functions and
+some engineering simulations as well.

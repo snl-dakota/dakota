@@ -467,17 +467,92 @@ MLMC extension to the scalarization function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Often, especially in the context of optimization, it is necessary to
-estimate statistics of a metric defined as a linear combination of mean
-and standard deviation of a QoI. A classical reliability measure can be
-estimated, starting from ML statistics, as
-
-.. math:: c^{ML}[Q] = \hat{Q}_{L}^{ML}  + \alpha \hat{\sigma}_L^{ML}.
-
-In this case, in order to obtain the variance of :math:`c^{ML}[Q]` it is
-necessary to employ an additional approximation:
+estimate statistics of a metric defined as a linear combination of
+mean and standard deviation of a QoI. A classical reliability measure
+:math:`c^{ML}[Q]` can be defined, for the quantity :math:`Q`, starting
+from multilevel (ML) statistics, as
 
 .. math::
 
+   c_L^{ML}[Q] = \hat{Q}_{L}^{ML}  + \alpha \hat{\sigma}_L^{ML}.
+
+To obtain the sample allocation, in the MLMC context, it is necessary
+to evaluate the variance of :math:`c_L^{ML}[Q]`, which can be written as
+
+.. math::
+
+   \mathbb{V}ar\left[ c_L^{ML}[Q] \right] = \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] + \alpha^2 \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] 
+   + 2 \alpha \mathbb{C}ov\left[ \hat{Q}_{L}^{ML}, \hat{\sigma}_L^{ML} \right].
+
+This expression requires, in addition to the already available terms
+:math:`\mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right]` and
+:math:`\mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right]`, also the
+covariance term :math:`\mathbb{C}ov\left[ \hat{Q}_{L}^{ML},
+\hat{\sigma}_L^{ML} \right]`. This latter term can be written knowing
+that shared samples are only present on the same level
+
+.. math::
+
+   \begin{split}
+    \mathbb{C}ov\left[ \hat{Q}_{L}^{ML}, \hat{\sigma}_L^{ML} \right] &= \mathbb{C}ov\left[ \sum_{\ell=0}^{L} \hat{Q}_{\ell} - \hat{Q}_{\ell-1}, \sum_{\ell=0}^{L} \hat{\sigma}_{\ell} - \hat{\sigma}_{\ell-1} \right] \\
+                                                                     &= \sum_{\ell=0}^{L} \mathbb{C}ov\left[ \hat{Q}_{\ell} - \hat{Q}_{\ell-1}, \hat{\sigma}_{\ell} - \hat{\sigma}_{\ell-1} \right],
+   \end{split}
+
+which leads to the need for evaluating the following four
+contributions
+
+.. math::
+
+   \mathbb{C}ov\left[ \hat{Q}_{\ell} - \hat{Q}_{\ell-1}, \hat{\sigma}_{\ell} - \hat{\sigma}_{\ell-1} \right] =
+   \mathbb{C}ov\left[ \hat{Q}_{\ell} , \hat{\sigma}_{\ell} \right] - \mathbb{C}ov\left[ \hat{Q}_{\ell} , \hat{\sigma}_{\ell-1} \right]
+   - \mathbb{C}ov\left[ \hat{Q}_{\ell-1}, \hat{\sigma}_{\ell} \right] + \mathbb{C}ov\left[ \hat{Q}_{\ell-1}, \hat{\sigma}_{\ell-1} \right].
+
+In Dakota, we adopt the following approximation, for two arbitrary
+levels :math:`\ell` and
+:math:`\kappa \in \left\{ \ell-1, \ell, \ell+1 \right\}`
+
+.. math::
+
+   \rho\left[ \hat{Q}_{\ell}, \hat{\sigma}_{\kappa} \right] \approx \rho\left[ \hat{Q}_{\ell}, \hat{Q}_{\kappa,2} \right]
+
+(we indicate with :math:`\hat{Q}_{\kappa,2}` the second central moment
+for :math:`Q` at the level :math:`\kappa`), which corresponds to
+assuming that the correlation between expected value and variance is a
+good approximation of the correlation between the expected value and
+the standard deviation. This assumption is particularly convenient
+because it is possible to obtain in closed form the covariance between
+expected value and variance and, therefore, we can adopt the following
+approximation
+
+.. math::
+
+   \begin{split}
+    \frac{ \mathbb{C}ov\left[ \hat{Q}_{\ell}, \hat{\sigma}_{\kappa} \right]}{\sqrt{ \mathbb{V}ar\left[ \hat{Q}_{\ell} \right] \mathbb{V}ar\left[ \hat{\sigma}_{\kappa} \right]} } 
+    \approx \frac{\mathbb{C}ov\left[ \hat{Q}_{\ell}, \hat{Q}_{\kappa,2} \right]}{\sqrt{ \mathbb{V}ar\left[ \hat{Q}_{\ell}\right] \mathbb{V}ar\left[ \hat{Q}_{\kappa,2}\right] }} \\
+    %
+    \mathbb{C}ov\left[ \hat{Q}_{\ell}, \hat{\sigma}_{\kappa} \right] 
+    \approx \mathbb{C}ov\left[ \hat{Q}_{\ell}, \hat{Q}_{\kappa,2} \right] \frac{\sqrt{\mathbb{V}ar\left[ \hat{\sigma}_{\kappa} \right]}}{\sqrt{  \mathbb{V}ar\left[ \hat{Q}_{\kappa,2}\right] }}.
+   \end{split}
+
+Finally, we can derive the term
+:math:`\mathbb{C}ov\left[ \hat{Q}_{\ell}, \hat{Q}_{\kappa,2} \right]`
+for all possible cases
+
+.. math::
+
+   \mathbb{C}ov\left[ \hat{Q}_{\ell}, \hat{Q}_{\kappa,2} \right] = 
+   \begin{cases}
+      \frac{1}{N_\ell} \left( \mathbb{E}\left[ Q_\ell Q_{\kappa}^2 \right] 
+                            - \mathbb{E}\left[ Q_\ell \right] \mathbb{E}\left[ Q_{\kappa}^2 \right] 
+                            - 2 \mathbb{E}\left[ Q_{\kappa} \right] \mathbb{E}\left[ Q_\ell Q_{\kappa} \right]
+                            + 2 \mathbb{E}\left[ Q_\ell \right] \mathbb{E}\left[ Q_\kappa^2 \right]
+                            \right),& \text{if } \kappa \neq \ell \\
+      \frac{\hat{Q}_{\ell,3}}{N_\ell},              & \text{if }  \kappa = \ell.
+  \end{cases}
+
+..
+   In this case, in order to obtain the variance of $c^{ML}[Q]$ it is necessary to employ an additional approximation:
+   \begin{equation}
    \begin{split}
     \mathbb{V}ar\left[ c^{ML}[Q] \right] &= \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] + \alpha^2 \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] 
                                          + 2 \alpha \mathbb{C}ov\left[ \hat{Q}_{L}^{ML}, \hat{\sigma}_L^{ML} \right] \\
@@ -486,16 +561,15 @@ necessary to employ an additional approximation:
                                          &\leq \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] + \alpha^2 \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] 
                                          + 2 |\alpha| \sqrt{ \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] }  \sqrt{ \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] },
    \end{split}
+   \end{equation}
+   
+   which permits to bound the maximum value for the variance (assuming a very conservative approximation for the correlation between the estimators for the mean and the standard deviation, \textit{i.e.} $\left|\rho\left[\hat{Q},\hat{\sigma}\right]\right|=1$).
 
-which permits to bound the maximum value for the variance (assuming a
-very conservative approximation for the correlation between the
-estimators for the mean and the standard deviation, *i.e.*
-:math:`\left|\rho\left[\hat{Q},\hat{\sigma}\right]\right|=1`).
+   All terms in the previous expression can be written as a function of the quantities derived in the previous sections, and, therefore, even for this case the allocation problem can be solved by resorting to a numerical optimization given a prescribed target.
 
-All terms in the previous expression can be written as a function of the
-quantities derived in the previous sections, and, therefore, even for
-this case the allocation problem can be solved by resorting to a
-numerical optimization given a prescribed target.
+Even for this case, the sample allocation problem can be solved by
+resorting to a numerical optimization given a prescribed target.
+
 
 .. _`uq:sampling:mlmf`:
 
