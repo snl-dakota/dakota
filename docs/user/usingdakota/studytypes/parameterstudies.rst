@@ -274,8 +274,8 @@ in the second example in Section `1.2 <#ps:vector>`__ would be:
 
 For convenience, the points for evaluation in a list parameter study may
 instead be specified via the specification, e.g.,
-``import_points_file ’listpstudy.dat’``, where the file may be in
-freeform or annotated
+``import_points_file ’listpstudy.dat’``, where the file ``listpstudy.dat`` 
+may be in freeform or annotated
 format `[input:tabularformat] <#input:tabularformat>`__. The ordering of
 the points is in input specification order, with both active and
 inactive variables by default.

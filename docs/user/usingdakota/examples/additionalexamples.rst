@@ -196,6 +196,8 @@ Figure `[additional:textbook_grad_constr_graphics] <#additional:textbook_grad_c
 | (b)      |
 +----------+
 
+TODO: Put back least squares discussion since it's a test problem
+
 .. _`additional:rosenbrock`:
 
 Rosenbrock
@@ -252,7 +254,9 @@ Section `[tutorial:examples:optimization] <#tutorial:examples:optimization>`__.
   are residual terms.
 
 The included analysis driver can handle both formulations. In the
-directory, the ``rosenbrock`` executable (compiled from ) checks the
+``dakota/share/dakota/test``
+directory, the ``rosenbrock`` executable (compiled from 
+``dakota_source/test/rosenbrock.cpp``) checks the
 number of response functions passed in the parameters file and returns
 either an objective function (as computed from
 Equation `[additional:rosenstd] <#additional:rosenstd>`__) for use with
@@ -285,8 +289,8 @@ engineering design problems (e.g., parameter estimation) that can make
 use of the least-squares approach.
 
 :numref:`additional:rosenbrock_nls` is a
-listing of the Dakota input file . This differs from the input file
-shown in
+listing of the Dakota input file ``rosen_opt_nls.in``.
+This differs from the input file shown in
 Figure `[tutorial:rosenbrock_grad] <#tutorial:rosenbrock_grad>`__ in
 several key areas. The responses block of the input file uses the
 keyword ``calibration_terms = 2`` instead of
@@ -384,7 +388,8 @@ Figure `1.3 <#fig:2D_shubert>`__.
 Efficient Global Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Dakota input file shows how to use efficient global optimization
+The Dakota input file ``herbie_shubert_opt_ego.in`` 
+shows how to use efficient global optimization
 (ego) to minimize the 5D version of any of these 3 separable functions.
 The input file is shown in
 :numref:`additional:herbie_shubert_ego`.
@@ -547,7 +552,8 @@ An example using the cylinder head test problem is shown below:
    :name: additional:cylinder_head
 
 The interface keyword specifies use of the ``cyl_head`` executable
-(compiled from ) as the simulator. The variables and responses keywords
+(compiled from ``dakota_source/test/cyl_head.cpp``)
+as the simulator. The variables and responses keywords
 specify the data sets to be used in the iteration by providing the
 initial point, descriptors, and upper and lower bounds for two
 continuous design variables and by specifying the use of one objective
@@ -738,7 +744,8 @@ optimal values for diameter and height of the final product.
 Constrained Gradient Based Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The input file for this example is named . The solution to this example
+The input file for this example is named ``container_opt_npsol.in``.
+The solution to this example
 problem is :math:`(H,D)=(4.99,4.03)`, with a minimum area of 98.43
 :math:`\mathtt{in}^2` .
 
@@ -843,7 +850,7 @@ or when scaled:
 Constrained Gradient Based Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The test problem is solved using :
+The test problem is solved using ``cantilever_opt_npsol.in``:
 
 .. literalinclude:: ../samples/cantilever_opt_npsol.in
    :language: dakota
@@ -953,7 +960,8 @@ bounded by :math:`0 \leq x_{i} \leq 1`, and:
 
 The input file for this example is shown in
 :numref:`additional:moga2inp`, which
-references the ``mogatest2`` executable (compiled from ) as the
+references the ``mogatest2`` executable (compiled from
+``dakota_source/test/mogatest2.cpp``) as the
 simulator. The Pareto front is shown in
 Figure `1.10 <#additional:moga2front>`__. Note the discontinuous nature
 of the front in this example.
@@ -1003,7 +1011,8 @@ The input file for this example is shown in
 :numref:`additional:moga3inp`. It differs from
 :numref:`additional:moga2inp` in the variables
 and responses specifications, in the use of the ``mogatest3`` executable
-(compiled from ) as the simulator, and in the
+(compiled from ``dakota_source/test/mogatest3.cpp``)
+as the simulator, and in the
 ``max_function_evaluations`` and ``mutation_type`` MOGA controls. The
 Pareto set is shown in Figure `1.11 <#additional:moga3set>`__. Note the
 discontinuous nature of the Pareto set (in the design space) in this
@@ -1083,7 +1092,7 @@ in :cite:p:`Sal04`) for this test problem:
 Morris One-at-a-Time Sensitivity Study
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The dakota input exercises the MOAT algorithm described in
+The dakota input ``morris_ps_moat.in`` exercises the MOAT algorithm described in
 Section `[dace:psuade] <#dace:psuade>`__ on the Morris problem. The
 Dakota output obtained is shown in
 Figures `[FIG:moat:out_preamble] <#FIG:moat:out_preamble>`__
@@ -1165,8 +1174,9 @@ Test Problems for Reliability Analyses
 --------------------------------------
 
 This section includes several test problems and examples related to
-reliability analyses. **These are NOT included in the directory, but are
-in the directory.**
+reliability analyses. **These are NOT included in the
+``dakota/share/dakota/examples/users`` directory, but are in the
+``dakota/share/dakota/test`` directory.**
 
 .. _`additional:logratio`:
 
@@ -1183,9 +1193,13 @@ variables.
 The distributions for both :math:`x_1` and :math:`x_2` are Lognormal(1,
 0.5) with a correlation coefficient between the two variables of 0.3.
 
-| **Reliability Analyses**
-| First-order and second-order reliability analysis (FORM and SORM) are
-  performed in the in the directory and in directory .
+**Reliability Analyses**
+
+First-order and second-order reliability analysis (FORM and SORM) are
+performed in the ``logratio_uq_reliability.in`` in the directory
+``dakota/share/dakota/examples/users`` and
+``dakota_logratio_taylor2.in`` in directory
+``dakota/share/dakota/test``.
 
 For the reliability index approach (RIA), 24 response levels (.4, .5,
 .55, .6, .65, .7, .75, .8, .85, .9, 1, 1.05, 1.15, 1.2, 1.25, 1.3, 1.35,
@@ -1218,7 +1232,8 @@ reliability methods. The limit state function is defined as:
 where :math:`F_y` is Lognormal(38., 3.8), :math:`Z` is Normal(54., 2.7),
 and the variables are uncorrelated.
 
-The input file computes a first-order CDF probability of
+The ``dakota/share/dakota/test/dakota_steel_section.in``
+input file computes a first-order CDF probability of
 :math:`p(g \leq 0.)` = 1.297e-07 and a second-order CDF probability of
 :math:`p(g \leq 0.)` = 1.375e-07. This second-order result differs from
 that reported in :cite:p:`Hal00`, since Dakota uses the Nataf
@@ -1244,7 +1259,8 @@ Lognormal(50., 15.), :math:`x_6` is Lognormal(40., 12.), and the
 variables are uncorrelated.
 
 While the limit state is linear in x-space, the nonlinear transformation
-of lognormals to u-space induces curvature. The input file computes a
+of lognormals to u-space induces curvature. The input file 
+``dakota/share/dakota/test/dakota_portal_frame.in`` computes a
 first-order CDF probability of :math:`p(g \leq 0.)` = 9.433e-03 and a
 second-order CDF probability of :math:`p(g \leq 0.)` = 1.201e-02. These
 results agree with the published results from the literature.
@@ -1269,49 +1285,55 @@ respectively, with a correlation coefficient of 0.5 between :math:`P`
 and :math:`M` (uncorrelated otherwise). The nominal values for :math:`b`
 and :math:`h` are 5 and 15, respectively.
 
-| **Reliability Analyses**
-| First-order and second-order reliability analysis are performed in the
-  and input files in . For RIA, 43 response levels (-9.0, -8.75, -8.5,
-  -8.0, -7.75, -7.5, -7.25, -7.0, -6.5, -6.0, -5.5, -5.0, -4.5, -4.0,
-  -3.5, -3.0, -2.5, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3,
-  -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2,
-  -0.1, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25) are mapped into the
-  corresponding cumulative probability levels. For PMA, these 43
-  probability levels (the fully converged results from RIA FORM) are
-  mapped back into the original response levels.
-  Figure `[fig:short_col_cdf] <#fig:short_col_cdf>`__ overlays the
-  computed CDF values for several first-order reliability method
-  variants as well as a Latin Hypercube reference solution of
-  :math:`10^6` samples.
+**Reliability Analyses**
+
+First-order and second-order reliability analysis are performed in the
+``dakota_short_column.in`` and ``dakota_short_column_taylor2.in``
+input files in ``dakota/share/dakota/test``.
+For RIA, 43 response levels (-9.0, -8.75, -8.5,
+-8.0, -7.75, -7.5, -7.25, -7.0, -6.5, -6.0, -5.5, -5.0, -4.5, -4.0,
+-3.5, -3.0, -2.5, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3,
+-1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2,
+-0.1, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25) are mapped into the
+corresponding cumulative probability levels. For PMA, these 43
+probability levels (the fully converged results from RIA FORM) are
+mapped back into the original response levels.
+Figure `[fig:short_col_cdf] <#fig:short_col_cdf>`__ overlays the
+computed CDF values for several first-order reliability method
+variants as well as a Latin Hypercube reference solution of
+:math:`10^6` samples.
 
 |image6| |image7|
 
 (a) RIA methods(b) PMA methods
 
-| **Reliability-Based Design Optimization**
-| The short column test problem is also amenable to Reliability-Based
-  Design Optimization (RBDO). An objective function of cross-sectional
-  area and a target reliability index of 2.5 (cumulative failure
-  probability :math:`p(g \le 0) \le 0.00621`) are used in the design
-  problem:
+**Reliability-Based Design Optimization**
 
-  .. math::
+The short column test problem is also amenable to Reliability-Based
+Design Optimization (RBDO). An objective function of cross-sectional
+area and a target reliability index of 2.5 (cumulative failure
+probability :math:`p(g \le 0) \le 0.00621`) are used in the design
+problem:
 
-     \begin{aligned}
-     \min       & & bh \nonumber \\
-     {\rm s.t.} & & \beta \geq 2.5 \nonumber \\
-                & &  5.0 \leq b \leq 15.0 \nonumber \\
-                & & 15.0 \leq h \leq 25.0\end{aligned}
+.. math::
 
-  As is evident from the UQ results shown in
-  Figure `[fig:short_col_cdf] <#fig:short_col_cdf>`__, the initial
-  design of :math:`(b, h) = (5,
-  15)` is infeasible and the optimization must add material to obtain
-  the target reliability at the optimal design
-  :math:`(b, h) = (8.68, 25.0)`. Simple bi-level, fully analytic
-  bi-level, and sequential RBDO methods are explored in inputs files , ,
-  and , with results as described in :cite:p:`Eld05,Eld06a`.
-  These files are located in .
+   \begin{aligned}
+   \min       & & bh \nonumber \\
+   {\rm s.t.} & & \beta \geq 2.5 \nonumber \\
+              & &  5.0 \leq b \leq 15.0 \nonumber \\
+              & & 15.0 \leq h \leq 25.0\end{aligned}
+
+As is evident from the UQ results shown in
+Figure `[fig:short_col_cdf] <#fig:short_col_cdf>`__, the initial
+design of :math:`(b, h) = (5,
+15)` is infeasible and the optimization must add material to obtain
+the target reliability at the optimal design
+:math:`(b, h) = (8.68, 25.0)`. Simple bi-level, fully analytic
+bi-level, and sequential RBDO methods are explored in input files 
+``dakota_rbdo_short_column.in``, ``dakota_rbdo_short_column_analytic.in``,
+and ``dakota_rbdo_short_column_trsb.in``, with results as described
+in :cite:p:`Eld05,Eld06a`.
+These files are located in ``dakota/share/dakota/test``.
 
 .. _`additional:steel_column`:
 
@@ -1353,7 +1375,8 @@ where
 
 and the column length :math:`L` is 7500 mm.
 
-This design problem ( in ) demonstrates design variable insertion into
+This design problem (``dakota_rbdo_steel_column.in`` in
+``dakota/share/dakota/test``) demonstrates design variable insertion into
 random variable distribution parameters through the design of the mean
 flange breadth, flange thickness, and profile height. The RBDO
 formulation maximizes the reliability subject to a cost constraint:
@@ -1377,7 +1400,8 @@ Test Problems for Forward Uncertainty Quantification
 
 This section includes several test problems and examples related to
 forward uncertainty quantification. **These are NOT included in the
-directory, but are in the directory.**
+``dakota/share/dakota/examples/users`` directory, but are in the
+``dakota/share/dakota/test`` directory.**
 
 Genz functions
 ~~~~~~~~~~~~~~

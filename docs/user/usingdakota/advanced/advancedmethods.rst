@@ -73,11 +73,13 @@ completion may be determined by convergence criteria (e.g.,
 ``convergence_tolerance``) or iteration limits (e.g.,
 ``max_iterations``).
 
-:numref:`adv_meth:figure01` shows a Dakota input
-file that specifies a sequential hybrid optimization method to solve the
-“textbook” optimization test problem. The file provided in starts with a
-solution which feeds its best point into a optimization which feeds its
-best point into . While this approach is overkill for such a simple
+:numref:`adv_meth:figure01` shows a Dakota input file that specifies a
+sequential hybrid optimization method to solve the “textbook”
+optimization test problem. The ``textbook_hybrid_strat.in`` file
+provided in ``dakota/share/dakota/examples/users`` starts with a
+``coliny_ea`` solution which feeds its best point into a
+``coliny_pattern_search`` optimization which feeds its best point into
+``optpp_newton``. While this approach is overkill for such a simple
 problem, it is useful for demonstrating the coordination between
 multiple sub-methods in the hybrid minimization algorithm.
 
@@ -136,7 +138,8 @@ starting points are independent, parallel computing may be used to
 concurrently run the local minimizations.
 
 An example input file for multistart local optimization on the
-“quasi_sine” test function (see in ) is shown in
+“quasi_sine” test function (see ``quasi_sine_fcn.C`` in
+``dakota_source/test``) is shown in
 :numref:`adv_meth:figure02`. The method keyword
 block in the input file contains the keyword ``multi_start``, along with
 the set of starting points (3 random and 5 listed) that will be used for
@@ -323,6 +326,8 @@ Section `[additional:textbook] <#additional:textbook>`__. In addition to
 the introduction of two integer variables, a modified value of
 :math:`1.4` is used inside the quartic sum to render the continuous
 solution a non-integral solution.
+
+TODO: Review missing branch and bound content from Users_Advanced_Methods.tex
 
 Figure `1.1 <#adv_meth:figure07>`__ shows the sequence of branches
 generated for this problem. The first optimization subproblem relaxes
@@ -518,7 +523,8 @@ optima :cite:p:`Giu02`. In these types of engineering design
 problems, traditional gradient-based optimizers often are ineffective,
 whereas global data fits can extract the global trends of interest
 despite the presence of local nonsmoothness (for an example problem with
-multiple local optima, look in for the file  :cite:p:`Giu00`).
+multiple local optima, look in ``dakota/share/dakota/test`` for the file
+``dakota_sbo_sine_fcn.in``  :cite:p:`Giu00`).
 
 The surrogate-based local minimizer is only mathematically guaranteed to
 find a local minimum. However, in practice, SBO can often find the
@@ -566,10 +572,12 @@ of each trust region, it is critical to use the best correction possible
 on the low-fidelity model in order to achieve rapid convergence rates to
 the optimum of the high-fidelity model :cite:p:`Eld04`.
 
-A multifidelity test problem named is available in to demonstrate this
+A multifidelity test problem named ``dakota_sbo_hierarchical.in``
+is available in ``dakota/share/dakota/test`` to demonstrate this
 SBO approach. This test problem uses the Rosenbrock function as the high
 fidelity model and a function named “lf_rosenbrock” as the low fidelity
-model. Here, lf_rosenbrock is a variant of the Rosenbrock function (see
+model. Here, lf_rosenbrock is a variant of the Rosenbrock function
+(see ``dakota_source/test/lf_rosenbrock.C``
 for formulation) with the minimum point at
 :math:`(x_1,x_2)=(0.80,0.44)`, whereas the minimum of the original
 Rosenbrock function is :math:`(x_1,x_2)=(1,1)`. Multifidelity SBO

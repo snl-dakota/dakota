@@ -240,8 +240,9 @@ are infeasible since the equality constraint is violated
 design that is both feasible and optimal for this example. Between the
 design variables and response values, the content of the system call to
 the simulator is displayed as
-“``(container container.in.1 container.out.1)``”, with being the name of
-the simulator and and being the names of the parameters and results
+“``(container container.in.1 container.out.1)``”, with ``container``
+being the name of the simulator and ``container.in.1`` and
+``container.out.1`` being the names of the parameters and results
 files, respectively.
 
 Just preceding the output of the objective and constraint function
@@ -303,7 +304,8 @@ facilitates the transfer of Dakota’s iteration history data to external
 mathematical analysis and/or graphics plotting packages (e.g., MATLAB,
 TECplot, Excel, S-plus, Minitab).
 
-The default file name for the top-level tabular output data is “,”
+The default file name for the top-level tabular output data is
+“``dakota_tabular.dat``,”
 though allows specification of an alternate name. Example tabular output
 from the “container” optimization problem is shown in
 Figure `[output:tabcont] <#output:tabcont>`__. This annotated tabular
@@ -533,9 +535,11 @@ for this file.
 When using numerical integration schemes with structured rules, Dakota
 can also output the integration points and corresponding weights to a
 tabular file. This output is generated when ``method output`` is
-``verbose`` or higher. Weights and points are printed to a file (tensor
-product quadrature), (sparse grids), or (cubature methods), with one
-line per integration point.
+``verbose`` or higher. Weights and points are printed to a file
+``dakota_quadrature_tabular.dat`` (tensor product quadrature),
+``dakota_sparse_tabular.dat`` (sparse grids), or
+``dakota_cubature_tabular.dat`` (cubature methods), with one line per
+integration point.
 
 Surrogate Model Exports
 -----------------------

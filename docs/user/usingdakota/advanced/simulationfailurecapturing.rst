@@ -31,8 +31,9 @@ example, the following simple C shell script excerpt
        endif
 
 will pass the ``if`` test and communicate simulation failure to Dakota
-if the ``grep`` command finds the string ``ERROR`` anywhere in the file.
-The device file is called the “bit bucket” and the ``grep`` command
+if the ``grep`` command finds the string ``ERROR`` anywhere in the
+``analysis.out`` file.  The ``/dev/null`` device file is called the
+“bit bucket” and the ``grep`` command
 output is discarded by redirecting it to this destination. The
 ``$status`` shell variable contains the exit status of the last command
 executed :cite:p:`And86`, which is the exit status of ``grep``

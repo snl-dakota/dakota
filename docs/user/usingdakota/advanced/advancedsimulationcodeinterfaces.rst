@@ -22,16 +22,19 @@ Algebraic Mappings
 
 If desired, one can define algebraic input-output mappings using the
 AMPL code :cite:p:`Fou03` and save these mappings in 3 files:
-, , and , where ``stub`` is a particular root name describing a
+``stub.nl``, ``stub.col``, and ``stub.row``,
+where ``stub`` is a particular root name describing a
 particular problem. These files names can be communicated to Dakota
 using the ``algebraic_mappings`` input.
 
-Dakota will use and to obtain input and output identifier strings,
+Dakota will use ``stub.col`` and ``stub.row`` to obtain input and
+output identifier strings,
 respectively, and will use the AMPL solver
-library :cite:p:`Gay97` to evaluate expressions conveyed in ,
+library :cite:p:`Gay97` to evaluate expressions conveyed in ``stub.nl``,
 and, if needed, their first and second derivatives.
 
-As a simple example (from ), consider algebraic mappings based on
+As a simple example (from ``dakota/share/dakota/test/dakota_ampl*``),
+consider algebraic mappings based on
 Newton’s law :math:`F = m a`. The following is an AMPL input file of
 variable and expression declarations and output commands:
 
@@ -41,19 +44,22 @@ variable and expression declarations and output commands:
 
 When processed by an AMPL processor, three files are created (as
 requested by the “option auxfiles" command). The first is the file
+``dakota_ampl_fma.nl``
 containing problem statistics, expression graphs, bounds, etc.:
 
 .. literalinclude:: ../samples/dakota_ampl_fma.nl
    :caption: AMPL .nl file
    :name: advint:ampl_nl
 
-Next, the file contains the set of variable descriptor strings:
+Next, the file ``dakota_ampl_fma.col`` contains the set of variable
+descriptor strings:
 
 .. literalinclude:: ../samples/dakota_ampl_fma.col
    :caption: AMPL .col file with variable descriptors
    :name: advint:ampl_col
 
-and the file contains the set of response descriptor strings:
+and the file ``dakota_ampl_fma.row`` contains the set of response
+descriptor strings:
 
 .. literalinclude:: ../samples/dakota_ampl_fma.row
    :caption: AMPL .row file with response descriptors
@@ -65,7 +71,8 @@ Dakota (see the Dakota Reference Manual :cite:p:`RefMan` for
 information on Dakota variable and response descriptors). Ordering of
 the inputs and outputs within the AMPL declaration is not important, as
 Dakota will reorder data as needed. The following listing shows an
-excerpt from , which demonstrates a combined algebraic/simulation-based
+excerpt from ``dakota/share/dakota/test/dakota_ampl_fma.in``,
+which demonstrates a combined algebraic/simulation-based
 mapping in which algebraic mappings from the ``fma`` definition are
 overlaid with simulation-based mappings from ``text_book``:
 
@@ -295,7 +302,8 @@ Linux, one might type
 or add such a command to the .bashrc file. Then proceed with compiling
 as usual.
 
-Example files corresponding to the following tutorial are available in .
+Example files corresponding to the following tutorial are available in
+``dakota/share/dakota/examples/users/MATLAB/linked/``.
 
 Dakota/Matlab input file specification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -493,8 +501,9 @@ or NumPy arrays.
   for data flow.
 
 An example of using the Python direct interface with both lists and
-arrays is included in . The Python direct driver is selected with, for
-example,
+arrays is included in
+``dakota/share/dakota/examples/official/drivers/Python/linked/``.
+The Python direct driver is selected with, for example,
 
 ::
 
@@ -503,7 +512,8 @@ example,
          # numpy
          analysis_drivers = 'python_module:analysis_function'
 
-where ``python_module`` denotes the module (file ) Dakota will attempt
+where ``python_module`` denotes the module (file ``python_module.py``)
+Dakota will attempt
 to import into the Python environment and ``analysis_function`` denotes
 the function to call when evaluating a parameter set. If the Python
 module is not in the directory from which Dakota is started, setting the
@@ -584,36 +594,40 @@ are described next.
 Scilab Script Interface
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Dakota distributions include a directory which demonstrates script-based
-interfacing to Scilab. The ``Rosenbrock`` subdirectory contains four
-notable files:
+Dakota distributions include a directory
+``dakota/share/dakota/examples/users/Scilab/script/`` which
+demonstrates script-based interfacing to Scilab. The ``Rosenbrock``
+subdirectory contains four notable files:
 
--  (the Dakota input file),
+-  ``dakota_scilab_rosenbrock.in`` (the Dakota input file),
 
--  (the Scilab computation code),
+-  ``rosenbrock.sci`` (the Scilab computation code),
 
--  (the analysis driver), and
+-  ``scilab_rosen_bb_simulator.sh`` (the analysis driver), and
 
--  (Scilab script).
+-  ``scilab_rosen_wrapper.sci`` (Scilab script).
 
-The file specifies the Dakota study to perform. The interface type is
-external (``fork``) and the shell script is the analysis driver used to
+The ``dakota_scilab_rosenbrock.in`` file specifies the Dakota study to
+perform. The interface type is external (``fork``) and the shell
+script ``scilab_rosen_bb_simulator.sh`` is the analysis driver used to
 perform function evaluations.
 
-The Scilab file accepts variable values and computes the objective,
-gradient, and Hessian values of the Rosenbrock function as requested by
-Dakota.
+The Scilab file ``rosenbrock.sci`` accepts variable values and computes
+the objective, gradient, and Hessian values of the Rosenbrock function
+as requested by Dakota.
 
-The is a short shell driver script, like that described in
+The ``scilab_rosen_bb_simulator.sh`` is a short shell driver script,
+like that described in
 Section `[interfaces:building] <#interfaces:building>`__, that Dakota
 executes to perform each function evaluation. Dakota passes the names of
 the parameters and results files to this script as ``$argv[1]`` and
-``$argv[2]``, respectively. The is divided into three parts:
-pre-processing, analysis, and post-processing.
+``$argv[2]``, respectively. The ``scilab_rosen_bb_simulator.sh`` is divided
+into three parts: pre-processing, analysis, and post-processing.
 
-In the analysis portion, the uses to extract the current variable values
+In the analysis portion, the ``scilab_rosen_bb_simulator.sh`` uses
+``scilab_rosen_wrapper.sci`` to extract the current variable values
 from the input parameters file (``$argv[1]``) and communicate them to
-the computation code in . The resulting objective function is
+the computation code in ``rosenbrock.sci``. The resulting objective function is
 transmitted to Dakota via the output result file (``$argv[1]``), and the
 driver script cleans up any temporary files.
 
@@ -639,7 +653,8 @@ The linked interface is implemented in source files
 ``src/ScilabInterface.[CH]`` directory, and must be enabled at compile
 time when building Dakota from source by setting
 ``DAKOTA_SCILAB:BOOL=ON``, and setting appropriate environment variables
-at compile and run time as described in in . This directory also
+at compile and run time as described in ``README.Scilab`` in
+``dakota/share/dakota/examples/users/Scilab/linked/``. This directory also
 contains examples for the Rosenbrock and PID problems.
 
 A few things to note about these examples:
@@ -659,17 +674,18 @@ A few things to note about these examples:
 Scilab Compiled Interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| In “compiled interface” mode, the Dakota analysis driver is a
-  lightweight shim, which communicates with the running application code
-  such as Scilab via named pipes. It is similar to that for Matlab in ,
-  whose README is likely instructive. An example of a Scilab compiled
-  interface is included in
-| .
+In "compiled interface" mode, the Dakota analysis driver is a
+lightweight shim, which communicates with the running application code
+such as Scilab via named pipes. It is similar to that for Matlab in
+``dakota/share/dakota/examples/users/MATLAB/compiled/``,
+whose README is likely instructive. An example of a Scilab compiled
+interface is included in
+``dakota/share/dakota/examples/users/Scilab/compiled/Rosenbrock/``.
 
-As with the other Scilab examples, there are computation code and Dakota
-input files. Note the difference in the Dakota input file , where the
-analysis driver starts the dakscilab shim program and always evaluates
-functions, gradients, and Hessians.
+As with the other Scilab examples, there are computation code and
+Dakota input files. Note the difference in the Dakota input file
+``rosenbrock.in``, where the analysis driver starts the dakscilab shim
+program and always evaluates functions, gradients, and Hessians.
 
 ::
 
@@ -680,7 +696,8 @@ functions, gradients, and Hessians.
        results_file = 'r.out'
        deactivate active_set_vector
 
-The dakscilab executable results from compiling and has the following
+The dakscilab executable results from compiling ``dakscilab.c``
+and has the following
 behavior and options. The driver dakscilab launches a server. This
 server then facilitates communication between Dakota and Scilab via
 named pipes communication. The user can also use the first named pipe
@@ -691,19 +708,20 @@ named pipes communication. The user can also use the first named pipe
        echo dbg scilab_script.sce > ${DAKSCILAB_PIPE}1
        echo quit > ${DAKSCILAB_PIPE}1
 
-The first command, with the keyword ’dbg’, launches the script for
+The first command, with the keyword ’dbg’, launches the script
+``scilab_script.sci`` for
 evaluation in Scilab. It permits to give instructions to Scilab. The
 second command ’quit’ stops the server.
 
 The dakscilab shim supports the following options for the driver call:
 
-#. -s to start the server
+#. ``-s`` to start the server
 
-#. -si to run an init script
+#. ``-si`` to run an init script
 
-#. -sf to run a final script
+#. ``-sf`` to run a final script
 
-#. -f -fp -fpp to specify names of objective function, gradient and
+#. ``-f -fp -fpp`` to specify names of objective function, gradient and
    hessian, then load them.
 
 For the included PID example, the driver call is
@@ -713,8 +731,9 @@ For the included PID example, the driver call is
        analysis_driver = '../dakscilab -d -si "exec init_test_automatic.sce;"
                         -sf "exec visualize_solution.sce;" -f "exec f_pid.sci"'
 
-Here there is an initialization script () which is launched before the
-main computation. It initializes a specific Scilab module called xcos. A
-finalization script to visualize the xcos solution is also specified ().
+Here there is an initialization script (``init_test_automatic.sce``)
+which is launched before the main computation. It initializes a
+specific Scilab module called xcos. A finalization script to visualize
+the xcos solution is also specified (``visualize_solution.sce``).
 Finally, the objective function is given with the computation code
-called .
+called ``f_pid.sci``.

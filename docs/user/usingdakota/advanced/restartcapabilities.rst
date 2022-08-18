@@ -18,7 +18,7 @@ However, Dakota automatically records the variable and response data
 from all function evaluations so that new executions of Dakota can pick
 up where previous executions left off.
 
-The Dakota restart file (e.g., ) is written in a binary format,
+The Dakota restart file (e.g., ``dakota.rst``) is written in a binary format,
 leveraging the Boost.Serialization library. While the cross-platform
 portability may NOT be as general as, say, the XDR standard, experience
 has shown it to be a sufficiently portable format to meet most users
@@ -39,7 +39,7 @@ command line input (may be abbreviated as ``-w``) is used:
        dakota -i dakota.in -write_restart my_restart_file
 
 If no ``-write_restart`` specification is used, then Dakota will still
-write a restart file, but using the default name instead of a
+write a restart file, but using the default name ``dakota.rst`` instead of a
 user-specified name. To turn restart recording off, the user may select
 ``deactivate restart_file`` in the ``interface`` specification (refer to
 the Interface Commands chapter in the Dakota Reference
@@ -49,7 +49,7 @@ the expense of a loss in the ability to recover and continue a run that
 terminates prematurely. Obviously, this option is not recommended when
 function evaluations are costly or prone to failure. Please note that
 using the ``deactivate restart_file`` specification will result in a
-zero length restart file with the default name .
+zero length restart file with the default name ``dakota.rst``.
 
 To restart Dakota from a restart file, the ``-read_restart`` command
 line input (may be abbreviated as ``-r``) is used:
@@ -84,7 +84,8 @@ lookups (for example a computationally expensive analysis driver).
 
 If the ``-write_restart`` and ``-read_restart`` specifications identify
 the same file (including the case where ``-write_restart`` is not
-specified and ``-read_restart`` identifies ), then new evaluations will
+specified and ``-read_restart`` identifies ``dakota.rst``),
+then new evaluations will
 be appended to the existing restart file. If the ``-write_restart`` and
 ``-read_restart`` specifications identify different files, then the
 evaluations read from the file identified by ``-read_restart`` are first
@@ -104,16 +105,17 @@ duplicates were detected (since these duplicates are not recorded in the
 restart file). In the case of a ``-stop_restart`` specification, it is
 usually desirable to specify a new restart file using ``-write_restart``
 so as to remove the records of erroneous or corrupted function
-evaluations. For example, to read in the first 50 evaluations from :
+evaluations. For example, to read in the first 50 evaluations from
+``dakota.rst``:
 
 ::
 
        dakota -i dakota.in -r dakota.rst -s 50 -w dakota_new.rst
 
-The file will contain the 50 processed evaluations from as well as any
-new evaluations. All evaluations following the
-50\ :math:`^{\mathrm{th}}` in have been removed from the latest restart
-record.
+The ``dakota_new.rst`` file will contain the 50 processed evaluations
+from ``dakota.rst`` as well as any new evaluations. All evaluations
+following the 50\ :superscript:`th` in ``dakota.rst`` have been
+removed from the latest restart record.
 
 Dakota’s restart algorithm relies on its duplicate detection
 capabilities. Processing a restart file populates the list of function
@@ -135,8 +137,9 @@ The Dakota Restart Utility
 
 The Dakota restart utility program provides a variety of facilities for
 managing restart files from Dakota executions. The executable program
-name is and it has the following options, as shown by the usage message
-returned when executing the utility without any options:
+name is ``dakota_restart_util`` and it has the following options, as
+shown by the usage message returned when executing the utility without
+any options:
 
 ::
 
@@ -401,9 +404,10 @@ which results in a report similar to the following:
        dakota.rst.2 processing completed: 110 evaluations retrieved.
        dakota.rst.3 processing completed: 65 evaluations retrieved.
 
-The database now contains 185 evaluations and can be read in for use in
-a subsequent Dakota study using the ``-read_restart`` option to the
-executable (see Section `1.1 <#restart:management>`__).
+The database ``dakota.rst.all`` now contains 185 evaluations and can
+be read in for use in a subsequent Dakota study using the
+``-read_restart`` option to the ``dakota`` executable (see
+Section `1.1 <#restart:management>`__).
 
 .. _`restart:utility:removal`:
 
@@ -418,11 +422,11 @@ If 0’s (or other erroneous data) are returned from the user’s
 file. If there is a clear demarcation of where corruption initiated
 (typical in a process with feedback, such as gradient-based
 optimization), then use of the ``-stop_restart`` option for the
-executable can be effective in continuing the study from the point
+``dakota`` executable can be effective in continuing the study from the point
 immediately prior to the introduction of bad data. If, however, there
 are interspersed corruptions throughout the restart database (typical in
 a process without feedback, such as sampling), then the ``remove`` and
-``remove_ids`` options of can be useful.
+``remove_ids`` options of ``dakota_restart_util`` can be useful.
 
 An example of the command syntax for the ``remove`` option is:
 
@@ -437,9 +441,9 @@ which results in a report similar to the following:
        Writing new restart file dakota.rst.repaired
        Restart repair completed: 65 evaluations retrieved, 2 removed, 63 saved.
 
-where any evaluations in having an active response function value that
-matches ``2.e-04`` within machine precision are discarded when
-creating.
+where any evaluations in ``dakota.rst`` having an active response
+function value that matches ``2.e-04`` within machine precision are
+discarded when creating ``dakota.rst.repaired``.
 
 An example of the command syntax for the ``remove_ids`` option is:
 
@@ -455,7 +459,8 @@ which results in a report similar to the following:
        Restart repair completed: 65 evaluations retrieved, 5 removed, 60 saved.
 
 where evaluation ids ``12``, ``15``, ``23``, ``44``, and ``57`` have
-been discarded when creating . An important detail is that, unlike the
+been discarded when creating ``dakota.rst.repaired``.
+An important detail is that, unlike the
 ``-stop_restart`` option which operates on restart record numbers (see
 Section `1.1 <#restart:management>`__)), the ``remove_ids`` option
 operates on evaluation ids. Thus, removal is not necessarily based on

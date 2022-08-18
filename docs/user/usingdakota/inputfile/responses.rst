@@ -135,26 +135,27 @@ construction. We plan to handle correlation or structure between field
 responses, which is currently not handled when we treat the responses as
 individual, separate scalar quantities.
 
-| For all three major response types (, , and
-| ), one can specify field responses (e.g. with ,
-| , and ). For each type of field response, one can specify the length
-  of the field (e.g. ) and the number of independent coordinates (). The
-  user can specify the independent coordinates by specifying and
-  providing the coordinates in files named . In the case of field data
-  from physical experiments used to calibrate field data from simulation
-  experiments, the specification is more involved: the user should refer
-  to the Dakota Reference manual to get the syntax. Note that at this
-  time, field responses may be specified by the user as outlined above.
-  All methods can handle field data, but currently the calibration
-  methods are the only methods specialized for field data, specifically
-  they interpolate the simulation field data to the experiment field
-  data points to calculate the residual terms. This is applicable to , ,
-  , the MCMC Bayesian methods, as well as general optimization methods
-  that recast the residuals into a sum-of-squares error. The other
-  methods simply handle the field responses as a number of scalar
-  responses currently. In future versions, we are planning some
-  additional features with methods that can handle field data, including
-  reduction of the field data.
+For all three major response types (, , and
+), one can specify field responses (e.g. with ,
+, and ). For each type of field response, one can specify the length
+of the field (e.g. ) and the number of independent coordinates (). The
+user can specify the independent coordinates by specifying and
+providing the coordinates in files named ``<response_descriptor>.coords``.
+In the case of field data
+from physical experiments used to calibrate field data from simulation
+experiments, the specification is more involved: the user should refer
+to the Dakota Reference manual to get the syntax. Note that at this
+time, field responses may be specified by the user as outlined above.
+All methods can handle field data, but currently the calibration
+methods are the only methods specialized for field data, specifically
+they interpolate the simulation field data to the experiment field
+data points to calculate the residual terms. This is applicable to , ,
+, the MCMC Bayesian methods, as well as general optimization methods
+that recast the residuals into a sum-of-squares error. The other
+methods simply handle the field responses as a number of scalar
+responses currently. In future versions, we are planning some
+additional features with methods that can handle field data, including
+reduction of the field data.
 
 .. _`responses:results`:
 

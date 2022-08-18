@@ -179,7 +179,7 @@ There are two calibration data import mechanisms:
    accommodate the richer structure of field-valued responses, this
    specification requires separate data files per response group
    (descriptor) ``DESC``, per experiment ``NUM``. The files are named
-   and must each be in a tabular text format.
+   ``DESC.NUM.*`` and must each be in a tabular text format.
 
 The tabular data files may be specified to be ``annotated`` (default),
 ``custom_annotated``, or ``freeform`` format.

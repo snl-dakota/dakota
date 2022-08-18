@@ -527,9 +527,11 @@ Dakota and the simulation, as well as any other files used by this
 simulation, must be protected from other files of the same name used by
 the other concurrent simulations. With respect to the parameters and
 results files, these files may be made unique through the use of the
-``file_tag`` option (e.g., , , etc.) or the default temporary file
-option (e.g., , etc.). However, if additional simulation files must be
-protected (e.g., , , , , etc.), then an effective approach is to create
+``file_tag`` option (e.g., ``params.in.1``, ``results.out.1``)
+or the default temporary file option (e.g.,
+``/var/tmp/aaa0b2Mfv``). However, if additional simulation files must
+be protected (e.g., ``model.i``, ``model.o``, ``model.g``,
+``model.e``), then an effective approach is to create
 a tagged working subdirectory for each simulation instance.
 Section `[interfaces:building] <#interfaces:building>`__ provides an
 example system call interface that demonstrates both the use of tagged
@@ -576,7 +578,8 @@ evaluations and/or concurrent analyses.
 Asynchronous Local Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The test file computes 49 orthogonal array samples, which may be
+The test file ``dakota/share/dakota/test/dakota_dace.in`` 
+computes 49 orthogonal array samples, which may be
 evaluated concurrently using parallel computing. When executing Dakota
 with this input file on a single processor, the following execution
 syntax may be used:
@@ -586,7 +589,7 @@ syntax may be used:
        dakota -i dakota_dace.in
 
 For serial execution (the default), the interface specification within
-would appear similar to
+``dakota_dace.in`` would appear similar to
 
 ::
 
@@ -722,7 +725,8 @@ scheduling. The keywords ``local_evaluation_scheduling static`` forces
 this behavior, so a completed evaluation will be replaced with one
 congruent modulo the evaluation concurrency. For example, with 6
 concurrent jobs, eval number 2 will be replaced with eval number 8.
-Examples of this usage can be seen in .
+Examples of this usage can be seen in
+``dakota/share/dakota/examples/parallelism``.
 
 .. _`parallel:SLP:message`:
 
@@ -830,7 +834,8 @@ capabilities.
 Message Passing Example
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Revisiting the test file , Dakota will now compute the 49 orthogonal
+Revisiting the test file ``dakota_dace.in``,
+Dakota will now compute the 49 orthogonal
 array samples using a message passing approach. In this case, a parallel
 launch utility is used to execute Dakota across multiple processors
 using syntax similar to the following:
@@ -994,7 +999,8 @@ capabilities.
 Hybrid Example
 ^^^^^^^^^^^^^^
 
-Revisiting the test file , Dakota will now compute the 49 orthogonal
+Revisiting the test file ``dakota_dace.in``,
+Dakota will now compute the 49 orthogonal
 array samples using a hybrid approach. As for the message passing case,
 a parallel launch utility is used to execute Dakota across multiple
 processors:
@@ -1450,11 +1456,13 @@ similar:
        qsub -q snl -lP 512 -lT 6:00:00 run_dakota
 
 These commands allocate 512 compute nodes for the study, and execute the
+``run_dakota``
 script on a service node. If this script contains a single-processor
 ``dakota`` command, then Dakota will execute on a single service node
 from which it can launch parallel simulations into the compute nodes
 using analysis drivers that contain ``yod`` commands (any ``yod``
-executions occurring at any level underneath the script are mapped to
+executions occurring at any level underneath the ``run_dakota`` 
+script are mapped to
 the 512 compute node allocation). If the script submitted to ``qsub``
 contains a multiprocessor ``mpirun`` command, then Dakota will execute
 across multiple service nodes so that it can spread the application load
@@ -1471,7 +1479,8 @@ Not all supercomputers employ the same model for service/compute
 partitions or provide the same support for tiling of concurrent
 multiprocessor simulations within a single NQS/PBS allocation. For this
 reason, templates for parallel job configuration are being catalogued
-within (in the software distributions) that are intended to provide
+within ``dakota/share/dakota/examples/parallelism``
+(in the software distributions) that are intended to provide
 guidance for individual machine idiosyncrasies.
 
 Dakota relies on hints from the runtime environment and command line
@@ -1896,7 +1905,8 @@ level would have been chosen automatically, dividing the six available
 processors into one evaluation server with three processors and another
 with two.
 
-Next, consider the following 3-level parallel case, in which , , and
+Next, consider the following 3-level parallel case, in which
+``text_book1``, ``text_book2``, and ``text_book3``
 from the previous examples now execute on two processors each. In this
 case, the ``processors_per_analysis`` keyword is added and the ``fork``
 interface is changed to a ``direct`` interface since the fine-grained
@@ -1990,7 +2000,7 @@ configuration for a 24 processor Dakota run
        -----------------------------------------------------------------------------
 
 Note that for this example, the parallel configuration is written to the
-file because of the use of concurrent iterators.
+file ``dakota.out.1`` because of the use of concurrent iterators.
 
 .. _`parallel:spec:multi:example5`:
 
@@ -2005,7 +2015,7 @@ using syntax similar to:
 
        qsub -q snl -lP 384 -lT 6:00:00 run_dakota
 
-where the script appears as
+where the ``run_dakota`` script appears as
 
 ::
 
@@ -2013,7 +2023,7 @@ where the script appears as
        cd /scratch/<some_workdir>
        yod -sz 384 dakota -i dakota.in > dakota.out
 
-the interface specifications from the input file appears as
+the interface specifications from the ``dakota.in`` input file appears as
 
 ::
 
@@ -2069,17 +2079,18 @@ application parallelism. In three of the four cases addressed, the
 application launched by Dakota is assumed MPI-enabled and run as an
 independent parallel process.
 
-The folder in the Dakota installation includes examples of the use
-cases. In all four, Dakota performs a vector parameter on the "textbook"
-test function described in
+The ``examples/parallelism/`` folder in the Dakota installation
+includes examples of the use cases. In all four, Dakota performs a
+vector parameter on the "textbook" test function described in
 Section `[additional:textbook] <#additional:textbook>`__. The
-application executed for serial demonstration is the example driver, and
-for parallel execution, a modified version named . Both are located in
-Dakota’s folder. Dakota uses its fork interface to launch interface
-scripts written either in Bash or Python, which include mock
-pre-processing to prepare application input, application execution in
-serial or parallel, and post-processing of application results to return
-to Dakota.
+application executed for serial demonstration is the ``text_book``
+example driver, and for parallel execution, a modified version named
+``text_book_simple_par``. Both are located in Dakota’s ``test/``
+folder. Dakota uses its fork interface to launch interface scripts
+written either in Bash or Python, which include mock pre-processing to
+prepare application input, application execution in serial or
+parallel, and post-processing of application results to return to
+Dakota.
 
 The combinations of Dakota and application parallelism are summarized in
 Table `[parallel:application:table01] <#parallel:application:table01>`__.
@@ -2108,7 +2119,8 @@ TODO: Cleanup table contents and formatting...
    | & Evaluation Submission & serial & parallel & submit *expensive*
      :math:`N` processor application jobs to a scheduler (e.g., qsub)
 
-Relevant example files for each case are included in directories with
+Relevant example files for each case are included in directories
+``dakota/share/dakota/examples/parallelism/`` with
 the Dakota distribution. These typically include a PBS or SLURM job
 submission script to launch the Dakota study, a Dakota input file, and
 a driver script.
@@ -2255,7 +2267,8 @@ additional features. It offers a background server option which can be
 used to tile multiple MPI jobs within a single parallel resource
 allocation. (Note that with MPICH, there is a difference between
 ``mpirun`` and ``mpiexec``, unlike with OpenMPI, where both are
-typically aliases for ``orterun``.) See the example in .
+typically aliases for ``orterun``.) See the example in
+``Case3-EvaluationTiling/MPICH``.
 
 In this case, an ``mpiexec`` server process is started and backgrounded
 to service application requests for processors; Dakota runs in serial
@@ -2267,7 +2280,7 @@ to service application requests for processors; Dakota runs in serial
 
    dakota dakota_pstudy.in
 
-and asynchronously launches :math:`M/N=3` evaluations ():
+and asynchronously launches :math:`M/N=3` evaluations (``dakota_pstudy.in``):
 
 ::
 
@@ -2295,13 +2308,13 @@ Relative node scheduling
 This Evaluation Tiling variant uses OpenMPI 1.3.3 or newer. It leverages
 Dakota’s option together with integer arithmetic to schedule each
 evaluation on the right subset of the processor allocation. A Bash-based
-example is provided in . Similar approaches work with some AIX/POE
-installations as well.
+example is provided in ``Case3-EvaluationTiling/OpenMPI``.
+Similar approaches work with some AIX/POE installations as well.
 
 The ``mpitile`` utility, released with Dakota 6.6, transparently manages
 construction of relative node lists when using the OpenMPI command
 ``mpirun`` and the SLURM workload manager. ``mpitile`` resides in the
-Dakota folder and is a wrapper for ``mpirun``. It uses a file locking
+Dakota ``bin/`` folder and is a wrapper for ``mpirun``. It uses a file locking
 mechanism to support dynamic scheduling of evaluations but also has a
 ``–static`` option. Using the ``–dedicated-master`` option, either an
 entire ``NODE`` or a ``TILE`` can be reserved for Dakota. Running
@@ -2309,12 +2322,14 @@ entire ``NODE`` or a ``TILE`` can be reserved for Dakota. Running
 its options. The script ``text_book_mpitile_dynamic.sh`` in the
 ``OpenMPI`` example folder demonstrates usage of ``mpitile``.
 
-| ``mpitile`` is based on the Python module
-  ``dakota.interfacing.parallel``, also released with Dakota 6.6.
-  Interface scripts written in Python may benefit from using its API
-  directly. An example is located at . The ``dakota`` Python package is
-  located in , which users should add to the environment variable
-| ``PYTHONPATH``.
+``mpitile`` is based on the Python module
+``dakota.interfacing.parallel``, also released with Dakota 6.6.
+Interface scripts written in Python may benefit from using its API
+directly. An example is located at
+``Case3-EvaluationTiling/OpenMPI/text_book_di_dynamic.py``. The
+``dakota`` Python package is located in
+``dakota/share/dakota/Python/``, which users should add to the
+environment variable ``PYTHONPATH``.
 
 Machinefile management
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -2330,13 +2345,14 @@ of the assigned resources. Note that this will not work with early
 OpenMPI versions with some resource managers (e.g., OpenMPI 1.2 with
 Torque), where machinefiles, even if a proper subset of
 ``$PBS_NODEFILE``, are ignored. This will however work with OpenMPI 1.3
-and newer. See the example in .
+and newer. See the example in ``Case3-EvaluationTiling/MachinefileMgmt``.
 
 In this case the ``pbs_submission`` script defines variables specifying
 how to create a separate node file for each job and sets up a set of
 nodefiles for use by each evaluation. As when using relative node lists,
 Dakota runs in serial and uses asynchronous evaluation concurrency to
-launch the jobs. The interface script contains logic to lock a node file
+launch the jobs. The interface script ``text_book_par_driver``
+contains logic to lock a node file
 for the application run and return it when complete. As each job
 completes, the next is scheduled.
 
@@ -2358,9 +2374,10 @@ login node or other node capable of job submission:
 
    dakota dakota_pstudy.in
 
-For each evaluation, the simulator script () will generate a script and
-submit it to the scheduler. Dummy results are returned to Dakota which
-will exit when all jobs have been scheduled.
+For each evaluation, the simulator script (``text_book_par_driver``)
+will generate a ``pbs_submission`` script and submit it to the
+scheduler. Dummy results are returned to Dakota which will exit when
+all jobs have been scheduled.
 
 In the second pass, when analysis is complete, the analysis driver is
 changed to ``post_process`` and Dakota is executed on a login node to

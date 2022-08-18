@@ -589,7 +589,8 @@ In many situations, one may run an initial sample set and then need to
 perform further sampling to get better estimates of the mean, variance,
 and percentiles, and to obtain more comprehensive sample coverage. We
 call this capability incremental sampling. Typically, a Dakota restart
-file () would be available from the original sample, so only the newly
+file (``dakota.rst``) would be available from the original sample,
+so only the newly
 generated samples would need to be evaluated. Incremental sampling
 supports continuous uncertain variables and discrete uncertain variables
 such as discrete distributions (e.g. binomial, Poisson, etc.) as well as
@@ -625,7 +626,8 @@ diminishes.
    end of the study both for the initial 50 samples and for the full
    sample of 60. The command line syntax for running the second sample
    is ``dakota -i input60.in -r dakota.50.rst`` where ``input60.in`` is
-   the input file with the refinement samples specification and is the
+   the input file with the refinement samples specification and
+   ``dakota.50.rst`` is the
    restart file containing the initial 50 samples. Note that if the
    restart file has a different name, that is fine; the correct restart
    file name should be used.
@@ -650,8 +652,9 @@ diminishes.
    at the end of the study final statistics will be reported both for
    the initial 50 samples and for the full sample of 100. The command
    line syntax for running the second sample is
-   ``dakota -i input100.in -r dakota.50.rst``, where is the input file
-   with the incremental sampling specification and is the restart file
+   ``dakota -i input100.in -r dakota.50.rst``, where ``input100.in``
+   is the input file with the incremental sampling specification and
+   ``dakota.50.rst`` is the restart file
    containing the initial 50 samples. Note that if the restart file has
    a different name, that is fine; the correct restart file name should
    be used.
@@ -685,7 +688,8 @@ accounts for at least 99 percent of the variance in the responses will
 be retained. The default for this percentage is 0.95. In many
 applications, only a few principal components explain the majority of
 the variance, resulting in significant data reduction. The principal
-components are written to a file, . Dakota also uses the principal
+components are written to a file ``princ_comp.txt``.
+Dakota also uses the principal
 components to create a surrogate model by representing the overall
 response as weighted sum of M principal components, where the weights
 will be determined by Gaussian processes which are a function of the
@@ -2036,6 +2040,8 @@ pure interval analysis, we recommend using either
 ``global_interval_est`` or ``local_interval_est`` instead of
 ``global_evidence`` or ``local_evidence``, for reasons of simplicity.
 
+TODO: Missing commented content?
+
 These interval methods can also be used as the outer loop within an
 interval-valued probability analysis for propagating mixed aleatory and
 epistemic uncertainty – refer to
@@ -2651,16 +2657,18 @@ summarizes the moments of the posterior samples from the chain (e.g.
 mean of the chain, standard deviation of the chain samples, etc.), as
 well as the credible and prediction intervals for each model output.
 
-Auxilliary output is also generated to a directory called in the
-directory from which Dakota is run. The file contains diagnostic
-information regarding the MCMC process. The Matlab files contained in
-the directory contain the chain files. The files to load in Matlab are
-or , containing the full chain or the filtered chain values of the
+Auxilliary output is also generated to a directory called
+``QuesoDiagnostics/`` in the directory from which Dakota is run. The
+file ``display_sub0.txt`` contains diagnostic information regarding
+the MCMC process. The Matlab files contained in the
+``QuesoDiagnostics/`` directory contain the chain files. The files to
+load in Matlab are ``raw_chain.m`` or ``filtered_chain.m``, containing
+the full chain or the filtered chain values of the
 parameters [4]_. In addition, the accepted chain values that Dakota
 generates are written to a file in the run directory called (by default)
-. The first columns of this file are the posterior values of the input
+``dakota_mcmc_tabular.dat``. The first columns of this file are the posterior values of the input
 variables. If ``burn_in`` or ``sub_sampling_period`` are specified, the
-filtered acceptance chain is instead written to the file . This file
+filtered acceptance chain is instead written to the file ``dakota_mcmc_tabular.dat``. This file
 contains the posterior values of the filtered MCMC chain, as well as the
 values of state variables and the resulting model responses. Finally, if
 one wants to see the likelihood of each point, specifying verbose output
@@ -2950,8 +2958,10 @@ the input configuration variable(s).
 
 Calculations corresponding to each prediction configuration and to each
 observable will be output to tabular files. The responses from the
-discrepancy model itself is output to . Those from the corrected model
-are output to . The user may specify the output file names for the
+discrepancy model itself is output to ``dakota_discrepancy_tabular.dat``.
+Those from the corrected model
+are output to ``dakota_corrected_tabular.dat``.
+The user may specify the output file names for the
 discrepancy and corrected model tabular files using the
 ``export_discrepancy_file`` and ``export_corrected_model_file``
 keywords, respectively.
@@ -2990,7 +3000,8 @@ Section `1.8.1 <#uq:bayesian:queso>`__. Including
 :math:`\sigma^{2}_{exp,i}` in the variance calculation accounts for the
 uncertainty in the model predictions that arise due to uncertainties in
 the calibration data. These prediction variances are output to the file
-by default. The name of this file can be modified using the
+``dakota_discrepancy_variance_tabular.dat`` by default.
+The name of this file can be modified using the
 ``export_corrected_variance_file`` keyword in the input script. If the
 response is a field, the variance information written to this file is
 the variance of the Gaussian process alone. Future work includes
@@ -3124,7 +3135,7 @@ Progress of the algorithm will be reported to the screen with the rest
 of the Dakota output. Furthermore, a summary of the algorithm’s results,
 including, for each iteration, the optimal design, the mutual
 information, and the corresponding high-fidelity model response, can be
-found in the file .
+found in the file ``experimental_design_output.txt``.
 
 One-at-a-time Implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -3148,7 +3159,8 @@ calibration of the low-fidelity model, select the optimal design (or
 multiple optimal designs when ``batch_size`` is greater than 1) from
 those provided in ``import_candidate_points_file``, and exit *without*
 running the “dummy" high-fidelity model code. The selected design(s)
-will be output to the screen, as well as to , as detailed above. The
+will be output to the screen, as well as to ``experimental_design_output.txt``,
+as detailed above. The
 high-fidelity model may then be run offline with the newly selected
 design point(s).
 

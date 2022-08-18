@@ -299,7 +299,8 @@ input file), ``simulator_script.sh`` (the simulation driver script),
 The file ``dakota_rosenbrock.in`` specifies the study that Dakota will
 perform and, in the interface section, describes the components to be
 used in performing function evaluations. In particular, it identifies
-as its ``analysis_driver``, as shown in :numref:`advint:figure01`.
+``simulator_script.sh`` as its ``analysis_driver``, as shown in
+:numref:`advint:figure01`.
 
 .. literalinclude:: ../samples/dakota_rosenbrock.in
    :language: dakota
@@ -367,7 +368,7 @@ file (``ros.in``) must be specified in the ``dprepro`` command line arguments.
    :name: advint:figure04
 
 The second part of the script executes the ``rosenbrock_bb.py`` simulator. The input and
-output file names, ``ros.in`` and ``ros.out``, respectively, are hard-coded into the. When the
+output file names, ``ros.in`` and ``ros.out``, respectively, are hard-coded into the simulator. When the
 ``./rosenbrock_bb.py`` simulator is executed, the values for ``x1`` and ``x2`` are read in from
 ``ros.in``, the Rosenbrock function is evaluated, and the function value is
 written out to ``ros.out``.
@@ -375,13 +376,13 @@ written out to ``ros.out``.
 The third part performs the post-processing and writes the response
 results to a file for Dakota to read. Using the UNIX “``grep``” utility,
 the particular response values of interest are extracted from the raw
-simulator output and saved to a temporary file (). When complete, this
+simulator output and saved to a temporary file (``results.tmp``). When complete, this
 file is renamed ``$2``, which in this example is always ``results.out``. Note that
 moving or renaming the completed results file avoids any problems with
 read race conditions (see
 Section `[parallel:SLP:local:system] <#parallel:SLP:local:system>`__).
 
-Because the Dakota input file (:numref:`advint:figure01`) specifies
+Because the Dakota input file ``dakota_rosenbrock.in`` (:numref:`advint:figure01`) specifies
 ``work_directory`` and ``directory_tag`` in its interface section, each
 invocation of ``simulator_script.sh`` wakes up in its own temporary directory, which Dakota has
 populated with the contents of directory ``templatedir/``. Having a separate directory
@@ -395,7 +396,7 @@ benefit and can be omitted. An alternative to ``directory_tag`` is to
 proceed as earlier versions of this chapter — prior to Dakota 5.0’s
 introduction of ``work_directory`` — recommended: add two more steps to
 the ``simulator_script.sh``, an initial one to create a temporary directory explicitly and copy
-``templatedir`` to it if needed, and a final step to remove the temporary directory and
+``templatedir/`` to it if needed, and a final step to remove the temporary directory and
 any files in it.
 
 When ``work_directory`` is specified, Dakota adjusts the ``$PATH`` seen
@@ -1968,6 +1969,9 @@ determine which of these to add to ``results["f"]``.
          results["f"].hessian = df2
 
      results.write()
+
+
+TODO: Need Dakota 6.16 content on decorators.
 
 .. _`interfaces:dprepro-and-pyprepro`:
 

@@ -326,8 +326,10 @@ In this case, Dakota will calculate the residuals (that is, the
 simulation model results minus the experimental results), and the
 user-provided script can omit this step: the script can just return the
 simulation outputs of interest. An example of this can be found in the
-file named . In this example, there are 3 residual terms. The data file
-of experimental results associated with this example is . These three
+file named ``dakota/share/dakota/examples/users/textbook_nls_datafile.in``.
+In this example, there are 3 residual terms. The data file
+of experimental results associated with this example is 
+``textbook_nls_datafile.lsq.dat``. These three
 values are subtracted from the least-squares terms to produce residuals
 for the nonlinear least-squares problem. Note that the file may be
 annotated (specified by ``annotated``) or freeform (specified by

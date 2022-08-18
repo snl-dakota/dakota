@@ -1202,17 +1202,17 @@ surrogate model types.
 Python Interface to the Surrogates Module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Dakota 6.13 onwards uses Pybind11 :cite:p:`pybind11` to
-  provide a Python interface to the surrogates module
-| ``dakota.surrogates``, which currently contains polynomial and
-  Gaussian process regression surrogates. In this section we describe
-  how to enable the interface and provide a simple demonstration.
+Dakota 6.13 onwards uses Pybind11 :cite:p:`pybind11` to
+provide a Python interface to the surrogates module
+``dakota.surrogates``, which currently contains polynomial and
+Gaussian process regression surrogates. In this section we describe
+how to enable the interface and provide a simple demonstration.
 
-| After installing Dakota, ``dakota.surrogates`` may be used by setting
-  the environment variable ``PYTHONPATH`` to include . Note that doing
-  so will also enable
-| ``dakota.interfacing`` as described in
-  `[interfaces:dakota.interfacing] <#interfaces:dakota.interfacing>`__.
+After installing Dakota, ``dakota.surrogates`` may be used by setting
+the environment variable ``PYTHONPATH`` to include
+``$DAK_INSTALL/share/dakota/Python``. Note that doing
+so will also enable ``dakota.interfacing`` as described in
+`[interfaces:dakota.interfacing] <#interfaces:dakota.interfacing>`__.
 
 The Python code snippet below shows how a Gaussian process surrogate can
 be built from existing Numpy arrays and an optional dictionary of
@@ -1236,7 +1236,9 @@ determining default settings.
 
    daksurr.save(gp, "gp.bin", True)
 
-The examples located in cover surrogate build/save/load workflows and
+The examples located in
+``$DAK_INSTALL/share/dakota/examples/official/surrogates/library``
+cover surrogate build/save/load workflows and
 other Python-accessible methods such as gradient and hessian evaluation.
 
 As a word of caution, the configuration options for a surrogate loaded
