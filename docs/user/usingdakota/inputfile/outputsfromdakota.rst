@@ -210,7 +210,7 @@ example follows:
                          9.8432498116e+01
    <<<<< Best constraint values   =
                         -9.6918029158e-12
-   <<<<< Best data captured at function evaluation 36
+   <<<<< Best evaluation ID: 36
 
 
    <<<<< Iterator npsol_sqp completed.

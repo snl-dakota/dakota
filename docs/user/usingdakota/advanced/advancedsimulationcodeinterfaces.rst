@@ -530,7 +530,9 @@ specified by the active set vector with fields “fns”, “fnGrads”, and
 “fnHessians”, corresponding to function values, gradients, and Hessians,
 respectively. The function may optionally include a failure code in
 “failure” (zero indicates success, nonzero failure) and function labels
-in “fnLabels”. See the linked interfaces example referenced above for
+in “fnLabels”. When metadata are active, they must
+be returned as an array of floats in the dictionary field
+“metadata”. See the linked interfaces example referenced above for
 more details.
 
 .. container::
@@ -541,40 +543,44 @@ more details.
       +---------------------+-----------------------------------------------+
       | **Entry Name**      | **Description**                               |
       +=====================+===============================================+
-      | functions           | number of functions (responses, constraints)  |
-      +---------------------+-----------------------------------------------+
       | variables           | total number of variables                     |
       +---------------------+-----------------------------------------------+
+      | functions           | number of functions (responses, constraints)  |
+      +---------------------+-----------------------------------------------+
+      | metadata            | number of metadata fields                     |
+      +---------------------+-----------------------------------------------+
+      | variable_labels     | variable labels in input specification order  |
+      +---------------------+-----------------------------------------------+
+      | function_labels     | function (response, constraint) labels        |
+      +---------------------+-----------------------------------------------+
+      | metadata_labels     | metadata field labels                         |
+      +---------------------+-----------------------------------------------+
       | cv                  | list/array of continuous variable values      |
+      +---------------------+-----------------------------------------------+
+      | cv_labels           | continuous variable labels                    |
       +---------------------+-----------------------------------------------+
       | div                 | list/array of discrete integer variable       |
       |                     | values                                        |
       +---------------------+-----------------------------------------------+
+      | div_labels          | discrete integer variable labels              |
+      +---------------------+-----------------------------------------------+
       | dsv                 | list of discrete string variable values       |
       |                     | (NumPy not supported)                         |
       +---------------------+-----------------------------------------------+
-      | drv                 | list/array of discrete real variable values   |
-      +---------------------+-----------------------------------------------+
-      | av                  | single list/array of all numeric variable     |
-      |                     | values (omits string variables)               |
-      +---------------------+-----------------------------------------------+
-      | cv_labels           | continuous variable labels                    |
-      +---------------------+-----------------------------------------------+
-      | div_labels          | discrete integer variable labels              |
-      +---------------------+-----------------------------------------------+
       | dsv_labels          | discrete string variable labels               |
       +---------------------+-----------------------------------------------+
-      | drv_labels          | discrete real variable labels                 |
+      | drv                 | list/array of discrete real variable values   |
       +---------------------+-----------------------------------------------+
-      | av_labels           | all numeric variable labels                   |
+      | drv_labels          | discrete real variable labels                 |
       +---------------------+-----------------------------------------------+
       | asv                 | active set vector                             |
       +---------------------+-----------------------------------------------+
       | dvv                 | derivative variables vector                   |
+      |                     | (list of one-based variable IDs)              |
       +---------------------+-----------------------------------------------+
-      | analysis_components | list of analysis components as strings        |
+      | analysis_components | list of analysis components strings           |
       +---------------------+-----------------------------------------------+
-      | currEvalId          | current evaluation ID number                  |
+      | eval_id             | one-based evaluation ID number                |
       +---------------------+-----------------------------------------------+
 
 .. _`advint:scilab`:

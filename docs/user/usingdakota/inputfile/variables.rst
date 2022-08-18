@@ -610,7 +610,7 @@ array (e.g., an identifier of 2 indicates that the second variable in
 the list is active for derivatives). The labels are again taken from
 user-provided or default variable descriptors.
 
-The final array for the analysis components (AC) begins with the number
+The fourth array for the analysis components (AC) begins with the number
 of analysis components (``q``) and its identifier string
 “``analysis_components``.” The next ``q`` lines provide additional
 strings for use in specializing a simulation interface followed by the
@@ -621,13 +621,19 @@ the ``analysis_components`` specification. The subset of the analysis
 components used for a particular analysis driver is the set passed in a
 particular parameters file.
 
-The final entry ``eval_id`` in the parameters file is the evaluation ID,
+The next entry ``eval_id`` in the parameters file is the evaluation ID,
 by default an integer indicating interface evaluation ID number. When
 hierarchical tagging is enabled as described
 in `[interfaces:file:tagging1] <#interfaces:file:tagging1>`__, the
 identifier will be a colon-separated string, e.g., 4:9:2. Several
 standard-format parameters file examples are shown in
 Section `[interfaces:mappings] <#interfaces:mappings>`__.
+
+The final array for the metadata (MD) begins with the number of
+metadata fields requested (``r``) and its identifier string
+``metadata``. The next ``r`` lines provide the names of
+each metadata field followed by the tags ``MD_i``.
+
 
 .. _`variables:parameters:aprepro`:
 

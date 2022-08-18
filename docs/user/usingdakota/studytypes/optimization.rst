@@ -759,7 +759,28 @@ is shown in :numref:`opt:methods:gradientfree:global:example:egm_rosen`.
        ``dakota/share/dakota/examples/users/dakota_rosenbrock_ego.in``
    :name: opt:methods:gradientfree:global:example:egm_rosen
 
-TODO: Missing User's 6.16 content goes here...
+There are two types of parallelization within the ``efficient_global``
+method: the first one is batch-sequential parallel, which is active by
+default, and the second one is asynchronous batch parallel. One can
+activate the asynchronous parallel scheme by adding ``nonblocking
+synchronization`` in the ``method`` block of the input file; for
+example, see
+``dakota/share/dakota/examples/users/dakota_rosenbrock_ego_stoch.in``
+for how to set up an asynchronous parallel EGO study.
+
+Both of these parallel EGO variants are enabled by setting a batch
+size with the keyword ``batch_size`` in the ``method``
+block. The whole batch is further divided into two sub-batches: the
+first batch focuses on querying points corresponding to maximal value
+of the acquisition function, whereas the second batch focuses on
+querying points with maximal posterior variances in the GP. The size
+of the second batch is set with the keyword ``exploration``,
+which has to be less than or equal to ``batch_size - 1``.
+
+For further elaboration of the difference between batch-sequential
+parallel and asynchronous parallel, see Surrogate-Based Minimization
+chapter in Dakota Theory Manual :cite:p:`TheoMan`.
+
 
 .. _`opt:additional`:
 
@@ -1442,37 +1463,39 @@ gradient-based method for a given problem
    ``optpp_q_newton`` show moderate performance for constrained problems
    across all scales.
 
-| **Non-gradient-based Methods**
-| Nongradient-based methods exhibit much slower convergence rates for
-  finding an optimum, and as a result, tend to be much more
-  computationally demanding than gradient-based methods. Nongradient
-  local optimization methods, such as pattern search algorithms, often
-  require from several hundred to a thousand or more function
-  evaluations, depending on the number of variables, and nongradient
-  global optimization methods such as genetic algorithms may require
-  from thousands to tens-of-thousands of function evaluations. Clearly,
-  for nongradient optimization studies, the computational cost of the
-  function evaluation must be relatively small in order to obtain an
-  optimal solution in a reasonable amount of time. In addition,
-  nonlinear constraint support in nongradient methods is an open area of
-  research and, while supported by many nongradient methods in Dakota,
-  is not as refined as constraint support in gradient-based methods.
-  However, nongradient methods can be more robust and more inherently
-  parallel than gradient-based approaches. They can be applied in
-  situations were gradient calculations are too expensive or unreliable.
-  In addition, some nongradient-based methods can be used for global
-  optimization which gradient-based techniques, by themselves, cannot.
-  For these reasons, nongradient-based methods deserve consideration
-  when the problem may be nonsmooth, multimodal, or poorly behaved.
+**Non-gradient-based Methods**
 
-| **Surrogate-based Methods**
-| The effectiveness or efficiency of optimization (and calibration)
-  methods can often be improved through the use of surrogate models. Any
-  Dakota optimization method can be used with a (build-once) global
-  surrogate by specifying the of a global surrogate model with the
-  optimizer’s keyword. This approach can be used with surrogates trained
-  from (static) imported data or trained online using a Dakota design of
-  experiments.
+Nongradient-based methods exhibit much slower convergence rates for
+finding an optimum, and as a result, tend to be much more
+computationally demanding than gradient-based methods. Nongradient
+local optimization methods, such as pattern search algorithms, often
+require from several hundred to a thousand or more function
+evaluations, depending on the number of variables, and nongradient
+global optimization methods such as genetic algorithms may require
+from thousands to tens-of-thousands of function evaluations. Clearly,
+for nongradient optimization studies, the computational cost of the
+function evaluation must be relatively small in order to obtain an
+optimal solution in a reasonable amount of time. In addition,
+nonlinear constraint support in nongradient methods is an open area of
+research and, while supported by many nongradient methods in Dakota,
+is not as refined as constraint support in gradient-based methods.
+However, nongradient methods can be more robust and more inherently
+parallel than gradient-based approaches. They can be applied in
+situations were gradient calculations are too expensive or unreliable.
+In addition, some nongradient-based methods can be used for global
+optimization which gradient-based techniques, by themselves, cannot.
+For these reasons, nongradient-based methods deserve consideration
+when the problem may be nonsmooth, multimodal, or poorly behaved.
+
+**Surrogate-based Methods**
+
+The effectiveness or efficiency of optimization (and calibration)
+methods can often be improved through the use of surrogate models. Any
+Dakota optimization method can be used with a (build-once) global
+surrogate by specifying the of a global surrogate model with the
+optimizer’s keyword. This approach can be used with surrogates trained
+from (static) imported data or trained online using a Dakota design of
+experiments.
 
 When online query of the underlying truth model at new design values is
 possible, tailored/adaptive surrogate-based methods may perform better

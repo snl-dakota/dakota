@@ -23,7 +23,7 @@ prompt without any arguments, a usage message similar to the following appears:
     -run [$val] (Perform run (model evaluation) phase)
     -post_run [$val] (Perform post-run (final results) phase)
     -read_restart [$val] (Read an existing DAKOTA restart file $val)
-    -stop_restart <$val> (Stop restart file processing at evaluation $val)
+    -stop_restart <$val> (Stop restart file processing at restart record $val)
     -write_restart [$val] (Write a new DAKOTA restart file $val)
 
 Of these available command line inputs, only the “-input” option is required, and “-input” can be omitted if the input

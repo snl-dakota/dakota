@@ -499,7 +499,7 @@ shows the final solution using the ``rosenbrock_bb.py`` simulator:
                           9.9931682203e-01 x2
     <<<<< Best objective function  =
                        1.1657044253e-07
-    <<<<< Best data captured at function evaluation 130
+    <<<<< Best evaluation ID: 130
     
     <<<<< Iterator npsol_sqp completed.
     <<<<< Single Method Strategy completed.
@@ -1640,7 +1640,7 @@ Its signature is:
 
 [index:dakota.interfacing.read_parameters_file]\ ``dakota.interfacing.``\ **``read_parameters_file``**\ (*parameters_file=None*,
 *results_file=None*,
-*ignore_asv=False*, *batch=False*)
+*ignore_asv=False*, *batch=False*, *infer_types=True*, *types=None*)
 
 *parameters_file* and *results_file* are the names of the parameters
 file that is to be read and the results file that ultimately is to be
@@ -1652,13 +1652,13 @@ the second to last.) Note that if the working directory has changed
 since script invocation, filenames provided as command line arguments by
 Dakota’s ``fork`` or ``system`` interfaces may be incorrect.
 
-| If *results_file* is set to the constant
-  ``dakota.interfacing.UNNAMED``, the ``Results`` or ``BatchResults``
-  object is constructed without a results file name. In this case, an
-  output stream must be provided when
-| ``Results.write()`` or ``BatchResults.write()`` is called. Unnamed
-  results files are most helpful when no results file will be written,
-  as with a script intended purely for pre-processing.
+If *results_file* is set to the constant
+``dakota.interfacing.UNNAMED``, the ``Results`` or ``BatchResults``
+object is constructed without a results file name. In this case, an
+output stream must be provided when
+``Results.write()`` or ``BatchResults.write()`` is called. Unnamed
+results files are most helpful when no results file will be written,
+as with a script intended purely for pre-processing.
 
 By default, the returned ``Results`` or ``BatchResults`` object enforces
 the active set vector (see the ``Results`` class section). This behavior
@@ -1668,6 +1668,27 @@ of a response to be set, by setting *ignore_asv* to ``True``. The
 
 The ``batch`` argument must be set to ``True`` when batch evaluation has
 been requested in the Dakota input file, and ``False`` when not.
+
+The final two arguments, ``infer_types`` and ``types``, control how
+types are assigned to parameter values.  The values initially are read
+as strings from the Dakota parameters file. If ``infer_types`` is
+``False`` and ``types`` is ``None``, they remain as type ``str``. If
+``infer_types`` is ``True``, an attempt is made to "guess" more
+convenient types. Conversion first to ``int`` and then to ``float``
+are tried. If both fail, the value remains a ``str``.
+
+Sometimes automatic type inference does not work as desired; a user
+may have a string-valued variable with the element "5", for example,
+that he does not want converted to an ``int``. Or, a user may wish to
+convert to a custom type, such as ``np.float64`` instead of the
+built-in Python ``float``. The ``types`` argument is useful in these
+cases. It can be set either to a ``list`` of types or a ``dict`` that
+maps variable labels to types. Types communicated using the ``types``
+argument override inferred types. If ``types`` is a list, it must have
+a length equal to the number of variables. A dictionary, on the other
+hand, need not contain types for every variable. This permits
+variable-by-variable control over assignment and inference of types.
+
 
 Parameters objects
 ~~~~~~~~~~~~~~~~~~
@@ -1682,6 +1703,11 @@ Variable values can be accessed by Dakota descriptor or by index using
 [] on the object itself. Variables types (integer, real, string) are
 inferred by first attempting to convert to ``int`` and then, if this
 fails, to ``float``.
+
+Variable values can be accessed by Dakota descriptor or by index using
+``[]`` on the object itself. Variables types are inferred or set as
+described in the previous section.
+ 
 
 Analysis components are accessible by index only using the ``an_comps``
 attribute. Iterating over a ``Parameters`` object yields the variable
@@ -1711,6 +1737,12 @@ descriptors.
 -  [index:dakota.interfacing.Parameters.num_an_comps]\ **``num_an_comps``**
    Number of analysis components
 
+-  [index:dakota.interfacing.Parameters.metadata]\ **``metadata``**
+   Names of requested metadata fields (strings)
+
+-  [index:dakota.interfacing.Parameters.num_metadata]\ **``num_metadata``**
+   Number of requested metadata fields.
+
 Parameters objects have the methods:
 
 -  [index:dakota.interfacing.Parameters.items]\ **``items``**\ () Return
@@ -1735,7 +1767,7 @@ Results objects
 
 ``Results`` objects are collections of ``Response`` objects, which are
 documented in the following section. Each ``Response`` can be accessed
-by name (Dakota descriptor) or by index using [] on the ``Results``
+by name (Dakota descriptor) or by index using ``[]`` on the ``Results``
 object itself. Iterating over a ``Results`` object yields the response
 descriptors. Although ``Results`` objects may be constructed directly,
 it is advisable to use the ``read_parameters_file`` function instead.
@@ -1935,14 +1967,14 @@ its gradient and Hessian.)
      results.write()
 
 The ``Results`` object exposes the active set vector read from the
-parameters file. When analytic gradients or Hessians are available for a
-response, the ASV should be queried to determine what Dakota has
-requested for an evaluation. If an attempt is made to addunrequested
+parameters file. When analytic gradients or Hessians are available for
+a response, the ASV should be queried to determine what Dakota has
+requested for an evaluation. If an attempt is made to add unrequested
 information to a response, a ``dakota.interface.ResponseError`` is
 raised. The same exception results if a requested piece of information
-is missing when ``Results.write()`` is called. The *ignore_asv* option
-to ``read_parameters_file`` and ``Results.write()`` overrides ASV
-checks.
+is missing when ``Results.write()`` is called. The
+``ignore_asv`` option to ``read_parameters_file`` and 
+``Results.write()`` overrides ASV checks.
 
 In Figure `[diexample:asv] <#diexample:asv>`__, ``applic_module.run()``
 has been modified to return not only the function value of ``f``, but
@@ -1970,8 +2002,36 @@ determine which of these to add to ``results["f"]``.
 
      results.write()
 
+As of the 6.16 release, the direct Python interface can interoperate with
+``dakota.interfacing`` using a feature of Python known as a decorator.
+Instead of receiving parameters from the Dakota parameters file and
+writing results to the results file as in Figure~\ref{diexample:asv},
+the decorated Python driver works with the Python dictionary passed from
+the direct Python interface.  An example of the decorator syntax and use
+of the ``dakota.interfacing`` ``Parameters`` and ``Results``
+objects that get created automatically from the direct interface
+Python dictionary is shown in Figure~\ref{linkeddiexample:decorator}.  The
+complete driver including details of the packing functions can be found in
+the ``dakota/share/dakota/examples/official/drivers/Python/linked_di`` folder.
 
-TODO: Need Dakota 6.16 content on decorators.
+.. code-block:: python
+   :caption: Decorated direct Python callback function using
+             ``Parameters`` and ``Results`` objects
+             constructed by the ``dakota.interfacing`` decorator
+   :name: linkeddiexample:decorator
+
+   from textbook import textbook_list
+   import dakota.interfacing as di
+   
+   @di.python_interface
+   def decorated_driver(params, results):
+   
+       textbook_input = pack_textbook_parameters(params, results)
+       fns, grads, hessians = textbook_list(textbook_input)
+       results = pack_dakota_results(fns, grads, hessians, results)
+   
+       return results
+
 
 .. _`interfaces:dprepro-and-pyprepro`:
 

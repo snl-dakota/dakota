@@ -269,6 +269,10 @@ formulation) and
 :numref:`additional:rosenbrock_nls`
 (least squares formulation) for examples of each usage.
 
+
+TODO: Missing optimization results discussion, if not moved elsewhere
+
+
 .. _`additional:rosenbrock:examples:nonlinear`:
 
 Least-Squares Optimization
@@ -606,7 +610,7 @@ The final report from the Dakota output is as follows:
                              1.8407497748e-13
                             -3.3471647504e-01
                              0.0000000000e+00
-       <<<<< Best data captured at function evaluation 51
+       <<<<< Best evaluation ID: 51
        <<<<< Environment execution completed.
        Dakota execution time in seconds:
          Total CPU        =       0.04 [parent =   0.031995, child =   0.008005]
@@ -762,7 +766,7 @@ The final report from the Dakota output is as follows:
                              9.8432498116e+01
        <<<<< Best constraint values   =
                             -9.6301439045e-12
-       <<<<< Best data captured at function evaluation 36
+       <<<<< Best evaluation ID: 36
        <<<<< Environment execution completed.
        Dakota execution time in seconds:
          Total CPU        =      0.18 [parent =      0.18, child =         0]
@@ -879,7 +883,7 @@ output is as follows:
        <<<<< Best constraint values   =
                             -1.6009000260e-02
                             -3.7083558446e-11
-       <<<<< Best data captured at function evaluation 31
+       <<<<< Best evaluation ID: 31
        <<<<< Environment execution completed.
        Dakota execution time in seconds:
          Total CPU        =       0.03 [parent =   0.027995, child =   0.002005]

@@ -238,6 +238,11 @@ across multiple lines for readability. Labels are not used and must not
 be present. White space after the initial double bracket and before the
 final one is optional, but none can appear within the double brackets.
 
+Any requested metadata values must appear at the end of the file
+(after any requested values, gradients, or Hessians). Their format
+requirements are the same as function values discussed above, and are
+similarly validated by the ``labeled`` keyword when specified.
+
 The format of the numeric fields may be floating point or scientific
 notation. In the latter case, acceptable exponent characters are “``E``”
 or “``e.``” A common problem when dealing with Fortran programs is that
