@@ -100,13 +100,11 @@ Available to all these algorithms is parallel computation support; ranging from 
 parallel computers typically found at national laboratories and supercomputer centers.
 
 As of Version 5.0, Dakota is publicly released as open source under a GNU Lesser General Public License and is available for free
-download world-wide. See http://www.gnu.org/licenses/lgpl.html for more information on the LGPL software use agreement. Dakota
+download world-wide under the `LGPL software use agreement <http://www.gnu.org/licenses/lgpl.html>`__. Dakota
 Versions 3.0 through 4.2+ were licensed under the GNU General Public License. Dakota public release facilitates research and software
 collaborations among Dakota developers at Sandia National Laboratories and other institutions, including academic, government, and
-corporate entities. See the Dakota FAQ at http://dakota.sandia.gov/faq-page for more information on the public release rationale and 
-ways to contribute.
-
-For a listing of current and former contributors and third-party library developers, visit the Dakota webpage at http://dakota.sandia.gov.
+corporate entities. See the :ref:`Dakota FAQ <faq-main>` for more information on the public release rationale and ways to contribute.
+You may also peruse the :ref:`listing of current and former contributors and third-party library developers <contributors>`.
 
 ====================
 C++ Software Toolkit
