@@ -2839,7 +2839,7 @@ void NonDExpansion::compute_level_mappings()
       for (j=0; j<rl_len; ++j, ++cntr)
 	if (final_asv[cntr] & 1) {
 	  z_bar = requestedRespLevels[i][j];
-	  if (!Pecos::is_below(sigma))
+	  if (!Pecos::is_small(sigma))
 	    computedRelLevels[i][j] = (cdfFlag) ?
 	      (mu - z_bar)/sigma : (z_bar - mu)/sigma;
 	  else
@@ -3110,7 +3110,7 @@ void NonDExpansion::compute_analytic_statistics()
 	// *** beta
 	if (final_asv[cntr] & 1) {
 	  Real z_bar = requestedRespLevels[i][j];
-	  if (!Pecos::is_below(sigma)) {
+	  if (!Pecos::is_small(sigma)) {
 	    Real ratio = (mu - z_bar)/sigma;
 	    computedRelLevels[i][j] = beta = (cdfFlag) ? ratio : -ratio;
 	  }
@@ -3124,7 +3124,7 @@ void NonDExpansion::compute_analytic_statistics()
 	if (final_asv[cntr] & 2) {
 	  if (final_stat_grad.empty())
 	    final_stat_grad.sizeUninitialized(num_final_grad_vars);
-	  if (!Pecos::is_below(sigma)) {
+	  if (!Pecos::is_small(sigma)) {
 	    Real z_bar = requestedRespLevels[i][j];
 	    for (k=0; k<num_final_grad_vars; ++k) {
 	      Real dratio_dx = (sigma*mu_grad[k] - (mu-z_bar)*sigma_grad[k])
@@ -3691,9 +3691,9 @@ void NonDExpansion::archive_sobol_indices() {
       // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
       // In this case, we cannot screen effectively at this level.
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
-			    Pecos::is_below_sq(respVariance[i]) ) ||
+			    Pecos::is_small_sq(respVariance[i]) ) ||
 			  ( covarianceControl   == FULL_COVARIANCE &&
-			    Pecos::is_below_sq(respCovariance(i,i))) )
+			    Pecos::is_small_sq(respCovariance(i,i))) )
 	              ? false : true;
       if (well_posed) {
 	const RealVector& total_indices = approx_i.total_sobol_indices();
@@ -4044,9 +4044,9 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
       // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
       // In this case, we cannot screen effectively at this level.
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
-			    Pecos::is_below_sq(respVariance[i]) ) ||
+			    Pecos::is_small_sq(respVariance[i]) ) ||
 			  ( covarianceControl   == FULL_COVARIANCE &&
-			    Pecos::is_below_sq(respCovariance(i,i)) ) )
+			    Pecos::is_small_sq(respCovariance(i,i)) ) )
 	              ? false : true;
       if (well_posed) {
 	const RealVector& total_indices = approx_i.total_sobol_indices();

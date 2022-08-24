@@ -1517,7 +1517,7 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
 
   for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
     //if(allocationTarget == TARGET_MEAN || allocationTarget == TARGET_VARIANCE){
-      fact_qoi = Pecos::is_below(eps_sq_div_2[qoi]) ? 0 : sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
+      fact_qoi = Pecos::is_small(eps_sq_div_2[qoi]) ? 0 : sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
       if (outputLevel == DEBUG_OUTPUT){
         Cout << "\n\tN_target for Qoi: " << qoi << ", with sum_sqrt_var_cost: " << sum_sqrt_var_cost[qoi] << std::endl;
         Cout << "\n\tN_target for Qoi: " << qoi << ", with eps_sq_div_2: " << eps_sq_div_2[qoi] << std::endl;
@@ -1525,9 +1525,9 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
       }
       for (size_t step = 0; step < num_steps; ++step) {
         if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
-          NTargetQoi(qoi, step) = Pecos::is_below(fact_qoi) ? 0 : std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
+          NTargetQoi(qoi, step) = Pecos::is_small(fact_qoi) ? 0 : std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
         }else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
-          NTargetQoi(qoi, step) = Pecos::is_below(fact_qoi) ? 0 : std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * (1./fact_qoi);
+          NTargetQoi(qoi, step) = Pecos::is_small(fact_qoi) ? 0 : std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * (1./fact_qoi);
         }else{
           Cout << "NonDMultilevelSampling::compute_sample_allocation_target: convergenceTolTarget is not known.\n";
           abort_handler(INTERFACE_ERROR);

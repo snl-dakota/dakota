@@ -1665,7 +1665,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	for (j=0; j<rl_len; j++, ++cntr) {
 	  // *** beta
 	  Real z_bar = requestedRespLevels[i][j];
-	  if (!Pecos::is_below(stdev))
+	  if (!Pecos::is_small(stdev))
 	    computedRelLevels[i][j] = (cdfFlag) ?
 	      (mean - z_bar)/stdev : (z_bar - mean)/stdev;
 	  else
@@ -1675,7 +1675,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	  // *** beta gradient
 	  if (final_asv[cntr] & 2) {
 	    RealVector beta_grad = finalStatistics.function_gradient_view(cntr);
-	    if (!Pecos::is_below(stdev)) {
+	    if (!Pecos::is_small(stdev)) {
 	      for (k=0; k<num_deriv_vars; ++k) {
 		Real stdev_grad = (central_mom) ?
 		  mom2_grad[k] / (2.*stdev) : mom2_grad[k];
