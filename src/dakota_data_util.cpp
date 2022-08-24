@@ -90,12 +90,12 @@ Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv)
   // check previous vector for zeros
   bool zero_prev = false, zero_curr = false;
   for (i=0; i<rv_len; ++i)
-    if (Pecos::is_small(std::abs(prev_rv[i])))
+    if (Pecos::is_small(prev_rv[i]))
       { zero_prev = true; break; }
   // check current vector for zeros
   if (zero_prev)
     for (i=0; i<rv_len; ++i)
-      if (Pecos::is_small(std::abs(curr_rv[i])))
+      if (Pecos::is_small(curr_rv[i]))
 	{ zero_curr = true; break; }
 
   // Compute norm of relative change one of three ways
@@ -132,7 +132,7 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
   // check previous vectors for zeros
   bool zero_prev = false, zero_curr = false;
   for (i=0; i<rv1_len; ++i)
-    if (Pecos::is_small(std::abs(prev_rv1[i])))
+    if (Pecos::is_small(prev_rv1[i]))
       { zero_prev = true; break; }
   if (!zero_prev)
     for (i=0; i<iv_len; ++i)
@@ -140,12 +140,12 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 	{ zero_prev = true; break; }
   if (!zero_prev)
     for (i=0; i<rv2_len; ++i)
-      if (Pecos::is_small(std::abs(prev_rv2[i])))
+      if (Pecos::is_small(prev_rv2[i]))
 	{ zero_prev = true; break; }
   // check current vectors for zeros
   if (zero_prev) {
     for (i=0; i<rv1_len; ++i)
-      if (Pecos::is_small(std::abs(curr_rv1[i])))
+      if (Pecos::is_small(curr_rv1[i]))
 	{ zero_curr = true; break; }
     if (!zero_prev)
       for (i=0; i<iv_len; ++i)
@@ -153,7 +153,7 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 	  { zero_curr = true; break; }
     if (!zero_prev)
       for (i=0; i<rv2_len; ++i)
-	if (Pecos::is_small(std::abs(curr_rv2[i])))
+	if (Pecos::is_small(curr_rv2[i]))
 	  { zero_curr = true; break; }
   }
 

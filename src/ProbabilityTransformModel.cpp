@@ -548,7 +548,7 @@ void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 	    // since we don't check all rows, check all columns despite symmetry
 	    for (j=0, corr_j=0; j<num_rv; ++j)
 	      if (no_mask || active_corr[j]) {
-		if (i != j && !Pecos::is_small(std::abs(x_corr(corr_i, corr_j)))) {
+		if (i != j && !Pecos::is_small(x_corr(corr_i, corr_j))) {
 		  Cerr << "\nWarning: u-space type for random variable " << i+1
 		       << " changed to\n         STD_NORMAL due to "
 		       << "decorrelation requirements.\n";
@@ -598,7 +598,7 @@ void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 	  for (j=0, corr_j=0; j<num_rv; ++j)
 	    if (no_mask || active_corr[j]) {
 	      if (i != j &&
-		  !Pecos::is_small(std::abs(x_corr(corr_i, corr_j))))
+		  !Pecos::is_small(x_corr(corr_i, corr_j)))
 		{ distribution_error = true; break; }
 	      ++corr_j;
 	    }
@@ -877,7 +877,7 @@ set_u_to_x_mapping(const Variables& u_vars, const ActiveSet& u_set,
 	      if (j != i) {
 		corr_j = ptmInstance->acv_index_to_corr_index(j);
 		if (corr_j != _NPOS &&
-		    !Pecos::is_small(std::abs(corr_x(corr_i, corr_j))) &&
+		    !Pecos::is_small(corr_x(corr_i, corr_j)) &&
 		    contains(u_dvv, acv_ids[j]))
 		  { x_dvv.push_back(acv_id_i);  break; }
 	      }
