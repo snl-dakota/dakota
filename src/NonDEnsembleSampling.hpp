@@ -167,7 +167,10 @@ protected:
 
   /// total number of successful sample evaluations (excluding faults)
   /// for each model form, discretization level, and QoI
-  Sizet3DArray NLev;
+  Sizet3DArray NLevActual;
+  /// total number of allocated sample evaluations (prior to any faults)
+  /// for each model form and discretization level (same for all QoI)
+  Sizet2DArray NLevAlloc;
 
   /// store the pilot_samples input specification, prior to run-time
   /// invocation of load_pilot_sample()

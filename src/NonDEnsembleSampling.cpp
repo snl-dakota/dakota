@@ -208,7 +208,8 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   if (statsFlag)
     switch (pilotMgmtMode) {
     case PILOT_PROJECTION:
-      print_multilevel_evaluation_summary(s, NLev, "Projected"); // *** FOR CONSISTENCY WITH equivHFEvals, SHOULD BE ALLOCATED RATHER THAN RECOVERED ***
+      // for consistency w/ equivHFEvals, report allocated rather than actual
+      print_multilevel_evaluation_summary(s, NLevAlloc, "Projected");
       s << "<<<<< Projected number of equivalent high fidelity evaluations: "
 	<< std::scientific  << std::setprecision(write_precision)
 	<< equivHFEvals << '\n';
@@ -221,8 +222,9 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
       //archive_equiv_hf_evals(equivHFEvals);
       break;
     default:
-      // Any offline pilot samples are excluded
-      print_multilevel_evaluation_summary(s, NLev, "Online"); // *** FOR CONSISTENCY WITH equivHFEvals, SHOULD BE ALLOCATED RATHER THAN RECOVERED ***
+      // Any offline pilot samples (N_pilot in *_offline()) are excluded.
+      // For consistency w/ equivHFEvals, report allocated rather than actual.
+      print_multilevel_evaluation_summary(s, NLevAlloc, "Online");
       s << "<<<<< Equivalent number of high fidelity evaluations: "
 	<< std::scientific  << std::setprecision(write_precision)
 	<< equivHFEvals << '\n';

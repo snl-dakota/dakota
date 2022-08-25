@@ -280,7 +280,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
       hf_targets[lev] = (lev < num_cv_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
-      delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), hf_targets[lev]);
+      delta_N_hf[lev] = one_sided_delta(N_alloc_hf[lev], hf_targets[lev]);
     }
 
     ++mlmfIter;
@@ -376,9 +376,12 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 
   // Initialize for pilot sample
   unsigned short group, lf_form = 0, hf_form = num_mf - 1;// 2 models @ extremes
-  Sizet2DArray&       N_lf =      NLev[lf_form];
-  Sizet2DArray&       N_hf =      NLev[hf_form]; 
-  Sizet2DArray  delta_N_l;   load_pilot_sample(pilotSamples, NLev, delta_N_l);
+  SizetArray&    N_alloc_lf =  NLevAlloc[lf_form];
+  SizetArray&    N_alloc_hf =  NLevAlloc[hf_form];
+  Sizet2DArray& N_actual_lf = NLevActual[lf_form];
+  Sizet2DArray& N_actual_hf = NLevActual[hf_form];
+  Sizet2DArray  delta_N_l;
+  load_pilot_sample(pilotSamples, NLevActual, delta_N_l);
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_form];
 
@@ -414,13 +417,14 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 				sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1,
 				sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
 				sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
-				sum_Hlm1_Hlm1, lev, N_lf[lev], N_hf[lev]);
+				sum_Hlm1_Hlm1, lev, N_actual_lf[lev],
+				N_actual_hf[lev]);
 	  // accumulate online costs for LF model
 	  if (online_lf_cost && mlmfIter == 0)
 	    accumulate_paired_online_cost(lf_accum_cost, lf_num_cost, lev);
 	}
 	else // no LF for this level; accumulate only multilevel discrepancies
-	  accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_hf[lev]);
+	  accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_actual_hf[lev]);
       }
     }
     if (mlmfIter == 0) {
@@ -458,7 +462,8 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 			    sum_Hl_Ll[1], sum_Hl_Llm1[1], sum_Hlm1_Ll[1],
 			    sum_Hlm1_Llm1[1], sum_Hl_Hl[1], sum_Hl_Hlm1[1],
 			    sum_Hlm1_Hlm1[1], hf_lev_cost/lf_lev_cost, lev,
-			    N_hf[lev], var_YH, rho_dot2_LH, eval_ratios_l);
+			    N_actual_hf[lev], var_YH, rho_dot2_LH,
+			    eval_ratios_l);
 
 	// retain Lambda per QoI and level, but apply QoI-average where needed
 	for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -477,7 +482,8 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       else {
 	increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
 	// compute Y variances for this level and aggregate across QoI:
-	variance_Ysum(sum_Hl[1][lev], sum_Hl_Hl[1][lev], N_hf[lev],var_YH[lev]);
+	variance_Ysum(sum_Hl[1][lev], sum_Hl_Hl[1][lev], N_actual_hf[lev],
+		      var_YH[lev]);
 	agg_var_hf_l       = sum(var_YH[lev], numFunctions);
 	sum_sqrt_var_cost += std::sqrt(agg_var_hf_l * hf_lev_cost);
       }
@@ -486,7 +492,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
       // will result in no additional variance reduction beyond MLMC.
       if (mlmfIter == 0 && !budget_constrained)
-	agg_estvar_iter0 += aggregate_mse_Yvar(var_YH[lev], N_hf[lev]);
+	agg_estvar_iter0 += aggregate_mse_Yvar(var_YH[lev], N_actual_hf[lev]);
     }
 
     // compute epsilon target based on relative tolerance: total MSE = eps^2
@@ -497,7 +503,8 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
     if (mlmfIter == 0) {
       // MLMC estimator variance for final estvar reporting is not aggregated
       // (reduction from control variate is applied subsequently)
-      compute_ml_estimator_variance(var_YH, N_hf, estVarIter0);//numHIter0=N_hf;
+      compute_ml_estimator_variance(var_YH, N_actual_hf, estVarIter0);
+      //numHIter0 = N_actual_hf;
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
       if (!budget_constrained) {// eps^2 / 2 = est var * conv tol
 	eps_sq_div_2 = agg_estvar_iter0 * convergenceTol;
@@ -516,7 +523,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       hf_targets[lev] = (lev < num_cv_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
-      delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), hf_targets[lev]);
+      delta_N_hf[lev] = one_sided_delta(N_alloc_hf[lev], hf_targets[lev]);
     }
 
     ++mlmfIter;
@@ -536,7 +543,8 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       // now execute additional LF sample increment
       if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
 		       mlmfIter, lev)) {
-	accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, N_lf[lev]);
+	accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev,
+			      N_actual_lf[lev]);
 	increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
 				     hf_ref_cost);
 	if (outputLevel == DEBUG_OUTPUT)
@@ -551,21 +559,21 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
 		     sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
 		     sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
-		     N_hf[lev], sum_Ll_refined, sum_Llm1_refined, N_lf[lev],
-		     /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
+		     N_actual_hf[lev], sum_Ll_refined, sum_Llm1_refined,
+		     N_actual_lf[lev], /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
       Y_mom += Y_cvmc_mom;
     }
     if (num_hf_lev > num_cv_lev)
-      ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_hf,
+      ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
 		     num_cv_lev, num_hf_lev, Y_mom);
     convert_moments(Y_mom, momentStats); // raw to final (central or std)
     recover_variance(momentStats, varH);
   }
   else // for consistency with pilot projection
-    update_projected_samples(hf_targets, eval_ratios,N_hf,hf_cost,N_lf,lf_cost);
+    update_projected_samples(hf_targets, eval_ratios, N_alloc_hf, hf_cost, N_alloc_lf, lf_cost);
 
   // Both QOI_STATISTICS and ESTIMATOR_PERFORMANCE
-  compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
+  compute_mlmf_estimator_variance(var_YH, N_actual_hf, Lambda, estVar);
   avgEstVar = average(estVar);
 }
 
@@ -579,15 +587,17 @@ multilevel_control_variate_mc_offline_pilot()
   RealVectorArray eval_ratios_pilot;
 
   unsigned short group, lf_form = 0, hf_form = NLev.size() - 1; // extremes
-  Sizet2DArray& N_lf = NLev[lf_form];
-  Sizet2DArray& N_hf = NLev[hf_form]; 
-  Sizet2DArray  N_pilot;
+  SizetArray&    N_alloc_lf =  NLevAlloc[lf_form];
+  SizetArray&    N_alloc_hf =  NLevAlloc[hf_form];
+  Sizet2DArray& N_actual_lf = NLevActual[lf_form];
+  Sizet2DArray& N_actual_hf = NLevActual[hf_form];
+  SizetArray N_alloc_pilot;  Sizet2DArray N_actual_pilot;
 
   // -----------------------------------------
   // Initial loop for offline (overkill) pilot
   // -----------------------------------------
-  evaluate_pilot(hf_cost, lf_cost, eval_ratios_pilot, Lambda_pilot,
-		 var_YH_pilot, N_pilot, hf_targets_pilot, false, false);
+  evaluate_pilot(hf_cost, lf_cost, eval_ratios_pilot, Lambda_pilot,var_YH_pilot,
+		 N_alloc_pilot, N_actual_pilot, hf_targets_pilot, false, false);
 
   // ----------------------------------------------------------
   // Evaluate online sample profile computed from offline pilot
@@ -620,15 +630,19 @@ multilevel_control_variate_mc_offline_pilot()
 			    sum_Ll_refined, sum_Llm1_refined, sum_Hl, sum_Hlm1,
 			    sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll,
 			    sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl,
-			    sum_Hl_Hlm1, sum_Hlm1_Hlm1,lev,N_lf[lev],N_hf[lev]);
+			    sum_Hl_Hlm1, sum_Hlm1_Hlm1, lev, N_actual_lf[lev],
+			    N_actual_hf[lev]);
       increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
 				     numSamples, lf_lev_cost, hf_ref_cost);
+      increment_samples(N_alloc_hf[lev], numSamples);
+      increment_samples(N_alloc_lf[lev], numSamples);
       // leave evaluation ratios and Lambda at values from Oracle pilot
     }
     else {
       // accumulate H sums for lev = 0, Y sums for lev > 0
-      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_hf[lev]);
+      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_actual_hf[lev]);
       increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
+      increment_samples(N_alloc_hf[lev], numSamples);
     }
   }
 
@@ -687,24 +701,22 @@ multilevel_control_variate_mc_pilot_projection()
 
   // Initialize for pilot sample
   unsigned short lf_form = 0, hf_form = NLev.size() - 1;// 2 models @ extremes
-  //SizetArray&    N_alloc_lf = NAllocated[lf_form];
-  //SizetArray&    N_alloc_hf = NAllocated[hf_form];
-  //Sizet2DArray& N_actual_lf = NRecovered[lf_form];
-  //Sizet2DArray& N_actual_hf = NRecovered[hf_form];
-  Sizet2DArray& N_lf = NLev[lf_form];
-  Sizet2DArray& N_hf = NLev[hf_form];
+  SizetArray&    N_alloc_lf =  NLevAlloc[lf_form];
+  SizetArray&    N_alloc_hf =  NLevAlloc[hf_form];
+  Sizet2DArray& N_actual_lf = NLevActual[lf_form];
+  Sizet2DArray& N_actual_hf = NLevActual[hf_form];
 
-  evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, //N_alloc_hf,
-		 N_hf/*N_actual_hf*/, hf_targets, true, true);
+  evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, N_alloc_hf,
+		 N_actual_hf, hf_targets, true, true);
 
   // Unlike NonDMultilevelSampling::multilevel_mc_pilot_projection(), here we
   // cannot readily estimate cv_raw_moments().  Rather than reporting only the
   // ml_raw_moments() roll up, seems better to bypass variance recovery.
 
   N_lf = N_hf;
-  update_projected_samples(hf_targets, eval_ratios, N_hf, hf_cost,
-			   N_lf, lf_cost);
-  compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
+  update_projected_samples(hf_targets, eval_ratios, N_alloc_hf, hf_cost,
+			   N_alloc_lf, lf_cost);
+  compute_mlmf_estimator_variance(var_YH, N_actual_hf, Lambda, estVar);
   avgEstVar = average(estVar);
 }
 
@@ -712,8 +724,7 @@ multilevel_control_variate_mc_pilot_projection()
 void NonDMultilevControlVarSampling::
 evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 	       RealVectorArray& eval_ratios, RealMatrix& Lambda,
-	       RealMatrix& var_YH, //SizetArray& N_alloc,
-	       Sizet2DArray& N_actual,
+	       RealMatrix& var_YH, SizetArray& N_alloc, Sizet2DArray& N_actual,
 	       RealVector& hf_targets, bool accumulate_cost, bool pilot_estvar)
 {
   Model& truth_model = iteratedModel.truth_model();
@@ -731,7 +742,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     { lf_accum_cost.size(num_cv_lev); lf_num_cost.assign(num_cv_lev, 0); }
 
   eval_ratios.resize(num_cv_lev);
-  N_actual.resize(num_hf_lev);  //N_alloc.resize(num_hf_lev);
+  N_actual.resize(num_hf_lev);  N_alloc.resize(num_hf_lev);
   hf_targets.sizeUninitialized(num_hf_lev);
   Lambda.shapeUninitialized(numFunctions, num_cv_lev);
   var_YH.shapeUninitialized(numFunctions, num_hf_lev);
@@ -770,7 +781,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
   for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
     configure_indices(group, hf_form, lev, sequenceType);
-    numSamples = /*N_alloc[lev] =*/ delta_N_hf[lev];
+    numSamples = N_alloc[lev] = delta_N_hf[lev];
     N_actual[lev].assign(numFunctions, 0);
 
     evaluate_ml_sample_increment(lev);
@@ -882,7 +893,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     hf_targets[lev] = (lev < num_cv_lev) ? fact *
       std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
       fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
-    //delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), hf_targets[lev]);
+    //delta_N_hf[lev] = one_sided_delta(N_alloc_hf[lev], hf_targets[lev]);
   }
 
   ++mlmfIter;
@@ -1153,8 +1164,8 @@ apply_mlmf_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
 void NonDMultilevControlVarSampling::
 update_projected_samples(const RealVector& hf_targets,
 			 const RealVectorArray& eval_ratios,
-			 Sizet2DArray& N_hf, const RealVector& hf_cost,
-			 Sizet2DArray& N_lf, const RealVector& lf_cost)
+			 SizetArray& N_alloc_hf, const RealVector& hf_cost,
+			 SizetArray& N_alloc_lf, const RealVector& lf_cost)
 {
   size_t hf_incr, lf_incr, lev, num_hf_lev = hf_cost.length(),
     num_cv_lev = std::min(num_hf_lev, (size_t)lf_cost.length());
@@ -1162,13 +1173,13 @@ update_projected_samples(const RealVector& hf_targets,
   RealVector lf_targets(numFunctions, false);
   for (lev=0; lev<num_hf_lev; ++lev) {
     hf_target_l = hf_targets[lev];
-    hf_incr = one_sided_delta(N_hf[lev], hf_target_l, 1);
+    hf_incr = one_sided_delta(N_alloc_hf[lev], average(hf_target_l));
     increment_samples(N_hf[lev], hf_incr);
     if (lev<num_cv_lev) {
       const RealVector& eval_ratios_l = eval_ratios[lev];
       for (size_t qoi=0; qoi<numFunctions; ++qoi)
 	lf_targets[qoi] = eval_ratios_l[qoi] * hf_target_l;
-      lf_incr = one_sided_delta(N_lf[lev], lf_targets, 1);
+      lf_incr = one_sided_delta(N_alloc_lf[lev], average(lf_targets));
       increment_samples(N_lf[lev], lf_incr);
       increment_mlmf_equivalent_cost(hf_incr, level_cost(hf_cost, lev), lf_incr,
 				     level_cost(lf_cost, lev), hf_ref_cost);
