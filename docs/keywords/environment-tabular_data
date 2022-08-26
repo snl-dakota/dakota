@@ -1,0 +1,29 @@
+Blurb::
+Write a tabular results file with variable and response history
+Description::
+Specifying the ``tabular_data`` flag writes to a data file the same
+variable and response function history data plotted when using the
+(deprecated) ``graphics`` flag.  Within the generated data file, the
+variables and response functions appear as columns and each function
+evaluation provides a new table row. This capability is most useful
+for post-processing of Dakota results with third-party graphics tools
+such as MatLab, Excel, Tecplot, etc.
+
+There is no dependence between the ``graphics`` flag and the
+``tabular_data`` flag; they may be used independently or
+concurrently.
+
+Dakota exports tabular data in one of three formats:
+
+- ``annotated`` (default)
+- ``custom_annotated``
+- ``freeform``
+Topics::
+dakota_output
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

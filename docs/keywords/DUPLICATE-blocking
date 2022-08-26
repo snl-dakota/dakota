@@ -1,0 +1,17 @@
+Blurb::
+Complete concurrent evaluation of all evaluations within a batch
+Description::
+In the ``blocking`` case, all of the concurrent evaluations in the batch must be completed and all results are returned together to the algorithm.
+
+
+
+These runs are reproducible, assuming use of the same seed in cases with random number generation.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

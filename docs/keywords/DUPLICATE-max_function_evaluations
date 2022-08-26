@@ -1,0 +1,24 @@
+Blurb::
+Number of function evaluations allowed for optimizers
+Description::
+The maximum number of function evaluations is used as a stopping
+criterion for optimizers.  If it has not reached any other stopping
+criteria first, the optimizer will stop after it has performed
+``max_function_evalutions`` evaluations.  See also ``max_iterations``.
+
+Some optimizers (e.g. ``ncsu_direct``) may run past this limit in the course
+of an iteration step that began before ``max_function_evaluations`` was
+exceeded.
+
+*Default Behavior*
+
+Default value is 1000.
+Topics::
+method_independent_controls
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,28 @@
+@import 'theme.css'; /* for the Read the Docs theme */
+
+div.wy-side-nav-search {
+    background-color: #b6f8fc;
+}
+
+div.wy-side-nav-search a {
+    color: #50bfc7;
+}
+
+div.wy-nav-content {
+    max-width: 1200px;
+}
+
+/* override table width restrictions */
+@media screen and (min-width: 767px) {
+
+  .wy-table-responsive table td {
+    /* !important prevents the common CSS stylesheets from
+       overriding this as on RTD they are loaded after this stylesheet */
+    white-space: normal !important;
+  }
+
+  .wy-table-responsive {
+    overflow: visible !important;
+  }
+
+}

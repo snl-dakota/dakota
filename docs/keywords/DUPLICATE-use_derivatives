@@ -1,0 +1,17 @@
+Blurb::
+Use derivative data to construct surrogate models
+Description::
+The ``use_derivatives`` flag specifies that any available derivative
+information should be used in global approximation builds, for those
+global surrogate types that support it (currently, polynomial
+regression and the Surfpack Gaussian process).
+
+However, it's use with Surfpack Gaussian process is not recommended.
+Topics::
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

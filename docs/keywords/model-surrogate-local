@@ -1,0 +1,28 @@
+Blurb::
+Build a locally accurate surrogate from data at a single point
+Description::
+Local approximations use value, gradient, and possibly Hessian data
+from a single point to form a series expansion for approximating data
+in the vicinity of this point.
+
+The currently available local
+approximation is the ``taylor_series`` selection.
+
+The truth model to be used to generate the value/gradient/Hessian data
+used in the series expansion is identified through the required
+``truth_model_pointer`` specification. The use of a model pointer (as
+opposed to an interface pointer) allows additional flexibility in
+defining the approximation. In particular, the derivative
+specification for the truth model may differ from the derivative
+specification for the approximation, and the truth model results
+being approximated may involve a model recursion (e.g., the
+values/gradients from a nested model).
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

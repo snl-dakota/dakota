@@ -1,9 +1,0 @@
-Blurb::
-The noise tolerance used when performing cross validation in the presence of noise or truncation errors.
-Description:: 
-The noise tolerance used when performing cross validation in the presence of noise or truncation errors.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	

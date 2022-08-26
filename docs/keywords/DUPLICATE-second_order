@@ -1,0 +1,15 @@
+Blurb::
+Specify that truth values, gradients and Hessians must be matched.
+Description::
+The correction specification specifies that the approximation will be
+corrected to match truth data. The keyword ``second_order`` matching
+ensures that truth values, gradients and Hessians are matched.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,9 +1,0 @@
-Blurb::
-Refine an expansion uniformly in all dimensions.
-Description::
-The quadrature_order or sparse_grid_level are ramped by one on each refinement iteration until either of the two convergence controls is satisfied. For the uniform refinement case with regression approaches, the expansion_order is ramped by one on each iteration while the oversampling ratio (either defined by collocation_ratio or inferred from collocation_points based on the initial expansion) is held fixed.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	

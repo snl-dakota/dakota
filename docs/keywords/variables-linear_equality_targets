@@ -1,0 +1,23 @@
+Blurb::
+Define target values for the linear equality constraints
+
+Description::
+In the equality case, the targets :math:`a_t`  provide the equality constraint right hand sides:
+
+.. math:: Ax = a_t
+
+If this is not specified, the defaults for the equality constraint targets enforce a value of ``0``. for each constraint:
+
+.. math:: Ax = 0.0
+
+Topics::
+linear_constraints
+
+Examples::
+Examples of specifying linear equality constraints to Dakota are provided on the :ref:`variables-linear_equality_constraint_matrix<variables-linear_equality_constraint_matrix>` page.
+
+Theory::
+
+Faq::
+
+See_Also::

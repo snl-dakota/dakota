@@ -112,8 +112,8 @@ average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
   for (step=0; step<num_steps; ++step)
     seq_cost[step] = accum_cost[step] / num_cost[step];
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Averaged cost: accum_cost:\n" << accum_cost << " num_cost:\n"
-	 << num_cost << " seq_cost:\n" << seq_cost << std::endl;
+    Cout << "Online cost: accum_cost:\n" << accum_cost << "num_cost:\n"
+	 << num_cost << "seq_cost:\n" << seq_cost << std::endl;
 }
 
 

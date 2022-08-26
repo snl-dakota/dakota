@@ -1,0 +1,59 @@
+Blurb::
+Output moments of the specified type and include them within the set of final statistics.
+Description::
+When performing a nested study that may employ moment statistics on the inner loop, it can be desirable to control the type of these moments.  The ``final_moments`` specification supports options of ``none``, ``standard`` (default), or ``central``, corresponding to omission of moments, standardized moments (mean, standard deviation, skewness, and excess kurtosis), or central moments (mean, variance, 3rd central, and 4th central).
+
+The presence or omission of moment results in the final statistics influences the outer level mappings in the case of a nested study.  For example, ``final_moments`` ``none`` can allow for a more compact specification of primary and/or secondary response mappings.
+Topics::
+
+Examples::
+The following method specification overrides the default to print ``central`` moments and include them in the set of final statistics.
+
+.. code-block::
+
+    method,
+      sampling
+        samples = 50 seed = 1234
+        response_levels = 3.6e+11 1.2e+05 3.5e+05
+        final_moments central
+
+
+Overriding the default to ``none`` as follows:
+
+.. code-block::
+
+    method,
+      sampling
+        samples = 50 seed = 1234
+        response_levels = 3.6e+11 1.2e+05 3.5e+05
+        final_moments none
+
+
+allows associated nested model mappings to be simplified from:
+
+.. code-block::
+
+    model
+      nested
+        sub_method_pointer = 'UQ'
+        primary_response_mapping   = 0. 0. 1. 0. 0. 1. 0. 0. 0.
+        secondary_response_mapping = 0. 0. 0. 0. 0. 0. 0. 0. 1.
+
+
+to a more compact version focused only on the response level mappings (two
+leading zeros per response function for moment mappings have been removed):
+
+.. code-block::
+
+    model
+      nested
+        sub_method_pointer = 'UQ'
+        primary_response_mapping   = 1. 1. 0.
+        secondary_response_mapping = 0. 0. 1.
+
+
+Theory::
+
+Faq::
+
+See_Also::

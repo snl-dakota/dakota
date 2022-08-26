@@ -1,0 +1,97 @@
+Blurb::
+Pattern search, derivative free optimization method
+Description::
+The asynchronous parallel pattern search (APPS) algorithm
+:cite:p:`GrKo06` is a fully asynchronous pattern search
+technique in that the search along each offset direction continues
+without waiting for searches along other directions to finish.
+
+Currently, APPS only supports coordinate bases with a total of *2n*
+function evaluations in the pattern, and these patterns may only
+contract.
+
+*Concurrency*
+
+APPS exploits parallelism through the use of Dakota's concurrent
+function evaluations. The variant of the algorithm that is currently
+exposed, however, limits the amount of concurrency that can be
+exploited. In particular, APPS can leverage an evaluation concurrency
+level of at most twice the number of variables. More options that
+allow for greater evaluation concurrency may be exposed in future
+releases.
+
+*Algorithm Behavior*
+
+
+- ``initial_delta``: the initial step length, must be positive
+- ``variable_tolerance``: step length used to determine convergence, must be greater than or equal to 4.4e-16
+- ``contraction_factor``: amount by which step length is rescaled after unsuccesful iterates, must be strictly between 0 and 1
+
+
+*Merit Functions*
+
+APPS solves nonlinearly constrained problems by solving a sequence of
+linearly constrained merit function-base subproblems. There are
+several exact and smoothed exact penalty functions that can be
+specified with the ``merit_function`` control. The options are as
+follows:
+
+
+- ``merit_max``: based on :math:`\ell_\infty`  norm
+- ``merit_max_smooth``: based on smoothed :math:`\ell_\infty`  norm
+- ``merit1``: based on :math:`\ell_1`  norm
+- ``merit1_smooth``: based on smoothed :math:`\ell_1`  norm
+- ``merit2``: based on :math:`\ell_2`  norm
+- ``merit2_smooth``: based on smoothed :math:`\ell_2`  norm
+- ``merit2_squared``: based on :math:`\ell_2^2`  norm
+
+The user can also specify the following to affect the merit functions:
+
+- ``constraint_penalty``
+- ``smoothing_parameter``
+
+
+*Method Independent Controls*
+
+The only method independent controls that are currently mapped to APPS
+are:
+
+- :ref:`method-asynch_pattern_search-max_function_evaluations<method-asynch_pattern_search-max_function_evaluations>`
+- :ref:`method-asynch_pattern_search-constraint_tolerance<method-asynch_pattern_search-constraint_tolerance>`
+- :ref:`method-output<method-output>`
+
+Note that while APPS treats the constraint tolerance separately for
+linear and nonlinear constraints, we apply the same value to both if
+the user specifies ``constraint_tolerance``.
+
+The APPS internal display level is mapped to
+the Dakota ``output`` settings as follows:
+
+- ``debug``: display final solution, all input parameters, variable and constraint info, trial points, search directions, and execution details
+- ``verbose``: display final solution, all input parameters, variable and constraint info, and trial points
+- ``normal``: display final solution, all input parameters, variable and constraint summaries, and new best points
+- ``quiet``: display final solution and all input parameters
+- ``silent``: display final solution
+
+
+
+*Expected HDF5 Output*
+
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
+
+
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+Topics::
+package_hopspack, global_optimization_methods
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

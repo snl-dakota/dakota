@@ -1,0 +1,16 @@
+Blurb::
+This describes the behavior of reuse of points in constructing polynomial
+chaos expansion models.
+Description::
+The ``reuse_points`` option controls the reuse behavior of points for various types of polynomial chaos expansions, including: ``collocation_points``,
+``collocation_ratio``, ``expansion_samples``, or ``orthogonal_least_interpolation``.  If any of these approaches are specified to create a set of points
+for the polynomial chaos expansion, one can specify ``reuse_points`` so that any points that have been previously generated (for example, from the ``import_points`` file) can be reused.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

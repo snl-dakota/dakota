@@ -1,0 +1,41 @@
+Blurb::
+Use the Adaptive Metropolis MCMC algorithm
+Description::
+This keyword specifies the use of the Adaptive Metropolis algorithm.
+That is, the "AM" part of DRAM is used but the "DR" part is not:
+specifying this keyword activates only the Adaptive Metropolis part of
+the MCMC algorithm, in which the covariance of the proposal density is
+updated adaptively.
+
+*Default Behavior*
+
+Five MCMC algorithm variants are supported in QUESO: ``dram``,
+``delayed_rejection``, ``adaptive_metropolis``, ``metropolis_hastings``, and
+``multilevel``.  The default is ``dram``.
+
+Four MCMC variants are currently supported in MUQ: ``dram``,
+``delayed_rejection``, ``metropolis_hastings`` and ``adaptive_metropolis``.
+
+*Usage Tips*
+
+If the user knows very little about the proposal covariance, but
+doesn't want to incur the cost of using full dram with both delayed
+rejection and adaptive metropolis, specifying only
+``adaptive_metropolis`` offers a good strategy.
+Topics::
+bayesian_calibration
+Examples::
+
+.. code-block::
+
+    method,
+            bayes_calibration queso
+              adaptive_metropolis
+              samples = 10000 seed = 348
+
+
+Theory::
+
+Faq::
+
+See_Also::

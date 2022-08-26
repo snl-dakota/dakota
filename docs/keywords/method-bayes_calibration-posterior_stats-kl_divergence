@@ -1,0 +1,41 @@
+Blurb::
+Calculate the Kullback-Leibler Divergence between prior and posterior
+Description::
+The Kullback-Leibler (KL) Divergence, also called the relative entropy,
+provides a measure of the difference between two probability distributions.
+By specifying ``kl_divergence``, the KL Divergence between the posterior
+:math:`f(\boldsymbol{\theta} | \textbf{y}^{Data})`  and the prior
+:math:`f(\boldsymbol{\theta})`  parameter distributions is calculated such that
+
+
+.. math:: 
+
+   D_{KL} = \int f(\boldsymbol{\theta} | \textbf{y}^{Data} ) \log
+   \frac{ f(\boldsymbol{\theta} | \textbf{y}^{Data}) }{ f(\boldsymbol{\theta}) }
+   d\boldsymbol{\theta}
+
+This quantity can be interpreted as the amount of information gained about the
+parameters during the Bayesian update.
+
+*Expected Output*
+
+If ``kl_divergence`` is specified, the calculated value will be reported to the
+screen at the end of the calibration, following the sample statistics of the
+response functions. Example output is given below.
+
+*Additional Discussion*
+
+The quantity calculated is a :math:`k` -nearest neighbor approximation of the
+possibly multi-dimensional integral given above. Therefore, some applications
+whose true KL Divergence is quite close to zero may report a negative KL
+Divergence.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

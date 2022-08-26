@@ -1,0 +1,14 @@
+Blurb::
+Maximum subspace dimension to consider
+Description::
+In cross-validation, only consider subspace dimensions from 1 to
+``max_rank``.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,19 @@
+Blurb::
+Simplex-based derivative free optimization method
+Description::
+The direct search algorithm, PDS (parallel direct search method),
+supports bound constraints.
+
+The PDS method can directly exploit asynchronous evaluations; however,
+this capability has not yet been implemented in Dakota.
+
+See :ref:`topic-package_optpp<topic-package_optpp>` for info related to all ``optpp`` methods.
+Topics::
+package_optpp
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

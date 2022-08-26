@@ -1,0 +1,20 @@
+Blurb::
+Select a mutation type
+Description::
+The ``mutation_type`` controls what approach is employed in randomly modifying
+continuous design variables within the EA population. Each of the mutation
+methods generates coordinate-wise changes to individuals, usually by adding a
+random variable to a given coordinate value (an ``offset_*`` mutation), but also by
+replacing a given coordinate value with a random variable (a ``replace_*``
+mutation).
+
+Discrete design variables are always mutated using the ``offset_uniform`` method.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,50 @@
+Blurb::
+Filename for a YAML file that specifies Gaussian process options
+Description::
+The YAML file contains configuration options
+that are used to populate a Teuchos ParameterList used by the Gaussian process
+that will override other keyword-specified parameters.
+Missing options in the YAML file are set to default values.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    # FILE: gp_options.yaml
+    
+    GP Parameters:
+      Sigma Bounds:
+        lower bound: 1.0e-2
+        upper bound: 1.0e2
+      scaler name: standardization
+      num restarts: 20
+      Nugget:
+        fixed nugget: 0.0
+        estimate nugget: true
+        Bounds:
+          lower bound: 3.17e-8
+          upper bound: 1.0e-2
+      gp seed: 42
+      standardize response: false
+      Trend:
+        estimate trend: true
+        Options:
+          max degree: 2
+          reduced basis: false
+          p-norm: 1.0
+          scaler type: none
+          regression solver type: SVD
+          verbosity: 1
+      kernel type: squared exponential
+      Length-scale Bounds:
+        lower bound: 1.0e-2
+        upper bound: 1.0e2
+      verbosity: 1
+
+
+Theory::
+
+Faq::
+
+See_Also::

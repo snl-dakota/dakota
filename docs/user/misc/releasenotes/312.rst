@@ -1,0 +1,37 @@
+.. _releasenotes-312:
+
+""""""""""""""""""""""""""
+Version 3.1.2 (2003/07/09)
+""""""""""""""""""""""""""
+
+**Interim release enhancements**
+
+- Additional refinements to 2D graphics:
+
+  - rework of SciPlot numerics to correct problems that were occurring when the y axis values become too large and/or when a range is not yet available:
+
+    - switched x and y axis numeric labels from a "%f" fixed format to a "%g" output format which automatically switches to exponential format when the numbers become large. This format also allows for minimal label precision and field width.
+    - reworked numerics for calculating axis increments and estimating space allocation for the new numeric label formats.
+    - reduced the maximum number of x axis increments to eliminate some label overlapping and centered the x axis labels on the axis ticks.
+	 
+  - addition of plot window options for axis labels and legends.
+   
+    - min/max symbols changed to unique shapes (discernable in black/white EPS).
+    - thumb wheels now support bidirectional windowing (left or right and up or down).
+    - refinement of initial graphics window sizing for larger numbers of plots.
+    - elimination of some data skipping in the graphics through suppression of data sets which contain only derivative data.
+    - efficiency enhancements through removal of redundant arrays and streamlining of data updates.
+	 
+  - New features:
+   
+    - initial release of DPREPRO (DAKOTA pre-processor), a freely-distributable pre-processor for use in interfaces between DAKOTA and various simulation codes. DPREPRO is a Perl script utility that inserts values from the DAKOTA parameters file into a template simulation input file to create new simulation input file instances. Features include:
+       
+      - supports both APREPRO and standard formats in the DAKOTA parameters files and auto-detects the format in use.
+      - extracts variable assignments both from the parameters file and from the template file and supports multiple order-independent matches and replacements per line.
+      - stores tag/value pairs in a hash for lookup efficiency.
+      - supports algebraic manipulation using both the intrinsic Perl functions as well as a variety of additional math subroutines.
+	   
+  - Miscellaneous:
+   
+    - fixed a bug with management of the aprepro format for LayeredModels which was occurring in hierarchical surrogate-based optimization.
+    - added a workaround for older pgf90 compilers such as those used on ASCI Red to allow use of the new f90 LHS library within DAKOTA. To mix C++ with pgf90, an explicit call to pghpf_init() is needed to allow f90 calls to ALLOCATE().

@@ -1,0 +1,11 @@
+.. _`topic-package_nlpql`:
+
+Package: NLPQL
+==============
+
+The NLPQL library includes a sequential quadratic programming (SQP)
+optimizer, specified as Dakota's ``nlpql_sqp`` method, for constrained
+optimization. The particular implementation used is NLPQLP :cite:p:`Sch04`,
+a variant with distributed and non-monotone line search.  NLPQL
+is commercially licensed (available from the author) and not
+distributed with public versions of Dakota.

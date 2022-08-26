@@ -1,0 +1,19 @@
+Blurb::
+Identify which analytical gradient corresponds to which response
+Description::
+The ``id_analytic_gradients`` list specifies by
+number the functions which have analytic gradients, and the
+``id_numerical_gradients`` list specifies by number the functions which
+must use numerical gradients. Each function identifier, from 1 through
+the total number of functions, must appear once and only once within
+the union of the ``id_analytic_gradients`` and
+``id_numerical_gradients`` lists.
+Topics::
+objective_function_pointer
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

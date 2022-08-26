@@ -1,0 +1,57 @@
+Blurb::
+Use derivatives to inform the MCMC proposal covariance.
+Description::
+This keyword selection results in definition of the MCMC proposal
+covariance from the Hessian of the misfit function (negative log
+likelihood), where this Hessian is defined from either a Gauss-Newton
+approximation (using only first derivatives of the calibration terms)
+or a full Hessian (using values, first derivatives, and second
+derivatives of the calibration terms).  If this Hessian is
+indeterminate, it will be corrected as described in  :cite:p:`TheoMan`
+
+*Default Behavior*
+The default is ``prior`` based proposal covariance.  This is a more
+advanced option that exploits structure in the form of the likelihood.
+
+*Expected Output*
+
+When derivatives are specified for defining the proposal covariance, the
+misfit Hessian and its inverse (the MVN proposal covariance) will be
+output to the standard output stream.
+
+*Usage Tips*
+
+The full Hessian of the misfit is used when either supported by the
+emulator in use (for PCE and surfpack GP, but not SC or dakota GP) or
+by the user's response specification (Hessian type is not "no_hessians"),
+in the case of no emulator.  When this full Hessian is indefinite and
+cannot be inverted to form the proposal covariance, fallback to the
+positive semi-definite Gauss-Newton Hessian is employed.
+
+Since this proposal covariance is locally accurate, it should be
+updated periodically using the ``update_period`` option.  While the
+adaptive metropolis option can be used in combination with
+derivative-based preconditioning, it is generally preferable to
+instead decrease the proposal update period due to the improved local
+accuracy of this approach.
+Topics::
+bayesian_calibration
+Examples::
+Generate a 2000 sample posterior chain, using derivatives to
+initialize the proposal covariance at the start of the chain.
+
+.. code-block::
+
+    method,
+            bayes_calibration queso
+              samples = 2000 seed = 348
+              delayed_rejection
+              emulator pce sparse_grid_level = 2
+              proposal_covariance derivatives
+
+
+Theory::
+
+Faq::
+
+See_Also::

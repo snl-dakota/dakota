@@ -1,9 +1,0 @@
-Blurb::
-Second parameter of the gumbel distribution
-Description::
-Specifies the list of \f$\beta\f$ parameters to define the distributions of the gumbel random variables. Length must match the other parameters and the number of gumbel random variables.
-Topics::	
-Examples::
-Theory::
-Faq::
-See_Also::	

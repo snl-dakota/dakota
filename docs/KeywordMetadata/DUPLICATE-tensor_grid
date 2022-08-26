@@ -1,9 +1,0 @@
-Blurb::
-Use sub-sampled tensor-product quadrature points to build a polynomial chaos expansion.
-Description::
-Tthe collocation grid is defined using a subset of tensor-product quadrature points: the order of the tensor-product grid is selected as one more than the expansion order in each dimension (to avoid sampling at roots of the basis polynomials) and then the tensor multi-index is uniformly sampled to generate a non-repeated subset of tensor quadrature points.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	

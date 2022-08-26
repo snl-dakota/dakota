@@ -1,0 +1,30 @@
+Blurb::
+Aleatory uncertain variable - uniform
+
+Description::
+The number of uniform uncertain variables and their distribution lower and upper
+bounds are required specifications, while variable descriptors is an optional specification.
+The uniform distribution has the density function:
+
+.. math:: f(x) = \frac{1}{U-L}
+
+where
+
+:math:`U`  and :math:`L` are the upper and lower bounds of the uniform distribution, respectively. The mean of the uniform distribution is :math:`\frac{U+L}{2}` 
+and the variance is :math:`\frac{(U-L)^2}{12}` .
+
+Topics::
+continuous_variables, aleatory_uncertain_variables
+
+Examples::
+
+Theory::
+This distribution is a special case of the more general beta distribution.
+
+For some methods, including vector and centered parameter studies, an
+initial point is needed for the uncertain variables. When not given
+explicitly, these variables are initialized to their means.
+
+Faq::
+
+See_Also::

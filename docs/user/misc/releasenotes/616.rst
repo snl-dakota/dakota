@@ -1,0 +1,108 @@
+.. _releasenotes-616:
+
+"""""""""""""""""""""""""
+Version 6.16 (2022/05/16)
+"""""""""""""""""""""""""
+
+**Highlight: Multifidelity UQ Methods**
+
+Dakota 6.16 significantly extends capabilities for multifidelity uncertainty quantification (MF UQ) based on random sampling, including iterated versions of approximate control variate (ACV) and multifidelity Monte Carlo (MFMC), new solution modes (online pilot, offline pilot, and pilot projection), new final statistics goals supporting estimator selection and tuning, online cost recovery through metadata, and improved numerical solution options for MFMC and ACV.
+
+*Documentation:* Refer to Reference Manual documentation on MF UQ methods, in particular multilevel_sampling, multifidelity_sampling, multilevel_multifidelity_sampling, and approximate_control_variate.
+
+**Highlight: Model Tuning for Multifidelity UQ**
+
+New capabilities for model tuning enable the optimization of hyper-parameters underlying low-fidelity approximations in order to achieve the best accuracy versus cost trade-off for a given multifidelity estimator.
+
+*Documentation:* This involves configuration of an outer optimization with a nested model, which in turn employs an MF UQ method.  Refer to the Nested Model documentation (Reference and Users) and the test examples in the source distribution at dakota/test/dakota_nested_tunable_acv.in.
+
+**Improvements by Category**
+
+*Interfaces, Input/Output*
+
+- New metadata response type collects auxiliary data from simulation interfaces (and induces changes in parameters and results APIs)
+- Python dakota.interfacing:
+ 
+  - Type handling improvements
+  - New "python_interface" decorator to provide seamless integration with Python direct interface
+  
+- New experimental plugin API and demo of runtime Python plugin
+
+*Models*
+
+AdapterModel / MinimizerAdapterModel: new derived Model classes that wrap function callbacks for solving (approximate) optimization sub-problems. These were developed for solving all-at-once model tuning problems, but are expected to have application more broadly.
+
+*Optimization Methods*
+
+Best evaluation reporting: Improvements made to best evaluation ID reporting, including clarifying errors vs. warnings and providing partial lookups when full matches can be pin-pointed. Also, optimal values of nonlinear constraints are better reported when model transformations are active.
+
+*UQ Methods*
+
+*MLMF Sampling*
+
+- ACV/MFMC + non-hierarchical (ensemble) models
+
+  - Harden and benchmark iterated versions of {ACV,MFMC}, avoiding inaccuracy/inefficiency from under/over-estimation of the pilot sample.
+  - Add new solution modes in {ACV,MFMC}: online pilot, offline pilot, pilot projection.  
+
+    - The online case (default) incorporates the pilot cost into the sample profile and updates the correlations/covariances as the number of shared samples is iteratively advanced.
+    - The offline case segregates pilot evaluation cost separate from online sample cost, making it useful as an "oracle" for computing a reference multifidelity solution based on an intentionally over-resolved pilot.
+
+  - The projection mode estimates the expected performance of the estimator from the pilot sample, but does not perform any sample increments beyond the pilot.  It is intended for estimator down-selection based on expected performance.
+
+    - Relax requirement on separate model forms, allowing use with a single truth model containing multiple resolutions
+    - final_statistics can be configured as qoi_statistics (default computation of moments) or estimator_performance (optional mode for model tuning that only computes estimator variance and equivalent cost, bypassing final sample increments and moment post-processing)
+    - Support online cost recovery through metadata: an alternative to up-front specification of solution_level_cost, and generally required for model tuning when costs are a function of the tuning hyper-parameters.
+	
+  - Alternative MFMC solutions:
+
+    - Implement a reordered analytic solution for MFMC, with results used for defining an initial guess of numerical solutions in {MFMC,ACV}
+    - Implement a numerical solution for MFMC, enforcing pyramid sampling constraints for correlation-based re-ordering. Can be utilized either as a fallback (default, replacing analytic solution only when necessary) or a hard override (useful when pilot size may be over-estimated).
+
+  - ACV initial guesses from related analytic solutions: two local optimizations now solved, starting from (reordered) analytic MFMC and ensemble CVMC, with the lowest estimator variance retained.
+  - Revisit ACV/MFMC fault tolerance to enforce consistent shared samples (finer-grained fault handling introduced more complexity than warranted).
+  
+- Retrofit hierarchical methods to elevate each of the legacy approaches (MLMC, CVMC, MLCV MC) to newest standards:
+
+  - compute LF increments based on HF targets rather than current HF counts, which may include overshoot due to pilot or early mis-estimation
+  - defer all LF sample increments until after shared iteration has converged, avoiding increments based on inaccurate early estimates
+  - refine enforcement of sample budget allocation
+  - implement pilot solution modes {online, offline, projection}, online cost recovery, and estimator_performance mode, as for non-hierarchical estimators above.
+  
+- The scalarization target for MLMC, which is a linear combination of mean and standard deviation, has been updated with a more robust and efficient approximation for the covariance term between the estimator mean and standard deviation. The new approximation relies on a closed-form solution for the covariance between the mean and variance and the assumption that the correlation between mean and variance can be used to approximate the correlation between mean and standard deviation. This approach significantly reduces the computational burden since all the needed terms can be obtained from pilot statistics rather than from bootstrapping.
+
+*Model Tuning*
+
+- Nested optimization approaches for model tuning, supporting MLMC, CVMC, MLCVMC, MFMC, and ACV estimators and local, global, and surrogate-based minimizers.
+- Online cost recovery when varying hyper-parameters, utilizing new response metadata.
+- Support for heterogenous parameterization of inactive variables within subordinate models.  This is essential for maximizing the reuse of data, as pruning dependencies on tuning hyper-parameters allows the evaluation cache to better distinguish duplicates.
+- Towards all-at-once model tuning: on-the-fly construction for surrogate-based minimizers, including surrogate_based_local, efficient_global, et al. This expands sub-problem solver options for numerical solutions in MF UQ methods.
+ 
+**Miscellaneous Enhancements and Bugfixes**
+
+- Enh: Enabled Dakota, QUESO, and C3 (multilevel function train) to use consistent CBLAS for reproducible test behavior on RHEL7.
+- Enh: Updates to JEGA TPL for maintenance and portability
+- Enh: Restart files are now versioned and backward-importable (from this release forward)
+- Enh: Enabled data_directory spec for location of calibration_data files
+- Enh/Bug fix: Surrogate models now prefer the use of truth_model_pointer over actual_model_pointer, partially addressing a GUI parsing bug.
+- Bug fix: QUESO GCC 10 portability fixed by commenting out invalid disabled code
+- Bug fix: Clang 12 portability fixes in deprecated Motif/SciPlot libraries with thanks to Yuri
+- Bug fix: LHS now properly samples "constant" random variables instead of seg faulting
+- Bug fix: repair bug with method recourse when nested use of Fortran optimizers is detected
+
+**Deprecated and Changed**
+
+- Backward-incompatible changes to Python direct APIs. Dictionary field names have changed.
+- Deprecated C-based Python interface in favor of Pybind11; can still be used via "legacy_python" keyword.
+- Metadata in APIs: Dakota parameters files now unconditionally include fields for number of response metadata (and their field names when present), possibly necessitating changes to parameter file parsers. Python interfaces have related API changes.
+
+**Compatibility**
+
+- Minimum Boost version 1.69
+- Minimum CMake version 3.15
+- No other mandatory changes to required compilers or third-party libraries. Dakota has been smoke tested on newer GCC compilers such as gcc-10.x, but not fully tested.
+
+**Other Notes and Known Issues**
+
+- Calibration with data from multiple unique experiment configurations in conjunction with nonlinear constraints is only supported if the constraint values are consistent across configurations.
+

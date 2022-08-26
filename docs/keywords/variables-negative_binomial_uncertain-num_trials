@@ -1,0 +1,25 @@
+Blurb::
+A negative binomial distribution parameter
+
+Description::
+The negative binomial distribution is typically used to predict the number of failures observed when repeating a test until a total of ``n`` successes have occurred, where each test has a probability ``p`` of success.
+
+The density function for the negative binomial distribution is given by:
+
+.. math:: f(x) = \left(\begin{array}{c}{n+x-1}\\{x}\end{array}\right){p^n}{(1-p)^{x}}
+
+where
+
+- :math:`p`  is the probability of success per trial
+- :math:`n`  is the number of successful trials
+- :math:`X`  is the number of failures
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

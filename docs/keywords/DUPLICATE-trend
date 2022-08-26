@@ -1,0 +1,21 @@
+Blurb::
+Choose a trend function for a Gaussian process surrogate
+Description::
+The only trend functions that are currently supported are polynomials.
+
+The trend function is selected using the ``trend``
+keyword, with options ``constant``, ``linear``, or ``reduced_quadratic``.
+The ``reduced_quadratic`` trend function includes the main
+effects, but not mixed/interaction terms.
+The Surfpack GP (See :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>`)
+has the additional option of (a full)
+``quadratic``.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

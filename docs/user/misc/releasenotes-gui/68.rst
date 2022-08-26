@@ -1,0 +1,20 @@
+.. _releasenotes-gui-68:
+
+"""""""""""""""""""""""""""""""""""""""
+Version 6.8 - Elevator Antics (2018/05)
+"""""""""""""""""""""""""""""""""""""""
+
+Dakota's graphical user interface (GUI) was substantially updated.
+
+- Dakota input files are fully explorable in the project navigator tree.
+- Workspace, project, and file/folder management mechanisms that are standard in the Eclipse framework were adopted.
+- Dakota may be run through Eclipse run configurations.
+- The analysis driver creation wizard was refactored.
+- A preliminary (alpha) version of a new workflow engine has been incorporated. It includes specific nodes for pre-processing and post-processing data files (assists with Dakota interfacing with a simulation model) and for launching Dakota as part of a larger workflow
+
+A number of bugfixes and other enhancements were made as well:
+
+- Added support for built-in Plotly plotting on Linux platforms
+- Better default behavior for unlabeled response values, e.g., that were causing correlation matrix parsing to fail
+- Squelched "phantom" pop-up dialog behind real dialogs on Linux build
+- Bugfix: Mac/Linux version of Dakota GUI appears to truncate Dakota output stream

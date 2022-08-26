@@ -1,7 +1,0 @@
-Blurb::  Number of candidate points for each crossover.
-Description::   In DREAM, there is an extra adaptation during burn-in, in which DREAM estimates a distribution of crossover probabilities that favors large jumps over smaller ones in each of the chains. Normalization is required to ensure that all of the input dimensions contribute equally. In this process, a discrete number of candidate points for each crossover value is generated. This parameter is num_cr.
-Topics:: 	bayesian_calibration	
-Examples::
-Theory::
-Faq::
-See_Also::	

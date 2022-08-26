@@ -1,0 +1,34 @@
+Blurb::
+Construct moving least squares surrogate over active subspace
+Description::
+Once the active subspace variables have been identified, replace the
+fullspace truth model with a moving least squares surrogate model over
+the reduced variables.  The surrogate is constructed using the
+fullspace function value samples collected during subspace
+identification, possibly supplemented with additional
+:ref:`model-active_subspace-build_surrogate-refinement_samples<model-active_subspace-build_surrogate-refinement_samples>` in the
+fullspace.
+
+*Default Behavior*
+
+No surrogate is constructed by default.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    model
+      active_subspace
+        id_model = 'SUBSPACE'
+        truth_model_pointer = 'FULLSPACE'
+        initial_samples  100
+       build_surrogate
+         refinement_samples 10
+
+
+Theory::
+
+Faq::
+
+See_Also::

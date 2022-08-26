@@ -1,0 +1,36 @@
+Blurb::
+Hessians are needed and will be obtained from a mix of numerical,
+analytic, and "quasi" sources
+Description::
+The ``mixed_hessians`` specification means that some Hessian
+information is available directly from the simulation (analytic)
+whereas the rest will have to be estimated by finite differences
+(numerical) or approximated by secant updating. As for
+mixed gradients, this specification allows the user to make use of as
+much analytic information as is available and then
+estimate/approximate the rest.
+
+The ``id_analytic_hessians`` list
+specifies by number the functions which have analytic Hessians, and
+the ``id_numerical_hessians`` and ``id_quasi_hessians`` lists specify by
+number the functions which must use numerical Hessians and
+secant Hessian updates, respectively. Each function identifier,
+from 1 through the total number of functions, must appear once and
+only once within the union of the ``id_analytic_hessians``,
+``id_numerical_hessians``, and ``id_quasi_hessians`` lists.
+
+The
+``fd_hessian_step_size`` and ``bfgs``, ``damped`` ``bfgs``, or ``sr1``
+secant update selections are as described previously in
+:ref:`responses<responses>` and pertain to those functions
+listed by the ``id_numerical_hessians`` and ``id_quasi_hessians``
+lists.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

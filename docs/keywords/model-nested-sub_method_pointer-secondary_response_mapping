@@ -1,0 +1,17 @@
+Blurb::
+Mapping of sub-method results to top-level secondary responses
+Description::
+Matrix that specifies how sub-method results (statistics, best
+parameters, etc.)  map to top-level nested model secondary responses
+(nonlinear inequality or equality constraints). Its usage is
+explained in detail on the parent keyword ( ``sub_method_pointer``)
+page.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

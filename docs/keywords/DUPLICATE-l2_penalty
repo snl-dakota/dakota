@@ -1,0 +1,13 @@
+Blurb::
+The :math:`l_2`  pentalty used when performing compressed sensing with elastic net.
+Description::
+The :math:`l_2`  pentalty used when performing compressed sensing with elastic net.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

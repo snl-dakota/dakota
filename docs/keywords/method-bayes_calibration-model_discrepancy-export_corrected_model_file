@@ -1,0 +1,33 @@
+Blurb::
+Output file for corrected model prediction calculations
+Description::
+Enables the user to specify the name and format of the file to which
+corrected model :math:`M_i + \delta_i`  information is output. The file will
+contain the values of the discrepancy model :math:`\delta_i`  calculated at
+those points specified with
+``num_predictions``, ``prediction_configs``, or ``import_prediction_configs``.
+
+Corresponding variance information is also output to file, see
+:ref:`method-bayes_calibration-model_discrepancy-export_corrected_variance_file<method-bayes_calibration-model_discrepancy-export_corrected_variance_file>`
+
+*Default Behavior*
+
+If ``export_corrected_model_file`` is not specified, information will be
+automatically output to ``dakota_corrected_model_tabular``.dat.
+
+*Usage Tips*
+
+Dakota exports tabular data in one of three formats:
+
+- ``annotated`` (default)
+- ``custom_annotated``
+- ``freeform``
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

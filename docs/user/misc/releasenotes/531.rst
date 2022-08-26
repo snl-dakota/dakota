@@ -1,0 +1,48 @@
+.. _releasenotes-531:
+
+""""""""""""""""""""""""""
+Version 5.3.1 (2013/05/15)
+""""""""""""""""""""""""""
+
+**Highlights**
+
+- Efficiency / precision / stability enhancements for stochastic expansions.
+- Support for native Windows builds with MS Visual Studio 2008 and Intel fortran 11.1 (also with Windows Command Prompt via CMake's "NMake Makefiles" build generator).
+- Bayesian calibration via QUESO now available in all Dakota distributions
+
+**Uncertainty Quantification (UQ)**
+
+- Efficiency / precision / stability enhancements for stochastic expansions.
+
+  - Stochastic collocation now employs a barycentric Lagrange formulation for global value-based interpolants in both nodal and hierarchical cases. This formulation significantly reduces run times when sampling on the interpolant. Further, tensor interpolant value/gradient computations now employ a multivariate Horner's rule for all interpolation polynomial cases.
+  - Polynomial chaos expansions also now employ Horner's rule for all 1D polynomial evaluations and employ a multivariate Horner's approach in selected value computations for tensor expansions.
+
+**Optimization and Calibration**
+
+- Bayesian calibration via QUESO
+
+  - Now available in all Dakota distributions, disabled by default.
+  - Additional QUESO user controls for surrogate type and whether to calibrate sigma.
+  - Progress toward building QUESO under Trilinos TriKota
+
+**Framework**
+
+- Input/Output
+
+  - Better use of the Boost.Filesystem library for portable interaction with the platform's native filesystem during data exchange when using 'fork' and 'system' interfaces.
+
+- Interfaces
+
+  - Improved NumPy behavior: when building Python interface, always try to link numpy, then give user option to turn enable/disable at runtime. No longer require PWD to be on the PYTHONPATH.
+  - Improved test/code coverage in 'fork' and 'system' interfaces, especially those leveraging Dakota's work_directory feature.
+
+- Build System / TPLs
+
+  - Numerous patches for Microsoft Visual Studio portability: strings, signals, min/max macros, sleep, extern, reserved keywords, asynch system calls, Boost filesystem, install dependencies, dakota_test.perl.
+  - Enable testing of external distributions by leaving out tests known to fail.
+  - Add tests for work_directory feature.
+
+**Miscellaneous Bug Fixes**
+
+- BUG: resolve testing differences from the baseline and improve reliability / RBDO performance for cases involving second-order integrations.
+- BUG: Command line options -help and -version could result in accessing invalid iterator.

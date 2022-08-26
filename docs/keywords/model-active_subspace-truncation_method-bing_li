@@ -1,0 +1,70 @@
+Blurb::
+Use the Bing Li "ladle" diagnostic to truncate subspace
+Description::
+Uses a trade-off criterion to determine where to truncate the active subspace.
+The criterion is a function of the eigenvalues
+and eigenvectors of the active subspace gradient matrix. This function compares
+the decrease in eigenvalue amplitude with the increase in eigenvector variability
+under bootstrap sampling of the gradient matrix. The active subspace size is taken to
+be the index of the first minimum of this quantity.
+
+*Usage Tips*
+
+If this automated diagnostic does not yield desirable results, consider
+using the explicit :ref:`model-active_subspace-dimension<model-active_subspace-dimension>` truncation option or one of the other
+truncation methods.
+Topics::
+
+Examples::
+
+Theory::
+Below is a brief outline of the Bing Li method of active subspace
+identification. The first two steps are common to all active subspace
+truncation methods.
+
+1. Compute the gradient of the quantity of interest, :math:`q = f(\mathbf{x})` ,
+    at several locations sampled from the input space,
+    
+.. math:: \nabla_{\mathbf{x}} f_i = \nabla f(\mathbf{x}_i).
+
+2. Compute the eigendecomposition of the matrix :math:`\hat{\mathbf{C}}` ,
+    
+.. math:: \hat{\mathbf{C}} = \frac{1}{M}\sum_{i=1}^{M}\nabla_{\mathbf{x}} f_i\nabla_{\mathbf{x}} f_i^T = \hat{\mathbf{W}}\hat{\mathbf{\Lambda}}\hat{\mathbf{W}}^T,
+
+where :math:`\hat{\mathbf{W}}`  has eigenvectors as columns,
+    :math:`\hat{\mathbf{\Lambda}} = \text{diag}(\hat{\lambda}_1,\:\ldots\:,\hat{\lambda}_N)` 
+    contains eigenvalues, and :math:`N`  is the total number of parameters.
+
+3. Normalize the eigenvalues,
+    
+.. math:: \lambda_i = \frac{\hat{\lambda}_i}{\sum_j^N \hat{\lambda}_j}.
+
+4. Use bootstrap sampling of the gradients found in step 1 to compute replicate
+    eigendecompositions,
+    
+.. math:: \hat{\mathbf{C}}_j^* = \hat{\mathbf{W}}_j^*\hat{\mathbf{\Lambda}}_j^*\left(\hat{\mathbf{W}}_j^*\right)^T.
+
+5. Compute variability of eigenvectors,
+    
+.. math:: f_i^0 = \frac{1}{M_{boot}}\sum_j^{M_{boot}}\left\lbrace 1 - \left\vert\text{det}\left(\hat{\mathbf{W}}_i^T\hat{\mathbf{W}}_{j,i}^*\right)\right\vert\right\rbrace ,
+
+where :math:`\hat{\mathbf{W}}_i`  and :math:`\hat{\mathbf{W}}_{j,i}^*`  both
+    contain only the first :math:`i`  eigenvectors and :math:`M_{boot}`  is the
+    number of bootstrap samples. The value of the variability at the first index,
+    :math:`f_1^0` , is defined as zero.
+
+6. Normalize the eigenvector variability,
+    
+.. math:: f_i = \frac{f_i^0}{\sum_j^N f_j^0}.
+
+7. The criterion, :math:`g_i` , is defined as,
+    
+.. math:: g_i = \lambda_i + f_i.
+
+8. The index of first minimum of :math:`g_i`  is then the estimated active
+    subspace rank.
+
+For additional information, see Luo, Wei, and Bing Li. "Combining eigenvalues and variation of eigenvectors for order determination." SIAM, 2015.
+Faq::
+
+See_Also::

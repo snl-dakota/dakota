@@ -1,0 +1,50 @@
+Blurb::
+Specify which finite difference routine is used
+Description::
+The ``method_source`` setting specifies the source of the finite
+differencing routine that will be used to compute the numerical
+gradients:
+
+- ``dakota`` (default)
+- ``vendor``
+
+
+``dakota`` denotes Dakota's internal finite differencing
+algorithm and ``vendor`` denotes the finite differencing algorithm
+supplied by the iterator package in use (DOT, CONMIN, NPSOL, NL2SOL, NLSSOL,
+ROL, and OPT++ each have their own internal finite differencing
+routines). The ``dakota`` routine is the default since it can execute
+in parallel and exploit the concurrency in finite difference
+evaluations (see Exploiting Parallelism in the Users Manual
+:cite:p:`UsersMan`).
+
+However, the ``vendor`` setting can be desirable in some cases since
+certain libraries will modify their algorithm when the finite
+differencing is performed internally. Since the selection of the
+``dakota`` routine hides the use of finite differencing from the
+optimizers (the optimizers are configured to accept user-supplied
+gradients, which some algorithms assume to be of analytic accuracy),
+the potential exists for the ``vendor`` setting to trigger the use of
+an algorithm more optimized for the higher expense and/or lower
+accuracy of finite-differencing. For example, NPSOL uses gradients in
+its line search when in user-supplied gradient mode (since it assumes
+they are inexpensive), but uses a value-based line search procedure
+when internally finite differencing. The use of a value-based line
+search will often reduce total expense in serial operations. However,
+in parallel operations, the use of gradients in the NPSOL line search
+(user-supplied gradient mode) provides excellent load balancing
+without need to resort to speculative optimization approaches.
+
+In
+summary, then, the ``dakota`` routine is preferred for parallel
+optimization, and the ``vendor`` routine may be preferred for serial
+optimization in special cases.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

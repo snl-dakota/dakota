@@ -1,0 +1,15 @@
+Blurb::
+Balance goals of reducing objective function and satisfying constraints
+Description::
+A ``merit_function`` is a function in constrained optimization that
+attempts to provide joint progress toward reducing the objective
+function and satisfying the constraints.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,60 @@
+.. _releasenotes-41:
+
+""""""""""""""""""""""""
+Version 4.1 (2007/09/21)
+""""""""""""""""""""""""
+
+**Uncertainty Quantification (UQ) Capabilities:**
+
+- New method: Wiener-Askey generalized polynomial chaos expansions approximate the functional relationship between response metrics and their underlying random variables. Orthogonal polynomial bases include Hermite, Legendre, Laguerre, Jacobi, and generalized Laguerre. Expansion coefficients are estimated by sampling, tensor-product quadrature, sparse grid cubature (using Clenshaw-Curtis), or linear regression. Additional features include analytic response moments, analytic random variable sensitivities, and analytic design variable sensitivities. Refer to Section 6.4 of the Users Manual for additional information.
+- New method: Efficient Global Reliability Analysis (EGRA) employs mean and variance estimates from Gaussian Process (GP) models to form an expected feasibility function (EFF), which is then maximized using a global optimizer to select points for GP refinement. This process accurately estimates response function contours, for which probabilities are then computed using multimodal adaptive importance sampling. Refer to Section 6.3.3 of the Users Manual for additional information.
+- New method: incremental Latin Hypercube and Monte Carlo sampling. In the incremental mode, one augments an initial LHS/MC sample set of size N with a second sample set of size N. Both samples together (of size 2N) will preserve the stratification and correlation structure of the original sample.
+- New method: importance sampling (standard, adaptive, and multimodal adaptive) added for local and global reliability methods.
+- Second-order integrations corrected (negative reliability indices and Epetra symmetric matrix products) for use within local reliability methods.
+- All UQ methods extended to support generalized reliability indices.
+- Epistemic methods now support final statistics results for use in optimization under uncertainty (OUU). Refer to the Models chapter in the Reference Manual for additional information on epistemic interval results accessible within OUU and to Section 10.6.2 of the Users Manual for initial guidance on formulating epistemic OUU studies.
+- Added compile time switches for Tausworthe and Mersenne twister random number generators for use with LHS/MC. These are not yet the default, as performance testing is ongoing.
+- Variance-based decomposition and Dempster-Shafer theory of evidence now support multiple response functions.
+
+**Optimization Capabilities:**
+
+- The multilevel hybrid optimization strategy now supports flow of multiple solutions between iterators. Iterators may now accept one or multiple starting point and may output one or multiple final results. The strategy logic maintains a consistent data flow and supports concurrency in multiple iterator instances as required (i.e., multiple data points require multiple instances of an iterator that accepts only a single input).
+- the surrogate-based optimization (sbo) strategy now supports multipoint approximations (i.e., tana-3), approximate subproblem reformulations for nonlinearly-constrained problems (subproblem objective may be the original surrogate objective, a surrogate lagrangian, or a surrogate augmented lagrangian; subproblem constraints may be the original surrogate constraints, linearized surrogate constraints, or no constraints), and constraint relaxation using a heuristic homotopy approach. in addition, previous augmented lagrangian updating approaches have been replaced with the provably-convergent approach of conn, gould, and toint. see section 9.6 of the users manual for formulations and aiaa mao conference paper for computational results.
+- new strategy: a global surrogate-based optimization strategy has been added. rather than being localized using trust-regions, each approximate optimization cycle identifies points for continuing updates to a single global surrogate model. this is most appropriate for use with interpolatory surrogates, such as kriging/gaussian process models.
+- new ouu approach: polynomial chaos-based design optimization (pc-bdo) is now supported in a bi-level formulation employing one of three different design sensitivity approaches: analytic design gradients based on a pce formed over all variables, numerical design gradients based on a pce formed only over the random variables, and numerical design gradients based on a pce formed over all variables. in the cases where the expansion is formed over all variables, only a single pce construction is required for the complete pc-bdo process, whereas the expansions only over the random variables must be recomputed for each change in design variables. refer to section 10.6.2 of the users manual for additional information on design sensitivity analysis formulations.
+- New method: the NCSU implementation of DIRECT by Joerg Gablonsky has been added as a global optimizer, augmenting the existing COLINY implementation of DIRECT. Additional NCSU optimizers, especially implicit filtering, will be added in time.
+- New method: closely related to the new EGRA uncertainty quantification method described above, the Efficient Global Optimization (EGO) method has been added. It employs mean and variance estimates from Gaussian Process (GP) models to form an expected improvement function (EIF), which is then maximized using a global optimizer to select points for GP refinement. This process balances the desires to exploit areas with good solutions and explore areas with limited data, resulting in excellent global search characteristics. This method supports nonlinear constraints through an augmented Lagrangian merit function formulation.
+- New method plug-ins: Support for dynamic optimizer plug-ins has been added. This initially targets SNOPT and NPSOL as shared object libraries, but will in time allow more flexible binding to commercial solvers at run time (currently managed at configure/make time).
+- OPT++ now supports an internal mode override, allowing more effective combination of optimizer evaluation requests, as well as iteration reset functionality, allowing an instance to be instantiated once and reused multiple times.
+- Update to the DAKOTA/AMPL interface to handle algebraic nonlinear constraints using the AMPL specification. This update allows the use of standard AMPL model files without modification of the constraint specification.
+
+**Nonlinear Least Squares Capabilities:**
+
+- Calculation of residuals can now be simplified through user specification of a least squares data file, which provides the set of data to which a computational model will be calibrated.
+
+**DACE Capabilities:**
+
+- Initial interface to PSUADE from LLNL, providing access to the Morris One-At-a-Time (MOAT) method.
+
+**Framework Enhancements:**
+
+- DAKOTA input files no longer require the use of "\" for line continuations. All examples have been updated to omit the backslash.
+- Gaussian process surrogate models now support variance estimators for use in expected improvement/expected feasibility functions; constant, linear, or quadratic trend functions; global optimization methods for maximum likelihood estimation; and point filtering.
+- New derived Model class: RecastModel. This is a thin wrapper around a sub-model allowing for linear and nonlinear recasting of its variables and responses. Used by variable and response scaling, random variable transformations, multiobjective optimization, merit functions (see SBO discussion above), and expected improvement/feasibility, as described in Section 10.3 of the Users Manual.
+- Extensions to variables views in surrogate model construction. Global surrogate classes previously assumed a hardwired "All" view (due to the use of this view by DACE methods) and local/multipoint/hierarchical surrogates previously assumed a hardwired "Distinct" view. Now general view support is available in all surrogate types, which allows much broader surrogate deployment than was previously possible. As part of this extension, sampling methods now support additional sampling modes (ACTIVE, ACTIVE_UNIFORM, ALL, ALL_UNIFORM, UNCERTAIN and UNCERTAIN_UNIFORM) and many classes have been extended to support data translations among differing variables set views.
+- Methods may now utilize mixed surrogate/truth models, as identified by a surrogate identifier list. The initial use case is sequential RBDO.
+- More flexible interface to input/output scaling and added support for logarithmic scaling. In addition, numerical derivative estimation is now performed within the scaled space to avoid step size thresholds.
+- Extended instantiate "on-the-fly" support for Iterators, Models, Interfaces, Approximations, and Constraints in to support advanced model recursions in local/global reliability and PCE methods.
+- Support for "NaN" and +/-"Inf" added to the input parser (for use in failure recovery values) and the response file reader. For both cases, mitigation approaches are iterator-specific. Currently, sampling methods will omit samples that are not finite from their summary statistics. See Section 20.4 of the Users Manual for additional information.
+- New interfaces: a new direct interface to Python has been developed and the existing direct interface to Matlab has been refined.
+- Extended surrogate build/update/append functionality within Models, Interfaces, and Approximations.
+- Added representation access function for letter/envelope idiom to reduce proliferation of virtual functions at envelope base classes.
+
+**Miscellaneous:**
+
+- DAKOTA now supports parallel make for concurrent compilation.
+- Ports to MINGW for Windows are now supported by the autotools harness.
+- Revision control for DAKOTA is now managed by subversion, allowing directory reorganization/renaming, upgrade of our release processes to employ release branches, and upgrade of our TPL processes to employ svn externals.
+- Stable releases have been added as new developmental releases (supplements existing VOTD release mechanisms), and revision numbers are now embedded within all developmental releases for traceability.
+- The nightly test harness now includes coverage of restart capabilities, as required for incremental sampling methods.
+- Bug fixes (Bugzilla record id): reliability methods (#1327, #2799), SBO (#2124, #2829, #2836), RBDO (#2828, #2832), PLplot window advance (#2180), sampling bounds (#2824), COLINY interface (#2250, #2434), JEGA parallelism (#1264), parallel usage of plug-in interfaces (#2826, #2827), parallel usage of instantiate on-the-fly Models (#2834), label propagation through Model recursions (#2831), IEEE special values in iostreams (#2855), derivative estimation in recast models (#2835), library build dependencies (#2158, #2822, #2843), and VOTD distribution process (#2841).

@@ -1,0 +1,127 @@
+Blurb::
+Select a surrogate model with global support
+Description::
+The global surrogate model requires specification of one of the
+following approximation types:
+
+
+1. Polynomial
+
+2. Gaussian process (Kriging interpolation)
+
+3. Layered perceptron artificial neural network approximation
+
+4. MARS
+
+5. Moving least squares
+
+6. Radial basis function
+
+7. Voronoi Piecewise Surrogate (VPS)
+
+All these approximations are implemented
+in SurfPack :cite:p:`Giunta2006`, except for VPS. In addition, a second version of
+Gaussian process is implemented directly in Dakota.
+
+*Training Data*
+
+Training data can be taken from prior runs, stored in a datafile,
+or by running a Design of Experiments method. The keywords listed
+below are used to determine how to collect training data:
+
+- ``dace_method_pointer``
+- ``reuse_points``
+- ``import_points_file``
+- ``use_derivatives`` The source of training data is determined by the contents of a provided ``import_points_file``, whether ``reuse_points`` and ``use_derivatives`` are specified, and the contents of the method block specified by ``dace_method_pointer``. ``use_derivatives`` is a special case, the other keywords are discussed below.
+
+The number of training data points used in building a global approximation is
+determined by specifying one of three point counts:
+
+
+
+1. ``minimum_points``: minimum required or minimum "reasonable" amount of training data. Defaults to d+1 for d input dimensions for most models, e.g., polynomials override to the number of coefficients required to estimate the requested order.
+
+
+2. ``recommended_points``: recommended number of training data, (this is the default option, if none of the keywords is specified).  Defaults to 5*d, except for polynomials where it's equal to the minimum.
+
+
+3. ``total_points``: specify the number of training data points. However, if the ``total_points`` value is less than the default ``minimum_points`` value, the ``minimum_points`` value is used.
+
+
+The sources of training data depend on the number of training points,
+:math:`N_{tp}` , the number of points in the import file, :math:`N_{if}` ,
+and the value of ``reuse_points``.
+
+
+- If there is no import file, all training data come from the DACE method
+
+- If there is an import file, all :math:`N_{if}`  points from the file are used, and the remaining :math:`N_{tp} - N_{if}`  points come from the DACE method
+
+- If there is an import file and ``reuse_points`` is:
+
+
+  - ``none`` - all :math:`N_{tp}`  points from DACE method
+
+
+  - ``region`` - only the points within a trust region are taken from the import file, and all remaining points are from the DACE method.
+
+
+  - ``all`` - (Default) all :math:`N_{if}`  points from the file are used, and the remaining :math:`N_{tp} - N_{if}`  points come from the DACE method
+
+
+
+
+
+
+*Surrogate Correction*
+
+A ``correction`` model can be added to the constructed surrogate in
+order to better match the training data. The specified correction method will be applied to the surrogate, and then the corrected
+surrogate model is used by the method.
+
+Finally, the quality of the surrogate can be tested using the
+``metrics`` and ``challenge_points_file`` keywords.
+Topics::
+
+Examples::
+
+Theory::
+Global methods, also referred to as response surface methods,
+involve many points spread over the parameter ranges of interest.
+These surface fitting methods work in conjunction with the sampling
+methods and design of experiments methods.
+
+
+*Procedures for Surface Fitting*
+
+The surface fitting process consists of three steps:
+
+
+1. selection of a set of design points
+
+
+2. evaluation of the true response quantities (e.g., from a user-supplied simulation code) at these design points,
+
+
+3. using the response data to solve for the unknown coefficients (e.g., polynomial coefficients, neural network weights, kriging correlation factors) in the surface fit model.
+
+
+In cases where there is
+more than one response quantity (e.g., an objective function plus one
+or more constraints), then a separate surface is built for each
+response quantity. Currently, the surface fit models are built using
+only 0 :math:`^{\mathrm{th}}` -order information (function values only), although
+extensions to using higher-order information (gradients and Hessians)
+are possible.
+
+Each surface fitting method employs a different
+numerical method for computing its internal coefficients. For example,
+the polynomial surface uses a least-squares approach that employs a
+singular value decomposition to compute the polynomial coefficients,
+whereas the kriging surface uses Maximum Likelihood Estimation to
+compute its correlation coefficients. More information on the
+numerical methods used in the surface fitting codes is provided in the
+Dakota Developers Manual.
+Faq::
+
+See_Also::

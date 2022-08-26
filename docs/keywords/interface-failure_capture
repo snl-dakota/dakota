@@ -1,0 +1,40 @@
+Blurb::
+Determine how Dakota responds to analysis driver failure
+Description::
+Dakota can deal with analysis failure in a few ways.
+
+The first step is that Dakota must detect analysis
+failure. Importantly, Dakota always expects a results file to be
+written by the analysis driver, even when a failure has occurred. If
+the file does not exist when the analysis driver exits, a Dakota error
+results, causing Dakota itself to terminate. The analysis driver
+communicates an analysis failure to Dakota by writing a results file
+beginning with the (case-insensitive) word "fail".  Any file contents
+after "fail" are ignored.
+
+Once Dakota detects analysis failure, the failure can be mitigated in four ways:
+
+- :ref:`interface-failure_capture-abort<interface-failure_capture-abort>` (the default)
+- :ref:`interface-failure_capture-retry<interface-failure_capture-retry>`
+- :ref:`interface-failure_capture-recover<interface-failure_capture-recover>`
+- :ref:`interface-failure_capture-continuation<interface-failure_capture-continuation>`
+
+
+
+
+
+
+
+
+
+Refer to the Simulation Code Failure Capturing chapter of the Users
+Manual :cite:p:`UsersMan` for additional information.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

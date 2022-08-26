@@ -1,6 +1,0 @@
-Blurb:: Export sample sequences without heading descriptors
-
-Description:: 
-Sample sequences are written on file without using any heading descriptors for the data set.
-The interface identifier, \c interface_id, and the model descriptors are still reported.
-

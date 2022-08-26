@@ -1,0 +1,17 @@
+Blurb::
+A batch of concurrent evaluations are queried for completions and a partial set is returned to the algorithm
+Description::
+In the ``nonblocking`` case, the set of running evaluations is queried for completion and a partial set of results is returned to an asynchronous algorithm, which can then generate new evaluations based on these partial results.
+
+
+
+In all cases, the algorithm steps will be subject to parallel timing variabilities / race conditions such that these runs will not generally be repeatable regardless of seed specification.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

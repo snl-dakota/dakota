@@ -1,0 +1,14 @@
+Blurb::
+Limit number of designs dominating those kept
+Description::
+The ``below_limit`` replacement will only keep designs that are
+dominated by fewer than a limiting number of other designs.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,19 @@
+Blurb::
+Use a total-order index set to construct a polynomial chaos expansion.
+Description::
+Use the traditional total-order index set to construct a polynomial chaos expansion. That is for a given order :math:`p`  keep all terms with a :math:`d` -dimensional multi index :math:`\mathbf{i}=(i_1,\ldots,i_d)`  that satisfies
+
+.. math:: 
+
+   \sum_{k=1}^d i_k \le p
+
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

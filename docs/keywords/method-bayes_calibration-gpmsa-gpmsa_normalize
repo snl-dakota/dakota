@@ -1,0 +1,17 @@
+Blurb::
+Enable GPMSA-internal normalization
+Description::
+Normalize variables and data (surrogate model build and experiment)
+when constructing the underlying Gaussian Process emulator.  When
+specified, this option will normalize calibration parameters and
+configuration (scenario) variables based on the min/max of the build
+data.  It will normalize simulation and experiment data by the mean
+and variance of the simulation build data.
+
+*Default Behavior*
+No GPMSA-specific scaling used.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

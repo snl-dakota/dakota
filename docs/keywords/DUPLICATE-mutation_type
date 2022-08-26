@@ -1,0 +1,24 @@
+Blurb::
+Select a mutation type for JEGA methods
+Description::
+Five mutation types are available for selection by keyword:
+``replace_uniform``, ``bit_random``, ``offset_cauchy``, ``offset_normal``, and
+``offset_uniform``. They are described in greater detail on their
+respective keyword pages.
+
+The ``offset_*`` mutators all act by adding a random "offset" to a variable
+value. The random amount has a mean of zero in all cases. The size of the offset
+is controlled using the ``mutation_scale`` keyword, which is interpreted
+differently for each ``offset_*`` type.
+
+The rate of mutations for all types is controlled suing the ``mutation_rate``.
+The rate is applied differently in each ``mutation_type``.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,75 @@
+Blurb::
+The (initial) order of a polynomial expansion
+Description::
+When the expansion_order for a a polynomial chaos expansion is
+specified, the coefficients may be computed by integration based on
+random samples or by regression using either random or sub-sampled
+tensor product quadrature points.
+
+Multidimensional integration by Latin hypercube sampling
+   (specified with ``expansion_samples``). In this case, the
+   expansion order *p* cannot be inferred from the numerical
+   integration specification and it is necessary to provide an
+   ``expansion_order`` to specify *p* for a total-order expansion.
+
+Linear regression (specified with either ``collocation_points`` or
+   ``collocation_ratio``). A total-order expansion is used and must
+   be specified using ``expansion_order`` as described in the
+   previous option. To avoid requiring the
+   user to calculate *N* from *n* and *p*), the ``collocation_ratio``
+   allows for specification of a constant factor applied to
+   *N* (e.g., ``collocation_ratio`` = ``2``. produces samples = *2N*).
+   In addition, the default linear relationship with *N* can be
+   overridden using a real-valued exponent specified using
+   ``ratio_order``. In this case, the number of samples becomes
+   :math:`cN^o`  where :math:`c`  is the ``collocation_ratio`` and :math:`o` 
+   is the ``ratio_order``. The ``use_derivatives`` flag informs the
+   regression approach to include derivative matching equations
+   (limited to gradients at present) in the least squares solutions,
+   enabling the use of fewer collocation points for a given
+   expansion order and dimension (number of points required becomes
+   :math:`\frac{cN^o}{n+1}` ). When admissible, a constrained least
+   squares approach is employed in which response values are first
+   reproduced exactly and error in reproducing response derivatives
+   is minimized. Two collocation grid options are supported: the
+   default is Latin hypercube sampling ("point collocation"), and an
+   alternate approach of "probabilistic collocation" is also
+   available through inclusion of the ``tensor_grid`` keyword. In
+   this alternate case, the collocation grid is defined using a
+   subset of tensor-product quadrature points: the order of the
+   tensor-product grid is selected as one more than the expansion
+   order in each dimension (to avoid sampling at roots of the basis
+   polynomials) and then the tensor multi-index is uniformly sampled
+   to generate a non-repeated subset of tensor quadrature points.
+
+
+If ``collocation_points`` or ``collocation_ratio`` is specified, the PCE
+coefficients will be determined by regression.
+If no regression
+specification is provided, appropriate defaults are defined.
+Specifically SVD-based least-squares will be used for solving
+over-determined systems and under-determined systems will be solved
+using LASSO. For the situation when the number of function values is
+smaller than the number of terms in a PCE, but the total number of
+samples including gradient values is greater than the number of terms,
+the resulting over-determined system will be solved using equality
+constrained least squares. Technical information on the various
+methods listed below can be found in the Linear regression section of
+the Theory Manual. Some of the regression methods (OMP, LASSO, and
+LARS) are able to produce a set of possible PCE coefficient vectors
+(see the Linear regression section in the Theory Manual). If cross
+validation is inactive, then only one solution, consistent with the
+``noise_tolerance``, will be returned. If cross validation is active,
+Dakota will choose between possible coefficient vectors found
+internally by the regression method across the set of expansion orders
+(1,..., ``expansion_order``) and the set of specified noise tolerances and
+return the one with the lowest cross validation error indicator.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

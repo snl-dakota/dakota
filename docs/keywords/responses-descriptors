@@ -1,0 +1,57 @@
+Blurb::
+Labels for the responses
+Description::
+A list of strings which identify the responses.  These are used in
+console and tabular output.  Response descriptors are ordered by
+primary response functions (objective, calibration, or response
+functions), followed by inequality, then equality constraints, if
+present.
+
+*Default Behavior*
+
+The default descriptor strings use a response type-dependent root
+string plus a one-based numeric identifier:
+
+
+- Objective functions: ``obj_fn_i``
+- Calibration terms: ``least_sq_term_i``
+- Nonlinear inequality constraints: ``nln_ineq_con_i``
+- Nonlinear equality constraints: ``nln_eq_con_i``
+- Response functions: ``response_fn_``
+
+*Expected Output*
+Dakota will label the various response functions in console and
+tabular output.
+
+*Usage Tips*
+When specifying descriptors for scalar and/or field responses, include
+as many descriptors as top-level scalar + field responses, e.g.,
+
+.. code-block::
+
+    responses
+      descriptors 'scalar1' 'scalar2' 'scalar3' 'field1' 'field2'
+      response_functions 5
+        scalar_responses 3
+        field_responses 2
+          field_lengths 42 24
+
+Dakota will append a numeric identifier for each field entry, for a
+total of 42 field1_j and 24 field2_k in this example.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    responses
+      descriptors 'cost' 'impact' 'safety'
+      objective_functions 2
+      nonlinear_inequality_constraints 1
+
+
+Theory::
+
+Faq::
+
+See_Also::

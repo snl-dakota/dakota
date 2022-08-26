@@ -1,0 +1,127 @@
+.. _gui-inputfiles-main:
+
+""""""""""""""""""
+Dakota Input Files
+""""""""""""""""""
+
+============
+Introduction
+============
+
+Once you have a Dakota input file imported into the GUI, there are many available options for inspecting and editing it.
+
+====================
+Dakota Visual Editor
+====================
+
+The Dakota Visual Editor is a powerful alternative to editing Dakota input files in a text editor.  Gone are the days of manually tinkering with long number arrays, or 
+hoping that variables and responses are active and indexed correctly.
+
+If the Dakota Visual Editor is not configured as your default editor of Dakota input files, right-click a Dakota input file and choose "Open With > Dakota Visual Editor".
+Otherwise, simply double-click the file.
+
+.. image:: img/DakotaVisualEditor.png
+   :alt: Dakota Visual Editor
+
+For more information, see :ref:`the main page about the Dakota Visual Editor. <gui-visual-editor-main>`
+
+.. _gui-inputfiles-texteditor:
+
+==================
+Dakota Text Editor
+==================
+
+The Dakota text editor is the most traditional way of editing a Dakota input file.  While not recommended for complex Dakota studies, the text editor can be handy if you just
+need to make a small adjustment to your Dakota input file.
+
+If the Dakota Text Editor is not configured as your default editor of Dakota input files, right-click a Dakota input file and choose "Open With > Dakota Text Editor".  Otherwise, simply double-click the file.
+
+.. image:: img/DakotaTextEditor.png
+   :alt: Dakota Text Editor
+
+.. _gui-inputfiles-errormarkup:
+
+Error Markup
+------------
+
+The Dakota GUI’s text editor provides some basic error marking functionality that can help with malformed Dakota input files.  For example, in this screenshot,
+we have a continuous_design section of a variables block, stating that it will have 3 variables.  However, only 2 variables are specified below; this prompts an error
+to be displayed, warning us about the discrepancy.  Keywords relevant to the error are marked with red underlines.  Tooltip text help (i.e. the pale yellow box pictured here)
+can be viewed if you hover over the red X icons to the left; doing this provides more information about what is specifically wrong with your file.
+
+.. image:: img/DakotaStudyIntro_Editing_6.png
+   :alt: The text editor shows you error markup
+   
+Completion Proposals
+--------------------
+
+Completion proposals are context-sensitive recommendations provided by the Dakota text editor.  If you are writing a Dakota text file,
+completion proposals can tell you which keywords are legally allowed to come next.  Completion proposals can also give you clues
+about values to use for new id\_\* and \*\_pointer keywords.
+
+Suppose we start with an empty environment block.
+
+.. image:: img/DakotaStudyIntro_Completion_1.png
+   :alt: environment
+
+With the text cursor on "environment," press Ctrl+Space (Command+Space on Mac.)  The following context menu will appear with recommendations for which keywords to include in your environment block.
+
+.. image:: img/DakotaStudyIntro_Completion_2.png
+   :alt: Completion proposals sub-menu
+
+As stated earlier, if you have block pointers specified elsewhere in your study, completion proposals can also recommend which blocks to point at:
+
+.. image:: img/DakotaStudyIntro_Completion_3.png
+   :alt: Pointer options
+
+.. _gui-inputfiles-blockrecipes:
+
+Block Recipes
+-------------
+
+If you want to wholesale replace a Dakota block with another block that has reasonable defaults for a different situation, right-clicking on a top-level
+keyword in the Dakota text editor will enable a "Replace Block with Recipe" context menu option:
+
+.. image:: img/BlockRecipe_1.png
+   :alt: Replace Block with Recipe
+
+A situation where this might be useful is for hooking a Dakota study up to :ref:`a workflow file as your chosen Dakota analysis driver. <gui-nestedworkflowtutorial-main>`
+You can also use this feature to switch to a different Dakota method, without disturbing the rest of the input file.
+
+Pre-processor Markup
+--------------------
+
+The Dakota text editor respects some pre-processor markup.  Orange bold text is used to indicate markup syntax:
+
+.. image:: img/DakotaTextEditor_Dprepro.png
+   :alt: Pre-processor markup in the text editor
+
+However, there are some limitations to using pre-processor markup in the Dakota text editor:
+
+- The markup must apply to individual parameter values of Dakota keywords, as shown above.  Markup cannot be used in place of
+  Dakota keywords themselves, and a single markup token cannot be applied across multiple parameter values at once.
+- % statements are used in pre-processor syntax to insert blocks of Python code that should be executed at runtime.
+  Single-line % statements are supported in the Dakota text editor, but blocks of Python code surrounded by % characters are not supported yet.
+
+:ref:`Learn more about Dakota's pre-processing tools <interfaces:dprepro-and-pyprepro>`.
+
+.. _gui-inputfiles-treeview:
+
+
+Tree in the Project Explorer view
+---------------------------------
+
+A Dakota input file can be expanded in the Project Explorer view's tree to reveal its content hierarchically:
+
+.. image:: img/DakotaStudyIntro_Editing_1.png
+   :alt: An hierarchical view of a Dakota input file
+
+"New Keyword" context menu option
+---------------------------------
+
+With a Dakota study expanded in the Project Explorer, right-click a Dakota keyword and choose "New Keyword."  A sub-context menu will pop
+out with available keywords at the point in the Dakota study you clicked on.  Choosing a keyword from this sub-context menu will automatically
+add it to your Dakota study.
+
+.. image:: img/DakotaStudyIntro_NewKeywordMenu_1.png
+   :alt: New Keyword submenu

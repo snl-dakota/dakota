@@ -1,0 +1,34 @@
+Blurb::
+Calculate metrics to assess the quality of quasi-Monte Carlo samples
+Description::
+``quality_metrics`` calculates four quality metrics relating to the
+volumetric spacing of the samples. The four quality metrics measure
+different aspects relating to the uniformity of point samples in hypercubes.
+Desirable properties of such point samples are:
+
+- are the points equally spaced
+- do the points cover the region
+- and are they isotropically distributed
+- with no directional bias in the spacing
+
+The four quality
+metrics we report are:
+
+- h: the point distribution norm, which is a measure of uniformity of the point distribution
+- chi: a regularity measure, and provides a measure of local uniformity of a set of points
+- tau: the second moment trace measure
+- d: the second moment determinant measure
+
+All of these values are scaled so that smaller is
+better (the smaller the metric, the better the uniformity of the point
+distribution).
+Topics::
+package_fsudace
+Examples::
+Complete explanation of these measures can be found in
+:cite:p:`Gunzburger2004`.
+Theory::
+
+Faq::
+
+See_Also::

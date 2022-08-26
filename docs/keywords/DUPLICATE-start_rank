@@ -1,0 +1,14 @@
+Blurb::
+The initial rank used for the starting point during a rank adaptation.
+Description::
+The ``adapt_rank`` procedure increments the rank on each iteration, starting
+from the rank defined by ``start_rank``
+
+*Default Behavior*
+
+Default is 2.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

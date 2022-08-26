@@ -1,0 +1,84 @@
+.. _releasenotes-51:
+
+""""""""""""""""""""""""
+Version 5.1 (2010/12/21)
+""""""""""""""""""""""""
+
+**Highlights**
+
+- Advances in stochastic expansion UQ methods: automated uniform and adaptive p-refinement, including support for nested integration; new gradient-enhanced PCE.
+- Improved statistics reporting as well as VBD index calculation and reporting control; extended mixed aleatory/epistemic UQ methods.
+- Integrated new Acro/COLIN optimization framework and new Kriging implementation from Surfpack.
+- Numerous framework and performance improvements, bug fixes
+
+**Uncertainty Quantification (UQ): Stochastic Expansions**
+
+- New uniform and adaptive polynomial order refinement ("p-refinement") for PCE and SC using tensor and sparse grids. These approaches automate the process of statistical convergence assessment by repeatedly refining a global grid until convergence criteria are satisfied.
+
+  - Uniform refinement of isotropic tensor and sparse grids is controlled by monitoring changes in the response covariance matrix.
+  - Adaptive refinement can employ variance attribution (total Sobol' indices from variance-based decomposition) to define anisotropic tensor and sparse grids.
+  - Adaptive refinement can be goal-oriented through use of a generalized sparse grid approach. The influence of trial sparse grid index sets on statistical quantities of interest (i.e., response covariance or specified CDF/CCDF level mappings) is measured to control the evolution of the index sets that define the global sparse grid. This new incremental approach led to the development of new framework constructs for efficient test, storage, and restoration of trial approximation increments.
+  
+- Integration rules
+
+  - Tensor quadrature now supports nested integration rules for use within automated refinement.
+  - Rule nesting is now under user control with defaults (nested for sparse, non-nested for tensor unless p-refinement) that can be overridden.
+  - Nested quadrature rule selections now employ Gauss-Patterson for uniform random variables and Genz-Keister for normal random variables. Exponential point growth in these rules is restricted to synchronize with the linear growth of standard non-nested Gauss rules, allowing greater precision consistency when mixing rule types. Chebyshev-based rules (Clenshaw-Curtis, Fejer2) have been de-emphasized.
+  
+- Statistics/Output
+
+  - Improved specification and output formatting for main/interaction/total Sobol' indices from variance-based decomposition.
+  - Generalized calculation and improved output of moments: SC now tabulates numerically-integrated response moments for mean, std deviation, skewness, and kurtosis, and PCE now tabulates expansion moments (mean, std deviation) alongside these four numerically-integrated response moments.
+
+- New PCE capabilities:
+
+  - PCE formed from sparse grids now employs a sum of tensor expansions. This eliminates previous performance discrepancies between PCE and SC; they are now identical in performance for many cases of interes.
+  - The linear regression approach for PCE now supports derivative (gradient) enhancement (coefficients computed from response values + derivatives).
+  - Low-order PCE can now be formed from cubature integration rules (Stroud rules and extensions). These expansions are useful for global SA.
+
+**Other UQ and Sensitivity Analysis:**
+
+- Sampling-based VBD/Sobol Indices: improved robustness and stability of Sobol indices especially in the presence of input interactions; extended approaches to discrete variables. Unified tabular formatting and specification controls with stochastic expansion methods.
+- Sampling-based moments: skewness and kurtosis statistics added.
+- Mixed aleatory-epistemic UQ capabilities extended to include second-order-probability/probability-of-frequency case, with semantics clarification that previous interval-based epistemic capability is now "interval-valued probability," reserving the "second-order probability" semantics for nested probabilistic propagations.
+
+**Methods (general)**
+
+- Integration of new Acro/COLIN optimization framework.
+- New framework for solution verification (estimation of numerical error) leveraging Richardson extrapolation, including single-pass estimation of order and iterative studies to achieve a prescribed convergence order or stabilize it.
+- Bayesian methods framework enables Bayesian calibration and uncertainty quantification with modular surrogate, UQ, and calibration components.
+- (Beta) Incorporation of LANL GPMSA (Gaussian Process Models for Simulation Analysis) library allows Bayesian model parameter calibration (determine posterior distributions consistent with simulation model, observed data, and priors). Has GSL (GNU GPL) dependence.
+
+**Framework**
+
+- Completion of post-run mode for parameter study and DACE methods.
+- Refactor many Analyzers, most importantly LHS, to share variables data and use compact storage for samples arrays, significantly improving performance and memory footprint.
+- Significant overhaul of Surfpack Kriging model; new kriging model supports generalized polynomial trend function, targeted correlation parameter search, and choice of optimization technique. More accurate, robust, and efficient than the previous Surfpack Kriging model.
+- Addition of inactive variable mappings to nested models. This enables multilevel mappings (e.g., 3-level for design/calibration under mixed uncertainty) in which first-level active variables become second-level inactive variables, and the second-level inactive must be propagated as third level inactive.
+- Eliminated little used 3-D graphics capability.
+- Allow update/append/restore/finalize of incrementally managed surrogate approximations (in support of generalized sparse grid).
+- Separate NIDR components from DAKOTA client, add spec-maint mode for developers and new build system.
+- (Alpha) CMake build system for UNIX platforms only; will ultimately enable native Windows support.
+- Removed specialized data types in favor of STL and improved management of strings.
+- Addressed numerous platform portability issues (including for SunProCC); require modern C++ compiler features.
+- Demonstration of dynamically loaded solvers, included dynamically loaded pieces of input spec.
+- DAKOTA no longer assumes ownership of MPI_COMM_WORLD when run in parallel.
+- Working directories: no longer create extra depth workdir/workdir.*; look for drivers in templatedir and DAKOTA run dir; fix misc. bugs.
+- Improvements to DAKOTA's Gaussian Process emulator for efficiency.
+
+**Miscellaneous**
+
+- ENH: permit configuration with Python 2.6.x.
+- ENH: allow user option to preserve existing results files.
+- ENH: Input specification: no longer require 'nond_method', preferring just 'method', so one may specify polynomial chaos instead of nond_polynomial_chaos; correct several input parsing bugs.
+- BUG: Remove arbitrary limit on scaling factor calculation.
+- ENH: Allow user control of text output precision.
+- ENH: allow creation of surrogate from data file with or without additional DACE samples (numSamples = 0 is valid).
+- BUG: restore input spec inclusion in reference manual.
+- BUG: fix operation of explicit --without-matlab option; distribute Matlab examples.
+- ENH: enable/disable tests and examples for library clients.
+- BUG: improve robustness of fork in MPI context by managing SIGCHLD.
+- ENH: instructions for running on Windows 7 and extended generic example for Windows.
+- ENH: when using system/fork, include function labels with ASV; updated dprepro and aprepro allow colon.
+- BUG: enable SBO with state variables (bug reported by Chirag Patel).
+- ENH: allow user to throttle number of final_solutions returned by multi-point iterators.

@@ -1,0 +1,9 @@
+Blurb::
+Maximum number of iterations for cross-approximation during a rank adaptation.
+Description::
+The number of iterations for the cross-approximation algorithm is limited within the ``adapt_rank`` procedure.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

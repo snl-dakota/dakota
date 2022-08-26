@@ -1,0 +1,13 @@
+Blurb::
+A set of weights specifying the realtive importance of each uncertain variable (dimension)
+Description::
+A set of weights specifying the realtive importance of each uncertain variable (dimension). Using this specification leada to anisotropic integrations with differing refinement levels for different random dimensions.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

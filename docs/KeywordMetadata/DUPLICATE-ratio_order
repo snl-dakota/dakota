@@ -1,8 +1,0 @@
-Blurb::Specify a non-linear the relationship between the expansion order of a polynomial chaos expansion and the number of samples that will be used to compute the PCE coefficients.
-Description::
-When using regression type methods (specified with either collocation_points or collocation_ratio), a total-order expansion can be  specified using expansion_order. To avoid requiring the user to calculate N from n and p), the collocation_ratio allows for specification of a constant factor applied to N (e.g., collocation_ratio = 2. produces samples = 2N). In addition, the default linear relationship with N can be overridden using a real-valued exponent specified using ratio_order. In this case, the number of samples becomes $cN^o$ where $c$ is the collocation_ratio and $o$ is the ratio_order.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	

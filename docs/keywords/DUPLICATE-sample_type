@@ -1,0 +1,33 @@
+Blurb::
+Selection of sampling strategy
+Description::
+The ``sample_type`` keyword allows the user to select between two types
+of sampling: Monte Carlo (pure random) and Latin hypercube
+(stratified) sampling.
+
+The incremental keywords are deprecated; instead use ``samples``
+together with ``refinement_samples``.
+
+*Default Behavior*
+
+If the ``sample_type`` keyword is present, it must be accompanied by
+``lhs`` or ``random``.  In most contexts, ``lhs`` is the default (exception:
+multilevel_sampling uses Monte Carlo by default).
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type lhs
+        samples = 20
+        seed = 83921
+
+
+Theory::
+
+Faq::
+
+See_Also::

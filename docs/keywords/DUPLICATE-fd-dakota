@@ -1,0 +1,23 @@
+Blurb::
+(Default) Use internal Dakota finite differences algorithm
+Description::
+The ``dakota`` routine is the default since it can execute
+in parallel and exploit the concurrency in finite difference
+evaluations (see Exploiting Parallelism in the Users Manual
+:cite:p:`UsersMan`).
+
+When the ``method_source`` is ``dakota``, the user may also specify the
+type of scaling desired when determining the finite difference step
+size. The choices are ``absolute``, ``bounds``, and ``relative``. For
+``absolute``, the step size will be applied as is. For ``bounds``, it
+will be scaled by the range of each parameter. For ``relative``, it
+will be scaled by the parameter value.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,133 @@
+Blurb::
+Randomly samples variables according to their distributions
+Description::
+This method generates parameter values by drawing samples from the
+specified uncertain variable probability distributions. The
+computational model is executed over all generated parameter values to
+compute the responses for which statistics are computed. The
+statistics support sensitivity analysis and uncertainty
+quantification.
+
+*Default Behavior*
+
+By default, ``sampling`` methods operate on aleatory and epistemic
+uncertain variables.  The types of variables can be restricted or
+expanded (to include design or state variables) through use of the
+``active`` keyword in the :ref:`variables<variables>` block in the Dakota input
+file.  If continuous design and/or state variables are designated as
+active, the sampling algorithm will treat them as parameters with
+uniform probability distributions between their upper and lower
+bounds.  Refer to :ref:`topic-variable_support<topic-variable_support>` for additional
+information on supported variable types, with and without correlation.
+
+The following keywords change how the samples are selected:
+
+- sample_type
+- fixed_seed
+- rng
+- samples
+- seed
+- variance_based_decomp
+
+*Expected Outputs*
+
+As a default, Dakota provides correlation analyses when running LHS.
+Correlation tables are printed with the simple, partial, and rank
+correlations between inputs and outputs. These can be useful to get a
+quick sense of how correlated the inputs are to each other, and how
+correlated various outputs are to inputs. ``variance_based_decomp`` is
+used to request more sensitivity information, with additional cost.
+
+Additional statistics can be computed from the samples using the following
+keywords:
+
+- ``response_levels``
+- ``reliability_levels``
+- ``probability_levels``
+- ``gen_reliability_levels``
+
+``response_levels`` computes statistics at the specified response value.
+The other three allow the specification of the statistic value, and will
+estimate the corresponding response value.
+
+``distribution`` is used to specify whether the statistic values are
+from cumulative or complementary cumulative functions.
+
+*Expected HDF5 Output*
+
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
+
+
+- When :ref:`method-sampling-variance_based_decomp<method-sampling-variance_based_decomp>` is enabled  - :ref:`hdf5_results-vbd<hdf5_results-vbd>`
+
+- For aleatory UQ studies  - :ref:`hdf5_results-pdf<hdf5_results-pdf>`
+  - :ref:`hdf5_results-level_mappings<hdf5_results-level_mappings>`
+  - :ref:`hdf5_results-sampling_moments<hdf5_results-sampling_moments>`
+  - :ref:`hdf5_results-correlations<hdf5_results-correlations>`
+
+- For epistemic UQ studies  - :ref:`hdf5_results-extreme_responses<hdf5_results-extreme_responses>`
+  - :ref:`hdf5_results-correlations<hdf5_results-correlations>`
+
+*Usage Tips*
+
+``sampling`` is a robust approach to doing sensitivity analysis and
+uncertainty quantification that can be applied to any problem.  It
+requires more simulations than newer, advanced methods.  Thus, an
+alternative may be preferable if the simulation is computationally
+expensive.
+Topics::
+uncertainty_quantification, sampling
+Examples::
+
+.. code-block::
+
+    # tested on Dakota 6.0 on 140501
+    
+    environment
+      tabular_data
+        tabular_data_file = 'Sampling_basic.dat'
+    
+    method
+      sampling
+        sample_type lhs
+        samples = 20
+    
+    model
+      single
+    
+    variables
+      active uncertain
+      uniform_uncertain = 2
+        descriptors  =   'input1'     'input2'
+        lower_bounds =  -2.0     -2.0
+        upper_bounds =   2.0      2.0
+      continuous_state = 1
+        descriptors =   'constant1'
+        initial_state = 100
+    
+    interface
+      analysis_drivers 'text_book'
+        fork
+    
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+
+This example illustrates a basic sampling Dakota input file.
+
+
+- LHS is used instead of purely random sampling.
+- The default random number generator is used.
+- Without a ``seed`` specified, this will not be reproducable
+- In the ``variables`` block, two types of variables are used
+- Only the uncertain variables are varied, this is the default     behavior, and is also specified by the ``active`` keyword, w/ the     ``uncertain`` option
+Theory::
+
+Faq::
+*Q:* Do I need to keep the LHS* and S4 files?
+*A:* No
+See_Also::

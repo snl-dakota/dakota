@@ -1,0 +1,33 @@
+Blurb::
+Enable export of multilevel/multifidelity sample sequences to individual files
+Description::
+When this option is active, separate output files are written for each
+unique sample increment and are tagged by algorithm type, simulation
+interface, iteration count, level count, and the number of samples as
+described below.  The data content is comprised of the input variables
+only, without corresponding responses, as an intended use case is to
+support evaluation of these sample sets offline.
+
+*Default Behavior*
+
+If not specified, the ``annotated`` format is assumed.
+
+*Expected Output*
+
+Separate output files are generated according to the following format:
+``{ml/cv}_{interface_id}_{iteration_number}_{level_number}_{number_of_samples}``.dat.
+
+With respect to the algorithm type, interface id, and level counter, the
+following definitions are employed:
+
+- Multilevel MC with hierarchical model: ``ml_`` is pre-pended for all sample increments and sample sets are tagged with the interface id from the HF model.
+- Control Variate MC with hierarchical model (deprecated): ``cv_`` is prepended for all sample increments, shared sample sets are tagged with the HF interface id, and LF-only refinements are tagged by the LF interface id.
+- Multilevel-Control Variate MC with hierarchical model: employs a combination of exports from the two cases above.  ``ml_`` is pre-pended for all HF sample increments and sample sets are tagged with the interface id from the HF model; ``cv_`` is prepended for all LF increments and sample sets are tagged with the LF interface id.  Note that the LF model shares the same ``ml_`` sample sets, but a redundant file is not created for this data.
+- Non-hierarchical approaches (Multifidelity MC, Approximate Control Variate): ``cv_`` is prepended for all sample increments and sample sets are tagged with the corresponding model interface id.  The level number corresponds to the index of the approximation model for LF increments and to the id of the truth model (number of LF approximations + 1) for shared increments.
+
+With respect to iteration count, pilot samples are tagged with iteration 0.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

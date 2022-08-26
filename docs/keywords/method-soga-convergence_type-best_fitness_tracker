@@ -1,0 +1,17 @@
+Blurb::
+Tracks the best fitness of the population
+Description::
+The ``best_fitness_tracker`` tracks the best fitness in the
+population. Convergence occurs after ``num_generations`` has passed and
+there has been less than ``percent_change`` in the best fitness
+value. The percent change can be as low as 0% in which case there must
+be no change at all over the number of generations.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

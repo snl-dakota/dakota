@@ -294,7 +294,7 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
   size_t cntr, step, num_steps = numApprox+1, num_finite, md_index;
-  Real cost;  bool ml = (costMetadataIndices.size() == 1);
+  Real cost, accum;  bool ml = (costMetadataIndices.size() == 1);
   IntRespMCIter r_it;
   using std::isfinite;
 
@@ -302,17 +302,19 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
   for (step=0, cntr=0; step<num_steps; ++step) {
     const SizetSizetPair& cost_mdi = (ml) ? costMetadataIndices[0] :
       costMetadataIndices[step];
-
     md_index = cntr + cost_mdi.first; // index into aggregated metadata
-    num_finite = 0;
+
+    accum = 0.;  num_finite = 0;
     for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
       cost = r_it->second.metadata()[md_index]; // offset by index
-      if (isfinite(cost)) {
-	++num_finite;
-	seq_cost[step] += cost;
-      }
+      if (isfinite(cost))
+	{ accum += cost; ++num_finite; }
     }
-    seq_cost[step] /= num_finite;
+    seq_cost[step] = accum / num_finite;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Online cost: accum_cost = " << accum << " num_cost = "
+	   << num_finite << " seq_cost = " << seq_cost[step] << std::endl;
+
     cntr += cost_mdi.second; // offset by size of metadata for step
   }
 }

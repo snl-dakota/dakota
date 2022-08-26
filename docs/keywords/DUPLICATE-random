@@ -1,0 +1,36 @@
+Blurb::
+Uses purely random Monte Carlo sampling to sample variables
+Description::
+The ``random`` keyword invokes Monte Carlo sampling as the means of
+drawing samples of uncertain variables according to their probability
+distributions.
+
+*Default Behavior*
+
+In most contexts, Monte Carlo sampling is not the default sampling mode
+(exception: multilevel_sampling).  To change this behavior, the
+``random`` keyword must be specified in conjuction with the ``sample_type``
+keyword.
+
+*Usage Tips*
+
+Monte Carlo sampling is more computationally expensive than Latin
+Hypercube Sampling as it requires a larger number of samples to
+accurately estimate statistics.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        samples = 200
+
+
+Theory::
+
+Faq::
+
+See_Also::

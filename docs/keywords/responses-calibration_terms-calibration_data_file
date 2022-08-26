@@ -1,0 +1,219 @@
+Blurb::
+Supply scalar calibration data only
+Description::
+Enables text file import of experimental observations for use in
+calibration, for scalar responses only, with optional scalar variance
+information.  For more complex data import cases see
+:ref:`responses-calibration_terms-calibration_data<responses-calibration_terms-calibration_data>`  Dakota will calibrate
+model variables to best match these data.
+
+Key options include:
+  \li format: whether the data file is in ``annotated``,
+    ``custom_annotated``, or ``freeform`` format
+  \li content: where ``num_experiments``,
+    ``num_config_variables``, and ``experiment_variance_type`` indicate which
+    columns appear in the data.
+
+In the most general case, the content of the data file is described by
+the arguments of three optional parameters.
+
+
+- ``num_experiments`` ( :math:`N_{exp}`  ) Default: :math:`N_{exp} = 1`  This indicates that the data represent multiple experiments, where each experiment might be conducted with different values of configuration variables.  An experiment can also be thought of as a replicate, where the experiments are run at the same values of the configuration variables.
+
+
+- ``num_config_variables`` ( :math:`N_{cfg}`  ) Configuration variables specify the values of experimental conditions at which data were collected.  The variables in these columns must correspond to state variables in the calibration study.  The simulation model will be run at each configuration and compared to the appropriate experiment data.
+
+
+
+- ``experiment_variance_type`` ('none' or 'scalar') This indicates if the data file contains variances for measurement error of the experimental data.  The default is 'none'.
+
+
+
+
+While some components may be omitted, the most complete version of a
+an annotated calibration data file could include columns corresponding
+to experiment ID, configuration variables, function value
+observations, and variances (observation errors), shown here in
+annotated format:
+
+.. code-block::
+
+    exp_id | configuration xvars | y data observations | y data variances
+    1         7.8  7                21.9372  1.8687       0.25  0.04
+    2         8.6  2                19.0779  4.8976       0.25  0.04
+    3         8.4  8                38.2758  4.4559       0.25  0.04
+    4         4.2  1                39.7600  6.4631       0.25  0.04
+
+
+Each row in the file corresponds to an experiment or replicate
+observation of an experiment to be compared to the model output.  This
+example shows 4 experiments, governed by two configuration variables
+(one real-valued and one integer-valued), two responses (QOIs), and
+corresponding observation errors with standard deviation 0.5 and 0.2.
+
+*Usage Tips*
+
+
+- The ``calibration_data_file`` keyword is used when \em only scalar calibration terms are present.  If there are field calibration terms, instead use :ref:`responses-calibration_terms-calibration_data<responses-calibration_terms-calibration_data>`.  For mixed scalar and field calibration terms, one may use the :ref:`responses-calibration_terms-calibration_data-scalar_data_file<responses-calibration_terms-calibration_data-scalar_data_file>` specification, which uses the format described on this page.
+- *Attention:* In versions of Dakota prior to 6.14, string-valued configuration variables were specified in data files with 0-based indices into the admissible values. As of Dakota 6.14, strings must be specified by value. For example a string-valued configuration variable for an experimental condition might appear in the file as ``low_pressure`` vs. ``high_pressure``.
+Topics::
+
+Examples::
+*Simple Case:* In the simplest case, no data content descriptors
+are specified:
+
+
+.. code-block::
+
+    responses
+      calibration_terms = 2
+        descriptors = 'volts' 'amps'
+        calibration_data_file = 'circuit.dat'
+          annotated
+
+
+And the data file ``circuit``.dat must contain only the :math:`y^{Data}`  observations which represent a single experimental observation.
+In this case, the data file should have :math:`N_{terms} = 2`  columns
+(for volts, amps) and 1 row, where :math:`N_{terms}`  is the value of
+:ref:`responses-calibration_terms<responses-calibration_terms>`.  The data file is shown here in
+annotated format:
+
+
+.. code-block::
+
+    exp_id | y data observations
+    1         21.9372  1.8687
+
+
+For each function evaluation, Dakota will run the analysis driver,
+which must return :math:`N_{terms} = 2`  model responses. Then the
+residuals are computed as: 
+.. math::  R_{i} = y^{Model}_i - y^{Data}_{i}. 
+These residuals can be weighted using
+:ref:`responses-calibration_terms-weights<responses-calibration_terms-weights>`.
+
+*Multiple experiments:* One might specify ``num_experiments`` :math:`N_E`  indicating that there are multiple experiments.  When multiple
+experiments are present, Dakota will expand the number of residuals
+for the repeat measurement data and difference with the data
+accordingly. For example, if the user has :math:`N_E = 4`  experiments
+in the example above with 2 calibration terms, the input file would
+contain
+
+
+.. code-block::
+
+    responses
+      calibration_terms = 2
+        descriptors = 'volts' 'amps'
+        calibration_data_file = 'circuit.dat'
+          annotated
+          num_experiments = 4
+
+
+And the ``calibration_data_file`` would need to contain 2 rows (one for
+each experiment), and each row should contain 2 experimental data
+values that will be differenced with respect to the appropriate model
+response:
+
+
+.. code-block::
+
+    exp_id  | y data observations
+    1          21.9372  1.8687
+    2          19.0779  4.8976
+    3          38.2758  4.4559
+    4          39.7600  6.4631
+
+
+To summarize, Dakota will calculate the sum of the squared
+residuals as: 
+.. math:: f = \sum_{i=1}^{N_E}R_{i}^2
+where the residuals
+now are calculated as: 
+.. math:: R_{i} = y^{Model}_i(\theta) -
+y^{Data}_{i}. 
+*With experimental variances:* If information is known about the
+measurement error and the uncertainty in the measurement, that can be
+specified by sending the measurement error variance to Dakota.  In
+this case, the keyword ``experiment_variance_type`` is added, followed by a
+string of variance types of length one or of length :math:`N_{terms}`  , where
+:math:`N_{terms}`  is the value of :ref:`responses-calibration_terms<responses-calibration_terms>`.
+The ``experiment_variance_type`` for each response can be 'none' or 'scalar'.
+NOTE: you must specify the same ``experiment_variance_type`` for all scalar
+terms. That is, they will all be 'none' or all be 'scalar.'
+
+
+.. code-block::
+
+    responses
+      calibration_terms = 2
+        descriptors = 'volts' 'amps'
+        calibration_data_file = 'circuit.dat'
+          annotated
+          experiment_variance_type 'scalar'
+
+
+For each response that has a 'scalar' variance type, each row of the
+datafile will now have :math:`N_{terms} = 2`  of :math:`y`  data values
+(volts, amps) followed by :math:`N_{terms} =2`  columns that specify
+the measurement error (in units of variance, not standard deviation)
+for volts, amps.  An example with two experiments in annotated format:
+
+
+.. code-block::
+
+    exp_id | y data observations | y data variances
+    1         21.9372  1.8687       0.25  0.04
+
+
+Dakota will run the analysis driver, which must return :math:`N_{terms}`  responses. Then the residuals are computed as:
+
+
+.. math:: 
+   R_{i} = \frac{y^{Model}_i - y^{Data}_{i}}{\sqrt{{var}_i}} 
+
+for :math:`i = 1 \dots N_{terms}` .
+
+*Putting all the options together:* Specifying all these options
+together might look like
+
+
+.. code-block::
+
+    responses
+      calibration_terms = 2
+        descriptors = 'volts' 'amps'
+        calibration_data_file = 'circuit.dat'
+          annotated
+          num_experiments = 4
+          experiment_variance_type 'scalar'
+
+
+Dakota will expect a data file
+
+
+.. code-block::
+
+    exp_id | configuration xvars | y data observations | y data variances
+    1         7.8  7                21.9372  1.8687       0.25  0.04
+    2         8.6  2                19.0779  4.8976       0.25  0.04
+    3         8.4  8                38.2758  4.4559       0.25  0.04
+    4         4.2  1                39.7600  6.4631       0.25  0.04
+
+
+To compute residuals for each experiment, e.g., exp_id = 4, Dakota will
+
+
+
+1. Evaluate the computational model at the specified configuration (state variables = [4.2, 1]).
+
+
+2. Difference the resulting 2 function values with the data [39.7600 volts, 6.4631 amps]
+
+
+3. Weight by the standard deviation = sqrt([0.25  0.04])
+Theory::
+
+Faq::
+
+See_Also::

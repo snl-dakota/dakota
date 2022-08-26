@@ -1,0 +1,30 @@
+.. _releasenotes-30:
+
+""""""""""""""""""""""""
+Version 3.0 (2002/03/30)
+""""""""""""""""""""""""
+
+All Version 3.0 beta additions plus:
+
+**General:**
+
+- Documentation (Users, Reference, and Developers Manuals) updated.
+- New software quality assurance (SQA) standards instituted.
+- Vector/list template classes based on STL are now well tested and stable.
+
+**New strategies:**
+
+- The surrogate-based optimization (SBO) strategy reduces computational expense and mitigates nonsmooth response variations through the use of local (Taylor series), global (quadratic polynomials, neural networks, kriging, splines), and hierarchical approximations. This strategy is now provably-convergent through the addition of the "beta" correction approach, which enforces first order consistency requirements necessary to ensure convergence to the optimum of the actual, high fidelity model. This new beta correction capability is critical for making SBO viable with hierarchical surrogates (models of varying fidelity).
+- The augmentation of samples at the root and branch nodes (for identifying good NLP starting points) is now functional for the parallel branch and bound strategy.
+
+**New iterative methods:**
+
+- OPT++ has completed the release approval process and the ANSI C++ version of OPT++ is now available for download with DAKOTA. The performance of OPT++'s nonlinear interior point methods is competitive with DOT and NPSOL, and OPT++ therefore provides a more capable freeware alternative for constrained minimization than CONMIN.
+- DAKOTA/UQ reorganized to make better use of inheritance, updated from Petra 1.0 to Epetra 2.0, and extended to include the mean value (MV) analytic reliability method.
+- DOT/CONMIN wrappers extended to manage linear inequality and equality constraints. DOT, NPSOL, OPT++, and CONMIN are now completely plug and play in terms of linear and nonlinear inequality and equality constraints.
+
+**New features:**
+
+- Tagged output streams for concurrent iterators are now managed with Cout/Cerr macros and are independent of UTILIB's CommonIO class.
+- Active set vector control may now be turned off in order to simplify user simulation interfaces. This allows the user to neglect the active set vector and trade some efficiency for simplicity.
+- LayeredModel correction facilities streamlined to remove the need to back out previous corrections before applying new ones. Local and hierarchical layered models now operate correctly in parallel.

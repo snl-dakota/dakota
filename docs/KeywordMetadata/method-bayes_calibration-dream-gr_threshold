@@ -1,8 +1,0 @@
-Blurb:: Convergence tolerance for the Gelman-Rubin statistic
-Description::   The gr_threshold is the convergence tolerance for the Gelman-Rubin statistic which will govern the 
-convergence of the multiple chain process. 
-Topics:: 	bayesian_calibration	
-Examples::
-Theory::
-Faq::
-See_Also::	

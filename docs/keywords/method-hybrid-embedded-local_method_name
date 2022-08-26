@@ -1,0 +1,16 @@
+Blurb::
+Specify the local method by Dakota name
+Description::
+``local_method_name`` is used to specify the local method in a
+``hybrid`` ``embedded`` optimization by Dakota name (e.g. '
+:ref:`method-conmin_mfd<method-conmin_mfd>`'). The name of the method is provided as a
+string. The method is executed with default options.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

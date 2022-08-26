@@ -1,0 +1,35 @@
+Blurb::
+Use the DRAM MCMC algorithm
+Description::
+The type of Markov Chain Monte Carlo used.  This keyword specifies the
+use of DRAM, (Delayed Rejection Adaptive Metropolis) :cite:p:`Haario`.
+
+*Default Behavior*
+
+Five MCMC algorithm variants are supported: ``dram``,
+``delayed_rejection``, ``adaptive_metropolis``, ``metropolis_hastings``, and
+``multilevel``.  The default is ``dram``.
+
+*Usage Tips*
+
+If the user knows very little about the proposal covariance, using
+dram is a recommended strategy.  The proposal covariance is adaptively
+updated, and the delayed rejection may help improve low acceptance
+rates.
+Topics::
+bayesian_calibration
+Examples::
+
+.. code-block::
+
+    method,
+            bayes_calibration queso
+              dram
+              samples = 10000 seed = 348
+
+
+Theory::
+
+Faq::
+
+See_Also::

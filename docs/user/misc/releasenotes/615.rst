@@ -1,0 +1,67 @@
+.. _releasenotes-615:
+
+"""""""""""""""""""""""""
+Version 6.15 (2021/11/15)
+"""""""""""""""""""""""""
+
+**Highlight: ML/MF UQ Methods**
+
+Significant extensions to multi-level (ML) / multi-fidelity (MF) sampling methods for UQ, including iterated versions of approximate control variate (ACV) and multifidelity Monte Carlo (MFMC) methods as well as refinement of previous multilevel and control variate approaches. These methods leverage the new ensemble surrogate model abstraction deployed in v6.14, which affords specification of model fidelities in an unordered / non-hierarchical manner. 
+
+*Enabling / Accessing:* New ML / MF sampling methods are specified as approximate_control_variate or multifidelity_sampling in combination with the new non_hierarchical surrogate model. Previous methods based on the hierarchical surrogate model are also now more fine-grained, including multilevel_sampling for multilevel Monte Carlo, multifidelity_sampling again for control variate Monte Carlo (the previous two-model hierarchical case is a special case of non-hierarchical MFMC with M approximation models), and multilevel_multifidelity_sampling for multilevel-multifidelity Monte Carlo.
+
+*Documentation:* Within the Dakota 6.15 Reference Manual, refer to method specifications and options for approximate_control_variate, multifidelity_sampling, multilevel_sampling, and multilevel_multifidelity_sampling.
+
+**Improvements by Category**
+
+*Surrogate Models*
+
+ - New Surrogates: The cost of Gaussian Process evaluation and variance methods has been significantly improved.
+
+*Optimization Methods*
+
+- Bug: Optimization and calibration with scaling transforms were not properly exploring discrete (or mixed) variables. Thanks to Madeline Lickenbrock for the report.
+- Bug: When using both scaling transforms and explicit calibration data, nonlinear constraints were not properly reported. This and a number of latent issues with scaling and data transformations were fixed. Thanks to George Orient for the report.
+
+*UQ Methods*
+
+- New ACV and MFMC methods as highlighted at top. Both implementations are novel iterated versions that treat the pilot sample as online cost by default, and adapt the entire sample profile relative to this pilot. This allows the user to commit fewer up-front resources to the accurate estimation of correlations and variances through the specification of smaller pilots, thereby relying on the iteration to compute the most efficient fully-integrated sample profile.
+  
+  - Convergence can be controlled via either accuracy (convergence_tolerance) or budget (max_function_evaluations)
+  - Current ACV sub-problem solvers are either NPSOL sequential quadratic programming (sqp) or OPT++ nonlinear interior point (nip), which solve a linearly-constrained sub-problem to minimize the estimator variance.
+  - Solution modes include online_pilot (default described above), offline_pilot (for comparison with "oracle" correlations/variances), and pilot_projection (for assessment of potential performance to inform ML/MF method selection).
+
+- Refinements to previous hierarchical ML/MF sampling approaches to enhance consistency with newer methods: 
+  
+  - Selection of an MLMC, CVMC, and MLMF MC approach is no longer hard-wired based on the type of model hierarchy encountered. After splitting into separate method specifications, model form and/or resolution hierarchies can now be supported more flexibly across the ML/MF method set.
+  - MLMC, CVMC, and MLMF MC now support a total budget target as an alternative to an accuracy target.
+  - Over-shoot has been reduced by applying control variate over-sample ratios to HF targets rather than actual HF counts (which may differ due to pilot over-estimation) and low-fidelity sample increments have been deferred until the over-sample ratios are converged (LF over-sample increments are no longer performed per iteration). Caveat: MLMF MC case has a pending patch for this, to be released soon.
+
+- PCE methods using compressive sensing, such as orthogonal matching pursuit, now more reliably recover the mean (0-th order) coefficient even when its magnitude is near zero. This feature is a fortuitous by-product of the response_scaling capability, originally targeting more robust handling of the variations in response scale when modeling multifidelity discrepancies.
+- The C3 library for functional tensor train approximation (developer: Alex Gorodetsky at the University of Michigan) can now be conditionally included without inducing testing differences, thanks to the GSL / CBLAS enhancement described below.
+
+*Architecture/Developer Features*
+
+- Enh: Regression test baselines are now specified per-test input file, easing maintenance.
+- Enh: Entirely new automated build/test system will enable wider platform and compiler support
+
+**Miscellaneous Enhancements and Bugfixes**
+
+- Examples Library: New examples for UQ with polynomial chaos and plotting with Dakota GUI's Chartreuse 
+- Enh/Bug fix: GCC 10 portability. Allow Fortran code in Lawson-Hanson and Surfpack's MARS to compile with GCC 10.x, which enforced consistency in scalar vs. array arguments. Thanks to both Tim Fuller and Sebastian Uharek for submitting patches.
+- Enh/Bug fix: Better error reporting when reading calibration configuration data files
+- Enh: New dakota-ui.sh wrapper facilitates setting paths and library locations necessary for launching The Dakota GUI on Mac.
+- Enh: Improved configure-time identification of GSL. Dakota now uses the standard CMake FindGSL, so user configure scripts may need to conform to the recommend search variables. 
+- Enh: Added support for DOE Vanguard and ATS-2 platforms.
+
+**Deprecated and Changed**
+
+Deprecated two-model control variate Monte Carlo using the hierarchical surrogate model, as now superseded by non-hierarchical MFMC.
+
+**Compatibility**
+
+No mandatory changes to required compilers or third-party libraries. Dakota has been smoke tested on newer GCC and Clang compilers, but not fully tested.
+
+**Other Notes and Known Issues**
+
+None

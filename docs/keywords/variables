@@ -1,0 +1,284 @@
+Blurb::
+Specifies the parameter set to be iterated by a particular method.
+
+Description::
+The ``variables`` specification in a Dakota input file specifies the
+parameter set to be iterated by a particular method. In the case of
+
+- An optimization study: These variables are adjusted in order to  locate an optimal design.
+- Parameter studies/sensitivity analysis/design of experiments: These  parameters are perturbed to explore the parameter space.
+- Uncertainty analysis: The variables are associated with  distribution/interval characterizations which are used to compute  corresponding distribution/interval characterizations for response  functions.
+
+To accommodate these different studies, Dakota supports different:
+
+- Variable types: design
+
+  - aleatory uncertain
+  - epistemic uncertain
+  - state
+
+- Variable domains: continuous
+
+  - discrete
+  
+    - discrete range
+    - discrete integer set
+    - discrete string set
+    - discrete real set
+
+Use the :ref:`topic-variables<topic-variables>` page to browse the available variables by type and domain.
+
+
+*Variable Types*
+
+- *Design Variables:* Design variables are those variables which are modified for the purposes of seeking an optimal design.
+
+  - The most common type of design variables encountered in engineering
+    applications are of the continuous type. These variables may assume
+    any real value within their bounds.
+  - All but a handful of the optimization algorithms in
+    Dakota support continuous design variables exclusively.
+
+- *Aleatory Uncertain Variables:* Aleatory uncertainty is also known as inherent variability, irreducible uncertainty, or randomness.
+
+  - Aleatory uncertainty is predominantly characterized using probability theory. This is the only option implemented in Dakota.
+
+- *Epistemic Uncertain Variables:* Epistemic uncertainty is uncertainty due to lack of knowledge.
+
+  - In Dakota, epistemic uncertainty is assessed by interval analysis or the Dempster-Shafer theory of evidence
+  - Continuous or discrete interval or set-valued variables are used to define set-valued probabilities or basic probabiliy assignments (BPA) which define a belief structure.
+  - Note that epistemic uncertainty can also be modeled with probability density functions (as done with aleatory uncertainty). Dakota does not support this capability.
+
+- *State Variables:* State variables consist of "other" variables which are to be mapped through
+  the simulation interface, in that they are not to be used for design and
+  they are not modeled as being uncertain.
+  
+  - State variables provide a convenient mechanism for managing additional
+    model parameterizations such as mesh density, simulation convergence
+    tolerances, and time step controls.
+  - Only parameter studies and design of experiments methods will iterate
+    on state variables.
+  - The ``initial_value`` is used as the only value
+    for the state variable for all other methods, unless ``active``
+    ``state`` is invoked.
+  - See more details on the :ref:`topic-state_variables<topic-state_variables>` page.
+
+*Variable Domains*
+
+Continuous variables are typically defined by bounds. Discrete
+variables can be defined in one of three ways, which are discussed on
+the page :ref:`topic-discrete_variables<topic-discrete_variables>`.
+
+.. _variables-ordering-of-variables:
+
+*Ordering of Variables*
+
+The ordering of variables is important, and a consistent ordering is
+employed throughout the Dakota software.  The ordering is shown in
+dakota.input.summary (and in the hierarchical order of this reference
+manual) and can be summarized as:
+
+1. design
+
+   a. continuous
+   b. discrete integer
+   c. discrete string
+   d. discrete real
+   
+2. aleatory uncertain
+
+   a. continuous
+   b. discrete integer
+   c. discrete string
+   d. discrete real
+   
+3. epistemic uncertain
+
+   a. continuous 
+   b. discrete integer
+   c. discrete string
+   d. discrete real
+   
+4. state
+
+   a. continuous
+   b. discrete integer
+   c. discrete string
+   d. discrete real
+
+Ordering of variable types below this granularity (e.g., from normal
+to histogram bin within aleatory uncertain - continuous ) is defined
+somewhat arbitrarily, but is enforced consistently throughout the
+code.
+
+*Active Variables*
+
+The reason variable types exist is that methods have the capability to
+treat variable types differently. All methods have default behavior that
+determines which variable types are "active" and will be assigned values
+by the method. For example, optimization methods will only vary the
+design variables - by default.
+
+The default behavior should be described on each method page, or on
+topics pages that relate to classes of methods.  In addition, the
+default behavior can be modified using the :ref:`variables-active<variables-active>`
+keyword.
+
+At least one type of variables that are active for the method in use
+must have nonzero size (at least 1 active variable) or an input error
+message will result.
+
+*Inferred Default Values and Bounds*
+
+The concept of active variables allows any Dakota variable type to be
+used in any method context.  Some methods, e.g., bound-constrained
+optimization or multi-dimensional or centered parameter studies,
+require bounds and/or an initial point on the variables, however
+uncertain variables may not be naturally defined in terms of these
+characteristics.
+
+Distribution lower and upper bounds are explicit portions of the
+normal, lognormal, uniform, loguniform, triangular, and beta
+specifications, whereas they are implicitly defined for others.  For
+example, bounds are naturally defined for histogram bin, histogram
+point, and interval variables (from the extreme values within the
+bin/point/interval specifications) as well as for binomial (0 to
+``num_trials``) and hypergeometric (0 to min( ``num_drawn``,
+``num_selected``)) variables.
+
+If not specified, distribution bounds are also inferred for normal and
+lognormal (if optional bounds are unspecified) as well as for
+exponential, gamma, gumbel, frechet, weibull, poisson, negative
+binomial, and geometric (which have no bounds specifications); these
+bounds are [0, :math:`\mu + 3 \sigma` ] for exponential, gamma, frechet,
+weibull, poisson, negative binomial, geometric, and unspecified
+lognormal, and [ :math:`\mu - 3 \sigma` , :math:`\mu + 3 \sigma` ] for gumbel
+and unspecified normal.
+
+When an intial point is needed and not explcitly specified in user
+input, it is assigned as described in the ``initial_point`` or
+``initial_state`` specification, e.g.,
+:ref:`variables-normal_uncertain-initial_point<variables-normal_uncertain-initial_point>`. For example, uncertain
+variables are initialized to their means, where mean values for
+bounded normal and bounded lognormal may be further adjusted to
+satisfy any user-specified distribution bounds, mean values for
+discrete integer range distributions are rounded down to the nearest
+integer, and mean values for discrete set distributions are rounded to
+the nearest set value.
+
+Topics::
+block
+
+Examples::
+Several examples follow. In the first example, two continuous design
+variables are specified:
+
+
+.. code-block::
+
+    variables,
+     continuous_design = 2
+       initial_point    0.9    1.1
+       upper_bounds     5.8    2.9
+       lower_bounds     0.5   -2.9
+       descriptors   'radius' 'location'
+
+
+In the next example, defaults are employed. In this case,
+``initial_point`` will default to a vector of ``0``. values,
+``upper_bounds`` will default to vector values of ``DBL_MAX`` (the maximum
+number representable in double precision for a particular platform),
+``lower_bounds`` will default to a vector of ``-DBL_MAX`` values, and
+``descriptors`` will default to a vector of <tt>'cdv_i'</tt> strings,
+where ``i`` ranges from one to two:
+
+
+.. code-block::
+
+    variables,
+     continuous_design = 2
+
+
+In the following example, the syntax for a normal-lognormal
+distribution is shown.  One normal and one lognormal uncertain
+variable are completely specified by their means and standard
+deviations. In addition, the dependence structure between the two
+variables is specified using the ``uncertain_correlation_matrix``.
+
+
+.. code-block::
+
+    variables,
+            normal_uncertain    =  1
+              means             =  1.0
+              std_deviations    =  1.0
+              descriptors       =  'TF1n'
+            lognormal_uncertain =  1
+              means             =  2.0
+              std_deviations    =  0.5
+              descriptors       =  'TF2ln'
+            uncertain_correlation_matrix =  1.0 0.2
+                                            0.2 1.0
+
+
+An example of the syntax for a state variables specification follows:
+
+
+.. code-block::
+
+    variables,
+            continuous_state = 1
+              initial_state       4.0
+              lower_bounds        0.0
+              upper_bounds        8.0
+              descriptors        'CS1'
+            discrete_state_range = 1
+              initial_state       104
+              lower_bounds        100
+              upper_bounds        110
+              descriptors        'DS1'
+
+
+And in a more advanced example, a variables specification containing a
+set identifier, continuous and discrete design variables, normal and
+uniform uncertain variables, and continuous and discrete state
+variables is shown:
+
+
+.. code-block::
+
+    variables,
+     id_variables = 'V1'
+     continuous_design = 2
+       initial_point    0.9    1.1
+       upper_bounds     5.8    2.9
+       lower_bounds     0.5   -2.9
+       descriptors   'radius' 'location'
+     discrete_design_range = 1
+       initial_point    2
+       upper_bounds     1
+       lower_bounds     3
+       descriptors   'material'
+     normal_uncertain = 2
+       means          =  248.89, 593.33
+       std_deviations =   12.4,   29.7
+       descriptors    =  'TF1n'   'TF2n'
+     uniform_uncertain = 2
+       lower_bounds =  199.3,  474.63
+       upper_bounds =  298.5,  712.
+       descriptors  =  'TF1u'   'TF2u'
+     continuous_state = 2
+       initial_state = 1.e-4  1.e-6
+       descriptors   = 'EPSIT1' 'EPSIT2'
+     discrete_state_set
+              integer = 1
+         initial_state = 100
+         set_values    = 100 212 375
+         descriptors   = 'load_case'
+
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,17 @@
+.. _releasenotes-gui-612:
+
+""""""""""""""""""""""""""""""""""""""
+Version 6.12 - Ice Age Alley (2020/06)
+""""""""""""""""""""""""""""""""""""""
+
+**Chartreuse Plotting**
+
+- New "relative threshold" feature allows you to define graph color scales on a 0-100 percentage scale.
+- Enabled custom decimal precision for canvas axes.
+- Enabled quadrant labeling for non-categorical heat maps.
+- When plotting correlation or rank correlation datasets, all dataset combinations (variable-response, response-variable, response-response, variable-variable and all-all) are now supported.
+- Better controls for ignoring inactive variables when generating plots.
+
+**Quantity of Interest extractors:** New "Last Anchor Occurrence" QOI extractor added
+
+A variety of small bugfixes to the Basic Model Format (BMF) creator, the New Dakota Study wizard, and the Dakota text editor

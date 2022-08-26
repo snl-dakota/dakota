@@ -1,9 +1,0 @@
-Blurb:: 
-Compute the coefficients of a polynomial expansion using least squares
-Description::
-Compute the coefficients of a polynomial expansion using least squares. Specifically SVD-based least-squares will be used for solving over-determined systems. For the situation when the number of function values is smaller than the number of terms in a PCE, but the total number of samples including gradient values is greater than the number of terms, the resulting over-determined system will be solved using equality constrained least squares
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	

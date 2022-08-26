@@ -1,0 +1,26 @@
+Blurb::
+Specify the number of processors per analysis when Dakota is run in parallel
+Description::
+For direct function interfaces, ``processors_per_analysis`` can be used
+to specify multiprocessor analysis partitions. As with the
+``evaluation_servers``, ``analysis_servers``,
+``evaluation_self_scheduling``, ``evaluation_static_scheduling``,
+``analysis_self_scheduling``, and ``analysis_static_scheduling``
+specifications, ``processors_per_analysis`` provides a means for the
+user to override the automatic parallel configuration (refer to
+ParallelLibrary and the Parallel Computing chapter of the Users Manual
+:cite:p:`UsersMan`) for the number of processors used for each analysis
+partition.
+
+*Usage Tips*
+
+- If both ``analysis_servers`` and ``processors_per_analysis`` are     specified and they are not in agreement, then ``analysis_servers``     takes precedence.
+Topics::
+concurrency_and_parallelism
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

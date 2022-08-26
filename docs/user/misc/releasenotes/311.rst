@@ -1,0 +1,26 @@
+.. _releasenotes-311:
+
+""""""""""""""""""""""""""
+Version 3.1.1 (2003/05/21)
+""""""""""""""""""""""""""
+
+**Interim release enhancements**
+
+- Overhaul of 2D graphics:
+
+  - subtle bug fixed with passing double* from an STL vector.
+  - horizontal/vertical wheel operations reworked.
+  - "Print" and "Markers" buttons activated in "Options" window. Markers can now be deactivated, and individual EPS files can now be generated from each plot window.
+  - box sizes, labels, button offsets, and colors adjusted to be more legible, and initial window sizing adjusted to properly capture the number of plots.
+  - reduced memory usage and improved efficiency.
+  
+- Completion of parallel scheduling for Pareto-set and Multi-start strategies:
+
+  - fixed parallel bug in random start feature (LHS must be executed only on world rank 0 and its results must be communicated to all iterator masters).
+  - scheduling routines are more modular and dynamic scheduling is now supported within dedicated-master partitions.
+
+- Miscellaneous:
+
+  - added support for the GM device in MPI.
+  - streamlined parallel configuration reporting.
+  - fixed string output formatting problem under Linux.

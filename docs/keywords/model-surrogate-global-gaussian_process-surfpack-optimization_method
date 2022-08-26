@@ -1,0 +1,37 @@
+Blurb::
+Change the optimization method used to compute hyperparameters
+Description::
+Select the optimization method to compute hyperparameters of the
+Gaussian Process by specifying one of these arguments:
+
+
+- ``global`` (default) - DIRECT method
+
+
+- ``local`` - CONMIN method
+
+
+- ``sampling`` - generates several random guesses and picks the candidate with greatest likelihood
+
+
+- ``none`` - no optimization, pick the center of the feasible region
+
+
+
+The ``none`` option, and the starting location of the
+``local`` optimization, default to the center, in
+log(correlation length) scale, of the of feasible region.
+
+Surfpack picks a small feasible region of correlation parameters.
+
+Note that we have found the ``global``
+optimization method to be the most robust.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

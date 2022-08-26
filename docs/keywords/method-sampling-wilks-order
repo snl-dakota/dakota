@@ -1,0 +1,25 @@
+Blurb::
+The order of the statistics to use when determining sample sizes
+for random sampling using Wilks order statistics.
+Description::
+*Default Behavior*
+
+The default order is 1.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        wilks
+          order 2
+
+
+Theory::
+
+Faq::
+
+See_Also::

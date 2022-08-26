@@ -1,0 +1,44 @@
+Blurb::
+Calculate the confidence intervals on estimates of first and second moments
+Description::
+During Bayesian calibration, a chain of samples is produced, which represents
+the underlying posterior distribution of model parameters. For each parameter
+sample, the corresponding model response is computed. The
+``confidence_intervals`` keyword indicates the calculation of a 95% confidence
+interval on the estimated mean and variance of each parameter and each
+response.
+
+As of Dakota 6.10, these confidence intervals are calculated using the
+asymptotically valid interval estimator,
+
+
+.. math:: 
+
+   \bar{g}_{n} \pm t_{*}\frac{\hat{\sigma}_{n}}{\sqrt{n}},
+
+where :math:`\bar{g}_{n}`  is the moment (i.e. mean or variance), :math:`t_{*}`  is
+the Student's :math:`t` -value for the 95th quantile, :math:`n`  is the sample size, and
+:math:`\hat{\sigma}_{n}`  is an estimate of the
+standard error whose square is obtained using batch means estimation. The
+Markov chain produced during calibration is broken up into "batches," the
+sample moment is calculated for each batch, and :math:`\hat{\sigma}_{n}`  is an
+unbiased estimate of the standard deviation in these batch moment calculations.
+
+*Expected Output*
+
+If ``confidence_intervals`` is specified, the 95% confidence interval for the
+mean and variance for each parameter and for each response will be output to
+the screen. If ``output`` is set to ``debug``, the mean of the moment calculated
+for each batch will also be output to the screen.
+
+*Additional Discussion*
+
+Confidence intervals may be used to indicate to the user whether ``samples``
+needs to be increased during the Bayesian calibration. For example, if the
+width of the intervals (one, many, or all) is below some threshold value, that
+may indicate that enough samples have been drawn.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

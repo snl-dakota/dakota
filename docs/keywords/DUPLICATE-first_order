@@ -1,0 +1,15 @@
+Blurb::
+Specify that truth values and gradients must be matched.
+Description::
+This correction specification specifies that the approximation will be
+corrected to match truth data. The keyword ``first_order`` matching
+ensures that truth values and gradients are matched.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

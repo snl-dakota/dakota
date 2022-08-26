@@ -1,0 +1,19 @@
+Blurb::
+Specify the form of the expansion to be used in the random field representation.
+THIS IS AN EXPERIMENTAL CAPABILITY.
+Description::
+This control allows the user to specify the form of
+the random field representation (e.g. either a Karhunen-Loeve or Principal Components expansion).
+THIS IS AN EXPERIMENTAL CAPABILITY UNDER ACTIVE DEVELOPMENT.
+
+*Default Behavior*
+The default expansion form is Karhunen-Loeve.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

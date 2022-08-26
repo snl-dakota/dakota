@@ -1,0 +1,86 @@
+Blurb::
+Supply field or mixed field/scalar calibration data
+Description::
+``calibration_data`` specifies a keyword block that indicates that
+Dakota should read in experimental data for calibration.  This block
+is primarily to support the reading of field calibration data.  For
+simpler, scalar-only response cases, see
+:ref:`responses-calibration_terms-calibration_data_file<responses-calibration_terms-calibration_data_file>`.  The user will
+typically specify the number of experiments, ``num_experiments``.  If
+this is not specified, it is assumed there is only one experiment.
+
+Up to four types of data may be read.  They are read from a collection
+of files, one per response descriptor, per experiment.  In this
+discussion, DESC refers to the response descriptor and NUM to the
+experiment number.
+
+
+
+1. *Values:* The scalar or field-valued response function values, e.g., temperature values, voltage levels.  These are read from files named ``DESC``.NUM.dat (one per response descriptor, per experiment), e.g, ``NUM.datvolts``.1.dat, ``1.dat,volts``.2.dat.  Scalar files will contain a single value, while field files will each contain a column of field reponse values. Without :ref:`responses-calibration_terms-calibration_data-interpolate<responses-calibration_terms-calibration_data-interpolate>` enabled, the lengths of these files must match those specified using the responses-calibration_terms-field_calibration_terms-lengths keyword.
+
+
+2. *Coordinates:* Field coordinates specify independent variables (e.g., spatial or temporal coordinates) upon which the field depends.  For example, the voltage might be a function of time, so time is the field coordinate.  These are read from files named ``DESC``.NUM.coords, each containing :ref:`responses-calibration_terms-field_calibration_terms-num_coordinates_per_field<responses-calibration_terms-field_calibration_terms-num_coordinates_per_field>` columns. The number of rows must be the same as in the values files described in the previous bullet.
+
+
+3. *Variances:* If :ref:`responses-calibration_terms-calibration_data-experiment_variance_type<responses-calibration_terms-calibration_data-experiment_variance_type>` is specified, variance values are read from files ``DESC``.NUM.sigma. Note that a single ``NUM.sigma.experiment_variance_type`` may be specified, or a unique ``experiment_variance_type`` per response descriptor (per scalar or field). If the ``experiment_variance_type`` is:
+
+
+  - 'scalar': a single variance value will be read from the file.
+
+
+  - 'diagonal' (field responses only): a column vector of variance values (length equal to the number of experimental data points) will be read from the file. The values are the variances of each field value for this descriptor.
+
+
+  - 'matrix' (field responses only): a matrix of covariance values (square with size the number of experimental values) will be read from the file. The matrix is a full covariance matrix for the components of this field response.  While covariance among entries in a field response may be specified, covariance among experiments is not permitted.
+
+
+
+
+4. *Configuration variables:* specify the conditions corresponding to different experiments.  When responses-calibration_terms-calibration_data-num_config_variables is specified, the configuration variable values for each experiment should be placed in a file named ``experiment``.NUM.config, where the number of items in that config file are the ``NUM.config,num_config_variables``.  These variables are used as auxilliary state variables for the simulation (for example) and are not calibrated. *Attention:* In versions of Dakota prior to 6.14, string-valued configuration variables were specified in data files with 0-based indices into the admissible values. As of Dakota 6.14, strings must be specified by value. For example a string-valued configuration variable for an experimental condition might appear in the file as ``low_pressure`` vs. ``high_pressure``.
+
+
+
+*Aggregating scalar data:* The above description is primarily
+relevant for field data (with files for field values, field
+coordinates, field variances).  If the user also has scalar
+experimental data, it may be entered as described above, i.e., one
+file named DESC.NUM.dat per scalar response.  However, an alternative
+is to provde the data for all scalar responses in aggregate in the
+simpler
+:ref:`responses-calibration_terms-calibration_data-scalar_data_file<responses-calibration_terms-calibration_data-scalar_data_file>` format,
+with the number of rows of that file equal to the number of
+experiments.  The scalar data file may be used in combination with the
+the separate field files described above.
+
+*Interpolation:* One important feature of field data is the
+capability to interpolate between points in the field.  For example,
+we may have simulation data at a set of responses :math:`y`  at time
+points :math:`t` : ( :math:`t_{s1}, y_{s1}` ), ( :math:`t_{s2}, y_{s2}` ),
+etc.  In this example, :math:`t`  is the independent coordinate for the
+simulation, and the simulation time and response points are denoted
+with subscripts :math:`s1, s2, s3,` .  If the user has experimental
+data that is taken at different time points: ( :math:`t_{e1}, y_{e1}` ),
+( :math:`t_{e2}, y_{e2}` ), ..., it is necessary to interpolate the
+simulation data to provide estimates of the simulation response at the
+experimental time points to construct the residual terms (model -
+experiment) at the experimental time points.  Dakota can perform 1-D
+interpolation.  The user must specify the keyword ``interpolate``, and
+also provide the field coordinates as well as field values for the
+experiment data.
+
+If the ``interpolate`` keyword is not specified, Dakota will assume
+that the simulation field data and the experiment field data is taken
+at the same set of independent coordinate values and simply construct
+the difference between these field terms to create the set of
+residuals for the sum-of-squares calculation.  When ``interpolate`` is
+specified, the simulation coordinates are assumed fixed and the same
+for each simulation.  These simulation coordinates are provided in
+DESC.coords.  However, the experiment coordinates for each
+experiment can be different, and are provided in the files numbered by
+experiment with the file names given by DESC.NUM.coords, as indicated
+above.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

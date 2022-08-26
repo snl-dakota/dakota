@@ -1,0 +1,16 @@
+Blurb::
+Preserve the work directory after function evaluation completion
+Description::
+By default, when a working directory is created by Dakota using the
+``work_directory`` keyword, it is deleted after the evaluation is
+completed.  The ``directory_save`` keyword will cause Dakota to leave
+(not delete) the directory.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,14 @@
+Blurb::
+Normalize each gradient sample by its norm
+Description::
+For each reponse function :math:`f_i` , normalize each gradient sample
+:math:`\nabla^j f_i`  by its two-norm :math:`\|\nabla^j f_i\|` 
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

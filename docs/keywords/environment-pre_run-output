@@ -1,0 +1,23 @@
+Blurb::
+Base filename for pre-run mode data output
+Description::
+Specify a base filename to which Dakota will write any
+pre-run output data (typically parameter sets to be evaluated). This
+option is overridden by any command-line -pre_run arguments.
+
+*Usage Tips*
+
+Dakota exports tabular data in one of three formats:
+
+- ``annotated`` (default)
+- ``custom_annotated``
+- ``freeform``
+Topics::
+dakota_IO
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

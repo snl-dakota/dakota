@@ -1,0 +1,39 @@
+Blurb::
+Selection of cumulative or complementary cumulative functions
+Description::
+The ``distribution`` keyword allows the user to select between a
+cumulative distribution/belief/plausibility function and a
+complementary cumulative distribution/belief/plausibility function.
+This choice affects how probabilities and reliability indices are
+reported.
+
+*Default Behavior*
+
+If the ``distribution`` keyword is present, it must be accompanied by
+either ``cumulative`` or ``complementary``.  Otherwise, a cumulative
+distribution will be used by default.
+
+*Expected Outputs*
+
+Output will be a set of model response-probability pairs determined
+according to the choice of distribution. The choice of distribution
+also defines the sign of the reliability or generalized reliability
+indices.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type lhs
+        samples = 10
+        distribution cumulative
+
+
+Theory::
+
+Faq::
+
+See_Also::

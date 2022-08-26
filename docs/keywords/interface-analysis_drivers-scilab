@@ -1,0 +1,20 @@
+Blurb::
+Run Scilab through a direct interface - requires special Dakota build
+Description::
+Dakota supports a library-linked interface to Scilab, but it must be
+explicitly enabled when compiling Dakota from source. Consult the
+Users Manual :cite:p:`UsersMan` for discussion and examples.  Contact the
+Dakota users mailing list for assistance building and using Dakota
+with these interfaces.
+
+The :ref:`interface-analysis_drivers<interface-analysis_drivers>` specifies a Scilab file which
+implements the parameter to response mapping.
+Topics::
+
+Examples::
+See ``dakota/share/dakota/examples/users/Scilab/linked``
+Theory::
+
+Faq::
+
+See_Also::

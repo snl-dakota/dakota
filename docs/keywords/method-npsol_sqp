@@ -1,0 +1,98 @@
+Blurb::
+NPSOL Sequential Quadratic Program
+Description::
+Sequential quadratic programming optimizer.
+
+*NPSOL requires a separate software license and therefore may not
+be available in all versions of Dakota.  CONMIN or OPT++ methods may
+be suitable alternatives.*
+
+
+*Stopping Criteria*
+
+The method independent controls for ``max_iterations`` and
+``max_function_evaluations`` limit the number of major SQP iterations and
+the number of function evaluations that can be performed during an
+NPSOL optimization. The ``convergence_tolerance`` control defines
+NPSOL's internal optimality tolerance which is used in evaluating if
+an iterate satisfies the first-order Kuhn-Tucker conditions for a
+minimum. The magnitude of ``convergence_tolerance`` approximately
+specifies the number of significant digits of accuracy desired in the
+final objective function (e.g., ``convergence_tolerance`` = ``1``.e-6
+will result in approximately six digits of accuracy in the final
+objective function). The ``constraint_tolerance`` control defines how
+tightly the constraint functions are satisfied at convergence. The
+default value is dependent upon the machine precision of the platform
+in use, but is typically on the order of ``1``.e-8 for double precision
+computations. Extremely small values for ``constraint_tolerance`` may
+not be attainable. The ``output`` verbosity setting controls the amount
+of information generated at each major SQP iteration: the ``silent``
+and ``quiet`` settings result in only one line of diagnostic output for
+each major iteration and print the final optimization solution,
+whereas the ``verbose`` and ``debug`` settings add additional
+information on the objective function, constraints, and variables at
+each major iteration.
+
+
+*Concurrency*
+
+NPSOL is not a parallel algorithm and cannot directly take advantage
+of concurrent evaluations. However, if ``numerical_gradients`` with
+``method_source`` ``dakota`` is specified, then the finite difference
+function evaluations can be performed concurrently (using any of the
+parallel modes described in the Users Manual
+:cite:p:`UsersMan`).
+
+An important related
+observation is the fact that NPSOL uses two different line searches
+depending on how gradients are computed. For either
+``analytic_gradients`` or ``numerical_gradients`` with ``method_source``
+``dakota``, NPSOL is placed in user-supplied gradient mode (NPSOL's
+"Derivative Level" is set to 3) and it uses a gradient-based line
+search (the assumption is that user-supplied gradients are
+inexpensive). On the other hand, if ``numerical_gradients`` are
+selected with ``method_source`` ``vendor``, then NPSOL is computing
+finite differences internally and it will use a value-based line
+search (the assumption is that finite differencing on each line search
+evaluation is too expensive). The ramifications of this are: (1)
+performance will vary between ``method_source`` ``dakota`` and
+``method_source`` ``vendor`` for ``numerical_gradients``, and (2) gradient
+speculation is unnecessary when performing optimization in parallel
+since the gradient-based line search in user-supplied gradient mode is
+already load balanced for parallel execution. Therefore, a
+``speculative`` specification will be ignored by NPSOL, and optimization
+with numerical gradients should select ``method_source`` ``dakota`` for
+load balanced parallel operation and ``method_source`` ``vendor`` for
+efficient serial operation.
+
+
+*Linear constraints*
+
+Lastly, NPSOL supports specialized handling of linear inequality and
+equality constraints. By specifying the coefficients and bounds of the
+linear inequality constraints and the coefficients and targets of the
+linear equality constraints, this information can be provided to NPSOL
+at initialization and tracked internally, removing the need for the
+user to provide the values of the linear constraints on every function
+evaluation.
+
+*Expected HDF5 Output*
+
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
+
+
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+Topics::
+package_npsol, sequential_quadratic_programming, local_optimization_methods
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

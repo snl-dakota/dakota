@@ -1,0 +1,17 @@
+Blurb::
+Secondary mappning of top-level variables to sub-model variables
+Description::
+The ``primary_variable_mapping``, ``secondary_variable_mapping``,
+``primary_response_mapping``, and ``secondary_response_mapping`` keywords control
+how top-level variables and responses are mapped to variables
+and responses in the sub-model. Their usage is explained on
+the parent keyword ( ``sub_method_pointer``) page.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

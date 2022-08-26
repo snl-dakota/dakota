@@ -1,0 +1,34 @@
+Blurb::
+Final variable values defining vector in vector parameter study
+Description::
+The ``final_point`` keyword is used to define the final values for each
+variable on the vector to be used in the vector parameter study.  The
+vector's direction and magnitude are determined by the initial value
+from the variables specification, and the ``final_point``.
+
+*Default Behavior*
+
+The user is required to specify either ``final_point`` or
+``step_vector``.  There is no default definition for the vector.
+
+*Usage Tips*
+
+The actual points are determined based on this vector and the number
+of points chosen is given in ``num_points``.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      vector_parameter_study
+        num_steps = 10
+        final_point =    2.0      2.0
+
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,9 +1,0 @@
-Blurb::
-A distribution parameter for the binomial distribution
-Description::
-The binomial distribution is typically used to predict the number of failures (or defective items or some type of event) in a total of \c n independent tests or trials, where each trial has the probability \c p of failing or being defective. Each particular test can be considered as a Bernoulli trial.
-Topics::	
-Examples::
-Theory::
-Faq::
-See_Also::	

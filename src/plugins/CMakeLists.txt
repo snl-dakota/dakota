@@ -7,7 +7,7 @@
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.17)
 project(DakotaPlugins CXX)
 
 # Currently Python plugins require Boost DLL headers (to load libpython.so)

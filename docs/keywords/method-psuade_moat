@@ -1,0 +1,69 @@
+Blurb::
+Morris One-at-a-Time
+Description::
+The Morris One-At-A-Time (MOAT) method, originally proposed by Morris
+:cite:p:`Mor91`, is a screening method, designed
+to explore a computational model to distinguish between input
+variables that have negligible, linear and additive, or nonlinear or
+interaction effects on the output. The computer experiments performed
+consist of individually randomized designs which vary one input factor
+at a time to create a sample of its elementary effects.
+
+The number of samples ( ``samples``) must be a positive integer multiple
+of (number of continuous design variable + 1) and will be
+automatically adjusted if misspecified.
+
+The number of partitions (
+``partitions``) applies to each variable being studied and must be odd
+(the number of MOAT levels per variable is partitions + 1). This will
+also be adjusted at runtime as necessary.
+
+For information on practical use of this method, see
+:cite:p:`Sal04`.
+Topics::
+package_psuade, design_and_analysis_of_computer_experiments
+Examples::
+
+Theory::
+With MOAT, each dimension of a :math:`k-` dimensional input space is
+uniformly partitioned into :math:`p`  levels, creating a grid of :math:`p^k`  points
+:math:`{\bf x} \in \bf{R}^k`  at which evaluations of the model :math:`y({\bf
+x})`  might take place. An elementary effect corresponding to input
+:math:`i`  is computed by a forward difference
+
+.. math:: 
+
+   d_i({\bf x}) = \frac{y({\bf x} + \Delta {\bf e}_i) - y({\bf x})}{\Delta},
+
+where :math:`e_i`  is the :math:`i^{\mbox{\scriptsize th}}`  coordinate vector, and
+the step :math:`\Delta`  is typically taken to be large (this is not intended
+to be a local derivative approximation). In the present
+implementation of MOAT, for an input variable scaled to :math:`[0,1]` ,
+:math:`\Delta = \frac{p}{2(p-1)}` , so the step used to find elementary
+effects is slightly larger than half the input range.
+
+The distribution of elementary effects :math:`d_i`  over the input space
+characterizes the effect of input :math:`i`  on the output of interest.
+After generating :math:`r`  samples from this distribution, their mean,
+
+.. math::  \mu_i = \frac{1}{r}\sum_{j=1}^{r}{d_i^{(j)}}
+
+modified mean
+
+.. math:: 
+
+   \mu_i^* = \frac{1}{r}\sum_{j=1}^{r}{|d_i^{(j)}|},
+
+(using absolute value) and standard deviation
+
+.. math:: 
+
+   \sigma_i = \sqrt{ \frac{1}{r}\sum_{j=1}^{r}{ \left(d_i^{(j)} - \mu_i
+   \right)^2} }
+
+are computed for each input :math:`i` . The mean and modified mean give an
+indication of the overall effect of an input on the output. Standard
+deviation indicates nonlinear effects or interactions, since it is an
+indicator of elementary effects varying throughout the input space.
+Faq::
+See_Also::

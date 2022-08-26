@@ -1,7 +1,0 @@
-Blurb:: Number of generations a long jump step is taken
-Description::   The integer jump_step forces a long jump every jump_step generations in DREAM.
-Topics::	bayesian_calibration
-Examples::
-Theory::
-Faq::
-See_Also::	

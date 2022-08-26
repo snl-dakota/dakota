@@ -1,0 +1,19 @@
+Blurb::
+The merit function by Vanderbei and Shanno
+Description::
+The "van_shanno" merit function can be classified as a penalty
+function for the logarithmic barrier formulation of the nonlinear
+programming problem. The cost per linesearch iteration is one function
+evaluation. For more information see :cite:p:`VanShanno1999`.
+
+If the function evaluation is expensive or noisy, set the
+``merit_function`` to "argaez_tapia" or "van_shanno".
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

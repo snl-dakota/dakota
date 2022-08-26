@@ -1,0 +1,28 @@
+Blurb::
+Interval analysis using global optimization methods
+Description::
+In the global approach to interval estimation, one uses either a global optimization
+method or a sampling method to assess the bounds of the responses.
+
+``global_interval_est``
+allows the user to specify several approaches to calculate
+interval bounds on the output responses.
+
+- ``lhs`` - note: this takes the minimum and maximum of the samples as the bounds
+- ``ego``
+- ``sbo``
+- ``ea``
+
+*Additional Resources*
+
+Refer to :ref:`topic-variable_support<topic-variable_support>` for information on supported
+variable types.
+Topics::
+uncertainty_quantification, epistemic_uncertainty_quantification_methods, interval_estimation
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

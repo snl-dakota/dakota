@@ -1,0 +1,19 @@
+Blurb::
+Determine how rectangles are subdivided
+Description::
+The ``division`` specification determines how DIRECT subdivides each
+subregion of the search space.
+
+If ``division`` is set to ``major_dimension``, then the dimension
+representing the longest edge of the subregion is subdivided (this is
+the default). If ``division`` is set to ``all_dimensions``, then all
+dimensions are simultaneously subdivided.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

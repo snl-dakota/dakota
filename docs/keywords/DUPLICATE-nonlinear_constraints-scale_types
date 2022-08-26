@@ -1,0 +1,31 @@
+Blurb::
+How to scale each nonlinear constraint
+Description::
+Each string in ``scale_types`` indicates the scaling type for each
+nonlinear inequality (equality) constraint. They only have effect
+when the associated method specifies ``scaling``.
+
+The options are:
+
+
+- ``value`` - characteristic value by which nonlinear constraint values will be divided. If this is chosen, then ``scales`` must also be specified; 'value' is assumed if scales are given without ``scale_types``
+- ``auto`` - automatic scaling based on bounds (inequalities) or targets (equalities)
+- ``log`` - logarithmic scaling (can be used together with ``scales``, which can be helpfully used to negate values prior to log transformation)
+
+If a single string is specified it will apply to all of the nonlinear
+inequality (equality) constraints. Otherwise a string must be
+specified for each nonlinear inequality (equality) constraint.
+
+*Usage Tips:*
+
+See the scaling information under specific methods, e.g.,
+method-\*-scaling for details on how to use this keyword.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::
