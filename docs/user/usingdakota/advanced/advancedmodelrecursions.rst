@@ -337,6 +337,8 @@ attributes. As with other complex Dakota input files, the identification
 tags given in each keyword block can be used to follow the relationships
 among the different keyword blocks.
 
+.. _`litinc-adv-model-recursion-textbook_opt_ouu1`:
+
 .. literalinclude:: ../samples/textbook_opt_ouu1.in
    :language: dakota
    :tab-width: 2
