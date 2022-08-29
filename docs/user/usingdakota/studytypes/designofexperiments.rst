@@ -150,14 +150,14 @@ DDACE, FSUDACE, and PSUADE primarily for design of experiments, where we
 are interested in understanding the main effects of parameters and where
 we want to sample over an input domain to obtain values for constructing
 a response surface. We use the nondeterministic sampling methods
-(``sampling``) for uncertainty quantification, where we are propagating
+(:ref:`sampling <method-sampling>`) for uncertainty quantification, where we are propagating
 specific input distributions and interested in obtaining (for example) a
 cumulative distribution function on the output. If one has a problem
 with no distributional information, we recommend starting with a design
 of experiments approach. Note that DDACE, FSUDACE, and PSUADE currently
 do *not* support distributional information: they take an upper and
 lower bound for each uncertain input variable and sample within that.
-The uncertainty quantification methods in ``sampling`` (primarily Latin
+The uncertainty quantification methods in :ref:`sampling <method-sampling>` (primarily Latin
 Hypercube sampling) offer the capability to sample from many
 distributional types. The distinction between UQ and DACE is somewhat
 arbitrary: both approaches often can yield insight about important
