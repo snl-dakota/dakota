@@ -3402,3 +3402,27 @@ applications.
    refinement or proposal updating, since these use cases access the
    entire acceptance chain to identify refinement data or restarting
    points, respectively.
+   
+Video Resources
+---------------
+
++--------------------------------------+-----------------+----------------+
+| Title                                | Link            | Resources      |
++======================================+=================+================+
+| Uncertainty Quantification           | |Training|_     | `Slides`__ /   |
+|                                      |                 | `Exercises`__  |
++--------------------------------------+-----------------+----------------+
+| Sampling                             | |Video|_        |                |
++--------------------------------------+-----------------+----------------+
+
+.. __: https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_UncertaintyQuantification.pdf
+__ https://dakota.sandia.gov/sites/default/files/training/uncertainty_analysis-220216.zip
+
+.. |Training| image:: img/UQTrainingTeaser.png
+                :alt: Uncertainty Quantification
+.. _Training: http://digitalops.sandia.gov/Mediasite/Play/8105e6e9c2cb45089cf24cd4585fc8cb1d
+
+.. |Video| image:: img/SamplingScreencastTeaser.png
+             :alt: Sampling
+.. _Video: https://www.youtube.com/watch?v=dnqoUCw6wSo
+
