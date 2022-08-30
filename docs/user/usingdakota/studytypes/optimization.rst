@@ -1586,3 +1586,20 @@ along with the license status and web page where available.
    :height: 2.5in
 .. |image4| image:: img/rosen_ea_final.png
    :height: 2.5in
+
+Video Resources
+---------------
+
++----------------------+-----------------+----------------+
+| Title                | Link            | Resources      |
++======================+=================+================+
+| Optimization         | |Training|_     | `Slides`__ /   |
+|                      |                 | `Exercises`__  |
++----------------------+-----------------+----------------+
+
+.. __: https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_Optimization.pdf
+__ https://dakota.sandia.gov/sites/default/files/training/optimization-220216.zip
+
+.. |Training| image:: img/OptimizationTrainingTeaser.png
+                :alt: Optimization
+.. _Training: https://digitalops.sandia.gov/Mediasite/Play/a13c912f3e994c4ea010aacd903b12111d
