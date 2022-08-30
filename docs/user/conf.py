@@ -22,8 +22,20 @@ project = 'dakota'
 copyright = '2022, Sandia National Laboratories'
 author = 'Sandia National Laboratories'
 
-# The full version, including alpha/beta/rc tags
-release = '6.16.0'
+# The major project version, used as the replacement for
+# |version|. For example, for the Python documentation, this may be
+# something like 2.6.
+#
+# For Dakota this will be substituted at build time by CMake
+version = '6.16'
+
+# The full project version, used as the replacement for |release| and
+# e.g. in the HTML templates. For example, for the Python
+# documentation, this may be something like 2.6.0rc1.
+#
+# For Dakota this will be substituted at build time by CMake, and may
+# include an appended stable '+'
+release = '6.16.0+'
 
 
 # -- General configuration ---------------------------------------------------

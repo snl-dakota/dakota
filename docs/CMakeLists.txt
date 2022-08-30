@@ -137,6 +137,22 @@ generate_users_examples_interfacing(
 
 add_custom_target(docs-user-samples DEPENDS ${_gen_inputs_var_out} ${_gen_interfacing_var_out})
 
+
+function(insert_dakota_version _conf_py_filename)
+  file(READ "${_conf_py_filename}" _conf_data)
+  string(REGEX REPLACE "version = '[0-9]+\\.[0-9]+'"
+    "version = '${Dakota_VERSION_PAIR}'" _conf_data "${_conf_data}")
+  string(REGEX REPLACE "release = '[0-9]+\\.[0-9]+\\.[0-9]+\\+?'"
+    "release = '${Dakota_VERSION_STRING}'" _conf_data "${_conf_data}")
+  file(WRITE "${_conf_py_filename}" "${_conf_data}")
+endfunction()
+
+# NOTE: This only happens on re-configure
+#
+# TODO: Need build time dep on this and ideally generate to build tree
+# and perhaps then use sphinx-build -c ${DakotaDocs_BINARY_DIR}/user
+insert_dakota_version("${DakotaDocs_SOURCE_DIR}/user/conf.py")
+
 add_custom_target(docs-user
   COMMAND "${_dakota_sphinx_exe}" -a -E -b html "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx:

@@ -8,6 +8,11 @@ div.wy-side-nav-search a {
     color: #50bfc7;
 }
 
+/* make sure version number doesn't disappear */
+.wy-side-nav-search > div.version {
+    color: #448FAA;
+}
+
 div.wy-nav-content {
     max-width: 1200px;
 }
