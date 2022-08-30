@@ -1,3 +1,5 @@
+.. _`responses:main`:
+
 Responses
 =========
 

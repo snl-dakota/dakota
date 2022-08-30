@@ -79,6 +79,8 @@ GUI Resources
 Deep Dive into Dakota's Analysis Driver Process
 ===============================================
 
+.. _user-supplied-sim-code-case1:
+
 ---------------------------
 Compiled Rosenbrock Example
 ---------------------------
@@ -166,6 +168,8 @@ the file ``results.out.1``:
 The value shown above is the value of the objective function, and the descriptor ‘f’ is an optional tag returned by the simulation
 code. When the fork call has completed, Dakota reads in the data from the results.in.X file and processes the results.
 Dakota then continues with additional executions of the rosenbrock program until the optimization process is complete.
+
+.. _user-supplied-sim-code-case2:
 
 ------------------------------
 User-Supplied Simulation Codes

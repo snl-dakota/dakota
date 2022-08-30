@@ -1,3 +1,5 @@
+.. _`models:main`:
+
 Models
 ======
 
@@ -101,6 +103,8 @@ Section `[adv_meth:sbm] <#adv_meth:sbm>`__). Surrogate models supported
 in Dakota can be categorized into three types: data fits, multifidelity,
 and reduced-order model surrogates. An overview and discussion of
 surrogate correction is provided here, with details following.
+
+:ref:`If you are looking for video resources on Dakota surrogate models, click here <surrmodels-videos>`.
 
 Overview of Surrogate Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1432,3 +1436,23 @@ specified using the ``truncation_tolerance`` keyword.
 For more information on active subspaces please consult the Theory
 Manual :cite:p:`TheoMan` and/or
 references :cite:p:`Constantine-preprint-active,constantine2014active,constantine2015active`.
+
+.. _`surrmodels-videos`:
+
+Video Resources
+---------------
+
++----------------------+-----------------+----------------+
+| Title                | Link            | Resources      |
++======================+=================+================+
+| Surrogate Models     | |Training|_     | `Slides`__ /   |
+|                      |                 | `Exercises`__  |
++----------------------+-----------------+----------------+
+
+.. __: https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_SurrogateModels.pdf
+__ https://dakota.sandia.gov/sites/default/files/training/surrogate-220216.zip
+
+.. |Training| image:: img/SurrogatesTrainingTeaser.png
+                :alt: Surrogate Models
+.. _Training: https://digitalops.sandia.gov/Mediasite/Play/b249f5f9347d4d9580be23dca66d9c1d1d
+

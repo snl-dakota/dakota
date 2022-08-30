@@ -1,3 +1,5 @@
+.. _`variables:main`:
+
 Variables
 =========
 

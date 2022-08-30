@@ -1,3 +1,5 @@
+.. _`interfaces:main`:
+
 Interfaces
 ==========
 
