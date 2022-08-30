@@ -189,7 +189,7 @@ user-specified correlation structure among the variables.
 The sampling methods in DDACE can be used alone or in conjunction with
 other methods. For example, DDACE sampling can be used with both
 surrogate-based optimization and optimization under uncertainty advanced
-methods. See :ref:`textbook_opt_ouu1.in <litinc-adv-model-recursion-textbook_opt_ouu1>` for
+methods. See :numref:`adv_models:figure09` for
 an example of how the DDACE settings are used in Dakota.
 
 The following sections provide more detail about the sampling methods
@@ -213,7 +213,7 @@ design is specified in Dakota with the method command
 :ref:`dace <method-dace>` :ref:`central_composite <method-dace-central_composite>`.
 
 As an example, with two input variables or factors, each having two
-levels, the factorial design is shown in :ref:`dace-table1`:
+levels, the factorial design is shown in :numref:`dace-table1`:
 
 .. table:: *Simple Factorial Design*
    :name: dace-table1
@@ -233,8 +233,8 @@ levels, the factorial design is shown in :ref:`dace-table1`:
    +----------+---------+   
 
 
-With a CCD, the design in :ref:`dace-table1` would be
-augmented with the points shown in :ref:`dace-table2`,
+With a CCD, the design in :numref:`dace-table1` would be
+augmented with the points shown in :numref:`dace-table2`,
 if :math:`\alpha` = 1.3.
 
 .. table:: *Additional Points to make the factorial design a CCD*
@@ -303,7 +303,7 @@ refers to the number of levels per input variable. The strength refers
 to the number of columns where we are guaranteed to see all the
 possibilities an equal number of times.
 
-For example, the following table shows an orthogonal array of
+For example, :numref:`dace-table3` shows an orthogonal array of
 strength 2 for :math:`m` = 8, with 7 variables:
 
 .. table:: *Orthogonal Array for Seven Variables*
@@ -541,10 +541,7 @@ deviation indicates nonlinear effects or interactions, since it is an
 indicator of elementary effects varying throughout the input space.
 
 The MOAT method is selected with method keyword :ref:`psuade_moat <method-psuade_moat>` as shown
-in the sample Dakota input file
-:ref:`morris_ps_moat.in <litinc-dace-morris_ps_moat>`.
-
-.. _`litinc-dace-morris_ps_moat`:
+in the sample Dakota input file :numref:`FIG:moat_input`.
 
 .. literalinclude:: ../samples/morris_ps_moat.in
    :language: dakota
@@ -776,8 +773,7 @@ uncertainty quantification mode), an active view override (e.g.,
 :ref:`"Management of Mixed Variables by Iterator" <variables:mixedview>`) of the Dakota
 input file.
 
-Design of experiments method selection recommendations are summarized in
-the table below:
+Design of experiments method selection recommendations are summarized in :numref:`dace-table4`:
 
 .. table:: *Guidelines for selection of parameter study, DOE, DACE, and sampling methods.*
    :name: dace-table4
