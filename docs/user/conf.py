@@ -12,6 +12,7 @@
 #
 import os
 import sys
+sys.path.insert(0, os.path.abspath("./_extensions"))
 sys.path.append(os.path.abspath("./_pygments"))
 
 from lexer.dakota import DakotaLexer
@@ -43,7 +44,7 @@ release = '6.16.0+'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['myst_parser', 'sphinxcontrib.bibtex']
+extensions = ['myst_parser', 'sphinxcontrib.bibtex', 'dakota']
 
 # Dakota input file syntax highlighting
 highlight_language = "dakota"
