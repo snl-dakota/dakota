@@ -133,6 +133,8 @@ The contents of the generated neutral file are similar to the following (from th
 
 This format is not intended for direct viewing (print should be used for this purpose). Rather, the neutral file capability has been used in the past for managing portability of restart data across platforms (recent use of more portable binary formats has largely eliminated this need) or for advanced repair of restart records (in cases where the remove command was insufficient).
 
+.. __`restart:utility:tabular`:
+
 ==============
 Tabular Format
 ==============
