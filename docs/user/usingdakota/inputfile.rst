@@ -15,7 +15,6 @@ Dakota Input File
    inputfile/interfaces
    inputfile/responses
    inputfile/inputstodakota
-   inputfile/outputsfromdakota
    inputfile/inputspec   
 
 .. note::
