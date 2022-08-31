@@ -10,9 +10,10 @@ utilize Dakota to drive the evaluation of user supplied black box code. The exam
 show the simplest use of Dakota for methods of each type. More advanced examples of using Dakota for specific purposes are
 provided in subsequent, topic-based, chapters.
 
-:ref:`If you are looking for examples of coupling Dakota to external simulations, click here <couplingtosimulations-main>`.
+.. note::
    
-:ref:`If you are looking for video examples, click here <examples-gettingstarted-videos>`.
+   - If you are looking for examples of coupling Dakota to external simulations, refer to :ref:`this section <couplingtosimulations-main>`.
+   - If you are looking for "getting started" video examples, refer to :ref:`this section <examples-gettingstarted-videos>`.
 
 .. _examples-gettingstarted-rosenbrock:
 
@@ -149,8 +150,7 @@ subsection demonstrates the use of one such method through the Dakota interface.
 .. literalinclude:: ../samples/rosen_grad_opt.in
    :language: dakota
    :tab-width: 2
-   :caption: Rosenbrock gradient-based unconstrained optimization
-       example: the Dakota input file.
+   :caption: Rosenbrock gradient-based unconstrained optimization example: the Dakota input file.
    :name: tutorial:rosenbrock_grad
 
 The format of the input file in :numref:`tutorial:rosenbrock_grad` is similar to that used for the parameter studies, but there are some new keywords in the responses and method sections.
@@ -174,7 +174,9 @@ steps. The scaling of the horizontal and vertical axes can be changed by moving 
 “Options” button allows the user to plot the vertical axes using a logarithmic scale. Note that log-scaling is only allowed if the
 values on the vertical axis are strictly greater than zero.
 
-:ref:`Similar plots can also be created in Dakota’s graphical user interface <chartreuse-plot-templates-iterhistory>`.
+.. note::
+
+   Similar plots can also be created in :ref:`Dakota’s graphical user interface <chartreuse-plot-templates-iterhistory>`.
 
 .. figure:: ../img/dak_graphics_grad_opt.png
    :alt: Optimization plots (Legacy Dakota graphics plotting)

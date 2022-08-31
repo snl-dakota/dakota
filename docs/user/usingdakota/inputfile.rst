@@ -18,7 +18,9 @@ Dakota Input File
    inputfile/outputsfromdakota
    inputfile/inputspec   
 
-:ref:`If you are looking for video resources on Dakota's input file format, click here <inputfile-videos>`.
+.. note::
+   
+   If you are looking for video resources on Dakota's input file format, :ref:`click here <inputfile-videos>`.
 
 There are six specification blocks that may appear in Dakota input files. These are identified in the input file using the following
 keywords: variables, interface, responses, model, method, and environment. While, these keyword blocks can appear in any
@@ -33,9 +35,7 @@ shown in :numref:`inputfile:figure01`:
    
    Relationship between the six blocks, for a simple study.
 
-It can be summarized as follows: In each iteration of its algorithm, a method block requests a variables-
-to-responses mapping from its model, which the model fulfills through an interface. While most Dakota analyses satisfy this
-relationship, where a single method runs a single model, :ref:`advanced cases are possible <adv_meth>`.
+It can be summarized as follows: **In each iteration of its algorithm, a method block requests a variables-to-responses mapping from its model, which the model fulfills through an interface.**
 
 .. literalinclude:: samples/rosen_multidim.in
    :language: dakota
@@ -50,6 +50,10 @@ Dakota input files.
 .. note::
 
    To see the results of this study and more, consult the :ref:`Examples section <examples-gettingstarted-rosenbrock>`.
+   
+.. note::
+
+   While most Dakota analyses satisfy the relationship where a single method runs a single model, :ref:`advanced cases are possible <adv_meth>`.
 
 The first block of the input file is the **environment block.** This keyword block is used to specify the
 general Dakota settings such as Dakota’s graphical output (via the graphics flag) and the tabular data output (via the
