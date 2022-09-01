@@ -26,8 +26,11 @@ void DakotaPythonPlugin::initialize() {
   boost::dll::shared_library python_lib(PLUGIN_PYTHON_LIB,
       boost::dll::load_mode::rtld_global);
 
-  py::initialize_interpreter();
-  py::print("DakotaPythonPlugin: interpreter is live.");
+  if (!Py_IsInitialized()) {
+    py::initialize_interpreter();
+    py::print("DakotaPythonPlugin: interpreter is live.");
+    ownPython = true;
+  }
 
   // DTS: assuming a single analysis driver
   const size_t num_drivers = analysisDrivers.size();
@@ -41,8 +44,11 @@ void DakotaPythonPlugin::initialize() {
 }
 
 void DakotaPythonPlugin::finalize() {
-  py::print("DakotaPythonPlugin: interpreter shutting down.");
-  py::finalize_interpreter();
+  if (ownPython && Py_IsInitialized()) {
+    py::print("DakotaPythonPlugin: interpreter shutting down.");
+    py::finalize_interpreter();
+    ownPython = false;
+  }
 }
 
 void DakotaPythonPlugin::set_python_function(std::string const& py_module_fn_str) {

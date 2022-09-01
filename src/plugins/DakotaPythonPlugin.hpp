@@ -116,6 +116,8 @@ protected:
   bool expect_derivative(const std::vector<short>& active_set,
       const short deriv_type) const;
 
+  bool ownPython = false;
+
 };
 
 }
