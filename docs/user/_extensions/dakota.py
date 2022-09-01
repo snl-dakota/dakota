@@ -52,7 +52,7 @@ def dakota_keyword_role(name, rawtext, text, lineno, inliner, options={}, conten
     src_file = inliner.document.attributes['source']
     if (not '/usingdakota/' in src_file):
         msg = inliner.reporter.error(
-            'Dakota keyword reference "%s" can only be used in usingdakota chapter' % text, line=lineno)
+            f'Dakota keyword reference "{rawtext}" can only be used in usingdakota chapter, not in file {src_file}', line=lineno)
         prb = inliner.problematic(rawtext, rawtext, msg)
         return [prb], [msg]
 
