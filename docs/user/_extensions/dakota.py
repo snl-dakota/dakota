@@ -7,6 +7,7 @@ from docutils.nodes import Element, TextElement
 from docutils.utils import unescape
 from typing import Optional, Tuple, Type
 
+import pathlib
 import re
 
 # References
@@ -50,18 +51,18 @@ def dakota_keyword_role(name, rawtext, text, lineno, inliner, options={}, conten
     # TODO: only works in usingdakota section and only for HTML output
     # Find the document property that other cross-refs use for base URL
     src_file = inliner.document.attributes['source']
-    if (not '/usingdakota/' in src_file):
+    src_path = pathlib.Path(src_file)
+    src_parts = src_path.parts
+    if (not 'usingdakota' in src_parts):
         msg = inliner.reporter.error(
             f'Dakota keyword reference "{rawtext}" can only be used in usingdakota chapter, not in file {src_file}', line=lineno)
         prb = inliner.problematic(rawtext, rawtext, msg)
         return [prb], [msg]
 
     # TODO: resolve and validate the reference?
-    rel_source = src_file.split('/usingdakota/', 1)[1]
-    levels = rel_source.count('/')
+    levels = len(src_parts) - src_parts.index('usingdakota') - 2
     rel_uri = ('../' * levels +
               'reference/' + kw_full + '.html')
-
     ref = nodes.reference(rawtext, title, refuri=rel_uri, **options)
     # Wrap in a literal node for formatting
     literal_ref = nodes.literal('', '', ref)
