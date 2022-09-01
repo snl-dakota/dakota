@@ -53,7 +53,7 @@ combined to investigate the variation of derivative quantities through
 the parameter space by computing sensitivity information at multiple
 points.
 
-In addition to sensitivity analysis applications, parameter studies can
+Parameter studies can also
 be used for investigating nonsmoothness in simulation response
 variations (so that models can be refined or finite difference step
 sizes can be selected for computing numerical gradients), interrogating
@@ -64,7 +64,8 @@ minimization methods as either a pre-processor (to identify a good
 starting point) or a post-processor (for post-optimality analysis).
 
 Parameter study methods will iterate any combination of design,
-uncertain, and state variables defined over continuous and discrete
+uncertain, and state variables (possibly filtered by the
+:dakkw:`variables-active` keyword) defined over continuous and discrete
 domains into any set of responses (any function, gradient, and Hessian
 definition). Parameter studies draw no distinction among the different
 types of continuous variables (design, uncertain, or state) or among
@@ -128,23 +129,26 @@ specifications for normal and lognormal. Distribution bounds are
 implicitly defined for histogram bin, histogram point, and interval
 variables (from the extreme values within the bin/point/interval
 specifications) as well as for :ref:`binomial
-<variables-binomial_uncertain>` (0 to ``num_trials``) and
+<variables-binomial_uncertain>` (0 to
+:dakkw:`variables-binomial_uncertain-num_trials`) and
 :ref:`hypergeometric <variables-hypergeometric_uncertain>` (0 to
-min(``num_drawn``, ``num_selected``)) variables.  Finally,
-distribution bounds are inferred for normal and lognormal if optional
-bounds are unspecified, as well as for exponential, gamma, gumbel,
-frechet, weibull, poisson, negative binomial, and geometric (which
-have no bounds specifications); these bounds are :math:`[0, \mu + 3
-\sigma]` for exponential, gamma, frechet, weibull, poisson, negative
-binomial, geometric, and unspecified lognormal, and :math:`[\mu -
-3\sigma, \mu + 3\sigma]` for gumbel and unspecified normal.
+min(:dakkw:`variables-hypergeometric_uncertain-num_drawn`,
+:dakkw:`variables-hypergeometric_uncertain-selected_population`))
+variables.  Finally, distribution bounds are inferred for normal and
+lognormal if optional bounds are unspecified, as well as for
+exponential, gamma, gumbel, frechet, weibull, poisson, negative
+binomial, and geometric (which have no bounds specifications); these
+bounds are :math:`[0, \mu + 3 \sigma]` for exponential, gamma,
+frechet, weibull, poisson, negative binomial, geometric, and
+unspecified lognormal, and :math:`[\mu - 3\sigma, \mu + 3\sigma]` for
+gumbel and unspecified normal.
 
 .. _`ps:vector`:
 
 Vector Parameter Study
 ----------------------
 
-The vector parameter study (:dakkw:`method-vector_parameter_study`)
+The :ref:`vector parameter study <method-vector_parameter_study>`
 computes response data sets at selected intervals along an
 :math:`n`-dimensional vector in parameter space. This capability
 encompasses both single-coordinate parameter studies (to study the
@@ -155,8 +159,10 @@ failure).
 
 Vector studies use either
 
-- ``final_point`` (vector of reals) with ``num_steps`` (integer), or
-- ``step_vector`` (vector of reals) with ``num_steps`` (integer)
+- :dakkw:`method-vector_parameter_study-final_point` (vector of reals)
+  with :dakkw:`method-vector_parameter_study-num_steps` (integer), or
+- :dakkw:`method-vector_parameter_study-step_vector` (vector of reals)
+  with :dakkw:`method-vector_parameter_study-num_steps` (integer)
 
 in conjunction with the :ref:`Initial Values <ps:overview:initial>` to
 define the vector and steps of the parameter study.
@@ -165,23 +171,30 @@ In both of these cases, the Initial Values are used as the parameter
 study starting point and the specification selection above defines the
 orientation of the vector and the increments to be evaluated along the
 vector. In the former case, the vector from initial to final point is
-partitioned by ``num_steps``, and in the latter case, the
-``step_vector`` is added ``num_steps`` times.  Thus the number of
-evaluations is :math:`\mathtt{num\_steps} +1`.
+partitioned by the number of steps, and in the latter case, the step
+vector is added number of steps times.  Thus the number of evaluations
+is :math:`\mathtt{num\_steps} +1`.
 
 .. note::
 
-   For discrete range variables, both ``final_point`` and
-   ``step_vector`` are specified in the actual numerical values. For
-   integer- or real-valued discrete sets, ``final_point`` is specified
-   in the actual numerical values, while for discrete string variable
-   it is given using a zero-based index into the sorted admissible
-   string values. For all discrete set variables, ``step_vector`` must
-   specify index offsets for the (ordered, unique) set.
+   For discrete range variables, both
+   :dakkw:`method-vector_parameter_study-final_point` and
+   :dakkw:`method-vector_parameter_study-step_vector` are specified in
+   the actual numerical values. For integer- or real-valued discrete
+   sets, :dakkw:`method-vector_parameter_study-final_point` is
+   specified in the actual numerical values, while for discrete string
+   variable it is given using a zero-based index into the sorted
+   admissible string values. For all discrete set variables,
+   :dakkw:`method-vector_parameter_study-step_vector` must specify
+   index offsets for the (ordered, unique) set.
+
+.. _`ps:vector:example1`:
 
 **Example 1:** Three continuous parameters with initial values of
-(1.0, 1.0, 1.0), ``num_steps`` = 4, and either ``final_point`` = (1.0,
-2.0, 1.0) or ``step_vector`` = (0, .25, 0):
+(1.0, 1.0, 1.0), :dakkw:`method-vector_parameter_study-num_steps` = 4,
+and either :dakkw:`method-vector_parameter_study-final_point` = (1.0,
+2.0, 1.0) or :dakkw:`method-vector_parameter_study-step_vector` = (0,
+.25, 0):
 
 ::
 
@@ -206,11 +219,15 @@ evaluations is :math:`\mathtt{num\_steps} +1`.
                          2.0000000000e+00 c2   
                          1.0000000000e+00 c3   
 
+.. _`ps:vector:example2`:
+
 **Example 2:** Two continuous parameters with initial values of (1.0,
 1.0), one discrete range parameter with initial value of 5, one
 discrete real set parameter with set values of (10., 12., 18., 30.,
-50.) and initial value of 10., ``num_steps`` = 4, and either
-``final_point`` = (2.0, 1.4, 13, 50.) or ``step_vector`` = (.25, .1,
+50.) and initial value of 10.,
+:dakkw:`method-vector_parameter_study-num_steps` = 4, and either
+:dakkw:`method-vector_parameter_study-final_point` = (2.0, 1.4, 13,
+50.) or :dakkw:`method-vector_parameter_study-step_vector` = (.25, .1,
 2, 1):
 
 ::
@@ -276,7 +293,7 @@ used, they need not be specified.
    values (not set indices).
 
 A specification that would result in the same parameter sets as in the
-second :ref:`vector parameter study <ps:vector>` example is:
+second :ref:`vector parameter study example <ps:vector:example2>` is:
 
 ::
 
@@ -290,7 +307,7 @@ For convenience, the points to be evaluated may instead be imported
 from a file using
 :dakkw:`method-list_parameter_study-import_points_file`, e.g.,
 ``import_points_file 'listpstudy.dat'``, where the file
-``listpstudy.dat`` may be in :ref:`freeform or annotated format
+:file:`listpstudy.dat` may be in :ref:`freeform or annotated format
 <input:tabularformat>`. The points for each evaluation must be given
 in input specification order, with both active and inactive variables
 by default.
@@ -300,35 +317,39 @@ by default.
 Centered Parameter Study
 ------------------------
 
-The centered parameter study
-(:dakkw:`method-centered_parameter_study`) study executes multiple
-coordinate-based parameter studies, one per parameter, centered at the
-specified :ref:`Initial Values <ps:overview:initial>`. This can help
-investigate function contours in the vicinity of a specific point. For
-example, after computing an optimum design, this capability could be
-used for post-optimality analysis in verifying that the computed
-solution is actually at a minimum or constraint boundary and in
-investigating the shape of this minimum or constraint boundary.
+The :ref:`centered parameter study <method-centered_parameter_study>`
+study executes multiple coordinate-based parameter studies, one per
+parameter, centered at the specified :ref:`Initial Values
+<ps:overview:initial>`. This can help investigate function contours in
+the vicinity of a specific point. For example, after computing an
+optimum design, this capability could be used for post-optimality
+analysis in verifying that the computed solution is actually at a
+minimum or constraint boundary and in investigating the shape of this
+minimum or constraint boundary.
 
-This method requires ``step_vector`` (list of reals) and
-``steps_per_variable`` (list of integers) specifications, where the
-former specifies the size of the increments per variable and the
-latter specifies the number of increments per variable for each of the
-positive and negative step directions. (These steps are applied
-sequentially, not all at once as in the :ref:`vector study
-<ps:vector>`.)
+This method requires
+:dakkw:`method-centered_parameter_study-step_vector` (list of reals)
+and :dakkw:`method-centered_parameter_study-steps_per_variable` (list
+of integers) specifications, where the former specifies the size of
+the increments per variable and the latter specifies the number of
+increments per variable for each of the positive and negative step
+directions. (These steps are applied sequentially, not all at once as
+in the :ref:`vector study <ps:vector>`.)
 
 .. note::
 
-   Similar to the the vector study ``step_vector`` includes actual
-   variable steps for continuous and discrete range variables, but
-   employs index offsets for discrete set variables (integer, string,
-   or real).
+   Similar to the the vector study
+   :dakkw:`method-centered_parameter_study-step_vector` includes
+   actual variable steps for continuous and discrete range variables,
+   but employs index offsets for discrete set variables (integer,
+   string, or real).
 
-For example, with Initial Values of (1.0, 1.0), a ``step_vector`` of
-(0.1, 0.1), and a ``steps_per_variable`` of (2, 2), the center point is
-evaluated followed by four function evaluations (two negative deltas and
-two positive deltas) per variable:
+For example, with Initial Values of (1.0, 1.0), a
+:dakkw:`method-centered_parameter_study-step_vector` of (0.1, 0.1),
+and a :dakkw:`method-centered_parameter_study-steps_per_variable` of
+(2, 2), the center point is evaluated followed by four function
+evaluations (two negative deltas and two positive deltas) per
+variable:
 
 ::
 
@@ -380,25 +401,29 @@ The :ref:`multidimensional parameter study
 :math:`n`-dimensional hypergrid of points. Each variable is
 partitioned into equally spaced intervals between its :ref:`upper and
 lower bounds <ps:overview:bounds>`, and each combination of the values
-defined by these partitions is evaluated. As for the vector and
-centered studies, partitioning occurs using the actual variable values
-for continuous and discrete range variables, but occurs within the
-space of valid indices for discrete set variables (integer, string, or
-real). The number of function evaluations performed in the study is:
+defined by these partitions is evaluated.  The number of function
+evaluations performed in the study is:
 
 .. math::
 
-   \prod_{i=1}^{n}\left(\mathtt{partitions}_{i}+1\right) \label{ eq:ps:multidim}
+   \prod_{i=1}^{n}\left(\mathtt{partitions}_{i}+1\right), \label{ eq:ps:multidim}
 
-The partitions information is specified using the ``partitions``
-specification, which provides an integer list of the number of
-partitions for each variable (i.e.,
-:math:`\mathtt{partitions}_{i}`). Since the Initial Values will not be
-used, they need not be specified.
+where the :dakkw:`method-multidim_parameter_study-partitions` keyword
+gives an integer list of the number of partitions for each variable
+(i.e., :math:`\mathtt{partitions}_{i}`). Since the Initial Values will
+not be used, they need not be specified.
+
+.. note::
+
+   As for the vector and centered studies, partitioning occurs using
+   the actual variable values for continuous and discrete range
+   variables, but occurs within the space of valid indices for
+   discrete set variables (integer, string, or real).
 
 In a two variable example problem with :math:`d1 \in [0, 2]` and
 :math:`d2 \in [0,3]` (as defined by the upper and lower bounds from
-the variables specification) and with ``partitions`` = (2, 3), the
+the variables specification) and with
+:dakkw:`method-multidim_parameter_study-partitions` = (2, 3), the
 interval [0, 2] is divided into two equal-sized partitions and the
 interval [0, 3] is divided into three equal-sized partitions. This
 two-dimensional grid, shown in :numref:`fig:ps:multidim`, would result
@@ -482,18 +507,21 @@ test function described in :ref:`examples-gettingstarted-rosenbrock`.  A
 similar example of a multidimensional parameter study is shown in
 :ref:`examples-gettingstarted-grid_study`.
 
-A vector parameter study is a study between any two design points in an
-:math:`n`\-dimensional parameter space. An input file for the vector parameter
-study is shown in :numref:`additional:rosenbrock_vector`. The
-primary differences between this input file and the input file for the
-multidimensional parameter study are found in the *variables* and
-*method* sections. In the variables section, the keywords for the bounds
-are removed and replaced with the keyword ``initial_point`` that
-specifies the starting point for the parameter study. In the method
-section, the ``vector_parameter_study`` keyword is used. The
-``final_point`` keyword indicates the stopping point for the parameter
-study, and ``num_steps`` specifies the number of steps taken between the
-initial and final points in the parameter study.
+A vector parameter study is a study between any two design points in
+an :math:`n`\-dimensional parameter space. An input file for the
+vector parameter study is shown in
+:numref:`additional:rosenbrock_vector`. The primary differences
+between this input file and the input file for the multidimensional
+parameter study are found in the *variables* and *method* sections. In
+the variables section, the keywords for the bounds are removed and
+replaced with the keyword ``initial_point`` that specifies the
+starting point for the parameter study. In the method section, the
+:dakkw:`method-vector_parameter_study` keyword is used. The
+:dakkw:`method-vector_parameter_study-final_point` keyword indicates
+the stopping point for the parameter study, and
+:dakkw:`method-vector_parameter_study-num_steps` specifies the number
+of steps taken between the initial and final points in the parameter
+study.
 
 .. literalinclude:: ../samples/rosen_ps_vector.in
    :language: dakota
