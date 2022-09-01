@@ -1,7 +1,7 @@
 .. _dace:
 
-Design of Experiments Capabilities
-==================================
+Design of Experiments
+=====================
 
 .. _`dace:overview`:
 

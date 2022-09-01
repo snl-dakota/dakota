@@ -1,7 +1,7 @@
 .. _opt:
 
-Optimization Capabilities
-=========================
+Optimization
+============
 
 Optimization algorithms work to minimize (or maximize) an objective
 function, typically calculated by the user simulation code, subject to

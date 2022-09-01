@@ -1,7 +1,7 @@
 .. _ps:
 
-Parameter Study Capabilities
-============================
+Parameter Studies
+=================
 
 .. _`ps:overview`:
 

@@ -1,7 +1,7 @@
 .. _uq:
 
-Uncertainty Quantification Capabilities
-=======================================
+Uncertainty Quantification
+==========================
 
 .. _`uq:overview`:
 

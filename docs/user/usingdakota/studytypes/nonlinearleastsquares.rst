@@ -1,7 +1,7 @@
 .. _nls:
 
-Nonlinear Least Squares Capabilities
-====================================
+Nonlinear Least Squares
+=======================
 
 .. _`nls:overview`:
 
