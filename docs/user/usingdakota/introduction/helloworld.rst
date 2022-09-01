@@ -38,7 +38,7 @@ What now?
 - :ref:`Learn more about this example's parameter study method, and the rosenbrock test problem. <examples-gettingstarted-main>`
 - :ref:`Explore the many types of studies that are possible in Dakota <studytypes-main>`.
 - :ref:`Learn the syntax needed to use these methods <inputfile-main>`.
-- :ref:`Learn how to use your own analysis code with Dakota <advint>`.
+- :ref:`Learn how to use your own analysis code with Dakota <couplingtosimulations-main>`.
 
 ===============
 Video Resources
