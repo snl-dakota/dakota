@@ -4,7 +4,10 @@ from docutils import nodes
 
 from sphinx.roles import XRefRole
 from docutils.nodes import Element, TextElement
+from docutils.utils import unescape
 from typing import Optional, Tuple, Type
+
+import re
 
 # References
 # https://doughellmann.com/posts/defining-custom-roles-in-sphinx/
@@ -25,11 +28,24 @@ def dakota_keyword_role(name, rawtext, text, lineno, inliner, options={}, conten
 
     # TODO: Separate role or options for 
     #  Linking full text, e.g., variables-normal_uncertain vs. normal_uncertain
-    #  Custom title, e.g., Normal Uncertain vs. normal_uncertain
 
-    # Get the trailing keyword name that will be the hyper-linked text
-    kw_full = text
-    kw_name = kw_full.split('-')[-1]
+    # Lifted this title parsing from sphinx/util/docutil.py as can't
+    # get inhertiance approach below to work...
+
+    # \x00 means the "<" was backslash-escaped
+    explicit_title_re = re.compile(r'^(.+?)\s*(?<!\x00)<(.*?)>$', re.DOTALL)
+
+    matched = explicit_title_re.match(text)
+    if matched:
+        has_explicit_title = True
+        title = unescape(matched.group(1))
+        kw_full = unescape(matched.group(2))
+    else:
+        has_explicit_title = False
+        # Get the trailing keyword name that will be the hyper-linked text
+        kw_name = text.split('-')[-1]
+        title = unescape(kw_name)
+        kw_full = unescape(text)
 
     # TODO: only works in usingdakota section and only for HTML output
     # Find the document property that other cross-refs use for base URL
@@ -46,7 +62,7 @@ def dakota_keyword_role(name, rawtext, text, lineno, inliner, options={}, conten
     rel_uri = ('../' * levels +
               'reference/' + kw_full + '.html')
 
-    ref = nodes.reference(rawtext, kw_name, refuri=rel_uri, **options)
+    ref = nodes.reference(rawtext, title, refuri=rel_uri, **options)
     # Wrap in a literal node for formatting
     literal_ref = nodes.literal('', '', ref)
 
