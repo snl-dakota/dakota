@@ -773,10 +773,10 @@ uncertainty quantification mode), an active view override (e.g.,
 :ref:`"Management of Mixed Variables by Iterator" <variables:mixedview>`) of the Dakota
 input file.
 
-Design of experiments method selection recommendations are summarized in :numref:`dace-table4`:
+Design of experiments method selection recommendations are summarized in :numref:`dace:usage:table`:
 
 .. table:: *Guidelines for selection of parameter study, DOE, DACE, and sampling methods.*
-   :name: dace-table4
+   :name: dace:usage:table
    :align: center
    :widths: auto
 

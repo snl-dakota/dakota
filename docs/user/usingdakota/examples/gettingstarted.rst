@@ -64,6 +64,8 @@ of the Rosenbrock test problem.
 Parameter Studies
 =================
 
+.. _examples-gettingstarted-grid_study:
+
 ------------------------------------
 Two-Dimensional Grid Parameter Study
 ------------------------------------
@@ -103,6 +105,8 @@ are not particularly instructive. More interesting visualizations can be created
 or by importing Dakota’s tabular data into an external graphics/plotting package. Example graphics and plotting packages
 include Mathematica, Matlab, Microsoft Excel, Origin, Tecplot, Gnuplot, and Matplotlib. (Sandia National Laboratories and
 the Dakota developers do not endorse any of these commercial products.)
+
+.. _examples-gettingstarted-vector_study:
 
 ----------------------
 Vector Parameter Study
