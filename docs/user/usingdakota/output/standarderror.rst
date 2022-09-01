@@ -7,13 +7,15 @@ Error Messages Output
 A variety of error messages are printed by Dakota in the event that an
 error is detected in the input specification. Some of the more common
 input errors, and the associated error messages, are described below.
-See also the Common Specification Mistakes section in the Dakota
-Reference Manual :cite:p:`RefMan`.
 
-Incorrectly spelled specifications, such as ``“numericl_gradients”``,
+.. note::
+
+   Also see :ref:`Common Specification Mistakes <inputfile_formatting_mistakes>`.
+
+Incorrectly spelled specifications, such as ``numericl_gradients``,
 will result in error messages of the form:
 
-::
+.. code-block::
 
    Input line 31: unrecognized identifier 'numericl_gradients'.
    Input line 31: unrecognized identifier 'method_source'.
@@ -39,7 +41,7 @@ specification for a response data set is combined with selection of a
 gradient-based optimization method, then this error must be detected
 during set-up of the optimizer (see last line of listing):
 
-::
+.. code-block::
 
    Error: gradient-based minimizers require a gradient specification.
 
@@ -55,12 +57,10 @@ indicated by an active set vector containing 3’s), but the user’s
 simulation code only returns function values, then the following error
 message is generated:
 
-::
+.. code-block::
 
-       At EOF: insufficient data for functionGradient 1
+   At EOF: insufficient data for functionGradient 1
 
 Unfortunately, descriptive error messages are not available for all
 possible failure modes of Dakota. If you encounter core dumps,
-segmentation faults, or other failures, please request help using the
-support mechanisms described on the `Dakota
-website <http://dakota.sandia.gov/>`__.
+segmentation faults, or other failures, :ref:`please request help from the Dakota team <help-main>`.

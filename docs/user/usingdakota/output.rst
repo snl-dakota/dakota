@@ -5,25 +5,18 @@ Dakota Output
 
 .. _`output:overview`:
 
-While Dakota primarily targets complex numerical simulation codes that are run on
-massively parallel supercomputers, Dakota’s output focuses on succinct,
-text-based reporting of the iterations and function evaluations
-performed by an algorithm. In a number of contexts, Dakota generates
-tabular output useful for data analysis and visualization with external
-tools.
+Dakota’s output focuses on succinct, text-based reporting of the iterations
+and function evaluations performed by an algorithm.
 
-Beyond numerical results, all output files provide information that allows
-the user to check that the actual analysis was the intended analysis.
+In a number of contexts, Dakota generates tabular output useful for data analysis
+and visualization with external tools. Beyond numerical results, all output files
+provide information that allows the user to check that the actual analysis was the intended analysis.
 
-The Dakota GUI increasingly provides visualization facilities that have replaced
-the optional basic graphical output capability provided with Unix versions
-of Dakota. Additionally, HDF5 output has been added to Dakota's suite of
-output formats.
+Additionally, the Dakota GUI :ref:`provides visualization facilities <chartreuse-main>`
+that have replaced the optional basic graphical output capability provided with Unix versions
+of Dakota.
 
-.. note::
-
-   Whenever an output file is specified for a Dakota run, the screen output itself becomes quite minimal,
-   consisting of version statements, environment statements and execution times.
+Last but not least, :ref:`HDF5 output <hdf5_output>` has been added to Dakota's suite of output formats.
 
 .. toctree::
    :maxdepth: 1

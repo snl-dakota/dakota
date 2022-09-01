@@ -4,7 +4,25 @@
 Standard Output
 ===============
 
-The output file contains information on every function evaluation:
+Dakota prints information on algorithm progress, function evaluations,
+and summary results to standard out and error (screen, terminal, or
+console) as it runs. Detailed information for a function evaluation may
+include an evaluation number, parameter values, execution syntax, the
+active set vector, and the response data set.
+
+This output may optionally be redirected to a file using :ref:`command-line options <command-line-main>`
+or the keyword :ref:`output_file <environment-output_file>`.
+
+.. note::
+
+   Whenever an output_file is specified for a Dakota run, the screen output itself
+   becomes quite minimal, consisting of version statements, environment statements and execution times.
+
+---------------------
+Simple Output Example
+---------------------
+
+Output from a Rosenbrock multidimensional parameter study (see :numref:`tutorial:rosenbrock_multidim`) is shown here:
 
 .. code-block::
 
@@ -62,20 +80,12 @@ The function evaluation summary is preceded by `<<<<<`. For this example 81 tota
 assessed; all were new, none were read in from the restart file. Correlation matrices complete the statistics
 and output for this problem. Successful runs will finish with `<<<<< Iterator study type completed.`
 
-**Additional Details**
+---------------   
+Detailed Output
+---------------
 
-Dakota prints information on algorithm progress, function evaluations,
-and summary results to standard out and error (screen, terminal, or
-console) as it runs. Detailed information for a function evaluation may
-include an evaluation number, parameter values, execution syntax, the
-active set vector, and the response data set. This output may be
-redirected to a file using the command-line options described in
-Section `[tutorial:installation:running] <#tutorial:installation:running>`__.
-
-Here, optimization of the “container” problem (see
-Chapter `[additional] <#additional>`__) is used as an example to
-describe Dakota output. The input file shown in
-Figure `[output:incont] <#output:incont>`__ specifies one equality
+Here, optimization of :ref:`the "container" problem <additional:container>` is used as an example to
+describe Dakota output. The input file shown in :numref:`output:incont` specifies one equality
 constraint, and that Dakota’s finite difference algorithm will provide
 central difference numerical gradients to the NPSOL optimizer.
 
@@ -267,17 +277,17 @@ example follows:
 The output begins with information on the Dakota version, compilation
 date, and run mode. It then echos the user input file before proceeding
 to execution phase. The lines following
-“``>>>>> Running npsol_sqp iterator.``” show Dakota performing function
+``>>>>> Running npsol_sqp iterator.`` show Dakota performing function
 evaluations 1–5 that have been requested by NPSOL. Evaluations 6 through
 39 have been omitted from the listing for brevity.
 
-Immediately following the line “``Begin Function Evaluation 1``”, the
+Immediately following the line ``Begin Function Evaluation 1``, the
 initial values of the design variables, the syntax of the blocking fork
 function evaluation, and the resulting objective and constraint function
 values returned by the simulation are listed. The values of the design
 variables are labeled with the tags ``H`` and ``D``, respectively,
 according to the descriptors given in the input file,
-Figure `[output:incont] <#output:incont>`__. The values of the objective
+:numref:`output:incont`. The values of the objective
 function and volume constraint are labeled with the tags ``obj_fn`` and
 ``nln_eq_con_1``, respectively. Note that the initial design parameters
 are infeasible since the equality constraint is violated
@@ -285,35 +295,38 @@ are infeasible since the equality constraint is violated
 design that is both feasible and optimal for this example. Between the
 design variables and response values, the content of the system call to
 the simulator is displayed as
-“``(container container.in.1 container.out.1)``”, with ``container``
+``(container container.in.1 container.out.1)``, with ``container``
 being the name of the simulator and ``container.in.1`` and
 ``container.out.1`` being the names of the parameters and results
 files, respectively.
 
 Just preceding the output of the objective and constraint function
-values is the line “``Active set vector = {1 1}``”. The active set
+values is the line ``Active set vector = {1 1}``. The active set
 vector indicates the types of data that are required from the simulator
 for the objective and constraint functions, and values of “``1``”
 indicate that the simulator must return values for these functions
-(gradient and Hessian data are not required). For more information on
-the active set vector, see Section `[variables:asv] <#variables:asv>`__.
+(gradient and Hessian data are not required).
+
+.. note::
+
+   Refer to :ref:`the Active Set Vector section <variables:asv>` for more details.
 
 Since finite difference gradients have been specified, Dakota computes
 their values by making additional function evaluation requests to the
 simulator at perturbed parameter values. Examples of the
 gradient-related function evaluations have been included in the sample
 output, beginning with the line that reads
-“``>>>>> Dakota finite difference evaluation for x[1] + h:``”. The
+``>>>>> Dakota finite difference evaluation for x[1] + h:``. The
 resulting finite difference gradients are listed after function
 evaluation 5 beginning with the line
-“``>>>>> Total response returned to iterator:``”. Here, another active
+``>>>>> Total response returned to iterator:``. Here, another active
 set vector is displayed in the Dakota output file. The line
-“``Active set vector = { 3 3 }``” indicates that the total response
+``Active set vector = { 3 3 }`` indicates that the total response
 resulting from the finite differencing contains function values and
 gradients.
 
 The final lines of the Dakota output, beginning with the line
-“``<<<<< Function evaluation summary:``”, summarize the results of the
+``<<<<< Function evaluation summary:``, summarize the results of the
 optimization study. The best values of the optimization parameters,
 objective function, and volume constraint are presented along with the
 function evaluation number where they occurred, total function
