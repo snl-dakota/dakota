@@ -37,17 +37,45 @@ specification details.
    order." This means the ordering of variables types given in the
    primary :dakkw:`variables` table.
 
+Key Dakota variable concepts include:
+
+- Category (design, uncertain (aleatory/epistemic), state) which
+  groups variables by their primary use.
+
+- Active View: the subset of variables (categories) being explored in
+  a particular study.
+
+- Type: a specific named variable
+
+- Domain: continuous vs. discrete (integer-, string-, or real-valued).
+  Discrete variables span categories and are specified via ranges,
+  admissible sets, and integer-valued discrete probability
+  distributions.
+
+.. note::
+
+   Characterizing the properties of a specific type of variable, e.g.,
+   :dakkw:`variables-discrete_design_set` or
+   :dakkw:`variables-lognormal_uncertain` often requires providing
+   arrays of data. For example a list of ``means`` or set
+   ``elements_per_variable``. The ordering of these arrays must match
+   the ordering of the ``descriptors`` for that variable type.
+
 .. _`variables:design`:
 
 Design Variables
 ----------------
 
-Design variables are those variables which are modified in the course of
-determining an optimal design. These variables may be continuous
-(real-valued between bounds), discrete range (integer-valued between
-bounds), discrete set of integers (integer-valued from finite set),
-discrete set of strings (string-valued from finite set), and discrete
-set of reals (real-valued from finite set).
+Design variables are adjusted in the course of determining an optimal
+design or an optimal set of deterministic calibration
+parameters. These variables may be continuous (real-valued between
+bounds), discrete range (integer-valued between bounds), discrete set
+of integers (integer-valued from finite set), discrete set of strings
+(string-valued from finite set), and discrete set of reals
+(real-valued from finite set). Continuous design variables are the
+most common design variable type in engineering applications. All but
+a handful of the optimization algorithms in Dakota support continuous
+design variables exclusively.
 
 .. _`variables:design:cdv`:
 
@@ -173,23 +201,13 @@ building.
 Aleatory Uncertain Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Aleatory uncertainties are irreducible variabilities inherent in nature.
-They are commonly modeled using probability distributions, and
-probabilistic methods are commonly used for propagating input aleatory
-uncertainties described by probability distribution specifications. The
-two following sections describe the continuous and discrete aleatory
-uncertain variables supported by Dakota.
-
-For aleatory random variables, Dakota supports a user-supplied
-correlation matrix to provide correlations among the input variables. By
-default, the correlation matrix is set to the identity matrix, i.e., no
-correlation among the uncertain variables.
-
-For additional information on random variable probability
-distributions, refer to :cite:p:`Hal00` and :cite:p:`Swi04`. Refer to
-:dakkw:`variables` for more detail on the uncertain variable
-specifications and to :ref:`uq` for available methods to quantify the
-uncertainty in the response.
+Aleatory uncertainty is also known as inherent variability,
+irreducible uncertainty, or randomnes. It is typically modeled using
+probability distributions, and probabilistic methods are commonly used
+for propagating input aleatory uncertainties described by probability
+distribution specifications. The two following sections describe the
+continuous and discrete aleatory uncertain variables supported by
+Dakota.
 
 .. _`variables:uncertain:cauv`:
 
@@ -288,17 +306,38 @@ available:
   point value :math:`i`, :math:`s`, or :math:`r`, with associated count
   :math:`c`).
 
+For aleatory random variables, Dakota admits an
+:dakkw:`variables-uncertain_correlation_matrix` that specifies
+correlations among the input variables. The correlation matrix
+defaults to the identity matrix, i.e., no correlation among the
+uncertain variables.
+
+For additional information on random variable probability
+distributions, refer to :cite:p:`Hal00` and :cite:p:`Swi04`. Refer to
+:dakkw:`variables` for more detail on the uncertain variable
+specifications and to :ref:`uq` for available methods to quantify the
+uncertainty in the response.
+
 .. _`variables:uncertain:euv`:
 
 Epistemic Uncertain Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Epistemic uncertainties are reducible uncertainties resulting from a
-lack of knowledge. For epistemic uncertainties, use of probability
-distributions is based on subjective prior knowledge rather than
-objective data, and we may alternatively explore non-probabilistic
-specifications based on intervals or Dempster-Shafer structures. Dakota
-supports the following epistemic uncertain variable types.
+Epistemic uncertainty is reducible uncertainty due to lack of
+knowledge. Characterization of epistemic uncertainties is often based
+on subjective prior knowledge rather than objective data.
+
+In Dakota, epistemic uncertainty can be characterized by interval- or
+set-valued variables (see relevant keywords below) that are propagated
+to calculate bounding intervals on simulation output using interval
+analysis methods. These epistemic variable types can optionally
+include basic probability assignments for use in Dempster-Shafer
+theory of evidence methods. Epistemic uncertainty can alternately be
+modeled with probability density functions, although results from UQ
+studies are then typically interpreted as possibilities or bounds, as
+opposed to a probability distribution of responses.
+
+Dakota supports the following epistemic uncertain variable types:
 
 - :ref:`Continuous Interval <variables-continuous_interval_uncertain>`:
   a real-valued interval-based specification
@@ -318,6 +357,14 @@ supports the following epistemic uncertain variable types.
   variables, these epistemic variables admit a finite number of values
   (``elements``) for type integer, string, or real, each with an
   associated probability.
+
+
+Through :dakkw:`models:nested`, Dakota can perform combined aleatory /
+epistemic analyses such as second-order probability or probability of
+frequency. For example, a variable can be assumed to have a lognormal
+distribution with specified variance, with its mean expressed as an
+epistemic uncertainty lying in an expert-specified interval. See
+examples in :ref:`adv_models`.
 
 .. _`variables:state`:
 
@@ -348,21 +395,34 @@ or real-valued set). Model parameterizations with strings (e.g.,
 :dakkw:`interrface-analysis_drivers-analysis_components` specification
 (see also :ref:`variables:parameters:standard`)
 
+
 State variables, as with other types of variables, are viewed
-differently depending on the method in use. Since these variables are
-neither design nor uncertain variables, algorithms for optimization,
-least squares, and uncertainty quantification do not iterate on these
-variables by default. They are inactive and hidden from the algorithm.
-However, Dakota still maps these variables through the user’s
-interface where they affect the computational model in use. This
-allows optimization, least squares, and uncertainty quantification
-studies to be executed under different simulation conditions (which
-will result, in general, in different results). Parameter studies and
-design of experiments methods, on the other hand, are general-purpose
-iterative techniques which do not by default draw a distinction
-between variable types. They include state variables in the set of
-variables to be studied, which permit them to explore the effect of
-state variable values on the responses of interest.
+differently depending on the method in use. By default, only parameter
+studies, design of experiments, and verification methods will vary
+state variables. This can be overridden as discussed in
+:ref:`variables:mixedview`.
+
+Since these variables are neither design nor uncertain variables,
+algorithms for optimization, least squares, and uncertainty
+quantification do not iterate on these variables by default. They are
+inactive and hidden from the algorithm.  However, Dakota still maps
+these variables through the user’s interface where they affect the
+computational model in use. This allows optimization, least squares,
+and uncertainty quantification studies to be executed under different
+simulation conditions (which will result, in general, in different
+results). Parameter studies and design of experiments methods, on the
+other hand, are general-purpose iterative techniques which do not by
+default draw a distinction between variable types. They include state
+variables in the set of variables to be studied, which permit them to
+explore the effect of state variable values on the responses of
+interest.
+
+When a state variable is held fixed, the specified ``initial_state``
+is used as its sole value. If the state variable is defined only by
+its bounds, then the initial_state will be inferred from the variable
+bounds or valid set values. If a method iterates on a state variable,
+the variable is treated as a design variable with the given bounds, or
+as a uniform uncertain variable with the given bounds.
 
 In some cases, state variables are used direct coordination with an
 optimization, least squares, or uncertainty quantification algorithm.
@@ -463,9 +523,9 @@ Variable Domain
 
 The variable domain setting controls how discrete variables (whether
 design, uncertain, or state) are treated. If :dakkw:`variables-mixed`
-is specified, the continuous and discrete variables are treated
-separately. When :dakkw:`variables-relaxed`, the discrete variables
-are relaxed and treated as continuous variables.
+is specified, the continuous and non-categorical discrete variables
+are treated separately. When :dakkw:`variables-relaxed`, the discrete
+variables are relaxed and treated as continuous variables.
 
 Domain control can be useful in optimization problems involving both
 continuous and discrete variables in order to apply a continuous

@@ -6,12 +6,8 @@ Topics
 .. toctree::
    :maxdepth: 1
    
-   topics/aleatory_uncertain_variables
    topics/aleatory_uncertainty_quantification_methods
    topics/design_and_analysis_of_computer_experiments
-   topics/design_variables
-   topics/discrete_variables
-   topics/epistemic_uncertain_variables
    topics/epistemic_uncertainty_quantification_methods
    topics/evidence_theory
    topics/interval_estimation
@@ -39,9 +35,6 @@ Topics
    topics/response_types
    topics/sampling
    topics/sequential_quadratic_programming
-   topics/state_variables
    topics/stochastic_expansion_methods
    topics/uncertainty_quantification
-   topics/variable_domain
    topics/variable_support
-   topics/variable_type
