@@ -8,103 +8,96 @@ Models
 Overview
 --------
 
-Chapters `[ps] <#ps>`__ through `[nls] <#nls>`__ presented the different
-“iterators” (or methods) available in Dakota. An iterator iterates on a
-model in order to map a set of variables into a set of responses. This
-model may involve a simple mapping involving a single interface, or it
-may involve recursions using sub-iterators and sub-models. These
-recursion capabilities were developed in order to provide mechanisms for
-“nesting,” “layering,” and “recasting” of software components, which
-allows the use of these components as building blocks to accomplish more
-sophisticated studies, such as surrogate-based optimization or
-optimization under uncertainty. In a nested relationship, a sub-iterator
+:ref:`studytypes-main` describes the major categories of Dakota
+methods.  A method evaluates or iterates on a model in order to map a
+set of variables into a set of responses. A model may involve a simple
+mapping with a single interface, or it may involve recursions using
+sub-methods and sub-models.  These recursions permit "nesting,"
+"layering," and "recasting” of software component building blocks to
+accomplish more sophisticated studies, such as surrogate-based
+optimization or optimization under uncertainty. In a nested
+relationship, a sub-method
 is executed using its sub-model for every evaluation of the nested
-model. In a layered relationship, on the other hand, sub-iterators and
+model. In a layered relationship, on the other hand, sub-methods and
 sub-models are used only for periodic updates and verifications. And in
 a recast relationship, the input variable and output response
 definitions in a sub-model are reformulated in order to support new
 problem definitions. In each of these cases, the sub-model is of
 arbitrary type, such that model recursions can be chained together in as
-long of a sequence as needed (e.g., layered containing nested contained
-layered containing single in
-Section `[adv_models:ouu:sb] <#adv_models:ouu:sb>`__).
-Figure `1.1 <#model:hier>`__ displays the model class hierarchy from the
-Dakota Developers Manual :cite:p:`DevMan`, with derived
-classes for single models, nested models, recast models, and two types
-of surrogate models: data fit and hierarchical/multifidelity. A third
-type of derived surrogate model supporting reduced-order models (ROM) is
-planned for future releases.
+long of a sequence as needed (e.g., layered containing nested containing
+layered containing single as described in :ref:`adv_models:ouu:sb`).
+
+:numref:`model:hier` displays the ``Model`` class hierarchy from the
+Dakota Developers Manual :cite:p:`DevMan`, with derived classes for
+single models, nested models, recast models, and two types of
+surrogate models: data fit and hierarchical/multifidelity. A third
+type of derived surrogate model supporting reduced-order models (ROM)
+is planned for future releases.
+
+..
+   TODO: Update this figure with newer snapshot (or await dev man linkage)
 
 .. figure:: img/classDakota_1_1Model.png
-   :alt: The Dakota model class hierarchy.
    :name: model:hier
 
-   The Dakota model class hierarchy.
+   The Dakota ``Model`` class hierarchy.
 
-Section `1.2 <#models:single>`__ describes single models,
-Section `1.3 <#models:recast>`__ describes recast models,
-Section `1.4 <#models:surrogate>`__ describes surrogate models of
-various types, Section `1.5 <#models:nested>`__ describes nested models,
-Section  `1.6 <#models:randomfield>`__ describes random field models,
-and Section  `1.7 <#models:subspace>`__ describes active subspace
-models. Finally, Chapter `[adv_models] <#adv_models>`__ presents a
-number of advanced examples demonstrating these model recursions.
+The following sections describe :ref:`models:single`
+(a.k.a. Simulation Models), :ref:`models:recast`,
+:ref:`models:surrogate` (of various types), :ref:`models:nested`,
+:ref:`models:randomfield`, and :ref:`models:subspace`, in turn,
+followed by related educational screencasts on models.  Finally,
+:ref:`adv_models` presents advanced examples demonstrating model
+recursions.
 
 .. _`models:single`:
 
 Single Models
 -------------
 
-The single model is the simplest model type. It uses a single interface
-instance (see Chapter `[interfaces] <#interfaces>`__) to map variables
-(see Chapter `[variables] <#variables>`__) into responses (see
-Chapter `[responses] <#responses>`__). There is no recursion in this
-case. Refer to the Models chapter in the Dakota Reference
-Manual :cite:p:`RefMan` for additional information on the
-single model specification.
+The single (or simulation) model is the simplest model type. It uses a
+single :ref:`interface <interfaces:main>` to map :ref:`variables
+<variables>` to :ref:`responses <responses>`. There is no recursion in
+this case. See the :dakkw:`model-single` keyword for details on
+specifying single models.
 
 .. _`models:recast`:
 
 Recast Models
 -------------
 
-The recast model is not directly visible to the user within the input
-specification. Rather, it is used “behind the scenes” to recast the
-inputs and outputs of a sub-model for the purposes of reformulating the
-problem posed to an iterator. Examples include variable and response
-scaling (see
-Section `[opt:additional:scaling] <#opt:additional:scaling>`__),
-transformations of uncertain variables and associated response
-derivatives to employ standardized random variables (see
-Sections `[uq:reliability] <#uq:reliability>`__
-and `[uq:expansion] <#uq:expansion>`__), multiobjective optimization
-(see
-Section `[opt:additional:multiobjective] <#opt:additional:multiobjective>`__),
-merit functions (see
-Section `[adv_meth:sbm:sblm] <#adv_meth:sbm:sblm>`__), and expected
-improvement/feasibility (see
-Sections `[opt:methods:gradientfree:global] <#opt:methods:gradientfree:global>`__
-and `[uq:reliability:global] <#uq:reliability:global>`__). Refer to the
-Dakota Developers Manual :cite:p:`DevMan` for additional
-details on the mechanics of recasting problem formulations.
+Recast models do not appear in Dakota's user input
+specification. Rather, they are used internally to transform the
+inputs and outputs of a sub-model in order to reformulate the problem
+posed to a method. Examples include :ref:`variable and response
+scaling <opt:additional:scaling>`, transformations of uncertain
+variables and associated response derivatives to standardized random
+variables (see :ref:`uq:reliability` and :ref:`uq:expansion`),
+:ref:`multiobjective optimization <opt:additional:multiobjective>`,
+:ref:`merit functions <adv_meth:sbm:sblm>`, and expected
+improvement/feasibility (see :ref:`opt:methods:gradientfree:global`
+and :ref:`uq:reliability:global`). Refer to the Dakota Developers
+Manual :cite:p:`DevMan` for additional details on recasting.
 
 .. _`models:surrogate`:
 
 Surrogate Models
 ----------------
 
-Surrogate models are inexpensive approximate models that are intended to
+Surrogate models are inexpensive approximate models intended to
 capture the salient features of an expensive high-fidelity model. They
 can be used to explore the variations in response quantities over
 regions of the parameter space, or they can serve as inexpensive
 stand-ins for optimization or uncertainty quantification studies (see,
-for example, the surrogate-based optimization methods in
-Section `[adv_meth:sbm] <#adv_meth:sbm>`__). Surrogate models supported
-in Dakota can be categorized into three types: data fits, multifidelity,
-and reduced-order model surrogates. An overview and discussion of
-surrogate correction is provided here, with details following.
+for example, :ref:`adv_meth:sbm`). Dakota surrogate models are of one
+of three types: data fit, multifidelity, and reduced-order model. An
+overview and discussion of surrogate correction is provided here, with
+details following.
 
-:ref:`If you are looking for video resources on Dakota surrogate models, click here <surrmodels-videos>`.
+.. note::
+
+   There are :ref:`video resources on Dakota surrogate models
+   <surrmodels-videos>`.
 
 Overview of Surrogate Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -112,19 +105,21 @@ Overview of Surrogate Types
 Data fitting methods involve construction of an approximation or
 surrogate model using data (response values, gradients, and Hessians)
 generated from the original truth model. Data fit methods can be further
-categorized as local, multipoint, and global approximation techniques,
-based on the number of points used in generating the data fit. Local
-methods involve response data from a single point in parameter space.
-Available local techniques currently include:
+categorized into local, multipoint, and global approximation techniques,
+based on the number of points used in generating the data fit.
 
-*Known Issue: When using discrete variables, there have been sometimes
-significant differences in data fit surrogate behavior observed across
-computing platforms in some cases. The cause has not yet been fully
-diagnosed and is currently under investigation. In addition, guidance on
-appropriate construction and use of surrogates with discrete variables
-is under development. In the meantime, users should therefore be aware
-that there is a risk of inaccurate results when using surrogates with
-discrete variables.*
+.. warning::
+
+   Known Issue: When using discrete variables, significant differences
+   in data fit surrogate behavior have been observed across computing
+   platforms in some cases. The cause has not been pinpointed. In
+   addition, guidance on appropriate construction and use of
+   surrogates is incomplete. In the meantime, users should be aware of
+   the risk of inaccurate results when using surrogates with discrete
+   variables.
+
+Local methods involve response data from a single point in parameter
+space.  Available local techniques currently include:
 
 **Taylor Series Expansion**: This is a local first-order or second-order
 expansion centered at a single point in the parameter space.
@@ -134,15 +129,14 @@ in parameter space, often involving the current and previous iterates of
 a minimization algorithm. Available techniques currently include:
 
 **TANA-3**: This multipoint approximation uses a two-point exponential
-approximation :cite:p:`Xu98,Fad90` built with response value
+approximation :cite:p:`Xu98,Fad90` built with response value
 and gradient information from the current and previous iterates.
 
 Global methods, often referred to as *response surface methods*, involve
 many points spread over the parameter ranges of interest. These surface
 fitting methods work in conjunction with the sampling methods and design
-of experiments methods described in
-Sections `[uq:sampling] <#uq:sampling>`__ and
- `[dace:background] <#dace:background>`__.
+of experiments methods described in :ref:`uq:sampling` and
+:ref:`dace:background`.
 
 **Polynomial Regression**: First-order (linear), second-order
 (quadratic), and third-order (cubic) polynomial response surfaces
@@ -156,18 +150,22 @@ through a total degree scheme.
 
 **Gaussian Process (GP) or Kriging Interpolation** Dakota contains two
 supported implementations of Gaussian process, also known as Kriging
- :cite:p:`Giu98`, spatial interpolation. One of these resides
+:cite:p:`Giu98`, spatial interpolation. One of these resides
 in the Surfpack sub-package of Dakota, the other resides in Dakota
 itself. Both versions use the Gaussian correlation function with
 parameters that are selected by Maximum Likelihood Estimation (MLE).
 This correlation function results in a response surface that is
-:math:`C^\infty`-continuous. Prior to Dakota 5.2, the Surfpack GP was
-referred to as the “Kriging” model and the Dakota version was labeled as
-the “Gaussian Process.” These terms are now used interchangeably. As of
-Dakota 5.2,the Surfpack GP is used by default. For now the user still
-has the option to select the Dakota GP, but the Dakota GP is deprecated
-and will be removed in a future release. A third experimental Gaussian
-process model was added in Dakota 6.12.
+:math:`C^\infty`-continuous. 
+
+.. note::
+
+   Prior to Dakota 5.2, the Surfpack GP was referred to as the
+   “Kriging” model and the Dakota version was labeled as the “Gaussian
+   Process.” These terms are now used interchangeably. As of Dakota
+   5.2,the Surfpack GP is used by default. For now the user still has
+   the option to select the Dakota GP, but the Dakota GP is deprecated
+   and will be removed in a future release. A third experimental
+   Gaussian process model was added in Dakota 6.12.
 
 -  **Surfpack GP**: Ill-conditioning due to a poorly spaced sample
    design is handled by discarding points that contribute the least
@@ -188,13 +186,13 @@ process model was added in Dakota 6.12.
 
 **Artificial Neural Networks**: An implementation of the stochastic
 layered perceptron neural network developed by Prof. D. C. Zimmerman of
-the University of Houston :cite:p:`Zim96`. This neural network
+the University of Houston :cite:p:`Zim96`. This neural network
 method is intended to have a lower training (fitting) cost than typical
 back-propagation neural networks.
 
 **Multivariate Adaptive Regression Splines (MARS)**: Software developed
 by Prof. J. H. Friedman of Stanford
-University :cite:p:`Fri91`. The MARS method creates a
+University :cite:p:`Fri91`. The MARS method creates a
 :math:`C^2`-continuous patchwork of splines in the parameter space.
 
 **Radial Basis Functions (RBF)**: Radial basis functions are functions
@@ -206,7 +204,7 @@ the weighted sum of individual radial basis functions.
 more specialized version of linear regression models. MLS is a weighted
 least squares approach where the weighting is “moved” or recalculated
 for every new point where a prediction is
-desired. :cite:p:`Nea04`
+desired. :cite:p:`Nea04`
 
 **Piecewise Decomposition Option for Global Surrogates**: Typically, the
 previous regression techniques use all available sample points to
@@ -258,14 +256,14 @@ function values between the surrogate and original models at a single
 point in parameter space through use of a simple scalar offset or
 scaling applied to the surrogate model. First-order corrections such as
 the first-order multiplicative correction (also known as beta
-correction :cite:p:`Cha93`) and the first-order additive
-correction :cite:p:`Lew00` also enforce consistency in the
+correction :cite:p:`Cha93`) and the first-order additive
+correction :cite:p:`Lew00` also enforce consistency in the
 gradients and provide a much more substantial correction capability that
-is sufficient for ensuring provable convergence in SBO algorithms (see
-Section `[adv_meth:sbm:sblm] <#adv_meth:sbm:sblm>`__). SBO convergence
+is sufficient for ensuring provable convergence in :ref:`SBO
+algorithms <adv_meth:sbm:sblm>`. SBO convergence
 rates can be further accelerated through the use of second-order
 corrections which also enforce consistency in the
-Hessians :cite:p:`Eld04`, where the second-order information
+Hessians :cite:p:`Eld04`, where the second-order information
 may involve analytic, finite-difference, or quasi-Newton Hessians.
 
 Correcting surrogate models with additive corrections involves
@@ -388,19 +386,18 @@ singular value decomposition to compute the polynomial coefficients,
 whereas the kriging surface uses Maximum Likelihood Estimation to
 compute its correlation coefficients. More information on the numerical
 methods used in the surface fitting codes is provided in the Dakota
-Developers Manual :cite:p:`DevMan`.
+Developers Manual :cite:p:`DevMan`.
 
 The set of design points that is used to construct a surface fit model
 is generated using either the DDACE software
-package :cite:p:`TonXX` or the LHS software
-package :cite:p:`Ima84`. These packages provide a variety of
+package :cite:p:`TonXX` or the LHS software
+package :cite:p:`Ima84`. These packages provide a variety of
 sampling methods including Monte Carlo (random) sampling, Latin
 hypercube sampling, orthogonal array sampling, central composite design
-sampling, and Box-Behnken sampling. More information on these software
-packages is provided in Chapter `[dace] <#dace>`__. Optionally, the
-quality of a surrogate model can be assessed with surrogate metrics or
-diagnostics as described in
-Section `1.4.3.11 <#models:surf:diagnostics>`__.
+sampling, and Box-Behnken sampling. See :ref:`dace` for more
+information on these software packages.  Optionally, the quality of a
+surrogate model can be assessed with :ref:`surrogate metrics or
+diagnostics <models:surf:diagnostics>`.
 
 .. _`models:surf:taylor`:
 
@@ -425,8 +422,8 @@ and the second-order expansion is:
    \nabla^2_{\bf x} f({\bf x}_0) ({\bf x} - {\bf x}_0) \label{eq:taylor2}
 
 where :math:`{\bf x}_0` is the expansion point in :math:`n`-dimensional
-parameter space and :math:`f({\bf x}_0)`,
-:math:`\nabla_{\bf x} f({\bf x}_0)`, and
+parameter space and :math:`f({\bf x}_0),`
+:math:`\nabla_{\bf x} f({\bf x}_0),` and
 :math:`\nabla^2_{\bf x} f({\bf x}_0)` are the computed response value,
 gradient, and Hessian at the expansion point, respectively. As dictated
 by the responses specification used in building the local surrogate, the
@@ -449,9 +446,9 @@ consistency requirements of provably-convergent SBO.
 Two Point Adaptive Nonlinearity Approximation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The TANA-3 method :cite:p:`Xu98` is a multipoint approximation
+The TANA-3 method :cite:p:`Xu98` is a multipoint approximation
 method based on the two point exponential
-approximation :cite:p:`Fad90`. This approach involves a Taylor
+approximation :cite:p:`Fad90`. This approach involves a Taylor
 series approximation in intermediate variables where the powers used for
 the intermediate variables are selected to match information at the
 current and previous expansion points. The form of the TANA model is:
@@ -561,43 +558,50 @@ often is successful when using polynomial models, particularly quadratic
 models. However, a polynomial surface fit may not be the best choice for
 modeling data trends over the entire parameter space, unless it is known
 a priori that the true data trends are close to linear, quadratic, or
-cubic. See :cite:p:`Mye95` for more information on polynomial
+cubic. See :cite:p:`Mye95` for more information on polynomial
 models.
 
-This surrogate model supports the domain decomposition option, further
-explained in `1.4.3.10 <#models:surf:piecewise_decomp>`__.
+This surrogate model supports the :ref:`domain decomposition
+option<models:surf:piecewise_decomp>`.
 
-| An experimental polynomial model was added in Dakota 6.12 that uses
-  the keyword
-| . The user specifies the order of the polynomial through the required
-  keyword ``basis_order`` according to a total degree rule.
+An experimental polynomial model was added in Dakota 6.12 that is
+specified with
+:dakkw:`model-surrogate-global-experimental_polynomial`.  The user
+specifies the order of the polynomial through the required keyword
+:dakkw:`model-surrogate-global-experimental_polynomial-basis_order`
+according to a total degree rule.
 
 .. _`models:surf:kriging`:
 
 Kriging/Gaussian-Process Spatial Interpolation Models
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the current release of Dakota, we have two versions of supported
-spatial interpolation models. There is an additional experimental
-version in Dakota’s standalone surrogates module that uses the keyword
-that is described at the end of this section. Of the supported versions,
-one is located in Dakota itself and the other in the Surfpack subpackage
-of Dakota which can be compiled in a standalone mode. These models are
-denoted as ``kriging dakota`` and ``kriging surfpack`` or as
-``gaussian_process dakota`` and ``gaussian_process surfpack``. In Dakota
-releases prior to 5.2, the ``dakota`` version was referred to as the
-``gaussian_process`` model while the ``surfpack`` version was referred
-to as the ``kriging`` model. As of Dakota 5.2, specifying only
-``gaussian_process`` or ``kriging`` will default to the ``surfpack``
-version in all contexts except Bayesian calibration. For now, both
-versions are supported but the ``dakota`` version is deprecated and
-intended to be removed in a future release. The two ``kriging`` or
-``gaussian_process`` models are very similar: the differences between
-them are explained in more detail below.
+Dakota has three implementations of spatial interpolation models, two
+supported and one experimental. Of the supported versions, one is
+located in Dakota itself and the other in the Surfpack subpackage of
+Dakota which can be compiled in a standalone mode. These models are
+specified via :dakkw:`model-surrogate-global-gaussian_process`
+:dakkw:`model-surrogate-global-gaussian_process-dakota` and
+:dakkw:`model-surrogate-global-gaussian_process`
+:dakkw:`model-surrogate-global-gaussian_process-surfpack`.
+
+.. note::
+
+   In Dakota releases prior to 5.2, the ``dakota`` version was
+   referred to as the ``gaussian_process`` model while the
+   ``surfpack`` version was referred to as the ``kriging`` model. As
+   of Dakota 5.2, specifying only
+   :dakkw:`model-surrogate-global-gaussian_process` without
+   qualification will default to the ``surfpack`` version in all
+   contexts except Bayesian calibration. For now, both versions are
+   supported but the ``dakota`` version is deprecated and likely to be
+   removed in a future release. The two Gaussian process models are
+   very similar; the differences between them are explained in more
+   detail below.
 
 The Kriging, also known as Gaussian process (GP), method uses techniques
 developed in the geostatistics and spatial statistics communities
-( :cite:p:`Cre91`, :cite:p:`Koe96`) to produce
+(:cite:p:`Cre91`, :cite:p:`Koe96`) to produce
 smooth surface fit models of the response values from a set of data
 points. The number of times the fitted surface is differentiable will
 depend on the correlation function that is used. Currently, the Gaussian
@@ -628,18 +632,18 @@ vector of correlation parameters,
 :math:`\underline{\theta} = \{\theta_{1},\ldots,\theta_{n}\}^T`. By
 default, Dakota determines the value of :math:`\underline{\theta}` using
 a Maximum Likelihood Estimation (MLE) procedure. However, the user can
-also opt to manually set them in the ``gaussian_process surfpack`` model
+also opt to manually set them in the Surfpack Gaussian process model
 by specifying a vector of correlation lengths,
 :math:`\underline{l}=\{l_{1},\ldots,l_{n}\}^T` where
 :math:`\theta_i=1/(2 l_i^2)`. This definition of correlation lengths
 makes their effect on the GP model’s behavior directly analogous to the
 role played by the standard deviation in a normal (a.k.a. Gaussian)
-distribution. In the ``gaussian_process surpack`` model, we used this
+distribution. In the Surfpack Gaussian process model, we used this
 analogy to define a small feasible region in which to search for
 correlation lengths. This region should (almost) always contain some
 correlation matrices that are well conditioned and some that are
 optimal, or at least near optimal. More details on Kriging/GP models may
-be found in :cite:p:`Giu98`.
+be found in :cite:p:`Giu98`.
 
 Since a GP has a hyper-parametric error model, it can be used to model
 surfaces with slope discontinuities along with multiple local minima and
@@ -661,184 +665,193 @@ when :math:`\underline{x}` is far from any of the data points from which
 the GP model was constructed (i.e., when the model is used for
 extrapolation).
 
-As mentioned above, there are two ``gaussian_process`` models in Dakota,
-the ``surfpack`` version and the ``dakota`` version. More details on the
-``gaussian_process dakota`` model can be found
-in :cite:p:`McF08`. The differences between these models are
-as follows:
+As mentioned above, there are two primary Gaussian process models in
+Dakota, the :dakkw:`model-surrogate-global-gaussian_process-surfpack`
+version and the
+:dakkw:`model-surrogate-global-gaussian_process-dakota` version. More
+details on the Dakota GP model can be found in :cite:p:`McF08`. The
+differences between these models are as follows:
 
--  | Trend Function: The GP models incorporate a parametric trend
-     function whose purpose is to capture large-scale variations. In
-     both models, the trend function can be a constant, linear,or
-     reduced quadratic (main effects only, no interaction terms)
-     polynomial. This is specified by the keyword ``trend`` followed by
-     one of ``constant``, ``linear``, or ``reduced_quadratic`` (in
-     Dakota 5.0 and earlier, the reduced quadratic option for the
-     ``dakota`` version was selected using the keyword, ``quadratic``).
-     The
-   | ``gaussian_process surfpack`` model has the additional option of a
-     full (i.e. it includes interaction terms) quadratic polynomial;
-     this is accessed by following the ``trend`` keyword with
-     ``quadratic``.
+- Trend Function: The GP models incorporate a parametric trend
+  function whose purpose is to capture large-scale variations. In
+  both models, the trend function can be a constant, linear,or
+  reduced quadratic (main effects only, no interaction terms)
+  polynomial. This is specified by the keyword ``trend`` followed by
+  one of ``constant``, ``linear``, or ``reduced_quadratic`` (in
+  Dakota 5.0 and earlier, the reduced quadratic (second-order with no
+  mixed terms) option for the ``dakota`` version was selected using
+  the keyword, ``quadratic``).  The Surfpack GP model has the
+  additional option of a full (including all interaction terms)
+  quadratic polynomial that is specified with ``trend quadratic``.
 
--  Correlation Parameter Determination: Both of the ``gaussian_process``
-   models use a Maximum Likelihood Estimation (MLE) approach to find the
-   optimal values of the hyper-parameters governing the mean and
-   correlation functions. By default both models use the global
-   optimization method called DIRECT, although they search regions with
-   different extents. For the ``gaussian_process dakota`` model, DIRECT
-   is the only option. The ``gaussian_process surfpack`` model has
-   several options for the optimization method used. These are specified
-   by the ``optimization_method`` keyword followed by one of these
-   strings:
+- Correlation Parameter Determination: Both of the primary GP models
+  use a Maximum Likelihood Estimation (MLE) approach to find the
+  optimal values of the hyper-parameters governing the mean and
+  correlation functions. By default both models use the global
+  optimization method called DIRECT, although they search regions
+  with different extents. For the Dakota GP model, DIRECT is the only
+  option. The Surfpack GP model has several options for
+  hyperparameter optimization. These are specified by the
+  :dakkw:`model-surrogate-global-gaussian_process-surfpack-optimization_method`
+  keyword followed by one of these strings:
 
-   -  ``’global’`` which uses the default DIRECT optimizer,
+  - ``'global'`` which uses the default DIRECT optimizer,
 
-   -  ``’local’`` which uses the CONMIN optimizer,
+  - ``'local'`` which uses the CONMIN gradient-based optimizer,
 
-   -  ``’sampling’`` which generates several random guesses and picks
-      the candidate with greatest likelihood, and
+  - ``'sampling'`` which generates several random guesses and picks
+     the candidate with greatest likelihood, and
 
-   -  ``’none’``
+  - ``'none'``
 
-   The ``’none’`` option, and the starting location of the ``’local’``
-   optimization, default to the center, in log(correlation length)
-   scale, of the small feasible region. However, these can also be user
-   specified with the ``correlation_lengths`` keyword followed by a list
-   of :math:`n` real numbers. The total number of evaluations of the
-   ``gaussian_process surfpack`` model’s likelihood function can be
-   controlled using the ``max_trials`` keyword followed by a positive
-   integer. Note that we have found the ``’global’`` optimization method
-   to be the most robust.
+  The ``'none'`` option and the initial iterate of the ``'local'``
+  optimization default to the center, in log(correlation length)
+  scale, of the small feasible region. However, these can also be
+  user specified with the
+  :dakkw:`model-surrogate-global-gaussian_process-surfpack-correlation_lengths`
+  keyword followed by a list of :math:`n` real numbers. The total
+  number of evaluations of the Surfpack GP model’s likelihood
+  function can be controlled using the
+  :dakkw:`model-surrogate-global-gaussian_process-surfpack-max_trials`
+  keyword followed by a positive integer. The ``'global'``
+  optimization method tends to be the most robust, if slow to
+  converge.
 
--  | Ill-conditioning. One of the major problems in determining the
-     governing values for a Gaussian process or Kriging model is the
-     fact that the correlation matrix can easily become ill-conditioned
-     when there are too many input points close together. Since the
-     predictions from the Gaussian process model involve inverting the
-     correlation matrix, ill-conditioning can lead to poor predictive
-     capability and should be avoided. The ``gaussian_process surfpack``
-     model defines a small feasible search region for correlation
-     lengths, which should (almost) always contain some well conditioned
-     correlation matrices. In Dakota 5.1, the ``kriging`` (now
-     ``gaussian_process surfpack`` or ``kriging surfpack``) model
-     avoided ill-conditioning by explicitly excluding poorly conditioned
-     :math:`\underline{\underline{R}}` from consideration on the basis
-     of their having a large (estimate of) condition number; this
-     constraint acted to decrease the size of admissible correlation
-     lengths. Note that a sufficiently bad sample design could require
-     correlation lengths to be so short that any interpolatory
-     Kriging/GP model would become inept at extrapolation and
-     interpolation.
-   | The ``gaussian_process dakota`` model has two features to overcome
-     ill-conditioning. The first is that the algorithm will add a small
-     amount of noise to the diagonal elements of the matrix (this is
-     often referred to as a “nugget”) and sometimes this is enough to
-     improve the conditioning. The second is that the user can specify
-     to build the GP based only on a subset of points. The algorithm
-     chooses an “optimal” subset of points (with respect to predictive
-     capability on the remaining unchosen points) using a greedy
-     heuristic. This option is specified with the keyword
-     ``point_selection`` in the input file.
-   | As of Dakota 5.2, the ``gaussian_process surfpack`` model has a
-     similar capability. Points are **not** discarded prior to the
-     construction of the model. Instead, within the maximum likelihood
-     optimization loop, when the correlation matrix violates the
-     explicit (estimate of) condition number constraint, the
-     ``gaussian_process surfpack`` model will perform a pivoted Cholesky
-     factorization of the correlation matrix. A bisection search is then
-     used to efficiently find the last point for which the reordered
-     correlation matrix is not too ill-conditioned. Subsequent reordered
-     points are excluded from the GP/Kriging model for the current set
-     of correlation lengths, i.e. they are not used to construct this GP
-     model or compute its likelihood. When necessary, the
-     ``gaussian_process surfpack`` model will automatically decrease the
-     order of the polynomial trend function. Once the maximum likelihood
-     optimization has been completed, the subset of points that is
-     retained will be the one associated with the most likely set of
-     correlation lengths. Note that a matrix being ill-conditioned means
-     that its rows or columns contain a significant amount of duplicate
-     information. Since the points that were discarded were the ones
-     that contained the least unique information, they should be the
-     ones that are the easiest to predict and provide maximum
-     improvement of the condition number. However, the
-     ``gaussian_process surfpack`` model is not guaranteed to exactly
-     interpolate the discarded points. Warning: when two very nearby
-     points are on opposite sides of a discontinuity, it is possible for
-     one of them to be discarded by this approach.
-   | Note that a pivoted Cholesky factorization can be significantly
-     slower than the highly optimized implementation of non-pivoted
-     Cholesky factorization in typical LAPACK distributions. A
-     consequence of this is that the ``gaussian_process surfpack`` model
-     can take significantly more time to build than the
-     ``gaussian_process dakota`` version. However, tests indicate that
-     the ``gaussian_process surfpack`` version will often be more
-     accurate and/or require fewer evaluations of the true function than
-     the ``gaussian_process dakota``. For this reason, the
-     ``gaussian_process surfpack`` version is the default option as of
-     Dakota 5.2.
+- Ill-conditioning. One of the major problems in determining the
+  governing values for a Gaussian process or Kriging model is the
+  fact that the correlation matrix can easily become ill-conditioned
+  when there are too many input points close together. Since the
+  predictions from the Gaussian process model involve inverting the
+  correlation matrix, ill-conditioning can lead to poor predictive
+  capability and should be avoided. The Surfpack GP
+  model defines a small feasible search region for correlation
+  lengths, which should (almost) always contain some well conditioned
+  correlation matrices. In Dakota 5.1 and earlier, the Surfpack ``kriging``
+  model
+  avoided ill-conditioning by explicitly excluding poorly conditioned
+  :math:`\underline{\underline{R}}` from consideration on the basis
+  of their having a large (estimate of) condition number; this
+  constraint acted to decrease the size of admissible correlation
+  lengths. Note that a sufficiently bad sample design could require
+  correlation lengths to be so short that any interpolatory
+  Kriging/GP model would become inept at extrapolation and
+  interpolation.
 
--  | Gradient Enhanced Kriging (GEK). As of Dakota 5.2, the
-     ``use_derivatives`` keyword will cause the
-     ``gaussian_process surfpack`` model to be built from a combination
-     of function value and gradient information. The
-     ``gaussian_process dakota`` model does not have this capability.
-     Incorporating gradient information will only be beneficial if
-     accurate and inexpensive derivative information is available, and
-     the derivatives are not infinite or nearly so. Here “inexpensive”
-     means that the cost of evaluating a function value plus gradient is
-     comparable to the cost of evaluating only the function value, for
-     example gradients computed by analytical, automatic
-     differentiation, or continuous adjoint techniques. It is not cost
-     effective to use derivatives computed by finite differences. In
-     tests, GEK models built from finite difference derivatives were
-     also significantly less accurate than those built from analytical
-     derivatives. Note that GEK’s correlation matrix tends to have a
-     significantly worse condition number than Kriging for the same
-     sample design.
-   | This issue was addressed by using a pivoted Cholesky factorization
-     of Kriging’s correlation matrix (which is a small sub-matrix within
-     GEK’s correlation matrix) to rank points by how much unique
-     information they contain. This reordering is then applied to whole
-     points (the function value at a point immediately followed by
-     gradient information at the same point) in GEK’s correlation
-     matrix. A standard non-pivoted Cholesky is then applied to the
-     reordered GEK correlation matrix and a bisection search is used to
-     find the last equation that meets the constraint on the (estimate
-     of) condition number. The cost of performing pivoted Cholesky on
-     Kriging’s correlation matrix is usually negligible compared to the
-     cost of the non-pivoted Cholesky factorization of GEK’s correlation
-     matrix. In tests, it also resulted in more accurate GEK models than
-     when pivoted Cholesky or whole-point-block pivoted Cholesky was
-     performed on GEK’s correlation matrix.
+  The Dakota GP model has two features to overcome
+  ill-conditioning. The first is that the algorithm will add a small
+  amount of noise to the diagonal elements of the matrix (this is
+  often referred to as a “nugget”) and sometimes this is enough to
+  improve the conditioning. The second is that the user can specify
+  to build the GP based only on a subset of points. The algorithm
+  chooses an “optimal” subset of points (with respect to predictive
+  capability on the remaining unchosen points) using a greedy
+  heuristic. This option is specified with the keyword
+  :dakkw:`model-surrogate-global-gaussian_process-dakota-point_selection`
+  in the input file.
 
-This surrogate model supports the domain decomposition option, further
-explained in `1.4.3.10 <#models:surf:piecewise_decomp>`__.
+  As of Dakota 5.2, the Surfpack GP model has a
+  similar capability. Points are **not** discarded prior to the
+  construction of the model. Instead, within the maximum likelihood
+  optimization loop, when the correlation matrix violates the
+  explicit (estimate of) condition number constraint, a pivoted Cholesky
+  factorization of the correlation matrix is performed. A bisection search is then
+  used to efficiently find the last point for which the reordered
+  correlation matrix is not too ill-conditioned. Subsequent reordered
+  points are excluded from the GP/Kriging model for the current set
+  of correlation lengths, i.e. they are not used to construct this GP
+  model or compute its likelihood. When necessary, the Surfpack GP
+  model will automatically decrease the
+  order of the polynomial trend function. Once the maximum likelihood
+  optimization has been completed, the subset of points that is
+  retained will be the one associated with the most likely set of
+  correlation lengths. Note that a matrix being ill-conditioned means
+  that its rows or columns contain a significant amount of duplicate
+  information. Since the points that were discarded were the ones
+  that contained the least unique information, they should be the
+  ones that are the easiest to predict and provide maximum
+  improvement of the condition number. However, the
+  Surfpack GP model is not guaranteed to exactly
+  interpolate the discarded points. Warning: when two very nearby
+  points are on opposite sides of a discontinuity, it is possible for
+  one of them to be discarded by this approach.
+
+  Note that a pivoted Cholesky factorization can be significantly
+  slower than the highly optimized implementation of non-pivoted
+  Cholesky factorization in typical LAPACK distributions. A
+  consequence of this is that the Surfpack GP model
+  can take significantly more time to build than the
+  Dakota GP version. However, tests indicate that
+  the Surfpack version will often be more
+  accurate and/or require fewer evaluations of the true function than
+  the Dakota analog. For this reason, the Surfpack
+  version is the default option as of Dakota 5.2.
+
+- Gradient Enhanced Kriging (GEK). As of Dakota 5.2, the
+  :dakkw:`model-surrogate-global-use_derivatives` keyword will cause the
+  Surfpack GP model to be built from a combination
+  of function value and gradient information. The Dakota GP
+  model does not have this capability.
+  Incorporating gradient information will only be beneficial if
+  accurate and inexpensive derivative information is available, and
+  the derivatives are not infinite or nearly so. Here “inexpensive”
+  means that the cost of evaluating a function value plus gradient is
+  comparable to the cost of evaluating only the function value, for
+  example gradients computed by analytical, automatic
+  differentiation, or continuous adjoint techniques. It is not cost
+  effective to use derivatives computed by finite differences. In
+  tests, GEK models built from finite difference derivatives were
+  also significantly less accurate than those built from analytical
+  derivatives. Note that GEK’s correlation matrix tends to have a
+  significantly worse condition number than Kriging for the same
+  sample design.
+
+  This issue was addressed by using a pivoted Cholesky factorization
+  of Kriging’s correlation matrix (which is a small sub-matrix within
+  GEK’s correlation matrix) to rank points by how much unique
+  information they contain. This reordering is then applied to whole
+  points (the function value at a point immediately followed by
+  gradient information at the same point) in GEK’s correlation
+  matrix. A standard non-pivoted Cholesky is then applied to the
+  reordered GEK correlation matrix and a bisection search is used to
+  find the last equation that meets the constraint on the (estimate
+  of) condition number. The cost of performing pivoted Cholesky on
+  Kriging’s correlation matrix is usually negligible compared to the
+  cost of the non-pivoted Cholesky factorization of GEK’s correlation
+  matrix. In tests, it also resulted in more accurate GEK models than
+  when pivoted Cholesky or whole-point-block pivoted Cholesky was
+  performed on GEK’s correlation matrix.
+
+This surrogate model supports the :ref:`domain decomposition option
+<models:surf:piecewise_decomp>`.
 
 The experimental Gaussian process model differs from the supported
 implementations in a few ways. First, at this time only local,
 gradient-based optimization methods for MLE are supported. The user may
-provide the ``num_restarts`` keyword to specify how many optimization
-runs from random initial guesses are performed. The appropriate number
-of runs to ensure that the global minimum is found will be problem
-dependent, and when this keyword is omitted the optimizer is run twenty
-times.
+provide the
+:dakkw:`model-surrogate-global-experimental_gaussian_process-num_restarts`
+keyword to specify how many optimization runs from random initial
+iterates are performed. The appropriate number of starts to ensure
+that the global minimum is found is problem-dependent.  When this
+keyword is omitted, the optimizer is run twenty times.
 
 Second, build data for the surrogate is scaled to have zero mean and
 unit variance, and fixed bounds are imposed on the kernel
 hyperparameters. The type of scaling and bound specification will be
 made user-configrable in a future release.
 
-Third, like the other GP implementations in Dakota the user may employ a
-polynomial trend function by supplying the ``trend`` keyword. Supported
-trend functions include ``constant``, ``linear``, and ``quadratic``
-polynomials, the last of these being a full rather than reduced
-quadratic. Polynomial coefficients are determined alongside the kernel
-hyperparmeters through MLE.
+Third, like the other GP implementations in Dakota the user may employ
+a polynomial trend function by supplying the
+:dakkw:`model-surrogate-global-experimental_gaussian_process-trend`
+keyword. Supported trend functions include ``constant``, ``linear``,
+``reduced_quadratic`` and ``quadratic`` polynomials, the last of these
+being a full rather than reduced quadratic. Polynomial coefficients
+are determined alongside the kernel hyperparmeters through MLE.
 
-Lastly, the use may specify a fixed non-negative value for the nugget
+Lastly, the use may specify a fixed non-negative value for the
+:dakkw:`model-surrogate-global-experimental_gaussian_process-nugget`
 parameter or may estimate it as part of the MLE procedure through the
-``find_nugget`` keyword.
+:dakkw:`model-surrogate-global-experimental_gaussian_process-find_nugget`
+keyword.
 
 .. _`models:surf:ann`:
 
@@ -847,7 +860,7 @@ Artificial Neural Network (ANN) Models
 
 The ANN surface fitting method in Dakota employs a stochastic layered
 perceptron (SLP) artificial neural network based on the direct training
-approach of Zimmerman :cite:p:`Zim96`. The SLP ANN method is
+approach of Zimmerman :cite:p:`Zim96`. The SLP ANN method is
 designed to have a lower training cost than traditional ANNs. This is a
 useful feature for SBO and OUU where new ANNs are constructed many times
 during the optimization process (i.e., one ANN for each response
@@ -886,7 +899,7 @@ Multivariate Adaptive Regression Spline (MARS) Models
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This surface fitting method uses multivariate adaptive regression
-splines from the MARS3.6 package :cite:p:`Fri91` developed at
+splines from the MARS3.6 package :cite:p:`Fri91` developed at
 Stanford University.
 
 The form of the MARS model is based on the following expression:
@@ -937,9 +950,9 @@ where the :math:`\phi` are the individual radial basis functions. These
 functions can be of any form, but often a Gaussian bell-shaped function
 or splines are used. Our implementation uses a Gaussian radial basis
 function. The weights are determined via a linear least squares solution
-approach. See :cite:p:`Orr96` for more details. This surrogate
-model supports the domain decomposition option, further explained
-in `1.4.3.10 <#models:surf:piecewise_decomp>`__.
+approach. See :cite:p:`Orr96` for more details. This surrogate
+model supports the :ref:`domain decomposition option
+<models:surf:piecewise_decomp>`.
 
 .. _`models:surf:mls`:
 
@@ -962,7 +975,7 @@ are obtained by minimizing the weighted sum of squares at N data points:
 
 Moving least squares is a further generalization of weighted least
 squares where the weighting is “moved” or recalculated for every new
-point where a prediction is desired. :cite:p:`Nea04` The
+point where a prediction is desired. :cite:p:`Nea04` The
 implementation of moving least squares is still under development. We
 have found that it works well in trust region methods where the
 surrogate model is constructed in a constrained region over a few
@@ -978,26 +991,34 @@ Regression techniques typically use all available sample points to
 approximate the underlying function anywhere in the domain. An
 alternative option is to use piecewise dcomposition to locally
 approximate the function at some point using a few sample points from
-its neighborhood. This option currently supports Polynomial Regression,
+its neighborhood. The
+:dakkw:`model-surrogate-global-domain_decomposition` option currently
+supports Polynomial Regression,
 Gaussian Process (GP) Interpolation, and Radial Basis Functions (RBF)
 Regression. This option requires a decomposition cell type. A valid cell
 type is one where any point in the domain is assigned to some cell(s),
 and each cell identifies its neighbor cells. Currently, only Voronoi
 cells are supported. Each cell constructs its own piece of the global
 surrogate, using the function information at its seed and a few layers
-of its neighbors, parametrized by ``support_layers``. It also supports
-an optional discontinuity detection capability
-``discontinuity_detection``, specified by either a jump threshold value
-``jump_threshold`` or a gradient threshold one ``gradient_threshold``.
+
+of its neighbors, parametrized by
+:dakkw:`model-surrogate-global-domain_decomposition-support_layers`. It
+also supports optional
+:dakkw:`model-surrogate-global-domain_decomposition-discontinuity_detection`,
+specified by either a
+:dakkw:`model-surrogate-global-domain_decomposition-discontinuity_detection-jump_threshold`
+valued or a
+:dakkw:`model-surrogate-global-domain_decomposition-discontinuity_detection-gradient_threshold`.
 
 The surrogate construction uses all available data, including
-derivatives, not only function evaluations. The user should list the
-keyword ``use_derivatives`` to indicate the availability of derivative
-information for the surrogate to use. If listed, the user can replace
-the default response parameters ``no_gradients`` and ``no_hessians``
-with other response options, e.g., ``numerical_gradients`` or
-``analytic_hessians``. More details on using gradients and Hessians, if
-available, can be found in chapter `[responses] <#responses>`__.
+derivatives, not only function evaluations. Include the keyword
+:dakkw:`model-surrogate-global-use_derivatives` to indicate the
+availability of derivative information. When specified, the user can
+then enable response derivatives, e.g., with
+:dakkw:`responses-numerical_gradients` or
+:dakkw:`responses-analytic_hessians`. More details on using gradients
+and Hessians, when available from the simulation can be found in
+:dakkw:`responses`.
 
 The features of the current (Voronoi) piecewise decomposition choice are
 further explained below:
@@ -1040,26 +1061,27 @@ or challenge) data point :math:`x_i`. In the simple error metric case,
 the points :math:`x_i` are those used to train the model, for cross
 validation they are points selectively omitted from the build, and for
 challenge data, they are supplementary points provided by the user. The
-basic metrics are specified via the ``metrics`` keyword, followed by one
-or more of:
+basic metrics are specified via the
+:dakkw:`model-surrogate-global-metrics` keyword, followed by one or
+more of the strings:
 
--  ``sum_squared``:
+-  ``'sum_squared'``:
    :math:`\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}`
 
--  ``mean_squared``:
+-  ``'mean_squared'``:
    :math:`\frac{1}{n}\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}`
 
--  ``root_mean_squared``:
+-  ``'root_mean_squared'``:
    :math:`\sqrt{\frac{1}{n}\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}}`
 
--  ``sum_abs``: :math:`\sum_{i=1}^{n}{ \left| o(x_i) - p(x_i) \right| }`
+-  ``'sum_abs'``: :math:`\sum_{i=1}^{n}{ \left| o(x_i) - p(x_i) \right| }`
 
--  ``mean_abs``:
+-  ``'mean_abs'``:
    :math:`\frac{1}{n}\sum_{i=1}^{n}{ \left| o(x_i) - p(x_i) \right| }`
 
--  ``max_abs``: :math:`\max_i \left| o(x_i) - p(x_i) \right|`
+-  ``'max_abs'``: :math:`\max_i \left| o(x_i) - p(x_i) \right|`
 
--  ``rsquared``: :math:`R^2 = \frac{\sum_{i=1}^{n}{\left(p_i -
+-  ``'rsquared'``: :math:`R^2 = \frac{\sum_{i=1}^{n}{\left(p_i -
    \bar{o}\right)^2}}{ \sum_{i=1}^{n}{\left(o_i -
    \bar{o}\right)^2}}`
 
@@ -1083,14 +1105,17 @@ generation and any metrics specified above are computed with respect to
 the held out data. A special case, when :math:`k` is equal to the number
 of data points, is known as leave-one-out cross-validation or prediction
 error sum of squares (PRESS). To specify :math:`k`-fold cross-validation
-or PRESS, follow the list of metrics with ``cross_validate`` and/or
-``press``, respectively.
+
+or PRESS, follow the list of metrics with
+:dakkw:`model-surrogate-global-metrics-cross_validation` and/or
+:dakkw:`model-surrogate-global-metrics-press`, respectively.
 
 **Challenge data:** A user may optionally specify
-``challenge_points_file``, a data file in freeform or annotated format
-that contains additional trial point/response data, one point per row.
-When specified, any of the above metrics specified will be computed with
-respect to the challenge data.
+:dakkw:`model-surrogate-global-import-challenge_points_file`, a data
+file in freeform or annotated format that contains additional trial
+point/response data, one point per row.  When specified, any of the
+above metrics specified will be computed with respect to the challenge
+data.
 
 Caution is advised when applying and interpreting these metrics. In
 general, lower errors are better, but for interpolatory models like
@@ -1141,47 +1166,66 @@ Surrogate Model Selection
 This section offers some guidance on choosing from among the available
 surrogate model types.
 
--  For Surrogate Based Local Optimization, i.e. the
-   ``surrogate_based_local`` method, with a trust region, either
-   ``surrogate`` ``local`` ``taylor_series`` or ``surrogate``
-   ``multipoint`` ``tana`` will probably work best. If for some reason
-   you wish or need to use a global surrogate (not recommended) then the
-   best of these options is likely to be either ``surrogate`` ``global``
-   ``gaussian_process`` ``surfpack`` or ``surrogate`` ``global``
-   ``moving_least_squares``.
+- For Surrogate Based Local Optimization
+  (:dakkw:`method-surrogate_based_local`) with a trust region, a
+  :dakkw:`model-surrogate-local-taylor_series` or
+  :dakkw:`model-surrogate-multipoint-tana` approximation will probably
+  work best. If you wish or need to use a global surrogate (not
+  recommended) then consider
+  :dakkw:`model-surrogate-global-gaussian_process` or possibly
+  :dakkw:`model-surrogate-global-moving_least_squares`.
 
--  | For Efficient Global Optimization (EGO), i.e. the
-     ``efficient_global`` method, the default
-   | ``gaussian_process`` ``surfpack`` is likely to find a more optimal
-     value and/or use fewer true function evaluations than the
-     alternative, ``gaussian_process`` ``dakota``. However, the
-     ``surfpack`` version will likely take more time to build than the
-     ``dakota`` version. Note that currently the ``use_derivatives``
-     keyword is not recommended for use with EGO based methods.
+- For iterative surrogate-based global methods, including Efficient
+  Global Optimization (EGO, :dakkw:`method-efficient_global`),
+  Efficient Global Reliability Analysis (EGRA,
+  :dakkw:`method-global_reliability`), EGO-based global interval
+  estimation (EGIE, :dakkw:`method-global_interval_est` with option
+  :dakkw:`method-global_interval_est-ego`), and EGO based
+  Dempster-Shafer Theory of Evidence (:dakkw:`method-global_evidence`
+  with option :dakkw:`method-global_evidence-ego`),
+  :dakkw:`model-surrogate-global-gaussian_process`
+  :dakkw:`model-surrogate-global-gaussian_process-surfpack` is the
+  recommended and default approximation.  The Surfpack GP is likely to
+  find a similar or more optimal value and/or use fewer true function
+  evaluations than the alternative Dakota GP. However the Surfpack
+  implementation will likely take more time to build at each iteration
+  than the Dakota version. The
+  :dakkw:`model-surrogate-global-use_derivatives` keyword is not
+  recommended for use with EGO-based methods.
 
--  For EGO based global interval estimation (EGIE), i.e. the
-   ``global_interval_est`` ``ego`` method, the default
-   ``gaussian_process`` ``surfpack`` will likely work better than the
-   alternative ``gaussian_process`` ``dakota``.
+- When using a global surrogate to extrapolate, either the
+  :dakkw:`model-surrogate-global-gaussian_process` or a quadratic or
+  cubic :dakkw:`model-surrogate-global-polynomial` is recommended.
 
--  For Efficient Global Reliability Analysis (EGRA), i.e. the
-   ``global_reliability`` method the ``surfpack`` and ``dakota``
-   versions of the gaussian process tend to give similar answers with
-   the ``dakota`` version tending to use fewer true function
-   evaluations. Since this is based on EGO, it is likely that the
-   default ``surfpack`` version is more accurate, although this has not
-   been rigorously demonstrated.
+- When attempting to interpolate more than roughly 1000 training
+  points, the build time of Gaussian process models may become
+  prohibitive. A radial basis function network
+  (:dakkw:`model-surrogate-global-radial_basis`) may provide a
+  reasonable alternative, as might a stochastic collocation
+  interpolant (:dakkw:`method-stoch_collocation`), if performing UQ.
 
--  For EGO based Dempster-Shafer Theory of Evidence, i.e. the
-   ``global_evidence`` ``ego`` method, the default ``gaussian_process``
-   ``surfpack`` will often use significantly fewer true function
-   evaluations than the alternative ``gaussian_process`` ``dakota``.
+- In other situations demanding a global surrogate,
+  :dakkw:`model-surrogate-global-gaussian_process`
+  :dakkw:`model-surrogate-global-gaussian_process-surfpack` is generally
+  recommended. Training the model with
+  :dakkw:`model-surrogate-global-use_derivatives` is only beneficial
+  if accurate and an inexpensive derivatives are available. Finite
+  difference derivatives are disqualified on both counts. However,
+  derivatives generated by analytical, automatic differentiation, or
+  continuous adjoint techniques can be helpful. Currently, only
+  first-order derivatives (gradients) will be used. Hessians will not
+  be used even if they are available.
 
--  When using a global surrogate to extrapolate, either the
-   ``gaussian_process`` ``surfpack`` or ``polynomial`` ``quadratic`` or
-   ``polynomial`` ``cubic`` is recommended.
+.. note::
 
--  When there is over roughly two or three thousand data points and you
+   MARS: While the MARS approximation in Dakota has performed well in
+   some applications, numerous runtime problems have been observed, so
+   it should be used with caution.
+
+.. 
+   BMA: This old guidance for interpolating large data seems wrong...
+
+   When there is over roughly two or three thousand data points and you
    wish to interpolate (or approximately interpolate) then a Taylor
    series, Radial Basis Function Network, or Moving Least Squares fit is
    recommended. The only reason that the ``gaussian_process``
@@ -1190,23 +1234,12 @@ surrogate model types.
    points is very large. Use of the third party MARS package included in
    Dakota is generally discouraged.
 
--  In other situations that call for a global surrogate, the
-   ``gaussian_process`` ``surfpack`` is generally recommended. The
-   ``use_derivatives`` keyword will only be useful if accurate and an
-   inexpensive derivatives are available. Finite difference derivatives
-   are disqualified on both counts. However, derivatives generated by
-   analytical, automatic differentiation, or continuous adjoint
-   techniques can be appropriate. Currently, first order derivatives,
-   i.e. gradients, are the highest order derivatives that can be used to
-   construct the ``gaussian_process`` ``surfpack`` model; Hessians will
-   not be used even if they are available.
-
 .. _`models:surrogate:python`:
 
 Python Interface to the Surrogates Module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dakota 6.13 onwards uses Pybind11 :cite:p:`pybind11` to
+Dakota 6.13 and newer use Pybind11 :cite:p:`pybind11` to
 provide a Python interface to the surrogates module
 ``dakota.surrogates``, which currently contains polynomial and
 Gaussian process regression surrogates. In this section we describe
@@ -1214,9 +1247,9 @@ how to enable the interface and provide a simple demonstration.
 
 After installing Dakota, ``dakota.surrogates`` may be used by setting
 the environment variable ``PYTHONPATH`` to include
-``$DAK_INSTALL/share/dakota/Python``. Note that doing
+:file:`$DAK_INSTALL/share/dakota/Python`. Note that doing
 so will also enable ``dakota.interfacing`` as described in
-`[interfaces:dakota.interfacing] <#interfaces:dakota.interfacing>`__.
+:ref:`interfaces:dakota.interfacing`.
 
 The Python code snippet below shows how a Gaussian process surrogate can
 be built from existing Numpy arrays and an optional dictionary of
@@ -1241,14 +1274,14 @@ determining default settings.
    daksurr.save(gp, "gp.bin", True)
 
 The examples located in
-``$DAK_INSTALL/share/dakota/examples/official/surrogates/library``
+:file:`$DAK_INSTALL/share/dakota/examples/official/surrogates/library`
 cover surrogate build/save/load workflows and
 other Python-accessible methods such as gradient and hessian evaluation.
 
 As a word of caution, the configuration options for a surrogate loaded
 from disk will be empty because the current implementation does not
 serialize them, although the save command will generate a YAML file
-``ClassName.yaml`` of configuration options used by the surrogate for
+:file:`<ClassName>.yaml` of configuration options used by the surrogate for
 reference.
 
 .. _`models:nested`:
@@ -1256,14 +1289,14 @@ reference.
 Nested Models
 -------------
 
-Nested models utilize a sub-iterator and a sub-model to perform a
-complete iterative study as part of every evaluation of the model. This
+Nested models employ sub-method and a sub-model to perform a complete
+iterative study as part of every evaluation of the model. This
 sub-iteration accepts variables from the outer level, performs the
-sub-level analysis, and computes a set of sub-level responses which are
-passed back up to the outer level. As described in the Models chapter of
-the Reference Manual :cite:p:`RefMan`, mappings are employed
-for both the variable inputs to the sub-model and the response outputs
-from the sub-model.
+sub-level analysis, and computes a set of sub-level responses which
+are passed back up to the outer level. As described in the nested
+model's :dakkw:`model-nested-sub_method_pointer` documentation,
+mappings are employed for both the variable inputs to the sub-model
+and the response outputs from the sub-model.
 
 In the variable mapping case, primary and secondary variable mapping
 specifications are used to map from the top-level variables into the
@@ -1278,36 +1311,31 @@ augmenting the active sub-model variables.
 In the response mapping case, primary and secondary response mapping
 specifications are used to map from the sub-model responses back to the
 top-level responses. These specifications provide real-valued
-multipliers that are applied to the sub-iterator response results to
+multipliers that are applied to the sub-method response results to
 define the outer level response set. These nested data results may be
 combined with non-nested data through use of the “optional interface”
 component within nested models.
 
-The nested model is used within a wide variety of multi-iterator,
+The nested model is used within a wide variety of multi-method,
 multi-model solution approaches. For example, optimization within
 optimization (for hierarchical multidisciplinary optimization),
 uncertainty quantification within uncertainty quantification (for mixed
 aleatory-epistemic UQ), uncertainty quantification within optimization
 (for optimization under uncertainty), and optimization within
 uncertainty quantification (for uncertainty of optima) are all
-supported, with and without surrogate model indirection. Several
-examples of nested model usage are provided in
-Chapter `[adv_models] <#adv_models>`__, most notably mixed
-epistemic-aleatory UQ in
-Section `[adv_models:mixed_uq] <#adv_models:mixed_uq>`__, optimization
-under uncertainty (OUU) in
-Section `[adv_models:ouu] <#adv_models:ouu>`__, and surrogate-based UQ
-in Section `[adv_models:sbuq] <#adv_models:sbuq>`__.
+supported, with and without surrogate model indirection.
+Examples of nested model usage appear in :ref:`adv_models`, most
+notably mixed epistemic-aleatory UQ in :ref:`adv_models:mixed_uq`
+optimization under uncertainty (OUU) in :ref:`adv_models:ouu`, and
+surrogate-based UQ in :ref:`adv_models:sbuq`.
 
 .. _`models:randomfield`:
 
 Random Field Models
 -------------------
 
-As of Dakota 6.4, we have a preliminary capability to generate random
-fields. This is an experimental capability that is undergoing active
-development, so the following description and the associated syntax may
-change.
+As of Dakota 6.4, there is a preliminary/experimental capability to
+generate random fields.
 
 Our goal with a random field model is to have a fairly general
 capability, where we can generate a random field representation in one
@@ -1319,67 +1347,72 @@ step is to draw realizations from the random field model to propagate to
 another simulation model. For example, the random field may represent a
 pressure or temperature boundary condition for a simulation.
 
-The random field model is currently specified with a model type of
-``random_field``. The first section of the random field specification
-tells Dakota what data to use to build the random field. This is
-specified with ``build_source``. The source of data to build the random
-field may be a file with data (where the N rows of data correspond to N
-samples of the random field and the M columns correspond to field
-values), or it may be a simulation that generates field data, or it may
-be specified given a mesh and a covariance matrix governing how the
-field varies over the mesh. In the case of using a simulation to
-generate field data, the simulation is defined with
-``dace_method_pointer``. In the case of using a mesh and a covariance,
-the form of the covariance is defined with ``analytic_covariance``.
+The random field model is specified with a model type of
+:dakkw:`model-random_field`. The first section of the random field
+specification tells Dakota what data to use to build the random
+field. This is specified with
+:dakkw:`model-random_field-build_source`. The source of data to build
+the random field may be a file with data (where the N rows of data
+correspond to N samples of the random field and the M columns
+correspond to field values), a simulation that generates field data,
+or a specified mesh plus covariance matrix governing how the field
+varies over the mesh. In the case of using a simulation to generate
+field data, the simulation is defined through
+:dakkw:`model-random_field-build_source-dace_method_pointer`. In the
+case of using a mesh and a covariance, the form of the covariance is
+defined with
+:dakkw:`model-random_field-build_source-analytic_covariance`.
 
 The next section of the random field model specifies the form of the
-expansion, ``expansion_form``. This can be either a Karhunen-Loeve
-expansion or a Principal components analysis. These are very similar:
-both involve the eigenvalues of the covariance matrix of the field data.
-The only difference is in the treatment of the estimation of the
-coefficients of the eigenvector basis functions. In the PCA case, we
-have developed an approach which makes the coefficients explicit
-functions of the uncertain variables used to generate the random field.
-The specification of the random field can also include the number of
-bases to retain or a truncation tolerance, which defines the percent
-variance that the expansion should capture.
+expansion, :dakkw:`model-random_field-expansion_form`. This can be
+either a Karhunen-Loeve expansion or a Principal components
+analysis. These are very similar: both involve the eigenvalues of the
+covariance matrix of the field data.  The only difference is in the
+treatment of the estimation of the coefficients of the eigenvector
+basis functions. In the PCA case, we have developed an approach which
+makes the coefficients explicit functions of the uncertain variables
+used to generate the random field.  The specification of the random
+field can also include the number of bases to retain or a truncation
+tolerance, which defines the percent variance that the expansion
+should capture.
 
-The final section of the random field model allows the user to specify a
-pointer to a model over which the random field will be propagated,
-``propagation_model_pointer``, meaning the model which will be driven
-with the random field input.
+The final section of the random field model admits a pointer to a
+model through which the random field will be propagated,
+:dakkw:`model-random_field-propagation_model_pointer`, meaning the
+model to be driven with the random field input.
 
 .. _`models:subspace`:
 
 Active Subspace Models
 ----------------------
 
-The active subspace technique :cite:p:`constantine2015active`
+The active subspace technique :cite:p:`constantine2015active`
 seeks directions in the input space for which the response function(s)
 show little variation. After a rotation to align with these directions,
 significant dimension reduction may be possible.
 
-The Dakota model type ``subspace`` manages the input subspace
-identification and transforms the original simulation model into the new
-coordinates. This capability is new as of Dakota 6.4 and under very
-active development, so the following information may be outdated.
+The Dakota model type :dakkw:`model-active_subspace` manages the input
+subspace identification and transforms the original simulation model
+into the new coordinates. This experimental capability was introduced
+in Dakota 6.4.
 
 In Dakota 6.4, the active subspace model can be used in conjunction with
 the following uncertainty quantification methods:
 
--  ``polynomial_chaos``
+- :dakkw:`method-polynomial_chaos`
 
--  ``sampling``
+- :dakkw:`method-sampling`
 
--  ``local_reliability``
+- :dakkw:`method-local_reliability`
 
-An error message similar to:
+.. note::
+
+   An error message similar to:
 
    ``Error: Resizing is not yet supported in method <method name>.``
 
-will be written and Dakota will exit if the active subspace model is
-used with a non-compatible method. The set of compatible methods will be
-expanded in future releases.
+   will be emitted and Dakota will exit if the active subspace model
+   is used with a non-compatible UQ method.
 
 The active subspace implementation in Dakota 6.4 first transforms
 uncertain variables to standard normal distributions using a Nataf
@@ -1390,21 +1423,22 @@ Dakota releases will not use this transformation and should perform
 better in the general case.
 
 The only required keyword when using a subspace model is the
-``truth_model_pointer`` which points to the underlying model (specified
-by its ``id_model``) on which to build the subspace. The ``subspace``
-model requires either analytical (preferred) or numerical gradients of
-the response functions. The active subspace model first samples the
-gradient of the fullspace model. The number of gradient samples can be
-specified with ``initial_samples``. The gradient samples are compiled
-into the columns of a matrix. A singular value decomposition is
-performed of the derivative matrix and the resulting singular values and
-vectors are used to determine the basis vectors and size of the active
-subspace.
+:dakkw:`model-active_subspace-truth_model_pointer` which points to the
+(via :dakkw:`model-id_model`) of the underlying model on which to
+build the subspace. A subspace model requires either analytical
+(preferred) or numerical gradients of the response functions. The
+active subspace model first samples the gradient of the fullspace
+model. The number of gradient samples can be specified with
+:dakkw:`model-active_subspace-initial_samples`. The gradient samples
+are compiled into the columns of a matrix. A singular value
+decomposition is performed of the derivative matrix and the resulting
+singular values and vectors are used to determine the basis vectors
+and size of the active subspace.
 
-Constantine :cite:p:`constantine2015active` recommends
-choosing ``initial_samples`` such that:
+Constantine :cite:p:`constantine2015active` recommends
+choosing the initial samples such that:
 
-.. math:: \text{\texttt{initial\_samples}} = \alpha k \log(m),
+.. math:: \mathtt{initial\_samples} = \alpha k \log(m),
 
 where :math:`\alpha` is an oversampling factor between 2 and 10,
 :math:`k` is the number of singular values to approximate, and :math:`m`
@@ -1412,30 +1446,25 @@ is the number of fullspace variables. To ensure accurate results,
 :math:`k` should be greater than the estimated subspace size determined
 by one of the truncation methods described below.
 
-Dakota has everal metrics to estimate the size of an active subspace:
+Dakota has several metrics to estimate the size of an active subspace
+chosen via :dakkw:`model-active_subspace-truncation_method`. If the
+desired subspace size is known it can be explicitly selected using the
+input parameter :dakkw:`model-active_subspace-dimension`. The
+:dakkw:`model-active_subspace-truncation_method-constantine` (default)
+and :dakkw:`model-active_subspace-truncation_method-bing_li`
+truncation methods both use bootstrap sampling of the compiled
+derivative matrix to estimate an active subspace size. The number of
+bootstrap samples used with these methods can be specified with the
+keyword :dakkw:`model-active_subspace-bootstrap_samples`, but
+typically the default value works well. The
+:dakkw:`model-active_subspace-truncation_method-energy` method
+computes the number of bases so that the subspace representation
+accounts for all but a maximum percentage (specified as a decimal) of
+the total eigenvalue energy.
 
--  ``constantine`` (default)
-
--  ``bing_li``
-
--  ``energy``
-
--  ``cross_validation``
-
-Additionally, if the desired subspace size is known it can be explicitly
-selected using the input parameter ``dimension``. The ``constantine``
-and ``bing_li`` truncation methods both use bootstrap sampling of the
-compiled derivative matrix to estimate an active subspace size. The
-number of bootstrap samples used with these methods can be specified
-with the keyword ``bootstrap_samples``, but typically the default value
-works well. The ``energy`` method computes the number of bases so that
-the subspace representation accounts for all but a maximum percentage
-(specified as a decimal) of the total eigenvalue energy. This value is
-specified using the ``truncation_tolerance`` keyword.
-
-For more information on active subspaces please consult the Theory
-Manual :cite:p:`TheoMan` and/or
-references :cite:p:`Constantine-preprint-active,constantine2014active,constantine2015active`.
+For more information on active subspaces please consult
+:ref:`Chap:ActSub` or references
+:cite:p:`Constantine-preprint-active,constantine2014active,constantine2015active`.
 
 .. _`surrmodels-videos`:
 

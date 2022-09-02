@@ -1,7 +1,7 @@
+.. _`studytypes-main`:
+
 Study Types
 =======================================
-
-.. _studytypes-main:
 
 .. toctree::
    :maxdepth: 1
