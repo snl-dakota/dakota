@@ -29,6 +29,94 @@
 
 using namespace Dakota;
 
+
+/// generate num_evals PRPs, write to the passed RestartWriter, and return in array
+PRPArray generate_and_write_prps(const int num_evals, RestartWriter &rst_writer)
+{
+  // Mock up one of each variable
+    SizetArray vc_totals(NUM_VC_TOTALS, 1);
+    vc_totals.assign(NUM_VC_TOTALS, 1);
+    std::pair<short, short> view(MIXED_ALL, EMPTY_VIEW);
+    SharedVariablesData svd(view, vc_totals);
+    Variables vars(svd);
+    for (size_t i=0; i<vars.acv(); ++i)
+      vars.all_continuous_variable(M_LOG2E + (Real) i, i);
+    for (size_t i=0; i<vars.adiv(); ++i)
+      vars.all_discrete_int_variable(i, i);
+    for (size_t i=0; i<vars.adsv(); ++i)
+      vars.all_discrete_string_variable(String("sv") + std::to_string(i), i);
+    for (size_t i=0; i<vars.adrv(); ++i)
+      vars.all_discrete_real_variable(100.0 + (Real) i, i);
+
+    // active set with 12 var / 2 resp, including gradients, Hessians
+    int num_resp = 2;
+    ActiveSet as(num_resp, NUM_VC_TOTALS);
+    as.request_values(7);
+    as.derivative_start_value(0);
+
+    // TODO: can't default construct srd...
+    // Also the Response doesn't get the right size...
+    // SharedResponseData srd(as);
+    // srd.response_type(SIMULATION_RESPONSE);
+    //  Response resp(srd);
+
+    // TODO: A number of Response constructors are partial, and may
+    // leave the resulting object in a bad state.  Have to use this ctor
+    // for it to work.
+    Response resp(SIMULATION_RESPONSE, as);
+
+    resp.function_value(M_PI, 0);
+    resp.function_value(2*M_PI, 1);
+
+    // This calls srand, but should be limited to this test
+    // TODO: utilities to use Boost RNG to populate matrices
+    Teuchos::ScalarTraits<Real>::seedrandom(12345);
+
+    RealMatrix gradient(NUM_VC_TOTALS, num_resp);
+    gradient.random();
+    resp.function_gradients(gradient);
+
+    RealSymMatrix hess0(NUM_VC_TOTALS, NUM_VC_TOTALS);
+    hess0.random();
+    resp.function_hessian(hess0, 0);
+
+    RealSymMatrix hess1(NUM_VC_TOTALS, NUM_VC_TOTALS);
+    hess1.random();
+    resp.function_hessian(hess1, 1);
+
+    String iface_id = "RST_IFACE";
+    int eval_id = 1;
+
+    // TODO: code is not robust to writing empty PRP (seg fault)
+    PRPArray prps_out;
+
+    for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
+      // For now this just make a small tweak so variables/resp are unique
+      vars.continuous_variable(M_LOG2E + (Real) (eval_id-1), 0);
+      resp.function_value(M_PI + (Real) (eval_id-1), 0);
+      // NOTE: This makes a deep copy of vars/resp by default:
+      ParamResponsePair prp_out(vars, iface_id, resp, eval_id);
+      prps_out.push_back(prp_out);
+      rst_writer.append_prp(prp_out);
+    }
+
+    return prps_out;
+}
+
+/// read PRPs from specified restart file to an array and return
+PRPArray read_prps(const int num_evals, const std::string& rst_filename)
+{
+  PRPArray prps_in;
+  std::ifstream restart_input_fs(rst_filename, std::ios::binary);
+  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+  for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
+    ParamResponsePair prp_in;
+    restart_input_archive & prp_in;
+    prps_in.push_back(prp_in);
+  }
+  return prps_in;
+}
+
 /** In-core test with 1 variable/response */
 TEUCHOS_UNIT_TEST(io, restart_1var)
 {
@@ -86,90 +174,17 @@ TEUCHOS_UNIT_TEST(io, restart_1var)
 /** File-based test with multiple variables/responses */
 TEUCHOS_UNIT_TEST(io, restart_allvar)
 {
-  String rst_filename("restart_allvar.rst");
+  std::string rst_filename("restart_allvar.rst");
   boost::filesystem::remove(rst_filename);
 
-  // Mock up one of each variable
-  SizetArray vc_totals(NUM_VC_TOTALS, 1);
-  vc_totals.assign(NUM_VC_TOTALS, 1);
-  std::pair<short, short> view(MIXED_ALL, EMPTY_VIEW);
-  SharedVariablesData svd(view, vc_totals);
-  Variables vars(svd);
-  for (size_t i=0; i<vars.acv(); ++i)
-    vars.all_continuous_variable(M_LOG2E + (Real) i, i);
-  for (size_t i=0; i<vars.adiv(); ++i)
-    vars.all_discrete_int_variable(i, i);
-  for (size_t i=0; i<vars.adsv(); ++i)
-    vars.all_discrete_string_variable(String("sv") + std::to_string(i), i);
-  for (size_t i=0; i<vars.adrv(); ++i)
-    vars.all_discrete_real_variable(100.0 + (Real) i, i);
-
-  // active set with 12 var / 2 resp, including gradients, Hessians
-  int num_resp = 2;
-  ActiveSet as(num_resp, NUM_VC_TOTALS);
-  as.request_values(7);
-  as.derivative_start_value(0);
-
-  // TODO: can't default construct srd...
-  // Also the Response doesn't get the right size...
-  // SharedResponseData srd(as);
-  // srd.response_type(SIMULATION_RESPONSE);
-  //  Response resp(srd);
-
-  // TODO: A number of Response constructors are partial, and may
-  // leave the resulting object in a bad state.  Have to use this ctor
-  // for it to work.
-  Response resp(SIMULATION_RESPONSE, as);
-
-  resp.function_value(M_PI, 0);
-  resp.function_value(2*M_PI, 1);
-
-  // This calls srand, but should be limited to this test
-  // TODO: utilities to use Boost RNG to populate matrices
-  Teuchos::ScalarTraits<Real>::seedrandom(12345);
-
-  RealMatrix gradient(NUM_VC_TOTALS, num_resp);
-  gradient.random();
-  resp.function_gradients(gradient);
-
-  RealSymMatrix hess0(NUM_VC_TOTALS, NUM_VC_TOTALS);
-  hess0.random();
-  resp.function_hessian(hess0, 0);
-
-  RealSymMatrix hess1(NUM_VC_TOTALS, NUM_VC_TOTALS);
-  hess1.random();
-  resp.function_hessian(hess1, 1);
-
-  String iface_id = "RST_IFACE";
-  int eval_id = 1;
-
-  // TODO: code is not robust to writing empty PRP (seg fault)
-  int num_evals = 10;
+  const int num_evals = 10;
   PRPArray prps_out, prps_in;
-  // added scope to force destruction of writer/reader and close the file
+  // scope to force destruction of writer and close the file
   {
     RestartWriter rst_writer(rst_filename);
-
-    for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
-      // For now this just make a small tweak so variables/resp are unique
-      vars.continuous_variable(M_LOG2E + (Real) (eval_id-1), 0);
-      resp.function_value(M_PI + (Real) (eval_id-1), 0);
-      // NOTE: This makes a deep copy of vars/resp by default:
-      ParamResponsePair prp_out(vars, iface_id, resp, eval_id);
-      prps_out.push_back(prp_out);
-      rst_writer.append_prp(prp_out);
-    }
-
+    prps_out = generate_and_write_prps(num_evals, rst_writer);
   }
-  {
-    std::ifstream restart_input_fs(rst_filename.c_str(), std::ios::binary);
-    boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
-    for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
-      ParamResponsePair prp_in;
-      restart_input_archive & prp_in;
-      prps_in.push_back(prp_in);
-    }
-  }
+  prps_in = read_prps(num_evals, rst_filename);
 
   TEST_EQUALITY(prps_in, prps_out);
 
