@@ -39,6 +39,7 @@ is planned for future releases.
 
 .. figure:: img/classDakota_1_1Model.png
    :name: model:hier
+   :align: center
 
    The Dakota ``Model`` class hierarchy.
 
@@ -220,6 +221,11 @@ optional discontinuity detection parameters (jump/gradient).
 In addition to data fit surrogates, Dakota supports multifidelity and
 reduced-order model approximations:
 
+..
+   TODO: Discussion on MF surrogates still seems accruate, but a lot
+   have evolved in this area in recent years. Needs review/update here
+   and throughout.
+
 **Multifidelity Surrogates**: Multifidelity modeling involves the use of
 a low-fidelity physics-based model as a surrogate for the original
 high-fidelity model. The low-fidelity model typically involves a coarser
@@ -287,21 +293,21 @@ approximations to the exact correction functions:
 
 .. math::
 
-   \begin{aligned}
-   \alpha({\bf x}) & = & A({\bf x_c}) + \nabla A({\bf x_c})^T 
+   \alpha({\bf x}) & = A({\bf x_c}) + \nabla A({\bf x_c})^T 
    ({\bf x} - {\bf x_c}) + \frac{1}{2} ({\bf x} - {\bf x_c})^T 
-   \nabla^2 A({\bf x_c}) ({\bf x} - {\bf x_c}) \label{eq:taylor_a} \\
-   \beta({\bf x})  & = & B({\bf x_c}) + \nabla B({\bf x_c})^T 
+   \nabla^2 A({\bf x_c}) ({\bf x} - {\bf x_c}) \label{eq:taylor_a}
+
+   \beta({\bf x})  & = B({\bf x_c}) + \nabla B({\bf x_c})^T 
    ({\bf x} - {\bf x_c}) + \frac{1}{2} ({\bf x} - {\bf x_c})^T \nabla^2 
-   B({\bf x_c}) ({\bf x} - {\bf x_c}) \label{eq:taylor_b}\end{aligned}
+   B({\bf x_c}) ({\bf x} - {\bf x_c}) \label{eq:taylor_b}
 
 where the exact correction functions are
 
 .. math::
 
-   \begin{aligned}
-   A({\bf x}) & = & f_{hi}({\bf x}) - f_{lo}({\bf x})       \label{eq:exact_A} \\
-   B({\bf x}) & = & \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})} \label{eq:exact_B}\end{aligned}
+   A({\bf x}) & = f_{hi}({\bf x}) - f_{lo}({\bf x})       \label{eq:exact_A}
+
+   B({\bf x}) & = \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})} \label{eq:exact_B}
 
 Refer to :cite:p:`Eld04` for additional details on the
 derivations.
@@ -464,15 +470,16 @@ where :math:`n` is the number of variables and:
 
 .. math::
 
-   \begin{aligned}
-   p_i & = & 1 + \ln \left[ \frac{\frac{\partial f}{\partial x_i}({\bf x}_1)}
+   p_i & = 1 + \ln \left[ \frac{\frac{\partial f}{\partial x_i}({\bf x}_1)}
    {\frac{\partial f}{\partial x_i}({\bf x}_2)} \right] \left/ 
-   \ln \left[ \frac{x_{i,1}}{x_{i,2}} \right] \right. \label{eq:tana_pi} \\
-   \epsilon({\bf x}) & = & \frac{H}{\sum_{i=1}^n (x_i^{p_i} - x_{i,1}^{p_i})^2 + 
-   \sum_{i=1}^n (x_i^{p_i} - x_{i,2}^{p_i})^2} \label{eq:tana_eps} \\
-   H & = & 2 \left[ f({\bf x}_1) - f({\bf x}_2) - \sum_{i=1}^n 
+   \ln \left[ \frac{x_{i,1}}{x_{i,2}} \right] \right. \label{eq:tana_pi}
+
+   \epsilon({\bf x}) & = \frac{H}{\sum_{i=1}^n (x_i^{p_i} - x_{i,1}^{p_i})^2 + 
+   \sum_{i=1}^n (x_i^{p_i} - x_{i,2}^{p_i})^2} \label{eq:tana_eps}
+
+   H & = 2 \left[ f({\bf x}_1) - f({\bf x}_2) - \sum_{i=1}^n 
    \frac{\partial f}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i} 
-   (x_{i,1}^{p_i} - x_{i,2}^{p_i}) \right] \label{eq:tana_H}\end{aligned}
+   (x_{i,1}^{p_i} - x_{i,2}^{p_i}) \right] \label{eq:tana_H}
 
 and :math:`{\bf x}_2` and :math:`{\bf x}_1` are the current and previous
 expansion points. Prior to the availability of two expansion points, a
@@ -700,7 +707,7 @@ differences between these models are as follows:
   - ``'local'`` which uses the CONMIN gradient-based optimizer,
 
   - ``'sampling'`` which generates several random guesses and picks
-     the candidate with greatest likelihood, and
+    the candidate with greatest likelihood, and
 
   - ``'none'``
 
@@ -1063,29 +1070,33 @@ validation they are points selectively omitted from the build, and for
 challenge data, they are supplementary points provided by the user. The
 basic metrics are specified via the
 :dakkw:`model-surrogate-global-metrics` keyword, followed by one or
-more of the strings:
+more of the strings shown in :numref:`table:model:diagnostics`.
 
--  ``'sum_squared'``:
-   :math:`\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}`
+.. list-table:: Global surrogate diagnostic metrics
+   :name: table:model:diagnostics
+   :header-rows: 1
+   :align: center
 
--  ``'mean_squared'``:
-   :math:`\frac{1}{n}\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}`
+   * - Metric String
+     - Formula
+   * - ``'sum_squared'``
+     - :math:`\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}`
+   * - ``'mean_squared'``
+     - :math:`\frac{1}{n}\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}`
+   * - ``'root_mean_squared'``
+     - :math:`\sqrt{\frac{1}{n}\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}}`
+   * - ``'sum_abs'``
+     - :math:`\sum_{i=1}^{n}{ \left| o(x_i) - p(x_i) \right| }`
+   * - ``'mean_abs'``
+     - :math:`\frac{1}{n}\sum_{i=1}^{n}{ \left| o(x_i) - p(x_i) \right| }`
+   * - ``'max_abs'``
+     - :math:`\max_i \left| o(x_i) - p(x_i) \right|`
+   * - ``'rsquared'``
+     - :math:`R^2 = \frac{\sum_{i=1}^{n}{\left(p_i -
+       \bar{o}\right)^2}}{ \sum_{i=1}^{n}{\left(o_i -
+       \bar{o}\right)^2}}`
 
--  ``'root_mean_squared'``:
-   :math:`\sqrt{\frac{1}{n}\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}}`
-
--  ``'sum_abs'``: :math:`\sum_{i=1}^{n}{ \left| o(x_i) - p(x_i) \right| }`
-
--  ``'mean_abs'``:
-   :math:`\frac{1}{n}\sum_{i=1}^{n}{ \left| o(x_i) - p(x_i) \right| }`
-
--  ``'max_abs'``: :math:`\max_i \left| o(x_i) - p(x_i) \right|`
-
--  ``'rsquared'``: :math:`R^2 = \frac{\sum_{i=1}^{n}{\left(p_i -
-   \bar{o}\right)^2}}{ \sum_{i=1}^{n}{\left(o_i -
-   \bar{o}\right)^2}}`
-
-Here, :math:`n` is the number of data points used to create the model,
+Therein, :math:`n` is the number of data points used to create the model,
 and :math:`\bar{o}` is the mean of the true response values.
 :math:`R^2`, developed for and most useful with polynomial regression,
 quantifies the amount of variability in the data that is captured by the
@@ -1105,7 +1116,6 @@ generation and any metrics specified above are computed with respect to
 the held out data. A special case, when :math:`k` is equal to the number
 of data points, is known as leave-one-out cross-validation or prediction
 error sum of squares (PRESS). To specify :math:`k`-fold cross-validation
-
 or PRESS, follow the list of metrics with
 :dakkw:`model-surrogate-global-metrics-cross_validation` and/or
 :dakkw:`model-surrogate-global-metrics-press`, respectively.
@@ -1194,8 +1204,9 @@ surrogate model types.
   recommended for use with EGO-based methods.
 
 - When using a global surrogate to extrapolate, either the
-  :dakkw:`model-surrogate-global-gaussian_process` or a quadratic or
-  cubic :dakkw:`model-surrogate-global-polynomial` is recommended.
+  :dakkw:`model-surrogate-global-gaussian_process` with a polynomial
+  trend function, or a quadratic or cubic
+  :dakkw:`model-surrogate-global-polynomial` is recommended.
 
 - When attempting to interpolate more than roughly 1000 training
   points, the build time of Gaussian process models may become
@@ -1258,7 +1269,7 @@ disk for later use. The ``print_options`` method writes the surrogate’s
 current configuration options to the console, which can useful for
 determining default settings.
 
-::
+:: code-block:: python
 
    import dakota.surrogates as daksurr
 
@@ -1335,10 +1346,8 @@ Random Field Models
 -------------------
 
 As of Dakota 6.4, there is a preliminary/experimental capability to
-generate random fields.
-
-Our goal with a random field model is to have a fairly general
-capability, where we can generate a random field representation in one
+generate random fields. The random field model aims to be a fairly general
+capability, where one can generate a random field representation in one
 of three ways: from data, from simulation runs (e.g. running an ensemble
 of simulations where each one produces a field response), or from a
 covariance matrix defined over a mesh. Then, a random field model (such
