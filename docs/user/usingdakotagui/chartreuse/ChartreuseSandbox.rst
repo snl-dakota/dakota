@@ -54,7 +54,7 @@ Dakota Visual Editor:  Variables Table
 --------------------------------------
 
 While viewing a Dakota variables block in the :ref:`Dakota Visual Editor <gui-visual-editor-main>`, you can select one or more variables
-to enable the "Auto-Visualize Variable" button.  The variables selected must belong to an :ref:`uncertain variable category <topic-variable_type>`.
+to enable the "Auto-Visualize Variable" button.  The variables selected must belong to an :ref:`uncertain variable category <variables:uncertain>`.
 Selecting this button will immediately visualize the **probability density function** for each variable in the Sandbox.
 
 .. image:: img/Plotting_Sandbox_2.png

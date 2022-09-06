@@ -26,7 +26,8 @@ To accommodate these different studies, Dakota supports different:
     - discrete string set
     - discrete real set
 
-Use the :ref:`topic-variables<topic-variables>` page to browse the available variables by type and domain.
+See the variables :ref:`variables:overview` for another summary of the
+available variables by type and domain.
 
 
 *Variable Types*
@@ -61,13 +62,13 @@ Use the :ref:`topic-variables<topic-variables>` page to browse the available var
   - The ``initial_value`` is used as the only value
     for the state variable for all other methods, unless ``active``
     ``state`` is invoked.
-  - See more details on the :ref:`topic-state_variables<topic-state_variables>` page.
+  - See more details in :ref:`variables:state`.
 
 *Variable Domains*
 
 Continuous variables are typically defined by bounds. Discrete
 variables can be defined in one of three ways, which are discussed on
-the page :ref:`topic-discrete_variables<topic-discrete_variables>`.
+in :ref:`variables:design:ddv`.
 
 .. _variables-ordering-of-variables:
 

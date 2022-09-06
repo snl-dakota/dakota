@@ -385,16 +385,15 @@ fidelity parameters.
    does not refer to, e.g., the solution variables of a differential
    equation.
 
-Similar to :ref:`design variables <variables:design>`, state variables
-can be specified via :dakkw:`variables-continuous_state` (real-valued
-between bounds), :dakkw:`variables-discrete_state_range`
-(integer-valued between bounds), or
-:dakkw:`variables-discrete_state_set` (a discrete integer-, string-,
-or real-valued set). Model parameterizations with strings (e.g.,
-"mesh1.exo"), are also possible using an interface
+State variable configuration mirrors that of :ref:`design variables
+<variables:design>`. They can be specified via
+:dakkw:`variables-continuous_state` (real-valued between bounds),
+:dakkw:`variables-discrete_state_range` (integer-valued between
+bounds), or :dakkw:`variables-discrete_state_set` (a discrete
+integer-, string-, or real-valued set). Model parameterizations with
+strings (e.g., "mesh1.exo"), are also possible using an interface
 :dakkw:`interrface-analysis_drivers-analysis_components` specification
 (see also :ref:`variables:parameters:standard`)
-
 
 State variables, as with other types of variables, are viewed
 differently depending on the method in use. By default, only parameter
@@ -532,6 +531,51 @@ continuous and discrete variables in order to apply a continuous
 optimizer to a mixed variable problem. All methods default to a mixed
 domain except for the experimental branch-and-bound method, which
 defaults to relaxed.
+
+.. _`variables:usage`:
+
+Usage Notes
+-----------
+
+..
+   TODO: Consider putting info from parameter studies on Initial
+   Values and Bounds here. Also merge with info the keywords/variables
+   section. Also this from the historical reference manual:
+
+   For continuous and discrete range variables, the \c lower_bounds
+   and \c upper_bounds restrict the size of the feasible design space
+   and are frequently used to prevent nonphysical designs.  Default
+   values are positive and negative machine limits for upper and lower
+   bounds (+/- \c DBL_MAX, \c INT_MAX, \c INT_MIN from the \c float.h
+   and \c limits.h system header files).
+
+**Specifying set variables:** Sets of integers, reals, and strings
+have similar specifications, though different value types. The
+variables are specified using three keywords:
+
+* Variable declaration keyword, e.g.,
+  :dakkw:`variables-discrete_design_set`: specifies the number of
+  variables being defined.
+
+* ``elements_per_variable``: a list of positive integers specifying
+  how many set members each variable admits
+
+  - Length: # of variables
+  - Default: equal apportionment of elements among variables
+
+* elements: a list of the permissible integer values in ALL sets,
+  concatenated together.
+
+  - Length: sum of ``elements_per_variable``, or an integer multiple
+    of number of variables
+  - The order is very important here.
+  - The list is partitioned according to the values of
+    ``elements_per_variable``, and each partition is assigned to a
+    variable.
+
+* The ordering of elements_per_variable, and the partitions of
+  elements must match the strings from descriptors
+
 
 .. _`variables:parameters`:
 
