@@ -129,8 +129,12 @@ moderate to large *n* (e.g., five or more), tensor-product quadrature
 quickly becomes too expensive and the sparse grid and regression
 approaches are preferred. Random sampling for coefficient
 estimation is generally not recommended due to its slow convergence
-rate. <!--, although it does hold the advantage that the simulation
-budget is more flexible than that required by the other approaches.-->
+rate.
+
+..
+   HIDDEN:, although it does hold the advantage that the simulation
+   budget is more flexible than that required by the other approaches.
+
 For incremental studies, approaches 4 and 5 support reuse of previous
 samples through the :ref:`method-sampling-sample_type-incremental_lhs<method-sampling-sample_type-incremental_lhs>`
 and :ref:`model-surrogate-global-reuse_points<model-surrogate-global-reuse_points>`

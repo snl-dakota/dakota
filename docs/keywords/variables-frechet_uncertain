@@ -10,10 +10,12 @@ The density function for the frechet distribution is:
    \left( \frac{\beta}{x} \right)^{\alpha+1}
    \exp \left( -\left(\frac{\beta}{x}\right)^\alpha \right),
 
-:math:`\mu = \beta\Gamma(1-\frac{1}{\alpha}),`  and
+where :math:`\mu = \beta\Gamma(1-\frac{1}{\alpha}),`  and
 :math:`\sigma^2 = \beta^2[\Gamma(1-\frac{2}{\alpha})-\Gamma^2(1-\frac{1}{\alpha})]` 
+
 Topics::
 continuous_variables, aleatory_uncertain_variables
+
 Examples::
 
 Theory::

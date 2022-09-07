@@ -157,10 +157,10 @@ decomposition and meshing.
 
 **Discrete Design Variable Types:**
 
-- The :dakkw:`variables:discrete_design_range` type supports a range
+- The :dakkw:`variables-discrete_design_range` type supports a range
   of consecutive integers between specified
-  :dakkw:`variables:discrete_design_range-lower_bounds` and
-  :dakkw:`variables:discrete_design_range-upper_bounds`.
+  :dakkw:`variables-discrete_design_range-lower_bounds` and
+  :dakkw:`variables-discrete_design_range-upper_bounds`.
 
 - The :dakkw:`discrete_design_set` type admits a set of enumerated
   integer, string, or real values through an ``elements``
@@ -195,6 +195,14 @@ and standard deviation as determined from experimental data. The
 inclusion of the uncertainty in the coating thickness is essential to
 accurately represent the resulting uncertainty in the response of the
 building.
+
+Uncertain variables directly support the use of probabilistic
+uncertainty quantification methods such as sampling, reliability, and
+stochastic expansion methods.  They also admit lower and upper
+distribution bounds (whether explicitly defined, implicitly defined,
+or inferred), which permits allows their use in methods that rely on a
+bounded region to define a set of function evaluations (i.e., design
+of experiments and some parameter study methods).
 
 .. _`variables:uncertain:auv`:
 
@@ -331,11 +339,12 @@ In Dakota, epistemic uncertainty can be characterized by interval- or
 set-valued variables (see relevant keywords below) that are propagated
 to calculate bounding intervals on simulation output using interval
 analysis methods. These epistemic variable types can optionally
-include basic probability assignments for use in Dempster-Shafer
-theory of evidence methods. Epistemic uncertainty can alternately be
-modeled with probability density functions, although results from UQ
-studies are then typically interpreted as possibilities or bounds, as
-opposed to a probability distribution of responses.
+include belief structures or basic probability assignments for use in
+Dempster-Shafer theory of evidence methods. Epistemic uncertainty can
+alternately be modeled with probability density functions, although
+results from UQ studies are then typically interpreted as
+possibilities or bounds, as opposed to a probability distribution of
+responses.
 
 Dakota supports the following epistemic uncertain variable types:
 
@@ -358,8 +367,14 @@ Dakota supports the following epistemic uncertain variable types:
   (``elements``) for type integer, string, or real, each with an
   associated probability.
 
+In the discrete case, interval variables may be used to specify
+categorical choices which are epistemic.  For example, if there are
+three possible forms for a physics model (model 1, 2, or 3) and there
+is epistemic uncertainty about which one is correct, a discrete
+uncertain interval or a discrete set could represent this type of
+uncertainty.
 
-Through :dakkw:`models:nested`, Dakota can perform combined aleatory /
+Through :dakkw:`model-nested`, Dakota can perform combined aleatory /
 epistemic analyses such as second-order probability or probability of
 frequency. For example, a variable can be assumed to have a lognormal
 distribution with specified variance, with its mean expressed as an

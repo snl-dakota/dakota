@@ -15,7 +15,7 @@ The density function for the normal distribution is:
 
 .. math::
    f(x) = \frac{1}{\sqrt{2\pi}\sigma}
-   \exp \left(-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2 \right) 
+   \exp \left(-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2 \right), 
    
 where :math:`\mu`  and :math:`\sigma` are the mean and standard deviation of the normal distribution, respectively.
 

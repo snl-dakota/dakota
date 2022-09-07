@@ -6,7 +6,7 @@ The number of uniform uncertain variables and their distribution lower and upper
 bounds are required specifications, while variable descriptors is an optional specification.
 The uniform distribution has the density function:
 
-.. math:: f(x) = \frac{1}{U-L}
+.. math:: f(x) = \frac{1}{U-L},
 
 where
 
