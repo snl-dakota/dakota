@@ -28,6 +28,4 @@ Last but not least, :ref:`HDF5 output <hdf5_output>` has been added to Dakota's 
    output/restartutility
    output/hdf
    output/graphicslegacy
-   output/pceoutput
-   output/surrmodeloutput
-   output/prerunoutput
+   output/otheroutput

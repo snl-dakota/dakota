@@ -8,7 +8,6 @@ Advanced Topics
    advanced/advancedmodelrecursions
    advanced/advancedsimulationcodeinterfaces
    advanced/parallelcomputing
-   advanced/restartcapabilities
    advanced/simulationfailurecapturing
    advanced/activesubspace
    advanced/basisadaptation

@@ -7,7 +7,7 @@ Tabular Output Data
 In a number of contexts, Dakota can output information in a
 whitespace-separated columnar data file, a tabular data file. The most
 common usage, to capture the iteration history in a tabular file, is
-enabled by including the :ref:`tabular_data <environment-tabular_data>`
+enabled by including the :dakkw:`environment-tabular_data`
 keyword in the specification (see :numref:`output:incont` for an example).
 
 This output format facilitates the transfer of Dakota’s iteration history data to external
@@ -90,7 +90,7 @@ using the Dakota restart utility.
    The second column labeled “:ref:`interface <interface>`” is new as of
    Dakota 6.1. It identifies which interface was used to map the variables
    to responses on each line of the tabular file (recall that the interface
-   defines which simulation is being run though the :ref:`analysis_driver <interface-analysis_drivers>`
+   defines which simulation is being run though the :ref:`analysis driver <couplingtosimulations-main>`
    specification). Disambiguating the interface is important when using
    hybrid methods, multi-fidelity methods, or nested models. In more
    common, simpler analyses, users typically ignore the first two columns

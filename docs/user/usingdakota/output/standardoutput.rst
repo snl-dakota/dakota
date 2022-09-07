@@ -11,7 +11,7 @@ include an evaluation number, parameter values, execution syntax, the
 active set vector, and the response data set.
 
 This output may optionally be redirected to a file using :ref:`command-line options <command-line-main>`
-or the keyword :ref:`output_file <environment-output_file>`.
+or the keyword :dakkw:`environment-output_file`.
 
 .. note::
 

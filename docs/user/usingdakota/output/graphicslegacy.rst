@@ -12,7 +12,7 @@ Legacy Graphics Output
    :ref:`completely replaced by functionality provided in the Dakota graphical
    user interface (GUI) <chartreuse-main>`.
 
-The X Windows graphics option is invoked by including the ``graphics``
+The X Windows graphics option is invoked by including the :dakkw:`environment-graphics`
 flag in the environment specification of the input file (see :numref:`output:incont`). 
 The graphics display the values of each response function (e.g., objective and constraint
 functions) and each parameter for the function evaluations in the study.

@@ -36,7 +36,7 @@ of the block.
 
 The input parser catches syntax errors, but not logic errors. The fact
 that certain input combinations are erroneous must be detected after
-parsing, at object construction time. For example, if a ``no_gradients``
+parsing, at object construction time. For example, if a :dakkw:`responses-no_gradients`
 specification for a response data set is combined with selection of a
 gradient-based optimization method, then this error must be detected
 during set-up of the optimizer (see last line of listing):
