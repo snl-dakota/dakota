@@ -1,15 +1,22 @@
 Blurb::
 Aleatory uncertain variable - loguniform
-Description::
-If the logarithm of an uncertain variable X has a uniform distribution, that is
-:math:`\log X \sim U(L_{LU},U_{LU}),` 
-then X is distributed with a loguniform distribution. The distribution lower bound is :math:`L_{LU}`  and upper bound is :math:`L_{LU}` 
-The loguniform distribution has the density function:
 
-.. math:: f(x) = \frac{1}{ x \left( \ln(U_{LU}) - \ln(L_{LU}) \right) }
+Description::
+
+If the logarithm of an uncertain variable :math:`X` has a uniform
+distribution, that is :math:`\log X \sim \mathcal{U}(L, U),` then
+:math:`X` is distributed with a loguniform distribution. The
+distribution lower bound is :math:`L` and upper bound is
+:math:`U` The loguniform distribution has the density function:
+
+.. math:: f(x) = \frac{1}{ x \left( \ln U - \ln L) \right) }
+
+..
+   TODO: Is above discussion of bounds correct?
 
 Topics::
 continuous_variables, aleatory_uncertain_variables
+
 Examples::
 
 Theory::

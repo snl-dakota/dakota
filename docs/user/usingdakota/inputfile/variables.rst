@@ -157,10 +157,10 @@ decomposition and meshing.
 
 **Discrete Design Variable Types:**
 
-- The :dakkw:`variables:discrete_design_range` type supports a range
+- The :dakkw:`variables-discrete_design_range` type supports a range
   of consecutive integers between specified
-  :dakkw:`variables:discrete_design_range-lower_bounds` and
-  :dakkw:`variables:discrete_design_range-upper_bounds`.
+  :dakkw:`variables-discrete_design_range-lower_bounds` and
+  :dakkw:`variables-discrete_design_range-upper_bounds`.
 
 - The :dakkw:`discrete_design_set` type admits a set of enumerated
   integer, string, or real values through an ``elements``
@@ -195,6 +195,14 @@ and standard deviation as determined from experimental data. The
 inclusion of the uncertainty in the coating thickness is essential to
 accurately represent the resulting uncertainty in the response of the
 building.
+
+Uncertain variables directly support the use of probabilistic
+uncertainty quantification methods such as sampling, reliability, and
+stochastic expansion methods.  They also admit lower and upper
+distribution bounds (whether explicitly defined, implicitly defined,
+or inferred), which permits allows their use in methods that rely on a
+bounded region to define a set of function evaluations (i.e., design
+of experiments and some parameter study methods).
 
 .. _`variables:uncertain:auv`:
 
@@ -331,11 +339,12 @@ In Dakota, epistemic uncertainty can be characterized by interval- or
 set-valued variables (see relevant keywords below) that are propagated
 to calculate bounding intervals on simulation output using interval
 analysis methods. These epistemic variable types can optionally
-include basic probability assignments for use in Dempster-Shafer
-theory of evidence methods. Epistemic uncertainty can alternately be
-modeled with probability density functions, although results from UQ
-studies are then typically interpreted as possibilities or bounds, as
-opposed to a probability distribution of responses.
+include belief structures or basic probability assignments for use in
+Dempster-Shafer theory of evidence methods. Epistemic uncertainty can
+alternately be modeled with probability density functions, although
+results from UQ studies are then typically interpreted as
+possibilities or bounds, as opposed to a probability distribution of
+responses.
 
 Dakota supports the following epistemic uncertain variable types:
 
@@ -358,8 +367,14 @@ Dakota supports the following epistemic uncertain variable types:
   (``elements``) for type integer, string, or real, each with an
   associated probability.
 
+In the discrete case, interval variables may be used to specify
+categorical choices which are epistemic.  For example, if there are
+three possible forms for a physics model (model 1, 2, or 3) and there
+is epistemic uncertainty about which one is correct, a discrete
+uncertain interval or a discrete set could represent this type of
+uncertainty.
 
-Through :dakkw:`models:nested`, Dakota can perform combined aleatory /
+Through :dakkw:`model-nested`, Dakota can perform combined aleatory /
 epistemic analyses such as second-order probability or probability of
 frequency. For example, a variable can be assumed to have a lognormal
 distribution with specified variance, with its mean expressed as an
@@ -385,16 +400,15 @@ fidelity parameters.
    does not refer to, e.g., the solution variables of a differential
    equation.
 
-Similar to :ref:`design variables <variables:design>`, state variables
-can be specified via :dakkw:`variables-continuous_state` (real-valued
-between bounds), :dakkw:`variables-discrete_state_range`
-(integer-valued between bounds), or
-:dakkw:`variables-discrete_state_set` (a discrete integer-, string-,
-or real-valued set). Model parameterizations with strings (e.g.,
-"mesh1.exo"), are also possible using an interface
+State variable configuration mirrors that of :ref:`design variables
+<variables:design>`. They can be specified via
+:dakkw:`variables-continuous_state` (real-valued between bounds),
+:dakkw:`variables-discrete_state_range` (integer-valued between
+bounds), or :dakkw:`variables-discrete_state_set` (a discrete
+integer-, string-, or real-valued set). Model parameterizations with
+strings (e.g., "mesh1.exo"), are also possible using an interface
 :dakkw:`interrface-analysis_drivers-analysis_components` specification
 (see also :ref:`variables:parameters:standard`)
-
 
 State variables, as with other types of variables, are viewed
 differently depending on the method in use. By default, only parameter
@@ -532,6 +546,51 @@ continuous and discrete variables in order to apply a continuous
 optimizer to a mixed variable problem. All methods default to a mixed
 domain except for the experimental branch-and-bound method, which
 defaults to relaxed.
+
+.. _`variables:usage`:
+
+Usage Notes
+-----------
+
+..
+   TODO: Consider putting info from parameter studies on Initial
+   Values and Bounds here. Also merge with info the keywords/variables
+   section. Also this from the historical reference manual:
+
+   For continuous and discrete range variables, the \c lower_bounds
+   and \c upper_bounds restrict the size of the feasible design space
+   and are frequently used to prevent nonphysical designs.  Default
+   values are positive and negative machine limits for upper and lower
+   bounds (+/- \c DBL_MAX, \c INT_MAX, \c INT_MIN from the \c float.h
+   and \c limits.h system header files).
+
+**Specifying set variables:** Sets of integers, reals, and strings
+have similar specifications, though different value types. The
+variables are specified using three keywords:
+
+* Variable declaration keyword, e.g.,
+  :dakkw:`variables-discrete_design_set`: specifies the number of
+  variables being defined.
+
+* ``elements_per_variable``: a list of positive integers specifying
+  how many set members each variable admits
+
+  - Length: # of variables
+  - Default: equal apportionment of elements among variables
+
+* elements: a list of the permissible integer values in ALL sets,
+  concatenated together.
+
+  - Length: sum of ``elements_per_variable``, or an integer multiple
+    of number of variables
+  - The order is very important here.
+  - The list is partitioned according to the values of
+    ``elements_per_variable``, and each partition is assigned to a
+    variable.
+
+* The ordering of elements_per_variable, and the partitions of
+  elements must match the strings from descriptors
+
 
 .. _`variables:parameters`:
 

@@ -6,9 +6,9 @@ The geometric distribution represents the number of successful trials that might
 
 The density function for the geometric distribution is given by:
 
-.. math:: f(x) = {p}{(1-p)^{x}}
+.. math:: f(x) = {p}{(1-p)^{x}},
 
-where ``p`` is the probability of failure per trial.
+where :math:`p` is the probability of failure per trial.
 
 Topics::
 discrete_variables, aleatory_uncertain_variables

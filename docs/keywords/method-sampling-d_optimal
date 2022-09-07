@@ -14,11 +14,12 @@ be generated and the most D-optimal will be selected.
 *Usage Tips*
 
 D-optimal designs are only supported for
-:ref:`topic-aleatory_uncertain_variables<topic-aleatory_uncertain_variables>`.  The default candidate-based
+:ref:`variables:uncertain:auv`.  The default candidate-based
 D-optimal strategy works for all submethods except incremental LHS (
 ``lhs`` with ``refinement_samples``).  The Leja sampling option only works
 for continuous variables, and when used with LHS designs, the
 candidates point set will be Latin, but the final design will not be.
+
 Topics::
 
 Examples::

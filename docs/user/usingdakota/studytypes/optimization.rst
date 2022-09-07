@@ -1527,6 +1527,20 @@ Section `[adv_meth:hybrid] <#adv_meth:hybrid>`__ and
 Section `[adv_meth:multistart] <#adv_meth:multistart>`__ provide more
 information on these approaches.
 
+**Specifying Mixed Bounds:** When solving constrained optimization
+problems, optimization (and calibration) solvers will use
+``*lower_bounds`` and ``*upper_bounds`` information from individual
+variable types, linear constraints (see :dakkw:`variables`), and
+nonlinear constraints (see :dakkw:`responses`). For most optimization
+solvers, a nonexistent upper bound can be specified by using a value
+greater than the "big bound size" constant (1.e+30 for continuous
+variables, 1.e+9 for discrete integer variables) and a nonexistent
+lower bound can be specified by using a value less than the negation
+of these constants (-1.e+30 for continuous, -1.e+9 for discrete
+integer). Not all optimizers currently support this feature, e.g., DOT
+and CONMIN will treat these large bound values as actual variable
+bounds, but this should not be problematic in practice.
+ 
 .. _`opt:libraries`:
 
 Optimization Third Party Libraries

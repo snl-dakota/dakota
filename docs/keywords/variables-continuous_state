@@ -6,8 +6,9 @@ Continuous state variables are defined by bounds.
 Default behavior for most methods is that only the initial_state
 values are used.
 
-See the :ref:`topic-state_variables<topic-state_variables>` page for details on the behavior of state
+See :ref:`variables:state` for details on the behavior of state
 variables.
+
 Topics::
 state_variables, continuous_variables
 Examples::

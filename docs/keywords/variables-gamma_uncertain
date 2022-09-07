@@ -8,11 +8,13 @@ The density function for the gamma distribution is given by:
 .. math::  f(x) = \frac{ {x}^{\alpha-1} \exp \left( \frac{-x}{\beta} \right) }
                 { \beta^{\alpha}\Gamma(\alpha) },
 
-:math:`\mu = \alpha\beta,`  and :math:`\sigma^2 = \alpha\beta^2` .
+where :math:`\mu = \alpha\beta,`  and :math:`\sigma^2 = \alpha\beta^2` .
 Note that the exponential distribution is a special
 case of this distribution for parameter :math:`\alpha = 1` .
+
 Topics::
 continuous_variables, aleatory_uncertain_variables
+
 Examples::
 
 Theory::

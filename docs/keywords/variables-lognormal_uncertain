@@ -2,9 +2,10 @@ Blurb::
 Aleatory uncertain variable - lognormal
 
 Description::
-If the logarithm of an uncertain variable X has a normal distribution, that is :math:`\log X \sim N(\mu,\sigma)` ,
-then X is distributed with a lognormal distribution.
-The lognormal is often used to model:
+If the logarithm of an uncertain variable X has a normal distribution,
+that is :math:`\log X \sim \mathcal{N}(\mu,\sigma^2)` , then :math:`X` is
+distributed with a lognormal distribution.  The lognormal is often
+used to model:
 
 - time to perform some task
 - variables which are the product of a large number of other quantities, by the Central Limit Theorem
@@ -24,6 +25,13 @@ For the lognormal variables, one may specify either the mean :math:`\mu` and sta
 of the actual lognormal distribution (option 1), the mean :math:`\mu`  and error factor :math:`\epsilon` 
 of the actual lognormal distribution (option 2), or the mean :math:`\lambda`  ("lambda") and standard deviation :math:`\zeta`  ("zeta")
 of the underlying normal distribution (option 3).
+
+..
+   HIDDEN: This approach diverges from that of [\ref Wyss1998 "Wyss and
+   Jorgensen, 1998"], which assumes that a specification of mean and
+   standard deviation provides parameters of the underlying normal
+   distribution, and a specification of mean and error factor provides
+   statistics of the actual lognormal distribution.
 
 The conversion equations from lognormal mean :math:`\mu`  and either lognormal error factor :math:`\epsilon` or lognormal standard deviation :math:`\sigma` 
 to the mean :math:`\lambda`  and standard deviation :math:`\zeta` of the underlying normal distribution are as follows:
