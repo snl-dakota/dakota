@@ -26,12 +26,7 @@ If no ``-write_restart`` specification is used, then Dakota will still write a r
 To turn restart recording off, the user may select :dakkw:`interface-deactivate` :dakkw:`interface-deactivate-restart_file` in the :dakkw:`interface` specification. This can increase execution
 speed and reduce disk storage requirements, but at the expense of a loss in the ability to recover and continue a run that terminates prematurely. Obviously, this
 option is not recommended when function evaluations are costly or prone to failure. Please note that using the :dakkw:`interface-deactivate` :dakkw:`interface-deactivate-restart_file` specification
-will result in a zero length restart file with the default name "dakota.rst".
-
-To turn restart recording off, the user may use the restart_file keyword, in the interface block. This can increase execution speed and reduce disk storage requirements,
-but at the expense of a loss in the ability to recover and continue a run that terminates prematurely. This option is not recommended when function evaluations are costly
-or prone to failure. Please note that using the deactivate restart_file specification will result in a zero length restart file with the default name "dakota.rst",
-which can overwrite an exiting file.
+will result in a zero length restart file with the default name "dakota.rst", which can overwrite an exiting file.
 
 =====================
 Reading Restart Files
