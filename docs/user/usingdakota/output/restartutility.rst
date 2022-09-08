@@ -4,8 +4,9 @@
 The Dakota Restart Utility
 """"""""""""""""""""""""""
 
-The Dakota restart utility program provides a variety of facilities for managing restart files from Dakota executions. The executable program name is ``dakota_restart_util``
-and it has the following options, as shown by the usage message returned when executing the utility without any options:
+The Dakota restart utility program provides a variety of facilities for managing restart files from
+Dakota executions. The executable program name is ``dakota_restart_util`` and it has the following
+options, as shown by the usage message returned when executing the utility without any options:
 
 .. code-block::
 
@@ -27,23 +28,27 @@ and it has the following options, as shown by the usage message returned when ex
      --freeform                   tabular file: freeform format
      --output_precision arg (=10) set tabular output precision
 
-Several of these functions involve format conversions. In particular, the binary format used for restart files can be converted to ASCII text and printed to the screen,
-converted to and from a neutral file format, or converted to a tabular format for importing into 3rd-party plotting programs. In addition, a restart file with corrupted
-data can be repaired by value or id, and multiple restart files can be combined to create a master database.
+Several of these functions involve format conversions. In particular, the binary format used
+for restart files can be converted to ASCII text and printed to the screen, converted to and
+from a neutral file format, or converted to a tabular format for importing into
+3rd-party plotting programs. In addition, a restart file with corrupted data can be repaired by
+value or id, and multiple restart files can be combined to create a master database.
 
 =============
 Print Command
 =============
 
-The print option is useful to show contents of a restart file, since the binary format is not convenient for direct inspection. The restart data is printed in full precision,
-so that exact matching of points is possible for restarted runs or corrupted data removals. For example, the following command...
+The ``print`` option is useful to show contents of a restart file, since the binary format is not
+convenient for direct inspection. The restart data is printed in full precision, so that (near-)exact
+matching of points is possible for restarted runs or corrupted data removals. For example,
+the following command...
 
 .. code-block::
 
-   dakota_restart_util print
-   dakota.rst 
+   dakota_restart_util print dakota.rst 
 
-...results in output similar to the following:
+...results in output similar to the following (output taken from
+the :ref:`Cylinder example <additional:cylinder>`):
 
 .. code-block::
 
@@ -87,9 +92,9 @@ so that exact matching of points is possible for restarted runs or corrupted dat
 
    Restart file processing completed: 11 evaluations retrieved.
 
-===================
-Neutral File Format
-===================
+===========================
+To/From Neutral File Format
+===========================
 
 A Dakota restart file can be converted to a neutral file format using a command like the following:
 
@@ -118,7 +123,8 @@ which results in a report similar to the following:
    Writing new restart file dakota.rst
    Neutral file processing completed: 11 evaluations retrieved.
 
-The contents of the generated neutral file are similar to the following (from the first two records for the Cylinder example in [4]).
+The contents of the generated neutral file are similar to the following (from the first
+two records for the :ref:`Cylinder example <additional:cylinder>`).
 
 .. code-block::
 
@@ -135,9 +141,10 @@ The contents of the generated neutral file are similar to the following (from th
       2.9814239699997572e+01  0.0000000000000000e+00  0.0000000000000000e+00
       1.4999999999999999e-01  0.0000000000000000e+00 -1.6998301774282701e-01 2
 
-This format is not intended for direct viewing (print should be used for this purpose). Rather, the neutral file capability has been used in the past
-for managing portability of restart data across platforms (recent use of more portable binary formats has largely eliminated this need) or for advanced
-repair of restart records (in cases where the remove command was insufficient).
+This format is not intended for direct viewing (``print`` should be used for this purpose). Rather,
+the neutral file capability has been used in the past for managing portability of restart
+data across platforms (recent use of more portable binary formats has largely eliminated this need)
+or for advanced repair of restart records (in cases where the remove command was insufficient).
 
 .. _`restart:utility:tabular`:
 
@@ -145,11 +152,13 @@ repair of restart records (in cases where the remove command was insufficient).
 Tabular Format
 ==============
 
-Conversion of a binary restart file to a tabular format enables convenient import of this data into 3rd-party post-processing tools such as Matlab,
-TECplot, Excel, etc. This facility is nearly identical to the output activated by the tabular_data keyword in the Dakota input file specification,
-but with two important differences:
+Conversion of a binary restart file to a tabular format enables convenient import of this data
+into 3rd-party post-processing tools such as Matlab, TECplot, Excel, etc. This facility is nearly
+identical to the output activated by the :dakkw:`environment-tabular_data` keyword in the Dakota input
+file specification, but with two important differences:
 
-1. No function evaluations are suppressed as they are with tabular_data (i.e., any internal finite difference evaluations are included).
+1. No function evaluations are suppressed as they are with :dakkw:`environment-tabular_data`
+(i.e., any internal finite difference evaluations are included).
 2. The conversion can be performed later, i.e., for Dakota runs executed previously.
 
 An example command for converting a restart file to tabular format is:
@@ -165,7 +174,11 @@ which results in a report similar to the following:
    Writing tabular text file dakota.m
    Restart file processing completed: 10 evaluations tabulated.
 
-The contents of the generated tabular file are similar to the following (from the example in the Restart section of [4]). Note that while evaluations resulting from numerical derivative offsets would be reported (as described above), derivatives returned as part of the evaluations are not reported (since they do not readily fit within a compact tabular format):
+The contents of the generated tabular file are similar to the following (from the
+:ref:`gradient-based optimization textbook problem example <additional:textbook:examples:gradient2>`).
+Note that while evaluations resulting from numerical derivative offsets would be reported
+(as described above), derivatives returned as part of the evaluations are not reported (since 
+they do not readily fit within a compact tabular format):
 
 .. code-block::
 
@@ -185,14 +198,16 @@ The contents of the generated tabular file are similar to the following (from th
 Controlling tabular format
 --------------------------
 
-The command-line options ``--freeform`` and --custom_annotated give control of headers in the resulting tabular file. Freeform will generate a tabular file
-with no leading row nor columns (variable and response values only). Custom annotated format accepts any or all of the options:
+The command-line options ``--freeform`` and ``--custom_annotated`` give control of headers in the
+resulting tabular file. Freeform will generate a tabular file with no leading row nor columns
+(variable and response values only). Custom annotated format accepts any or all of the options:
 
 - ``header``: include %-commented header row with labels
 - ``eval_id``: include leading column with evaluation ID
 - ``interface_id``: include leading column with interface ID
 
-For example, to recover Dakota 6.0 tabular format, which contained a header row, leading column with evaluation ID, but no interface ID:
+For example, to recover Dakota 6.0 tabular format, which contained a header row,
+leading column with evaluation ID, but no interface ID:
 
 .. code-block::
 
@@ -208,14 +223,17 @@ Resulting in
    3               0.89991            1.1 0.0002003604863   0.2598380081       0.760045 
    ...
 
-Finally, ``--output_precision integer`` will generate tabular output with the specified integer digits of precision.
+Finally, ``--output_precision integer`` will generate tabular output with the specified integer
+digits of precision.
 
 =======================================
 Concatenation of Multiple Restart Files
 =======================================
 
-In some instances, it is useful to combine restart files into a single master function evaluation database. For example, when constructing a data fit surrogate model,
-data from previous studies can be pulled in and reused to create a combined data set for the surrogate fit. An example command for concatenating multiple restart files is:
+In some instances, it is useful to combine restart files into a single master function
+evaluation database. For example, when constructing a data fit surrogate model,
+data from previous studies can be pulled in and reused to create a combined data set for the
+surrogate fit. An example command for concatenating multiple restart files is:
 
 .. code-block::
 
@@ -230,17 +248,22 @@ which results in a report similar to the following:
    dakota.rst.2 processing completed: 110 evaluations retrieved.
    dakota.rst.3 processing completed: 65 evaluations retrieved.
 
-The dakota.rst.all database now contains 185 evaluations and can be read in for use in a subsequent Dakota study using the ``-read_restart`` option to the dakota executable.
+The dakota.rst.all database now contains 185 evaluations and can be read in for use in
+a subsequent Dakota study using the ``-read_restart`` option to the dakota executable.
 
 =========================
 Removal of Corrupted Data
 =========================
 
-On occasion, a simulation or computer system failure may cause a corruption of the Dakota restart file. For example, a simulation crash may result in failure of
-a post-processor to retrieve meaningful data. If 0's (or other erroneous data) are returned from the user's analysis_driver, then this bad data will get recorded in the restart file.
-If there is a clear demarcation of where corruption initiated (typical in a process with feedback, such as gradient-based optimization), then use of the -stop_restart option
-for the dakota executable can be effective in continuing the study from the point immediately prior to the introduction of bad data. If, however, there are interspersed corruptions
-throughout the restart database (typical in a process without feedback, such as sampling), then the remove and ``remove_ids`` options of dakota_restart_util can be useful.
+On occasion, a simulation or computer system failure may cause a corruption of the Dakota restart file.
+For example, a simulation crash may result in failure of a post-processor to retrieve meaningful data.
+If 0's (or other erroneous data) are returned from the user's analysis_driver, then this bad data will
+get recorded in the restart file. If there is a clear demarcation of where corruption initiated
+(typical in a process with feedback, such as gradient-based optimization), then use of the ``-stop_restart``
+option for the Dakota executable can be effective in continuing the study from the point immediately
+prior to the introduction of bad data. If, however, there are interspersed corruptions throughout
+the restart database (typical in a process without feedback, such as sampling), then the remove
+and ``remove_ids`` options of dakota_restart_util can be useful.
 
 An example of the command syntax for the remove option is:
 
@@ -255,7 +278,8 @@ which results in a report similar to the following:
    Writing new restart file dakota.rst.repaired
    Restart repair completed: 65 evaluations retrieved, 2 removed, 63 saved.
 
-where any evaluations in dakota.rst having an active response function value that matches 2.e-04 within machine precision are discarded when creating dakota.rst.repaired.
+where any evaluations in dakota.rst having an active response function value that matches ``2.e-04``
+within machine precision are discarded when creating dakota.rst.repaired.
 
 An example of the command syntax for the ``remove_ids`` option is:
 
@@ -270,364 +294,16 @@ which results in a report similar to the following:
    Writing new restart file dakota.rst.repaired
    Restart repair completed: 65 evaluations retrieved, 5 removed, 60 saved.
 
-where evaluation ids 12, 15, 23, 44, and 57 have been discarded when creating dakota.rst.repaired. An important detail is that, unlike the ``-stop_restart`` option which
-operates on restart record numbers, the ``remove_ids`` option operates on evaluation ids. Thus, removal is not necessarily based on the order of appearance in the restart file.
-This distinction is important when removing restart records for a run that contained either asynchronous or duplicate evaluations, since the restart insertion order and evaluation
-ids may not correspond in these cases (asynchronous evaluations have ids assigned in the order of job creation but are inserted in the restart file in the order of job completion,
-and duplicate evaluations are not recorded which introduces offsets between evaluation id and record number). This can also be important if removing records from a concatenated
-restart file, since the same evaluation id could appear more than once. In this case, all evaluation records with ids matching the ``remove_ids`` list will be removed.
-
-If neither of these removal options is sufficient to handle a particular restart repair need, then the fallback position is to resort to direct editing of a neutral file to perform the necessary modifications.
-
-=============================
-Advanced Restart Capabilities
-=============================
-
-.. _`adv:restart:utility`:
-
-The Dakota restart utility program provides a variety of facilities for
-managing restart files from Dakota executions. The executable program
-name is ``dakota_restart_util`` and it has the following options, as
-shown by the usage message returned when executing the utility without
-any options:
-
-::
-
-   Usage:
-     dakota_restart_util command <arg1> [<arg2> <arg3> ...] --options
-       dakota_restart_util print <restart_file>
-       dakota_restart_util to_neutral <restart_file> <neutral_file>
-       dakota_restart_util from_neutral <neutral_file> <restart_file>
-       dakota_restart_util to_tabular <restart_file> <text_file>
-         [--custom_annotated [header] [eval_id] [interface_id]]
-         [--output_precision <int>]
-       dakota_restart_util remove <double> <old_restart_file> <new_restart_file>
-       dakota_restart_util remove_ids <int_1> ... <int_n> <old_restart_file> <new_restart_file>
-       dakota_restart_util cat <restart_file_1> ... <restart_file_n> <new_restart_file>
-   options:
-     --help                       show dakota_restart_util help message
-     --custom_annotated arg       tabular file options: header, eval_id, 
-                                  interface_id
-     --freeform                   tabular file: freeform format
-     --output_precision arg (=10) set tabular output precision
-
-Several of these functions involve format conversions. In particular,
-the binary format used for restart files can be converted to ASCII text
-and printed to the screen, converted to and from a neutral file format,
-or converted to a tabular format for importing into 3rd-party
-plotting/graphics programs. In addition, a restart file with corrupted
-data can be repaired by value or id, and multiple restart files can be
-combined to create a master database.
-
-.. _`adv:restart:utility:print`:
-
-Print
------
-
-The ``print`` option outputs the contents of a particular restart file
-in human-readable format, since the binary format is not convenient for
-direct inspection. The restart data is printed in full precision, so
-that (near-)exact matching of points is possible for restarted runs or
-corrupted data removals. For example, the following command
-
-::
-
-       dakota_restart_util print dakota.rst
-
-results in output similar to the following (from the example in
-Section `[additional:cylinder] <#additional:cylinder>`__):
-
-::
-
-       ------------------------------------------
-       Restart record    1  (evaluation id    1):
-       ------------------------------------------
-       Parameters:
-                             1.8000000000000000e+00 intake_dia
-                             1.0000000000000000e+00 flatness
-
-       Active response data:
-       Active set vector = { 3 3 3 3 }
-                            -2.4355973813420619e+00 obj_fn
-                            -4.7428486677140930e-01 nln_ineq_con_1
-                            -4.5000000000000001e-01 nln_ineq_con_2
-                             1.3971143170299741e-01 nln_ineq_con_3
-        [ -4.3644298963447897e-01  1.4999999999999999e-01 ] obj_fn gradient
-        [  1.3855136437818300e-01  0.0000000000000000e+00 ] nln_ineq_con_1 gradient
-        [  0.0000000000000000e+00  1.4999999999999999e-01 ] nln_ineq_con_2 gradient
-        [  0.0000000000000000e+00 -1.9485571585149869e-01 ] nln_ineq_con_3 gradient
-
-       ------------------------------------------
-       Restart record    2  (evaluation id    2):
-       ------------------------------------------
-       Parameters:
-                             2.1640000000000001e+00 intake_dia
-                             1.7169994018008317e+00 flatness
-
-       Active response data:
-       Active set vector = { 3 3 3 3 }
-                            -2.4869127192988878e+00 obj_fn
-                             6.9256958799989843e-01 nln_ineq_con_1
-                            -3.4245008972987528e-01 nln_ineq_con_2
-                             8.7142207937157910e-03 nln_ineq_con_3
-        [ -4.3644298963447897e-01  1.4999999999999999e-01 ] obj_fn gradient
-        [  2.9814239699997572e+01  0.0000000000000000e+00 ] nln_ineq_con_1 gradient
-        [  0.0000000000000000e+00  1.4999999999999999e-01 ] nln_ineq_con_2 gradient
-        [  0.0000000000000000e+00 -1.6998301774282701e-01 ] nln_ineq_con_3 gradient
-
-       ...<snip>...
-
-       Restart file processing completed: 11 evaluations retrieved.
-
-.. _`adv:restart:utility:neutral`:
-
-To/From Neutral File Format
----------------------------
-
-A Dakota restart file can be converted to a neutral file format using a
-command like the following:
-
-::
-
-       dakota_restart_util to_neutral dakota.rst dakota.neu
-
-which results in a report similar to the following:
-
-::
-
-       Writing neutral file dakota.neu
-       Restart file processing completed: 11 evaluations retrieved.
-
-Similarly, a neutral file can be returned to binary format using a
-command like the following:
-
-::
-
-       dakota_restart_util from_neutral dakota.neu dakota.rst
-
-which results in a report similar to the following:
-
-::
-
-       Reading neutral file dakota.neu
-       Writing new restart file dakota.rst
-       Neutral file processing completed: 11 evaluations retrieved.
-
-The contents of the generated neutral file are similar to the following
-(from the first two records for the example in
-Section `[additional:cylinder] <#additional:cylinder>`__):
-
-::
-
-       6 7 2 1.8000000000000000e+00 intake_dia 1.0000000000000000e+00 flatness 0 0 0 0
-       NULL 4 2 1 0 3 3 3 3 1 2 obj_fn nln_ineq_con_1 nln_ineq_con_2 nln_ineq_con_3
-         -2.4355973813420619e+00 -4.7428486677140930e-01 -4.5000000000000001e-01
-          1.3971143170299741e-01 -4.3644298963447897e-01  1.4999999999999999e-01
-          1.3855136437818300e-01  0.0000000000000000e+00  0.0000000000000000e+00
-          1.4999999999999999e-01  0.0000000000000000e+00 -1.9485571585149869e-01 1
-       6 7 2 2.1640000000000001e+00 intake_dia 1.7169994018008317e+00 flatness 0 0 0 0
-       NULL 4 2 1 0 3 3 3 3 1 2 obj_fn nln_ineq_con_1 nln_ineq_con_2 nln_ineq_con_3
-         -2.4869127192988878e+00 6.9256958799989843e-01 -3.4245008972987528e-01
-          8.7142207937157910e-03 -4.3644298963447897e-01  1.4999999999999999e-01
-          2.9814239699997572e+01  0.0000000000000000e+00  0.0000000000000000e+00
-          1.4999999999999999e-01  0.0000000000000000e+00 -1.6998301774282701e-01 2
-
-This format is not intended for direct viewing (``print`` should be used
-for this purpose). Rather, the neutral file capability has been used in
-the past for managing portability of restart data across platforms of
-dissimilar endianness of the computer architectures (e.g. creator of the
-file was little endian but the need exists to run dakota with restart on
-a big endian host. The neutral file format has also been shown to be
-useful for for advanced repair of restart records (in cases where the
-techniques of Section `1.2.5 <#restart:utility:removal>`__ were
-insufficient).
-
-.. _`adv:restart:utility:tabular`:
-
-To Tabular Format
------------------
-
-Conversion of a binary restart file to a tabular format enables
-convenient import of this data into 3rd-party post-processing tools such
-as Matlab, TECplot, Excel, etc. This facility is similar to the
-``tabular_data`` option in the Dakota input file specification
-(described in Section `[output:tabular] <#output:tabular>`__), but with
-two important differences:
-
-#. No function evaluations are suppressed as they are with
-   ``tabular_data`` (i.e., any internal finite difference evaluations
-   are included).
-
-#. The conversion can be performed after Dakota completion, i.e., for
-   Dakota runs executed previously.
-
-An example command for converting a restart file to tabular format is:
-
-::
-
-       dakota_restart_util to_tabular dakota.rst dakota.m
-
-which results in a report similar to the following:
-
-::
-
-       Writing tabular text file dakota.m
-       Restart file processing completed: 10 evaluations tabulated.
-
-The contents of the generated tabular file are similar to the following
-(from the example in
-Section `[additional:textbook:examples:gradient2] <#additional:textbook:examples:gradient2>`__).
-Note that while evaluations resulting from numerical derivative offsets
-would be reported (as described above), derivatives returned as part of
-the evaluations are not reported (since they do not readily fit within a
-compact tabular format):
-
-::
-
-   %eval_id interface             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2 
-          1     NO_ID           0.9            1.1         0.0002           0.26           0.76 
-          2     NO_ID    0.58256179   0.4772224441   0.1050555937   0.1007670171 -0.06353963386 
-          3     NO_ID           0.5   0.4318131566   0.1667232695  0.03409342169 -0.06353739777 
-          4     NO_ID           0.5   0.3695495062   0.2204806721  0.06522524692  -0.1134331625 
-          5     NO_ID           0.5   0.3757758727   0.2143316122  0.06211206365  -0.1087924935 
-          6     NO_ID           0.5   0.3695495062   0.2204806721  0.06522524692  -0.1134331625 
-          7     NO_ID  0.5005468682  -0.5204065326    5.405888123   0.5107504335  0.02054952507 
-          8     NO_ID  0.5000092554   0.4156974409   0.1790558059  0.04216053506 -0.07720026537 
-          9     NO_ID   0.500000919   0.4302129149   0.1679019175   0.0348944616  -0.0649173074 
-         10     NO_ID    0.50037519  -0.2214765079    2.288391116   0.3611135847  -0.2011357515 
-   ...
-
-**Controlling tabular format:** The command-line options ``–freeform``
-and ``–custom_annotated`` give control of headers in the resulting
-tabular file. give control of headers in the resulting tabular file.
-Freeform will generate a tabular file with no leading row nor columns
-(variable and response values only). Custom annotated format accepts any
-or all of the options:
-
--  ``header``: include %-commented header row with labels
-
--  ``eval_id``: include leading column with evaluation ID
-
--  ``interface_id``: include leading column with interface ID
-
-For example, to recover Dakota 6.0 tabular format, which contained a
-header row, leading column with evaluation ID, but no interface ID:
-
-::
-
-   dakota_restart_util to_tabular dakota.rst dakota.m --custom_annotated header eval_id
-
-Resulting in
-
-::
-
-   %eval_id             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2 
-   1                   0.9            1.1         0.0002           0.26           0.76 
-   2               0.90009            1.1 0.0001996404857   0.2601620081       0.759955 
-   3               0.89991            1.1 0.0002003604863   0.2598380081       0.760045 
-   ...
-
-Finally, ``–output_precision <int>`` will generate tabular output with
-the specified integer digits of precision.
-
-.. _`adv:restart:utility:concatenation`:
-
-Concatenation of Multiple Restart Files
----------------------------------------
-
-In some instances, it is useful to combine restart files into a single
-master function evaluation database. For example, when constructing a
-data fit surrogate model, data from previous studies can be pulled in
-and reused to create a combined data set for the surrogate fit. An
-example command for concatenating multiple restart files is:
-
-::
-
-       dakota_restart_util cat dakota.rst.1 dakota.rst.2 dakota.rst.3 dakota.rst.all
-
-which results in a report similar to the following:
-
-::
-
-       Writing new restart file dakota.rst.all
-       dakota.rst.1 processing completed: 10 evaluations retrieved.
-       dakota.rst.2 processing completed: 110 evaluations retrieved.
-       dakota.rst.3 processing completed: 65 evaluations retrieved.
-
-The database ``dakota.rst.all`` now contains 185 evaluations and can
-be read in for use in a subsequent Dakota study using the
-``-read_restart`` option to the ``dakota`` executable (see
-Section `1.1 <#restart:management>`__).
-
-.. _`adv:restart:utility:removal`:
-
-Removal of Corrupted Data
--------------------------
-
-On occasion, a simulation or computer system failure may cause a
-corruption of the Dakota restart file. For example, a simulation crash
-may result in failure of a post-processor to retrieve meaningful data.
-If 0’s (or other erroneous data) are returned from the user’s
-``analysis_driver``, then this bad data will get recorded in the restart
-file. If there is a clear demarcation of where corruption initiated
-(typical in a process with feedback, such as gradient-based
-optimization), then use of the ``-stop_restart`` option for the
-``dakota`` executable can be effective in continuing the study from the point
-immediately prior to the introduction of bad data. If, however, there
-are interspersed corruptions throughout the restart database (typical in
-a process without feedback, such as sampling), then the ``remove`` and
-``remove_ids`` options of ``dakota_restart_util`` can be useful.
-
-An example of the command syntax for the ``remove`` option is:
-
-::
-
-       dakota_restart_util remove 2.e-04 dakota.rst dakota.rst.repaired
-
-which results in a report similar to the following:
-
-::
-
-       Writing new restart file dakota.rst.repaired
-       Restart repair completed: 65 evaluations retrieved, 2 removed, 63 saved.
-
-where any evaluations in ``dakota.rst`` having an active response
-function value that matches ``2.e-04`` within machine precision are
-discarded when creating ``dakota.rst.repaired``.
-
-An example of the command syntax for the ``remove_ids`` option is:
-
-::
-
-       dakota_restart_util remove_ids 12 15 23 44 57 dakota.rst dakota.rst.repaired
-
-which results in a report similar to the following:
-
-::
-
-       Writing new restart file dakota.rst.repaired
-       Restart repair completed: 65 evaluations retrieved, 5 removed, 60 saved.
-
-where evaluation ids ``12``, ``15``, ``23``, ``44``, and ``57`` have
-been discarded when creating ``dakota.rst.repaired``.
-An important detail is that, unlike the
-``-stop_restart`` option which operates on restart record numbers (see
-Section `1.1 <#restart:management>`__)), the ``remove_ids`` option
-operates on evaluation ids. Thus, removal is not necessarily based on
-the order of appearance in the restart file. This distinction is
-important when removing restart records for a run that contained either
-asynchronous or duplicate evaluations, since the restart insertion order
-and evaluation ids may not correspond in these cases (asynchronous
-evaluations have ids assigned in the order of job creation but are
-inserted in the restart file in the order of job completion, and
-duplicate evaluations are not recorded which introduces offsets between
-evaluation id and record number). This can also be important if removing
-records from a concatenated restart file, since the same evaluation id
-could appear more than once. In this case, all evaluation records with
-ids matching the ``remove_ids`` list will be removed.
-
-If neither of these removal options is sufficient to handle a particular
-restart repair need, then the fallback position is to resort to direct
-editing of a neutral file (refer to
-Section `1.2.2 <#restart:utility:neutral>`__) to perform the necessary
-modifications.
+where evaluation ids 12, 15, 23, 44, and 57 have been discarded when creating dakota.rst.repaired. An
+important detail is that, unlike the ``-stop_restart`` option which operates on restart record numbers,
+the ``remove_ids`` option operates on evaluation ids. Thus, removal is not necessarily based on the order
+of appearance in the restart file. This distinction is important when removing restart records for a run
+that contained either asynchronous or duplicate evaluations, since the restart insertion order and evaluation
+ids may not correspond in these cases (asynchronous evaluations have ids assigned in the order of job creation
+but are inserted in the restart file in the order of job completion, and duplicate evaluations are not recorded
+which introduces offsets between evaluation id and record number). This can also be important if removing
+records from a concatenated restart file, since the same evaluation id could appear more than once. In this case,
+all evaluation records with ids matching the ``remove_ids`` list will be removed.
+
+If neither of these removal options is sufficient to handle a particular restart repair need, then
+the fallback position is to resort to direct editing of a neutral file to perform the necessary modifications.
