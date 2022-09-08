@@ -753,6 +753,12 @@ are of interest:
    variable types, we avoid inducing additional nonlinearity that can
    slow convergence.
 
+..
+   HIDDEN: we can exploit basis orthogonality under expectation
+   (e.g., Eq.~\ref{eq:coeff_extract}) without requiring a
+   transformation of variables, thereby avoiding avoid inducing
+   additional nonlinearity that can slow convergence.
+
 #. *Askey basis:* For non-Askey types, perform a nonlinear variable
    transformation from a given input distribution to the most similar
    Askey basis. For example, lognormal distributions might employ a
@@ -783,6 +789,9 @@ following choices:
    basis, respectively, in the transformed space. Independence is
    maintained, but the nonlinearity of the Nataf transformation is at
    least partially mitigated.
+
+..
+   Note: no secondary warping since no correlation.
 
 Dakota does not yet implement the double transformation concept, such
 that each correlated variable will employ a Wiener basis approach.
@@ -1918,6 +1927,10 @@ refinement of stochastic expansions using the following customizations:
    refinement process more closely to the statistical QOI, the
    refinement process can become more efficient in achieving the desired
    analysis objectives.
+
+..
+   (it is much less straightforward to embed QOI in the calculation
+   of dimension preference for anisotropic tensor/sparse grids).
 
 Hierarchical increments in a variety of statistical QoI may be derived,
 starting from increments in response mean and covariance. The former is

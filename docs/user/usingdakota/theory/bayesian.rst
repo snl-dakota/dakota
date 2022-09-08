@@ -77,6 +77,15 @@ observational data (i.e., :math:`r_i = q_i(\boldsymbol{\theta}) - d_i`
 for :math:`i = 1,\dots,n`), and :math:`\boldsymbol{\Sigma_d}` is the
 covariance matrix of the Gaussian data uncertainties.
 
+..
+   HIDDEN: , and we omit the leading multivariate normal (MVN)
+   constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma_d}|}$ for
+   simplicity. \footnote{In practice, omitting this MVN constant can
+   avoid precision loss due to subtractive cancellation in
+   log-likelihood calculations; further, this shortcut will be
+   canceled out by the normalization factor in the denominator of
+   Eq.~\ref{eq:BayesThm}.}.
+
 The negative log-likelihood is comprised of the misfit function
 
 .. math::
