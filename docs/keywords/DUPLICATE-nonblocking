@@ -10,6 +10,16 @@ Topics::
 
 Examples::
 
+When specifying ``nonblocking``:
+
+- In the context of parallel pattern search, all points in the pattern
+  may not be evaluated.  The first improving point found becomes the
+  next iterate.
+
+- In the context of adaptive refinement of Gaussian process (GP)
+  models, look-aheads are back-filled with new refinement candidates
+  based on the latest updated state of the GP.
+
 Theory::
 
 Faq::

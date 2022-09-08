@@ -25,13 +25,19 @@ Group 1 keywords are used to select the type of basis,
 
 - Wiener: employs standard normal random variables in a transformed   probability space, corresponding to Hermite orthogonal basis   polynomials (see :ref:`method-polynomial_chaos-wiener<method-polynomial_chaos-wiener>`).
 - Askey: employs standard normal, standard uniform, standard   exponential, standard beta, and standard gamma random variables in a   transformed probability space, corresponding to Hermite, Legendre,   Laguerre, Jacobi, and generalized Laguerre orthogonal basis   polynomials, respectively (see :ref:`method-polynomial_chaos-askey<method-polynomial_chaos-askey>`).
-- Extended (default if no option is selected): The Extended option   avoids the use of any nonlinear variable transformations by   augmenting the Askey approach with numerically-generated orthogonal   polynomials for non-Askey probability density functions.  Extended   polynomial selections replace each of the sub-optimal Askey basis   selections    for bounded normal, lognormal, bounded lognormal, loguniform,   triangular, gumbel, frechet, weibull, and bin-based histogram.
+- Extended (default if no option is selected): The Extended option   avoids the use of any nonlinear variable transformations by   augmenting the Askey approach with numerically-generated orthogonal   polynomials for non-Askey probability density functions.  Extended   polynomial selections with numerically-generated polynomials that are
+  orthogonal to the prescribed probability density functions replace each of the sub-optimal Askey basis   selections    for bounded normal, lognormal, bounded lognormal, loguniform,   triangular, gumbel, frechet, weibull, and bin-based histogram.
 
 For supporting correlated random variables, certain fallbacks must
 be implemented.
 
 - The Extended option is the default and supports only  Gaussian correlations.
-- If needed to support prescribed correlations (not under user  control), the Extended and Askey options will fall back to the Wiener  option <EM>on a per variable basis</EM>. If the prescribed  correlations are also unsupported by Wiener expansions, then Dakota  will exit with an error.
+- If needed to support prescribed correlations (not under user  control), the Extended and Askey options will fall back to the Wiener option *on a per variable basis*. If the prescribed  correlations are also unsupported by Wiener expansions, then Dakota  will exit with an error.
+
+These defaults can be overridden by the user by supplying the keyword
+``askey`` to request restriction to the use of Askey bases only or by
+supplying the keyword ``wiener`` to request restriction to the use of
+exclusively Hermite bases.
 
 Refer to :ref:`topic-variable_support<topic-variable_support>` for additional information on
 supported variable types, with and without correlation.
@@ -130,6 +136,11 @@ quickly becomes too expensive and the sparse grid and regression
 approaches are preferred. Random sampling for coefficient
 estimation is generally not recommended due to its slow convergence
 rate.
+
+.. 
+   HIDDEN: For large \e n (e.g., more than ten), point
+   collocation may begin to suffer from ill-conditioning and sparse
+   grids are generally recommended.
 
 ..
    HIDDEN:, although it does hold the advantage that the simulation
