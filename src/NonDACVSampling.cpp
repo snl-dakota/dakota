@@ -152,11 +152,12 @@ void NonDACVSampling::approximate_control_variate()
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS)
-    approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, numH,
+    approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, numH, // ***
 		      avg_eval_ratios, avg_hf_target);
   else { // for consistency with pilot projection
     Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
-    update_projected_samples(avg_hf_target, avg_eval_ratios,numH,N_L_projected);
+    update_projected_samples(avg_hf_target, avg_eval_ratios, numH, // ***
+			     N_L_projected);
     finalize_counts(N_L_projected);
   }
 }

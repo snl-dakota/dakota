@@ -230,7 +230,7 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
 	<< equivHFEvals << '\n';
       print_variance_reduction(s);
 
-      s << "\nStatistics based on multilevel sample set:\n";
+      s << "\nStatistics based on multilevel sample set:\n"; // *** FINAL_STATISTICS ESTIMATOR_PERFORMANCE --> check results_state!! ***
       //print_statistics(s);
       print_moments(s, "response function",
 		    iteratedModel.truth_model().response_labels());

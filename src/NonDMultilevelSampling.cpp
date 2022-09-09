@@ -207,8 +207,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   SizetArray delta_N_l;
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
 
-  //Sizet2DArray& N_l = NLev[form]; // slice only valid for ML
-  // define a new 2D array and then post back to NLev at end
+  //Sizet2DArray& N_l = NLevActual[form]; // slice only valid for ML
+  // define a new 2D array and then post back to NLevActual at end
   Sizet2DArray N_l(numSteps);
   for (step=0; step<numSteps; ++step)
     N_l[step].assign(numFunctions, 0);
@@ -296,8 +296,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 
   compute_ml_estimator_variance(var_Y, N_l, estVar);
   avgEstVar = average(estVar);
-  // post final N_l back to NLev (needed for final eval summary)
-  inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
+  // post final N_l back to NLevActual (needed for final eval summary)
+  inflate_final_samples(N_l, multilev, secondaryIndex, NLevActual);
 }
 */
 
@@ -322,8 +322,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_l(num_steps, 0);
   RealVectorArray mu_hat(num_steps);
-  //Sizet2DArray& N_l = NLev[form]; // *** VALID ONLY FOR ML
-  // define a new 2D array and then post back to NLev at end
+  //Sizet2DArray& N_l = NLevActual[form]; // *** VALID ONLY FOR ML
+  // define a new 2D array and then post back to NLevActual at end
   Sizet2DArray N_l(num_steps);
   for (step=0; step<num_steps; ++step)
     N_l[step].assign(numFunctions, 0);
@@ -365,9 +365,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   }
   compute_ml_estimator_variance(var_Y, N_l, estVar);
   avgEstVar = average(estVar);
-  // post final N_l back to NLev (needed for final eval summary)
+  // post final N_l back to NLevActual (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
+  inflate_final_samples(N_l, multilev, secondaryIndex, NLevActual);
 }
 
 //>>>>>>> devel
@@ -434,8 +434,8 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   }
   compute_ml_estimator_variance(var_Y, N_online, estVar);
   avgEstVar = average(estVar);
-  // post final N_online back to NLev (needed for final eval summary)
-  inflate_final_samples(N_online, multilev, secondaryIndex, NLev);
+  // post final N_online back to NLevActual (needed for final eval summary)
+  inflate_final_samples(N_online, multilev, secondaryIndex, NLevActual);
 }
 
 /*<<<<<<< HEAD
@@ -507,9 +507,9 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   update_projected_samples(delta_N_l, N_l, sequenceCost);
   compute_ml_estimator_variance(var_Y, N_l, estVar);
   avgEstVar = average(estVar);
-  // post final N_l back to NLev (needed for final eval summary)
+  // post final N_l back to NLevActual (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  inflate_final_samples(N_l, multilev, secondaryIndex, NLev);
+  inflate_final_samples(N_l, multilev, secondaryIndex, NLevActual);
 }
 
 

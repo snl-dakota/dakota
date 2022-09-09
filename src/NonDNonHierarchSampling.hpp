@@ -340,11 +340,11 @@ initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 
 inline void NonDNonHierarchSampling::finalize_counts(Sizet2DArray& N_L)
 {
-  // post final sample counts back to NLev (needed for final eval summary) by
-  // aggregated into 2D array and then inserting into 3D
+  // post final sample counts back to NLevActual (needed for final eval summary)
+  // by aggregated into 2D array and then inserting into 3D
   N_L.push_back(numH);
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  inflate_final_samples(N_L, multilev, secondaryIndex, NLev);
+  inflate_final_samples(N_L, multilev, secondaryIndex, NLevActual);
 }
 
 

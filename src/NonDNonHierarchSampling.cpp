@@ -67,7 +67,8 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
   size_t i, num_mf = model_ensemble.size(), num_lev, md_index, num_md;
   ModelLIter ml_it;
-  NLev.resize(num_mf);
+  NLevActual.resize(num_mf);
+  NLevAlloc.resize(num_mf);
   costMetadataIndices.resize(num_mf);
   for (i=0, ml_it=model_ensemble.begin(); ml_it!=model_ensemble.end();
        ++i, ++ml_it) {
@@ -89,10 +90,11 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
       err_flag = true;
     }
 
-    //Sizet2DArray& Nl_i = NLev[i];
-    NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
+    //Sizet2DArray& Nl_i = NLevActual[i];
+    NLevActual[i].resize(num_lev); //Nl_i.resize(num_lev);
     //for (j=0; j<num_lev; ++j)
     //  Nl_i[j].resize(numFunctions); // defer
+    NLevAlloc[i].resize(num_lev);
     costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
   }
 

@@ -59,12 +59,13 @@ void NonDMultilevControlVarSampling::pre_run()
   NonDEnsembleSampling::pre_run();
 
   // reset sample counters to 0
-  size_t i, j, num_mf = NLev.size(), num_lev;
+  size_t i, j, num_mf = NLevActual.size(), num_lev;
   for (i=0; i<num_mf; ++i) {
-    Sizet2DArray& Nl_i = NLev[i];
+    Sizet2DArray& Nl_i = NLevActual[i];
     num_lev = Nl_i.size();
     for (j=0; j<num_lev; ++j)
       Nl_i[j].assign(numFunctions, 0);
+    NLevAlloc[i].assign(num_lev, 0);
   }
 }
 
@@ -94,7 +95,7 @@ void NonDMultilevControlVarSampling::core_run()
   sequenceType = Pecos::RESOLUTION_LEVEL_SEQUENCE;
 
   // For two-model control variate methods, select lowest,highest fidelities
-  unsigned short lf_form = 0, hf_form = NLev.size() - 1; // ordered low:high
+  unsigned short lf_form = 0, hf_form = NLevActual.size() - 1;//ordered low:high
   size_t lev = SZ_MAX; // defer on assigning soln levels
   Pecos::ActiveKey active_key;
   active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
@@ -126,7 +127,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 {
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
-  size_t qoi, lev, num_mf = NLev.size(),
+  size_t qoi, lev, num_mf = NLevActual.size(),
     num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
   bool budget_constrained = (maxFunctionEvals != SZ_MAX);
@@ -153,9 +154,10 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 
   // Initialize for pilot sample
   unsigned short group, lf_form = 0, hf_form = num_mf - 1;// 2 models @ extremes
-  Sizet2DArray&       N_lf =      NLev[lf_form];
-  Sizet2DArray&       N_hf =      NLev[hf_form];
-  Sizet2DArray  delta_N_l;   load_pilot_sample(pilotSamples, NLev, delta_N_l);
+  Sizet2DArray&       N_lf =      NLevActual[lf_form];
+  Sizet2DArray&       N_hf =      NLevActual[hf_form];
+  Sizet2DArray  delta_N_l;
+  load_pilot_sample(pilotSamples, NLevActual, delta_N_l);
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
 
@@ -332,7 +334,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 {
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
-  size_t qoi, lev, num_mf = NLev.size(),
+  size_t qoi, lev, num_mf = NLevActual.size(),
     num_hf_lev = truth_model.solution_levels(),
     num_lf_lev =  surr_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, num_lf_lev);
@@ -397,6 +399,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       if (numSamples) {
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(lev);
+	N_alloc_hf[lev] += numSamples;
 	// accumulate online costs for HF model
 	if (online_hf_cost && mlmfIter == 0)
 	  accumulate_paired_online_cost(hf_accum_cost, hf_num_cost, lev);
@@ -411,6 +414,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	  configure_indices(group, lf_form, lev, sequenceType);
 	  // eval allResp w/ LF model reusing allVars from ML step above
 	  evaluate_parameter_sets(iteratedModel, true, false);
+	  N_alloc_lf[lev] += numSamples;
 	  // process previous and new set of allResponses for MLMF sums;
 	  accumulate_mlmf_Qsums(allResponses, hf_resp, sum_Ll, sum_Llm1,
 				sum_Ll_refined, sum_Llm1_refined, sum_Hl,
@@ -523,7 +527,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       hf_targets[lev] = (lev < num_cv_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
-      delta_N_hf[lev] = one_sided_delta(N_alloc_hf[lev], hf_targets[lev]);
+      delta_N_hf[lev] = one_sided_delta(N_alloc_hf[lev], hf_targets[lev]);// *** no backfill? ***
     }
 
     ++mlmfIter;
@@ -541,8 +545,9 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       configure_indices(group, lf_form, lev, sequenceType);
 
       // now execute additional LF sample increment
-      if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
+      if (lf_increment(eval_ratios[lev], N_alloc_lf[lev], hf_targets[lev],// *** backfill? ***
 		       mlmfIter, lev)) {
+	N_alloc_lf[lev] += numSamples;
 	accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev,
 			      N_actual_lf[lev]);
 	increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
@@ -586,7 +591,7 @@ multilevel_control_variate_mc_offline_pilot()
   RealMatrix Lambda_pilot, var_YH_pilot;
   RealVectorArray eval_ratios_pilot;
 
-  unsigned short group, lf_form = 0, hf_form = NLev.size() - 1; // extremes
+  unsigned short group, lf_form = 0, hf_form = NLevActual.size() - 1;// extremes
   SizetArray&    N_alloc_lf =  NLevAlloc[lf_form];
   SizetArray&    N_alloc_hf =  NLevAlloc[hf_form];
   Sizet2DArray& N_actual_lf = NLevActual[lf_form];
@@ -700,7 +705,7 @@ multilevel_control_variate_mc_pilot_projection()
   RealMatrix Lambda, var_YH;  RealVectorArray eval_ratios;
 
   // Initialize for pilot sample
-  unsigned short lf_form = 0, hf_form = NLev.size() - 1;// 2 models @ extremes
+  unsigned short lf_form = 0, hf_form = NLevActual.size() - 1; // 2 @ extremes
   SizetArray&    N_alloc_lf =  NLevAlloc[lf_form];
   SizetArray&    N_alloc_hf =  NLevAlloc[hf_form];
   Sizet2DArray& N_actual_lf = NLevActual[lf_form];
@@ -729,7 +734,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 {
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
-  size_t qoi, lev, num_mf = NLev.size(),
+  size_t qoi, lev, num_mf = NLevActual.size(),
     num_hf_lev = truth_model.solution_levels(),
     num_lf_lev =  surr_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, num_lf_lev);
@@ -770,9 +775,10 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
   // > Note: N_actual may (pilot projection) or may not (offline pilot)
   //   be the same as N_hf.  We still use N_hf for computing delta_N_hf.
   unsigned short group, lf_form = 0, hf_form = num_mf - 1;// 2 models @ extremes
-  //Sizet2DArray&     N_lf =      NLev[lf_form];
-  Sizet2DArray&       N_hf =      NLev[hf_form]; 
-  Sizet2DArray  delta_N_l;   load_pilot_sample(pilotSamples, NLev, delta_N_l);
+  //Sizet2DArray& N_actual_lf = NLevActual[lf_form];
+  Sizet2DArray& N_actual_hf = NLevActual[hf_form];
+  Sizet2DArray  delta_N_l;
+  load_pilot_sample(pilotSamples, NLevActual, delta_N_l);
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_form];
 

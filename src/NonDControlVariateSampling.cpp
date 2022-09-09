@@ -36,7 +36,7 @@ NonDControlVariateSampling(ProblemDescDB& problem_db, Model& model):
   NonDHierarchSampling(problem_db, model)//, finalCVRefinement(true)
 {
   // For now...
-  size_t num_mf = NLev.size();
+  size_t num_mf = NLevActual.size();
   if (num_mf > 2)
     Cerr << "Warning: NonDControlVariateSampling currently uses first and last "
 	 << "model in ordered sequence and ignores the rest." << std::endl;
@@ -102,8 +102,8 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 {
   size_t hf_form_index, lf_form_index, hf_lev_index, lf_lev_index;
   hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
-  SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
-  SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
+  SizetArray& N_hf = NLevActual[hf_form_index][hf_lev_index];
+  SizetArray& N_lf = NLevActual[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
 
   IntRealVectorMap sum_L_shared, sum_H, sum_LL, sum_LH;
@@ -209,8 +209,8 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
 {
   size_t hf_form_index, lf_form_index, hf_lev_index, lf_lev_index;
   hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
-  SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
-  SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
+  SizetArray& N_hf = NLevActual[hf_form_index][hf_lev_index];
+  SizetArray& N_lf = NLevActual[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
 
   // ---------------------------------------------------------------------
@@ -266,8 +266,8 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
 {
   size_t hf_form_index, lf_form_index, hf_lev_index, lf_lev_index;
   hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
-  SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
-  SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
+  SizetArray& N_hf = NLevActual[hf_form_index][hf_lev_index];
+  SizetArray& N_lf = NLevActual[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
 
   RealVector eval_ratios, hf_targets;  Real cost_ratio;
@@ -354,10 +354,10 @@ hf_lf_indices(size_t& hf_form_index, size_t& hf_lev_index,
     hf_form_index = lf_form_index
       = (secondaryIndex == SZ_MAX) ? 0 : secondaryIndex;
     // extremes of range
-    hf_lev_index = NLev[hf_form_index].size() - 1;  lf_lev_index = 0;
+    hf_lev_index = NLevActual[hf_form_index].size() - 1;  lf_lev_index = 0;
   }
-  else { // model form hierarchy
-    hf_form_index = NLev.size() - 1;  lf_form_index = 0; // extremes of range
+  else { // model form hierarchy: extremes of range
+    hf_form_index = NLevActual.size() - 1;  lf_form_index = 0;
     size_t raw_index = iteratedModel.truth_model().solution_level_cost_index();
     hf_lev_index = (raw_index == SZ_MAX) ? 0 : raw_index;
     raw_index    = iteratedModel.surrogate_model().solution_level_cost_index();
@@ -814,7 +814,7 @@ void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
 {
   size_t hf_form_index, hf_lev_index, lf_form_index, lf_lev_index;
   hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
-  SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
+  SizetArray& N_hf = NLevActual[hf_form_index][hf_lev_index];
 
   RealVector mc_est_var(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
