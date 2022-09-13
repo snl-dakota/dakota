@@ -8,7 +8,7 @@
 
 
 # Tests of top-level Dakota Python interface
-
+import os
 import sys
 #import numpy as np # DTS: looks like numpy is already imported if Dakota
 # is built with Numpy because get_variables_values_np(daklib) works fine
@@ -162,17 +162,17 @@ def test_lib():
     print("\n+++ Done LibEnv.\n")
 
     # Conditionally test values written to the h5 file if h5py is available
-    test_dakota_has_h5py = True
+    test_dakota_has_hdf5_and_h5py = True
     try:
         import h5py
         print("Module h5py imported.\n")
-        # This variant did not seem to work ...
-        #__import__(h5py)
     except ImportError:
         print("Module h5py not found. Skipping check of hdf5 file values.\n")
         test_dakota_has_h5py = False
 
-    if test_dakota_has_h5py:
+    test_dakota_has_hdf5_and_h5py &= os.path.exists("test.dakota.h5")
+
+    if test_dakota_has_hdf5_and_h5py: 
         with h5py.File("test.dakota.h5", "r") as h:
             hresps = h["/methods/NO_METHOD_ID/results/execution:1/best_objective_functions"]
             hvars =  h["/methods/NO_METHOD_ID/results/execution:1/best_parameters/continuous"]

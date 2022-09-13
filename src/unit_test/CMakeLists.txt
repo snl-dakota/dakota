@@ -238,15 +238,15 @@ endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
 
 # Test top-level dakota.dakota module
 if(DAKOTA_PYBIND11)
-  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/test_dakota.in"
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/test_dakota_python_env.in"
     dakota_unit_test_copied_files
     )
-  add_test(NAME dakota_python
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.py
+  add_test(NAME dakota_python_env
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.py
     $<TARGET_FILE_DIR:environment>
     )
-  set_property(TEST dakota_python PROPERTY LABELS Unit)
+  set_property(TEST dakota_python_env PROPERTY LABELS Unit)
 endif()
 
 
