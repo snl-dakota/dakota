@@ -67,7 +67,7 @@ def text_book_fn_only(params):
 # Probably don't want / need this...
 def test_cmd():
     print("\n+++ Constructing CommandLine...\n")
-    dakcmd = dakenv.CommandLine("test_dakota.in")
+    dakcmd = dakenv.CommandLine("test_dakota_python_env.in")
     print("\n+++ Running CommandLine...\n")
     dakcmd.execute()
     print("\n+++ Done CommandLine.\n")
