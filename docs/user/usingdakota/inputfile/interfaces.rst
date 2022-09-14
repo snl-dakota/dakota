@@ -1,3 +1,10 @@
+..
+   TODO: 
+   % needed by pyrepro manual section, which was converted by
+   % pandoc from markdown.
+   \providecommand{\tightlist}{%
+   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
 .. _`interfaces:main`:
 
 Interfaces
@@ -14,6 +21,13 @@ evaluations involve interfacing with one or more computational
 simulation codes, computing algebraic mappings (refer to
 Section `[advint:algebraic] <#advint:algebraic>`__), or a combination of
 the two.
+
+..
+   TODO:
+   %In the case of use of an approximation in place of an expensive
+   %simulation code, an \texttt{approximation} interface can be selected
+   %to make use of surrogate modeling capabilities available within
+   %Dakota.  Surrogate models are discussed further in Chapter~\ref{models}.
 
 This chapter will focus on mechanisms for simulation code invocation,
 starting with interface types in Section `1.2 <#interfaces:sim>`__ and
@@ -318,6 +332,11 @@ script by ``$1`` and ``$2``, respectively. The ``simulator_script.sh``
 is divided into three parts: pre-processing, analysis, and
 post-processing.
 
+..
+   TODO:
+   % is divided into five parts: set up, pre-processing, analysis,
+   % post-processing, and clean up.
+
 .. literalinclude:: ../samples/simulator_script.sh
    :language: dakota
    :tab-width: 2
@@ -383,6 +402,14 @@ file is renamed ``$2``, which in this example is always ``results.out``. Note th
 moving or renaming the completed results file avoids any problems with
 read race conditions (see
 Section `[parallel:SLP:local:system] <#parallel:SLP:local:system>`__).
+
+..
+   TODO:
+   % Finally, in the clean up phase, the working directory is removed to
+   % reduce the amount of disk storage required to execute the study. If
+   % data from each simulation needs to be saved, this step can be
+   % commented out by inserting a ``\texttt{\#}'' character before
+   % ``\texttt{$\backslash$rm -rf}''.
 
 Because the Dakota input file ``dakota_rosenbrock.in`` (:numref:`advint:figure01`) specifies
 ``work_directory`` and ``directory_tag`` in its interface section, each
@@ -2838,6 +2865,9 @@ can contain new variable definitions, and it can access older ones.
 Parameters defined in the file are not immutable by default, unlike
 those defined in files included from the command line using the
 ``--include`` option.
+
+..
+   TODO: review these claims after talking to Justin
 
 ``d/pyprepro`` performs limited searching for included files, first in
 the path of the original template, and then in the path where

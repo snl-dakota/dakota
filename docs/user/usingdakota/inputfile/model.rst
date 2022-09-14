@@ -215,12 +215,26 @@ Regression. It requires a decomposition cell type (currently set to be
 Voronoi cells), an optional number of support layers of neighbors, and
 optional discontinuity detection parameters (jump/gradient).
 
+..
+   TODO:
+   %\textbf{Orthogonal Polynomials}: This technique involves the use of
+   %multivariate orthogonal polynomials as a global basis for surrogate
+   %modeling.  These multivariate polynomials are constructed as a product
+   %of particular univariate orthogonal polynomials, including Hermite,
+   %Legendre, Laguerre, Jacobi, and generalized Laguerre polynomials,
+   %which are defined as functions of standard normal, standard uniform,
+   %standard exponential, standard beta, and standard gamma random
+   %variables, respectively.  Given the probabilistic interpretation of
+   %the approximation variables, this data fit is primarily used for
+   %uncertainty quantification, and in particular, polynomial chaos
+   %expansions.
+
 In addition to data fit surrogates, Dakota supports multifidelity and
 reduced-order model approximations:
 
 ..
    TODO: Discussion on MF surrogates still seems accruate, but a lot
-   have evolved in this area in recent years. Needs review/update here
+   has evolved in this area in recent years. Needs review/update here
    and throughout.
 
 **Multifidelity Surrogates**: Multifidelity modeling involves the use of
@@ -323,6 +337,49 @@ a convex combination of the additive and multiplicative corrections:
 
 where :math:`\gamma` is calculated to satisfy an additional matching
 condition, such as matching values at the previous design iterate.
+
+..
+   TODO:
+
+   %It should be noted that in both first order correction methods, the
+   %function $\hat{f}(x)$ matches the function value and gradients of
+   %$f_{t}(x)$ at $x=x_{c}$. This property is necessary in proving that
+   %the first order-corrected SBO algorithms are provably convergent to a
+   %local minimum of $f_{t}(x)$.  However, the first order correction
+   %methods are significantly more expensive than the zeroth order
+   %correction methods, since the first order methods require computing
+   %both $\nabla f_{t}(x_{c})$ and $\nabla f_{s}(x_{c})$.  When the SBO
+   %strategy is used with either of the zeroth order correction methods,
+   %or with no correction method, convergence is not guaranteed to a local
+   %minimum of $f_{t}(x)$. That is, the SBO strategy becomes a heuristic
+   %optimization algorithm. From a mathematical point of view this is
+   %undesirable, but as a practical matter, the heuristic variants of SBO
+   %are often effective in finding local minima.
+   
+   %\emph{Usage guidelines:}
+   %\begin{itemize}
+   %\item Both the \texttt{additive zeroth\_order} and
+   %  \texttt{multiplicative zeroth\_order} correction methods are
+   %  ``free'' since they use values of $f_{t}(x_{c})$ that are normally
+   %  computed by the SBO strategy.
+   %
+   %\item The use of either the \texttt{additive first\_order} method or
+   %  the \texttt{multiplicative first\_order} method does not necessarily
+   %  improve the rate of convergence of the SBO algorithm.
+   %
+   %\item When using the first order correction methods, the
+   %  \texttt{TRUE\_FCN\_GRAD} response keywords must be modified (see
+   %  bottom of Figure~\ref{sbm:sblm_rosen}) to allow either analytic or
+   %  numerical gradients to be computed. This provides the gradient data
+   %  needed to compute the correction function.
+   %
+   %\item For many computationally expensive engineering optimization
+   %  problems, gradients often are too expensive to obtain or are
+   %  discontinuous (or may not exist at all). In such cases the heuristic
+   %  SBO algorithm has been an effective approach at identifying optimal
+   %  designs~\cite{Giu02}.
+   %\end{itemize}
+
 
 .. _`models:surrogate:datafit`:
 
@@ -656,6 +713,11 @@ studying the global response value trends in the parameter space. This
 surface fitting method needs a minimum number of design points equal to
 the sum of the number of basis functions and the number of dimensions,
 :math:`n`, but it is recommended to use at least double this amount.
+
+..
+   TODO:
+   %$n_{c_{quad}}$ design points when possible (refer to
+   %Section~\ref{models:surf:polynomial} for $n_{c}$ definitions).
 
 The GP model is guaranteed to pass through all of the response data
 values that are used to construct the model. Generally, this is a

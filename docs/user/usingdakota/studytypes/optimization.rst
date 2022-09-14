@@ -813,6 +813,15 @@ this section include:
    to the relative scaling of problem inputs and outputs, and this
    feature can help.
 
+..
+   TODO:
+   % \item {\bf Solvers in shared libraries}: On computer systems that
+   %   permit use of shared libraries (most modern systems), Dakota can
+   %   avail itself of optimization solvers contained in shared libraries.
+   %   This is a first step toward allowing optional parts of Dakota, such
+   %   as proprietary solvers, to be accessed from shared
+   %   libraries.
+
 The Advanced Methods Chapter `[adv_meth] <#adv_meth>`__ offers details
 on the following component-based meta-algorithm approaches:
 
@@ -1249,6 +1258,35 @@ not scaled.
    :caption: Sample usage of scaling keywords in Dakota input specification --
        see ``dakota/share/dakota/examples/users/rosen_opt_scaled.in``
    :name: opt:additional:scaling:example:figure01
+
+..
+   TODO:
+   %\subsection{dl\_solver --- Solvers via Shared Libraries}
+   %\label{opt:additional:dlsolver}
+   %
+   %On computer systems that permit use of shared libraries (most modern
+   %systems), Dakota can avail itself of optimization solvers contained in
+   %shared libraries.  This is a first step toward allowing optional parts
+   %of Dakota, such as proprietary solvers, to be accessed from shared
+   %libraries. For example, the Dakota source distributions illustrate
+   %making a sample shared-library interface to SNOPT~\cite{GilMS05},
+   %whose use would be specified by
+   %\begin{small}
+   %\begin{verbatim}
+   %    method,
+   %          dl_solver = 'dl_snopt.dll'
+   %\end{verbatim}
+   %\end{small}
+   %The quoted string contains the name of the shared library, optionally
+   %followed by keyword assignments known to the library, such as
+   %\begin{small}
+   %\begin{verbatim}
+   %    method,
+   %          dl_solver = 'dl_snopt.dll outlev = 1'
+   %\end{verbatim}
+   %\end{small}
+   %which would turn on some diagnostic printing in the SNOPT example.
+
 
 .. _`opt:usage`:
 

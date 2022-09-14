@@ -19,6 +19,18 @@ enabled by the model recursion capabilities described in
 Chapter `[models] <#models>`__ with specific examples in
 Chapter `[adv_models] <#adv_models>`__.
 
+..
+   TODO:
+
+   %It was driven by the observed need for ``meta-optimization'' and other 
+   %high level systems analysis procedures in real-world engineering 
+   %design problems. 
+   
+   %When these model recursion specifications are sufficient to completely
+   %describe a multi-iterator, multi-model solution approach, then a
+   %separate meta-iterator specification is not used (see
+   %Chapter~\ref{adv_models} for examples).
+
 .. _`adv_meth:hybrid`:
 
 Hybrid Minimization
@@ -72,6 +84,19 @@ definition of completion without interference*. Individual method
 completion may be determined by convergence criteria (e.g.,
 ``convergence_tolerance``) or iteration limits (e.g.,
 ``max_iterations``).
+
+..
+   TODO:
+   %The \texttt{adaptive} option
+   %is similar, with the difference that the progress of each method is
+   %monitored and method switching is enforced according to
+   %externally-defined relative progress metrics.  
+   
+   %The \texttt{embedded} approach is restricted to special tightly-coupled
+   %hybrid algorithms in which local searches are used periodically to
+   %accelerate a global search.  These hybrids do not contain a discrete
+   %method switch, but rather repeatedly apply a local algorithm within
+   %the context of the global algorithm.
 
 :numref:`adv_meth:figure01` shows a Dakota input file that specifies a
 sequential hybrid optimization method to solve the “textbook”
@@ -327,7 +352,26 @@ the introduction of two integer variables, a modified value of
 :math:`1.4` is used inside the quartic sum to render the continuous
 solution a non-integral solution.
 
-TODO: Review missing branch and bound content from Users_Advanced_Methods.tex
+..
+   TODO:
+
+   %Figure~\ref{adv_meth:figure06} shows a Dakota input file for solving this
+   %problem. This input file is named \path{dakota_bandb.in} in the
+   %\path{dakota/share/dakota/test} directory. Note the specification for the
+   %discrete variables, where lower and upper bounds are given. The
+   %discrete variables can take on any integer value within these bounds.
+   
+   %\begin{figure}
+   %  \centering
+   %  \begin{bigbox}
+   %    \begin{small}
+   %      \verbatimtabinput[8]{../../../test/examples-users/dakota_bandb.in}
+   %    \end{small}
+   %  \end{bigbox}
+   %  \caption{Dakota input file for the branch-and-bound method for
+   %    solving MINLP optimization problems.}
+   %  \label{adv_meth:figure06}
+   %\end{figure}
 
 Figure `1.1 <#adv_meth:figure07>`__ shows the sequence of branches
 generated for this problem. The first optimization subproblem relaxes
@@ -374,6 +418,12 @@ integer value from Dakota as the index into a vector of discrete real
 values. However, when integrality is relaxed, additional logic for
 interpolating between the discrete real values is needed.
 
+..
+   TODO:
+   % Note: it should be straightforward to extend MINLP to support
+   % general discrete variables, if PICO would support it.  Does this
+   % come up in MILP for logistics, etc.?
+
 .. _`adv_meth:sbm`:
 
 Surrogate-Based Minimization
@@ -415,6 +465,17 @@ will generally have a limited range of accuracy, the surrogate-based
 local algorithm periodically checks the accuracy of the surrogate model
 against the original simulation model and adaptively manages the extent
 of the approximate optimization cycles using a trust region approach.
+
+..
+   TODO:
+   %The surrogate-based local method in
+   %Dakota can be implemented using heuristic rules (less expensive) or
+   %provably-convergent rules (more expensive). The heuristic approach
+   %is particularly effective on real-world engineering design problems
+   %that contain nonsmooth features (e.g., slope discontinuities,
+   %numerical noise) where gradient-based optimization methods often have
+   %trouble, and where the computational expense of the simulation
+   %precludes the use of nongradient-based methods.
 
 Refer to the Dakota Theory Manual :cite:p:`TheoMan` for
 algorithmic details on iterate acceptance, merit function formulations,
@@ -461,6 +522,28 @@ variables to perform the fit. However, with an embedded first-order
 consistency constraint at a single point, the minimum number of samples
 is reduced by :math:`n+1` to :math:`(n^2+n)/2`.
 
+..
+   TODO:
+
+   % Use figure from Theresa's paper?  Use equations from notes?
+   
+   % With gradient information in each sample, this can be further
+   % reduced to ceil(n+2/2) samples.
+   %This corresponds to defining the terms of a symmetric Hessian matrix
+   %and points to an alternate approach.  Rather than enforcing
+   %consistency through constrained least squares, one can embed
+   %consistency directly by employing a Taylor series centered at the
+   %point of local consistency enforcement and globally estimating the
+   %higher order terms.  In the quadratic polynomial example, a
+   %second-order Taylor series with globally estimated Hessian terms
+   %requires the same $(n^2+n)/2$ samples and directly satisfies
+   %first-order consistency.  To further reduce sampling requirements in
+   %this case, one can choose to perform only partial updates (e.g., the
+   %diagonal) of the Hessian matrix~\cite{Per02}.
+   
+   % Additional research area: Exploiting variance estimators to guide
+   % global search (e.g., kriging)
+
 In the local and multipoint data fit cases, the iteration progression
 will appear as in :numref:`fig:sbo_mh`. Both cases
 involve a single new evaluation of the original high-fidelity model per
@@ -476,6 +559,26 @@ surrogates, requiring more SBO cycles with smaller trust regions. More
 information on the design of experiments methods is available in
 Chapter `[dace] <#dace>`__, and the data fit surrogates are described in
 Section `[models:surrogate:datafit] <#models:surrogate:datafit>`__.
+
+..
+   TODO:
+   %In SBO with surface fit functions, a sequence of optimization
+   %subproblems are evaluated, each of which is confined to a subset of
+   %the parameter space known as a ``trust region.'' Inside each trust
+   %region, Dakota's data sampling methods are used to evaluate the
+   %response quantities at a small number (order $10^{1}$ to $10^{2}$) of
+   %design points. Next, multidimensional surface fitting is performed to
+   %create a surrogate function for each of the response quantities.
+   %Finally, optimization is performed using the surrogate functions in
+   %lieu of the actual response quantities, and the optimizer's search is
+   %limited to the region inside the trust region bounds. A validation
+   %procedure is then applied to compare the predicted improvement in the
+   %response quantities to the actual improvement in the response
+   %quantities. Based on the results of this validation, the optimum
+   %design point is either accepted or rejected and the size of the trust
+   %region is either expanded, contracted, or left unchanged. The sequence
+   %of optimization subproblems continues until the SBO convergence 
+   %criteria are satisfied
 
 Figure `[sbm:sblm_rosen] <#sbm:sblm_rosen>`__ shows a Dakota input file
 that implements surrogate-based optimization on Rosenbrock’s function.
@@ -571,6 +674,28 @@ However, with only a single high-fidelity model evaluation at the center
 of each trust region, it is critical to use the best correction possible
 on the low-fidelity model in order to achieve rapid convergence rates to
 the optimum of the high-fidelity model :cite:p:`Eld04`.
+
+..
+   TODO:
+   %SBO can also be applied with multifidelity, or hierarchical, models,
+   %i.e., where one has available both a high-fidelity computational model
+   %and a low-fidelity computational model. This situation can occur when
+   %the low-fidelity model neglects some physical phenomena (e.g.,
+   %viscosity, heat transfer, etc.) that are included in the high-fidelity
+   %model, or when the low-fidelity model has a lower resolution
+   %computational mesh than the high-fidelity model. In many cases, the
+   %low-fidelity model can serve as a surrogate for the high-fidelity
+   %model during the optimization process. Thus, the low-fidelity model
+   %can be used in SBO in a manner similar to the use of surface fit models
+   %described in Section~\ref{adv_meth:sbm:sblm:surface}. A key difference
+   %in SBO with hierarchical surrogates is that a design of experiments
+   %using the high-fidelity model is not required; rather high-fidelity
+   %evaluations are only needed at the center of the current trust-region
+   %and the predicted optimum point in order to correct the low-fidelity
+   %model and verify improvement, respectively. Another difference is that
+   %one of the four types of correction described in
+   %Section~\ref{adv_meth:sbm:sblm:surface} is required for SBO with 
+   %multifidelity models.
 
 A multifidelity test problem named ``dakota_sbo_hierarchical.in``
 is available in ``dakota/share/dakota/test`` to demonstrate this
