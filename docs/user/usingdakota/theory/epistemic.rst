@@ -56,6 +56,23 @@ opinions), that would be otherwise discarded in an interval analysis or
 probabilistic framework. The ability to make use of this information
 results in a commensurately more informed output.
 
+..
+   TODO: cross ref this in users
+
+   Appears already in Users Manual:
+   Figure~\ref{fig:bel_plaus} shows example cumulative 
+   belief and plausibility functions (CBF and CPF) and complementary 
+   cumulative belief and plausibility functions (CCBF and CCPF, respectively). 
+   This figure was taken from~\cite{helton_2004}.
+   \begin{figure}[h!]% order of placement preference: here, top, bottom
+   \begin{center}
+   \includegraphics[width = 5in]{belief_plaus.eps}
+   \caption{Example Cumulative and Complementary Cumulative Distributions for Belief and Plausibility}
+   \label{fig:bel_plaus}
+   \end{center} 
+   \end{figure}
+
+
 The procedure to compute belief structures involves four major steps:
 
 #. Determine the set of :math:`d`-dimensional hypercubes that have a

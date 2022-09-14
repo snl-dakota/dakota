@@ -155,6 +155,13 @@ function (see Section `1.2 <#sbm:sblm_con_merit>`__), Lagrangian hard
 convergence assessment (see Section `1.3 <#sbm:sblm_con_hard>`__), and
 no constraint relaxation (see Section `1.4 <#sbm:sblm_con_relax>`__).
 
+..
+   TODO: It is attractive both from its simplicity and potential for
+   improved performance, assuming that all of the trust region
+   updating machinery can be rendered compatible with the lack of an
+   explicitly-optimized merit function.  and is the default approach
+   taken in Dakota.
+
 While the formulation of Eq. `[eq:NLP_SBO_TRAL] <#eq:NLP_SBO_TRAL>`__
 (and others from row 1 in Table `1.1 <#tab:sbo_subprob>`__) can suffer
 from infeasible intermediate iterates and slow convergence to
@@ -192,6 +199,10 @@ also form a merit function for computing the trust region ratio;
 however, the omission of this merit function from explicit use in the
 approximate optimization cycles can lead to synchronization problems
 with the optimizer.
+
+..
+   TODO: In this case, penalty-free and multiplier-free trust region
+   ratios (see Section~\ref{sbm:sblm_con_merit}) become attractive.
 
 Once computed, the value for :math:`\rho^k` can be used to define the
 step acceptance and the next trust region size :math:`\Delta^{k+1}`
@@ -275,14 +286,44 @@ relaxes the common enforcement of monotonicity in constraint violation
 reduction and, by allowing more flexibility in acceptable step
 generation, often allows the algorithm to be more efficient.
 
+.. 
+   TODO: Note: filter method idea could allow even more flexibility
+   with elimination of the reduction of individual constraint
+   violations into a single norm.  That is, the Pareto concept could
+   be extended to N_con + 1 dimensions.  However, without another
+   mechanism to enforce violation reduction, the algorithm could
+   easily generate steps that are acceptable to the filter but which
+   diverge in constraint violation.
+
+
 The use of a filter method is compatible with any of the SBO
 formulations in
 Eqs. `[eq:NLP_SBO_TRAL] <#eq:NLP_SBO_TRAL>`__–`[eq:NLP_SBO_direct] <#eq:NLP_SBO_direct>`__.
+
+..
+   TODO: ; however, it is particularly attractive for the latter since the only
+   remaining purpose for a merit function is for managing trust region
+   expansion/retention/contraction when the filter accepts a step.
+   If alternate logic can be developed
+   for that portion, then the entire SBO algorithm can become penalty and
+   multiplier free.  In~\cite{Fle02}, for example, trust
+   region updates are less structured than in Table~\ref{tab:rho_k} and
+   only basic logic is provided (no $\rho^k$ is used).
+
 
 .. _`sbm:sblm_con_merit`:
 
 Merit functions
 ---------------
+
+..
+   TODO: Merit functions are used in the trust region ratio
+   calculations for sizing subsequent trust regions.  They may also be
+   used for the surrogate objective function as described
+   in~\cite{Rod98,Ale00,Per04b}, which has the advantage of better
+   synchronizing the trust region ratios with the approximate
+   optimization steps, but which has the disadvantage that it can slow
+   convergence.
 
 The merit function :math:`\Phi({\bf x})` used in
 Eqs. `[eq:NLP_SBO_TRAL] <#eq:NLP_SBO_TRAL>`__-`[eq:NLP_SBO_SQP] <#eq:NLP_SBO_SQP>`__,\ `[eq:rho_phi_k] <#eq:rho_phi_k>`__
@@ -374,6 +415,32 @@ than in Eq. `[eq:exp_rp] <#eq:exp_rp>`__, often using an infrequent
 application of a constant multiplier rather than a fixed exponential
 progression.
 
+..
+   TODO: As mentioned previously, a goal for the formulation in
+   Eq.~\ref{eq:NLP_SBO_direct} is to employ a penalty and multiplier
+   free approach for the merit function and/or trust region logic.  A
+   Lagrangian merit function is penalty free and a penalty merit
+   function is multiplier free, but no merit functions to this point
+   are both.  One concept~\cite{Giu00} is to bypass the need for a
+   merit function by forming a set of trust region ratios, one for
+   each surrogate function (${\hat f}$, ${\hat g}_i$, and ${\hat
+   h}_j$).  In this case, a single ratio could be determined from the
+   minimum (or average, norm, etc.) of the set, ----- The weakness of
+   this approach is one of scaling near optimality/balancing
+   optimality and feasibility: when constraint values are near zero,
+   the feasibility trust region ratios are less important than the
+   optimality trust region ratios.  This is naturally captured in
+   merit function approaches.  ----- or a composite step approach
+   could be used with different trust region sizes for the constraint
+   reduction and objective reduction subproblems~\cite{Ale00}.
+   Another concept is to utilize a merit function derived from the
+   filter concept using, for example, metrics of filter area swept out
+   by accepted iterates.  This concept will be investigated further in
+   future work.  Initial concepts for swept filter area have issues
+   with potential unboundedness, but will be investigated further in
+   future work.
+
+
 .. _`sbm:sblm_con_hard`:
 
 Convergence assessment
@@ -386,6 +453,10 @@ unavailable or unreliable). Therefore, simple soft convergence criteria
 are also employed which monitor for diminishing returns (relative
 improvement in the merit function less than a tolerance for some number
 of consecutive iterations).
+
+..
+   TODO Note: soft convergence is not discussed in \cite{Giu00} (and
+   can't be cited)
 
 To assess hard convergence, one calculates the norm of the projected
 gradient of a merit function whenever the feasibility tolerance is
@@ -421,6 +492,9 @@ NETLIB are used, respectively.
 
 Constraint relaxation
 ---------------------
+
+.. 
+   TODO: trConstraintRelax may be COMPOSITE\_STEP or HOMOTOPY.  
 
 The goal of constraint relaxation is to achieve efficiency through the
 balance of feasibility and optimality when the trust region restrictions
@@ -491,6 +565,9 @@ recovered. The vectors :math:`{\bf b}_{g}, {\bf b}_{h}` are chosen so
 that the starting point, :math:`{\bf x}^0`, is feasible with respect to
 the fully relaxed constraints:
 
+..
+   TODO: NOTE: these _could_ need updating in the case of global data fits
+
 .. math::
 
    \begin{aligned}
@@ -529,6 +606,9 @@ volume within the trust region. Determining the optimal value for
 :math:`\alpha` remains an open question and will be explored in future
 work.
 
+..
+   TODO: Note: could just use $\tau^k$ in previous equations above
+
 After :math:`\tau^k` is determined using this procedure, the problem in
 Eq. `[eq:NLP_relaxed] <#eq:NLP_relaxed>`__ is solved for
 :math:`{\bf x}^k_\ast`. If the step is accepted, then the value of
@@ -545,6 +625,16 @@ Eq. `[eq:NLP_relaxed] <#eq:NLP_relaxed>`__ is solved for
    g_{u_{i}} - g_i({\bf x}^k_\ast)\right\}}{b_{g_{i}}} \\ 
    \tau_j & = 1 - \frac{| h_j({\bf x}^k_\ast) - h_{t_{j}} |}{b_{h_{j}}}\end{aligned}
 
+..
+   TODO: 
+   \begin{align}
+   \tau^{k} & = \min\left\{1,\min_i \tau_i , \min_j \tau_j \right\} \; ,\\
+   \intertext{where}
+   \tau_i & = \frac{\min \left\{\hat g_i({\bf x}^k) - ({\bf g}_l)_i, 
+   ({\bf g}_u)_i - \hat g_i({\bf x}^k)\right\}}{b_i^{g}} + 1\\ 
+   \tau_j & = \frac{- | \hat h_j({\bf x}^k) - ({\bf h}_t)_j |}{b_j^{h}} + 1 \; .
+   \end{align}
+
 TODO: Figure, image, and reference/caption.
 
 .. container:: wrapfigure
@@ -560,6 +650,15 @@ achieved first, and then progress is made toward the optimal point. The
 iterates generated using the relaxed constraints are shown in blue,
 where a balance of satisfying feasibility and optimality has been
 achieved, leading to fewer overall SBO iterations.
+
+..
+   TODO:
+   \begin{figure}[ht!]
+   \epsfxsize 3in \centerline{\epsfbox{tau_updates.eps}}
+   \caption{Example SBO iterates using surrogate (red) and relaxed (blue)
+   constraints.}
+   \label{fig:constr_relax}
+   \end{figure}
 
 The behavior illustrated in
 Fig. `[fig:constr_relax] <#fig:constr_relax>`__ is an example where
