@@ -43,6 +43,10 @@ include(DakotaOptions)
 # Dakota version and optional tags
 # -----
 include(DakotaVersion)
+# Define convenience variables used here and in subdirs, such as
+#   Dakota_VERSION_{PAIR, TRIPLE, STRING, SRC}
+include(DakotaVersionUtils)
+dakota_version_set_helper_vars()
 
 
 # Installation destination options

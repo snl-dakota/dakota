@@ -208,6 +208,11 @@ endif()
 # Package docs for nightly builds (HTML and PDF for dev)
 # TODO: Rework this into custom command(s) and bind into target
 # TODO: Better handling of html-dev instead of symlink
+# Define convenience variables used here and in subdirs, such as
+#   Dakota_VERSION_{PAIR, TRIPLE, STRING, SRC}
+include(DakotaVersionUtils)
+dakota_version_set_helper_vars()
+include(DakotaCPack)
 dakota_cpack_initialize()
 add_custom_target(package_docs
   COMMAND ${CMAKE_COMMAND} -E
