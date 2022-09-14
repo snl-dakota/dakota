@@ -43,8 +43,11 @@ if( NOT Dakota_SOURCE_DIR)
   get_filename_component(Dakota_SOURCE_DIR ".." ABSOLUTE) 
 endif()
 
-set(CMAKE_MODULE_PATH "${Dakota_SOURCE_DIR}/cmake"
+set(CMAKE_MODULE_PATH 
+  "${Dakota_SOURCE_DIR}"
+  "${Dakota_SOURCE_DIR}/cmake"
   "${Dakota_SOURCE_DIR}/cmake/semsCMake" ${CMAKE_MODULE_PATH})
+include(DakotaVersion)
 include(ListFilterEmacsBackups)
 include(DakotaTestHelpers)
 include(DakotaUsersExamples)
@@ -205,6 +208,7 @@ endif()
 # Package docs for nightly builds (HTML and PDF for dev)
 # TODO: Rework this into custom command(s) and bind into target
 # TODO: Better handling of html-dev instead of symlink
+dakota_cpack_initialize()
 add_custom_target(package_docs
   COMMAND ${CMAKE_COMMAND} -E
     tar czf user-html-${Dakota_VERSION_STRING}.tar.gz user-html

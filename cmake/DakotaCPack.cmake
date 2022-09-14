@@ -60,7 +60,7 @@ endfunction()
 # @date: Date at configure time(?) in YYYY_MM_DD format.
 function(dakota_parse_package_label _label_with_tokens _retval_subbed_label)
 
-  string(REPLACE "@version" "${Dakota_VERSION_TRIPLE}" _subbed_label
+  string(REPLACE "@version" "${Dakota_VERSION_STRING}" _subbed_label
     "${_label_with_tokens}")
 
   string(REPLACE "@sha1" "${Dakota_GIT_ABBREV_SHA1}" _subbed_label
