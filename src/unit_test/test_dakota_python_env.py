@@ -168,7 +168,7 @@ def test_lib():
         print("Module h5py imported.\n")
     except ImportError:
         print("Module h5py not found. Skipping check of hdf5 file values.\n")
-        test_dakota_has_h5py = False
+        test_dakota_has_hdf5_and_h5py = False
 
     test_dakota_has_hdf5_and_h5py &= os.path.exists("test.dakota.h5")
 
