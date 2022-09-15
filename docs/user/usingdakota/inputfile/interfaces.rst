@@ -15,12 +15,17 @@ Interfaces
 Overview
 --------
 
-The ``interface`` specification in a Dakota input file controls details
+The :dakkw:`interface` specification in a Dakota input file controls details
 of function evaluations. The mechanisms currently in place for function
 evaluations involve interfacing with one or more computational
-simulation codes, computing algebraic mappings (refer to
-Section `[advint:algebraic] <#advint:algebraic>`__), or a combination of
-the two.
+simulation codes, computing :ref:`algebraic mappings <advint:algebraic>`,
+or a combination of the two.
+
+.. note::
+   
+   It is highly recommended that, at minimum, you are familiar with the
+   :ref:`general strategy by which Dakota interfaces with external simulation models <couplingtosimulations-main>`
+   before delving into this section.
 
 ..
    TODO:
@@ -29,16 +34,11 @@ the two.
    %to make use of surrogate modeling capabilities available within
    %Dakota.  Surrogate models are discussed further in Chapter~\ref{models}.
 
-This chapter will focus on mechanisms for simulation code invocation,
-starting with interface types in Section `1.2 <#interfaces:sim>`__ and
-followed by a guide to constructing simulation-based interfaces in
-Section `1.3 <#interfaces:building>`__. This chapter also provides an
-overview of simulation interface components, covers issues relating to
-file management, and presents a number of example data mappings.
-
-For a detailed description of interface specification syntax, refer to
-the interface commands chapter in the Dakota Reference
-Manual :cite:p:`RefMan`.
+This section will focus on mechanisms for simulation code invocation,
+starting with :ref:`interface types <interfaces:sim>` and
+followed by a guide to :ref:`constructing simulation-based interfaces <interfaces:building>`.
+This section also provides an overview of simulation interface components,
+covers issues relating to file management, and presents a number of example data mappings.
 
 .. _`interfaces:sim`:
 
@@ -52,9 +52,54 @@ between Dakota and the simulation occurs through parameter and response
 files. For system call and fork interfaces, the interface section must
 specify the details of this data transfer. In the direct case, a
 separate process is not created and communication occurs in memory
-through a prescribed API. Sections `1.2.1 <#interfaces:direct>`__
-through `1.2.5 <#interfaces:which>`__ provide information on the
-simulation interfacing approaches.
+through a prescribed API.
+
+The following sub-sections provide information on the simulation interfacing approaches:
+
+.. _`interfaces:fork`:
+
+Fork Simulation Interface
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The :dakkw:`interface-fork` simulation interface is the most common
+method for interfacing Dakota with an external simulation model.
+
+The fork simulation interface uses the ``fork``, ``exec``, and ``wait``
+families of functions to manage simulation codes or simulation drivers.
+Calls to ``fork`` or ``vfork`` create a copy of the Dakota process,
+``execvp`` replaces this copy with the simulation code or driver process,
+and then Dakota uses the ``wait`` or ``waitpid`` functions to wait for
+completion of the new process.
+
+.. note::
+
+   In a native Windows version of Dakota, similar Win32 functions, such
+   as ``_spawnvp()``, are used instead.
+
+.. note::
+
+   Transfer of variables and response data between Dakota and the simulator
+   code or driver occurs through the file system in exactly the same manner
+   as for the :ref:`system call interface <interfaces:system>`.
+   
+An example of a fork interface specification follows:
+
+.. code::
+
+   interface
+       fork
+           input_filter    = 'test_3pc_if'
+           output_filter   = 'test_3pc_of'
+           analysis_driver = 'test_3pc_ac'
+           parameters_file = 'tb.in'
+           results_file    = 'tb.out'
+           file_tag
+		   
+**Further Reading**
+
+- More detailed examples of using the fork call interface are provided in :ref:`the section below on building a black-box interface to a simulation code <interfaces:building>`.
+- This :ref:`compiled Rosenbrock example <user-supplied-sim-code-case1>` may also be instructive for understanding the functionality of the ``fork`` interface.
+- Information on asynchronous usage of the fork call interface is provided in :ref:`this section <parallel:SLP:local:fork>`.
 
 .. _`interfaces:direct`:
 
@@ -72,10 +117,12 @@ external codes such as Phoenix Integration’s ModelCenter framework and
 The Mathworks’ Matlab have been linked in this way, and a direct
 interface to Sandia’s SIERRA multiphysics framework is under
 development. In the latter case, the additional effort is particularly
-justified since SIERRA unifies an entire suite of physics codes. [*Note:
-the “sandwich implementation” of combining a direct interface plug-in
-with Dakota’s library mode is discussed in the Dakota Developers
-Manual :cite:p:`DevMan`*].
+justified since SIERRA unifies an entire suite of physics codes.
+
+.. note::
+
+   The "sandwich implementation" of combining a direct interface plug-in
+   with Dakota’s library mode is discussed :ref:`here <interfacing_with_dakota_as_library>`.
 
 In addition to direct linking with simulation codes, the direct
 interface also provides access to internal polynomial test functions
@@ -83,39 +130,43 @@ that are used for algorithm performance and regression testing. The
 following test functions are available: ``cantilever``, ``cyl_head``,
 ``log_ratio``, ``rosenbrock``, ``short_column``, and ``text_book``
 (including ``text_book1``, ``text_book2``, ``text_book3``, and
-``text_book_ouu``). While these functions are also available as external
-programs in the ``dakota/share/dakota/test`` directory, maintaining internally linked versions allows
-more rapid testing. See Chapter `[additional] <#additional>`__ for
-additional information on several of these test problems. An example
-input specification for a direct interface follows:
+``text_book_ouu``).
 
-::
+While these functions are also available as external
+programs in the ``dakota/share/dakota/test`` directory, maintaining internally
+linked versions allows more rapid testing. See :ref:`the Additional Examples page <additional>` for
+additional information on several of these test problems.
 
-       interface,
-               direct
-                 analysis_driver = 'rosenbrock'
+An example input specification for a direct interface follows:
 
-Additional specification examples are provided in
-Section `[tutorial:examples] <#tutorial:examples>`__ and additional
-information on asynchronous usage of the direct function interface is
-provided in
-Section `[parallel:SLP:local:direct] <#parallel:SLP:local:direct>`__.
-Guidance for usage of some particular direct simulation interfaces is in
-Section `[advint:existingdirect] <#advint:existingdirect>`__ and the
-details of adding a simulation code to the direct interface are provided
-in Section `[advint:direct] <#advint:direct>`__.
+.. code::
+
+   interface
+       direct
+           analysis_driver = 'rosenbrock'
+
+**Further Reading**
+
+- Additional specification examples are provided in the :ref:`"Getting Started" tutorial <examples-gettingstarted-main>`.
+- Additional information on asynchronous usage of the direct function interface is provided in :ref:`this section <parallel:SLP:local:direct>`.
+- Guidance for usage of some particular direct simulation interfaces is in :ref:`the section on connecting existing direct interfaces to external simulators. <advint:existingdirect>`
+- Details of adding a simulation code to the direct interface are provided in :ref:`this section <advint:direct>`.
 
 .. _`interfaces:system`:
 
 System Call Simulation Interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Users are strongly encouraged to use the fork simulation interface if
-possible, though the system interface is still supported for portability
-and backward compatibility.** The system call approach invokes a
-simulation code or simulation driver by using the ``system`` function
-from the standard C library :cite:p:`Ker88`. In this approach,
-the system call creates a new process that communicates with Dakota
+.. warning::
+
+   Users are strongly encouraged to use the fork simulation interface if
+   possible, though the system interface is still supported for portability
+   and backward compatibility.
+   
+The system call approach invokes a simulation code or simulation driver by
+using the :dakkw:`interface-system` function from the standard C library :cite:p:`Ker88`.
+
+In this approach, the system call creates a new process that communicates with Dakota
 through parameter and response files. The system call approach allows
 the simulation to be initiated via its standard invocation procedure (as
 a “black box”) and then coordinated with a variety of tools for pre- and
@@ -126,51 +177,18 @@ direct function approach, but this extra overhead is usually
 insignificant compared with the cost of a simulation. An example of a
 system call interface specification follows:
 
-::
+.. code::
 
-       interface,
-               system
-                 analysis_driver = 'text_book'
-                 parameters_file = 'text_book.in'
-                 results_file    = 'text_book.out'
-                 file_tag file_save
+   interface
+       system
+           analysis_driver = 'text_book'
+           parameters_file = 'text_book.in'
+           results_file    = 'text_book.out'
+           file_tag
+		   file_save
 
 Information on asynchronous usage of the system interface is provided in
-Section `[parallel:SLP:local:system] <#parallel:SLP:local:system>`__.
-
-.. _`interfaces:fork`:
-
-Fork Simulation Interface
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The fork simulation interface uses the ``fork``, ``exec``, and ``wait``
-families of functions to manage simulation codes or simulation drivers.
-(In a native MS Windows version of Dakota, similar Win32 functions, such
-as ``_spawnvp()``, are used instead.) Calls to ``fork`` or ``vfork``
-create a copy of the Dakota process, ``execvp`` replaces this copy with
-the simulation code or driver process, and then Dakota uses the ``wait``
-or ``waitpid`` functions to wait for completion of the new process.
-Transfer of variables and response data between Dakota and the simulator
-code or driver occurs through the file system in exactly the same manner
-as for the system call interface. An example of a fork interface
-specification follows:
-
-::
-
-       interface,
-               fork
-                 input_filter    = 'test_3pc_if'
-                 output_filter   = 'test_3pc_of'
-                 analysis_driver = 'test_3pc_ac'
-                 parameters_file = 'tb.in'
-                 results_file    = 'tb.out'
-                 file_tag
-
-More detailed examples of using the fork call interface are provided in
-Section `[tutorial:examples:user_supply:optimization1] <#tutorial:examples:user_supply:optimization1>`__
-and in Section `1.3 <#interfaces:building>`__, and information on
-asynchronous usage of the fork call interface is provided in
-Section `[parallel:SLP:local:fork] <#parallel:SLP:local:fork>`__.
+the :ref`section on system call synchronization <parallel:SLP:local:system>`.
 
 .. _`interfaces:syntax`:
 
