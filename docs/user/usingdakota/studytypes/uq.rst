@@ -2797,28 +2797,50 @@ implementations in Dakota.
 
 TODO: review table formatting, caption it, reference it
 
-.. container:: tabulary
+.. container::
+   :name: tab:beyes_meth_comp
 
-   | \|L|C|C|C|C|C\| Capability & QUESO & MUQ & GPMSA & DREAM & WASABI
-   | Prior Distributions & Any continuous variable type & Any continuous
-     variable type & Any continuous variable type & Uniform only &
-     Uniform only
-   | Inference Type & MCMC with DR, AM, DRAM, or MH & MCMC with DR, AM,
-     DRAM, or MH & MCMC with DR, AM, DRAM, or MH & MCMC with
-     Differential Evolution Adaptive Metropolis & MCMC-free interval
-     analysis
-   | Can use PCE/SC Emulator & Yes & Yes & Yes & Yes & Yes
-   | Can use GP Emulator & Yes & Yes & Yes (required) & Yes & Yes
-   | Likelihood-based adaptive emulator update & Yes & No & No & No & No
-   | Initialize with MAP pre-solve & Yes & Yes & No & No & No
-   | Proposal covariance options & prior, user, derivative-based & n/a &
-     prior, user & n/a & n/a
-   | Can calibrate error covariance multipliers & Yes & Yes & Yes
-     (internal) & Yes & No
-   | Supports standardized space & Yes & Yes & Yes & Yes & Yes
-   | Logit transform & Yes & Yes & Yes & No & No
-   | Posterior export & samples & samples & samples & samples & samples,
-     density
+   .. table:: Capabilities of Bayesian methods in Dakota
+
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Capability          | QUESO                        | MUQ                          | GPMSA                        | DREAM              | WASABI       |
+      +=====================+==============================+==============================+==============================+====================+==============+
+      | Prior               | Any continuous variable type | Any                          | Any                          | Uniform only       | Uniform      |
+      | Distributions       |                              | continuous                   | continuous                   |                    | only         |
+      |                     |                              | variable type                | variable type                |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Inference Type      | MCMC with                    | MCMC with                    | MCMC with                    | MCMC with          | MCMC-        |
+      |                     | DR, AM,                      | DR, AM,                      | DR, AM,                      | Differential       | free         |
+      |                     | DRAM, or                     | DRAM, or                     | DRAM, or                     | Evolution Adaptive | interval     |
+      |                     | MH                           | MH                           | MH                           | Metropolis         | analysis     |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Can use PCE/SC      | Yes                          | Yes                          | Yes                          | Yes                | Yes          |
+      | Emulator            |                              |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Can use GP Emulator | Yes                          | Yes                          | Yes (required)               | Yes                | Yes          |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Likelihood-based    | Yes                          | No                           | No                           | No                 | No           |
+      | adaptive emulator   |                              |                              |                              |                    |              |
+      | update              |                              |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Initialize with     | Yes                          | Yes                          | No                           | No                 | No           |
+      | MAP pre-solve       |                              |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Proposal covariance | prior, user,                 | n/a                          | prior, user                  | n/a                | n/a          |
+      | options             | derivative-based             |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Can calibrate error | Yes                          | Yes                          | Yes (internal)               | Yes                | No           |
+      | covariance          |                              |                              |                              |                    |              |
+      | multipliers         |                              |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Supports            | Yes                          | Yes                          | Yes                          | Yes                | Yes          |
+      | standardized space  |                              |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Logit transform     | Yes                          | Yes                          | Yes                          | No                 | No           |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Posterior export    | samples                      | samples                      | samples                      | samples            | samples,     |
+      |                     |                              |                              |                              |                    | density      |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
 
 .. _`uq:bayesian:ex`:
 
