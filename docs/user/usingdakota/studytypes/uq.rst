@@ -3004,6 +3004,33 @@ TODO: fix figures
      \label{fig:uq:obs_err_mult}
    \end{figure}
 
+    +--------------------------------------------------------------------------------------------+
+    |                                                                                            |
+    | .. math::                                                                                  |
+    |     :label: uq:obs_err_mult                                                                |
+    |                                                                                            |
+    |     \textbf{The caption}                                                                   |
+    |                                                                                            |
+    +==========================================+=================================================+
+
+.. container::
+   :name: uq:obs_err_mult
+
+   .. table:: Calibrating observational error covariance multipliers: (a)
+      one multiplier on whole user-provided covariance structure, (b)
+      multiplier per-experiment, (c) multiplier per-response, and (d)
+      both..
+
+      +------------------------------------------+-------------------------------------------------+
+      | .. image:: img/CalibrateOne.png          | .. image:: img/CalibratePerExperiment.png       |
+      |                                          |                                                 |
+      | (a)                                      | (b)                                             |
+      +------------------------------------------+-------------------------------------------------+
+      | .. image:: img/CalibratePerResponse.png  | .. image:: img/CalibrateBoth.png                |
+      |                                          |                                                 |
+      | (c)                                      | (d)                                             |
+      +------------------------------------------+-------------------------------------------------+
+
 
 Scaling and Weighting of Residuals
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
