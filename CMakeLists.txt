@@ -79,8 +79,8 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION)
   set(DAKOTA_VERSION_FOUND TRUE)
 else()
   dakota_version_from_git()
+  dakota_create_version_file()
 endif()
-
 
 
 include(DakotaCPack)

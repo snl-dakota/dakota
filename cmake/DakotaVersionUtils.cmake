@@ -58,7 +58,14 @@ macro(dakota_version_from_git)
 
   endif()
 
-  # Create VERSION file
+  message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
+  message(STATUS "Dakota git revision is: ${Dakota_GIT_REV}")
+
+
+endmacro()
+
+# Record the Dakota version and git sha1
+function(dakota_create_version_file)
   file( WRITE ${Dakota_BINARY_DIR}/generated/VERSION/VERSION
       "DakotaVersion ${Dakota_VERSION_SRC}
 Built from GIT revision ${Dakota_GIT_REV}
@@ -66,10 +73,5 @@ Built from GIT revision ${Dakota_GIT_REV}
   set(DAKOTA_VERSION_file_path "${Dakota_BINARY_DIR}/generated/VERSION/")
   install(FILES ${Dakota_BINARY_DIR}/generated/VERSION/VERSION DESTINATION
     ${DAKOTA_TOPFILES_INSTALL})
-
-  message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
-  message(STATUS "Dakota git revision is: ${Dakota_GIT_REV}")
-
-
-endmacro()
+endfunction()
 

@@ -43,11 +43,16 @@ if( NOT Dakota_SOURCE_DIR)
   get_filename_component(Dakota_SOURCE_DIR ".." ABSOLUTE) 
 endif()
 
+if( NOT Dakota_BINARY_DIR)
+  set(Dakota_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+endif()
+
 set(CMAKE_MODULE_PATH 
   "${Dakota_SOURCE_DIR}"
   "${Dakota_SOURCE_DIR}/cmake"
   "${Dakota_SOURCE_DIR}/cmake/semsCMake" ${CMAKE_MODULE_PATH})
 include(DakotaVersion)
+include(DakotaCPack)
 include(ListFilterEmacsBackups)
 include(DakotaTestHelpers)
 include(DakotaUsersExamples)
@@ -210,25 +215,23 @@ endif()
 # TODO: Better handling of html-dev instead of symlink
 # Define convenience variables used here and in subdirs, such as
 #   Dakota_VERSION_{PAIR, TRIPLE, STRING, SRC}
-include(DakotaVersionUtils)
-dakota_version_set_helper_vars()
-include(DakotaCPack)
-dakota_cpack_initialize()
+dakota_docs_package_label("${DAKOTA_PACKAGE_LABEL}" Dakota_FINAL_PACKAGE_LABEL)
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generated/label/label.txt" "${Dakota_FINAL_PACKAGE_LABEL}")
 add_custom_target(package_docs
   COMMAND ${CMAKE_COMMAND} -E
-    tar czf user-html-${Dakota_VERSION_STRING}.tar.gz user-html
+    tar czf user-html-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz user-html
   COMMAND ${CMAKE_COMMAND} -E create_symlink dev/html-dev html-dev
   COMMAND ${CMAKE_COMMAND} -E
-    tar czf html-dev-${Dakota_VERSION_STRING}.tar.gz "html-dev/*"
+    tar czf html-dev-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz "html-dev/*"
   COMMAND ${CMAKE_COMMAND} -E copy
-    dev/latex-dev/refman.pdf Developers-${Dakota_VERSION_STRING}.pdf
+    dev/latex-dev/refman.pdf Developers-${Dakota_FINAL_PACKAGE_LABEL}.pdf
   COMMAND ${CMAKE_COMMAND} -E
     tar czf dakota-${Dakota_FINAL_PACKAGE_LABEL}-docs.tar.gz
       user-html
-      user-html-${Dakota_VERSION_STRING}.tar.gz
+      user-html-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz
       "html-dev/*"
-      html-dev-${Dakota_VERSION_STRING}.tar.gz
-      Developers-${Dakota_VERSION_STRING}.pdf
+      html-dev-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz
+      Developers-${Dakota_FINAL_PACKAGE_LABEL}.pdf
   COMMENT "Packaging docs"
   )
 add_dependencies(package_docs docs-pdf docs)
