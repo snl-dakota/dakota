@@ -2157,7 +2157,8 @@ bounds on the inputs. Again, any output response that falls within the
 output interval is a possible output with no frequency information
 assigned to it.
 
-We have the capability to perform interval analysis using either or . In
+We have the capability to perform interval analysis using either
+``global_interval_est`` or ``local_interval_est``. In
 the global approach, one uses either a global optimization method or a
 sampling method to assess the bounds. ``global_interval_est`` allows the
 user to specify either ``lhs``, which performs Latin Hypercube Sampling
@@ -2313,26 +2314,24 @@ modeled as sets of intervals. The user assigns a basic probability
 assignment (BPA) to each interval, indicating how likely it is that the
 uncertain input falls within the interval. The BPAs for a particular
 uncertain input variable must sum to one. The intervals may be
-overlapping, contiguous, or have gaps. In Dakota, an interval uncertain
-variable is specified as . When one defines an interval type variable in
-Dakota, it is also necessary to specify the number of intervals defined
-for each variable with as well the basic probability assignments per
-
-TODO: something missing below?
-
-interval, , and the associated bounds per each interval, .
-:numref:`uq:figure16` shows the input specification
-for interval uncertain variables. The example has two epistemic
-uncertain interval variables. The first uncertain variable has three
-intervals and the second has two. The basic probability assignments for
-the first variable are 0.5, 0.1, and 0.4, while the BPAs for the second
-variable are 0.7 and 0.3. Note that it is possible (and often the case)
-to define an interval uncertain variable with only ONE interval. This
-means that you only know that the possible value of that variable falls
-within the interval, and the BPA for that interval would be 1.0. In the
-case we have shown, the interval bounds on the first interval for the
-first variable are 0.6 and 0.9, and the bounds for the second interval
-for the first variable are 0.1 to 0.5, etc.
+overlapping, contiguous, or have gaps. In Dakota, an interval
+uncertain variable is specified as ``interval_uncertain``. When one
+defines an interval type variable in Dakota, it is also necessary
+to specify the number of intervals defined for each variable with
+``iuv_num_intervals`` as well the basic probability assignments per
+interval, ``iuv_interval_probs``, and the associated bounds per each
+interval, ``iuv_interval_bounds``.  :numref:`uq:figure16` shows the input
+specification for interval uncertain variables. The example has two
+epistemic uncertain interval variables. The first uncertain variable
+has three intervals and the second has two. The basic probability
+assignments for the first variable are 0.5, 0.1, and 0.4, while the
+BPAs for the second variable are 0.7 and 0.3. Note that it is possible
+(and often the case) to define an interval uncertain variable with only
+ONE interval. This means that you only know that the possible value of
+that variable falls within the interval, and the BPA for that interval
+would be 1.0. In the case we have shown, the interval bounds on the
+first interval for the first variable are 0.6 and 0.9, and the bounds
+for the second interval for the first variable are 0.1 to 0.5, etc.
 
 .. literalinclude:: ../samples/textbook_uq_glob_evidence.in
    :language: dakota
@@ -2466,7 +2465,7 @@ Note: In Dakota, the prior distribution is characterized by the
 properties of the active uncertain variables. Correlated priors are only
 supported for unbounded normal, untruncated lognormal, uniform,
 exponential, gumbel, frechet, and weibull distributions and require a
-probability transformation by specifying .
+probability transformation by specifying ``standardized_space``.
 
 When data are available, the likelihood function describes how well each
 parameter value is supported by the data. Bayes
@@ -2979,32 +2978,48 @@ and calibrate the multipliers :math:`m_i` as hyper-parameters in the
 Bayesian inference process.
 
 The supported modes for calibrating observation error multipliers are
-shown in Figure `[fig:uq:obs_err_mult] <#fig:uq:obs_err_mult>`__: , , ,
-and . Here, the two major blocks denote two experiments, while the inner
-blocks denote five response groups (two scalar, three field). The priors
-on the hyper-parameters :math:`m_i` are taken to be inverse gamma
-distributions, with mean and mode approximately 1.0 and standard
-deviation approximately 0.1.
+shown in Figure `[fig:uq:obs_err_mult] <#fig:uq:obs_err_mult>`__: ``one``,
+``per_experiment``, ``per_response``, and ``both``. Here, the two major
+blocks denote two experiments, while the inner blocks denote five response
+groups (two scalar, three field). The priors on the hyper-parameters
+:math:`m_i` are taken to be inverse gamma distributions, with mean and
+mode approximately 1.0 and standard deviation approximately 0.1.
 
-TODO: Likely mising images here
+TODO: fix figures
 
-.. container:: subfigmatrix
+..
+   TODO:
+   \begin{figure}[htbp!]
+     \centering
+     \begin{subfigmatrix}{2}
+       \subfigure[]{\includegraphics[scale=0.5]{images/CalibrateOne}}
+       \subfigure[]{\includegraphics[scale=0.5]{images/CalibratePerExperiment}}
+       \subfigure[]{\includegraphics[scale=0.5]{images/CalibratePerResponse}}
+       \subfigure[]{\includegraphics[scale=0.5]{images/CalibrateBoth}}
+     \end{subfigmatrix}
+     \caption{Calibrating observational error covariance multipliers: (a)
+       one multiplier on whole user-provided covariance structure, (b)
+       multiplier per-experiment, (c) multiplier per-response, and (d)
+       both..}
+     \label{fig:uq:obs_err_mult}
+   \end{figure}
 
-   2
 
 Scaling and Weighting of Residuals
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Dakota’s scaling options, described in
-Section `[opt:additional:scaling] <#opt:additional:scaling>`__, can be
-used on Bayesian calibration problems, using the keyword, to scale the
-residuals between the data points and the model predictions, if desired.
-Additionally, Bayesian calibration residuals-squared can be weighted via
-the specification. Neither set of weights nor scales are adjusted during
-calibration. When response scaling is active, it is applied after error
-variance weighting and before application. The keyword documentation in
-the Dakota Reference Manual :cite:p:`RefMan` has more detail
-about weighting and scaling of the residual terms.
+Section `[opt:additional:scaling] <#opt:additional:scaling>`__,
+can be used on Bayesian calibration problems, using the
+``calibration_term_scales`` keyword, to scale the residuals between
+the data points and the model predictions, if desired.  Additionally,
+Bayesian calibration residuals-squared can be weighted via the
+``calibration_terms_weights`` specification. Neither set of weights nor
+scales are adjusted during calibration. When response scaling is active,
+it is applied after error variance weighting and before ``weights``
+application. The ``calibration_terms`` keyword documentation in the Dakota
+Reference Manual :cite:p:`RefMan` has more detail about weighting and
+scaling of the residual terms.
 
 Model Evidence
 ~~~~~~~~~~~~~~
@@ -3057,13 +3072,13 @@ depending on the method(s) used to calculate model evidence.
    distribution of the parameters, calculating the corresponding
    likelihood values at those samples, and estimating the integral given
    in Eq. `[eq:uq:model_evidence] <#eq:uq:model_evidence>`__ by brute
-   force. The number of samples used in the sampling of the integral is
-   determined by . Although this method is easy, it is not efficient
-   because each sample of the prior density requires an evaluation of
-   the simulation model to compute the corresponding likelihood.
-   Additionally, many prior samples will have very low (near zero)
-   likelihood, so millions of samples may be required for accurate
-   computation of the integral.
+   force. The number of samples used in the sampling of the integral
+   is determined by ``evidence_samples``. Although this method is easy,
+   it is not efficient because each sample of the prior density requires
+   an evaluation of the simulation model to compute the corresponding
+   likelihood.  Additionally, many prior samples will have very low
+   (near zero) likelihood, so millions of samples may be required for
+   accurate computation of the integral.
 
 #. Laplace approximation. This approach is based on the Laplace
    approximation, as outlined in :cite:p:`Wasserman`. It has
@@ -3349,13 +3364,12 @@ Manual :cite:p:`TheoMan` for more information regarding the
 implementation of the mutual information calculations.
 
 There are three criteria by which this algorithm is considered complete.
-The user may specify , which limits the number of high-fidelity model
-simulations Dakota will run. Note that this does not include any
-simulations needed to perform the initial Bayesian calibration of the
-low-fidelity model parameters. Alternatively, if the change in the
-mutual information from one iteration to the next is sufficiently small
-or if all candidate points have been exhausted, the algorithm will
-terminate.
+The user may specify ``max_hifi_evaluations``, which limits the number of
+high-fidelity model simulations Dakota will run. Note that this does not
+include any simulations needed to perform the initial Bayesian calibration
+of the low-fidelity model parameters. Alternatively, if the change in the
+mutual information from one iteration to the next is sufficiently small or
+if all candidate points have been exhausted, the algorithm will terminate.
 
 Progress of the algorithm will be reported to the screen with the rest
 of the Dakota output. Furthermore, a summary of the algorithm’s results,
