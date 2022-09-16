@@ -43,10 +43,6 @@ if( NOT Dakota_SOURCE_DIR)
   get_filename_component(Dakota_SOURCE_DIR ".." ABSOLUTE) 
 endif()
 
-if( NOT Dakota_BINARY_DIR)
-  set(Dakota_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-endif()
-
 set(CMAKE_MODULE_PATH 
   "${Dakota_SOURCE_DIR}"
   "${Dakota_SOURCE_DIR}/cmake"
