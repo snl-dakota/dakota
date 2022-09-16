@@ -12,8 +12,9 @@ applications. Dakota also offers more advanced algorithms, e.g., to
 manage multi-objective optimization or perform surrogate-based
 minimization. This chapter summarizes optimization problem formulation,
 standard algorithms available in Dakota (mostly through included
-third-party libraries, see `1.5 <#opt:libraries>`__), some advanced
-capabilities, and offers usage guidelines.
+Optimization Third Party Libraries
+third-party libraries, see :ref:`Optimization Third Party Libraries <opt:libraries>` below,
+some advanced capabilities, and offers usage guidelines.
 
 .. _`opt:formulations`:
 
@@ -30,6 +31,7 @@ and  :cite:p:`Van84`.
 A general optimization problem is formulated as follows:
 
 .. math::
+   :label: optimformulation
 
    \begin{aligned}
      \hbox{minimize:} & & f(\mathbf{x})\nonumber\\
@@ -75,7 +77,7 @@ design point is said to be *infeasible* if it violates one or more of
 the constraints.
 
 Many different methods exist to solve the optimization problem given by
-Equation `[opt:formulations:equation01] <#opt:formulations:equation01>`__,
+Equation :math:numref:`optimformulation`,  
 all of which iterate on :math:`\mathbf{x}` in some manner. That is, an
 initial value for each parameter in :math:`\mathbf{x}` is chosen, the
 *response quantities*, :math:`f(\mathbf{x})`, :math:`\mathbf{g(x)}`,
@@ -148,13 +150,13 @@ extensive framework for managing a variety of local, multipoint, global,
 and hierarchical surrogates for use in optimization. Finally, sometimes
 there are multiple objectives that one may want to optimize
 simultaneously instead of a single scalar objective. In this case, one
-may employ multi-objective methods that are described in
-Section `1.3.1 <#opt:additional:multiobjective>`__.
+may employ multi-objective methods that are described 
+:ref:`below <opt:additional:multiobjective>`.
 
 This overview of optimization approaches underscores that no single
 optimization method or algorithm works best for all types of
-optimization problems. Section `1.4 <#opt:usage>`__ offers guidelines
-for choosing a Dakota optimization algorithm best matched to your
+optimization problems. The :ref:`Optimization Usage Guidelines <opt:usage>`
+offers guidelines for choosing a Dakota optimization algorithm best matched to your
 specific optimization problem.
 
 .. _`opt:formulations:constraints`:
@@ -167,10 +169,11 @@ inequality constraints of the form
 :math:`g_{L_{i}} \leq g_{i}(\mathbf{x})
 \leq g_{U_{i}}`, as well as nonlinear equality constraints of the form
 :math:`h_{j}(\mathbf{x}) = h_{t_{j}}`. Some optimizers (e.g.,
-``npsol_``, ``optpp_``, ``soga``, and ``moga`` methods) can handle these
-constraint forms directly, whereas other optimizers (e.g.,
-``asynch_pattern_search``, ``dot_``, and ``conmin_``,
-``mesh_adaptive_search``) require Dakota to perform an internal
+:dakkw:`method-npsol`, :dakkw:`method-optpp`, :dakkw:`method-soga`, 
+and :dakkw:`method-moga` methods) can handle these
+constraint forms directly, whereas other optimizers (e.g., 
+:dakkw:`method-asynch_pattern_search`, ``dot_``, and ``conmin_``,
+:dakkw:`method-mesh_adaptive_search`) require Dakota to perform an internal
 conversion of all constraints to one-sided inequality constraints of the
 form :math:`g_{i}(\mathbf{x}) \leq 0`. In the latter case, the two-sided
 inequality constraints are treated as
@@ -178,10 +181,10 @@ inequality constraints are treated as
 g_{i}(\mathbf{x}) \leq 0` and the equality constraints are treated as
 :math:`h_{j}(\mathbf{x}) - h_{t_{j}} \leq 0` and :math:`h_{t_{j}} -
 h_{j}(\mathbf{x}) \leq 0`. The situation is similar for linear
-constraints: ``asynch_pattern_search``, ``npsol_``, ``optpp_``,
-``soga``, and ``moga`` methods support them directly, whereas ``dot_``
-and ``conmin_`` methods do not. For linear inequalities of the form
-:math:`a_{L_{i}} \leq
+constraints: :dakkw:`method-asynch_pattern_search`, ``npsol_``,
+``optpp_``, :dakkw:`methods-soga`, and :dakkw:`methods-moga` methods 
+support them directly, whereas ``dot_`` and ``conmin_`` methods do not. 
+For linear inequalities of the form :math:`a_{L_{i}} \leq
 \mathbf{a}_{i}^{T}\mathbf{x} \leq a_{U_{i}}` and linear equalities of
 the form :math:`\mathbf{a}_{i}^{T}\mathbf{x} = a_{t_{j}}`, the nonlinear
 constraint arrays in ``dot_`` and ``conmin_`` methods are further
@@ -199,7 +202,7 @@ between. ``nlpql_`` methods support nonlinear equality constraints
 constraints. Constraint mappings are used with NLPQL for both linear and
 nonlinear cases. Most ``coliny_`` methods now support two-sided
 nonlinear inequality constraints and nonlinear constraints with targets,
-but do not natively support linear constraints. ROL’s (``rol``)
+but do not natively support linear constraints. ROL’s (:dakkw:`method-rol`)
 augmented Lagrangian method converts inequality constraints into
 equality constraints with bounded slack variables. This conversion is
 performed internally within ROL, but might explain potentially weak
@@ -211,8 +214,8 @@ derivative components are most commonly computed with respect to the
 active continuous variables, which in this case are the *continuous
 design variables*. This differs from parameter study methods (for which
 all continuous variables are active) and from non-deterministic analysis
-methods (for which the uncertain variables are active). Refer to
-Section `[responses:active] <#responses:active>`__ for additional
+methods (for which the uncertain variables are active). Refer to the
+:ref:`Active Variables for Derivatives <responses:active>` section for additional
 information on derivative components and active continuous variables.
 
 .. _`opt:methods`:
@@ -223,7 +226,7 @@ Optimizing with Dakota: Choosing a Method
 This section summarizes the optimization methods available in Dakota. We
 group them according to search method and search goal and establish
 their relevance to types of problems. For a summary of this discussion,
-see Section `1.4 <#opt:usage>`__.
+see :ref:`Optimization Usage Guidelines <opt:usage>`.
 
 .. _`opt:methods:gradient`:
 
@@ -233,15 +236,15 @@ Gradient-Based Local Methods
 Gradient-based optimizers are best suited for efficient navigation to a
 local minimum in the vicinity of the initial point. They are not
 intended to find global optima in nonconvex design spaces. For global
-optimization methods, see `1.2.3 <#opt:methods:gradientfree:global>`__.
+optimization methods, see 
+:ref:`Derivative-Free Global Methods <opt:methods:gradientfree:global>`.
 Gradient-based optimization methods are highly efficient, with the best
 convergence rates of all of the local optimization methods, and are the
 methods of choice when the problem is smooth, unimodal, and
 well-behaved. However, these methods can be among the least robust when
 a problem exhibits nonsmooth, discontinuous, or multimodal behavior. The
-derivative-free methods described
-in `1.2.2 <#opt:methods:gradientfree:local>`__ are more appropriate for
-problems with these characteristics.
+derivative-free methods described in :ref:`Derivative-Free Local Methods <opt:methods:gradientfree:local>`
+are more appropriate for problems with these characteristics.
 
 Gradient accuracy is a critical factor for gradient-based optimizers, as
 inaccurate derivatives will often lead to failures in the search or
@@ -283,10 +286,10 @@ minimizing a quadratic function over a space defined by the gradient and
 directions that are mutually conjugate with respect to the Hessian.
 There are a couple of options in terms of methods to be used strictly
 for unconstrained problems, namely the Polak-Ribiere conjugate gradient
-method (``optpp_cg``) and ROL’s (Rapid Optimization Library for
+method (:dakkw:`method-optpp_cg`) and ROL’s (Rapid Optimization Library for
 large-scale optimization, part of the Trilinos software
 suite :cite:p:`Kou2014`) trust-region method with truncated
-conjugate gradient subproblem solver (``rol``). ROL relies on secant
+conjugate gradient subproblem solver (:dakkw:`method-rol`). ROL relies on secant
 updates for the Hessian, with the an approximation to the Hessian matrix
 at each iteration provided using only values of the gradient at current
 and previous iterates.
@@ -306,21 +309,24 @@ Methods for Bound-Constrained Problems
 For bound-constrained problems, both conjugate gradient methods and
 quasi-Newton methods (described in the next sub-section) are available
 in Dakota. For conjugate gradient methods, the Fletcher-Reeves conjugate
-gradient method (``conmin_frcg`` and
-``dot_frcg`` :cite:p:`Van95`) and ROL’s trust-region method
-with truncated conjugate gradient subproblem solver (``rol``) are
+gradient method (:dakkw:`method-conmin_frcg` and
+:dakkw:`method-dot_frcg` :cite:p:`Van95`) and ROL’s trust-region method
+with truncated conjugate gradient subproblem solver (:dakkw:`method-rol`) are
 available. Note that ROL exhibits slow/erratic convergence when
 finite-differencing approximations to the gradient of objective function
-are used. DOT (``dot_bfgs``) provides a quasi-Newton method for such
-problems. *We here provide a caution regarding ``dot_frcg``. In DOT
-Version 4.20, we have noticed inconsistent behavior of this algorithm
-across different versions of Linux. Our best assessment is that it is
-due to different treatments of uninitialized variables. As we do not
-know the intention of the code authors and maintaining DOT source code
-is outside of the Dakota project scope, we have not made nor are we
-recommending any code changes to address this. However, all users who
-use ``dot_frcg`` in DOT Version 4.20 should be aware that results may
-not be reliable.*
+are used. DOT (:dakkw:`method-dot_bfgs`) provides a quasi-Newton method for such
+problems.
+
+.. warning::
+    We here provide a caution regarding :dakkw:`method-dot_frcg`. In DOT
+    Version 4.20, we have noticed inconsistent behavior of this algorithm
+    across different versions of Linux. Our best assessment is that it is
+    due to different treatments of uninitialized variables. As we do not
+    know the intention of the code authors and maintaining DOT source code
+    is outside of the Dakota project scope, we have not made nor are we
+    recommending any code changes to address this. However, all users who
+    use :dakkw:`method-dot_frcg` in DOT Version 4.20 should be aware that results may
+    not be reliable.
 
 .. _`opt:methods:gradient:constrained`:
 
@@ -337,19 +343,24 @@ nonlinear optimization problems with nonlinear constraints. Each
 subproblem involves minimizing a quadratic approximation the Lagrangian
 subject to linearized constraints. Only gradient information is
 required; Hessians are approximated by low-rank updates defined by the
-step taken at each iterations. *It is important to note that while the
-solution found by an SQP method will respect the constraints, the
-intermediate iterates may not.* SQP methods available in Dakota include
-``dot_sqp``, ``nlpql_sqp``, and ``npsol_sqp`` :cite:p:`Gil86`.
-The particular implementation in ``nlpql_sqp`` :cite:p:`Sch04`
+step taken at each iterations.
+
+.. note::
+    It is important to note that while the
+    solution found by an SQP method will respect the constraints, the
+    intermediate iterates may not.
+
+SQP methods available in Dakota include
+:dakkw:`method-dot_sqp`, :dakkw:`method-nlpql_sqp`, and :dakkw:`method-npsol_sqp` 
+:cite:p:`Gil86`. The particular implementation in :dakkw:`method-nlpql_sqp` :cite:p:`Sch04`
 uses a variant with distributed and non-monotone line search. Thus, this
 variant is designed to be more robust in the presence of inaccurate or
 noisy gradients common in many engineering applications. ROL’s
-composite-step method (``rol``), utilizing SQP with trust regions, for
-equality-constrained problems is another option (Note that ROL exhibits
+composite-step method (:dakkw:`method-rol`), utilizing SQP with trust regions,
+for equality-constrained problems is another option (Note that ROL exhibits
 slow/erratic convergence when finite-differencing approximations to the
 gradient of objective and constraints are used). Also available is a
-method related to SQP: sequential linear programming (``dot_slp``).
+method related to SQP: sequential linear programming (:dakkw:`method-dot_slp`).
 
 Newton Methods can be applied to nonlinear optimization problems with
 nonlinear constraints. The subproblems associated with these methods
@@ -358,40 +369,33 @@ setting the derivative of a second-order Taylor series expansion to
 zero. Unlike SQP methods, Newton methods maintain feasibility over the
 course of the optimization iterations. The variants of this approach
 correspond to the amount of derivative information provided by the user.
-The full Newton method (``optpp_newton``) expects both gradients and
-Hessians to be provided. Quasi-Newton methods (``optpp_q_newton``)
+The full Newton method (:dakkw:`method-optpp_newton`) expects both gradients and
+Hessians to be provided. Quasi-Newton methods (:dakkw:`method-optpp_q_newton`)
 expect only gradients. The Hessian is approximated by the
 Broyden-Fletcher-Goldfarb-Shanno (BFGS) low-rank updates. Finally, the
-finite difference Newton method (``optpp_fd_newton``) expects only
+finite difference Newton method (:dakkw:`method-optpp_fd_newton`) expects only
 gradients and approximates the Hessian with second-order finite
 differences.
 
 Method of Feasible Directions (MFD) methods are appropriate for
 nonlinear optimization problems with nonlinear constraints. These
 methods ensure that all iterates remain feasible. Dakota includes
-``conmin_mfd`` :cite:p:`Van78` and ``dot_mmfd`` *One observed
-drawback to ``conmin_mfd`` is that it does a poor job handling equality
-constraints*. ``dot_mmfd`` does not suffer from this problem, nor do
-other methods for constrained problems.
+:dakkw:`method-conmin_mfd` :cite:p:`Van78` and :dakkw:`method-dot_mmfd`
+
+.. note:: 
+    One observed drawback to :dakkw:`method-conmin_mfd` is that it does a poor job
+    handling equality constraints. :dakkw:`method-dot_mmfd` does not suffer from this
+    problem, nor do other methods for constrained problems.
 
 The augmented Lagrangian method provides a strategy to handle equality
 and inequality constraints by introducing the augmented Lagrangian
 function, combining the use of Lagrange multipliers and a quadratic
-penalty term. It is implemented in ROL (``rol``) exhibiting scalable
+penalty term. It is implemented in ROL (:dakkw:`method-rol`) exhibiting scalable
 performance for large-scale problems. As previously stated, ROL exhibits
 slow/erratic convergence when finite-differencing approximations to the
 gradient of objective function and/or constraints are used. Users are
 advised to resort to alternative optimizers until performance of ROL
 improves in future releases.
-
-.. _`opt:methods:gradient:example`:
-
-Example
-^^^^^^^
-
-We refer the reader to
-Section `[tutorial:examples:optimization] <#tutorial:examples:optimization>`__
-for this example.
 
 .. _`opt:methods:gradientfree:local`:
 
@@ -402,7 +406,7 @@ Derivative-free methods can be more robust and more inherently parallel
 than gradient-based approaches. They can be applied in situations were
 gradient calculations are too expensive or unreliable. In addition, some
 derivative-free methods can be used for global optimization which
-gradient-based techniques (see `1.2.1 <#opt:methods:gradient>`__), by
+:ref:`gradient-based techniques <opt:methods:gradient`), by
 themselves, cannot. For these reasons, derivative-free methods are often
 go-to methods when the problem may be nonsmooth, multimodal, or poorly
 behaved. It is important to be aware, however, that they exhibit much
@@ -432,23 +436,22 @@ identification abilities if the stencil is such that it allows them to
 step over local minima. There are two main pattern search methods
 available in Dakota, and they vary according to richness of available
 stencil and the way constraints supported. Asynchronous Parallel Pattern
-Search (APPS) :cite:p:`GrKo06` (``asynch_pattern_search``)
+Search (APPS) :cite:p:`GrKo06` (:dakkw:`method-asynch_pattern_search`)
 uses the coordinate basis as its stencil, and it handles nonlinear
 constraints explicitly through modification of the coordinate stencil to
 allow directions that parallel constraints :cite:p:`GrKo07`. A
-second variant of pattern search, ``coliny_pattern_search``, has the
+second variant of pattern search, :dakkw:`method-coliny_pattern_search`, has the
 option of using either a coordinate or a simplex basis as well as
 allowing more options for the stencil to evolve over the course of the
 optimization. It handles nonlinear constraints through the use of
 penalty functions. The
-``mesh_adaptive_search`` :cite:p:`AuLeTr09a`, :cite:p:`Nomad`, :cite:p:`Le2011a`
+:dakkw:`method-mesh_adaptive_search` :cite:p:`AuLeTr09a`, :cite:p:`Nomad`, :cite:p:`Le2011a`
 is similar in spirit to and falls in the same class of methods as the
 pattern search methods. The primary difference is that its underlying
-search structure is that of a mesh. The ``mesh_adaptive_search`` also
+search structure is that of a mesh. The :dakkw:`method-mesh_adaptive_search` also
 provides a unique optimization capability in Dakota in that it can
-explicitly treat categorical variables, i.e., non-relaxable discrete
-variables as described in
-Section `[variables:design:ddv] <#variables:design:ddv>`__. Furthermore,
+explicitly treat categorical variables, i.e., `non-relaxable discrete
+variables <variables:design:ddv>`. Furthermore,
 it provides the ability to use a surrogate model to inform the priority
 of function evaluations with the goal of reducing the number needed.
 
@@ -457,45 +460,53 @@ pattern search methods, but their search directions are defined by
 triangles that are reflected, expanded, and contracted across the
 variable space. The two simplex-based methods available in Dakota are
 the Parallel Direct Search method :cite:p:`Den94b`
-(``optpp_pds``) and the Constrained Optimization BY Linear
-Approximations (COBYLA) (``coliny_cobyla``). The former handles only
-bound constraints, while the latter handles nonlinear constraints. *One
-drawback of both simplex-based methods is that their current
-implementations do not allow them to take advantage of parallel
-computing resources via Dakota’s infrastructure. Additionally, we note
-that the implementation of COBYLA is such that the best function value
-is not always returned to Dakota for reporting. The user is advised to
-look through the Dakota screen output or the tabular output file (if
-generated) to confirm what the best function value and corresponding
-parameter values are. Furthermore, COBYLA does not always respect bound
-constraints when scaling is turned on. Neither bug will be fixed, as
-maintaining third-party source code (such as COBYLA) is outside of the
-Dakota project scope.*
+(:dakkw:`method-optpp_pds`) and the Constrained Optimization BY Linear
+Approximations (COBYLA) (:dakkw:`method-coliny_cobyla`). The former handles only
+bound constraints, while the latter handles nonlinear constraints.
 
+.. note:: 
+    Onedrawback of both simplex-based methods is that their current
+    implementations do not allow them to take advantage of parallel
+    computing resources via Dakota’s infrastructure. Additionally, we note
+    that the implementation of COBYLA is such that the best function value
+    is not always returned to Dakota for reporting. The user is advised to
+    look through the Dakota screen output or the tabular output file (if
+    generated) to confirm what the best function value and corresponding
+    parameter values are. Furthermore, COBYLA does not always respect bound
+    constraints when scaling is turned on. Neither bug will be fixed, as
+    maintaining third-party source code (such as COBYLA) is outside of the
+    Dakota project scope.
+    
 A **Greedy Search Heuristic** for nonlinear optimization problems is
-captured in the Solis-Wets () method. This method takes a sampling-based
-approach in order to identify search directions. *Note that one observed
-drawback to is that it does a poor job solving problems with nonlinear
-constraints. This algorithm is also not implemented in such a way as to
-take advantage of parallel computing resources via Dakota’s
-infrastructure.*
+captured in the Solis-Wets (:dakkw:`method-coliny_solis_wets`) method.
+This method takes a sampling-based approach in order to identify search directions.
+
+.. note:: 
+    Note that one observed
+    drawback to is that it does a poor job solving problems with nonlinear
+    constraints. This algorithm is also not implemented in such a way as to
+    take advantage of parallel computing resources via Dakota’s
+    infrastructure.
 
 **Nonlinear Optimization with Path Augmented Constraints (NOWPAC)** is a
 provably-convergent gradient-free inequality-constrained optimization
 method that solves a series of trust region surrogate-based subproblems
 to generate improving steps. Due to its use of an interior penalty
 scheme and enforcement of strict feasibility,
-``nowpac`` :cite:p:`Augustin-preprint-nowpac` does not support
+:dakkw:`method-nowpac` :cite:p:`Augustin-preprint-nowpac` does not support
 linear or nonlinear equality constraints. The stochastic version is
-``snowpac``, which incorporates noise estimates in its objective and
-inequality constraints. ``snowpac`` modifies its trust region controls
+`:dakkw:`method-snowpac`, which incorporates noise estimates in its objective and
+inequality constraints. :dakkw:`method-snowpac` modifies its trust region controls
 and adds smoothing from a Gaussian process surrogate in order to
-mitigate noise. *Note that as opposed to the stochastic version
-(``snowpac``), ``nowpac`` does not currently support a feasibility
-restoration mode, so it is necessary to start from a feasible design.
-Also note that ``(s)nowpac`` is not configured with Dakota by default
-and requires a separate installation of the NOWPAC distribution, along
-with third-party libraries Eigen and NLOPT.*
+mitigate noise.
+
+.. note:: 
+    Note that as opposed to the stochastic version
+    (:dakkw:`method-snowpac`), :dakkw:`method-nowpac` does not currently support a
+    feasibility restoration mode, so it is necessary to start from a feasible design.
+    Also note that ``(s)nowpac`` is not configured with Dakota by default
+    and requires a separate installation of the NOWPAC distribution, along
+    with third-party libraries Eigen and NLOPT.
 
 .. _`opt:methods:gradientfree:local:example`:
 
