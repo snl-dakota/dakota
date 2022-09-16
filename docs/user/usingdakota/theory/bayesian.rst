@@ -43,6 +43,12 @@ The result is the posterior parameter density of the parameters
 
 .. math:: {f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}} \label{eq:BayesThm}
 
+..
+   TODO: The likelihood function can be written generally as:
+   \begin{equation*}
+     \mathcal{L}\left( {\theta ;d} \right) = f\left( {q\left( \theta  \right) - d} \right)
+   \end{equation*}
+
 The likelihood function is used to describe how well a model’s
 predictions are supported by the data. The specific likelihood function
 currently used in Dakota is a Gaussian likelihood. This means that we
@@ -61,6 +67,14 @@ probabilistic model defined by Eq. (`[eq:model] <#eq:model>`__) results
 in a likelihood function for :math:`\boldsymbol{\theta}` as shown in
 Eq. `[eq:Likelihood] <#eq:Likelihood>`__:
 
+..
+    TODO:
+
+    We further assume that all experiments and observations are independent. 
+
+    ...that (likelihood) is the product of $n$ normal probability
+    density functions
+
 .. math::
 
    \mathcal{L}(\boldsymbol{\theta;d}) = 
@@ -76,6 +90,15 @@ differences between the model predictions and the corresponding
 observational data (i.e., :math:`r_i = q_i(\boldsymbol{\theta}) - d_i`
 for :math:`i = 1,\dots,n`), and :math:`\boldsymbol{\Sigma_d}` is the
 covariance matrix of the Gaussian data uncertainties.
+
+..
+   TODO: , and we omit the leading multivariate normal (MVN)
+   constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma_d}|}$ for
+   simplicity. \footnote{In practice, omitting this MVN constant can
+   avoid precision loss due to subtractive cancellation in
+   log-likelihood calculations; further, this shortcut will be
+   canceled out by the normalization factor in the denominator of
+   Eq.~\ref{eq:BayesThm}.}.
 
 The negative log-likelihood is comprised of the misfit function
 
@@ -103,6 +126,18 @@ When incorporating the prior density, the maximum *a posteriori*
 probability (MAP) point is the solution that maximizes the posterior
 probability in Eq. `[eq:BayesThm] <#eq:BayesThm>`__. This point will
 differ from the MLE for cases of non-uniform prior probability.
+
+..
+   TODO:
+
+   \begin{equation}
+   p(\mathbf{d}|\xi) \;=\; \text{exp}\left[-\frac{1}{2}(f(\xi)-\mathbf{d})^T\boldsymbol{\Sigma_d}^{-1}(f(\xi)-\mathbf{d})\right]
+   \end{equation}
+   \begin{equation}
+   -\text{log}\left[p(\mathbf{d}|\xi)\right] \;=\; \frac{1}{2}(f(\xi)-\mathbf{d})^T\boldsymbol{\Sigma_d}^{-1}(f(\xi)-\mathbf{d}) \;=\; M(\xi)
+   \end{equation}
+   
+   pre_solve needs a deactivation option
 
 In the sections to follow, we describe approaches for preconditioning
 the MCMC process by computing a locally-accurate proposal density and
@@ -143,6 +178,14 @@ makes the Gauss-Newton approximation a good approximation for solutions
 with small residuals. It also has the feature of being at least positive
 semi-definite, whereas the full misfit Hessian may be indefinite in
 general.
+
+..
+   TODO: To form the MVN proposal density for the MCMC process, we
+   define the proposal covariance to be the inverse of the misfit
+   Hessian.  Since the full Hessian may be indefinite while the
+   Gauss-Newton approximation is at least positive semi-definite, we
+   may first attempt to invert the full Hessian, followed by recourse
+   when necessary to inverting the Gauss-Newton approximate Hessian.
 
 We are interested in preconditioning the MCMC sampling using an accurate
 local representation of the curvature of the posterior distribution, so
@@ -546,6 +589,17 @@ according to Eq. `[Eq:KrigVar] <#Eq:KrigVar>`__. Future work includes
 extending this capability to include polynomial discrepancy formulations
 for field responses, as well as computation of prediction intervals
 which include experimental variance information.
+
+..
+   TODO:
+
+   Introducing a discrepancy term gives rise to practical, as well as 
+   philosphical, issues: What model form is most appropriate for $\delta_i$? How
+   should $\delta_i$ be estimated? How does including $\delta_i$ change the 
+   meaning or interpretation of the model responses? What is the appropriate way
+   of using $\delta_i$ to improve the predictive capability of the model? 
+   
+   add comments regarding interpolation vs extrapolation? kam
 
 Scalar Responses Example
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1119,6 +1173,28 @@ Section `1.7 <#uq:bayes_experimental_design>`__.
 
 Measure-theoretic Stochastic Inversion
 --------------------------------------
+
+..
+   TODO:
+
+   % MACROS FOR THIS SECTION
+   \newcommand{\pspace}{\mathbf{\Lambda}}
+   \newcommand{\dspace}{\mathbf{\mathcal{D}}}
+   \newcommand{\pmeas}{\mu_{\pspace}}
+   \newcommand{\dmeas}{\mu_{\dspace}}
+   \newcommand{\pborel}{\mathcal{B}_{\pspace}}
+   \newcommand{\dborel}{\mathcal{B}_{\dspace}}
+   \newcommand{\priormeas}{P_{\pspace}^{\text{prior}}}
+   \newcommand{\postmeas}{P_{\pspace}^{\text{post}}}
+   \newcommand{\priordens}{\pi_{\pspace}^{\text{prior}}}
+   \newcommand{\postdens}{\pi_{\pspace}^{\text{post}}}
+   \newcommand{\pfpriormeas}{P_{\dspace}^{Q(\text{prior})}}
+   \newcommand{\pfpostmeas}{P_{\dspace}^{Q(\text{post})}}
+   \newcommand{\pfpriordens}{\pi_{\dspace}^{Q(\text{prior})}}
+   \newcommand{\pfpostdens}{\pi_{\dspace}^{Q(\text{post})}}
+   \newcommand{\obsmeas}{P_{\dspace}^{\text{obs}}}
+   \newcommand{\obsdens}{\pi_{\dspace}^{\text{obs}}}
+   \newcommand{\postdenssbayes}{\tilde{\pi}_{\pspace}^{\text{post}}}
 
 In this section we present an overview of a specific implementation of
 the measure-theoretic approach for solving a stochastic inverse problem

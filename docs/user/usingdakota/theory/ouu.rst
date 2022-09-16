@@ -338,6 +338,13 @@ resulting expansions are valid only for a particular set of
 nonprobabilistic variables and must be recalculated each time the
 nonprobabilistic variables are modified.
 
+..
+   TODO:The evaluation of integrals involving $\frac{dR}{ds}$ extends
+   the data requirements for the PCE approach to include response
+   sensitivities at each of the sampled points.% for the quadrature,
+   sparse grid, sampling, or point collocation coefficient estimation
+   approaches.
+
 Similarly for stochastic collocation,
 
 .. math::
@@ -358,6 +365,9 @@ leads to
    - 2 \mu \frac{d\mu}{ds} 
    ~~=~~ \sum_{k=1}^{N_p} 2 w_k (r_k - \mu) \frac{dr_k}{ds}
    \label{eq:dsigR_ds_xi_sc}\end{aligned}
+
+..
+   TODO: based on differentiation of Eqs.~\ref{eq:mean_sc}-\ref{eq:covar_sc}.
 
 .. _`ouu:sebdo:ssa:dvsa_cve`:
 
@@ -403,6 +413,23 @@ does not need to be updated for each change in nonprobabilistic
 variables, although adaptive localization techniques (i.e., trust region
 model management approaches) can be employed when improved local
 accuracy of the sensitivities is required.
+
+..
+   TODO: The remaining polynomials may then be differentiated with
+   respect to $\boldsymbol{s}$. % as in
+   Eqs.~\ref{eq:dR_dxi_pce}-\ref{eq:deriv_prod_pce}.  In this
+   approach, the combined PCE is valid for the full design variable
+   range ($\boldsymbol{s}_L \le \boldsymbol{s} \le \boldsymbol{s}_U$)
+   and does not need to be updated for each change in nonprobabilistic
+   variables, although adaptive localization techniques (i.e., trust
+   region model management approaches) can be employed when improved
+   local accuracy of the sensitivities is required.
+
+   Q: how is TR ratio formed if exact soln can't be evaluated?
+   A: if objective is accuracy over a design range, then truth is PCE/SC
+      at a single design point!  -->>  Can use first-order corrections based
+      on the 2 different SSA approaches!  This is a multifidelity SBO using
+      HF = probabilistic expansion, LF = Combined expansion. Should get data reuse.
 
 Similarly for stochastic collocation,
 
@@ -453,6 +480,25 @@ polynomials) may introduce a :math:`\frac{d\Psi}{ds}` or
 :math:`\frac{d\boldsymbol{L}}{ds}` dependence for inserted :math:`s`
 that will introduce additional terms in the sensitivity expressions.
 
+..
+   TODO:
+
+   While one could artificially augment the dimensionality of
+   a combined variable expansion approach with inserted nonprobabilistic
+   variables, this is not currently explored in this work.  Thus, any
+   
+   TO DO: discuss independence of additional nonprobabilistic dimensions:
+   > augmented are OK.
+   > inserted rely on the fact that expansion variables \xi are _standard_
+     random variables.
+   Special case: parameterized orthogonal polynomials (gen Laguerre,
+   Jacobi) can be differentiated w.r.t. their {alpha,beta}
+   distribution parameters.  However, the PCE coefficients are likely
+   also fns of {alpha,beta}.  Therefore, the approach above is correct
+   conceptually but is missing additional terms resulting from the
+   polynomial dependence.  NEED TO VERIFY PCE EXPANSION DERIVATIVES
+   FOR PARAMETERIZED POLYNOMIALS!
+
 While moment sensitivities directly enable robust design optimization
 and interval estimation formulations which seek to control or bound
 response variance, control or bounding of reliability requires
@@ -467,6 +513,22 @@ response level :math:`z` (inverse reliability mapping
 :math:`\bar{\beta} \rightarrow z`) from the moment design sensitivities
 and the specified levels :math:`\bar{\beta}` or :math:`\bar{z}`.
 
+..
+   TODO:
+
+   From here, approximate design sensitivities of probability levels may
+   also be formed given a probability expression (such as $\Phi(-\beta)$)
+   for the reliability index.  The current alternative of numerical
+   design sensitivities of sampled probability levels would employ fewer
+   simplifying approximations, but would also be much more expensive to
+   compute accurately and is avoided for now.  Future capabilities for
+   analytic probability sensitivities could be based on Pearson/Johnson
+   model for analytic response PDFs or 
+   sampling sensitivity approaches. % TO DO: cite 
+   
+   Extending beyond these simple approaches to support probability and
+   generalized reliability metrics is a subject of current work~\cite{mao2010}.
+
 .. _`ouu:sebdo:form`:
 
 Optimization Formulations
@@ -479,6 +541,10 @@ under uncertainty (OUU). The latter two approaches apply surrogate
 modeling approaches (data fits and multifidelity modeling) to the
 uncertainty analysis and then apply trust region model management to the
 optimization process.
+
+..
+   TODO: for optimization under uncertainty (OUU). %for
+   reliability-based design and robust design.
 
 .. _`ouu:sebdo:form:bilev`:
 
@@ -610,6 +676,19 @@ assumptions (e.g., Mean Value for low fidelity, SORM for high fidelity),
 and for stochastic expansion methods, it could involve differences in
 selected levels of :math:`p` and :math:`h` refinement.
 
+..
+   TODO:
+   Here we will explore multifidelity stochastic models and employ
+   first-order additive corrections, where the meaning of multiple
+   fidelities is expanded to imply the quality of multiple UQ analyses,
+   not necessarily the fidelity of the underlying simulation model.  For
+   example, taking an example from the reliability method family, one
+   might employ the simple Mean Value method as a ``low fidelity'' UQ
+   model and take SORM as a ``high fidelity'' UQ model.  In this case,
+   the models do not differ in their ability to span a range of design
+   parameters; rather, they differ in their sets of approximating
+   assumptions about the characteristics of the response function.
+
 Here, we define UQ fidelity as point-wise accuracy in the design space
 and take the high fidelity truth model to be the probabilistic expansion
 PCE/SC model, with validity only at a single design point. The low
@@ -646,6 +725,17 @@ each trust region, ensuring convergence of the multifidelity
 optimization process to the high fidelity optimum. Design derivatives of
 the MVFOSM statistics are currently evaluated numerically using forward
 finite differences.
+
+..
+   TODO:
+   While conceptually different, in the end, this approach is
+   similar to the use of a global data fit surrogate-based optimization
+   at the top level in combination with the probabilistic expansion PCE/SC
+   at the lower level, with the distinction that the multifidelity approach
+   embeds the design space spanning within a modified PCE/SC process
+   whereas the data fit approach performs the design space spanning
+   outside of the UQ (using data from a single unmodified PCE/SC process,
+   which may now remain zeroth-order).
 
 Multifidelity optimization for reliability-based design can be
 formulated as:
@@ -694,6 +784,11 @@ algorithm [2]_. Instead, this consistency should only be enforced when
 sufficient high fidelity curvature information has been accumulated
 (e.g., after :math:`n` rank one updates).
 
+..
+   TODO: where correction functions $\alpha({\bf s})$ enforcing first-order
+   %and quasi-second-order 
+   consistency~\cite{Eld04} are typically employed.  Quasi-second-order
+
 .. _`ouu:sampling`:
 
 Sampling-based OUU
@@ -714,6 +809,9 @@ This enables design sensitivities for mean, standard deviation or
 variance (based on ``final_moments`` type), and forward/inverse
 reliability index mappings (:math:`\bar{z} \rightarrow \beta`,
 :math:`\bar{\beta} \rightarrow z`).
+
+..
+   TODO: Multilevel MC ...
 
 .. [1]
    MVFOSM is exact for linear functions with Gaussian inputs, but

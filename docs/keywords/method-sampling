@@ -77,6 +77,25 @@ uncertainty quantification that can be applied to any problem.  It
 requires more simulations than newer, advanced methods.  Thus, an
 alternative may be preferable if the simulation is computationally
 expensive.
+
+**Active Variables:** By default sampling generates samples only for
+the uncertain variables, and treats any design or state variables as
+constants.  However, if :dakkw:`variables-active`
+:dakkw:`variables-active-all` is specified sampling will be performed
+over all variables, including uncertain, design, and state.  In this
+case, the sampling algorithm will treat any continuous design or
+continuous state variables as parameters with uniform probability
+distributions between their upper and lower bounds.
+
+This is similar to the behavior of the design of experiments methods,
+since they will also generate samples over all continuous design,
+uncertain, and state variables in the variables specification.
+However, the design of experiments methods will treat all variables as
+being uniformly distributed between their upper and lower bounds,
+whereas the sampling method will sample the uncertain variables within
+their specified probability distributions. The other ``active``
+options can enable sample over other subsets of variables.
+
 Topics::
 uncertainty_quantification, sampling
 Examples::

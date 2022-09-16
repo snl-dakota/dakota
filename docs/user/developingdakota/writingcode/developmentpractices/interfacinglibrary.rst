@@ -2,6 +2,8 @@
 Interfacing with Dakota as a Library
 """"""""""""""""""""""""""""""""""""
 
+.. _`interfacing_with_dakota_as_library`:
+
 ============
 Introduction
 ============

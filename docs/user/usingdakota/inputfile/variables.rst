@@ -210,12 +210,15 @@ Aleatory Uncertain Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Aleatory uncertainty is also known as inherent variability,
-irreducible uncertainty, or randomnes. It is typically modeled using
+irreducible uncertainty, or randomness. It is typically modeled using
 probability distributions, and probabilistic methods are commonly used
 for propagating input aleatory uncertainties described by probability
 distribution specifications. The two following sections describe the
 continuous and discrete aleatory uncertain variables supported by
 Dakota.
+
+..
+   TODO: %characterized by having a sufficiently rich set of data as to allow modeling
 
 .. _`variables:uncertain:cauv`:
 
@@ -334,6 +337,12 @@ Epistemic Uncertain Variables
 Epistemic uncertainty is reducible uncertainty due to lack of
 knowledge. Characterization of epistemic uncertainties is often based
 on subjective prior knowledge rather than objective data.
+
+..
+   TODO: 
+   %data is generally sparse, making the use of probability theory
+   %questionable and leading to nonprobabilistic methods based on
+   %interval or fuzzy specifications.
 
 In Dakota, epistemic uncertainty can be characterized by interval- or
 set-valued variables (see relevant keywords below) that are propagated

@@ -276,6 +276,54 @@ the active continuous variables depend on view override specifications,
 inference by response type, and inference by method type, in that order,
 as described in Section `[variables:mixed] <#variables:mixed>`__.
 
+..
+   TODO:
+
+   %For optimization and calibration problems,
+   %the active continuous variables are the \emph{continuous design
+   %  variables} ($n_{dvv}=n_{cdv}$), since they are the variables the
+   %minimizer manipulates.  Similarly, for uncertainty quantification
+   %methods that use gradient and/or Hessian information, the active
+   %continuous variables are the \emph{continuous uncertain variables}
+   %($n_{dvv}=n_{cauv}$ for aleatory methods, $n_{dvv}=n_{ceuv}$ for
+   %epistemic methods, $n_{dvv}=n_{cauv}+n_{ceuv}$ for methods that handle
+   %both), with the exception of \texttt{all\_variables} mode.  And
+   %lastly, parameter study methods that are cataloging gradient and/or
+   %Hessian information do not draw a distinction among continuous
+   %variables; therefore, the active continuous variables are defined from
+   %\emph{all continuous variables} that are specified
+   %($n_{dvv}=n_{cdv}+n_{cauv}+n_{ceuv}+n_{csv}$).  Additional detail on
+   %these variables views is provided in Table~\ref{responses:active_tab}.
+   
+   %\begin{table}
+   %\centering
+   %\caption{Variable views for different iterators.}
+   %\label{responses:active_tab}\vspace{2mm}
+   %\begin{tabular}{|c|c|c|}
+   %\hline
+   %\textbf{Method} & \textbf{Default Active view} & \textbf{Derivative variables} \\
+   %\hline
+   %branch and bound         & Merged Design   & $n_{cdv}+n_{ddiv}+n_{ddrv}$ \\
+   %\hline
+   %optimization,            & Mixed Design    & $n_{cdv}$ \\
+   %nonlinear least squares  &                 &           \\
+   %\hline
+   %sampling (standard mode) & Mixed Uncertain & $n_{cauv}+n_{ceuv}$ \\
+   %\hline
+   %local reliability,       & Mixed Aleatory Uncertain & $n_{cauv}$ \\
+   %global reliability (standard mode),  &              &            \\
+   %stochastic expansion (standard mode) &              &            \\
+   %\hline
+   %interval estimation,     & Mixed Epistemic Uncertain & $n_{ceuv}$ \\
+   %evidence                 &                           &            \\
+   %\hline
+   %parameter studies,       & Mixed All & $n_{cdv}+n_{cauv}+n_{ceuv}+n_{csv}$\\
+   %design of experiments,   &           & \\
+   %uncertainty quantification (all\_variables mode) & & \\
+   %\hline
+   %\end{tabular}
+   %\end{table}
+
 In a few cases, derivatives are needed with respect to the *inactive*
 continuous variables. This occurs for nested iteration where a top-level
 iterator sets derivative requirements (with respect to its active

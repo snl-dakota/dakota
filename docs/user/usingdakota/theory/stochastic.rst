@@ -3,6 +3,12 @@
 Stochastic Expansion Methods
 ============================
 
+..
+   TODO:
+   This chapter explores the polynomial chaos expansion (PCE) and
+   stochastic collocation (SC) in greater detail than that provided in
+   the uncertainty quantification chapter of the User's Manual.  
+
 This chapter explores two approaches to forming stochastic expansions,
 the polynomial chaos expansion (PCE), which employs bases of
 multivariate orthogonal polynomials, and stochastic collocation (SC),
@@ -116,6 +122,13 @@ need to induce additional nonlinearity through variable transformations,
 but performing this process for general joint density functions with
 correlation is a topic of ongoing research (refer to
 Section `1.5 <#theory:uq:expansion:trans>`__ for additional details).
+
+..
+   TODO (in above):
+   random variable sets having arbitrary probability density functions and 
+   %preserve the exponential convergence rates for general UQ applications,
+   %and also eliminates the need to calculate correlation warping.
+   eliminate the need to induce additional nonlinearity through variable
 
 .. _`theory:uq:expansion:interp`:
 
@@ -326,6 +339,9 @@ the special case of :math:`m = 1` point over the range
 :math:`\xi \in [a, b]`, :math:`H_1^{(1)}(\xi) = 1` and
 :math:`H_1^{(2)}(\xi) = \xi` for :math:`\xi_1 = \frac{b+a}{2}`.
 
+..
+   TODO: could add discussion of collocation weights
+
 .. _`theory:uq:expansion:interp:hierarch`:
 
 Hierarchical interpolation
@@ -450,6 +466,11 @@ polynomials involving an expansion term multi-index :math:`t_i^j`:
    \Psi_j(\boldsymbol{\xi}) = 
    \prod_{i=1}^{n} \psi_{t_i^j}(\xi_i) \label{eq:multivar_prod}
 
+..
+   TODO:
+   which provides a convenient form for sensitivity analysis as described
+   in \ref{uq:expansion:rvsa}.
+
 In the case of a mixed basis, the same multi-index definition is
 employed although the one-dimensional polynomials :math:`\psi_{t_i^j}`
 are heterogeneous in type.
@@ -559,6 +580,40 @@ subsequent machinery for estimating response values and statistics from
 the expansion can be performed in a manner that is agnostic to the
 specific expansion form.
 
+..
+   TODO (review following for above paragraphs):
+
+   %through pruning polynomials that satisfy the total-order bound 
+   %(potentially defined from the maximum of the per-dimension bounds)
+   %but violate individual per-dimension bounds (the number of these
+   %pruned polynomials would then be subtracted from
+   %Eq.~\ref{eq:num_to_terms}).
+   Finally, additional tailoring of the
+   expansion form is used in the case of sparse grids (see
+   Section~\ref{uq:expansion:spectral_sparse}) through the use of a
+   summation of anisotropic tensor expansions.
+   %Of particular interest is the tailoring of expansion form to target
+   %specific monomial coverage as motivated by the integration process
+   %employed for evaluating chaos coefficients.  If the specific monomial
+   %set that can be resolved by a particular integration approach is known
+   %or can be approximated, then the chaos expansion can be tailored to
+   %synchonize with this set.  Tensor-product and total-order expansions
+   %can be seen as special cases of this general approach (corresponding
+   %to tensor-product quadrature and Smolyak sparse grids with linear
+   %growth rules, respectively), whereas, for example, Smolyak sparse
+   %grids with nonlinear growth rules could generate synchonized expansion
+   %forms that are neither tensor-product nor total-order (to be discussed
+   %later in association with Figure~\ref{fig:pascal_sparse_lev4_Gauss}).
+   In all cases, the specifics of the expansion are codified in the
+   term multi-index, and subsequent machinery for estimating response 
+   values and statistics from the expansion
+   %(estimating response values at particular $\boldsymbol{\xi}$, evaluating
+   %response statistics by integrating over $\boldsymbol{\xi}$, etc.)
+   can be performed in a manner that is agnostic to the specific 
+   expansion form.
+
+
+
 .. _`theory:uq:expansion:sc`:
 
 Stochastic Collocation
@@ -635,6 +690,18 @@ quadrature rules (e.g., Clenshaw-Curtis, Gauss-Patterson, Genz-Keister),
 the interpolation property is preserved, but sparse interpolants based
 on non-nested rules may exhibit some interpolation error at the
 collocation points.
+
+..
+   TODO:
+   %There is no need for tailoring of the expansion form as there is for
+   %PCE (i.e., to synchronize the expansion polynomials with the set of
+   %integrable monomials) since the polynomials that appear in the
+   %expansion are determined by the Lagrange construction
+   %(Eq.~\ref{eq:lagrange_poly_1d}).  That is, any tailoring or refinement
+   %of the expansion occurs through the selection of points in the
+   %interpolation grid and the polynomial orders of the basis are adapted
+   %implicitly.
+
 
 .. _`theory:uq:expansion:sc:gradient`:
 
@@ -725,6 +792,49 @@ within Eq. `[eq:smolyak1] <#eq:smolyak1>`__.
 Transformations to uncorrelated standard variables
 --------------------------------------------------
 
+..
+   TODO (review commented text for inclusion in following):
+
+   Polynomial chaos and stochastic collocation are expanded using
+   polynomials that are functions of independent random variables
+   $\boldsymbol{\xi}$, which are often standardized forms of common
+   distributions.  Thus, a key component of stochastic expansion
+   approaches is performing a transformation of variables from the
+   original random variables $\boldsymbol{x}$ to independent (standard)
+   random variables $\boldsymbol{\xi}$ and then applying the stochastic
+   expansion in the transformed space.  %The dimension of
+   %$\boldsymbol{\xi}$ is typically chosen to correspond to the dimension
+   %of $\boldsymbol{x}$, although this is not required.  In fact, the
+   %dimension of $\boldsymbol{\xi}$ should be chosen to represent the
+   %number of distinct sources of randomness in a particular problem, and
+   %if individual $x_i$ mask multiple random inputs, then the dimension of
+   %$\boldsymbol{\xi}$ can be expanded to accommodate~\cite{ghanem_private}.
+   %For simplicity, all subsequent discussion will assume a one-to-one 
+   %correspondence between $\boldsymbol{\xi}$ and $\boldsymbol{x}$.
+   This notion of independent standard space is extended over the 
+   notion of ``u-space'' used in reliability methods (see
+   Section~\ref{uq:reliability:local:mpp}) 
+   in that it extends the standardized set beyond standard normals.
+   %includes not just independent standard normals, but also independent 
+   %standard uniforms, exponentials, betas, and gammas.
+   %For problems directly involving independent input distributions of
+   %these five types, conversion to standard form involves a simple linear
+   %scaling transformation (to the form of the density functions in
+   %Table~\ref{TAB:askey}) and then the corresponding chaos/collocation
+   %points can be employed.  For correlated normal,
+   %uniform, exponential, beta, and gamma distributions, the same linear
+   %scaling transformation can be applied followed by application of the
+   %inverse Cholesky factor of the correlation matrix (similar to
+   %Eq.~\ref{eq:trans_zu} below, but the correlation matrix requires no
+   %modification for linear transformations).  As described previously,
+   %the subsequent independence assumption is valid for uncorrelated
+   %standard normals but may introduce significant error for other random
+   %variable types (this is currently a topic of ongoing research).  
+   For distributions that are already independent, three different 
+   approaches are of interest:
+   %one has a choice of up to three different approaches, depending on
+   %the types of distributions that are present:
+
 Polynomial chaos and stochastic collocation are expanded using
 polynomials that are functions of independent random variables
 :math:`\boldsymbol{\xi}`, which are often standardized forms of common
@@ -752,6 +862,12 @@ are of interest:
    usage of the optimal basis corresponding to each of the random
    variable types, we avoid inducing additional nonlinearity that can
    slow convergence.
+
+..
+   TODO: we can exploit basis orthogonality under expectation
+   (e.g., Eq.~\ref{eq:coeff_extract}) without requiring a
+   transformation of variables, thereby avoiding avoid inducing
+   additional nonlinearity that can slow convergence.
 
 #. *Askey basis:* For non-Askey types, perform a nonlinear variable
    transformation from a given input distribution to the most similar
@@ -783,6 +899,9 @@ following choices:
    basis, respectively, in the transformed space. Independence is
    maintained, but the nonlinearity of the Nataf transformation is at
    least partially mitigated.
+
+..
+   Note: no secondary warping since no correlation.
 
 Dakota does not yet implement the double transformation concept, such
 that each correlated variable will employ a Wiener basis approach.
@@ -831,6 +950,10 @@ sampling, tensor-product quadrature, Smolyak sparse grids, or cubature
 methods. In SC, the multidimensional interpolants need to be formed over
 structured data sets, such as point sets from quadrature or sparse
 grids; approaches based on random sampling may not be used.
+
+..
+   TODO: The spectral projection approach
+   %(which justifies the term stochastic finite elements)
 
 The spectral projection approach projects the response against each
 basis function using inner products and employs the polynomial
@@ -911,12 +1034,23 @@ that are orthogonal with respect to a density function weighting, e.g.
 Gauss-Hermite, Gauss-Legendre, Gauss-Laguerre, generalized
 Gauss-Laguerre, Gauss-Jacobi, or numerically-generated Gauss rules.
 
+..
+   TODO: 
+   %In the case where $\Omega$ is a
+   %hypercube, i.e. $\Omega=[-1,1]^n$, there are several choices of nested
+   %abscissas, included Clenshaw-Curtis, Gauss-Patterson,
+   %etc.~\cite{webster1, webster2, gerstner_griebel_98}.  
+
 We first introduce an index :math:`i\in\mathbb{N}_+`, :math:`i\ge1`.
 Then, for each value of :math:`i`, let
 :math:`\{\xi_1^i, \ldots,\xi_{m_i}^i\}\subset \Omega_i` be a sequence of
 abscissas for quadrature on :math:`\Omega_i`. For
 :math:`f\in C^0(\Omega_i)` and :math:`n=1` we introduce a sequence of
 one-dimensional quadrature operators
+
+..
+   TODO:
+   %$\mathscr{U}^i:\, C^0(\Gamma^1; W(D))\rightarrow V_{m_i}(\Gamma^1; W(D))$
 
 .. math::
 
@@ -958,6 +1092,35 @@ all random dimensions, :math:`m_{i_j} = m`, then
 Eq. `[eq:multi_tensor] <#eq:multi_tensor>`__ requires :math:`m^n`
 function evaluations.
 
+..
+   TODO (review commented text)
+
+   %Figure~\ref{fig:pascal_tensor_quad5_Gauss} depicts the monomial
+   %coverage in Pascal's triangle for an integrand evaluated using an
+   %isotropic Gaussian quadrature rules in two dimensions ($m_1 = m_2 =
+   %5$).  Given this type of coverage, the traditional approach of
+   %exploying a total-order PCE (involving integrands indicated by the red
+   %horizontal line) neglects a significant portion of the monomial
+   %coverage and one would expect a tensor-product PCE to provide improved
+   %synchronization and more effective usage of the Gauss point
+   %evaluations.  In fact, use of a tensor-expansion improves PCE
+   %performance significantly and has been shown to result in identical
+   %polynomial forms to SC~\cite{ConstTPQ}, eliminating a performance gap
+   %that exists in the total-order expansion case.  Note that the
+   %integrand monomial coverage must resolve $2p$, such that $p_1 = p_2 =
+   %4$ would be selected in this example (preferring slight
+   %over-integration to under-integration) for either the tensor or
+   %total-order expansion cases.
+   %\begin{figure}[h!]
+   %\begin{center}
+   %\includegraphics[width=2.5in]{TensorQuad5_Gauss}
+   %\caption{Pascal's triangle depiction of integrand monomial coverage 
+   %for two dimensions and Gaussian tensor-product quadrature order = 5.
+   %Red line depicts maximal total-order integrand coverage.}
+   %\label{fig:pascal_tensor_quad5_Gauss}
+   %\end{center}
+   %\end{figure} 
+
 In :cite:p:`Eld09a`, it is demonstrated that close
 synchronization of expansion form with the monomial resolution of a
 particular numerical integration technique can result in significant
@@ -980,6 +1143,18 @@ SC :cite:p:`Eld09a`.
 
 Smolyak sparse grids
 ~~~~~~~~~~~~~~~~~~~~
+
+..
+   TODO:
+
+   % For m = max points per dim, w = level:
+   %   Gaussian Smolyak: m = 2^(w+1) - 1  -->  m = 1, 3, 7, 15, 31, 63, 127
+   %   Clenshaw-Curtis:  m = 2^w     + 1  -->  m = 1, 3, 5,  9, 17, 33,  65
+   % TP logic would use:
+   %   Gaussian Smolyak: 2p <= 2m-1
+   %   Clenshaw-Curtis:  2p <=  m+1
+   % SG order selection instead using 2p <= m,
+   % as this is what has been observed thus far.
 
 If the number of random variables is moderately large, one should rather
 consider sparse tensor product spaces as first proposed by Smolyak
@@ -1031,6 +1206,19 @@ quadrature orders. The following growth rules are employed for indices
 1`, where closed and open refer to the inclusion and exclusion of the
 bounds within an interval, respectively:
 
+..
+   TODO:
+
+   % The following is more precisely presented by replacing w with i-1
+   %\begin{eqnarray}
+   %{\rm Clenshaw-Curtis:}~~m &=& 
+   %\left\{ \begin{array}{ll}
+   %         1       & w=0 \\
+   %         2^w + 1 & w \geq 1 
+   %        \end{array} \right.        \label{eq:growth_CC_nonlin} \\
+   %{\rm Gaussian:}~~m &=& 2^{w+1} - 1 \label{eq:growth_Gauss_nonlin}
+   %\end{eqnarray}
+
 .. math::
 
    \begin{aligned}
@@ -1048,6 +1236,24 @@ nested), and linear growth rules are best for standard Gauss rules that
 take advantage of, at most, “weak” nesting (e.g., reuse of the center
 point).
 
+..
+   TODO
+   %For fully nested quadrature rules such as Clenshaw-Curtis and
+   %%Gauss-Patterson, nonlinear growth rules are strongly preferred
+   %(Eq.~\ref{eq:growth_CC_nonlin} for the former and
+   %Eq.~\ref{eq:growth_Gauss_nonlin} for the latter).  For at most weakly
+   %nested Gaussian quadrature rules, either linear or nonlinear rules may
+   %be selected, with the former motivated by finer granularity of control
+   %and uniform integrand coverage and the latter motivated by consistency
+   %with Clenshaw-Curtis and Gauss-Patterson.  The $m = 2i - 1$ linear
+   %rule takes advantage of weak nesting (e.g., Gauss-Hermite and
+   %Gauss-Legendre), whereas non-nested rules (e.g., Gauss-Laguerre) could
+   %alternatively employ an $m = i$ linear rule without any loss of reuse.
+   %In the experiments to follow, Clenshaw-Curtis employs nonlinear growth
+   %via Eq.~\ref{eq:growth_CC_nonlin}, and all Gaussian rules employ
+   %either nonlinear growth from Eq.~\ref{eq:growth_Gauss_nonlin} or
+   %linear growth from Eq.~\ref{eq:growth_Gauss_lin}.
+
 Examples of isotropic sparse grids, constructed from the fully nested
 Clenshaw-Curtis abscissas and the weakly-nested Gaussian abscissas are
 shown in Figure `1.1 <#fig:isogrid_N2_q7>`__, where
@@ -1061,6 +1267,16 @@ To see the reduction in function evaluations with respect to full tensor
 product grids, we also include a plot of the corresponding
 Clenshaw-Curtis isotropic full tensor grid having the same maximum
 number of points in each direction, namely :math:`2^{\rm w}+1 = 33`.
+
+..
+   TODO:
+
+   Cross-references for Clenshaw-Curtis and Gaussian abscissas above
+
+   %Whereas an isotropic tensor-product quadrature scales as $m^n$, an
+   %isotropic sparse grid scales as $m^{{\rm log}~n}$, significantly
+   %mitigating the curse of dimensionality.
+
 
 .. container:: center
 
@@ -1077,6 +1293,52 @@ number of points in each direction, namely :math:`2^{\rm w}+1 = 33`.
       :math:`\mathscr{A}(5,2)` utilizing Clenshaw-Curtis (middle) and
       Gauss-Legendre (right) points with nonlinear growth.
 
+..
+   TODO:
+
+   Figure~\ref{fig:pascal_sparse_lev4_Gauss} depicts the monomial
+   %coverage in Pascal's triangle for two-dimensional level 4 isotropic
+   %sparse grids ($\mathscr{A}(4,2)$) employing the same one-dimensional
+   %Gaussian integration rule, where
+   %Figure~\ref{fig:pascal_sparse_lev4_Gauss}(a) shows the application of
+   %a nonlinear growth rule as given in Eq.~\ref{eq:growth_Gauss_nonlin}
+   %and Figure~\ref{fig:pascal_sparse_lev4_Gauss}(b) shows the use of a
+   %linear growth rule as given in Eq.~\ref{eq:growth_Gauss_lin}.  Using
+   %this geometric interpretation, subtracted tensor-product grids from
+   %Eqs.~\ref{eq:delta} and \ref{eq:smolyak2} can be interpreted as
+   %regions of overlap where only a single contribution to the integral
+   %should be retained.  And for these monomial coverage patterns, the
+   %traditional approach of exploying a total-order PCE (maximal
+   %resolvable total-order integrand depicted with red horizontal line)
+   %can be seen to be well synchronized for the case of linear growth
+   %rules (since only a few small ``teeth'' protrude beyond the maximal
+   %total-order basis) and to be somewhat conservative for nonlinear
+   %growth rules due to the ``hyperbolic cross'' shape (since the maximal
+   %total-order basis is dictated by the concave interior, neglecting the
+   %extended coverage along the axes).
+   %
+   %However, the inclusion of additional terms beyond the
+   %total-order basis in the nonlinear growth rule case, as motivated by
+   %the legs in Figure~\ref{fig:pascal_sparse_lev4_Gauss}(a), would be
+   %error-prone, since the order of the unknown response function will
+   %tend to push the product integrand (Eq.~\ref{eq:coeff_extract}) out
+   %into the concave interior, resulting in product polynomials that are
+   %not resolvable by the sparse integration.
+   %\begin{figure}[htbp]
+   %  \begin{subfigmatrix}{2}
+   %  \subfigure[Nonlinear growth rule.]{\includegraphics{SparseLevel4_NonlinGauss}}
+   %  \subfigure[Linear growth rule.]{\includegraphics{SparseLevel4_LinGauss}}
+   %  \end{subfigmatrix}
+   %  \caption{Pascal's triangle depiction of integrand monomial coverage 
+   %for two dimensions and Gaussian sparse grid level = 4.  Red line depicts 
+   %maximal total-order integrand coverage.}
+   %\label{fig:pascal_sparse_lev4_Gauss}
+   %\end{figure}
+   %For the total-order PCE basis, the integrand monomial coverage must
+   %again resolve $2p$, such that $p = 9$ would be selected in this
+   %nonlinear growth rule example and $p = 7$ would be selected in the
+   %linear growth rule example.
+
 In :cite:p:`Eld09a`, it is demonstrated that the
 synchronization of total-order PCE with the monomial resolution of a
 sparse grid is imperfect, and that sparse grid SC consistently
@@ -1085,7 +1347,15 @@ evaluate the integrals in
 Eq. `[eq:coeff_extract] <#eq:coeff_extract>`__. In our Dakota
 implementation, we depart from the use of sparse integration of
 total-order expansions, and instead employ a linear combination of
-tensor expansions :cite:p:`ConstSSG`. That is, we compute
+tensor expansions :cite:p:`ConstSSG`. 
+
+..
+   TODO:
+   %That is, instead of employing the sparse grid as a separate numerical
+   %integration scheme for evaluations of Eq.~\ref{eq:coeff_extract} (for 
+   %which expansion synchronization is a challenge), we instead 
+
+That is, we compute
 separate tensor polynomial chaos expansions for each of the underlying
 tensor quadrature grids (for which there is no synchronization issue)
 and then sum them using the Smolyak combinatorial coefficient (from
@@ -1095,7 +1365,17 @@ in Section `1.6.2 <#theory:uq:expansion:spectral_quad>`__, and also simplifies
 PCE for the case of anisotropic sparse grids described next.
 
 For anisotropic Smolyak sparse grids, a dimension preference vector is
-used to emphasize important stochastic dimensions. Given a mechanism for
+used to emphasize important stochastic dimensions. 
+
+..
+   TODO:
+   %A natural mechanism for quantifying
+   %dimension importance is through the global sensitivity analysis
+   %procedure described in Section~\ref{sec:ssa:global}, as the
+   %attribution of output variance among input sources provides an
+   %intuitive measure of importance in the stochastic setting.
+
+Given a mechanism for
 defining anisotropy, we can extend the definition of the sparse grid
 from that of Eq. `[eq:smolyak2] <#eq:smolyak2>`__ to weight the
 contributions of different index set components. First, the sparse grid
@@ -1119,6 +1399,19 @@ index constraint :math:`{\rm w}+1 \leq
 :math:`\leq`). Second, the combinatorial coefficient for adding the
 contribution from each of these index sets is modified as described
 in :cite:p:`Burk09`.
+
+..
+   TODO:
+   %Given the modified index sets and combinatorial coefficients defined
+   %from the dimension preference vector, interpolation (SC) on
+   %anisotropic sparse grids proceeds as for the isotropic case.  PCE,
+   %however, again has the challenge of expansion tailoring.  Fortunately,
+   %in the anistropic case, we can assume that more is known about the
+   %form of the response function (especially if the dimension preference
+   %was based on variance-based decomposition).  This allows us to abandon
+   %the safe total-order basis approach in favor of a tightly-synchronized
+   %expansion formulation that applies the $2p$ logic to all of the
+   %protruding ``legs'' in the monomial resolution structure.
 
 .. _`theory:uq:expansion:cubature`:
 
@@ -1158,17 +1451,50 @@ sufficient order to avoid sampling at roots of the basis
 polynomials [6]_. In either case, each row of the matrix
 :math:`\boldsymbol{\Psi}` contains the :math:`N_t` multivariate
 polynomial terms :math:`\Psi_j` evaluated at a particular
-:math:`\boldsymbol{\xi}` sample. It is common to combine this
+:math:`\boldsymbol{\xi}` sample. 
+
+..
+   TODO:
+   %% An over-sampling is most commonly used (\cite{pt_colloc2} recommends
+   %% $2N_t$ samples), resulting in a least squares solution for the
+   %% over-determined system, although unique determination ($N_t$ samples)
+   %% and under-determination (fewer than $N_t$ samples) are also supported.
+   %% As for sampling-based coefficient estimation, this approach is only
+   %% valid for PCE and does not require synchronization with monomial
+   %% coverage; thus
+
+It is common to combine this
 coefficient estimation approach with a total-order chaos expansion in
 order to keep sampling requirements low. In this case, simulation
 requirements scale as :math:`\frac{r(n+p)!}{n!p!}` (:math:`r` is a
 collocation ratio with typical values :math:`0.1 \leq r \leq 2`).
+
+..
+   TODO:
+   %, which can be significantly more affordable than isotropic tensor-product
+   %% quadrature (scales as $(p+1)^n$ for standard Gauss rules) for larger
+   %% problems.
+   %
+   %A closely related technique is known as the ``probabilistic
+   %collocation'' approach.  Rather than employing random over-sampling,
+   %this technique uses a selected subset of $N_t$ Gaussian quadrature
+   %points (those with highest tensor-product weighting), which provides
+   %more optimal collocation locations and preserves interpolation
+   %properties.
+
 Additional regression equations can be obtained through the use of
 derivative information (gradients and Hessians) from each collocation
 point (refer to ``use_derivatives`` in the PCE regression specification
 details in the Dakota Reference Manual :cite:p:`RefMan`),
 which can aid in scaling with respect to the number of random variables,
 particularly for adjoint-based derivative approaches.
+
+..
+   TODO:
+   %Finally, one can additionally modify the order of the exponent 
+   %applied to $N_t$ in the collocation ratio calculation (refer to 
+   %{\tt ratio\_order} in the PCE regression specification details in the
+   %Dakota Reference Manual~\cite{RefMan}).
 
 Various methods can be employed to solve
 `[eq:regression] <#eq:regression>`__. The relative accuracy of each
@@ -1390,8 +1716,14 @@ multi-dimensional tree. Given an ancestor basis term
 :math:`\left\lVert \boldsymbol{\lambda} \right\rVert_{1}` we define the
 indices of its children as :math:`\boldsymbol{\lambda}+\mathbf{e}_k`,
 :math:`k=1,\ldots,d`, where :math:`\mathbf{e}_k=(0,\ldots,1,\ldots,0)`
-is the unit vector co-directional with the :math:`k`-th dimension. An
-example of a typical PCE tree is depicted in
+is the unit vector co-directional with the :math:`k`-th dimension.
+
+..
+   TODO: %We refer to the basis terms with
+   $\hat{\boldsymbol{\lambda}}-\be_k$ as ancestors of the basis
+   indexed by $\hat{\boldsymbol{\lambda}}$.
+
+An example of a typical PCE tree is depicted in
 Figure `1.3 <#fig:pce-tree>`__. In this figure, as often in practice,
 the magnitude of the ancestors of a PCE coefficient is a reasonable
 indicator of the size of the child coefficient. In practice, some
@@ -1461,6 +1793,8 @@ every basis set considered during the evolution of the algorithm we have
 a measure of the expected accuracy of the PCE coefficients. At each step
 in the algorithm we choose the basis set that results in the lowest
 cross validation error.
+
+TODO: This algorithm didn't make it over with pandoc...
 
 .. container:: algorithm
 
@@ -1533,9 +1867,20 @@ Algorithm `[alg:basis-selection] <#alg:basis-selection>`__,
 used to identify the significant coefficients of the PCE and their
 corresponding basis terms :math:`\Lambda^{(k,0)}`. The set of non-zero
 coefficients :math:`\Lambda^{(k,0)}` identified by
-:math:`\ell_1`-minimization is then expanded. The ``EXPAND`` routine
+:math:`\ell_1`-minimization is then expanded.
+
+..
+   TODO:
+   % The key to the proposed method working well is to ensure the basis generated by expansion is able capture higher degree terms without increasing the mutual coherence
+   % to a point which degrades the ability of $\ell_1$-minimization to recover those higher order terms. 
+
+The ``EXPAND`` routine
 expands an index set by one polynomial degree, but sometimes it may be
 necessary to expand the basis :math:`\Lambda^{(k)}` more than once. [7]_
+
+..
+   TODO: %For example by more than one degree to avoid situations when no basis terms one degree higher are significant, but basis terms two or three degrees higher are. 
+
 To generate these higher degree index sets ``EXPAND`` is applied
 recursively to :math:`\Lambda^{(k,0)}` up to a fixed number of :math:`T`
 times. Specifically, the following sets are generated
@@ -1604,6 +1949,14 @@ Eq. `[eq:norm_squared] <#eq:norm_squared>`__. These expressions provide
 exact moments of the expansions, which converge under refinement to
 moments of the true response functions.
 
+..
+   TODO:
+   %Higher moments are also available
+   %analytically and could be employed in moment fitting approaches (i.e.,
+   %Pearson and Johnson models) in order to approximate a response PDF,
+   %although this is outside the scope of the current paper.
+
+
 Similar expressions can be derived for stochastic collocation:
 
 .. math::
@@ -1633,7 +1986,14 @@ employ the former approach; i.e., the right-most expressions in
 Eqs. `[eq:mean_sc] <#eq:mean_sc>`__–`[eq:covar_sc] <#eq:covar_sc>`__ are
 employed for all tensor and sparse cases irregardless of nesting.
 Skewness and kurtosis calculations as well as sensitivity derivations in
-the following sections are also based on this choice. The expressions
+the following sections are also based on this choice. 
+
+..
+   TODO: 
+   %Similarly, moment $k$ for stochastic collocation is just 
+   %$\sum_{j=1}^{N_p} r^k_j w_j$ minus previously computed moments.
+
+The expressions
 for skewness and (excess) kurtosis from direct numerical integration of
 the response function are as follows:
 
@@ -1867,6 +2227,11 @@ with dimension order scaled proportionately to preference; for both
 grids, dimension refinement lower bound constraints are enforced to
 ensure that all previously evaluated points remain in new refined grids.
 
+..
+   TODO
+   %; with the introduction of interaction effects, nonlinear index-set
+   %constraints can also be considered.
+
 Given an anisotropic global grid, the expansion refinement proceeds as
 for the uniform case, in that the p-refinement approach increases the
 order of the global basis polynomials
@@ -1883,6 +2248,12 @@ applied in this case.
 
 Goal-oriented dimension-adaptive refinement with greedy adaptation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..
+   TODO:
+   %The uniform and dimension-adaptive refinement capabilities described above
+   %define anisotropy and control convergence in a highly structured
+   %manner based on variance-related measures.  
 
 Relative to the uniform and dimension-adaptive refinement capabilities
 described previously, the generalized sparse grid
@@ -1919,6 +2290,14 @@ refinement of stochastic expansions using the following customizations:
    refinement process can become more efficient in achieving the desired
    analysis objectives.
 
+..
+   TODO:
+
+   (it is much less straightforward to embed QOI in the calculation
+   of dimension preference for anisotropic tensor/sparse grids).
+
+   add full discussion of hierarchical estimation of statistical QoI:
+
 Hierarchical increments in a variety of statistical QoI may be derived,
 starting from increments in response mean and covariance. The former is
 defined from computing the expectation of the difference interpolants in
@@ -1934,6 +2313,32 @@ Increments in standard deviation and reliability indices can
 subsequently be defined, where care is taken to preserve numerical
 precision through the square root operation (e.g., via Boost
 sqrt1pm1()).
+
+..
+   TODO:
+
+   % Std Deviation:
+   % Reliability index:
+   
+   %If the objectives and constraints of a design under uncertainty
+   %problem are focused on variance (e.g., robust design), then the
+   %general-purpose formulations described above are sufficiently
+   %goal-oriented.  However, for other classes of problems (e.g.,
+   %reliability-based design or stochastic inverse problems), we may
+   %prefer to employ refinement approaches guided by assessments of
+   %accuracy in other statistical QOI.  A particular focus in this effort
+   %is to refine adaptively with the goal of accuracy in tail probability
+   %estimates.  There are two parts to this effort: goal-oriented
+   %p-refinement using generalized sparse grids and efficient tail
+   %probability estimation.
+   %
+   %Since probability levels are not available analytically from
+   %stochastic expansions, they must be evaluated numerically using some
+   %form of sampling on the expansion.  For tail probability estimates,
+   %standard sampling approaches (e.g., LHS) can become expensive even for
+   %this surrogate-based sampling and we require a more directed
+   %probability estimation procedure, in particular the importance
+   %sampling procedure described previously in Section~\ref{sec:imp_samp}.
 
 Given these customizations, the algorithmic steps can be summarized as:
 
@@ -2089,6 +2494,13 @@ resolved low fidelity grid to perform this combination, we utilize the
 discrepancy expansion rather than the original discrepancy function
 values for both interpolated and non-interpolated point values (and
 derivatives), in order to ensure consistency.
+
+..
+   TODO:
+   %the low-fidelity model values are corrected to match the high-fidelity 
+   %model values (and potentially their derivatives) at the high-fidelity 
+   %collocation points.
+
 
 .. [1]
    If joint distributions are known, then the Rosenblatt transformation

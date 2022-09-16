@@ -99,12 +99,26 @@ challenging problem. There are many experimental designs and sampling
 methods which address the issue of adequate and representative sample
 selection.
 
+..
+   TODO:
+   %Classical experimental designs which are often used in physical experiments 
+   %include Central Composite designs and Box-Behnken designs.
+
+
 There are many goals of running a computer experiment: one may want to
 explore the input domain or the design space and get a better
 understanding of the range in the outputs for a particular domain.
 Another objective is to determine which inputs have the most influence
 on the output, or how changes in the inputs change the output. This is
-usually called *sensitivity analysis*. Another goal is to use the
+usually called *sensitivity analysis*. 
+
+..
+   TODO:
+   %Another goal is to compare the relative 
+   %importance of model input uncertainties on the uncertainty in the model 
+   %outputs, \emph{uncertainty analysis}. 
+
+Another goal is to use the
 sampled input points and their corresponding output to create a
 *response surface approximation* for the computer code. The response
 surface approximation (e.g., a polynomial regression model, a
@@ -191,6 +205,9 @@ other methods. For example, DDACE sampling can be used with both
 surrogate-based optimization and optimization under uncertainty advanced
 methods. See :numref:`adv_models:figure09` for
 an example of how the DDACE settings are used in Dakota.
+
+..
+   TODO: Cross-reference DDACE package description
 
 The following sections provide more detail about the sampling methods
 available for design of experiments in DDACE.
