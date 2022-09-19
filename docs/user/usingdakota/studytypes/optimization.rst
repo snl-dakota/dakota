@@ -406,7 +406,7 @@ Derivative-free methods can be more robust and more inherently parallel
 than gradient-based approaches. They can be applied in situations were
 gradient calculations are too expensive or unreliable. In addition, some
 derivative-free methods can be used for global optimization which
-:ref:`gradient-based techniques <opt:methods:gradient`), by
+:ref:`gradient-based techniques <opt:methods:gradient>`), by
 themselves, cannot. For these reasons, derivative-free methods are often
 go-to methods when the problem may be nonsmooth, multimodal, or poorly
 behaved. It is important to be aware, however, that they exhibit much
@@ -450,7 +450,7 @@ is similar in spirit to and falls in the same class of methods as the
 pattern search methods. The primary difference is that its underlying
 search structure is that of a mesh. The :dakkw:`method-mesh_adaptive_search` also
 provides a unique optimization capability in Dakota in that it can
-explicitly treat categorical variables, i.e., `non-relaxable discrete
+explicitly treat categorical variables, i.e., :ref:`non-relaxable discrete
 variables <variables:design:ddv>`. Furthermore,
 it provides the ability to use a surrogate model to inform the priority
 of function evaluations with the goal of reducing the number needed.
@@ -465,7 +465,7 @@ Approximations (COBYLA) (:dakkw:`method-coliny_cobyla`). The former handles only
 bound constraints, while the latter handles nonlinear constraints.
 
 .. note:: 
-    Onedrawback of both simplex-based methods is that their current
+    One drawback of both simplex-based methods is that their current
     implementations do not allow them to take advantage of parallel
     computing resources via Dakota’s infrastructure. Additionally, we note
     that the implementation of COBYLA is such that the best function value
@@ -547,24 +547,28 @@ the optimum at :math:`(x_1,x_2) = (1.0,1,0)`, although it was making
 progress in that direction when it was terminated. (It would have
 reached the minimum point eventually.)
 
-The iteration history is provided in Figures 
-`[opt:methods:gradientfree:local:example:ps_graphics] <#opt:methods:gradientfree:local:example:ps_graphics>`__\ (a)
-and (b), which show the locations of the function evaluations used in
-the pattern search algorithm.
-Figure `[opt:methods:gradientfree:local:example:ps_graphics] <#opt:methods:gradientfree:local:example:ps_graphics>`__\ (c)
+:numref:`opt:methods:gradientfree:local:example:ps:complete` shows
+the locations of the function evaluations used in the pattern search algorithm.
+:numref:`opt:methods:gradientfree:local:example:ps:closeup`
 provides a close-up view of the pattern search function evaluations used
 at the start of the algorithm. The coordinate pattern is clearly visible
 at the start of the iteration history, and the decreasing size of the
 coordinate pattern is evident at the design points move toward
 :math:`(x_1,x_2) = (1.0,1.0)`.
 
-TODO: review table/images
+.. figure:: img/rosen_ps_opt_pts.png
+    :height: 2.5in
+    :alt: Complete sequence of design points evaluated during a pattern search optimization of the Rosenbrock function
+    :name: opt:methods:gradientfree:local:example:ps:complete
+    
+    Rosenbrock pattern search: sequence of design points (dots) evaluated
 
-.. container:: tabular
+.. figure:: img/rosen_ps_opt_pts2.png
+    :height: 2.5in
+    :alt: Close-up view near the minimum of the Rosenbrock function
+    :name: opt:methods:gradientfree:local:example:ps:closeup
 
-   | cc |image|
-   | |image1| & |image2|
-   | (b) & (c)
+    Rosenbrock pattern search: close-up view illustrating the shape of the coordinate pattern used
 
 While pattern search algorithms are useful in many optimization
 problems, this example shows some of the drawbacks to this algorithm.
@@ -582,8 +586,8 @@ engineering applications when the quality of gradient data is suspect.
 Derivative-Free Global Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The discussion of derivative-free global methods is identical to that
-in `1.2.2 <#opt:methods:gradientfree:local>`__, so we forego repeating
+Much of the discussion of :ref:`Derivative-Free Local Methods <opt:methods:gradientfree:local>`
+is also applicable to derivative-free global methods, so we forego repeating
 it here. There are two types of global optimization methods in Dakota.
 
 .. _`opt:methods:gradientfree:global:descriptions`:
@@ -607,35 +611,38 @@ objective function of the optimization problem. An extensive discussion
 of EAs is beyond the scope of this text, but may be found in a variety
 of sources (cf.,  :cite:p:`Haf92` pp.
 149-158; :cite:p:`Gol89`). EAs available in Dakota include
-``coliny_ea``, ``soga``, and ``moga``. The latter is specifically
-designed for multi-objective problems, discussed further
-in `1.3 <#opt:additional>`__. All variants can optimize over discrete
+:dakkw:`method-coliny_ea`, :dakkw:`method-soga`, and :dakkw:`method-moga`.
+The latter is specifically designed for multi-objective problems, discussed further
+:ref:`below <opt:additional>`. All variants can optimize over discrete
 variables, including discrete string variables, in addition to
-continuous variables. We note that an experimental branch and bound
-capability is being matured to provide a gradient-based approach to
-solving mixed variable global optimization problems. One key distinction
+continuous variables. Dakota also has an experimental branch and bound
+capability that provides a gradient-based approach to
+solving mixed-variable global optimization problems. One key distinction
 is that it does not handle categorical variables (e.g., string
 variables). The branch and bound method is discussed further in
-Section `[adv_meth:minlp] <#adv_meth:minlp>`__.
+the :ref:`Mixed Integer Nonlinear Programming <adv_meth:minlp>` section.
 
 **DIvision of RECTangles (DIRECT)** :cite:p:`Gab01` balances
 local search in promising regions of the design space with global search
 in unexplored regions. It adaptively subdivides the space of feasible
 design points to guarantee that iterates are generated in the
 neighborhood of a global minimum in finitely many iterations. Dakota
-includes two implementations (``ncsu_direct`` and ``coliny_direct``. In
-practice, DIRECT has proven an effective heuristic for many
-applications. For some problems, the ``ncsu_direct`` implementation has
-outperformed the ``coliny_direct`` implementation. ``ncsu_direct`` can
-accommodate only bound constraints, while ``coliny_direct`` handles
-nonlinear constraints using a penalty formulation of the problem.
+includes two implementations (:dakkw:`method-ncsu_direct` and 
+:dakkw:`method-coliny_direct`. In practice, DIRECT has proven an effective
+heuristic for many applications. For some problems, the :dakkw:`method-ncsu_direct`
+implementation has outperformed the :dakkw:`method-coliny_direct` implementation.
+:dakkw:`method-ncsu_direct` can accommodate only bound constraints, while
+:dakkw:`method-coliny_direct` handles nonlinear constraints using a penalty
+formulation of the problem.
 
 **Efficient Global Optimization (EGO)** is a global optimization
 technique that employs response surface
-surrogates :cite:p:`Jon98,Hua06`. In each EGO iteration, a
-Gaussian process (GP) approximation for the objective function is
-constructed based on sample points of the true simulation. The GP allows
-one to specify the prediction at a new input location as well as the
+surrogates :cite:p:`Jon98,Hua06`. The :dakkw:`method-efficient_global`
+method is Dakota's implementation of EGO.
+
+In each EGO iteration, a Gaussian process (GP) approximation for the objective
+function is constructed based on sample points of the true simulation. The GP 
+allows one to specify the prediction at a new input location as well as the
 uncertainty associated with that prediction. The key idea in EGO is to
 maximize an Expected Improvement Function (EIF), defined as the
 expectation that any point in the search space will provide a better
@@ -665,8 +672,8 @@ find points which maximize the EIF. Rather, we use the DIRECT algorithm.
 Second, we allow for multiobjective optimization and nonlinear least
 squares including general nonlinear constraints. Constraints are handled
 through an augmented Lagrangian merit function approach (see
-Surrogate-Based Minimization chapter in Dakota Theory
-Manual :cite:p:`TheoMan`).
+:ref:`Surrogate-Based Local Minimization <sblm>` in the theory section of
+the manual. :cite:p:`TheoMan`).
 
 .. _`opt:methods:gradientfree:global:example`:
 
@@ -690,14 +697,19 @@ not readily available.
        ``dakota/share/dakota/examples/users/rosen_opt_ea.in``
    :name: opt:methods:gradientfree:global:example:rosenbrock_ea
 
-:numref"`opt:methods:gradientfree:global:example:rosenbrock_ea
+:numref:`opt:methods:gradientfree:global:example:rosenbrock_ea`
 shows a Dakota input file that uses an EA to minimize the Rosenbrock
 function. For this example the EA has a population size of 50. At the
 start of the first generation, a random number generator is used to
-select 50 design points that will comprise the initial population. *[A
-specific seed value is used in this example to generate repeatable
-results, although, in general, one should use the default setting which
-allows the EA to choose a random seed.]* A two-point crossover technique
+select 50 design points that will comprise the initial population.
+
+.. 
+    *[A
+    specific seed value is used in this example to generate repeatable
+    results, although, in general, one should use the default setting which
+    allows the EA to choose a random seed.]*
+
+A two-point crossover technique
 is used to exchange genetic string values between the members of the
 population during the EA breeding process. The result of the breeding
 process is a population comprised of the 10 best “parent” design points
@@ -714,18 +726,25 @@ the best design point found was :math:`(x_1,x_2) = (0.98,0.95)`. The
 file ``ea_tabular.dat.sav``
 provides a listing of the design parameter values and objective
 function values for all 2,000 design points evaluated during the running
-of the EA. Figure 
-`[opt:methods:gradientfree:global:example:rosenbrock_ea_graphics] <#opt:methods:gradientfree:global:example:rosenbrock_ea_graphics>`__\ (a)
+of the EA. :numref:`opt:methods:gradientfree:global:example:rosenbrock:initial`
 shows the population of 50 randomly selected design points that comprise
-the first generation of the EA, and
-Figure `[opt:methods:gradientfree:global:example:rosenbrock_ea_graphics] <#opt:methods:gradientfree:global:example:rosenbrock_ea_graphics>`__\ (b)
+the first generation of the EA, and :numref:`opt:methods:gradientfree:global:example:rosenbrock:final`
 shows the final population of 50 design points, where most of the 50
 points are clustered near :math:`(x_1,x_2) = (0.98,0.95)`.
 
-======== ========
-|image3| |image4|
-(a)      (b)
-======== ========
+.. figure:: img/rosen_ea_init.png
+    :height: 2.5in
+    :alt: 50 randomly chosen design points in the initial population of a genetic algorithm, overlaid on a contour plot of the Rosenbrock function
+    :name: opt:methods:gradientfree:global:example:rosenbrock:initial
+    
+    50 design points in the initial population of an evolutionary algorithm
+
+.. figure:: img/rosen_ea_final.png
+    :height: 2.5in
+    :alt: Final population of design points, overlaid on a contour plot of the Rosenbrock function
+    :name: opt:methods:gradientfree:global:example:rosenbrock:final
+    
+    The final population of design points of an evolutionary algorithm
 
 As described above, an EA is not well-suited to an optimization problem
 involving a smooth, differentiable objective such as the Rosenbrock
@@ -746,10 +765,10 @@ feasible constraints), and then it switches to a gradient-based
 algorithm (using the best design point found by the EA as its starting
 point) to perform an efficient local search for an optimum design point.
 More information on this hybrid approach is provided in
-Section `[adv_meth:hybrid] <#adv_meth:hybrid>`__.
+the :ref:`Hybrid Minimization <adv_meth:hybrid>` section.
 
 **Efficient Global Optimization:** The method is specified as
-``efficient_global``. Currently we do not expose any specification
+:dakkw:`method-efficient_global`. Currently we do not expose any specification
 controls for the underlying Gaussian process model used or for the
 optimization of the expected improvement function, which is currently
 performed by the NCSU DIRECT algorithm. The only item the user can
@@ -770,27 +789,27 @@ is shown in :numref:`opt:methods:gradientfree:global:example:egm_rosen`.
        ``dakota/share/dakota/examples/users/dakota_rosenbrock_ego.in``
    :name: opt:methods:gradientfree:global:example:egm_rosen
 
-There are two types of parallelization within the ``efficient_global``
+There are two types of parallelization within the :dakkw:`method-efficient_global`
 method: the first one is batch-sequential parallel, which is active by
-default, and the second one is asynchronous batch parallel. One can
-activate the asynchronous parallel scheme by adding ``nonblocking
-synchronization`` in the ``method`` block of the input file; for
-example, see
-``dakota/share/dakota/examples/users/dakota_rosenbrock_ego_stoch.in``
+default, and the second one is asynchronous batch parallel. These are activated
+using the :dakkw:`method-efficient_global-batch_size-synchronization-blocking` and 
+:dakkw:`method-efficient_global-batch_size-synchronization-nonblocking` keywords, respecitvely.
+See ``dakota/share/dakota/examples/users/dakota_rosenbrock_ego_stoch.in``
 for how to set up an asynchronous parallel EGO study.
 
 Both of these parallel EGO variants are enabled by setting a batch
-size with the keyword ``batch_size`` in the ``method``
-block. The whole batch is further divided into two sub-batches: the
+size with the keyword :dakkw:`method-efficient_global-batch_size`. 
+The whole batch is further divided into two sub-batches: the
 first batch focuses on querying points corresponding to maximal value
 of the acquisition function, whereas the second batch focuses on
 querying points with maximal posterior variances in the GP. The size
-of the second batch is set with the keyword ``exploration``,
+of the second batch is set with the keyword :dakkw:`method-efficient_global-batch_size-exploration`,
 which has to be less than or equal to ``batch_size - 1``.
 
 For further elaboration of the difference between batch-sequential
-parallel and asynchronous parallel, see Surrogate-Based Minimization
-chapter in Dakota Theory Manual :cite:p:`TheoMan`.
+parallel and asynchronous parallel, see the detailed discussion of
+:ref:`Efficient Global Optimization <uq:ego>` in the theory section of
+the manual :cite:p:`TheoMan`.
 
 
 .. _`opt:additional`:
@@ -799,17 +818,14 @@ Additional Optimization Capabilities
 ------------------------------------
 
 Dakota provides several capabilities which extend the services provided
-by the optimization software packages described in
-Sections `1.2.1 <#opt:methods:gradient>`__
-through `1.2.3 <#opt:methods:gradientfree:global>`__. Those described in
-this section include:
+by the optimization software packages described in the sections above.
+Those described in this section include:
 
 -  **Multiobjective optimization**: There are three capabilities for
    multiobjective optimization in Dakota. The first is MOGA, described
-   above in
-   Section `1.2.3.1 <#opt:methods:gradientfree:global:descriptions>`__.
+   :ref:`above <opt:methods:gradientfree:global:descriptions>`.
    The second is the Pareto-set strategy, described in
-   Section `[adv_meth:pareto] <#adv_meth:pareto>`__. The third is a
+   :ref:`Pareto Optimization <adv_meth:pareto>`. The third is a
    weighting factor approach for multiobjective reduction, in which a
    composite objective function is constructed from a set of individual
    objective functions using a user-specified set of weighting factors.
@@ -817,7 +833,7 @@ this section include:
    objective algorithms.
 
 -  **Scaling,** where any optimizer (or least squares solver described
-   in Section `[nls:solution] <#nls:solution>`__), can accept
+   in the :ref:`Nonlinear Least Squares <nls>` section), can accept
    user-specified (and in some cases automatic or logarithmic) scaling
    of continuous design variables, objective functions (or least squares
    terms), and constraints. Some optimization algorithms are sensitive
@@ -833,7 +849,7 @@ this section include:
    %   as proprietary solvers, to be accessed from shared
    %   libraries.
 
-The Advanced Methods Chapter `[adv_meth] <#adv_meth>`__ offers details
+The :ref:`Advanced Methods <adv_meth>` section offers details
 on the following component-based meta-algorithm approaches:
 
 -  **Sequential Hybrid Minimization**: This meta-algorithm allows the
@@ -1639,16 +1655,6 @@ along with the license status and web page where available.
 
 -  SCOLIB (``coliny_`` methods) License: BSD; website:
    https://software.sandia.gov/trac/acro/wiki/Packages.
-
-.. |image| image:: img/dak_graphics_ps_opt.png
-.. |image1| image:: img/rosen_ps_opt_pts.png
-   :height: 2.5in
-.. |image2| image:: img/rosen_ps_opt_pts2.png
-   :height: 2.5in
-.. |image3| image:: img/rosen_ea_init.png
-   :height: 2.5in
-.. |image4| image:: img/rosen_ea_final.png
-   :height: 2.5in
 
 Video Resources
 ---------------
