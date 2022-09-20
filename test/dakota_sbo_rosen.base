@@ -8,13 +8,13 @@ Test Number 0 succeeded
                       6.9841747717e-14
 <<<<< Best evaluation ID not available
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 19834 total (19834 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 5501 total (5501 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 18006 total (18006 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 10291 total (10291 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9084444188e-01 x1
-                      9.8169680030e-01 x2
+                      9.9993792408e-01 x1
+                      9.9987632099e-01 x2
 <<<<< Best objective function  =
-                      8.4400442382e-05
+                      3.8754127584e-09
 <<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 1434 total (1434 new, 0 duplicate)
@@ -71,13 +71,13 @@ Test Number 7 succeeded
                       7.6131949970e-06
 <<<<< Best evaluation ID not available
 Test Number 8 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 11670 total (11670 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 5501 total (5501 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 545 total (545 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 289 total (289 new, 0 duplicate)
 <<<<< Best parameters          =
-                      8.6740690171e-01 x1
-                      7.5183434003e-01 x2
+                      9.9971465051e-01 x1
+                      9.9942857430e-01 x2
 <<<<< Best objective function  =
-                      1.7612333757e-02
+                      8.1489641862e-08
 <<<<< Best evaluation ID not available
 Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 816 total (816 new, 0 duplicate)
