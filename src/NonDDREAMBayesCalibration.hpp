@@ -17,7 +17,7 @@
 #define NOND_DREAM_BAYES_CALIBRATION_H
 
 #include "NonDBayesCalibration.hpp"
-#include "dakota_mersenne_twister.hpp"
+#include <random>
 
 namespace Dakota {
 
@@ -112,7 +112,7 @@ protected:
   int jumpStep;
 
   /// random number engine for sampling the prior
-  boost::mt19937 rnumGenerator;
+  std::mt19937 rnumGenerator;
 
 private:
 

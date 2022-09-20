@@ -11,8 +11,6 @@
 
 #include "util_common.hpp"
 
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_int.hpp>
 #include <random>
 
 namespace dakota {
@@ -43,8 +41,8 @@ void random_permutation(const int num_pts, const unsigned int seed,
   Generator numberGenerator(mtwister, distribution);
   */
 
-  boost::random::mt19937 generator(seed);
-  boost::random::uniform_int_distribution<> dist(0, num_pts - 1);
+  std::mt19937 generator(seed);
+  std::uniform_int_distribution<> dist(0, num_pts - 1);
   int index, tmp;
   for (int i = 0; i < num_pts; i++) {
     index = dist(generator);

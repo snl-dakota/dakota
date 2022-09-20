@@ -12,24 +12,8 @@
 #include <fstream>
 #include <vector>
 #include <string>
-
-// Portability for deprecated Boost integer_log2.hpp header used in
-// Boost 1.69 random library. To be removed once we migrate to std
-// library RNG.
-#include <boost/version.hpp>
-#if (BOOST_VERSION < 107000) && !defined(BOOST_ALLOW_DEPRECATED_HEADERS)
-//could alternately use: #define BOOST_PENDING_INTEGER_LOG2_HPP 1
-#define BOOST_ALLOW_DEPRECATED_HEADERS 1
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/variate_generator.hpp>
-#undef BOOST_ALLOW_DEPRECATED_HEADERS
-#else
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/variate_generator.hpp>
-#endif
-
+#include <functional>
+#include <random>
 
 int main(int argc, char** argv)
 {
@@ -97,12 +81,11 @@ int main(int argc, char** argv)
   }
   */
 
-  // random number generation (Boost mersenne_twister) with fixed seed
+  // random number generation (mersenne_twister) with fixed seed
   // for repeatability
-  namespace bran = boost::random;
-  bran::mt19937 generator(41u);
-  bran::normal_distribution<> n;
-  bran::variate_generator<bran::mt19937&,bran::normal_distribution<> > ran_gaussian(generator, n);
+  std::mt19937 generator(41u);
+  std::normal_distribution<> n;
+  auto ran_gaussian = std::bind(n, generator);
 
   // compute response
   // create weights from inputs x

@@ -20,13 +20,8 @@
 #include "NonDSampling.hpp"
 #include "dakota_stat_util.hpp"
 
-// BMA TODO: remove this header
-// for uniform PDF and samples
-//#include "pdflib.hpp"
-
-// included to set seed in RNGLIB:
-#include "rnglib.hpp"
-//#include <random>
+#include <boost/math/distributions/normal.hpp>
+#include <random>
 
 #define DEBUG
 
@@ -300,8 +295,8 @@ void NonDWASABIBayesCalibration::calibrate()
   ////////////////////////////////////////////////////////
 
   std::vector<int> points_to_keep;
-  boost::random::mt19937 rng;
-  boost::random::uniform_real_distribution<double> distribution(0.0, 1.0);
+  std::mt19937 rng;
+  std::uniform_real_distribution<double> distribution(0.0, 1.0);
 
   if ( !generateRandomPosteriorSamples || !evaluatePosteriorDensity ){
     Cout << "Must specify at least one of generate_posterior_samples "
