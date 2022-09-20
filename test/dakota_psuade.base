@@ -13,17 +13,17 @@ Test Number 0 succeeded
                       0.0000000000e+00 cdv_10
                       1.0000000000e+00 cdv_11
                       6.6666666667e-01 cdv_12
-                      3.3333333333e-01 cdv_13
+                      1.0000000000e+00 cdv_13
                       0.0000000000e+00 cdv_14
                       1.0000000000e+00 cdv_15
                       0.0000000000e+00 cdv_16
                       3.3333333333e-01 cdv_17
-                      6.6666666667e-01 cdv_18
+                      0.0000000000e+00 cdv_18
                       3.3333333333e-01 cdv_19
                       0.0000000000e+00 cdv_20
 <<<<< Best objective function  =
-                     -1.7076519863e+02
-<<<<< Best evaluation ID: 19
+                     -2.0265591345e+02
+<<<<< Best evaluation ID: 21
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 0 total (0 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -39,14 +39,14 @@ Test Number 1 succeeded
                       0.0000000000e+00 cdv_10
                       1.0000000000e+00 cdv_11
                       6.6666666670e-01 cdv_12
-                      3.3333333330e-01 cdv_13
+                      1.0000000000e+00 cdv_13
                       0.0000000000e+00 cdv_14
                       1.0000000000e+00 cdv_15
                       0.0000000000e+00 cdv_16
                       3.3333333330e-01 cdv_17
-                      6.6666666670e-01 cdv_18
+                      0.0000000000e+00 cdv_18
                       3.3333333330e-01 cdv_19
                       0.0000000000e+00 cdv_20
 <<<<< Best objective function  =
-                     -1.7076519860e+02
-<<<<< Best evaluation ID: 19
+                     -2.0265591350e+02
+<<<<< Best evaluation ID: 21
