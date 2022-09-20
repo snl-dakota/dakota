@@ -15,8 +15,13 @@ loose coupling is the simplest and most common interfacing approach Dakota users
 be a binary file, a script, or some other type of executable file. The goal of this page is to provide a brief overview of how
 Dakota connects to that simulation model to study it.
 
-.. image:: ../img/CouplingSimulations1.png
-   :alt: Fig 1.1
+.. figure:: ../img/CouplingSimulations1.png
+   :name: coupling:figure01
+   :alt: The loosely-coupled or "black-box" interface between Dakota and a user-supplied simulation code.
+   :width: 800
+   :align: center
+   
+   The loosely-coupled or "black-box" interface between Dakota and a user-supplied simulation code.
 
 This figure depicts a typical loosely-coupled relationship between Dakota and the black-box simulation code. The solid lines denote file
 input/output (I/O) operations inherent to Dakota or the analyst’s simulation code. The dotted lines indicate passing or converting

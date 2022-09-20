@@ -256,17 +256,17 @@ detection scheme for this purpose in the asynchronous case. Thus, an
 important advantage of the fork interface over the system call interface
 is that it avoids the potential of a file race condition when employing
 asynchronous local parallelism (refer to
-Section `[parallel:SLP:local] <#parallel:SLP:local>`__). This condition
+:ref:`Asynchronous Local Parallelism <parallel:SLP:local>`). This condition
 can occur when the responses file has been created but the writing of
 the response data set to this file has not been completed (see
-Section `[parallel:SLP:local:system] <#parallel:SLP:local:system>`__).
+:ref:`System Call Synchronization <parallel:SLP:local:system>`).
 While significant care has been taken to manage this file race condition
 in the system call case, the fork interface still has the potential to
 be more robust when performing function evaluations asynchronously.
 
 Another advantage of the fork interface is that it has additional
 asynchronous capabilities when a function evaluation involves multiple
-analyses. As shown in Table `[parallel:table01] <#parallel:table01>`__,
+analyses. As shown in :numref:`parallel:table01`,
 the fork interface supports asynchronous local and hybrid parallelism
 modes for managing concurrent analyses within function evaluations,
 whereas the system call interface does not. These additional
@@ -299,11 +299,9 @@ interfaces (system call or fork), pre- and post-processing functionality
 typically needs to be supplied (or developed) in order to transfer the
 parameters from Dakota to the simulator input file and to extract the
 response values of interest from the simulator’s output file for return
-to Dakota (see Figures `[intro:bbinterface] <#intro:bbinterface>`__
-and `1.1 <#interfaces:bbinterfacecomp>`__). This is often managed
-through the use of scripting languages, such as
-C-shell :cite:p:`And86`, Bourne
-shell :cite:p:`Bli96`, Perl :cite:p:`Wal96`, or
+to Dakota (see :numref:`coupling:figure01` and :numref:`interfaces:bbinterfacecomp`).
+This is often managed through the use of scripting languages, such as
+C-shell :cite:p:`And86`, Bourne shell :cite:p:`Bli96`, Perl :cite:p:`Wal96`, or
 Python :cite:p:`Mar03`. While these are common and convenient
 choices for simulation drivers/filters, it is important to recognize
 that any executable file can be used. If the user prefers, the desired
@@ -647,6 +645,8 @@ performed within the input and output filters.
 .. figure:: img/dakota_components.png
    :alt: Components of the simulation interface
    :name: interfaces:bbinterfacecomp
+   :width: 400
+   :align: center   
 
    Components of the simulation interface
 
