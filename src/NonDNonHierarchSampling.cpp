@@ -67,8 +67,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
   size_t i, num_mf = model_ensemble.size(), num_lev, md_index, num_md;
   ModelLIter ml_it;
-  NLevActual.resize(num_mf);
-  NLevAlloc.resize(num_mf);
+  NLevActual.resize(num_mf);  NLevAlloc.resize(num_mf);
   costMetadataIndices.resize(num_mf);
   for (i=0, ml_it=model_ensemble.begin(); ml_it!=model_ensemble.end();
        ++i, ++ml_it) {
@@ -517,7 +516,7 @@ mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
     cost_L                =        cost[approx];
     // NOTE: indexing is reversed from Peherstorfer (HF = 1, MF = 2, LF = 3)
     // > becomes Approx LF = 0 and MF = 1, Truth HF = 2
-    // > i+1 becomes i-1 and most correlated ref is rho2_LH(qoi, num_am1)
+    // > i+1 becomes i-1 and most correlated approx is rho2_LH(qoi, num_am1)
     if (approx)
       for (qoi=0; qoi<numFunctions; ++qoi)
 	eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L *

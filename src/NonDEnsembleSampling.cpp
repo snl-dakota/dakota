@@ -38,6 +38,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   pilotMgmtMode(
     problem_db.get_short("method.nond.ensemble_sampling_solution_mode")),
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
+  backfillFailures(false), // inactive option for now
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
@@ -205,39 +206,30 @@ void NonDEnsembleSampling::active_set_mapping()
 
 void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
 {
-  if (statsFlag)
-    switch (pilotMgmtMode) {
-    case PILOT_PROJECTION:
-      // for consistency w/ equivHFEvals, report allocated rather than actual
-      print_multilevel_evaluation_summary(s, NLevAlloc, "Projected");
-      s << "<<<<< Projected number of equivalent high fidelity evaluations: "
-	<< std::scientific  << std::setprecision(write_precision)
-	<< equivHFEvals << '\n';
-      print_variance_reduction(s);
+  if (!statsFlag)
+    return;
 
-      //s << "\nStatistics based on multilevel sample set:\n";
-      //print_moments(s, "response function",
-      //	      iteratedModel.truth_model().response_labels());
-      //archive_moments();
-      //archive_equiv_hf_evals(equivHFEvals);
-      break;
-    default:
-      // Any offline pilot samples (N_pilot in *_offline()) are excluded.
-      // For consistency w/ equivHFEvals, report allocated rather than actual.
-      print_multilevel_evaluation_summary(s, NLevAlloc, "Online");
-      s << "<<<<< Equivalent number of high fidelity evaluations: "
-	<< std::scientific  << std::setprecision(write_precision)
-	<< equivHFEvals << '\n';
-      print_variance_reduction(s);
+  bool   pilot_mode   = (pilotMgmtMode == PILOT_PROJECTION);
+  String summary_type = (pilot_mode) ? "Projected" : "Online Allocation";
+  // For consistency w/ equivHFEvals, report allocated first.
+  // Any offline pilot samples (N_pilot in *_offline()) are excluded.
+  print_multilevel_evaluation_summary(s, NLevAlloc, summary_type);
+  s << "<<<<< " << summary_type
+    << " number of equivalent high fidelity evaluations: " << std::scientific
+    << std::setprecision(write_precision) << equivHFEvals << '\n';
+  archive_equiv_hf_evals(equivHFEvals);
+  if (!pilot_mode) // && faults_detected ?
+    print_multilevel_evaluation_summary(s, NLevActual, "Online Successful");
 
-      s << "\nStatistics based on multilevel sample set:\n"; // *** FINAL_STATISTICS ESTIMATOR_PERFORMANCE --> check results_state!! ***
-      //print_statistics(s);
-      print_moments(s, "response function",
-		    iteratedModel.truth_model().response_labels());
-      archive_moments();
-      archive_equiv_hf_evals(equivHFEvals);
-      break;
-    }
+  print_variance_reduction(s);
+
+  if (!pilot_mode && finalStatsType == QOI_STATISTICS) {
+    s << "\nStatistics based on multilevel sample set:\n";
+    //print_statistics(s);
+    print_moments(s, "response function",
+		  iteratedModel.truth_model().response_labels());
+    archive_moments();
+  }
 }
 
 

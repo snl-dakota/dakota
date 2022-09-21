@@ -182,16 +182,19 @@ protected:
   /// print system series/parallel mappings for response levels
   void print_system_mappings(std::ostream& s) const;
 
-  /// print evaluation summary for multilevel sampling across 1D profile
+  /// print evaluation summary for multilevel sampling across 1D level profile
   void print_multilevel_evaluation_summary(std::ostream& s,
 					   const SizetArray& N_samp);
-  /// print evaluation summary for multilevel sampling across 2D profile
+  /// print evaluation summary for multilevel sampling across 2D
+  /// level+QoI profile
   void print_multilevel_evaluation_summary(std::ostream& s,
 					   const Sizet2DArray& N_samp);
-  /// print evaluation summary for multilevel sampling across 3D profile
+  /// print evaluation summary for multilevel sampling across 2D model+level
+  /// profile (allocations) or 3D model+level+QoI profile (successful)
+  template <typename ArrayType>
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const Sizet3DArray& N_samp,
-					   String type = "Final");
+					   const std::vector<ArrayType>& N_samp,
+					   String type);// = "Final");
 
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
@@ -535,6 +538,36 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
   return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
 }
 */
+
+
+template <typename ArrayType> void NonD::
+print_multilevel_evaluation_summary(std::ostream& s,
+				    const std::vector<ArrayType>& N_samp,
+				    String type)
+{
+  // Sizet3DArray used for successful sample counts --> Nsamp[i] binds with 2D
+
+  // Sizet2DArray used for sample allocations --> Nsamp[i] binds with 1D,
+  // which is identical to 3D case with homogenous QoI samples
+
+  size_t i, j, num_mf = N_samp.size(), width = write_precision+7;
+  if (num_mf == 1) {
+    s << "<<<<< " << type << " samples per level:\n";
+    print_multilevel_evaluation_summary(s, N_samp[0]);
+  }
+  else {
+    ModelList& sub_models = iteratedModel.subordinate_models(false);
+    ModelLIter m_iter = sub_models.begin();
+    s << "<<<<< " << type << " samples per model form:\n";
+    for (i=0; i<num_mf; ++i) {
+      s << "      Model Form ";
+      if (m_iter != sub_models.end())
+	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
+      else s << i+1 << ":\n";
+      print_multilevel_evaluation_summary(s, N_samp[i]);
+    }
+  }
+}
 
 } // namespace Dakota
 

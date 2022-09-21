@@ -191,6 +191,10 @@ protected:
   /// major iteration counter
   size_t mlmfIter;
 
+  /// (inactive) option to backfill simulation failures by comparing targets
+  /// against successful sample completions rather than sample allocations
+  bool backfillFailures;
+
   /// final estimator variance for targeted moment (usually mean), averaged
   /// across QoI
   Real avgEstVar;

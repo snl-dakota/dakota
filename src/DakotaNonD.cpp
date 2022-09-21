@@ -1166,30 +1166,6 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
 }
 
 
-void NonD::
-print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp,
-				    String type)
-{
-  size_t i, j, num_mf = N_samp.size(), width = write_precision+7;
-  if (num_mf == 1) {
-    s << "<<<<< " << type << " samples per level:\n";
-    print_multilevel_evaluation_summary(s, N_samp[0]);
-  }
-  else {
-    ModelList& sub_models = iteratedModel.subordinate_models(false);
-    ModelLIter m_iter = sub_models.begin();
-    s << "<<<<< " << type << " samples per model form:\n";
-    for (i=0; i<num_mf; ++i) {
-      s << "      Model Form ";
-      if (m_iter != sub_models.end())
-	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
-      else s << i+1 << ":\n";
-      print_multilevel_evaluation_summary(s, N_samp[i]);
-    }
-  }
-}
-
-
 unsigned short NonD::
 sub_optimizer_select(unsigned short requested_sub_method,
 		     unsigned short   default_sub_method)

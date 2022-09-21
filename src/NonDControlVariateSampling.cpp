@@ -35,12 +35,6 @@ NonDControlVariateSampling::
 NonDControlVariateSampling(ProblemDescDB& problem_db, Model& model):
   NonDHierarchSampling(problem_db, model)//, finalCVRefinement(true)
 {
-  // For now...
-  size_t num_mf = NLevActual.size();
-  if (num_mf > 2)
-    Cerr << "Warning: NonDControlVariateSampling currently uses first and last "
-	 << "model in ordered sequence and ignores the rest." << std::endl;
-
   // Want to define this as construct time for early run-time use in
   // HierarchSurrModel::create_tabular_datastream().  Note that MLCV will have
   // two overlapping assignments, one from this ctor (first) that is then
@@ -64,10 +58,16 @@ void NonDControlVariateSampling::core_run()
   Pecos::ActiveKey active_key, hf_key, lf_key;
   unsigned short hf_form, lf_form;  size_t hf_lev, lf_lev;
   if (multilev) {
+    if (numSteps > 2)
+      Cerr << "Warning: NonDControlVariateSampling uses first and last "
+	   << "resolution levels and ignores the rest." << std::endl;
     hf_lev  = numSteps - 1;  lf_lev = 0;  // extremes of range
     hf_form = lf_form = (secondaryIndex == SZ_MAX) ? USHRT_MAX : secondaryIndex;
   }
   else {
+    if (numSteps > 2)
+      Cerr << "Warning: NonDControlVariateSampling uses first and last models "
+	   << "in ordered sequence and ignores the rest." << std::endl;
     hf_form = numSteps - 1;  lf_form = 0; // extremes of range
     if (secondaryIndex == SZ_MAX) {
       hf_lev =     iteratedModel.truth_model().solution_level_cost_index();
@@ -102,9 +102,12 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 {
   size_t hf_form_index, lf_form_index, hf_lev_index, lf_lev_index;
   hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
-  SizetArray& N_hf = NLevActual[hf_form_index][hf_lev_index];
-  SizetArray& N_lf = NLevActual[lf_form_index][lf_lev_index];
-  N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
+  SizetArray& N_actual_shared = NLevActual[hf_form_index][hf_lev_index];
+  SizetArray& N_actual_lf     = NLevActual[lf_form_index][lf_lev_index];
+  N_actual_shared.assign(numFunctions, 0);  N_actual_lf.assign(numFunctions, 0);
+  size_t&     N_alloc_shared  = NLevAlloc[hf_form_index][hf_lev_index];
+  size_t&     N_alloc_lf      = NLevAlloc[lf_form_index][lf_lev_index];
+  N_alloc_shared = N_alloc_lf = 0;
 
   IntRealVectorMap sum_L_shared, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH);
@@ -123,7 +126,11 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     // Evaluate shared increment and update correlations, {eval,estvar}_ratios
     // -----------------------------------------------------------------------
     shared_increment(active_key, mlmfIter, 0);
-    accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH, N_hf);
+    // exclude failure backfill from alloc increment, if needed
+    N_alloc_shared += (backfillFailures && mlmfIter) ?
+      one_sided_delta(N_alloc_shared, average(hf_targets)) : numSamples;
+    accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH,
+		       N_actual_shared);
     if (mlmfIter == 0) {
       if (onlineCost) recover_paired_online_cost(sequenceCost, 1);
       cost_ratio  = (onlineCost) ? sequenceCost[1] : sequenceCost[numSteps - 1];
@@ -134,12 +141,14 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     // Compute the LF/HF evaluation ratio using shared samples, averaged
     // over QoI.  This includes updating varH and rho2_LH.
     compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
-			cost_ratio, N_hf, varH, rho2_LH, eval_ratios);
+			cost_ratio, N_actual_shared, varH, rho2_LH,eval_ratios);
     // estVarIter0 only uses HF pilot since sum_L_shared / N_shared minus
     // sum_L_refined / N_refined is zero for CV prior to sample refinement.
     // (This differs from MLMC estvar^0 which uses pilot for all levels.)
-    if (mlmfIter == 0)
-      { compute_mc_estimator_variance(varH,N_hf,estVarIter0); numHIter0 = N_hf;}
+    if (mlmfIter == 0) {
+      compute_mc_estimator_variance(varH, N_actual_shared, estVarIter0);
+      numHIter0 = N_actual_shared;
+    }
     // Compute the ratio of MC and CVMC mean squared errors (for convergence).
     // This ratio incorporates the anticipated variance reduction from the
     // upcoming application of eval_ratios.
@@ -153,7 +162,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
       allocate_budget(eval_ratios, cost_ratio, hf_targets);
     }
     else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: support both
-      // N_hf = estvar_ratio * varH / convTol / estVarIter0
+      // N_H = estvar_ratio * varH / convTol / estVarIter0
       // Note: don't simplify further since estVarIter0 is fixed based on pilot
       Cout << "Scaling profile for convergenceTol = " << convergenceTol;
       hf_targets = estVarRatios;
@@ -162,8 +171,14 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     }
     // numSamples is relative to N_H, but the approx_increments() below are
     // computed relative to hf_targets (independent of sunk cost for pilot)
+    // Note: don't backfill failures (unless specific user override?).
+    // Reasons: inconsistent w/ budget alloc; inconsistent w/ pilot handling;
+    //          would need to carry over to LF increments as well, which are not
+    //          iterated; may amplify corr between params and successes/failures
     Cout << ": average HF target = " << average(hf_targets) << std::endl;
-    numSamples = one_sided_delta(N_hf, hf_targets, 1); // average
+    numSamples = (backfillFailures) ? // new option for accuracy tolerance
+      one_sided_delta(N_actual_shared,        hf_targets, 1) : // average
+      one_sided_delta(N_alloc_shared, average(hf_targets));
     //numSamples = std::min(num_samp_budget, num_samp_ctol);
 
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
@@ -180,25 +195,39 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     // after N_hf has converged, which simplifies maxFnEvals / convTol logic
     // (no need to further interrogate these throttles below)
     IntRealVectorMap sum_L_refined = sum_L_shared;
-    N_lf = N_hf; // shared to this point, but only N_hf has been updated
-    Pecos::ActiveKey lf_key;  active_key.extract_key(1, lf_key);
-    if (lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
-      accumulate_mf_sums(sum_L_refined, N_lf);
+    // shared LF/HF samples to this point, as tracked by N_*_shared
+    N_actual_lf = N_actual_shared;  N_alloc_lf = N_alloc_shared;
+    Pecos::ActiveKey lf_key;        active_key.extract_key(1, lf_key);
+    RealVector lf_targets;
+    if (backfillFailures) { // increment relative to successful samples
+      lf_increment(lf_key, eval_ratios, N_actual_lf, hf_targets, lf_targets,
+		   mlmfIter, 0);
+      N_alloc_lf += one_sided_delta(N_alloc_lf, average(lf_targets));
+    }
+    else {                  // increment relative to allocated samples
+      lf_increment(lf_key, eval_ratios, N_alloc_lf,  hf_targets, lf_targets,
+		   mlmfIter, 0);
+      N_alloc_lf += numSamples;
+    }
+    if (numSamples) {
+      accumulate_mf_sums(sum_L_refined, N_actual_lf);
       increment_mf_equivalent_cost(numSamples, cost_ratio);
     }
 
     // Compute/apply control variate params to estimate uncentered raw moments
     RealMatrix H_raw_mom(numFunctions, 4);
-    cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined,
-		   N_lf, H_raw_mom);
+    cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_actual_shared,
+		   sum_L_refined, N_actual_lf, H_raw_mom);
     // Convert uncentered raw moment estimates to final moments (central or std)
     convert_moments(H_raw_mom, momentStats);
   }
   else // for consistency with pilot projection
-    update_projected_samples(hf_targets, eval_ratios, cost_ratio, N_hf, N_lf);
+    update_projected_samples(hf_targets, eval_ratios, cost_ratio,
+			     N_actual_shared, N_actual_lf,
+			     N_alloc_shared,  N_alloc_lf);
 
   // Both QOI_STATISTICS and ESTIMATOR_PERFORMANCE
-  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
 }
 
 
@@ -209,16 +238,20 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
 {
   size_t hf_form_index, lf_form_index, hf_lev_index, lf_lev_index;
   hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
-  SizetArray& N_hf = NLevActual[hf_form_index][hf_lev_index];
-  SizetArray& N_lf = NLevActual[lf_form_index][lf_lev_index];
-  N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
+  SizetArray& N_actual_shared = NLevActual[hf_form_index][hf_lev_index];
+  SizetArray& N_actual_lf     = NLevActual[lf_form_index][lf_lev_index];
+  N_actual_shared.assign(numFunctions, 0);  N_actual_lf.assign(numFunctions, 0);
+  size_t&     N_alloc_shared  = NLevAlloc[hf_form_index][hf_lev_index];
+  size_t&     N_alloc_lf      = NLevAlloc[lf_form_index][lf_lev_index];
+  N_alloc_shared = N_alloc_lf = 0;
 
   // ---------------------------------------------------------------------
   // Compute final rho2LH, varH, {eval,estvar} ratios from (oracle) pilot
   // treated as "offline" cost
   // ---------------------------------------------------------------------
-  RealVector eval_ratios, hf_targets;  SizetArray N_shared;  Real cost_ratio;
-  evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_shared,
+  RealVector eval_ratios, hf_targets;  Real cost_ratio;
+  SizetArray N_offline_shared;
+  evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_offline_shared,
 		 hf_targets, false, false); // no cost, estvar
 
   // -----------------------------------
@@ -228,34 +261,51 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
   initialize_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH);
   RealVector sum_HH(numFunctions);
 
-  // online N_hf is zero; at least 2 samples required for online variance/corr
-  numSamples = std::max(one_sided_delta(N_hf, hf_targets, 1), (size_t)2);
+  // online samples are zero; at least 2 samples reqd for online variance/corr
+  numSamples
+    = std::max(one_sided_delta(N_actual_shared, hf_targets, 1), (size_t)2);
   shared_increment(active_key, mlmfIter, 0);
-  accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH, N_hf);
+  N_alloc_shared += numSamples;
+  accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH,
+		     N_actual_shared);
   increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     IntRealVectorMap sum_L_refined = sum_L_shared;
-    N_lf = N_hf; // shared to this point, but only N_hf has been updated
+    // shared LF/HF samples to this point, as tracked by N_*_shared
+    N_actual_lf = N_actual_shared;  N_alloc_lf = N_alloc_shared;
     Pecos::ActiveKey lf_key;  active_key.extract_key(1, lf_key);
-    if (lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
-      accumulate_mf_sums(sum_L_refined, N_lf);
+    RealVector lf_targets;
+    if (backfillFailures) { // increment relative to successful samples
+      lf_increment(lf_key, eval_ratios, N_actual_lf, hf_targets, lf_targets,
+		   mlmfIter, 0);
+      N_alloc_lf += one_sided_delta(N_alloc_lf, average(lf_targets));
+    }
+    else {                  // increment relative to allocated samples
+      lf_increment(lf_key, eval_ratios, N_alloc_lf,  hf_targets, lf_targets,
+		   mlmfIter, 0);
+      N_alloc_lf += numSamples;
+    }
+    if (numSamples) {
+      accumulate_mf_sums(sum_L_refined, N_actual_lf);
       increment_mf_equivalent_cost(numSamples, cost_ratio);
     }
     // Compute/apply control variate params to estimate uncentered raw moments
     RealMatrix H_raw_mom(numFunctions, 4);
-    cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined,
-		   N_lf, H_raw_mom);
+    cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_actual_shared,
+		   sum_L_refined, N_actual_lf, H_raw_mom);
     // Convert uncentered raw moment estimates to final moments (central or std)
     convert_moments(H_raw_mom, momentStats);
   }
   else // for consistency with pilot projection
-    update_projected_samples(hf_targets, eval_ratios, cost_ratio, N_hf, N_lf);
+    update_projected_samples(hf_targets, eval_ratios, cost_ratio,
+			     N_actual_shared, N_actual_lf,
+			     N_alloc_shared,  N_alloc_lf);
 
   // Both QOI_STATISTICS and ESTIMATOR_PERFORMANCE
-  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
 }
 
 
@@ -266,30 +316,37 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
 {
   size_t hf_form_index, lf_form_index, hf_lev_index, lf_lev_index;
   hf_lf_indices(hf_form_index, hf_lev_index, lf_form_index, lf_lev_index);
-  SizetArray& N_hf = NLevActual[hf_form_index][hf_lev_index];
-  SizetArray& N_lf = NLevActual[lf_form_index][lf_lev_index];
-  N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
+  SizetArray& N_actual_shared = NLevActual[hf_form_index][hf_lev_index];
+  SizetArray& N_actual_lf     = NLevActual[lf_form_index][lf_lev_index];
+  N_actual_shared.assign(numFunctions, 0);  N_actual_lf.assign(numFunctions, 0);
+  // Not tracked separately for pilot projections:
+  size_t&     N_alloc_shared  = NLevAlloc[hf_form_index][hf_lev_index];
+  size_t&     N_alloc_lf      = NLevAlloc[lf_form_index][lf_lev_index];
 
   RealVector eval_ratios, hf_targets;  Real cost_ratio;
-  evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_hf, hf_targets,
-		 true, true); // accumulate cost, compute estvar0
+  evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_actual_shared,
+		 hf_targets, true, true); // accumulate cost, compute estvar0
+  N_alloc_shared = N_alloc_lf = numSamples;
 
-  N_lf = N_hf; // shared to this point, but only N_hf has been updated
-  update_projected_samples(hf_targets, eval_ratios, cost_ratio, N_hf, N_lf);
-  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_hf, avgEstVar);
+  N_actual_lf = N_actual_shared; // only N_actual_shared updated so far
+  update_projected_samples(hf_targets, eval_ratios, cost_ratio,
+			   N_actual_shared, N_actual_lf,
+			   N_alloc_shared,  N_alloc_lf);
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
 }
 
 
 void NonDControlVariateSampling::
 evaluate_pilot(const Pecos::ActiveKey& active_key, Real& cost_ratio,
-	       RealVector& eval_ratios, RealVector& var_H, SizetArray& N_shared,
-	       RealVector& hf_targets, bool accumulate_cost, bool pilot_estvar)
+	       RealVector& eval_ratios, RealVector& var_H,
+	       SizetArray& N_actual_shared, RealVector& hf_targets,
+	       bool accumulate_cost, bool pilot_estvar)
 {
   RealVector sum_L(numFunctions), sum_H(numFunctions), sum_LL(numFunctions),
     sum_LH(numFunctions), sum_HH(numFunctions), rho2_LH(numFunctions, false);
   bool budget_constrained = (maxFunctionEvals != SZ_MAX);
 
-  N_shared.assign(numFunctions, 0);
+  N_actual_shared.assign(numFunctions, 0);
 
   SizetArray delta_N_l;
   load_pilot_sample(pilotSamples, 2, delta_N_l); // 2 models only
@@ -299,7 +356,7 @@ evaluate_pilot(const Pecos::ActiveKey& active_key, Real& cost_ratio,
   // Evaluate shared increment and update correlations, {eval,estvar}_ratios
   // -----------------------------------------------------------------------
   shared_increment(active_key, mlmfIter, 0);
-  accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared);
+  accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_actual_shared);
   if (onlineCost) recover_paired_online_cost(sequenceCost, 1);
   cost_ratio  = (onlineCost) ? sequenceCost[1] : sequenceCost[numSteps - 1];
   cost_ratio /= sequenceCost[0]; // HF / LF
@@ -309,13 +366,13 @@ evaluate_pilot(const Pecos::ActiveKey& active_key, Real& cost_ratio,
   // Compute the LF/HF evaluation ratio using shared samples, averaged
   // over QoI.  This includes updating var_H and rho2_LH.
   compute_eval_ratios(sum_L, sum_H, sum_LL, sum_LH, sum_HH, cost_ratio,
-		      N_shared, var_H, rho2_LH, eval_ratios);
+		      N_actual_shared, var_H, rho2_LH, eval_ratios);
   // estVarIter0 only uses HF pilot since sum_L_shared / N_shared minus
   // sum_L_refined / N_refined is zero for CV prior to sample refinement.
   // (This differs from MLMC estvar^0 which uses pilot for all levels.)
   if (pilot_estvar || !budget_constrained) {
-    compute_mc_estimator_variance(var_H, N_shared, estVarIter0);
-    numHIter0 = N_shared;
+    compute_mc_estimator_variance(var_H, N_actual_shared, estVarIter0);
+    numHIter0 = N_actual_shared;
   }
   // Compute the ratio of MC and CVMC mean squared errors (for convergence).
   // This ratio incorporates the anticipated variance reduction from the
@@ -330,7 +387,7 @@ evaluate_pilot(const Pecos::ActiveKey& active_key, Real& cost_ratio,
     allocate_budget(eval_ratios, cost_ratio, hf_targets);
   }
   else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: support both
-    // N_hf = estvar_ratio * var_H / convTol / estVarIter0
+    // N_H = estvar_ratio * var_H / convTol / estVarIter0
     // Note: don't simplify further since estVarIter0 is fixed based on pilot
     Cout << "Scaling profile for convergenceTol = " << convergenceTol;
     hf_targets = estVarRatios;
@@ -565,16 +622,66 @@ shared_increment(const Pecos::ActiveKey& agg_key, size_t iter, size_t lev)
 }
 
 
-/** version with LF key */
+/** versions with LF key */
 bool NonDControlVariateSampling::
 lf_increment(const Pecos::ActiveKey& lf_key, const RealVector& eval_ratios,
 	     const SizetArray& N_lf, const RealVector& hf_targets,
+	     RealVector& lf_targets, size_t iter, size_t lev)
+{
+  lf_allocate_samples(eval_ratios, N_lf, hf_targets, lf_targets);
+
+  if (numSamples) {
+    uncorrected_surrogate_mode(); // also needed for lf_key assignment below
+    iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
+
+    return lf_perform_samples(iter, lev);
+  }
+  else
+    return false;
+}
+
+
+/** versions with LF key */
+bool NonDControlVariateSampling::
+lf_increment(const Pecos::ActiveKey& lf_key, const RealVector& eval_ratios,
+	     size_t N_lf, const RealVector& hf_targets, RealVector& lf_targets,
 	     size_t iter, size_t lev)
+{
+  SizetArray N_lf_sa;  N_lf_sa.assign(eval_ratios.length(), N_lf);
+  lf_allocate_samples(eval_ratios, N_lf_sa, hf_targets, lf_targets);
+
+  if (numSamples) {
+    uncorrected_surrogate_mode(); // also needed for lf_key assignment below
+    iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
+
+    return lf_perform_samples(iter, lev);
+  }
+  else
+    return false;
+}
+
+
+/** version without LF key */
+bool NonDControlVariateSampling::
+lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
+	     Real hf_target, RealVector& lf_targets, size_t iter, size_t lev)
+{
+  RealVector hf_targets(eval_ratios.length(), false);  hf_targets = hf_target;
+  lf_allocate_samples(eval_ratios, N_lf, hf_targets, lf_targets);
+
+  return (numSamples) ? lf_perform_samples(iter, lev) : false;
+}
+
+
+/** shared helper */
+void NonDControlVariateSampling::
+lf_allocate_samples(const RealVector& eval_ratios, const SizetArray& N_lf,
+		    const RealVector& hf_targets, RealVector& lf_targets)
 {
   // update LF samples based on evaluation ratio
   //   r = m/n -> m = r*n -> delta = m-n = (r-1)*n
   //   or with inverse r  -> delta = m-n = n/inverse_r - n
-  RealVector lf_targets(numFunctions, false);
+  if (lf_targets.empty()) lf_targets.sizeUninitialized(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     lf_targets[qoi] = eval_ratios[qoi] * hf_targets[qoi];
   // Choose average, RMS, max of difference?
@@ -587,48 +694,11 @@ lf_increment(const Pecos::ActiveKey& lf_key, const RealVector& eval_ratios,
     Cout << " from avg LF = " << average(N_lf) << ", avg HF targets = "
 	 << average(hf_targets) << ", avg eval_ratio = "<< average(eval_ratios);
   Cout << std::endl;
-
-  if (numSamples) {
-    uncorrected_surrogate_mode(); // also needed for lf_key assignment below
-    iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
-
-    return lf_increment(iter, lev);
-  }
-  else
-    return false;
-}
-
-
-/** version without LF key */
-bool NonDControlVariateSampling::
-lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
-	     Real hf_target, size_t iter, size_t lev)
-{
-  // NonDMLCVSampling applies eval_ratio to hf_target as allocated by ML portion
-
-  // update LF samples based on evaluation ratio
-  //   r = m/n -> m = r*n -> delta = m-n = (r-1)*n
-  //   or with inverse r  -> delta = m-n = n/inverse_r - n
-  RealVector lf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    lf_targets[qoi] = eval_ratios[qoi] * hf_target;
-  // Choose average, RMS, max of difference?
-  // Trade-off: Possible overshoot vs. more iteration...
-  numSamples = one_sided_delta(N_lf, lf_targets, 1); // average
-
-  if (numSamples) Cout << "\nCVMC LF sample increment = " << numSamples;
-  else            Cout << "\nNo CVMC LF sample increment";
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << " from avg LF = " << average(N_lf) << ", HF target = " << hf_target
-	 << ", avg eval_ratio = "<< average(eval_ratios);
-  Cout << std::endl;
-
-  return (numSamples) ? lf_increment(iter, lev) : false;
 }
 
 
 /** shared helper */
-bool NonDControlVariateSampling::lf_increment(size_t iter, size_t lev)
+bool NonDControlVariateSampling::lf_perform_samples(size_t iter, size_t lev)
 {
   // ----------------------------------------
   // Compute LF increment for control variate
@@ -796,17 +866,28 @@ cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,
 void NonDControlVariateSampling::
 update_projected_samples(const RealVector& hf_targets,
 			 const RealVector& eval_ratios, Real cost_ratio,
-			 SizetArray& N_hf, SizetArray& N_lf)
+			 SizetArray& N_actual_hf, SizetArray& N_actual_lf,
+			 size_t&     N_alloc_hf,  size_t&     N_alloc_lf)
 {
   RealVector lf_targets(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     lf_targets[qoi] = eval_ratios[qoi] * hf_targets[qoi];
 
-  size_t hf_incr = one_sided_delta(N_hf, hf_targets, 1),
-         lf_incr = one_sided_delta(N_lf, lf_targets, 1);
-  increment_samples(N_hf, hf_incr);
-  increment_samples(N_lf, lf_incr);
-  increment_mf_equivalent_cost(hf_incr, lf_incr, cost_ratio);
+  size_t hf_actual_incr, lf_actual_incr,
+    hf_alloc_incr = one_sided_delta(N_alloc_hf, average(hf_targets)),
+    lf_alloc_incr = one_sided_delta(N_alloc_lf, average(lf_targets));
+  // essentially assigns targets to allocations:
+  N_alloc_hf += hf_alloc_incr;  N_alloc_lf += lf_alloc_incr;
+
+  if (backfillFailures) {
+    hf_actual_incr = one_sided_delta(N_actual_hf, hf_targets, 1);
+    lf_actual_incr = one_sided_delta(N_actual_lf, lf_targets, 1);
+  }
+  else
+    { hf_actual_incr = hf_alloc_incr;  lf_actual_incr = lf_alloc_incr; }
+  increment_samples(N_actual_hf, hf_actual_incr); // assumes no (addtl) failures
+  increment_samples(N_actual_lf, lf_actual_incr); // assumes no (addtl) failures
+  increment_mf_equivalent_cost(hf_actual_incr, lf_actual_incr, cost_ratio);
 }
 
 
