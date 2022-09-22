@@ -44,8 +44,8 @@ class Moments(unittest.TestCase):
                         self.assertAlmostEqual(console_moments[i][r][j], hdf5_moments[j])
                     scale_label = list(hdf5_moments.dims[0].keys())[0]
                     self.assertEqual(expected_scale_label, scale_label)
-                    for es, s in zip(expected_scale, hdf5_moments.dims[0][0]):
-                        self.assertEqual(es,s)
+                    self.assertListEqual(expected_scale, hce.h5py_strings(hdf5_moments.dims[0][0])) 
+
 
     def test_moment_confidence_intervals(self):
         console_cis = self._cis
@@ -64,9 +64,9 @@ class Moments(unittest.TestCase):
                     for j in range(2):
                         for k in range(2):
                             self.assertAlmostEqual(ci[r][j][k], hdf_cis[r][j,k])
-                    for j in range(2):
-                        self.assertEqual(expected_scales[0][j], hdf_cis[r].dims[0][0][j])
-                        self.assertEqual(expected_scales[1][j], hdf_cis[r].dims[1][0][j])
+                    self.assertListEqual(expected_scales[0], hce.h5py_strings(hdf_cis[r].dims[0][0]))
+                    self.assertListEqual(expected_scales[1], hce.h5py_strings(hdf_cis[r].dims[1][0]))
+
 
 class Correlations(unittest.TestCase):
     def setUp(self):
@@ -99,9 +99,7 @@ class Correlations(unittest.TestCase):
                 self.assertEqual(len(corr[1]), hdf_simple.shape[0])
                 self.assertEqual(len(corr[1][0]), hdf_simple.shape[1])
                 # factors
-                hdf_factors = hdf_simple.dims[0][0][:]
-                for cf, hf in zip(corr[0], hdf_factors):
-                    self.assertEqual(cf, hf)
+                self.assertListEqual(corr[0], hce.h5py_strings(hdf_simple.dims[0][0]))
                 # elements
                 n = len(corr[1])
                 for i in range(n):
@@ -138,8 +136,7 @@ class Correlations(unittest.TestCase):
                 # and data are the same
                 for resp in list(corr.keys()):
                     self.assertEqual(len(corr[resp][1]), hdf_partial[resp].shape[0])
-                    for cf, hf in zip(corr[resp][0], hdf_partial[resp].dims[0][0][:]):
-                        self.assertEqual(cf, hf)
+                    self.assertListEqual(corr[resp][0], hce.h5py_strings(hdf_partial[resp].dims[0][0]))
                     for cd, hd in zip(corr[resp][1], hdf_partial[resp]):
                         self.assertAlmostEqual(cd, hd, 5)
 
@@ -187,13 +184,13 @@ class TabularData(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/interfaces/APPROX_INTERFACE_1/surr/variables/continuous"]
-            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
+            self.assertListEqual(variables, hce.h5py_strings(hvars.dims[1][0]))
             for i, v in enumerate(variables):
                 for eid, tv, hv in zip(tdata["%eval_id"], tdata[v], hvars[:,i]):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
             hresps = h["/interfaces/APPROX_INTERFACE_1/surr/responses/functions"]
             # Responses
-            self.assertListEqual(responses, hresps.dims[1][0][:].tolist())
+            self.assertListEqual(responses, hce.h5py_strings(hresps.dims[1][0]))
             for i, r in enumerate(responses):
                 for eid, tr, hr in zip(tdata["%eval_id"],tdata[r], hresps[:,i]):
                     self.assertAlmostEqual(tr, hr, msg="Bad comparison for response '%s'" % r, places=9)
@@ -210,7 +207,7 @@ class RestartData(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/interfaces/NO_ID/truth_m/variables/continuous"]
-            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
+            self.assertListEqual(variables, hce.h5py_strings(hvars.dims[1][0]))
             for i, v in enumerate(variables):
                 for eid, tv, hv in zip(rdata["eval_id"], rdata["variables"]["continuous"][v], hvars[:,i]):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
@@ -233,8 +230,7 @@ class RestartData(unittest.TestCase):
                 self.assertListEqual(r_dvv, h_dvv_ids)
             # Analysis Components
             self.assertEqual(len(ac), len(hac), "Unexpected number of analysis components")
-            for e, h in zip(ac, hac):
-                self.assertEqual(e,h,"Analysis components in file not as expected.")
+            self.assertListEqual(ac, hce.h5py_strings(hac), "Analysis components in file not as expected.")
             # Responses
             # extract the portion of the gradient corresponding to the DVV
             def extract_gradient(full_grad, dvv):
@@ -243,7 +239,7 @@ class RestartData(unittest.TestCase):
                     if d == 1:
                         grad.append(g)
                 return grad
-            self.assertListEqual(responses, hresps_f.dims[1][0][:].tolist())
+            self.assertListEqual(responses, hce.h5py_strings(hresps_f.dims[1][0]))
             for i, r in enumerate(responses):
                 for eid, a, d, tr, hf, hg in zip(rdata["eval_id"], hasv, hdvv, rdata["response"][r], hresps_f[:,i], hresps_g[:,i,:]):
                     if a & 1:

@@ -62,8 +62,8 @@ class Results(unittest.TestCase):
                     msg="Number of sets in hdf5 output not as expected.")
             self.assertEqual(hdf5_num_vars, len(console_labels),
                     msg="Number of best variables in hdf5 output not as expected.")
-            for cv, hv in zip(console_labels, hdf5_best.dims[1][0][:]):
-                self.assertEqual(cv,hv,msg="Unexpected label in best variables")
+            self.assertEqual(console_labels, hce.h5py_strings(hdf5_best.dims[1][0]),
+                             msg="Unexpected label in best variables")                            
             for e_id, h_id in zip(list(range(1,console_num_sets+1)), hdf5_best.dims[0][0][:]):
                 self.assertEqual(e_id, h_id, msg="Unexpected set_id in best variables")
             for cs, hs in zip(self._results["best"], hdf5_best):
@@ -87,8 +87,8 @@ class Results(unittest.TestCase):
                     msg="Number of sets in hdf5 output not as expected.")
             self.assertEqual(hdf5_num_resps, len(console_labels),
                     msg="Number of best resposnses in hdf5 output not as expected.")
-            for cv, hv in zip(console_labels, hdf5_best.dims[1][0][:]):
-                self.assertEqual(cv,hv,msg="Unexpected label in responses")
+            self.assertListEqual(console_labels, hce.h5py_strings(hdf5_best.dims[1][0]),
+                                 msg="Unexpected label in responses")
             for e_id, h_id in zip(list(range(1,console_num_sets+1)), hdf5_best.dims[0][0][:]):
                 self.assertEqual(e_id, h_id, msg="Unexpected set_id in responses")
             for cs, hs in zip(self._results["functions"], hdf5_best):

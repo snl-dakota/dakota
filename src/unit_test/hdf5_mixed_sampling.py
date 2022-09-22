@@ -60,7 +60,7 @@ class Moments(unittest.TestCase):
                         self.assertAlmostEqual(console_moments[i][r][j], hdf5_moments[j])
                     scale_label = list(hdf5_moments.dims[0].keys())[0]
                     self.assertEqual(expected_scale_label, scale_label)
-                    for es, s in zip(expected_scale, hdf5_moments.dims[0][0]):
+                    for es, s in zip(expected_scale, hce.h5py_strings(hdf5_moments.dims[0][0])):
                         self.assertEqual(es,s)
 
     def test_moment_confidence_intervals(self):
@@ -80,9 +80,11 @@ class Moments(unittest.TestCase):
                     for j in range(2):
                         for k in range(2):
                             self.assertAlmostEqual(ci[r][j][k], hdf_cis[r][j,k])
+                    hdf_cis_labels = [hce.h5py_strings(hdf_cis[r].dims[0][0]),
+                                      hce.h5py_strings(hdf_cis[r].dims[1][0])] 
                     for j in range(2):
-                        self.assertEqual(expected_scales[0][j], hdf_cis[r].dims[0][0][j])
-                        self.assertEqual(expected_scales[1][j], hdf_cis[r].dims[1][0][j])
+                        self.assertEqual(expected_scales[0][j], hdf_cis_labels[0][j])
+                        self.assertEqual(expected_scales[1][j], hdf_cis_labels[1][j])
 
 class PDFs(unittest.TestCase):
     def setUp(self):
@@ -254,13 +256,13 @@ class TabularData(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/models/nested/nested_m/variables/continuous"]
-            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
+            self.assertListEqual(variables, hce.h5py_strings(hvars.dims[1][0]))
             for i, v in enumerate(variables):
                 for eid, tv, hv in zip(tdata["%eval_id"], tdata[v], hvars[:,i]):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
             hresps = h["/models/nested/nested_m/responses/functions"]
             # Responses
-            self.assertListEqual(responses, hresps.dims[1][0][:].tolist())
+            self.assertListEqual(responses, hce.h5py_strings(hresps.dims[1][0]))
             for i, r in enumerate(responses):
                 for eid, tr, hr in zip(tdata["%eval_id"], tdata[r], hresps[:,i]):
                     self.assertAlmostEqual(tr, hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
@@ -276,13 +278,13 @@ class RestartData(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/interfaces/NO_ID/sim_m/variables/continuous"]
-            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
+            self.assertListEqual(variables, hce.h5py_strings(hvars.dims[1][0]))
             for i, v in enumerate(variables):
                 for eid, tv, hv in zip(rdata["eval_id"], rdata["variables"]["continuous"][v], hvars[:,i]):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
             hresps = h["/interfaces/NO_ID/sim_m/responses/functions"]
             # Responses
-            self.assertListEqual(responses, hresps.dims[1][0][:].tolist())
+            self.assertListEqual(responses, hce.h5py_strings(hresps.dims[1][0]))
             for i, r in enumerate(responses):
                 for eid, tr, hr in zip(rdata["eval_id"], rdata["response"][r], hresps[:,i]):
                     self.assertAlmostEqual(tr["function"], hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
