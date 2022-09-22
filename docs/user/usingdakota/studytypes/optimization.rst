@@ -1211,7 +1211,7 @@ for the string-valued specifications include ``’value’``, ``’auto’``, or
 respectively (although not all types are valid for scaling all
 entities). If a single string is specified with any of these keywords it
 will apply to each component of the relevant vector, e.g., with
-:dakkw:`continuous_design = 3 <variables-continuous_design`, 
+:dakkw:`continuous_design = 3 <variables-continuous_design>`, 
 :dakkw:`scale_types = 'value' <variables-continuous_design-scale_types>` will
 enable characteristic value scaling for each of the 3 continuous design
 variables.
@@ -1232,8 +1232,8 @@ value smaller in magnitude than ``1.0e10*DBL_MIN``. User-provided values
 violating this lower bound are accepted unaltered, whereas for
 automatically calculated scaling, the lower bound is enforced.
 
--  No ``scales`` and no ``scale_types``` specified for this component (variable or response type: no
-   scaling performed on this component.
+-  No ``scales`` and no ``scale_types``` specified for this component (variable or 
+   response type): no scaling performed on this component.
 
 -  Characteristic value (``’value’``): the corresponding quantity is
    scaled (divided) by the required characteristic value provided in the
