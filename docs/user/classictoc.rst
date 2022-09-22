@@ -63,6 +63,9 @@ set of manuals, this set of links may help you find what you're looking for...
 - :ref:`Chapter 8: Models <models:overview>`
 - :ref:`Chapter 9: Variables <variables:overview>`
 - :ref:`Chapter 10: Interfaces <interfaces:overview>`
+
+  - :ref:`10.9: Preprocessing with dprepro and pyprepro <interfaces:dprepro-and-pyprepro>`
+
 - :ref:`Chapter 11: Responses <responses:overview>`
 - :ref:`Chapter 12: Inputs to Dakota <input>`
 - :ref:`Chapter 13: Output from Dakota <output>`
@@ -70,7 +73,7 @@ set of manuals, this set of links may help you find what you're looking for...
 - :ref:`Chapter 15: Advanced Model Recursions <adv_models>`
 - :ref:`Chapter 16: Advanced Simulation Code Interfaces <advint>`
 - :ref:`Chapter 17: Parallel Computing <parallel>`
-- :ref:`Chapter 18: Restart Capabilities and Utilities <restart>`
+- :ref:`Chapter 18: Restart Capabilities and Utilities <dakota_restart>`
 - :ref:`Chapter 19: Simulation Failure Capturing <failure>`
 - :ref:`Chapter 20: Additional Examples <additional>`
 

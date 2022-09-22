@@ -25,7 +25,6 @@ Last but not least, :ref:`HDF5 output <hdf5_output>` has been added to Dakota's 
    output/standarderror
    output/tabulardata
    output/restart
-   output/restartutility
    output/hdf
    output/graphicslegacy
    output/otheroutput
