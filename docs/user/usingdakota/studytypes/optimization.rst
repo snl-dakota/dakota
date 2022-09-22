@@ -1191,7 +1191,7 @@ supported.
 Scaling is enabled on a per-method basis for optimizers and calibration
 (least squares and Bayesian) methods by including the ``scaling`` keyword in the
 relevant ``method`` specification in the Dakota input file, e.g. for the
-:dakkw:`optpp_q_newton method <method-optpp_q_newton-scaling>`. When scaling is
+:ref:`optpp_q_newton method <method-optpp_q_newton-scaling>`. When scaling is
 enabled, variables, functions, gradients, Hessians, etc., are
 transformed such that the optimizer iterates in the scaled
 variable/response space. Evaluations of the computational model
@@ -1394,7 +1394,7 @@ level of constraint support for brevity.
     |                      |                      | :dakkw:`method-optpp_fd_newton`,                                          |
     |                      |                      | :dakkw:`method-rol`                                                       |
     |                      +----------------------+---------------------------------------------------------------------------+
-    |                      | bound constraints,   | :dakkw:`weighted sums <responses-objective_functions-weights>`,           |
+    |                      | bound constraints,   | :ref:`Weighted sum of objectives <responses-objective_functions-weights>`,|
     |                      | linear and nonlinear |                                                                           |
     |                      | constraints;         | :ref:`Pareto Optimization <adv_meth:pareto>`                              |
     |                      | multiobjective       |                                                                           |
