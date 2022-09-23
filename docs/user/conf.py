@@ -44,7 +44,9 @@ release = '6.16.0+'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['myst_parser', 'sphinxcontrib.bibtex', 'dakota']
+extensions = ['myst_parser', 'sphinxcontrib.bibtex', 'dakota',
+              'sphinx.ext.imgmath']
+#              'sphinx.ext.mathjax']
 
 # Dakota input file syntax highlighting
 highlight_language = "dakota"
@@ -86,6 +88,11 @@ html_logo = 'img/dakota_Arrow_Name_Tag_horiz_transparent.png'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# Default to mathjax for better build speed during development
+html_math_renderer = 'mathjax'
+# Jenkins will override to images for packaging
+#html_math_renderer = 'imgmath'
 
 # Enable numref
 numfig = True

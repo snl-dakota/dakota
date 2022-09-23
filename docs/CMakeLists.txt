@@ -159,27 +159,27 @@ insert_dakota_version("${DakotaDocs_SOURCE_DIR}/user/conf.py")
 
 # Serial build assuming all files are stale
 add_custom_target(docs-user
-  COMMAND "${_dakota_sphinx_exe}" -a -E -b html "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMAND "${_dakota_sphinx_exe}" -a -E -b html ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx:
-  ${_dakota_sphinx_exe} -a -E -b html ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  ${_dakota_sphinx_exe} -a -E -b html ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
 add_dependencies(docs-user docs-keywords docs-user-samples)
 
 # Parallel build assuming all files are stale
 add_custom_target(docs-user-fast
-  COMMAND "${_dakota_sphinx_exe}" -a -E -b html -j auto "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMAND "${_dakota_sphinx_exe}" -a -E -b html -j auto ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx (full rebuild):
-  ${_dakota_sphinx_exe} -a -E -b html -j auto ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  ${_dakota_sphinx_exe} -a -E -b html -j auto ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
 add_dependencies(docs-user-fast docs-keywords docs-user-samples)
 
 # Serial build of only changed files
 add_custom_target(docs-user-increm
-  COMMAND "${_dakota_sphinx_exe}" -b html "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMAND "${_dakota_sphinx_exe}" -b html ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx:
-  ${_dakota_sphinx_exe} -b html ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  ${_dakota_sphinx_exe} -b html ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
-add_dependencies(docs-user docs-keywords docs-user-samples)
+add_dependencies(docs-user-increm docs-keywords docs-user-samples)
 
 
 add_custom_target(docs-user-clean
