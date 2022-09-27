@@ -58,24 +58,24 @@ tabular formats:
      2               I1   0.94468    1.0636     4.133        12         3     14753 
      3               I1    1.0279    1.0035        12     4.133         3     14753  
 
-   Another example is shown in :numref:`output:tabcont`.
+  Another example is shown in :numref:`output:tabcont`.
 
-   .. note::
+  .. note::
 
-      Dakota 6.1 and newer include a column for the interface ID. See the
-      discussion of custom-annotated format for importing/exporting
-      Dakota 6.0 format files.
+     Dakota 6.1 and newer include a column for the interface ID. See the
+     discussion of custom-annotated format below for importing/exporting
+     Dakota 6.0 format files.
 
-   For scalar experiment data files, each subsequent row contains an
-   experiment ID, followed by data for configuration variables,
-   observations, and/or observation errors, depending on context. This
-   example shows 3 data points for each of two experiments.
+  For scalar experiment data files, each subsequent row contains an
+  experiment ID, followed by data for configuration variables,
+  observations, and/or observation errors, depending on context. This
+  example shows 3 data points for each of two experiments.
 
-   ::
-   
-      %experiment d1 d2 d3
-      1   82  15.5    2.02
-      2   82.2    15.45   2
+  ::
+  
+     %experiment d1 d2 d3
+     1   82  15.5    2.02
+     2   82.2    15.45   2
 
 - **Free-form:** When optionally specifying ``freeform`` for a given
   tabular import, the data file must be provided in a free-form
@@ -198,12 +198,16 @@ Calibration data imports include the following information:
 -  **Configuration variables (optional):** state variable values
    indicating the configuration at which this experiment was conducted;
    length must agree with the number of state variables active in the
-   study. **Attention:** In versions of Dakota prior to 6.14,
-   string-valued configuration variables were specified in data files
-   with 0-based indices into the admissible values. As of Dakota 6.14,
-   strings must be specified by value. For example a string-valued
-   configuration variable for an experimental condition might appear in
-   the file as ``low_pressure`` vs. ``high_pressure``.
+   study.
+
+   .. warning::
+
+      In versions of Dakota prior to 6.14, string-valued configuration
+      variables were specified in data files with 0-based indices into
+      the admissible values. As of Dakota 6.14, strings must be
+      specified by value. For example a string-valued configuration
+      variable for an experimental condition might appear in the file
+      as ``low_pressure`` vs. ``high_pressure``.
 
 -  **Experimental observations (required):** experimental data values to
    difference with model responses; length equal to the total response

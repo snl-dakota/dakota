@@ -8,15 +8,14 @@ Responses
 Overview
 --------
 
-The :dakkw:`responses` specification in a Dakota input file controls
-the types of data that can be returned from an interface during
-Dakota’s execution. The specification includes the number and type of
-response functions (objective functions, nonlinear constraints,
-calibration terms, etc.) as well as availability of first and second
-derivatives (gradient vectors and Hessian matrices) for these response
-functions. A brief overview of the response data sets and their uses
-follows, as well as discussion of potential user issues relating to
-file formats and derivative vector and matrix sizing. See
+A :dakkw:`responses` block in a Dakota input file specifies the types
+of data that can be returned from an interface during Dakota’s
+execution. The specification includes the number and type of response
+functions (objective functions, nonlinear constraints, calibration
+terms, etc.) as well as availability of first and second derivatives
+(gradient vectors and Hessian matrices) of them. A brief overview of
+the response types and their uses follows, as well as discussion of
+response file formats and derivative vector and matrix sizing. See
 :dakkw:`responses` for additional details and examples.
 
 .. _`responses:overview:types`:
@@ -24,28 +23,31 @@ file formats and derivative vector and matrix sizing. See
 Response function types
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The types of response functions listed in the responses specification
-are most often paired with the iterative technique called for in the
-:dakkw:`method` specification:
+The types of responses specified in an input file are commonly paired
+with the iterative technique called for in a :dakkw:`method`
+specification block:
 
-- an optimization data set comprised of :dakkw:`responses-objective_functions`,
+- **Optimization** data set comprised of :dakkw:`responses-objective_functions`,
   :dakkw:`responses-objective_functions-nonlinear_inequality_constraints`, and
-  :dakkw:`responses-objective_functions-nonlinear_equality_constraints`. This data set is
-  appropriate for use with optimization methods, e.g., the methods in :ref:`opt`.
-  When using :ref:`results files <responses:results>`, the responses must be ordered:
-  objectives, inequalities, then equalities.
+  :dakkw:`responses-objective_functions-nonlinear_equality_constraints`. This
+  data set is primarily for use with optimization methods, e.g., the
+  methods in :ref:`opt`.  When using :ref:`results files
+  <responses:results>`, the responses must be ordered: objectives,
+  inequalities, then equalities.
 
-- a calibration data set comprised of :dakkw:`responses-calibration_terms`,
-  :dakkw:`responses-calibration_terms-nonlinear_inequality_constraints`, and
-  :dakkw:`responses-calibration_terms-nonlinear_equality_constraints`. This data set is
-  appropriate for use with nonlinear least squares algorithms, e.g.,
-  the methods in :ref:`nls`. When using :ref:`results files <responses:results>`
-  the responses must be ordered:
-  calibration terms, inequalities, then equalities.
+- **Calibration** data set comprised of :dakkw:`responses-calibration_terms`,
+  :dakkw:`responses-calibration_terms-nonlinear_inequality_constraints`,
+  and
+  :dakkw:`responses-calibration_terms-nonlinear_equality_constraints`. This
+  data set is primarily for use calibration
+  algorithms, e.g., the methods in :ref:`nls` and :ref:`uq:bayesian`. When using
+  :ref:`results files <responses:results>` the responses must
+  be ordered: calibration terms, inequalities, then equalities.
 
-- a generic data set comprised of :dakkw:`responses-response_functions`. This data
-  set is appropriate for use with uncertainty quantification methods, e.g., 
-  the methods in :ref:`uq`.
+- **Generic** data set comprised of
+  :dakkw:`responses-response_functions`. This data set is appropriate
+  for use with uncertainty quantification methods, e.g., the methods
+  in :ref:`uq`.
 
 Certain general-purpose iterative techniques, such as parameter studies
 and design of experiments methods, can be used with any of these data
@@ -72,7 +74,7 @@ Gradient availability for these response functions may be described by:
   differences.
 
 The gradient specification relates to the method in use.  Gradients
-are typically needed studies such as gradient-based optimization,
+are typically needed for studies such as gradient-based optimization,
 reliability analysis for uncertainty quantification, or local
 sensitivity analysis.
 
@@ -111,9 +113,12 @@ state approximations or second-order probability integrations.
 Field Data
 ~~~~~~~~~~
 
+..
+   TODO: This section needs a re-write
+
 Prior to Dakota 6.1, Dakota responses were always treated as scalar
-responses. That is, if the user specifies ``response_functions=5``,
-Dakota treats the five responses as five separate scalar quantities.
+responses. That is, if the user specified ``response_functions = 5``,
+Dakota treated the five responses as five separate scalar quantities.
 There are some cases where responses are a "field" quantity, meaning
 that the responses are a function of one or more independent variables
 such as time and/or spatial location. In these cases, the responses
@@ -123,7 +128,7 @@ current-voltage curve in Dakota. With scalar response quantities, we
 ignore the independent variable(s). For example, if we have a response
 :math:`R` as a function of time :math:`t`, the user currently gives
 Dakota a set of discrete responses at particular times and Dakota
-doesn’t know the times.
+isn't aware of the time values.
 
 With the field data capability, the user can specify that they have
 one field response of size :math:`5000 \times 1` (for example). Dakota
@@ -148,8 +153,7 @@ coordinates by specifying and providing the coordinates in files named
 :file:`<response_descriptor>.coords`. In the case of field data from
 physical experiments used to calibrate field data from simulation
 experiments, the specification is more involved: the user should refer
-to the Dakota Reference manual to get the syntax. Note that at this
-time, field responses may be specified by the user as outlined above.
+to the :dakkw:`responses` keywords for specific syntax. 
 All methods can handle field data, but currently the calibration
 methods are the only methods specialized for field data, specifically
 they interpolate the simulation field data to the experiment field
@@ -157,10 +161,10 @@ data points to calculate the residual terms. This is applicable to
 :dakkw:`method-nl2sol`, :dakkw:`method-nlssol`,
 :dakkw:`method-optpp_g_newton`, the MCMC Bayesian methods, as well as
 general optimization methods that recast the residuals into a
-sum-of-squared errors. The other methods simply handle the field
-responses as a number of scalar responses currently. In future
-versions, we are planning some additional features with methods that
-can handle field data, including reduction of the field data.
+sum-of-squared errors. Other methods simply handle the field
+responses as a vector of scalar responses, as they did historically. Future
+versions might include additional methods to explicitly
+handle field data, including dimension reduction.
 
 .. _`responses:results`:
 
@@ -169,10 +173,10 @@ Dakota Results File Data Format
 
 Simulation interfaces using system calls and forks to create separate
 simulation processes must communicate with the simulation through the
-file system. This is done by reading and writing files of parameters
-and results. Dakota uses its own format for this data
-input/output. For the results file, only one format is supported
-(versus the two parameter file formats described in
+file system. Dakota accomplishes this by writing parameters files with
+variable values and reading results files with response values. For
+the results file, only one text file format is supported (versus the
+two parameter file formats described in
 :ref:`variables:parameters`). Ordering of response functions is as
 listed in :ref:`responses:overview:types`, i.e., objective functions
 or calibration terms are first, followed by nonlinear inequality
@@ -261,12 +265,13 @@ a separate post-processing step (e.g., using the UNIX ``sed`` utility).
 Active Variables for Derivatives
 --------------------------------
 
-An important question for proper management of both gradient and Hessian
-data is: if several different types of variables are used, *for which
-variables are response function derivatives needed?* That is, how is
-:math:`n_{dvv}` determined? The short answer is that the derivative
-variables vector (DVV) specifies the set of variables to be used for
-computing derivatives, and :math:`n_{dvv}` is the length of this vector.
+An important question for proper management of both gradient and
+Hessian data is: if several different types of variables are used,
+*for which variables are response function derivatives needed?* That
+is, how is :math:`n_{dvv}` determined? The short answer is that the
+derivative variables vector (DVV), communicated in the parameters
+file, specifies the set of variables to be used for computing
+derivatives, and :math:`n_{dvv}` is the length of this vector.
 
 In most cases, the DVV is defined directly from the set of active
 continuous variables for the iterative method in use. Since methods
@@ -327,16 +332,16 @@ as described in :ref:`variables:mixed`.
    %\end{table}
 
 In a few cases, derivatives are needed with respect to the *inactive*
-continuous variables. This occurs for nested iteration where a top-level
-iterator sets derivative requirements (with respect to its active
-continuous variables) on the final solution of the lower-level iterator
+continuous variables. This occurs for nested models where a top-level
+method sets derivative requirements (with respect to its active
+continuous variables) on the final solution of the lower-level/inner method
 (for which the top-level active variables are inactive). For example, in
 an uncertainty analysis within a nested design under uncertainty
 algorithm, derivatives of the lower-level response functions may be
 needed with respect to the design variables, which are active continuous
 variables at the top level but are inactive within the uncertainty
 quantification. These instances are the reason for the creation and
-inclusion of the DVV vector — to clearly indicate the variables whose
+inclusion of the DVV vector -- to clearly indicate the variables whose
 partial derivatives are needed.
 
 In all cases, if the DVV is honored, then the correct derivative
