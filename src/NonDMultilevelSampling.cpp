@@ -23,9 +23,6 @@
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
-#include "boost/random.hpp"
-#include "boost/generator_iterator.hpp"
-
 static const char rcsId[]="@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 
@@ -1223,7 +1220,6 @@ Real NonDMultilevelSampling::compute_bootstrap_covariance(const size_t step,
         covmeanlm1sigmalm1 = 0;
   Real covmeanlsigmal_grad = 0, covmeanlm1sigmal_grad = 0, 
         covmeanlsigmalm1_grad = 0, covmeanlm1sigmalm1_grad = 0;
-  typedef boost::mt19937 RNGType;
 
   std::map<int, RealMatrix>::const_iterator it = lev_qoisamplematrix_map.find(step);
   nb_samples = it->second.numCols(); 
@@ -1232,15 +1228,13 @@ Real NonDMultilevelSampling::compute_bootstrap_covariance(const size_t step,
   bs_samples_lm1.size(nb_samples);
 
   //Cout << "Bootstrap seed: " << *seed << "\n";
-  RNGType rng((*seed));
-  boost::uniform_int<> rand_int_range( 0, nb_samples-1);
-  boost::variate_generator< RNGType, boost::uniform_int<> >
-    rand_int(rng, rand_int_range);
+  std::mt19937 rng((*seed));
+  std::uniform_int_distribution<> unif_int(0, nb_samples-1);
 
   for(int bs_resample = 0; bs_resample < nb_bs_samples; ++bs_resample){
 
     for(int resample = 0; resample < nb_samples; ++resample){
-      bs_sample_idx = rand_int();
+      bs_sample_idx = unif_int(rng);
       bs_samples_l[resample] = it->second(qoi, bs_sample_idx);
       bs_samples_lm1[resample] = (step > 0) ? 
                                     it->second(qoi + nb_functions, bs_sample_idx) : 0;

@@ -77,7 +77,13 @@ void PStudyDACE::
 volumetric_quality(int ndim, int num_samples, double* sample_points)
 {
   int num_trials = 100000;
-  int seed_init  = 1 + std::rand();
+  // Historically this used a bare call to rand(), so using
+  // random_device.  However, may have relied on rand() without
+  // srand() ==> srand(1), so may prefer seeding with a fixed value.
+  std::random_device rd;
+  std::mt19937 rng(rd());
+  std::uniform_int_distribution<> unif_int(1, std::numeric_limits<int>::max());
+  int seed_init  = unif_int(rng);
 
 #ifdef HAVE_FSUDACE
   chiMeas = chi_measure(ndim, num_samples, sample_points, num_trials,seed_init);

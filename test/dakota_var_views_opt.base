@@ -84,7 +84,7 @@ Test Number 4 succeeded
                      -8.1177681033e-07
 <<<<< Best evaluation ID: 25
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 459 total (459 new, 0 duplicate)
+<<<<< Function evaluation summary: 475 total (475 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -99,7 +99,7 @@ Test Number 5 succeeded
 <<<<< Best constraint values   =
                      -0.0000000000e+00
                      -0.0000000000e+00
-<<<<< Best evaluation ID: 7
+<<<<< Best evaluation ID: 8
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 167 total (167 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -249,7 +249,7 @@ Test Number 14 succeeded
 <<<<< Best constraint values   =
                      -0.0000000000e+00
                      -0.0000000000e+00
-<<<<< Best evaluation ID: 55
+<<<<< Best evaluation ID: 68
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 1001 total (1001 new, 0 duplicate)
 <<<<< Best parameters          =

@@ -30,17 +30,6 @@ int n_choose_k(int n, int k) {
 
 void random_permutation(const int num_pts, const unsigned int seed,
                         VectorXi& permutations) {
-  /*
-  using boost::uniform_int<> = NumberDistribution;
-  using boost::mt19937 = RNG;
-  using boost::variate_generator<RNG&, NumberDistribution> Generator;
-
-  NumberDistribution distribution(0, num_pts);
-  RNG mtwister;
-  mtwister.seed(seed);
-  Generator numberGenerator(mtwister, distribution);
-  */
-
   std::mt19937 generator(seed);
   std::uniform_int_distribution<> dist(0, num_pts - 1);
   int index, tmp;
