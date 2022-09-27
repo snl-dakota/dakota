@@ -597,30 +597,30 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 10 succeeded
 <<<<< Function evaluation summary (ID_I): 331 total (331 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  4.3090068147552252e+01  He0  He0  He0  He0  He0
-  -2.6974773951548347e+01  He1  He0  He0  He0  He0
-  -6.3146624246202121e-01  He0  He1  He0  He0  He0
-  1.0730338635161603e+00  He0  He0  He1  He0  He0
-  -8.8698125205049150e-01  He0  He0  He0  He1  He0
-  -1.9198506986183472e-02  He0  He0  He0  He0  He1
-  1.2022396134743106e+01  He2  He0  He0  He0  He0
-  2.8229541613592074e-01  He1  He1  He0  He0  He0
-  5.3689529663471927e+00  He0  He2  He0  He0  He0
-  1.5241213776996503e+00  He1  He0  He1  He0  He0
-  1.9606323314230720e-01  He0  He1  He1  He0  He0
-  2.1627396692658372e+00  He0  He0  He2  He0  He0
-  -9.7218823137414834e-01  He1  He0  He0  He1  He0
-  -2.7482208661732198e-02  He0  He1  He0  He1  He0
-  5.6600664881706575e-01  He0  He0  He1  He1  He0
-  2.9118800758565960e-01  He0  He0  He0  He2  He0
-  -1.9241059261275058e-02  He1  He0  He0  He0  He1
-  2.0337994316976474e-03  He0  He1  He0  He0  He1
-  2.5539212135119390e-02  He0  He0  He1  He0  He1
-  -8.0103894718035959e-02  He0  He0  He0  He1  He1
-  9.7123222058215483e-02  He0  He0  He0  He0  He2
+  4.3090068147552230e+01  He0  He0  He0  He0  He0
+  -2.6970602734881297e+01  He1  He0  He0  He0  He0
+  -3.3787880313686525e-01  He0  He1  He0  He0  He0
+  1.3130946441222919e+00  He0  He0  He1  He0  He0
+  -8.4960469683000839e-01  He0  He0  He0  He1  He0
+  -4.5449919896690054e-02  He0  He0  He0  He0  He1
+  1.2035511212798545e+01  He2  He0  He0  He0  He0
+  1.6723558706013461e-01  He1  He1  He0  He0  He0
+  5.3687495053524765e+00  He0  He2  He0  He0  He0
+  1.2985923379178137e+00  He1  He0  He1  He0  He0
+  7.7156005814144224e-02  He0  He1  He1  He0  He0
+  2.1636408476908984e+00  He0  He0  He2  He0  He0
+  -1.0797201097819253e+00  He1  He0  He0  He1  He0
+  -3.6586263965086838e-02  He0  He1  He0  He1  He0
+  4.4824577937951054e-01  He0  He0  He1  He1  He0
+  2.7821600266669433e-01  He0  He0  He0  He2  He0
+  -2.4885224475474411e-02  He1  He0  He0  He0  He1
+  -4.5610544792952469e-05  He0  He1  He0  He0  He1
+  8.1519125719569860e-03  He0  He0  He1  He0  He1
+  -8.0059001234160418e-02  He0  He0  He0  He1  He1
+  9.6282431491392165e-02  He0  He0  He0  He0  He2
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.3090068147552252e+01  3.3014559468042464e+01
+ response_fn_1  4.3090068147552230e+01  3.3014559468042471e+01
 Test Number 11 succeeded
 <<<<< Function evaluation summary (ID_I): 501 total (501 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
