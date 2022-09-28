@@ -4041,12 +4041,26 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
   for (i=0; i<numFunctions; ++i) {
     Approximation& approx_i = poly_approxs[i];
     if (approx_i.expansion_coefficient_flag()) {
+
+      // Skip output for negative (co-)variances
+      // ---  Should more be done besides warning ? RWH
+      if ( (covarianceControl == DIAGONAL_COVARIANCE) && (respVariance[i] < 0.0) ) {
+	s << fn_labels[i] << " Sobol' indices not available due to negative "
+	  << "variance\n";
+        continue;
+      }
+      if ( (covarianceControl == FULL_COVARIANCE) && (respCovariance(i,i) < 0.0) ) {
+	s << fn_labels[i] << " Sobol' indices not available due to negative "
+	  << "covariance\n";
+        continue;
+      }
+
       // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
       // In this case, we cannot screen effectively at this level.
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
-			    Pecos::is_small_sq(respVariance[i]) ) ||
+			    Pecos::is_small(std::sqrt(respVariance[i]),approx_i.mean()) ) ||
 			  ( covarianceControl   == FULL_COVARIANCE &&
-			    Pecos::is_small_sq(respCovariance(i,i)) ) )
+			    Pecos::is_small(std::sqrt(respCovariance(i,i)),approx_i.mean()) ) )
 	              ? false : true;
       if (well_posed) {
 	const RealVector& total_indices = approx_i.total_sobol_indices();
