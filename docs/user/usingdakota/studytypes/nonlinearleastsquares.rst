@@ -102,11 +102,11 @@ at a particular location and/or time step, i.e.:
 
 .. math::
 
-   T_i(\mathbf{x}) = R_i(\mathbf{x})-\overline{R_i}
+   T_i(\mathbf{x}) = R_i(\mathbf{x})-\bar{R_i}
      \label{nls:equation03}
 
 where :math:`R_i(\mathbf{x})` is the response quantity predicted by the
-model and :math:`\overline{R_i}` is the corresponding experimental data.
+model and :math:`\bar{R_i}` is the corresponding experimental data.
 In this case, :math:`\mathbf{x}` would have the meaning of model
 parameters which are not precisely known and are being calibrated to
 match available data. This class of problem is known by the terms
