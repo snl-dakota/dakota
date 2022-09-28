@@ -154,9 +154,9 @@ Gauss-Newton
 
 Dakota’s Gauss-Newton algorithm consists of combining an implementation
 of the Gauss-Newton Hessian approximation (see
-Section  :ref:`formulations <nls:formulations>`) with full Newton optimization
+Section  :ref:`Nonlinear Least Squares Fomulations <nls:formulations>`) with full Newton optimization
 algorithms from the OPT++ package :cite:p:`MeOlHoWi07` (see
-Section  :ref:`Methods for Constrained Problems <opt::methods:gradient:constrained>`).
+Section  :ref:`Methods for Constrained Problems <opt:methods:gradient:constrained>`).
 The exact objective function value, exact objective function gradient,
 and the approximate objective function Hessian are defined from the
 least squares term values and gradients and are passed to the
@@ -201,10 +201,10 @@ The NLSSOL algorithm is bundled with NPSOL. It uses an SQP-based
 approach to solve generally-constrained nonlinear least-squares
 problems. It periodically employs the Gauss-Newton Hessian approximation
 to accelerate the search. Like the Gauss-Newton algorithm of
-Section `:ref:`Gauss <nls:solution:gauss>`), its derivative order is
+Section  :ref:`Gauss <nls:solution:gauss>`), its derivative order is
 balanced in that it requires only first-order information for the
 least-squares terms and nonlinear constraints. License: commercial; see
-NPSOL   :ref:`Methods for Constrained Problems <opt::methods:gradient:constrained>`.
+NPSOL   :ref:`Methods for Constrained Problems <opt:methods:gradient:constrained>`.
 
 This approach can be selected using the ``nlssol_sqp`` method
 specification. An example specification follows:
