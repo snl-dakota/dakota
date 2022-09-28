@@ -37,7 +37,7 @@ assumption that the residuals tend towards zero at the solution. As a
 result, residual function value and gradient information (first-order
 information) is sufficient to define the value, gradient, and
 approximate Hessian of the sum-of-squares objective function
-(second-order information). See Section `1.2 <#nls:formulations>`__ for
+(second-order information). See :ref:`formulations <nls:formulations>` for
 additional details on this approximation.
 
 In practice, least-squares solvers will tend to be significantly more
