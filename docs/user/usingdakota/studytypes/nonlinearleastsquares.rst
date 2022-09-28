@@ -333,13 +333,13 @@ formulations.
    %\end{figure}
 
 
-Figure `[nls:figure02] <#nls:figure02>`__ shows an excerpt from the
+Figure  :numref:`Figure02 <nls:figure02>` shows an excerpt from the
 output obtained when running NL2SOL on a five-dimensional problem. Note
 that the optimal parameter estimates are printed, followed by the
 residual norm and values of the individual residual terms, followed by
 the confidence intervals on the parameters.
 
-:numref:`nls:cioptimal:example:figure01`
+:numref:`opt:additional:multiobjective:example1:figure02`
 ::
 
    <<<<< Iterator nl2sol completed.
