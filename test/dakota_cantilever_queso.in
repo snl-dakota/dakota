@@ -5,8 +5,7 @@
 
 method
   bayes_calibration queso
-# NOTE: typically you will want O(10^4) samples; this is just a short test
-    chain_samples = 1000 seed = 348
+    chain_samples = 10000 seed = 348
     dram  # | delayed_rejection | adaptive_metropolis | metropolis_hastings
 #    calibrate_error_multipliers per_response            #p4,#p5
 #       # inverse gamma prior                            #p4,#p5
@@ -34,7 +33,6 @@ method
     probability_levels 0.05 0.1  				#s0,#s1
                        0.05 0.1				#s0,#s1
     posterior_stats kl_divergence
-    output debug
 
 variables
   uniform_uncertain 2

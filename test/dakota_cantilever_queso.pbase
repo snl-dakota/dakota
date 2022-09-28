@@ -1,140 +1,128 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
-         stress: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 16584 total (16584 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8691852474e+07 E
-                      2.4998843409e+00 w
+                      2.8690496078e+07 E
+                      2.5001659214e+00 w
 <<<<< Best misfit              =
-                      9.7137281272e+00
+                      9.7109647149e+00
 <<<<< Best log prior           =
                      -2.0703165165e+01
 <<<<< Best log posterior       =
-                     -6.9874315821e+01
+                     -6.9871552408e+01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-             E  2.8609959149e+07  1.4417714265e+05  8.0289072767e-01  7.8655956161e-02
-             w  2.5016445558e+00  3.8306697138e-03 -1.2217188066e-01  3.8866929785e-02
+             E  2.8684173192e+07  1.2965524946e+05  1.1909551064e-01 -9.2493027593e-02
+             w  2.5003144108e+00  3.5842700871e-03  2.2704322389e-02 -2.2766604964e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress  2.6282814617e+03  8.9765361327e+01  1.3400226598e-01  4.9239052295e-02
-  displacement  2.9604502307e-01  1.0636886950e-02 -3.5080744510e-01 -1.2381836901e-01
-Information gained from prior to posterior = 6.0209966781e+00
+        stress  2.6594430615e+03  8.4081457011e+01 -1.3006240766e-02 -2.2722201687e-01
+  displacement  2.9171409816e-01  9.8526368314e-03 -4.7499136329e-02 -5.4839183808e-02
+Information gained from prior to posterior = 6.7946345672e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
-         stress: 1468 val (1468 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 1468 val (1468 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 16323 total (16323 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8648655053e+07 E
-                      2.5015668110e+00 w
+                      2.8690936560e+07 E
+                      2.5001369187e+00 w
 <<<<< Best misfit              =
-                      9.8012312136e+00
+                      9.7108922369e+00
 <<<<< Best log prior           =
                      -2.0703165165e+01
 <<<<< Best log posterior       =
-                     -6.9961818907e+01
+                     -6.9871479930e+01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-             E  2.8506753626e+07  3.8307420828e+04  1.3039327250e-01  6.6935899992e+00
-             w  2.5026433245e+00  3.0465652412e-03  3.0912842683e-01  5.2358311834e-02
+             E  2.8677319593e+07  1.3518454077e+05  1.1630451422e-01 -3.8316197170e-01
+             w  2.5002741822e+00  3.5703589496e-03  4.7673615837e-02 -1.2538809965e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress  2.6048303154e+03  7.1267271938e+01 -3.0005923242e-01  4.4813089222e-02
-  displacement  3.0350843286e-01  5.4717777815e-03  1.5296908017e-03 -1.2245378222e-01
-Information gained from prior to posterior = 1.9840447225e+01
+        stress  2.6603856243e+03  8.3754799396e+01 -3.7471605301e-02 -1.2780840408e-01
+  displacement  2.9239429437e-01  1.0056554096e-02 -1.6424699849e-03 -2.6863870394e-01
+Information gained from prior to posterior = 6.6564350361e+00
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
-         stress: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 16584 total (16584 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8691852474e+07 E
-                      2.4998843409e+00 w
+                      2.8690496078e+07 E
+                      2.5001659214e+00 w
 <<<<< Best misfit              =
-                      9.7137281272e+00
+                      9.7109647149e+00
 <<<<< Best log prior           =
                      -2.0703165165e+01
 <<<<< Best log posterior       =
-                     -6.9874315821e+01
+                     -6.9871552408e+01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-             E  2.8609959149e+07  1.4417714265e+05  8.0289072767e-01  7.8655956161e-02
-             w  2.5016445558e+00  3.8306697138e-03 -1.2217188066e-01  3.8866929785e-02
+             E  2.8684173192e+07  1.2965524946e+05  1.1909551064e-01 -9.2493027593e-02
+             w  2.5003144108e+00  3.5842700871e-03  2.2704322389e-02 -2.2766604964e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress  2.6282814617e+03  8.9765361327e+01  1.3400226598e-01  4.9239052295e-02
-  displacement  2.9604502307e-01  1.0636886950e-02 -3.5080744510e-01 -1.2381836901e-01
-Information gained from prior to posterior = 6.0209966781e+00
+        stress  2.6594430615e+03  8.4081457011e+01 -1.3006240766e-02 -2.2722201687e-01
+  displacement  2.9171409816e-01  9.8526368314e-03 -4.7499136329e-02 -5.4839183808e-02
+Information gained from prior to posterior = 6.7946345672e+00
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
-         stress: 1468 val (1468 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 1468 val (1468 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 16323 total (16323 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8648655053e+07 E
-                      2.5015668110e+00 w
+                      2.8690936560e+07 E
+                      2.5001369187e+00 w
 <<<<< Best misfit              =
-                      9.8012312136e+00
+                      9.7108922369e+00
 <<<<< Best log prior           =
                      -2.0703165165e+01
 <<<<< Best log posterior       =
-                     -6.9961818907e+01
+                     -6.9871479930e+01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-             E  2.8506753626e+07  3.8307420828e+04  1.3039327250e-01  6.6935899992e+00
-             w  2.5026433245e+00  3.0465652412e-03  3.0912842683e-01  5.2358311834e-02
+             E  2.8677319593e+07  1.3518454077e+05  1.1630451422e-01 -3.8316197170e-01
+             w  2.5002741822e+00  3.5703589496e-03  4.7673615837e-02 -1.2538809965e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress  2.6048303154e+03  7.1267271938e+01 -3.0005923242e-01  4.4813089222e-02
-  displacement  3.0350843286e-01  5.4717777815e-03  1.5296908017e-03 -1.2245378222e-01
-Information gained from prior to posterior = 1.9840447225e+01
+        stress  2.6603856243e+03  8.3754799396e+01 -3.7471605301e-02 -1.2780840408e-01
+  displacement  2.9239429437e-01  1.0056554096e-02 -1.6424699849e-03 -2.6863870394e-01
+Information gained from prior to posterior = 6.6564350361e+00
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 1762 total (1762 new, 0 duplicate)
-         stress: 1762 val (1762 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 1762 val (1762 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 18233 total (18233 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8725945587e+07 E
-                      2.4993381806e+00 w
-                      8.5488028185e-01 CovMultResp1
-                      8.9860299890e-01 CovMultResp2
+                      2.8659211703e+07 E
+                      2.5007092948e+00 w
+                      9.2512537971e-01 CovMultResp1
+                      9.5327397825e-01 CovMultResp2
 <<<<< Best misfit              =
-                      1.1082170014e+01
+                      1.0349931760e+01
 <<<<< Best log prior           =
-                     -1.9252953512e+01
+                     -1.9149069643e+01
 <<<<< Best log posterior       =
-                     -6.8474007124e+01
+                     -6.8328029275e+01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-             E  2.8605946432e+07  1.3532115812e+05  1.3945884416e+00  1.3541457485e+00
-             w  2.5016034131e+00  3.5684594382e-03 -1.2273953999e-01 -1.6888920395e-01
-  CovMultResp1  1.0044694859e+00  1.7084394579e-01  3.4221784361e-01  1.5077791544e-01
-  CovMultResp2  1.0548221534e+00  1.8771627706e-01  6.6394070771e-01  5.6539171795e-01
+             E  2.8678669546e+07  1.3338109630e+05  5.9271123501e-02 -2.1992341198e-01
+             w  2.5002894282e+00  3.5858484104e-03 -4.7558020251e-02  3.9332938184e-04
+  CovMultResp1  9.9174244777e-01  1.8395537515e-01  8.6460939341e-01  1.5995801027e+00
+  CovMultResp2  1.0362145310e+00  1.8942198660e-01  6.9795141350e-01  5.8410477363e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress  2.6292222498e+03  8.3622879617e+01  1.3260561395e-01 -1.6917219669e-01
-  displacement  2.9646522740e-01  9.9607488850e-03 -1.0560733245e+00  1.2791257125e+00
-Information gained from prior to posterior = 8.2908388285e+00
+        stress  2.6600292992e+03  8.4131499997e+01  5.8493352154e-02 -6.5711958837e-05
+  displacement  2.9224795761e-01  1.0128326028e-02 -5.7657198052e-02  6.9826516015e-03
+Information gained from prior to posterior = 6.4593382848e+00
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 1800 total (1800 new, 0 duplicate)
-         stress: 1800 val (1800 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 1800 val (1800 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 18394 total (18394 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8639753447e+07 E
-                      2.5011742137e+00 w
-                      6.8548822280e-01 CovMultResp1
-                      9.2046475229e-01 CovMultResp2
+                      2.8679478662e+07 E
+                      2.5005676354e+00 w
+                      7.5973129728e-01 CovMultResp1
+                      8.7292738471e-01 CovMultResp2
 <<<<< Best misfit              =
-                      1.2167647369e+01
+                      1.1827555198e+01
 <<<<< Best log prior           =
-                     -2.1321922782e+01
+                     -2.1303900317e+01
 <<<<< Best log posterior       =
-                     -7.0644490022e+01
+                     -7.0535411193e+01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-             E  2.8563846690e+07  9.5100350556e+04  1.2354358416e+00  7.9625733236e-01
-             w  2.5019851962e+00  3.4353065179e-03  1.9214581775e-02 -9.2030356347e-02
-  CovMultResp1  1.0260730453e+00  3.7387815958e-01  1.3538051020e+00  3.9436119762e+00
-  CovMultResp2  1.4701743387e+00  6.8424971556e-01  1.5191416902e+00  2.5570099327e+00
+             E  2.8679849083e+07  1.5123479352e+05  7.4260539973e-02 -6.6313551212e-02
+             w  2.5004067654e+00  3.9584560021e-03  5.6088267334e-01  3.2521802490e+00
+  CovMultResp1  1.0843629455e+00  5.3712787007e-01  4.1699251086e+00  4.1638837903e+01
+  CovMultResp2  1.3541868230e+00  6.0102974925e-01  1.8937560011e+00  6.2097436481e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress  2.6202682022e+03  8.0450698819e+01 -9.2317030086e-03 -9.1427611616e-02
-  displacement  2.9954754931e-01  8.3603027591e-03 -5.7320241860e-01 -7.2592267731e-02
-Information gained from prior to posterior = 8.6352311573e+00
+        stress  2.6573100837e+03  9.2751544754e+01 -5.3140269862e-01  3.1053519881e+00
+  displacement  2.9195729356e-01  1.1359498495e-02 -7.1331437757e-03  1.4078398239e-01
+Information gained from prior to posterior = 5.8908950869e+00

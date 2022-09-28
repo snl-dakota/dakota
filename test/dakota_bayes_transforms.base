@@ -41,7 +41,7 @@ Sample moment statistics for each response function:
                   2.6548175985e-01  9.5000000000e-01
                   2.6359683842e-01  1.0000000000e-01
                   2.6531665560e-01  9.0000000000e-01
-Information gained from prior to posterior = -2.8517542589e+00
+Information gained from prior to posterior = -2.8683807211e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 3212 total (3212 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -85,7 +85,7 @@ Sample moment statistics for each response function:
                   2.6759357456e-01  9.5000000000e-01
                   2.6187905540e-01  1.0000000000e-01
                   2.6711440803e-01  9.0000000000e-01
-Information gained from prior to posterior = -1.2221725709e+01
+Information gained from prior to posterior = -1.2246344006e+01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 3254 total (3254 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -129,7 +129,7 @@ Sample moment statistics for each response function:
                   2.6545742298e-01  9.5000000000e-01
                   2.6364877885e-01  1.0000000000e-01
                   2.6529823620e-01  9.0000000000e-01
-Information gained from prior to posterior = 6.5975949638e+00
+Information gained from prior to posterior = 6.1875052832e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 3231 total (3231 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -173,7 +173,7 @@ Sample moment statistics for each response function:
                   2.6548175985e-01  9.5000000000e-01
                   2.6359683842e-01  1.0000000000e-01
                   2.6531665560e-01  9.0000000000e-01
-Information gained from prior to posterior = -2.8517542589e+00
+Information gained from prior to posterior = -2.8683807211e+00
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 2839 total (2839 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -217,7 +217,7 @@ Sample moment statistics for each response function:
                   2.9106923752e-01  9.5000000000e-01
                   2.3733754538e-01  1.0000000000e-01
                   2.8710260203e-01  9.0000000000e-01
-Information gained from prior to posterior = -1.4497101355e+01
+Information gained from prior to posterior = -1.4560600140e+01
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -261,39 +261,39 @@ Sample moment statistics for each response function:
                   2.9585048494e-01  9.5000000000e-01
                   2.3576356304e-01  1.0000000000e-01
                   2.8988198556e-01  9.0000000000e-01
-Information gained from prior to posterior = -1.4212703904e+01
+Information gained from prior to posterior = -1.4129553531e+01
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 1998 total (1998 new, 0 duplicate)
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-             E  2.8965392521e+07  2.4611395718e+05  1.9457633327e-01 -7.8078108466e-01
-             w  2.5020495654e+00  1.4874547063e-02 -2.6482918285e-01 -2.5641505009e-01
+             E  2.8949955197e+07  2.4967639965e+05  3.3693467122e-01 -6.9728329324e-01
+             w  2.5030651701e+00  1.4913543154e-02 -3.3703772379e-01 -4.6379200837e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress  2.6212597570e+03  3.4909492672e+02  3.0273994706e-01 -2.4122950592e-01
-  displacement  2.6429924032e-01  1.4775604986e-02  1.3129551398e-02  2.1929617235e+00
+        stress  2.5975001996e+03  3.4984716781e+02  3.7876721760e-01 -2.7847019060e-02
+  displacement  2.6392794959e-01  1.4880272073e-02 -4.3069958913e-01  2.1590220199e+00
                   Response Level    Probability Level
                   ----------------- -----------------
-                  2.0367083671e+03  5.0000000000e-02
-                  3.3748435151e+03  9.5000000000e-01
-                  2.1021796021e+03  1.0000000000e-01
-                  3.2413602437e+03  9.0000000000e-01
+                  2.0093522818e+03  5.0000000000e-02
+                  3.3510651473e+03  9.5000000000e-01
+                  2.0615067650e+03  1.0000000000e-01
+                  3.2504443542e+03  9.0000000000e-01
                   Response Level    Probability Level
                   ----------------- -----------------
-                  2.3688523127e-01  5.0000000000e-02
-                  2.9192986587e-01  9.5000000000e-01
-                  2.3932547131e-01  1.0000000000e-01
-                  2.8718558761e-01  9.0000000000e-01
+                  2.3351164278e-01  5.0000000000e-02
+                  2.9154832784e-01  9.5000000000e-01
+                  2.3907816187e-01  1.0000000000e-01
+                  2.8911738144e-01  9.0000000000e-01
                   Response Level    Probability Level
                   ----------------- -----------------
-                  2.0182203027e+03  5.0000000000e-02
-                  3.3668065387e+03  9.5000000000e-01
-                  2.0950809829e+03  1.0000000000e-01
-                  3.2490187387e+03  9.0000000000e-01
+                  1.9887946119e+03  5.0000000000e-02
+                  3.3548100963e+03  9.5000000000e-01
+                  2.0679178475e+03  1.0000000000e-01
+                  3.2576055402e+03  9.0000000000e-01
                   Response Level    Probability Level
                   ----------------- -----------------
-                  2.3680814039e-01  5.0000000000e-02
-                  2.9183031870e-01  9.5000000000e-01
-                  2.3935260533e-01  1.0000000000e-01
-                  2.8716412130e-01  9.0000000000e-01
-Information gained from prior to posterior = 2.2303488218e+00
+                  2.3341939085e-01  5.0000000000e-02
+                  2.9164090814e-01  9.5000000000e-01
+                  2.3918474275e-01  1.0000000000e-01
+                  2.8894204286e-01  9.0000000000e-01
+Information gained from prior to posterior = -7.5326011130e+00

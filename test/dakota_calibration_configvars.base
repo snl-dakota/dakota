@@ -54,7 +54,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
 least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
-Information gained from prior to posterior = 3.9196284455e+00
+Information gained from prior to posterior = 4.0976897193e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
 <<<<< Best parameters (experiment config variables omitted) =
@@ -148,7 +148,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
 least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
-Information gained from prior to posterior = 3.9196284455e+00
+Information gained from prior to posterior = 4.0976897193e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 2060 total (2060 new, 0 duplicate)
 <<<<< Best parameters (experiment config variables omitted) =
