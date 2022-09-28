@@ -79,8 +79,7 @@ of a sum of the squares objective function for problems of the form:
 where :math:`f(\mathbf{x})` is the objective function to be minimized
 and :math:`T_i(\mathbf{x})` is the i\ :math:`^{\mathrm{th}}` least
 squares term. The bound, linear, and nonlinear constraints are the same
-as described previously for  :math:numref:`optimformulation`,
-(`[opt:formulations:equation01] <#opt:formulations:equation01>`__).
+as described previously for  :math:numref:`optimformulation`, Optimization Formulations.
 Specialized least squares algorithms are generally based on the
 Gauss-Newton approximation. When differentiating :math:`f(\mathbf{x})`
 twice, terms of :math:`T_i(\mathbf{x})T''_i(\mathbf{x})` and
@@ -125,7 +124,7 @@ residuals, and offers options for instead returning the simulation
 output to Dakota together with a separate ``calibration_data`` file,
 from which residuals will be calculated. Any linear or nonlinear
 constraints are handled in an identical way to that of optimization (see
-Section `[opt:formulations] <#opt:formulations>`__; note that neither
+Section Optimization Formulations  :math:numref:`optimformulation` ; note that neither
 Gauss-Newton nor NLSSOL require any constraint augmentation and NL2SOL
 supports neither linear nor nonlinear constraints). Gradients of the
 least-squares terms and nonlinear constraints are required and should be
@@ -133,7 +132,7 @@ specified using either ``numerical_gradients``, ``analytic_gradients``,
 or ``mixed_gradients``. Since explicit second derivatives are not used
 by the least-squares methods, the ``no_hessians`` specification should
 be used. Dakota’s scaling options, described in
-Section `[opt:additional:scaling] <#opt:additional:scaling>`__ can be
+Section Optimization with User-specified or Automatic Scaling, :numref:`opt:additional:scaling:example:figure01` can be
 used on least-squares problems, using the ``calibration_term_scales``
 keyword to scale least-squares residuals, if desired.
 
@@ -155,9 +154,9 @@ Gauss-Newton
 
 Dakota’s Gauss-Newton algorithm consists of combining an implementation
 of the Gauss-Newton Hessian approximation (see
-Section `1.2 <#nls:formulations>`__) with full Newton optimization
+Section  :ref:`formulations <nls:formulations>`) with full Newton optimization
 algorithms from the OPT++ package :cite:p:`MeOlHoWi07` (see
-Section `[opt:methods:gradient:constrained] <#opt:methods:gradient:constrained>`__).
+Section  :ref:`Methods for Constrained Problems <opt::methods:gradient:constrained>`).
 The exact objective function value, exact objective function gradient,
 and the approximate objective function Hessian are defined from the
 least squares term values and gradients and are passed to the
@@ -202,10 +201,10 @@ The NLSSOL algorithm is bundled with NPSOL. It uses an SQP-based
 approach to solve generally-constrained nonlinear least-squares
 problems. It periodically employs the Gauss-Newton Hessian approximation
 to accelerate the search. Like the Gauss-Newton algorithm of
-Section `1.4.1 <#nls:solution:gauss>`__, its derivative order is
+Section `:ref:`Gauss <nls:solution:gauss>`), its derivative order is
 balanced in that it requires only first-order information for the
 least-squares terms and nonlinear constraints. License: commercial; see
-NPSOL `[opt:methods:gradient:constrained] <#opt:methods:gradient:constrained>`__.
+NPSOL   :ref:`Methods for Constrained Problems <opt::methods:gradient:constrained>`.
 
 This approach can be selected using the ``nlssol_sqp`` method
 specification. An example specification follows:
