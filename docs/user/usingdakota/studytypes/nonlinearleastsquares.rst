@@ -79,7 +79,7 @@ of a sum of the squares objective function for problems of the form:
 where :math:`f(\mathbf{x})` is the objective function to be minimized
 and :math:`T_i(\mathbf{x})` is the i\ :math:`^{\mathrm{th}}` least
 squares term. The bound, linear, and nonlinear constraints are the same
-as described previously for
+as described previously for  :math:numref:`optimformulation`,
 (`[opt:formulations:equation01] <#opt:formulations:equation01>`__).
 Specialized least squares algorithms are generally based on the
 Gauss-Newton approximation. When differentiating :math:`f(\mathbf{x})`
