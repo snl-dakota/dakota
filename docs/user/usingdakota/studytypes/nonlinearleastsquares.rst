@@ -201,7 +201,7 @@ The NLSSOL algorithm is bundled with NPSOL. It uses an SQP-based
 approach to solve generally-constrained nonlinear least-squares
 problems. It periodically employs the Gauss-Newton Hessian approximation
 to accelerate the search. Like the Gauss-Newton algorithm of
-Section  :ref:`Gauss <nls:solution:gauss>`), its derivative order is
+Section  :ref:`Gauss-Newton <nls:solution:gauss>`), its derivative order is
 balanced in that it requires only first-order information for the
 least-squares terms and nonlinear constraints. License: commercial; see
 NPSOL   :ref:`Methods for Constrained Problems <opt:methods:gradient:constrained>`.
@@ -306,7 +306,7 @@ Examples
 
 Both the Rosenbrock and textbook example problems can be formulated as
 nonlinear least-squares problems. Refer to
-Chapter `[additional] <#additional>`__ for more information on these
+Chapter 20 in the Dakota User's Manual for more information on these
 formulations.
 
 ..
@@ -339,6 +339,7 @@ that the optimal parameter estimates are printed, followed by the
 residual norm and values of the individual residual terms, followed by
 the confidence intervals on the parameters.
 
+:numref:`nls:cioptimal:example:figure01`
 ::
 
    <<<<< Iterator nl2sol completed.
