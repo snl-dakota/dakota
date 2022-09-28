@@ -29,11 +29,22 @@ or
 
     dakota -o dakota.out -e dakota.err dakota.in
 
-Alternatively, any of a variety of Unix redirection variants can be used. The simplest of these redirects stdout to another file:
+Alternatively, any of a variety of Unix (or Windows) command-line
+redirection variants can be used. The simplest of these redirects
+stdout to another file:
 
 .. code-block::
 
     dakota dakota.in > dakota.out
+
+.. note::
+
+   Command-line redirection will redirect *all* Dakota-generated
+   output (or errors if specified) to the specified file, including
+   output from underlying third-party libraries. In contrast, the
+   command-line ``-output`` and ``-error`` (or analagous input file
+   options) will only capture output from core Dakota and may not
+   include some elements of console output.
 
 To run the dakota process in the background, append an ampersand symbol (&) to the command with an embedded space, e.g.,\
 

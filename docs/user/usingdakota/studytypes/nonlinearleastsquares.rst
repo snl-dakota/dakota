@@ -1,7 +1,10 @@
 .. _nls:
 
-Nonlinear Least Squares Capabilities
-====================================
+Nonlinear Least Squares
+=======================
+
+..
+   TODO: discuss calibration overall, then NLS
 
 .. _`nls:overview`:
 
@@ -307,6 +310,30 @@ nonlinear least-squares problems. Refer to
 Chapter `[additional] <#additional>`__ for more information on these
 formulations.
 
+..
+   TODO:
+   %Figure~\ref{nls:figure01}
+   %shows an excerpt from output for the Rosenbrock example solved by
+   %the Gauss-Newton method.
+   %
+   %\begin{figure}
+   %\begin{bigbox}
+   %\begin{small}
+   %\begin{verbatim}
+   %     Active response data for function evaluation 1:
+   %     Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+   %                          -4.4000000000e+00 least_sq_term_1
+   %                           2.2000000000e+00 least_sq_term_2
+   %      [  2.4000000000e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+   %      [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+   %\end{verbatim}
+   %\end{small}
+   %\end{bigbox}
+   %\caption{Example of intermediate output from a Gauss-Newton method.}
+   %\label{nls:figure01}
+   %\end{figure}
+
+
 Figure `[nls:figure02] <#nls:figure02>`__ shows an excerpt from the
 output obtained when running NL2SOL on a five-dimensional problem. Note
 that the optimal parameter estimates are printed, followed by the
@@ -391,6 +418,9 @@ that they will occur in the text file before the responses.
 
 Usage Guidelines
 ----------------
+
+..
+   TODO: borrow from and refer to opt.
 
 Calibration problems can be transformed to general optimization problems
 where the objective is some type of aggregated error metric. For

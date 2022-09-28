@@ -6,7 +6,7 @@ The exponential distribution is often used for modeling failure rates.
 
 The density function for the exponential distribution is given by:
 
-.. math:: f(x) = \frac{1}{\beta} \exp \left( \frac{-x}{\beta} \right)
+.. math:: f(x) = \frac{1}{\beta} \exp \left( \frac{-x}{\beta} \right),
 
 where :math:`\mu_{E} = \beta`  and :math:`\sigma^2_{E} = \beta^2` .
 

@@ -2,11 +2,13 @@ Blurb::
 String-valued discrete design set variables
 Description::
 Discrete design variables whose values come from a specified set of
-admissible strings.  The details of how to specify this discrete
-variable are located on the :ref:`topic-discrete_variables<topic-discrete_variables>` page.  Each
-string element value must be quoted and may contain alphanumeric,
-dash, underscore, and colon. White space, quote characters, and
-backslash/metacharacters are not permitted.
+admissible strings.
+
+See :ref:`variables:usage` for tips on specifying discrete set
+variables. Each string element value must be quoted and may contain
+alphanumeric, dash, underscore, and colon. White space, quote
+characters, and backslash/metacharacters are not permitted.
+
 Topics::
 discrete_variables, design_variables
 Examples::

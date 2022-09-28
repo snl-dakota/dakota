@@ -220,6 +220,9 @@ interface class is derived from **DirectFnApplicInterface** which
 *redefines* the **derived_map_if()**, **derived_map_ac()**, and
 **derived_map_of()** virtual functions.
 
+..
+   TODO: % Note: this approach has benefits primarily in library mode:
+
 In the approach of Section `1.2.3 <#advint:direct:sandwich>`__ below,
 the class derivation approach avoids the need to recompile the Dakota
 library when the simulation or its direct interface class is modified.

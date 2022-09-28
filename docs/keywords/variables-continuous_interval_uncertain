@@ -1,5 +1,6 @@
 Blurb::
 Epistemic uncertain variable - values from one or more continuous intervals
+
 Description::
 Continuous interval uncertain variables are epistemic types.
 They can specify a single interval per variable which may
@@ -15,11 +16,13 @@ Dempster-Shafer theory of evidence.
 Other epistemic types include:
 
 - :ref:`variables-discrete_interval_uncertain<variables-discrete_interval_uncertain>`
-- discrete_uncertain_set :ref:`variables-discrete_uncertain_set-integer<variables-discrete_uncertain_set-integer>`
-- discrete_uncertain_set :ref:`variables-discrete_uncertain_set-string<variables-discrete_uncertain_set-string>`
-- discrete_uncertain_set :ref:`variables-discrete_uncertain_set-real<variables-discrete_uncertain_set-real>`
+- :ref:`variables-discrete_uncertain_set-integer<variables-discrete_uncertain_set-integer>`
+- :ref:`variables-discrete_uncertain_set-string<variables-discrete_uncertain_set-string>`
+- :ref:`variables-discrete_uncertain_set-real<variables-discrete_uncertain_set-real>`
+
 Topics::
 continuous_variables, epistemic_uncertain_variables
+
 Examples::
 The following specification is for an interval analysis:
 
@@ -45,27 +48,31 @@ The following specification is for a Dempster-Shafer analysis:
 Here there are 2 interval uncertain variables. The first one is defined by three intervals, and the second by two intervals. The three intervals for the first variable have basic probability assignments of 0.2, 0.5, and 0.3, respectively, while the basic probability assignments for the two intervals for the second variable are 0.4 and 0.6.
 The basic probability assignments for each interval variable must sum to one. The interval bounds for the first variable are [2, 2.5], [4, 5], and [4.5, 6], and the interval bounds for the second variable are [1.0, 5.0] and [3.0, 5.0]. Note that the intervals can be overlapping or disjoint.  The BPA for the first variable indicates that it is twice as likely that the value occurs
 on the interval [4,5] than either [2,2.5] or [4.5,6].
+
 Theory::
+
 The continuous interval uncertain variable is NOT a probability distribution. Although it may seem similar to a histogram, the interpretation of this uncertain variable is different. It is used in epistemic uncertainty analysis, where one is trying to model uncertainty due to lack of knowledge.
 The continuous interval uncertain variable is used in both interval analysis and in Dempster-Shafer theory of evidence.
 
+**Interval Analysis**
 
-- interval analysis
-
--only one interval is allowed for each ``continuous_interval_uncertain`` variable
--the interval is defined by lower and upper bounds
--the value of the random variable lies somewhere in this interval
--output is the minimum and maximum function value conditionalon the specified interval
+- Only one interval is allowed for each ``continuous_interval_uncertain`` variable
+- The interval is defined by lower and upper bounds
+- The value of the random variable lies somewhere in this interval
+- Output is the minimum and maximum function value conditional on the specified interval
 
 
-- Dempster-Shafer theory of evidence
+**Dempster-Shafer Theory of Evidence**
 
--multiple intervals can be assigned to each ``continuous_interval_uncertain`` variable
--a Basic Probability Assignment (BPA) is associated with each interval. The BPA represents a probability that the value of the uncertain variable is located within that interval.
--each interval is defined by lower and upper bounds
--outputs are called "belief" and "plausibility."Belief represents the smallest possible probability that is consistent with the evidence,
-while plausibility represents the largest possible probability that is consistent with the evidence.
-Evidence is the intervals together with their BPA.
+- Multiple intervals can be assigned to each ``continuous_interval_uncertain`` variable
+- A Basic Probability Assignment (BPA) is associated with each interval. The BPA represents a probability that the value of the uncertain variable is located within that interval.
+- Each interval is defined by lower and upper bounds
+- Outputs are called "belief" and "plausibility." Belief represents
+  the smallest possible probability that is consistent with the
+  evidence, while plausibility represents the largest possible
+  probability that is consistent with the evidence. Evidence is the
+  intervals together with their BPA.
+
 Faq::
 
 See_Also::

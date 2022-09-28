@@ -42,6 +42,15 @@ Linear regression (specified with either ``collocation_points`` or
    polynomials) and then the tensor multi-index is uniformly sampled
    to generate a non-repeated subset of tensor quadrature points.
 
+..
+   HIDDEN: the order of the tensor-product grid is the minimum
+   required to meet or exceed the point requirement, and then this set
+   of points is filtered down to the requirement based on the subset
+   of points having highest product integration weight. In our
+   experience, the alternate probabilistic collocation approach using
+   a structured grid tends to suffer from ill-conditioning more
+   quickly than the default point collocation approach using an
+   unstructured grid.
 
 If ``collocation_points`` or ``collocation_ratio`` is specified, the PCE
 coefficients will be determined by regression.

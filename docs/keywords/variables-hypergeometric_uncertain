@@ -9,17 +9,17 @@ The hypergeometric probability density is used when sampling without replacement
 
 The density function for the hypergeometric distribution is given by:
 
-.. math:: f(x) = \frac{\left(\begin{array}{c}m\\x\end{array}\right)\left(\begin{array}{c}{N-m}\\{n-x}\end{array}\right)}{\left(\begin{array}{c}N\\n\end{array}\right)}
+.. math:: f(x) = \frac{\left(\begin{array}{c}m\\x\end{array}\right)\left(\begin{array}{c}{N-m}\\{n-x}\end{array}\right)}{\left(\begin{array}{c}N\\n\end{array}\right)},
 
 where the three distribution parameters are:
 
-- N is the total population
-- m is the number of items in the selected population (e.g. the number of white balls in the full urn of N items)
-- n is the size of the sample drawn (e.g. number of balls drawn)
+- :math:`N`: the total population
+- :math:`m`: the number of items in the selected population (e.g. the number of white balls in the full urn of :math:`N` items)
+- :math:`n` the size of the sample drawn (e.g. number of balls drawn)
 
 In addition,
 
-- x, the abscissa of the density function, indicates the number of successes (e.g. drawing a white ball)
+- :math:`x`, the abscissa of the density function, indicates the number of successes (e.g. drawing a white ball)
 - :math:`\left(\begin{array}{c}a\\b\end{array}\right)` indicates a binomial coefficient ("a choose b")
 
 Topics::
@@ -28,7 +28,7 @@ discrete_variables, aleatory_uncertain_variables
 Examples::
 
 Theory::
-The hypergeometric is often described using an urn model. For example, say we have a total population containing N balls, and we know that m of the balls are white and the remaining balls are green. If we draw n balls from the urn without replacement, the hypergeometric distribution describes the probability of drawing x white balls.
+The hypergeometric is often described using an urn model. For example, say we have a total population containing :math:`N` balls, and we know that :math:`m` of the balls are white and the remaining balls are green. If we draw :math:`n` balls from the urn without replacement, the hypergeometric distribution describes the probability of drawing :math:`x` white balls.
 
 Faq::
 

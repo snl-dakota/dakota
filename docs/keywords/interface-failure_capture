@@ -19,17 +19,17 @@ Once Dakota detects analysis failure, the failure can be mitigated in four ways:
 - :ref:`interface-failure_capture-recover<interface-failure_capture-recover>`
 - :ref:`interface-failure_capture-continuation<interface-failure_capture-continuation>`
 
-
-
-
-
-
-
-
-
 Refer to the Simulation Code Failure Capturing chapter of the Users
 Manual :cite:p:`UsersMan` for additional information.
 Topics::
+
+**Default Behavior:** If no failure capturing specification is
+provided, then the default behavior is method dependent. For those
+iterative algorithms that provide internal failure mitigation
+strategies (currently NL2SOL), the default is to transfer the failure
+information from the interface back to the algorithm for mitigation,
+with no specific action taken by Dakota. For all other algorithms, the
+default is to abort.
 
 Examples::
 

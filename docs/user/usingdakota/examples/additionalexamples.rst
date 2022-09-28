@@ -130,6 +130,11 @@ in the optimal objective function is observed.
 Gradient-based Constrained Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+..
+   TODO:
+   %as of 130124 the example results do NOT match the words in this manual.
+   %this cannot be fixed without changing the test input file
+
 This example demonstrates the use of a gradient-based optimization
 algorithm on a nonlinearly constrained problem. The Dakota input file
 for this example is shown in
@@ -196,22 +201,85 @@ Figure `[additional:textbook_grad_constr_graphics] <#additional:textbook_grad_c
 | (b)      |
 +----------+
 
-TODO: Put back least squares discussion since it's a test problem
+.. _`additional:textbook:least`:
+
+Least Squares Optimization
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..
+   TODO: resolve the confusion while retaining the test problem, since
+   it appears in other references across the manual.
+
+   %khu 130124 - I don't see the point of this example.  it is confusing because
+   %the formulation changes and the solution changes. it also replicates the
+   %example w/ the Rosenbrock test function.
+
+
+This test problem may also be used to exercise least squares
+solution methods by modifying the problem formulation to:
+
+.. math::
+
+   \texttt{minimize } (f)^2+(g_1)^2+(g_2)^2 \label{additional:tbls}
+
+This modification is performed by simply changing the responses
+specification for the three functions from ``num_objective_functions =
+1`` and ``num_nonlinear_inequality_constraints = 2`` to
+``num_least_squares_terms = 3``. Note that the two problem
+formulations are not equivalent and have different solutions.
+
+.. note::
+
+   Another way to exercise the least squares methods which would be
+   equivalent to the optimization formulation would be to select the
+   residual functions to be :math:`(x_{i}-1)^2`. However, this formulation
+   requires modification to :file:`dakota_source/test/text_book.cpp` and will
+   not be presented here. Equation~\ref{additional:tbls}, on the other
+   hand, can use the existing ``text_book`` without modification.
+
+Refer to Section~\ref{additional:rosenbrock} for an example of
+minimizing the same objective function using both optimization and
+least squares approaches.
+
+The solution for the least squares problem given in
+Equation~\ref{additional:tbls} is:
+
+.. math::
+
+   x_1 &= 0.566 \\
+   x_2 &= 0.566
+
+with the residual functions equal to
+
+.. math::
+
+   f^{\ast} &= 0.0713 \\
+   g_1^{\ast} &= 0.0371 \\
+   g_2^{\ast} &= 0.0371
+
+and therefore a sum of squares equal to 0.00783.
+
+This study requires selection of ``num_least_squares_terms = 3`` in
+the responses specification and selection of either
+``optpp_g_newton``, ``nlssol_sqp``, or ``nl2sol`` in the method
+specification.
+
 
 .. _`additional:rosenbrock`:
 
 Rosenbrock
 ----------
 
-The Rosenbrock function :cite:p:`Gil81` is a well known test
-problem for optimization algorithms. The standard formulation includes
-two design variables, and computes a single objective function. This
+The Rosenbrock function :cite:p:`Gil81` is a well known test problem
+for optimization algorithms. The standard formulation includes two
+design variables, and computes a single objective function, while
+generalizations can support arbitrary many design variables. This
 problem can also be posed as a least-squares optimization problem with
-two residuals to be minimzed because the objective function is the sum
-of squared terms.
+two residuals to be minimized because the objective function is
+comprised of a sum of squared terms.
 
-| **Standard Formulation**
-| The standard two-dimensional formulation can be stated as
+**Standard Formulation**
+The standard two-dimensional formulation can be stated as
 
   .. math:: \texttt{minimize } f=100(x_2-x_1^2)^2+(1-x_1)^2 \label{additional:rosenstd}
 
@@ -237,9 +305,32 @@ A discussion of gradient based optimization to minimize this function is
 in
 Section `[tutorial:examples:optimization] <#tutorial:examples:optimization>`__.
 
-| **A Least-Squares Optimization Formulation**
-| This test problem may also be used to exercise least-squares solution
-  methods by recasting the standard problem formulation into:
+**"Extended" Formulation:** The formulation in :cite:p:`Noc99` is
+called the "extended Rosenbrock" and is defined as:
+
+.. math::
+   f = \sum_{i=1}^{n/2} \left[ \alpha (x_{2i}-x_{2i-1}^2)^2+(1-x_{2i-1})^2 \right] \label{additional:rosenexd}
+
+**"Generalized" Formulation:** Another n-dimensional formulation was
+propsed in :cite:p:`Sch87`:
+
+.. math::
+   f = \sum_{i=1}^{n-1} \left[ 100 (x_{i+1}-x_i^2)^2+(1-x_i)^2 \right] \label{additional:rosengen}
+
+..
+   TODO: Not sure why this is in this section...
+   \begin{equation}
+   f = \sum_{i=1}^{n/2} \left[ e^{-x^2_{2i-1}} + 10 e^{-x^2_{2i}} \right]
+   \label{additional:gerstner_aniso1}
+   \end{equation}
+   \begin{equation}
+   f = exp\left(-\sum_{i=1}^{n/2} \left[ 10 x^2_{2i-1} + 5 x^2_{2i} \right]\right)
+   \label{additional:gerstner_aniso3}
+   \end{equation}
+
+**A Least-Squares Optimization Formulation**
+This test problem may also be used to exercise least-squares solution
+methods by recasting the standard problem formulation into:
 
   .. math:: \texttt{minimize } f = (f_1)^2+(f_2)^2 \label{additional:rosenls}
 
@@ -269,9 +360,138 @@ formulation) and
 :numref:`additional:rosenbrock_nls`
 (least squares formulation) for examples of each usage.
 
+.. _`additional:rosenbrock:results`:
 
-TODO: Missing optimization results discussion, if not moved elsewhere
+Optimization Results
+~~~~~~~~~~~~~~~~~~~~
 
+..
+   TODO: Per khu, consider moving this discussion to a methods section
+   and making this chapter focus more on test problems...
+
+In comparing the two approaches, one would expect the Gauss-Newton
+approach to be more efficient since it exploits the special-structure
+of a least squares objective function and, in this problem, the
+Gauss-Newton Hessian is a good approximation since the least squares
+residuals are zero at the solution. From a good initial guess, this
+expected behavior is clearly demonstrated. Starting from
+``cdv_initial_point = 0.8, 0.7``, the ``optpp_g_newton`` method
+converges in only 3 function and gradient evaluations while the
+``optpp_q_newton`` method requires 27 function and gradient
+evaluations to achieve similar accuracy. Starting from a poorer
+initial guess (e.g., ``cdv_initial_point = -1.2, 1.0``), the trend is
+less obvious since both methods spend several evaluations finding the
+vicinity of the minimum (total function and gradient evaluations = 45
+for ``optpp_q_newton`` and 29 for ``optpp_g_newton``). However, once
+the vicinity is located and the Hessian approximation becomes
+accurate, convergence is much more rapid with the Gauss-Newton
+approach.
+
+Shown below is the complete Dakota output for the ``optpp_g_newton``
+method starting from ``cdv_initial_point = 0.8, 0.7``:
+
+::
+
+   Running MPI executable in serial mode.
+   Dakota version 6.0 release.
+   Subversion revision xxxx built May ...
+   Writing new restart file dakota.rst
+   gradientType = analytic
+   hessianType = none
+   
+   >>>>> Executing environment.
+   
+   >>>>> Running optpp_g_newton iterator.
+   
+   ------------------------------
+   Begin Function Evaluation    1
+   ------------------------------
+   Parameters for function evaluation 1:
+                         8.0000000000e-01 x1
+                         7.0000000000e-01 x2
+   
+   rosenbrock /tmp/file4t29aW /tmp/filezGeFpF
+   
+   Active response data for function evaluation 1:
+   Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                         6.0000000000e-01 least_sq_term_1
+                         2.0000000000e-01 least_sq_term_2
+    [ -1.6000000000e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+    [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+   
+   
+   
+   
+   ------------------------------
+   Begin Function Evaluation    2
+   ------------------------------
+   Parameters for function evaluation 2:
+                         9.9999528206e-01 x1
+                         9.5999243139e-01 x2
+   
+   rosenbrock /tmp/fileSaxQHo /tmp/fileHnU1Z7
+   
+   Active response data for function evaluation 2:
+   Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                        -3.9998132761e-01 least_sq_term_1
+                         4.7179363810e-06 least_sq_term_2
+    [ -1.9999905641e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+    [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+   
+   
+   
+   
+   ------------------------------
+   Begin Function Evaluation    3
+   ------------------------------
+   Parameters for function evaluation 3:
+                         9.9999904377e-01 x1
+                         9.9999808276e-01 x2
+   
+   rosenbrock /tmp/filedtRtlR /tmp/file3kUVGA
+   
+   Active response data for function evaluation 3:
+   Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                        -4.7950734494e-08 least_sq_term_1
+                         9.5622502239e-07 least_sq_term_2
+    [ -1.9999980875e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+    [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+   
+   
+   
+   
+   ------------------------------
+   Begin Function Evaluation    4
+   ------------------------------
+   Parameters for function evaluation 4:
+                         9.9999904377e-01 x1
+                         9.9999808276e-01 x2
+   
+   Duplication detected: analysis_drivers not invoked.
+   
+   Active response data retrieved from database:
+   Active set vector = { 2 2 } Deriv vars vector = { 1 2 }
+    [ -1.9999980875e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+    [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+   
+   
+   <<<<< Function evaluation summary: 4 total (3 new, 1 duplicate)
+   <<<<< Best parameters          =
+                         9.9999904377e-01 x1
+                         9.9999808276e-01 x2
+   <<<<< Best residual norm =  9.5742653315e-07; 0.5 * norm^2 =  4.5833278319e-13
+   <<<<< Best residual terms      =
+                        -4.7950734494e-08
+                         9.5622502239e-07
+   <<<<< Best evaluation ID: 3
+   Confidence Interval for x1 is [  9.9998687852e-01,  1.0000112090e+00 ]
+   Confidence Interval for x2 is [  9.9997372187e-01,  1.0000224436e+00 ]
+   
+   <<<<< Iterator optpp_g_newton completed.
+   <<<<< Environment execution completed.
+   Dakota execution time in seconds:
+     Total CPU        =       0.01 [parent =   0.017997, child =  -0.007997]
+     Total wall clock =  0.0672231
 
 .. _`additional:rosenbrock:examples:nonlinear`:
 
@@ -1022,6 +1242,12 @@ Pareto set is shown in Figure `1.11 <#additional:moga3set>`__. Note the
 discontinuous nature of the Pareto set (in the design space) in this
 example. The Pareto front is shown in
 Figure `1.12 <#additional:moga3front>`__.
+
+..
+   TODO:
+   %Again, note the unusual nature of this Pareto example (these figures
+   %agree reasonably well with the Srinivas problem results shown in the
+   %literature).
 
 .. literalinclude:: ../samples/mogatest3.in
    :language: dakota

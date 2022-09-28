@@ -47,6 +47,12 @@ analysis over the aleatory random variables. In this manner, ensembles
 of aleatory statistics are generated, one set for each realization of
 the epistemic parameters.
 
+..
+   TODO:
+   %This ensemble is then
+   %interpreted in different ways according to the outer loop methodology
+   %that is employed.
+
 In Dakota, we support interval-valued probability (IVP), second-order
 probability (SOP), and Dempster-Shafer theory of evidence (DSTE)
 approaches to mixed uncertainty. These three approaches differ in how
@@ -70,6 +76,29 @@ The problem of uncertainty propagation then becomes an interval analysis
 problem: given inputs that are defined within intervals, what are the
 corresponding intervals on the outputs?
 
+..
+   TODO (Above):
+
+   %These approaches can be considered to be a special case of imprecise
+   %probability theory. 
+
+   %Although interval analysis is conceptually simple, in practice it can
+   %be difficult to determine the more effective solution approach. A direct
+   %approach is to use optimization to find the maximum and minimum values
+   %of the output measure of interest, which correspond to the upper and
+   %lower interval bounds on the output, respectively. In practice, it
+   %may require a large number of function evaluations to determine these
+   %optima, especially if the simulation is very nonlinear with respect to
+   %the inputs, has a high number of inputs with interaction effects,
+   %exhibits discontinuities, etc.
+   
+   TODO (Below):
+
+   %In IVP, we segregate the aleatory and epistemic variables and 
+   %perform nested iteration~\cite{helton_2009}. 
+   Starting from a specification of intervals and probability distributions 
+   on the inputs, %(as described in Section~\ref{sec:ssa:io}, 
+
 Starting from a specification of intervals and probability distributions
 on the inputs, the intervals may augment the probability distributions,
 insert into the probability distributions, or some combination (refer to
@@ -89,6 +118,14 @@ the family of distributions (see Figure `1.1 <#fig:horsetail>`__).
       :width: 3.5in
 
       Example CDF ensemble. Commonly referred to as a “horsetail” plot.
+
+..
+   TODO:
+   %However, nested iteration can be computationally expensive when it is
+   %implemented using two random sampling loops. Consequently, when
+   %employing simulation-based models, the nested sampling must often be
+   %under-resolved, particularly at the epistemic outer loop, 
+   %resulting in an under-prediction of credible output ranges. 
 
 Given that the ensemble stems from multiple realizations of the
 epistemic uncertainties, the interpretation is that each CDF/CCDF
@@ -155,6 +192,9 @@ local point solutions in the epistemic parameter space, such that we may
 employ directed optimization techniques to compute these extrema and
 potentially avoid the cost of sampling the full epistemic space.
 
+..
+   TODO: %resulting in more precise output bounds at lower cost.
+
 In ``dakota/share/dakota/test``, test input files such as
 ``dakota_uq_cantilever_ivp_exp.in`` and
 ``dakota_uq_short_column_ivp_exp.in`` replace the outer loop sampling
@@ -186,6 +226,15 @@ and a frequency interpretation of the aleatory variables. The PoF
 terminology is used in a recent National Academy of Sciences report on
 the Quantification of Margins and Uncertainties
 (QMU) :cite:p:`NAS08`.
+
+
+..
+   TODO (w.r.t. first sentence below)
+   % MSE: this is not currently supported in implementation to my knowledge:
+   %In certain special cases, expected values of expected values can be
+   %computed in closed form (selected statistics for combined variable
+   %stochastic expansions, refer to the Dakota Theory
+   %Manual~\cite{TheoMan}), without need for a separate outer loop method.
 
 Rather than employing interval estimation techniques at the outer loop
 in SOP, we instead apply probabilistic methods, potentially the same
@@ -361,6 +410,9 @@ Section `[additional:cantilever] <#additional:cantilever>`__) with a
 nested approach. For each of these files, the “``1``” identifies
 formulation 1, which is short-hand for the nested approach.
 
+..
+   TODO: combine following with TR-SBOUU discussion?
+
 .. _`adv_models:ouu:sb`:
 
 Surrogate-Based OUU (SBOUU)
@@ -507,7 +559,14 @@ must be recomputed for each change in design variables. Sensitivities
 for “augmented” design variables (which are separate from and augment
 the random variables) may be handled using either analytic approach;
 however, sensitivities for “inserted” design variables (which define
-distribution parameters for the random variables) must be computed using
+distribution parameters for the random variables) must be 
+
+..
+   TODO:
+   %handled using Eqs.~\ref{eq:dmuR_ds_xi_pce}-\ref{eq:dsigR_ds_xi_pce} 
+   %where $\frac{dR}{ds}$ is calculated as $\frac{dR}{dx} \frac{dx}{ds}$.
+
+computed using
 :math:`\frac{dR}{dx} \frac{dx}{ds}` (refer to Stochastic Sensitivity
 Analysis section in Optimization Under Uncertainty chapter of Dakota
 Theory Manual :cite:p:`TheoMan`). Additional test input files

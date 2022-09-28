@@ -1,7 +1,7 @@
 .. _uq:
 
-Uncertainty Quantification Capabilities
-=======================================
+Uncertainty Quantification
+==========================
 
 .. _`uq:overview`:
 
@@ -40,7 +40,12 @@ UQ methods can be distinguished by their ability to propagate aleatory
 or epistemic input uncertainty characterizations, where aleatory
 uncertainties are irreducible variabilities inherent in nature and
 epistemic uncertainties are reducible uncertainties resulting from a
-lack of knowledge. For aleatory uncertainties, probabilistic methods are
+lack of knowledge.
+
+..
+   TODO: %Since sufficient data is generally available for
+
+For aleatory uncertainties, probabilistic methods are
 commonly used for computing response distribution statistics based on
 input probability distribution specifications. Conversely, for epistemic
 uncertainties, use of probability distributions is based on subjective
@@ -70,6 +75,55 @@ Dempster-Shafer theory of evidence. These involve advanced model
 recursions and are described in
 Section `[adv_models:mixed_uq] <#adv_models:mixed_uq>`__.
 
+..
+   TODO:
+   %In addition, future extensions to the DDACE package will make it 
+   %applicable to general UQ problems, which will augment the Dakota/UQ 
+   %capabilities.
+   %Uncertainty quantification methods (also referred to as
+   %nondeterministic analysis methods) in the Dakota/UQ system involve the
+   %computation of probabilistic information about response functions
+   %based on sets of simulations taken from the specified probability
+   %distributions for uncertain parameters. That is, 
+   
+   %The impact on the response functions due to the probabilistic nature
+   %of the parameters is often estimated using a sampling-based approach
+   %such as Monte Carlo sampling or one of its variants (latin hypercube,
+   %quasi-Monte Carlo, Markov-chain Monte Carlo, etc.). In these sampling
+   %approaches, a random number generator is used to select different
+   %values of the parameters with probability specified by their
+   %probability distributions. This is the point that distinguishes UQ
+   %sampling from DoE/DACE sampling, in that the former supports general
+   %probabilistic descriptions of the parameter set and the latter
+   %generally supports only a bounded parameter space description. A
+   %particular set of parameter values is often called a \emph{sample
+   %point}, or simply a \emph{sample}. With Monte Carlo and Latin
+   %Hypercube sampling, the user may specify correlations among the input
+   %sample points. After a user-selected number of sample points has been
+   %generated, the response functions for each sample are evaluated. Then,
+   %a statistical analysis is performed on the response function values to
+   %yield information on their characteristics. While this approach is
+   %straightforward, and readily amenable to parallel computing, it can be
+   %computationally expensive depending on the accuracy requirements of
+   %the statistical information (which links directly to the number of
+   %sample points).
+   
+   %Finally, when the input uncertainties are poorly characterized, then
+   %epistemic uncertainty methods, such as second-order probability or
+   %Dempster-Shafer theory of evidence, can be used to compute intervals
+   %of potential probability values. The second-order probability
+   %approach performs an ensemble of aleatory UQ analyses, one for each
+   %realization of the epistemic parameter set. The ensemble of CDF/CCDF
+   %curves generates what is known as a ``horse-tail'' plot.
+   %Dempster-Shafer, on the other hand, directly generates probability
+   %bounds, known as the belief and plausibility functions.
+   
+   %This chapter has extensive details on various Dakota UQ methods, but
+   %here is a high-level summary of available capabilities:
+   
+   % BMA TODO: Considerably shorten the following descriptions, moving
+   % text to later sections if needed.
+
 **LHS (Latin Hypercube Sampling)**: This package provides both Monte
 Carlo (random) sampling and Latin Hypercube sampling methods, which can
 be used with probabilistic variables in Dakota that have the following
@@ -87,6 +141,20 @@ additional incremental study which will double the number of samples (to
 incremental sample of size 2N is also a Latin Hypercube, with proper
 stratification and correlation. Statistics for each increment are
 reported separately at the end of the study.
+
+..
+   TODO (middle of above paragraph)
+   %The LHS package currently serves
+   %two purposes: (1) it can be used for uncertainty quantification by
+   %sampling over uncertain variables characterized by probability
+   %distributions, or (2) it can be used in a DACE mode in which any
+   %design and state variables are treated as having uniform distributions
+   %(see the \texttt{active all} view override in the Dakota Reference
+   %Manual~\cite{RefMan}). The LHS package historically came in two
+   %versions: ``old'' (circa 1980) and ``new'' (circa 1998), but presently
+   %only the latter is supported in Dakota, requiring a Fortran 90
+   %compiler. This ``new'' LHS is available under a separate GNU Lesser
+   %General Public License and is distributed with Dakota. 
 
 **Reliability Methods**: This suite of methods includes both local and
 global reliability methods. Local methods include first- and
@@ -109,10 +177,29 @@ approximations based on Gaussian process models. They accurately resolve
 a particular contour of a response function and then estimate
 probabilities using multimodal adaptive importance sampling.
 
+..
+   TODO (above before global reliability):
+   % Reliability mappings may involve computing reliability and
+   % probability levels for prescribed response levels (forward
+   % reliability analysis, commonly known as the reliability index
+   % approach or RIA) or computing response levels for prescribed
+   % reliability and probability levels (inverse reliability analysis,
+   % commonly known as the performance measure approach or PMA).
+   % Approximation-based MPP search methods (AMV, AMV$^2$, AMV+,
+   % AMV$^2$+, and TANA) may be applied in either x-space or u-space, and
+   % mappings may involve either cumulative or complementary cumulative
+   % distribution functions.
+
 **Stochastic Expansion Methods**: Theoretical development of these
 techniques mirrors that of deterministic finite element analysis
 utilizing the notions of projection, orthogonality, and weak
 convergence :cite:p:`Gha99`, :cite:p:`Gha91`.
+
+..
+   TODO:
+   %The objective of these
+   %techniques is to characterize the response of systems whose governing
+   %equations involve stochastic coefficients. 
 
 Rather than focusing on estimating specific statistics (e.g., failure
 probability), they form an approximation to the functional relationship
@@ -916,6 +1003,9 @@ The general procedure of these EGO-type methods is:
    maximized. Update the Gaussian process model using this new point. Go
    to Step 2.
 
+..
+   TODO: %\item Use cross validation to ensure that the GP model is satisfactory.
+
 Gaussian process (GP) models are used because they provide not just a
 predicted value at an unsampled point, but also an estimate of the
 prediction variance. This variance gives an indication of the
@@ -1000,6 +1090,12 @@ incorporates probability of failure at multiple points.
 
 Uncertainty Quantification Examples using Reliability Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..
+   TODO:
+   %Reliability methods provide an alternative approach to uncertainty
+   %quantification which can be less computationally demanding than
+   %sampling techniques. 
 
 In summary, the user can choose to perform either forward (RIA) or
 inverse (PMA) mappings when performing a reliability analysis. With
@@ -1228,6 +1324,11 @@ Sections `[additional:logratio] <#additional:logratio>`__-`[additional:steel_co
 Stochastic Expansion Methods
 ----------------------------
 
+..
+   TODO:
+   %The objective of these techniques is to characterize the response of
+   %systems whose governing equations involve stochastic coefficients. 
+
 The development of these techniques mirrors that of deterministic finite
 element analysis through the utilization of the concepts of projection,
 orthogonality, and weak convergence. The polynomial chaos expansion is
@@ -1315,7 +1416,12 @@ polynomials, where the former interpolate the values while producing
 zero gradients and the latter interpolate the gradients while producing
 zero values (refer to :cite:p:`TheoMan` for additional
 details). Sparse interpolants are weighted sums of these tensor
-interpolants; however, they are only interpolatory for sparse grids
+interpolants;
+
+..
+   TODO: %and retain the use of response values as expansion coefficients;
+
+however, they are only interpolatory for sparse grids
 based on fully nested rules and will exhibit some interpolation error at
 the collocation points for sparse grids based on non-nested rules. A key
 to maximizing performance with SC is performing collocation using the
@@ -1357,6 +1463,11 @@ input-output mapping and form multiple expansions in order to reduce
 reliance on the most expensive computational models by integrating
 information from low cost modeling alternatives.
 
+..
+   TODO:
+   %rich information coming from low cost approximate models and sparse
+   %information coming from expensive high-fidelity models.
+
 .. _`uq:stoch_exp:ex`:
 
 Uncertainty Quantification Examples using Stochastic Expansions
@@ -1366,6 +1477,15 @@ Uncertainty Quantification Examples using Stochastic Expansions
 
 Polynomial Chaos Expansion for Rosenbrock
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..
+   TODO:
+   %The term ``Polynomial Chaos'' refers to the representation of a stochastic 
+   %process as a polynomial expansion in random (or stochastic) variables. This 
+   %representation acts as a response surface that maps stochastic inputs to 
+   %stochastic outputs. Desired statistics can then be obtained from the 
+   %response surface either analytically or by re-sampling the fast surrogate.
+   %Additional details regarding the method are provided in
 
 A typical Dakota input file for performing an uncertainty quantification
 using PCE is shown in :numref:`uq:examples:pce_input`. In this
@@ -1497,6 +1617,15 @@ with fewer true function evaluations.
 Uncertainty Quantification Example using Stochastic Collocation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+..
+   TODO:
+   %A typical Dakota input file for performing an uncertainty
+   %quantification using polynomial chaos expansions is shown in
+   %Section~\ref{uq:stoch_exp:ex:pce}, which illustrates PCE defined from an
+   %anisotropic tensor-product quadrature grid. The uncertain variables
+   %are uniforms, so the expansion is built using classical Legendre
+   %polynomials. 
+
 Compared to the previous PCE example, this section presents a more
 sophisticated example, where we use stochastic collocation built on an
 anisotropic sparse grid defined from numerically-generated orthogonal
@@ -1547,7 +1676,15 @@ response covariance (collapsing to a single variance value for one
 response function) and global sensitivity indices (Sobol’ indices) are
 presented next. This example shows that variable x1 has the largest main
 effect (0.99) as compared with variable x2 (0.0007) or the interaction
-between x1 and x2 (0.005). Finally, we see the numerical results for the
+between x1 and x2 (0.005).
+
+..
+   TODO:
+   %After the global sensitivity indices, the local, analytic random 
+   %variable sensitivities are presented, as computed from
+   %Eqs.~\ref{eq:dR_dx}-\ref{eq:dR_dxi_sc}, evaluated at the mean values.
+
+Finally, we see the numerical results for the
 CDF probabilities based on 10000 samples performed on the expansion. For
 example, the probability that the Rosenbrock function is less than 100
 is 0.7233. Note that these results are significantly different than the
@@ -1817,6 +1954,9 @@ Distance
    to compare other adaptive metrics to one that relies purely on
    space-filling in an equivalent context.
 
+..
+   TODO: %DPM: PROBABLY WANT TO CHANGE THE NAME OF THIS METRIC:
+
 Gradient
    Similar to the above metric, a candidate’s nearest neighbor is
    determined as in the distance metric, only now the score is the
@@ -1936,6 +2076,13 @@ The sample budget is specified by ``build_samples``. By default, the
 method employs a local approach to estimate the Lipschitz constant per
 sphere.
 
+..
+   TODO:
+   %The method can generally support local or global approaches to estimate the
+   %Lipschitz constant per sphere, given by (\texttt{lipschitz local} or
+   %\texttt{lipschitz global}). However, only the local approach is currently
+   %supported and is the default if not specified by the user.
+
 The surrogate model used by the ``pof_darts`` method for extensive
 sampling is specified using a ``model_pointer``, and its parameters are
 therefore defined in that model. It can typically be any global
@@ -2010,7 +2157,8 @@ bounds on the inputs. Again, any output response that falls within the
 output interval is a possible output with no frequency information
 assigned to it.
 
-We have the capability to perform interval analysis using either or . In
+We have the capability to perform interval analysis using either
+``global_interval_est`` or ``local_interval_est``. In
 the global approach, one uses either a global optimization method or a
 sampling method to assess the bounds. ``global_interval_est`` allows the
 user to specify either ``lhs``, which performs Latin Hypercube Sampling
@@ -2040,13 +2188,41 @@ pure interval analysis, we recommend using either
 ``global_interval_est`` or ``local_interval_est`` instead of
 ``global_evidence`` or ``local_evidence``, for reasons of simplicity.
 
-TODO: Missing commented content?
+..
+   TODO:
+   %An example of interval estimation is found in
+   %the \path{dakota/share/dakota/examples/users/cantilever_uq_global_interval.in},
+   %and also in Section~\ref{uq:examples:interval}.
+   
+   %Note that we have kept separate implementations of interval analysis and
+   %Dempster-Shafer evidence theory because our users often want to couple
+   %interval analysis on an ``outer loop'' with an aleatory, probabilistic
+   %analysis on an ``inner loop'' for nested, second-order probability
+   %calculations. See Section~\ref{adv_models:mixed_uq} for additional
+   %details on these nested approaches.
 
 These interval methods can also be used as the outer loop within an
 interval-valued probability analysis for propagating mixed aleatory and
 epistemic uncertainty – refer to
 Section `[adv_models:mixed_uq:ivp] <#adv_models:mixed_uq:ivp>`__ for
 additional details.
+
+..
+   TODO:
+   %\subsubsection{Interval Analysis for Cantilever}\label{uq:examples:interval}
+   
+   %Interval analysis is often used to model epistemic uncertainty. 
+   %In interval analysis, the 
+   %uncertainty quantification problem is one of determining the 
+   %resulting bounds on the output (defining the output interval) 
+   %given interval bounds on the inputs. 
+   
+   %We can do interval analysis using either
+   %\texttt{global\_interval\_est} or \texttt{local\_interval\_est}.
+   %In the global approach, one uses either a global optimization 
+   %method or a sampling method to assess the bounds, whereas the 
+   %local method uses gradient information in a derivative-based 
+   %optimization approach. 
 
 An example of interval estimation is shown in
 :numref:`uq:examples:interval_input`, with example results in
@@ -2093,6 +2269,22 @@ inner loop. A nested Dempster-Shafer approach for propagating mixed
 aleatory and epistemic uncertainty is described in
 Section `[adv_models:mixed_uq:dste] <#adv_models:mixed_uq:dste>`__.
 
+..
+   TODO:
+   %We also use a technique called second-order probability to perform
+   %uncertainty quantification when there is both epistemic and aleatory
+   %uncertainty present. Second-order probability is a nested technique
+   %with two levels of uncertainty quantification. The outer level UQ is
+   %typically linked to epistemic uncertainties and the inner level UQ is
+   %commonly associated with aleatory uncertainties. A common approach
+   %used is to sample possible realizations of epistemic variables in the
+   %outer loop, then send these to the inner loop for additional sampling
+   %over the aleatory variables. In this way one generates ``families''
+   %or ensembles of cumulative distribution functions, where each
+   %individual CDF is based on aleatory uncertainty, and the ensemble is
+   %based on epistemic uncertainty. See Section~\ref{adv_models:mixed_uq}
+   %for more details.
+
 In evidence theory, there are two complementary measures of uncertainty:
 belief and plausibility. Together, belief and plausibility can be
 thought of as defining lower and upper bounds, respectively, on
@@ -2122,26 +2314,24 @@ modeled as sets of intervals. The user assigns a basic probability
 assignment (BPA) to each interval, indicating how likely it is that the
 uncertain input falls within the interval. The BPAs for a particular
 uncertain input variable must sum to one. The intervals may be
-overlapping, contiguous, or have gaps. In Dakota, an interval uncertain
-variable is specified as . When one defines an interval type variable in
-Dakota, it is also necessary to specify the number of intervals defined
-for each variable with as well the basic probability assignments per
-
-TODO: something missing below?
-
-interval, , and the associated bounds per each interval, .
-:numref:`uq:figure16` shows the input specification
-for interval uncertain variables. The example has two epistemic
-uncertain interval variables. The first uncertain variable has three
-intervals and the second has two. The basic probability assignments for
-the first variable are 0.5, 0.1, and 0.4, while the BPAs for the second
-variable are 0.7 and 0.3. Note that it is possible (and often the case)
-to define an interval uncertain variable with only ONE interval. This
-means that you only know that the possible value of that variable falls
-within the interval, and the BPA for that interval would be 1.0. In the
-case we have shown, the interval bounds on the first interval for the
-first variable are 0.6 and 0.9, and the bounds for the second interval
-for the first variable are 0.1 to 0.5, etc.
+overlapping, contiguous, or have gaps. In Dakota, an interval
+uncertain variable is specified as ``interval_uncertain``. When one
+defines an interval type variable in Dakota, it is also necessary
+to specify the number of intervals defined for each variable with
+``iuv_num_intervals`` as well the basic probability assignments per
+interval, ``iuv_interval_probs``, and the associated bounds per each
+interval, ``iuv_interval_bounds``.  :numref:`uq:figure16` shows the input
+specification for interval uncertain variables. The example has two
+epistemic uncertain interval variables. The first uncertain variable
+has three intervals and the second has two. The basic probability
+assignments for the first variable are 0.5, 0.1, and 0.4, while the
+BPAs for the second variable are 0.7 and 0.3. Note that it is possible
+(and often the case) to define an interval uncertain variable with only
+ONE interval. This means that you only know that the possible value of
+that variable falls within the interval, and the BPA for that interval
+would be 1.0. In the case we have shown, the interval bounds on the
+first interval for the first variable are 0.6 and 0.9, and the bounds
+for the second interval for the first variable are 0.1 to 0.5, etc.
 
 .. literalinclude:: ../samples/textbook_uq_glob_evidence.in
    :language: dakota
@@ -2275,7 +2465,7 @@ Note: In Dakota, the prior distribution is characterized by the
 properties of the active uncertain variables. Correlated priors are only
 supported for unbounded normal, untruncated lognormal, uniform,
 exponential, gumbel, frechet, and weibull distributions and require a
-probability transformation by specifying .
+probability transformation by specifying ``standardized_space``.
 
 When data are available, the likelihood function describes how well each
 parameter value is supported by the data. Bayes
@@ -2289,6 +2479,13 @@ probability density function of the parameters
 information derived from the data.
 
 .. math:: {f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}}. \label{eq:BayesThm}
+
+..
+   TODO:
+   %\begin{equation}
+   %  \label{eqn:BayesThm}
+   %  {f_{\Theta |D}}\left( {\theta |d} \right) = \frac{{{f_\Theta }\left( \theta  \right)\mathcal{L}\left( {\theta ;d} \right)}}{{{f_D}\left( d \right)}}
+   %\end{equation}
 
 The likelihood function is used to describe how well a model’s
 predictions are supported by the data. The likelihood function can be
@@ -2445,7 +2642,12 @@ Theory Manual.
 
 An additional control for QUESO is to perform a logit transformation
 (``logit_transform``) which performs an internal variable transformation
-from bounded domains to unbounded domains. This option can be helpful
+from bounded domains to unbounded domains. 
+
+..
+   TODO: %in order to reduce sample rejection due to an out-of-bounds condition.
+
+This option can be helpful
 when regions of high posterior density exist in the corners of a
 multi-dimensional bounded domain. In these cases, it may be difficult to
 generate feasible samples from the proposal density, and transformation
@@ -2491,7 +2693,8 @@ in :cite:p:`TheoMan`.
 DREAM
 ~~~~~
 
-For the DREAM method, one can define the number of chains used with the
+For the DREAM method, one can define the number of chains (minimum 3)
+used with the
 ``chains`` specification. The total number of generations per chain in
 DREAM is the number of samples divided by the number of chains. The
 number of chains randomly selected to be used in the crossover each time
@@ -2593,28 +2796,50 @@ implementations in Dakota.
 
 TODO: review table formatting, caption it, reference it
 
-.. container:: tabulary
+.. container::
+   :name: tab:beyes_meth_comp
 
-   | \|L|C|C|C|C|C\| Capability & QUESO & MUQ & GPMSA & DREAM & WASABI
-   | Prior Distributions & Any continuous variable type & Any continuous
-     variable type & Any continuous variable type & Uniform only &
-     Uniform only
-   | Inference Type & MCMC with DR, AM, DRAM, or MH & MCMC with DR, AM,
-     DRAM, or MH & MCMC with DR, AM, DRAM, or MH & MCMC with
-     Differential Evolution Adaptive Metropolis & MCMC-free interval
-     analysis
-   | Can use PCE/SC Emulator & Yes & Yes & Yes & Yes & Yes
-   | Can use GP Emulator & Yes & Yes & Yes (required) & Yes & Yes
-   | Likelihood-based adaptive emulator update & Yes & No & No & No & No
-   | Initialize with MAP pre-solve & Yes & Yes & No & No & No
-   | Proposal covariance options & prior, user, derivative-based & n/a &
-     prior, user & n/a & n/a
-   | Can calibrate error covariance multipliers & Yes & Yes & Yes
-     (internal) & Yes & No
-   | Supports standardized space & Yes & Yes & Yes & Yes & Yes
-   | Logit transform & Yes & Yes & Yes & No & No
-   | Posterior export & samples & samples & samples & samples & samples,
-     density
+   .. table:: Capabilities of Bayesian methods in Dakota
+
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Capability          | QUESO                        | MUQ                          | GPMSA                        | DREAM              | WASABI       |
+      +=====================+==============================+==============================+==============================+====================+==============+
+      | Prior               | Any continuous variable type | Any                          | Any                          | Uniform only       | Uniform      |
+      | Distributions       |                              | continuous                   | continuous                   |                    | only         |
+      |                     |                              | variable type                | variable type                |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Inference Type      | MCMC with                    | MCMC with                    | MCMC with                    | MCMC with          | MCMC-        |
+      |                     | DR, AM,                      | DR, AM,                      | DR, AM,                      | Differential       | free         |
+      |                     | DRAM, or                     | DRAM, or                     | DRAM, or                     | Evolution Adaptive | interval     |
+      |                     | MH                           | MH                           | MH                           | Metropolis         | analysis     |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Can use PCE/SC      | Yes                          | Yes                          | Yes                          | Yes                | Yes          |
+      | Emulator            |                              |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Can use GP Emulator | Yes                          | Yes                          | Yes (required)               | Yes                | Yes          |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Likelihood-based    | Yes                          | No                           | No                           | No                 | No           |
+      | adaptive emulator   |                              |                              |                              |                    |              |
+      | update              |                              |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Initialize with     | Yes                          | Yes                          | No                           | No                 | No           |
+      | MAP pre-solve       |                              |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Proposal covariance | prior, user,                 | n/a                          | prior, user                  | n/a                | n/a          |
+      | options             | derivative-based             |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Can calibrate error | Yes                          | Yes                          | Yes (internal)               | Yes                | No           |
+      | covariance          |                              |                              |                              |                    |              |
+      | multipliers         |                              |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Supports            | Yes                          | Yes                          | Yes                          | Yes                | Yes          |
+      | standardized space  |                              |                              |                              |                    |              |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Logit transform     | Yes                          | Yes                          | Yes                          | No                 | No           |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
+      | Posterior export    | samples                      | samples                      | samples                      | samples            | samples,     |
+      |                     |                              |                              |                              |                    | density      |
+      +---------------------+------------------------------+------------------------------+------------------------------+--------------------+--------------+
 
 .. _`uq:bayesian:ex`:
 
@@ -2753,32 +2978,75 @@ and calibrate the multipliers :math:`m_i` as hyper-parameters in the
 Bayesian inference process.
 
 The supported modes for calibrating observation error multipliers are
-shown in Figure `[fig:uq:obs_err_mult] <#fig:uq:obs_err_mult>`__: , , ,
-and . Here, the two major blocks denote two experiments, while the inner
-blocks denote five response groups (two scalar, three field). The priors
-on the hyper-parameters :math:`m_i` are taken to be inverse gamma
-distributions, with mean and mode approximately 1.0 and standard
-deviation approximately 0.1.
+shown in Figure `[fig:uq:obs_err_mult] <#fig:uq:obs_err_mult>`__: ``one``,
+``per_experiment``, ``per_response``, and ``both``. Here, the two major
+blocks denote two experiments, while the inner blocks denote five response
+groups (two scalar, three field). The priors on the hyper-parameters
+:math:`m_i` are taken to be inverse gamma distributions, with mean and
+mode approximately 1.0 and standard deviation approximately 0.1.
 
-TODO: Likely mising images here
+TODO: fix figures
 
-.. container:: subfigmatrix
+..
+   TODO:
+   \begin{figure}[htbp!]
+     \centering
+     \begin{subfigmatrix}{2}
+       \subfigure[]{\includegraphics[scale=0.5]{images/CalibrateOne}}
+       \subfigure[]{\includegraphics[scale=0.5]{images/CalibratePerExperiment}}
+       \subfigure[]{\includegraphics[scale=0.5]{images/CalibratePerResponse}}
+       \subfigure[]{\includegraphics[scale=0.5]{images/CalibrateBoth}}
+     \end{subfigmatrix}
+     \caption{Calibrating observational error covariance multipliers: (a)
+       one multiplier on whole user-provided covariance structure, (b)
+       multiplier per-experiment, (c) multiplier per-response, and (d)
+       both..}
+     \label{fig:uq:obs_err_mult}
+   \end{figure}
 
-   2
+    +--------------------------------------------------------------------------------------------+
+    |                                                                                            |
+    | .. math::                                                                                  |
+    |     :label: uq:obs_err_mult                                                                |
+    |                                                                                            |
+    |     \textbf{The caption}                                                                   |
+    |                                                                                            |
+    +==========================================+=================================================+
+
+.. container::
+   :name: uq:obs_err_mult
+
+   .. table:: Calibrating observational error covariance multipliers: (a)
+      one multiplier on whole user-provided covariance structure, (b)
+      multiplier per-experiment, (c) multiplier per-response, and (d)
+      both..
+
+      +------------------------------------------+-------------------------------------------------+
+      | .. image:: img/CalibrateOne.png          | .. image:: img/CalibratePerExperiment.png       |
+      |                                          |                                                 |
+      | (a)                                      | (b)                                             |
+      +------------------------------------------+-------------------------------------------------+
+      | .. image:: img/CalibratePerResponse.png  | .. image:: img/CalibrateBoth.png                |
+      |                                          |                                                 |
+      | (c)                                      | (d)                                             |
+      +------------------------------------------+-------------------------------------------------+
+
 
 Scaling and Weighting of Residuals
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Dakota’s scaling options, described in
-Section `[opt:additional:scaling] <#opt:additional:scaling>`__, can be
-used on Bayesian calibration problems, using the keyword, to scale the
-residuals between the data points and the model predictions, if desired.
-Additionally, Bayesian calibration residuals-squared can be weighted via
-the specification. Neither set of weights nor scales are adjusted during
-calibration. When response scaling is active, it is applied after error
-variance weighting and before application. The keyword documentation in
-the Dakota Reference Manual :cite:p:`RefMan` has more detail
-about weighting and scaling of the residual terms.
+Section `[opt:additional:scaling] <#opt:additional:scaling>`__,
+can be used on Bayesian calibration problems, using the
+``calibration_term_scales`` keyword, to scale the residuals between
+the data points and the model predictions, if desired.  Additionally,
+Bayesian calibration residuals-squared can be weighted via the
+``calibration_terms_weights`` specification. Neither set of weights nor
+scales are adjusted during calibration. When response scaling is active,
+it is applied after error variance weighting and before ``weights``
+application. The ``calibration_terms`` keyword documentation in the Dakota
+Reference Manual :cite:p:`RefMan` has more detail about weighting and
+scaling of the residual terms.
 
 Model Evidence
 ~~~~~~~~~~~~~~
@@ -2831,13 +3099,13 @@ depending on the method(s) used to calculate model evidence.
    distribution of the parameters, calculating the corresponding
    likelihood values at those samples, and estimating the integral given
    in Eq. `[eq:uq:model_evidence] <#eq:uq:model_evidence>`__ by brute
-   force. The number of samples used in the sampling of the integral is
-   determined by . Although this method is easy, it is not efficient
-   because each sample of the prior density requires an evaluation of
-   the simulation model to compute the corresponding likelihood.
-   Additionally, many prior samples will have very low (near zero)
-   likelihood, so millions of samples may be required for accurate
-   computation of the integral.
+   force. The number of samples used in the sampling of the integral
+   is determined by ``evidence_samples``. Although this method is easy,
+   it is not efficient because each sample of the prior density requires
+   an evaluation of the simulation model to compute the corresponding
+   likelihood.  Additionally, many prior samples will have very low
+   (near zero) likelihood, so millions of samples may be required for
+   accurate computation of the integral.
 
 #. Laplace approximation. This approach is based on the Laplace
    approximation, as outlined in :cite:p:`Wasserman`. It has
@@ -3123,13 +3391,12 @@ Manual :cite:p:`TheoMan` for more information regarding the
 implementation of the mutual information calculations.
 
 There are three criteria by which this algorithm is considered complete.
-The user may specify , which limits the number of high-fidelity model
-simulations Dakota will run. Note that this does not include any
-simulations needed to perform the initial Bayesian calibration of the
-low-fidelity model parameters. Alternatively, if the change in the
-mutual information from one iteration to the next is sufficiently small
-or if all candidate points have been exhausted, the algorithm will
-terminate.
+The user may specify ``max_hifi_evaluations``, which limits the number of
+high-fidelity model simulations Dakota will run. Note that this does not
+include any simulations needed to perform the initial Bayesian calibration
+of the low-fidelity model parameters. Alternatively, if the change in the
+mutual information from one iteration to the next is sufficiently small or
+if all candidate points have been exhausted, the algorithm will terminate.
 
 Progress of the algorithm will be reported to the screen with the rest
 of the Dakota output. Furthermore, a summary of the algorithm’s results,
@@ -3271,6 +3538,14 @@ section.
   techniques such as Monte Carlo and Latin hypercube sampling (LHS)
   quickly becomes prohibitive, especially if tail statistics are needed.
 
+..
+   TODO:
+   %Additional sampling options include quasi-Monte Carlo (QMC)
+   %sampling and importance sampling (IS),
+   %or Markov Chain Monte Carlo (MCMC) sampling
+   %and incremental sampling may also be used to incrementally add samples 
+   %to an existing sample set.
+
 Alternatively, one can apply the traditional sampling techniques to a
 surrogate function approximating the expensive computational simulation
 (see Section `[adv_models:sbuq] <#adv_models:sbuq>`__). However, if this
@@ -3386,6 +3661,39 @@ applications.
   ``global_evidence``), the approach generates epistemic belief and
   plausibility bounds on aleatory statistics.
 
+..
+   TODO:
+   \section{Future Nondeterministic Methods}\label{uq:future}
+   
+   Uncertainty analysis methods under investigation for future inclusion
+   into the Dakota framework include extensions to the stochastic
+   expansion methods and sampling capabilities currently supported.
+   In particular, smart adaptive methods that can mitigate the curse
+   of dimensionality are a research emphasis.
+   %
+   %Advanced ``smart sampling'' techniques such as bootstrap sampling (BS)
+   %and Markov chain Monte Carlo simulation (McMC) are being considered.
+   %We also have an active research focus on adaptive sparse grid methods,
+   %to more efficiently construct stochastic expansions. 
+   %
+   %Efforts have been initiated to allow for non-traditional
+   %representations of uncertainty. We have implemented Dempster-Shafer
+   %theory of evidence, and other non-traditional approaches may follow. 
+   %
+   We are also currently emphasizing the development of Bayesian methods,
+   specifically focusing on surrogate-modeling, discrepancy, 
+   post-processing, and multi-model extensions to the Bayesian
+   calibration capabilities.
+   %
+   %, where a ``prior
+   %distribution'' on a parameter is updated through a Bayesian framework
+   %involving experimental data and a likelihood function.
+   %
+   %Finally, the tractability and efficacy of the more intrusive
+   %variant of stochastic finite element/polynomial chaos expansion
+   %methods, previously mentioned, is being assessed for possible
+   %implementation in Dakota.
+
 .. [1]
    Orthogonal polynomial selections also exist for discrete probability
    distributions, but are not yet supported in Dakota.
@@ -3402,3 +3710,27 @@ applications.
    refinement or proposal updating, since these use cases access the
    entire acceptance chain to identify refinement data or restarting
    points, respectively.
+   
+Video Resources
+---------------
+
++--------------------------------------+-----------------+----------------+
+| Title                                | Link            | Resources      |
++======================================+=================+================+
+| Uncertainty Quantification           | |Training|_     | `Slides`__ /   |
+|                                      |                 | `Exercises`__  |
++--------------------------------------+-----------------+----------------+
+| Sampling                             | |Video|_        |                |
++--------------------------------------+-----------------+----------------+
+
+.. __: https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_UncertaintyQuantification.pdf
+__ https://dakota.sandia.gov/sites/default/files/training/uncertainty_analysis-220216.zip
+
+.. |Training| image:: img/UQTrainingTeaser.png
+                :alt: Uncertainty Quantification
+.. _Training: http://digitalops.sandia.gov/Mediasite/Play/8105e6e9c2cb45089cf24cd4585fc8cb1d
+
+.. |Video| image:: img/SamplingScreencastTeaser.png
+             :alt: Sampling
+.. _Video: https://www.youtube.com/watch?v=dnqoUCw6wSo
+

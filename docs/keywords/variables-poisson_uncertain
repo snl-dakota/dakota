@@ -7,13 +7,13 @@ The expected number of occurences in a single time interval is :math:`\lambda` ,
 
 The probability mass function for the poisson distribution is given by:
 
-.. math:: f(x) = \frac{\lambda^{x} e^{-\lambda}}{x!}
+.. math:: f(x) = \frac{\lambda^{x} e^{-\lambda}}{x!},
 
 where
 
 - :math:`\lambda`  is the expected number of events occuring in a single time interval
-- ``x`` is the number of events that occur in this time period
-- f(x) is the probability that ``x`` events occur in this time period
+- :math:`x` is the number of events that occur in this time period
+- f(x) is the probability that :math:`x` events occur in this time period
 
 Topics::
 discrete_variables, aleatory_uncertain_variables

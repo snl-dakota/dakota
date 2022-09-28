@@ -43,8 +43,12 @@ if( NOT Dakota_SOURCE_DIR)
   get_filename_component(Dakota_SOURCE_DIR ".." ABSOLUTE) 
 endif()
 
-set(CMAKE_MODULE_PATH "${Dakota_SOURCE_DIR}/cmake"
+set(CMAKE_MODULE_PATH 
+  "${Dakota_SOURCE_DIR}"
+  "${Dakota_SOURCE_DIR}/cmake"
   "${Dakota_SOURCE_DIR}/cmake/semsCMake" ${CMAKE_MODULE_PATH})
+include(DakotaVersion)
+include(DakotaCPack)
 include(ListFilterEmacsBackups)
 include(DakotaTestHelpers)
 include(DakotaUsersExamples)
@@ -137,19 +141,46 @@ generate_users_examples_interfacing(
 
 add_custom_target(docs-user-samples DEPENDS ${_gen_inputs_var_out} ${_gen_interfacing_var_out})
 
+
+function(insert_dakota_version _conf_py_filename)
+  file(READ "${_conf_py_filename}" _conf_data)
+  string(REGEX REPLACE "version = '[0-9]+\\.[0-9]+'"
+    "version = '${Dakota_VERSION_PAIR}'" _conf_data "${_conf_data}")
+  string(REGEX REPLACE "release = '[0-9]+\\.[0-9]+\\.[0-9]+\\+?'"
+    "release = '${Dakota_VERSION_STRING}'" _conf_data "${_conf_data}")
+  file(WRITE "${_conf_py_filename}" "${_conf_data}")
+endfunction()
+
+# NOTE: This only happens on re-configure
+#
+# TODO: Need build time dep on this and ideally generate to build tree
+# and perhaps then use sphinx-build -c ${DakotaDocs_BINARY_DIR}/user
+insert_dakota_version("${DakotaDocs_SOURCE_DIR}/user/conf.py")
+
+# Serial build assuming all files are stale
 add_custom_target(docs-user
-  COMMAND "${_dakota_sphinx_exe}" -a -E -b html "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMAND "${_dakota_sphinx_exe}" -a -E -b html ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx:
-  ${_dakota_sphinx_exe} -a -E -b html ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  ${_dakota_sphinx_exe} -a -E -b html ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
 add_dependencies(docs-user docs-keywords docs-user-samples)
 
+# Parallel build assuming all files are stale
 add_custom_target(docs-user-fast
-  COMMAND "${_dakota_sphinx_exe}" -a -E -b html -j auto "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMAND "${_dakota_sphinx_exe}" -a -E -b html -j auto ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx (full rebuild):
-  ${_dakota_sphinx_exe} -a -E -b html -j auto ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  ${_dakota_sphinx_exe} -a -E -b html -j auto ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
 add_dependencies(docs-user-fast docs-keywords docs-user-samples)
+
+# Serial build of only changed files
+add_custom_target(docs-user-increm
+  COMMAND "${_dakota_sphinx_exe}" -b html ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMENT "Generating user-html with Sphinx:
+  ${_dakota_sphinx_exe} -b html ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
+)
+add_dependencies(docs-user-increm docs-keywords docs-user-samples)
+
 
 add_custom_target(docs-user-clean
   COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_CURRENT_BINARY_DIR}/user-html"
@@ -178,21 +209,25 @@ endif()
 # Package docs for nightly builds (HTML and PDF for dev)
 # TODO: Rework this into custom command(s) and bind into target
 # TODO: Better handling of html-dev instead of symlink
+# Define convenience variables used here and in subdirs, such as
+#   Dakota_VERSION_{PAIR, TRIPLE, STRING, SRC}
+dakota_docs_package_label("${DAKOTA_PACKAGE_LABEL}" Dakota_FINAL_PACKAGE_LABEL)
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generated/label/label.txt" "${Dakota_FINAL_PACKAGE_LABEL}")
 add_custom_target(package_docs
   COMMAND ${CMAKE_COMMAND} -E
-    tar czf user-html-${Dakota_VERSION_STRING}.tar.gz user-html
+    tar czf user-html-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz user-html
   COMMAND ${CMAKE_COMMAND} -E create_symlink dev/html-dev html-dev
   COMMAND ${CMAKE_COMMAND} -E
-    tar czf html-dev-${Dakota_VERSION_STRING}.tar.gz "html-dev/*"
+    tar czf html-dev-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz "html-dev/*"
   COMMAND ${CMAKE_COMMAND} -E copy
-    dev/latex-dev/refman.pdf Developers-${Dakota_VERSION_STRING}.pdf
+    dev/latex-dev/refman.pdf Developers-${Dakota_FINAL_PACKAGE_LABEL}.pdf
   COMMAND ${CMAKE_COMMAND} -E
     tar czf dakota-${Dakota_FINAL_PACKAGE_LABEL}-docs.tar.gz
       user-html
-      user-html-${Dakota_VERSION_STRING}.tar.gz
+      user-html-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz
       "html-dev/*"
-      html-dev-${Dakota_VERSION_STRING}.tar.gz
-      Developers-${Dakota_VERSION_STRING}.pdf
+      html-dev-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz
+      Developers-${Dakota_FINAL_PACKAGE_LABEL}.pdf
   COMMENT "Packaging docs"
   )
 add_dependencies(package_docs docs-pdf docs)

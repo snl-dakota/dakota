@@ -50,8 +50,8 @@ class Moments(unittest.TestCase):
                     self.assertAlmostEqual(console_moments[0][r][j], hdf5_moments[j])
                 scale_label = list(hdf5_moments.dims[0].keys())[0]
                 self.assertEqual(expected_scale_label, scale_label)
-                for es, s in zip(expected_scale, hdf5_moments.dims[0][0]):
-                    self.assertEqual(es,s)
+                self.assertListEqual(expected_scale, hce.h5py_strings(hdf5_moments.dims[0][0]))
+
 
 class EquivHFAttribute(unittest.TestCase):
 

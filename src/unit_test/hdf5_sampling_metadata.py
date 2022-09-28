@@ -31,8 +31,8 @@ class RestartData(unittest.TestCase):
             h_intf_metadata = h["/interfaces/NO_ID/NO_MODEL_ID/metadata"]
             h_model_metadata = h["/models/simulation/NO_MODEL_ID/metadata"]
             
-            self.assertSequenceEqual(h_intf_metadata.dims[1][0], r_metadata_labels)
-            self.assertSequenceEqual(h_model_metadata.dims[1][0], r_metadata_labels)
+            self.assertSequenceEqual(hce.h5py_strings(h_intf_metadata.dims[1][0]), r_metadata_labels)
+            self.assertSequenceEqual(hce.h5py_strings(h_model_metadata.dims[1][0]), r_metadata_labels)
             
             for intf, model, restart in zip(h_intf_metadata, h_model_metadata, r_metadata_results):
                 self.assertAlmostEqual(intf[0], restart[0])

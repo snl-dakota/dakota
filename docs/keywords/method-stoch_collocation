@@ -256,6 +256,28 @@ calculation of high-order global polynomials with the desired
 interpolation properties can be similarly numerically challenging such
 that the use of local cubic splines is recommended due to numerical
 stability.
+
+..
+   HIDDEN: The orthogonal polynomials used in defining the Gauss
+   points that make up the interpolation grid are governed by the
+   Wiener, Askey, or Extended options. The Wiener option uses
+   interpolation points from Gauss-Hermite (non-nested) or
+   Genz-Keister (nested) integration rules for all random variables
+   and employs the same nonlinear variable transformation as the local
+   and global reliability methods (and therefore has the same variable
+   support).  The Askey option, however, employs interpolation points
+   from Gauss-Hermite (Genz-Keister if nested), Gauss-Legendre
+   (Gauss-Patterson if nested), Gauss-Laguerre, Gauss-Jacobi, and
+   generalized Gauss-Laguerre quadrature. The Extended option avoids
+   the use of any nonlinear variable transformations by augmenting the
+   Askey approach with Gauss points from numerically-generated
+   orthogonal polynomials for non-Askey probability density
+   functions. As for PCE, the Wiener/Askey/Extended selection defaults
+   to Extended, can be overridden by the user using the keywords \c
+   askey or \c wiener, and automatically falls back from
+   Extended/Askey to Wiener on a per variable basis as needed to
+   support prescribed correlations.
+
 Faq::
 
 See_Also::

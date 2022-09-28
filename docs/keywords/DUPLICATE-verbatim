@@ -2,19 +2,20 @@ Blurb::
 Specify the command Dakota uses to launch analysis driver(s) and filters
 Description::
 The typical commands that Dakota uses to launch analysis drivers are:
-<!----
+
+..
+   HIDDEN: khu 140925 - i removed references to filters, because I
+   don't think they are working.
+
+   .. code-block::
+
+      > input_filter parameters_file_name results_file_name
+      > analysis_driver parameters_file_name results_file_name
+      > output_filter parameters_file_name results_file_name
 
 .. code-block::
 
-    > input_filter parameters_file_name results_file_name
-    > analysis_driver parameters_file_name results_file_name
-    > output_filter parameters_file_name results_file_name
-
-
-khu 140925 - i removed references to filters, because I don't think they are working.
-
----->\verbatim
-> analysis_driver parameters_file_name results_file_name
+   > analysis_driver parameters_file_name results_file_name
 
 Dakota will automatically arrange the executables and file names.
 

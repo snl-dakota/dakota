@@ -1,7 +1,7 @@
 .. _dace:
 
-Design of Experiments Capabilities
-==================================
+Design of Experiments
+=====================
 
 .. _`dace:overview`:
 
@@ -56,8 +56,7 @@ Dakota.
 
 This chapter describes DDACE, FSUDace, and PSUADE, with a focus on
 designing computer experiments. Latin Hypercube Sampling, also used in
-uncertainty quantification, is discussed in
-Section `[uq:sampling] <#uq:sampling>`__.
+uncertainty quantification, is discussed in :ref:`the section on sampling methods <uq:sampling>`.
 
 .. _`dace:background`:
 
@@ -100,12 +99,26 @@ challenging problem. There are many experimental designs and sampling
 methods which address the issue of adequate and representative sample
 selection.
 
+..
+   TODO:
+   %Classical experimental designs which are often used in physical experiments 
+   %include Central Composite designs and Box-Behnken designs.
+
+
 There are many goals of running a computer experiment: one may want to
 explore the input domain or the design space and get a better
 understanding of the range in the outputs for a particular domain.
 Another objective is to determine which inputs have the most influence
 on the output, or how changes in the inputs change the output. This is
-usually called *sensitivity analysis*. Another goal is to use the
+usually called *sensitivity analysis*. 
+
+..
+   TODO:
+   %Another goal is to compare the relative 
+   %importance of model input uncertainties on the uncertainty in the model 
+   %outputs, \emph{uncertainty analysis}. 
+
+Another goal is to use the
 sampled input points and their corresponding output to create a
 *response surface approximation* for the computer code. The response
 surface approximation (e.g., a polynomial regression model, a
@@ -151,14 +164,14 @@ DDACE, FSUDACE, and PSUADE primarily for design of experiments, where we
 are interested in understanding the main effects of parameters and where
 we want to sample over an input domain to obtain values for constructing
 a response surface. We use the nondeterministic sampling methods
-``(sampling)`` for uncertainty quantification, where we are propagating
+(:dakkw:`method-sampling`) for uncertainty quantification, where we are propagating
 specific input distributions and interested in obtaining (for example) a
 cumulative distribution function on the output. If one has a problem
 with no distributional information, we recommend starting with a design
 of experiments approach. Note that DDACE, FSUDACE, and PSUADE currently
 do *not* support distributional information: they take an upper and
 lower bound for each uncertain input variable and sample within that.
-The uncertainty quantification methods in ``sampling`` (primarily Latin
+The uncertainty quantification methods in :dakkw:`method-sampling` (primarily Latin
 Hypercube sampling) offer the capability to sample from many
 distributional types. The distinction between UQ and DACE is somewhat
 arbitrary: both approaches often can yield insight about important
@@ -190,8 +203,11 @@ user-specified correlation structure among the variables.
 The sampling methods in DDACE can be used alone or in conjunction with
 other methods. For example, DDACE sampling can be used with both
 surrogate-based optimization and optimization under uncertainty advanced
-methods. See Figure `[adv_models:figure09] <#adv_models:figure09>`__ for
+methods. See :numref:`adv_models:figure09` for
 an example of how the DDACE settings are used in Dakota.
+
+..
+   TODO: Cross-reference DDACE package description
 
 The following sections provide more detail about the sampling methods
 available for design of experiments in DDACE.
@@ -211,46 +227,54 @@ to a star point is :math:`\pm\alpha` with :math:`\mid\alpha\mid > 1`.
 The precise value of :math:`\alpha` depends on certain properties
 desired for the design and on the number of factors involved. The CCD
 design is specified in Dakota with the method command
-``dace central_composite``.
+:dakkw:`method-dace` :dakkw:`method-dace-central_composite`.
 
 As an example, with two input variables or factors, each having two
-levels, the factorial design is shown in Table `1.1 <#dace:table01>`__ .
+levels, the factorial design is shown in :numref:`dace-table1`:
 
-.. container::
-   :name: dace:table01
+.. table:: *Simple Factorial Design*
+   :name: dace-table1
+   :align: center
+   :widths: auto
+ 
+   +----------+---------+
+   |Input 1   |Input 2  |
+   +==========+=========+
+   |-1        |-1       |
+   +----------+---------+
+   |-1        |+1       |
+   +----------+---------+
+   |+1        |-1       |
+   +----------+---------+
+   |+1        |+1       |
+   +----------+---------+   
 
-   .. table:: Simple Factorial Design
 
-      ======= =======
-      Input 1 Input 2
-      ======= =======
-      -1      -1
-      -1      +1
-      +1      -1
-      +1      +1
-      ======= =======
+With a CCD, the design in :numref:`dace-table1` would be
+augmented with the points shown in :numref:`dace-table2`,
+if :math:`\alpha` = 1.3.
 
-With a CCD, the design in Table `1.1 <#dace:table01>`__ would be
-augmented with the following points shown in
-Table `1.2 <#dace:table02>`__ if :math:`\alpha` = 1.3. These points
-define a circle around the original factorial design.
+.. table:: *Additional Points to make the factorial design a CCD*
+   :name: dace-table2
+   :align: center
+   :widths: auto
+ 
+   +----------+---------+
+   |Input 1   |Input 2  |
+   +==========+=========+
+   |0         |+1.3     |
+   +----------+---------+
+   |0         |-1.3     |
+   +----------+---------+
+   |1.3       |0        |
+   +----------+---------+
+   |-1.3      |0        |
+   +----------+---------+ 
+   |0         |0        |
+   +----------+---------+ 
 
-.. container::
-   :name: dace:table02
-
-   .. table:: Additional Points to make the factorial design a CCD
-
-      ======= =======
-      Input 1 Input 2
-      ======= =======
-      0       +1.3
-      0       -1.3
-      1.3     0
-      -1.3    0
-      0       0
-      ======= =======
-
-Note that the number of sample points specified in a CCD,\ ``samples``,
+These points define a circle around the original factorial design.
+Note that the number of sample points specified in a CCD, :dakkw:`method-dace-samples`,
 is a function of the number of variables in the problem:
 
 .. math:: samples = 1 + 2*NumVar + 2^{NumVar}
@@ -272,10 +296,10 @@ capability for orthogonal blocking compared to the central composite
 designs. Box-Behnken requires fewer runs than CCD for 3 factors, but
 this advantage goes away as the number of factors increases. The
 Box-Behnken design is specified in Dakota with the method command
-``dace box_behnken``.
+:dakkw:`method-dace` :dakkw:`method-dace-box_behnken`.
 
 Note that the number of sample points specified in a Box-Behnken design,
-``samples``, is a function of the number of variables in the problem:
+:dakkw:`method-dace-samples`, is a function of the number of variables in the problem:
 
 .. math:: samples = 1 + 4*NumVar + (NumVar-1)/2
 
@@ -296,26 +320,26 @@ refers to the number of levels per input variable. The strength refers
 to the number of columns where we are guaranteed to see all the
 possibilities an equal number of times.
 
-For example, Table `1.3 <#dace:table03>`__ shows an orthogonal array of
+For example, :numref:`dace-table3` shows an orthogonal array of
 strength 2 for :math:`m` = 8, with 7 variables:
 
-.. container::
-   :name: dace:table03
+.. table:: *Orthogonal Array for Seven Variables*
+   :name: dace-table3
+   :align: center
+   :widths: auto
 
-   .. table:: Orthogonal Array for Seven Variables
-
-      ======= ======= ======= ======= ======= ======= =======
-      Input 1 Input 2 Input 3 Input 4 Input 5 Input 6 Input 7
-      ======= ======= ======= ======= ======= ======= =======
-      0       0       0       0       0       0       0
-      0       0       0       1       1       1       1
-      0       1       1       0       0       1       1
-      0       1       1       1       1       0       0
-      1       0       1       0       1       0       1
-      1       0       1       1       0       1       0
-      1       1       0       0       1       1       0
-      1       1       0       1       0       0       1
-      ======= ======= ======= ======= ======= ======= =======
+   ======= ======= ======= ======= ======= ======= =======
+   Input 1 Input 2 Input 3 Input 4 Input 5 Input 6 Input 7
+   ======= ======= ======= ======= ======= ======= =======
+   0       0       0       0       0       0       0
+   0       0       0       1       1       1       1
+   0       1       1       0       0       1       1
+   0       1       1       1       1       0       0
+   1       0       1       0       1       0       1
+   1       0       1       1       0       1       0
+   1       1       0       0       1       1       0
+   1       1       0       1       0       0       1
+   ======= ======= ======= ======= ======= ======= =======
 
 If one picks any two columns, say the first and the third, note that
 each of the four possible rows we might see there, 0 0, 0 1, 1 0, 1 1,
@@ -326,11 +350,11 @@ generated by DDACE do not treat the factor levels as one fixed value (0
 or 1 in the above example). Instead, once a level for a variable is
 determined in the array, DDACE samples a random variable from within
 that level. The orthogonal array design is specified in Dakota with the
-method command ``dace oas``.
+method command :dakkw:`method-dace` :dakkw:`method-dace-oas`.
 
 The orthogonal array method in DDACE is the only method that allows for
 the calculation of main effects, specified with the command
-``main_effects``. Main effects is a sensitivity analysis method which
+:dakkw:`method-dace-main_effects`. Main effects is a sensitivity analysis method which
 identifies the input variables that have the most influence on the
 output. In main effects, the idea is to look at the mean of the response
 function when variable A (for example) is at level 1 vs. when variable A
@@ -363,8 +387,7 @@ Grid Design
 
 In a grid design, a grid is placed over the input variable space. This
 is very similar to a multi-dimensional parameter study where the samples
-are taken over a set of partitions on each variable (see
-Section `[ps:multidimensional] <#ps:multidimensional>`__). The main
+are taken over a set of partitions on each variable. The main
 difference is that in grid sampling, a small random perturbation is
 added to each sample value so that the grid points are not on a perfect
 grid. This is done to help capture certain features in the output such
@@ -381,7 +404,11 @@ partitions) raised to the number of variables. For example, if there are
 2 variables, each with 5 partitions, the number of samples would be
 :math:`5^2`. In this case, doubling the number of variables squares the
 sample size. The grid design is specified in Dakota with the method
-command ``dace grid``.
+command :dakkw:`method-dace` :dakkw:`method-dace-grid`.
+
+.. note::
+
+   Refer to the section on :ref:`multi-dimensional parameter studies <ps:multidimensional>` for more information.
 
 .. _`dace:mc`:
 
@@ -390,7 +417,7 @@ Monte Carlo Design
 
 Monte Carlo designs simply involve pure Monte-Carlo random sampling from
 uniform distributions between the lower and upper bounds on each of the
-input variables. Monte Carlo designs, specified by ``dace random``, are
+input variables. Monte Carlo designs, specified by :dakkw:`method-dace` :dakkw:`method-dace-random`, are
 a way to generate a set of random samples over an input domain.
 
 .. _`dace:lhs`:
@@ -398,14 +425,16 @@ a way to generate a set of random samples over an input domain.
 LHS Design
 ~~~~~~~~~~
 
-DDACE offers the capability to generate Latin Hypercube designs. For
-more information on Latin Hypercube sampling, see
-Section `[uq:sampling] <#uq:sampling>`__. Note that the version of LHS
+DDACE offers the capability to generate Latin Hypercube designs. Note that the version of LHS
 in DDACE generates uniform samples (uniform between the variable
 bounds). The version of LHS offered with nondeterministic sampling can
 generate LHS samples according to a number of distribution types,
 including normal, lognormal, weibull, beta, etc. To specify the DDACE
-version of LHS, use the method command ``dace lhs``.
+version of LHS, use the method command :dakkw:`method-dace` :dakkw:`method-dace-lhs`.
+
+.. note::
+
+   Refer to the section on :ref:`Latin Hypercube sampling <uq:sampling>` for more information.
 
 .. _`dace:oalhs`:
 
@@ -414,7 +443,7 @@ OA-LHS Design
 
 DDACE offers a hybrid design which is combination of an orthogonal array
 and a Latin Hypercube sample. This design is specified with the method
-command ``dace oa_lhs``. This design has the advantages of both
+command :dakkw:`method-dace` :dakkw:`method-dace-oa_lhs`. This design has the advantages of both
 orthogonality of the inputs as well as stratification of the samples
 (see :cite:p:`Owe92`).
 
@@ -450,8 +479,8 @@ discrepancy.
 The quasi-Monte Carlo sequences of Halton and Hammersley are
 deterministic sequences determined by a set of prime bases. A Halton
 design is specified in Dakota with the method command
-``fsu_quasi_mc halton``, and the Hammersley design is specified with the
-command ``fsu_quasi_mc hammersley``. For more details about the input
+:dakkw:`method-fsu_quasi_mc` :dakkw:`method-fsu_quasi_mc-halton`, and the Hammersley design is specified with the
+command :dakkw:`method-fsu_quasi_mc` :dakkw:`method-fsu_quasi_mc-hammersley`. For more details about the input
 specification, see the Reference Manual. CVT points tend to arrange
 themselves in a pattern of cells that are roughly the same shape. To
 produce CVT points, an almost arbitrary set of initial points is chosen,
@@ -459,7 +488,7 @@ and then an internal set of iterations is carried out. These iterations
 repeatedly replace the current set of sample points by an estimate of
 the centroids of the corresponding Voronoi
 subregions :cite:p:`Du99`. A CVT design is specified in Dakota
-with the method command ``fsu_cvt``.
+with the method command :dakkw:`method-fsu_cvt`.
 
 The methods in FSUDace are useful for design of experiments because they
 provide good coverage of the input space, thus allowing global
@@ -499,7 +528,7 @@ x})` might take place. An elementary effect corresponding to input
 
 .. math:: d_i({\bf x}) = \frac{y({\bf x} + \Delta {\bf e}_i) - y({\bf x})}{\Delta},
 
-where :math:`e_i` is the :math:`i^{\mbox{\scriptsize th}}` coordinate
+where :math:`e_i` is the :math:`i^{\mbox{th}}` coordinate
 vector, and the step :math:`\Delta` is typically taken to be large (this
 is not intended to be a local derivative approximation). In the present
 implementation of MOAT, for an input variable scaled to :math:`[0,1]`,
@@ -528,20 +557,8 @@ an indication of the overall effect of an input on the output. Standard
 deviation indicates nonlinear effects or interactions, since it is an
 indicator of elementary effects varying throughout the input space.
 
-The MOAT method is selected with method keyword ``psuade_moat`` as shown
-in the sample Dakota input file in
-:numref:`FIG:moat_input`. The number of samples
-(``samples``) must be a positive integer multiple of (number of
-continuous design variables :math:`k` + 1) and will be automatically
-adjusted if misspecified. The number of partitions (``partitions``)
-applies to each variable being studied and must be odd (the number of
-MOAT levels :math:`p` per variable is partitions + 1, similar to Dakota
-multidimensional parameter studies). This will also be adjusted at
-runtime as necessary. Finite user-specified lower and upper bounds are
-required and will be scaled as needed by the method. For more
-information on use of MOAT sampling, see the Morris example in
-Section `[additional:morris] <#additional:morris>`__, or Saltelli, et
-al. :cite:p:`Sal04`.
+The MOAT method is selected with method keyword :dakkw:`method-psuade_moat` as shown
+in the sample Dakota input file :numref:`FIG:moat_input`.
 
 .. literalinclude:: ../samples/morris_ps_moat.in
    :language: dakota
@@ -550,6 +567,19 @@ al. :cite:p:`Sal04`.
        -- see ``dakota/share/dakota/examples/users/morris_ps_moat.in``
    :name: FIG:moat_input
 
+The number of :dakkw:`method-psuade_moat-samples` must be a positive integer multiple of (number of
+continuous design variables :math:`k` + 1) and will be automatically
+adjusted if misspecified. The number of :dakkw:`method-psuade_moat-partitions`
+applies to each variable being studied and must be odd (the number of
+MOAT levels :math:`p` per variable is partitions + 1, similar to Dakota
+multidimensional parameter studies). This will also be adjusted at
+runtime as necessary. Finite user-specified lower and upper bounds are
+required and will be scaled as needed by the method.
+
+.. note::
+   
+   For more information on the use of MOAT sampling, see :ref:`this Morris example <additional:morris>`,
+   or Saltelli, et al. :cite:p:`Sal04`.
 
 .. _`dace:sa`:
 
@@ -604,7 +634,7 @@ assess the smoothness of the response functions in order to select a
 finite difference step size, and a set of more widely-spaced points in a
 centered or multidimensional parameter study could be used to determine
 whether the response function variation is likely to be unimodal or
-multimodal. See Chapter `[ps] <#ps>`__ for additional information on
+multimodal. See :ref:`Parameter Studies Capabilities <ps>` for additional information on
 these methods. These more global approaches to sensitivity analysis can
 be used to obtain trend data even in situations when gradients are
 unavailable or unreliable, and they are conceptually similar to the
@@ -616,7 +646,7 @@ quantification described in the following sections.
 Assessing Sensitivity with DACE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Like parameter studies (see Chapter `[ps] <#ps>`__), the DACE techniques
+Like :ref:`parameter studies <ps>`, the DACE techniques
 are useful for characterizing the behavior of the response functions of
 interest through the parameter ranges of interest. In addition to direct
 interrogation and visualization of the sampling results, a number of
@@ -632,8 +662,7 @@ techniques include analysis of variance
 (ANOVA) :cite:p:`Mye95` and main effects analysis, in which
 the parameters which have the greatest influence on the results are
 identified from sampling results. Scatter plots and ANOVA may be
-accessed through import of Dakota tabular results (see
-Section `[output:tabular] <#output:tabular>`__) into external
+accessed through :ref:`import of Dakota tabular results <output:tabular>` into external
 statistical analysis programs such as S-plus, Minitab, etc.
 
 Running any of the design of experiments or sampling methods allows the
@@ -652,7 +681,7 @@ Correlation tables are printed with the simple, partial, and rank
 correlations between inputs and outputs. These can be useful to get a
 quick sense of how correlated the inputs are to each other, and how
 correlated various outputs are to inputs. The correlation analyses are
-explained further in Chapter `[uq:sampling] <#uq:sampling>`__.
+explained further in :ref:`the sampling section <uq:sampling>`.
 
 We also have the capability to calculate sensitivity indices through
 Variance-based Decomposition (VBD). Variance-based decomposition is a
@@ -687,7 +716,7 @@ calculations for the calculation of the :math:`S_{i}` and :math:`T_{i}`
 indices when using sampling. The implementation details of these
 calculatiosn are provided in :cite:p:`Weirs10`. VBD can be
 specified for any of the sampling or DACE methods using the command
-``variance_based_decomposition``. Note that VBD is extremely
+:dakkw:`method-dace-variance_based_decomp`. Note that VBD is extremely
 computationally intensive when using sampling since replicated sets of
 sample values are evaluated. If the user specified a number of samples,
 :math:`N`, and a number of nondeterministic variables, :math:`M`,
@@ -697,8 +726,7 @@ recommend that :math:`N`, the number of samples, be at least one hundred
 and preferably several hundred or thousands. Because of the
 computational cost, variance-based decomposition is turned off as a
 default for sampling or DACE. Another alternative, however, is to obtain
-these indices using one of the stochastic expansion methods described in
-Section `[uq:expansion] <#uq:expansion>`__. The calculation of the
+these indices using :ref:`one of the stochastic expansion methods <uq:expansion>`. The calculation of the
 indices using expansion methods is much more efficient since the VBD
 indices are analytic functions of the coefficients in the stochastic
 expansion. The paper by Weirs et al. :cite:p:`Weirs10`
@@ -715,7 +743,7 @@ higher order interactions that contribute significantly to the variance.
 There is no requirement that the sum of the total effect indices is one:
 in most cases, the sum of the total effect indices will be greater than
 one. An example of the Main and Total effects indices as calculated by
-Dakota using sampling is shown in the following figure:
+Dakota using sampling is shown in the following spinnet of Dakota output:
 
 .. code-block::
 
@@ -756,44 +784,45 @@ distributions of the parameters. DOE/DACE methods typically assume
 uniform distributions, whereas the sampling approaches in Dakota support
 a broad range of probability distributions.
 
-To use ``sampling`` in design of experiments mode (as opposed to
+To use :dakkw:`method-sampling` in design of experiments mode (as opposed to
 uncertainty quantification mode), an active view override (e.g.,
-``active all``) can be included in the variables specification (see
+:dakkw:`variables-active` :dakkw:`variables-active-all`) can be included in the variables specification (see
 :ref:`"Management of Mixed Variables by Iterator" <variables:mixedview>`) of the Dakota
 input file.
 
-Design of experiments method selection recommendations are summarized in
-the table below:
+Design of experiments method selection recommendations are summarized in :numref:`dace:usage:table`:
 
-.. table:: Guidelines for selection of parameter study, DOE, DACE,
-   and sampling methods.
+.. table:: *Guidelines for selection of parameter study, DOE, DACE, and sampling methods.*
+   :name: dace:usage:table
+   :align: center
+   :widths: auto
 
-   +-----------------------+-----------------------+--------------------------------------------------------------------------+
-   | Method Classification | Applications          | Applicable Methods                                                       |
-   +=======================+=======================+==========================================================================+
-   | parameter study       | sensitivity analysis, | :ref:`centered_parameter_study <method-centered_parameter_study>`,       |
-   |                       | directed parameter    | :ref:`list_parameter_study <method-list_parameter_study>`,               |
-   |                       | space investigations  | :ref:`multidim_parameter_study <method-multidim_parameter_study>`,       |
-   |                       |                       | :ref:`vector_parameter_study <method-vector_parameter_study>`            |
-   +-----------------------+-----------------------+--------------------------------------------------------------------------+
-   | classical design      | physical experiments  | :ref:`dace <method-dace>` (:ref:`box_behnken <method-dace-box_behnken>`, |
-   | of experiments        | (parameters are       | :ref:`central_composite <method-dace-central_composite>`)                |
-   |                       | uniformly             |                                                                          |
-   |                       | distributed)          |                                                                          |
-   +-----------------------+-----------------------+--------------------------------------------------------------------------+
-   | design of computer    | variance analysis,    | :ref:`dace <method-dace>` (:ref:`grid <method-dace-grid>`,               |
-   | experiments           | space filling design  | :ref:`random <method-dace-random>`, :ref:`oas <method-dace-oas>`         |
-   |                       | (parameters are       | :ref:`lhs <method-dace-lhs>`, :ref:`oa_lhs <method-dace-oa_lhs>`),       |
-   |                       | uniformly distributed)| :ref:`fsu_quasi_mc <method-fsu_quasi_mc>`                                |
-   |                       |                       | (:ref:`halton <method-fsu_quasi_mc-halton>`,                             |
-   |                       |                       | :ref:`hammersley <method-fsu_quasi_mc-hammersley>`),                     |
-   |                       |                       | :ref:`fsu_cvt <method-fsu_cvt>`, :ref:`psuade_moat <method-psuade_moat>` |
-   +-----------------------+-----------------------+--------------------------------------------------------------------------+
-   | sampling              | space filling designs | :ref:`sampling <method-sampling>`                                        |
-   |                       | (parameters have      | (:ref:`Monte Carlo <method-sampling-sample_type-random>` or              |
-   |                       | general probability   | :ref:`LHS <method-sampling-sample_type-lhs>`) with optional active view  |
-   |                       | distributions)        | override                                                                 |
-   +-----------------------+-----------------------+--------------------------------------------------------------------------+
+   +-----------------------+-----------------------+----------------------------------------------------------------------+
+   | Method Classification | Applications          | Applicable Methods                                                   |
+   +=======================+=======================+======================================================================+
+   | parameter study       | sensitivity analysis, | :dakkw:`method-centered_parameter_study`,                            |
+   |                       | directed parameter    | :dakkw:`method-list_parameter_study`,                                |
+   |                       | space investigations  | :dakkw:`method-multidim_parameter_study`,                            |
+   |                       |                       | :dakkw:`method-vector_parameter_study`                               |
+   +-----------------------+-----------------------+----------------------------------------------------------------------+
+   | classical design      | physical experiments  | :dakkw:`method-dace` (:dakkw:`method-dace-box_behnken`,              |
+   | of experiments        | (parameters are       | :dakkw:`method-dace-central_composite`)                              |
+   |                       | uniformly             |                                                                      |
+   |                       | distributed)          |                                                                      |
+   +-----------------------+-----------------------+----------------------------------------------------------------------+
+   | design of computer    | variance analysis,    | :dakkw:`method-dace` (:dakkw:`method-dace-grid`,                     |
+   | experiments           | space filling design  | :dakkw:`method-dace-random`, :dakkw:`method-dace-oas`                |
+   |                       | (parameters are       | :dakkw:`method-dace-lhs`, :dakkw:`method-dace-oa_lhs`),              |
+   |                       | uniformly distributed)| :dakkw:`method-fsu_quasi_mc`                                         |
+   |                       |                       | (:dakkw:`method-fsu_quasi_mc-halton`,                                |
+   |                       |                       | :dakkw:`method-fsu_quasi_mc-hammersley`),                            |
+   |                       |                       | :dakkw:`method-fsu_cvt`, :dakkw:`method-psuade_moat`                 |
+   +-----------------------+-----------------------+----------------------------------------------------------------------+
+   | sampling              | space filling designs | :dakkw:`method-sampling`                                             |
+   |                       | (parameters have      | (:dakkw:`method-sampling-sample_type-random` or                      |
+   |                       | general probability   | :dakkw:`method-sampling-sample_type-lhs`) with optional active view  |
+   |                       | distributions)        | override                                                             |
+   +-----------------------+-----------------------+----------------------------------------------------------------------+
    
 Video Resources
 ---------------

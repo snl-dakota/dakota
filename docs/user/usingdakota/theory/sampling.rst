@@ -179,6 +179,14 @@ multi-physics applications that are computationally intensive.
 Multilevel Monte Carlo for the mean
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+..
+   TODO:The multilevel Monte Carlo (MLMC) algorithm has been
+   introduced, starting from the control variate idea, for situation
+   in which additional
+   %(with respect to the stochastic space)
+   discretization levels can be defined. The basic idea, borrowed from
+   the multigrid approach,
+
 The multilevel Monte Carlo (MLMC) algorithm has been introduced,
 starting from the control variate idea, for situation in which
 additional discretization levels can be defined. The basic idea,
@@ -425,6 +433,11 @@ and a closed form solution is obtained
 similarly as for the expected value
 in `[EQ:mlmc_optimization] <#EQ:mlmc_optimization>`__.
 
+..
+   TODO: Note here, that higher order terms of $N_\ell$ in
+   $\mathbb{V}ar\left[ \hat{Q}_{\ell,2} \right]$ are not considered in
+   the optimization.
+
 The second approach uses numerical optimization directly on the
 non-linear optimization
 problem `[EQ:mlmc_optimization_var] <#EQ:mlmc_optimization_var>`__ to
@@ -551,6 +564,8 @@ for all possible cases
   \end{cases}
 
 ..
+   TODO:
+
    In this case, in order to obtain the variance of $c^{ML}[Q]$ it is necessary to employ an additional approximation:
    \begin{equation}
    \begin{split}
@@ -765,6 +780,11 @@ maximization problem obtaining
                       - \mathbb{V}ar\left(Q_{\ell-1}^{\mathrm{LF}}\right) \mathrm{Cov}\left(  Y^{\mathrm{HF}}_{\ell},Q_{\ell}^{\mathrm{LF}} \right) }
                { \mathbb{V}ar\left(Q_{\ell}^{\mathrm{LF}}\right) \mathrm{Cov}\left( Y^{\mathrm{HF}}_{\ell},Q_{\ell-1}^{\mathrm{LF}} \right) 
                - \mathrm{Cov}\left( Y^{\mathrm{HF}}_{\ell},Q_{\ell}^{\mathrm{LF}} \right) \mathrm{Cov}\left( Q_{\ell}^{\mathrm{LF}},Q_{\ell-1}^{\mathrm{LF}} \right) }.
+
+..
+   TODO: to which correspond the optimal ratio
+   $\dfrac{\theta_\ell^2}{\tau_\ell} =
+   \dfrac{\theta_\ell^2}{\tau_\ell} (\gamma_\ell^\star )$.
 
 The resulting optimal allocation of samples across levels and model
 forms is given by

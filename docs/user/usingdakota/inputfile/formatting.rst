@@ -1,3 +1,5 @@
+.. _`inputfile_formatting_main`:
+
 """""""""""""""""""""
 Input File Formatting
 """""""""""""""""""""
@@ -13,7 +15,9 @@ General Formatting Rules
 - Equal signs are optional.
 - Strings can be surrounded by single or double quotes (but not “fancy” quotes).
 - Scientific notation is fine.
- 
+
+.. _`inputfile_formatting_args`:
+
 --------------------
 Specifying Arguments
 --------------------
@@ -78,6 +82,8 @@ Count and sequence abbreviations can be used together. For example...
     response_levels =
         2*0.0:0.1:1.0
 
+
+.. _`inputfile_formatting_mistakes`:
 
 -----------------------------
 Common Specification Mistakes

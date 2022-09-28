@@ -5,6 +5,12 @@ Reliability Methods
 
 .. _`theory:uq:reliability:local`:
 
+..
+   TODO:
+   This chapter explores local and global reliability methods in greater
+   detail than that provided in the Uncertainty Quantification chapter of
+   the User's Manual.
+
 Local Reliability Methods
 -------------------------
 
@@ -108,6 +114,9 @@ validity of the linear Taylor series approximation used to approximate
 the response quantities of interest. The importance factors are
 determined as follows for each of :math:`n` random variables:
 
+..
+   TODO:  where we require uncorrelated input variables: 
+
 .. math::
 
    {\rm ImportFactor}_i = \left[ \frac{\sigma_{x_i}}{\sigma_g}
@@ -118,6 +127,12 @@ diagonal terms in Eq. `[eq:mv_std_dev] <#eq:mv_std_dev>`__ normalized by
 the total response variance. In the case where the input variables are
 correlated resulting in off-diagonal terms for the input covariance, we
 can also compute a two-way importance factor as
+
+
+..
+   TODO: diagonal terms in Eq.~\ref{eq:mv_std_dev} normalized by the total
+   response variance.  %involve an attribution of the total response
+   %variance among the set of input variables.
 
 .. math::
 
@@ -607,6 +622,29 @@ or parabolic
 (Eqs. `[eq:p_2nd_breit] <#eq:p_2nd_breit>`__–`[eq:p_2nd_hr] <#eq:p_2nd_hr>`__)
 approximation to the limit state at this MPP may fail to adequately
 capture the contour of a highly nonlinear limit state.
+
+..
+   TODO:
+
+   For these reasons,
+   efficient global reliability analysis (EGRA) is investigated
+   in~\cite{bichon_egra_sdm}.
+   
+   Global reliability methods include the efficient global reliability
+   analysis (EGRA) method. Analytical methods of reliability analysis solve a 
+   local optimization problem to locate the most probable point of failure (MPP), 
+   and then quantify the reliability based on its location and an approximation 
+   to the shape of the limit state at this point. Typically, gradient-based 
+   solvers are used to solve this optimization problem, which may fail to 
+   converge for nonsmooth response functions with unreliable gradients or 
+   may converge to only one of several solutions for response functions that 
+   possess multiple local optima. In addition to these MPP convergence issues, 
+   the evaluated probabilites can be adversely affected by limit state 
+   approximations that may be inaccurate. Analysts are then forced
+   to revert to sampling methods, which do not rely on MPP convergence or 
+   simplifying approximations to the true shape of the limit state. 
+   However, employing such methods is impractical when evaluation of the 
+   response function is expensive.
 
 A reliability analysis method that is both efficient when applied to
 expensive response functions and accurate for a response function of any

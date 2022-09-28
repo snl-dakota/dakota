@@ -12,7 +12,6 @@ Using Dakota
    running
    output
    studytypes
-   methodtypes
    topics
    advanced
    theory

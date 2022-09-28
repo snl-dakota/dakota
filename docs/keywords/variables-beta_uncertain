@@ -6,15 +6,11 @@ The number of beta uncertain variables, the alpha and beta parameters, and the d
 The beta distribution can be helpful when the actual distribution of an uncertain variable is unknown, but the user has a good idea of the bounds, the mean, and the standard deviation of the uncertain variable.
 The density function for the beta distribution is
 
-.. math:: f(x)= \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}\frac{(x-L)^{\alpha-1}(U-x)^{\beta-1}}{(U-L)^{\alpha+\beta-1}}
+.. math:: f(x)= \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}\frac{(x-L)^{\alpha-1}(U-x)^{\beta-1}}{(U-L)^{\alpha+\beta-1}},
 
-where
+where :math:`\Gamma(\alpha)` is the gamma function and
 
-:math:`\Gamma(\alpha)` 
-
-is the gamma function and
-
-:math:`B(\alpha, \beta) = \frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha+\beta)}` 
+.. math:: `B(\alpha, \beta) = \frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha+\beta)}` 
 
 is the beta function. To calculate the mean and standard deviation from the alpha, beta, upper bound, and lower bound parameters of the beta distribution, the following expressions may be used.
 

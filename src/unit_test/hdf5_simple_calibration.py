@@ -51,10 +51,10 @@ class Results(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             params = h["/methods/NO_METHOD_ID/results/execution:1/best_parameters/continuous"]
             # Descriptors match
-            h5_descriptors = set(params.dims[0][0][:])
+            h5_descriptors = set(hce.h5py_strings(params.dims[0][0]))
             self.assertEqual(expected_descriptors, h5_descriptors)
             ## Verify the values
-            for (label, c_val), h5_val in zip(console_params, params.value):
+            for (label, c_val), h5_val in zip(console_params, params[()]):
                 self.assertAlmostEqual(c_val, h5_val)
 
     def test_residuals(self):
@@ -63,7 +63,7 @@ class Results(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             h5_residuals = h["/methods/NO_METHOD_ID/results/execution:1/best_residuals"]
             self.assertEqual(len(console_residuals), h5_residuals.shape[0])
-            for c_r, h_r in zip(console_residuals, h5_residuals.value):
+            for c_r, h_r in zip(console_residuals, h5_residuals[()]):
                 self.assertAlmostEqual(c_r, h_r)
 
     def test_constraints(self):
@@ -72,7 +72,7 @@ class Results(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             h5_constraints = h["/methods/NO_METHOD_ID/results/execution:1/best_constraints"]
             self.assertEqual(len(console_constraints), h5_constraints.shape[0])
-            for c_c, h_c in zip(console_constraints, h5_constraints.value):
+            for c_c, h_c in zip(console_constraints, h5_constraints[()]):
                 self.assertAlmostEqual(c_c, h_c)
 
     def test_norms(self):
@@ -80,7 +80,7 @@ class Results(unittest.TestCase):
         console_norm = self._norms[0]
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             self.assertAlmostEqual(console_norm,
-                    h["/methods/NO_METHOD_ID/results/execution:1/best_norm"].value)
+                    h["/methods/NO_METHOD_ID/results/execution:1/best_norm"][()])
 
     def test_parameter_confidence_intervals(self):
         self.assertEqual(len(self._cis), 1)
@@ -88,9 +88,9 @@ class Results(unittest.TestCase):
         expected_descriptors = set(console_ci.keys())
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             h5_ci = h["/methods/NO_METHOD_ID/results/execution:1/confidence_intervals"]
-            self.assertEqual(expected_descriptors, set(h5_ci.dims[0][0][:]))
+            self.assertEqual(expected_descriptors, set(hce.h5py_strings(h5_ci.dims[0][0])))
             self.assertEqual(len(console_ci), h5_ci.shape[0])
-            for i, d in enumerate(h5_ci.dims[0][0]):
+            for i, d in enumerate(hce.h5py_strings(h5_ci.dims[0][0])):
                 for j in range(2):
                     self.assertAlmostEqual(console_ci[d][j], h5_ci[i,j])
 
@@ -105,7 +105,7 @@ class EvaluationsStructure(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5", "r") as f:
             h = f["/interfaces/NO_ID/NO_MODEL_ID"]
             actual = {item for item in h}
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     def test_model_presence(self):
         expected_model_types = ["simulation"] #, "recast"]
@@ -124,7 +124,7 @@ class EvaluationsStructure(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5", "r") as f:
             h = f["/models/simulation/NO_MODEL_ID"]
             actual = {item for item in h}
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     def test_sources(self):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
@@ -155,7 +155,7 @@ class TabularData(unittest.TestCase):
             # Variables
             hvars = h["/models/simulation/NO_MODEL_ID/variables/continuous"]
             hasv = h["/models/simulation/NO_MODEL_ID/properties/active_set_vector"]
-            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
+            self.assertListEqual(variables, hce.h5py_strings(hvars.dims[1][0]))
             hindex = 0
             for i, eid in enumerate(tdata["%eval_id"]):
                 while not all((a & 1 for a in hasv[hindex,:])):
@@ -168,7 +168,7 @@ class TabularData(unittest.TestCase):
                     
             # Responses
             hresps = h["/models/simulation/NO_MODEL_ID/responses/functions"]
-            self.assertListEqual(responses, hresps.dims[1][0][:].tolist())
+            self.assertListEqual(responses, hce.h5py_strings(hresps.dims[1][0]))
             hindex = 0
             for i, eid in enumerate(tdata["%eval_id"]):
                 while not all((a & 1 for a in hasv[hindex,:])):
@@ -190,13 +190,13 @@ class RestartData(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/interfaces/NO_ID/NO_MODEL_ID/variables/continuous"]
-            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
+            self.assertListEqual(variables, hce.h5py_strings(hvars.dims[1][0]))
             for i, v in enumerate(variables):
                 for eid, tv, hv in zip(rdata["eval_id"], rdata["variables"]["continuous"][v], hvars[:,i]):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
             hresps = h["/interfaces/NO_ID/NO_MODEL_ID/responses/functions"]
             # Responses
-            self.assertListEqual(responses, hresps.dims[1][0][:].tolist())
+            self.assertListEqual(responses, hce.h5py_strings(hresps.dims[1][0]))
             for i, r in enumerate(responses):
                 for eid, tr, hr in zip(rdata["eval_id"], rdata["response"][r], hresps[:,i]):
                     self.assertAlmostEqual(tr["function"], hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)

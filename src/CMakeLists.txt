@@ -768,7 +768,7 @@ if(HAVE_MUQ)
   set(iterator_src ${iterator_src} NonDMUQBayesCalibration.cpp)
   list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/include)
   list(APPEND DAKOTA_LIBDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/lib)
-  list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqOptimization muqApproximation muqSamplingAlgorithms muqInference)
+  list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqSamplingAlgorithms)
 endif()
 
 if(HAVE_ROL)
@@ -926,6 +926,10 @@ if (DAKOTA_MODELCENTER)
   target_link_libraries(dakota_src PHXCppApi)
 endif()
 
+# Force MUQ to build before Dakota source needing it:
+if(HAVE_MUQ)
+  add_dependencies(dakota_src MUQ)
+endif()
 
 #--- Add Dakota executables, with custom commands and properties
 

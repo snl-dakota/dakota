@@ -44,6 +44,14 @@ The general procedure of these EGO-type methods is:
    maximized. Update the Gaussian process model using this new point. Go
    to Step 2.
 
+..
+   TODO: Review comments:
+
+   \item Use cross validation to ensure that the kriging model is satisfactory.
+
+   To construct a parallel algorithm, the $n$ best points could be
+   selected and evaluated in steps 2 and 3.
+
 The following sections discuss the construction of the Gaussian process
 model used, the form of the EIF, and then a description of how that EIF
 is modified for application to reliability analysis.
@@ -151,6 +159,16 @@ defined by:
 
    \hat{\sigma}_Z^2 = \frac{1}{n}({\bf g}-{\bf F}{\boldsymbol \beta})^T
      {\bf R}^{-1}({\bf g}-{\bf F}{\boldsymbol \beta})
+
+..
+   TODO: Review comment:
+
+   where $\hat{\boldsymbol \beta}$ is the generalized least squares 
+   estimate of $\boldsymbol \beta$ from:
+   \begin{equation}
+   \hat{\boldsymbol \beta} = \left[ {\bf F}^T{\bf R}^{-1}{\bf F} \right]^{-1}
+     {\bf F}^T{\bf R}^{-1}{\bf g}
+   \end{equation}
 
 Maximizing Eq. `[eq:like] <#eq:like>`__ gives the maximum likelihood
 estimate of :math:`\boldsymbol \theta`, which in turn defines
@@ -282,6 +300,9 @@ prediction is a Gaussian distribution. Similar to Equation
 by
 
 .. math:: a_{\text{PI}}({\bf u}) = \Phi(\gamma({\bf u})).
+
+..
+   TODO: where $\gamma({\bf u}) = \frac{G^* - \mu({\bf u})}{\sigma({\bf u})} $. 
 
 Generally speaking, the EI acquisition function performs better than the
 PI acquisition function.

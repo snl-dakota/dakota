@@ -80,6 +80,14 @@ tiling, for example on a large compute cluster). This last section is a
 good quick start for interfacing Dakota to your parallel (or serial)
 application on a cluster.
 
+..
+   TODO:
+   % In the following sections, the parallel algorithms available in this
+   % Dakota release are listed followed by descriptions of the software
+   % components that enable parallelism, approaches for utilizing these
+   % components, and input specification and execution details for
+   % running parallel Dakota studies.
+
 .. _`parallel:overview:cat`:
 
 Categorization of parallelism
@@ -175,6 +183,27 @@ parallel simulations on sets of processors where they are most efficient
 and then replicate this efficiency with many coarse-grained instances
 involving one or more levels of nested job scheduling.
 
+..
+   TODO:
+   %From a software perspective, coarse-grained parallelism by
+   %itself (many instances of a single-processor simulation) and
+   %fine-grained parallelism by itself (a single instance of a large
+   %multiprocessor simulation) can be considered to cover two ends of a
+   %spectrum, and we are interested in also supporting anywhere in between
+   %(any number of instances of any size simulation).  Single-level
+   %parallelism approaches (the extremes of this spectrum) are described
+   %in Section~\ref{parallel:SLP}, and multilevel parallelism approaches
+   %(middle of the spectrum) are discussed in Section~\ref{parallel:MLP}.
+   
+   %The available concurrency in function evaluation parallelism is
+   %determined by the aspects of a particular systems analysis
+   %application, and is therefore highly application-dependent.
+   %Algorithmic parallelism, on the other hand, is largely determined by
+   %the selection and configuration of a particular algorithm.  These
+   %selection possibilities within Dakota are outlined in the following
+   %section.
+
+
 .. _`parallel:algorithms`:
 
 Parallel Dakota algorithms
@@ -211,6 +240,9 @@ Parallel iterators
    concurrency :cite:p:`Sch04`. Finally, finite-difference
    Newton algorithms can exploit additional concurrency in numerically
    evaluating Hessian matrices.
+
+..
+   TODO: which can evaluate hessians this way?
 
 -  Nongradient-based optimizers: HOPSPACK, JEGA methods, and most SCOLIB
    methods support parallelism. HOPSPACK and SCOLIB methods exploit
@@ -281,6 +313,15 @@ parallelism are:
 -  Multi-start iteration: a meta-iterator for executing multiple
    instances of an iterator from different starting points.
 
+..
+   TODO:
+   %\item Branch and bound: optimization meta-iterator for mixed-integer
+   %nonlinear programming with noncategorical discrete variables.
+
+   %In the branch and bound case, the available iterator concurrency grows
+   %as the tree develops more branches, so some of the iterator servers
+   %may be idle in the initial phases. Similarly, 
+
 The hybrid minimization case will display varying levels of iterator
 concurrency based on differing support of multipoint solution
 input/output between iterators; however, the use of multiple parallel
@@ -294,7 +335,12 @@ Parallel models
 ^^^^^^^^^^^^^^^
 
 Parallelism support in model classes (see
-Chapter `[models] <#models>`__) is an important issue for advanced model
+Chapter `[models] <#models>`__) is an important issue for
+
+..
+   TODO: %variable scaling (see Section~\ref{opt:additional:scaling}) and 
+
+advanced model
 recursions such as surrogate-based minimization, optimization under
 uncertainty, and mixed aleatory-epistemic UQ (see
 Chapters `[adv_meth] <#adv_meth>`__ and `[adv_models] <#adv_models>`__).
@@ -788,6 +834,10 @@ Scheduling
 The following scheduling approaches are available within a level of
 message passing parallelism:
 
+..
+   TODO: need a more descriptive term, e.g. single-point dedicated
+   dynamic scheduling
+
 -  *Dynamic scheduling*: in the dedicated master model, the master
    processor manages a single processing queue and maintains a
    prescribed number of jobs (usually one) active on each slave. Once a
@@ -810,6 +860,35 @@ message passing parallelism:
    performance. However, heterogeneity, when not known *a priori*, can
    very quickly degrade performance since there is no mechanism to
    adapt.
+
+
+..
+   TODO:
+   %In addition, the following scheduling approach is provided by PICO for
+   %the scheduling of concurrent optimizations within the branch and bound
+   %minimizer:
+   
+   %\begin{itemize}
+   % TO DO: this could become multipoint nondedicated dynamic scheduling
+   %\item \emph{Distributed scheduling}: in this approach, a peer
+   %  partition is used and each peer maintains a separate queue of
+   %  pending jobs. When one peer's queue is smaller than the other
+   %  queues, it requests work from its peers (prior to idleness). In this
+   %  way, it can adapt to heterogeneous conditions, provided there are
+   %  sufficient instances to balance the variation. Each partition
+   %  performs communication between computations, and no processors are
+   %  dedicated to scheduling. Furthermore, it distributes scheduling load
+   %  beyond a single processor, which can be important for large numbers
+   %  of concurrent jobs (whose scheduling might overload a single master)
+   %  or for fault tolerance (avoiding a single point of failure).
+   %  However, it involves relatively complicated logic and additional
+   %  communication for queue status and job migration, and its
+   %  performance is not always superior since a partition can become
+   %  work-starved if its peers are locked in computation (Note: this
+   %  logic can be somewhat simplified if a separate thread can be created
+   %  for communication and migration of jobs).
+   %\end{itemize}
+
 
 Message passing schedulers may be used for managing concurrent
 sub-iterator executions within a meta-iterator, concurrent evaluations
@@ -1132,6 +1211,11 @@ Section `1.1.1 <#parallel:overview:cat>`__). Algorithmic fine-grained
 parallelism is not currently supported in Dakota, although this picture
 is rapidly evolving.
 
+..
+   TODO:
+   %the development of large-scale parallel SAND techniques is an ongoing
+   %research focus~\cite{Bar01b}.
+
 A particular application may support one or more of these parallelism
 types, and Dakota provides for convenient selection and combination of
 multiple levels. If multiple types of parallelism can be exploited, then
@@ -1161,6 +1245,24 @@ single instance of a multiprocessor analysis, since it was desired to
 investigate the effectiveness of the Dakota schedulers independent from
 the efficiency of the parallel analysis.
 
+TODO: fix figures
+
+..
+   TODO:
+   \begin{figure}[ht]
+     \centering
+     \subfigure[Relative speedup.]
+       {\includegraphics[width=.45\textwidth]{images/mss_rel_speedup_3lev_determ}}
+     \subfigure[Relative efficiency.]
+       {\includegraphics[width=.45\textwidth]{images/mss_rel_eff_3lev_determ}}
+     \caption{Fixed-size scaling results for three levels of parallelism.}
+     \label{fig:mlp_scaling}
+   % The 2 processor run uses a 1/1/1/2 configuration and is as small as can be
+   % fairly compared for the same level of fine-grained simulation.  The 12, 48,
+   % 96, and 192 processor runs use 3 levels of parallelism in a 1/eval_srv/3/2
+   % configuration with eval_srv = 2, 8, 16, and 32, respectively.
+   \end{figure}
+
 .. _`parallel:MLP:local`:
 
 Asynchronous Local Parallelism
@@ -1185,6 +1287,11 @@ Section `[interfaces:which] <#interfaces:which>`__).
 Message Passing Parallelism
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+..
+   TODO: 
+   %\subsection{Communicator partitioning}
+   %   Lowest level supports single-level options above
+
 .. _`parallel:MLP:message:partitioning`:
 
 Partitioning of levels
@@ -1203,7 +1310,15 @@ modified, to be modular on a communicator (i.e., it does not assume
 ownership of ``MPI_COMM_WORLD``). New intra-communicators are created
 with the ``MPI_Comm_split`` routine, and in order to send messages
 between these intra-communicators, new inter-communicators are created
-with calls to ``MPI_Intercomm_create``. Multiple parallel configurations
+with calls to ``MPI_Intercomm_create``.
+
+..
+   TODO:
+   %To minimize overhead, Dakota creates
+   %new intra- and inter-communicators only when the parent communicator
+   %provides insufficient context for the scheduling at a particular level
+
+Multiple parallel configurations
 (containing a set of communicator partitions) are allocated for use in
 studies with multiple iterators and models (e.g., 16 servers of 64
 processors each could be used for iteration on a lower fidelity model,
@@ -1237,7 +1352,12 @@ level with either the dedicated master partition/dynamic scheduling
 combination or the peer partition/static scheduling combination. In
 addition, the iterator-evaluation level supports a peer
 partition/dynamic scheduling option, and certain external libraries may
-provide custom options. As an example,
+provide custom options.
+
+..
+   TODO: %(e.g., PICO supports distributed scheduling in peer partitions).
+
+As an example,
 Figure `1.3 <#parallel:figure02>`__ shows a case in which a branch and
 bound meta-iterator employs peer partition/distributed scheduling at
 level 1, each optimizer partition employs concurrent function
@@ -1331,51 +1451,42 @@ nonblocking synchronization is only supported at the concurrent function
 evaluation level, although it spans asynchronous local, message passing,
 and hybrid parallelism options.
 
-TODO: Table caption not rendering correctly; check table layout
-
-.. container::
+.. table:: *Support of job management approaches within parallelism levels. Shown in parentheses are supported simulation interfaces and supported synchronization approaches.*
    :name: parallel:table01
+   :align: center
+   :widths: auto
 
-   .. table:: Support of job management approaches within parallelism
-      levels. Shown in parentheses are supported simulation interfaces
-      and supported synchronization approaches.
-
-      +----------------+----------------+----------------+----------------+
-      | **Parallelism  | **Asynchronous | **Message      | **Hybrid**     |
-      | Level**        | Local**        | Passing**      |                |
-      +================+================+================+================+
-      | concurrent     |                | **X**          |                |
-      | iterators      |                |                |                |
-      | within a       |                |                |                |
-      +----------------+----------------+----------------+----------------+
-      | meta-iterator  |                | (blocking      |                |
-      | or nested      |                | synch)         |                |
-      | model          |                |                |                |
-      +----------------+----------------+----------------+----------------+
-      | concurrent     | **X**          | **X**          | **X**          |
-      | function       |                |                |                |
-      | evaluations    |                |                |                |
-      +----------------+----------------+----------------+----------------+
-      | within an      | (system, fork) | (system, fork, | (system, fork) |
-      | iterator       |                | direct)        |                |
-      +----------------+----------------+----------------+----------------+
-      |                | (blocking,     | (blocking,     | (blocking,     |
-      |                | nonblocking)   | nonblocking)   | nonblocking)   |
-      +----------------+----------------+----------------+----------------+
-      | concurrent     | **X**          | **X**          | **X**          |
-      | analyses       |                |                |                |
-      +----------------+----------------+----------------+----------------+
-      | within a       | (fork only)    | (system, fork, | (fork only)    |
-      | function       |                | direct)        |                |
-      | evaluation     |                |                |                |
-      +----------------+----------------+----------------+----------------+
-      |                | (blocking      | (blocking      | (blocking      |
-      |                | synch)         | synch)         | synch)         |
-      +----------------+----------------+----------------+----------------+
-      | fine-grained   |                | **X**          |                |
-      | parallel       |                |                |                |
-      | analysis       |                |                |                |
-      +----------------+----------------+----------------+----------------+
+   +----------------+----------------+----------------+----------------+
+   | **Parallelism  | **Asynchronous | **Message      | **Hybrid**     |
+   | Level**        | Local**        | Passing**      |                |
+   +================+================+================+================+
+   | concurrent     |                | **X**          |                |
+   | iterators      |                |                |                |
+   | within a       |                |                |                |
+   | meta-iterator  |                | (blocking      |                |
+   | or nested      |                | synch)         |                |
+   | model          |                |                |                |
+   +----------------+----------------+----------------+----------------+
+   | concurrent     | **X**          | **X**          | **X**          |
+   | function       |                |                |                |
+   | evaluations    |                |                |                |
+   | within an      | (system, fork) | (system, fork, | (system, fork) |
+   | iterator       |                | direct)        |                |
+   |                | (blocking,     | (blocking,     | (blocking,     |
+   |                | nonblocking)   | nonblocking)   | nonblocking)   |
+   +----------------+----------------+----------------+----------------+
+   | concurrent     | **X**          | **X**          | **X**          |
+   | analyses       |                |                |                |
+   | within a       | (fork only)    | (system, fork, | (fork only)    |
+   | function       |                | direct)        |                |
+   | evaluation     |                |                |                |
+   |                | (blocking      | (blocking      | (blocking      |
+   |                | synch)         | synch)         | synch)         |
+   +----------------+----------------+----------------+----------------+
+   | fine-grained   |                | **X**          |                |
+   | parallel       |                |                |                |
+   | analysis       |                |                |                |
+   +----------------+----------------+----------------+----------------+
 
 .. _`parallel:running`:
 
@@ -1437,6 +1548,16 @@ In each of these cases, MPI command line arguments are used by MPI
 (extracted first in the call to ``MPI_Init``) and Dakota command line
 arguments are used by Dakota (extracted second by Dakota’s command line
 handler).
+
+..
+   TODO:
+   %An issue that can arise with these command line
+   %arguments is that the mpirun script distributed with MPICH has been
+   %observed to have problems with certain file path specifications (e.g.,
+   %a relative path such as ``\path{../some_file}''). These path
+   %problems are most easily resolved by using local linkage (all
+   %referenced files or soft links to these files appear in the same
+   %directory).
 
 Finally, when running on computer resources that employ NQS/PBS batch
 schedulers, the single-processor ``dakota`` command syntax or the
@@ -2141,6 +2262,17 @@ processors (``pbs_submission``):
 
 and will launch :math:`M` simultaneous analysis jobs, and as each job
 completes, another will be launched, until all jobs are complete.
+
+..
+   TODO:
+   %\item If the possible Dakota application concurrency equals $M$,
+   %Dakota will use a peer-to-peer scheduler, and run the $M$ jobs
+   %concurrently.  When the possible concurrency is greater than $M$,
+   %Dakota will by default launch $M-1$ jobs with a master-slave model.
+   %Specifying a static schedule (see {\tt evaluation\_scheduling} 
+   %options) in the Dakota input, will override the default master-slave 
+   %scheduler and Dakota will launch M jobs, but jobs will be launched 
+   %blocking, so all M will complete, then another M will be scheduled.
 
 -  If the analysis is extremely fast, performance may be improved by
    launching multiple evaluation jobs local to each Dakota MPI process,

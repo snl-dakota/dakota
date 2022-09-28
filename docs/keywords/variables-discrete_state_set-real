@@ -1,13 +1,13 @@
 Blurb::
 Discrete state variables, each defined by a set of permissible real numbers
+
 Description::
 Discrete state variables defined by a set of permissible real numbers.
 
-The details of how to specify this discrete variable are located on the
-:ref:`topic-discrete_variables<topic-discrete_variables>` page.
+See :ref:`variables:usage` for tips on specifying discrete set
+variables and :ref:`variables:state` for details on the behavior
+of state variables.
 
-See the :ref:`topic-state_variables<topic-state_variables>` page for details on the behavior of state
-variables.
 Topics::
 discrete_variables, state_variables
 Examples::

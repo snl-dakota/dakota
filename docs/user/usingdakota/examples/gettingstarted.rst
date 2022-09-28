@@ -10,9 +10,12 @@ utilize Dakota to drive the evaluation of user supplied black box code. The exam
 show the simplest use of Dakota for methods of each type. More advanced examples of using Dakota for specific purposes are
 provided in subsequent, topic-based, chapters.
 
-:ref:`If you are looking for examples of coupling Dakota to external simulations, click here <couplingtosimulations-main>`.
+.. note::
    
-:ref:`If you are looking for video examples, click here <examples-gettingstarted-videos>`.
+   - If you are looking for examples of coupling Dakota to external simulations, refer to :ref:`this section <couplingtosimulations-main>`.
+   - If you are looking for "getting started" video examples, refer to :ref:`this section <examples-gettingstarted-videos>`.
+
+.. _examples-gettingstarted-rosenbrock:
 
 =======================
 Rosenbrock Test Problem
@@ -27,15 +30,19 @@ The Rosenbrock function is a common test problem for Dakota examples. This funct
 Shown below is a three-dimensional plot of this function, where both x1 and x2 range in value from −2 to 2;
 also shown below is a contour plot for Rosenbrock’s function. 
 
-.. image:: ../img/rosen_3d_surf.png
-   :alt: 3D Plot
+.. figure::  ../img/rosen_3d_surf.png
+   :alt: Rosenbrock's function as a 3D plot
    :align: center
    :width: 300
+   
+   Rosenbrock's function as a 3D plot
 
-.. image:: ../img/rosen_2d_surf.png
-   :alt: Contour Plot
+.. figure:: ../img/rosen_2d_surf.png
+   :alt: Rosenbrock's function as a contour plot
    :align: center
    :width: 300
+   
+   Rosenbrock's function as a contour plot
 
 An optimization problem using Rosenbrock’s function is formulated as follows:
 
@@ -57,22 +64,27 @@ of the Rosenbrock test problem.
 Parameter Studies
 =================
 
+.. _examples-gettingstarted-grid_study:
+
 ------------------------------------
 Two-Dimensional Grid Parameter Study
 ------------------------------------
 
-.. image:: ../img/rosen_2d_pts.png
-   :alt: Fig 2.6
+.. figure:: ../img/rosen_2d_pts.png
+   :alt: Rosenbrock 2-D parameter study example: location of the design points (dots) evaluated.
    :align: center
    :width: 300
+   :name: figure:rosen_2d_pts
+   
+   Rosenbrock 2-D parameter study example: location of the design points (dots) evaluated.
 
 Parameter study methods in the Dakota toolkit involve the computation of response data sets at a selection of points in the
 parameter space. These response data sets are not linked to any specific interpretation, so they may consist of any allowable
 specification from the responses keyword block, i.e., objective and constraint functions, least squares terms and constraints, or
 generic response functions. This allows the use of parameter studies in direct coordination with optimization, least squares,
 and uncertainty quantification studies without significant modification to the input file.
-An example of a parameter study is the 2-D parameter study example problem listed in Figure 2.4. This is executed by Dakota
-using the command noted in the comments:
+An example of a parameter study is the 2-D parameter study example problem listed in :numref:`tutorial:rosenbrock_multidim`.
+This is executed by Dakota using the command noted in the comments:
 
 .. code-block::
 
@@ -83,7 +95,7 @@ is redirect to rosen_multidim.stdout. For comparison, files named rosen_multidim
 included in the dakota/share/dakota/examples/users directory. As for many of the examples, Dakota provides a report on the
 best design point located during the study at the end of these output files.
 
-This 2-D parameter study produces the grid of data samples shown in Figure 2.6. In general, a multidimensional parameter
+This 2-D parameter study produces the grid of data samples shown in :numref:`figure:rosen_2d_pts`. In general, a multidimensional parameter
 study lets one generate a grid in multiple dimensions. The keyword multidim parameter study indicates that a grid
 will be generated over all variables. The keyword partitions indicates the number of grid partitions in each dimension.
 For this example, the number of the grid partitions are the same in each dimension (8 partitions) but it would be possible to
@@ -93,6 +105,8 @@ are not particularly instructive. More interesting visualizations can be created
 or by importing Dakota’s tabular data into an external graphics/plotting package. Example graphics and plotting packages
 include Mathematica, Matlab, Microsoft Excel, Origin, Tecplot, Gnuplot, and Matplotlib. (Sandia National Laboratories and
 the Dakota developers do not endorse any of these commercial products.)
+
+.. _examples-gettingstarted-vector_study:
 
 ----------------------
 Vector Parameter Study
@@ -140,8 +154,7 @@ subsection demonstrates the use of one such method through the Dakota interface.
 .. literalinclude:: ../samples/rosen_grad_opt.in
    :language: dakota
    :tab-width: 2
-   :caption: Rosenbrock gradient-based unconstrained optimization
-       example: the Dakota input file.
+   :caption: Rosenbrock gradient-based unconstrained optimization example: the Dakota input file.
    :name: tutorial:rosenbrock_grad
 
 The format of the input file in :numref:`tutorial:rosenbrock_grad` is similar to that used for the parameter studies, but there are some new keywords in the responses and method sections.
@@ -165,16 +178,18 @@ steps. The scaling of the horizontal and vertical axes can be changed by moving 
 “Options” button allows the user to plot the vertical axes using a logarithmic scale. Note that log-scaling is only allowed if the
 values on the vertical axis are strictly greater than zero.
 
-:ref:`Similar plots can also be created in Dakota’s graphical user interface <chartreuse-plot-templates-iterhistory>`.
+.. note::
+
+   Similar plots can also be created in :ref:`Dakota’s graphical user interface <chartreuse-plot-templates-iterhistory>`.
 
 .. figure:: ../img/dak_graphics_grad_opt.png
-   :alt: Fig 2.8a
+   :alt: Optimization plots (Legacy Dakota graphics plotting)
    :align: center
    
    Optimization plots (Legacy Dakota graphics plotting)
 
 .. figure:: ../img/rosen_grad_opt_pts.png
-   :alt: Fig 2.8b
+   :alt: Optimization plot points on Rosenbrock curve
    :align: center
    :width: 300
    
@@ -248,7 +263,7 @@ The subsection demonstrates the use of Monte Carlo random sampling for Uncertain
 :numref:`tutorial:rosenbrock_mc` shows the Dakota input file for an example problem that demonstrates some of the random sampling capabilities
 available in Dakota. In this example, the design parameters, x1 and x2, will be treated as uncertain parameters that have
 uniform distributions over the interval [-2, 2]. This is specified in the variables block of the input file, beginning with the
-keyword uniform uncertain. Another difference from earlier input files such as Figure 2.7 occurs in the responses
+keyword uniform uncertain. Another difference from earlier input files such as :numref:`tutorial:rosenbrock_grad` occurs in the responses
 block, where the keyword response functions is used in place of objective functions. The final changes to the
 input file occur in the method block, where the keyword sampling is used.
 
@@ -263,60 +278,62 @@ In this example, Dakota will select 200 design points from within the parameter 
 function at all 200 points, and then perform some basic statistical calculations on the 200 response values.
 
 The Dakota command is noted in the file, and copies of the outputs are in the dakota/share/dakota/examples/
-users directory, with .sav appended to the name. Figure 2.10 shows example results from this sampling method. Note that
+users directory, with .sav appended to the name. :numref:`rosen_sampling_results` shows example results from this sampling method. Note that
 your results will differ from those in this file if your seed value differs or if no seed is specified.
 
 In addition to the output files discussed in the previous examples, several LHS*.out files are generated. They are a byproduct
 of a software package, LHS [136], that Dakota utilizes to generate random samples and can be ignored.
 
 .. code-block::
+   :name: rosen_sampling_results
+   :caption: Results of Monte Carlo Sampling on the Rosenbrock function
 
-    Statistics based on 200 samples:
+   Statistics based on 200 samples:
 
-    Moment-based statistics for each response function:
-                                Mean           Std Dev          Skewness          Kurtosis
-     response_fn_1  4.5540183516e+02  5.3682678089e+02  1.6661798252e+00  2.7925726822e+00
+   Moment-based statistics for each response function:
+                               Mean           Std Dev          Skewness          Kurtosis
+   response_fn_1  4.5540183516e+02  5.3682678089e+02  1.6661798252e+00  2.7925726822e+00
 
-    95% confidence intervals for each response function:
-                        LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
-     response_fn_1  3.8054757609e+02  5.3025609422e+02  4.8886795789e+02  5.9530059589e+02
+   95% confidence intervals for each response function:
+                       LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+    response_fn_1  3.8054757609e+02  5.3025609422e+02  4.8886795789e+02  5.9530059589e+02
 
-    Level mappings for each response function:
-    Cumulative Distribution Function (CDF) for response_fn_1:
-         Response Level  Probability Level  Reliability Index  General Rel Index
-         --------------  -----------------  -----------------  -----------------
-       1.0000000000e+02   3.4000000000e-01
+   Level mappings for each response function:
+   Cumulative Distribution Function (CDF) for response_fn_1:
+        Response Level  Probability Level  Reliability Index  General Rel Index
+        --------------  -----------------  -----------------  -----------------
+      1.0000000000e+02   3.4000000000e-01
 
-    Probability Density Function (PDF) histograms for each response function:
-    PDF for response_fn_1:
-              Bin Lower          Bin Upper      Density Value
-              ---------          ---------      -------------
-       1.1623549854e-01   1.0000000000e+02   3.4039566059e-03
-       1.0000000000e+02   2.7101710856e+03   2.5285698843e-04
+   Probability Density Function (PDF) histograms for each response function:
+   PDF for response_fn_1:
+             Bin Lower          Bin Upper      Density Value
+             ---------          ---------      -------------
+      1.1623549854e-01   1.0000000000e+02   3.4039566059e-03
+      1.0000000000e+02   2.7101710856e+03   2.5285698843e-04
 
-    Simple Correlation Matrix among all inputs and outputs:
-                           x1           x2 response_fn_1 
-              x1  1.00000e+00 
-              x2 -5.85097e-03  1.00000e+00 
-    response_fn_1 -9.57746e-02 -5.08193e-01  1.00000e+00 
+   Simple Correlation Matrix among all inputs and outputs:
+                          x1           x2 response_fn_1 
+             x1  1.00000e+00 
+             x2 -5.85097e-03  1.00000e+00 
+   response_fn_1 -9.57746e-02 -5.08193e-01  1.00000e+00 
 
-    Partial Correlation Matrix between input and output:
-                 response_fn_1 
-              x1 -1.14659e-01 
-              x2 -5.11111e-01 
+   Partial Correlation Matrix between input and output:
+                response_fn_1 
+             x1 -1.14659e-01 
+             x2 -5.11111e-01 
 
-    Simple Rank Correlation Matrix among all inputs and outputs:
-                           x1           x2 response_fn_1 
-              x1  1.00000e+00 
-              x2 -6.03315e-03  1.00000e+00 
-    response_fn_1 -1.15360e-01 -5.04661e-01  1.00000e+00 
+   Simple Rank Correlation Matrix among all inputs and outputs:
+                          x1           x2 response_fn_1 
+             x1  1.00000e+00 
+             x2 -6.03315e-03  1.00000e+00 
+   response_fn_1 -1.15360e-01 -5.04661e-01  1.00000e+00 
 
-    Partial Rank Correlation Matrix between input and output:
-                 response_fn_1 
-              x1 -1.37154e-01 
-              x2 -5.08762e-01 
+   Partial Rank Correlation Matrix between input and output:
+                response_fn_1 
+             x1 -1.37154e-01 
+             x2 -5.08762e-01 
 
-As shown in Figure 2.10, the statistical data on the 200 Monte Carlo samples is printed at the end of the output file in the section
+As shown in :numref:`rosen_sampling_results`, the statistical data on the 200 Monte Carlo samples is printed at the end of the output file in the section
 that starts with “Statistics based on 200 samples.” In this section summarizing moment-based statistics, Dakota outputs the
 mean, standard deviation, skewness, and kurtosis estimates for each of the response functions. For example, the mean of the
 Rosenbrock function given uniform input uncertainties on the input variables is 455.4 and the standard deviation is 536.8.
@@ -329,14 +346,17 @@ of the response function values that are below the response threshold values spe
 of the sample inputs resulted in a Rosenbrock function value that was less than or equal to 100, as shown in the line listing
 the cumulative distribution function values. Finally, there are several correlation matrices printed at the end, showing simple
 and partial raw and rank correlation matrices. Correlations provide an indication of the strength of a monotonic relationship
-between input and outputs. More detail on correlation coefficients and their interpretation can be found in Section 5.2.1. More
-detail about sampling methods in general can be found in Section 5.2. Finally, Figure 2.11 shows the locations of the 200
-sample sites within the parameter space of the Rosenbrock function for this example.
+between input and outputs. More detail on correlation coefficients and their interpretation can be found :ref:`here <uq:uncertainty1>`. More
+detail about sampling methods in general can be found :ref:`here <uq:sampling>`. Finally, :numref:`figure:rosen_nond_pts` shows the
+locations of the 200 sample sites within the parameter space of the Rosenbrock function for this example.
 
-.. image:: ../img/rosen_nond_pts.png
-   :alt: Fig 2.11
+.. figure:: ../img/rosen_nond_pts.png
+   :alt: Monte Carlo sampling example: locations in the parameter space of the 200 Monte Carlo samples using a uniform distribution for both x1 and x2.
    :align: center
    :width: 300
+   :name: figure:rosen_nond_pts
+   
+   Monte Carlo sampling example: locations in the parameter space of the 200 Monte Carlo samples using a uniform distribution for both x1 and x2.
 
 ===========================
 Least Squares (Calibration)
