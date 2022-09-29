@@ -180,7 +180,7 @@ specification. An example specification follows:
                convergence_tolerance = 1e-4
                output debug
 
-Refer to the Dakota Reference Manual :cite:p:`RefMan` for more
+Refer to the Dakota Reference Manual :ref:`Keyword Reference <keyword-reference-area>` for more
 detail on the input commands for the Gauss-Newton algorithm.
 
 The Gauss-Newton algorithm is gradient-based and is best suited for
@@ -215,7 +215,7 @@ specification. An example specification follows:
              nlssol_sqp
                convergence_tolerance = 1e-8
 
-Refer to the Dakota Reference Manual :cite:p:`RefMan` for more
+Refer to the Dakota Reference Manual  :ref:`Keyword Reference <keyword-reference-area>` for more
 detail on the input commands for NLSSOL.
 
 .. _`nls:solution:nl2sol`:
@@ -296,7 +296,7 @@ of weights are adjusted during calibration as they would be in
 iteratively re-weighted least squares.) When response scaling is active,
 it is applied after error variance weighting and before ``weights``
 application. The ``calibration_terms`` keyword documentation in the
-Dakota Reference Manual :cite:p:`RefMan` has more detail about
+Dakota Reference Manual  :ref:`Keyword Reference <keyword-reference-area>` has more detail about
 weighting and scaling of the residual terms.
 
 .. _`nls:examples`:
@@ -408,7 +408,8 @@ a measurement variance associated with each calibration term) or
 ``scalar`` (the user specifies one measurement variance per calibration
 term). For field calibration terms, the ``variance_type`` can also be
 ``diagonal`` or ``matrix``. These are explained in more detail in the
-Reference manual. Additionally, there is sometimes the need to specify
+Reference manual. See the :ref:`Keyword Reference <keyword-reference-area>`
+for more information. Additionally, there is sometimes the need to specify
 configuration variables. These are often used in Bayesian calibration
 analysis. These are specified as ``num_config_variables``. If the user
 specifies a positive number of configuration variables, it is expected
