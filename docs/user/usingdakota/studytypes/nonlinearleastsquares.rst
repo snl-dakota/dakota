@@ -333,18 +333,50 @@ formulations.
    %\end{figure}
 
 
-Figure  :numref:`Figure01 <nls:nl2sol:example1:figure01>` shows an excerpt from the
+Figure  :numref:`nls:nl2sol:example1:figure01` shows an excerpt from the
 output obtained when running NL2SOL on a five-dimensional problem. Note
 that the optimal parameter estimates are printed, followed by the
 residual norm and values of the individual residual terms, followed by
 the confidence intervals on the parameters.
 
-:numref:`nls:nl2sol:example1:figure01`
+
+.. code-block::
+   :caption: Dakota results for the multiobjective optimization example.
+   :name:  nls:nl2sol:example1:figure01
+
+      ------------------------------
+      
+      <<<<< Iterator nl2sol completed.
+      <<<<< Function evaluation summary: 27 total (26 new, 1 duplicate)
+      <<<<< Best parameters          =
+                         3.7541004764e-01 x1
+                         1.9358463401e+00 x2
+                        -1.4646865611e+00 x3
+                         1.2867533504e-02 x4
+                         2.2122702030e-02 x5
+      <<<<< Best residual norm =  7.3924926090e-03; 0.5 * norm^2 =  2.7324473487e-05
+      <<<<< Best residual terms      =
+                        -2.5698266189e-03
+                         4.4759880011e-03
+                         9.9223430643e-04
+                        -1.0634409194e-03
+
+      ...
+
+      Confidence Interval for x1 is [  3.7116510206e-01,  3.7965499323e-01 ]
+      Confidence Interval for x2 is [  1.4845485507e+00,  2.3871441295e+00 ]
+      Confidence Interval for x3 is [ -1.9189348458e+00, -1.0104382765e+00 ]
+      Confidence Interval for x4 is [  1.1948590669e-02,  1.3786476338e-02 ]
+      Confidence Interval for x5 is [  2.0289951664e-02,  2.3955452397e-02 ]
+
+
+
+:numref:`nls:nl2sol:example1:figure02`
 ::
 
 .. code-block::
    :caption: Dakota results for the multiobjective optimization example.
-   :name: nls:nl2sol:example1:figure01
+   :name: nls:nl2sol:example1:figure02
       <<<<< Iterator nl2sol completed.
       <<<<< Function evaluation summary: 27 total (26 new, 1 duplicate)
       <<<<< Best parameters          =
@@ -435,7 +467,7 @@ results, etc. In all of these cases, one can pose the calibration
 problem as an optimization problem that can be solved by any of Dakota’s
 optimizers. In this situation, when applying an general optimization
 solver to a calibration problem, the guidelines in
-Table `[opt:usage] <#opt:usage>`__ still apply.
+Guide :numref:`opt:usage:guideopt` still apply.
 
 In some cases, it will be better to use a nonlinear least-squares method
 instead of a general optimizer to determine optimal parameter values
