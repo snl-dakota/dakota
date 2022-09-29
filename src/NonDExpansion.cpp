@@ -3690,10 +3690,14 @@ void NonDExpansion::archive_sobol_indices() {
     if (approx_i.expansion_coefficient_flag()) {
       // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
       // In this case, we cannot screen effectively at this level.
+      if (covarianceControl == DIAGONAL_COVARIANCE)
+        assert(respVariance[i] >= 0.0 );
+      if (covarianceControl == FULL_COVARIANCE)
+        assert(respCovariance(i,i) >= 0.0 );
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
-			    Pecos::is_small_sq(respVariance[i]) ) ||
+			    Pecos::is_small(std::sqrt(respVariance[i])),approx_i.mean() ) ||
 			  ( covarianceControl   == FULL_COVARIANCE &&
-			    Pecos::is_small_sq(respCovariance(i,i))) )
+			    Pecos::is_small(std::sqrt(respCovariance(i,i)),approx_i.mean())) )
 	              ? false : true;
       if (well_posed) {
 	const RealVector& total_indices = approx_i.total_sobol_indices();
