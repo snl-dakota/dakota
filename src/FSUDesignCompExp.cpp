@@ -37,6 +37,7 @@ FSUDesignCompExp::FSUDesignCompExp(ProblemDescDB& problem_db, Model& model):
   case FSU_CVT: {
     // CVT inputs
     randomSeed   = seedSpec =  probDescDB.get_int("method.random_seed");
+    rng.seed(randomSeed);
     varyPattern  = !probDescDB.get_bool("method.fixed_seed");
     numCVTTrials =  probDescDB.get_int("method.fsu_cvt.num_trials");
 
@@ -134,6 +135,7 @@ FSUDesignCompExp(Model& model, int samples, int seed,
   case FSU_CVT:
     // CVT inputs and defaults
     randomSeed   = seedSpec = seed;
+    rng.seed(randomSeed);
     numCVTTrials = 10000;
     trialType    = -1; // default is "random"
     break;
@@ -316,7 +318,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
                        // handling; current default is now uniform 
 
     // Trial type can be one of four values: random, grid, halton, uniform
-    // random  = system rand() (to be replaced w/ BoostRNG)
+    // random  = system mt19937
     // uniform = John's personal RNG (simple + portable/reproducible)
     // --> for simplicity, uniform has been removed.
 
@@ -333,35 +335,32 @@ get_parameter_sets(Model& model, const size_t num_samples,
 
     // Set seed value for input to CVT.  A user-specified seed gives you
     // repeatable behavior but no specification gives you random behavior (seed
-    // generated from a system clock).  For the cases where core_run() may be
+    // generated from a system source).  For the cases where core_run() may be
     // called multiple times for the same DACE object (e.g., SBO), a
     // deterministic sequence of seed values is used (unless fixed_seed has
     // been specified).  This renders the study repeatable but the sampling
     // pattern varies from one run to the next.
     if (numDACERuns == 1) { // set initial seed
       if (!seedSpec) { // no user specification: random behavior
-	// Generate initial seed from a system clock.  NOTE: the system clock
+	// Generate initial seed from a system source.  NOTE: the system source
 	// is not reused on subsequent invocations since (1) clock granularity
 	// can be too coarse (can repeat on subsequent runs for inexpensive test
 	// fns) and (2) seed progression can be highly structured, which could
-	// induce correlation between sample sets.  Instead, the clock-generated
+	// induce correlation between sample sets.  Instead, the system-generated
 	// case uses the same seed progression procedure below as the
 	// user-specified case.  This has the additional benefit that a random
-	// run can be recreated by specifying the clock-generated seed in the
+	// run can be recreated by specifying the system-generated seed in the
 	// input file.
 	randomSeed = generate_system_seed();
+	rng.seed(randomSeed); // seed for use with varyPattern
       }
     }
     else if (varyPattern) { // define sequence of seed values for numLHSRuns > 1
-      // It would be preferable to call srand() only once and then call rand()
-      // for each execution (the intended usage model), but possible interaction
-      // with other uses of rand() in ANN, SGOPT, APPS, etc. is a concern. E.g.,
-      // an srand(clock()) executed elsewhere would ruin the repeatability of
-      // the NonDSampling seed sequence.  The only way to insure isolation is to
-      // reseed each time.  Any induced correlation should be inconsequential
-      // for the intended use.
-      std::srand(randomSeed);
-      randomSeed = 1 + std::rand(); // from 1 to RANDMAX+1
+      // NOTE: This previously set randomSeed to [1, RAND_MAX+1],
+      // which could overflow int
+      std::uniform_int_distribution<>
+	rand_int(1, std::numeric_limits<int>::max());
+      randomSeed = rand_int(rng); // from 1 to INT_MAX
     }
     Cout << "\nFSU DACE method = " << methodName << " Samples = " << num_samples;
     if (numDACERuns == 1 || !varyPattern) {
