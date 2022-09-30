@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # Test the identity_response_mapping
 #
 # Each test demonstrations mapping a different combination of aleatory results

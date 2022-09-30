@@ -1,4 +1,5 @@
 #@ *: DakotaConfig=HAVE_NPSOL
+#@ s*: Label=FastTest
 #@ s6: TimeoutDelay=480
 
 # DAKOTA Input File: dakota_pcbdo_short_column.in

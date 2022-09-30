@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # This test verifies reading discrete configuration variables for calibration
 #
 # Test s0 generates the data at 13 configs with all design at 0.5

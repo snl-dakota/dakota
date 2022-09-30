@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s0: TimeoutDelay=240
 
 method,

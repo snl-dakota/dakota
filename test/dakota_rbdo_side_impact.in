@@ -1,4 +1,5 @@
 #@ *: DakotaConfig=HAVE_NPSOL
+#@ s*: Label=FastTest
 environment,
 	  method_pointer = 'OPTIM'
 

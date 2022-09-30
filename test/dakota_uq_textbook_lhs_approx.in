@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE - dakota_textbook_lhs_approx.in
 
 environment,
