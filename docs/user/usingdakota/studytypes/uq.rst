@@ -73,7 +73,7 @@ Dakota additionally supports mixed aleatory/epistemic UQ via
 interval-valued probability, second-order probability, and
 Dempster-Shafer theory of evidence. These involve advanced model
 recursions and are described in
-Section `[adv_models:mixed_uq] <#adv_models:mixed_uq>`__.
+:ref:`adv_models:mixed_uq`.
 
 ..
    TODO:
@@ -326,11 +326,11 @@ squares).
 
 Within the variables specification, uncertain variable descriptions are
 employed to define the random variable distributions (refer to
-Section `[variables:uncertain] <#variables:uncertain>`__). For Bayesian
+:ref:`variables:uncertain`). For Bayesian
 inference methods, these uncertain variable properties characterize the
 prior distribution to be updated and constrained by the observational
 data. As enumerated in
-Section `[variables:uncertain] <#variables:uncertain>`__, uncertain
+:ref:`variables:uncertain`, uncertain
 variables types are categorized as either aleatory or epistemic and as
 either continuous or discrete, where discrete types include integer
 ranges, integer sets, string sets, and real sets. The continuous
@@ -351,7 +351,7 @@ assessment, derivative components are normally computed with respect to
 the active continuous variables, which could be aleatory uncertain,
 epistemic uncertain, aleatory and epistemic uncertain, or all continuous
 variables, depending on the active view (see
-Section `[variables:mixed] <#variables:mixed>`__).
+:ref:`variables:mixed`).
 
 .. _`uq:sampling`:
 
@@ -675,7 +675,7 @@ amongst uncorrelated inputs.
 Finally, note that the LHS package can be used for design of experiments
 over design and state variables by including an active view override in
 the variables specification section of the Dakota input file (see
-Section `[variables:mixedview] <#variables:mixedview>`__). Then, instead
+:ref:`variables:mixedview`). Then, instead
 of iterating on only the uncertain variables, the LHS package will
 sample over all of the active variables. In the ``active all`` view,
 continuous design and continuous state variables are treated as having
@@ -975,7 +975,7 @@ within the Reference Manual), the MPP search and integration order
 selections are explicit in the method specification, but the order of
 the approximation is inferred from the associated response specification
 (as is done with local taylor series approximations described in
-Section `[models:surf:taylor] <#models:surf:taylor>`__). Thus,
+:ref:`models:surf:taylor`). Thus,
 reliability methods do not have to be synchronized in approximation and
 integration order as shown in the table; however, it is often desirable
 to do so.
