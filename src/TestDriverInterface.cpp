@@ -19,9 +19,8 @@
 #include "PHXCppApi.h"
 #endif
 #include <boost/tokenizer.hpp>
-#include "dakota_mersenne_twister.hpp"
-#include <boost/random/normal_distribution.hpp>
 #include <boost/assign.hpp>
+#include <random>
 #include <vector>
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "NonDLHSSampling.hpp"
@@ -5247,8 +5246,8 @@ int TestDriverInterface::aniso_quad_form()
       }
     }
 
-    boost::random::mt19937 vec_RNG(seed);
-    boost::random::normal_distribution<> sampler;
+    std::mt19937 vec_RNG(seed);
+    std::normal_distribution<> sampler;
 
     size_t num_prin_direc = eigenvals.size();
 

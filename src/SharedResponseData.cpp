@@ -320,7 +320,7 @@ void SharedResponseData::reshape(size_t num_fns)
   if (num_functions() != num_fns) {
     // separate sharing if needed
     //if (srdRep.use_count() > 1) { // shared rep: separate
-    boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+    std::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
     srdRep.reset(new SharedResponseDataRep()); // create new srdRep
     srdRep->copy_rep(old_rep.get());           // copy old data to new
     //}
@@ -371,7 +371,7 @@ void SharedResponseData::field_lengths(const IntVector& field_lens)
   // no change in number of scalar functions
   // when the field lengths change, need a new rep
   if (field_lengths() != field_lens) {
-    boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+    std::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
     srdRep.reset(new SharedResponseDataRep());  // create new srdRep
     srdRep->copy_rep(old_rep.get());            // copy old data to new
     
@@ -415,7 +415,7 @@ void SharedResponseData::primary_fn_type(short type)
 { 
   // when the primary type changes, need a new rep
   if (srdRep->primaryFnType != type) {
-    boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+    std::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
     srdRep.reset(new SharedResponseDataRep());  // create new srdRep
     srdRep->copy_rep(old_rep.get());            // copy old data to new
     srdRep->primaryFnType = type;

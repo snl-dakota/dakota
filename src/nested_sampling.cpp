@@ -9,10 +9,8 @@
 
 #include "nested_sampling.hpp"
 #include "math_tools.hpp"
-
-#include "dakota_mersenne_twister.hpp"
-#include <boost/random/uniform_real.hpp>
 #include "OrthogPolyApproximation.hpp"
+#include <random>
 
 namespace Dakota{
 
@@ -131,10 +129,10 @@ get_enriched_sample_indices( int num_dims,
 
 void LejaSampler::get_candidate_samples( int num_dims, int num_samples, int seed,
 					 RealMatrix &candidate_samples ){
-  boost::mt19937 rng;
+  std::mt19937 rng;
   if (seed)
     rng.seed(seed);
-  boost::uniform_real<double> uniform_sampler(0.,PI);
+  std::uniform_real_distribution<double> uniform_sampler(0.,PI);
   Pecos::util::reshape( candidate_samples, num_dims, num_samples );
   for (int j=0; j<num_samples; j++)
     for (int i=0; i<num_dims; i++)

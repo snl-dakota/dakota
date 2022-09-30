@@ -469,8 +469,15 @@ RealVector NonDGPImpSampling::drawNewX(int this_k)
     yada2=binEnds(i);
     binEnds(i)=yada2/cum_sum;
   }
-  //std::srand(randomSeed);
-  double rand_cdf = (double)std::rand()/RAND_MAX;
+  // NOTE: This was historically unbound to randomSeed,
+  // but was likely relying on rand() without srand() ==> srand(1)
+  std::mt19937 rng(randomSeed);
+  // This is imperfect to sample on [0, 1] inclusive per
+  // https://en.cppreference.com/w/cpp/numeric/random/uniform_real_distributio
+  // But likely doesn't matter for this use case
+  std::uniform_real_distribution<> unif_real
+    (0.0, std::nextafter(1.0, std::numeric_limits<double>::max()));
+  double rand_cdf = unif_real(rng);
   //Cout << "randcdf " << rand_cdf << '\n';
   bool found_cdf=false; 
   i=0; 

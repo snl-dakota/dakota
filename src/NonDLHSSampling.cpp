@@ -31,9 +31,6 @@
 #include "BasisPolynomial.hpp"
 #include "OrthogPolyApproximation.hpp"
 
-#include "boost/random.hpp"
-#include "boost/generator_iterator.hpp"
-
 static const char rcsId[]="@(#) $Id: NonDLHSSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 
@@ -679,16 +676,13 @@ Real NonDLHSSampling::bootstrap_covariance(const size_t qoi){
   RealVector mean_bs(nb_bs_samples);
   RealVector sigma_bs(nb_bs_samples);
   Real mean_mean_bs = 0, mean_sigma_bs = 0, covmeansigma = 0;
-  typedef boost::mt19937 RNGType;
 
-  RNGType rng(randomSeed);
-  boost::uniform_int<> rand_int_range( 0, numSamples-1);
-  boost::variate_generator< RNGType, boost::uniform_int<> >
-    rand_int(rng, rand_int_range);
+  std::mt19937 rng(randomSeed);
+  std::uniform_int_distribution<> unif_int(0, numSamples-1);
 
   for(int bs_resample = 0; bs_resample < nb_bs_samples; ++bs_resample){
     for(int resample = 0; resample < numSamples; ++resample){
-      bs_sample_idx = rand_int();
+      bs_sample_idx = unif_int(rng);
       bs_samples[resample] = qoiSamplesMatrix(qoi, bs_sample_idx);
     }
     mean_bs[bs_resample] = 0;

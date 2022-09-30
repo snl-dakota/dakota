@@ -335,6 +335,7 @@ MS_Complex::MS_Complex(double  *points, int dimension, int count, int _k, bool p
 	V = new Vertex *[szV];
 	E = new KNN_Edge *[szE];
 
+	// NOTE: Not removing use of srand/rand as code likely to be retired
   srand(8);
 	double *p = new double[dimension];
 	for(int i=0; i < count; i++)

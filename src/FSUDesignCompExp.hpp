@@ -108,6 +108,9 @@ private:
 
   // CVT data
 
+  // RNG to persist for varying pattern
+  std::mt19937 rng;
+
   /// the user seed specification for the random number generator
   /// (allows repeatable results)
   int seedSpec;
