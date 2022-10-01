@@ -53,8 +53,7 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
     md_index, num_md;
   ModelLRevIter ml_rit;
   bool err_flag = false, mlmf = (methodName==MULTILEVEL_MULTIFIDELITY_SAMPLING);
-  NLevActual.resize(num_mf);
-  NLevAlloc.resize(num_mf);
+  NLevActual.resize(num_mf);  NLevAlloc.resize(num_mf);
   costMetadataIndices.resize(num_mf);
   for (i=num_mf-1, ml_rit=ordered_models.rbegin();
        ml_rit!=ordered_models.rend(); --i, ++ml_rit) { // high fid to low fid

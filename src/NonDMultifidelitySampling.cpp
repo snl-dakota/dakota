@@ -84,7 +84,7 @@ void NonDMultifidelitySampling::core_run()
 void NonDMultifidelitySampling::multifidelity_mc()
 {
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
-  RealVector sum_HH, hf_targets;    RealMatrix var_L, eval_ratios;
+  RealVector sum_HH, hf_targets;  RealMatrix var_L, eval_ratios;
   //Sizet2DArray N_L_baseline, N_LH;
   initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
   //initialize_counts(N_L_baseline, numH, N_LH);

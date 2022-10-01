@@ -56,21 +56,6 @@ protected:
   //- Heading: Member functions
   //
 
-  /// perform LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
-		    Real hf_target, RealVector& lf_targets,
-		    size_t iter, size_t lev);
-  /// perform final LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(const Pecos::ActiveKey& lf_key,
-		    const RealVector& eval_ratios, const SizetArray& N_lf,
-		    const RealVector& hf_targets, RealVector& lf_targets,
-		    size_t iter, size_t lev);
-  /// perform final LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(const Pecos::ActiveKey& lf_key,
-		    const RealVector& eval_ratios, size_t N_lf,
-		    const RealVector& hf_targets, RealVector& lf_targets,
-		    size_t iter, size_t lev);
-
   /// compute scalar variance and correlation parameters for control variates
   void compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			      Real sum_HH, size_t N_shared, Real& var_H,
@@ -86,6 +71,16 @@ protected:
 			const RealMatrix& sum_L_refined,
 			const SizetArray& N_refined, size_t lev,
 			const RealVector& beta, RealVector& H_raw_mom);
+
+  /// compute numSamples for LF sample increment
+  void lf_allocate_samples(const RealVector& eval_ratios,
+			   const SizetArray& N_lf, const RealVector& hf_targets,
+			   RealVector& lf_targets);
+  /// compute numSamples for LF sample increment
+  void lf_allocate_samples(const RealVector& eval_ratios, size_t N_lf,
+			   Real hf_target, Real& lf_target);
+  /// parameter set definition and evaluation for LF sample increment
+  bool lf_perform_samples(size_t iter, size_t lev);
 
   //
   //- Heading: Data
@@ -119,6 +114,17 @@ private:
 		      SizetArray& N_shared, RealVector& hf_targets,
 		      bool accumulate_cost, bool pilot_estvar);
 
+  /// perform final LF sample increment as indicated by the evaluation ratio
+  bool lf_increment(const Pecos::ActiveKey& lf_key,
+		    const RealVector& eval_ratios, const SizetArray& N_lf,
+		    const RealVector& hf_targets, RealVector& lf_targets,
+		    size_t iter, size_t lev);
+  /// perform final LF sample increment as indicated by the evaluation ratio
+  bool lf_increment(const Pecos::ActiveKey& lf_key,
+		    const RealVector& eval_ratios, size_t N_lf,
+		    const RealVector& hf_targets, RealVector& lf_targets,
+		    size_t iter, size_t lev);
+
   /// define model form and resolution level indices
   void hf_lf_indices(size_t& hf_form_index, size_t& hf_lev_index,
 		     size_t& lf_form_index, size_t& lf_lev_index);
@@ -126,13 +132,6 @@ private:
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation and estimator variance ratios
   void shared_increment(const Pecos::ActiveKey& agg_key,size_t iter,size_t lev);
-
-  /// compute numSamples for LF sample increment
-  void lf_allocate_samples(const RealVector& eval_ratios,
-			   const SizetArray& N_lf, const RealVector& hf_targets,
-			   RealVector& lf_targets);
-  /// parameter set definition and evaluation for LF sample increment
-  bool lf_perform_samples(size_t iter, size_t lev);
 
   /// update equivHFEvals from HF, LF evaluation counts
   void compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,
@@ -214,8 +213,8 @@ private:
   /// rather than accumulations
   void update_projected_samples(const RealVector& hf_targets,
 				const RealVector& eval_ratios, Real cost_ratio,
-				SizetArray& N_actual_hf,SizetArray& N_actual_lf,
-				size_t&     N_alloc_hf, size_t&     N_alloc_lf);
+				SizetArray& N_actual_hf, size_t& N_alloc_hf,
+				SizetArray& N_actual_lf, size_t& N_alloc_lf);
 
   //
   //- Heading: Data

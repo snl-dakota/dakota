@@ -77,9 +77,17 @@ private:
   /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 		      RealVectorArray& eval_ratios, RealMatrix& Lambda,
-		      RealMatrix& var_YH, Sizet2DArray& N_shared,
-		      RealVector& hf_targets, bool accumulate_cost,
-		      bool pilot_estvar);
+		      RealMatrix& var_YH, SizetArray& N_alloc,
+		      Sizet2DArray& N_actual, RealVector& hf_targets,
+		      bool accumulate_cost, bool pilot_estvar);
+
+  /// perform LF sample increment as indicated by evaluation ratios
+  bool lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
+		    Real hf_target, RealVector& lf_targets,
+		    size_t iter, size_t lev);
+  /// perform LF sample increment as indicated by evaluation ratios
+  bool lf_increment(const RealVector& eval_ratios, size_t N_lf, Real hf_target,
+		    Real& lf_target, size_t iter, size_t lev);
 
   /// compute the equivalent number of HF evaluations (includes any sim faults)
   void compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
@@ -189,8 +197,12 @@ private:
   /// for pilot projection mode, advance sample counts and accumulated cost
   void update_projected_samples(const RealVector& hf_targets,
 				const RealVectorArray& eval_ratios,
-				Sizet2DArray& N_hf, const RealVector& hf_cost,
-				Sizet2DArray& N_lf, const RealVector& lf_cost);
+				Sizet2DArray& N_actual_hf,
+				SizetArray& N_alloc_hf,
+				const RealVector& hf_cost,
+				Sizet2DArray& N_actual_lf,
+				SizetArray& N_alloc_lf,
+				const RealVector& lf_cost);
 
   /// initialize the MLMF accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -374,6 +386,26 @@ compute_mlmf_estimator_variance(const RealMatrix&   var_Y,
       for (qoi=0; qoi<numFunctions; ++qoi)
 	mlmf_est_var[qoi] += var_Yl[qoi] / num_Yl[qoi];
   }
+}
+
+
+inline bool NonDMultilevControlVarSampling::
+lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
+	     Real hf_target, RealVector& lf_targets, size_t iter, size_t lev)
+{
+  RealVector hf_targets(eval_ratios.length(), false);  hf_targets = hf_target;
+  lf_allocate_samples(eval_ratios, N_lf, hf_targets, lf_targets);
+
+  return (numSamples) ? lf_perform_samples(iter, lev) : false;
+}
+
+
+inline bool NonDMultilevControlVarSampling::
+lf_increment(const RealVector& eval_ratios, size_t N_lf, Real hf_target,
+	     Real& lf_target, size_t iter, size_t lev)
+{
+  lf_allocate_samples(eval_ratios, N_lf, hf_target, lf_target);
+  return (numSamples) ? lf_perform_samples(iter, lev) : false;
 }
 
 
