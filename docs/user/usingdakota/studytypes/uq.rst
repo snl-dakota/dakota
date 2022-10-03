@@ -943,6 +943,7 @@ regular font indicates other supported combinations.
 .. table:: Mapping from Dakota options to standard reliability
    methods.
    :name: tab:rel_meth_map
+   :align: center
    :class: tr:nth-child(3) {color: red;}
 
    +---------------+-------------------------+-------------------------+
@@ -1797,9 +1798,9 @@ therefore the sample mean of the indicator function,
 :math:`I\left(\textbf{X}\right)`,
 
 .. math::
+   :label: mc_ind
 
    P_{MC}=\frac{1}{N}\sum_{i=1}^{N}I\left(\mathbf{X_i}\right)\ \ \textbf{X}\sim \rho\left(\textbf{X}\right),
-   \label{mc_ind}
 
 where :math:`N` samples, :math:`\mathbf{X_i}`, are drawn from
 :math:`\rho\left(\textbf{X}\right)`, and the indicator function
@@ -1810,7 +1811,10 @@ Importance sampling draws samples from the importance density
 :math:`\rho'\left(\textbf{X}\right)` and scales the sample mean by the
 importance density:
 
-.. math:: P_{IS}=\frac{1}{N}\sum_{i=1}^N \left(I\left(\mathbf{X_i}\right)\frac{\rho\left(\mathbf{X_i}\right)}{\rho'\left(\mathbf{X_i}\right)}\right)\ \ \textbf{X}\sim\rho'\left(\textbf{X}\right).\label{eqn:ispfail}
+.. math:: 
+   :label: eqn:ispfail
+
+   P_{IS}=\frac{1}{N}\sum_{i=1}^N \left(I\left(\mathbf{X_i}\right)\frac{\rho\left(\mathbf{X_i}\right)}{\rho'\left(\mathbf{X_i}\right)}\right)\ \ \textbf{X}\sim\rho'\left(\textbf{X}\right).
 
 This reduces the asymptotic error variance from:
 
@@ -1819,12 +1823,12 @@ This reduces the asymptotic error variance from:
 to
 
 .. math::
+   :label: eq:iserrorvar
 
    \sigma_{err_{IS}}^2=\frac{{\rm E}\left[\left(I\left(\textbf{X}\right)\frac{\rho\left(\textbf{X}\right)}{\rho'\left(\textbf{X}\right)}
    -P\right)^2\right]}{N}.
-   \label{eqn:iserrorvar}
 
-Inspection of Eq. :numref:`eqn:iserrorvar` reveals
+Inspection of Eq. :math:numref:`eq:iserrorvar` reveals
 :math:`\sigma_{err_{IS}}^2=0` if :math:`\rho'\left(\textbf{X}\right)`
 equals the ideal importance density
 :math:`\rho^*\left(\textbf{X}\right)`,
@@ -2507,7 +2511,7 @@ probability transformation by specifying ``standardized_space``.
 When data are available, the likelihood function describes how well each
 parameter value is supported by the data. Bayes
 Theorem :cite:p:`Jaynes`, shown in
-:numref:`eq:BayesThm`, is used for inference: to
+:math:numref:`eq:BayesThm`, is used for inference: to
 derive the plausible parameter values, based on the prior probability
 density and the data :math:`\boldsymbol{d}`. The result is the posterior
 probability density function of the parameters
@@ -2515,8 +2519,9 @@ probability density function of the parameters
 \right)`. It is interpreted the same way as the prior, but includes the
 information derived from the data.
 
-.. math:: {f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}}. \label{eq:BayesThm}
-
+.. math:: {f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}}.
+   :label: eq:BayesThm
+   
 ..
    TODO:
    %\begin{equation}
@@ -2540,8 +2545,8 @@ of interest returned from a computer simulation) and the experimental
 observations are Gaussian:
 
 .. math::
+   :label: eq:model
 
-   \label{eq:model}
    d_i = q_i(\boldsymbol{\theta}) + \epsilon_i,
 
 where :math:`\epsilon_i` is a random variable that can encompass both
@@ -2550,13 +2555,13 @@ the simulation quantity of interest :math:`q_i`, for each of :math:`n`
 observations.
 
 If we assume that all experiments and observations are independent, then
-the probabilistic model defined by :numref:`eq:model`)
+the probabilistic model defined by :math:numref:`eq:model`
 results in a likelihood function for :math:`\boldsymbol{\theta}` that is
 the product of :math:`n` normal probability density functions:
 
 .. math::
+   :label: eq:Likelihood
 
-   \label{eqn:Likelihood}  
    \mathcal{L}(\boldsymbol{{\theta};d}) = \prod_{i=1}^n
    \frac{1}{\sigma_d \sqrt{2\pi}} \exp
    \left[ - \frac{\left(d_i-q_i(\boldsymbol{{\theta}})\right)^2}{2{\sigma_d}^2} \right],
@@ -2909,8 +2914,8 @@ quantity of interest.
 When the input file shown in :numref:`uq:figure18` is run,
 Dakota will run the MCMC algorithm and generate a posterior sample of
 :math:`\boldsymbol{\theta}` in accordance with Bayes
-Theorem :numref:`eq:BayesThm` and the likelihood
-function :numref:`eqn:Likelihood`. Dakota’s final output
+Theorem :math:numref:`eq:BayesThm` and the likelihood
+function :math:numref:`eq:Likelihood`. Dakota’s final output
 summary reports an evaluation count summary and the best sample point
 visited during the MCMC process as measured by maximum posterior
 probability (an estimate of the MAP point). The final output also
@@ -3073,9 +3078,9 @@ a version of Bayes’ rule which calculates the posterior model
 plausibility as:
 
 .. math::
+   :label: eq:model_plausibility
 
    \pi_{post}(M_i|D)=\pi_{prior}(M_i)\frac{\pi(D|M_i)}{\pi(D)}
-   \label{eq:model_plausibility}
 
 In this equation, the posterior model probability given the data is also
 referred to as model plausibility. The prior model plausibility,
@@ -3084,16 +3089,16 @@ for all models, but it does not have to be. :math:`\pi(D)` is a
 normalizing factor such that the sum of all model plausibilities is 1.
 In this context, model selection involves choosing the model with the
 highest posterior model plausibility. Model evidence is defined as the
-likelihood in :numref:`eq:model_plausibility`, denoted
+likelihood in :math:numref:`eq:model_plausibility`, denoted
 by :math:`\pi(D|M_i)`. Model evidence is determined by averaging the
 likelihood of its model parameters over all possible values of the model
 parameters, according to their prior distributions. It is also called
 the marginal likelihood of the model. Model evidence is defined as:
 
 .. math::
+   :label: eq:uq:model_evidence
 
    \pi(D|M_i)=\int \pi(D|\boldsymbol{\theta_i},M_i)\pi_{prior}(\boldsymbol{\theta_i}|M_i)d \boldsymbol{\theta_i}
-   \label{eq:uq:model_evidence}
 
 There are many ways to calculate model evidence. There are currently two
 methods implemented in Dakota. The user first specifies
@@ -3103,7 +3108,7 @@ depending on the method(s) used to calculate model evidence.
 #. Monte Carlo approximation. This involves sampling from the prior
    distribution of the parameters, calculating the corresponding
    likelihood values at those samples, and estimating the integral given
-   in Eq. :numref:`eq:uq:model_evidence` by brute
+   in Eq. :math:numref:`eq:uq:model_evidence` by brute
    force. The number of samples used in the sampling of the integral
    is determined by ``evidence_samples``. Although this method is easy,
    it is not efficient because each sample of the prior density requires
@@ -3135,7 +3140,7 @@ Whether in a Bayesian setting or otherwise, the goal of model
 calibration is to minimize the difference between the observational data
 :math:`d_i` and the corresponding model response
 :math:`q_i(\boldsymbol{\theta})`. In the presence of scenario or
-configuration variables :math:`x`, Eq. :numref:`eq:model` can be
+configuration variables :math:`x`, Eq. :math:numref:`eq:model` can be
 modified,
 
 .. math:: d_i(x) = q_i\left(\boldsymbol{\theta}, x\right) + \epsilon_i,
@@ -3245,8 +3250,8 @@ discrepancy model is additively combined with the variance information
 provided with the experimental data, such that
 
 .. math::
+   :label: eq:discrep_var
 
-   \label{eq:discrep_var}
    \Sigma_{total,i}(x) = \Sigma_{\delta, i}(x) + \sigma^{2}_{exp,i} I
 
 for each observable :math:`i`. Further details of how the variance
@@ -3266,7 +3271,7 @@ configuration variable :math:`x_j`.
 When each corrected model value
 :math:`q_i(\boldsymbol{\theta}^{*}, x_{k, new}) +
 \delta_i(x_{k,new})` is considered, the variance calculated
-via :numref:`eq:discrep_var` provides a prediction
+via :math:numref:`eq:discrep_var` provides a prediction
 interval, similar to those described in
 :ref:`uq:bayesian:queso`. Including
 :math:`\sigma^{2}_{exp,i}` in the variance calculation accounts for the
@@ -3322,7 +3327,7 @@ such that each model has its own specifications. The low-fidelity
 ``variables`` block contains information about both the design
 variables, which are specified with ``continuous_state``, and the
 parameters to be updated via Bayes’
-Theorem :numref:`eq:BayesThm`, which are specified using one
+Theorem :math:numref:`eq:BayesThm`, which are specified using one
 of the aleatory uncertain variable types discussed in
 Section :ref:`variables:uncertain`. In
 the high-fidelity ``variables`` block, only the ``continuous_state``
