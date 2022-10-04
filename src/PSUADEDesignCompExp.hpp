@@ -15,6 +15,8 @@
 #ifndef PSUADE_DESIGN_COMP_EXP_H
 #define PSUADE_DESIGN_COMP_EXP_H
 
+#include <random>
+
 #include "DakotaPStudyDACE.hpp"
 
 namespace Dakota {

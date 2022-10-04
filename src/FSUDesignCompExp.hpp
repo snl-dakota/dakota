@@ -15,6 +15,8 @@
 #ifndef FSU_DESIGN_COMP_EXP_H
 #define FSU_DESIGN_COMP_EXP_H
 
+#include <random>
+
 #include "DakotaPStudyDACE.hpp"
 
 namespace Dakota {
