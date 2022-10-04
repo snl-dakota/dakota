@@ -13,6 +13,7 @@
 //- Checked by:
 
 #include <memory>
+#include <regex>
 #include <utility>
 #include <boost/algorithm/string/predicate.hpp>
 #include "dakota_global_defs.hpp"
@@ -94,17 +95,85 @@ void OutputManager::initial_redirects(const ProgramOptions& prog_opts)
   // will still be true.  This behavior is okay because the redirector
   // will see the same filename and not reopen the file.
 
+  std::string input_specified_output, input_specified_error;
+  if (!prog_opts.input_file().empty())
+    check_inputfile_redirs(prog_opts.input_file(), input_specified_output,
+			   input_specified_error);
+  else if (!prog_opts.input_string().empty())
+    check_inputstring_redirs(prog_opts.input_string(), input_specified_output,
+			     input_specified_error);
+
+  std::string output_file;
+  if (prog_opts.user_stdout_redirect())
+    output_file = prog_opts.output_file();
+  else if (!input_specified_output.empty())
+    output_file = input_specified_output;
+
   //  if output file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
+  if (worldRank == 0 && !output_file.empty()) {
     if (outputLevel >= DEBUG_OUTPUT)
-      std::cout << "\nRedirecting Cout on rank 0 to " << prog_opts.output_file()
-                << std::endl;
-    coutRedirector.push_back(prog_opts.output_file());
+      std::cout << "\nRedirecting Cout on rank 0 to " << output_file
+		<< std::endl;
+    coutRedirector.push_back(output_file);
   }
 
+  std::string error_file;
+  if (prog_opts.user_stderr_redirect())
+    error_file = prog_opts.error_file();
+  else if (!input_specified_error.empty())
+    error_file = input_specified_error;
+
   //  if error file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && prog_opts.user_stderr_redirect())
-    cerrRedirector.push_back(prog_opts.error_file());
+  if (worldRank == 0 && !error_file.empty())
+    cerrRedirector.push_back(error_file);
+}
+
+
+void OutputManager::check_inputfile_redirs(const std::string& input_filename,
+					   std::string& output_filename,
+					   std::string& error_filename)
+{
+  std::ifstream infile(input_filename);
+  OutputManager::check_input_redirs(infile, output_filename, error_filename);
+}
+
+
+void OutputManager::check_inputstring_redirs(const std::string& input_string,
+					     std::string& output_filename,
+					     std::string& error_filename)
+{
+  std::istringstream infile(input_string);
+  OutputManager::check_input_redirs(infile, output_filename, error_filename);
+}
+
+
+/** This has a stream API to permit multiline matching. */
+void OutputManager::check_input_redirs(std::istream& input_stream,
+				       std::string& output_filename,
+				       std::string& error_filename)
+{
+  // this doesn't allow abbreviations due to output_filter and error_factors
+  // also doesn't treat intervening commented sections
+  // moreover a commented redirect will still redirect...
+
+  // quoted filename with a match group for the contained filename;
+  // this sub-group will always exist if the regex matches
+  const std::string quoted_filename = "['\"](.+)['\"]";
+
+  //    auto const outfile_kw = boost::regex("output_file");
+  auto const out_kw_with_filename =
+    boost::regex("output_file[=\\s]+" + quoted_filename);
+  auto const err_kw_with_filename =
+    boost::regex("error_file[=\\s]+" + quoted_filename);
+
+  std::string line;
+  boost::smatch matches;
+  while (std::getline(input_stream, line)) {
+    if(boost::regex_search(line, matches, out_kw_with_filename))
+      output_filename = matches.str(1);
+    if(boost::regex_search(line, matches, err_kw_with_filename))
+      error_filename = matches.str(1);
+  }
 }
 
 
