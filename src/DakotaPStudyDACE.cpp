@@ -11,6 +11,8 @@
 //- Description: Implementation code for the PStudyDACE class
 //- Owner:       Mike Eldred
 
+#include <random>
+
 #include "dakota_system_defs.hpp"
 #include "DakotaPStudyDACE.hpp"
 #include "ProblemDescDB.hpp"
