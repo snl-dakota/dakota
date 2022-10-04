@@ -31,14 +31,25 @@ some_other_keyword
 error_file "dakota.err" # trailing comment
 )";
 
+// These commented lines should not cause a redirect
+std::string no_redirs_comments = R"(
+environment
+#   output_file  =    'dakota.log'# trailing comment
+some_other_keyword
+# full line comment error_file "dakota.err" # trailing comment
+)";
+
 std::string bum_comments = R"(
 environment
-output_file  =
+output_file  # where to output
   # change the log here:
   'dakota.log'# trailing comment
 some_other_keyword
 # full line comment
-error_file "dakota.err" # trailing comment
+error_file 
+  =          # so it equals
+  # change the error file here:
+  "dakota.err" # trailing comment
 )";
 
 
@@ -58,6 +69,12 @@ BOOST_AUTO_TEST_CASE(test_valid_redirs)
     BOOST_TEST(errfile == "dakota.err");
   }
 
+  std::string outfile, errfile;
+  std::istringstream infile(no_redirs_comments);
+  Dakota::OutputManager::check_input_redirs(infile, outfile, errfile);
+
+  BOOST_TEST(outfile == "");
+  BOOST_TEST(errfile == "");
 }
 
 

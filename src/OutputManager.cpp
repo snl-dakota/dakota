@@ -169,9 +169,11 @@ void OutputManager::check_input_redirs(std::istream& input_stream,
   std::string line;
   boost::smatch matches;
   while (std::getline(input_stream, line)) {
-    if(boost::regex_search(line, matches, out_kw_with_filename))
+    if(boost::regex_search(line, matches, out_kw_with_filename) && 
+       !strcontains(matches.prefix(), "#") )
       output_filename = matches.str(1);
-    if(boost::regex_search(line, matches, err_kw_with_filename))
+    if(boost::regex_search(line, matches, err_kw_with_filename) &&
+       !strcontains(matches.prefix(), "#") )
       error_filename = matches.str(1);
   }
 }
