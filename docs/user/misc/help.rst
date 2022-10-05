@@ -8,7 +8,14 @@ Help Resources
 Public User Community
 =====================
 
-Dakota is an open source and publicly available project with a significant worldwide user base. Our vision is that Dakota users will increasingly help each other with questions and issues. We encourage general usage questions about how to use Dakota, including how to install, choose algorithms, or interface to an application code, be posted to our public users' email list. Simply email your question to [dakota-users@software.sandia.gov](mailto:dakota-users@software.sandia.gov). Your first message will be held for moderation, and after it is approved, you will be subscribed to the list. Please refer to the guidance in our FAQ when preparing your request. Also, note that while we make every attempt to respond to all support inquiries, funding and staffing limitations demand that we prioritize requests as follows:
+Dakota is an open source and publicly available project with a significant worldwide user base. Our vision is that Dakota
+users will increasingly help each other with questions and issues. We encourage general usage questions about how to use Dakota,
+including how to install, choose algorithms, or interface to an application code, be posted to our public users' email list.
+
+Simply email your question to `dakota-users@software.sandia.gov <mailto:dakota-users@software.sandia.gov>`__. Your first message will
+be held for moderation, and after it is approved, you will be subscribed to the list. Please refer to the guidance in our FAQ when
+preparing your request. Also, note that while we make every attempt to respond to all support inquiries, funding and staffing limitations
+demand that we prioritize requests as follows:
 
 - Sandia National Laboratories users and integrators
 - CRADA and other DOE users and partners, e.g., NNSA/ASC labs, NEAMS and CASL Nuclear Energy initiatives
