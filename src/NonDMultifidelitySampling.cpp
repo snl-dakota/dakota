@@ -1079,8 +1079,9 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   size_t qoi, approx, num_am1 = numApprox - 1, hf_form_index, hf_lev_index;
   hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  Real cost_L, cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
-    avg_N_H = average(N_H_actual), r_i; // *** TO DO: review
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  Real cost_L, cost_H = cost[numApprox], budget = (Real)maxFunctionEvals, r_i,
+    avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
   RealVector avg_eval_ratios;
 
   if (mlmfIter == 0) {

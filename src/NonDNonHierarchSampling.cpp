@@ -674,9 +674,10 @@ nonhierarch_numerical_solution(const RealVector& cost,
     approx_ip1, max_iter=100000, max_eval=500000, hf_form_index, hf_lev_index;
   hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
-    avg_N_H = average(N_H_actual), // *** TO DO: review
-    conv_tol = 1.e-8; // tight convergence
+    conv_tol = 1.e-8, // tight convergence
+    avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
   bool ordered = approx_sequence.empty();
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:

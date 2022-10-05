@@ -426,22 +426,23 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
   if (mlmfIter == 0) {
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+    size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     // estVarIter0 only uses HF pilot since sum_L_shared / N_shared minus
     // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
     // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
     // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
     compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
     numHIter0 = N_H_actual;
+    Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
 
     if (budget_exhausted) { // there is only 1 feasible pt, no need for solve
       if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
-      numSamples = 0; avg_eval_ratios = 1.; avg_hf_target = average(N_H_actual); // *** TO DO
+      numSamples = 0; avg_eval_ratios = 1.; avg_hf_target = avg_N_H;
       avg_estvar = average(estVarIter0);    avg_estvar_ratio = 1.;
       return;
     }
     else { // compute initial estimate of r* from MFMC
       covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
-      Real avg_N_H = average(N_H_actual); // *** TO DO: verify
 
       // Run a competition among analytic approaches for best initial guess:
       // > Option 1 is analytic MFMC: differs from ACV due to recursive pairing
@@ -530,7 +531,7 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     approxSequence.clear();
 
     // Should not be required so long as previous solution is feasible:
-    //Real avg_N_H = average(N_H_actual); // *** TO DO: verify
+    //Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
     //Cout << "Before: avg_eval_ratios =:\n" << avg_eval_ratios
     // 	   << "avg_hf_target = " << avg_hf_target << std::endl;
     //scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target);
@@ -1096,7 +1097,7 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
       else // compute variances/covariances for higher-order moment estimators
 	compute_acv_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
 			    N_shared_q, F, qoi, beta); // all use shared counts
-        // *** TO DO: support shared_approx_increment() --> baselineL
+        // *** TO DO3: support shared_approx_increment() --> baselineL
 
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);
       H_raw_mq = sum_H_mq / N_shared_q; // first term to be augmented
