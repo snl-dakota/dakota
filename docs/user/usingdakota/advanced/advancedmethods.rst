@@ -54,7 +54,7 @@ identifier strings, and each of the corresponding method specifications
 has the responsibility for identifying the model specification (which
 may in turn identify variables, interface, and responses specifications)
 that each method will use (see the Dakota Reference
-Manual :cite:p:`RefMan` and the example discussed below).
+Manual :ref:`Keyword Reference <keyword-reference-area>` and the example discussed below).
 Currently, only the sequential hybrid approach is available. The
 ``embedded`` and ``collaborative`` approaches are not fully functional
 at this time.
@@ -157,7 +157,7 @@ However, there is no theoretical guarantee that the global optimum will
 be found. This approach combines the efficiency of local minimization
 methods with a user-specified global stratification (using a specified
 ``starting_points`` list, a number of specified ``random_starts``, or
-both; see the Dakota Reference Manual :cite:p:`RefMan` for
+both; see the Dakota Reference Manual :ref:`Keyword Reference <keyword-reference-area>` for
 additional specification details). Since solutions for different
 starting points are independent, parallel computing may be used to
 concurrently run the local minimizations.
@@ -214,7 +214,7 @@ Section `[opt:additional:multiobjective] <#opt:additional:multiobjective>`__.
 In the Pareto optimization method, multiple sets of multiobjective
 weightings are evaluated. The user can specify these weighting sets in
 the method keyword block using a list, a number of , or both (see the
-Dakota Reference Manual :cite:p:`RefMan` for additional
+Dakota Reference Manual :ref:`Keyword Reference <keyword-reference-area>` for additional
 specification details).
 
 Dakota performs one multiobjective optimization problem for each set of
