@@ -204,6 +204,23 @@ void NonDNonHierarchSampling::assign_active_key(bool multilev)
 }
 
 
+void NonDNonHierarchSampling::
+hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
+{
+  if (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE) {// resolution hierarchy
+    // traps for completeness (undefined model form should not occur)
+    hf_form_index = (secondaryIndex == SZ_MAX) ? 0 : secondaryIndex;
+    // extremes of range
+    hf_lev_index = NLevActual[hf_form_index].size() - 1;
+  }
+  else { // model form hierarchy: extremes of range
+    hf_form_index = NLevActual.size() - 1;
+    size_t raw_index = iteratedModel.truth_model().solution_level_cost_index();
+    hf_lev_index = (raw_index == SZ_MAX) ? 0 : raw_index;
+  }
+}
+
+
 void NonDNonHierarchSampling::shared_increment(size_t iter)
 {
   if (iter == 0) Cout << "\nNon-hierarchical pilot sample: ";
@@ -526,7 +543,7 @@ mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 	eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L * rho2_LH_a[qoi]);
   }
 
-  // Note: one_sided_delta(numH, hf_targets, 1) enforces monotonicity a bit
+  // Note: one_sided_delta(N_H, hf_targets, 1) enforces monotonicity a bit
   // further downstream.  It averages +/- differences so it's not one-sided
   // per QoI --> to recover the same behavior, we must use avg_eval_ratios.
   // For now, monotonic_r defaults false since it should be redundant.
@@ -609,7 +626,7 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
     eval_ratios.shapeUninitialized(numFunctions, numApprox);
 
   // Compute an ensemble of two-model CVMC solutions:
-  size_t qoi, approx;
+    size_t qoi, approx, hf_form_index, hf_lev_index;
   Real cost_ratio, rho_sq, cost_H = cost[numApprox];
   for (approx=0; approx<numApprox; ++approx) {
     cost_ratio = cost_H / cost[approx];
@@ -617,9 +634,13 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
     Real*   eval_ratios_a = eval_ratios[approx];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       rho_sq = rho2_LH_a[qoi];
-      eval_ratios_a[qoi] = (rho_sq < 1.) ? // prevent div by 0, sqrt(negative)
-	std::sqrt(cost_ratio * rho_sq / (1. - rho_sq)) :
-	(Real)maxFunctionEvals / average(numH);
+      if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
+	eval_ratios_a[qoi] = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      else {
+	hf_indices(hf_form_index, hf_lev_index);
+	eval_ratios_a[qoi] = (Real)maxFunctionEvals
+	                   / (Real)NLevAlloc[hf_form_index][hf_lev_index];
+      }
     }
   }
 }
@@ -650,9 +671,12 @@ nonhierarch_numerical_solution(const RealVector& cost,
   // > ACV-IS is unconstrained in model order --> retain N_i > N
 
   size_t i, num_cdv, num_lin_con = 0, num_nln_con = 0, approx, approx_im1,
-    approx_ip1, max_iter = 100000, max_eval = 500000;
+    approx_ip1, max_iter=100000, max_eval=500000, hf_form_index, hf_lev_index;
+  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
-    avg_N_H = average(numH), conv_tol = 1.e-8; // tight convergence
+    avg_N_H = average(N_H_actual), // *** TO DO: review
+    conv_tol = 1.e-8; // tight convergence
   bool ordered = approx_sequence.empty();
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
@@ -1010,7 +1034,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
   // All cases employ a projected MC estvar to match the projected ACV estvar
   // from N* (where N* may include a num_samples increment not yet performed)
   RealVector mc_estvar;
-  project_mc_estimator_variance(varH, numH, num_samples, mc_estvar);
+  project_mc_estimator_variance(varH, N_H_actual, num_samples, mc_estvar);
   Real avg_mc_estvar = average(mc_estvar);
 
   // Report ratio of averages rather that average of ratios (see notes in
@@ -1074,10 +1098,13 @@ Real NonDNonHierarchSampling::objective_function(const RealVector& r_and_N)
   // form estimator variances to pick up dependence on N
   RealVector est_var(numFunctions, false);
   switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+  case R_ONLY_LINEAR_CONSTRAINT: { // N is a vector constant for opt sub-problem
+    size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
+    SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     for (qoi=0; qoi<numFunctions; ++qoi)
-      est_var[qoi] = varH[qoi] / numH[qoi] * estvar_ratios[qoi];
+      est_var[qoi] = varH[qoi] / N_H_actual[qoi] * estvar_ratios[qoi];
     break;
+  }
   case N_VECTOR_LINEAR_CONSTRAINT:
   case R_AND_N_NONLINEAR_CONSTRAINT: {  // N is a scalar optimization variable
     Real N = r_and_N[numApprox];
@@ -1288,11 +1315,13 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   //   a result that is consistent with average(estVarIter0) when N* = pilot.
   // > The ACV ratio then differs from final ACV / final MC (due to recovering
   //   avgEstVar from the optimizer obj fn), but difference is usually small.
+  size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   RealVector final_mc_estvar;
-  compute_mc_estimator_variance(varH, numH, final_mc_estvar);
+  compute_mc_estimator_variance(varH, N_H_actual, final_mc_estvar);
   Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
   s << "  " << type << "   MC (" << std::setw(5)
-    << (size_t)std::floor(average(numH) + .5) << " HF samples): "
+    << (size_t)std::floor(average(N_H_actual) + .5) << " HF samples): "
     << std::setw(wpp7) << average(final_mc_estvar) // avgEstVar / avgEstVarRatio
     << "\n  " << type << method << " (sample profile):   "
     << std::setw(wpp7) << avgEstVar

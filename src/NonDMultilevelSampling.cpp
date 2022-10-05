@@ -255,7 +255,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     // the pilot sample and then seek to reduce it by a relative_factor <= 1.
     if (mlmfIter == 0) {
       // MLMC estimator variance for final estvar reporting is not aggregated
-      compute_ml_estimator_variance(var_Y, N_l, estVarIter0);//numHIter0=numH;
+      compute_ml_estimator_variance(var_Y, N_l, estVarIter0);
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
       if (!budget_constrained) // eps^2 / 2 = estvar0 * rel tol
 	eps_sq_div_2 = agg_estvar0 * convergenceTol;
@@ -297,7 +297,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   compute_ml_estimator_variance(var_Y, N_l, estVar);
   avgEstVar = average(estVar);
   // post final N_l back to NLevActual (needed for final eval summary)
-  inflate_final_samples(N_l, multilev, secondaryIndex, NLevActual);
+  inflate_sequence_samples(N_l, multilev, secondaryIndex, NLevActual);
 }
 */
 
@@ -367,7 +367,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   avgEstVar = average(estVar);
   // post final N_l back to NLevActual (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  inflate_final_samples(N_l, multilev, secondaryIndex, NLevActual);
+  inflate_sequence_samples(N_l, multilev, secondaryIndex, NLevActual);
 }
 
 //>>>>>>> devel
@@ -435,7 +435,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   compute_ml_estimator_variance(var_Y, N_online, estVar);
   avgEstVar = average(estVar);
   // post final N_online back to NLevActual (needed for final eval summary)
-  inflate_final_samples(N_online, multilev, secondaryIndex, NLevActual);
+  inflate_sequence_samples(N_online, multilev, secondaryIndex, NLevActual);
 }
 
 /*<<<<<<< HEAD
@@ -509,7 +509,7 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   avgEstVar = average(estVar);
   // post final N_l back to NLevActual (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  inflate_final_samples(N_l, multilev, secondaryIndex, NLevActual);
+  inflate_sequence_samples(N_l, multilev, secondaryIndex, NLevActual);
 }
 
 

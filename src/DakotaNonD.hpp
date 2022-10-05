@@ -151,10 +151,19 @@ protected:
   /// distribute pilot sample specification across model forms and levels
   void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
 			 Sizet2DArray& delta_N_l);
+
   /// update the relevant slice of N_l_3D from the final 2D multilevel
   /// or 2D multifidelity sample profile
-  void inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
-			     size_t secondary_index, Sizet3DArray& N_l_3D);
+  template <typename ArrayType>
+  void inflate_approx_samples(const ArrayType& N_l_2D, bool multilev,
+			      size_t secondary_index,
+			      std::vector<ArrayType>& N_l_3D);
+  /// update the relevant slice of N_l_3D from the final 2D multilevel
+  /// or 2D multifidelity sample profile
+  template <typename ArrayType>
+  void inflate_sequence_samples(const ArrayType& N_l_2D, bool multilev,
+				size_t secondary_index,
+				std::vector<ArrayType>& N_l_3D);
 
   /// resizes finalStatistics::functionGradients based on finalStatistics ASV
   void resize_final_statistics_gradients();
@@ -538,6 +547,82 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
   return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
 }
 */
+
+
+template <typename ArrayType> void NonD::
+inflate_approx_samples(const ArrayType& N_l_2D, bool multilev,
+		       size_t secondary_index, std::vector<ArrayType>& N_l_3D)
+{
+  // 2D array is num_steps x num_qoi
+  // 3D array is num_mf x num_lev x num_qoi which we slice as either:
+  // > MF case: 1:num_mf x active_lev x 1:num_qoi
+  // > ML case: active_mf x 1:num_lev x 1:num_qoi
+
+  size_t i, num_approx = N_l_3D.size() - 1;
+  if (multilev) { // ML case
+    // see NonD::configure_sequence(): secondary_index should be num_mf - 1
+    if (secondary_index == SZ_MAX || secondary_index >= num_approx) {
+      Cerr << "Error: invalid secondary index in NonD::"
+	   << "inflate_approx_samples()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    ArrayType& N_l_3D_s = N_l_3D[secondary_index];
+    for (i=0; i<num_approx; ++i)
+      N_l_3D_s[i] = N_l_2D[i];
+  }
+  else { // MF case
+    if (secondary_index == SZ_MAX) {
+      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelLIter m_iter = sub_models.begin();
+      size_t m_soln_lev, active_lev;
+      for (i=0; i<num_approx && m_iter != sub_models.end(); ++i, ++m_iter) {
+	m_soln_lev = m_iter->solution_level_cost_index();
+	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
+	N_l_3D[i][active_lev] = N_l_2D[i];  // assign vector of qoi samples
+      }
+    }
+    else // valid secondary_index
+      for (i=0; i<num_approx; ++i)
+	N_l_3D[i][secondary_index] = N_l_2D[i]; // assign vector of qoi samples
+  }
+}
+
+
+template <typename ArrayType> void NonD::
+inflate_sequence_samples(const ArrayType& N_l_2D, bool multilev,
+			 size_t secondary_index, std::vector<ArrayType>& N_l_3D)
+{
+  // 2D array is num_steps x num_qoi
+  // 3D array is num_mf x num_lev x num_qoi which we slice as either:
+  // > MF case: 1:num_mf x active_lev x 1:num_qoi
+  // > ML case: active_mf x 1:num_lev x 1:num_qoi
+
+  size_t i, num_mf = N_l_3D.size();  
+  if (multilev) { // ML case
+    // see NonD::configure_sequence(): secondary_index should be num_mf - 1
+    if (secondary_index == SZ_MAX || secondary_index >= num_mf) {
+      Cerr << "Error: invalid secondary index in NonD::"
+	   << "inflate_sequence_samples()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    N_l_3D[secondary_index] = N_l_2D;
+  }
+  else { // MF case
+    if (secondary_index == SZ_MAX) {
+      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelLIter m_iter = sub_models.begin();
+      size_t m_soln_lev, active_lev;
+      for (i=0; i<num_mf && m_iter != sub_models.end(); ++i, ++m_iter) {
+	m_soln_lev = m_iter->solution_level_cost_index();
+	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
+	N_l_3D[i][active_lev] = N_l_2D[i];  // assign vector of qoi samples
+      }
+    }
+    else // valid secondary_index
+      for (i=0; i<num_mf; ++i)
+	N_l_3D[i][secondary_index] = N_l_2D[i]; // assign vector of qoi samples
+  }
+}
 
 
 template <typename ArrayType> void NonD::

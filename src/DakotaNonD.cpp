@@ -578,36 +578,6 @@ load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
 }
 
 
-void NonD::
-inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
-		      size_t secondary_index, Sizet3DArray& N_l_3D)
-{
-  // 2D array is num_steps x num_qoi
-  // 3D array is num_mf x num_lev x num_qoi which we slice as either:
-  // > MF case: 1:num_mf x active_lev x 1:num_qoi
-  // > ML case: active_mf x 1:num_lev x 1:num_qoi
-
-  size_t i, num_mf = N_l_3D.size();  
-  if (multilev) // ML case
-    N_l_3D[secondary_index] = N_l_2D;
-  else { // MF case
-    if (secondary_index == SZ_MAX) {
-      ModelList& sub_models = iteratedModel.subordinate_models(false);
-      ModelLIter m_iter = sub_models.begin();
-      size_t m_soln_lev, active_lev;
-      for (i=0; i<num_mf && m_iter != sub_models.end(); ++i, ++m_iter) {
-	m_soln_lev = m_iter->solution_level_cost_index();
-	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
-	N_l_3D[i][active_lev] = N_l_2D[i];  // assign vector of qoi samples
-      }
-    }
-    else // valid secondary_index
-      for (i=0; i<num_mf; ++i)
-	N_l_3D[i][secondary_index] = N_l_2D[i]; // assign vector of qoi samples
-  }
-}
-
-
 void NonD::resize_final_statistics_gradients()
 {
   if (finalStatistics.is_null()) // not all ctor chains track final stats

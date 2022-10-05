@@ -88,7 +88,7 @@ protected:
   int seed_sequence(size_t index);
 
   /// increment samples array with a shared scalar
-  void increment_samples(SizetArray& N_l, size_t num_samples);
+  void increment_samples(SizetArray& N_l, size_t incr);
 
   /// compute the variance of the mean estimator (Monte Carlo sample average)
   void compute_mc_estimator_variance(const RealVector& var_l,
@@ -338,13 +338,12 @@ estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
 
 
 inline void NonDEnsembleSampling::
-increment_samples(SizetArray& N_l, size_t new_samples)
+increment_samples(SizetArray& N_l, size_t incr)
 {
-  if (new_samples) {
-    size_t q, nq = N_l.size();
-    for (q=0; q<nq; ++q)
-      N_l[q] += new_samples;
-  }
+  if (!incr) return;
+  size_t q, nq = N_l.size();
+  for (q=0; q<nq; ++q)
+    N_l[q] += incr;
 }
 
 

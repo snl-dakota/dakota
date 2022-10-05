@@ -107,6 +107,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
   N_actual_shared.assign(numFunctions, 0);//N_actual_lf.assign(numFunctions, 0);
   size_t&     N_alloc_shared  = NLevAlloc[hf_form_index][hf_lev_index];
   size_t&     N_alloc_lf      = NLevAlloc[lf_form_index][lf_lev_index];
+  N_alloc_shared = 0;
 
   IntRealVectorMap sum_L_shared, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH);
@@ -116,7 +117,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 
   SizetArray delta_N_l;
   load_pilot_sample(pilotSamples, 2, delta_N_l); // 2 models only
-  N_alloc_shared = numSamples = std::min(delta_N_l[0], delta_N_l[1]);
+  numSamples = std::min(delta_N_l[0], delta_N_l[1]);
   Real cost_ratio = 0.;
 
   while (numSamples && mlmfIter <= maxIterations) {
@@ -127,6 +128,8 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     shared_increment(active_key, mlmfIter, 0);
     accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH,
 		       N_actual_shared);
+    N_alloc_shared += (backfillFailures && mlmfIter) ?
+      one_sided_delta(N_alloc_shared, average(hf_targets)) : numSamples;
     if (mlmfIter == 0) {
       if (onlineCost) recover_paired_online_cost(sequenceCost, 1);
       cost_ratio  = (onlineCost) ? sequenceCost[1] : sequenceCost[numSteps - 1];
@@ -177,8 +180,6 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
       one_sided_delta(N_alloc_shared, average(hf_targets));
     //numSamples = std::min(num_samp_budget, num_samp_ctol);
     // exclude failure backfill from alloc increment, if needed
-    N_alloc_shared += (backfillFailures) ?
-      one_sided_delta(N_alloc_shared, average(hf_targets)) : numSamples;
 
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
     ++mlmfIter;
@@ -317,7 +318,6 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
   SizetArray& N_actual_shared = NLevActual[hf_form_index][hf_lev_index];
   SizetArray& N_actual_lf     = NLevActual[lf_form_index][lf_lev_index];
   N_actual_shared.assign(numFunctions, 0);//N_actual_lf.assign(numFunctions, 0);
-  // Not tracked separately for pilot projections:
   size_t&     N_alloc_shared  = NLevAlloc[hf_form_index][hf_lev_index];
   size_t&     N_alloc_lf      = NLevAlloc[lf_form_index][lf_lev_index];
 

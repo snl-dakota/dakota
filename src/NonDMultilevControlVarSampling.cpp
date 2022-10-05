@@ -263,7 +263,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
     if (mlmfIter == 0) {
       // MLMC estimator variance for final estvar reporting is not aggregated
       // (reduction from control variate is applied subsequently)
-      compute_ml_estimator_variance(var_YH, N_hf, estVarIter0);//numHIter0=numH;
+      compute_ml_estimator_variance(var_YH, N_hf, estVarIter0);
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
       if (!budget_constrained) {
 	eps_sq_div_2 = agg_estvar_iter0 * convergenceTol;
@@ -403,6 +403,10 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	if (online_hf_cost && mlmfIter == 0)
 	  accumulate_paired_online_cost(hf_accum_cost, hf_num_cost, lev);
 
+	N_alloc_l = (backfillFailures && mlmfIter) ?
+	  one_sided_delta(N_alloc_hf[lev], hf_targets[lev]) : numSamples;
+	N_alloc_hf[lev] += N_alloc_l;
+
 	// control variate betwen LF and HF for this discretization level:
 	// if unequal number of levels, LF levels are assigned as CV to the
 	// leading set of HF levels, since these tend to have larger variance.
@@ -424,6 +428,8 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	  // accumulate online costs for LF model
 	  if (online_lf_cost && mlmfIter == 0)
 	    accumulate_paired_online_cost(lf_accum_cost, lf_num_cost, lev);
+
+	  N_alloc_lf[lev] += N_alloc_l;
 	}
 	else // no LF for this level; accumulate only multilevel discrepancies
 	  accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_actual_hf[lev]);
@@ -506,7 +512,6 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       // MLMC estimator variance for final estvar reporting is not aggregated
       // (reduction from control variate is applied subsequently)
       compute_ml_estimator_variance(var_YH, N_actual_hf, estVarIter0);
-      //numHIter0 = N_actual_hf;
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
       if (!budget_constrained) {// eps^2 / 2 = est var * conv tol
 	eps_sq_div_2 = agg_estvar_iter0 * convergenceTol;
@@ -525,19 +530,10 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
       hf_tgt_l = hf_targets[lev] = (lev < num_cv_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
-      if (backfillFailures) {
-	delta_N_hf[lev]  = one_sided_delta(N_actual_hf[lev], hf_tgt_l, 1);
-	// increment in allocation does not backfill:
-	N_alloc_l        = one_sided_delta(N_alloc_hf[lev],  hf_tgt_l);
-	N_alloc_hf[lev] += N_alloc_l;
-	if (lev < num_cv_lev) N_alloc_lf[lev] += N_alloc_l;
-      }
-      else { // neither alloc nor actual backfill
-	N_alloc_l = delta_N_hf[lev]
-	  = one_sided_delta(N_alloc_hf[lev], hf_tgt_l);
-	N_alloc_hf[lev] += N_alloc_l;
-	if (lev < num_cv_lev) N_alloc_lf[lev] += N_alloc_l;
-      }
+      delta_N_hf[lev] = (backfillFailures) ?
+	one_sided_delta(N_actual_hf[lev], hf_tgt_l, 1) :
+	one_sided_delta(N_alloc_hf[lev],  hf_tgt_l);
+      // Note: N_alloc_{lf,hf} accumulated upstream due to maxIterations exit
     }
 
     ++mlmfIter;
@@ -911,10 +907,8 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
 
   // MLMC estimator variance for final estvar reporting is not aggregated
   // (reduction from control variate is applied subsequently)
-  if (pilot_estvar) {
+  if (pilot_estvar)
     compute_ml_estimator_variance(var_YH, N_actual, estVarIter0);
-    //numHIter0 = N_actual;
-  }
   // compute eps^2 / 2 = aggregated estvar0 * rel tol
   if (!budget_constrained) {// eps^2 / 2 = est var * conv tol
     eps_sq_div_2 = agg_estvar_iter0 * convergenceTol;

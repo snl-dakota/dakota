@@ -80,15 +80,16 @@ void NonDMultifidelitySampling::core_run()
 
 
 /** This is the standard MFMC version that integrates the pilot alongside
-    the sample adaptation and iterates to determine numH. */
+    the sample adaptation and iterates to determine N_H. */
 void NonDMultifidelitySampling::multifidelity_mc()
 {
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
   RealVector sum_HH, hf_targets;  RealMatrix var_L, eval_ratios;
-  //Sizet2DArray N_L_baseline, N_LH;
   initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
-  //initialize_counts(N_L_baseline, numH, N_LH);
-  numH.assign(numFunctions, 0);
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
   while (numSamples && mlmfIter <= maxIterations) {
 
@@ -96,7 +97,10 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // Evaluate shared increment and increment accumulators
     // ----------------------------------------------------
     shared_increment(mlmfIter); // spans ALL models, blocking
-    accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, numH);
+    accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
+		       N_H_actual);
+    N_H_alloc += (backfillFailures && mlmfIter) ?
+      one_sided_delta(N_H_alloc, average(hf_targets)) : numSamples;
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the correlation updates.
@@ -109,13 +113,13 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // First, compute the LF/HF evaluation ratio using shared samples,
     // averaged over QoI.  This includes updating varH and rho2LH.
     compute_LH_correlation(sum_L_baseline[1], sum_H[1], sum_LL[1], sum_LH[1],
-			   sum_HH, numH, var_L, varH, rho2LH);
+			   sum_HH, N_H_actual, var_L, varH, rho2LH);
     // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
     // - sum_L_refined / N_refined) cancel out prior to sample refinement.
     // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
     if (mlmfIter == 0) {
-      compute_mc_estimator_variance(varH, numH, estVarIter0);
-      numHIter0 = numH;
+      compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
+      numHIter0 = N_H_actual;
     }
     // compute r* from rho2 and cost, either analytically or numerically
     mfmc_eval_ratios(var_L, rho2LH, sequenceCost, approxSequence, eval_ratios,
@@ -127,8 +131,8 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // Compute the ratio of MC and MFMC estimator variance, which incorporates
     // anticipated variance reduction from upcoming application of eval_ratios.
     // > Note: this could be redundant for tol-based targets with m1* > pilot
-    mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
-			    eval_ratios);
+    mfmc_estimator_variance(rho2LH, varH, N_H_actual, hf_targets,
+			    approxSequence, eval_ratios);
 
     ++mlmfIter;
   }
@@ -136,14 +140,11 @@ void NonDMultifidelitySampling::multifidelity_mc()
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS)
-    // numH is converged --> finalize with LF increments and post-processing
-    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH,
-		      approxSequence, eval_ratios, hf_targets);
-  else { // for consistency with pilot projection
-    Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
-    update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
-    finalize_counts(N_L_projected);
-  }
+    // N_H_actual is converged --> finalize with LF increments + post-processing
+    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_H_actual,
+		      N_H_alloc, approxSequence, eval_ratios, hf_targets);
+  else // for consistency with pilot projection
+    projected_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc);
 }
 
 
@@ -179,37 +180,39 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
   RealVector sum_HH;     //Sizet2DArray N_L_baseline, N_LH;
   initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
-  numH.assign(numFunctions, 0); //initialize_counts(N_L_baseline, numH, N_LH);
-  // at least 2 samples reqd for variance (and resetting allSamples after pilot)
-  numSamples = std::max(one_sided_delta(numH, hf_targets, 1),(size_t)2);//numH=0
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  N_H_actual.assign(numFunctions, 0);
 
-  // As a first cut, don't reuse any of offline pilot for numH
+  // at least 2 samples reqd for variance (and resetting allSamples after pilot)
+  numSamples = std::max(one_sided_delta(N_H_actual, hf_targets, 1),(size_t)2);//N_H_actual=0
+
+  // As a first cut, don't reuse any of offline pilot for N_H
   shared_increment(mlmfIter); // spans ALL models, blocking
-  accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, numH);
+  accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
   increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1);
 
   // Don't replace pilot-based varH (retain "oracle" rho2LH, varH) since this
   // introduces noise in the final MC/MFMC estimator variances.  It does
-  // however result in mixing offline varH with online numH for estVarIter0.
-  //compute_variance(sum_H[1], sum_HH, numH, varH); // online varH
+  // however result in mixing offline varH with online N_H for estVarIter0.
+  //compute_variance(sum_H[1], sum_HH, N_H_actual, varH); // online varH
   // With changes to print_results(), estVarIter0 no longer used for this mode.
-  //compute_mc_estimator_variance(varH, numH, estVarIter0);  numHIter0 = numH;
-  // Exclude pilot from R^2 benefit, but include any difference between numH
+  //compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
+  //numHIter0 = N_H_actual;
+  // Exclude pilot from R^2 benefit, but include any difference between N_H
   // and hf_targets:
-  mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
+  mfmc_estimator_variance(rho2LH, varH, N_H_actual, hf_targets, approxSequence,
 			  eval_ratios);
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS)
-    // numH is converged --> finalize with LF increments and post-processing
-    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, numH,
-		      approxSequence, eval_ratios, hf_targets);
-  else { // for consistency with pilot projection
-    Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
-    update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
-    finalize_counts(N_L_projected);
-  }
+    // N_H is converged --> finalize with LF increments and post-processing
+    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_H_actual,
+		      N_H_alloc, approxSequence, eval_ratios, hf_targets);
+  else // for consistency with pilot projection
+    projected_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc);
 }
 
 
@@ -220,14 +223,16 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   RealVector sum_H(numFunctions), sum_HH(numFunctions), hf_targets;
   RealMatrix var_L, eval_ratios, sum_L_baseline(numFunctions, numApprox),
     sum_LL(numFunctions, numApprox), sum_LH(numFunctions, numApprox);
-  //Sizet2DArray N_L_baseline, N_LH;
-  numH.assign(numFunctions, 0); //initialize_counts(N_L_baseline, numH, N_LH);
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  N_H_actual.assign(numFunctions, 0);
 
   // ----------------------------------------------------
   // Evaluate shared increment and increment accumulators
   // ----------------------------------------------------
   shared_increment(mlmfIter); // spans ALL models, blocking
-  accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, numH);
+  accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
   if (onlineCost) recover_online_cost(sequenceCost);
   increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1);
 
@@ -236,13 +241,14 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // -------------------------------------------
   // First, compute the LF/HF evaluation ratio using shared samples,
   // averaged over QoI.  This includes updating varH and rho2LH.
-  compute_LH_correlation(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, numH,
-			 var_L, varH, rho2LH);
+  compute_LH_correlation(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
+			 N_H_actual, var_L, varH, rho2LH);
   // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
   // - sum_L_refined / N_refined) cancel out prior to sample refinement.
   // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
   // > Note: numHIter0 may differ from pilotSamples[numApprox] for sim faults
-  compute_mc_estimator_variance(varH, numH, estVarIter0);  numHIter0 = numH;
+  compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
+  numHIter0 = N_H_actual;
   // compute r* from rho2 and cost
   mfmc_eval_ratios(var_L, rho2LH, sequenceCost, approxSequence, eval_ratios,
 		   hf_targets);
@@ -251,19 +257,13 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // ----------------------
   // Compute EstVar ratios:
   // ----------------------
-  // overwrite actual incurred numH with projected numH
-  //SizetArray N_H_projected = numH; // more fine-grained bookkeeping if needed
-  Sizet2DArray N_L_projected;  inflate(numH, N_L_projected);
-  update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
+  // No LF increments or final moments for pilot projection
+  projected_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc);
   // Compute the ratio of MC and MFMC mean squared errors, which incorporates
   // anticipated variance reduction from upcoming application of eval_ratios.
   // > Note: this could be redundant for tol-based targets with m1* > pilot
-  mfmc_estimator_variance(rho2LH, varH, numH, hf_targets, approxSequence,
+  mfmc_estimator_variance(rho2LH, varH, N_H_actual, hf_targets, approxSequence,
 			  eval_ratios);
-
-  // No LF increments or final moments for pilot projection
-
-  finalize_counts(N_L_projected);
 }
 
 
@@ -357,35 +357,60 @@ update_hf_targets(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
 void NonDMultifidelitySampling::
 update_projected_samples(const RealVector& hf_targets,
 			 const RealMatrix& eval_ratios,
-			 SizetArray& N_H_projected, Sizet2DArray& N_L_projected)
+			 SizetArray&   N_H_actual, size_t&     N_H_alloc,
+			 Sizet2DArray& N_L_actual, SizetArray& N_L_alloc)
 {
-  size_t incr = one_sided_delta(N_H_projected, hf_targets, 1);
-  increment_samples(N_H_projected, incr);
-  increment_equivalent_cost(incr, sequenceCost, numApprox);
+  size_t alloc_incr = one_sided_delta(N_H_alloc, average(hf_targets)),
+    actual_incr = (backfillFailures) ?
+      one_sided_delta(N_H_actual, hf_targets, 1) : alloc_incr;
+  increment_samples(N_H_actual, actual_incr);
+  N_H_alloc += alloc_incr;
+  increment_equivalent_cost(actual_incr, sequenceCost, numApprox);
 
   size_t qoi, approx;  RealVector lf_targets(numFunctions, false);
   for (approx=0; approx<numApprox; ++approx) {
     for (qoi=0; qoi<numFunctions; ++qoi)
       lf_targets[qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
-    SizetArray& N_L_a = N_L_projected[approx];
-    incr = one_sided_delta(N_L_a, lf_targets, 1);
-    increment_samples(N_L_a, incr);
-    increment_equivalent_cost(incr, sequenceCost, approx);
+    SizetArray& N_L_actual_a = N_L_actual[approx];
+    size_t&     N_L_alloc_a  = N_L_alloc[approx];
+    alloc_incr  = one_sided_delta(N_L_alloc_a, average(lf_targets));
+    actual_incr = (backfillFailures) ?
+      one_sided_delta(N_L_actual_a, lf_targets, 1) : alloc_incr;
+    increment_samples(N_L_actual_a, actual_incr);
+    N_L_alloc_a += alloc_incr;
+    increment_equivalent_cost(actual_incr, sequenceCost, approx);
   }
+}
+
+
+void NonDMultifidelitySampling::
+projected_increments(const RealVector& hf_targets,
+		     const RealMatrix& eval_ratios,
+		     SizetArray& N_H_actual, size_t& N_H_alloc)
+{  
+  // overwrite actual incurred N_H with projected N_H
+  //SizetArray N_H_actual_proj = N_H_actual;//fine-grained bookkeeping if needed
+
+  Sizet2DArray N_L_actual_proj;  inflate(N_H_actual, N_L_actual_proj);
+  SizetArray   N_L_alloc_proj;   inflate(N_H_alloc,  N_L_alloc_proj);
+  update_projected_samples(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
+			   N_L_actual_proj, N_L_alloc_proj);
+  finalize_counts(N_L_actual_proj, N_L_alloc_proj);
 }
 
 
 void NonDMultifidelitySampling::
 approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		  IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
-		  const SizetArray& N_H, const SizetArray& approx_sequence,
+		  const SizetArray& N_H_actual, size_t N_H_alloc,
+		  const SizetArray& approx_sequence,
 		  const RealMatrix& eval_ratios, const RealVector& hf_targets)
 {
   // ----------------------------------------------------------------
-  // Compute N_L increments based on eval ratio applied to final numH
+  // Compute N_L increments based on eval ratio applied to final N_H
   // ----------------------------------------------------------------
   // Note: these results do not affect the HF iteration loop and can be
-  // performed after numH has converged, which simplifies maxFnEvals / convTol
+  // performed after N_H has converged, which simplifies maxFnEvals / convTol
   // logic (no need to further interrogate these throttles below)
 
   // maxIterations == 0 was inconsistent for targeting the pilot only case
@@ -408,15 +433,17 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   // [0,numApprox-1-i] using the delta relative to the previous step
   IntRealMatrixMap sum_L_shared  = sum_L_baseline,
                    sum_L_refined = sum_L_baseline; // copies
-  Sizet2DArray N_L_shared;  inflate(N_H, N_L_shared);
-  Sizet2DArray N_L_refined = N_L_shared;
+  Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
+  Sizet2DArray N_L_actual_refined = N_L_actual_shared;
+  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc, N_L_alloc_refined);
   for (size_t end=numApprox; end>0; --end) {
     // *** TO DO NON_BLOCKING: 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
-    if (mfmc_approx_increment(eval_ratios, N_L_refined, hf_targets, mlmfIter,
+    if (mfmc_approx_increment(eval_ratios, N_L_actual_refined,
+			      N_L_alloc_refined, hf_targets, mlmfIter,
 			      approx_sequence, 0, end)) {
       // MFMC samples on [0, approx) --> sum_L_{shared,refined}
-      accumulate_mf_sums(sum_L_shared, sum_L_refined, N_L_shared, N_L_refined,
-			 approx_sequence, 0, end);
+      accumulate_mf_sums(sum_L_shared, sum_L_refined, N_L_actual_shared,
+			 N_L_actual_refined, approx_sequence, 0, end);
       increment_equivalent_cost(numSamples,sequenceCost,approx_sequence,0,end);
     }
   }
@@ -424,17 +451,19 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
   mf_raw_moments(sum_L_baseline, sum_L_shared, sum_L_refined, sum_H, sum_LL,
-		 sum_LH, N_L_shared, N_L_refined, numH, H_raw_mom);
+		 sum_LH, N_L_actual_shared, N_L_actual_refined, N_H_actual,
+		 H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
   // post final sample counts into format for final results reporting
-  finalize_counts(N_L_refined);
+  finalize_counts(N_L_actual_refined, N_L_alloc_refined);
 }
 
 
 bool NonDMultifidelitySampling::
 mfmc_approx_increment(const RealMatrix& eval_ratios,
-		      const Sizet2DArray& N_L_refined,
+		      const Sizet2DArray& N_L_actual_refined,
+		      SizetArray& N_L_alloc_refined,
 		      const RealVector& hf_targets, size_t iter,
 		      const SizetArray& approx_sequence,
 		      size_t start, size_t end)
@@ -457,7 +486,7 @@ mfmc_approx_increment(const RealMatrix& eval_ratios,
   //   consolidation) requires vector estimation here to hit budget target.
   //   These LF targets subsequently get averaged by one_sided_delta().
   // > would be interesting to compare averaging from the start vs. averaging
-  //   at the very end. *** TO DO ***
+  //   at the very end.
   //   Probably will be similar, in which case we will prefer the latter since
   //   it leaves the door open for per-QoI optimized sample profiles.
   // > Both MFMC and ACV defer rounding until the end (numSamples estimation).
@@ -470,12 +499,30 @@ mfmc_approx_increment(const RealMatrix& eval_ratios,
   // These approaches overshoot when combined with vector update_hf_targets():
   //   lf_targets[qoi] = eval_ratios(qoi, approx) * avg_hf_target;
   //   lf_target = avg_eval_ratios[approx] * avg_hf_target;
-  const SizetArray& lf_curr = N_L_refined[approx];
-  numSamples = one_sided_delta(lf_curr, lf_targets, 1); // average
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Approx samples computed from average delta between targets:\n"
-	 << lf_targets << " and current counts:\n" << lf_curr << std::endl;
-
+  if (backfillFailures) {
+    const SizetArray& lf_curr = N_L_actual_refined[approx];
+    numSamples = one_sided_delta(lf_curr, lf_targets, 1); // average
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Approx samples (" << numSamples << ") computed from average "
+	   << "delta between targets:\n" << lf_targets
+	   << "and current counts:\n" << lf_curr << std::endl;
+    size_t N_alloc = one_sided_delta(N_L_alloc_refined[approx],
+				     average(lf_targets));
+    increment_sample_range(N_L_alloc_refined, N_alloc, approx_sequence,
+			   start, end);
+  }
+  else {
+    size_t lf_curr = N_L_alloc_refined[approx];
+    numSamples = one_sided_delta(lf_curr, average(lf_targets));
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Approx samples (" << numSamples << ") computed from average "
+	   << "delta between targets:\n" << lf_targets
+	   << "and current allocation = " << lf_curr << std::endl;
+    increment_sample_range(N_L_alloc_refined, numSamples, approx_sequence,
+			   start, end);
+  }
+  // the approximation sequence can be managed within one set of jobs using
+  // a composite ASV with NonHierarchSurrModel
   return approx_increment(iter, approx_sequence, start, end);
 }
 
@@ -1029,9 +1076,11 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     abort_handler(METHOD_ERROR);
   }
 
-  size_t qoi, approx, num_am1 = numApprox - 1;
+  size_t qoi, approx, num_am1 = numApprox - 1, hf_form_index, hf_lev_index;
+  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   Real cost_L, cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
-    avg_N_H = average(numH), r_i;
+    avg_N_H = average(N_H_actual), r_i; // *** TO DO: review
   RealVector avg_eval_ratios;
 
   if (mlmfIter == 0) {
@@ -1143,13 +1192,13 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
       }
       Cout << std::endl;
     }
-    // numSamples is relative to numH, but the approx_increments() below are
+    // numSamples is relative to N_H, but the approx_increments() below are
     // computed relative to hf_targets (independent of sunk cost for pilot)
-    numSamples = one_sided_delta(numH, hf_targets, 1);
+    numSamples = one_sided_delta(N_H, hf_targets, 1);
     //numSamples = std::min(num_samp_budget, num_samp_ctol); // enforce both
     break;
   }
-  // For numerical cases, mfmc_numerical_solution() must incorporate varH/numH
+  // For numerical cases, mfmc_numerical_solution() must incorporate varH/N_H
   // in the objective and returns avg estvar as the final objective.  So estVar
   // is more direct here than estVarRatios, as for NonDACVSampling.
   //default:
@@ -1224,14 +1273,16 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
 	<< (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
 	<< std::setw(wpp7) << average(estVarIter0) << '\n';
 
+    size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
+    SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     RealVector mc_est_var(numFunctions, false);
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      mc_est_var[qoi] = varH[qoi] / numH[qoi];
+      mc_est_var[qoi] = varH[qoi] / N_H_actual[qoi];
     Real avg_mc_est_var        = average(mc_est_var),
          avg_budget_mc_est_var = average(varH) / equivHFEvals;
     String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
     s << "  " << type << "   MC (" << std::setw(5)
-      << (size_t)std::floor(average(numH) + .5) << " HF samples): "
+      << (size_t)std::floor(average(N_H_actual) + .5) << " HF samples): "
       << std::setw(wpp7) << avg_mc_est_var << "\n  " << type
       << " MFMC (sample profile):   " << std::setw(wpp7) << avgEstVar
       << "\n  " << type << " MFMC ratio (1 - R^2):    "
@@ -1245,7 +1296,7 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
       << avgEstVar / avg_budget_mc_est_var << '\n';
     break;
   }
-  // For numerical cases, mfmc_numerical_solution() must incorporate varH/numH
+  // For numerical cases, mfmc_numerical_solution() must incorporate varH / N_H
   // in the objective and returns avg estvar as the final objective.  So estVar
   // is more direct here than estVarRatios, as for NonDACVSampling.
   default: // numerical solution

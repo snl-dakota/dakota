@@ -99,7 +99,7 @@ protected:
 		       RealVector& sum_HH);
   void initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			 Sizet2DArray& num_LH);
-  void finalize_counts(Sizet2DArray& N_L);
+  void finalize_counts(Sizet2DArray& N_L_actual, SizetArray& N_L_alloc);
 
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t index);
@@ -108,6 +108,13 @@ protected:
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 const SizetArray& approx_sequence,
 				 size_t start, size_t end);
+
+  void increment_sample_range(SizetArray& N_L, size_t incr,
+			      const SizetArray& approx_sequence,
+			      size_t start, size_t end);
+
+  /// define model form and resolution level indices
+  void hf_indices(size_t& hf_form_index, size_t& hf_lev_index);
 
   void compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q);
   void compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
@@ -159,6 +166,8 @@ protected:
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);
 
+  /// promote scalar to 1D array
+  void inflate(size_t N_0D, SizetArray& N_1D);
   /// promote 1D array to 2D array
   void inflate(const SizetArray& N_1D, Sizet2DArray& N_2D);
   /// promote vector of averaged values to full matrix
@@ -205,8 +214,6 @@ protected:
   /// approximations
   SizetArray approxSequence;
 
-  /// number of evaluations of HF truth model (length numFunctions)
-  SizetArray numH;
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
   RealMatrix covLH;
@@ -219,7 +226,7 @@ protected:
   /// number of successful pilot evaluations of HF truth model (exclude faults)
   SizetArray numHIter0;
   /// ratio of final estimator variance (optimizer result averaged across QoI)
-  /// and final MC estimator variance  (final varH / numH averaged across QoI)
+  /// and final MC estimator variance  (final varH / N_H averaged across QoI)
   Real avgEstVarRatio;
 
 private:
@@ -338,13 +345,20 @@ initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 }
 
 
-inline void NonDNonHierarchSampling::finalize_counts(Sizet2DArray& N_L)
+inline void NonDNonHierarchSampling::
+finalize_counts(Sizet2DArray& N_L_actual, SizetArray& N_L_alloc)
 {
-  // post final sample counts back to NLevActual (needed for final eval summary)
-  // by aggregated into 2D array and then inserting into 3D
-  N_L.push_back(numH);
+  // post final sample counts back to NLev{Actual,Alloc} (for final summaries)
+
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  inflate_final_samples(N_L, multilev, secondaryIndex, NLevActual);
+
+  // Aggregate N_H into 2D N_L array and then insert into 3D:
+  //N_L_actual.push_back(N_H);
+  //inflate_sequence_samples(N_L_actual, multilev, secondaryIndex, NLevActual);
+
+  // Update LF counts only as HF counts are directly updated by reference:
+  inflate_approx_samples(N_L_actual, multilev, secondaryIndex, NLevActual);
+  inflate_approx_samples(N_L_alloc,  multilev, secondaryIndex, NLevAlloc);
 }
 
 
@@ -387,6 +401,20 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
       approx = approx_sequence[i];
       equivHFEvals += (Real)new_samp * cost[approx] / cost_ref;
     }
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_sample_range(SizetArray& N_L, size_t incr,
+		       const SizetArray& approx_sequence,
+		       size_t start, size_t end)
+{
+  if (!incr) return;
+  bool ordered = approx_sequence.empty();  size_t i, approx;
+  for (i=start; i<end; ++i) {
+    approx = (ordered) ? i : approx_sequence[i];
+    N_L[approx] += incr;
   }
 }
 
@@ -770,6 +798,10 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
   //     << " num_L_shared = "  << num_L_shared
   //     << " num_L_refined = " << num_L_refined << std::endl; 
 }
+
+
+inline void NonDNonHierarchSampling::inflate(size_t N_0D, SizetArray& N_1D)
+{ N_1D.assign(numApprox, N_0D); }
 
 
 inline void NonDNonHierarchSampling::
