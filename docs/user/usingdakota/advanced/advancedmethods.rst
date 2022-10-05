@@ -15,9 +15,7 @@ capability allows the use of existing iterative algorithm and
 computational model software components as building blocks to accomplish
 more sophisticated studies, such as hybrid, multistart, Pareto, or
 surrogate-based minimization. Further multi-component capabilities are
-enabled by the model recursion capabilities described in
-Chapter `[models] <#models>`__ with specific examples in
-Chapter `[adv_models] <#adv_models>`__.
+enabled by the model recursion capabilities described in the page :ref:`Models <models:main>`  with specific examples in the page :ref:`Advanced Models <adv_models>` .
 
 ..
    TODO:
