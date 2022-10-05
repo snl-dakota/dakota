@@ -4,10 +4,9 @@
 Batched Evaluations
 """""""""""""""""""
 
-Beginning with release 6.11, Dakota provides for execution of
-evaluations in batches. Batch mode is intended to allow a user to assume
-greater control over where and when to run individual evaluations. It is
-activated using the ``batch`` keyword.
+Dakota provides for execution of evaluations in batches.
+Batch mode is intended to allow a user to assume greater control over where
+and when to run individual evaluations. It is activated using the :dakkw:`interface-batch` keyword.
 
 In batch mode, Dakota writes the parameters for multiple (a batch of)
 evaluations to a single batch parameters file and then invokes the
@@ -25,7 +24,7 @@ is convenient.
 By default, all currently available evaluations are added to a single
 batch. For example, in a sampling study that has a 1000 samples, by
 default all 1000 evaluations would be added to a single batch. The batch
-size may be limited using the ``size`` subkeyword. Setting
+size may be limited using the :dakkw:`interface-batch-size` subkeyword. Setting
 ``size = 100`` would result in 10 equal-size batches being run one after
 another in a 1000-sample study.
 
@@ -40,24 +39,24 @@ can select the aprepro format.
 The following example parameters file contains parameter sets for two
 evaluations.
 
-::
+.. code-block::
 
-                                             1 variables
-                        -4.912558193411678e-01 x1
-                                             1 functions
-                                             1 ASV_1:response_fn_1
-                                             1 derivative_variables
-                                             1 DVV_1:x1
-                                             0 analysis_components
-                                           1:1 eval_id
-                                             1 variables
-                        -2.400695372000337e-01 x1
-                                             1 functions
-                                             1 ASV_1:response_fn_1
-                                             1 derivative_variables
-                                             1 DVV_1:x1
-                                             0 analysis_components
-                                           1:2 eval_id    interface,
+                        1 variables
+   -4.912558193411678e-01 x1
+                        1 functions
+                        1 ASV_1:response_fn_1
+                        1 derivative_variables
+                        1 DVV_1:x1
+                        0 analysis_components
+                      1:1 eval_id
+                        1 variables
+   -2.400695372000337e-01 x1
+                        1 functions
+                        1 ASV_1:response_fn_1
+                        1 derivative_variables
+                        1 DVV_1:x1
+                        0 analysis_components
+                      1:2 eval_id    interface,
 
 Note that the ``eval_id`` contains two pieces of information separated
 by a colon. The second is the evaluation number, and the first is the
@@ -75,7 +74,7 @@ The following is an example batch results file corresponding to the
 batch parameters file above. The initial # on the first line is
 optional, and a final # (not shown here) is allowed.
 
-::
+.. code-block::
 
    #
                         4.945481774823024e+00 f
@@ -92,13 +91,11 @@ or directory). As explained in the previous section, the batch number is
 an incrementing integer beginning with 1 that uniquely identifies a
 batch.
 
-Batch mode restricts the use of several other Dakota features.
+Batch mode restricts the use of several other Dakota features:
 
--  No ``input_filter`` or ``output_filter`` is allowed.
-
--  Only one ``analysis_driver`` is permitted.
-
--  ``failure_capture`` modes are limited to abort and recover.
-
+-  No :dakkw:`interface-analysis_drivers-input_filter` or
+   :dakkw:`interface-analysis_drivers-output_filter` is allowed.
+-  Only one :dakkw:`interface-analysis_drivers` keyword is permitted.
+-  :dakkw:`interface-failure_capture` modes are limited to abort and recover.
 -  Asynchronous evaluation is disallowed (only one batch at a time may
    be executed).
