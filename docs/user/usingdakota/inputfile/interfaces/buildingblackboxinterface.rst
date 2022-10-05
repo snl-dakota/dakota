@@ -155,16 +155,16 @@ of:
 
 .. code-block::
 
-					   2 variables
+                       2 variables
    4.664752623441543e-01 x1
    2.256400864298234e-01 x2
-					   1 functions
-					   3 ASV_1:obj_fn
-					   2 derivative_variables
-					   1 DVV_1:x1
-					   2 DVV_2:x2
-					   0 analysis_components
-					  60 eval_id
+                       1 functions
+                       3 ASV_1:obj_fn
+                       2 derivative_variables
+                       1 DVV_1:x1
+                       2 DVV_2:x2
+                       0 analysis_components
+                      60 eval_id
 
 This file is called ``workdir/workdir.60/params.in`` if the line
 
