@@ -4,10 +4,9 @@
 Parameters and Results Files with dakota.interfacing
 """"""""""""""""""""""""""""""""""""""""""""""""""""
 
-The Python module ``dakota.interfacing`` first was made available with
-Dakota 6.6. (It was released with Dakota 6.5 as the module ``dipy``.) By
-providing a Python interface to read and write, respectively, Dakota
-parameters and results files, ``dakota.interfacing`` can simplify
+The Python module ``dakota.interfacing`` provides a Python interface
+to read and write Dakota parameters and results files, respectively.
+Because of this, ``dakota.interfacing`` can greatly simplify
 development of black-box interfaces. The benefit may be greatest when
 one or more phases of the interface (pre-processing, execution,
 post-processing) is written in Python.
@@ -23,8 +22,7 @@ The following sections describe the components of
 
 -  The ``BatchParameters`` and ``BatchResults`` classes. Containers for
    multiple ``Parameters`` and ``Results`` objects; used when
-   evaluations are performed by Dakota in batch mode
-   (Section `1.6 <#interfaces:batch>`__)
+   evaluations are performed by Dakota in :ref:`batch mode <interfaces:batch>`.
 
 -  The ``read_parameters_file`` function. Constructs ``Parameters``,
    ``Results``, ``BatchParameters``, and ``BatchResults`` objects from a
@@ -42,9 +40,7 @@ tuple containing ``(BatchParameters, BatchResults)``.
 
 Its signature is:
 
-[index:dakota.interfacing.read_parameters_file]\ ``dakota.interfacing.``\ **``read_parameters_file``**\ (*parameters_file=None*,
-*results_file=None*,
-*ignore_asv=False*, *batch=False*, *infer_types=True*, *types=None*)
+dakota.interfacing. **read_parameters_file** (*parameters_file=None*, *results_file=None*, *ignore_asv=False*, *batch=False*, *infer_types=True*, *types=None*)
 
 *parameters_file* and *results_file* are the names of the parameters
 file that is to be read and the results file that ultimately is to be
@@ -119,42 +115,22 @@ descriptors.
 
 ``Parameters`` objects have the attributes:
 
--  [index:dakota.interfacing.Parameters.an_comps]\ **``an_comps``** List
-   of the analysis components (strings).
-
--  [index:dakota.interfacing.Parameters.eval_id]\ **``eval_id``**
-   Evaluation id (string).
-
--  [index:dakota.interfacing.Parameters.eval_num]\ **``eval_num``**
-   Evaluation number (final token in eval_id) (int).
-
--  [index:dakota.interfacing.Parameters.aprepro_format]\ **``aprepro_format``**
-   Boolean indicating whether the parameters file was in aprepro (True)
+-  **an_comps** - List of the analysis components (strings).
+-  **eval_id** - Evaluation id (string).
+-  **eval_num** - Evaluation number (final token in eval_id) (int).
+-  **aprepro_format** - Boolean indicating whether the parameters file was in aprepro (True)
    or Dakota (False) format.
-
--  [index:dakota.interfacing.Parameters.descriptors]\ **``descriptors``**
-   List of the variable descriptors
-
--  [index:dakota.interfacing.Parameters.num_variables]\ **``num_variables``**
-   Number of variables
-
--  [index:dakota.interfacing.Parameters.num_an_comps]\ **``num_an_comps``**
-   Number of analysis components
-
--  [index:dakota.interfacing.Parameters.metadata]\ **``metadata``**
-   Names of requested metadata fields (strings)
-
--  [index:dakota.interfacing.Parameters.num_metadata]\ **``num_metadata``**
-   Number of requested metadata fields.
+-  **descriptors** - List of the variable descriptors
+-  **num_variables** - Number of variables
+-  **num_an_comps** - Number of analysis components
+-  **metadata** - Names of requested metadata fields (strings)
+-  **num_metadata** - Number of requested metadata fields.
 
 Parameters objects have the methods:
 
--  [index:dakota.interfacing.Parameters.items]\ **``items``**\ () Return
-   an iterator that yields tuples of the descriptor and value for each
+-  **items()** - Return an iterator that yields tuples of the descriptor and value for each
    parameter. (``Results`` objects also have ``items()``.)
-
--  [index:dakota.interfacing.Parameters.values]\ **``values``**\ ()
-   Return an iterator that yields the value for each parameter.
+-  **values()** - Return an iterator that yields the value for each parameter.
    (``Results`` objects have the corresponding method ``responses()``.)
 
 Results objects
