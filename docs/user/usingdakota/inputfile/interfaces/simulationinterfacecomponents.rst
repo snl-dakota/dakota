@@ -4,7 +4,7 @@ Simulation Interface Components
 -------------------------------
 
 :numref:`interfaces:bbinterfacecomp` is an extension of
-Figure `[intro:bbinterface] <#intro:bbinterface>`__ that adds details of
+:numref:`coupling:figure01` that adds details of
 the components that make up each of the simulation interfaces (system
 call, fork, and direct). These components include an ``input_filter``
 (“IFilter”), one or more ``analysis_drivers`` (“Analysis Code/Driver”),
@@ -66,9 +66,9 @@ the ``input_filter`` and ``output_filter`` specifications), then only
 one process will appear in the execution syntax of the simulation
 interface. An example of this syntax in the system call case is:
 
-::
+.. code-block::
 
-       driver params.in results.out
+   driver params.in results.out
 
 where ``driver`` is the user-specified analysis driver and ``params.in`` and ``results.out`` are the names of the
 parameters and results files, respectively, passed on the command line.
@@ -78,9 +78,9 @@ since the same file names will be used each time.
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-::
+.. code-block::
 
-       blocking fork: driver params.in results.out
+   blocking fork: driver params.in results.out
 
 for which only a single blocking fork is needed to perform the
 evaluation.
@@ -88,12 +88,12 @@ evaluation.
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-::
+.. code-block::
 
-       Direct function: invoking driver
+   Direct function: invoking driver
 
 where this analysis driver must be linked as a function within Dakota’s
-direct interface (see Section `[advint:direct] <#advint:direct>`__).
+direct interface (see the :ref:`"Developing a Direct Simulation Interface" section <advint:direct>`).
 Note that no parameter or response files are involved, since such values
 are passed directly through the function argument lists.
 
@@ -101,24 +101,27 @@ Both the system call and fork interfaces support asynchronous
 operations. The asynchronous system call execution syntax involves
 executing the system call in the background:
 
-::
+.. code-block::
 
-       driver params.in.1 results.out.1 &
+   driver params.in.1 results.out.1 &
 
 and the asynchronous fork execution syntax involves use of a nonblocking
 fork:
 
-::
+.. code-block::
 
-       nonblocking fork: driver params.in.1 results.out.1
+   nonblocking fork: driver params.in.1 results.out.1
 
-where file tagging (see Section `1.5.2 <#interfaces:file:tagging1>`__)
+where :ref:`file tagging <interfaces:file:tagging1>`)
 has been user-specified in both cases to prevent conflicts between
 concurrent analysis drivers. In these cases, the user must retrieve the
 command line arguments since the file names change on each evaluation.
-Execution of the direct interface must currently be performed
-synchronously since multithreading is not yet supported (see
-Section `[parallel:SLP:local:direct] <#parallel:SLP:local:direct>`__).
+
+.. note::
+
+   Execution of the direct interface must currently be performed
+   synchronously since multithreading is not yet supported. See
+   the :ref:`section on direct function synchronization <parallel:SLP:local:direct>` for more information.
 
 .. _`interfaces:components:single2`:
 
@@ -128,10 +131,10 @@ Single analysis driver with filters
 When filters are used, the syntax of the system call that Dakota
 performs is:
 
-::
+.. code-block::
 
-       ifilter params.in results.out; driver params.in results.out;
-            ofilter params.in results.out
+   ifilter params.in results.out; driver params.in results.out;
+        ofilter params.in results.out
 
 in which the input filter (``ifilter``), analysis driver (``driver``), and output filter (``ofilter``)
 processes are combined into a single system call through the use of
@@ -142,10 +145,10 @@ line.
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-::
+.. code-block::
 
-       blocking fork: ifilter params.in results.out;
-            driver params.in results.out; ofilter params.in results.out
+   blocking fork: ifilter params.in results.out;
+        driver params.in results.out; ofilter params.in results.out
 
 where a series of three blocking forks is used to perform the
 evaluation.
@@ -153,9 +156,9 @@ evaluation.
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-::
+.. code-block::
 
-       Direct function: invoking { ifilter driver ofilter }
+   Direct function: invoking { ifilter driver ofilter }
 
 where each of the three components must be linked as a function within
 Dakota’s direct interface. Since asynchronous operations are not yet
@@ -167,17 +170,17 @@ argument lists.
 Asynchronous executions would appear as follows for the system call
 interface:
 
-::
+.. code-block::
 
-       (ifilter params.in.1 results.out.1; driver params.in.1 results.out.1;
-            ofilter params.in.1 results.out.1) &
+   (ifilter params.in.1 results.out.1; driver params.in.1 results.out.1;
+        ofilter params.in.1 results.out.1) &
 
 and, for the fork interface, as:
 
-::
+.. code-block::
 
-       nonblocking fork: ifilter params.in.1 results.out.1;
-            driver params.in.1 results.out.1; ofilter params.in.1 results.out.1
+   nonblocking fork: ifilter params.in.1 results.out.1;
+        driver params.in.1 results.out.1; ofilter params.in.1 results.out.1
 
 where file tagging of evaluations has again been user-specified in both
 cases. For the system call simulation interface, use of parentheses and
@@ -191,8 +194,8 @@ output filter. The intermediate process can be blocking or nonblocking
 (nonblocking in this case), and the second level of forks can be
 blocking or nonblocking (blocking in this case). The fact that forks can
 be reforked multiple times using either blocking or nonblocking
-approaches provides the enhanced flexibility to support a variety of
-local parallelism approaches (see Chapter `[parallel] <#parallel>`__).
+approaches provides the enhanced flexibility to support :ref:`a variety of
+local parallelism approaches <parallel>`.
 
 .. _`interfaces:components:multiple1`:
 
@@ -203,26 +206,25 @@ If a list of ``analysis_drivers`` is specified and filters are not
 needed (i.e., neither ``input_filter`` nor ``output_filter`` appears),
 then the system call syntax would appear as:
 
-::
+.. code-block::
 
-       driver1 params.in results.out.1; driver2 params.in results.out.2;
-            driver3 params.in results.out.3
+   driver1 params.in results.out.1; driver2 params.in results.out.2;
+        driver3 params.in results.out.3
 
-where ``driver1``, ``driver2``, and ``driver3`` are the user-specified analysis drivers and ``params.in`` and ``results.out`` are the
+where ``driver1``, ``driver2``, and ``driver3`` are the user-specified analysis
+drivers and ``params.in`` and ``results.out`` are the
 user-selected names of the parameters and results files. Note that the
 results files for the different analysis drivers have been automatically
-tagged to prevent overwriting. This automatic tagging of *analyses* (see
-Section `1.5.4 <#interfaces:file:tagging2>`__) is a separate operation
-from user-selected tagging of *evaluations* (see
-Section `1.5.2 <#interfaces:file:tagging1>`__).
+tagged to prevent overwriting. This :ref:`automatic tagging of analyses <interfaces:file:tagging2>`
+is a separate operation from :ref:`user-selected tagging of evaluations <interfaces:file:tagging1>`.
 
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-::
+.. code-block::
 
-       blocking fork: driver1 params.in results.out.1;
-            driver2 params.in results.out.2; driver3 params.in results.out.3
+   blocking fork: driver1 params.in results.out.1;
+        driver2 params.in results.out.2; driver3 params.in results.out.3
 
 for which a series of three blocking forks is needed (no reforking of an
 intermediate process is required).
@@ -230,9 +232,9 @@ intermediate process is required).
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-::
+.. code-block::
 
-       Direct function: invoking { driver1 driver2 driver3 }
+   Direct function: invoking { driver1 driver2 driver3 }
 
 where, again, each of these components must be linked within Dakota’s
 direct interface and no files are involved for parameter and response
@@ -242,17 +244,17 @@ Both the system call and fork interfaces support asynchronous function
 evaluations. The asynchronous system call execution syntax would be
 reported as
 
-::
+.. code-block::
 
-       (driver1 params.in.1 results.out.1.1; driver2 params.in.1 results.out.1.2;
-            driver3 params.in.1 results.out.1.3) &
+   (driver1 params.in.1 results.out.1.1; driver2 params.in.1 results.out.1.2;
+        driver3 params.in.1 results.out.1.3) &
 
 and the nonblocking fork execution syntax would be reported as
 
-::
+.. code-block::
 
-       nonblocking fork: driver1 params.in.1 results.out.1.1;
-            driver2 params.in.1 results.out.1.2; driver3 params.in.1 results.out.1.3
+   nonblocking fork: driver1 params.in.1 results.out.1.1;
+        driver2 params.in.1 results.out.1.2; driver3 params.in.1 results.out.1.3
 
 where, in both cases, file tagging of evaluations has been
 user-specified to prevent conflicts between concurrent analysis drivers
@@ -270,34 +272,32 @@ Multiple analysis drivers with filters
 Finally, when combining filters with multiple ``analysis_drivers``, the
 syntax of the system call that Dakota performs is:
 
-::
+.. code-block::
 
-       ifilter params.in.1 results.out.1;
-            driver1 params.in.1 results.out.1.1;
-            driver2 params.in.1 results.out.1.2;
-            driver3 params.in.1 results.out.1.3;
-            ofilter params.in.1 results.out.1
+   ifilter params.in.1 results.out.1;
+        driver1 params.in.1 results.out.1.1;
+        driver2 params.in.1 results.out.1.2;
+        driver3 params.in.1 results.out.1.3;
+        ofilter params.in.1 results.out.1
 
 in which all processes have again been combined into a single system
 call through the use of semi-colons and parentheses. Note that the
 secondary file tagging for the results files is only used for the
 analysis drivers and not for the filters. This is consistent with the
 filters’ defined purpose of managing the non-repeated portions of
-analysis pre- and post-processing (e.g., overlay of response results
-from individual analyses; see
-Section `1.5.4 <#interfaces:file:tagging2>`__ for additional
-information).
+analysis pre- and post-processing (e.g., :ref:`overlay of response results
+from individual analyses <interfaces:file:tagging2>`).
 
 For the same mapping, the fork simulation interface echoes the following
 syntax:
 
-::
+.. code-block::
 
-       blocking fork: ifilter params.in.1 results.out.1;
-            driver1 params.in.1 results.out.1.1;
-            driver2 params.in.1 results.out.1.2;
-            driver3 params.in.1 results.out.1.3;
-            ofilter params.in.1 results.out.1
+   blocking fork: ifilter params.in.1 results.out.1;
+        driver1 params.in.1 results.out.1.1;
+        driver2 params.in.1 results.out.1.2;
+        driver3 params.in.1 results.out.1.3;
+        ofilter params.in.1 results.out.1
 
 for which a series of five blocking forks is used (no reforking of an
 intermediate process is required).
@@ -305,9 +305,9 @@ intermediate process is required).
 Executing the same mapping with the direct simulation interface results
 in an echo of the following syntax:
 
-::
+.. code-block::
 
-       Direct function: invoking { ifilter driver1 driver2 driver3 ofilter }
+   Direct function: invoking { ifilter driver1 driver2 driver3 ofilter }
 
 where each of these components must be linked as a function within
 Dakota’s direct interface. Since asynchronous operations are not
@@ -319,23 +319,23 @@ through the function argument lists.
 Asynchronous executions would appear as follows for the system call
 interface:
 
-::
+.. code-block::
 
-       (ifilter params.in.1 results.out.1;
-            driver1 params.in.1 results.out.1.1;
-            driver2 params.in.1 results.out.1.2;
-            driver3 params.in.1 results.out.1.3;
-            ofilter params.in.1 results.out.1) &
+   (ifilter params.in.1 results.out.1;
+        driver1 params.in.1 results.out.1.1;
+        driver2 params.in.1 results.out.1.2;
+        driver3 params.in.1 results.out.1.3;
+        ofilter params.in.1 results.out.1) &
 
 and for the fork interface:
 
-::
+.. code-block::
 
-       nonblocking fork: ifilter params.in.1 results.out.1;
-            driver1 params.in.1 results.out.1.1;
-            driver2 params.in.1 results.out.1.2;
-            driver3 params.in.1 results.out.1.3;
-            ofilter params.in.1 results.out.1
+   nonblocking fork: ifilter params.in.1 results.out.1;
+        driver1 params.in.1 results.out.1.1;
+        driver2 params.in.1 results.out.1.2;
+        driver3 params.in.1 results.out.1.3;
+        ofilter params.in.1 results.out.1
 
 where, again, user-selected file tagging of evaluations is combined with
 automatic file tagging of analyses. In the fork interface case, an

@@ -153,38 +153,38 @@ As an example of the data flow on a particular function evaluation,
 consider evaluation 60. The parameters file for this evaluation consists
 of:
 
- ::
+.. code-block::
 
-                                              2 variables
-                          4.664752623441543e-01 x1
-                          2.256400864298234e-01 x2
-                                              1 functions
-                                              3 ASV_1:obj_fn
-                                              2 derivative_variables
-                                              1 DVV_1:x1
-                                              2 DVV_2:x2
-                                              0 analysis_components
-                                             60 eval_id
+					   2 variables
+   4.664752623441543e-01 x1
+   2.256400864298234e-01 x2
+					   1 functions
+					   3 ASV_1:obj_fn
+					   2 derivative_variables
+					   1 DVV_1:x1
+					   2 DVV_2:x2
+					   0 analysis_components
+					  60 eval_id
 
 This file is called ``workdir/workdir.60/params.in`` if the line
 
-::
+.. code-block::
 
-         named 'workdir' file_save  directory_save
+   named 'workdir' file_save  directory_save
 
 in :numref:`advint:figure01` is uncommented. The
 first portion of the file indicates that there are two variables,
 followed by new values for variables ``x1`` and ``x2``, and one response
 function (an objective function), followed by an active set vector (ASV)
 value of ``1``. The ASV indicates the need to return the value of the
-objective function for these parameters (see
-Section `[variables:asv] <#variables:asv>`__). The ``dprepro`` script reads the
-variable values from this file, namely ``4.664752623441543e-01`` and
+objective function for these parameters (see the :ref:`Active Set Vector section <variables:asv>`).
+
+The ``dprepro`` script reads the variable values from this file, namely ``4.664752623441543e-01`` and
 ``2.256400864298234e-01`` for ``x1`` and ``x2`` respectively, and
 substitutes them in the ``{x1}`` and ``{x2}`` fields of the ``ros.template`` file. The
 final three lines of the resulting input file (``ros.in``) then appear as follows:
 
-::
+.. code-block::
 
    variable 1 0.4664752623
    variable 2 0.2256400864
@@ -194,7 +194,7 @@ where all other lines are identical to the template file. The ``rosenbrock_bb`` 
 accepts ``ros.in`` as its input file and generates the following output to the file
 ``ros.out``:
 
-::
+.. code-block::
 
     Beginning execution of model: Rosenbrock black box
     Set up complete.
@@ -223,7 +223,7 @@ ASV.
 After 132 of these function evaluations, the following Dakota output
 shows the final solution using the ``rosenbrock_bb.py`` simulator:
 
-::
+.. code-block::
 
     Exit NPSOL - Optimal solution found.
     
@@ -301,9 +301,10 @@ effort in the development of a high quality Dakota interface. In these
 cases, more sophisticated interfacing approaches could involve a more
 thoroughly developed black box interface with robust support of a
 variety of inputs and outputs, or it might involve intrusive interfaces
-such as the direct simulation interface discussed below in
-Section `[advint:direct] <#advint:direct>`__ or the SAND interface
-described in Section `[intro:coupling] <#intro:coupling>`__.
+such as the direct simulation interface discussed below in the
+:ref:`"Developing a Direct Simulation Interface" section <advint:direct>`
+or the :ref:`"SAND Simulation Codes" section <user-supplied-sim-code-sand>`
+of the main page on interface coupling.
 
 Additional Examples
 ~~~~~~~~~~~~~~~~~~~
