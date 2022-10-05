@@ -12,9 +12,6 @@ Interfaces
 
 .. _`interfaces:overview`:
 
-Overview
---------
-
 The :dakkw:`interface` specification in a Dakota input file controls details
 of function evaluations. The mechanisms currently in place for function
 evaluations involve interfacing with one or more computational
