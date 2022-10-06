@@ -27,28 +27,31 @@ serial and parallel simulation codes.
 engineering design applications call for the use of multiple simulation
 code executions (different disciplinary codes, the same code for
 different load cases or environments, etc.) in order to evaluate a
-single response data set [1]_ (e.g., objective functions and
+single response data set (e.g., objective functions and
 constraints) for a single set of parameters. If these simulation code
 executions are independent (or if coupling is enforced at a higher
 level), Dakota can perform them concurrently.
 
 **Concurrent Execution of Function Evaluations within an Iterator**:
-With very few exceptions, the iterative algorithms described in
-Chapters `[ps] <#ps>`__–`[nls] <#nls>`__ all provide opportunities for
+Many Dakota methods provide opportunities for
 the concurrent evaluation of response data sets for different parameter
 sets. Whenever there exists a set of function evaluations that are
 independent, Dakota can perform them in parallel.
 
+.. note::
+    the term "function evaluation" is used broadly to mean any individual
+    data request from an iterative algorithm
+
 **Concurrent Execution of Sub-Iterators within a Meta-iterator or Nested
-Model**: The advanced methods described in
-Chapter `[adv_meth] <#adv_meth>`__ are examples of meta-iterators, and
-the advanced model recursions described in
-Sections `[adv_models:mixed_uq] <#adv_models:mixed_uq>`__–`[adv_models:ouu] <#adv_models:ouu>`__
-all utilize nested models. Both of these cases generate sets of iterator
+Model**: The advanced methods described on the :ref:`Advanced Methods <adv_meth>` 
+page are examples of meta-iterators, and
+the advanced model recursions described on the :ref:`Advanced Models <adv_models>`
+page all utilize nested models. Both of these cases generate sets of iterator
 subproblems that can be executed concurrently. For example, the
-Pareto-set and multi-start strategies generate sets of optimization
-subproblems. Similarly, optimization under uncertainty
-(`[adv_models:ouu] <#adv_models:ouu>`__) generates sets of uncertainty
+:ref:`Pareto-set <adv_meth:pareto>` and :ref:`multi-start <adv_meth:multistart>`
+strategies generate sets of optimization subproblems. Similarly, 
+:ref:`optimization under uncertainty <adv_models:ouu>`
+generates sets of uncertainty
 quantification subproblems. Whenever these subproblems are independent,
 Dakota can perform them in parallel.
 
@@ -68,11 +71,11 @@ one to two levels of parallelism.
 
 Navigating the body of this chapter: The range of capabilities is
 extensive and can be daunting at first; therefore, this chapter takes an
-incremental approach in first describing the simplest single-level
-parallel computing models (Section `1.2 <#parallel:SLP>`__) using
+incremental approach in first describing the simplest 
+:ref:`single-level parallel <parallel:SLP>` computing models using
 asynchronous local, message passing, and hybrid approaches. More
-advanced uses of Dakota can build on this foundation to exploit multiple
-levels of parallelism, as described in Section `1.3 <#parallel:MLP>`__.
+advanced uses of Dakota can build on this foundation to exploit 
+:ref:`multiple levels of parallelism <parallel:MLP>`.
 
 The chapter concludes with a discussion of using Dakota with
 applications that run as independent MPI processes (parallel application
@@ -101,11 +104,11 @@ function evaluations:
 
 #. *Algorithmic coarse-grained parallelism*: This parallelism involves
    the concurrent execution of independent function evaluations, where a
-   “function evaluation” is defined as a data request from an algorithm
+   "function evaluation" is defined as a data request from an algorithm
    (which may involve value, gradient, and Hessian data from multiple
    objective and constraint functions). This concept can also be
-   extended to the concurrent execution of multiple “iterators” within a
-   “meta-iterator.” Examples of algorithms containing coarse-grained
+   extended to the concurrent execution of multiple "iterators" within a
+   "meta-iterator." Examples of algorithms containing coarse-grained
    parallelism include:
 
    -  *Gradient-based algorithms*: finite difference gradient
@@ -143,8 +146,8 @@ function evaluations:
    computational fluid dynamics, shock physics, and many others.
 
 By definition, coarse-grained parallelism requires very little
-inter-processor communication and is therefore “embarrassingly
-parallel,” meaning that there is little loss in parallel efficiency due
+inter-processor communication and is therefore "embarrassingly
+parallel," meaning that there is little loss in parallel efficiency due
 to communication as the number of processors increases. However, it is
 often the case that there are not enough separable computations on each
 algorithm cycle to utilize the thousands of processors available on
@@ -250,8 +253,13 @@ Parallel iterators
    evaluations; however, there are some limitations on the levels of
    concurrency and asynchrony that can be exploited. These are detailed
    in the Dakota Reference Manual. Serial SCOLIB methods include
-   Solis-Wets () and certain options ( and ) in pattern search (). OPT++
-   PDS () and NCSU DIRECT () are also currently serial due to
+   Solis-Wets (:dakkw:`method-coliny_solis_wets`) and certain 
+   :dakkw:`method-coliny_pattern_search-exploratory_moves`
+   options (:dakkw:`method-coliny_pattern_search-exploratory_moves-adaptive_pattern`
+   and :dakkw:`method-coliny_pattern_search-exploratory_moves-multi_step`)
+   in pattern search (:dakkw:`method-coliny_pattern_search`)
+   :ref:`OPT++ PDS <method-optpp_pds>` and :ref:`NCSU DIRECT <method-ncsu_direct>`
+   are also currently serial due to
    incompatibilities in Dakota and OPT++/NCSU parallelism models.
    Finally, and support dynamic job queues managed with nonblocking
    synchronization.
@@ -264,31 +272,41 @@ Parallel iterators
    use speculative gradients since this approach is superseded by
    NLSSOL’s gradient-based line search in user-supplied derivative mode.
 
--  | Surrogate-based minimizers: , , and
-   | all support parallelism in the initial surrogate construction, but
-     subsequent concurrency varies. In the case of , only a single point
-     is generated for evaluation for each subsequent cycle and there is
-     no derivatove concurrency for this point. In the case of , only a
-     single point is generated per subsequent cycle, but derivative
-     concurrency for numerical gradient or Hessian evaluations may be
-     available. And in the case of , multiple points may be generated on
-     each subsequent cycle, depending on the multipoint return
-     capability of specific minimizers.
+-  Surrogate-based minimizers: :dakkw:`method-surrogate_based_local`,
+   :dakkw:`method-surrogate_based_global`, and :dakkw:`method-efficient_global`
+   all support parallelism in the initial surrogate construction, but
+   subsequent concurrency varies. In the case of :dakkw:`method-efficient_global`, 
+   available concurrency depends on :dakkw:`method-efficient_global-batch_size`.
+   In the case of :dakkw:`method-surrogate_based_local`, only a
+   single point is generated per subsequent cycle, but derivative
+   concurrency for numerical gradient or Hessian evaluations may be
+   available. And in the case of :dakkw:`method-surrogate_based_local`, 
+   multiple points may be generated on
+   each subsequent cycle, depending on the multipoint return
+   capability of specific minimizers.
 
--  Parameter studies: all parameter study methods (, , , and ) support
+-  Parameter studies: all parameter study methods (:ref:`vector <method-vector_parameter_study>`,
+   :ref:`list <method-list_parameter_study>`, :ref:`centered <method-centered_parameter_study>`,
+   and :ref:`multidim <method-multidim_parameter_study>`) support
    parallelism. These methods avoid internal synchronization points, so
    all evaluations are available for concurrent execution.
 
--  Design of experiments: all (, , , , , , and ), ( and ), , and methods
+-  Design of experiments: all :dakkw:`method-dace`  (:dakkw:`method-dace-grid`,
+   :dakkw:`method-dace-random`, :dakkw:`method-dace-oas`, :dakkw:`method-dace-lhs`,
+   :dakkw:`method-dace-oa_lhs`, :dakkw:`method-dace-box_behnken`, and 
+   :dakkw:`method-dace-central_composite`), :dakkw:`method-fsu_quasi_mc` 
+   (:dakkw:`method-fsu_quasi_mc-halton` and :dakkw:`method-fsu_quasi_mc-hammersley`), 
+   :dakkw:`method-fsu_cvt`, and :dakkw:`method-psuade_moat` methods
    support parallelism.
 
--  Uncertainty quantification: all nondeterministic methods (sampling,
+-  Uncertainty quantification: all nondeterministic methods (:dakkw:`method-sampling`,
    reliability, stochastic expansion, and epistemic) support
-   parallelism. In the case of gradient-based methods (local
-   reliability, local interval estimation), parallelism can be exploited
+   parallelism. In the case of gradient-based methods (:dakkw:`method-local_reliability`,
+   :dakkw:`method-local_interval_est`) parallelism can be exploited
    through the use of Dakota’s native finite differencing routine for
-   computing gradients. In the case of many global methods (e.g., global
-   reliability, global interval estimation, polynomial chaos), initial
+   computing gradients. In the case of many global methods (e.g., 
+   :dakkw:`method-global_reliability`, :dakkw:`method-global_interval_est`,
+   :dakkw:`method-polynomial_chaos`) initial
    surrogate construction is highly parallel, but any subsequent
    (adaptive) refinement may have greater concurrency restrictions
    (including a single point per refinement cycle in some cases).
@@ -302,16 +320,17 @@ Certain advanced methods support concurrency in multiple iterator
 executions. Currently, the methods which can exploit this level of
 parallelism are:
 
--  Hybrid minimization: when the sequential hybrid transfers multiple
+-  :ref:`Hybrid minimization <adv_meth:hybrid>`: when the sequential 
+   hybrid transfers multiple
    solution points between methods, single-point minimizers will be
    executed concurrently using each of the transferred solution points.
 
--  Pareto-set optimization: a meta-iterator for multiobjective
-   optimization using the simple weighted-sum approach for computing
-   sets of points on the Pareto front of nondominated solutions.
+-  :ref:`Pareto-set optimization <adv_meth:pareto>`: a meta-iterator
+   for multiobjective optimization using the simple weighted-sum approach
+   for computing sets of points on the Pareto front of nondominated solutions.
 
--  Multi-start iteration: a meta-iterator for executing multiple
-   instances of an iterator from different starting points.
+-  :ref:`Multi-start iteration <adv_meth:multistart>`: a meta-iterator
+   for executing multiple instances of an iterator from different starting points.
 
 ..
    TODO:
@@ -334,29 +353,28 @@ fixed set of jobs to perform and should exhibit good load balancing.
 Parallel models
 ^^^^^^^^^^^^^^^
 
-Parallelism support in model classes (see
-Chapter `[models] <#models>`__) is an important issue for
+Parallelism support in :ref:`model <models:main>` is an important issue for
 
 ..
    TODO: %variable scaling (see Section~\ref{opt:additional:scaling}) and 
 
-advanced model
-recursions such as surrogate-based minimization, optimization under
+advanced model recursions such as surrogate-based minimization, optimization under
 uncertainty, and mixed aleatory-epistemic UQ (see
-Chapters `[adv_meth] <#adv_meth>`__ and `[adv_models] <#adv_models>`__).
+the :ref:`Advanced Method <adv_meth>` and :ref:`Advanced Model <adv_models>` pages).
 Support is as follows:
 
--  Single model: parallelism is managed as specified in the model’s
-   associated ``interface`` instance.
+-  :ref:`Single model <models:single>`: parallelism is managed as specified 
+   in the model’s associated :dakkw:`interface` instance.
 
--  Recast model: most parallelism is forwarded on to the sub-model. An
-   exception to this is finite differencing in the presence of variable
+-  :ref:`Recast model <models:recast>`: most parallelism is forwarded on to the 
+   sub-model. An exception to this is finite differencing in the presence of variable
    scaling. Since it is desirable to perform offsets in the scaled space
    (and avoid minimum step size tolerances), this parallelism is not
    forwarded to the sub-model, instead being enacted at the recast
    level.
 
--  Data fit surrogate model: parallelism is supported in the
+-  :ref:`Data fit surrogate model <models:surrogate:datafit>`: parallelism is 
+   supported in the
    construction of global surrogate models via the concurrent evaluation
    of points generated by design of experiments methods. Local and
    multipoint approximations evaluate only a single point at a time, so
@@ -381,17 +399,17 @@ Support is as follows:
    of both low and high fidelity models, so parallel schedulers can
    exploit simultaneous concurrency for both models.
 
--  Nested model: concurrent executions of the optional interface and
+-  :ref:`Nested model <models:nested>`: concurrent executions of the optional interface and
    concurrent executions of the sub-iterator are supported and are
    synchronized in succession. Currently, synchronization is blocking
    (all concurrent evaluations are completed before new batches are
-   scheduled); nonblocking schedulers (see `1.2 <#parallel:SLP>`__) may
+   scheduled); nonblocking schedulers (see :ref:`Single-level parallelism <parallel:SLP>`)
+   may
    be supported in time. Nested model concurrency and meta-iterator
-   concurrency (Section `1.1.2.2 <#parallel:algorithms:adv_meth>`__) may
+   concurrency (:ref:`Advanced methods <parallel:algorithms:adv_meth>`) may
    be combined within an arbitrary number of levels of recursion.
    Primary clients for this capability include optimization under
-   uncertainty and mixed aleatory-epistemic UQ (see
-   Section `[models:nested] <#models:nested>`__).
+   uncertainty and mixed aleatory-epistemic UQ.
 
 .. _`parallel:SLP`:
 
@@ -405,12 +423,13 @@ multiprocessors on the low end. Given the reduced scale in the middle to
 low ranges, it is more common to exploit only one of the levels of
 parallelism; however, this can still be quite effective in reducing the
 time to obtain a solution. Three single-level parallelism models will be
-discussed, and are depicted in Figure `1.1 <#parallel:figure03>`__:
+discussed, and are depicted in :numref:`parallel:figure03`:
 
 .. figure:: img/ex_in_hy_job_management.png
    :alt: External, internal, and hybrid job management.
    :name: parallel:figure03
-   :width: 60mm
+   :width: 50%
+   :align: center
 
    External, internal, and hybrid job management.
 
@@ -439,15 +458,16 @@ approach is used in most cases:
 -  *nonblocking synchronization*: the job queue is dynamic, with jobs
    entering and leaving continuously. There are no defined
    synchronization points for the algorithm, which requires specialized
-   algorithm logic (only currently supported by
-   ``coliny_pattern_search`` and ``asynch_pattern_search``, which are
-   sometimes referred to as “fully asynchronous” algorithms).
+   algorithm logic. Sometimes referred to as "fully asynchronous" algorithms,
+   these currently include :dakkw:method-coliny_pattern_search`,
+   :dakkw:`method-asynch_pattern_search`, and :dakkw:`method-efficient_global` with
+   the :dakkw:`method-efficient_global-batch_size-synchronization-nonblocking` option.
 
 Given these job management capabilities, it is worth noting that the
-popular term “asynchronous” can be ambiguous when used in isolation. In
+popular term "asynchronous" can be ambiguous when used in isolation. In
 particular, it can be important to qualify whether one is referring to
-“asynchronous job launch” (synonymous with any of the three concurrent
-job launch approaches described above) or “asynchronous job recovery”
+"asynchronous job launch" (synonymous with any of the three concurrent
+job launch approaches described above) or "asynchronous job recovery"
 (synonymous with the latter nonblocking job synchronization approach).
 
 .. _`parallel:SLP:local`:
@@ -472,10 +492,9 @@ asynchronous local invocation capabilities are used in two contexts: (1)
 by themselves to launch concurrent jobs from a single processor that
 rely on external means (e.g., operating system, job queues) for
 assignment to other processors, and (2) in combination with Dakota’s
-message-passing schedulers to provide a hybrid parallelism (see
-Section `1.2.3 <#parallel:SLP:hybrid>`__). Thus, Dakota supports any of
-the four combinations of synchronous or asynchronous local combined with
-message passing or without.
+message-passing schedulers to provide a :ref:`hybrid parallelism <parallel:SLP:hybrid>`.
+Thus, Dakota supports any of the four combinations of synchronous or asynchronous 
+local combined with message passing or without.
 
 Asynchronous local schedulers may be used for managing concurrent
 function evaluations requested by an iterator or for managing concurrent
@@ -484,16 +503,18 @@ concurrency supports either blocking (all jobs in the queue must be
 completed by the scheduler) or nonblocking (dynamic job queue may shrink
 or expand) synchronization, where blocking synchronization is used by
 most iterators and nonblocking synchronization is used by fully
-asynchronous algorithms such as ``asynch_pattern_search`` and
-``coliny_pattern_search``. The latter evaluation/analysis concurrency is
-restricted to blocking synchronization. The “Asynchronous Local” column
-in Table `1.1 <#parallel:table01>`__ summarizes these capabilities.
+asynchronous algorithms such as :dakkw:`method-asynch_pattern_search`,
+:dakkw:`method-coliny_pattern_search`, and :dakkw:`method-efficient_global`
+with the :dakkw:`method-efficient_global-batch_size-synchronization-nonblocking` option.
+The latter evaluation/analysis concurrency is
+restricted to blocking synchronization. The "Asynchronous Local" column
+in :numref:`parallel:table01` summarizes these capabilities.
 
 Dakota supports three local simulation invocation approaches based on
 the direct function, system call, and fork simulation interfaces. For
 each of these cases, an input filter, one or more analysis drivers, and
-an output filter make up the interface, as described in
-Section `[interfaces:components] <#interfaces:components>`__.
+an output filter make up the interface, as described in 
+:ref:`Simulation Interface Components <interfaces:components>`.
 
 .. _`parallel:SLP:local:direct`:
 
@@ -505,7 +526,7 @@ operation of the direct function simulation interface involves a
 standard procedure call to the input filter, if present, followed by
 calls to one or more simulations, followed by a call to the output
 filter, if present (refer to
-Sections `[interfaces:sim] <#interfaces:sim>`__-`[interfaces:components] <#interfaces:components>`__
+:ref:`Simulation Interface Components <interfaces:components>`
 for additional details and examples). Each of these components must be
 linked as functions within Dakota. Control does not return to the
 calling code until the evaluation is completed and the response object
@@ -534,8 +555,11 @@ foreground. Control does not return to the calling code until the
 simulation is completed and the response file has been written. In this
 case, the possibility of a race condition (see below) does not exist and
 any errors during response recovery will cause an immediate abort of the
-Dakota process (note: detection of the string “fail” is not a response
-recovery error; see Chapter `[failure] <#failure>`__).
+Dakota process.
+
+.. note:: 
+    Detection of the string "fail" is not a response
+    recovery error; see `Simulation Failure Capturing <failure>`.
 
 Asynchronous operation involves spawning the system call in the
 background, continuing with other tasks (e.g., spawning other system
@@ -579,7 +603,7 @@ or the default temporary file option (e.g.,
 be protected (e.g., ``model.i``, ``model.o``, ``model.g``,
 ``model.e``), then an effective approach is to create
 a tagged working subdirectory for each simulation instance.
-Section `[interfaces:building] <#interfaces:building>`__ provides an
+The :ref:`Interfaces <interfaces:building>` page provides an
 example system call interface that demonstrates both the use of tagged
 working directories and the relocation of completed results files to
 avoid the race condition.
@@ -591,8 +615,10 @@ Fork synchronization
 
 The fork capability is quite similar to the system call; however, it has
 the advantage that asynchronous fork invocations can avoid the results
-file race condition that may occur with asynchronous system calls (see
-Section `[interfaces:which] <#interfaces:which>`__). The fork interface
+file race condition that may occur with asynchronous system calls (See 
+the :ref:`Interfaces <interfaces:which>` page discussion on choosing
+between :dakkw:`interface-analysis_drivers-fork` and 
+:dakkw:`interface-analysis_drivers-system`). The fork interface
 invokes the filters and analysis drivers using the ``fork`` and ``exec``
 family of functions, and completion of these processes is detected using
 the ``wait`` family of functions. Since ``wait`` is based on a process
@@ -762,13 +788,15 @@ Local evaluation scheduling options
 
 The default behavior for asynchronous local parallelism is for Dakota to
 dispatch the next evaluation the local queue when one completes (and can
-optionally be specified by ``local_evaluation_scheduling dynamic``. In
-some cases, the simulation code interface benefits from knowing which
+optionally be specified by
+:dakkw:`local_evaluation_scheduling dynamic <interface-asynchronous-local_evaluation_scheduling-dynamic>`.
+In some cases, the simulation code interface benefits from knowing which
 job number will replace a completed job. This includes some modes of
 application tiling with certain MPI implementations, where sending a job
 to the correct subset of available processors is done with relative node
-scheduling. The keywords ``local_evaluation_scheduling static`` forces
-this behavior, so a completed evaluation will be replaced with one
+scheduling. The keywords
+:dakkw:`local_evaluation_scheduling dynamic <interface-asynchronous-local_evaluation_scheduling-static>`
+forces this behavior, so a completed evaluation will be replaced with one
 congruent modulo the evaluation concurrency. For example, with 6
 concurrent jobs, eval number 2 will be replaced with eval number 8.
 Examples of this usage can be seen in
@@ -779,21 +807,21 @@ Examples of this usage can be seen in
 Message Passing Parallelism
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dakota uses a “single program-multiple data” (SPMD) parallel programming
+Dakota uses a "single program-multiple data" (SPMD) parallel programming
 model. It uses message-passing routines from the Message Passing
 Interface (MPI)
 standard :cite:p:`Gro94`, :cite:p:`Sni96` to
 communicate data between processors. The SPMD designation simply denotes
 that the same Dakota executable is loaded on all processors during the
-parallel invocation. This differs from the MPMD model (“multiple
-program-multiple data”) which would have the Dakota executable on one or
+parallel invocation. This differs from the MPMD model ("multiple
+program-multiple data") which would have the Dakota executable on one or
 more processors communicating directly with simulator executables on
 other processors. The MPMD model has some advantages, but heterogeneous
 executable loads are not supported by all parallel environments.
 Moreover, the MPMD model requires simulation code intrusion on the same
 order as conversion to a subroutine, so subroutine conversion (see
-Section `[advint:direct] <#advint:direct>`__) in a direct-linked SPMD
-model is preferred.
+:ref:`Developing a Direct Simulation Interface <advint:direct>`) 
+in a direct-linked SPMD model is preferred.
 
 .. _`parallel:SLP:message:part`:
 
@@ -810,7 +838,7 @@ partitioning models:
 -  *Peer partition*: all processors are allocated to server partitions
    and the loss of a processor to scheduling is avoided.
 
-These models are depicted in Figure `1.2 <#parallel:figure01>`__. The
+These models are depicted in :numref:`parallel:figure01`. The
 peer partition is desirable since it utilizes all processors for
 computation; however, it requires either the use of sophisticated
 mechanisms for distributed scheduling or a problem for which static
@@ -822,7 +850,8 @@ idleness is minimized.
 .. figure:: img/comm_partitioning.png
    :alt: Communicator partitioning models.
    :name: parallel:figure01
-   :width: 70mm
+   :width: 50%
+   :align: center
 
    Communicator partitioning models.
 
@@ -898,14 +927,14 @@ restricted to blocking synchronization, in that all jobs in the queue
 are completed before exiting the scheduler and returning the set of
 results to the algorithm. Nonblocking message-passing scheduling is
 supported for the iterator–evaluation concurrency level in support of
-fully asynchronous algorithms (e.g., ``asynch_pattern_search`` and
-``coliny_pattern_search``) that avoid synchronization points that can
-harm scaling.
+fully asynchronous algorithms (e.g., :dakkw:`method-asynch_pattern_search`,
+:dakkw:`method-coliny_pattern_search`, and :dakkw:`method-efficient_global`)
+that avoid synchronization points that can harm scaling.
 
 Message passing is also used within a fine-grained parallel simulation
 code, although this is separate from Dakota’s capabilities (Dakota may,
-at most, pass a communicator partition to the simulation). The “Message
-Passing” column in Table `1.1 <#parallel:table01>`__ summarizes these
+at most, pass a communicator partition to the simulation). The "Message
+Passing" column in :numref:`parallel:table01` summarizes these
 capabilities.
 
 .. _`parallel:SLP:message:ex`:
@@ -1016,20 +1045,20 @@ Hybrid Parallelism
 ~~~~~~~~~~~~~~~~~~
 
 The asynchronous local approaches described in
-Section `1.2.1 <#parallel:SLP:local>`__ can be considered to rely on
-*external* scheduling mechanisms, since it is generally the operating
-system or some external queue/load sharing software that allocates jobs
-to processors. Conversely, the message-passing approaches described in
-Section `1.2.2 <#parallel:SLP:message>`__ rely on *internal* scheduling
-mechanisms to distribute work among processors. These two approaches
-provide building blocks which can be combined in a variety of ways to
-manage parallelism at multiple levels. At one extreme, Dakota can
-execute on a single processor and rely completely on external means to
-map all jobs to processors (i.e., using asynchronous local approaches).
+the :ref:`Asynchronous Local Parallelism <parallel:SLP:local>` section
+can be considered to rely on *external* scheduling mechanisms, since it 
+is generally the operating system or some external queue/load sharing
+software that allocates jobs to processors. Conversely, the message-passing
+approaches described in :ref:`Message Passing Parallelism <parallel:SLP:message>`
+rely on *internal* scheduling mechanisms to distribute work among processors.
+These two approaches provide building blocks which can be combined in a
+variety of ways to manage parallelism at multiple levels. At one extreme,
+Dakota can execute on a single processor and rely completely on external
+means to map all jobs to processors (i.e., using asynchronous local approaches).
 At the other extreme, Dakota can execute on many processors and manage
 all levels of parallelism, including the parallel simulations, using
 completely internal approaches (i.e., using message passing at all
-levels as in Figure `1.3 <#parallel:figure02>`__). While all-internal or
+levels as in :numref:`parallel:figure02`). While all-internal or
 all-external approaches are common cases, many additional approaches
 exist between the two extremes in which some parallelism is managed
 internally and some is managed externally.
@@ -1037,7 +1066,16 @@ internally and some is managed externally.
 These combined approaches are referred to as *hybrid* parallelism, since
 the internal distribution of work based on message-passing is being
 combined with external allocation using asynchronous local
-approaches [2]_. Figure `1.1 <#parallel:figure03>`__ depicts the
+approaches.
+
+..note::
+    The term "hybrid parallelism" is often used to describe the
+    combination of MPI message passing and OpenMP shared memory
+    parallelism models. This can be considered to be a special case of
+    the meaning here, as OpenMP is based on threads, which is analagous
+    to asynchronous local usage of the direct simulation interface.
+
+:numref:`parallel:figure03` depicts the
 asynchronous local, message-passing, and hybrid approaches for a
 dedicated-master partition. Approaches (b) and (c) both use MPI
 message-passing to distribute work from the master to the slaves, and
@@ -1069,8 +1107,8 @@ message-passing approach over all processors.
 Hybrid schedulers may be used for managing concurrent evaluations within
 an iterator or concurrent analyses within an evaluation. In the former
 case, blocking or nonblocking synchronization can be used, whereas the
-latter case is restricted to blocking synchronization. The “Hybrid”
-column in Table `1.1 <#parallel:table01>`__ summarizes these
+latter case is restricted to blocking synchronization. The "Hybrid"
+column in :numref:`parallel:table01` summarizes these
 capabilities.
 
 .. _`parallel:SLP:hybrid:ex`:
@@ -1089,8 +1127,8 @@ processors:
        mpirun -np 5 -machinefile machines dakota -i dakota_dace.in
 
 Since the asynchronous local parallelism will also be used, the
-interface specification includes the ``asynchronous`` keyword and
-appears similar to
+interface specification includes the :dakkw:`interface-asynchronous`
+keyword and appears similar to
 
 ::
 
@@ -1184,18 +1222,14 @@ local to each of the four servers is asynchronous.
 Multilevel parallelism
 ----------------------
 
-Parallel computers within the Department of Energy national laboratories
-have achieved nearly 20 quadrillion (:math:`10^{15}`) floating point
-operations per second (20 petaFLOPS) in Linpack benchmarks. Planning for
-"exascale" systems, rated at 1000 petaFLOPS, is well underway. This
-performance is achieved through the use of massively parallel (MP)
-processing using :math:`O[10^{5}-10^{6}]` processors. In order to
-harness the power of these machines for performing design, uncertainty
+Parallel computing resources within the Department of Energy national
+laboratories continue to rapidly grow. In order to harness the power
+of these machines for performing design, uncertainty
 quantification, and other systems analyses, parallel algorithms are
 needed which are scalable to thousands of processors.
 
 Dakota supports an open-ended number of levels of nested parallelism
-which, as described in Section `1.1 <#parallel:overview>`__, can be
+which, as described in the :ref:`Overview <parallel:overview>` above, can be
 categorized into three types of concurrent job scheduling and four types
 of parallelism: (a) concurrent iterators within a meta-iterator
 (scheduled by Dakota), (b) concurrent function evaluations within each
@@ -1206,10 +1240,9 @@ these parallelism levels can minimize efficiency losses and achieve near
 linear scaling on MP computers. Types (a) and (b) are classified as
 algorithmic coarse-grained parallelism, type (c) is function evaluation
 coarse-grained parallelism, and type (d) is function evaluation
-fine-grained parallelism (see
-Section `1.1.1 <#parallel:overview:cat>`__). Algorithmic fine-grained
-parallelism is not currently supported in Dakota, although this picture
-is rapidly evolving.
+fine-grained parallelism (see :ref:`Categorization of parallelism <parallel:overview:cat>`).
+Algorithmic fine-grained parallelism is not currently supported in Dakota,
+although this picture is rapidly evolving.
 
 ..
    TODO:
@@ -1227,16 +1260,16 @@ to :cite:p:`Eld00`. In many cases, *the user may simply employ
 Dakota’s automatic parallelism configuration facilities,* which
 implement the recommendations from the aforementioned paper.
 
-Figure `[fig:mlp_scaling] <#fig:mlp_scaling>`__ shows typical fixed-size
+:numref:`parallel:fig:mlp_scaling:speedup` and 
+:numref:`parallel:fig:mlp_scaling:efficiency` show typical fixed-size
 scaling performance using a modified version of the extended
-``text_book`` problem (see
-Section `[additional:textbook] <#additional:textbook>`__). Three levels
+:ref:`textbook <additional:textbook>` problem. Three levels
 of parallelism (concurrent evaluations within an iterator, concurrent
 analyses within each evaluation, and multiprocessor analyses) are
 exercised within a modest partition of processors (circa year 2000).
 Despite the use of a fixed problem size and the presence of some
 idleness within the scheduling at multiple levels, the efficiency is
-still reasonably high [3]_. Greater efficiencies are obtainable for
+still reasonably high. Greater efficiencies are obtainable for
 scaled speedup studies (or for larger problems in fixed-size studies)
 and for problems optimized for minimal scheduler idleness (by, e.g.,
 managing all concurrency in as few scheduling levels as possible). Note
@@ -1245,23 +1278,21 @@ single instance of a multiprocessor analysis, since it was desired to
 investigate the effectiveness of the Dakota schedulers independent from
 the efficiency of the parallel analysis.
 
-TODO: fix figures
+.. figure:: img/mss_rel_speedup_3lev_determ.png
+    :alt: Relative speedup for Dakota utilizing three levels of parallelism
+    :name: parallel:fig:mlp_scaling:speedup
+    :width: 50%
+    :align: center
+ 
+    Relative speedup for Dakota utilizing three levels of parallelism
 
-..
-   TODO:
-   \begin{figure}[ht]
-     \centering
-     \subfigure[Relative speedup.]
-       {\includegraphics[width=.45\textwidth]{images/mss_rel_speedup_3lev_determ}}
-     \subfigure[Relative efficiency.]
-       {\includegraphics[width=.45\textwidth]{images/mss_rel_eff_3lev_determ}}
-     \caption{Fixed-size scaling results for three levels of parallelism.}
-     \label{fig:mlp_scaling}
-   % The 2 processor run uses a 1/1/1/2 configuration and is as small as can be
-   % fairly compared for the same level of fine-grained simulation.  The 12, 48,
-   % 96, and 192 processor runs use 3 levels of parallelism in a 1/eval_srv/3/2
-   % configuration with eval_srv = 2, 8, 16, and 32, respectively.
-   \end{figure}
+.. figure:: img/mss_rel_eff_3lev_determ.png
+    :alt: Relative efficiency for Dakota utilizing three levels of parallelism
+    :name: parallel:fig:mlp_scaling:efficiency
+    :width: 50%
+    :align: center
+
+    Relative efficiency for Dakota utilizing three levels of parallelism
 
 .. _`parallel:MLP:local`:
 
@@ -1271,16 +1302,15 @@ Asynchronous Local Parallelism
 In most cases, the use of asynchronous local parallelism is the
 termination point for multilevel parallelism, in that any level of
 parallelism lower than an asynchronous local level will be serialized
-(see discussion in Section `1.3.3 <#parallel:MLP:hybrid>`__). The
-exception to this rule is reforking of forked processes for concurrent
+(see discussion in the following section :ref:`Hybrid Parallelism <parallel:MLP:hybrid>`).
+The exception to this rule is reforking of forked processes for concurrent
 analyses within forked evaluations. In this case, a new process is
 created using fork for one of several concurrent evaluations; however,
 the new process is not replaced immediately using exec. Rather, the new
 process is reforked to create additional child processes for executing
 concurrent analyses within each concurrent evaluation process. This
 capability is not supported by system calls and provides one of the key
-advantages to using fork over system (see
-Section `[interfaces:which] <#interfaces:which>`__).
+advantages to using :ref:`fork over system <interfaces:which>`.
 
 .. _`parallel:MLP:message`:
 
@@ -1328,9 +1358,9 @@ the parallel configurations are allocated at object construction time
 and are reported at the beginning of the Dakota output.
 
 Each tier within Dakota’s nested parallelism hierarchy can use the
-dedicated master and peer partition approaches described in
-Section `1.2.2.1 <#parallel:SLP:message:part>`__. To recursively
-partition the subcommunicators of Figure `1.2 <#parallel:figure01>`__,
+dedicated master and peer partition approaches described above in the
+:ref:`Partitioning <parallel:SLP:message:part>` section. To recursively
+partition the subcommunicators of :numref:`parallel:figure01`,
 ``COMM1/2/3`` in the dedicated master or peer partition case would be
 further subdivided using the appropriate partitioning model for the next
 lower level of parallelism.
@@ -1343,7 +1373,8 @@ Scheduling within levels
 .. figure:: img/recursive_partitioning.png
    :alt: Recursive partitioning for nested parallelism.
    :name: parallel:figure02
-   :width: 60mm
+   :width: 50%
+   :align: center
 
    Recursive partitioning for nested parallelism.
 
@@ -1357,18 +1388,17 @@ provide custom options.
 ..
    TODO: %(e.g., PICO supports distributed scheduling in peer partitions).
 
-As an example,
-Figure `1.3 <#parallel:figure02>`__ shows a case in which a branch and
+As an example, :numref:`parallel:figure02` shows a case in which a branch and
 bound meta-iterator employs peer partition/distributed scheduling at
 level 1, each optimizer partition employs concurrent function
 evaluations in a dedicated master partition/dynamic scheduling model at
 level 2, and each function evaluation partition employs concurrent
 multiprocessor analyses in a peer partition/static scheduling model at
 level 3. In this case, ``MPI_COMM_WORLD`` is subdivided into
-``optCOMM1/2/3/.../\tau_{1}``, each ``optCOMM`` is further subdivided
-into ``evalCOMM0`` (master) and ``evalCOMM1/2/3/.../\tau_{2}`` (slaves),
-and each slave ``evalCOMM`` is further subdivided into
-``analCOMM1/2/3/.../\tau_{3}``. Logic for selecting the :math:`\tau_i`
+:math:`optCOMM1/2/3/.../\tau_{1}`, each :math:`optCOMM` is further subdivided
+into :math:`evalCOMM0` (master) and :math:`evalCOMM1/2/3/.../\tau_{2}` (slaves),
+and each slave :math:`evalCOMM` is further subdivided into
+:math:`analysisCOMM1/2/3/.../\tau_{3}`. Logic for selecting the :math:`\tau_i`
 that maximize overall efficiency is discussed
 in :cite:p:`Eld00`.
 
@@ -1413,7 +1443,7 @@ hybrid inter-level case, the function evaluations would be scheduled one
 per SMP, and the analysis components within each of these evaluations
 would be executed concurrently using asynchronous local approaches
 within the SMP. Thus, the distinction can be viewed as whether the
-concurrent jobs on each server in Figure `1.1 <#parallel:figure03>`__\ c
+concurrent jobs on each server in :numref:`parallel:figure03`
 reflect the same level of parallelism as that being scheduled by the
 master (intra-level) or one level of parallelism below that being
 scheduled by the master (inter-level).
@@ -1423,7 +1453,7 @@ scheduled by the master (inter-level).
 Capability Summary
 ------------------
 
-Table `1.1 <#parallel:table01>`__ shows a matrix of the supported job
+:numref:`parallel:table01` shows a matrix of the supported job
 management approaches for each of the parallelism levels, with supported
 simulation interfaces and synchronization approaches shown in
 parentheses. The concurrent iterator and multiprocessor analysis
@@ -1437,7 +1467,7 @@ drivers, resulting in a parallel analysis external to Dakota (which is
 consistent with asynchronous local and hybrid approaches), this
 parallelism is not visible to Dakota and therefore does not qualify as
 parallelism that Dakota manages (and therefore is not included in
-Table `1.1 <#parallel:table01>`__). The concurrent evaluation and
+:numref:`parallel:table01`). The concurrent evaluation and
 analysis levels can be managed either with message-passing, asynchronous
 local, or hybrid techniques, with the exceptions that the direct
 interface does not support asynchronous operations (asynchronous local
@@ -1493,7 +1523,7 @@ and hybrid parallelism options.
 Running a Parallel Dakota Job
 -----------------------------
 
-Section `1.2 <#parallel:SLP>`__ provides a few examples of serial and
+:ref:`Single-level parallelism <parallel:SLP>` provides a few examples of serial and
 parallel execution of Dakota using asynchronous local, message passing,
 and hybrid approaches to single-level parallelism. The following
 sections provides a more complete discussion of the parallel execution
@@ -1512,9 +1542,8 @@ single-processor for a serial study, e.g.:
 
        dakota -i dakota.in > dakota.out
 
-See
-Section `[tutorial:installation:running] <#tutorial:installation:running>`__
-for additional information on single-processor command syntax.
+See :ref:`Dakota Beginner's tutorial <helloworld-main>` for additional
+information on single-processor command syntax.
 
 .. _`parallel:running:multiprocessor`:
 
@@ -1645,9 +1674,9 @@ have been assigned. These assignments can be overridden by the user by
 specifying a number of servers, processors per server, or both, for the
 concurrent iterator, evaluation, and analysis parallelism levels. For
 example, if it is desired to parallelize concurrent analyses within each
-function evaluation, then an ``evaluation_servers = 1`` override would
-serialize the concurrent function evaluations level and ensure processor
-availability for concurrent analyses.
+function evaluation, then an :dakkw:`evaluation_servers = 1 <interface-evaluation_servers` 
+override would serialize the concurrent function evaluations level and 
+ensure processor availability for concurrent analyses.
 
 The exception to this push up of concurrency occurs for
 concurrent-iterator parallelism levels, since iterator executions tend
@@ -1671,12 +1700,13 @@ executions.
 The interface specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Specifying parallelism within an interface can involve the use of the
-  ,
-| , and keywords to specify concurrency local to a processor (i.e.,
-  asynchronous local parallelism). This specification has dual uses:
+Specifying parallelism within an interface can involve the use of the
+:dakkw:`interface-asynchronous`, :dakkw:`interface-asynchronous-evaluation_concurrency`, 
+and :dakkw:`interface-asynchronous`, :dakkw:`interface-asynchronous-analysis_concurrency`
+keywords to specify concurrency local to a processor (i.e., asynchronous
+local parallelism). This specification has dual uses:
 
--  When running Dakota on a single-processor, the ``asynchronous``
+-  When running Dakota on a single-processor, the :dakkw:`interface-asynchronous`
    keyword specifies the use of asynchronous invocations local to the
    processor (these jobs then rely on external means to be allocated to
    other processors). The default behavior is to simultaneously launch
@@ -1684,40 +1714,45 @@ The interface specification
    available analyses within each function evaluation. In some cases,
    the default behavior can overload a machine or violate a usage
    policy, resulting in the need to limit the number of concurrent jobs
-   using the ``evaluation_concurrency`` and ``analysis_concurrency``
+   using the :dakkw:`interface-asynchronous-evaluation_concurrency`
+   and :dakkw:`interface-asynchronous-analysis_concurrency`
    specifications.
 
 -  When executing Dakota across multiple processors and managing jobs
-   with a message-passing scheduler, the ``asynchronous`` keyword
-   specifies the use of asynchronous invocations local to each server
-   processor, resulting in a hybrid parallelism approach (see
-   Section `1.2.3 <#parallel:SLP:hybrid>`__). In this case, the default
-   behavior is one job per server, which must be overridden with an
-   ``evaluation_concurrency`` specification and/or an
-   ``analysis_concurrency`` specification. When a hybrid parallelism
+   with a message-passing scheduler, the :dakkw:`interface-asynchronous` 
+   keyword specifies the use of asynchronous invocations local to each server
+   processor, resulting in a :ref:`hybrid parallelism <parallel:SLP:hybrid>`
+   approach. In this case, the default behavior is one job per server, which
+   must be overridden with an :dakkw:`interface-asynchronous-evaluation_concurrency`
+   specification and/or an :dakkw:`interface-asynchronous-analysis_concurrency`
+   specification. When a hybrid parallelism
    approach is specified, the capacity of the servers (used in the
    automatic configuration logic) is defined as the number of servers
    times the number of asynchronous jobs per server.
 
 In both cases, the scheduling of local evaluations is dynamic by
 default, but may be explicitly selected or overriden using
-``local_evaluation_scheduling dynamic`` or ``static``.
+:dakkw:`local_evaluation_scheduling dynamic <interface-asynchronous-local_evaluation_scheduling-dynamic>`
+:dakkw:`interface-asynchronous-local_evaluation_scheduling-static`
 
-In addition, ``evaluation_servers``, ``processors_per_evaluation``, and
-``evaluation_scheduling`` keywords can be used to override the automatic
-parallel configuration for concurrent function evaluations. Evaluation
-scheduling may be selected to be ``master`` or ``peer``, where the
-latter must be further specified to be ``dynamic`` or ``static``.
+In addition, :dakkw:`interface-evaluation_servers`, :dakkw:`interface-processors_per_evaluation`, 
+and :dakkw:`interface-evaluation_scheduling` keywords can be used to
+override the automatic parallel configuration for concurrent function
+evaluations. Evaluation scheduling may be selected to be
+`:dakkw:`interface-evaluation_scheduling-master` or :dakkw:`interface-evaluation_scheduling-peer`,
+where the latter must be further specified to be
+:dakkw:`interface-evaluation_scheduling-peer-dynamic` or :dakkw:`interface-evaluation_scheduling-peer-static`.
 
 To override the automatic parallelism configuration for concurrent
-analyses, the ``analysis_servers`` and ``analysis_scheduling`` keywords
-may be specified, and the ``processors_per_analysis`` keyword can be
-used to override the automatic parallelism configuration for the size of
-multiprocessor analyses used in a direct function simulation interface.
-Scheduling options for this level include ``master`` or ``peer``, where
-the latter is static (no dynamic peer option supported). Each of these
-keywords appears as part of the interface commands specification in the
-Dakota Reference Manual :cite:p:`RefMan`.
+analyses, the :dakkw:`interface-analysis_servers` and
+:dakkw:`interface-analysis_scheduling` keywords
+may be specified, and the :dakkw:`interface-analysis_drivers-direct-processors_per_analysis`
+keyword can be used to override the automatic parallelism configuration
+for the size of multiprocessor analyses used in a direct function simulation 
+interface. Scheduling options for this level include 
+:dakkw:`interface-analysis_scheduling-master` or 
+:dakkw:`interface-analysis_scheduling-peer`, where
+the latter is static (no dynamic peer option supported).
 
 .. _`parallel:spec:meta`:
 
@@ -1725,11 +1760,13 @@ The meta-iterator and nested model specifications
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To specify concurrency in sub-iterator executions within meta-iterators
-and nested models, the , , and keywords are used to override the
-automatic parallelism configuration. For this level, the available
-scheduling options are or , where the latter is static (no dynamic peer
-option supported). See the method and model commands specification in
-the Dakota Reference Manual :cite:p:`RefMan` for additional
+(such as :dakkw:`method-hybrid-sequential`) and nested models (such as 
+:dakkw:`model-nested-sub_method_pointer`), the ``iterator_servers``,
+``processors_per_iterator``, and ``iterator_scheduling`` keywords are used to
+override the automatic parallelism configuration. For this level, the available
+scheduling options are ``master`` or ``peer``, where the latter is static
+(no dynamic peer option supported). See the method and model commands specification
+in the :ref:`Keyword Reference <keyword-reference-area>` for additional
 details.
 
 .. _`parallel:spec:single`:
@@ -1739,11 +1776,11 @@ Single-processor Dakota specification
 
 Specifying a single-processor Dakota job that exploits parallelism
 through asynchronous local approaches (see
-Figure `1.1 <#parallel:figure03>`__\ a) requires inclusion of the
-``asynchronous`` keyword in the interface specification. Once the input
-file is defined, single-processor Dakota jobs are executed using the
-command syntax described previously in
-Section `1.5.1 <#parallel:running:single>`__.
+:numref:`parallel:figure03`) requires inclusion of the
+:dakkw:`interface-asynchronous` keyword in the interface specification.
+Once the input file is defined, single-processor Dakota jobs are executed
+using the command syntax described previously in
+:ref:`Single-processor execution <parallel:running:single>`.
 
 .. _`parallel:spec:single:example1`:
 
@@ -1778,25 +1815,25 @@ which will perform asynchronous finite differencing:
                  fd_gradient_step_size = 1.e-4
                no_hessians
 
-Note that ``method_source`` ``dakota`` selects Dakota’s internal finite
-differencing routine so that the concurrency in finite difference
-offsets can be exploited. In this case, central differencing has been
-selected and 11 function evaluations (one at the current point plus two
-offsets in each of five variables) can be performed simultaneously for
-each NPSOL response request. These 11 evaluations will be launched with
-system calls in the background and presumably assigned to additional
-processors through the operating system of a multiprocessor compute
-server or other comparable method. The concurrency specification may be
-included if it is necessary to limit the maximum number of simultaneous
-evaluations. For example, if a maximum of six compute processors were
-available, the command
+Note that :dakkw:`method_source dakota<responses-numerical_gradient-method_source-dakota>`
+selects Dakota’s internal finite differencing routine so that the
+concurrency in finite difference offsets can be exploited. In this case,
+central differencing has been selected and 11 function evaluations (one
+at the current point plus two offsets in each of five variables) can be
+performed simultaneously for each NPSOL response request. These 11
+evaluations will be launched with system calls in the background and
+presumably assigned to additional processors through the operating system of
+a multiprocessor compute server or other comparable method. The concurrency
+specification may be included if it is necessary to limit the maximum number
+of simultaneous evaluations. For example, if a maximum of six compute processors
+were available, the command
 
 ::
 
        evaluation_concurrency = 6
 
-could be added to the ``asynchronous`` specification within the
-``interface`` keyword from the preceding example.
+could be added to the :dakkw:`interface-asynchronous` specification within the
+:dakkw:`interface` keyword from the preceding example.
 
 .. _`parallel:spec:single:example2`:
 
@@ -1835,14 +1872,16 @@ an input specification similar to the following could be used:
                  fd_gradient_step_size = 1.e-4
                no_hessians
 
-In this case, the default concurrency with just an ``asynchronous``
+In this case, the default concurrency with just an :dakkw:`asynchronous`
 specification would be all 11 function evaluations and all 3 analyses,
 which can be limited by the and specifications. The input file above
 limits the function evaluation concurrency, but not the analysis
 concurrency (a specification of 3 is the default in this case and could
-be omitted). Changing the input to ``evaluation_concurrency = 1`` would
-serialize the function evaluations, and changing the input to
-``analysis_concurrency = 1`` would serialize the analyses.
+be omitted). Changing the input to 
+:dakkw:`evaluation_concurrency = 1 <interface-asychronous-evaluation_concurrency>`
+would serialize the function evaluations, and changing the input to
+:dakkw:`analysis_concurrency = 1 <evaluation_concurrency = 1 <interface-asychronous-analysis_concurrency>`
+would serialize the analyses.
 
 .. _`parallel:spec:multi`:
 
@@ -1850,18 +1889,18 @@ Multiprocessor Dakota specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In multiprocessor executions, server evaluations are synchronous
-(Figure `1.1 <#parallel:figure03>`__\ b) by default and the
+(:numref:`parallel:figure03` a) by default and the
 ``asynchronous`` keyword is only used if a hybrid parallelism approach
-(Figure `1.1 <#parallel:figure03>`__\ c) is desired. Multiprocessor
+(:numref:`parallel:figure03` c) is desired. Multiprocessor
 Dakota jobs are executed using the command syntax described previously
-in Section `1.5.2 <#parallel:running:multiprocessor>`__.
+in :ref:`Multiprocessor execution <parallel:running:multiprocessor>`
 
 .. _`parallel:spec:multi:example3`:
 
 Example 3
 ^^^^^^^^^
 
-To run Example 1 using a message-passing approach, the ``asynchronous``
+To run Example 1 using a message-passing approach, the :dakkw:`interface-asynchronous`
 keyword would be removed (since the servers will execute their
 evaluations synchronously), resulting in the following interface
 specification:
@@ -1926,8 +1965,8 @@ As a related example, consider the case where each of the workstations
 used in the parallel execution has multiple processors. In this case, a
 hybrid parallelism approach which combines message-passing parallelism
 with asynchronous local parallelism (see
-Figure `1.1 <#parallel:figure03>`__\ c) would be a good choice. To
-specify hybrid parallelism, one uses the same ``asynchronous``
+:numref:`parallel:figure03` c) would be a good choice. To
+specify hybrid parallelism, one uses the same :dakkw:`interface-asynchronous`
 specification as was used for the single-processor examples, e.g.:
 
 ::
@@ -1962,7 +2001,7 @@ scheduler is sufficient.
 Example 4
 ^^^^^^^^^
 
-To run Example 2 using a message-passing approach, the ``asynchronous``
+To run Example 2 using a message-passing approach, the :dakkw:`interface-asynchronous`
 specification is again removed:
 
 ::
@@ -1990,7 +2029,7 @@ parallel configuration report:
        -----------------------------------------------------------------------------
 
 in which all of the processors have been assigned to support evaluation
-concurrency due to the “push up” automatic configuration logic. To
+concurrency due to the "push up" automatic configuration logic. To
 assign some of the available processors to the concurrent analysis
 level, the following input could be used:
 
@@ -2029,8 +2068,9 @@ with two.
 Next, consider the following 3-level parallel case, in which
 ``text_book1``, ``text_book2``, and ``text_book3``
 from the previous examples now execute on two processors each. In this
-case, the ``processors_per_analysis`` keyword is added and the ``fork``
-interface is changed to a ``direct`` interface since the fine-grained
+case, the :dakkw:`interface-analysis_drivers-direct-processors_per_analysis`
+keyword is added and the :dakkw:`interface-analysis_drivers-fork` interface
+is changed to a :dakkw:`interface-analysis_drivers-direct` interface since the fine-grained
 parallelism of the three simulations is managed internally:
 
 ::
@@ -2088,8 +2128,9 @@ processors each and the fine model would employ 4 evaluation servers of
 
 Next, consider the following 4-level parallel case that employs the
 Pareto set optimization meta-iterator. In this case,
-``iterator_servers`` and ``iterator_scheduling peer`` requests are
-included in the method specification:
+:dakkw:`method-pareto_set-iterator_servers` and
+:dakkw:`iterator_scheduling peer <method-pareto_set-iterator_scheduling-peer>`
+requests are included in the method specification:
 
 ::
 
@@ -2100,7 +2141,7 @@ included in the method specification:
                   opt_method_pointer = 'NLP'
                   random_weight_sets = 4
 
-Adding this ``pareto_set`` method specification to the input file from
+Adding this :dakkw:`methodd-pareto_set` method specification to the input file from
 the previous 12 processor example results in the following parallel
 configuration for a 24 processor Dakota run
 (syntax: ``mpirun -np 24 dakota -i dakota.in``):
@@ -2202,11 +2243,10 @@ independent parallel process.
 
 The ``examples/parallelism/`` folder in the Dakota installation
 includes examples of the use cases. In all four, Dakota performs a
-vector parameter on the "textbook" test function described in
-Section `[additional:textbook] <#additional:textbook>`__. The
-application executed for serial demonstration is the ``text_book``
+vector parameter on the :ref:`textbook <additional:textbook>` test
+function. The application executed for serial demonstration is the ``text_book``
 example driver, and for parallel execution, a modified version named
-``text_book_simple_par``. Both are located in Dakota’s ``test/``
+``text_book_simple_par``. Both are located in Dakota’s ``share/dakota/test/``
 folder. Dakota uses its fork interface to launch interface scripts
 written either in Bash or Python, which include mock pre-processing to
 prepare application input, application execution in serial or
@@ -2214,31 +2254,47 @@ parallel, and post-processing of application results to return to
 Dakota.
 
 The combinations of Dakota and application parallelism are summarized in
-Table `[parallel:application:table01] <#parallel:application:table01>`__.
-In each case, :math:`M` denotes the total number of processors (or MPI
-tasks) allocated and :math:`N` denotes the number of processors used by
-a single application analysis. For most scenarios, Cases 1–3, where
+:numref:`parallel:application:table01`. In each case, :math:`M` denotes 
+the total number of processors (or MPI tasks) allocated and :math:`N`
+denotes the number of processors used by a single application analysis.
+For most scenarios, Cases 1–3, where
 Dakota and the application jobs run within a single cluster processor
 allocation (queued job), are preferred. However for particularly
 long-running or large jobs, or platforms that not supporting the first
 scheduling modes, Case 4 may be most appropriate.
 
-TODO: Cleanup table contents and formatting...
+ 
+.. list-table:: Application Parallelism Use Cases
+    :name: parallel:application:table01
+    :header-rows: 1
+    :widths: 8 18 12 12 50
 
-[1]>m1 [parallel:application:table01]
+    * - Case
+      - Name
+      - Dakota
+      - Application
+      - Notes
+    * - 1
+      - Massively Serial
+      - parallel
+      - serial
+      - :math:`M` simultaneous application instances, each :math:`N=1` processor
+    * - 2
+      - Sequential Parallel
+      - serial
+      - parallel
+      - 1 simultaneous application instance on :math:`N` processors
+    * - 3
+      - Evaluation Tiling
+      - serial
+      - parallel
+      - :math:`M/N` simultaneous :math:`N` processor jobs
+    * - 4
+      - Evaluation Submission
+      - serial
+      - parallel
+      - submit *expensive* :math:`N` processor application jobs to a scheduler (e.g., qsub)
 
-.. container:: tabular
-
-   | c|L2cm\|c|c|L7.5cm **Case** & **Name** & **Dakota** &
-     **Application** & **Notes**
-   | & Massively Serial & parallel & serial & :math:`M` simultaneous
-     application instances, each :math:`N=1` processor
-   | & Sequential Parallel & serial & parallel & 1 simultaneous
-     application instance on :math:`N` processors
-   | & Evaluation Tiling &serial & parallel & :math:`M/N` simultaneous
-     :math:`N` processor jobs
-   | & Evaluation Submission & serial & parallel & submit *expensive*
-     :math:`N` processor application jobs to a scheduler (e.g., qsub)
 
 Relevant example files for each case are included in directories
 ``dakota/share/dakota/examples/parallelism/`` with
@@ -2252,7 +2308,7 @@ Case 1: Massively Serial — Multiple serial analysis jobs
 In this case, Dakota will launch multiple simultaneous single processor
 application runs (an embarrassingly parallel model). Dakota is run in
 parallel, making this example an elaboration of the message-passing
-single-level parallel mode described in Section `1.2 <#parallel:SLP>`__.
+:ref:`single-level parallel <parallel:SLP>` mode.
 Specifically in this example, Dakota is run in parallel with :math:`M=6`
 processors (``pbs_submission``):
 
@@ -2282,7 +2338,7 @@ completes, another will be launched, until all jobs are complete.
 
         asynchronous evaluation_concurrency = [2 or more]
 
-   As discussed in Section `1.2.3 <#parallel:SLP:hybrid>`__, combining
+   As discussed in :ref:`Hybrid Parallelism <parallel:SLP:hybrid>`, combining
    MPI and local (asynchronous) parallelism in this way is an example of
    hybrid parallelism.
 
@@ -2357,7 +2413,7 @@ desired to perform 10 concurrent runs of a parallel application, each
 requiring 32 processors. The compute nodes each have 16 processors. The
 job script must reserve 2 nodes per application run (:math:`32/16`) for
 a total of :math:`2 \cdot 10 = 20` nodes. Dakota’s
-``evaluation_concurrency`` must be set to 10.
+:dakkw:`interface-asynchronous-evaluation_concurrency` must be set to 10.
 
 Under ideal circumstances, as Dakota concurrently launches evaluations
 of the user’s parallel application, the cluster workload manager (e.g.
@@ -2515,17 +2571,3 @@ In the second pass, when analysis is complete, the analysis driver is
 changed to ``post_process`` and Dakota is executed on a login node to
 collect the results of the study.
 
-.. [1]
-   the term “function evaluation” is used broadly to mean any individual
-   data request from an iterative algorithm
-
-.. [2]
-   The term “hybrid parallelism” is often used to describe the
-   combination of MPI message passing and OpenMP shared memory
-   parallelism models. This can be considered to be a special case of
-   the meaning here, as OpenMP is based on threads, which is analagous
-   to asynchronous local usage of the direct simulation interface.
-
-.. [3]
-   Note that overhead is reduced in these scaling studies by
-   deactivating the evaluation cache and restart file logging.
