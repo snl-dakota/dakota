@@ -65,6 +65,8 @@ public:
 
   /// perform a forward uncertainty propagation using PCE/SC methods
   void core_run();
+  /// Inherit to allow on-the-fly instances to customize behavior
+  virtual void post_run(std::ostream& s) override;
   /// print the final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 

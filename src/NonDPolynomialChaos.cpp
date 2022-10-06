@@ -1179,6 +1179,14 @@ sample_allocation_metric(Real& sparsity_metric, Real power)
 }
 
 
+void NonDPolynomialChaos::post_run(std::ostream& s)
+{
+  NonDExpansion::post_run(s);
+  if (!expansionExportFile.empty())
+    print_results(s, FINAL_RESULTS);
+}
+
+
 void NonDPolynomialChaos::print_results(std::ostream& s, short results_state)
 {
   switch (results_state) {

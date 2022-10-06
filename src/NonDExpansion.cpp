@@ -740,6 +740,12 @@ void NonDExpansion::core_run()
 }
 
 
+void NonDExpansion::post_run(std::ostream& s)
+{
+  NonD::post_run(s);
+}
+
+
 void NonDExpansion::initialize_expansion()
 {
   // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure

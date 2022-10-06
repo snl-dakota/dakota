@@ -129,6 +129,8 @@ protected:
   void update_samples_from_order_increment();
   void sample_allocation_metric(Real& sparsity_metric, Real power);
 
+  /// Inherit to allow on-the-fly instances to customize behavior
+  virtual void post_run(std::ostream& s) override;
   /// print the final coefficients and final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   /// print the PCE coefficient array for the orthogonal basis
