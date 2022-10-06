@@ -312,39 +312,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   // estimator (YY[i] = (Y^i)^2 for i=1).
   IntRealMatrixMap sum_Ql, sum_Qlm1;
   IntIntPairRealMatrixMap sum_QlQlm1;
-/*<<<<<<< HEAD
-  initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, num_steps);
-
-  // Initialize for pilot sample
-  SizetArray delta_N_l;
-  load_pilot_sample(pilotSamples, num_steps, delta_N_l);
-
-  // raw eval counts are accumulation of allSamples irrespective of resp faults
-  SizetArray raw_N_l(num_steps, 0);
-  RealVectorArray mu_hat(num_steps);
-  //Sizet2DArray& N_l = NLevActual[form]; // *** VALID ONLY FOR ML
-  // define a new 2D array and then post back to NLevActual at end
-  Sizet2DArray N_l(num_steps);
-  for (step=0; step<num_steps; ++step)
-    N_l[step].assign(numFunctions, 0);
-
-  for (step=0; step<num_steps && storeEvals; ++step){
-    std::pair<int, RealMatrix> empty_irm_pr;
-    empty_irm_pr.first = step;
-    levQoisamplesmatrixMap.insert(empty_irm_pr).first->second.shape(0,0);
-  }
-
-  // Useful for future extensions when convergence tolerance can be a vector
-  convergenceTolVec.resize(numFunctions);
-  for(size_t qoi = 0; qoi < numFunctions; ++qoi)
-    convergenceTolVec[qoi] = convergenceTol;
-  
-  // now converge on sample counts per level (N_l)
-  mlmfIter = 0;  equivHFEvals = 0.;
-  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
-	 equivHFEvals <= maxFunctionEvals) {
-    for (step=0; step<num_steps; ++step) {
-=======*/
   initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps);
   RealMatrix var_Y, var_qoi;  RealVector eps_sq_div_2;
   SizetArray delta_N_l;  Sizet2DArray N_l;
@@ -370,7 +337,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   inflate_sequence_samples(N_l, multilev, secondaryIndex, NLevActual);
 }
 
-//>>>>>>> devel
 
 void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 {
@@ -438,44 +404,6 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   inflate_sequence_samples(N_online, multilev, secondaryIndex, NLevActual);
 }
 
-/*<<<<<<< HEAD
-      // aggregate variances across QoI for estimating N_l (justification:
-      // for independent QoI, sum of QoI variances = variance of QoI sum)
-      //Real &agg_var_l = agg_var[step];//carried over from prev iter if no samp
-      if (numSamples) {// && equivHFEvals <= maxFunctionEvals) {
-    	// Don't include per level check on maxFunctionEvals, since it would be
-    	// preferable to instead scale the sample profile to match the budget.
-    	// Prior to scaling the profile, checking only at outer loop preserves
-    	// correct profile shape even though it can overshoot.
-
-    	// assign sequence, get samples, export, evaluate
-    	evaluate_ml_sample_increment(step);
-
-      if(storeEvals) store_evaluations(step);
-
-      accumulate_sums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, mu_hat, N_l);
-
-    	// update raw evaluation counts
-    	raw_N_l[step] += numSamples;
-    	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
-      }
-    }
-
-    //For target sigma and target scalarization we need to do this in an extra
-    //step since variances over all levels have to be known
-    for (step=0; step<num_steps && delta_N_l[step]; ++step) {
-      aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l,
-                   step, agg_var_qoi);
-      //Cout << "Agg var: "<< step << " " << agg_var_qoi << "\n";
-      // MSE reference is MC applied to HF
-      if (mlmfIter == 0)
-        aggregate_mse_target_Qsum(agg_var_qoi, N_l, step, estimator_var0_qoi);
-    }
-
-    if (mlmfIter == 0){ // eps^2 / 2 = var * relative factor
-      set_convergence_tol(estimator_var0_qoi, cost, eps_sq_div_2_qoi);
-    }
-=======*/
 
 void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 {
@@ -593,23 +521,14 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     compute_sample_allocation_target(var_qoi, cost, N_online, delta_N_l);
   else
     compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1, eps_sq_div_2,
-				     var_qoi, cost, N_pilot, N_online, delta_N_l);
-
-//>>>>>>> devel
+				     var_qoi, cost, N_pilot, N_online,
+				     delta_N_l);
 
   ++mlmfIter;
   Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
        << delta_N_l << std::endl;
 }
 
-/*
-<<<<<<< HEAD
-    //exit(-1);
-    ++mlmfIter;
-    Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
-	 << delta_N_l << std::endl;
-=======
-*/
 
 void NonDMultilevelSampling::
 configure_indices(unsigned short group, unsigned short form, size_t lev,
@@ -631,7 +550,6 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
     // step 0 in the sequence
     bypass_surrogate_mode();
     iteratedModel.active_model_key(hf_key); // one active fidelity
-//>>>>>>> devel
   }
   else {
     aggregated_models_mode();
@@ -650,31 +568,9 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
       lf_key.assign_resolution_level(lf_lev);
     }
 
-/*<<<<<<< HEAD
-  // roll up moment contributions
-  compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
-  // populate finalStatErrors
-  compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
-
-  /////
-  RealVector noise_qoi(numFunctions);
-  for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-    noise_qoi[qoi] = 0;
-    noise_qoi[qoi] += pow(scalarizationCoeffs(qoi, 2*qoi)*finalStatErrors(2*qoi, 2*qoi), 2); //Mean noise
-    noise_qoi[qoi] += pow(scalarizationCoeffs(qoi, 2*qoi+1)*finalStatErrors(2*qoi+1, 2*qoi+1), 2); //Std noise
-    if(scalarizationCoeffs(qoi, 2*qoi) != 0 && scalarizationCoeffs(qoi, 2*qoi+1) != 0
-         && finalMomentsType == Pecos::STANDARD_MOMENTS){
-      noise_qoi[qoi] += scalarizationCoeffs(qoi, 2*qoi)*scalarizationCoeffs(qoi, 2*qoi+1)*finalStatErrors(2*qoi, 2*qoi+1); //Std noise
-    }
-    //Cout << "Noise [qoi]: " << qoi << " : " << noise_qoi[qoi] << std::endl;
-  }
-
-  /////
-=======*/
     discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
     iteratedModel.active_model_key(discrep_key); // two active fidelities
   }
-//>>>>>>> devel
 }
 
 
@@ -1013,32 +909,14 @@ accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY, size_t lev,
 
 
 void NonDMultilevelSampling::
-aggregate_variance_target_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
-                  const IntIntPairRealMatrixMap& sum_QlQlm1, 
-                const Sizet2DArray& N_l, const size_t step, RealMatrix& agg_var_qoi)
+aggregate_variance_target_Qsum(const IntRealMatrixMap& sum_Ql,
+			       const IntRealMatrixMap& sum_Qlm1, 
+			       const IntIntPairRealMatrixMap& sum_QlQlm1, 
+			       const Sizet2DArray& N_l, const size_t step,
+			       RealMatrix& agg_var_qoi)
 {
   // compute estimator variance from current sample accumulation:
   if (outputLevel >= DEBUG_OUTPUT) Cout << "variance of Y[" << step << "]: ";
-/*<<<<<<< HEAD
-  for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-    if (allocationTarget == TARGET_MEAN) {
-      agg_var_qoi(qoi, step) = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
-    } else if (allocationTarget == TARGET_VARIANCE) {
-      agg_var_qoi(qoi, step) = aggregate_variance_variance_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
-      //Cout << "(Qoi, step): " << qoi << ", " << step << ") Var[Var]: " << agg_var_qoi(qoi, step) << std::endl; 
-    } else if (allocationTarget == TARGET_SIGMA) {
-      agg_var_qoi(qoi, step) = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);  
-      //Cout << "(Qoi, step): " << qoi << ", " << step << ") Var[Sigma]: " << agg_var_qoi(qoi, step) << std::endl; 
-    } else if (allocationTarget == TARGET_SCALARIZATION){
-      agg_var_qoi(qoi, step) = aggregate_variance_scalarization_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
-    }else{
-        Cout << "NonDMultilevelSampling::aggregate_variance_target_Qsum: allocationTarget is not known.\n";
-        abort_handler(INTERFACE_ERROR);
-    }
-    if(agg_var_qoi(qoi, step) < 0){
-      Cout << "NonDMultilevelSampling::aggregate_variance_target_Qsum(qoi, lev) = (" << qoi << ", " << step << "): agg_var_qoi(qoi, step) < 0 = " << agg_var_qoi(qoi, step) << std::endl; 
-    }
-=======*/
   switch (allocationTarget) {
   case TARGET_MEAN:
     for (size_t qoi = 0; qoi < numFunctions; ++qoi)
@@ -1066,7 +944,6 @@ aggregate_variance_target_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatr
     abort_handler(METHOD_ERROR); break;
   }
   for (size_t qoi = 0; qoi < numFunctions; ++qoi)
-//>>>>>>> devel
     check_negative(agg_var_qoi(qoi, step));
 }
 
