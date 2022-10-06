@@ -1,8 +1,8 @@
 .. _`interfaces:dakota.interfacing`:
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""
-Parameters and Results Files with dakota.interfacing
-""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Parameters and Results Using the Python dakota.interfacing module
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 The Python module ``dakota.interfacing`` provides a Python interface
 to read and write Dakota parameters and results files, respectively.
@@ -16,14 +16,11 @@ The following sections describe the components of
 
 -  The ``Parameters`` class. Makes available the variable information
    for a single evaluation
-
 -  The ``Results`` class. Collects results for a single evaluation and
    writes them to file
-
 -  The ``BatchParameters`` and ``BatchResults`` classes. Containers for
    multiple ``Parameters`` and ``Results`` objects; used when
    evaluations are performed by Dakota in :ref:`batch mode <interfaces:batch>`.
-
 -  The ``read_parameters_file`` function. Constructs ``Parameters``,
    ``Results``, ``BatchParameters``, and ``BatchResults`` objects from a
    Dakota parameters file.
@@ -40,7 +37,9 @@ tuple containing ``(BatchParameters, BatchResults)``.
 
 Its signature is:
 
-dakota.interfacing. **read_parameters_file** (*parameters_file=None*, *results_file=None*, *ignore_asv=False*, *batch=False*, *infer_types=True*, *types=None*)
+.. code-block::
+
+   dakota.interfacing.read_parameters_file (parameters_file=None, results_file=None, ignore_asv=False, batch=False, infer_types=True, types=None)
 
 *parameters_file* and *results_file* are the names of the parameters
 file that is to be read and the results file that ultimately is to be
@@ -115,22 +114,22 @@ descriptors.
 
 ``Parameters`` objects have the attributes:
 
--  **an_comps** - List of the analysis components (strings).
--  **eval_id** - Evaluation id (string).
--  **eval_num** - Evaluation number (final token in eval_id) (int).
--  **aprepro_format** - Boolean indicating whether the parameters file was in aprepro (True)
+-  ``an_comps`` - List of the analysis components (strings).
+-  ``eval_id`` - Evaluation id (string).
+-  ``eval_num`` - Evaluation number (final token in eval_id) (int).
+-  ``aprepro_format`` - Boolean indicating whether the parameters file was in aprepro (True)
    or Dakota (False) format.
--  **descriptors** - List of the variable descriptors
--  **num_variables** - Number of variables
--  **num_an_comps** - Number of analysis components
--  **metadata** - Names of requested metadata fields (strings)
--  **num_metadata** - Number of requested metadata fields.
+-  ``descriptors`` - List of the variable descriptors
+-  ``num_variables`` - Number of variables
+-  ``num_an_comps`` - Number of analysis components
+-  ``metadata`` - Names of requested metadata fields (strings)
+-  ``num_metadata`` - Number of requested metadata fields.
 
 Parameters objects have the methods:
 
--  **items()** - Return an iterator that yields tuples of the descriptor and value for each
+-  ``items()`` - Return an iterator that yields tuples of the descriptor and value for each
    parameter. (``Results`` objects also have ``items()``.)
--  **values()** - Return an iterator that yields the value for each parameter.
+-  ``values()`` - Return an iterator that yields the value for each parameter.
    (``Results`` objects have the corresponding method ``responses()``.)
 
 Results objects
@@ -140,9 +139,7 @@ Results objects
 
 -  communicate response requests from Dakota (active set vector and
    derivative variables)
-
 -  collect response data (function values, gradients, and Hessians)
-
 -  write Dakota results files
 
 ``Results`` objects are collections of ``Response`` objects, which are
@@ -154,46 +151,25 @@ it is advisable to use the ``read_parameters_file`` function instead.
 
 Results objects have the attributes:
 
--  [index:dakota.interfacing.Results.eval_id]\ **``eval_id``**
-   Evaluation id (a string).
-
--  [index:dakota.interfacing.Results.eval_num]\ **``eval_num``**
-   Evaluation number (final token in eval_id) (int).
-
--  [index:dakota.interfacing.Results.aprepro_format]\ **``aprepro_format``**
-   Boolean indicating whether the parameters file was in aprepro (True)
+-  ``eval_id`` - Evaluation id (a string).
+-  ``eval_num`` - Evaluation number (final token in eval_id) (int).
+-  ``aprepro_format`` - Boolean indicating whether the parameters file was in aprepro (True)
    or Dakota (False) format.
-
--  [index:dakota.interfacing.Results.descriptors]\ **``descriptors``**
-   List of the response descriptors (strings)
-
--  [index:dakota.interfacing.Results.num_responses]\ **``num_responses``**
-   Number of variables (read-only)
-
--  [index:dakota.interfacing.Results.deriv_vars]\ **``deriv_vars``**
-   List of the derivative variables (strings)
-
--  [index:dakota.interfacing.Results.num_deriv_vars]\ **``num_deriv_vars``**\ Number
-   of derivative variables (int)
+-  ``descriptors`` - List of the response descriptors (strings)
+-  ``num_responses`` - Number of variables (read-only)
+-  ``deriv_vars`` - List of the derivative variables (strings)
+-  ``num_deriv_vars`` - Number of derivative variables (int)
 
 Results objects have the methods:
 
--  [index:dakota.interfacing.Results.items]\ **``items``**\ () Return an
-   iterator that yields tuples of the descriptor and ``Response`` object
+-  ``items()`` - Return an iterator that yields tuples of the descriptor and ``Response`` object
    for each response. (``Parameters`` objects also have ``items()``.)
-
--  [index:dakota.interfacing.Results.responses]\ **``responses``**\ ()
-   Return an iterator that yields the ``Response`` object for each
+-  ``responses()`` - Return an iterator that yields the ``Response`` object for each
    response. (``Parameters`` objects have the corresponding method
    ``values()``.)
-
--  [index:dakota.interfacing.Results.fail]\ **``fail``**\ () Set the
-   FAIL attribute. When the results file is written, it will contain
-   only the word FAIL, triggering Dakota’s failure capturing behavior
-   (See Chapter `[failure] <#failure>`__).
-
--  [index:dakota.interfacing.Results.write]\ **``write``**\ (*stream=None*,
-   *ignore_asv=None*) Write the results to the Dakota results file. If
+-  ``fail()`` - Set the FAIL attribute. When the results file is written, it will contain
+   only the word FAIL, triggering :ref:`Dakota’s failure capturing behavior <failure>`.
+-  ``write (stream=None, ignore_asv=None)`` - Write the results to the Dakota results file. If
    *stream* is set, it overrides the results file name provided at
    construct time. It must be an open file-like object, rather than the
    name of a file. If *ignore_asv* is True, the file will be written
@@ -212,25 +188,18 @@ descriptor using [].
 
 ``Response``\ s have the attributes:
 
--  [index:dakota.interfacing.Response.asv]\ **``asv``** a
-   ``collections.namedtuple`` with three members, *function*,
+-  ``asv`` - A ``collections.namedtuple`` with three members, *function*,
    *gradient*, and *hessian*. Each is a boolean indicating whether
    Dakota requested the associated information for the response.
    ``namedtuples`` can be accessed by index or by member.
-
--  [index:dakota.interfacing.Response.function]\ **``function``**
-   Function value for the response. A ResponseError is raised if Dakota
+-  ``function`` - Function value for the response. A ResponseError is raised if Dakota
    did not request the function value (and ignore_asv is False).
-
--  [index:dakota.interfacing.Response.gradient]\ **``gradient``**
-   Gradient for the response. Gradients must be a 1D iterable of values
+-  ``gradient`` - Gradient for the response. Gradients must be a 1D iterable of values
    that can be converted to floats, such as a ``list`` or 1D
    ``numpy array``. A ResponseError is raised if Dakota did not request
    the gradient (and ignore_asv is False), or if the number of elements
    does not equal the number of derivative variables.
-
--  [index:dakota.interfacing.Response.hessian]\ **``hessian``** Hessian
-   value for the response. Hessians must be an iterable of iterables
+-  ``hessian`` - Hessian value for the response. Hessians must be an iterable of iterables
    (e.g. a 2D ``numpy array`` or list of lists). A ResponseError is
    raised if Dakota did not request the Hessian (and ignore_asv is
    False), or if the dimension does not correspond correctly with the
@@ -247,8 +216,7 @@ to use the ``read_parameters_file`` function instead.
 
 ``BatchParameters`` objects have one attribute.
 
--  [index:dakota.interfacing.BatchParameters.batch_id]\ **``batch_id``**
-   The "id" of this batch of evaluations, reported by Dakota (string).
+- ``batch_id`` - The "id" of this batch of evaluations, reported by Dakota (string).
 
 ``BatchParameters`` objects have no methods.
 
@@ -263,13 +231,11 @@ may be constructed directly, it is advisable to use the
 
 ``BatchResults`` objects have a single attribute:
 
--  [index:dakota.interfacing.BatchResults.batch_id]\ **``batch_id``**
-   The "id" of this batch of evaluations, reported by Dakota (string)
+-  ``batch_id`` - The "id" of this batch of evaluations, reported by Dakota (string)
 
 ``BatchResults`` objects have a single method:
 
--  [index:dakota.interfacing.Results.write]\ **``write``**\ (*stream=None*,
-   *ignore_asv=None*) Write results for all evaluations to the Dakota
+-  ``write (stream=None, ignore_asv=None)`` - Write results for all evaluations to the Dakota
    results file. If *stream* is set, it overrides the results file name
    provided at construct time. It must be an open file-like object,
    rather than the name of a file. If *ignore_asv* is True, the file
@@ -280,12 +246,14 @@ Processing Templates
 ~~~~~~~~~~~~~~~~~~~~
 
 Dakota is packaged with a sophisticated command-line template processor
-called ``dprepro``. It is fully documented in
-Section `1.9 <#interfaces:dprepro-and-pyprepro>`__. Templates may be
+called :ref:`dprepro <interfaces:dprepro-and-pyprepro>`. Templates may be
 processed within Python analysis drivers without externally invoking
 ``dprepro`` by calling the ``dprepro`` function:
 
-TODO Bogus phantom section
+.. code-block::
+
+   dakota.interfacing.dprepro(template, parameters=None, results=None, include=None, output=None, fmt='%0.10g', 
+   code='%', code block='f% %g', inline='f g', warn=True)
 
 If *template* is a string, it is assumed to contain a template. If it is
 a file-like object (that has a ``.read()`` method), the template will be
@@ -320,7 +288,7 @@ example of a Python analysis driver. This example demonstrates the
 ``dakota.interfacing`` module.
 
 For most applications, using ``dakota.interfacing`` is straightforward.
-The first example, in Figure `[diexample:simple] <#diexample:simple>`__,
+The first example, in :numref:`diexample:simple`,
 is a mock analysis driver. Two variables with the descriptors ``x1`` and
 ``x2`` are read from the Dakota parameters file and used to evaluate the
 fictitious user function ``applic_module.run()``. The result, stored in
@@ -329,22 +297,24 @@ response. (A common error is leaving off the ``function`` attribute,
 which is needed to distinguish the function value of the response from
 its gradient and Hessian.)
 
-::
+.. code-block:: python
+   :caption: A simple analysis driver that uses `dakota.interfacing`.
+   :name: diexample:simple
+   
+   import dakota.interfacing as di
+   import applic_module # fictitious application 
 
-     import dakota.interfacing as di
-     import applic_module # fictitious application 
+   params, results = di.read_parameters_file()
 
-     params, results = di.read_parameters_file()
+   # parameters can be accessed by descriptor, as shown here, or by index
+   x1 = params["x1"]
+   x2 = params["x2"]
 
-     # parameters can be accessed by descriptor, as shown here, or by index
-     x1 = params["x1"]
-     x2 = params["x2"]
+   f = applic_module.run(x1,x2)
 
-     f = applic_module.run(x1,x2)
-
-     # Responses also can be accessed by descriptor or index
-     results["f"].function = f
-     results.write()
+   # Responses also can be accessed by descriptor or index
+   results["f"].function = f
+   results.write()
 
 The ``Results`` object exposes the active set vector read from the
 parameters file. When analytic gradients or Hessians are available for
@@ -356,31 +326,33 @@ is missing when ``Results.write()`` is called. The
 ``ignore_asv`` option to ``read_parameters_file`` and 
 ``Results.write()`` overrides ASV checks.
 
-In Figure `[diexample:asv] <#diexample:asv>`__, ``applic_module.run()``
+In :numref:`diexample:asv`, ``applic_module.run()``
 has been modified to return not only the function value of ``f``, but
 also its gradient and Hessian. The ``asv`` attribute is examined to
 determine which of these to add to ``results["f"]``.
 
-::
+.. code-block:: python
+   :caption: Examining the active set vector
+   :name: diexample:asv
 
-     import dakota.interfacing as di
-     import applic_module # fictitious application
+   import dakota.interfacing as di
+   import applic_module # fictitious application
 
-     params, results = di.read_parameters_file()
+   params, results = di.read_parameters_file()
 
-     x1 = params["x1"]
-     x2 = params["x2"]
+   x1 = params["x1"]
+   x2 = params["x2"]
 
-     f, df, df2 = applic_module.run(x1,x2)
+   f, df, df2 = applic_module.run(x1,x2)
 
-     if Results.asv.function:
-         results["f"].function = f
-     if Results.asv.gradient:
-         results["f"].gradient = df
-     if Results.asv.hessian:
-         results["f"].hessian = df2
+   if Results.asv.function:
+       results["f"].function = f
+   if Results.asv.gradient:
+       results["f"].gradient = df
+   if Results.asv.hessian:
+       results["f"].hessian = df2
 
-     results.write()
+   results.write()
 
 As of the 6.16 release, the direct Python interface can interoperate with
 ``dakota.interfacing`` using a feature of Python known as a decorator.
@@ -390,7 +362,7 @@ the decorated Python driver works with the Python dictionary passed from
 the direct Python interface.  An example of the decorator syntax and use
 of the ``dakota.interfacing`` ``Parameters`` and ``Results``
 objects that get created automatically from the direct interface
-Python dictionary is shown in Figure~\ref{linkeddiexample:decorator}.  The
+Python dictionary is shown in :numref:`linkeddiexample:decorator`.  The
 complete driver including details of the packing functions can be found in
 the ``dakota/share/dakota/examples/official/drivers/Python/linked_di`` folder.
 
@@ -415,11 +387,10 @@ the ``dakota/share/dakota/examples/official/drivers/Python/linked_di`` folder.
 
 .. _`interfaces:params-and-results`:
 
-``DakotaParams`` and ``DakotaResults``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+DakotaParams and DakotaResults
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If the ``dakota`` Python package (see
-Section `1.8 <#interfaces:dakota.interfacing>`__) is available for
+If the ``dakota`` :ref:`Python package <interfaces:dakota.interfacing>` is available for
 import (e.g. has been added to the ``PYTHONPATH``), then ``dprepro``
 generates ``Parameters`` and ``Results`` objects from the Dakota
 parameters file. These are available for use in templates under the
@@ -805,10 +776,11 @@ As explained elsewhere, variables can be defined as ``Immutable(value)``
 or ``Mutable(value)``. If a variable is Immutable, it cannot be
 reassigned without first explicitly make it Mutable.
 
-*Note*: Unlike variables defined ``--include`` files
-(Section `1.9.3.7 <#interfaces:immutable-variables>`__), variables from
-files read in using the ``include()`` function are not Immutable by
-default.
+.. note::
+
+   Unlike :ref:`variables defined via - -include<interfaces:immutable-variables>`,
+   variables from files read in using the ``include()`` function are Mutable by
+   default.
 
 .. _`interfaces:print-all-variables`:
 
@@ -987,8 +959,7 @@ Name                         value
 ============================ =============
 
 Note that all trigonometric functions assume that inputs are in radians.
-See `Python’s ``math``
-library <https://docs.Python.org/3/library/math.html>`__ for more
+See `Python’s "math" library <https://docs.Python.org/3/library/math.html>`__ for more
 details. To compute based on degrees, convert first:
 
 ::
