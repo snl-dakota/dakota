@@ -16,19 +16,15 @@ surrogate model indirection. Three important examples are highlighted:
 mixed aleatory-epistemic UQ, optimization under uncertainty, and
 surrogate-based UQ.
 
-Starting with Dakota version 6.1, concurrency can now be exploited
-across sub-iteration instances. For example, multiple inner loop UQ
-assessments can be performed simultaneously within optimization under
-uncertainty or mixed aleatory-epistemic UQ studies, provided the outer
+In addition, concurrency can be exploited across sub-iteration instances.
+For example, multiple inner loop UQ assessments can be performed
+simultaneously within optimization under uncertainty or mixed
+aleatory-epistemic UQ studies, provided the outer
 loop algorithm supports concurrency in its evaluations. Both
 meta-iterators and nested models support ``iterator_servers``,
 ``processors_per_iterator``, and ``iterator_scheduling`` specifications
-which can be used to define a parallel configuration that partitions
-servers for supporting sub-iteration concurrency. Refer to
-Chapter `[parallel] <#parallel>`__ for additional information on
-parallel configurations, and to the Methods and Models chapters of the
-Reference Manual :cite:p:`RefMan` for additional information
-on these specifications.
+which can be used to define a :ref:`parallel configuration <parallel>` that partitions
+servers for supporting sub-iteration concurrency.
 
 .. _`adv_models:mixed_uq`:
 
@@ -102,22 +98,20 @@ corresponding intervals on the outputs?
 Starting from a specification of intervals and probability distributions
 on the inputs, the intervals may augment the probability distributions,
 insert into the probability distributions, or some combination (refer to
-Section `[models:nested] <#models:nested>`__ and to the Models chapter
-of the Reference Manual :cite:p:`RefMan`). We generate an
+the :ref:`Nested Models section <models:nested>` for more information). We generate an
 ensemble of cumulative distribution functions (CDF) or Complementary
 Cumulative Distribution Functions (CCDF), one CDF/CCDF result for each
 aleatory analysis. Plotting an entire ensemble of CDFs or CCDFs in a
 “horsetail” plot allows one to visualize the upper and lower bounds on
-the family of distributions (see Figure `1.1 <#fig:horsetail>`__).
+the family of distributions (see :numref:`fig:horsetail`).
 
-.. container:: center
+.. figure:: img/horsetail.png
+   :alt: Example CDF ensemble. Commonly referred to as a “horsetail” plot.
+   :name: fig:horsetail
+   :width: 3.5in
+   :align: center
 
-   .. figure:: img/horsetail.png
-      :alt: Example CDF ensemble. Commonly referred to as a “horsetail” plot.
-      :name: fig:horsetail
-      :width: 3.5in
-
-      Example CDF ensemble. Commonly referred to as a “horsetail” plot.
+   Example CDF ensemble. Commonly referred to as a “horsetail” plot.
 
 ..
    TODO:
@@ -141,9 +135,9 @@ A sample input file is shown in :numref:`adv_models:2ndprob`, in which the
 outer epistemic level variables are defined as intervals. Samples will
 be generated from these intervals to select means for :math:`X` and
 :math:`Y` that are employed in an inner level reliability analysis of
-the cantilever problem (see
-Section `[additional:cantilever] <#additional:cantilever>`__).
-Figure `[adv_models:2ndprob_res] <#adv_models:2ndprob_res>`__ shows
+the :ref:`cantilever problem <additional:cantilever>`.
+
+:numref:`adv_models:2ndprob_res` shows
 excerpts from the resulting output. In this particular example, the
 outer loop generates 50 possible realizations of epistemic variables,
 which are then sent to the inner loop to calculate statistics such as
@@ -171,12 +165,12 @@ problem.
 .. literalinclude:: ../samples/cantilever_uq_sop_rel.in
    :language: dakota
    :tab-width: 2
-   :caption: Dakota input file for the interval-valued probability
-       example -- see
-       ``dakota/share/dakota/examples/users/cantilever_uq_sop_rel.in``
+   :caption: Dakota input file for the interval-valued probability example -- see ``dakota/share/dakota/examples/users/cantilever_uq_sop_rel.in``
    :name: adv_models:2ndprob
 
-::
+.. code-block::
+   :caption: Interval-valued statistics for cantilever beam reliability indices..
+   :name: adv_models:2ndprob_res
 
    Statistics based on 50 samples:
 
@@ -198,10 +192,9 @@ potentially avoid the cost of sampling the full epistemic space.
 In ``dakota/share/dakota/test``, test input files such as
 ``dakota_uq_cantilever_ivp_exp.in`` and
 ``dakota_uq_short_column_ivp_exp.in`` replace the outer loop sampling
-with the local and global interval optimization methods described in
-Section `[uq:interval] <#uq:interval>`__. In these cases, we no longer
-generate horse tails and infer intervals, but rather compute the desired
-intervals directly.
+with the :ref:`local and global interval optimization methods <uq:interval>`.
+In these cases, we no longer generate horse tails and infer intervals,
+but rather compute the desired intervals directly.
 
 .. _`adv_models:mixed_uq:sop`:
 
@@ -216,7 +209,7 @@ probability distributions and compute epistemic statistics on the
 aleatory statistics (for example, probabilities on probabilities – the
 source of the “second-order” terminology :cite:p:`GoNg99`).
 Now the different hairs of the horsetail shown in
-Figure `1.1 <#fig:horsetail>`__ have a relative probability of
+:numref:`fig:horsetail` have a relative probability of
 occurrence and stronger inferences may be drawn. In particular, mean,
 5\ :math:`^{th}` percentile, and 95\ :math:`^{th}` percentile
 probability values are a common example. Second-order probability is
@@ -246,7 +239,7 @@ interval variables (annotated test ``#1`` in
 generating the epistemic values is essentially the same in both cases;
 however, the interpretation of results is quite different. In IVP, each
 “hair” or individual CDF in the horsetail plot in
-Figure `1.1 <#fig:horsetail>`__ would be interpreted as a possible
+:numref:`fig:horsetail` would be interpreted as a possible
 realization of aleatory uncertainty conditional on a particular
 epistemic sample realization. The ensemble then indicates the influence
 of the epistemic variables (e.g. by how widespread the ensemble is).
@@ -281,8 +274,7 @@ requirements, belief and plausibility functions provide a more finely
 resolved epistemic characterization than a basic output interval.
 
 The single-level DSTE approach for propagating epistemic uncertainties
-is described in Section `[uq:dempshaf] <#uq:dempshaf>`__ and in the
-Dakota Theory Manual :cite:p:`TheoMan`. An example of nested
+is described :ref:`in this section <uq:dempshaf>`. An example of nested
 DSTE for propagating mixed uncertainties can be seen in
 ``dakota/share/dakota/test`` in the input file
 ``dakota_uq_ishigami_dste_exp.in``.
@@ -303,7 +295,7 @@ structural components.
 
 In OUU, a nondeterministic method is used to evaluate the effect of
 uncertain variable distributions on response functions of interest
-(refer to Chapter `[uq] <#uq>`__ for additional information on
+(refer to the :ref:`main UQ section <uq>` for additional information on
 nondeterministic analysis). Statistics on these response functions are
 then included in the objective and constraint functions of an
 optimization process. Different UQ methods can have very different
@@ -318,9 +310,8 @@ provided in :cite:p:`Eld02`.
 
 Another class of OUU algorithms is called reliability-based design
 optimization (RBDO). RBDO methods are used to perform design
-optimization accounting for reliability metrics. The reliability
-analysis capabilities described in
-Section `[uq:reliability] <#uq:reliability>`__ provide a rich foundation
+optimization accounting for reliability metrics. The
+:ref:`reliability analysis capabilities <uq:reliability>` provide a rich foundation
 for exploring a variety of RBDO formulations. :cite:p:`Eld05`
 investigated bi-level, fully-analytic bi-level, and first-order
 sequential RBDO approaches employing underlying first-order reliability
@@ -331,8 +322,7 @@ underlying second-order reliability assessments.
 When using stochastic expansions for UQ, analytic moments and analytic
 design sensitivities can be exploited as described
 in :cite:p:`Eld07`. Several approaches for obtaining design
-sensitivities of statistical metrics are discussed in
-Section `1.2.5 <#adv_models:ouu:sebdo>`__.
+sensitivities of statistical metrics are discussed :ref:`here <adv_models:ouu:sebdo>`.
 
 Finally, when employing epistemic methods for UQ, the set of statistics
 available for use within optimization are interval-based. Robustness
@@ -352,7 +342,7 @@ loop which seeks to optimize a nondeterministic quantity (e.g., minimize
 probability of failure). The uncertainty quantification (UQ) inner loop
 evaluates this nondeterministic quantity (e.g., computes the probability
 of failure) for each optimization function evaluation.
-Figure `1.2 <#adv_models:figure08>`__ depicts the nested OUU iteration
+:numref:`adv_models:figure08` depicts the nested OUU iteration
 where :math:`\mathit{\mathbf{d}}` are the design variables,
 :math:`\mathit{\mathbf{u}}` are the uncertain variables characterized by
 probability distributions, :math:`\mathit{\mathbf{r_{u}(d,u)}}` are the
@@ -363,6 +353,7 @@ uncertainty quantification on these response functions.
 .. figure:: img/nested_ouu.png
    :alt: Formulation 1: Nested OUU.
    :name: adv_models:figure08
+   :align: center
 
    Formulation 1: Nested OUU.
 
@@ -378,9 +369,9 @@ keyword block is followed by the optimization specification, consisting
 of the optimization method, the continuous design variables, and the
 response quantities that will be used by the optimizer. The mapping
 matrices used for incorporating UQ statistics into the optimization
-response data are described in the Dakota Reference
-Manual :cite:p:`RefMan`. The uncertainty quantification
-specification includes the UQ method, the uncertain variable probability
+response data are described :ref:`here <model-nested-sub_method_pointer>`.
+
+The uncertainty quantification specification includes the UQ method, the uncertain variable probability
 distributions, the interface to the simulation code, and the UQ response
 attributes. As with other complex Dakota input files, the identification
 tags given in each keyword block can be used to follow the relationships
@@ -389,8 +380,7 @@ among the different keyword blocks.
 .. literalinclude:: ../samples/textbook_opt_ouu1.in
    :language: dakota
    :tab-width: 2
-   :caption: Dakota input file for the nested OUU example -- see
-       ``dakota/share/dakota/examples/users/textbook_opt_ouu1.in``
+   :caption: Dakota input file for the nested OUU example -- see ``dakota/share/dakota/examples/users/textbook_opt_ouu1.in``
    :name: adv_models:figure09
 
 Latin hypercube sampling is used as the UQ method in this example
@@ -405,8 +395,7 @@ Other nested OUU examples in the directory
 ``dakota/share/dakota/test`` include ``dakota_ouu1_tbch.in``, which
 adds an additional interface for including deterministic data in the
 textbook OUU problem, and ``dakota_ouu1_cantilever.in``, which solves
-the cantilever OUU problem (see
-Section `[additional:cantilever] <#additional:cantilever>`__) with a
+the :ref:`cantilever OUU problem <additional:cantilever>` with a
 nested approach. For each of these files, the “``1``” identifies
 formulation 1, which is short-hand for the nested approach.
 
@@ -424,7 +413,7 @@ include use of a surrogate model at the optimization level, at the
 uncertainty quantification level, or at both levels. These surrogate
 models encompass both data fit surrogates (at the optimization or UQ
 level) and model hierarchy surrogates (at the UQ level only).
-Figure `1.3 <#adv_models:figure10>`__ depicts the different
+:numref:`adv_models:figure10` depicts the different
 surrogate-based formulations where :math:`\mathbf{\hat{r}_{u}}` and
 :math:`\mathbf{\hat{s}_{u}}` are approximate response functions and
 approximate response statistics, respectively, generated from the
@@ -433,6 +422,7 @@ surrogate models.
 .. figure:: img/sbouu.png
    :alt: Formulations 2, 3, and 4 for Surrogate-based OUU.
    :name: adv_models:figure10
+   :align: center
 
    Formulations 2, 3, and 4 for Surrogate-based OUU.
 
@@ -440,10 +430,8 @@ SBOUU examples in the ``dakota/share/dakota/test`` directory include
 ``dakota_sbouu2_tbch.in``, ``dakota_sbouu3_tbch.in``, and
 ``dakota_sbouu4_tbch.in``, which solve the textbook OUU problem, and
 ``dakota_sbouu2_cantilever.in``, ``dakota_sbouu3_cantilever.in``, and
-``dakota_sbouu4_cantilever.in``, which solve the cantilever OUU
-problem (see
-Section `[additional:cantilever] <#additional:cantilever>`__). For each
-of these files, the “``2``,” “``3``,” and “``4``” identify formulations
+``dakota_sbouu4_cantilever.in``, which solve :ref:`the cantilever OUU problem <additional:cantilever>`.
+For each of these files, the “``2``,” “``3``,” and “``4``” identify formulations
 2, 3, and 4, which are short-hand for the “layered containing nested,”
 “nested containing layered,” and “layered containing nested containing
 layered” surrogate-based formulations, respectively. In general, the use
@@ -459,9 +447,8 @@ approaches.
 Trust-Region Surrogate-Based OUU (TR-SBOUU)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The TR-SBOUU approach applies the trust region logic of deterministic
-SBO (see Section `[adv_meth:sbm:sblm] <#adv_meth:sbm:sblm>`__) to SBOUU.
-Trust-region verifications are applicable when surrogates are used at
+The TR-SBOUU approach applies the :ref:`trust region logic of deterministic SBO <adv_meth:sbm:sblm>`
+to SBOUU. Trust-region verifications are applicable when surrogates are used at
 the optimization level, i.e., formulations 2 and 4. As a result of
 periodic verifications and surrogate rebuilds, these techniques are more
 expensive than SBOUU; however they are more reliable in that they
@@ -473,8 +460,7 @@ TR-SBOUU examples in the directory ``dakota/share/dakota/test``
 include ``dakota_trsbouu2_tbch.in`` and ``dakota_trsbouu4_tbch.in``,
 which solve the textbook OUU problem, and
 ``dakota_trsbouu2_cantilever.in`` and
-``dakota_trsbouu4_cantilever.in``, which solve the cantilever OUU
-problem (see Section `[additional:cantilever] <#additional:cantilever>`__).
+``dakota_trsbouu4_cantilever.in``, which solve :ref:`the cantilever OUU problem <additional:cantilever>`.
 
 Computational results for several example problems are available
 in :cite:p:`Eld02`.
@@ -486,18 +472,14 @@ RBDO
 
 Bi-level and sequential approaches to reliability-based design
 optimization (RBDO) and their associated sensitivity analysis
-requirements are described in the Optimization Under Uncertainty chapter
-of the Dakota Theory Manual :cite:p:`TheoMan`.
+requirements are described in the :ref:`Optimization Under Uncertainty theory section <ouu>`.
 
 A number of bi-level RBDO examples are provided in
 ``dakota/share/dakota/test``. The ``dakota_rbdo_cantilever.in``,
 ``dakota_rbdo_short_column.in``, and ``dakota_rbdo_steel_column.in``
-input files solve the cantilever (see
-Section `[additional:cantilever] <#additional:cantilever>`__), short
-column (see
-Section `[additional:short_column] <#additional:short_column>`__), and
-steel column (see
-Section `[additional:steel_column] <#additional:steel_column>`__) OUU
+input files solve the :ref:`cantilever <additional:cantilever>`,
+:ref:`short column <additional:short_column>`, and
+:ref:`steel column <additional:steel_column>` OUU
 problems using a bi-level RBDO approach employing numerical design
 gradients. The ``dakota_rbdo_cantilever_analytic.in`` and
 ``dakota_rbdo_short_column_analytic.in`` input files solve the
@@ -531,21 +513,16 @@ Stochastic Expansion-Based Design Optimization
 For stochastic expansion-based approaches to optimization under
 uncertainty, bi-level, sequential, and multifidelity approaches and
 their associated sensitivity analysis requirements are described in the
-Optimization Under Uncertainty chapter of the Dakota Theory
-Manual :cite:p:`TheoMan`.
+:ref:`Optimization Under Uncertainty theory section <ouu>`.
 
 In dakota/share/dakota/test, the ``dakota_pcbdo_cantilever.in``,
 ``dakota_pcbdo_rosenbrock.in``, ``dakota_pcbdo_short_column.in``, and
-``dakota_pcbdo_steel_column.in`` input files solve cantilever (see
-Section `[additional:cantilever] <#additional:cantilever>`__),
-Rosenbrock, short column (see
-Section `[additional:short_column] <#additional:short_column>`__), and
-steel column (see
-Section `[additional:steel_column] <#additional:steel_column>`__) OUU
+``dakota_pcbdo_steel_column.in`` input files solve :ref:`cantilever <additional:cantilever>`,
+Rosenbrock, :ref:`short column <additional:short_column>`, and
+:ref:`steel column <additional:steel_column>` OUU
 problems using a bi-level polynomial chaos-based approach, where the
 statistical design metrics are reliability indices based on moment
-projection (see Mean Value section in Reliability Methods Chapter of
-Dakota Theory Manual :cite:p:`TheoMan`). The test matrix in
+projection (see the :ref:`Mean Value section <theory:uq:reliability:local:mv>` in Reliability Methods theory section). The test matrix in
 the former three input files evaluate design gradients of these
 reliability indices using several different approaches: analytic design
 gradients based on a PCE formed over only over the random variables,
@@ -567,10 +544,10 @@ distribution parameters for the random variables) must be
    %where $\frac{dR}{ds}$ is calculated as $\frac{dR}{dx} \frac{dx}{ds}$.
 
 computed using
-:math:`\frac{dR}{dx} \frac{dx}{ds}` (refer to Stochastic Sensitivity
-Analysis section in Optimization Under Uncertainty chapter of Dakota
-Theory Manual :cite:p:`TheoMan`). Additional test input files
-include:
+:math:`\frac{dR}{dx} \frac{dx}{ds}` (refer to :ref:`Stochastic Sensitivity
+Analysis <ouu:sebdo:ssa>` section in the Optimization Under Uncertainty theory section).
+
+Additional test input files include:
 
 -  ``dakota_scbdo_cantilever.in``,
    ``dakota_scbdo_rosenbrock.in``,
@@ -605,8 +582,7 @@ Epistemic OUU
 ~~~~~~~~~~~~~
 
 An emerging capability is optimization under epistemic uncertainty. As
-described in the Nested Model section of the Reference
-Manual :cite:p:`RefMan`, epistemic and mixed
+described in the section on :ref:`nested models <model-nested>`, epistemic and mixed
 aleatory/epistemic uncertainty quantification methods generate lower and
 upper interval bounds for all requested response, probability,
 reliability, and generalized reliability level mappings. Design for
@@ -620,13 +596,12 @@ We now have the capability to perform epistemic analysis by using
 interval optimization on the “outer loop” to calculate bounding
 statistics of the aleatory uncertainty on the “inner loop.” Preliminary
 studies :cite:p:`Eld09b` have shown this approach is more
-efficient and accurate than nested sampling (which was described in
-Section `1.1.2 <#adv_models:mixed_uq:sop>`__). This approach uses an
+efficient and accurate than nested sampling, which was described in
+:ref:`the example from this section <adv_models:mixed_uq:sop>`. This approach uses an
 efficient global optimization method for the outer loop and stochastic
 expansion methods (e.g. polynomial chaos or stochastic collocation on
-the inner loop). The interval optimization is described in
-Section `[uq:interval] <#uq:interval>`__. Example input files
-demonstrating the use of interval estimation for epistemic analysis,
+the inner loop). The interval optimization is described :ref:`here <uq:interval>`.
+Example input files demonstrating the use of interval estimation for epistemic analysis,
 specifically in epistemic-aleatory nesting, are:
 ``dakota_uq_cantilever_sop_exp.in``, and ``dakota_short_column_sop_exp.in``.
 Both files are in ``dakota/share/dakota/test``.
@@ -682,11 +657,13 @@ dependent. If you choose to use surrogates in uncertainty
 quantification, we strongly recommend trying a variety of surrogates and
 examining diagnostic goodness-of-fit metrics.
 
-*Known Issue: When using discrete variables, there have been sometimes
-significant differences in data fit surrogate behavior observed across
-computing platforms in some cases. The cause has not yet been fully
-diagnosed and is currently under investigation. In addition, guidance on
-appropriate construction and use of surrogates with discrete variables
-is under development. In the meantime, users should therefore be aware
-that there is a risk of inaccurate results when using surrogates with
-discrete variables.*
+.. warning::
+
+   *Known Issue: When using discrete variables, there have been sometimes
+   significant differences in data fit surrogate behavior observed across
+   computing platforms in some cases. The cause has not yet been fully
+   diagnosed and is currently under investigation. In addition, guidance on
+   appropriate construction and use of surrogates with discrete variables
+   is under development. In the meantime, users should therefore be aware
+   that there is a risk of inaccurate results when using surrogates with
+   discrete variables.*
