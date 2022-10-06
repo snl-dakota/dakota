@@ -166,7 +166,9 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Note: non-zero seed would be needed for expansionSampler, if defined
   crossValidation(false), crossValidNoiseOnly(false),
   maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
-  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type),
+  expansionExportFile(
+    model.problem_description_db().get_string("method.nond.export_expansion_file"))
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
   // ----------------
@@ -247,7 +249,9 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   maxCVOrderCandidates(USHRT_MAX), respScaling(false),
   importBuildPointsFile(import_build_pts_file), l2Penalty(0.),
   numAdvance(3), expOrderSpec(exp_order), collocPtsSpec(colloc_pts),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  normalizedCoeffOutput(false), uSpaceType(u_space_type),
+  expansionExportFile(
+    model.problem_description_db().get_string("method.nond.export_expansion_file"))
   //resizedFlag(false), callResize(false)
 {
   // ----------------
@@ -347,7 +351,9 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		rule_growth, piecewise_basis, use_derivs), 
   crossValidation(false), crossValidNoiseOnly(false),
   maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
-  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type),
+  expansionExportFile(
+    model.problem_description_db().get_string("method.nond.export_expansion_file"))
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
   multilevAllocControl     = ml_alloc_control;
@@ -373,7 +379,9 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		piecewise_basis, use_derivs),
   crossValidation(cv_flag), crossValidNoiseOnly(false),
   maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
-  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type),
+  expansionExportFile(
+    model.problem_description_db().get_string("method.nond.export_expansion_file"))
   //resizedFlag(false), callResize(false)
 {
   multilevAllocControl     = ml_alloc_control;
