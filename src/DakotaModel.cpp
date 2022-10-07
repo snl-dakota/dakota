@@ -4752,16 +4752,25 @@ void Model::estimate_message_lengths()
     // currently, every processor does this estimation (no Bcast needed)
     messageLengths.assign(4, 0);
 
+    Cout << "Here... mvDist.type() = " << mvDist.type() << std::endl;
+
     if (parallelLib.mpirun_flag()) {
       MPIPackBuffer buff;
+
+      //Model & working_model = truth_model(); //(subordinate_models().size()>0) ? truth_model() : *this;
+      int i=0;
+      for( auto & m : subordinate_models() )
+        Cout << "Model " << i++ << "  " << typeid(m).name() 
+             << "  has " << m.tv() << " total vars."
+             << std::endl;
 
       // A Variables object could later be larger if it has string set
       // elements that are longer than the current value.  Create a
       // new Variables object and set the string variables to the
       // worst case before packing. Variables aren't aware of the set
       // elements, so set them here with helper functions.
-      Variables new_vars(currentVariables.copy());
-      assign_max_strings(mvDist, new_vars);
+      Variables new_vars(/* working_model. */currentVariables.copy());
+      assign_max_strings(/* working_model. */multivariate_distribution(), new_vars);
 
       buff << new_vars;
       messageLengths[0] = buff.size(); // length of message containing vars
@@ -4801,6 +4810,10 @@ void Model::
 assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 		   Variables& vars)
 {
+  Cout << "In Model::assign_max_strings with model typeid = " << typeid(*this).name() << std::endl;
+  //Cout << "mv_dist.random_variables().size() : " << mv_dist.random_variables().size() << std::endl;
+  Cout << "I have " << subordinate_models().size() << " subordinate models." << std::endl;
+
   std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mv_dist.multivar_dist_rep());
@@ -4811,7 +4824,11 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 
   // discrete design set string
   svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+  Cout << "design_counts (num_cv, num_div, num_dsv, num_drv) = "
+       << "( "<< num_cv << ", " << num_div << ", " << num_dsv 
+       << ", " << num_drv << " )" << std::endl;
   start_rv = num_cv + num_div;  end_rv = start_rv + num_dsv;
+  Cout << "\t start_rv, end_rv = " << start_rv << "\t" << end_rv << std::endl;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringSet>(rv, Pecos::DSS_VALUES, ss);
     SSCIter max_it = max_string(ss);
@@ -4821,7 +4838,11 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 
   // histogram pt string
   svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  Cout << "aleatory_uncertain_counts (num_cv, num_div, num_dsv, num_drv) = "
+       << "( "<< num_cv << ", " << num_div << ", " << num_dsv 
+       << ", " << num_drv << " )" << std::endl;
   start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
+  Cout << "\t start_rv, end_rv = " << start_rv << "\t" << end_rv << std::endl;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringRealMap>(rv, Pecos::H_BIN_PAIRS, srm);
     SRMCIter max_it = max_string(srm);
@@ -4831,7 +4852,11 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 
   // discrete epistemic set string
   svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  Cout << "epistemic_uncertain_counts (num_cv, num_div, num_dsv, num_drv) = "
+       << "( "<< num_cv << ", " << num_div << ", " << num_dsv 
+       << ", " << num_drv << " )" << std::endl;
   start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
+  Cout << "\t start_rv, end_rv = " << start_rv << "\t" << end_rv << std::endl;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringRealMap>(rv, Pecos::DUSS_VALUES_PROBS, srm);
     SRMCIter max_it = max_string(srm);
@@ -4841,9 +4866,15 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 
   // discrete state set string
   svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+  Cout << "state_counts (num_cv, num_div, num_dsv, num_drv) = "
+       << "( "<< num_cv << ", " << num_div << ", " << num_dsv 
+       << ", " << num_drv << " )" << std::endl;
   start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
+  Cout << "\t start_rv, end_rv = " << start_rv << "\t" << end_rv << std::endl;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
+    Cout << "Here..." << std::endl;
     mvd_rep->pull_parameter<StringSet>(rv, Pecos::DSS_VALUES, ss);
+    Cout << "ss.empty() ? --> " << ss.empty() << std::endl;
     SSCIter max_it = max_string(ss);
     vars.all_discrete_string_variable(*max_it, adsv_index);
   }
