@@ -39,7 +39,7 @@ sets. Whenever there exists a set of function evaluations that are
 independent, Dakota can perform them in parallel.
 
 .. note::
-    the term "function evaluation" is used broadly to mean any individual
+    The term *function evaluation* is used broadly to mean any individual
     data request from an iterative algorithm
 
 **Concurrent Execution of Sub-Iterators within a Meta-iterator or Nested
@@ -228,7 +228,7 @@ Parallel iterators
    all exploit parallelism through the use of Dakota’s native finite
    differencing routine (selected with in the responses specification),
    which will perform concurrent evaluations for each of the parameter
-   offsets. For ``n`` variables, forward differences result in an
+   offsets. For :math:`n` variables, forward differences result in an
    :math:`n+1` concurrency and central differences result in a
    :math:`2n+1` concurrency. In addition, CONMIN, DOT, and OPT++ can use
    speculative gradient techniques :cite:p:`Byr88` to obtain
@@ -257,7 +257,7 @@ Parallel iterators
    :dakkw:`method-coliny_pattern_search-exploratory_moves`
    options (:dakkw:`method-coliny_pattern_search-exploratory_moves-adaptive_pattern`
    and :dakkw:`method-coliny_pattern_search-exploratory_moves-multi_step`)
-   in pattern search (:dakkw:`method-coliny_pattern_search`)
+   in pattern search (:dakkw:`method-coliny_pattern_search`).
    :ref:`OPT++ PDS <method-optpp_pds>` and :ref:`NCSU DIRECT <method-ncsu_direct>`
    are also currently serial due to
    incompatibilities in Dakota and OPT++/NCSU parallelism models.
@@ -280,7 +280,7 @@ Parallel iterators
    In the case of :dakkw:`method-surrogate_based_local`, only a
    single point is generated per subsequent cycle, but derivative
    concurrency for numerical gradient or Hessian evaluations may be
-   available. And in the case of :dakkw:`method-surrogate_based_local`, 
+   available. And in the case of :dakkw:`method-surrogate_based_global`, 
    multiple points may be generated on
    each subsequent cycle, depending on the multipoint return
    capability of specific minimizers.
@@ -352,12 +352,11 @@ fixed set of jobs to perform and should exhibit good load balancing.
 
 Parallel models
 ^^^^^^^^^^^^^^^
-
-Parallelism support in :ref:`model <models:main>` is an important issue for
-
 ..
    TODO: %variable scaling (see Section~\ref{opt:additional:scaling}) and 
 
+
+Parallelism support in :ref:`model <models:main>` is an important issue for
 advanced model recursions such as surrogate-based minimization, optimization under
 uncertainty, and mixed aleatory-epistemic UQ (see
 the :ref:`Advanced Method <adv_meth>` and :ref:`Advanced Model <adv_models>` pages).
@@ -459,7 +458,7 @@ approach is used in most cases:
    entering and leaving continuously. There are no defined
    synchronization points for the algorithm, which requires specialized
    algorithm logic. Sometimes referred to as "fully asynchronous" algorithms,
-   these currently include :dakkw:method-coliny_pattern_search`,
+   these currently include :dakkw:`method-coliny_pattern_search`,
    :dakkw:`method-asynch_pattern_search`, and :dakkw:`method-efficient_global` with
    the :dakkw:`method-efficient_global-batch_size-synchronization-nonblocking` option.
 
@@ -559,7 +558,7 @@ Dakota process.
 
 .. note:: 
     Detection of the string "fail" is not a response
-    recovery error; see `Simulation Failure Capturing <failure>`.
+    recovery error; see :ref:`Simulation Failure Capturing <failure>`.
 
 Asynchronous operation involves spawning the system call in the
 background, continuing with other tasks (e.g., spawning other system
@@ -795,7 +794,7 @@ job number will replace a completed job. This includes some modes of
 application tiling with certain MPI implementations, where sending a job
 to the correct subset of available processors is done with relative node
 scheduling. The keywords
-:dakkw:`local_evaluation_scheduling dynamic <interface-asynchronous-local_evaluation_scheduling-static>`
+:dakkw:`local_evaluation_scheduling static <interface-asynchronous-local_evaluation_scheduling-static>`
 forces this behavior, so a completed evaluation will be replaced with one
 congruent modulo the evaluation concurrency. For example, with 6
 concurrent jobs, eval number 2 will be replaced with eval number 8.
@@ -842,8 +841,8 @@ These models are depicted in :numref:`parallel:figure01`. The
 peer partition is desirable since it utilizes all processors for
 computation; however, it requires either the use of sophisticated
 mechanisms for distributed scheduling or a problem for which static
-scheduling of concurrent work performs well (see *Scheduling* below). If
-neither of these characteristics is present, then use of the dedicated
+scheduling of concurrent work performs well (see :ref:`Scheduling <parallel:SLP:message:sched>` 
+below). If neither of these characteristics is present, then use of the dedicated
 master partition supports a dynamic scheduling which assures that server
 idleness is minimized.
 
@@ -1068,7 +1067,7 @@ the internal distribution of work based on message-passing is being
 combined with external allocation using asynchronous local
 approaches.
 
-..note::
+.. note::
     The term "hybrid parallelism" is often used to describe the
     combination of MPI message passing and OpenMP shared memory
     parallelism models. This can be considered to be a special case of
@@ -1739,7 +1738,7 @@ In addition, :dakkw:`interface-evaluation_servers`, :dakkw:`interface-processors
 and :dakkw:`interface-evaluation_scheduling` keywords can be used to
 override the automatic parallel configuration for concurrent function
 evaluations. Evaluation scheduling may be selected to be
-`:dakkw:`interface-evaluation_scheduling-master` or :dakkw:`interface-evaluation_scheduling-peer`,
+:dakkw:`interface-evaluation_scheduling-master` or :dakkw:`interface-evaluation_scheduling-peer`,
 where the latter must be further specified to be
 :dakkw:`interface-evaluation_scheduling-peer-dynamic` or :dakkw:`interface-evaluation_scheduling-peer-static`.
 
@@ -1776,7 +1775,7 @@ Single-processor Dakota specification
 
 Specifying a single-processor Dakota job that exploits parallelism
 through asynchronous local approaches (see
-:numref:`parallel:figure03`) requires inclusion of the
+:numref:`Fig. {number}a <parallel:figure03>`) requires inclusion of the
 :dakkw:`interface-asynchronous` keyword in the interface specification.
 Once the input file is defined, single-processor Dakota jobs are executed
 using the command syntax described previously in
@@ -1889,9 +1888,9 @@ Multiprocessor Dakota specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In multiprocessor executions, server evaluations are synchronous
-(:numref:`parallel:figure03` a) by default and the
+(:numref:`Fig. {number}a <parallel:figure03>`) by default and the
 ``asynchronous`` keyword is only used if a hybrid parallelism approach
-(:numref:`parallel:figure03` c) is desired. Multiprocessor
+(:numref:`Fig. {number}c <parallel:figure03>`) is desired. Multiprocessor
 Dakota jobs are executed using the command syntax described previously
 in :ref:`Multiprocessor execution <parallel:running:multiprocessor>`
 
@@ -1965,7 +1964,7 @@ As a related example, consider the case where each of the workstations
 used in the parallel execution has multiple processors. In this case, a
 hybrid parallelism approach which combines message-passing parallelism
 with asynchronous local parallelism (see
-:numref:`parallel:figure03` c) would be a good choice. To
+:numref:`Fig. {number}c <parallel:figure03>`) would be a good choice. To
 specify hybrid parallelism, one uses the same :dakkw:`interface-asynchronous`
 specification as was used for the single-processor examples, e.g.:
 
