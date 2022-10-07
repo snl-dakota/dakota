@@ -1288,7 +1288,7 @@ template <typename OrdinalType, typename ScalarType>
 inline ScalarType find_min(
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec)
 {
-  size_t i, len = vec.length();
+  OrdinalType i, len = vec.length();
   ScalarType min = (len) ? vec[0] : std::numeric_limits<ScalarType>::max();
   for (i=1; i<len; ++i)
     if (vec[i] < min)
@@ -1297,12 +1297,11 @@ inline ScalarType find_min(
 }
 
 
-template <typename ScalarType>
-inline ScalarType find_min(const ScalarType* vec, size_t len)
+template <typename OrdinalType, typename ScalarType>
+inline ScalarType find_min(const ScalarType* vec, OrdinalType len)
 {
-  size_t i;
   ScalarType min = (len) ? vec[0] : std::numeric_limits<ScalarType>::max();
-  for (i=1; i<len; ++i)
+  for (OrdinalType i=1; i<len; ++i)
     if (vec[i] < min)
       min = vec[i];
   return min;
@@ -1325,9 +1324,20 @@ template <typename OrdinalType, typename ScalarType>
 inline ScalarType find_max(
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec)
 {
-  size_t i, len = vec.length();
+  OrdinalType i, len = vec.length();
   ScalarType max = (len) ? vec[0] : std::numeric_limits<ScalarType>::min();
   for (i=1; i<len; ++i)
+    if (vec[i] > max)
+      max = vec[i];
+  return max;
+}
+
+
+template <typename OrdinalType, typename ScalarType>
+inline ScalarType find_max(const ScalarType* vec, const OrdinalType len)
+{
+  ScalarType max = (len) ? vec[0] : std::numeric_limits<ScalarType>::min();
+  for (OrdinalType i=1; i<len; ++i)
     if (vec[i] > max)
       max = vec[i];
   return max;
