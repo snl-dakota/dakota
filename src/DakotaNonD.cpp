@@ -574,7 +574,8 @@ load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
   }
 
   Cout << "\nMultilevel-multifidelity pilot sample:\n";
-  print_multilevel_evaluation_summary(Cout, delta_N_l);
+  print_multilevel_model_summary(Cout, delta_N_l, "Pilot",
+				 discrepancy_sample_counts());
 }
 
 
@@ -1113,7 +1114,8 @@ print_multilevel_evaluation_summary(std::ostream& s, const SizetArray& N_samp)
 {
   size_t j, width = write_precision+7, num_lev = N_samp.size();
   for (j=0; j<num_lev; ++j)
-    s << "                     " << std::setw(width) << N_samp[j] << '\n';
+    s << "                     " << std::setw(width) << N_samp[j]
+      << "  QoI_lev" << j << '\n'; // QoI counts
 }
 
 
@@ -1130,8 +1132,63 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
 	for (size_t q=1; q<num_q; ++q)
 	  s << ' ' << N_j[q];
       }
-      s << '\n';
+      s << "  QoI_lev" << j << '\n';
     }
+  }
+}
+
+
+void NonD::
+print_multilevel_discrepancy_summary(std::ostream& s, const SizetArray& N_samp)
+{
+  size_t j, N_unroll, width = write_precision+7, num_lev = N_samp.size(),
+    num_discrep = num_lev - 1;
+  for (j=0; j<num_lev; ++j) {
+    s << std::setw(width) << N_samp[j] << "  Discrep_lev" << j;
+    N_unroll = (j<num_discrep) ?  N_samp[j] + N_samp[j+1] : N_samp[j];
+    s << std::setw(width) << N_unroll  << "  QoI_lev"     << j << '\n';
+  }
+}
+
+
+void NonD::
+print_multilevel_row(std::ostream& s, const SizetArray& N_j)
+{
+  s << std::setw(write_precision+7) << N_j[0];
+  if (!homogeneous(N_j)) { // print all QoI counts in this 1D array
+    size_t q, num_q = N_j.size();
+    for (size_t q=1; q<num_q; ++q)
+      s << ' ' << N_j[q];
+  }
+}
+
+
+void NonD::
+print_multilevel_row(std::ostream& s, const SizetArray& N_j,
+		     const SizetArray& N_jp1)
+{
+  s << std::setw(write_precision+7) << N_j[0] + N_jp1[0];
+  if (!homogeneous(N_j) || !homogeneous(N_jp1)) {
+    size_t q, num_q = N_j.size();
+    for (size_t q=1; q<num_q; ++q)
+      s << ' ' << N_j[q] + N_jp1[q];
+  }
+}
+
+
+void NonD::
+print_multilevel_discrepancy_summary(std::ostream& s,const Sizet2DArray& N_samp)
+{
+  size_t j, N_unroll, width = write_precision+7, num_lev = N_samp.size(),
+    num_discrep = num_lev - 1;
+  for (j=0; j<num_lev; ++j) {
+    const SizetArray& N_j = N_samp[j];
+    if (N_j.empty()) continue;
+    print_multilevel_row(s, N_j);
+    s << "  Discrep_lev" << j;
+    if (j<num_discrep) print_multilevel_row(s, N_j, N_samp[j+1]);
+    else               print_multilevel_row(s, N_j);
+    s << "  QoI_lev" << j << '\n';
   }
 }
 

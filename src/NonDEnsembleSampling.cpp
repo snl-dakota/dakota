@@ -209,17 +209,20 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   if (!statsFlag)
     return;
 
-  bool   pilot_mode   = (pilotMgmtMode == PILOT_PROJECTION);
-  String summary_type = (pilot_mode) ? "Projected" : "Online Allocation";
+  bool   pilot_mode   = (pilotMgmtMode == PILOT_PROJECTION),
+         discrep_flag = discrepancy_sample_counts();
+  String summary_type = (pilot_mode) ? "Projected " : "Online ";
   // For consistency w/ equivHFEvals, report allocated first.
   // Any offline pilot samples (N_pilot in *_offline()) are excluded.
-  print_multilevel_evaluation_summary(s, NLevAlloc, summary_type);
+  print_multilevel_model_summary(s, NLevAlloc, summary_type + "allocation",
+				 discrep_flag);
   s << "<<<<< " << summary_type
-    << " number of equivalent high fidelity evaluations: " << std::scientific
+    << "number of equivalent high fidelity evaluations: " << std::scientific
     << std::setprecision(write_precision) << equivHFEvals << '\n';
   archive_equiv_hf_evals(equivHFEvals);
-  if (!pilot_mode) // && faults_detected ?
-    print_multilevel_evaluation_summary(s, NLevActual, "Online Successful");
+  //if (faults_detected())
+  //  print_multilevel_model_summary(s, NLevActual, summary_type + "successful",
+  //                                 discrep_flag);
 
   print_variance_reduction(s);
 

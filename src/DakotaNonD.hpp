@@ -123,6 +123,9 @@ protected:
   /// update finalStatistics::functionValues
   virtual void update_final_statistics();
 
+  /// flag identifying whether sample counts correspond to level discrepancies
+  virtual bool discrepancy_sample_counts() const;
+
   //
   //- Heading: Utility routines
   //
@@ -198,12 +201,22 @@ protected:
   /// level+QoI profile
   void print_multilevel_evaluation_summary(std::ostream& s,
 					   const Sizet2DArray& N_samp);
+
+  /// print evaluation summary for multilevel sampling across 1D level profile
+  void print_multilevel_discrepancy_summary(std::ostream& s,
+					    const SizetArray& N_samp);
+  /// print evaluation summary for multilevel sampling across 2D
+  /// level+QoI profile
+  void print_multilevel_discrepancy_summary(std::ostream& s,
+					    const Sizet2DArray& N_samp);
+
   /// print evaluation summary for multilevel sampling across 2D model+level
   /// profile (allocations) or 3D model+level+QoI profile (successful)
   template <typename ArrayType>
-  void print_multilevel_evaluation_summary(std::ostream& s,
-					   const std::vector<ArrayType>& N_samp,
-					   String type);// = "Final");
+  void print_multilevel_model_summary(std::ostream& s,
+				      const std::vector<ArrayType>& N_samp,
+				      String type,// = "Final");
+				      bool discrep_flag);
 
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
@@ -346,6 +359,12 @@ private:
   void print_level_map(std::ostream& s, size_t fn_index,
 		       const String& qoi_label) const;
 
+  /// print an set of aggregated QoI sample counts for a level
+  void print_multilevel_row(std::ostream& s, const SizetArray& N_j);
+  /// print an unrolled set of aggregated QoI sample counts for a level
+  void print_multilevel_row(std::ostream& s, const SizetArray& N_j,
+			    const SizetArray& N_jp1);
+
   /// return true if N_l has consistent values
   bool homogeneous(const SizetArray& N_l) const;
 
@@ -419,6 +438,10 @@ inline void NonD::print_level_mappings(std::ostream& s) const
 
 inline void NonD::print_densities(std::ostream& s) const
 { print_densities(s, "response function", iteratedModel.response_labels()); }
+
+
+inline bool NonD::discrepancy_sample_counts() const
+{ return false; }
 
 
 inline bool NonD::homogeneous(const SizetArray& N_l) const
@@ -626,9 +649,9 @@ inflate_sequence_samples(const ArrayType& N_l_2D, bool multilev,
 
 
 template <typename ArrayType> void NonD::
-print_multilevel_evaluation_summary(std::ostream& s,
-				    const std::vector<ArrayType>& N_samp,
-				    String type)
+print_multilevel_model_summary(std::ostream& s,
+			       const std::vector<ArrayType>& N_samp,
+			       String type, bool discrep_flag)
 {
   // Sizet3DArray used for successful sample counts --> Nsamp[i] binds with 2D
 
@@ -638,18 +661,20 @@ print_multilevel_evaluation_summary(std::ostream& s,
   size_t i, j, num_mf = N_samp.size(), width = write_precision+7;
   if (num_mf == 1) {
     s << "<<<<< " << type << " samples per level:\n";
-    print_multilevel_evaluation_summary(s, N_samp[0]);
+    if (discrep_flag) print_multilevel_discrepancy_summary(s, N_samp[0]);
+    else              print_multilevel_evaluation_summary(s,  N_samp[0]);
   }
   else {
     ModelList& sub_models = iteratedModel.subordinate_models(false);
-    ModelLIter m_iter = sub_models.begin();
+    ModelLIter     m_iter = sub_models.begin();
     s << "<<<<< " << type << " samples per model form:\n";
     for (i=0; i<num_mf; ++i) {
       s << "      Model Form ";
       if (m_iter != sub_models.end())
 	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
       else s << i+1 << ":\n";
-      print_multilevel_evaluation_summary(s, N_samp[i]);
+      if (discrep_flag) print_multilevel_discrepancy_summary(s, N_samp[i]);
+      else              print_multilevel_evaluation_summary(s,  N_samp[i]);
     }
   }
 }

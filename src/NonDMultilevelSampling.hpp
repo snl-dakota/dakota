@@ -61,6 +61,8 @@ protected:
   void nested_response_mappings(const RealMatrix& primary_coeffs,
 				const RealMatrix& secondary_coeffs);
 
+  bool discrepancy_sample_counts() const;
+
   //
   //- Heading: Member functions
   //
@@ -577,6 +579,10 @@ level_cost(const RealVector& cost, size_t step)
     cost[step] + cost[step-1] : // aggregated {HF,LF} mode
     cost[step];                 //     uncorrected LF mode
 }
+
+
+inline bool NonDMultilevelSampling::discrepancy_sample_counts() const
+{ return true; }
 
 
 inline void NonDMultilevelSampling::

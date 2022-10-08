@@ -55,6 +55,8 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   void print_variance_reduction(std::ostream& s);
 
+  bool discrepancy_sample_counts() const;
+
 private:
 
   //
@@ -327,6 +329,10 @@ private:
 
 inline NonDMultilevControlVarSampling::~NonDMultilevControlVarSampling()
 { }
+
+
+inline bool NonDMultilevControlVarSampling::discrepancy_sample_counts() const
+{ return true; }
 
 
 inline void NonDMultilevControlVarSampling::
