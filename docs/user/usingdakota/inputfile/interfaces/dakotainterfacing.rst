@@ -25,222 +25,257 @@ The following sections describe the components of
    ``Results``, ``BatchParameters``, and ``BatchResults`` objects from a
    Dakota parameters file.
 
-Creating Parameters and Results objects
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+API
+~~~
 
-``dakota.interfacing`` has one free function, ``read_parameters_file``,
-which creates ``Parameters``, ``Results``, ``BatchParameters``, and
-``BatchResults`` objects from a Dakota parameters file. For single,
-non-batch evaluation, it returns a tuple that contains
-``(Parameters, Results)``. For batch evaluations, it instead returns a
-tuple containing ``(BatchParameters, BatchResults)``.
+.. method:: dakota.interfacing.read_parameters_file(parameters_file=None, \
+    results_file=None, ignore_asv=False, batch=False, infer_types=True, \
+    types=None)
+           
+    Creates ``Parameters``, ``Results``, ``BatchParameters``, and ``BatchResults`` objects from a Dakota parameters file.
+           
+    :param parameters_file: The names of the parameter file that is to be read.
+                            The name can be an absolute or relative filepath, or just a filename.
+                            If a parameters file is not provided, it will be obtained from the command line arguments.
+                            (The parameters filename is assumed to be the second-to-last argument.)
+                            Note that if the working directory has changed since script invocation,
+                            filenames provided as command line arguments by Dakota’s ``fork`` or ``system``
+                            interfaces may be incorrect.           
+    :param results_file: The name of the results file that ultimately is to be
+                         written. The name can be an absolute or relative filepaths, or just a filename.
+                         If a results file is not provided, it will be obtained from the command line arguments.
+                         (The results filename is assumed to be the last command line argument.) Note that
+                         if the working directory has changed since script invocation, filenames provided
+                         as command line arguments by Dakota’s ``fork`` or ``system`` interfaces may be incorrect.
+                         If *results_file* is set to the constant ``dakota.interfacing.UNNAMED``, the ``Results``
+                         or ``BatchResults`` object is constructed without a results file name. In this case, an
+                         output stream must be provided when ``Results.write()`` or ``BatchResults.write()`` is
+                         called. Unnamed results files are most helpful when no results file will be written,
+                         as with a script intended purely for pre-processing.
+    :param ignore_asv: By default, the returned ``Results`` or ``BatchResults`` object enforces
+                       the active set vector (see the ``Results`` class section). This behavior
+                       can be overridden, allowing any property (function, gradient, Hessian)
+                       of a response to be set, by setting this field to ``True``. This option can be useful when
+                       setting up or debugging a driver.
+    :param batch: Must be set to ``True`` when batch evaluation has been requested in the Dakota input file, and ``False`` when not.
+    :param infer_types: Controls how types are assigned to parameter values.  The values initially are read
+                        as strings from the Dakota parameters file. If ``infer_types`` is ``False`` and ``types`` is ``None``,
+                        they remain as type ``str``. If ``infer_types`` is ``True``, an attempt is made to "guess" more
+                        convenient types. Conversion first to ``int`` and then to ``float`` are tried. If both fail, the value remains a ``str``.
+    :param type: Controls how types are assigned to parameter values.  The values initially are read
+                 as strings from the Dakota parameters file. If ``infer_types`` is ``False`` and ``types`` is ``None``,
+                 they remain as type ``str``. If ``infer_types`` is ``True``, an attempt is made to "guess" more
+                 convenient types. Conversion first to ``int`` and then to ``float`` are tried. If both fail, the value remains a ``str``.
+                 
+    :return: For single, non-batch evaluation, it returns a tuple that contains ``(Parameters, Results)``. For batch evaluations, it instead returns a tuple containing ``(BatchParameters, BatchResults)``.
 
-Its signature is:
-
-.. code-block::
-
-   dakota.interfacing.read_parameters_file (parameters_file=None, results_file=None, ignore_asv=False, batch=False, infer_types=True, types=None)
-
-*parameters_file* and *results_file* are the names of the parameters
-file that is to be read and the results file that ultimately is to be
-written. The names can be absolute or relative filepaths or just
-filenames. If a parameters file or results file is not provided, it will
-be obtained from the command line arguments. (The results filename is
-assumed to be the last command line argument, and the parameters file
-the second to last.) Note that if the working directory has changed
-since script invocation, filenames provided as command line arguments by
-Dakota’s ``fork`` or ``system`` interfaces may be incorrect.
-
-If *results_file* is set to the constant
-``dakota.interfacing.UNNAMED``, the ``Results`` or ``BatchResults``
-object is constructed without a results file name. In this case, an
-output stream must be provided when
-``Results.write()`` or ``BatchResults.write()`` is called. Unnamed
-results files are most helpful when no results file will be written,
-as with a script intended purely for pre-processing.
-
-By default, the returned ``Results`` or ``BatchResults`` object enforces
-the active set vector (see the ``Results`` class section). This behavior
-can be overridden, allowing any property (function, gradient, Hessian)
-of a response to be set, by setting *ignore_asv* to ``True``. The
-*ignore_asv* option can be useful when setting up or debugging a driver.
-
-The ``batch`` argument must be set to ``True`` when batch evaluation has
-been requested in the Dakota input file, and ``False`` when not.
-
-The final two arguments, ``infer_types`` and ``types``, control how
-types are assigned to parameter values.  The values initially are read
-as strings from the Dakota parameters file. If ``infer_types`` is
-``False`` and ``types`` is ``None``, they remain as type ``str``. If
-``infer_types`` is ``True``, an attempt is made to "guess" more
-convenient types. Conversion first to ``int`` and then to ``float``
-are tried. If both fail, the value remains a ``str``.
-
-Sometimes automatic type inference does not work as desired; a user
-may have a string-valued variable with the element "5", for example,
-that he does not want converted to an ``int``. Or, a user may wish to
-convert to a custom type, such as ``np.float64`` instead of the
-built-in Python ``float``. The ``types`` argument is useful in these
-cases. It can be set either to a ``list`` of types or a ``dict`` that
-maps variable labels to types. Types communicated using the ``types``
-argument override inferred types. If ``types`` is a list, it must have
-a length equal to the number of variables. A dictionary, on the other
-hand, need not contain types for every variable. This permits
-variable-by-variable control over assignment and inference of types.
+.. note::
+   
+   Sometimes automatic type inference does not work as desired; a user
+   may have a string-valued variable with the element "5", for example,
+   that he does not want converted to an ``int``. Or, a user may wish to
+   convert to a custom type, such as ``np.float64`` instead of the
+   built-in Python ``float``. The ``types`` argument is useful in these
+   cases. It can be set either to a ``list`` of types or a ``dict`` that
+   maps variable labels to types. Types communicated using the ``types``
+   argument override inferred types. If ``types`` is a list, it must have
+   a length equal to the number of variables. A dictionary, on the other
+   hand, need not contain types for every variable. This permits
+   variable-by-variable control over assignment and inference of types.
 
 
-Parameters objects
-~~~~~~~~~~~~~~~~~~
+.. class:: Parameters
 
-``Parameters`` objects make the variables, analysis components,
-evaluation ID, and evaluation number read from a Dakota parameters file
-available through a combination of key-value access and object
-attributes. Although ``Parameters`` objects may be constructed directly,
-it is advisable to use the ``read_parameters_file`` function instead.
+    ``Parameters`` objects make the variables, analysis components,
+    evaluation ID, and evaluation number read from a Dakota parameters file
+    available through a combination of key-value access and object
+    attributes. Although ``Parameters`` objects may be constructed directly,
+    it is advisable to use the ``read_parameters_file`` function instead.
 
-Variable values can be accessed by Dakota descriptor or by index using
-[] on the object itself. Variables types (integer, real, string) are
-inferred by first attempting to convert to ``int`` and then, if this
-fails, to ``float``.
+    Variable values can be accessed by Dakota descriptor or by index using
+    [] on the object itself. Variables types (integer, real, string) are
+    inferred by first attempting to convert to ``int`` and then, if this
+    fails, to ``float``.
 
-Variable values can be accessed by Dakota descriptor or by index using
-``[]`` on the object itself. Variables types are inferred or set as
-described in the previous section.
- 
+    Variable values can be accessed by Dakota descriptor or by index using
+    ``[]`` on the object itself. Variables types are inferred or set as
+    described in the previous section.
 
-Analysis components are accessible by index only using the ``an_comps``
-attribute. Iterating over a ``Parameters`` object yields the variable
-descriptors.
+    Analysis components are accessible by index only using the ``an_comps``
+    attribute. Iterating over a ``Parameters`` object yields the variable
+    descriptors.
 
-``Parameters`` objects have the attributes:
+   .. attribute:: an_comps
+   
+      List of the analysis components (strings).
 
--  ``an_comps`` - List of the analysis components (strings).
--  ``eval_id`` - Evaluation id (string).
--  ``eval_num`` - Evaluation number (final token in eval_id) (int).
--  ``aprepro_format`` - Boolean indicating whether the parameters file was in aprepro (True)
-   or Dakota (False) format.
--  ``descriptors`` - List of the variable descriptors
--  ``num_variables`` - Number of variables
--  ``num_an_comps`` - Number of analysis components
--  ``metadata`` - Names of requested metadata fields (strings)
--  ``num_metadata`` - Number of requested metadata fields.
+   .. attribute:: eval_id
+   
+      Evaluation id (string).
+      
+   .. attribute:: eval_num
+     
+      Evaluation number (final token in eval_id) (int).
+      
+   .. attribute:: aprepro_format
+   
+      Boolean indicating whether the parameters file was in aprepro (True) or Dakota (False) format.
+      
+   .. attribute:: descriptors
+   
+      List of the variable descriptors
+      
+   .. attribute:: num_variables
+      
+      Number of variables
+      
+   .. attribute:: num_an_comps
+      
+      Number of analysis components
+      
+   .. attribute:: metadata
+   
+      Names of requested metadata fields (strings)
+      
+   .. attribute:: num_metadata
+   
+      Number of requested metadata fields.
 
-Parameters objects have the methods:
+   .. method:: items()
+   
+      Return an iterator that yields tuples of the descriptor and value for each parameter. (``Results`` objects also have ``items()``.)
+      
+   .. method:: values()
+   
+      Return an iterator that yields the value for each parameter. (``Results`` objects have the corresponding method ``responses()``.)
 
--  ``items()`` - Return an iterator that yields tuples of the descriptor and value for each
-   parameter. (``Results`` objects also have ``items()``.)
--  ``values()`` - Return an iterator that yields the value for each parameter.
-   (``Results`` objects have the corresponding method ``responses()``.)
+.. class:: Results
 
-Results objects
-~~~~~~~~~~~~~~~
+    ``Results`` objects do the following:
 
-``Results`` objects:
+    -  communicate response requests from Dakota (active set vector and
+       derivative variables)
+    -  collect response data (function values, gradients, and Hessians)
+    -  write Dakota results files
 
--  communicate response requests from Dakota (active set vector and
-   derivative variables)
--  collect response data (function values, gradients, and Hessians)
--  write Dakota results files
+    ``Results`` objects are collections of ``Response`` objects, which are
+    documented in the following section. Each ``Response`` can be accessed
+    by name (Dakota descriptor) or by index using ``[]`` on the ``Results``
+    object itself. Iterating over a ``Results`` object yields the response
+    descriptors. Although ``Results`` objects may be constructed directly,
+    it is advisable to use the ``read_parameters_file`` function instead.
 
-``Results`` objects are collections of ``Response`` objects, which are
-documented in the following section. Each ``Response`` can be accessed
-by name (Dakota descriptor) or by index using ``[]`` on the ``Results``
-object itself. Iterating over a ``Results`` object yields the response
-descriptors. Although ``Results`` objects may be constructed directly,
-it is advisable to use the ``read_parameters_file`` function instead.
+   .. attribute:: eval_id
+   
+      Evaluation id (a string).
+      
+   .. attribute:: eval_num
+   
+      Evaluation number (final token in eval_id) (int).
+      
+   .. attribute:: aprepro_format
+   
+      Boolean indicating whether the parameters file was in aprepro (True) or Dakota (False) format.
+      
+   .. attribute:: descriptors
+   
+      List of the response descriptors (strings)
+     
+   .. attribute:: num_responses
+      
+      Number of variables (read-only)
+      
+   .. attribute:: deriv_vars
+   
+      List of the derivative variables (strings)
+      
+   .. attribute:: num_deriv_vars
+     
+      Number of derivative variables (int)
 
-Results objects have the attributes:
+   .. method:: items()
+   
+      Return an iterator that yields tuples of the descriptor and ``Response`` object for each response. (``Parameters`` objects also have ``items()``.)
+      
+   .. method:: responses()
+   
+      Return an iterator that yields the ``Response`` object for each response. (``Parameters`` objects have the corresponding method ``values()``.)
+      
+   .. method:: fail()
+   
+      Set the FAIL attribute. When the results file is written, it will contain only the word FAIL, triggering :ref:`Dakota’s failure capturing behavior <failure>`.
+   
+   .. method:: write (stream=None, ignore_asv=None)
+   
+      Write the results to the Dakota results file.
+      
+      :param stream: If *stream* is set, it overrides the results file name provided at construct time. It must be an open file-like object, rather than the name of a file.
+      :param ignore_asv: If *ignore_asv* is True, the file will be written even if information requested via the active set vector is missing.
 
--  ``eval_id`` - Evaluation id (a string).
--  ``eval_num`` - Evaluation number (final token in eval_id) (int).
--  ``aprepro_format`` - Boolean indicating whether the parameters file was in aprepro (True)
-   or Dakota (False) format.
--  ``descriptors`` - List of the response descriptors (strings)
--  ``num_responses`` - Number of variables (read-only)
--  ``deriv_vars`` - List of the derivative variables (strings)
--  ``num_deriv_vars`` - Number of derivative variables (int)
+.. note::
+      
+   Calling ``write()`` on a ``Results`` object that was generated by reading a batch parameters file will raise a ``BatchWriteError``.
+   Instead, ``write()`` should be called on the containing ``BatchResults`` object.
 
-Results objects have the methods:
+.. class:: Response
 
--  ``items()`` - Return an iterator that yields tuples of the descriptor and ``Response`` object
-   for each response. (``Parameters`` objects also have ``items()``.)
--  ``responses()`` - Return an iterator that yields the ``Response`` object for each
-   response. (``Parameters`` objects have the corresponding method
-   ``values()``.)
--  ``fail()`` - Set the FAIL attribute. When the results file is written, it will contain
-   only the word FAIL, triggering :ref:`Dakota’s failure capturing behavior <failure>`.
--  ``write (stream=None, ignore_asv=None)`` - Write the results to the Dakota results file. If
-   *stream* is set, it overrides the results file name provided at
-   construct time. It must be an open file-like object, rather than the
-   name of a file. If *ignore_asv* is True, the file will be written
-   even if information requested via the active set vector is missing.
-   Calling ``write()`` on a ``Results`` object that was generated by
-   reading a batch parameters file will raise a ``BatchWriteError``.
-   Instead, ``write()`` should be called on the containing
-   ``BatchResults`` object.
+    ``Response`` objects store response information. They typically are instantiated and accessed through a Results object by index or response
+    descriptor using [].
 
-Response object
-~~~~~~~~~~~~~~~
+   .. attribute:: asv
+      
+      A ``collections.namedtuple`` with three members, *function*, *gradient*, and *hessian*. Each is a boolean indicating whether
+      Dakota requested the associated information for the response.
+      
+   .. attribute:: namedtuples
+   
+      These can be accessed by index or by member.
+      
+   .. attribute:: function
+   
+      Function value for the response. A ResponseError is raised if Dakota did not request the function value (and ignore_asv is False).
+      
+   .. attribute:: gradient
+   
+      Gradient for the response. Gradients must be a 1D iterable of values that can be converted to floats, such as a ``list`` or 1D
+      ``numpy array``. A ResponseError is raised if Dakota did not request the gradient (and ignore_asv is False), or if the number of elements
+      does not equal the number of derivative variables.
 
-``Response`` objects store response information. They typically are
-instantiated and accessed through a Results object by index or response
-descriptor using [].
+   .. attribute:: hessian
+      
+      Hessian value for the response. Hessians must be an iterable of iterables (e.g. a 2D ``numpy array`` or list of lists). A ResponseError is
+      raised if Dakota did not request the Hessian (and ignore_asv is False), or if the dimension does not correspond correctly with the
+      number of derivative variables.
 
-``Response``\ s have the attributes:
+.. class:: BatchParameters
 
--  ``asv`` - A ``collections.namedtuple`` with three members, *function*,
-   *gradient*, and *hessian*. Each is a boolean indicating whether
-   Dakota requested the associated information for the response.
-   ``namedtuples`` can be accessed by index or by member.
--  ``function`` - Function value for the response. A ResponseError is raised if Dakota
-   did not request the function value (and ignore_asv is False).
--  ``gradient`` - Gradient for the response. Gradients must be a 1D iterable of values
-   that can be converted to floats, such as a ``list`` or 1D
-   ``numpy array``. A ResponseError is raised if Dakota did not request
-   the gradient (and ignore_asv is False), or if the number of elements
-   does not equal the number of derivative variables.
--  ``hessian`` - Hessian value for the response. Hessians must be an iterable of iterables
-   (e.g. a 2D ``numpy array`` or list of lists). A ResponseError is
-   raised if Dakota did not request the Hessian (and ignore_asv is
-   False), or if the dimension does not correspond correctly with the
-   number of derivative variables.
+    ``BatchParameters`` objects are collections of ``Parameters`` objects. The individual ``Parameters`` objects can be accessed by index ([]) or
+    by iterating the ``BatchParameters`` object. Although ``BatchParameters`` objects may be constructed directly, it is advisable
+    to use the ``read_parameters_file`` function instead.
 
-BatchParameters object
-~~~~~~~~~~~~~~~~~~~~~~
+   .. attribute:: batch_id
+   
+      The "id" of this batch of evaluations, reported by Dakota (string).
 
-``BatchParameters`` objects are collections of ``Parameters`` objects.
-The individual ``Parameters`` objects can be accessed by index ([]) or
-by iterating the ``BatchParameters`` object. Although
-``BatchParameters`` objects may be constructed directly, it is advisable
-to use the ``read_parameters_file`` function instead.
+.. class:: BatchResults
 
-``BatchParameters`` objects have one attribute.
+    ``BatchResults`` objects are collections of ``Results`` objects. The individual ``Results`` objects can be accessed by index ([]) or by
+    iterating the ``BatchResults`` object. Although ``BatchResults`` objects may be constructed directly, it is advisable to use the
+    ``read_parameters_file`` function instead.
 
-- ``batch_id`` - The "id" of this batch of evaluations, reported by Dakota (string).
-
-``BatchParameters`` objects have no methods.
-
-BatchResults object
-~~~~~~~~~~~~~~~~~~~
-
-``BatchResults`` objects are collections of ``Results`` objects. The
-individual ``Results`` objects can be accessed by index ([]) or by
-iterating the ``BatchResults`` object. Although ``BatchResults`` objects
-may be constructed directly, it is advisable to use the
-``read_parameters_file`` function instead.
-
-``BatchResults`` objects have a single attribute:
-
--  ``batch_id`` - The "id" of this batch of evaluations, reported by Dakota (string)
-
-``BatchResults`` objects have a single method:
-
--  ``write (stream=None, ignore_asv=None)`` - Write results for all evaluations to the Dakota
-   results file. If *stream* is set, it overrides the results file name
-   provided at construct time. It must be an open file-like object,
-   rather than the name of a file. If *ignore_asv* is True, the file
-   will be written even if information requested via the active set
-   vector is missing.
+   .. attribute:: batch_id
+   
+      The "id" of this batch of evaluations, reported by Dakota (string)
+      
+   .. method:: write (stream=None, ignore_asv=None)
+   
+      Write results for all evaluations to the Dakota results file.
+      
+      :param stream: If *stream* is set, it overrides the results file name
+                     provided at construct time. It must be an open file-like object,
+                     rather than the name of a file.
+      :param ignore_asv: If *ignore_asv* is True, the file will be written even
+                         if information requested via the active set vector is missing.
 
 Processing Templates
 ~~~~~~~~~~~~~~~~~~~~
