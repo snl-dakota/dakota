@@ -181,7 +181,7 @@ The ``quasi_sine`` test function has multiple local minima, but there is
 an overall trend in the function that tends toward the global minimum at
 :math:`(x1,x2)=(0.177,0.177)`. See :cite:p:`Giu00` for more
 information on this test function.
-Figure `[adv_meth:figure03] <#adv_meth:figure03>`__ shows the results
+:numref:`adv_meth:figure03` shows the results
 summary for the eight local optimizations performed. From the five
 specified starting points and the 3 random starting points (as
 identified by the ``x1``, ``x2`` headers), the eight local optima (as
@@ -189,6 +189,11 @@ identified by the ``x1*``, ``x2*`` headers) are all different and only
 one of the local optimizations finds the global minimum.
 
 ::
+
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota results summary for a multistart local optimization method.
+   :name: adv_meth:figure03
 
    <<<<< Results summary:
       set_id             x1             x2            x1*            x2*         obj_fn 
