@@ -188,9 +188,8 @@ identified by the ``x1``, ``x2`` headers), the eight local optima (as
 identified by the ``x1*``, ``x2*`` headers) are all different and only
 one of the local optimizations finds the global minimum.
 
+
 .. code-block::
-   :language: dakota
-   :tab-width: 2
    :caption: Dakota results summary for a multistart local optimization method.
    :name: adv_meth:figure03
 
@@ -253,8 +252,6 @@ useful for visualizing the trade-offs in the competing objectives.
 
 
 .. code-block::
-   :language: dakota
-   :tab-width: 2
    :caption: Dakota results summary for the Pareto-set optimization method.
    :name: adv_meth:figure05
 
