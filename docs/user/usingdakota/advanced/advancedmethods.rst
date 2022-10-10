@@ -188,13 +188,13 @@ identified by the ``x1``, ``x2`` headers), the eight local optima (as
 identified by the ``x1*``, ``x2*`` headers) are all different and only
 one of the local optimizations finds the global minimum.
 
-::
 .. code-block::
    :language: dakota
    :tab-width: 2
    :caption: Dakota results summary for a multistart local optimization method.
    :name: adv_meth:figure03
 
+      ------------------------------
       <<<<< Results summary:
          set_id             x1             x2            x1*            x2*         obj_fn 
               1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
@@ -204,7 +204,8 @@ one of the local optimizations finds the global minimum.
               5              0              0  0.03572926375  0.03572926375  0.08730499239 
               6  -0.7767971993  0.01810943539  -0.7024118387  0.03572951143   0.3165522387 
               7  -0.3291571008  -0.7697378755   0.3167607374  -0.4009188363   0.2471403213 
-              8   0.8704730469   0.7720679005    0.177092899   0.3167611757  0.08256082751 
+              8   0.8704730469   0.7720679005    0.177092899   0.3167611757  0.08256082751       
+
 
 .. _`adv_meth:pareto`:
 
@@ -250,7 +251,6 @@ useful for visualizing the trade-offs in the competing objectives.
        ``dakota/share/dakota/examples/users/textbook_pareto_strat.in``
    :name: adv_meth:figure04
 
-::
 
 .. code-block::
    :language: dakota
@@ -258,6 +258,8 @@ useful for visualizing the trade-offs in the competing objectives.
    :caption: Dakota results summary for the Pareto-set optimization method.
    :name: adv_meth:figure05
 
+
+      ------------------------------
       <<<<< Results summary:
          set_id             w1             w2             w3             x1             x2         obj_fn
               1              1              0              0   0.9996554048    0.997046351 7.612301561e-11
