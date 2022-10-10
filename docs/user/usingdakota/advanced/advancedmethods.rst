@@ -286,7 +286,7 @@ formulated as follows:
 
 where :math:`\mathbf{d}` is a vector whose elements are integer values.
 In situations where the discrete variables can be temporarily relaxed
-(i.e., noncategorical discrete variables, see
+(i.e., noncategorical discrete variables, see Section
 :ref:`Discrete Design Variables <variables:design:ddv>`, the
 branch-and-bound algorithm can be applied. Categorical variables (e.g.,
 true/false variables, feature counts, etc.) that are not relaxable
@@ -355,7 +355,7 @@ problem :cite:p:`Eld99`:
      & & x_{5},x_{6} \in \{0,1,2,3,4\}\nonumber\end{aligned}
 
 This problem is a variant of the textbook test problem described in
-Section `[additional:textbook] <#additional:textbook>`__. In addition to
+Section :ref:`Additional Examples Textbook <additional:textbook>`. In addition to
 the introduction of two integer variables, a modified value of
 :math:`1.4` is used inside the quartic sum to render the continuous
 solution a non-integral solution.
@@ -381,7 +381,7 @@ solution a non-integral solution.
    %  \label{adv_meth:figure06}
    %\end{figure}
 
-Figure `1.1 <#adv_meth:figure07>`__ shows the sequence of branches
+Figure `45 <#adv_meth:figure07>`__ shows the sequence of branches
 generated for this problem. The first optimization subproblem relaxes
 the integrality constraint on parameters :math:`x_{5}` and
 :math:`x_{6}`, so that :math:`0
@@ -420,7 +420,7 @@ In some cases, the discrete variables may be real-valued, such as
 restricted to work with integer values. Therefore, it is up to the user
 to perform a transformation between the discrete integer values from
 Dakota and the discrete real values that are passed to the simulation
-code (see Section `[variables:design:ddv] <#variables:design:ddv>`__).
+code (see Section:ref:`Discrete Design Variables <variables:design:ddv>`).
 When integrality is not being relaxed, a common mapping is to use the
 integer value from Dakota as the index into a vector of discrete real
 values. However, when integrality is relaxed, additional logic for
