@@ -441,7 +441,7 @@ Surrogate models approximate an original, high fidelity “truth” model,
 typically at reduced computational cost. In Dakota, several surrogate
 model selections are possible, which are categorized as data fits,
 multifidelity models, and reduced-order models, as described in
-Section `[models:surrogate] <#models:surrogate>`__. In the context of
+Section :ref:`Models Surrogate <models:surrogate>`. In the context of
 minimization (optimization or calibration), surrogate models can speed
 convergence by reducing function evaluation cost or smoothing noisy
 response functions. Three categories of surrogate-based minimization are
@@ -468,7 +468,7 @@ In the surrogate-based local minimization method (keyword:
 surrogate model instead of directly operating on the computationally
 expensive simulation model. The surrogate model can be based on data
 fits, multifidelity models, or reduced-order models, as described in
-Section `[models:surrogate] <#models:surrogate>`__. Since the surrogate
+Section :ref:`Models Surrogate <models:surrogate>`. Since the surrogate
 will generally have a limited range of accuracy, the surrogate-based
 local algorithm periodically checks the accuracy of the surrogate model
 against the original simulation model and adaptively manages the extent
@@ -485,8 +485,9 @@ of the approximate optimization cycles using a trust region approach.
    %trouble, and where the computational expense of the simulation
    %precludes the use of nongradient-based methods.
 
-Refer to the Dakota Theory Manual :cite:p:`TheoMan` for
-algorithmic details on iterate acceptance, merit function formulations,
+Refer to the Dakota Reference
+Manual :ref:`Keyword Reference <keyword-reference-area>` for
+algorithmic guidelines and details on iterate acceptance, merit function formulations,
 convergence assessment, and constraint relaxation.
 
 .. _`adv_meth:sbm:sblm:surface`:
@@ -500,7 +501,7 @@ each new trust region. In the global data fit case, this can mean
 performing a new design of experiments on the original high-fidelity
 model for each trust region, which can effectively limit the approach to
 use on problems with, at most, tens of variables.
-Figure `1.2 <#fig:sbo_df>`__ displays this case. However, an important
+Figure `46 <#fig:sbo_df>`__ displays this case. However, an important
 benefit of the global sampling is that the global data fits can tame
 poorly-behaved, nonsmooth, discontinuous response variations within the
 original model into smooth, differentiable, easily navigated surrogates.
