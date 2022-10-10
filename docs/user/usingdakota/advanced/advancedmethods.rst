@@ -227,7 +227,7 @@ engineering design. Since solutions for different multiobjective weights
 are independent, parallel computing may be used to concurrently execute
 the multiobjective optimization problems.
 
-Figure `[adv_meth:figure05] <#adv_meth:figure05>`__ shows the results
+:numref:`adv_meth:figure05` shows the results
 summary for the Pareto-set optimization method. For the four
 multiobjective weighting sets (as identified by the ``w1``, ``w2``,
 ``w3`` headers), the local optima (as identified by the ``x1``, ``x2``
@@ -259,6 +259,10 @@ useful for visualizing the trade-offs in the competing objectives.
            3              0              0              1            5.8 1.12747589e-11           -2.9
            4          0.333          0.333          0.333            0.5   0.5000000041       0.041625
 
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota results summary for the Pareto-set optimization method.
+   :name: adv_meth:figure05
 .. _`adv_meth:minlp`:
 
 Mixed Integer Nonlinear Programming (MINLP)
