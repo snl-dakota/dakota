@@ -286,7 +286,7 @@ formulated as follows:
 where :math:`\mathbf{d}` is a vector whose elements are integer values.
 In situations where the discrete variables can be temporarily relaxed
 (i.e., noncategorical discrete variables, see
-Section `[variables:design:ddv] <#variables:design:ddv>`__), the
+:ref:`Discrete Design Variables <variables:design:ddv>`, the
 branch-and-bound algorithm can be applied. Categorical variables (e.g.,
 true/false variables, feature counts, etc.) that are not relaxable
 cannot be used with the branch and bound method. During the branch and
