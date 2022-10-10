@@ -189,7 +189,7 @@ identified by the ``x1*``, ``x2*`` headers) are all different and only
 one of the local optimizations finds the global minimum.
 
 ::
-
+.. code-block::
    :language: dakota
    :tab-width: 2
    :caption: Dakota results summary for a multistart local optimization method.
@@ -252,6 +252,11 @@ useful for visualizing the trade-offs in the competing objectives.
 
 ::
 
+.. code-block::
+   :language: dakota
+   :tab-width: 2
+   :caption: Dakota results summary for the Pareto-set optimization method.
+   :name: adv_meth:figure05
    <<<<< Results summary:
       set_id             w1             w2             w3             x1             x2         obj_fn
            1              1              0              0   0.9996554048    0.997046351 7.612301561e-11
@@ -259,10 +264,6 @@ useful for visualizing the trade-offs in the competing objectives.
            3              0              0              1            5.8 1.12747589e-11           -2.9
            4          0.333          0.333          0.333            0.5   0.5000000041       0.041625
 
-   :language: dakota
-   :tab-width: 2
-   :caption: Dakota results summary for the Pareto-set optimization method.
-   :name: adv_meth:figure05
 .. _`adv_meth:minlp`:
 
 Mixed Integer Nonlinear Programming (MINLP)
