@@ -5,10 +5,12 @@ Version 6.17 - Northern Kremisphere (2022/11)
 """""""""""""""""""""""""""""""""""""""""""""
 
 Version 6.17 is a less dramatic release of Dakota GUI that mainly focuses on bugfixes and incremental
-feature improvements. Among the feature improvements is integration with the new Sphinx-based Dakota
-help documentation system, as well as improvements to the new MLMF study editor.
+feature improvements. Among the feature improvements are:
+ - Integration with the new Sphinx-based Dakota help documentation system
+ - Improvements to the new MLMF study editor.
+ - A variety of small bugfixes that keep the Dakota Text Editor, Dakota Visual Editor, and input file tree view in sync with each other.
 
-*XStream Note:* The official version of XStream has been removed, due to a security vulnerability. ForUsing
+*XStream Note:* The official version of XStream has been removed, due to a security vulnerability. For
 the time being, we are using a Sandia-developed fork of XStream in its place for backwards compatibility, but
 XStream will eventually stop being used for XML-based object serialization altogether. Stay tuned for more information.
 
