@@ -4,6 +4,9 @@
 Version 6.16 - Manic Mincers (2022/05)
 """"""""""""""""""""""""""""""""""""""
 
+.. image:: img/DakotaGui_ManicMincers.png
+   :alt: Dakota GUI 6.16 splash screen
+
 **Chartreuse**
 
 - You now have more flexibility in controlling the font size on rendered plots. Font size is configurable from: Window > Preferences > Chartreuse.
