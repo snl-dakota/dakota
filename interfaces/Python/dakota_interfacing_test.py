@@ -582,7 +582,8 @@ class PythonDirectInterfaceTest(unittest.TestCase):
         expected_values += direct_dense_params["drv"]
         expected_values.append(direct_dense_params["cv"][1])
         actual_values = [value for label, value in params.items()]
-        self.assertListEqual(expected_values, actual_values)
+        for e, a in zip(expected_values, actual_values):
+            self.assertAlmostEqual(e, a)
 
     def test_parameters_from_dict_asv(self):
         _, results = di.read_params_from_dict(direct_dense_params)
