@@ -11,6 +11,7 @@ import sys
 import shlex
 import shutil
 import random
+from textwrap import dedent
 
 # Find the best implementation available on this platform
 try:
@@ -178,29 +179,29 @@ class Immutables(unittest.TestCase):
     
         # Make sure the entries not ONLY equal, but are the SAME object (even though
         # wrapped in a (Im)mutable
-        self.assert_(mydict['MM1'] is MM,msg="M1 changed object")
-        self.assert_(mydict['MM2'] is MM,msg="M2 changed object (called as Mutable)")
-        self.assert_(mydict['II'] is II,msg="II changed object (called as Immutable)")
+        selfassertTrue(mydict['MM1'] is MM,msg="M1 changed object")
+        selfassertTrue(mydict['MM2'] is MM,msg="M2 changed object (called as Mutable)")
+        selfassertTrue(mydict['II'] is II,msg="II changed object (called as Immutable)")
     
         # Make sure II is in immutable
-        self.assert_('II' in mydict.immutables)
+        selfassertTrue('II' in mydict.immutables)
     
         # Make sure we cannot change II but (can *change* MM)
         mydict['II'] = 'new I'
         mydict['MM1'] = 'new M'
     
-        self.assert_(mydict['II'] != 'new I' and mydict['II'] is II)
-        self.assert_(mydict['MM1'] == 'new M' and mydict['MM1'] is not MM)
+        selfassertTrue(mydict['II'] != 'new I' and mydict['II'] is II)
+        selfassertTrue(mydict['MM1'] == 'new M' and mydict['MM1'] is not MM)
     
         # Show that even though the object can't be changed, if the python object
         # itself is mutable (as a list is), it can be modified
         N0 = len(mydict['II'])
-        self.assert_(N0 == 3)
+        selfassertTrue(N0 == 3)
         mydict['II'].append('d')
         N1 = len(mydict['II'])
-        self.assert_(N1 == 4)
-        self.assert_(mydict['II'] is II)
-        self.assert_(mydict['II'] == ['a','b','c','d'])
+        selfassertTrue(N1 == 4)
+        selfassertTrue(mydict['II'] is II)
+        selfassertTrue(mydict['II'] == ['a','b','c','d'])
 
         # Show that using update keeps mutability of both
         mydict2 = ImmutableValDict()
@@ -209,26 +210,26 @@ class Immutables(unittest.TestCase):
         mydict2['II'] = 'NEW II'
     
         mydict.update(mydict2)
-        self.assert_(len(mydict) == 5) # since 'II' was repeated, != 6
-        self.assert_(mydict['II'] is II, "II changed...")
+        selfassertTrue(len(mydict) == 5) # since 'II' was repeated, != 6
+        selfassertTrue(mydict['II'] is II, "II changed...")
     
         mydict['ii'] = 100
-        self.assert_(mydict['ii'] != 100 and mydict['ii'] == 'ii')
+        selfassertTrue(mydict['ii'] != 100 and mydict['ii'] == 'ii')
     
-        self.assert_(mydict.immutables == set(['II','ii']))
+        selfassertTrue(mydict.immutables == set(['II','ii']))
 
         # Make sure when you delete an item, it gets removed
-        self.assert_('ii' in mydict.immutables and mydict['ii'] == 'ii')
+        selfassertTrue('ii' in mydict.immutables and mydict['ii'] == 'ii')
         del mydict['ii']
-        self.assert_('ii' not in mydict) # make sure was deleted
-        self.assert_('ii' not in mydict.immutables) # make sure not still immutable
-        self.assert_(mydict.immutables == set(['II']))
+        selfassertTrue('ii' not in mydict) # make sure was deleted
+        selfassertTrue('ii' not in mydict.immutables) # make sure not still immutable
+        selfassertTrue(mydict.immutables == set(['II']))
         
         # Show that you can convert it to immutable
         mydict['II'] = Mutable(mydict['II'])
-        self.assert_('II' not in mydict.immutables)
+        selfassertTrue('II' not in mydict.immutables)
         mydict['II'] = 'new I'
-        self.assert_(mydict['II'] == 'new I' and mydict['II'] is not II)
+        selfassertTrue(mydict['II'] == 'new I' and mydict['II'] is not II)
 
         # test creating a new dict from an ImmutableValDict -- when passed as an ARG
         olddict = ImmutableValDict()
@@ -236,13 +237,13 @@ class Immutables(unittest.TestCase):
         olddict['M'] = 2
     
         newdict = ImmutableValDict(olddict)
-        self.assert_(newdict.immutables == set(['I']))
+        selfassertTrue(newdict.immutables == set(['I']))
         newdict['I']*= 10
-        self.assert_(newdict['I'] == 1)
+        selfassertTrue(newdict['I'] == 1)
     
         # Show that this fails if not passed as an arg
         newdict = ImmutableValDict(**olddict)
-        self.assert_(newdict.immutables != set(['I']))
+        selfassertTrue(newdict.immutables != set(['I']))
     
         # FINALLY, now show that these properties are maintained when 
         # using an ImmutableValDict inside exec
@@ -252,7 +253,7 @@ class Immutables(unittest.TestCase):
         env['outI'] = Immutable('i')
         env['outM'] = 'm'
         
-        env['assert_'] = self.assert_         
+        env['assert_'] = selfassertTrue         
         exec_test = """\
             
             assert_(outI == 'i')
@@ -280,11 +281,11 @@ class Immutables(unittest.TestCase):
         exec(exec_test,env)
     
         # Make sure those are set here
-        self.assert_('im2' not in env.immutables, "im2 did not get removed")
-        self.assert_('inI' in env.immutables)
-        self.assert_(env['inI'] == 'I' )
+        selfassertTrue('im2' not in env.immutables, "im2 did not get removed")
+        selfassertTrue('inI' in env.immutables)
+        selfassertTrue(env['inI'] == 'I' )
         env['inI'] = 'iiiiiii'
-        self.assert_(env['inI'] == 'I' )
+        selfassertTrue(env['inI'] == 'I' )
     
     def test_immutable(self):
         """
@@ -318,7 +319,7 @@ class Immutables(unittest.TestCase):
         [1, 2, 3, 30]
         """
         output = pyprepro.pyprepro(input)
-        self.assert_(compare_lines(output,gold)   )
+        selfassertTrue(compare_lines(output,gold)   )
 
     def test_mutable_overset(self):
         """
@@ -339,7 +340,7 @@ class Immutables(unittest.TestCase):
         output = pyprepro.pyprepro(input)
         for line in output.strip().split('\n'):
             a,b = line.split()
-            self.assert_(a == b)
+            selfassertTrue(a == b)
 
     def test_include_statements(self):
         """
@@ -373,13 +374,13 @@ Define parameters here
     
         output = pyprepro.pyprepro(input)
 
-        self.assert_(compare_lines(output,gold)   )
+        selfassertTrue(compare_lines(output,gold)   )
     
         ###################
         # Test with depth and from CLI
         cmd = ['test_files/include_test2_0.inp','test_output/include_test2_0.out']
         pyprepro._pyprepro_cli(cmd)
-        self.assert_(compare_lines(\
+        selfassertTrue(compare_lines(\
             read('test_output/include_test2_0.out'),
             read('test_gold/include_test2.gold')
         ))
@@ -415,7 +416,7 @@ class unicode_and_encoding(unittest.TestCase):
         pyprepro._pyprepro_cli(shsplit(cmd))
 
         output = read('test_output/unicode.out')
-        self.assert_(compare_lines(output,gold)   )
+        selfassertTrue(compare_lines(output,gold)   )
 
     def test_windows_encodings(self):
         """
@@ -427,10 +428,10 @@ class unicode_and_encoding(unittest.TestCase):
         gold = u'°·è -- § ¨ © ª « -- °·è'
         encodings = ['utf8','Windows-1252']
         for encoding in encodings:
-            self.assert_(pyprepro.pyprepro(testtxt.encode(encoding)) == gold)
+            selfassertTrue(pyprepro.pyprepro(testtxt.encode(encoding)) == gold)
     
         for filename in ['windows_ansi','windows_unicode','windows_unicode2']:    
-            self.assert_(compare_lines( pyprepro.pyprepro('test_files/{0}.txt'.format(filename)),
+            selfassertTrue(compare_lines( pyprepro.pyprepro('test_files/{0}.txt'.format(filename)),
                            read('test_gold/{0}.gold'.format(filename))))
     
 class invocation_and_options(unittest.TestCase):
@@ -451,7 +452,7 @@ class invocation_and_options(unittest.TestCase):
 
         out = read('test_output/cli_include.out')
         gold = read('test_gold/cli_include.gold')
-        self.assert_(compare_lines(out,gold))
+        selfassertTrue(compare_lines(out,gold))
     
     def test_CLI_vars(self):
         """
@@ -461,7 +462,7 @@ class invocation_and_options(unittest.TestCase):
         # Clean
         cmd = 'test_files/cli_var.inp test_output/cli_var.inp.0'
         pyprepro._pyprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(\
+        selfassertTrue(compare_lines(\
                 read('test_output/cli_var.inp.0'),
                 read('test_gold/cli_var.gold.0')))
     
@@ -469,7 +470,7 @@ class invocation_and_options(unittest.TestCase):
         # The rest should follow since A is immutable
         cmd = '--var "A=1.2" test_files/cli_var.inp test_output/cli_var.inp.1'
         pyprepro._pyprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(\
+        selfassertTrue(compare_lines(\
                 read('test_output/cli_var.inp.1'),
                 read('test_gold/cli_var.gold.1')))
             
@@ -478,14 +479,14 @@ class invocation_and_options(unittest.TestCase):
         # Also test with more spaces
         cmd = '--var "C = 1.2" test_files/cli_var.inp test_output/cli_var.inp.2'
         pyprepro._pyprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(\
+        selfassertTrue(compare_lines(\
                 read('test_output/cli_var.inp.2'),
                 read('test_gold/cli_var.gold.2')))
     
         # Set "other" to an int
         cmd = '--var "other = 13" test_files/cli_var.inp test_output/cli_var.inp.3'
         pyprepro._pyprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(\
+        selfassertTrue(compare_lines(\
                 read('test_output/cli_var.inp.3'),
                 read('test_gold/cli_var.gold.3')))
     
@@ -493,7 +494,7 @@ class invocation_and_options(unittest.TestCase):
         # NOTICE: you do not quote it. As it is bash, it is assumed to be a string
         cmd = '--var "other = text" test_files/cli_var.inp test_output/cli_var.inp.4'
         pyprepro._pyprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(\
+        selfassertTrue(compare_lines(\
                 read('test_output/cli_var.inp.4'),
                 read('test_gold/cli_var.gold.4')))
 
@@ -501,8 +502,8 @@ class invocation_and_options(unittest.TestCase):
         cmd = 'fake_file_' + ''.join(random.choice('123456789') for _ in range(10))
         with CLI_Error() as E:
             pyprepro._pyprepro_cli(shsplit(cmd))
-        self.assert_(E.exit_code != 0)
-        self.assert_(E.stderr.strip() == 'ERROR: `infile` must be a file or `-` to read from stdin')
+        selfassertTrue(E.exit_code != 0)
+        selfassertTrue(E.stderr.strip() == 'ERROR: `infile` must be a file or `-` to read from stdin')
             
     def test_change_code_delims(self):
         """
@@ -518,7 +519,7 @@ class invocation_and_options(unittest.TestCase):
 
         ccmd = '--inline "[[ ]]" --code "$" --code-block "<{* *>}" test_files/new_delim.inp test_output/new_delim_right.out'
         pyprepro._pyprepro_cli(shsplit(ccmd))
-        self.assert_(compare_lines(\
+        selfassertTrue(compare_lines(\
                 read('test_output/new_delim_right.out'),
                 read('test_gold/new_delim_right.gold')))
 
@@ -536,10 +537,10 @@ class invocation_and_options(unittest.TestCase):
         pyprepro._pyprepro_cli(shsplit(cmd))
         
         # CLI
-        self.assert_(compare_lines(GOLD,read('test_output/json_include0.inp')))
+        selfassertTrue(compare_lines(GOLD,read('test_output/json_include0.inp')))
         
         # Function
-        self.assert_(compare_lines(GOLD,pyprepro.pyprepro('test_files/json_include.inp',
+        selfassertTrue(compare_lines(GOLD,pyprepro.pyprepro('test_files/json_include.inp',
                                                           json_include=['test_files/json_include_params.json',
                                                                         'test_files/json_include_params2.json'],
                                                           python_include='test_files/python_include_params.py')))
@@ -552,7 +553,7 @@ class invocation_and_options(unittest.TestCase):
                'test_files/json_include.inp '
                'test_output/json_include1.inp')
         pyprepro._dprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(GOLD,read('test_output/json_include1.inp')))
+        selfassertTrue(compare_lines(GOLD,read('test_output/json_include1.inp')))
 
 
     def test_dakota_include(self):
@@ -579,8 +580,8 @@ class invocation_and_options(unittest.TestCase):
                                  code_block='{{% %}}',inline='[[ ]]',warn=False)
         res2 = pyprepro.pyprepro(tpl,dakota_include='test_files/dakota_default.1',
                                  code_block='{{% %}}',inline='[[ ]]',warn=False)
-        self.assert_(res1 == res2)
-        self.assert_(compare_lines(res1,gold))
+        selfassertTrue(res1 == res2)
+        selfassertTrue(compare_lines(res1,gold))
         
         with open('test_output/tmp.tpl','wt') as F:
             F.write(tpl)
@@ -610,22 +611,22 @@ class invocation_and_options(unittest.TestCase):
         
         res = pyprepro.pyprepro(tpl)
         res = [r.strip() for r in res.split('\n') if r.strip()]
-        self.assert_(res == ['1','2'])
+        selfassertTrue(res == ['1','2'])
         
         res = pyprepro.pyprepro(tpl,env=env)
         res = [r.strip() for r in res.split('\n') if r.strip()]
-        self.assert_(res == ['5','2'])
+        selfassertTrue(res == ['5','2'])
         
         res = pyprepro.pyprepro(tpl,immutable_env=env)
         res = [r.strip() for r in res.split('\n') if r.strip()]
-        self.assert_(res == ['5','100'])
+        selfassertTrue(res == ['5','100'])
         
         pyprepro.pyprepro(tpl,immutable_env=env,output='test_output/funout.inp')
         
         with open('test_output/funout.inp') as f:
             res = f.read()
         res = [r.strip() for r in res.split('\n') if r.strip()]
-        self.assert_(res == ['5','100'])
+        selfassertTrue(res == ['5','100'])
     
 
 class preparser_edge_cases(unittest.TestCase):
@@ -658,13 +659,13 @@ class preparser_edge_cases(unittest.TestCase):
         """
     
         output = pyprepro.pyprepro(input)
-        self.assert_(compare_lines(output,gold))
+        selfassertTrue(compare_lines(output,gold))
     
         # More single line tests
         
         # just for speed
         p = pyprepro.pyprepro       
-        c = lambda a,b: self.assert_(compare_lines(a,b))
+        c = lambda a,b: selfassertTrue(compare_lines(a,b))
         
         # Reminder that r means string literal. So r'\' is '\\' but this is NOT needed in read-files
         c( p(r'{a=5}')      ,r'5')
@@ -720,7 +721,7 @@ class preparser_edge_cases(unittest.TestCase):
         7
         """
         output = pyprepro.pyprepro(input)
-        self.assert_(compare_lines(output,gold))
+        selfassertTrue(compare_lines(output,gold))
 
     def test_inline_dict_assignment(self):
         """
@@ -750,7 +751,7 @@ class preparser_edge_cases(unittest.TestCase):
             t = t.replace(' ','')
             return t
     
-        self.assert_(_clean(out) == _clean(gold))
+        selfassertTrue(_clean(out) == _clean(gold))
 
     def test_inline_comparison_and_assignment(self):
         """
@@ -762,14 +763,14 @@ class preparser_edge_cases(unittest.TestCase):
         cmd = ['test_files/inline_comparison_and_assignment_colons.inp',
                'test_output/inline_comparison_and_assignment_colons.out']
         pyprepro._pyprepro_cli(cmd)
-        self.assert_(compare_lines(\
+        selfassertTrue(compare_lines(\
             read('test_output/inline_comparison_and_assignment_colons.out'),
             read('test_gold/inline_comparison_and_assignment_colons.gold')))   
     
     def test_py38_walrus(self):
         if sys.version_info < (3,8):
             return
-        self.assert_(pyprepro.pyprepro('A = {A:= 10}; {A}') == 'A = 10; 10')
+        selfassertTrue(pyprepro.pyprepro('A = {A:= 10}; {A}') == 'A = 10; 10')
     
     def test_parse_inline_assignment_preparser(self):
         """
@@ -791,7 +792,7 @@ class preparser_edge_cases(unittest.TestCase):
 {% A= 1 %}
 { A }
 {% A += 4 %}"""
-        self.assert_(compare_lines(pyprepro._preparser(IN),GOLD))
+        selfassertTrue(compare_lines(pyprepro._preparser(IN),GOLD))
 
 
         # This tests the regression
@@ -808,7 +809,7 @@ class preparser_edge_cases(unittest.TestCase):
 { A }
 {% A += 4
 %}"""
-        self.assert_(compare_lines(pyprepro._preparser(IN),GOLD))
+        selfassertTrue(compare_lines(pyprepro._preparser(IN),GOLD))
 
         
     def test_pathological_quotes(self):
@@ -820,18 +821,18 @@ class preparser_edge_cases(unittest.TestCase):
         IN = """ "{A = 1}" {A} """ # The OUTER quotes are the problem
         OUT = pyprepro.pyprepro(IN)
         GOLD = """ "1" 1 """
-        self.assert_(OUT == GOLD)
+        selfassertTrue(OUT == GOLD)
     
         # with unmatched outer quotes
         IN = '"{A=1}{A}'
         OUT = pyprepro.pyprepro(IN)
         GOLD = '"11'
-        self.assert_(OUT == GOLD)
+        selfassertTrue(OUT == GOLD)
     
         IN = """'{A="}"}'"""
         OUT = pyprepro.pyprepro(IN)
         GOLD = """'}'"""
-        self.assert_(OUT == GOLD)
+        selfassertTrue(OUT == GOLD)
 
         # With UNmatched inner quotes. We still expect this to fail since it isn't
         self.assertRaises(SyntaxError,pyprepro.pyprepro,'{A = "}adshd}')
@@ -847,14 +848,14 @@ class preparser_edge_cases(unittest.TestCase):
         self.assertRaises(EmptyInlineError,pyprepro.pyprepro,'A = {}')
         self.assertRaises(EmptyInlineError,pyprepro.pyprepro,'A = [[ ]]',inline='[[ ]]')
         
-        self.assert_(pyprepro.pyprepro('A = [[ ]]') == 'A = [[ ]]') # Just to make sure that otherwise passes
+        selfassertTrue(pyprepro.pyprepro('A = [[ ]]') == 'A = [[ ]]') # Just to make sure that otherwise passes
 
         cmd = 'test_files/empty_inline.inp'
         with CLI_Error() as E:
             pyprepro._pyprepro_cli(shsplit(cmd))
-        self.assert_(E.exit_code != 0)
-        self.assert_('EmptyInlineError' in E.stderr)
-        self.assert_('Empty inline expression' in E.stderr)
+        selfassertTrue(E.exit_code != 0)
+        selfassertTrue('EmptyInlineError' in E.stderr)
+        selfassertTrue('Empty inline expression' in E.stderr)
         
 class dakota_dprepro(unittest.TestCase):
     def test_dakota_param_names(self):
@@ -874,7 +875,7 @@ class dakota_dprepro(unittest.TestCase):
             1
             ASV_1:fun1
         """
-        self.assert_(compare_lines(pyprepro.pyprepro(input),gold))
+        selfassertTrue(compare_lines(pyprepro.pyprepro(input),gold))
     
         input = """\
             { ASV_1:fun1 = 1}
@@ -904,7 +905,7 @@ class dakota_dprepro(unittest.TestCase):
             10
             i5param
         """
-        self.assert_(compare_lines(pyprepro.pyprepro(input),gold))
+        selfassertTrue(compare_lines(pyprepro.pyprepro(input),gold))
     
 
         input = """\
@@ -949,12 +950,12 @@ class dakota_dprepro(unittest.TestCase):
         # dakota style with 3 inputs. NOTE: call dprepro
         cmd = ' --no-warn test_files/dakota_default.1 {0} test_output/dakota.1'.format(templatepath)
         pyprepro._dprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(read('test_output/dakota.1'),gold))
+        selfassertTrue(compare_lines(read('test_output/dakota.1'),gold))
     
         # aprepo style with 3 inputs. NOTE: call dprepro
         cmd = '--no-warn test_files/dakota_aprepro.1 {0} test_output/dakota.2'.format(templatepath)
         pyprepro._dprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(read('test_output/dakota.2'),gold))
+        selfassertTrue(compare_lines(read('test_output/dakota.2'),gold))
 
     def test_malformed_dakota_and_simple(self):
         """
@@ -975,12 +976,12 @@ class dakota_dprepro(unittest.TestCase):
         
         cmd = ' --no-warn --simple-parser test_files/dakota_malformed_default.1 {0} test_output/dakota.3'.format(templatepath)
         pyprepro._dprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(read('test_output/dakota.3'),gold))
+        selfassertTrue(compare_lines(read('test_output/dakota.3'),gold))
     
         # aprepo style with 3 inputs. NOTE: call dprepro
         cmd = '--no-warn --simple-parser test_files/dakota_malformed_aprepro.1 {0} test_output/dakota.4'.format(templatepath)
         pyprepro._dprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(read('test_output/dakota.4'),gold))
+        selfassertTrue(compare_lines(read('test_output/dakota.4'),gold))
         
 
     def test_dakota_interfacing(self):
@@ -993,7 +994,7 @@ class dakota_dprepro(unittest.TestCase):
         gold = read('test_gold/dprepro_di.gold')
         cmd = '--no-warn test_files/dakota_default.1 test_files/dprepro_di.inp test_output/dakota.3'
         pyprepro._dprepro_cli(shsplit(cmd))
-        self.assert_(compare_lines(read('test_output/dakota.3'),gold))
+        selfassertTrue(compare_lines(read('test_output/dakota.3'),gold))
 
 
 
@@ -1013,7 +1014,7 @@ class special_functions(unittest.TestCase):
         # do not compare since pprint (used in all_vars()) may not be consistent
         res = [line.strip() for line in res.split('\n') if len(line.strip())>0]
         D = eval(res[-1])
-        self.assert_(['a','b'] == sorted(D.keys()))
+        selfassertTrue(['a','b'] == sorted(D.keys()))
 
     def test_vset(self):
         """Quick test of vset"""
@@ -1037,8 +1038,8 @@ class special_functions(unittest.TestCase):
         OUT1 = pyprepro.pyprepro(IN1)
         OUT2 = pyprepro.pyprepro(IN2)
     
-        self.assert_(compare_lines(OUT1,GOLD))
-        self.assert_(compare_lines(OUT2,GOLD)) # by transitive property, OUT1 == OUT2
+        selfassertTrue(compare_lines(OUT1,GOLD))
+        selfassertTrue(compare_lines(OUT2,GOLD)) # by transitive property, OUT1 == OUT2
 
 
 class misc(unittest.TestCase):
@@ -1068,14 +1069,14 @@ class misc(unittest.TestCase):
         output2 = pyprepro.pyprepro(input,fmt='%3.1f')
         output3 = pyprepro.pyprepro(input,fmt='{0:3.1f}')
     
-        self.assert_(compare_lines(output1,gold1))
-        self.assert_(compare_lines(output2,gold2))
-        self.assert_(compare_lines(output3,gold2))
+        selfassertTrue(compare_lines(output1,gold1))
+        selfassertTrue(compare_lines(output2,gold2))
+        selfassertTrue(compare_lines(output3,gold2))
         
         try:
             import numpy as np
             res = pyprepro.pyprepro('num = {num}',env={'num':np.float64(10.2)})
-            self.assert_(compare_lines(res,'num = 10.2'))
+            selfassertTrue(compare_lines(res,'num = 10.2'))
         except ImportError:
             sys.stderr.write("Skipping tests for np.float64 formatting since cannot find NumPy\n")
 
@@ -1088,14 +1089,14 @@ class misc(unittest.TestCase):
         cmd = ' --no-warn test_files/white_space.inp test_output/white_space.out'
         pyprepro._pyprepro_cli(shsplit(cmd))
         
-        self.assert_(compare_lines(read('test_output/white_space.out'),
+        selfassertTrue(compare_lines(read('test_output/white_space.out'),
                                    read('test_gold/white_space.gold')))
     
     def test_division(self):
         """
         Make sure 3/2 == 1.5
         """
-        self.assert_(pyprepro.pyprepro('{3/2}') == '1.5')
+        selfassertTrue(pyprepro.pyprepro('{3/2}') == '1.5')
 
     def test_non_templated(self):
         """
@@ -1104,7 +1105,7 @@ class misc(unittest.TestCase):
             2: File input
         """
     
-        self.assert_(pyprepro.pyprepro('test nothing').strip() == 'test nothing')
+        selfassertTrue(pyprepro.pyprepro('test nothing').strip() == 'test nothing')
     
 class error_capture(unittest.TestCase):
     def test_name(self):
@@ -1126,20 +1127,20 @@ class error_capture(unittest.TestCase):
             pyprepro.pyprepro('_testin.inp')
         
         # make sure it failed
-        self.assert_(E.exit_code != 0)
+        selfassertTrue(E.exit_code != 0)
         stderr = pyprepro._touni(E.stderr)
         gold = '''
 Error occurred
     Exception: NameError
     Message: name 'param2' is not defined
 '''
-        self.assert_(compare_lines(stderr,gold))
+        selfassertTrue(compare_lines(stderr,gold))
         
         # Also test when it is called
         with CLI_Error() as E2: 
             pyprepro.pyprepro("%include('_testin.inp')")
-        self.assert_(E.exit_code != 0)
-        self.assert_(compare_lines(pyprepro._touni(E2.stderr),gold))
+        selfassertTrue(E.exit_code != 0)
+        selfassertTrue(compare_lines(pyprepro._touni(E2.stderr),gold))
 
         os.remove('_testin.inp')
         
@@ -1162,30 +1163,55 @@ Error occurred
             pyprepro.pyprepro('_testin.inp')
                     
         # make sure it failed
-        self.assert_(E.exit_code != 0)
+        selfassertTrue(E.exit_code != 0)
         stderr = pyprepro._touni(E.stderr)
+        line_num_of_error = 4
+        if not PY3:
+            error_message = 'invalid syntax'
+        elif sys.version_info >= (3,10):
+            error_message = "'(' was never closed"
+            line_num_of_error = 1
+        else:
+            error_message = 'unexpected EOF while parsing'
         gold = '''
 Error occurred
     Exception: SyntaxError
     Filename: {}
-    Approximate Line Number: 4
+    Approximate Line Number: {}
     Message: {}
-'''.format(os.path.abspath('_testin.inp'),'invalid syntax' if not PY3 else 'unexpected EOF while parsing')
-        self.assert_(compare_lines(stderr,gold))
+'''.format(os.path.abspath('_testin.inp'), line_num_of_error, error_message)
+        selfassertTrue(compare_lines(stderr,gold))
         
         # Also test when it is called
         with CLI_Error() as E2: 
             pyprepro.pyprepro("%include('_testin.inp')")
-        self.assert_(E.exit_code != 0)
-        self.assert_(compare_lines(pyprepro._touni(E2.stderr),gold))
+        selfassertTrue(E.exit_code != 0)
+        selfassertTrue(compare_lines(pyprepro._touni(E2.stderr),gold))
 
         os.remove('_testin.inp')
         
         # Via module
         self.assertRaises(SyntaxError,pyprepro.pyprepro,input) # Should fail
- 
+
+class Regressions(unittest.TestCase):
+    def test_same_inline_open_close(self):
+        """
+        Test things like --inline "@ @" where the open and close are the same.
+        Reported on 2022-05-31 and fixed on 2022-06-01
+        """
+        
+        ## Function call. This should be sufficient. No need to test CLI
+        selfassertTrue(pyprepro.pyprepro("@ a @", inline="@ @", env={"a": 1}) == "1")
+        selfassertTrue(pyprepro.pyprepro("@@ a @@", inline="@@ @@", env={"a": 1}) == "1")
+        selfassertTrue(pyprepro.pyprepro("$ a $", inline="$ $", env={"a": 1}) == "1")
+        selfassertTrue(pyprepro.pyprepro("$@$ a $@$", inline="$@$ $@$", env={"a": 1}) == "1")
+        selfassertTrue(pyprepro.pyprepro("% a = 1\n@ a @", inline="@ @",) == "1")
+        
+        
+        
 if __name__ == '__main__':
     unittest.main()
+    #breakpoint()
 # 
 #     # Run all tests
 #     failed = []
