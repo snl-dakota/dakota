@@ -83,6 +83,12 @@ public class BatchCopyrightCommentUpdater {
 		"gov.sandia.dakota.common",
 		"gov.sandia.dakota.common.ui",
 		"gov.sandia.dakota.editor",
+		"gov.sandia.dakota.editor.method.ga",
+		"gov.sandia.dakota.editor.method.hybrid",
+		"gov.sandia.dakota.editor.method.optpp",
+		"gov.sandia.dakota.editor.method.paramsweep",
+		"gov.sandia.dakota.editor.method.sampling",
+		"gov.sandia.dakota.editor.model.surrogates",
 		"gov.sandia.dakota.glimmer.bridge",
 		"gov.sandia.dakota.help",
 		"gov.sandia.dakota.jni",
@@ -167,7 +173,7 @@ public class BatchCopyrightCommentUpdater {
 	// CONFIGURATION //
 	///////////////////
 	
-	private static final boolean DRY_RUN           = true;
+	private static final boolean DRY_RUN           = false;
 	private static final String START_DIR          = "C:\\Users\\emridgw\\workspace\\svn\\dart";
 	private static final boolean UPDATE_EXISTING_HEADERS = true;
 	private static final boolean INSERT_IF_MISSING = true;
