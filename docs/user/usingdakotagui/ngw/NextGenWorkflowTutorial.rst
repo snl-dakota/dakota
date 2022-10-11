@@ -1,12 +1,16 @@
 .. _gui-nestedworkflowtutorial-main:
 
-""""""""""""""""""""""""""""""""""""""""""
-Create a Nested Workflow Driver for Dakota
-""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""
+Tutorial: Create an NGW Analysis Driver for Dakota
+""""""""""""""""""""""""""""""""""""""""""""""""""
 
 This section shows you the concrete steps for creating a workflow-based Dakota analysis driver.  This is meant to be an exemplary tutorial,
 and not the "only" way to do things.  In practice, you can use any combination of nodes to get from point A to point B; in fact, you are
 encouraged to experiment with NGW to see what it is capable of.
+
+.. note::
+
+   You can read more about the relationship between Dakota analysis drivers and Next-Gen Workflow :ref:`here <ngw-analysisdrivers>`.
 
 We will use the classic cantilever beam problem for this example, :ref:`available in the shipped Dakota example files. <gui-examples-offline>`
 

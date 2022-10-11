@@ -12,9 +12,9 @@ between Dakota and your simulation model using a series of nodes that are visual
    :maxdepth: 1
    
    NextGenWorkflowBasics
+   NextGenWorkflowAnalysisDrivers
    NextGenWorkflowTutorial
    NextGenWorkflowExpertMode
-   NextGenWorkflowMultipleAnalysisDrivers
    NextGenWorkflowSurrogates
    
 For further information, refer to the official `NGW project on Gitlab. <https://gitlab.com/iwf/ngw>`__

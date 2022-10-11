@@ -13,18 +13,39 @@ GUI Quickstart
    
    Introduction
    examples/DakotaExamples
-   wizards/Wizards
 
-=================
-Dakota Input File
-=================
+=======
+Wizards
+=======
+
+.. toctree::
+   :maxdepth: 1
+   
+   wizards/NewDakotaProject
+   wizards/NewDakotaStudy
+   wizards/NewScriptDriver
+   wizards/NewWorkflowDriver
+   wizards/NewDakotaWrapperWorkflow
+
+==========================
+Editing Dakota Input Files
+==========================
    
 .. toctree::
    :maxdepth: 1
    
-   inputfiles/DakotaInputFiles
    inputfiles/DakotaVisualEditor
+   inputfiles/DakotaTextEditor
+   inputfiles/DakotaTreeView
    inputfiles/MlmfEditor
+   
+=================
+Simulation Models
+=================
+
+.. toctree::
+   :maxdepth: 1
+   
    simulationmodels
    
 ==============
@@ -37,9 +58,9 @@ Running Dakota
    running/DakotaRunConfiguration
    running/DakotaRunWorkflow
    
-=============
-Dakota Output
-=============
+==================
+Output from Dakota
+==================
 
 .. toctree::
    :maxdepth: 1

@@ -108,7 +108,7 @@ From left to right…
 - **Disable All** Batch-disable all your variables.
 - **Reset to Model Defaults** This reverts all your work on the variables page back to the state when you first imported from your source of variables and responses.
   A warning dialog appears when you hit this button (in case you click on it by mistake).
-- **Open Dakota Reference Manual** Opens the Dakota reference manual for the selected variable category (for instance, :ref:`continuous_design <variables-continuous_design>`).
+- **Open Dakota Manual** Opens the Dakota manual for the selected variable category (for instance, :ref:`continuous_design <variables-continuous_design>`).
 - **Batch-assign category** Auto-assign every variable to the same category.
 
 **Variable Properties**
