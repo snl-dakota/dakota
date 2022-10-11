@@ -150,5 +150,5 @@ as well as test whether it's working as expected.  It's highly recommended that 
 
 So, we now have a workflow that can read in parameters and return response values.  This is cool, but what we want eventually is for Dakota to provide new parameters on each Dakota iteration.  How do we do that?
 
-1. :ref:`We need to create a Dakota study that will drive the workflow, using the New Dakota Study wizard. <gui-wizards-main>`
+1. :ref:`We need to create a Dakota study that will drive the workflow, using the New Dakota Study wizard. <wizards-newdakotastudy>`
 2. :ref:`After that, we will need to create a second, outer workflow that knows how to launch a Dakota study that uses the workflow engine as its analysis driver. <wizards-newwrapperworkflow-main>`
