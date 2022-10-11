@@ -566,9 +566,7 @@ form (as discussed for the global Taylor series approach above). The
 primary disadvantage to these surrogates is that the region of accuracy
 tends to be smaller than for global data fits and multifidelity
 surrogates, requiring more SBO cycles with smaller trust regions. More
-information on the design of experiments methods is available in
-Chapter `[dace] <#dace>`__, and the data fit surrogates are described in
-Section `[models:surrogate:datafit] <#models:surrogate:datafit>`__.
+information on the design of experiments methods is available in :ref:`Section Dace <dace>`, and the data fit surrogates are described in :ref:`Section Models Surrogate Datafit <models:surrogate:datafit>`.
 
 ..
    TODO:
@@ -590,7 +588,7 @@ Section `[models:surrogate:datafit] <#models:surrogate:datafit>`__.
    %of optimization subproblems continues until the SBO convergence 
    %criteria are satisfied
 
-Figure `[sbm:sblm_rosen] <#sbm:sblm_rosen>`__ shows a Dakota input file
+:numref:`sbm:sblm_rosen` shows a Dakota input file
 that implements surrogate-based optimization on Rosenbrock’s function.
 The first method keyword block contains the SBO keyword
 ``surrogate_based_local``, plus the commands for specifying the trust
@@ -737,7 +735,7 @@ methods :cite:p:`Lat00`. In the single-point and multipoint
 E-ROM cases, the SBO iteration can appear as in
 :numref:`fig:sbo_mh`, whereas in the S-ROM, global E-ROM,
 and tensor SVD cases, the SBO iteration will appear as in
-Fig. `1.2 <#fig:sbo_df>`__. In addition to the high-fidelity model
+:numref:`fig:sbo_df`. In addition to the high-fidelity model
 analysis requirements, procedures for updating the system matrices and
 basis vectors are also required.
 
