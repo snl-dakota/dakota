@@ -15,7 +15,7 @@ capability allows the use of existing iterative algorithm and
 computational model software components as building blocks to accomplish
 more sophisticated studies, such as hybrid, multistart, Pareto, or
 surrogate-based minimization. Further multi-component capabilities are
-enabled by the model recursion capabilities described in the page :ref:`Models <models:main>`  with specific examples in the page :ref:`Advanced Models <adv_models>` .
+enabled by the model recursion capabilities described in the page :ref:`Models <models:main>` with specific examples in the page :ref:`Advanced Models <adv_models>`.
 
 ..
    TODO:
@@ -622,8 +622,7 @@ If this input file is executed in Dakota, it will converge to the
 optimal design point at :math:`(x_{1},x_{2})=(1,1)` in approximately 800
 function evaluations. While this solution is correct, it is obtained at
 a much higher cost than a traditional gradient-based optimizer (e.g.,
-see the results obtained in
-Section `[tutorial:examples:optimization] <#tutorial:examples:optimization>`__).
+see the results obtained in :ref:`Section Tutorial Examples Optimization <tutorial:examples:optimization>`.
 This demonstrates that the SBO method with global data fits is not
 really intended for use with smooth continuous optimization problems;
 direct gradient-based optimization can be more efficient for such
