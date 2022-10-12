@@ -61,10 +61,10 @@ extern "C" void nidr_set_input_string(const char *);
 
 extern "C" void nidr_lib_cleanup(void);
 
-extern "C" const size_t nidr_squawkmax ;
-extern "C" char* nidr_squawks[];
-extern "C" void nidr_alloc_squawks();
-extern "C" void nidr_free_squawks();
+extern "C" const size_t nidr_max_errors ;
+extern "C" char* nidr_parse_errors[];
+extern "C" void nidr_alloc_error_cache();
+extern "C" void nidr_free_error_cache();
 
 namespace Dakota {
 extern ProblemDescDB *Dak_pddb;
@@ -158,16 +158,16 @@ derived_parse_inputs(const std::string& dakota_input_file,
   //   ptr_parse_opts = parser_options.c_str();
   FILE *dump_file = NULL;
 
-  nidr_alloc_squawks();
+  nidr_alloc_error_cache();
   if (nidr_parse(parser_options.c_str(), dump_file)) {
     //Cerr << "\nErrors parsing input file." << std::endl;
-    for (unsigned int i=0; i<nidr_squawkmax; ++i)
-      if (nidr_squawks[i][0] != '\0')
-	Cerr << nidr_squawks[i];
-    nidr_free_squawks();
+    for (unsigned int i=0; i<nidr_max_errors; ++i)
+      if (nidr_parse_errors[i][0] != '\0')
+	Cerr << nidr_parse_errors[i];
+    nidr_free_error_cache();
     abort_handler(PARSE_ERROR); // allows proper abort in parallel case
   }
-  nidr_free_squawks();
+  nidr_free_error_cache();
 
   if (nerr)
     abort_handler(PARSE_ERROR);
