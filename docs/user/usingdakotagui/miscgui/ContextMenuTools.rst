@@ -47,7 +47,7 @@ which replaces the markup syntax with the latest variable values from the curren
 **Recommended Further Reading**
 
 - Learn more about the :ref:`process by which Dakota communicates with external simulation models. <couplingtosimulations-main>`
-- Learn about the `APREPRO <https://gsjaardema.github.io/seacas/aprepro.pdf>`__
+- Learn about the `APREPRO <https://sandialabs.github.io/seacas-docs/sphinx/html/#aprepro>`__
 - Learn about the :ref:`DPREPRO pre-processing tool <interfaces:dprepro-and-pyprepro>` (a Dakota-developed derivation of APREPRO with similar syntax).
 - Configure Dakota GUI's default pre-processing markup style in the :ref:`Preferences <gui-preferences-highlighter>` dialog.
 

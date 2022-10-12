@@ -69,4 +69,4 @@ Getting Started
 - How do I create a plot from an HDF5 database file, using Next-Gen Workflow?
 
  - :ref:`Option 1:  Use basic HDF/Dakota data plotting nodes.<chartreuse-ngw-hdf-tutorial>`
- - :ref:`Option 2:  Use advanced HDF/Dakota "composite plotter" nodes.<chartreuse-ngw-composite-plotters>` 
+ - :ref:`Option 2:  Use advanced HDF/Dakota "megaplotter" nodes.<chartreuse-ngw-composite-plotters>` 

@@ -93,4 +93,4 @@ Using HDF5 Files in Next-Gen Workflow
 HDF5 files can also be used when building workflows in :ref:`Next-Gen Workflow. <ngw-main>`
 
 - :ref:`Learn about the simple HDF5 plotting nodes that Next-Gen Workflow provides. <chartreuse-ngw-hdf-tutorial>`
-- :ref:`Learn about the advanced "composite plotters" that combine knowledge of Dakota, HDF5, and Chartreuse to produce extremely complex plots. <chartreuse-ngw-composite-plotters>`
+- :ref:`Learn about the advanced "megaplotters" that combine knowledge of Dakota, HDF5, and Chartreuse to produce extremely complex plots. <chartreuse-ngw-composite-plotters>`

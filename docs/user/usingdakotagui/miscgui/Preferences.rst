@@ -153,7 +153,7 @@ Highlighter
 - **Default Pre-processing Marker** This setting controls what pre-processor markup type is used by default.
 
   - **APREPRO** APREPRO is an algebraic pre-processor that reads a file containing both general text and algebraic, string, or conditional expressions.
-    `You can learn more about APREPRO here. <https://gsjaardema.github.io/seacas/aprepro.pdf>`__
+    `You can learn more about APREPRO here. <https://sandialabs.github.io/seacas-docs/sphinx/html/#aprepro>`__
   - **DPREPRO** DPREPRO is a Dakota-developed derivation of APREPRO with similar syntax.
     :ref:`You can learn more about DPREPRO here. <interfaces:dprepro-and-pyprepro>`
   - **Positional Preprocessor** A special type of pre-processor used by Dakota GUI.  Rather than marking up a text file, a positional pre-processor

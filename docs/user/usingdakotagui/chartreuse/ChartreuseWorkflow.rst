@@ -10,7 +10,7 @@ Introduction
 
 Chartreuse offers robust support for :ref:`Next-Gen Workflow <ngw-main>`, a node-based workflow creation tool included with Dakota GUI.  Depending on what
 you want to do, there are a number of different Chartreuse nodes that you have at your disposal.  These nodes range from simple plots based on inputted arrays
-of numbers, to more sophisticated "composite plotters" that generate sets of plots using complex data sources (such as a Dakota HDF5 output file).
+of numbers, to more sophisticated "megaplotter" nodes that generate sets of plots using complex data sources (such as a Dakota HDF5 output file).
 
 .. _chartreuse-ngw-node-help:
 
@@ -220,10 +220,10 @@ PDF curve plots can be combined with other types of Chartreuse plotting nodes (f
 .. _chartreuse-ngw-composite-plotters:
 
 =================================================================
-"Data Visualization (Dakota/Chartreuse Composite Plots)" Category
+"Data Visualization (Dakota/Chartreuse Megaplotters)" Category
 =================================================================
 
-There is another set of plotting nodes available in the "Data Visualization (Dakota/Chartreuse Composite Plots)" folder:
+There is another set of plotting nodes available in the "Data Visualization (Dakota/Chartreuse Megaplotters)" folder:
 
 .. image:: img/Plotting_HDF_4.png
    :alt: This is the last of the plotting nodes, I promise
@@ -233,9 +233,9 @@ These nodes behave somewhat differently than other Chartreuse plotting nodes:
 - Whereas all other Chartreuse plot nodes require you to manage the created plot data (usually by piping the created plot to a "file"
   node as the final destination), these nodes generate a multitude of plots when they are executed.  As such, they manage their own file creation process.
 - These nodes are also specific to Dakota-generated HDF5 files, and will not work with general HDF5 files, or with other types of Dakota output files.
-- Composite plotters are context-sensitive to the type of Dakota study that was run.  For example, the "incrementalLHS"
+- Megaplotters are context-sensitive to the type of Dakota study that was run.  For example, the "incrementalLHS"
   node will not arbitrarily work with all types of Dakota HDF5 files, especially if the datasets unique to LHS studies are not present in the
-  HDF5 file.  :ref:`Refer to a specific composite plotter node's documentation for more information on the restrictions for using it. <chartreuse-ngw-node-help>`
+  HDF5 file.  :ref:`Refer to a specific megaplotter node's documentation for more information on the restrictions for using it. <chartreuse-ngw-node-help>`
 
 -----------------------------------------
 Tutorial:  Using the responseCompare node
@@ -249,7 +249,7 @@ That is, one of the following Dakota methods must have been used to generate the
 :ref:`list_parameter_study <method-list_parameter_study>`, :ref:`multidim_parameter_study <method-multidim_parameter_study>`,
 or :ref:`vector_parameter_study <method-vector_parameter_study>`.
 
-Converse to the strict upfront requirements for using a composite plotter, the workflow to build is trivial.  Simply drag the Dakota-generated HDF5 file onto
+Converse to the strict upfront requirements for using a megaplotter, the workflow to build is trivial.  Simply drag the Dakota-generated HDF5 file onto
 the canvas as a "file" node, then drag a "responseCompare" node onto the canvas, and connect the "fileReference" output port of the file node to the
 "hdfFile" input port of the responseCompare node.
 
@@ -257,7 +257,7 @@ the canvas as a "file" node, then drag a "responseCompare" node onto the canvas,
    :alt: responseCompare node
 
 Note that there is no need to configure the responseCompare node before running (although there are a number of useful configuration options available
-for each composite plotter node).  The composite plotter node will automatically iterate through your HDF5 file and produce the appropriate number of
+for each megaplotter node).  The megaplotter node will automatically iterate through your HDF5 file and produce the appropriate number of
 plots to represent your Dakota study data.
 
 Running this workflow will generate a number of .plot files in your workflow's run directory - one .plot file per response.
