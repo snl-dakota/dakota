@@ -133,6 +133,7 @@ void OutputManager::check_inputfile_redirs(const std::string& input_filename,
 					   std::string& output_filename,
 					   std::string& error_filename)
 {
+  // TODO: Check file operation exceptions
   std::ifstream infile(input_filename);
   OutputManager::check_input_redirs(infile, output_filename, error_filename);
 }
@@ -152,29 +153,57 @@ void OutputManager::check_input_redirs(std::istream& input_stream,
 				       std::string& output_filename,
 				       std::string& error_filename)
 {
-  // this doesn't allow abbreviations due to output_filter and error_factors
-  // also doesn't treat intervening commented sections
-  // moreover a commented redirect will still redirect...
+  // RATIONALE: This doesn't allow abbreviations due to similar
+  // keywords output_filter and error_factors.
 
   // quoted filename with a match group for the contained filename;
   // this sub-group will always exist if the regex matches
   const std::string quoted_filename = "['\"](.+)['\"]";
-
-  //    auto const outfile_kw = boost::regex("output_file");
+  auto const quoted_filename_re = boost::regex(quoted_filename);
+  auto const out_kw = boost::regex("output_file");
   auto const out_kw_with_filename =
     boost::regex("output_file[=\\s]+" + quoted_filename);
+  auto const err_kw = boost::regex("error_file");
   auto const err_kw_with_filename =
     boost::regex("error_file[=\\s]+" + quoted_filename);
 
   std::string line;
-  boost::smatch matches;
   while (std::getline(input_stream, line)) {
+
+    boost::smatch matches;
+
     if(boost::regex_search(line, matches, out_kw_with_filename) && 
        !strcontains(matches.prefix(), "#") )
       output_filename = matches.str(1);
+    // match only the keyword, then look ahead
+    else if(boost::regex_search(line, matches, out_kw) &&
+       !strcontains(matches.prefix(), "#") ) {
+      // search until an uncommented quoted file name
+      while (std::getline(input_stream, line)) {
+	if (boost::regex_search(line, matches, quoted_filename_re) &&
+	    !strcontains(matches.prefix(), "#")) {
+	  output_filename = matches.str(1);
+	  break;
+	}
+      }
+    }
+
     if(boost::regex_search(line, matches, err_kw_with_filename) &&
        !strcontains(matches.prefix(), "#") )
       error_filename = matches.str(1);
+    // match only the keyword, then look ahead
+    else if(boost::regex_search(line, matches, err_kw) &&
+       !strcontains(matches.prefix(), "#") ) {
+      // search until an uncommented quoted file name
+      while (std::getline(input_stream, line)) {
+	if (boost::regex_search(line, matches, quoted_filename_re) &&
+	    !strcontains(matches.prefix(), "#")) {
+	  error_filename = matches.str(1);
+	  break;
+	}
+      }
+    }
+
   }
 }
 

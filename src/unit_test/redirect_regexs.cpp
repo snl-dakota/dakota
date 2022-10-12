@@ -16,6 +16,7 @@
 #define BOOST_TEST_MODULE dakota_redirect_regexs
 #include <boost/test/included/unit_test.hpp>
 
+// These examples should cause redirects
 std::string valid_redirs = R"(
 environment
 output_file  =    'dakota.log'
@@ -31,17 +32,10 @@ some_other_keyword
 error_file "dakota.err" # trailing comment
 )";
 
-// These commented lines should not cause a redirect
-std::string no_redirs_comments = R"(
-environment
-#   output_file  =    'dakota.log'# trailing comment
-some_other_keyword
-# full line comment error_file "dakota.err" # trailing comment
-)";
-
-std::string bum_comments = R"(
+std::string valid_redirs_intervening_lines = R"(
 environment
 output_file  # where to output
+  # If you really want to,
   # change the log here:
   'dakota.log'# trailing comment
 some_other_keyword
@@ -52,14 +46,20 @@ error_file
   "dakota.err" # trailing comment
 )";
 
+// These commented lines should not cause a redirect
+std::string no_redirs_comments = R"(
+environment
+#   output_file  =    'dakota.log'# trailing comment
+some_other_keyword
+# full line comment error_file "dakota.err" # trailing comment
+)";
 
-// check functions only with default ASV = 1's
+
 BOOST_AUTO_TEST_CASE(test_valid_redirs)
 {
   // TODO: Parameterized test
   std::vector<std::string> valid_inputs =
-    { valid_redirs, valid_redirs_comments };
-  //    { valid_redirs, valid_redirs_comments, bum_comments };
+    { valid_redirs, valid_redirs_comments, valid_redirs_intervening_lines };
   for (const auto& input_text : valid_inputs) {
     std::string outfile, errfile;
     std::istringstream infile(input_text);
