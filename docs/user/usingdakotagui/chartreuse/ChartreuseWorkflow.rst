@@ -56,7 +56,7 @@ These nodes behave somewhat differently than other Chartreuse plotting nodes:
 - Whereas all other Chartreuse plot nodes require you to manage the created plot data (usually by piping the created plot to a "file"
   node as the final destination), these nodes generate a multitude of plots when they are executed.  As such, they manage their own file creation process.
 - These nodes are also specific to Dakota-generated HDF5 files, and will not work with general HDF5 files, or with other types of Dakota output files.
-- Megaplotters are context-sensitive to the type of Dakota study that was run.  For example, the "incrementalLHS"
+- Megaplotters are context-sensitive to the type of Dakota study that was run.  For example, the :ref:`"incrementalLHS" <ngw-node-incrementalLHS>`
   node will not arbitrarily work with all types of Dakota HDF5 files, especially if the datasets unique to LHS studies are not present in the
   HDF5 file.
 
@@ -86,20 +86,20 @@ Then, draw two connector lines from the file node's "dataOut" port to both colum
 .. image:: img/Plotting_Workflow_3.png
    :alt: Connecting the nodes
 
-Now, open the Chartreuse folder in the Palette and drag "traceScatterPlot2d" onto the canvas.  Note that it has two input ports – "X" and "Y."  We will drag
+Now, open the Chartreuse folder in the Palette and drag :ref:`"traceScatterPlot2d" <ngw-node-traceScatterPlot2d>` onto the canvas.  Note that it has two input ports – "X" and "Y."  We will drag
 connectors from our two column nodes' "stdout" ports to these two input ports.
 
 .. image:: img/Plotting_Workflow_4.PNG
    :alt: A traceScatterPlot2d node
 
-If you open the Settings editor view for the traceScatterPlot2d, you will notice that many of the
+If you open the Settings editor view for the :ref:`"traceScatterPlot2d" <ngw-node-traceScatterPlot2d>` node, you will notice that many of the
 :ref:`same configuration settings for 2D scatter plots <chartreuse-plot-trace-scatter-2d>` that were available in the
 :ref:`Plot Trace Creator <chartreuse-plot-trace>` dialog are available here as well:
 
 .. image:: img/Plotting_Workflow_5.PNG
    :alt: The Settings editor
 
-Finally, we need to send our plot to a file to be able to view it.  Drag a "file" node from the "File Operations" folder onto the canvas, and connect the
+Finally, we need to send our plot to a file to be able to view it. Drag a "file" node from the "File Operations" folder onto the canvas, and connect the
 plotFileDataOut port of our 2D scatter plot node to the "dataIn" port of the file node.  Don't forget to provide a name for your plot file in the "fileName"
 field of your file node.
 
@@ -123,15 +123,15 @@ Let's make this plot more interesting and add another trace to the same canvas.
 - Add another column node to this workflow.  Configure it to extract a different column from our tabular data file.  Don't forget to set headerLines to 1 to omit the first row.
 - Connect the tabular data file node's dataOut port to this new column node's stdin port.
 - You may want to consider using each column node's label field to keep the column nodes straight.
-- Add a second traceScatterPlot2d node.  Set its Trace Color property to something other than black.
+- Add a second :ref:`"traceScatterPlot2d" <ngw-node-traceScatterPlot2d>` node.  Set its Trace Color property to something other than black.
 - Wire the column output ports as appropriate.  In our example, the first two columns represent two variables, and the third column represents a response, so we send the
   response column data to both scatter plot nodes, but each variable only goes to one of the scatter plot nodes.
 
 .. image:: img/Plotting_Workflow_7.png
    :alt: Example of column extractors
 
-We need to combine the two plot traces onto one canvas so that they can be displayed together, so use a plotCanvas node from the Chartreuse folder.
-A plotCanvas node is somewhat unique in that it does not have any input ports by default, but we can create our own.  Create two new input ports for this node
+We need to combine the two plot traces onto one canvas so that they can be displayed together, so use a :ref:`"plotCanvas" <ngw-node-plotCanvas>` node from the Chartreuse folder.
+A :ref:`"plotCanvas" <ngw-node-plotCanvas>` node is somewhat unique in that it does not have any input ports by default, but we can create our own.  Create two new input ports for this node
 (call them trace1 and trace2), and draw connector lines from our two trace nodes' trace output ports to the two input ports you just created:
 
 .. image:: img/Plotting_Workflow_8.png
@@ -154,13 +154,14 @@ Tutorial: Multiple Plot Canvases
 ================================
 
 Now let's try separating these two plot traces onto their own canvases.  Because we will be dealing with multiple canvases (and therefore multiple
-plotCanvas nodes) we will need a new type of node to aggregate canvases together – the plotWindow node.
+:ref:`plotCanvas <ngw-node-plotCanvas>` nodes) we will need a new type of node to aggregate canvases together – the :ref:`"plotWindow" <ngw-node-plotWindow>` node.
 
-- Add a new plotCanvas node and a new plotWindow node to your workflow.
-- Pipe the second traceScatterPlot2d node's trace output port to the new plotCanvas node.
-- Delete the second traceScatterPlot2d node's original pipe to the first plotCanvas node, and make sure to delete the first plotCanvas node's second input port.
-- Then, on the new plotWindow node, add two custom input ports (for instance, "canvas1" and "canvas2") and pipe your two canvas output ports to these two input ports.
-- Also, make sure to set the plotWindow node's "Column count" field to "2" – this will ensure that the two canvases are stacked horizontally next to each other.
+- Add a new :ref:`"plotCanvas" <ngw-node-plotCanvas>` node and a new :ref:`"plotWindow" <ngw-node-plotWindow>` node to your workflow.
+- Pipe the second :ref:`"traceScatterPlot2d" <ngw-node-traceScatterPlot2d>` node's trace output port to the new :ref:`"plotCanvas" <ngw-node-plotCanvas>` node.
+- Delete the second :ref:`"traceScatterPlot2d" <ngw-node-traceScatterPlot2d>` node's original pipe to the first :ref:`"plotCanvas" <ngw-node-plotCanvas>` node,
+  and make sure to delete the first :ref:`"plotCanvas" <ngw-node-plotCanvas>` node's second input port.
+- Then, on the new :ref:`"plotWindow" <ngw-node-plotWindow>` node, add two custom input ports (for instance, "canvas1" and "canvas2") and pipe your two canvas output ports to these two input ports.
+- Also, make sure to set the :ref:`"plotWindow" <ngw-node-plotWindow>` node's "Column count" field to "2" – this will ensure that the two canvases are stacked horizontally next to each other.
   If you wanted to stack the two canvases vertically, you would set the "Column count" field to 1 (that is, if you think about the canvases being on a grid,
   there would only be one column of canvases, so when the second canvas needs to be placed, it will move down to the next row).
 - Keep the file node at the end as the final destination for our plot data.
@@ -181,20 +182,22 @@ Running the workflow should produce the following:
 Tutorial: Create a Scatter Plot Using an HDF5 Database File
 ===========================================================
 
-Let's try creating a scatter plot using the hdfTraceScatterPlot2d node, instead of the classic traceScatterPlot2d node.
+Let's try creating a scatter plot using the :ref:`"hdfTraceScatterPlot2d" <ngw-node-hdfTraceScatterPlot2d>` node, instead of the classic traceScatterPlot2d node.
 
 Begin by dragging your .h5 file containing Dakota-generated results onto a blank workflow canvas:
 
 .. image:: img/Plotting_HDF_8.png
    :alt: From humble beginnings
 
-Next, drag an hdfTraceScatterPlot2d node onto the canvas, and connect the "fileReference" output port of the h5 file node to the "hdfFile" input port of the hdfTraceScatterPlot2d node:
+Next, drag an :ref:`"hdfTraceScatterPlot2d" <ngw-node-hdfTraceScatterPlot2d>` node onto the canvas, and connect the "fileReference" output
+port of the h5 file node to the "hdfFile" input port of the :ref:`"hdfTraceScatterPlot2d" <ngw-node-hdfTraceScatterPlot2d>` node:
 
 .. image:: img/Plotting_HDF_6.png
    :alt: One node, two node, red node, blue node
 
 Note that HDF5-based plotting nodes don't "just work", and need some additional configuration.  For example, this scatter plot node needs to be told which
-datasets to extract for the X and Y data of the scatter plot.  With the hdfTraceScatterPlot2d node selected, you can update its configuration in the Settings editor:
+datasets to extract for the X and Y data of the scatter plot.  With the :ref:`"hdfTraceScatterPlot2d" <ngw-node-hdfTraceScatterPlot2d>` node selected, you can update
+its configuration in the Settings editor:
 
 .. image:: img/Plotting_HDF_7.png
    :alt: Set the properties of the scatter plot node
@@ -211,7 +214,7 @@ Finally, add a file node to the canvas, and connect the "plotFileDataOut" output
 Tutorial:  Using the responseCompare node
 =========================================
 
-Let's try using the responseCompare node.  This node will compare the variability of Dakota's input variables against each of Dakota's output responses, using
+Let's try using the :ref:`"responseCompare" <ngw-node-responseCompare>` node.  This node will compare the variability of Dakota's input variables against each of Dakota's output responses, using
 one generated canvas per response.  It is similar to the :ref:`Chartreuse Plotting Template for centered parameter studies, seen outside of Next-Gen Workflow <chartreuse-plot-templates-cps>`.
 
 To use this node, we must begin with a Dakota-generated HDF5 file that represents a parameter sweep study.
@@ -220,13 +223,13 @@ That is, one of the following Dakota methods must have been used to generate the
 or :ref:`vector_parameter_study <method-vector_parameter_study>`.
 
 Converse to the strict upfront requirements for using a megaplotter, the workflow to build is trivial.  Simply drag the Dakota-generated HDF5 file onto
-the canvas as a "file" node, then drag a "responseCompare" node onto the canvas, and connect the "fileReference" output port of the file node to the
-"hdfFile" input port of the responseCompare node.
+the canvas as a "file" node, then drag a :ref:`"responseCompare" <ngw-node-responseCompare>` node node onto the canvas, and connect the "fileReference" output port of the file node to the
+"hdfFile" input port of the :ref:`"responseCompare" <ngw-node-responseCompare>` node node.
 
 .. image:: img/Plotting_Workflow_16.png
    :alt: responseCompare node
 
-Note that there is no need to configure the responseCompare node before running (although there are a number of useful configuration options available
+Note that there is no need to configure the :ref:`"responseCompare" <ngw-node-responseCompare>` node node before running (although there are a number of useful configuration options available
 for each megaplotter node).  The megaplotter node will automatically iterate through your HDF5 file and produce the appropriate number of
 plots to represent your Dakota study data.
 
