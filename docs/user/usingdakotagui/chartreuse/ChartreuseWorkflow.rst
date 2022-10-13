@@ -8,37 +8,63 @@ Chartreuse in Next-Gen Workflow
 Introduction
 ============
 
-Chartreuse offers robust support for :ref:`Next-Gen Workflow <ngw-main>`, a node-based workflow creation tool included with Dakota GUI.  Depending on what
-you want to do, there are a number of different Chartreuse nodes that you have at your disposal.  These nodes range from simple plots based on inputted arrays
-of numbers, to more sophisticated "megaplotter" nodes that generate sets of plots using complex data sources (such as a Dakota HDF5 output file).
+Chartreuse offers robust support for :ref:`Next-Gen Workflow (NGW) <ngw-main>`, a node-based workflow creation tool included with Dakota GUI.
 
-.. _chartreuse-ngw-node-help:
+This page contains a number of useful "getting started" topics and tutorials for utilizing Chartreuse in Next-Gen Workflow.
 
-===============================
-Get Help for an Individual Node
-===============================
+.. _ngw-choosing-node-guide:
 
-The configuration options for each node vary significantly.  To learn more about the specific fields, input ports, and output ports of each plotting node,
-open the node in the Settings editor view and click on the small "?" button to the right of the Settings editor banner.
+========================
+Which Node Should I Use?
+========================
 
-.. image:: img/Plotting_HDF_3.png 
-   :alt: Documentation for individual workflow nodes is available by clicking the small blue ? in the top-right corner of the dialog.
-
-==========================================
-"Data Visualization (Chartreuse)" Category
-==========================================
+There are a lot of nodes in NGW. The number of Chartreuse plotting nodes alone can be overwhelming. 
+If you are looking to create basic plots, the nodes in the "Data Visualization (Chartreuse)" folder are a good place to start.
+These nodes expect arrays of numbers as inputs; these nodes can also combine plot traces and plot canvases together
+to create more sophisticated plots.
 
 .. image:: img/Plotting_Workflow_12.png
    :alt: Data Visualization (Chartreuse)
 
-The nodes in the "Data Visualization (Chartreuse)" folder are useful for creating basic Chartreuse plots using arbitrary arrays of numbers, as
-well as performing combinations of plot traces and plot canvases.
+In the "Data Visualization (Dakota/Chartreuse Simple Plots)" folder, a library of simple plotting nodes are available:
+
+.. image:: img/Plotting_HDF_1.png
+   :alt: "Data Visualization (Dakota/Chartreuse Simple Plots)" nodes
+   
+.. note::
+
+   Note that many of these plot nodes' names are prefixed by "hdf".  *Most nodes in this folder require a Dakota-generated HDF5 database file to work properly.*
+
+These Dakota/Chartreuse/HDF5 plotting nodes provide a usability advantage over the old-school approach of :ref:`extracting tabular columns one at a time <chartreuse-ngw-main-single-plot-tutorial>`.
+If you drag one of these plot nodes onto the workflow canvas, note that only one input port is provided - "hdfFile."  Having
+one input port that manages everything leads to much simpler-looking workflows.  For example:
+
+.. image:: img/Plotting_HDF_2.png
+   :alt: A simpler HDF-style workflow
+
+These HDF5-based plotting nodes can produce much more sophisticated plots that simply weren't possible with the column-extracting approach.
+
+.. _chartreuse-ngw-composite-plotters:
+
+There is yet another set of plotting nodes available in the "Data Visualization (Dakota/Chartreuse Megaplotters)" folder:
+
+.. image:: img/Plotting_HDF_4.png
+   :alt: This is the last of the plotting nodes, I promise
+
+These nodes behave somewhat differently than other Chartreuse plotting nodes:
+
+- Whereas all other Chartreuse plot nodes require you to manage the created plot data (usually by piping the created plot to a "file"
+  node as the final destination), these nodes generate a multitude of plots when they are executed.  As such, they manage their own file creation process.
+- These nodes are also specific to Dakota-generated HDF5 files, and will not work with general HDF5 files, or with other types of Dakota output files.
+- Megaplotters are context-sensitive to the type of Dakota study that was run.  For example, the "incrementalLHS"
+  node will not arbitrarily work with all types of Dakota HDF5 files, especially if the datasets unique to LHS studies are not present in the
+  HDF5 file.
 
 .. _chartreuse-ngw-main-single-plot-tutorial:
 
----------------------------
-Tutorial: Single Plot Trace
----------------------------
+====================================
+Tutorial: Single Plot Trace Workflow
+====================================
 
 Assume that we already have a Dakota tabular data file to use as our data source.  Beginning with a blank workflow, drag your tabular
 output file from the Project Explorer view onto the workflow canvas.
@@ -88,9 +114,9 @@ You can double-click the .plot file to view the result:
    
 .. _chartreuse-ngw-main-multiple-trace-tutorial:
 
-------------------------------
-Tutorial: Multiple Plot Traces
-------------------------------
+=======================================
+Tutorial: Multiple Plot Traces Workflow
+=======================================
 
 Let's make this plot more interesting and add another trace to the same canvas.
 
@@ -120,10 +146,12 @@ Now try running this workflow.  We should get a plot where two traces are overla
 
 .. image:: img/Plotting_Workflow_9.png
    :alt: Two traces on one canvas
+   
+.. _chartreuse-ngw-main-multiple-canvas-tutorial:
 
---------------------------------
+================================
 Tutorial: Multiple Plot Canvases
---------------------------------
+================================
 
 Now let's try separating these two plot traces onto their own canvases.  Because we will be dealing with multiple canvases (and therefore multiple
 plotCanvas nodes) we will need a new type of node to aggregate canvases together – the plotWindow node.
@@ -147,31 +175,11 @@ Running the workflow should produce the following:
 .. image:: img/Plotting_Workflow_11.png
    :alt: Two canvases on one plot window
 
-==============================================================
-"Data Visualization (Dakota/Chartreuse Simple Plots)" Category
-==============================================================
-
-In the "Data Visualization (Dakota/Chartreuse Simple Plots)" folder, a library of simple plotting nodes are available.
-
-.. image:: img/Plotting_HDF_1.png
-   :alt: "Data Visualization (Dakota/Chartreuse Simple Plots)" nodes
-
-Note that many of these plot nodes' names are prefixed by "hdf".  *Most nodes in this folder require a Dakota-generated HDF5 database file to work properly.*
-
-The Dakota/Chartreuse/HDF5 plotting nodes provide a usability advantage over the old-school approach of :ref:`extracting tabular columns one at a time <chartreuse-ngw-main-single-plot-tutorial>`.
-If you drag one of these plot nodes onto the workflow canvas, note that only one input port is provided - "hdfFile."  Having
-one input port that manages everything leads to much simpler-looking workflows.  For example:
-
-.. image:: img/Plotting_HDF_2.png
-   :alt: A simpler HDF-style workflow
-
-These HDF5-based plotting nodes can produce much more sophisticated plots that simply weren't possible with the column-extracting approach.
-
 .. _chartreuse-ngw-hdf-tutorial:
 
------------------------------------------------------------
+===========================================================
 Tutorial: Create a Scatter Plot Using an HDF5 Database File
------------------------------------------------------------
+===========================================================
 
 Let's try creating a scatter plot using the hdfTraceScatterPlot2d node, instead of the classic traceScatterPlot2d node.
 
@@ -199,47 +207,9 @@ Finally, add a file node to the canvas, and connect the "plotFileDataOut" output
 .. image:: img/Plotting_HDF_5.png
    :alt: It's so simple!
 
-.. _chartreuse-ngw-uncertainty-variables:
-
-------------------------------------------------------------------
-Visualizing Dakota's Uncertainty Variables Using Next-Gen Workflow
-------------------------------------------------------------------
-
-In addition to HDF5-based plotting nodes, the "Data Visualization (Dakota/Chartreuse Simple Plots)" folder contains a node for visualizing the
-probability density functions of certain Dakota variable types.  This topic is covered in more detail :ref:`here <chartreuse-sandbox-main-sending-data>`.
-
-.. image:: img/Plotting_Workflow_15.png
-   :alt: PDF visualization node
-
-To use this node, simply provide the Dakota input file as a "file" node on the canvas, and pipe its "fileReference" output port to the "inFile"
-input port of this node.  In addition, provide the descriptor of the variable you want to visualize in this node's Settings Editor.
-
-Note that this node has the familiar "plotFileDataOut" and "trace" output ports seen on other Chartreuse nodes.  This means that Dakota variable
-PDF curve plots can be combined with other types of Chartreuse plotting nodes (for example, :ref:`aggregating traces onto the same canvas <chartreuse-ngw-main-multiple-trace-tutorial>`).
-
-.. _chartreuse-ngw-composite-plotters:
-
-=================================================================
-"Data Visualization (Dakota/Chartreuse Megaplotters)" Category
-=================================================================
-
-There is another set of plotting nodes available in the "Data Visualization (Dakota/Chartreuse Megaplotters)" folder:
-
-.. image:: img/Plotting_HDF_4.png
-   :alt: This is the last of the plotting nodes, I promise
-
-These nodes behave somewhat differently than other Chartreuse plotting nodes:
-
-- Whereas all other Chartreuse plot nodes require you to manage the created plot data (usually by piping the created plot to a "file"
-  node as the final destination), these nodes generate a multitude of plots when they are executed.  As such, they manage their own file creation process.
-- These nodes are also specific to Dakota-generated HDF5 files, and will not work with general HDF5 files, or with other types of Dakota output files.
-- Megaplotters are context-sensitive to the type of Dakota study that was run.  For example, the "incrementalLHS"
-  node will not arbitrarily work with all types of Dakota HDF5 files, especially if the datasets unique to LHS studies are not present in the
-  HDF5 file.  :ref:`Refer to a specific megaplotter node's documentation for more information on the restrictions for using it. <chartreuse-ngw-node-help>`
-
------------------------------------------
+=========================================
 Tutorial:  Using the responseCompare node
------------------------------------------
+=========================================
 
 Let's try using the responseCompare node.  This node will compare the variability of Dakota's input variables against each of Dakota's output responses, using
 one generated canvas per response.  It is similar to the :ref:`Chartreuse Plotting Template for centered parameter studies, seen outside of Next-Gen Workflow <chartreuse-plot-templates-cps>`.
@@ -276,3 +246,4 @@ Recommended Reading
 
 - For more traditional Chartreuse plotting options, :ref:`see the main Chartreuse documentation page <chartreuse-plot-trace>`.
 - For fast plotting outside of Next-Gen Workflow, :ref:`see the documentation page for Chartreuse's Sandbox View <chartreuse-sandbox-main>`.
+- Refer to the :ref:`NGW Node Glossary <ngw-node-glossary>` for a more comprehensive exploration of node functionality.

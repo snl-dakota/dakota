@@ -14,7 +14,17 @@ between Dakota and your simulation model using a series of nodes that are visual
    NextGenWorkflowBasics
    NextGenWorkflowAnalysisDrivers
    NextGenWorkflowTutorial
-   NextGenWorkflowExpertMode
-   NextGenWorkflowSurrogates
+   NodeGlossary
+
+=======================
+Highlighted Node Topics
+=======================
+
+- :ref:`Dakota Workflows in "Expert Mode" <ngw-expertmode>`
+- :ref:`Dakota Surrogates in Workflows <ngw-surrogates>`
    
-For further information, refer to the official `NGW project on Gitlab. <https://gitlab.com/iwf/ngw>`__
+===============
+Further Reading
+===============
+   
+- Refer to the official `NGW project on Gitlab. <https://gitlab.com/iwf/ngw>`__
