@@ -61,7 +61,7 @@ public class BatchPluginVersionUpdater {
 	// CONFIGURATION //
 	///////////////////
 	
-	private static final boolean DRY_RUN = true;
+	private static final boolean DRY_RUN = false;
 	private static final String START_DIR = "C:\\Users\\emridgw\\workspace\\svn\\dart";
 	private static final String[] PLUGIN_BLACKLIST = new String[]{
 		"gov.sandia.aleph",
