@@ -23,6 +23,12 @@
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
+// Using Boost MT since need it anyway for unif int dist
+#include "dakota_mersenne_twister.hpp"
+// Using Boost unif int dist for cross-platform stability
+#include "boost/random/uniform_int_distribution.hpp"
+#include "boost/random/variate_generator.hpp"
+
 static const char rcsId[]="@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 
@@ -1228,13 +1234,16 @@ Real NonDMultilevelSampling::compute_bootstrap_covariance(const size_t step,
   bs_samples_lm1.size(nb_samples);
 
   //Cout << "Bootstrap seed: " << *seed << "\n";
-  std::mt19937 rng((*seed));
-  std::uniform_int_distribution<> unif_int(0, nb_samples-1);
+  boost::mt19937 rng((*seed));
+  boost::random::uniform_int_distribution<> rand_int_range( 0, nb_samples-1);
+  boost::variate_generator
+    < boost::mt19937, boost::random::uniform_int_distribution<> >
+    rand_int(rng, rand_int_range);
 
   for(int bs_resample = 0; bs_resample < nb_bs_samples; ++bs_resample){
 
     for(int resample = 0; resample < nb_samples; ++resample){
-      bs_sample_idx = unif_int(rng);
+      bs_sample_idx = rand_int();
       bs_samples_l[resample] = it->second(qoi, bs_sample_idx);
       bs_samples_lm1[resample] = (step > 0) ? 
                                     it->second(qoi + nb_functions, bs_sample_idx) : 0;
