@@ -211,7 +211,7 @@ one of the local optimizations finds the global minimum.
 Pareto Optimization
 -------------------
 
-The Pareto optimization method (keyword: ) is one of three
+The Pareto optimization method (keyword: ``pareto_set`` ) is one of three
 multiobjective optimization capabilities discussed in
 Section `[opt:additional:multiobjective] <#opt:additional:multiobjective>`__.
 In the Pareto optimization method, multiple sets of multiobjective
