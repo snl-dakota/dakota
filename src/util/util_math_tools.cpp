@@ -11,6 +11,16 @@
 
 #include "util_common.hpp"
 
+#include <boost/version.hpp>
+#if (BOOST_VERSION < 107000) && !defined(BOOST_ALLOW_DEPRECATED_HEADERS)
+//could alternately use: #define BOOST_PENDING_INTEGER_LOG2_HPP 1
+#define BOOST_ALLOW_DEPRECATED_HEADERS 1
+#include <boost/random/mersenne_twister.hpp>
+#undef BOOST_ALLOW_DEPRECATED_HEADERS
+#else
+#include <boost/random/mersenne_twister.hpp>
+#endif
+#include <boost/random/uniform_int_distribution.hpp>
 #include <random>
 
 namespace dakota {
@@ -30,8 +40,10 @@ int n_choose_k(int n, int k) {
 
 void random_permutation(const int num_pts, const unsigned int seed,
                         VectorXi& permutations) {
-  std::mt19937 generator(seed);
-  std::uniform_int_distribution<> dist(0, num_pts - 1);
+  // Using Boost MT since need it anyway for unif int dist
+  boost::random::mt19937 generator(seed);
+  // Using Boost unif int dist for cross-platform stability
+  boost::random::uniform_int_distribution<> dist(0, num_pts - 1);
   int index, tmp;
   for (int i = 0; i < num_pts; i++) {
     index = dist(generator);

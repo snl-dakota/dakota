@@ -20,8 +20,9 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
-#include <random>
 #include <vector>
+#include "dakota_mersenne_twister.hpp"
+#include <boost/random/uniform_int_distribution.hpp>
 #include "Teuchos_SerialDenseVector.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 
@@ -94,13 +95,15 @@ protected:
 
   // Internal static members for random variate generation
 
+  // Using Boost MT since need it anyway for unif int dist
   /// Random number generator to use for sampling
-  static std::mt19937 bootstrapRNG;
+  static boost::random::mt19937 bootstrapRNG;
 
   // Internal instance members
 
+  // Using Boost unif int dist for cross-platform stability
   /// Uniform distribution to provide samples from the empirical distribution
-  std::uniform_int_distribution<> sampler;
+  boost::random::uniform_int_distribution<> sampler;
 
   /// Size of the dataset defining the empirical distribution
   const size_t dataSize;
@@ -112,7 +115,7 @@ protected:
 
 /// The boostrap random number generator
 template<typename Data>
-std::mt19937 BootstrapSamplerBase<Data>::bootstrapRNG;
+boost::random::mt19937 BootstrapSamplerBase<Data>::bootstrapRNG;
 
 
 /// Actual boostrap sampler implementation for common data types
