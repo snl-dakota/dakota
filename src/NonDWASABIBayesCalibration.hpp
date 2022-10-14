@@ -18,7 +18,7 @@
 
 #include "NonDBayesCalibration.hpp"
 #include "GaussianKDE.hpp"
-#include <random>
+#include "dakota_mersenne_twister.hpp"
 
 namespace Dakota {
 

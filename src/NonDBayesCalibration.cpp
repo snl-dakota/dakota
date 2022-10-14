@@ -27,6 +27,14 @@
 #include "SNLLOptimizer.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "LHSDriver.hpp"
+// Using Boost MT since need it anyway for dist
+#include "dakota_mersenne_twister.hpp"
+#include "boost/random.hpp"
+// Using Boost dist for cross-platform stability
+#include "boost/random/normal_distribution.hpp"
+#include "boost/random/variate_generator.hpp"
+#include "boost/generator_iterator.hpp"
+#include "boost/math/special_functions/digamma.hpp"
 // BMA: May need to better manage DLL export / import from ANN in the future
 // #ifdef DLL_EXPORTS
 // #undef DLL_EXPORTS
@@ -39,8 +47,6 @@
 #include "DiscrepancyCorrection.hpp"
 #include "bayes_calibration_utils.hpp"
 #include "dakota_stat_util.hpp"
-#include "boost/math/special_functions/digamma.hpp"
-#include <random>
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -1441,24 +1447,26 @@ void NonDBayesCalibration::apply_error_vec(const RealVector& sim_error_vec,
   //int num_exp = expData.num_experiments();
   RealVector error_vec(numFunctions);
   Real stdev;
-  std::mt19937 rnumGenerator;
+  boost::mt19937 rnumGenerator;
   if (sim_error_vec.length() == 1) {
     rnumGenerator.seed(stoch_seed);
     stdev = std::sqrt(sim_error_vec[0]);
-    std::normal_distribution<> err_dist(0.0, stdev);
-    auto err_gen = std::bind(err_dist, std::ref(rnumGenerator));
-    for (size_t j = 0; j < numFunctions; j++)
-      error_vec[j] = err_gen();
-    expData.apply_simulation_error(error_vec, experiment);
+    boost::normal_distribution<> err_dist(0.0, stdev);
+    boost::variate_generator<boost::mt19937,
+           boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
+      for (size_t j = 0; j < numFunctions; j++)
+        error_vec[j] = err_gen();
+      expData.apply_simulation_error(error_vec, experiment);
   }
   else {
       for (size_t j = 0; j < numFunctions; j++) {
         ++stoch_seed;
         stdev = std::sqrt(sim_error_vec[j]);
         rnumGenerator.seed(stoch_seed);
-	std::normal_distribution<> err_dist(0.0, stdev);
-	auto err_gen = std::bind(err_dist, std::ref(rnumGenerator));
-	error_vec[j] = err_gen();
+        boost::normal_distribution<> err_dist(0.0, stdev);
+        boost::variate_generator<boost::mt19937,
+               boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
+        error_vec[j] = err_gen();
       }
       expData.apply_simulation_error(error_vec, experiment);
   }
@@ -1470,14 +1478,16 @@ void NonDBayesCalibration::build_error_matrix(const RealVector& sim_error_vec,
 {
   Real stdev;
   RealVector col_vec(numFunctions);
-  std::mt19937 rnumGenerator;
+  boost::mt19937 rnumGenerator;
   int num_filtered = sim_error_matrix.numCols();
   ++stoch_seed;
   if (sim_error_vec.length() == 1) {
     rnumGenerator.seed(stoch_seed);
     stdev = std::sqrt(sim_error_vec[0]);
-    std::normal_distribution<> err_dist(0.0, stdev);
-    auto err_gen = std::bind(err_dist, std::ref(rnumGenerator));
+    boost::normal_distribution<> err_dist(0.0, stdev);
+    boost::variate_generator<boost::mt19937, 
+                             boost::normal_distribution<> >
+           err_gen(rnumGenerator, err_dist);
     for (int j = 0; j < num_filtered; j++) {
       for (size_t k = 0; k < numFunctions; k++) {
         col_vec[k] = err_gen();
@@ -1491,8 +1501,10 @@ void NonDBayesCalibration::build_error_matrix(const RealVector& sim_error_vec,
         ++stoch_seed;
         rnumGenerator.seed(stoch_seed);
         stdev = std::sqrt(sim_error_vec[k]);
-        std::normal_distribution<> err_dist(0.0, stdev);
-        auto err_gen = std::bind(err_dist, std::ref(rnumGenerator));
+        boost::normal_distribution<> err_dist(0.0, stdev);
+        boost::variate_generator<boost::mt19937,
+                   boost::normal_distribution<> >
+               err_gen(rnumGenerator, err_dist);
         col_vec[k] = err_gen();
       }
       Teuchos::setCol(col_vec, j, sim_error_matrix);
@@ -3254,7 +3266,7 @@ void NonDBayesCalibration::kl_post_prior(RealMatrix& acceptanceChain)
 void NonDBayesCalibration::prior_sample_matrix(RealMatrix& prior_dist_samples)
 {
   // Create matrix containing samples from the prior distribution
-  std::mt19937 rnumGenerator;
+  boost::mt19937 rnumGenerator;
   int num_params = prior_dist_samples.numRows(); 
   int num_samples = prior_dist_samples.numCols();
   RealVector vec(num_params);
@@ -3343,7 +3355,7 @@ void NonDBayesCalibration::mutual_info_buildX()
 
   int num_params = numContinuousVars + numHyperparams;
   int num_samples = 1000;
-  std::mt19937 rnumGenerator;
+  boost::mt19937 rnumGenerator;
   RealMatrix Xmatrix;
   Xmatrix.shapeUninitialized(2*num_params, num_samples);
   RealVector vec(num_params);

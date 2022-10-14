@@ -73,7 +73,7 @@ least_sq_term_1  3.5870494636e+01  2.3254732876e+00  5.1564034700e-01  2.1230996
 Test Number 3 succeeded
 Optimal design:
                       3.4010060611e+01 csv_1
-Mutual information = 3.4933583921e+00
+Mutual information = 3.5589492831e+00
 <<<<< Function evaluation summary (lofi_IF): 5161 total (5149 new, 12 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -97,27 +97,27 @@ least_sq_term_1  4.1148417783e+01  3.0458369057e+00  3.0153050712e+00  1.3808119
 Test Number 4 succeeded
 Optimal design:
                       3.4010060611e+01 csv_1
-Mutual information = 3.6476319231e+00
-<<<<< Function evaluation summary (lofi_IF): 5127 total (5105 new, 22 duplicate)
+Mutual information = 5.0163117810e+00
+<<<<< Function evaluation summary (lofi_IF): 5172 total (5148 new, 24 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.3883133236e-02 uuv_1
-                     -3.7554332854e+00 uuv_2
-                      1.2898230978e+02 uuv_3
+                      3.4867619791e-02 uuv_1
+                     -3.8548730353e+00 uuv_2
+                      1.3142282166e+02 uuv_3
 <<<<< Best misfit              =
-                      7.0430638956e-02
+                      1.8989577761e-02
 <<<<< Best log prior           =
                      -4.8267124559e+00
 <<<<< Best log posterior       =
-                     -7.6539586945e+00
+                     -7.6025176333e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         uuv_1  3.2692297197e-02  3.2585043544e-03 -6.7224527564e-01 -3.1285595565e-01
-         uuv_2 -3.6637306225e+00  2.7226745150e-01  8.1697546514e-01 -2.6563795087e-01
-         uuv_3  1.2766748064e+02  4.6471447778e+00 -9.4542947649e-01 -1.9677155238e-01
+         uuv_1  3.4952493278e-02  2.1921828587e-03 -7.5796237508e-01  4.3921915783e-01
+         uuv_2 -3.8539235114e+00  1.5606573074e-01  7.1510751398e-01  6.5657476483e-01
+         uuv_3  1.3108401538e+02  2.5912851554e+00 -5.8059436213e-01  1.3627680395e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  4.0878444481e+01  2.2421670561e+00  1.4177787831e-01  6.9363966398e+00
+least_sq_term_1  4.0440840686e+01  1.8339407374e+00 -1.1239808902e+00  1.0291715129e+01
 Test Number 5 succeeded
 Optimal design:
                       2.7450049782e+01 csv_1
