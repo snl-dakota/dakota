@@ -193,7 +193,7 @@ one of the local optimizations finds the global minimum.
    :caption: Dakota results summary for a multistart local optimization method.
    :name: adv_meth:figure03
 
-      ------------------------------
+      <<<<<
       <<<<< Results summary:
          set_id             x1             x2            x1*            x2*         obj_fn 
               1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
@@ -256,7 +256,7 @@ useful for visualizing the trade-offs in the competing objectives.
    :name: adv_meth:figure05
 
 
-      ------------------------------
+      <<<<<
       <<<<< Results summary:
          set_id             w1             w2             w3             x1             x2         obj_fn
               1              1              0              0   0.9996554048    0.997046351 7.612301561e-11
