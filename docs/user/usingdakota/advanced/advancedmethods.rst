@@ -213,7 +213,7 @@ Pareto Optimization
 
 The Pareto optimization method (keyword: ``pareto_set`` ) is one of three
 multiobjective optimization capabilities discussed in
-Section `[opt:additional:multiobjective] <#opt:additional:multiobjective>`__.
+Section :ref:`Multiobjective Optimization <opt:additional:multiobjective>`.
 In the Pareto optimization method, multiple sets of multiobjective
 weightings are evaluated. The user can specify these weighting sets in
 the method keyword block using a list, a number of , or both (see the
