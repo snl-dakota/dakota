@@ -16,6 +16,7 @@
 #include "fsu.H"
 #include "ProblemDescDB.hpp"
 #include "dakota_stat_util.hpp"
+#include <boost/random/uniform_int_distribution.hpp>
 #ifdef _MSC_VER
 #undef min
 #endif
@@ -318,7 +319,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
                        // handling; current default is now uniform 
 
     // Trial type can be one of four values: random, grid, halton, uniform
-    // random  = system mt19937
+    // random  = mt19937
     // uniform = John's personal RNG (simple + portable/reproducible)
     // --> for simplicity, uniform has been removed.
 
@@ -358,7 +359,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
     else if (varyPattern) { // define sequence of seed values for numLHSRuns > 1
       // NOTE: This previously set randomSeed to [1, RAND_MAX+1],
       // which could overflow int
-      std::uniform_int_distribution<>
+      boost::random::uniform_int_distribution<>
 	rand_int(1, std::numeric_limits<int>::max());
       randomSeed = rand_int(rng); // from 1 to INT_MAX
     }
