@@ -41,7 +41,7 @@ Sample moment statistics for each response function:
                   3.5531474989e-01  9.5000000000e-01
                   2.3819857955e-01  1.0000000000e-01
                   3.4492339244e-01  9.0000000000e-01
-Information gained from prior to posterior = 6.7946345672e+00
+Information gained from prior to posterior = 6.6331081425e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 16584 total (16584 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -85,4 +85,4 @@ Sample moment statistics for each response function:
                   3.5473749200e-01  9.5000000000e-01
                   2.3803946844e-01  1.0000000000e-01
                   3.4444880989e-01  9.0000000000e-01
-Information gained from prior to posterior = 6.7946345672e+00
+Information gained from prior to posterior = 6.6331081425e+00

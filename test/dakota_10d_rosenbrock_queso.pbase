@@ -41,7 +41,7 @@ least_sq_term_7_1 -5.0120524158e-01  7.8843156709e-01  2.4821288117e-01  2.06843
 least_sq_term_8_1  3.7411494719e-01  3.2082206822e-01 -7.6801719894e-02 -9.9810321021e-01
 least_sq_term_9_1 -3.7870627245e-01  7.1325682865e-01  1.1705194120e-01 -3.9945915642e-01
 least_sq_term_10_1  3.5424477713e-01  3.9134629771e-01  6.2035840073e-01 -3.5132539138e-01
-Information gained from prior to posterior = 2.1642533046e+01
+Information gained from prior to posterior = 2.1758137381e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 261 total (261 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -85,7 +85,7 @@ least_sq_term_7_1 -2.6101497244e-01  6.8666537109e-01 -5.9328196918e-01  1.12954
 least_sq_term_8_1  4.8250210178e-01  3.3697857223e-01 -4.8738767852e-03 -5.0848941026e-01
 least_sq_term_9_1 -3.8957667839e-01  6.4187810859e-01  6.0036775558e-02 -1.1536280773e-01
 least_sq_term_10_1  6.4090743325e-01  3.0040550870e-01  3.0371624646e-01 -3.1127159731e-01
-Information gained from prior to posterior = 2.4248224903e+01
+Information gained from prior to posterior = 2.4760445396e+01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 241 total (241 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -137,7 +137,7 @@ least_sq_term_15_1  1.0600081464e-02  7.8774340988e-01  4.1238727980e-01  5.8227
 least_sq_term_16_1  3.4655938039e-01  3.3673798843e-01  6.1458056035e-01 -7.5438333895e-01
 least_sq_term_17_1 -2.5082301377e-01  6.8868252471e-01  2.3807113387e-01  1.6978760455e-01
 least_sq_term_18_1  4.5861957188e-01  4.0731263206e-01  2.9386142142e-02 -1.2940458325e+00
-Information gained from prior to posterior = 4.7412659264e+01
+Information gained from prior to posterior = 4.6473171647e+01
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 261 total (261 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -189,4 +189,4 @@ least_sq_term_15_1 -3.4146241766e-02  5.9004519819e-01 -1.1378624036e-01  2.8935
 least_sq_term_16_1  7.2059716489e-01  2.4337883915e-01 -4.7034676464e-01 -9.3061984357e-01
 least_sq_term_17_1 -3.6999970345e-03  6.4819859782e-01  1.0306883828e-01  1.5966420302e-01
 least_sq_term_18_1  8.6614503719e-01  1.8006884239e-01 -1.2330254311e+00  8.9536131236e-01
-Information gained from prior to posterior = 4.9490131522e+01
+Information gained from prior to posterior = 4.8520663655e+01
