@@ -111,7 +111,7 @@ MatrixXd create_uniform_random_double_matrix(const int num_rows,
     throw std::runtime_error("Number of rows and columns must > 1.");
 
   MatrixXd random_matrix(num_rows, num_cols);
-  std::mt19937 rng(seed);
+  boost::mt19937 rng(seed);
 
   for (int i = 0; i < num_rows; ++i)
     for (int j = 0; j < num_cols; ++j) random_matrix(i, j) = rng();

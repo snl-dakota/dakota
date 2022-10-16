@@ -120,7 +120,7 @@ protected:
   RealVector paramMaxs;
 
   /// random number engine for sampling the prior
-  std::mt19937 rnumGenerator;
+  boost::mt19937 rnumGenerator;
  
   /// Matrix for moment statistics.  Note that posterior values have density 
   /// associated with them so we can't use the compute_moments in NonDSampling
