@@ -601,8 +601,11 @@ corresponding to prescribed probability or reliability levels.
 
 In addition to obtaining statistical summary information of the type
 shown in :numref:`uq:figure03`, the results of LHS
-sampling also include correlations. Four types of correlations are
-returned in the output: simple and partial “raw” correlations, and
+sampling also include correlations.
+
+.. _`uq:correlationtypes`:
+
+Four types of correlations are returned in the output: simple and partial “raw” correlations, and
 simple and partial “rank” correlations. The raw correlations refer to
 correlations performed on the actual input and output data. Rank
 correlations refer to correlations performed on the ranks of the data.
