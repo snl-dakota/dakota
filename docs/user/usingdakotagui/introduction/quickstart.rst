@@ -1,25 +1,8 @@
-Introduction
-============
-
-The Dakota GUI is an application that allows you to easily edit Dakota input files, run Dakota, and visually plot Dakota's output data.  The Dakota GUI also aids in the process of defining a simulation model and connecting Dakota to that simulation model, without the need to write pre-processing or post-processing scripts.
-
 .. _dakota-gui-quickstart:
 
------------------
-Launching the GUI
------------------
-
-- **Linux:** Run the ``dakota-ui.sh`` script in the ``bin`` folder of a Dakota install. Alternately, you may directly run ``DakotaUI`` in the ``gui`` folder, but you will have to manage paths to Dakota libraries yourself.
-
-  - Dakota GUI has been tested to work on RHEL (7 or newer) and Ubuntu.
- 
-- **Mac OSX:** Run the ``dakota-ui.sh`` script in the ``bin`` folder of a Dakota install.
-- **Windows:** Double-click ``DakotaUI.exe`` in the ``gui`` folder of a Dakota install.
-- **Ubuntu:** While the Dakota GUI is not officially supported on Debian-flavored Linux distros, users have reported that it works on recent versions of Ubuntu.
-
----------------
-Getting Started
----------------
+==============
+GUI Quickstart
+==============
 
 - I'm completely new to Dakota.  Where do I start?
 

@@ -4,6 +4,14 @@
 Next-Gen Workflow Node Glossary
 """""""""""""""""""""""""""""""
 
+.. _ngw-node-help:
+
+For any node not listed in the glossary below, you can open that node's documentation by opening the Settings editor view for that node,
+and then clicking on the small "?" button to the right of the Settings editor banner:
+
+.. image:: img/Plotting_HDF_3.png
+   :alt: Documentation for individual workflow nodes is available by clicking the small blue ? in the top-right corner of the dialog.
+
 ========
 Blackbox
 ========
@@ -101,15 +109,3 @@ HDF
 
    nodes/hdfExtractColumn
    nodes/hdfExtractRow
-
-.. _ngw-node-help:
-
-===========
-Other Nodes
-===========
-
-For any other NGW node that's not covered in the glossary above, you can open that node's documentation by opening the Settings editor view for that node,
-and then clicking on the small "?" button to the right of the Settings editor banner:
-
-.. image:: img/Plotting_HDF_3.png
-   :alt: Documentation for individual workflow nodes is available by clicking the small blue ? in the top-right corner of the dialog.

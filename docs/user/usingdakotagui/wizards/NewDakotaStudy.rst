@@ -158,3 +158,9 @@ The final page of the wizard is concerned with configuring Dakota's interface bl
 
 - **Working Directory Options** Finally, you can also configure whether Dakota's analysis driver should run in a private working directory for each evaluation, and whether
   those working directories should similarly be tagged and saved after each evaluation completes.
+  
+==========
+Next Steps
+==========
+
+If you used an .iwf file as your analysis driver, learn about :ref:`the final step <ngw-analysisdrivers-sandwich>` required to run your Dakota Study using Next-Gen Workflow.

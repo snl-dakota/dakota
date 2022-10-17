@@ -4,14 +4,25 @@
 Using Dakota GUI
 """"""""""""""""
 
+The Dakota GUI is an application that allows you to easily edit Dakota input files, run Dakota, and visually plot Dakota's output data.  The Dakota GUI also aids in the process of defining a simulation model and connecting Dakota to that simulation model, without the need to write pre-processing or post-processing scripts.
+
+============
+Introduction
+============
+
+.. toctree::
+   :maxdepth: 1
+   
+   introduction/launching
+   introduction/quickstart
+
 ==============
-GUI Quickstart
+Example Search
 ==============
 
 .. toctree::
    :maxdepth: 2
-   
-   Introduction
+
    examples/DakotaExamples
 
 =======
