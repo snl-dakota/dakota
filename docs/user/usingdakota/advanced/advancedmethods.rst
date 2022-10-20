@@ -505,7 +505,7 @@ use on problems with, at most, tens of variables.
 Figure `46 <#fig:sbo_df>`__ displays this case. However, an important
 benefit of the global sampling is that the global data fits can tame
 poorly-behaved, non-smooth, discontinuous response variations within the
-original model into smooth, differentiable, easily navigable and easily navigated surrogates.
+original model into smooth, differentiable, easily navigable, and easily navigated surrogates.
 This allows SBO with global data fits to extract the relevant global
 design trends from noisy simulation data.
 
