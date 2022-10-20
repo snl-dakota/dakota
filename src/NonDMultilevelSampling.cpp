@@ -236,7 +236,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
 	accumulate_ml_Ysums(sum_Y, sum_YY, lev, N_l[step]);
-	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
+	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost,
+	                             equivHFEvals);
 
 	// compute estimator variance from current sample accumulation:
 	variance_Ysum(sum_Y[1][step], sum_YY[step], N_l[step], var_Y[step]);
@@ -290,7 +291,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     break;
   }
   case PILOT_PROJECTION:
-    update_projected_samples(delta_N_l, N_l, sequenceCost);
+    update_projected_samples(delta_N_l, sequenceCost, deltaEquivHF);
     break;
   }
 
@@ -385,7 +386,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
     evaluate_ml_sample_increment(step);
     accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_online[step]);
     increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, step),
-				 ref_cost);
+				 ref_cost, equivHFEvals);
   }
 
   // ---------------------
@@ -434,8 +435,10 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual); // not reported
     recover_variance(momentStats, varH); // momentStats only for varH
   }
-  update_projected_samples(delta_N_l, N_actual, N_alloc, sequenceCost);
-  compute_ml_estimator_variance(var_Y, N_actual, estVar);
+  update_projected_samples(delta_N_l, N_alloc, sequenceCost, deltaEquivHF);
+  Sizet2DArray N_actual_proj = N_actual;
+  increment_samples(N_actual_proj, delta_N_l);
+  compute_ml_estimator_variance(var_Y, N_actual_proj, estVar);
   avgEstVar = average(estVar);
   // post final N_l back to NLevActual (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
@@ -521,7 +524,7 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     Real ref_cost = cost[numSteps-1];
     for (step=0; step<numSteps; ++step)
       increment_ml_equivalent_cost(delta_N_l[step], level_cost(cost, step),
-				   ref_cost);
+				   ref_cost, equivHFEvals);
   }
   // capture pilot-sample metrics:
   if (mlmfIter == 0) {
@@ -2065,9 +2068,10 @@ void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
   }
   }
   if (finalStatsType == QOI_STATISTICS) {
-    Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
+    Real     proj_equiv_hf = equivHFEvals + deltaEquivHF,
+      avg_budget_mc_estvar = average(varH) / proj_equiv_hf;
     s << "\n Equivalent   MC (" << std::setw(5)
-      << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+      << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
       << std::setw(wpp7) << avg_budget_mc_estvar
       << "\n Equivalent MLMC / MC ratio:         " << std::setw(wpp7)
       << avgEstVar / avg_budget_mc_estvar << '\n';

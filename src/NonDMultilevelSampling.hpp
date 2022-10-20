@@ -74,7 +74,7 @@ protected:
   /// increment the equivalent number of HF evaluations based on new
   /// model evaluations
   void increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost,
-				    Real ref_cost);
+				    Real ref_cost, Real& equiv_hf);
 
   /// compute MLMC estimator variance from level QoI variances
   void compute_ml_estimator_variance(const RealMatrix&   var_Y,
@@ -196,7 +196,7 @@ private:
   void increment_alloc_samples(size_t& N_l_alloc, const Real* N_l_target);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
-  void compute_ml_equivalent_cost(const SizetArray& raw_N_l,
+  Real compute_ml_equivalent_cost(const SizetArray& raw_N_l,
 				  const RealVector& cost);
 
   /// populate finalStatErrors for MLMC based on Q sums
@@ -208,8 +208,9 @@ private:
   /// for pilot projection, advance the sample counts and aggregate cost based
   /// on projected rather than actual samples
   void update_projected_samples(const SizetArray& delta_N_l,
-				Sizet2DArray& N_actual, SizetArray& N_alloc,
-				const RealVector& cost);
+				//Sizet2DArray& N_actual,
+				SizetArray& N_alloc, const RealVector& cost,
+				Real& delta_equiv_hf);
 
   /// compute variance from sum accumulators
   /// necessary for sample allocation optimization
@@ -952,47 +953,48 @@ compute_ml_estimator_variance(const RealMatrix&   var_Y,
 
 
 inline void NonDMultilevelSampling::
-update_projected_samples(const SizetArray& delta_N_l, Sizet2DArray& N_actual,
-			 SizetArray& N_alloc, const RealVector& cost)
+update_projected_samples(const SizetArray& delta_N_l, //Sizet2DArray& N_actual,
+			 SizetArray& N_alloc, const RealVector& cost,
+			 Real& delta_equiv_hf)
 {
   size_t incr, lev, num_lev = cost.length();
   Real ref_cost = cost[num_lev-1];
   for (lev=0; lev<num_lev; ++lev) {
     incr = delta_N_l[lev];
-    increment_ml_equivalent_cost(incr, level_cost(cost, lev), ref_cost);
-    if (backfillFailures) {
-      increment_samples(N_actual[lev], incr);
+    //increment_samples(N_actual[lev], incr);
+    increment_ml_equivalent_cost(incr, level_cost(cost, lev), ref_cost,
+				 delta_equiv_hf);
+    if (backfillFailures)
       increment_alloc_samples(N_alloc[lev], NTargetQoI[lev]);
-    }
-    else {
-      increment_samples(N_actual[lev], incr);
+    else
       N_alloc[lev] += incr;
-    }      
   }
 }
 
 
 inline void NonDMultilevelSampling::
-increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost, Real ref_cost)
+increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost, Real ref_cost,
+			     Real& equiv_hf)
 {
   // increment the equivalent number of HF evaluations
   if (new_N_l) {
-    equivHFEvals += new_N_l * lev_cost / ref_cost; // normalize into equiv HF
+    equiv_hf += new_N_l * lev_cost / ref_cost; // normalize into equiv HF
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "ML incremented by " << new_N_l << " level samples.  "
-	   << "equivHFEvals = " << equivHFEvals << std::endl;
+	   << "equivalent HF evals = " << equiv_hf << std::endl;
   }
 }
 
 
-inline void NonDMultilevelSampling::
+inline Real NonDMultilevelSampling::
 compute_ml_equivalent_cost(const SizetArray& raw_N_l, const RealVector& cost)
 {
-  size_t step, num_steps = raw_N_l.size();
-  equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
+  size_t step, num_steps = raw_N_l.size();  Real equiv_hf = 0.;
+  equiv_hf = raw_N_l[0] * cost[0]; // first level is single eval
   for (step=1; step<num_steps; ++step) // subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_l[step] * (cost[step] + cost[step - 1]);
-  equivHFEvals /= cost[num_steps - 1]; // normalize into equivalent HF evals
+    equiv_hf += raw_N_l[step] * (cost[step] + cost[step - 1]);
+  equiv_hf /= cost[num_steps - 1]; // normalize into equivalent HF evals
+  return equiv_hf;
 }
 
 

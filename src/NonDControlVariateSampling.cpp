@@ -53,6 +53,7 @@ void NonDControlVariateSampling::core_run()
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   onlineCost = !query_cost(numSteps, multilev, sequenceCost);
   if (onlineCost) sequenceCost.size(2); // collapse model recovery down to 2
+  deltaNActualHF = 0;
 
   // For two-model control variate, select extreme fidelities/resolutions
   Pecos::ActiveKey active_key, hf_key, lf_key;
@@ -135,7 +136,8 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
       cost_ratio  = (onlineCost) ? sequenceCost[1] : sequenceCost[numSteps - 1];
       cost_ratio /= sequenceCost[0]; // HF / LF
     }
-    increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
+    increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio,
+				 equivHFEvals);
 
     // Compute the LF/HF evaluation ratio using shared samples, averaged
     // over QoI.  This includes updating varH and rho2_LH.
@@ -211,7 +213,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     }
     if (numSamples) {
       accumulate_mf_sums(sum_L_refined, N_actual_lf);
-      increment_mf_equivalent_cost(numSamples, cost_ratio);
+      increment_mf_equivalent_cost(numSamples, cost_ratio, equivHFEvals);
     }
 
     // Compute/apply control variate params to estimate uncentered raw moments
@@ -220,14 +222,36 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 		   sum_L_refined, N_actual_lf, H_raw_mom);
     // Convert uncentered raw moment estimates to final moments (central or std)
     convert_moments(H_raw_mom, momentStats);
+    estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
   }
-  else // for consistency with pilot projection
+  else { // for consistency with pilot projection
     update_projected_samples(hf_targets, eval_ratios, cost_ratio,
-			     N_actual_shared, N_alloc_shared,
-			     N_actual_lf,     N_alloc_lf);
-
-  // Both QOI_STATISTICS and ESTIMATOR_PERFORMANCE
-  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
+			     N_actual_shared, N_alloc_shared, N_actual_lf,
+			     N_alloc_lf, deltaNActualHF, deltaEquivHF);
+    SizetArray N_actual_shared_proj = N_actual_shared;
+    increment_samples(N_actual_shared_proj, deltaNActualHF);
+    estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared_proj,
+				avgEstVar);
+    // Must manage N_actual vs. N_actual_proj in final roll ups:
+    // > "Actual" should mean succeeded --> either suppress projection-based
+    //   updates to actual counters or change meaning of these to that of Alloc
+    //   but with faults removed (and backfill optionally added).
+    // > seems preferable to restrict Actual to this meaning and migrate
+    //   projection-based reporting to Alloc (+ other cached state as needed),
+    //   which retains strict linkage with accumulated sums/stats
+    //   >> can address special case needs for Actual projection case-by-case
+    //   >> BUT, projected variance reduction calcs reuse best available varH
+    //      in combination with projected NLevActual, so
+    //   >> NLevActual would be used in multilevel_eval_summary()
+    //      NLevActual + NLevProj would be used in print_variance_reduction(),
+    //      (for stats like varH, actual + proj is preferred to projected alloc)
+    //      where Proj can be lower dimensional even for backfill
+    //      (actual_incr is averaged over QoI)
+    //   >> NLevProj can still be included in NLevAlloc -- no need to separate,
+    //      but might eliminate some accumulations if separated?
+    //   >> use similar approach with equivHFEvals (tracks actual) + Proj
+    //      (separated projection)
+  }
 }
 
 
@@ -267,7 +291,7 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
   shared_increment(active_key, mlmfIter, 0);
   accumulate_mf_sums(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH,
 		     N_actual_shared);
-  increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
+  increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio,equivHFEvals);
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
@@ -289,7 +313,7 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
     }
     if (numSamples) {
       accumulate_mf_sums(sum_L_refined, N_actual_lf);
-      increment_mf_equivalent_cost(numSamples, cost_ratio);
+      increment_mf_equivalent_cost(numSamples, cost_ratio, equivHFEvals);
     }
     // Compute/apply control variate params to estimate uncentered raw moments
     RealMatrix H_raw_mom(numFunctions, 4);
@@ -297,14 +321,17 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
 		   sum_L_refined, N_actual_lf, H_raw_mom);
     // Convert uncentered raw moment estimates to final moments (central or std)
     convert_moments(H_raw_mom, momentStats);
+    estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
   }
-  else // for consistency with pilot projection
+  else { // for consistency with pilot projection
     update_projected_samples(hf_targets, eval_ratios, cost_ratio,
-			     N_actual_shared, N_alloc_shared,
-			     N_actual_lf,     N_alloc_lf);
-
-  // Both QOI_STATISTICS and ESTIMATOR_PERFORMANCE
-  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
+			     N_actual_shared, N_alloc_shared, N_actual_lf,
+			     N_alloc_lf, deltaNActualHF, deltaEquivHF);
+    SizetArray N_actual_shared_proj = N_actual_shared;
+    increment_samples(N_actual_shared_proj, deltaNActualHF);
+    estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared_proj,
+				avgEstVar);
+  }
 }
 
 
@@ -325,11 +352,15 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
   evaluate_pilot(active_key, cost_ratio, eval_ratios, varH, N_actual_shared,
 		 hf_targets, true, true); // accumulate cost, compute estvar0
   N_alloc_shared = N_alloc_lf = numSamples;
-
   N_actual_lf = N_actual_shared; // only N_actual_shared updated so far
-  update_projected_samples(hf_targets, eval_ratios, cost_ratio, N_actual_shared,
-			   N_alloc_shared, N_actual_lf, N_alloc_lf);
-  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
+
+  update_projected_samples(hf_targets, eval_ratios, cost_ratio,
+			   N_actual_shared, N_alloc_shared, N_actual_lf,
+			   N_alloc_lf, deltaNActualHF, deltaEquivHF);
+  SizetArray N_actual_shared_proj = N_actual_shared;
+  increment_samples(N_actual_shared_proj, deltaNActualHF);
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared_proj,
+			      avgEstVar);
 }
 
 
@@ -358,7 +389,8 @@ evaluate_pilot(const Pecos::ActiveKey& active_key, Real& cost_ratio,
   cost_ratio  = (onlineCost) ? sequenceCost[1] : sequenceCost[numSteps - 1];
   cost_ratio /= sequenceCost[0]; // HF / LF
   if (accumulate_cost)
-    increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
+    increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio,
+				 equivHFEvals);
 
   // Compute the LF/HF evaluation ratio using shared samples, averaged
   // over QoI.  This includes updating var_H and rho2_LH.
@@ -871,28 +903,32 @@ cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,
 void NonDControlVariateSampling::
 update_projected_samples(const RealVector& hf_targets,
 			 const RealVector& eval_ratios, Real cost_ratio,
-			 SizetArray& N_actual_hf, size_t& N_alloc_hf,
-			 SizetArray& N_actual_lf, size_t& N_alloc_lf)
+			 const SizetArray& N_H_actual, size_t& N_H_alloc,
+			 const SizetArray& N_L_actual, size_t& N_L_alloc,
+			 size_t& delta_N_H_actual, //size_t& delta_N_L_actual,
+			 Real& delta_equiv_hf)
 {
   RealVector lf_targets(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     lf_targets[qoi] = eval_ratios[qoi] * hf_targets[qoi];
 
   size_t hf_actual_incr, lf_actual_incr,
-    hf_alloc_incr = one_sided_delta(N_alloc_hf, average(hf_targets)),
-    lf_alloc_incr = one_sided_delta(N_alloc_lf, average(lf_targets));
+    hf_alloc_incr = one_sided_delta(N_H_alloc, average(hf_targets)),
+    lf_alloc_incr = one_sided_delta(N_L_alloc, average(lf_targets));
   // essentially assigns targets to allocations:
-  N_alloc_hf += hf_alloc_incr;  N_alloc_lf += lf_alloc_incr;
+  N_H_alloc += hf_alloc_incr;  N_L_alloc += lf_alloc_incr;
 
   if (backfillFailures) {
-    hf_actual_incr = one_sided_delta(N_actual_hf, hf_targets, 1);
-    lf_actual_incr = one_sided_delta(N_actual_lf, lf_targets, 1);
+    hf_actual_incr = one_sided_delta(N_H_actual, hf_targets, 1);
+    lf_actual_incr = one_sided_delta(N_L_actual, lf_targets, 1);
   }
   else
     { hf_actual_incr = hf_alloc_incr;  lf_actual_incr = lf_alloc_incr; }
-  increment_samples(N_actual_hf, hf_actual_incr); // assumes no (addtl) failures
-  increment_samples(N_actual_lf, lf_actual_incr); // assumes no (addtl) failures
-  increment_mf_equivalent_cost(hf_actual_incr, lf_actual_incr, cost_ratio);
+  //increment_samples(N_H_actual, hf_actual_incr);// assumes no addtl fails
+  //increment_samples(N_L_actual, lf_actual_incr);// assumes no addtl fails
+  delta_N_H_actual += hf_actual_incr;  //delta_N_L_actual += lf_actual_incr;
+  increment_mf_equivalent_cost(hf_actual_incr, lf_actual_incr, cost_ratio,
+			       delta_equiv_hf);
 }
 
 
@@ -903,10 +939,12 @@ void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
   SizetArray& N_hf = NLevActual[hf_form_index][hf_lev_index];
 
   RealVector mc_est_var(numFunctions, false);
+  Real proj_equiv_hf = equivHFEvals + deltaEquivHF;
+  // est_var is projected for cases that are not fully iterated/incremented
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    mc_est_var[qoi] = varH[qoi] / N_hf[qoi];
+    mc_est_var[qoi] = varH[qoi] / (N_hf[qoi] + deltaNActualHF);
   Real     avg_mc_est_var = average(mc_est_var),
-    avg_budget_mc_est_var = average(varH) / equivHFEvals;
+    avg_budget_mc_est_var = average(varH) / proj_equiv_hf;
 
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
   size_t wpp7 = write_precision + 7;
@@ -918,14 +956,14 @@ void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
       << std::setw(wpp7) << average(estVarIter0) << '\n';
 
   s << "  " << type << "   MC (" << std::setw(5)
-    << (size_t)std::floor(average(N_hf) + .5) << " HF samples): "
-    << std::setw(wpp7) << avg_mc_est_var
+    << (size_t)std::floor(average(N_hf) + deltaNActualHF + .5)
+    << " HF samples): " << std::setw(wpp7) << avg_mc_est_var
     << "\n  " << type << " CVMC (sample profile):   "
     << std::setw(wpp7) << avgEstVar
     << "\n  " << type << " CVMC ratio (1 - R^2):    "
     << std::setw(wpp7) << avgEstVar / avg_mc_est_var
     << "\n Equivalent   MC (" << std::setw(5)
-    << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+    << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
     << std::setw(wpp7) << avg_budget_mc_est_var
     << "\n Equivalent CVMC ratio:              " << std::setw(wpp7)
     << avgEstVar / avg_budget_mc_est_var << '\n';

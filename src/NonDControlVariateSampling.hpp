@@ -133,14 +133,15 @@ private:
   /// computing/updating the evaluation and estimator variance ratios
   void shared_increment(const Pecos::ActiveKey& agg_key,size_t iter,size_t lev);
 
-  /// update equivHFEvals from HF, LF evaluation counts
-  void compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,
+  /// compute/return equivalent HF evaluations from HF, LF evaluation counts
+  Real compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,
 				  Real cost_ratio);
-  /// update equivHFEvals from HF, LF evaluation increment
+  /// update equivalent HF evaluations from HF, LF evaluation increment
   void increment_mf_equivalent_cost(size_t new_N_hf, size_t new_N_lf,
-				    Real cost_ratio);
-  /// update equivHFEvals from LF evaluation increment
-  void increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio);
+				    Real cost_ratio, Real& equiv_hf_evals);
+  /// update equivalent HF evaluations from LF evaluation increment
+  void increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio,
+				    Real& equiv_hf_evals);
 
   /// initialize the CV accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -213,12 +214,19 @@ private:
   /// rather than accumulations
   void update_projected_samples(const RealVector& hf_targets,
 				const RealVector& eval_ratios, Real cost_ratio,
-				SizetArray& N_actual_hf, size_t& N_alloc_hf,
-				SizetArray& N_actual_lf, size_t& N_alloc_lf);
+				const SizetArray& N_H_actual, size_t& N_H_alloc,
+				const SizetArray& N_L_actual, size_t& N_L_alloc,
+				size_t& delta_N_H_actual,
+				//size_t& delta_N_L_actual,
+				Real& delta_equiv_hf);
 
   //
   //- Heading: Data
   //
+
+  /// for sample projections, the calculated increment in HF samples that
+  /// would be evaluated if full iteration/statistics were needed
+  size_t deltaNActualHF;
 
   RealVector estVarRatios;
   SizetArray numHIter0;
@@ -229,19 +237,21 @@ inline NonDControlVariateSampling::~NonDControlVariateSampling()
 { }
 
 
-inline void NonDControlVariateSampling::
+inline Real NonDControlVariateSampling::
 compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf, Real cost_ratio)
-{ equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio; }
+{ return raw_N_hf + (Real)raw_N_lf / cost_ratio; }
 
 
 inline void NonDControlVariateSampling::
-increment_mf_equivalent_cost(size_t new_N_hf, size_t new_N_lf, Real cost_ratio)
-{ equivHFEvals += new_N_hf + (Real)new_N_lf / cost_ratio; }
+increment_mf_equivalent_cost(size_t new_N_hf, size_t new_N_lf, Real cost_ratio,
+			     Real& equiv_hf_evals)
+{ equiv_hf_evals += new_N_hf + (Real)new_N_lf / cost_ratio; }
 
 
 inline void NonDControlVariateSampling::
-increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio)
-{ equivHFEvals += (Real)new_N_lf / cost_ratio; }
+increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio,
+			     Real& equiv_hf_evals)
+{ equiv_hf_evals += (Real)new_N_lf / cost_ratio; }
 
 
 inline void NonDControlVariateSampling::

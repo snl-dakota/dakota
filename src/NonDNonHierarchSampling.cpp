@@ -138,6 +138,7 @@ void NonDNonHierarchSampling::pre_run()
   NonDEnsembleSampling::pre_run();
 
   nonHierSampInstance = this;
+  deltaNActualHF = 0;
 
   /* Numerical solves do not involve use of iteratedModel
 
@@ -1318,18 +1319,22 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   //   avgEstVar from the optimizer obj fn), but difference is usually small.
   size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  // est_var is projected for cases that are not fully iterated/incremented
   RealVector final_mc_estvar;
-  compute_mc_estimator_variance(varH, N_H_actual, final_mc_estvar);
-  Real avg_budget_mc_estvar = average(varH) / equivHFEvals;
+  //compute_mc_estimator_variance(varH, N_H_actual, final_mc_estvar);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    final_mc_estvar[qoi] = varH[qoi] / (N_H_actual[qoi] + deltaNActualHF);
+  Real proj_equiv_hf = equivHFEvals + deltaEquivHF,
+    avg_budget_mc_estvar = average(varH) / proj_equiv_hf;
   s << "  " << type << "   MC (" << std::setw(5)
-    << (size_t)std::floor(average(N_H_actual) + .5) << " HF samples): "
-    << std::setw(wpp7) << average(final_mc_estvar) // avgEstVar / avgEstVarRatio
+    << (size_t)std::floor(average(N_H_actual) + deltaNActualHF + .5)
+    << " HF samples): " << std::setw(wpp7) << average(final_mc_estvar)
     << "\n  " << type << method << " (sample profile):   "
     << std::setw(wpp7) << avgEstVar
     << "\n  " << type << method << " ratio (1 - R^2):    "
     << std::setw(wpp7) << avgEstVarRatio
     << "\n Equivalent   MC (" << std::setw(5)
-    << (size_t)std::floor(equivHFEvals + .5) << " HF samples): "
+    << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
     << std::setw(wpp7) << avg_budget_mc_estvar
     << "\n Equivalent" << method << " ratio:              "
     << std::setw(wpp7) << avgEstVar / avg_budget_mc_estvar << '\n';

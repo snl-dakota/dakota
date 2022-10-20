@@ -102,12 +102,12 @@ protected:
   void finalize_counts(Sizet2DArray& N_L_actual, SizetArray& N_L_alloc);
 
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
-				 size_t index);
+				 size_t index, Real& equiv_hf_evals);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
-				 size_t start, size_t end);
+				 size_t start, size_t end,Real& equiv_hf_evals);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 const SizetArray& approx_sequence,
-				 size_t start, size_t end);
+				 size_t start, size_t end,Real& equiv_hf_evals);
 
   void increment_sample_range(SizetArray& N_L, size_t incr,
 			      const SizetArray& approx_sequence,
@@ -222,6 +222,10 @@ protected:
   RealSymMatrixArray covLL;
   /// squared Pearson correlations among approximations and truth
   RealMatrix rho2LH;
+
+  /// for sample projections, the calculated increment in HF samples that
+  /// would be evaluated if full iteration/statistics were pursued
+  size_t deltaNActualHF;
 
   /// number of successful pilot evaluations of HF truth model (exclude faults)
   SizetArray numHIter0;
@@ -364,42 +368,42 @@ finalize_counts(Sizet2DArray& N_L_actual, SizetArray& N_L_alloc)
 
 inline void NonDNonHierarchSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
-			  size_t index)
+			  size_t index,    Real& equiv_hf_evals)
 {
   size_t len = cost.length(), hf_index = len-1;
-  equivHFEvals += (index == hf_index) ? new_samp :
+  equiv_hf_evals += (index == hf_index) ? new_samp :
     (Real)new_samp * cost[index] / cost[hf_index];
 }
 
 
 inline void NonDNonHierarchSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
-			  size_t start, size_t end)
+			  size_t start, size_t end, Real& equiv_hf_evals)
 {
   size_t index, len = cost.length(), hf_index = len-1;
   Real cost_ref = cost[hf_index];
   if (end == len)
-    { equivHFEvals += new_samp; --end; }
+    { equiv_hf_evals += new_samp; --end; }
   for (index=start; index<end; ++index)
-    equivHFEvals += (Real)new_samp * cost[index] / cost_ref;
+    equiv_hf_evals += (Real)new_samp * cost[index] / cost_ref;
 }
 
 
 inline void NonDNonHierarchSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  const SizetArray& approx_sequence,
-			  size_t start, size_t end)
+			  size_t start, size_t end, Real& equiv_hf_evals)
 {
   if (approx_sequence.empty())
-    increment_equivalent_cost(new_samp, cost, start, end);
+    increment_equivalent_cost(new_samp, cost, start, end, equiv_hf_evals);
   else {
     size_t i, len = cost.length(), hf_index = len-1, approx;
     Real cost_ref = cost[hf_index];
     if (end == len) // truth is always last
-      { equivHFEvals += new_samp; --end; }
+      { equiv_hf_evals += new_samp; --end; }
     for (i=start; i<end; ++i) {
       approx = approx_sequence[i];
-      equivHFEvals += (Real)new_samp * cost[approx] / cost_ref;
+      equiv_hf_evals += (Real)new_samp * cost[approx] / cost_ref;
     }
   }
 }

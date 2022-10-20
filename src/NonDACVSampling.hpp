@@ -70,7 +70,10 @@ protected:
 
   void projected_increments(Real avg_hf_targets,
 			    const RealVector& avg_eval_ratios,
-			    SizetArray& N_H_actual, size_t& N_H_alloc);
+			    const SizetArray& N_H_actual, size_t& N_H_alloc,
+			    size_t& delta_N_H_actual,
+			    //SizetArray& delta_N_L_actual,
+			    Real& delta_equiv_hf);
   void approx_increments(IntRealMatrixMap& sum_L_baselineH,
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
@@ -166,8 +169,11 @@ private:
 
   void update_projected_samples(Real avg_hf_target,
 				const RealVector& avg_eval_ratios,
-				SizetArray&   N_H_actual,size_t&     N_H_alloc,
-				Sizet2DArray& N_L_actual,SizetArray& N_L_alloc);
+				const SizetArray& N_H_actual, size_t& N_H_alloc,
+				const Sizet2DArray& N_L_actual,
+				SizetArray& N_L_alloc, size_t& delta_N_H_actual,
+				//SizetArray& delta_N_L_actual,
+				Real& delta_equiv_hf);
 
   //
   //- Heading: Data

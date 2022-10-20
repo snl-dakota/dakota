@@ -92,14 +92,14 @@ private:
 		    Real& lf_target, size_t iter, size_t lev);
 
   /// compute the equivalent number of HF evaluations (includes any sim faults)
-  void compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
+  Real compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
 				    const RealVector& hf_cost,
 				    const SizetArray& raw_N_lf,
 				    const RealVector& lf_cost);
   /// increment the equivalent number of HF evaluations
-  void increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
-				      size_t new_N_lf, Real lf_lev_cost,
-				      Real hf_ref_cost);
+  void increment_mlmf_equivalent_cost(size_t new_N_hf,  Real hf_lev_cost,
+				      size_t new_N_lf,  Real lf_lev_cost,
+				      Real hf_ref_cost, Real& equiv_hf);
 
   /// compute the variance of the MLMF estimator
   void compute_mlmf_estimator_variance(const RealMatrix&   var_Y,
@@ -199,12 +199,24 @@ private:
   /// for pilot projection mode, advance sample counts and accumulated cost
   void update_projected_samples(const RealVector& hf_targets,
 				const RealVectorArray& eval_ratios,
-				Sizet2DArray& N_actual_hf,
+				const Sizet2DArray& N_actual_hf,
 				SizetArray& N_alloc_hf,
 				const RealVector& hf_cost,
-				Sizet2DArray& N_actual_lf,
+				const Sizet2DArray& N_actual_lf,
 				SizetArray& N_alloc_lf,
-				const RealVector& lf_cost);
+				const RealVector& lf_cost,
+				SizetArray& delta_N_actual_hf,
+				//SizetArray& delta_N_actual_lf,
+				Real& delta_equiv_hf);
+  /// for pilot projection mode, advance sample counts and accumulated cost
+  void update_projected_lf_samples(const RealVector& hf_targets,
+				   const RealVectorArray& eval_ratios,
+				   const RealVector& hf_cost,
+				   const Sizet2DArray& N_actual_lf,
+				   SizetArray& N_alloc_lf,
+				   const RealVector& lf_cost,
+				   //SizetArray& delta_N_actual_lf,
+				   Real& delta_equiv_hf);
 
   /// initialize the MLMF accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -335,40 +347,41 @@ inline bool NonDMultilevControlVarSampling::discrepancy_sample_counts() const
 { return true; }
 
 
-inline void NonDMultilevControlVarSampling::
+inline Real NonDMultilevControlVarSampling::
 compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
 			     const RealVector& hf_cost,
 			     const SizetArray& raw_N_lf,
 			     const RealVector& lf_cost)
 {
-  equivHFEvals = 0.;
-  if (raw_N_hf[0]) equivHFEvals += raw_N_hf[0] * hf_cost[0]; // 1st level
-  if (raw_N_lf[0]) equivHFEvals += raw_N_lf[0] * lf_cost[0]; // 1st level
+  Real equiv_hf = 0.;
+  if (raw_N_hf[0]) equiv_hf += raw_N_hf[0] * hf_cost[0]; // 1st level
+  if (raw_N_lf[0]) equiv_hf += raw_N_lf[0] * lf_cost[0]; // 1st level
   size_t lev, num_hf_lev = raw_N_hf.size(), num_cv_lev = raw_N_lf.size();
   for (lev=1; lev<num_hf_lev; ++lev) // subsequent levels incur 2 model costs
     if (raw_N_hf[lev])
-      equivHFEvals += raw_N_hf[lev] * (hf_cost[lev] + hf_cost[lev-1]);
+      equiv_hf += raw_N_hf[lev] * (hf_cost[lev] + hf_cost[lev-1]);
   for (lev=1; lev<num_cv_lev; ++lev) // subsequent levels incur 2 model costs
     if (raw_N_lf[lev])
-      equivHFEvals += raw_N_lf[lev] * (lf_cost[lev] + lf_cost[lev-1]);
-  equivHFEvals /= hf_cost[num_hf_lev-1]; // normalize into equiv HF evals
+      equiv_hf += raw_N_lf[lev] * (lf_cost[lev] + lf_cost[lev-1]);
+  equiv_hf /= hf_cost[num_hf_lev-1]; // normalize into equiv HF evals
+  return equiv_hf;
 }
 
 
 inline void NonDMultilevControlVarSampling::
 increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
 			       size_t new_N_lf, Real lf_lev_cost,
-			       Real hf_ref_cost)
+			       Real hf_ref_cost, Real& equiv_hf)
 {
   // increment the equivalent number of HF evaluations
   Real incr = 0.;
   if (new_N_hf) incr += new_N_hf * hf_lev_cost;
   if (new_N_lf) incr += new_N_lf * lf_lev_cost;
-  equivHFEvals += incr / hf_ref_cost; // normalize into equiv HF evals
+  equiv_hf += incr / hf_ref_cost; // normalize into equiv HF evals
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "MLMF incremented by " << new_N_hf << " HF and " << new_N_lf
-	 << " LF samples.  equivHFEvals = " << equivHFEvals << std::endl;
+	 << " LF samples.  equivalent HF evals = " << equiv_hf << std::endl;
 }
 
 

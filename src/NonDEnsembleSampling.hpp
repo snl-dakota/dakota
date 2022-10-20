@@ -89,6 +89,8 @@ protected:
 
   /// increment samples array with a shared scalar
   void increment_samples(SizetArray& N_l, size_t incr);
+  /// increment 2D samples array with a shared 1D array (additional dim is QoI)
+  void increment_samples(Sizet2DArray& N_l, const SizetArray& incr);
 
   /// compute the variance of the mean estimator (Monte Carlo sample average)
   void compute_mc_estimator_variance(const RealVector& var_l,
@@ -201,6 +203,9 @@ protected:
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
+  /// for sample projections, the calculated increment in equivHFEvals that
+  /// would be incurred if full iteration/statistics were needed
+  Real deltaEquivHF;
 
   /// variances for HF truth (length numFunctions)
   RealVector varH;
@@ -338,12 +343,26 @@ estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
 
 
 inline void NonDEnsembleSampling::
-increment_samples(SizetArray& N_l, size_t incr)
+increment_samples(SizetArray& N_samp, size_t incr)
 {
   if (!incr) return;
-  size_t q, nq = N_l.size();
+  size_t q, nq = N_samp.size();
   for (q=0; q<nq; ++q)
-    N_l[q] += incr;
+    N_samp[q] += incr;
+}
+
+
+inline void NonDEnsembleSampling::
+increment_samples(Sizet2DArray& N_samp, const SizetArray& incr)
+{
+  size_t l, nl = N_samp.size();
+  if (incr.size() != nl) {
+    Cerr << "Error: inconsistent array sizes in NonDEnsembleSampling::"
+	 << "increment_samples()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (l=0; l<nl; ++l)
+    increment_samples(N_samp[l], incr[l]);
 }
 
 
