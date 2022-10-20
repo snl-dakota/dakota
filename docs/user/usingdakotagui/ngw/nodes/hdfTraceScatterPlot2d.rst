@@ -4,6 +4,14 @@
 hdfTraceScatterPlot2d
 =====================
 
+.. figure:: img/scatter_plot.png
+   :name: ngw-node-hdfTraceScatterPlot2d-figure
+   :alt: Example scatter plot
+   :width: 400
+   :align: center
+   
+   Example scatter plot
+
 -----------
 Description
 -----------

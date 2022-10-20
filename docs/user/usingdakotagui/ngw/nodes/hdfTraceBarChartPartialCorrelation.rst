@@ -4,6 +4,14 @@
 hdfTraceBarChartPartialCorrelation
 ==================================
 
+.. figure:: img/bar_charts.png
+   :name: ngw-node-hdfTraceBarChartPartialCorrelation-figure
+   :alt: Example partial correlation bar chart
+   :width: 400
+   :align: center
+   
+   Example partial correlation bar chart
+
 -----------
 Description
 -----------

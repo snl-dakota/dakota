@@ -4,6 +4,14 @@
 traceHeatMap
 ============
 
+.. figure:: img/heatmap.png
+   :name: ngw-node-traceHeatMap-figure
+   :alt: Example heatmap
+   :width: 400
+   :align: center
+   
+   Example heatmap
+
 -----------
 Description
 -----------

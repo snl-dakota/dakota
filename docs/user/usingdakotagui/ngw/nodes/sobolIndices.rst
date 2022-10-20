@@ -4,6 +4,14 @@
 sobolIndices
 ============
 
+.. figure:: img/SobolIndices.png
+   :name: ngw-node-sobolIndices-figure
+   :alt: Example Sobol' indices chart
+   :width: 600
+   :align: center
+   
+   Example Sobol' indices chart
+
 -----------
 Description
 -----------

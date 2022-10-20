@@ -4,6 +4,14 @@
 categoricalBarCharts
 ====================
 
+.. figure:: img/categorical_bar_chart.png
+   :name: ngw-node-categoricalBarCharts-figure
+   :alt: Example categorical bar charts
+   :width: 400
+   :align: center
+   
+   Example categorical bar charts
+
 -----------
 Description
 -----------

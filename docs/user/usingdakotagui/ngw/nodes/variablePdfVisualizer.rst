@@ -6,8 +6,13 @@
 variablePdfVisualizer
 =====================
 
-.. image:: img/Plotting_Workflow_15.png
+.. figure:: img/Plotting_Workflow_15.png
+   :name: ngw-node-variablePdfVisualizer-figure
    :alt: PDF visualization node
+   :width: 300
+   :align: center
+   
+   PDF visualization node
 
 -----------
 Description

@@ -4,6 +4,14 @@
 scatterPlotMatrix
 =================
 
+.. figure:: img/ScatterPlotMatrix.png
+   :name: ngw-node-scatterPlotMatrix-figure
+   :alt: Example 3D scatter plot
+   :width: 600
+   :align: center
+   
+   Example scatter plot matrix
+
 -----------
 Description
 -----------

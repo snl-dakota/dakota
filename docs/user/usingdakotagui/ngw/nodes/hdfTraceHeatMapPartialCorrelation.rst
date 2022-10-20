@@ -4,6 +4,14 @@
 hdfTraceHeatMapPartialCorrelation
 =================================
 
+.. figure:: img/heatmap_partial_correlation.png
+   :name: hdfTraceHeatMapPartialCorrelation-figure
+   :alt: Example partial correlation heatmap
+   :width: 400
+   :align: center
+   
+   Example partial correlation heatmap
+
 -----------
 Description
 -----------

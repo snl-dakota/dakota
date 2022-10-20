@@ -4,6 +4,14 @@
 hdfTraceHeatMap
 ===============
 
+.. figure:: img/heatmap.png
+   :name: ngw-node-hdfTraceHeatMap-figure
+   :alt: Example heatmap
+   :width: 400
+   :align: center
+   
+   Example heatmap
+
 -----------
 Description
 -----------

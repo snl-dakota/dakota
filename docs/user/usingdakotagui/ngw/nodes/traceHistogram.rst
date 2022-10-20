@@ -4,6 +4,14 @@
 traceHistogram
 ==============
 
+.. figure:: img/histogram.png
+   :name: ngw-node-traceHistogram-figure
+   :alt: Example histogram
+   :width: 400
+   :align: center
+   
+   Example histogram
+
 -----------
 Description
 -----------

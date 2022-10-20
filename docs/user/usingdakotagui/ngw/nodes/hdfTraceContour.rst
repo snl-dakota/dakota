@@ -4,6 +4,14 @@
 hdfTraceContour
 ===============
 
+.. figure:: img/contour_plot.png
+   :name: ngw-node-hdfTraceContour-figure
+   :alt: Example contour plot
+   :width: 400
+   :align: center
+   
+   Example contour plot
+
 -----------
 Description
 -----------

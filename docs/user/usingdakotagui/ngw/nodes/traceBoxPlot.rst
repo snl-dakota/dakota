@@ -4,6 +4,14 @@
 traceBoxPlot
 ============
 
+.. figure:: img/box_plot.png
+   :name: ngw-node-traceBoxPlot-figure
+   :alt: Example box plot
+   :width: 400
+   :align: center
+   
+   Example box plot
+
 -----------
 Description
 -----------
