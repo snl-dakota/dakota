@@ -15,16 +15,14 @@ capability allows the use of existing iterative algorithm and
 computational model software components as building blocks to accomplish
 more sophisticated studies, such as hybrid, multistart, Pareto, or
 surrogate-based minimization. Further multi-component capabilities are
-enabled by the model recursion capabilities described in
-Chapter `[models] <#models>`__ with specific examples in
-Chapter `[adv_models] <#adv_models>`__.
+enabled by the model recursion capabilities described in the page :ref:`Models <models:main>` with specific examples in the page :ref:`Advanced Models <adv_models>`.
 
 ..
    TODO:
 
-   %It was driven by the observed need for ``meta-optimization'' and other 
-   %high level systems analysis procedures in real-world engineering 
-   %design problems. 
+   %It was driven by the observed need for ``meta-optimization'' and other
+   %high level systems analysis procedures in real-world engineering
+   %design problems.
    
    %When these model recursion specifications are sufficient to completely
    %describe a multi-iterator, multi-model solution approach, then a
@@ -54,7 +52,7 @@ identifier strings, and each of the corresponding method specifications
 has the responsibility for identifying the model specification (which
 may in turn identify variables, interface, and responses specifications)
 that each method will use (see the Dakota Reference
-Manual :cite:p:`RefMan` and the example discussed below).
+Manual :ref:`Keyword Reference <keyword-reference-area>` and the example discussed below).
 Currently, only the sequential hybrid approach is available. The
 ``embedded`` and ``collaborative`` approaches are not fully functional
 at this time.
@@ -157,7 +155,7 @@ However, there is no theoretical guarantee that the global optimum will
 be found. This approach combines the efficiency of local minimization
 methods with a user-specified global stratification (using a specified
 ``starting_points`` list, a number of specified ``random_starts``, or
-both; see the Dakota Reference Manual :cite:p:`RefMan` for
+both; see the Dakota Reference Manual :ref:`Keyword Reference <keyword-reference-area>` for
 additional specification details). Since solutions for different
 starting points are independent, parallel computing may be used to
 concurrently run the local minimizations.
@@ -183,38 +181,43 @@ The ``quasi_sine`` test function has multiple local minima, but there is
 an overall trend in the function that tends toward the global minimum at
 :math:`(x1,x2)=(0.177,0.177)`. See :cite:p:`Giu00` for more
 information on this test function.
-Figure `[adv_meth:figure03] <#adv_meth:figure03>`__ shows the results
+:numref:`adv_meth:figure03` shows the results
 summary for the eight local optimizations performed. From the five
 specified starting points and the 3 random starting points (as
 identified by the ``x1``, ``x2`` headers), the eight local optima (as
 identified by the ``x1*``, ``x2*`` headers) are all different and only
 one of the local optimizations finds the global minimum.
 
-::
 
-   <<<<< Results summary:
-      set_id             x1             x2            x1*            x2*         obj_fn 
-           1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
-           2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
-           3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
-           4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
-           5              0              0  0.03572926375  0.03572926375  0.08730499239 
-           6  -0.7767971993  0.01810943539  -0.7024118387  0.03572951143   0.3165522387 
-           7  -0.3291571008  -0.7697378755   0.3167607374  -0.4009188363   0.2471403213 
-           8   0.8704730469   0.7720679005    0.177092899   0.3167611757  0.08256082751 
+.. code-block::
+   :caption: Dakota results summary for a multistart local optimization method.
+   :name: adv_meth:figure03
+
+      
+      <<<<< Results summary:
+         set_id             x1             x2            x1*            x2*         obj_fn 
+              1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
+              2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
+              3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
+              4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
+              5              0              0  0.03572926375  0.03572926375  0.08730499239 
+              6  -0.7767971993  0.01810943539  -0.7024118387  0.03572951143   0.3165522387 
+              7  -0.3291571008  -0.7697378755   0.3167607374  -0.4009188363   0.2471403213 
+              8   0.8704730469   0.7720679005    0.177092899   0.3167611757  0.08256082751       
+
 
 .. _`adv_meth:pareto`:
 
 Pareto Optimization
 -------------------
 
-The Pareto optimization method (keyword: ) is one of three
+The Pareto optimization method (keyword: ``pareto_set`` ) is one of three
 multiobjective optimization capabilities discussed in
-Section `[opt:additional:multiobjective] <#opt:additional:multiobjective>`__.
+Section :ref:`Multiobjective Optimization <opt:additional:multiobjective>`.
 In the Pareto optimization method, multiple sets of multiobjective
 weightings are evaluated. The user can specify these weighting sets in
 the method keyword block using a list, a number of , or both (see the
-Dakota Reference Manual :cite:p:`RefMan` for additional
+Dakota Reference Manual :ref:`Keyword Reference <keyword-reference-area>` for additional
 specification details).
 
 Dakota performs one multiobjective optimization problem for each set of
@@ -224,7 +227,7 @@ engineering design. Since solutions for different multiobjective weights
 are independent, parallel computing may be used to concurrently execute
 the multiobjective optimization problems.
 
-Figure `[adv_meth:figure05] <#adv_meth:figure05>`__ shows the results
+:numref:`adv_meth:figure05` shows the results
 summary for the Pareto-set optimization method. For the four
 multiobjective weighting sets (as identified by the ``w1``, ``w2``,
 ``w3`` headers), the local optima (as identified by the ``x1``, ``x2``
@@ -247,14 +250,20 @@ useful for visualizing the trade-offs in the competing objectives.
        ``dakota/share/dakota/examples/users/textbook_pareto_strat.in``
    :name: adv_meth:figure04
 
-::
 
-   <<<<< Results summary:
-      set_id             w1             w2             w3             x1             x2         obj_fn
-           1              1              0              0   0.9996554048    0.997046351 7.612301561e-11
-           2              0              1              0            0.5            2.9           -1.2
-           3              0              0              1            5.8 1.12747589e-11           -2.9
-           4          0.333          0.333          0.333            0.5   0.5000000041       0.041625
+.. code-block::
+   :caption: Dakota results summary for the Pareto-set optimization method.
+   :name: adv_meth:figure05
+
+
+     
+      <<<<< Results summary:
+         set_id             w1             w2             w3             x1             x2         obj_fn
+              1              1              0              0   0.9996554048    0.997046351 7.612301561e-11
+              2              0              1              0            0.5            2.9           -1.2
+              3              0              0              1            5.8 1.12747589e-11           -2.9
+              4          0.333          0.333          0.333            0.5   0.5000000041       0.041625
+
 
 .. _`adv_meth:minlp`:
 
@@ -278,8 +287,8 @@ formulated as follows:
 
 where :math:`\mathbf{d}` is a vector whose elements are integer values.
 In situations where the discrete variables can be temporarily relaxed
-(i.e., noncategorical discrete variables, see
-Section `[variables:design:ddv] <#variables:design:ddv>`__), the
+(i.e., noncategorical discrete variables, see Section
+:ref:`Discrete Design Variables <variables:design:ddv>`, the
 branch-and-bound algorithm can be applied. Categorical variables (e.g.,
 true/false variables, feature counts, etc.) that are not relaxable
 cannot be used with the branch and bound method. During the branch and
@@ -347,7 +356,7 @@ problem :cite:p:`Eld99`:
      & & x_{5},x_{6} \in \{0,1,2,3,4\}\nonumber\end{aligned}
 
 This problem is a variant of the textbook test problem described in
-Section `[additional:textbook] <#additional:textbook>`__. In addition to
+Section :ref:`Additional Examples Textbook <additional:textbook>`. In addition to
 the introduction of two integer variables, a modified value of
 :math:`1.4` is used inside the quartic sum to render the continuous
 solution a non-integral solution.
@@ -373,7 +382,7 @@ solution a non-integral solution.
    %  \label{adv_meth:figure06}
    %\end{figure}
 
-Figure `1.1 <#adv_meth:figure07>`__ shows the sequence of branches
+Figure `45 <#adv_meth:figure07>`__ shows the sequence of branches
 generated for this problem. The first optimization subproblem relaxes
 the integrality constraint on parameters :math:`x_{5}` and
 :math:`x_{6}`, so that :math:`0
@@ -412,7 +421,7 @@ In some cases, the discrete variables may be real-valued, such as
 restricted to work with integer values. Therefore, it is up to the user
 to perform a transformation between the discrete integer values from
 Dakota and the discrete real values that are passed to the simulation
-code (see Section `[variables:design:ddv] <#variables:design:ddv>`__).
+code (see Section:ref:`Discrete Design Variables <variables:design:ddv>`).
 When integrality is not being relaxed, a common mapping is to use the
 integer value from Dakota as the index into a vector of discrete real
 values. However, when integrality is relaxed, additional logic for
@@ -433,7 +442,7 @@ Surrogate models approximate an original, high fidelity “truth” model,
 typically at reduced computational cost. In Dakota, several surrogate
 model selections are possible, which are categorized as data fits,
 multifidelity models, and reduced-order models, as described in
-Section `[models:surrogate] <#models:surrogate>`__. In the context of
+Section :ref:`Models Surrogate <models:surrogate>`. In the context of
 minimization (optimization or calibration), surrogate models can speed
 convergence by reducing function evaluation cost or smoothing noisy
 response functions. Three categories of surrogate-based minimization are
@@ -460,7 +469,7 @@ In the surrogate-based local minimization method (keyword:
 surrogate model instead of directly operating on the computationally
 expensive simulation model. The surrogate model can be based on data
 fits, multifidelity models, or reduced-order models, as described in
-Section `[models:surrogate] <#models:surrogate>`__. Since the surrogate
+Section :ref:`Models Surrogate <models:surrogate>`. Since the surrogate
 will generally have a limited range of accuracy, the surrogate-based
 local algorithm periodically checks the accuracy of the surrogate model
 against the original simulation model and adaptively manages the extent
@@ -477,8 +486,9 @@ of the approximate optimization cycles using a trust region approach.
    %trouble, and where the computational expense of the simulation
    %precludes the use of nongradient-based methods.
 
-Refer to the Dakota Theory Manual :cite:p:`TheoMan` for
-algorithmic details on iterate acceptance, merit function formulations,
+Refer to the Dakota Reference
+Manual :ref:`Keyword Reference <keyword-reference-area>` for
+algorithmic guidelines and details on iterate acceptance, merit function formulations,
 convergence assessment, and constraint relaxation.
 
 .. _`adv_meth:sbm:sblm:surface`:
@@ -492,10 +502,10 @@ each new trust region. In the global data fit case, this can mean
 performing a new design of experiments on the original high-fidelity
 model for each trust region, which can effectively limit the approach to
 use on problems with, at most, tens of variables.
-Figure `1.2 <#fig:sbo_df>`__ displays this case. However, an important
+Figure `46 <#fig:sbo_df>`__ displays this case. However, an important
 benefit of the global sampling is that the global data fits can tame
-poorly-behaved, nonsmooth, discontinuous response variations within the
-original model into smooth, differentiable, easily navigated surrogates.
+poorly-behaved, non-smooth, discontinuous response variations within the
+original model into smooth, differentiable, easily navigable, and easily navigated surrogates.
 This allows SBO with global data fits to extract the relevant global
 design trends from noisy simulation data.
 
@@ -556,9 +566,7 @@ form (as discussed for the global Taylor series approach above). The
 primary disadvantage to these surrogates is that the region of accuracy
 tends to be smaller than for global data fits and multifidelity
 surrogates, requiring more SBO cycles with smaller trust regions. More
-information on the design of experiments methods is available in
-Chapter `[dace] <#dace>`__, and the data fit surrogates are described in
-Section `[models:surrogate:datafit] <#models:surrogate:datafit>`__.
+information on the design of experiments methods is available in :ref:`Section Dace <dace>`, and the data fit surrogates are described in :ref:`Section Models Surrogate Datafit <models:surrogate:datafit>`.
 
 ..
    TODO:
@@ -580,7 +588,7 @@ Section `[models:surrogate:datafit] <#models:surrogate:datafit>`__.
    %of optimization subproblems continues until the SBO convergence 
    %criteria are satisfied
 
-Figure `[sbm:sblm_rosen] <#sbm:sblm_rosen>`__ shows a Dakota input file
+:numref:`sbm:sblm_rosen` shows a Dakota input file
 that implements surrogate-based optimization on Rosenbrock’s function.
 The first method keyword block contains the SBO keyword
 ``surrogate_based_local``, plus the commands for specifying the trust
@@ -614,8 +622,7 @@ If this input file is executed in Dakota, it will converge to the
 optimal design point at :math:`(x_{1},x_{2})=(1,1)` in approximately 800
 function evaluations. While this solution is correct, it is obtained at
 a much higher cost than a traditional gradient-based optimizer (e.g.,
-see the results obtained in
-Section `[tutorial:examples:optimization] <#tutorial:examples:optimization>`__).
+see the results obtained in :ref:`Section Tutorial Examples Optimization <tutorial:examples:optimization>`.
 This demonstrates that the SBO method with global data fits is not
 really intended for use with smooth continuous optimization problems;
 direct gradient-based optimization can be more efficient for such
@@ -727,7 +734,7 @@ methods :cite:p:`Lat00`. In the single-point and multipoint
 E-ROM cases, the SBO iteration can appear as in
 :numref:`fig:sbo_mh`, whereas in the S-ROM, global E-ROM,
 and tensor SVD cases, the SBO iteration will appear as in
-Fig. `1.2 <#fig:sbo_df>`__. In addition to the high-fidelity model
+:numref:`fig:sbo_df`. In addition to the high-fidelity model
 analysis requirements, procedures for updating the system matrices and
 basis vectors are also required.
 
