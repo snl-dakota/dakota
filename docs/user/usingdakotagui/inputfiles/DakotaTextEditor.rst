@@ -1,35 +1,8 @@
-.. _gui-inputfiles-main:
-
-""""""""""""""""""
-Dakota Input Files
-""""""""""""""""""
-
-============
-Introduction
-============
-
-Once you have a Dakota input file imported into the GUI, there are many available options for inspecting and editing it.
-
-====================
-Dakota Visual Editor
-====================
-
-The Dakota Visual Editor is a powerful alternative to editing Dakota input files in a text editor.  Gone are the days of manually tinkering with long number arrays, or 
-hoping that variables and responses are active and indexed correctly.
-
-If the Dakota Visual Editor is not configured as your default editor of Dakota input files, right-click a Dakota input file and choose "Open With > Dakota Visual Editor".
-Otherwise, simply double-click the file.
-
-.. image:: img/DakotaVisualEditor.png
-   :alt: Dakota Visual Editor
-
-For more information, see :ref:`the main page about the Dakota Visual Editor. <gui-visual-editor-main>`
-
 .. _gui-inputfiles-texteditor:
 
-==================
+""""""""""""""""""
 Dakota Text Editor
-==================
+""""""""""""""""""
 
 The Dakota text editor is the most traditional way of editing a Dakota input file.  While not recommended for complex Dakota studies, the text editor can be handy if you just
 need to make a small adjustment to your Dakota input file.
@@ -104,24 +77,3 @@ However, there are some limitations to using pre-processor markup in the Dakota 
   Single-line % statements are supported in the Dakota text editor, but blocks of Python code surrounded by % characters are not supported yet.
 
 :ref:`Learn more about Dakota's pre-processing tools <interfaces:dprepro-and-pyprepro>`.
-
-.. _gui-inputfiles-treeview:
-
-
-Tree in the Project Explorer view
----------------------------------
-
-A Dakota input file can be expanded in the Project Explorer view's tree to reveal its content hierarchically:
-
-.. image:: img/DakotaStudyIntro_Editing_1.png
-   :alt: An hierarchical view of a Dakota input file
-
-"New Keyword" context menu option
----------------------------------
-
-With a Dakota study expanded in the Project Explorer, right-click a Dakota keyword and choose "New Keyword."  A sub-context menu will pop
-out with available keywords at the point in the Dakota study you clicked on.  Choosing a keyword from this sub-context menu will automatically
-add it to your Dakota study.
-
-.. image:: img/DakotaStudyIntro_NewKeywordMenu_1.png
-   :alt: New Keyword submenu

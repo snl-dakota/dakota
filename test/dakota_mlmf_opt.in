@@ -1,4 +1,5 @@
 #@ *: Label=Experimental
+#@ s*: Label=FastTest
 #@ s0: DakotaConfig=HAVE_NPSOL
 # DAKOTA INPUT FILE - dakota_mlmf_opt.in
 # Contains regression tests for using the multilevel-multifidelity optimization

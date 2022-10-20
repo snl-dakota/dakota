@@ -14,8 +14,8 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 response_fn_1 Sobol' indices:
                                   Main             Total
-                      4.7508913283e-01  5.3242162037e-01 uuv_1
-                      3.8112392892e-01  4.9912486515e-01 uuv_2
+                      4.0192640428e-01  4.0821521755e-01 uuv_1
+                      4.0050388089e-01  4.9019493441e-01 uuv_2
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 response_fn_1 Sobol' indices:

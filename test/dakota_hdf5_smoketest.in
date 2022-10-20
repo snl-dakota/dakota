@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s*: DakotaConfig=DAKOTA_HAVE_HDF5
 # A smoke test to verify the HDF5 output works
 

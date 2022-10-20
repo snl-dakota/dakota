@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 method,
 	polynomial_chaos
  	  expansion_order   = 4

@@ -4,6 +4,8 @@
 Next-Gen Workflow Basics
 """"""""""""""""""""""""
 
+.. _ngw-basics-palette:
+
 ===========
 The Palette
 ===========

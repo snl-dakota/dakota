@@ -1,4 +1,5 @@
 #@ *: Label=Experimental
+#@ s*: Label=FastTest
 
 environment,
 	  tabular_data

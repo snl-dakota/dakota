@@ -23,8 +23,11 @@
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
-#include "boost/random.hpp"
-#include "boost/generator_iterator.hpp"
+// Using Boost MT since need it anyway for unif int dist
+#include "dakota_mersenne_twister.hpp"
+// Using Boost unif int dist for cross-platform stability
+#include "boost/random/uniform_int_distribution.hpp"
+#include "boost/random/variate_generator.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -1223,7 +1226,6 @@ Real NonDMultilevelSampling::compute_bootstrap_covariance(const size_t step,
         covmeanlm1sigmalm1 = 0;
   Real covmeanlsigmal_grad = 0, covmeanlm1sigmal_grad = 0, 
         covmeanlsigmalm1_grad = 0, covmeanlm1sigmalm1_grad = 0;
-  typedef boost::mt19937 RNGType;
 
   std::map<int, RealMatrix>::const_iterator it = lev_qoisamplematrix_map.find(step);
   nb_samples = it->second.numCols(); 
@@ -1232,9 +1234,10 @@ Real NonDMultilevelSampling::compute_bootstrap_covariance(const size_t step,
   bs_samples_lm1.size(nb_samples);
 
   //Cout << "Bootstrap seed: " << *seed << "\n";
-  RNGType rng((*seed));
-  boost::uniform_int<> rand_int_range( 0, nb_samples-1);
-  boost::variate_generator< RNGType, boost::uniform_int<> >
+  boost::mt19937 rng((*seed));
+  boost::random::uniform_int_distribution<> rand_int_range( 0, nb_samples-1);
+  boost::variate_generator
+    < boost::mt19937, boost::random::uniform_int_distribution<> >
     rand_int(rng, rand_int_range);
 
   for(int bs_resample = 0; bs_resample < nb_bs_samples; ++bs_resample){

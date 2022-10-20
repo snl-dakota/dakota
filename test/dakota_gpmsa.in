@@ -1,5 +1,6 @@
 #@ *: Label=Experimental
 #@ *: DakotaConfig=HAVE_QUESO
+#@ s*: Label=FastTest
 #@ s0: ReqFiles=initial_point_sub0.m,initial_proposal_covariance_sub0.m
 #
 # Try to replicate the CASL-verif1 case 

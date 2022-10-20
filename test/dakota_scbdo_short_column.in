@@ -1,4 +1,5 @@
 #@ *: DakotaConfig=HAVE_NPSOL
+#@ s*: Label=FastTest
 # DAKOTA Input File: dakota_pcbdo_short_column.in
 # Optimization under uncertainty using polynomial chaos methods within a
 # nested OUU environment.  The test problem is the "short_column" problem from

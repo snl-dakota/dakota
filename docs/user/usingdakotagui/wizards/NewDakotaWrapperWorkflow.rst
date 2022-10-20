@@ -18,12 +18,12 @@ Executing ``dakota -input my_cool_input_file.in`` on the command line won't work
 
 We need a tool that has enough context to appropriately substitute the DPREPRO markup with the correct IWF file as an analysis driver.
 
-For this situation, we need to create a **second wrapper workflow** that launches Dakota for us.  This is the right answer because the "dakota" node in Next-Gen Workflow
+For this situation, we need to create a **second wrapper workflow** that launches Dakota for us.  This is the right solution because the "dakota" node in Next-Gen Workflow
 knows how to substitute DPREPRO markup.  Additionally, Next-Gen Workflow also provides a special node that converts IWF workflow files into run-ready Dakota analysis drivers.
 
 .. note::
-   Older versions of Dakota GUI and Next-Gen Workflow relied on a special "SAW\_DRIVER" string to make the connection that is now handled through DPREPRO.  "SAW\_DRIVER"
-   is now considered a deprecated mechanism for connecting Dakota to Next-Gen Workflow, and we recommend replacing it with the DPREPRO syntax shown in this section.
+
+   You can read more about the relationship between Dakota analysis drivers and Next-Gen Workflow :ref:`here <ngw-analysisdrivers>`.
 
 You can access the Dakota Wrapper Workflow Wizard via "File > New > Other" and then "Dakota > Dakota Wrapper Workflow".  You can also right-click on a Dakota input file and choose "New > Wrapper workflow for Dakota".
 

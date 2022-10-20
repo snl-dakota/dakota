@@ -17,6 +17,7 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/functional/hash/hash.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
 #include <boost/regex.hpp>
 #include <algorithm>
 #include "Teuchos_SerialDenseHelpers.hpp"
@@ -1504,6 +1505,36 @@ inline bool contains(const DakContainerType& v,
                      const typename DakContainerType::value_type& val)
 {
   return ( std::find(v.begin(), v.end(), val) != v.end() ) ? true : false;
+}
+
+
+/// Random shuffle with C++17 shuffle API, but using Boost for portability
+/*
+   Should be portable for a given version of Boost, when passing either a std
+   or boost URBG, such as mt19937.
+
+   Taken from reference implementation example at
+   https://en.cppreference.com/w/cpp/algorithm/random_shuffle, which is similar
+   to the libc++ implementation (and perhaps less optimized than libstdc++).
+
+   RATIONALE: While the Mersenne Twister and other RNGs are cross-platform
+   deterministic, shuffle and uniform_int_distribution themselves have
+   implementation details that vary. Using the boost uniform_int_distribution
+   with a custom shuffle stabilizes this for a given Boost version.
+*/
+template<class RandomIt, class URBG>
+void rand_shuffle(RandomIt first, RandomIt last, URBG&& g)
+{
+  typedef typename std::iterator_traits<RandomIt>::difference_type diff_t;
+  // uses the Boost distribution from cross-platform portability (though may
+  // change between Boost versions)
+  typedef boost::random::uniform_int_distribution<diff_t> distr_t;
+  typedef typename distr_t::param_type param_t;
+
+  distr_t D;
+  diff_t n = last - first;
+  for (diff_t i = n-1; i > 0; --i)
+      std::swap(first[i], first[D(g, param_t(0, i))]);
 }
 
 

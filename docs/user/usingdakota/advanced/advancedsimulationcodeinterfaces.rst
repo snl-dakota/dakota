@@ -4,16 +4,16 @@ Advanced Simulation Code Interfaces
 ===================================
 
 This chapter extends the interface discussion in
-Chapter `[interfaces] <#interfaces>`__ and its discussion of generic
+Chapter :ref:`interfaces:main` and its discussion of generic
 black-box interfaces to simulations
-(Section `[interfaces:building] <#interfaces:building>`__). It describes
+(Section :ref:`interfaces:building`). It describes
 specialized, tightly integrated, and advanced interfaces through which
 Dakota can perform function evaluation mappings. It describes AMPL-based
-algebraic mappings (Section `1.1 <#advint:algebraic>`__), tight
+algebraic mappings (Section :ref:`advint:algebraic`), tight
 integration of a simulation code into Dakota
-(Section `1.2 <#advint:direct>`__), and specialized interfaces to
-Matlab, Python, and Scilab (Sections `1.3 <#advint:existingdirect>`__
-and `1.4 <#advint:scilab>`__).
+(Section :ref:`advint:direct`), and specialized interfaces to
+Matlab, Python, and Scilab (Sections :ref:`advint:existingdirect`
+and :ref:`advint:scilab`).
 
 .. _`advint:algebraic`:
 
@@ -39,8 +39,6 @@ Newton’s law :math:`F = m a`. The following is an AMPL input file of
 variable and expression declarations and output commands:
 
 .. literalinclude:: ../samples/dakota_ampl_fma.mod
-   :caption: AMPL input file
-   :name: advint:ampl_imput
 
 When processed by an AMPL processor, three files are created (as
 requested by the “option auxfiles" command). The first is the file
@@ -48,22 +46,16 @@ requested by the “option auxfiles" command). The first is the file
 containing problem statistics, expression graphs, bounds, etc.:
 
 .. literalinclude:: ../samples/dakota_ampl_fma.nl
-   :caption: AMPL .nl file
-   :name: advint:ampl_nl
 
 Next, the file ``dakota_ampl_fma.col`` contains the set of variable
 descriptor strings:
 
 .. literalinclude:: ../samples/dakota_ampl_fma.col
-   :caption: AMPL .col file with variable descriptors
-   :name: advint:ampl_col
 
 and the file ``dakota_ampl_fma.row`` contains the set of response
 descriptor strings:
 
 .. literalinclude:: ../samples/dakota_ampl_fma.row
-   :caption: AMPL .row file with response descriptors
-   :name: advint:ampl_row
 
 The variable and objective function names declared within AMPL should be
 a subset of the variable descriptors and response descriptors used by
@@ -76,7 +68,7 @@ which demonstrates a combined algebraic/simulation-based
 mapping in which algebraic mappings from the ``fma`` definition are
 overlaid with simulation-based mappings from ``text_book``:
 
-::
+.. code-block::
 
    variables,
            continuous_design = 5
@@ -110,12 +102,10 @@ simulation-based components contribute to the same function, they are
 added together.
 
 To solve ``text_book`` algebraically (refer to
-Section `[additional:textbook] <#additional:textbook>`__ for
+Section :ref:`additional:textbook` for
 definition), the following AMPL model file could be used
 
 .. literalinclude:: ../samples/dakota_ampl_tb.mod
-   :caption: AMPL model file for text_book
-   :name: advint:ampl_textbook
 
 Note that the nonlinear constraints should not currently be declared as
 constraints within AMPL. Since the Dakota variable bounds and constraint
@@ -197,7 +187,7 @@ member functions. In this case, the following steps are performed:
          int function_name(const Dakota::Variables& vars,
                            const Dakota::ActiveSet& set, Dakota::Response& response);
 
-#. The Dakota system must be recompiled and linked with the new function
+4. The Dakota system must be recompiled and linked with the new function
    object files or libraries.
 
 Various header files may have to be included, particularly within the
@@ -223,7 +213,7 @@ interface class is derived from **DirectFnApplicInterface** which
 ..
    TODO: % Note: this approach has benefits primarily in library mode:
 
-In the approach of Section `1.2.3 <#advint:direct:sandwich>`__ below,
+In the approach of Section :ref:`advint:direct:sandwich` below,
 the class derivation approach avoids the need to recompile the Dakota
 library when the simulation or its direct interface class is modified.
 
@@ -250,11 +240,11 @@ Existing Direct Interfaces to External Simulators
 -------------------------------------------------
 
 In addition to built-in polynomial test functions described in
-Section `[interfaces:direct] <#interfaces:direct>`__, Dakota includes
+Section :ref:`interfaces:direct`, Dakota includes
 direct interfaces to Sandia’s Salinas code for structural dynamics,
 Phoenix Integration’s ModelCenter framework, The Mathworks’ Matlab
 scientific computing environment, Scilab (as described in
-Section `1.4 <#advint:scilab>`__), and Python. While these can be
+Section :ref:`advint:scilab`), and Python. While these can be
 interfaced to with a script-based approach, some usability and
 efficiency gains may be realized by re-compiling Dakota with these
 direct interfaces enabled. Some details on Matlab and Python interfaces
@@ -324,7 +314,7 @@ Dakota ``interface`` specification:
 
 Multiple Matlab analysis drivers are supported. Multiple analysis
 components are supported as for other interfaces as described in
-Section `[interfaces:components] <#interfaces:components>`__. The ``.m``
+Section :ref:`interfaces:components`. The ``.m``
 extension in the ``analysis_drivers`` specification is optional and will
 be stripped by the interface before invoking the function. So
 ``myanalysis`` and ``myanalysis.m`` will both cause the interface to
@@ -347,9 +337,11 @@ workspace before the analysis function is called. The structure passed
 from Dakota to the analysis m-function contains essentially the same
 information that would be passed to a Dakota direct function included in
 ``DirectApplicInterface.C``, with fields shown in
-Figure `[advint:figure:matlabparams] <#advint:figure:matlabparams>`__.
+Figure :numref:`advint:figure:matlabparams`.
 
-::
+.. code-block::
+   :caption: Dakota/Matlab parameter data structure.
+   :name: advint:figure:matlabparams
 
    Dakota.
      numFns              number of functions (responses, constraints)
@@ -373,11 +365,13 @@ Figure `[advint:figure:matlabparams] <#advint:figure:matlabparams>`__.
 
 The structure ``Dakota`` returned from the analysis must contain a
 subset of the fields shown in
-Figure `[advint:figure:matlabresponse] <#advint:figure:matlabresponse>`__.
+Figure :numref:`advint:figure:matlabresponse`.
 It may contain additional fields and in fact is permitted to be the
 structure passed in, augmented with any required outputs.
 
-::
+.. code-block::
+   :caption: Dakota/Matlab response data structure.
+   :name: advint:figure:matlabresponse
 
    Dakota.
      fnVals      ([1 x numFns], required if function values requested)
@@ -388,10 +382,11 @@ structure passed in, augmented with any required outputs.
      failure     (optional: zero indicates success, nonzero failure
 
 An example Matlab analysis driver ``rosenbrock.m`` for the Rosenbrock
-function is shown in Figure
- `[advint:figure:matlabrosen] <#advint:figure:matlabrosen>`__.
+function is shown in Figure :numref:`advint:figure:matlabrosen`.
 
-::
+.. code-block::
+   :caption: Sample Matlab implementation of the Rosenbrock test function for the Dakota/Matlab interface.
+   :name: advint:figure:matlabrosen
 
    function Dakota = rosenbrock(Dakota)
 
@@ -527,7 +522,7 @@ structures instead of the default lists.
 
 Whether using the list or array interface, data from Dakota is passed
 (via kwargs) into the user function in a dictionary containing the
-entries shown in Table `1.1 <#advint:table:pythonparams>`__. The
+entries shown in Table :numref:`advint:table:pythonparams`. The
 ``analysis_function`` must return a dictionary containing the data
 specified by the active set vector with fields “fns”, “fnGrads”, and
 “fnHessians”, corresponding to function values, gradients, and Hessians,
@@ -538,53 +533,52 @@ be returned as an array of floats in the dictionary field
 “metadata”. See the linked interfaces example referenced above for
 more details.
 
-.. container::
+.. table:: Data dictionary passed to Python direct interface.
    :name: advint:table:pythonparams
+   :align: center
 
-   .. table:: Data dictionary passed to Python direct interface.
-
-      +---------------------+-----------------------------------------------+
-      | **Entry Name**      | **Description**                               |
-      +=====================+===============================================+
-      | variables           | total number of variables                     |
-      +---------------------+-----------------------------------------------+
-      | functions           | number of functions (responses, constraints)  |
-      +---------------------+-----------------------------------------------+
-      | metadata            | number of metadata fields                     |
-      +---------------------+-----------------------------------------------+
-      | variable_labels     | variable labels in input specification order  |
-      +---------------------+-----------------------------------------------+
-      | function_labels     | function (response, constraint) labels        |
-      +---------------------+-----------------------------------------------+
-      | metadata_labels     | metadata field labels                         |
-      +---------------------+-----------------------------------------------+
-      | cv                  | list/array of continuous variable values      |
-      +---------------------+-----------------------------------------------+
-      | cv_labels           | continuous variable labels                    |
-      +---------------------+-----------------------------------------------+
-      | div                 | list/array of discrete integer variable       |
-      |                     | values                                        |
-      +---------------------+-----------------------------------------------+
-      | div_labels          | discrete integer variable labels              |
-      +---------------------+-----------------------------------------------+
-      | dsv                 | list of discrete string variable values       |
-      |                     | (NumPy not supported)                         |
-      +---------------------+-----------------------------------------------+
-      | dsv_labels          | discrete string variable labels               |
-      +---------------------+-----------------------------------------------+
-      | drv                 | list/array of discrete real variable values   |
-      +---------------------+-----------------------------------------------+
-      | drv_labels          | discrete real variable labels                 |
-      +---------------------+-----------------------------------------------+
-      | asv                 | active set vector                             |
-      +---------------------+-----------------------------------------------+
-      | dvv                 | derivative variables vector                   |
-      |                     | (list of one-based variable IDs)              |
-      +---------------------+-----------------------------------------------+
-      | analysis_components | list of analysis components strings           |
-      +---------------------+-----------------------------------------------+
-      | eval_id             | one-based evaluation ID number                |
-      +---------------------+-----------------------------------------------+
+   +---------------------+-----------------------------------------------+
+   | **Entry Name**      | **Description**                               |
+   +=====================+===============================================+
+   | variables           | total number of variables                     |
+   +---------------------+-----------------------------------------------+
+   | functions           | number of functions (responses, constraints)  |
+   +---------------------+-----------------------------------------------+
+   | metadata            | number of metadata fields                     |
+   +---------------------+-----------------------------------------------+
+   | variable_labels     | variable labels in input specification order  |
+   +---------------------+-----------------------------------------------+
+   | function_labels     | function (response, constraint) labels        |
+   +---------------------+-----------------------------------------------+
+   | metadata_labels     | metadata field labels                         |
+   +---------------------+-----------------------------------------------+
+   | cv                  | list/array of continuous variable values      |
+   +---------------------+-----------------------------------------------+
+   | cv_labels           | continuous variable labels                    |
+   +---------------------+-----------------------------------------------+
+   | div                 | list/array of discrete integer variable       |
+   |                     | values                                        |
+   +---------------------+-----------------------------------------------+
+   | div_labels          | discrete integer variable labels              |
+   +---------------------+-----------------------------------------------+
+   | dsv                 | list of discrete string variable values       |
+   |                     | (NumPy not supported)                         |
+   +---------------------+-----------------------------------------------+
+   | dsv_labels          | discrete string variable labels               |
+   +---------------------+-----------------------------------------------+
+   | drv                 | list/array of discrete real variable values   |
+   +---------------------+-----------------------------------------------+
+   | drv_labels          | discrete real variable labels                 |
+   +---------------------+-----------------------------------------------+
+   | asv                 | active set vector                             |
+   +---------------------+-----------------------------------------------+
+   | dvv                 | derivative variables vector                   |
+   |                     | (list of one-based variable IDs)              |
+   +---------------------+-----------------------------------------------+
+   | analysis_components | list of analysis components strings           |
+   +---------------------+-----------------------------------------------+
+   | eval_id             | one-based evaluation ID number                |
+   +---------------------+-----------------------------------------------+
 
 .. _`advint:scilab`:
 
@@ -627,7 +621,7 @@ as requested by Dakota.
 
 The ``scilab_rosen_bb_simulator.sh`` is a short shell driver script,
 like that described in
-Section `[interfaces:building] <#interfaces:building>`__, that Dakota
+Section :ref:`interfaces:building`, that Dakota
 executes to perform each function evaluation. Dakota passes the names of
 the parameters and results files to this script as ``$argv[1]`` and
 ``$argv[2]``, respectively. The ``scilab_rosen_bb_simulator.sh`` is divided
@@ -654,7 +648,7 @@ then invokes the specified Scilab analysis_driver directly. In Scilab,
 this structure is an mlist
 (http://help.scilab.org/docs/5.3.2/en_US/mlist.html), with the same
 fields as in the Matlab
-interface `[advint:figure:matlabparams] <#advint:figure:matlabparams>`__,
+interface :numref:`advint:figure:matlabparams`,
 with the addition of a field ``dakota_type``, which is used to validate
 the names of fields in the data structure.
 

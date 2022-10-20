@@ -93,12 +93,12 @@ Surrogate quality metrics at build (training) points for response_fn_1:
              max_abs  1.0764853114e+03
             rsquared  9.9204163247e-01
 Surrogate quality metrics (5-fold CV) for response_fn_1:
-         sum_squared    6.0224761973e+07
-        mean_squared    6.0224761973e+05
-   root_mean_squared    7.7604614536e+02
-             sum_abs    6.0298213347e+04
-            mean_abs    6.0298213347e+02
-             max_abs    2.5222313408e+03
+         sum_squared    7.5212315960e+07
+        mean_squared    7.5212315960e+05
+   root_mean_squared    8.6725034425e+02
+             sum_abs    6.9513906853e+04
+            mean_abs    6.9513906853e+02
+             max_abs    2.3031384328e+03
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_1:
          sum_squared    5.6458394067e+07
@@ -125,12 +125,12 @@ Surrogate quality metrics at build (training) points for response_fn_2:
              max_abs  1.0076469659e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_2:
-         sum_squared    4.1060525012e-17
-        mean_squared    4.1060525012e-19
-   root_mean_squared    6.4078487039e-10
-             sum_abs    4.6730929031e-08
-            mean_abs    4.6730929031e-10
-             max_abs    2.1671249240e-09
+         sum_squared    5.7414778154e-17
+        mean_squared    5.7414778154e-19
+   root_mean_squared    7.5772539982e-10
+             sum_abs    5.6578881713e-08
+            mean_abs    5.6578881713e-10
+             max_abs    2.2609669692e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
          sum_squared    4.0362752645e-17
@@ -157,12 +157,12 @@ Surrogate quality metrics at build (training) points for response_fn_3:
              max_abs  1.1688530144e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_3:
-         sum_squared    6.2882219250e-17
-        mean_squared    6.2882219250e-19
-   root_mean_squared    7.9298309724e-10
-             sum_abs    6.4469678782e-08
-            mean_abs    6.4469678782e-10
-             max_abs    1.9086143915e-09
+         sum_squared    7.9125139201e-17
+        mean_squared    7.9125139201e-19
+   root_mean_squared    8.8952312618e-10
+             sum_abs    6.6814057255e-08
+            mean_abs    6.6814057255e-10
+             max_abs    2.8583826417e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
          sum_squared    6.2047503985e-17
@@ -381,10 +381,10 @@ Surrogate quality metrics at build (training) points for response_fn_1:
              max_abs  1.0764853114e+03
             rsquared  9.9204163247e-01
 Surrogate quality metrics (5-fold CV) for response_fn_1:
-         sum_squared    6.0224761973e+07
-   root_mean_squared    7.7604614536e+02
-            mean_abs    6.0298213347e+02
-             max_abs    2.5222313408e+03
+         sum_squared    7.5212315960e+07
+   root_mean_squared    8.6725034425e+02
+            mean_abs    6.9513906853e+02
+             max_abs    2.3031384328e+03
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics at challenge (test) points for response_fn_1:
          sum_squared  1.4598417091e+07
@@ -399,10 +399,10 @@ Surrogate quality metrics at build (training) points for response_fn_2:
              max_abs  1.0076469659e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_2:
-         sum_squared    4.1060525012e-17
-   root_mean_squared    6.4078487039e-10
-            mean_abs    4.6730929031e-10
-             max_abs    2.1671249240e-09
+         sum_squared    5.7414778154e-17
+   root_mean_squared    7.5772539982e-10
+            mean_abs    5.6578881713e-10
+             max_abs    2.2609669692e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics at challenge (test) points for response_fn_2:
          sum_squared  1.0715915864e-17
@@ -417,10 +417,10 @@ Surrogate quality metrics at build (training) points for response_fn_3:
              max_abs  1.1688530144e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_3:
-         sum_squared    6.2882219250e-17
-   root_mean_squared    7.9298309724e-10
-            mean_abs    6.4469678782e-10
-             max_abs    1.9086143915e-09
+         sum_squared    7.9125139201e-17
+   root_mean_squared    8.8952312618e-10
+            mean_abs    6.6814057255e-10
+             max_abs    2.8583826417e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics at challenge (test) points for response_fn_3:
          sum_squared  1.6296807608e-17
@@ -593,12 +593,12 @@ Surrogate quality metrics at build (training) points for response_fn_1:
              max_abs  3.0407542548e+02
             rsquared  9.2122736551e-01
 Surrogate quality metrics (5-fold CV) for response_fn_1:
-         sum_squared    4.1497978934e+05
-        mean_squared    4.1497978934e+03
-   root_mean_squared    6.4418924963e+01
-             sum_abs    4.0163038761e+03
-            mean_abs    4.0163038761e+01
-             max_abs    4.4555740701e+02
+         sum_squared    4.6036740772e+05
+        mean_squared    4.6036740772e+03
+   root_mean_squared    6.7850380081e+01
+             sum_abs    4.3137600930e+03
+            mean_abs    4.3137600930e+01
+             max_abs    4.5995041303e+02
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics at challenge (test) points for response_fn_1:
          sum_squared  4.6288413246e+09
@@ -617,12 +617,12 @@ Surrogate quality metrics at build (training) points for response_fn_2:
              max_abs  1.4188732411e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_2:
-         sum_squared    1.3156990850e-17
-        mean_squared    1.3156990850e-19
-   root_mean_squared    3.6272566563e-10
-             sum_abs    2.3442124516e-08
-            mean_abs    2.3442124516e-10
-             max_abs    1.5156242927e-09
+         sum_squared    1.3425703352e-17
+        mean_squared    1.3425703352e-19
+   root_mean_squared    3.6641101720e-10
+             sum_abs    2.4107641635e-08
+            mean_abs    2.4107641635e-10
+             max_abs    1.5376424578e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics at challenge (test) points for response_fn_2:
          sum_squared  2.4052595052e-17
@@ -641,12 +641,12 @@ Surrogate quality metrics at build (training) points for response_fn_3:
              max_abs  1.8664347845e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_3:
-         sum_squared    3.9806158970e-17
-        mean_squared    3.9806158970e-19
-   root_mean_squared    6.3092122305e-10
-             sum_abs    3.8688297556e-08
-            mean_abs    3.8688297556e-10
-             max_abs    2.2557264945e-09
+         sum_squared    3.8386336163e-17
+        mean_squared    3.8386336163e-19
+   root_mean_squared    6.1956707597e-10
+             sum_abs    3.7445875858e-08
+            mean_abs    3.7445875858e-10
+             max_abs    2.3947361871e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics at challenge (test) points for response_fn_3:
          sum_squared  3.5598321263e-17

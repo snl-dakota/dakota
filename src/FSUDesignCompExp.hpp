@@ -16,6 +16,7 @@
 #define FSU_DESIGN_COMP_EXP_H
 
 #include "DakotaPStudyDACE.hpp"
+#include "dakota_mersenne_twister.hpp"
 
 namespace Dakota {
 
@@ -107,6 +108,10 @@ private:
   IntVector primeBase;
 
   // CVT data
+
+  // Using Boost MT since need it anyway for unif int dist
+  /// RNG to persist for varying pattern
+  boost::mt19937 rng;
 
   /// the user seed specification for the random number generator
   /// (allows repeatable results)

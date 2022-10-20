@@ -11,6 +11,7 @@ Dakota
 .. toctree::
    :maxdepth: 1
    
+   releasenotes/next
    releasenotes/616
    releasenotes/615
    releasenotes/614
@@ -54,6 +55,7 @@ Dakota GUI
 .. toctree::
    :maxdepth: 1
    
+   releasenotes-gui/617
    releasenotes-gui/616
    releasenotes-gui/615
    releasenotes-gui/614

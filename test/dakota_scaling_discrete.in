@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # Test protecting bug fix for scaling in presence of discrete variables
 # (Not a test for discrete variable scaling as isn't supported)
 #

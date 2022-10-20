@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 method,
   sampling
     model_pointer = 'SUBSPACE'

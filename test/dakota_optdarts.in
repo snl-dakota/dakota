@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE - dakota_optdarts.in
 
 environment,

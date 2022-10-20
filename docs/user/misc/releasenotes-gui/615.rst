@@ -4,6 +4,9 @@
 Version 6.15 -  Lakeside Limbo (2021/11)
 """"""""""""""""""""""""""""""""""""""""
 
+.. image:: img/DakotaGui_LakesideLimbo.png
+   :alt: Dakota GUI 6.15 splash screen
+
 **Multi-level / Multi-fidelity Editor (Experimental)**
 
 - New Dakota input file editor tailored to working with multi-level / multi-fidelity studies.  Allows for easy manipulation of model hierarchies and solution level costs.

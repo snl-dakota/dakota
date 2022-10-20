@@ -4,6 +4,9 @@
 Version 6.13 - Jungle Japes (2020/11)
 """""""""""""""""""""""""""""""""""""
 
+.. image:: img/DakotaGui_JungleJapes.png
+   :alt: Dakota GUI 6.13 splash screen
+
 **Chartreuse**
 
 - New "Sandbox View" for fast visualizations of generic data using Chartreuse.

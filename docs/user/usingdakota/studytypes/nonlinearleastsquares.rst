@@ -37,7 +37,7 @@ assumption that the residuals tend towards zero at the solution. As a
 result, residual function value and gradient information (first-order
 information) is sufficient to define the value, gradient, and
 approximate Hessian of the sum-of-squares objective function
-(second-order information). See Section `1.2 <#nls:formulations>`__ for
+(second-order information). See :ref:`formulations <nls:formulations>` for
 additional details on this approximation.
 
 In practice, least-squares solvers will tend to be significantly more
@@ -79,8 +79,7 @@ of a sum of the squares objective function for problems of the form:
 where :math:`f(\mathbf{x})` is the objective function to be minimized
 and :math:`T_i(\mathbf{x})` is the i\ :math:`^{\mathrm{th}}` least
 squares term. The bound, linear, and nonlinear constraints are the same
-as described previously for
-(`[opt:formulations:equation01] <#opt:formulations:equation01>`__).
+as described previously for  :math:numref:`optimformulation`, Optimization Formulations.
 Specialized least squares algorithms are generally based on the
 Gauss-Newton approximation. When differentiating :math:`f(\mathbf{x})`
 twice, terms of :math:`T_i(\mathbf{x})T''_i(\mathbf{x})` and
@@ -102,11 +101,11 @@ at a particular location and/or time step, i.e.:
 
 .. math::
 
-   T_i(\mathbf{x}) = R_i(\mathbf{x})-\overline{R_i}
+   T_i(\mathbf{x}) = R_i(\mathbf{x})-\bar{R_i}
      \label{nls:equation03}
 
 where :math:`R_i(\mathbf{x})` is the response quantity predicted by the
-model and :math:`\overline{R_i}` is the corresponding experimental data.
+model and :math:`\bar{R_i}` is the corresponding experimental data.
 In this case, :math:`\mathbf{x}` would have the meaning of model
 parameters which are not precisely known and are being calibrated to
 match available data. This class of problem is known by the terms
@@ -125,7 +124,7 @@ residuals, and offers options for instead returning the simulation
 output to Dakota together with a separate ``calibration_data`` file,
 from which residuals will be calculated. Any linear or nonlinear
 constraints are handled in an identical way to that of optimization (see
-Section `[opt:formulations] <#opt:formulations>`__; note that neither
+Section Optimization Formulations  :math:numref:`optimformulation` ; note that neither
 Gauss-Newton nor NLSSOL require any constraint augmentation and NL2SOL
 supports neither linear nor nonlinear constraints). Gradients of the
 least-squares terms and nonlinear constraints are required and should be
@@ -133,7 +132,7 @@ specified using either ``numerical_gradients``, ``analytic_gradients``,
 or ``mixed_gradients``. Since explicit second derivatives are not used
 by the least-squares methods, the ``no_hessians`` specification should
 be used. Dakota’s scaling options, described in
-Section `[opt:additional:scaling] <#opt:additional:scaling>`__ can be
+Section Optimization with User-specified or Automatic Scaling, :numref:`opt:additional:scaling:example:figure01` can be
 used on least-squares problems, using the ``calibration_term_scales``
 keyword to scale least-squares residuals, if desired.
 
@@ -155,9 +154,9 @@ Gauss-Newton
 
 Dakota’s Gauss-Newton algorithm consists of combining an implementation
 of the Gauss-Newton Hessian approximation (see
-Section `1.2 <#nls:formulations>`__) with full Newton optimization
+Section  :ref:`Nonlinear Least Squares Fomulations <nls:formulations>`) with full Newton optimization
 algorithms from the OPT++ package :cite:p:`MeOlHoWi07` (see
-Section `[opt:methods:gradient:constrained] <#opt:methods:gradient:constrained>`__).
+Section  :ref:`Methods for Constrained Problems <opt:methods:gradient:constrained>`).
 The exact objective function value, exact objective function gradient,
 and the approximate objective function Hessian are defined from the
 least squares term values and gradients and are passed to the
@@ -181,7 +180,7 @@ specification. An example specification follows:
                convergence_tolerance = 1e-4
                output debug
 
-Refer to the Dakota Reference Manual :cite:p:`RefMan` for more
+Refer to the Dakota Reference Manual :ref:`Keyword Reference <keyword-reference-area>` for more
 detail on the input commands for the Gauss-Newton algorithm.
 
 The Gauss-Newton algorithm is gradient-based and is best suited for
@@ -202,10 +201,10 @@ The NLSSOL algorithm is bundled with NPSOL. It uses an SQP-based
 approach to solve generally-constrained nonlinear least-squares
 problems. It periodically employs the Gauss-Newton Hessian approximation
 to accelerate the search. Like the Gauss-Newton algorithm of
-Section `1.4.1 <#nls:solution:gauss>`__, its derivative order is
+Section  :ref:`Gauss-Newton <nls:solution:gauss>`), its derivative order is
 balanced in that it requires only first-order information for the
 least-squares terms and nonlinear constraints. License: commercial; see
-NPSOL `[opt:methods:gradient:constrained] <#opt:methods:gradient:constrained>`__.
+NPSOL   :ref:`Methods for Constrained Problems <opt:methods:gradient:constrained>`.
 
 This approach can be selected using the ``nlssol_sqp`` method
 specification. An example specification follows:
@@ -216,7 +215,7 @@ specification. An example specification follows:
              nlssol_sqp
                convergence_tolerance = 1e-8
 
-Refer to the Dakota Reference Manual :cite:p:`RefMan` for more
+Refer to the Dakota Reference Manual  :ref:`Keyword Reference <keyword-reference-area>` for more
 detail on the input commands for NLSSOL.
 
 .. _`nls:solution:nl2sol`:
@@ -297,7 +296,7 @@ of weights are adjusted during calibration as they would be in
 iteratively re-weighted least squares.) When response scaling is active,
 it is applied after error variance weighting and before ``weights``
 application. The ``calibration_terms`` keyword documentation in the
-Dakota Reference Manual :cite:p:`RefMan` has more detail about
+Dakota Reference Manual  :ref:`Keyword Reference <keyword-reference-area>` has more detail about
 weighting and scaling of the residual terms.
 
 .. _`nls:examples`:
@@ -307,7 +306,7 @@ Examples
 
 Both the Rosenbrock and textbook example problems can be formulated as
 nonlinear least-squares problems. Refer to
-Chapter `[additional] <#additional>`__ for more information on these
+Chapter 20 in the Dakota User's Manual, or :ref:`Additional Examples <additional>` for more information on these
 formulations.
 
 ..
@@ -334,36 +333,43 @@ formulations.
    %\end{figure}
 
 
-Figure `[nls:figure02] <#nls:figure02>`__ shows an excerpt from the
+Figure  :numref:`nls:nl2sol:example1:figure01` shows an excerpt from the
 output obtained when running NL2SOL on a five-dimensional problem. Note
 that the optimal parameter estimates are printed, followed by the
 residual norm and values of the individual residual terms, followed by
 the confidence intervals on the parameters.
 
-::
 
-   <<<<< Iterator nl2sol completed.
-   <<<<< Function evaluation summary: 27 total (26 new, 1 duplicate)
-   <<<<< Best parameters          =
+.. code-block::
+   :caption: Dakota results for the multiobjective optimization example.
+   :name:  nls:nl2sol:example1:figure01
+
+      ------------------------------
+      
+      <<<<< Iterator nl2sol completed.
+      <<<<< Function evaluation summary: 27 total (26 new, 1 duplicate)
+      <<<<< Best parameters          =
                          3.7541004764e-01 x1
                          1.9358463401e+00 x2
                         -1.4646865611e+00 x3
                          1.2867533504e-02 x4
                          2.2122702030e-02 x5
-   <<<<< Best residual norm =  7.3924926090e-03; 0.5 * norm^2 =  2.7324473487e-05
-   <<<<< Best residual terms      =
+      <<<<< Best residual norm =  7.3924926090e-03; 0.5 * norm^2 =  2.7324473487e-05
+      <<<<< Best residual terms      =
                         -2.5698266189e-03
                          4.4759880011e-03
                          9.9223430643e-04
                         -1.0634409194e-03
 
-   ...
+      ...
 
-   Confidence Interval for x1 is [  3.7116510206e-01,  3.7965499323e-01 ]
-   Confidence Interval for x2 is [  1.4845485507e+00,  2.3871441295e+00 ]
-   Confidence Interval for x3 is [ -1.9189348458e+00, -1.0104382765e+00 ]
-   Confidence Interval for x4 is [  1.1948590669e-02,  1.3786476338e-02 ]
-   Confidence Interval for x5 is [  2.0289951664e-02,  2.3955452397e-02 ]
+      Confidence Interval for x1 is [  3.7116510206e-01,  3.7965499323e-01 ]
+      Confidence Interval for x2 is [  1.4845485507e+00,  2.3871441295e+00 ]
+      Confidence Interval for x3 is [ -1.9189348458e+00, -1.0104382765e+00 ]
+      Confidence Interval for x4 is [  1.1948590669e-02,  1.3786476338e-02 ]
+      Confidence Interval for x5 is [  2.0289951664e-02,  2.3955452397e-02 ]
+
+
 
 The analysis driver script (the script being driven by Dakota) has to
 perform several tasks in the case of parameter estimation using
@@ -408,7 +414,8 @@ a measurement variance associated with each calibration term) or
 ``scalar`` (the user specifies one measurement variance per calibration
 term). For field calibration terms, the ``variance_type`` can also be
 ``diagonal`` or ``matrix``. These are explained in more detail in the
-Reference manual. Additionally, there is sometimes the need to specify
+Reference manual. See the :ref:`Keyword Reference <keyword-reference-area>`
+for more information. Additionally, there is sometimes the need to specify
 configuration variables. These are often used in Bayesian calibration
 analysis. These are specified as ``num_config_variables``. If the user
 specifies a positive number of configuration variables, it is expected
@@ -431,7 +438,7 @@ results, etc. In all of these cases, one can pose the calibration
 problem as an optimization problem that can be solved by any of Dakota’s
 optimizers. In this situation, when applying an general optimization
 solver to a calibration problem, the guidelines in
-Table `[opt:usage] <#opt:usage>`__ still apply.
+Guide :numref:`opt:usage:guideopt` still apply.
 
 In some cases, it will be better to use a nonlinear least-squares method
 instead of a general optimizer to determine optimal parameter values

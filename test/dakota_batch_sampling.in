@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s2: Restart=write
 #@ s3: Restart=read DependsOn=s2
 #

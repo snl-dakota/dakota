@@ -27,8 +27,10 @@
 #include "SNLLOptimizer.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "LHSDriver.hpp"
+// Using Boost MT since need it anyway for dist
 #include "dakota_mersenne_twister.hpp"
 #include "boost/random.hpp"
+// Using Boost dist for cross-platform stability
 #include "boost/random/normal_distribution.hpp"
 #include "boost/random/variate_generator.hpp"
 #include "boost/generator_iterator.hpp"

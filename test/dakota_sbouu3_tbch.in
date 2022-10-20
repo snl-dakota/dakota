@@ -1,4 +1,5 @@
 #@ *: DakotaConfig=HAVE_DOT
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE: dakota_sbouu3_tbch.in
 #
 # OUU with surrogates: nested containing surrogate

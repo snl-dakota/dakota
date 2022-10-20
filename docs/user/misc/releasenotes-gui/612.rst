@@ -4,6 +4,9 @@
 Version 6.12 - Ice Age Alley (2020/06)
 """"""""""""""""""""""""""""""""""""""
 
+.. image:: img/DakotaGui_IceAgeAlley.png
+   :alt: Dakota GUI 6.12 splash screen
+
 **Chartreuse Plotting**
 
 - New "relative threshold" feature allows you to define graph color scales on a 0-100 percentage scale.

@@ -22,7 +22,6 @@
 #include "DataResponses.hpp"
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/tracking.hpp>
-#include <boost/shared_ptr.hpp>
 
 namespace Dakota {
 
@@ -293,7 +292,7 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  boost::shared_ptr<SharedResponseDataRep> srdRep;
+  std::shared_ptr<SharedResponseDataRep> srdRep;
 };
 
 

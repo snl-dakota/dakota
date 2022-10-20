@@ -1,5 +1,6 @@
 #@ *: Label=Experimental
 #@ *: DakotaConfig=HAVE_QUESO
+#@ s*: Label=FastTest
 #@ s0: ReqFiles=dakota_discrepancy.dat
 #@ s1: ReqFiles=dakota_discrepancy.dat
 #@ s2: ReqFiles=dakota_discrepancy.dat

@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s0: UserMan=rosen_multidim
 #@ s1: UserMan=rosen_ps_vector
 #@ s2: UserMan=rosen_grad_opt

@@ -97,7 +97,7 @@ int main(int argc, char** argv)
   }
   */
 
-  // random number generation (Boost mersenne_twister) with fixed seed
+  // random number generation (mersenne_twister) with fixed seed
   // for repeatability
   namespace bran = boost::random;
   bran::mt19937 generator(41u);

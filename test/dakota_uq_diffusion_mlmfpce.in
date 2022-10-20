@@ -1,4 +1,3 @@
-#@ s*: Label=FastTest
 #@ s*: TimeoutAbsolute=3600
 #@ s*: TimeoutDelay=1200
 

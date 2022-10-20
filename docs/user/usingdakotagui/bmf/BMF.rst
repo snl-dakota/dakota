@@ -6,14 +6,6 @@ Basic Model Format (BMF)
 
 Basic Model Format files (that is, files with a BMF extension) allow an analyst to define input parameters and output responses for black-box simulation models.
 
-A BMF file is a good starting point for many different operations in Dakota GUI, because the BMF format is recognized by many different tools that require you to provide a definition of input parameters and output responses:
-
-- :ref:`"Dakota Study" Wizard <wizards-newdakotastudy>`
-- :ref:`"Markup File" Tool <gui-context-tools-markup>`
-- :ref:`"Recognize as Analysis Driver" Tool <gui-context-tools-recognize-driver>`
-- :ref:`"Script-Based Dakota Driver" Wizard <wizards-scriptdriver-main>`
-- :ref:`"Workflow-Based Dakota Driver" Wizard <wizards-newworkflowdriver-main>`
-
 .. note::
    Before beginning, an analyst is assumed to have some *a priori* knowledge about the black-box simulation model of interest, specifically with regards to what
    sorts of input parameters it receives, and what output results to look at.
@@ -96,3 +88,15 @@ The responses tab of the editor is a mirror of the variables tab:
 
 .. image:: img/NewDakotaStudy_SimModel_6.png
    :alt: The responses editor
+
+Next Steps
+----------
+
+A BMF file is a good starting point for many different operations in Dakota GUI, because the BMF format is recognized
+by many different tools that require you to provide a definition of input parameters and output responses:
+
+- :ref:`"Dakota Study" Wizard <wizards-newdakotastudy>`
+- :ref:`"Markup File" Tool <gui-context-tools-markup>`
+- :ref:`"Recognize as Analysis Driver" Tool <gui-context-tools-recognize-driver>`
+- :ref:`"Script-Based Dakota Driver" Wizard <wizards-scriptdriver-main>`
+- :ref:`"Workflow-Based Dakota Driver" Wizard <wizards-newworkflowdriver-main>`

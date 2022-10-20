@@ -113,9 +113,10 @@ int main(int argc, char** argv)
   double y = vars[Y]; // vertical load
 
 #ifdef RANDOM_DURATION
-  srand ( (unsigned int) (time(NULL)/y) );
-  std::this_thread::sleep_for
-    (std::chrono::seconds((int)(10.*((double)rand()/RAND_MAX))));
+  std::random_device rd;
+  std::mt19937 rng( (std::mt19937::result_type) ( (double)rd() / y ) );
+  std::uniform_int_distribution<> unif_int(0, 10);
+  std::this_thread::sleep_for(std::chrono::seconds(unif_int(rng)));
 #endif // RANDOM_DURATION
 
   // allow f,c1,c2 (optimization) or just c1,c2 (calibration)

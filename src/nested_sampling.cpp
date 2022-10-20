@@ -134,7 +134,7 @@ void LejaSampler::get_candidate_samples( int num_dims, int num_samples, int seed
   boost::mt19937 rng;
   if (seed)
     rng.seed(seed);
-  boost::uniform_real<double> uniform_sampler(0.,PI);
+  boost::random::uniform_real_distribution<double> uniform_sampler(0.,PI);
   Pecos::util::reshape( candidate_samples, num_dims, num_samples );
   for (int j=0; j<num_samples; j++)
     for (int i=0; i<num_dims; i++)
