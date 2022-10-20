@@ -20,9 +20,9 @@ enabled by the model recursion capabilities described in the page :ref:`Models <
 ..
    TODO:
 
-   %It was driven by the observed need for ``meta-optimization'' and other 
-   %high level systems analysis procedures in real-world engineering 
-   %design problems. 
+   %It was driven by the observed need for ``meta-optimization'' and other
+   %high level systems analysis procedures in real-world engineering
+   %design problems.
    
    %When these model recursion specifications are sufficient to completely
    %describe a multi-iterator, multi-model solution approach, then a
