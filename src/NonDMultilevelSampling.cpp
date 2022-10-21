@@ -2047,7 +2047,7 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
 
 void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
 {
-  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
+  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "   Online";
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
   switch (pilotMgmtMode) {

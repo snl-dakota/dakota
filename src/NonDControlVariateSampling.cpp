@@ -946,7 +946,7 @@ void NonDControlVariateSampling::print_variance_reduction(std::ostream& s)
   Real     avg_mc_est_var = average(mc_est_var),
     avg_budget_mc_est_var = average(varH) / proj_equiv_hf;
 
-  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
+  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "   Online";
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
 

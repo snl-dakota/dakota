@@ -1309,7 +1309,7 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
       << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
       << std::setw(wpp7) << average(estVarIter0) << '\n';
 
-  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "    Final";
+  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "   Online";
   //String method = method_enum_to_string(methodName); // string too verbose
   String method = (methodName == MULTIFIDELITY_SAMPLING) ? " MFMC" : "  ACV";
   // Ordering of averages:
@@ -1320,7 +1320,7 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   // est_var is projected for cases that are not fully iterated/incremented
-  RealVector final_mc_estvar;
+  RealVector final_mc_estvar(numFunctions, false);
   //compute_mc_estimator_variance(varH, N_H_actual, final_mc_estvar);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     final_mc_estvar[qoi] = varH[qoi] / (N_H_actual[qoi] + deltaNActualHF);

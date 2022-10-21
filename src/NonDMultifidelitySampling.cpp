@@ -1299,7 +1299,7 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
       mc_est_var[qoi] = varH[qoi] / (N_H_actual[qoi] + deltaNActualHF);
     Real avg_mc_est_var        = average(mc_est_var),
          avg_budget_mc_est_var = average(varH) / proj_equiv_hf;
-    String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
+    String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"   Online";
     s << "  " << type << "   MC (" << std::setw(5)
       << (size_t)std::floor(average(N_H_actual) + deltaNActualHF + .5)
       << " HF samples): " << std::setw(wpp7) << avg_mc_est_var << "\n  "

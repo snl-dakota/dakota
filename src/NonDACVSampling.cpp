@@ -120,6 +120,8 @@ void NonDACVSampling::approximate_control_variate()
     shared_increment(mlmfIter); // spans ALL models, blocking
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, N_H_actual);//, N_LL);
+    N_H_alloc += (backfillFailures && mlmfIter) ?
+      one_sided_delta(N_H_alloc, avg_hf_target) : numSamples;
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
@@ -229,6 +231,7 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 		      sum_LH, sum_HH, N_H_actual);//, N_LL);
+  N_H_alloc += numSamples;
   increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,equivHFEvals);
   // allow pilot to vary for C vs c
 
@@ -270,6 +273,7 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 		      sum_LH, sum_HH, N_H_actual);//, N_LL);
+  N_H_alloc += numSamples;
   if (onlineCost) recover_online_cost(sequenceCost);
   increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,equivHFEvals);
   // allow pilot to vary for C vs c

@@ -1963,7 +1963,7 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
     NonDControlVariateSampling::print_variance_reduction(s); break;
   default: {
     Real avg_mlmc_estvar0, avg_budget_mc_estvar;
-    String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"    Final";
+    String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"   Online";
     size_t wpp7 = write_precision + 7;
     s << "<<<<< Variance for mean estimator:\n";
     switch (pilotMgmtMode) {
