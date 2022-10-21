@@ -608,12 +608,16 @@ multilevel_control_variate_mc_offline_pilot()
   RealMatrix Lambda_pilot, var_YH_pilot;
   RealVectorArray eval_ratios_pilot;
 
+  size_t lev, num_hf_lev = iteratedModel.truth_model().solution_levels();
   unsigned short group, lf_form = 0, hf_form = NLevActual.size() - 1;// extremes
   SizetArray&    N_alloc_lf =  NLevAlloc[lf_form];
   SizetArray&    N_alloc_hf =  NLevAlloc[hf_form];
   Sizet2DArray& N_actual_lf = NLevActual[lf_form];
   Sizet2DArray& N_actual_hf = NLevActual[hf_form];
-  SizetArray N_alloc_pilot;  Sizet2DArray N_actual_pilot;
+  SizetArray N_alloc_pilot;  Sizet2DArray N_actual_pilot(num_hf_lev);
+  N_alloc_pilot.assign(num_hf_lev, 0);
+  for (lev=0; lev<num_hf_lev; ++lev)
+    N_actual_pilot[lev].assign(numFunctions, 0);
 
   // -----------------------------------------
   // Initial loop for offline (overkill) pilot
@@ -624,8 +628,7 @@ multilevel_control_variate_mc_offline_pilot()
   // ----------------------------------------------------------
   // Evaluate online sample profile computed from offline pilot
   // ----------------------------------------------------------
-  size_t qoi, lev, num_hf_lev = hf_cost.length(),
-    num_cv_lev = std::min(num_hf_lev, (size_t)lf_cost.length());
+  size_t qoi, num_cv_lev = std::min(num_hf_lev, (size_t)lf_cost.length());
   Real lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
   IntRealMatrixMap sum_Ll, sum_Llm1, sum_Ll_refined, sum_Llm1_refined, sum_Hl,
     sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1,
@@ -784,7 +787,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     { lf_accum_cost.size(num_cv_lev); lf_num_cost.assign(num_cv_lev, 0); }
 
   eval_ratios.resize(num_cv_lev);
-  N_actual.resize(num_hf_lev);  N_alloc.resize(num_hf_lev);
+  //N_actual.resize(num_hf_lev);  N_alloc.resize(num_hf_lev);
   hf_targets.sizeUninitialized(num_hf_lev);
   Lambda.shapeUninitialized(numFunctions, num_cv_lev);
   var_YH.shapeUninitialized(numFunctions, num_hf_lev);
@@ -811,11 +814,9 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
   // Initialize for pilot sample
   // > Note: N_actual may (pilot projection) or may not (offline pilot)
   //   be the same as N_hf.  We still use N_hf for computing delta_N_hf.
-  unsigned short group, lf_form = 0, hf_form = num_mf - 1;// 2 models @ extremes
-  //Sizet2DArray& N_actual_lf = NLevActual[lf_form];
-  Sizet2DArray& N_actual_hf = NLevActual[hf_form];
   Sizet2DArray  delta_N_l;
   load_pilot_sample(pilotSamples, NLevActual, delta_N_l);
+  unsigned short group, lf_form = 0, hf_form = num_mf - 1;// 2 models @ extremes
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_form];
 
