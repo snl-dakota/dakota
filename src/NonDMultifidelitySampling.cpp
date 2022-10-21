@@ -408,7 +408,6 @@ projected_increments(const RealVector& hf_targets,
 
   Sizet2DArray N_L_actual;      inflate(N_H_actual, N_L_actual);
   SizetArray   N_L_alloc_proj;  inflate(N_H_alloc,  N_L_alloc_proj);
-  Cout << "projected_increments:\n" << N_H_actual << N_H_alloc << std::endl;
   update_projected_samples(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
 			   N_L_actual, N_L_alloc_proj, delta_N_H_actual,
 			   /*delta_N_L_actual,*/ delta_equiv_hf);

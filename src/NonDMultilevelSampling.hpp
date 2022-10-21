@@ -161,8 +161,9 @@ private:
   /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		       IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
-		       Sizet2DArray& N_pilot, Sizet2DArray& N_online,
-		       SizetArray& N_alloc, SizetArray& delta_N_l,
+		       Sizet2DArray& N_actual_pilot,
+		       Sizet2DArray& N_actual_online, SizetArray& N_alloc_pilot,
+		       SizetArray& N_alloc_online, SizetArray& delta_N_l,
 		       RealMatrix& var_Y, RealMatrix& var_qoi,
 		       RealVector& eps_sq_div_2, bool increment_cost,
 		       bool pilot_estvar);

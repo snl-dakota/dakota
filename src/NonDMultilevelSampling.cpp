@@ -321,7 +321,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations)
     // loop over levels and compute sample increments
     evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
-		    N_l_actual, N_l_actual, N_l_alloc, // pilot is online
+		    N_l_actual, N_l_actual, N_l_alloc, N_l_alloc,// pilot=online
 		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
 
   // Only QOI_STATISTICS requires estimation of moments
@@ -355,15 +355,16 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   IntRealMatrixMap sum_Ql, sum_Qlm1;  IntIntPairRealMatrixMap sum_QlQlm1;
   initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps);
   RealMatrix var_Y, var_qoi;  RealVector eps_sq_div_2;
-  Sizet2DArray N_pilot, N_online;  SizetArray delta_N_l, N_alloc;
+  Sizet2DArray N_actual_pilot, N_actual_online;
+  SizetArray delta_N_l, N_alloc_pilot, N_alloc_online;
 
   // -----------------------------------------
   // Initial loop for offline (overkill) pilot
   // -----------------------------------------
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-  evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
-		  N_pilot, N_online, N_alloc, // pilot is offline
-		  delta_N_l, var_Y, var_qoi, eps_sq_div_2, false, false);
+  evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_actual_pilot,
+		  N_actual_online, N_alloc_pilot, N_alloc_online, delta_N_l,
+		  var_Y, var_qoi, eps_sq_div_2, false, false);
 
   // ----------------------------------------------------------
   // Evaluate online sample profile computed from offline pilot
@@ -384,7 +385,9 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
       numSamples = 2;
     }
     evaluate_ml_sample_increment(step);
-    accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_online[step]);
+    accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
+			N_actual_online[step]);
+    N_alloc_online[step] += numSamples;
     increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, step),
 				 ref_cost, equivHFEvals);
   }
@@ -395,16 +398,16 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   // Only QOI_STATISTICS requires estimation of moments
   if (finalStatsType == QOI_STATISTICS) {
     // roll up moment contributions
-    compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_online);
+    compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_online);
     recover_variance(momentStats, varH);
     // populate finalStatErrors
-    compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_online);
+    compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_online);
   }
-  compute_ml_estimator_variance(var_Y, N_online, estVar);
+  compute_ml_estimator_variance(var_Y, N_actual_online, estVar);
   avgEstVar = average(estVar);
   // post final N_online back to NLevActual (needed for final eval summary)
-  inflate_sequence_samples(N_online, multilev, secondaryIndex, NLevActual);
-  inflate_sequence_samples(N_alloc,  multilev, secondaryIndex, NLevAlloc);
+  inflate_sequence_samples(N_actual_online, multilev,secondaryIndex,NLevActual);
+  inflate_sequence_samples(N_alloc_online,  multilev,secondaryIndex,NLevAlloc);
 }
 
 
@@ -424,7 +427,7 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   // ----------------------
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
   evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
-		  N_actual, N_actual, N_alloc, // pilot is online
+		  N_actual, N_actual, N_alloc, N_alloc, // pilot is online
 		  delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
 
   // ---------------------
@@ -450,8 +453,9 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 void NonDMultilevelSampling::
 evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
-		Sizet2DArray& N_pilot, Sizet2DArray& N_online,
-		SizetArray& N_alloc, SizetArray& delta_N_l, RealMatrix& var_Y,
+		Sizet2DArray& N_actual_pilot, Sizet2DArray& N_actual_online,
+		SizetArray& N_alloc_pilot, SizetArray& N_alloc_online,
+		SizetArray& delta_N_l, RealMatrix& var_Y,
 		RealMatrix& var_qoi, RealVector& eps_sq_div_2,
 		bool increment_cost, bool pilot_estvar)
 {
@@ -470,20 +474,22 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   RealVector agg_est_var0, accumulated_cost;  IntIntPair pr11(1, 1);
   SizetArray num_cost; // counts for online recovery
 
-  // Note: for online and projection modes, N_pilot and N_online are
-  //       the same array; for offline, they are distinct.
-  if (N_pilot.empty()) {
-    N_pilot.resize(numSteps);
+  // Note: for online and projection modes, N_*_pilot and N_*_online
+  //       are the same array; for offline, they are distinct.
+  if (N_actual_pilot.empty()) {
+    N_actual_pilot.resize(numSteps);
     for (step=0; step<numSteps; ++step)
-      N_pilot[step].assign(numFunctions, 0);
+      N_actual_pilot[step].assign(numFunctions, 0);
   }
-  if (N_online.empty()) {
-    N_online.resize(numSteps);
+  if (N_actual_online.empty()) {
+    N_actual_online.resize(numSteps);
     for (step=0; step<numSteps; ++step)
-      N_online[step].assign(numFunctions, 0);
+      N_actual_online[step].assign(numFunctions, 0);
   }
-  if (N_alloc.empty())
-    N_alloc.assign(numSteps, 0);
+  if (N_alloc_pilot.empty())
+    N_alloc_pilot.assign(numSteps, 0);
+  if (N_alloc_online.empty())
+    N_alloc_online.assign(numSteps, 0);
   if (mlmfIter == 0) {
     if (!budget_constrained)
       { agg_est_var0.size(numFunctions); eps_sq_div_2.size(numFunctions); }
@@ -501,19 +507,21 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
       // assign sequence, get samples, export, evaluate
       evaluate_ml_sample_increment(step);
-      accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, N_pilot[step]);
-      increment_alloc_samples(N_alloc[step], NTargetQoI[step]);
+      accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
+			  N_actual_pilot[step]);
+      increment_alloc_samples(N_alloc_pilot[step], NTargetQoI[step]);
       variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
 		    sum_Ql.at(2)[step], sum_QlQlm1.at(pr11)[step],
-		    sum_Qlm1.at(2)[step], N_pilot[step], step, var_Y[step]);
-      aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_pilot,
-				     step, var_qoi);
+		    sum_Qlm1.at(2)[step], N_actual_pilot[step], step,
+		    var_Y[step]);
+      aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1,
+				     N_actual_pilot, step, var_qoi);
 
       if (mlmfIter == 0) {
 	if (onlineCost)
 	  accumulate_paired_online_cost(accumulated_cost, num_cost, step);
 	if (!budget_constrained) // MSE reference is MC applied to HF
-	  aggregate_mse_target_Qsum(var_qoi, N_pilot, step, agg_est_var0);
+	  aggregate_mse_target_Qsum(var_qoi, N_actual_pilot, step,agg_est_var0);
       }
     }
   }
@@ -529,17 +537,18 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   // capture pilot-sample metrics:
   if (mlmfIter == 0) {
     if (pilot_estvar) // initial est var for summary report (not aggregated)
-      compute_ml_estimator_variance(var_Y, N_pilot, estVarIter0);
+      compute_ml_estimator_variance(var_Y, N_actual_pilot, estVarIter0);
     if (!budget_constrained) // set target eps^2 / 2 = estvar0 * rel tol
       set_convergence_tol(agg_est_var0, cost, eps_sq_div_2);
   }
   // update targets based on variance estimates
   if (budget_constrained)
-    compute_sample_allocation_target(var_qoi, cost, N_online,N_alloc,delta_N_l);
+    compute_sample_allocation_target(var_qoi, cost, N_actual_online,
+				     N_alloc_online, delta_N_l);
   else
     compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1, eps_sq_div_2,
-				     var_qoi, cost, N_pilot, N_online, N_alloc,
-				     delta_N_l);
+				     var_qoi, cost, N_actual_pilot,
+				     N_actual_online, N_alloc_online,delta_N_l);
 
   ++mlmfIter;
   Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
@@ -1391,7 +1400,7 @@ void NonDMultilevelSampling::
 compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
 				 const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2_in, 
 				 const RealMatrix& var_qoi, const RealVector& cost, 
-				 const Sizet2DArray& N_pilot, const Sizet2DArray& N_online,
+				 const Sizet2DArray& N_actual_pilot, const Sizet2DArray& N_actual_online,
 				 const SizetArray& N_alloc, SizetArray& delta_N_l)
 {
   const size_t num_steps = var_qoi.numCols(), max_iter = (maxIterations < 0) ? 25 : maxIterations;
@@ -1504,7 +1513,7 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
       initial_point.size(num_steps);
       pilot_samples.size(num_steps);
       for (size_t step = 0; step < num_steps; ++step) {
-        pilot_samples[step] = N_pilot[step][qoi];
+        pilot_samples[step] = N_actual_pilot[step][qoi];
         initial_point[step] = 8. > NTargetQoI(qoi, step) ? 8 : NTargetQoI(qoi, step); 
       }
 
@@ -1803,16 +1812,16 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
     for (size_t step = 0; step < num_steps; ++step) {
       if(allocationTarget == TARGET_MEAN){
 	delta_N_l_qoi(qoi, step) = (backfillFailures) ?
-	  one_sided_delta(N_online[step][qoi], NTargetQoI(qoi, step)) :
+	  one_sided_delta(N_actual_online[step][qoi], NTargetQoI(qoi, step)) :
 	  one_sided_delta(N_alloc[step],       NTargetQoI(qoi, step));
       }else if (allocationTarget == TARGET_VARIANCE || allocationTarget == TARGET_SIGMA || allocationTarget == TARGET_SCALARIZATION){
 	if(max_iter==1){
 	  delta_N_l_qoi(qoi, step) = (backfillFailures) ?
-	    one_sided_delta(N_online[step][qoi], NTargetQoI(qoi, step)) :
+	    one_sided_delta(N_actual_online[step][qoi], NTargetQoI(qoi, step)) :
 	    one_sided_delta(N_alloc[step],       NTargetQoI(qoi, step));
 	}else{
 	  delta_N_l_qoi(qoi, step) = (backfillFailures) ?
-	    std::min(N_online[step][qoi]*3, one_sided_delta(N_online[step][qoi], NTargetQoI(qoi, step))) :
+	    std::min(N_actual_online[step][qoi]*3, one_sided_delta(N_actual_online[step][qoi], NTargetQoI(qoi, step))) :
 	    std::min(N_alloc[step]*3,       one_sided_delta(N_alloc[step],       NTargetQoI(qoi, step)));
 	  delta_N_l_qoi(qoi, step) = delta_N_l_qoi(qoi, step) > 1 ?  
 	    delta_N_l_qoi(qoi, step) * underrelaxation_factor > 1 ?
