@@ -483,7 +483,7 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       N_online[step].assign(numFunctions, 0);
   }
   if (N_alloc.empty())
-    N_alloc.resize(numSteps);
+    N_alloc.assign(numSteps, 0);
   if (mlmfIter == 0) {
     if (!budget_constrained)
       { agg_est_var0.size(numFunctions); eps_sq_div_2.size(numFunctions); }

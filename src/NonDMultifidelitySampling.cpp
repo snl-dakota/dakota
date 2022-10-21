@@ -185,7 +185,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  N_H_actual.assign(numFunctions, 0);
+  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
   // at least 2 samples reqd for variance (and resetting allSamples after pilot)
   numSamples = std::max(one_sided_delta(N_H_actual, hf_targets, 1),(size_t)2);//N_H_actual=0
@@ -193,6 +193,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // As a first cut, don't reuse any of offline pilot for N_H
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
+  N_H_alloc += numSamples;
   increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
 			    equivHFEvals);
 
@@ -230,13 +231,14 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  N_H_actual.assign(numFunctions, 0);
+  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
   // ----------------------------------------------------
   // Evaluate shared increment and increment accumulators
   // ----------------------------------------------------
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
+  N_H_alloc += numSamples;
   if (onlineCost) recover_online_cost(sequenceCost);
   increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
 			    equivHFEvals);
@@ -406,6 +408,7 @@ projected_increments(const RealVector& hf_targets,
 
   Sizet2DArray N_L_actual;      inflate(N_H_actual, N_L_actual);
   SizetArray   N_L_alloc_proj;  inflate(N_H_alloc,  N_L_alloc_proj);
+  Cout << "projected_increments:\n" << N_H_actual << N_H_alloc << std::endl;
   update_projected_samples(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
 			   N_L_actual, N_L_alloc_proj, delta_N_H_actual,
 			   /*delta_N_L_actual,*/ delta_equiv_hf);
