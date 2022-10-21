@@ -182,8 +182,8 @@ void NonDEnsembleSampling::update_final_statistics()
   */
   switch (finalStatsType) {
   case ESTIMATOR_PERFORMANCE:
-    finalStatistics.function_value(avgEstVar,    0);
-    finalStatistics.function_value(equivHFEvals, 1);
+    finalStatistics.function_value(avgEstVar, 0);
+    finalStatistics.function_value(equivHFEvals + deltaEquivHF, 1);
     break;
   case QOI_STATISTICS: // final stats: moments + level mappings
     NonD::update_final_statistics(); break;
