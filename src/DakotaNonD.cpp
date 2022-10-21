@@ -1144,9 +1144,9 @@ print_multilevel_discrepancy_summary(std::ostream& s, const SizetArray& N_samp)
   size_t j, N_unroll, width = write_precision+7, num_lev = N_samp.size(),
     num_discrep = num_lev - 1;
   for (j=0; j<num_lev; ++j) {
-    s << std::setw(width) << N_samp[j] << "  Discrep_lev" << j;
+    s << std::setw(width) << N_samp[j] << "  DeltaQoI_lev" << j;
     N_unroll = (j<num_discrep) ?  N_samp[j] + N_samp[j+1] : N_samp[j];
-    s << std::setw(width) << N_unroll  << "  QoI_lev"     << j << '\n';
+    s << std::setw(width) << N_unroll  << "  QoI_lev"      << j << '\n';
   }
 }
 
