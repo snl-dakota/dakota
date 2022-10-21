@@ -314,17 +314,20 @@ private:
   /// algorithm option for fully asynchronous batch updating of the GP
   bool batchAsynch;
 
-  /// convergence checkers
-  /// tolerance convergence on distance between predicted best-so-far samples
+  // convergence checkers
+
+  /// tolerance on distance between consecutive iterates
   Real distanceTol;
-  /// counter for convergence in EIF
-  unsigned short eifConvergenceCntr;
-  /// limit convergence (compared with counter) of EIF
-  unsigned short eifConvergenceLimit;
-  /// counter for distance in input space
+  /// counter for consecutive iterates with variable distance < distanceTol
   unsigned short distConvergenceCntr;
-  /// limit for distance (compared with counter) in input space
+  /// limit for distance convergence counter
   unsigned short distConvergenceLimit;
+
+  /// counter for consecutive iterates with EIF value < convergenceTol
+  unsigned short eifConvergenceCntr;
+  /// limit for EIF convergence counter
+  unsigned short eifConvergenceLimit;
+
   /// counter for global iteration
   unsigned short globalIterCount;
 };

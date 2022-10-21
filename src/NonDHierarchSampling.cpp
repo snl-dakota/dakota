@@ -53,7 +53,7 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
     md_index, num_md;
   ModelLRevIter ml_rit;
   bool err_flag = false, mlmf = (methodName==MULTILEVEL_MULTIFIDELITY_SAMPLING);
-  NLev.resize(num_mf);
+  NLevActual.resize(num_mf);  NLevAlloc.resize(num_mf);
   costMetadataIndices.resize(num_mf);
   for (i=num_mf-1, ml_rit=ordered_models.rbegin();
        ml_rit!=ordered_models.rend(); --i, ++ml_rit) { // high fid to low fid
@@ -81,10 +81,11 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
       err_flag = true;
     }
 
-    //Sizet2DArray& Nl_i = NLev[i];
-    NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
+    //Sizet2DArray& Nl_i = NLevActual[i];
+    NLevActual[i].resize(num_lev); //Nl_i.resize(num_lev);
     //for (j=0; j<num_lev; ++j)
     //  Nl_i[j].resize(numFunctions); // defer to pre_run()
+    NLevAlloc[i].resize(num_lev);
     costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
     prev_lev = num_lev;
   }

@@ -1310,7 +1310,7 @@ sub parse_test_output {
     # ***********************************************
     # *** UQ sampling/reliability results summary ***
     # ***********************************************
-    if (/^<<<<< (Equivalent number of|Projected number of equivalent) high fidelity evaluations/) {
+    if (/^<<<<< (Equivalent number of|Online number of equivalent|Projected number of equivalent|Incurred cost in equivalent) high fidelity evaluations:/) {
       print;
       print TEST_OUT;
     }

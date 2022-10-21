@@ -38,6 +38,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   pilotMgmtMode(
     problem_db.get_short("method.nond.ensemble_sampling_solution_mode")),
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
+  backfillFailures(false), // inactive option for now
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
@@ -124,7 +125,8 @@ void NonDEnsembleSampling::pre_run()
   // Note: numLHSRuns is interpreted differently here (accumulation of LHS runs
   //       for each execution of ensemble sampler) than for base NonDSampling
   //       (total accumulation of LHS runs)
-  mlmfIter = numLHSRuns = 0;  equivHFEvals = 0.;
+  mlmfIter = numLHSRuns = 0;
+  equivHFEvals = deltaEquivHF = 0.;
   seedSpec = randomSeed = seed_sequence(0); // (re)set seeds to sequence
 }
 
@@ -180,8 +182,8 @@ void NonDEnsembleSampling::update_final_statistics()
   */
   switch (finalStatsType) {
   case ESTIMATOR_PERFORMANCE:
-    finalStatistics.function_value(avgEstVar,    0);
-    finalStatistics.function_value(equivHFEvals, 1);
+    finalStatistics.function_value(avgEstVar, 0);
+    finalStatistics.function_value(equivHFEvals + deltaEquivHF, 1);
     break;
   case QOI_STATISTICS: // final stats: moments + level mappings
     NonD::update_final_statistics(); break;
@@ -205,37 +207,45 @@ void NonDEnsembleSampling::active_set_mapping()
 
 void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
 {
-  if (statsFlag)
-    switch (pilotMgmtMode) {
-    case PILOT_PROJECTION:
-      print_multilevel_evaluation_summary(s, NLev, "Projected"); // *** FOR CONSISTENCY WITH equivHFEvals, SHOULD BE ALLOCATED RATHER THAN RECOVERED ***
-      s << "<<<<< Projected number of equivalent high fidelity evaluations: "
-	<< std::scientific  << std::setprecision(write_precision)
-	<< equivHFEvals << '\n';
-      print_variance_reduction(s);
+  if (!statsFlag)
+    return;
 
-      //s << "\nStatistics based on multilevel sample set:\n";
-      //print_moments(s, "response function",
-      //	      iteratedModel.truth_model().response_labels());
-      //archive_moments();
-      //archive_equiv_hf_evals(equivHFEvals);
-      break;
-    default:
-      // Any offline pilot samples are excluded
-      print_multilevel_evaluation_summary(s, NLev, "Online"); // *** FOR CONSISTENCY WITH equivHFEvals, SHOULD BE ALLOCATED RATHER THAN RECOVERED ***
-      s << "<<<<< Equivalent number of high fidelity evaluations: "
-	<< std::scientific  << std::setprecision(write_precision)
-	<< equivHFEvals << '\n';
-      print_variance_reduction(s);
+  bool pilot_projection = (pilotMgmtMode == PILOT_PROJECTION),
+       discrep_flag     = discrepancy_sample_counts(),
+       cv_projection    = (finalStatsType == ESTIMATOR_PERFORMANCE),
+       projections      = (pilot_projection || cv_projection);
+  String summary_type = (pilot_projection) ? "Projected " : "Online ";
 
-      s << "\nStatistics based on multilevel sample set:\n";
-      //print_statistics(s);
-      print_moments(s, "response function",
-		    iteratedModel.truth_model().response_labels());
-      archive_moments();
-      archive_equiv_hf_evals(equivHFEvals);
-      break;
-    }
+  // Always report allocated, then optionally report actual.
+  // Any offline pilot samples (N_pilot in *_offline()) are excluded.
+  print_multilevel_model_summary(s, NLevAlloc, summary_type + "allocation of",
+				 discrep_flag);
+  Real proj_equiv_hf = equivHFEvals + deltaEquivHF;
+  s << "<<<<< " << summary_type
+    << "number of equivalent high fidelity evaluations: " << std::scientific
+    << std::setprecision(write_precision) << proj_equiv_hf <<'\n';
+  archive_equiv_hf_evals(proj_equiv_hf);
+
+  if (/*faults_detected() ||*/ projections) {
+    // NLevActual includes successful sample accumulations used for stats
+    // equivHFEvals includes incurred cost for evaluations, successful or not
+    print_multilevel_model_summary(s, NLevActual, "Actual accumulated",
+                                   discrep_flag);
+    s << "<<<<< Incurred cost in equivalent high fidelity evaluations: "
+      << std::scientific << std::setprecision(write_precision) << equivHFEvals
+      << '\n';
+    //archive_incurred_equiv_hf_evals(equivHFEvals);
+  }
+
+  print_variance_reduction(s);
+
+  if (!projections) {
+    s << "\nStatistics based on multilevel sample set:\n";
+    //print_statistics(s);
+    print_moments(s, "response function",
+		  iteratedModel.truth_model().response_labels());
+    archive_moments();
+  }
 }
 
 
