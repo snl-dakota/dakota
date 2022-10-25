@@ -196,27 +196,38 @@ protected:
 
   /// print evaluation summary for multilevel sampling across 1D level profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const SizetArray& N_samp);
+					   const SizetArray& N_m);
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const Sizet2DArray& N_samp);
+					   const Sizet2DArray& N_m);
 
-  /// print evaluation summary for multilevel sampling across 1D level profile
+  /// print evaluation summary for multilevel sampling across 1D level
+  /// profile for discrepancy across levels
   void print_multilevel_discrepancy_summary(std::ostream& s,
-					    const SizetArray& N_samp);
+					    const SizetArray& N_m);
+  /// print evaluation summary for multilevel sampling across 1D level
+  /// profile for discrepancy across model forms
+  void print_multilevel_discrepancy_summary(std::ostream& s,
+					    const SizetArray& N_m,
+					    const SizetArray& N_mp1);
   /// print evaluation summary for multilevel sampling across 2D
-  /// level+QoI profile
+  /// level+QoI profile for discrepancy across levels
   void print_multilevel_discrepancy_summary(std::ostream& s,
-					    const Sizet2DArray& N_samp);
+					    const Sizet2DArray& N_m);
+  /// print evaluation summary for multilevel sampling across 2D
+  /// level+QoI profile for discrepancy across model forms
+  void print_multilevel_discrepancy_summary(std::ostream& s,
+					    const Sizet2DArray& N_m,
+					    const Sizet2DArray& N_mp1);
 
   /// print evaluation summary for multilevel sampling across 2D model+level
-  /// profile (allocations) or 3D model+level+QoI profile (successful)
+  /// profile (allocations) or 3D model+level+QoI profile (actual)
   template <typename ArrayType>
   void print_multilevel_model_summary(std::ostream& s,
 				      const std::vector<ArrayType>& N_samp,
 				      String type,// = "Final");
-				      bool discrep_flag);
+				      short seq_type, bool discrep_flag);
 
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
@@ -654,7 +665,7 @@ inflate_sequence_samples(const ArrayType& N_l, bool multilev,
 template <typename ArrayType> void NonD::
 print_multilevel_model_summary(std::ostream& s,
 			       const std::vector<ArrayType>& N_samp,
-			       String type, bool discrep_flag)
+			       String type, short seq_type, bool discrep_flag)
 {
   // Sizet3DArray used for successful sample counts --> Nsamp[i] binds with 2D
 
@@ -668,6 +679,7 @@ print_multilevel_model_summary(std::ostream& s,
     else              print_multilevel_evaluation_summary(s,  N_samp[0]);
   }
   else {
+    bool mf_seq = (seq_type == Pecos::MODEL_FORM_SEQUENCE);
     ModelList& sub_models = iteratedModel.subordinate_models(false);
     ModelLIter     m_iter = sub_models.begin();
     s << "<<<<< " << type << " samples per model form:\n";
@@ -676,8 +688,14 @@ print_multilevel_model_summary(std::ostream& s,
       if (m_iter != sub_models.end())
 	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
       else s << i+1 << ":\n";
-      if (discrep_flag) print_multilevel_discrepancy_summary(s, N_samp[i]);
-      else              print_multilevel_evaluation_summary(s,  N_samp[i]);
+      if (discrep_flag) {
+	if (mf_seq && i+1 < num_mf) // *** TO DO: pass secondary index (and if SZ_MAX, then need active index).  Need to cover case where there are multiple levels for an MF-precedence case that uses only the active level(s)
+	  print_multilevel_discrepancy_summary(s, N_samp[i], N_samp[i+1]);
+	else
+	  print_multilevel_discrepancy_summary(s, N_samp[i]);
+      }
+      else
+	print_multilevel_evaluation_summary(s,  N_samp[i]);
     }
   }
 }

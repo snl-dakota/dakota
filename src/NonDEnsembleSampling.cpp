@@ -219,7 +219,7 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   // Always report allocated, then optionally report actual.
   // Any offline pilot samples (N_pilot in *_offline()) are excluded.
   print_multilevel_model_summary(s, NLevAlloc, summary_type + "allocation of",
-				 discrep_flag);
+				 sequenceType, discrep_flag);
   Real proj_equiv_hf = equivHFEvals + deltaEquivHF;
   s << "<<<<< " << summary_type
     << "number of equivalent high fidelity evaluations: " << std::scientific
@@ -230,7 +230,7 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
     // NLevActual includes successful sample accumulations used for stats
     // equivHFEvals includes incurred cost for evaluations, successful or not
     print_multilevel_model_summary(s, NLevActual, "Actual accumulated",
-                                   discrep_flag);
+                                   sequenceType, discrep_flag);
     s << "<<<<< Incurred cost in equivalent high fidelity evaluations: "
       << std::scientific << std::setprecision(write_precision) << equivHFEvals
       << '\n';
