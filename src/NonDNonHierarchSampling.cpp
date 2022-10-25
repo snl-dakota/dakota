@@ -210,7 +210,8 @@ hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
 {
   if (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE) {// resolution hierarchy
     // traps for completeness (undefined model form should not occur)
-    hf_form_index = (secondaryIndex == SZ_MAX) ? 0 : secondaryIndex;
+    hf_form_index = (secondaryIndex == SZ_MAX) ?
+      NLevActual.size() - 1 : secondaryIndex;
     // extremes of range
     hf_lev_index = NLevActual[hf_form_index].size() - 1;
   }

@@ -152,8 +152,8 @@ protected:
   void load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
 			 SizetArray& delta_N_l);
   /// distribute pilot sample specification across model forms and levels
-  void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
-			 Sizet2DArray& delta_N_l);
+  void load_pilot_sample(const SizetArray& pilot_spec, short seq_type,
+			 const Sizet3DArray& N_l, Sizet2DArray& delta_N_l);
 
   /// update the relevant slice of N_l_3D from the final 2D multilevel
   /// or 2D multifidelity sample profile
@@ -689,7 +689,7 @@ print_multilevel_model_summary(std::ostream& s,
 	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
       else s << i+1 << ":\n";
       if (discrep_flag) {
-	if (mf_seq && i+1 < num_mf) // *** TO DO: pass secondary index (and if SZ_MAX, then need active index).  Need to cover case where there are multiple levels for an MF-precedence case that uses only the active level(s)
+	if (mf_seq && i+1 < num_mf) // *** TO DO: pass secondary index (and if SZ_MAX, then need active index).  Need to cover case where there are multiple levels for an MF-precedence case that executes across a slice of active level(s)
 	  print_multilevel_discrepancy_summary(s, N_samp[i], N_samp[i+1]);
 	else
 	  print_multilevel_discrepancy_summary(s, N_samp[i]);

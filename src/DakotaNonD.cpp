@@ -528,8 +528,8 @@ load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
 
 
 void NonD::
-load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
-		  Sizet2DArray& delta_N_l)
+load_pilot_sample(const SizetArray& pilot_spec, short seq_type,
+		  const Sizet3DArray& N_l, Sizet2DArray& delta_N_l)
 {
   size_t i, num_samp, pilot_size = pilot_spec.size(), num_mf = N_l.size();
   delta_N_l.resize(num_mf);
@@ -574,9 +574,8 @@ load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
   }
 
   Cout << "\nMultilevel-multifidelity pilot sample:\n";
-  print_multilevel_model_summary(Cout, delta_N_l, "Pilot",
-				 Pecos::RESOLUTION_LEVEL_SEQUENCE, // for ML-MF
-				 discrepancy_sample_counts());// true for ML-MF
+  print_multilevel_model_summary(Cout, delta_N_l, "Pilot", seq_type,
+				 discrepancy_sample_counts());
 }
 
 
@@ -1174,7 +1173,7 @@ print_multilevel_discrepancy_summary(std::ostream& s, const Sizet2DArray& N_m)
     const SizetArray& N_mj = N_m[j];
     if (N_mj.empty()) continue;
 
-    print_multilevel_row(s, N_mj);  s << "  Discrep_lev" << j;
+    print_multilevel_row(s, N_mj);  s << "  DeltaQoI_lev" << j;
     if (j<num_discrep) print_multilevel_row(s, N_mj, N_m[j+1]);
     else               print_multilevel_row(s, N_mj);
     s << "  QoI_lev" << j << '\n';
@@ -1192,7 +1191,7 @@ print_multilevel_discrepancy_summary(std::ostream& s, const Sizet2DArray& N_m,
     const SizetArray& N_mj = N_m[j];
     if (N_mj.empty()) continue;
 
-    print_multilevel_row(s, N_mj);            s << "  Discrep_lev" << j;
+    print_multilevel_row(s, N_mj);            s << "  DeltaQoI_lev" << j;
     print_multilevel_row(s, N_mj, N_mp1[j]);  s << "  QoI_lev" << j << '\n';
   }
 }

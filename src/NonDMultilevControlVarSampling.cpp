@@ -158,7 +158,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   Sizet2DArray&       N_lf =      NLevActual[lf_form];
   Sizet2DArray&       N_hf =      NLevActual[hf_form];
   Sizet2DArray  delta_N_l;
-  load_pilot_sample(pilotSamples, NLevActual, delta_N_l);
+  load_pilot_sample(pilotSamples, sequenceType, NLevActual, delta_N_l);
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
 
@@ -386,7 +386,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
   Sizet2DArray& N_actual_lf = NLevActual[lf_form];
   Sizet2DArray& N_actual_hf = NLevActual[hf_form];
   Sizet2DArray  delta_N_l;
-  load_pilot_sample(pilotSamples, NLevActual, delta_N_l);
+  load_pilot_sample(pilotSamples, sequenceType, NLevActual, delta_N_l);
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_form];
 
@@ -815,7 +815,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
   // > Note: N_actual may (pilot projection) or may not (offline pilot)
   //   be the same as N_hf.  We still use N_hf for computing delta_N_hf.
   Sizet2DArray  delta_N_l;
-  load_pilot_sample(pilotSamples, NLevActual, delta_N_l);
+  load_pilot_sample(pilotSamples, sequenceType, NLevActual, delta_N_l);
   unsigned short group, lf_form = 0, hf_form = num_mf - 1;// 2 models @ extremes
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_form];
