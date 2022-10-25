@@ -103,8 +103,6 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
 
   void initialize_run();
-  /// Inherit to allow on-the-fly instances to customize behavior
-  virtual void post_run(std::ostream& s) override;
   void finalize_run();
 
   // return the final uncertain variables from the nondeterministic iteration
@@ -383,12 +381,6 @@ inline void NonD::initialize_run()
   Analyzer::initialize_run();
   prevNondInstance = nondInstance; 
   nondInstance = this; 
-}
-
-
-inline void NonD::post_run(std::ostream& s)
-{ 
-  Analyzer::post_run(s);
 }
 
 

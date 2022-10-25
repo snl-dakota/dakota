@@ -305,21 +305,23 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_ushort("method.nond.quadrature_order");
       unsigned short cub_int
 	= probDescDB.get_ushort("method.nond.cubature_integrand");
+      const String & exp_expansion_file
+        = probDescDB.get_string("method.nond.export_expansion_file");
       if (ssg_level != USHRT_MAX) { // PCE sparse grid
 	short exp_coeff_approach = (refine_cntl) ?
 	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model, exp_coeff_approach,
 	  ssg_level, dim_pref, u_space_type, refine_type, refine_cntl,
-	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
+	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs, exp_expansion_file);
       }
       else if (tpq_order != USHRT_MAX)
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model, Pecos::QUADRATURE,
 	  tpq_order, dim_pref, u_space_type, refine_type, refine_cntl,
-	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
+	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs, exp_expansion_file);
       else if (cub_int != USHRT_MAX)
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model, Pecos::CUBATURE,
 	  cub_int, dim_pref, u_space_type, refine_type, refine_cntl,
-	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
+	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs, exp_expansion_file);
       else { // regression PCE: LeastSq/CS, OLI
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
@@ -331,7 +333,7 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
-	  probDescDB.get_bool("method.import_build_active_only"));
+	  probDescDB.get_bool("method.import_build_active_only"), exp_expansion_file);
       }
       mcmcDerivOrder = 7; // Hessian computations implemented for PCE
     }

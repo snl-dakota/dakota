@@ -159,7 +159,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short num_int, const RealVector& dim_pref,
 		    short u_space_type, short refine_type, short refine_control,
 		    short covar_control, short rule_nest, short rule_growth,
-		    bool piecewise_basis, bool use_derivs):
+		    bool piecewise_basis, bool use_derivs,
+                    String exp_expansion_file ):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, dim_pref, 0,
 		refine_type, refine_control, covar_control, 0., rule_nest,
 		rule_growth, piecewise_basis, use_derivs), 
@@ -167,8 +168,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   crossValidation(false), crossValidNoiseOnly(false),
   maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
   numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type),
-  expansionExportFile(
-    model.problem_description_db().get_string("method.nond.export_expansion_file"))
+  expansionExportFile(exp_expansion_file)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
   // ----------------
@@ -240,7 +240,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    bool piecewise_basis, bool use_derivs, bool cv_flag,
 		    const String& import_build_pts_file,
 		    unsigned short import_build_format,
-		    bool import_build_active_only):
+		    bool import_build_active_only,
+                    String exp_expansion_file ):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, dim_pref, seed,
 		refine_type, refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
@@ -250,8 +251,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   importBuildPointsFile(import_build_pts_file), l2Penalty(0.),
   numAdvance(3), expOrderSpec(exp_order), collocPtsSpec(colloc_pts),
   normalizedCoeffOutput(false), uSpaceType(u_space_type),
-  expansionExportFile(
-    model.problem_description_db().get_string("method.nond.export_expansion_file"))
+  expansionExportFile(exp_expansion_file)
   //resizedFlag(false), callResize(false)
 {
   // ----------------
@@ -351,9 +351,7 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		rule_growth, piecewise_basis, use_derivs), 
   crossValidation(false), crossValidNoiseOnly(false),
   maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
-  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type),
-  expansionExportFile(
-    model.problem_description_db().get_string("method.nond.export_expansion_file"))
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
   multilevAllocControl     = ml_alloc_control;
@@ -379,9 +377,7 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		piecewise_basis, use_derivs),
   crossValidation(cv_flag), crossValidNoiseOnly(false),
   maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
-  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type),
-  expansionExportFile(
-    model.problem_description_db().get_string("method.nond.export_expansion_file"))
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false)
 {
   multilevAllocControl     = ml_alloc_control;
@@ -1181,7 +1177,7 @@ sample_allocation_metric(Real& sparsity_metric, Real power)
 
 void NonDPolynomialChaos::post_run(std::ostream& s)
 {
-  NonDExpansion::post_run(s);
+  Analyzer::post_run(s);
   if (!expansionExportFile.empty())
     print_results(s, FINAL_RESULTS);
 }
