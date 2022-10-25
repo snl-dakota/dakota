@@ -123,6 +123,9 @@ protected:
   /// update finalStatistics::functionValues
   virtual void update_final_statistics();
 
+  /// flag identifying whether sample counts correspond to level discrepancies
+  virtual bool discrepancy_sample_counts() const;
+
   //
   //- Heading: Utility routines
   //
@@ -151,10 +154,19 @@ protected:
   /// distribute pilot sample specification across model forms and levels
   void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
 			 Sizet2DArray& delta_N_l);
+
   /// update the relevant slice of N_l_3D from the final 2D multilevel
   /// or 2D multifidelity sample profile
-  void inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
-			     size_t secondary_index, Sizet3DArray& N_l_3D);
+  template <typename ArrayType>
+  void inflate_approx_samples(const ArrayType& N_l, bool multilev,
+			      size_t secondary_index,
+			      std::vector<ArrayType>& N_l_vec);
+  /// update the relevant slice of N_l_3D from the final 2D multilevel
+  /// or 2D multifidelity sample profile
+  template <typename ArrayType>
+  void inflate_sequence_samples(const ArrayType& N_l, bool multilev,
+				size_t secondary_index,
+				std::vector<ArrayType>& N_l_vec);
 
   /// resizes finalStatistics::functionGradients based on finalStatistics ASV
   void resize_final_statistics_gradients();
@@ -182,16 +194,29 @@ protected:
   /// print system series/parallel mappings for response levels
   void print_system_mappings(std::ostream& s) const;
 
-  /// print evaluation summary for multilevel sampling across 1D profile
+  /// print evaluation summary for multilevel sampling across 1D level profile
   void print_multilevel_evaluation_summary(std::ostream& s,
 					   const SizetArray& N_samp);
-  /// print evaluation summary for multilevel sampling across 2D profile
+  /// print evaluation summary for multilevel sampling across 2D
+  /// level+QoI profile
   void print_multilevel_evaluation_summary(std::ostream& s,
 					   const Sizet2DArray& N_samp);
-  /// print evaluation summary for multilevel sampling across 3D profile
-  void print_multilevel_evaluation_summary(std::ostream& s,
-					   const Sizet3DArray& N_samp,
-					   String type = "Final");
+
+  /// print evaluation summary for multilevel sampling across 1D level profile
+  void print_multilevel_discrepancy_summary(std::ostream& s,
+					    const SizetArray& N_samp);
+  /// print evaluation summary for multilevel sampling across 2D
+  /// level+QoI profile
+  void print_multilevel_discrepancy_summary(std::ostream& s,
+					    const Sizet2DArray& N_samp);
+
+  /// print evaluation summary for multilevel sampling across 2D model+level
+  /// profile (allocations) or 3D model+level+QoI profile (successful)
+  template <typename ArrayType>
+  void print_multilevel_model_summary(std::ostream& s,
+				      const std::vector<ArrayType>& N_samp,
+				      String type,// = "Final");
+				      bool discrep_flag);
 
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
@@ -334,6 +359,12 @@ private:
   void print_level_map(std::ostream& s, size_t fn_index,
 		       const String& qoi_label) const;
 
+  /// print an set of aggregated QoI sample counts for a level
+  void print_multilevel_row(std::ostream& s, const SizetArray& N_j);
+  /// print an unrolled set of aggregated QoI sample counts for a level
+  void print_multilevel_row(std::ostream& s, const SizetArray& N_j,
+			    const SizetArray& N_jp1);
+
   /// return true if N_l has consistent values
   bool homogeneous(const SizetArray& N_l) const;
 
@@ -407,6 +438,10 @@ inline void NonD::print_level_mappings(std::ostream& s) const
 
 inline void NonD::print_densities(std::ostream& s) const
 { print_densities(s, "response function", iteratedModel.response_labels()); }
+
+
+inline bool NonD::discrepancy_sample_counts() const
+{ return false; }
 
 
 inline bool NonD::homogeneous(const SizetArray& N_l) const
@@ -535,6 +570,117 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
   return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
 }
 */
+
+
+template <typename ArrayType> void NonD::
+inflate_approx_samples(const ArrayType& N_l, bool multilev,
+		       size_t secondary_index, std::vector<ArrayType>& N_l_vec)
+{
+  // 2D array is num_steps x num_qoi
+  // 3D array is num_mf x num_lev x num_qoi which we slice as either:
+  // > MF case: 1:num_mf x active_lev x 1:num_qoi
+  // > ML case: active_mf x 1:num_lev x 1:num_qoi
+
+  size_t i, num_mf = N_l_vec.size(), num_approx;
+  if (multilev) { // ML case
+    // see NonD::configure_sequence(): secondary_index should be num_mf - 1
+    if (secondary_index == SZ_MAX || secondary_index >= num_mf) {
+      Cerr << "Error: invalid secondary index in NonD::"
+	   << "inflate_approx_samples()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    ArrayType& N_l_s = N_l_vec[secondary_index];
+    num_approx = N_l_s.size() - 1;
+    for (i=0; i<num_approx; ++i)
+      N_l_s[i] = N_l[i];
+  }
+  else { // MF case
+    num_approx = num_mf - 1;
+    if (secondary_index == SZ_MAX) {
+      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelLIter m_iter = sub_models.begin();
+      size_t m_soln_lev, active_lev;
+      for (i=0; i<num_approx && m_iter != sub_models.end(); ++i, ++m_iter) {
+	m_soln_lev = m_iter->solution_level_cost_index();
+	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
+	N_l_vec[i][active_lev] = N_l[i];  // assign vector of qoi samples
+      }
+    }
+    else // valid secondary_index
+      for (i=0; i<num_approx; ++i)
+	N_l_vec[i][secondary_index] = N_l[i]; // assign vector of qoi samples
+  }
+}
+
+
+template <typename ArrayType> void NonD::
+inflate_sequence_samples(const ArrayType& N_l, bool multilev,
+			 size_t secondary_index,
+			 std::vector<ArrayType>& N_l_vec)
+{
+  // 2D array is num_steps x num_qoi
+  // 3D array is num_mf x num_lev x num_qoi which we slice as either:
+  // > MF case: 1:num_mf x active_lev x 1:num_qoi
+  // > ML case: active_mf x 1:num_lev x 1:num_qoi
+
+  size_t i, num_mf = N_l_vec.size();  
+  if (multilev) { // ML case
+    // see NonD::configure_sequence(): secondary_index should be num_mf - 1
+    if (secondary_index == SZ_MAX || secondary_index >= num_mf) {
+      Cerr << "Error: invalid secondary index in NonD::"
+	   << "inflate_sequence_samples()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    N_l_vec[secondary_index] = N_l;
+  }
+  else { // MF case
+    if (secondary_index == SZ_MAX) {
+      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelLIter m_iter = sub_models.begin();
+      size_t m_soln_lev, active_lev;
+      for (i=0; i<num_mf && m_iter != sub_models.end(); ++i, ++m_iter) {
+	m_soln_lev = m_iter->solution_level_cost_index();
+	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
+	N_l_vec[i][active_lev] = N_l[i];  // assign vector of qoi samples
+      }
+    }
+    else // valid secondary_index
+      for (i=0; i<num_mf; ++i)
+	N_l_vec[i][secondary_index] = N_l[i]; // assign vector of qoi samples
+  }
+}
+
+
+template <typename ArrayType> void NonD::
+print_multilevel_model_summary(std::ostream& s,
+			       const std::vector<ArrayType>& N_samp,
+			       String type, bool discrep_flag)
+{
+  // Sizet3DArray used for successful sample counts --> Nsamp[i] binds with 2D
+
+  // Sizet2DArray used for sample allocations --> Nsamp[i] binds with 1D,
+  // which is identical to 3D case with homogenous QoI samples
+
+  size_t i, j, num_mf = N_samp.size(), width = write_precision+7;
+  if (num_mf == 1) {
+    s << "<<<<< " << type << " samples per level:\n";
+    if (discrep_flag) print_multilevel_discrepancy_summary(s, N_samp[0]);
+    else              print_multilevel_evaluation_summary(s,  N_samp[0]);
+  }
+  else {
+    ModelList& sub_models = iteratedModel.subordinate_models(false);
+    ModelLIter     m_iter = sub_models.begin();
+    s << "<<<<< " << type << " samples per model form:\n";
+    for (i=0; i<num_mf; ++i) {
+      s << "      Model Form ";
+      if (m_iter != sub_models.end())
+	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
+      else s << i+1 << ":\n";
+      if (discrep_flag) print_multilevel_discrepancy_summary(s, N_samp[i]);
+      else              print_multilevel_evaluation_summary(s,  N_samp[i]);
+    }
+  }
+}
 
 } // namespace Dakota
 

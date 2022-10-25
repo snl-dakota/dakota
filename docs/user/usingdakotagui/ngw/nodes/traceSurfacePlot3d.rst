@@ -4,6 +4,14 @@
 traceSurfacePlot3d
 ==================
 
+.. figure:: img/surface_plot_3d.png
+   :name: ngw-node-traceSurfacePlot3d-figure
+   :alt:  Example 3D surface plot
+   :width: 400
+   :align: center
+   
+   Example 3D surface plot
+
 -----------
 Description
 -----------

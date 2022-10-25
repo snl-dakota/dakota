@@ -4,6 +4,14 @@
 hdfTraceHistogram
 =================
 
+.. figure:: img/histogram.png
+   :name: ngw-node-hdfTraceHistogram-figure
+   :alt: Example histogram
+   :width: 400
+   :align: center
+   
+   Example histogram
+
 -----------
 Description
 -----------

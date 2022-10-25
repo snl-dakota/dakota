@@ -164,8 +164,13 @@ Click OK when you are done.
 Bar Charts
 ==========
 
-.. image:: img/Plotting_Trace_BarChart.png
+.. figure:: img/Plotting_Trace_BarChart.png
+   :name: chartreuse-trace-creator-figure12
    :alt: Bar chart options
+   :width: 400
+   :align: center
+   
+   Bar chart options
 
 .. note::
    Bar charts require :ref:`two-dimensional plot datasets <chartreuse-plot-dataset-terminology>`.
@@ -182,8 +187,13 @@ Use this option to create standard bar charts.
 Bar Charts (Categorical Data)
 =============================
 
-.. image:: img/Plotting_Trace_BarChartCategorical.png
+.. figure:: img/Plotting_Trace_BarChartCategorical.png
+   :name: chartreuse-trace-creator-figure13
    :alt: Options for bar charts with categorical data
+   :width: 400
+   :align: center
+   
+   Options for bar charts with categorical data
 
 .. note::
    Bar charts require :ref:`two-dimensional plot datasets <chartreuse-plot-dataset-terminology>`.
@@ -201,8 +211,13 @@ This type of plot is best used in conjunction with :ref:`Dakota-generated HDF5 f
 Box Plots
 =========
 
-.. image:: img/Plotting_Trace_BoxPlot.png
+.. figure:: img/Plotting_Trace_BoxPlot.png
+   :name: chartreuse-trace-creator-figure14
    :alt: Box plot options
+   :width: 400
+   :align: center
+   
+   Box plot options
 
 Use this option to create a standard `box-and-whisker plot <https://en.wikipedia.org/wiki/Box_plot>`__.
 
@@ -217,8 +232,13 @@ Use this option to create a standard `box-and-whisker plot <https://en.wikipedia
 Contour Plots
 =============
 
-.. image:: img/Plotting_Trace_ContourPlot.png
+.. figure:: img/Plotting_Trace_ContourPlot.png
+   :name: chartreuse-trace-creator-figure15
    :alt: Contour plot options
+   :width: 400
+   :align: center
+   
+   Contour plot options
 
 Use this option to create a standard `contour plot <https://www.statisticshowto.com/contour-plots/>`__.
 
@@ -243,8 +263,13 @@ Use this option to create a standard `contour plot <https://www.statisticshowto.
 Heat Maps
 =========
 
-.. image:: img/Plotting_Trace_Heatmap.png
+.. figure:: img/Plotting_Trace_Heatmap.png
+   :name: chartreuse-trace-creator-figure16
    :alt: Heatmap options
+   :width: 400
+   :align: center
+   
+   Heatmap options
 
 Use this option to create a standard `heatmap <https://en.wikipedia.org/wiki/Heat_map>`__.
 
@@ -281,8 +306,13 @@ Use this option to create a `heatmap <https://en.wikipedia.org/wiki/Heat_map>`__
 Histograms
 ==========
 
-.. image:: img/Plotting_Trace_Histogram.png
+.. figure:: img/Plotting_Trace_Histogram.png
+   :name: chartreuse-trace-creator-figure17
    :alt: Histogram options
+   :width: 400
+   :align: center
+   
+   Histogram options
 
 Use this option to create a `histogram <https://en.wikipedia.org/wiki/Histogram>`__.
 
@@ -307,8 +337,13 @@ Use this option to create a `histogram <https://en.wikipedia.org/wiki/Histogram>
 Parallel Coordinates Plots
 ==========================
 
-.. image:: img/Plotting_Trace_ParallelCoordinates.png
-   :alt: Parallel coordinates
+.. figure:: img/Plotting_Trace_ParallelCoordinates.png
+   :name: chartreuse-trace-creator-figure18
+   :alt: Parallel coordinates options
+   :width: 400
+   :align: center
+   
+   Parallel coordinates options
 
 Use this option to create a `parallel coordinates plot <https://en.wikipedia.org/wiki/Parallel_coordinates>`__.
 
@@ -324,8 +359,13 @@ Use this option to create a `parallel coordinates plot <https://en.wikipedia.org
 Scatter Plots
 =============
 
-.. image:: img/Plotting_SingleTrace_ScatterPlotTutorial_1.png
+.. figure:: img/Plotting_SingleTrace_ScatterPlotTutorial_1.png
+   :name: chartreuse-trace-creator-figure19
    :alt: Scatter plot options
+   :width: 400
+   :align: center
+   
+   Scatter plot options
 
 Use this option to create a standard 2D scatter plot.
 
@@ -348,8 +388,13 @@ Use this option to create a standard 2D scatter plot.
 Scatter Plots (Categorical Axes)
 ================================
 
-.. image:: img/Plotting_Trace_ScatterPlotCategorical.png
+.. figure:: img/Plotting_Trace_ScatterPlotCategorical.png
+   :name: chartreuse-trace-creator-figure20
    :alt: Options for scatter plots with categorical axes
+   :width: 400
+   :align: center
+   
+   Options for scatter plots with categorical axes
 
 .. note::
    Scatter plots with categorical data require plot datasets that have **two** data label axes.
@@ -369,8 +414,13 @@ This type of plot is best used in conjunction with :ref:`Dakota-generated HDF5 f
 Scatter 3D Plot
 ===============
 
-.. image:: img/Plotting_Trace_ScatterPlot3D.png
+.. figure:: img/Plotting_Trace_ScatterPlot3D.png
+   :name: chartreuse-trace-creator-figure21
    :alt: Scatter plot 3D options
+   :width: 400
+   :align: center
+   
+   Scatter plot 3D options
 
 Use this option to create a standard 3D scatter plot.
 
@@ -394,8 +444,13 @@ Use this option to create a standard 3D scatter plot.
 Surface 3D Plot
 ===============
 
-.. image:: img/Plotting_Trace_SurfacePlot3D.png
+.. figure:: img/Plotting_Trace_SurfacePlot3D.png
+   :name: chartreuse-trace-creator-figure22
    :alt: Surface plot 3D options
+   :width: 400
+   :align: center
+   
+   Surface plot 3D options
 
 Use this option to create a 3D surface plot.
 

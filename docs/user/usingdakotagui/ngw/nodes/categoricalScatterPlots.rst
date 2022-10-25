@@ -4,6 +4,14 @@
 categoricalScatterPlots
 =======================
 
+.. figure:: img/categorical_scatter_plot.png
+   :name: ngw-node-categoricalScatterPlots-figure
+   :alt: Example categorical scatter plot
+   :width: 400
+   :align: center
+   
+   Example categorical scatter plot
+
 -----------
 Description
 -----------

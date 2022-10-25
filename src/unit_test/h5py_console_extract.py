@@ -110,7 +110,7 @@ def extract_equiv_num_hf_evals():
     global __OUTPUT
     lines_iter = iter(__OUTPUT)
     for line in lines_iter:
-        if line.startswith("<<<<< Equivalent number of high fidelity evaluations:"):
+        if line.startswith("<<<<< Online number of equivalent high fidelity evaluations:"):
             msg, val = line.split(':')
             return float(val)
     return None

@@ -78,14 +78,21 @@ protected:
 			       SizetArray& approx_sequence,
 			       RealMatrix& eval_ratios, Real& avg_hf_target);
 
+  void projected_increments(const RealVector& hf_targets,
+			    const RealMatrix& eval_ratios,
+			    const SizetArray& N_H_actual, size_t& N_H_alloc,
+			    size_t& delta_N_H_actual,
+			    //SizetArray& delta_N_L_actual,
+			    Real& delta_equiv_hf);
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
-			 IntRealMatrixMap& sum_LH, const SizetArray& N_H,
-			 const SizetArray& approx_sequence,
+			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
+			 size_t N_H_alloc, const SizetArray& approx_sequence,
 			 const RealMatrix& eval_ratios,
 			 const RealVector& hf_targets);
   bool mfmc_approx_increment(const RealMatrix& eval_ratios,
-			     const Sizet2DArray& N_L_refined,
+			     const Sizet2DArray& N_L_actual_refined,
+			     SizetArray& N_L_alloc_refined,
 			     const RealVector& hf_targets, size_t iter,
 			     const SizetArray& approx_sequence,
 			     size_t start, size_t end);
@@ -101,8 +108,11 @@ protected:
 
   void update_projected_samples(const RealVector& hf_targets,
 				const RealMatrix& eval_ratios,
-				SizetArray& N_H_projected,
-				Sizet2DArray& N_L_projected);
+				const SizetArray& N_H_actual, size_t& N_H_alloc,
+				const Sizet2DArray& N_L_actual,
+				SizetArray& N_L_alloc, size_t& delta_N_H_actual,
+				//SizetArray& delta_N_L_actual,
+				Real& delta_equiv_hf);
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,

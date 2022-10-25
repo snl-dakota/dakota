@@ -56,15 +56,6 @@ protected:
   //- Heading: Member functions
   //
 
-  /// perform LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
-		    Real hf_target, size_t iter, size_t lev);
-  /// perform final LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(const Pecos::ActiveKey& lf_key,
-		    const RealVector& eval_ratios, const SizetArray& N_lf,
-		    const RealVector& hf_targets, size_t iter, size_t lev);
-
-
   /// compute scalar variance and correlation parameters for control variates
   void compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			      Real sum_HH, size_t N_shared, Real& var_H,
@@ -80,6 +71,16 @@ protected:
 			const RealMatrix& sum_L_refined,
 			const SizetArray& N_refined, size_t lev,
 			const RealVector& beta, RealVector& H_raw_mom);
+
+  /// compute numSamples for LF sample increment
+  void lf_allocate_samples(const RealVector& eval_ratios,
+			   const SizetArray& N_lf, const RealVector& hf_targets,
+			   RealVector& lf_targets);
+  /// compute numSamples for LF sample increment
+  void lf_allocate_samples(const RealVector& eval_ratios, size_t N_lf,
+			   Real hf_target, Real& lf_target);
+  /// parameter set definition and evaluation for LF sample increment
+  bool lf_perform_samples(size_t iter, size_t lev);
 
   //
   //- Heading: Data
@@ -113,6 +114,17 @@ private:
 		      SizetArray& N_shared, RealVector& hf_targets,
 		      bool accumulate_cost, bool pilot_estvar);
 
+  /// perform final LF sample increment as indicated by the evaluation ratio
+  bool lf_increment(const Pecos::ActiveKey& lf_key,
+		    const RealVector& eval_ratios, const SizetArray& N_lf,
+		    const RealVector& hf_targets, RealVector& lf_targets,
+		    size_t iter, size_t lev);
+  /// perform final LF sample increment as indicated by the evaluation ratio
+  bool lf_increment(const Pecos::ActiveKey& lf_key,
+		    const RealVector& eval_ratios, size_t N_lf,
+		    const RealVector& hf_targets, RealVector& lf_targets,
+		    size_t iter, size_t lev);
+
   /// define model form and resolution level indices
   void hf_lf_indices(size_t& hf_form_index, size_t& hf_lev_index,
 		     size_t& lf_form_index, size_t& lf_lev_index);
@@ -121,17 +133,15 @@ private:
   /// computing/updating the evaluation and estimator variance ratios
   void shared_increment(const Pecos::ActiveKey& agg_key,size_t iter,size_t lev);
 
-  /// core parameter set definition and evaluation for LF sample increment
-  bool lf_increment(size_t iter, size_t lev);
-
-  /// update equivHFEvals from HF, LF evaluation counts
-  void compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,
+  /// compute/return equivalent HF evaluations from HF, LF evaluation counts
+  Real compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,
 				  Real cost_ratio);
-  /// update equivHFEvals from HF, LF evaluation increment
+  /// update equivalent HF evaluations from HF, LF evaluation increment
   void increment_mf_equivalent_cost(size_t new_N_hf, size_t new_N_lf,
-				    Real cost_ratio);
-  /// update equivHFEvals from LF evaluation increment
-  void increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio);
+				    Real cost_ratio, Real& equiv_hf_evals);
+  /// update equivalent HF evaluations from LF evaluation increment
+  void increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio,
+				    Real& equiv_hf_evals);
 
   /// initialize the CV accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -204,11 +214,19 @@ private:
   /// rather than accumulations
   void update_projected_samples(const RealVector& hf_targets,
 				const RealVector& eval_ratios, Real cost_ratio,
-				SizetArray& N_hf, SizetArray& N_lf);
+				const SizetArray& N_H_actual, size_t& N_H_alloc,
+				const SizetArray& N_L_actual, size_t& N_L_alloc,
+				size_t& delta_N_H_actual,
+				//size_t& delta_N_L_actual,
+				Real& delta_equiv_hf);
 
   //
   //- Heading: Data
   //
+
+  /// for sample projections, the calculated increment in HF samples that
+  /// would be evaluated if full iteration/statistics were needed
+  size_t deltaNActualHF;
 
   RealVector estVarRatios;
   SizetArray numHIter0;
@@ -219,19 +237,21 @@ inline NonDControlVariateSampling::~NonDControlVariateSampling()
 { }
 
 
-inline void NonDControlVariateSampling::
+inline Real NonDControlVariateSampling::
 compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf, Real cost_ratio)
-{ equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio; }
+{ return raw_N_hf + (Real)raw_N_lf / cost_ratio; }
 
 
 inline void NonDControlVariateSampling::
-increment_mf_equivalent_cost(size_t new_N_hf, size_t new_N_lf, Real cost_ratio)
-{ equivHFEvals += new_N_hf + (Real)new_N_lf / cost_ratio; }
+increment_mf_equivalent_cost(size_t new_N_hf, size_t new_N_lf, Real cost_ratio,
+			     Real& equiv_hf_evals)
+{ equiv_hf_evals += new_N_hf + (Real)new_N_lf / cost_ratio; }
 
 
 inline void NonDControlVariateSampling::
-increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio)
-{ equivHFEvals += (Real)new_N_lf / cost_ratio; }
+increment_mf_equivalent_cost(size_t new_N_lf, Real cost_ratio,
+			     Real& equiv_hf_evals)
+{ equiv_hf_evals += (Real)new_N_lf / cost_ratio; }
 
 
 inline void NonDControlVariateSampling::
