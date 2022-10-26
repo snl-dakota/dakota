@@ -378,6 +378,10 @@ private:
 
   /// return true if N_l has consistent values
   bool homogeneous(const SizetArray& N_l) const;
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const SizetArray& N_m) const;
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const Sizet2DArray& N_m) const;
 
   //
   //- Heading: Data members
@@ -583,6 +587,26 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
 */
 
 
+inline bool NonD::zeros(const SizetArray& N_m) const
+{
+  size_t j, len = N_m.size();
+  for (j=0; j<len; ++j)
+    if (N_m[j])
+      return false;
+  return true;
+}
+
+
+inline bool NonD::zeros(const Sizet2DArray& N_m) const
+{
+  size_t j, len = N_m.size();
+  for (j=0; j<len; ++j)
+    if (!zeros(N_m[j]))
+      return false;
+  return true;
+}
+
+
 template <typename ArrayType> void NonD::
 inflate_approx_samples(const ArrayType& N_l, bool multilev,
 		       size_t secondary_index, std::vector<ArrayType>& N_l_vec)
@@ -683,19 +707,39 @@ print_multilevel_model_summary(std::ostream& s,
     ModelList& sub_models = iteratedModel.subordinate_models(false);
     ModelLIter     m_iter = sub_models.begin();
     s << "<<<<< " << type << " samples per model form:\n";
-    for (i=0; i<num_mf; ++i) {
-      s << "      Model Form ";
-      if (m_iter != sub_models.end())
-	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
-      else s << i+1 << ":\n";
-      if (discrep_flag) {
-	if (mf_seq && i+1 < num_mf) // *** TO DO: pass secondary index (and if SZ_MAX, then need active index).  Need to cover case where there are multiple levels for an MF-precedence case that executes across a slice of active level(s)
-	  print_multilevel_discrepancy_summary(s, N_samp[i], N_samp[i+1]);
+    for (i=0; i<num_mf; ++i, ++m_iter) {
+      const ArrayType& N_i = N_samp[i];
+      if (N_i.empty() || zeros(N_i)) continue;
+
+      s << "      Model Form " << m_iter->model_id() << ":\n";
+      if (!discrep_flag) // no discrepancies
+	print_multilevel_evaluation_summary(s,  N_i);
+      else if (mf_seq && i+1 < num_mf) // discrepancy across model forms
+	print_multilevel_discrepancy_summary(s, N_i, N_samp[i+1]);
+      else // discrepancy across levels or for last model form
+	print_multilevel_discrepancy_summary(s, N_i);
+
+      /*
+      if (discrep_flag} {
+	// To restrict inactive level outputs, could employ secondary index or
+        // lookups, but output of inactive levels seems acceptable and provides
+        // additional context relative to a user's broader specification.
+	if (mf_seq) {
+	  size_t c_index = sm_iter->solution_level_cost_index(),
+	    lev_index_i = (c_index == SZ_MAX) ? 0 : c_index;
+	  if (i+1 < num_mf) {
+	    c_index = (sm_iter+1)->solution_level_cost_index();
+	    size_t lev_index_ip1 = (c_index == SZ_MAX) ? 0 : c_index;
+	    print_multilevel_discrepancy_summary(s, N_i[lev_index_i],
+						 N_samp[i+1][lev_index_ip1]);
+	  }
+	  else // now separated from case immediately below
+	    print_multilevel_discrepancy_summary(s, N_i[lev_index_i]);
+	}
 	else
-	  print_multilevel_discrepancy_summary(s, N_samp[i]);
+	  print_multilevel_discrepancy_summary(s, N_i);
       }
-      else
-	print_multilevel_evaluation_summary(s,  N_samp[i]);
+      */
     }
   }
 }

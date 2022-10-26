@@ -55,50 +55,13 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
 
   // check iteratedModel for model form hi1erarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
-  bool err_flag = false;
   if (iteratedModel.surrogate_type() == "non_hierarchical")
     aggregated_models_mode(); // truth model + all approx models
   else {
     Cerr << "Error: Non-hierarchical sampling requires a non-hierarchical "
          << "surrogate model specification." << std::endl;
-    err_flag = true;
-  }
-
-  ModelList& model_ensemble = iteratedModel.subordinate_models(false);
-  size_t i, num_mf = model_ensemble.size(), num_lev, md_index, num_md;
-  ModelLIter ml_it;
-  NLevActual.resize(num_mf);  NLevAlloc.resize(num_mf);
-  costMetadataIndices.resize(num_mf);
-  for (i=0, ml_it=model_ensemble.begin(); ml_it!=model_ensemble.end();
-       ++i, ++ml_it) {
-    // only SimulationModel supports solution_{levels,costs} and cost metadata
-    num_lev  = ml_it->solution_levels(); // lower bound is 1 soln level
-    md_index = ml_it->cost_metadata_index();
-    num_md   = ml_it->current_response().metadata().size();
-
-    // Ensure there is consistent cost data available as SimulationModel must
-    // be allowed to have empty solnCntlCostMap (when optional solution control
-    // is not specified).  Passing false bypasses lower bound of 1.
-    // > For ACV, only require 1 solution cost, neglecting resolutions for now
-    //if (num_lev > ml_it->solution_levels(false)) {
-    if (md_index == _NPOS && ml_it->solution_levels(false) == 0) {
-      Cerr << "Error: insufficient cost data provided for non-hierarchical "
-	   << "sampling.\n       Please provide offline solution_level_cost "
-	   << "estimates or activate\n       online cost recovery for model "
-	   << ml_it->model_id() << '.' << std::endl;
-      err_flag = true;
-    }
-
-    //Sizet2DArray& Nl_i = NLevActual[i];
-    NLevActual[i].resize(num_lev); //Nl_i.resize(num_lev);
-    //for (j=0; j<num_lev; ++j)
-    //  Nl_i[j].resize(numFunctions); // defer
-    NLevAlloc[i].resize(num_lev);
-    costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
-  }
-
-  if (err_flag)
     abort_handler(METHOD_ERROR);
+  }
 
   iteratedModel.multifidelity_precedence(true); // prefer MF, reassign keys
   configure_sequence(numSteps, secondaryIndex, sequenceType);
@@ -215,10 +178,14 @@ hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
     // extremes of range
     hf_lev_index = NLevActual[hf_form_index].size() - 1;
   }
-  else { // model form hierarchy: extremes of range
+  else { // model form hierarchy: HF model is max of range
     hf_form_index = NLevActual.size() - 1;
-    size_t raw_index = iteratedModel.truth_model().solution_level_cost_index();
-    hf_lev_index = (raw_index == SZ_MAX) ? 0 : raw_index;
+    if (secondaryIndex == SZ_MAX) {
+      size_t c_index = iteratedModel.truth_model().solution_level_cost_index();
+      hf_lev_index = (c_index == SZ_MAX) ? 0 : c_index;
+    }
+    else
+      hf_lev_index = secondaryIndex;
   }
 }
 

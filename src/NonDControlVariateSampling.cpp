@@ -444,10 +444,14 @@ hf_lf_indices(size_t& hf_form_index, size_t& hf_lev_index,
   }
   else { // model form hierarchy: extremes of range
     hf_form_index = NLevActual.size() - 1;  lf_form_index = 0;
-    size_t raw_index = iteratedModel.truth_model().solution_level_cost_index();
-    hf_lev_index = (raw_index == SZ_MAX) ? 0 : raw_index;
-    raw_index    = iteratedModel.surrogate_model().solution_level_cost_index();
-    lf_lev_index = (raw_index == SZ_MAX) ? 0 : raw_index;
+    if (secondaryIndex == SZ_MAX) {
+      size_t c_index = iteratedModel.truth_model().solution_level_cost_index();
+      hf_lev_index = (c_index == SZ_MAX) ? 0 : c_index;
+      c_index    = iteratedModel.surrogate_model().solution_level_cost_index();
+      lf_lev_index = (c_index == SZ_MAX) ? 0 : c_index;
+    }
+    else
+      hf_lev_index = lf_lev_index = secondaryIndex;
   }
 }
 
