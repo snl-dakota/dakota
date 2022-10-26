@@ -274,7 +274,7 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
     << std::setprecision(write_precision) << proj_equiv_hf <<'\n';
   archive_equiv_hf_evals(proj_equiv_hf);
 
-  if (/*faults_detected() ||*/ projections) {
+  if (projections || differ(NLevAlloc, NLevActual)) {
     // NLevActual includes successful sample accumulations used for stats
     // equivHFEvals includes incurred cost for evaluations, successful or not
     print_multilevel_model_summary(s, NLevActual, "Actual accumulated",

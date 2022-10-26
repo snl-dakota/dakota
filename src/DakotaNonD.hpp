@@ -253,6 +253,14 @@ protected:
   //size_t one_sided_delta(const Sizet2DArray& current,
   //			   const RealMatrix& targets, size_t power);
 
+  /// return true if fine-grained reporting differs from coarse-grained
+  bool differ(size_t N_alloc_ij, const SizetArray& N_actual_ij) const;
+  /// return true if fine-grained reporting differs from coarse-grained
+  bool differ(const SizetArray& N_alloc_i,
+	      const Sizet2DArray& N_actual_i) const;
+  /// return true if fine-grained reporting differs from coarse-grained
+  bool differ(const Sizet2DArray& N_alloc, const Sizet3DArray& N_actual) const;
+
   /// allocate results array storage for distribution mappings
   void archive_allocate_mappings();
   /// archive the mappings from specified response levels for specified fn
@@ -378,6 +386,7 @@ private:
 
   /// return true if N_l has consistent values
   bool homogeneous(const SizetArray& N_l) const;
+
   /// return true if N_m is empty or only populated with zeros
   bool zeros(const SizetArray& N_m) const;
   /// return true if N_m is empty or only populated with zeros
@@ -466,6 +475,43 @@ inline bool NonD::homogeneous(const SizetArray& N_l) const
     if (N_l[i] != N0)
       return false;
   return true;
+}
+
+
+inline bool NonD::
+differ(size_t N_alloc_ij, const SizetArray& N_actual_ij) const
+{
+  if (N_actual_ij.empty()) // allow empty NLevActual[i][j]
+    return (N_alloc_ij > 0);
+  size_t q, num_q = N_actual_ij.size();
+  for (q=0; q<num_q; ++q)
+    if (N_alloc_ij != N_actual_ij[q])
+      return true;
+  return false;
+}
+
+
+inline bool NonD::
+differ(const SizetArray& N_alloc_i, const Sizet2DArray& N_actual_i) const
+{
+  size_t j, num_lev = N_alloc_i.size();
+  if (N_actual_i.size() != num_lev) return true; // require both non-empty lev
+  for (j=0; j<num_lev; ++j)
+    if (differ(N_alloc_i[j], N_actual_i[j]))
+      return true;
+  return false;
+}
+
+
+inline bool NonD::
+differ(const Sizet2DArray& N_alloc, const Sizet3DArray& N_actual) const
+{
+  size_t i, num_mf = N_alloc.size();
+  if (N_actual.size() != num_mf) return true; // require both non-empty mf
+  for (i=0; i<num_mf; ++i)
+    if (differ(N_alloc[i], N_actual[i]))
+      return true;
+  return false;
 }
 
 
