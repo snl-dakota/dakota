@@ -152,8 +152,8 @@ protected:
   void load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
 			 SizetArray& delta_N_l);
   /// distribute pilot sample specification across model forms and levels
-  void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
-			 Sizet2DArray& delta_N_l);
+  void load_pilot_sample(const SizetArray& pilot_spec, short seq_type,
+			 const Sizet3DArray& N_l, Sizet2DArray& delta_N_l);
 
   /// update the relevant slice of N_l_3D from the final 2D multilevel
   /// or 2D multifidelity sample profile
@@ -196,27 +196,38 @@ protected:
 
   /// print evaluation summary for multilevel sampling across 1D level profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const SizetArray& N_samp);
+					   const SizetArray& N_m);
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const Sizet2DArray& N_samp);
+					   const Sizet2DArray& N_m);
 
-  /// print evaluation summary for multilevel sampling across 1D level profile
+  /// print evaluation summary for multilevel sampling across 1D level
+  /// profile for discrepancy across levels
   void print_multilevel_discrepancy_summary(std::ostream& s,
-					    const SizetArray& N_samp);
+					    const SizetArray& N_m);
+  /// print evaluation summary for multilevel sampling across 1D level
+  /// profile for discrepancy across model forms
+  void print_multilevel_discrepancy_summary(std::ostream& s,
+					    const SizetArray& N_m,
+					    const SizetArray& N_mp1);
   /// print evaluation summary for multilevel sampling across 2D
-  /// level+QoI profile
+  /// level+QoI profile for discrepancy across levels
   void print_multilevel_discrepancy_summary(std::ostream& s,
-					    const Sizet2DArray& N_samp);
+					    const Sizet2DArray& N_m);
+  /// print evaluation summary for multilevel sampling across 2D
+  /// level+QoI profile for discrepancy across model forms
+  void print_multilevel_discrepancy_summary(std::ostream& s,
+					    const Sizet2DArray& N_m,
+					    const Sizet2DArray& N_mp1);
 
   /// print evaluation summary for multilevel sampling across 2D model+level
-  /// profile (allocations) or 3D model+level+QoI profile (successful)
+  /// profile (allocations) or 3D model+level+QoI profile (actual)
   template <typename ArrayType>
   void print_multilevel_model_summary(std::ostream& s,
 				      const std::vector<ArrayType>& N_samp,
 				      String type,// = "Final");
-				      bool discrep_flag);
+				      short seq_type, bool discrep_flag);
 
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
@@ -241,6 +252,14 @@ protected:
   size_t one_sided_delta(const SizetArray& current, Real target, size_t power);
   //size_t one_sided_delta(const Sizet2DArray& current,
   //			   const RealMatrix& targets, size_t power);
+
+  /// return true if fine-grained reporting differs from coarse-grained
+  bool differ(size_t N_alloc_ij, const SizetArray& N_actual_ij) const;
+  /// return true if fine-grained reporting differs from coarse-grained
+  bool differ(const SizetArray& N_alloc_i,
+	      const Sizet2DArray& N_actual_i) const;
+  /// return true if fine-grained reporting differs from coarse-grained
+  bool differ(const Sizet2DArray& N_alloc, const Sizet3DArray& N_actual) const;
 
   /// allocate results array storage for distribution mappings
   void archive_allocate_mappings();
@@ -368,6 +387,11 @@ private:
   /// return true if N_l has consistent values
   bool homogeneous(const SizetArray& N_l) const;
 
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const SizetArray& N_m) const;
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const Sizet2DArray& N_m) const;
+
   //
   //- Heading: Data members
   //
@@ -451,6 +475,43 @@ inline bool NonD::homogeneous(const SizetArray& N_l) const
     if (N_l[i] != N0)
       return false;
   return true;
+}
+
+
+inline bool NonD::
+differ(size_t N_alloc_ij, const SizetArray& N_actual_ij) const
+{
+  if (N_actual_ij.empty()) // allow empty NLevActual[i][j]
+    return (N_alloc_ij > 0);
+  size_t q, num_q = N_actual_ij.size();
+  for (q=0; q<num_q; ++q)
+    if (N_alloc_ij != N_actual_ij[q])
+      return true;
+  return false;
+}
+
+
+inline bool NonD::
+differ(const SizetArray& N_alloc_i, const Sizet2DArray& N_actual_i) const
+{
+  size_t j, num_lev = N_alloc_i.size();
+  if (N_actual_i.size() != num_lev) return true; // require both non-empty lev
+  for (j=0; j<num_lev; ++j)
+    if (differ(N_alloc_i[j], N_actual_i[j]))
+      return true;
+  return false;
+}
+
+
+inline bool NonD::
+differ(const Sizet2DArray& N_alloc, const Sizet3DArray& N_actual) const
+{
+  size_t i, num_mf = N_alloc.size();
+  if (N_actual.size() != num_mf) return true; // require both non-empty mf
+  for (i=0; i<num_mf; ++i)
+    if (differ(N_alloc[i], N_actual[i]))
+      return true;
+  return false;
 }
 
 
@@ -572,6 +633,26 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
 */
 
 
+inline bool NonD::zeros(const SizetArray& N_m) const
+{
+  size_t j, len = N_m.size();
+  for (j=0; j<len; ++j)
+    if (N_m[j])
+      return false;
+  return true;
+}
+
+
+inline bool NonD::zeros(const Sizet2DArray& N_m) const
+{
+  size_t j, len = N_m.size();
+  for (j=0; j<len; ++j)
+    if (!zeros(N_m[j]))
+      return false;
+  return true;
+}
+
+
 template <typename ArrayType> void NonD::
 inflate_approx_samples(const ArrayType& N_l, bool multilev,
 		       size_t secondary_index, std::vector<ArrayType>& N_l_vec)
@@ -654,7 +735,7 @@ inflate_sequence_samples(const ArrayType& N_l, bool multilev,
 template <typename ArrayType> void NonD::
 print_multilevel_model_summary(std::ostream& s,
 			       const std::vector<ArrayType>& N_samp,
-			       String type, bool discrep_flag)
+			       String type, short seq_type, bool discrep_flag)
 {
   // Sizet3DArray used for successful sample counts --> Nsamp[i] binds with 2D
 
@@ -668,16 +749,43 @@ print_multilevel_model_summary(std::ostream& s,
     else              print_multilevel_evaluation_summary(s,  N_samp[0]);
   }
   else {
+    bool mf_seq = (seq_type == Pecos::MODEL_FORM_SEQUENCE);
     ModelList& sub_models = iteratedModel.subordinate_models(false);
     ModelLIter     m_iter = sub_models.begin();
     s << "<<<<< " << type << " samples per model form:\n";
-    for (i=0; i<num_mf; ++i) {
-      s << "      Model Form ";
-      if (m_iter != sub_models.end())
-	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
-      else s << i+1 << ":\n";
-      if (discrep_flag) print_multilevel_discrepancy_summary(s, N_samp[i]);
-      else              print_multilevel_evaluation_summary(s,  N_samp[i]);
+    for (i=0; i<num_mf; ++i, ++m_iter) {
+      const ArrayType& N_i = N_samp[i];
+      if (N_i.empty() || zeros(N_i)) continue;
+
+      s << "      Model Form " << m_iter->model_id() << ":\n";
+      if (!discrep_flag) // no discrepancies
+	print_multilevel_evaluation_summary(s,  N_i);
+      else if (mf_seq && i+1 < num_mf) // discrepancy across model forms
+	print_multilevel_discrepancy_summary(s, N_i, N_samp[i+1]);
+      else // discrepancy across levels or for last model form
+	print_multilevel_discrepancy_summary(s, N_i);
+
+      /*
+      if (discrep_flag} {
+	// To restrict inactive level outputs, could employ secondary index or
+        // lookups, but output of inactive levels seems acceptable and provides
+        // additional context relative to a user's broader specification.
+	if (mf_seq) {
+	  size_t c_index = sm_iter->solution_level_cost_index(),
+	    lev_index_i = (c_index == SZ_MAX) ? 0 : c_index;
+	  if (i+1 < num_mf) {
+	    c_index = (sm_iter+1)->solution_level_cost_index();
+	    size_t lev_index_ip1 = (c_index == SZ_MAX) ? 0 : c_index;
+	    print_multilevel_discrepancy_summary(s, N_i[lev_index_i],
+						 N_samp[i+1][lev_index_ip1]);
+	  }
+	  else // now separated from case immediately below
+	    print_multilevel_discrepancy_summary(s, N_i[lev_index_i]);
+	}
+	else
+	  print_multilevel_discrepancy_summary(s, N_i);
+      }
+      */
     }
   }
 }

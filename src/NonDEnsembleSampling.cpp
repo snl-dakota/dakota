@@ -48,6 +48,54 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     problem_db.get_ushort("method.nond.export_samples_format")),
   seedIndex(SZ_MAX)
 {
+  ModelList& model_ensemble = iteratedModel.subordinate_models(false);
+  size_t i, num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
+    md_index, num_md;
+  ModelLRevIter ml_rit; // reverse iteration for prev_lev tracking
+  bool err_flag = false, mlmf = (methodName==MULTILEVEL_MULTIFIDELITY_SAMPLING);
+  NLevActual.resize(num_mf);  NLevAlloc.resize(num_mf);
+  costMetadataIndices.resize(num_mf);
+  for (i=num_mf-1, ml_rit=model_ensemble.rbegin();
+       ml_rit!=model_ensemble.rend(); --i, ++ml_rit) { // high fid to low fid
+    // only SimulationModel supports solution_{levels,costs} and cost metadata.
+    // metadata indices only vary per response specification (model form).
+    num_lev  = ml_rit->solution_levels(); // lower bound is 1 soln level
+    md_index = ml_rit->cost_metadata_index();
+    num_md   = ml_rit->current_response().metadata().size();
+
+    if (mlmf && num_lev > prev_lev) {
+      Cerr << "\nWarning: unused solution levels in multilevel-multifidelity "
+	   << "sampling for model " << ml_rit->model_id() << ".\n         "
+	   << "Ignoring " << num_lev - prev_lev << " of " << num_lev
+	   << " levels." << std::endl;
+      num_lev = prev_lev;
+    }
+
+    // Ensure there is consistent cost data available as SimulationModel must
+    // be allowed to have empty solnCntlCostMap (when optional solution control
+    // is not specified).  Passing false bypasses lower bound of 1.
+    // > Previous option below uses solution_levels() with and without false,
+    //   which can only differ if SimulationModel::solnCntlCostMap is empty.
+    //if (md_index == SZ_MAX && num_lev > ml_rit->solution_levels(false)) { }
+    if (md_index == SZ_MAX && ml_rit->solution_levels(false) == 0) {
+      Cerr << "Error: insufficient cost data provided for ensemble sampling."
+	   << "\n       Please provide offline solution_level_cost "
+	   << "estimates or activate\n       online cost recovery for model "
+	   << ml_rit->model_id() << '.' << std::endl;
+      err_flag = true;
+    }
+
+    //Sizet2DArray& Nl_i = NLevActual[i];
+    NLevActual[i].resize(num_lev); //Nl_i.resize(num_lev);
+    //for (j=0; j<num_lev; ++j)
+    //  Nl_i[j].resize(numFunctions); // defer to pre_run()
+    NLevAlloc[i].resize(num_lev);
+    costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
+    prev_lev = num_lev;
+  }
+  if (err_flag)
+    abort_handler(METHOD_ERROR);
+
   // Support multilevel LHS as a specification override.  The estimator variance
   // is known/correct for MC and an assumption/approximation for LHS.  To get an
   // accurate LHS estimator variance, one would need:
@@ -219,18 +267,18 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   // Always report allocated, then optionally report actual.
   // Any offline pilot samples (N_pilot in *_offline()) are excluded.
   print_multilevel_model_summary(s, NLevAlloc, summary_type + "allocation of",
-				 discrep_flag);
+				 sequenceType, discrep_flag);
   Real proj_equiv_hf = equivHFEvals + deltaEquivHF;
   s << "<<<<< " << summary_type
     << "number of equivalent high fidelity evaluations: " << std::scientific
     << std::setprecision(write_precision) << proj_equiv_hf <<'\n';
   archive_equiv_hf_evals(proj_equiv_hf);
 
-  if (/*faults_detected() ||*/ projections) {
+  if (projections || differ(NLevAlloc, NLevActual)) {
     // NLevActual includes successful sample accumulations used for stats
     // equivHFEvals includes incurred cost for evaluations, successful or not
     print_multilevel_model_summary(s, NLevActual, "Actual accumulated",
-                                   discrep_flag);
+                                   sequenceType, discrep_flag);
     s << "<<<<< Incurred cost in equivalent high fidelity evaluations: "
       << std::scientific << std::setprecision(write_precision) << equivHFEvals
       << '\n';

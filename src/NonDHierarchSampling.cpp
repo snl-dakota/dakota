@@ -40,64 +40,21 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   // Note: even though the hierarchy may be multilevel | multifidelity | both,
   // we require a hierarchical model to manage aggregations, reductions, etc.
   // (i.e. a SimulationModel with resolution hyper-parameters is insufficient).
+  bool err_flag = false;
   if (iteratedModel.surrogate_type() == "hierarchical")
     aggregated_models_mode();
   else {
-    Cerr << "Error: Hierarch Monte Carlo requires a hierarchical "
-	 << "surrogate model specification." << std::endl;
-    abort_handler(METHOD_ERROR);
+    Cerr << "Error: Hierarchical sampling requires a hierarchical surrogate "
+	 << "model specification." << std::endl;
+    err_flag = true;
   }
-
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  size_t i, num_mf = ordered_models.size(), num_lev, prev_lev = SZ_MAX,
-    md_index, num_md;
-  ModelLRevIter ml_rit;
-  bool err_flag = false, mlmf = (methodName==MULTILEVEL_MULTIFIDELITY_SAMPLING);
-  NLevActual.resize(num_mf);  NLevAlloc.resize(num_mf);
-  costMetadataIndices.resize(num_mf);
-  for (i=num_mf-1, ml_rit=ordered_models.rbegin();
-       ml_rit!=ordered_models.rend(); --i, ++ml_rit) { // high fid to low fid
-    // for now, only SimulationModel supports solution_{levels,costs}()
-    num_lev  = ml_rit->solution_levels(); // lower bound is 1 soln level
-    // Note: for ML and MLCV, metadata indices only vary per model form
-    md_index = ml_rit->cost_metadata_index();
-    num_md   = ml_rit->current_response().metadata().size();
-
-    if (mlmf && num_lev > prev_lev) {
-      Cerr << "\nWarning: unused solution levels in multilevel-multifidelity "
-	   << "sampling for model " << ml_rit->model_id() << ".\n         "
-	   << "Ignoring " << num_lev - prev_lev << " of " << num_lev
-	   << " levels." << std::endl;
-      num_lev = prev_lev;
-    }
-
-    // Ensure there is consistent cost data available as SimulationModel must
-    // be allowed to have empty solnCntlCostMap (when optional solution control
-    // is not specified).  Passing false bypasses lower bound of 1.
-    if (md_index == SZ_MAX && num_lev > ml_rit->solution_levels(false)) {
-      Cerr << "Error: insufficient cost data provided for multilevel sampling."
-	   << "\n       Please provide solution_level_cost estimates for model "
-	   << ml_rit->model_id() << '.' << std::endl;
-      err_flag = true;
-    }
-
-    //Sizet2DArray& Nl_i = NLevActual[i];
-    NLevActual[i].resize(num_lev); //Nl_i.resize(num_lev);
-    //for (j=0; j<num_lev; ++j)
-    //  Nl_i[j].resize(numFunctions); // defer to pre_run()
-    NLevAlloc[i].resize(num_lev);
-    costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
-    prev_lev = num_lev;
-  }
-  if (err_flag)
-    abort_handler(METHOD_ERROR);
 
   pilotSamples = problem_db.get_sza("method.nond.pilot_samples");
   if ( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples),
 		     [](int i){ return i > 0; }) ) {
     Cerr << "\nError: Some levels have pilot samples of size 0 in "
        << method_enum_to_string(methodName) << '.' << std::endl;
-    abort_handler(METHOD_ERROR);
+    err_flag = true;
   }
   switch (pilotSamples.size()) {
     case 0:  maxEvalConcurrency *= 100;  break;
@@ -107,6 +64,9 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
       break;
     }
   }
+
+  if (err_flag)
+    abort_handler(METHOD_ERROR);
 }
 
 
