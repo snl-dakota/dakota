@@ -13,9 +13,9 @@
 //- Checked by:
 
 #include <memory>
-#include <regex>
 #include <utility>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/regex.hpp>
 #include "dakota_global_defs.hpp"
 #include "OutputManager.hpp"
 #include "ProgramOptions.hpp"
@@ -112,8 +112,8 @@ void OutputManager::initial_redirects(const ProgramOptions& prog_opts)
   //  if output file specified, redirect immediately, possibly rebind later
   if (worldRank == 0 && !output_file.empty()) {
     if (outputLevel >= DEBUG_OUTPUT)
-      std::cout << "\nRedirecting Cout on rank 0 to " << output_file
-		<< std::endl;
+      std::cout << "\nRedirecting Dakota standard output on rank 0 to "
+		<< output_file << std::endl;
     coutRedirector.push_back(output_file);
   }
 
@@ -156,16 +156,18 @@ void OutputManager::check_input_redirs(std::istream& input_stream,
   // RATIONALE: This doesn't allow abbreviations due to similar
   // keywords output_filter and error_factors.
 
-  // quoted filename with a match group for the contained filename;
-  // this sub-group will always exist if the regex matches
-  const std::string quoted_filename = "['\"](.+)['\"]";
+  // symmetric-quoted filename with a match group for the contained filename;
+  // the filename sub-group will always exist if the regex matches
+  const std::string quoted_filename = "(['\"])(.+?)\\1";
   auto const quoted_filename_re = boost::regex(quoted_filename);
   auto const out_kw = boost::regex("output_file");
+  // NIDR accepts keyword with adjoining token without whitespace (?!), but
+  // we prohibit multiple =
   auto const out_kw_with_filename =
-    boost::regex("output_file[=\\s]+" + quoted_filename);
+    boost::regex("output_file\\s*=?\\s*" + quoted_filename);
   auto const err_kw = boost::regex("error_file");
   auto const err_kw_with_filename =
-    boost::regex("error_file[=\\s]+" + quoted_filename);
+    boost::regex("error_file\\s*=?\\s*" + quoted_filename);
 
   std::string line;
   while (std::getline(input_stream, line)) {
@@ -174,7 +176,7 @@ void OutputManager::check_input_redirs(std::istream& input_stream,
 
     if(boost::regex_search(line, matches, out_kw_with_filename) && 
        !strcontains(matches.prefix(), "#") )
-      output_filename = matches.str(1);
+      output_filename = matches.str(2);
     // match only the keyword, then look ahead
     else if(boost::regex_search(line, matches, out_kw) &&
        !strcontains(matches.prefix(), "#") ) {
@@ -182,7 +184,7 @@ void OutputManager::check_input_redirs(std::istream& input_stream,
       while (std::getline(input_stream, line)) {
 	if (boost::regex_search(line, matches, quoted_filename_re) &&
 	    !strcontains(matches.prefix(), "#")) {
-	  output_filename = matches.str(1);
+	  output_filename = matches.str(2);
 	  break;
 	}
       }
@@ -190,7 +192,7 @@ void OutputManager::check_input_redirs(std::istream& input_stream,
 
     if(boost::regex_search(line, matches, err_kw_with_filename) &&
        !strcontains(matches.prefix(), "#") )
-      error_filename = matches.str(1);
+      error_filename = matches.str(2);
     // match only the keyword, then look ahead
     else if(boost::regex_search(line, matches, err_kw) &&
        !strcontains(matches.prefix(), "#") ) {
@@ -198,7 +200,7 @@ void OutputManager::check_input_redirs(std::istream& input_stream,
       while (std::getline(input_stream, line)) {
 	if (boost::regex_search(line, matches, quoted_filename_re) &&
 	    !strcontains(matches.prefix(), "#")) {
-	  error_filename = matches.str(1);
+	  error_filename = matches.str(2);
 	  break;
 	}
       }

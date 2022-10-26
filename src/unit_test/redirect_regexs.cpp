@@ -24,6 +24,14 @@ some_other_keyword
 error_file "dakota.err"
 )";
 
+// apparently NIDR permits this
+std::string valid_spaceless_redirs = R"(
+environment
+output_file'dakota.log'
+some_other_keyword
+error_file"dakota.err"
+)";
+
 std::string valid_redirs_comments = R"(
 environment
 output_file  =    'dakota.log'# trailing comment
@@ -55,11 +63,27 @@ some_other_keyword
 )";
 
 
+// This mess shouldn't cause a redirect
+// TODO: Or should it? Not yet tested.
+std::string no_redirs_junk = R"(
+environment
+output_file
+   Hey, ho, there's some random content here
+   = = =
+   "oops, forgot a closing quote
+   "noredir.log"  # here's my filename
+error_file
+   malformed content
+   'noredir.err'
+)";
+
+
 BOOST_AUTO_TEST_CASE(test_valid_redirs)
 {
   // TODO: Parameterized test
   std::vector<std::string> valid_inputs =
-    { valid_redirs, valid_redirs_comments, valid_redirs_intervening_lines };
+    { valid_redirs, valid_spaceless_redirs, valid_redirs_comments,
+      valid_redirs_intervening_lines };
   for (const auto& input_text : valid_inputs) {
     std::string outfile, errfile;
     std::istringstream infile(input_text);
