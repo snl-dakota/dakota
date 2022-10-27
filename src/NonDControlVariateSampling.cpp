@@ -222,36 +222,13 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 		   sum_L_refined, N_actual_lf, H_raw_mom);
     // Convert uncentered raw moment estimates to final moments (central or std)
     convert_moments(H_raw_mom, momentStats);
-    estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
   }
-  else { // for consistency with pilot projection
-    update_projected_samples(hf_targets, eval_ratios, cost_ratio,
-			     N_actual_shared, N_alloc_shared, N_actual_lf,
-			     N_alloc_lf, deltaNActualHF, deltaEquivHF);
-    SizetArray N_actual_shared_proj = N_actual_shared;
-    increment_samples(N_actual_shared_proj, deltaNActualHF);
-    estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared_proj,
-				avgEstVar);
-    // Must manage N_actual vs. N_actual_proj in final roll ups:
-    // > "Actual" should mean succeeded --> either suppress projection-based
-    //   updates to actual counters or change meaning of these to that of Alloc
-    //   but with faults removed (and backfill optionally added).
-    // > seems preferable to restrict Actual to this meaning and migrate
-    //   projection-based reporting to Alloc (+ other cached state as needed),
-    //   which retains strict linkage with accumulated sums/stats
-    //   >> can address special case needs for Actual projection case-by-case
-    //   >> BUT, projected variance reduction calcs reuse best available varH
-    //      in combination with projected NLevActual, so
-    //   >> NLevActual would be used in multilevel_eval_summary()
-    //      NLevActual + NLevProj would be used in print_variance_reduction(),
-    //      (for stats like varH, actual + proj is preferred to projected alloc)
-    //      where Proj can be lower dimensional even for backfill
-    //      (actual_incr is averaged over QoI)
-    //   >> NLevProj can still be included in NLevAlloc -- no need to separate,
-    //      but might eliminate some accumulations if separated?
-    //   >> use similar approach with equivHFEvals (tracks actual) + Proj
-    //      (separated projection)
-  }
+  else // for consistency with pilot projection
+    // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
+    update_projected_lf_samples(hf_targets, eval_ratios, cost_ratio,
+				N_actual_lf, N_alloc_lf, deltaEquivHF);
+
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
 }
 
 
@@ -321,17 +298,13 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
 		   sum_L_refined, N_actual_lf, H_raw_mom);
     // Convert uncentered raw moment estimates to final moments (central or std)
     convert_moments(H_raw_mom, momentStats);
-    estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
   }
-  else { // for consistency with pilot projection
-    update_projected_samples(hf_targets, eval_ratios, cost_ratio,
-			     N_actual_shared, N_alloc_shared, N_actual_lf,
-			     N_alloc_lf, deltaNActualHF, deltaEquivHF);
-    SizetArray N_actual_shared_proj = N_actual_shared;
-    increment_samples(N_actual_shared_proj, deltaNActualHF);
-    estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared_proj,
-				avgEstVar);
-  }
+  else // for consistency with pilot projection
+    // N_H is converged --> deltaNActualHF is 0 --> no change to estVar
+    update_projected_lf_samples(hf_targets, eval_ratios, cost_ratio,
+				N_actual_lf, N_alloc_lf, deltaEquivHF);
+
+  estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
 }
 
 
@@ -905,6 +878,28 @@ cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,
 
 
 void NonDControlVariateSampling::
+update_projected_lf_samples(const RealVector& hf_targets,
+			    const RealVector& eval_ratios, Real cost_ratio,
+			    const SizetArray& N_L_actual, size_t& N_L_alloc,
+			    /*size_t& delta_N_L_actual,*/ Real& delta_equiv_hf)
+{
+  RealVector lf_targets(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    lf_targets[qoi] = eval_ratios[qoi] * hf_targets[qoi];
+
+  size_t lf_actual_incr,
+    lf_alloc_incr = one_sided_delta(N_L_alloc, average(lf_targets));
+  // essentially assigns targets to allocations:
+  N_L_alloc += lf_alloc_incr;
+
+  lf_actual_incr = (backfillFailures) ?
+    one_sided_delta(N_L_actual, lf_targets, 1) : lf_alloc_incr;
+  //delta_N_L_actual += lf_actual_incr;
+  increment_mf_equivalent_cost(lf_actual_incr, cost_ratio, delta_equiv_hf);
+}
+
+
+void NonDControlVariateSampling::
 update_projected_samples(const RealVector& hf_targets,
 			 const RealVector& eval_ratios, Real cost_ratio,
 			 const SizetArray& N_H_actual, size_t& N_H_alloc,
@@ -912,27 +907,19 @@ update_projected_samples(const RealVector& hf_targets,
 			 size_t& delta_N_H_actual, //size_t& delta_N_L_actual,
 			 Real& delta_equiv_hf)
 {
-  RealVector lf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    lf_targets[qoi] = eval_ratios[qoi] * hf_targets[qoi];
-
-  size_t hf_actual_incr, lf_actual_incr,
-    hf_alloc_incr = one_sided_delta(N_H_alloc, average(hf_targets)),
-    lf_alloc_incr = one_sided_delta(N_L_alloc, average(lf_targets));
+  size_t hf_actual_incr,
+    hf_alloc_incr = one_sided_delta(N_H_alloc, average(hf_targets));
   // essentially assigns targets to allocations:
-  N_H_alloc += hf_alloc_incr;  N_L_alloc += lf_alloc_incr;
+  N_H_alloc += hf_alloc_incr;
 
-  if (backfillFailures) {
-    hf_actual_incr = one_sided_delta(N_H_actual, hf_targets, 1);
-    lf_actual_incr = one_sided_delta(N_L_actual, lf_targets, 1);
-  }
-  else
-    { hf_actual_incr = hf_alloc_incr;  lf_actual_incr = lf_alloc_incr; }
-  //increment_samples(N_H_actual, hf_actual_incr);// assumes no addtl fails
-  //increment_samples(N_L_actual, lf_actual_incr);// assumes no addtl fails
-  delta_N_H_actual += hf_actual_incr;  //delta_N_L_actual += lf_actual_incr;
-  increment_mf_equivalent_cost(hf_actual_incr, lf_actual_incr, cost_ratio,
-			       delta_equiv_hf);
+  hf_actual_incr = (backfillFailures) ?
+    one_sided_delta(N_H_actual, hf_targets, 1) : hf_alloc_incr;
+  delta_N_H_actual += hf_actual_incr;
+  delta_equiv_hf   += hf_actual_incr;
+
+  update_projected_lf_samples(hf_targets, eval_ratios, cost_ratio,
+			      N_L_actual, N_L_alloc, //delta_N_L_actual,
+			      delta_equiv_hf);
 }
 
 

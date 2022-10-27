@@ -141,12 +141,13 @@ void NonDMultifidelitySampling::multifidelity_mc()
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS)
-    // N_H_actual is converged --> finalize with LF increments + post-processing
+    // N_H_actual is final --> finalize with LF increments + post-processing
     approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_H_actual,
 		      N_H_alloc, approxSequence, eval_ratios, hf_targets);
   else // for consistency with pilot projection
-    projected_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
-			 deltaNActualHF, /*deltaNActualLF,*/ deltaEquivHF);
+    // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
+    projected_lf_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
+			    /*deltaNActualLF,*/ deltaEquivHF);
 }
 
 
@@ -187,10 +188,8 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
-  // at least 2 samples reqd for variance (and resetting allSamples after pilot)
-  numSamples = std::max(one_sided_delta(N_H_actual, hf_targets, 1),(size_t)2);//N_H_actual=0
-
-  // As a first cut, don't reuse any of offline pilot for N_H
+  // at least 2 samples reqd for variance (initial N_H_actual = 0)
+  numSamples = std::max(one_sided_delta(N_H_actual, hf_targets, 1),(size_t)2);
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
   N_H_alloc += numSamples;
@@ -216,8 +215,9 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
     approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_H_actual,
 		      N_H_alloc, approxSequence, eval_ratios, hf_targets);
   else // for consistency with pilot projection
-    projected_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
-			 deltaNActualHF, /*deltaNActualLF,*/ deltaEquivHF);
+    // N_H is converged from offline pilot --> do not compute deltaNActualHF
+    projected_lf_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
+			    /*deltaNActualLF,*/ deltaEquivHF);
 }
 
 
@@ -270,8 +270,10 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // Compute the ratio of MC and MFMC mean squared errors, which incorporates
   // anticipated variance reduction from upcoming application of eval_ratios.
   // > Note: this could be redundant for tol-based targets with m1* > pilot
-  mfmc_estimator_variance(rho2LH, varH, N_H_actual, hf_targets, approxSequence,
-			  eval_ratios);
+  SizetArray N_H_actual_proj = N_H_actual;
+  increment_samples(N_H_actual_proj, deltaNActualHF);
+  mfmc_estimator_variance(rho2LH, varH, N_H_actual_proj, hf_targets,
+			  approxSequence, eval_ratios);
 }
 
 
@@ -362,24 +364,17 @@ update_hf_targets(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
 }
 
 
+/** LF only */
 void NonDMultifidelitySampling::
-update_projected_samples(const RealVector& hf_targets,
-			 const RealMatrix& eval_ratios,
-			 const SizetArray&   N_H_actual, size_t&     N_H_alloc,
-			 const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
-			 size_t& delta_N_H_actual,
-			 //SizetArray& delta_N_L_actual,
-			 Real& delta_equiv_hf)
+projected_lf_increments(const RealVector& hf_targets,
+			const RealMatrix& eval_ratios,
+			const SizetArray& N_H_actual, size_t& N_H_alloc,
+			/*SizetArray& delta_N_L_actual,*/ Real& delta_equiv_hf)
 {
-  size_t alloc_incr = one_sided_delta(N_H_alloc, average(hf_targets)),
-    actual_incr = (backfillFailures) ?
-      one_sided_delta(N_H_actual, hf_targets, 1) : alloc_incr;
-  //increment_samples(N_H_actual, actual_incr);
-  delta_N_H_actual += actual_incr;  N_H_alloc += alloc_incr;
-  increment_equivalent_cost(actual_incr, sequenceCost, numApprox,
-			    delta_equiv_hf);
-
-  size_t qoi, approx;  RealVector lf_targets(numFunctions, false);
+  Sizet2DArray N_L_actual;  inflate(N_H_actual, N_L_actual);
+  SizetArray   N_L_alloc;   inflate(N_H_alloc,  N_L_alloc);
+  size_t qoi, approx, alloc_incr, actual_incr;
+  RealVector lf_targets(numFunctions, false);
   for (approx=0; approx<numApprox; ++approx) {
     for (qoi=0; qoi<numFunctions; ++qoi)
       lf_targets[qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
@@ -388,14 +383,16 @@ update_projected_samples(const RealVector& hf_targets,
     alloc_incr  = one_sided_delta(N_L_alloc_a, average(lf_targets));
     actual_incr = (backfillFailures) ?
       one_sided_delta(N_L_actual_a, lf_targets, 1) : alloc_incr;
-    //increment_samples(N_L_actual_a, actual_incr);
     /*delta_N_L_actual[approx] += actual_incr;*/  N_L_alloc_a += alloc_incr;
     increment_equivalent_cost(actual_incr, sequenceCost, approx,
 			      delta_equiv_hf);
   }
+
+  finalize_counts(N_L_actual, N_L_alloc);
 }
 
 
+/** LF and HF */
 void NonDMultifidelitySampling::
 projected_increments(const RealVector& hf_targets,
 		     const RealMatrix& eval_ratios,
@@ -403,16 +400,17 @@ projected_increments(const RealVector& hf_targets,
 		     size_t& delta_N_H_actual, //SizetArray& delta_N_L_actual,
 		     Real& delta_equiv_hf)
 {
-  // overwrite actual incurred N_H with projected N_H
-  //SizetArray N_H_actual_proj = N_H_actual;//fine-grained bookkeeping if needed
+  // The N_L baseline is the shared set PRIOR to delta_N_H --> important for
+  // cost incr even if lf_targets is defined robustly (hf_targets * eval_ratios)
+  projected_lf_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
+			  /*delta_N_L_actual,*/ delta_equiv_hf);
 
-  Sizet2DArray N_L_actual;      inflate(N_H_actual, N_L_actual);
-  SizetArray   N_L_alloc_proj;  inflate(N_H_alloc,  N_L_alloc_proj);
-  update_projected_samples(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
-			   N_L_actual, N_L_alloc_proj, delta_N_H_actual,
-			   /*delta_N_L_actual,*/ delta_equiv_hf);
-  //increment_samples(N_L_actual_proj, delta_N_L_actual);
-  finalize_counts(N_L_actual, N_L_alloc_proj);
+  size_t alloc_incr = one_sided_delta(N_H_alloc, average(hf_targets)),
+    actual_incr = (backfillFailures) ?
+      one_sided_delta(N_H_actual, hf_targets, 1) : alloc_incr;
+  delta_N_H_actual += actual_incr;  N_H_alloc += alloc_incr;
+  increment_equivalent_cost(actual_incr, sequenceCost, numApprox,
+			    delta_equiv_hf);
 }
 
 
@@ -1195,6 +1193,7 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
 
     // update avgEstVar for final variance report and finalStats
     estvar_ratios_to_avg_estvar(estVarRatios, var_H, N_H, avgEstVar);
+    Cout << "N_H:\n" << N_H << std::endl;
 
     if (outputLevel >= NORMAL_OUTPUT) {
       bool ordered = approx_sequence.empty();

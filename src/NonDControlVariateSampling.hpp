@@ -212,6 +212,14 @@ private:
 
   /// for pilot-projection mode, update the same counts based on projections
   /// rather than accumulations
+  void update_projected_lf_samples(const RealVector& hf_targets,
+				   const RealVector& eval_ratios,
+				   Real cost_ratio,
+				   const SizetArray& N_L_actual,
+				   size_t& N_L_alloc,//size_t& delta_N_L_actual,
+				   Real& delta_equiv_hf);
+  /// for pilot-projection mode, update the same counts based on projections
+  /// rather than accumulations
   void update_projected_samples(const RealVector& hf_targets,
 				const RealVector& eval_ratios, Real cost_ratio,
 				const SizetArray& N_H_actual, size_t& N_H_alloc,

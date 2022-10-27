@@ -90,6 +90,22 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     //for (j=0; j<num_lev; ++j)
     //  Nl_i[j].resize(numFunctions); // defer to pre_run()
     NLevAlloc[i].resize(num_lev);
+    // Must manage N_actual vs. N_actual_proj in final roll ups:
+    // > "Actual" should mean succeeded --> suppress projection-based
+    //   updates to actual counters
+    // > migrate projection-based reporting to Alloc (+ other cached state as
+    //   needed), which retains strict linkage with accumulated sums/stats.
+    //   BUT, projected variance reduction calcs reuse best available varH in
+    //   combination with projected NLevActual, so:
+    //   >> Use NLevActual in multilevel_eval_summary();
+    //      use NLevActual + deltaNLevActual in print_variance_reduction(),
+    //      (for stats like varH, actual + proj is preferred to projected alloc)
+    //      where Proj can be lower dimensional even for backfill
+    //      (actual_incr is averaged over QoI)
+    //   >> Projections are allocations --> include in final NLevAlloc
+    //   >> use similar approach with equivHFEvals (tracks actual) + delta
+    //      (separated projection)
+
     costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
     prev_lev = num_lev;
   }
