@@ -5,20 +5,21 @@ Sampling Methods
 
 This chapter introduces several fundamental concepts related to sampling
 methods. In particular, the statistical properties of the Monte Carlo
-estimator are discussed (§\ `1.1 <#uq:sampling:montecarlo>`__) and
+estimator are discussed (:ref:`uq:sampling:montecarlo`) and
 strategies for multilevel and multifidelity sampling are introduced
 within this context. Hereafter, multilevel refers to the possibility of
 exploiting distinct discretization levels (i.e. space/time resolution)
 within a single model form, whereas multifidelity involves the use of
-more than one model form. In §\ `1.2 <#uq:sampling:controlvariate>`__,
-we describe the control variate Monte Carlo algorithm that we align with
-multifidelity sampling, and in §\ `1.3 <#uq:sampling:multilevel>`__, we
+more than one model form. In :ref:`uq:sampling:mfmc:`,
+we describe the multifidelity Monte Carlo and its single fidelity model version, the control variate Monte Carlo, 
+that we align with
+multifidelity sampling, and in :ref:`uq:sampling:multilevel`, we
 describe the multilevel Monte Carlo algorithm that we align with
-multilevel sampling. In §\ `1.4 <#uq:sampling:mlmf>`__, we show that
+multilevel sampling. In :ref:`uq:sampling:mlmf`, we show that
 these two approaches can be combined to create multilevel-multifidelity
 sampling approaches.
 
-.. _`uq:sampling:montecarlo`:
+.. _uq:sampling:montecarlo:
 
 Monte Carlo (MC)
 ----------------
@@ -39,17 +40,15 @@ as follows
 where :math:`Q^{(i)} = Q(\boldsymbol{\xi}^{(i)})` and :math:`N` is used
 to indicate the number of realizations of the model.
 
-For large :math:`N` it is trivial to demonstrate that the MC estimator
-is unbiased, i.e., its bias is zero and its convergence to the true
+The MC estimator is unbiased, i.e., its bias is zero and its convergence to the true
 statistics is :math:`\mathcal{O}(N^{-1/2})`. Moreover, since each
-sequence of realizations is different, another crucial property of any
+set of realizations for :math:`Q` is different, another crucial property of any
 estimator is its own variance:
 
 .. math::
+   :label: varianceMC
 
-   \label{EQ: variance MC}
-    \mathbb{V}ar\left( \hat{Q}_N^{MC} \right)  = \dfrac{1}{N^2} \sum_{i=1}^{N} \mathbb{V}ar\left( Q \right) 
-               = \dfrac{\mathbb{V}ar\left(Q\right) }{N}.
+   \mathbb{V}ar\left( \hat{Q}_N^{MC} \right) = \dfrac{\mathbb{V}ar\left(Q\right) }{N}.
 
 Furthermore, it is possible to show, in the limit
 :math:`N \rightarrow \infty`, that the error
@@ -60,15 +59,14 @@ consequence, it is possible to define a confidence interval for the MC
 estimator which has an amplitude proportional to the standard deviation
 of the estimator. Indeed, the variance of the estimator plays a
 fundamental role in the quality of the numerical results: the reduction
-of the variance (for a fixed computational cost) is a very effective way
-of improving the quality of the MC prediction.
+of the estimator variance correspond to an error reduction in the statistics.
 
-.. _`uq:sampling:controlvariate`:
+.. _uq:sampling:mfmc:
 
-Control variate Monte Carlo
+Multifidelity Monte Carlo
 ---------------------------
 
-A closer inspection of Eq. `[EQ: variance MC] <#EQ: variance MC>`__
+A closer inspection of Eq. :math:numref:`varianceMC`
 indicates that only an increase in the number of simulations :math:`N`
 might reduce the overall variance, since
 :math:`\mathbb{V}ar\left({Q}\right)` is an intrinsic property of the
@@ -76,24 +74,24 @@ model under analysis. However, more sophisticated techniques have been
 proposed to accelerate the convergence of a MC simulation. For instance,
 an incomplete list of these techniques can include stratified sampling,
 importance sampling, Latin hypercube, deterministic Sobol’ sequences and
-control variates. In particular, the control variate approach, is based
-on the idea of replacing the RV :math:`Q` with a different one which has
+control variates (see :cite:p:`OwenMC`). In particular, the control variate approach, is based
+on the idea of replacing the RV :math:`Q` with one that has
 the same expected value, but with a smaller variance. The goal is to
-reduce the numerator in Eq. `[EQ: variance MC] <#EQ: variance MC>`__,
+reduce the numerator in Eq. :math:numref:`varianceMC`,
 and hence the value of the estimator variance without requiring a larger
 number of simulations. In a practical setting, the control variate makes
-use of an auxiliary functional :math:`G=G(\boldsymbol{\xi})` for which
+use of an auxiliary RV :math:`G=G(\boldsymbol{\xi})` for which
 the expected value :math:`\mathbb{E}\left[G\right]` is known. Indeed,
 the alternative estimator can be defined as
 
+
+.. add a label :label: control_variate
 .. math::
+   :label: control_variate
+   
+   \hat{Q}_N^{MCCV} =  \hat{Q}_N^{MC} - \beta \left( \hat{G}_N^{MC} - \mathbb{E}\left[G\right] \right), \quad \mathrm{where} \quad \beta \in \mathbb{R}.
 
-   \label{EQ: control variate}
-   \hat{Q}_N^{MCCV} =  \hat{Q}_N^{MC} - \beta \left( \hat{G}_N^{MC} - \mathbb{E}\left[G\right] \right).
-
-The MC control variate estimator :math:`\hat{Q}_N^{MCCV}` is unbiased
-(irrespective of the value of the parameter
-:math:`\beta \in \mathbb{R}`), but its variance now has a more complex
+The MC control variate estimator :math:`\hat{Q}_N^{MCCV}` is unbiased, but its variance now has a more complex
 dependence not only on the :math:`\mathbb{V}ar\left({Q}\right)`, but
 also on :math:`\mathbb{V}ar\left(G\right)` and the covariance between
 :math:`Q` and :math:`G` since
@@ -127,11 +125,53 @@ from a more crude physical/engineering approximation of the problem. A
 viable way of building a well correlated control variate is to rely on a
 low-fidelity model (i.e. a crude approximation of the model of interest)
 to estimate the control variate using estimated control means (see
-:cite:p:`Pasupathy2014`). This technique has been introduced
-in the context of optimization under uncertainty in
-:cite:p:`Ng2014`.
+:cite:p:`Pasupathy2014,Ng2014` for more details). In this latter case,
+clearly the expected value of the low-fidelity model is not known and needs to be computed.
 
-.. _`uq:sampling:multilevel`:
+With a slight change in notation, it is possible to write
+ 
+ .. math:: \hat{Q}^{CVMC} = \hat{Q} + \alpha_1 \left( \hat{Q}_1 - \hat{\mu}_1 \right),
+ 
+where :math:`\hat{Q}` represents the MC estimator for the high-fidelity model, :math:`\hat{Q}_1` the MC estimator for the low-fidelity model
+and :math:`\hat{\mu}_1` a different approximation for :math:`\mathbb{E}[Q_1]`. If :math:`N` samples are used for approximating :math:`\hat{Q}` and
+:math:`\hat{Q}_1` and a total of :math:`r_1 N` samples for the low-fidelity models are available, an optimal solution, which guarantees the best use of the low-fidelity resources,
+can be obtained following :cite:p:`Ng2014` as
+
+.. math:: \alpha_1 = -\rho_1 \sqrt{ \frac{ \mathbb{V}ar[Q] }{ \mathbb{V}ar[Q_1] } }
+.. math:: r_1 = \sqrt{ \frac{ \mathcal{C} }{ \mathcal{C}_1 } \frac{\rho_1^2}{1-\rho_1^2} },
+
+where :math:`\mathcal{C}` and :math:`\mathcal{C}_1` represent the cost of evaluating the high- and low-fidelity models, respectively and :math:`\rho_1` is the correlation between the two models. This solution leads to the following expression for the estimator variance 
+
+.. math::  \mathbb{V}ar[\hat{Q}^{CVMC}] = \mathbb{V}ar[\hat{Q}] \left( 1 - \frac{r_1-1}{r_1} \rho_1^2 \right),
+
+which shows similarities with the variance of a control variate estimator with the only difference being the term :math:`\frac{r_1-1}{r_1}` that, by multiplying the correlation 
+:math:`\rho_1`, effectively penalizes the estimator due to the need for estimating the low-fidelity mean.
+
+Another common case encountered in practice is the availability of more than a low-fidelity model. In this case, the multifidelity Monte Carlo can be extended following
+:cite:p:`peherstorfer2016optimal,peherstorfer_survey_2018` as
+
+.. math:: \hat{Q}^{MFMC} = \hat{Q} + \sum_{i=1}^M \alpha_i \left( \hat{Q}_i - \hat{\mu}_i \right),
+
+where :math:`\hat{Q}_i` represents the generic ith low-fidelity model.
+
+The MFMC estimator is still unbiased (similarly to MC) and share similarities with CVMC; indeed one can recover CVMC directly from it. For each low-fidelity model we use :math:`N_i r_i` samples, as in the CVMC case, however for :math:`i \geq 2`, the term :math:`\hat{Q_i}` is approximated with exactly the same samples of the previous model, while each :math:`\hat{\mu}_i` is obtained by adding to this set a number of :math:`(r_i-r_{i-1}) N_i` additional independent samples. Following :cite:p:`peherstorfer2016optimal` the weights can be obtained as
+
+.. math::
+   :label: mfmc_alpha
+
+   \alpha_i = - \rho_i \sqrt{ \frac{ \mathbb{V}ar[Q] }{ \mathbb{V}ar[Q_i] } }.
+
+The optimal resource allocation problem is also obtainable in closed-form if, as demonstrated in :cite:p:`peherstorfer2016optimal` the following conditions, for the models' correlations and costs, hold 
+
+.. math:: |\rho_1| > |\rho_2| > \dots > |\rho_M|
+.. math:: \frac{\mathcal{C}_{i-1}}{\mathcal{C}_{i}} > \frac{ \rho_{i-1}^2 - \rho_{i}^2 }{ \rho_{i}^2 - \rho_{i+1}^2 },
+
+leading to 
+
+.. math:: r_i = \sqrt{ \frac{\mathcal{C}}{\mathcal{C}_i} \frac{\rho_i^2 - \rho_{i+1}^2}{1-\rho_1^2} }.
+
+
+.. _uq:sampling:multilevel:
 
 Multilevel Monte Carlo
 ----------------------
@@ -249,8 +289,8 @@ estimator variance) equal to the residual bias error
 (:math:`\varepsilon^2/2`)
 
 .. math::
-
-   \label{EQ:mlmc_optimization}
+   :label: mlmc_optimization
+   
     f(N_\ell,\lambda) = \sum_{\ell=0}^{L} N_\ell \, \mathcal{C}_{\ell} 
                       + \lambda \left( \sum_{\ell=0}^{L} N_\ell^{-1} \mathbb{V}ar\left({Y_\ell}\right) - \varepsilon^2/2 \right).
 
@@ -280,19 +320,19 @@ A single level unbiased estimator for the variance of a generic QoI at
 the highest level :math:`M_L` of the hierarchy can be written as
 
 .. math::
-
-   \label{eq: variance_est_single_level}
-    \mathbb{V}ar\left[Q_{M_L}\right] \approx \frac{1}{N_{M_L} - 1} \sum_{i=1}^{N_{M_L}} \left( Q_{M_L}^{(i)} - \mathbb{E}\left[Q_L\right] \right)^2.
+   :label: variance_est_single_level
+   
+   \mathbb{V}ar\left[Q_{M_L}\right] \approx \frac{1}{N_{M_L} - 1} \sum_{i=1}^{N_{M_L}} \left( Q_{M_L}^{(i)} - \mathbb{E}\left[Q_L\right] \right)^2.
 
 The multilevel version of
-Eq. `[eq: variance_est_single_level] <#eq: variance_est_single_level>`__
+Eq. :eq:`variance_est_single_level`
 can be obtained via a telescopic expansion in term of difference of
 estimators over subsequent levels. To simplify the notation and for
 simplicity of exposure from now on we only indicate the level, *i.e.*
 :math:`M_\ell = \ell`.
 
 The expansion is obtained by re-writing
-Eq. `[eq: variance_est_single_level] <#eq: variance_est_single_level>`__
+Eq. :eq:`variance_est_single_level`
 as
 
 .. math::
@@ -316,20 +356,20 @@ with :math:`\hat{Q}_{\ell,2}` the sampling estimator for the second
 order moment of the QoI :math:`Q_\ell` we can write
 
 .. math::
-
+   :label: variance_est_ML_approximation
+   
    \begin{split}
-   \label{eq: variance_est_ML_approximation}
-    \mathbb{V}ar\left[Q_L\right] \approx \hat{Q}_{L,2}^{\mathrm{ML}} = \sum_{\ell=0}^L \hat{Q}_{\ell,2} - \hat{Q}_{\ell-1,2},
+   \mathbb{V}ar\left[Q_L\right] \approx \hat{Q}_{L,2}^{\mathrm{ML}} = \sum_{\ell=0}^L \hat{Q}_{\ell,2} - \hat{Q}_{\ell-1,2},
    \end{split}
 
 where
 
 .. math::
-
-   \label{eq: variance_est_ML_level_terms}
-    \hat{Q}_{\ell,2} = \frac{1}{N_\ell - 1} \sum_{i=1}^{N_\ell} \left( Q_\ell^{(i)} - \hat{Q}_\ell \right)^2
-   \text{\quad  and \quad}
-    \hat{Q}_{\ell - 1,2} = \frac{1}{N_\ell - 1} \sum_{i=1}^{N_\ell} \left( Q_{\ell - 1}^{(i)} - \hat{Q}_{\ell - 1} \right)^2.
+   :label: variance_est_ML_level_terms
+   
+   \hat{Q}_{\ell,2} = \frac{1}{N_\ell - 1} \sum_{i=1}^{N_\ell} \left( Q_\ell^{(i)} - \hat{Q}_\ell \right)^2
+   \quad  \mathrm{and} \quad
+   \hat{Q}_{\ell - 1,2} = \frac{1}{N_\ell - 1} \sum_{i=1}^{N_\ell} \left( Q_{\ell - 1}^{(i)} - \hat{Q}_{\ell - 1} \right)^2.
 
 Note that :math:`\hat{Q}_{\ell,2}` and :math:`\hat{Q}_{\ell - 1,2}` are
 explicitly sharing the same samples :math:`N_\ell`.
@@ -346,7 +386,7 @@ estimator :math:`\hat{Q}_{L,2}^{ML}`
                                                   - 2 \mathbb{C}ov\left( \hat{Q}_{\ell,2},\hat{Q}_{\ell-1,2} \right),
 
 where the covariance term is a result of the dependence described
-in `[eq: variance_est_ML_level_terms] <#eq: variance_est_ML_level_terms>`__.
+in :eq:`variance_est_ML_level_terms`.
 
 The previous expression can be evaluated once the variance for the
 sample estimator of the second order order moment
@@ -397,8 +437,8 @@ An optimization problem, similar to the one formulated for the mean in
 the previous section, can be written in the case of variance
 
 .. math::
-
-   \label{EQ:mlmc_optimization_var}
+   :label: mlmc_optimization_var
+   
    \begin{split}
    \min\limits_{N_\ell} \sum_{\ell=0}^L \mathcal{C}_{\ell} N_\ell \quad \mathrm{s.t.} \quad \mathbb{V}ar\left[ \hat{Q}_{L,2}^{\mathrm{ML}} \right] = \varepsilon^2/2.
    % 
@@ -417,21 +457,20 @@ problem. The analytical approximation follows the approach described in
 Next, the following constrained minimization problem is formulated
 
 .. math::
-
-   \label{EQ:mlmc_var_optimization_nobile}
+   :label: mlmc_var_optimization_nobile
+   
     f(N_\ell,\lambda) = \sum_{\ell=0}^{L} N_\ell \, \mathcal{C}_{\ell} 
                       + \lambda \left( \sum_{\ell=0}^{L} N_\ell^{-1} \hat{V}_{2, \ell} - \varepsilon^2/2 \right),
 
 and a closed form solution is obtained
 
 .. math::
-
-   \label{EQ: MLMC_nl_var_nobile}
+   :label: MLMC_nl_var_nobile
+   
    N_{\ell} = \frac{2}{\varepsilon^2} \left[ \, \sum_{k=0}^L \left( \hat{V}_{2, k} \mathcal{C}_k \right)^{1/2} \right] 
                   \sqrt{\frac{ \hat{V}_{2, \ell} }{\mathcal{C}_{\ell}}},
 
-similarly as for the expected value
-in `[EQ:mlmc_optimization] <#EQ:mlmc_optimization>`__.
+similarly as for the expected value in :eq:`mlmc_optimization`.
 
 ..
    TODO: Note here, that higher order terms of $N_\ell$ in
@@ -440,7 +479,7 @@ in `[EQ:mlmc_optimization] <#EQ:mlmc_optimization>`__.
 
 The second approach uses numerical optimization directly on the
 non-linear optimization
-problem `[EQ:mlmc_optimization_var] <#EQ:mlmc_optimization_var>`__ to
+problem :eq:`mlmc_optimization_var` to
 find an optimal sample allocation. Dakota uses OPTPP as the default
 optimizer and switches to NPSOL if it is available.
 
@@ -591,16 +630,16 @@ resorting to a numerical optimization given a prescribed target.
 A multilevel-multifidelity approach
 -----------------------------------
 
-The MLMC approach described in §\ `1.3 <#uq:sampling:multilevel>`__ can
-be considered to be a recursive control variate technique in that it
+The MLMC approach described in :ref:`uq:sampling:multilevel` can
+be related to a recursive control variate technique in that it
 seeks to reduce the variance of the target function in order to limit
 the sampling at high resolution. In addition, the difference function
 :math:`Y_\ell` for each level can itself be the target of an additional
-control variate (refer to §\ `1.2 <#uq:sampling:controlvariate>`__). A
+control variate (refer to :ref:`uq:sampling:controlvariate`). A
 practical scenario is when not only different resolution levels are
 available (multilevel part), but also a cheaper computational model can
 be used (multifidelity part). The combined approach is a
-multilevel-multifidelity algorithm, and in particular, a
+multilevel-multifidelity algorithm :cite:p:`Fairbanks2017,Nobile2015,GeraciCTR`, and in particular, a
 multilevel-control variate Monte Carlo sampling approach.
 
 .. _`uq:sampling:mlmf:Ycorr`:
@@ -613,9 +652,9 @@ and a cheaper, possibly biased low-fidelity (LF) model, it is possible
 to write the following estimator
 
 .. math::
-
-   \label{EQ: MLMF estimator}
-    \mathbb{E}\left[Q_M^{\mathrm{HF}}\right] = \sum_{l=0}^{L_{\mathrm{HF}}} \mathbb{E}\left[Y^{\mathrm{HF}}_{\ell}\right] 
+   :label: MLMF estimator
+   
+   \mathbb{E}\left[Q_M^{\mathrm{HF}}\right] = \sum_{l=0}^{L_{\mathrm{HF}}} \mathbb{E}\left[Y^{\mathrm{HF}}_{\ell}\right] 
                                              \approx \sum_{l=0}^{L_{\mathrm{HF}}} \hat{Y}^{\mathrm{HF}}_{\ell} = \sum_{l=0}^{L_{\mathrm{HF}}} Y^{{\mathrm{HF}},\star}_{\ell},
 
 where
@@ -654,8 +693,7 @@ can be written as (for further details see
 :cite:p:`GeraciCTR`)
 
 .. math::
-
-   \label{EQ: MLMF mean}
+   :label: MLMF mean
    \begin{split}
    \mathbb{V}ar\left(\hat{Q}_M^{MLMF}\right) &= \sum_{l=0}^{L_{\mathrm{HF}}} \left( \dfrac{1}{N_{\ell}^{\mathrm{HF}}} \mathbb{V}ar\left(Y^{\mathrm{HF}}_{\ell}\right) 
                                              + \dfrac{\alpha_\ell^2 r_\ell}{(1+r_\ell) N_{\ell}^{\mathrm{HF}}} \mathbb{V}ar\left(Y^{\mathrm{HF}}_{\ell}\right) \right. \\
@@ -678,8 +716,8 @@ proportional to the variance
 ratio :math:`r_\ell`:
 
 .. math::
-
-   \label{EQ: MLMF variance}
+   :label: MLMF variance
+   
    \begin{split}
     \mathbb{V}ar\left(\hat{Q}_M^{MLMF}\right) &= \sum_{l=0}^{L_{\mathrm{HF}}} \dfrac{1}{N_{\ell}^{\mathrm{HF}}} \mathbb{V}ar\left(Y^{\mathrm{HF}}_{\ell}\right)
     \Lambda_{\ell}(r_\ell) \quad \mathrm{where} \\
@@ -700,11 +738,11 @@ large :math:`r_\ell`, i.e.,
 The optimal sample allocation is determined taking into account the
 relative cost between the HF and LF models and their correlation (per
 level). In particular the optimization problem introduced in
-Eq. `[EQ:mlmc_optimization] <#EQ:mlmc_optimization>`__ is replaced by
+Eq. :eq:`mlmc_optimization` is replaced by
 
 .. math::
 
-   \operatornamewithlimits{argmin}\limits_{N_{\ell}^{\mathrm{HF}}, r_\ell}(\mathcal{L}), \quad \mathrm{where} \quad \mathcal{L} = \sum_{\ell=0}^{L_{\mathrm{HF}}} N_{\ell}^{\mathrm{HF}} \mathcal{C}_{\ell}^{\mathrm{eq}} +
+   \mathrm{argmin}_{N_{\ell}^{\mathrm{HF}}, r_\ell}(\mathcal{L}), \quad \mathrm{where} \quad \mathcal{L} = \sum_{\ell=0}^{L_{\mathrm{HF}}} N_{\ell}^{\mathrm{HF}} \mathcal{C}_{\ell}^{\mathrm{eq}} +
                     \lambda \left( \sum_{\ell=0}^{L_{\mathrm{HF}}} \dfrac{1}{N_{\ell}^{\mathrm{HF}}}\mathbb{V}ar\left( Y^{\mathrm{HF}}_{\ell}\right) \Lambda_{\ell}(r_\ell) - \varepsilon^2/2 \right),
 
 where the optimal allocation is obtained as well as the optimal ratio
@@ -738,7 +776,7 @@ HF model.
 :math:`Q_l` correlations
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-A potential refinement of the previous approach consists in exploiting
+A potential refinement of the previous approach :cite:p:`geraci_multifidelity_2017` consists in exploiting
 the QoI on each pair of levels, :math:`\ell` and :math:`\ell-1`, to
 build a more correlated LF function. For instance, it is possible to use
 
@@ -751,7 +789,7 @@ and maximize the correlation between :math:`Y_\ell^{\mathrm{HF}}` and
 Formally the two formulations are completely equivalent if
 :math:`Y_\ell^{\mathrm{LF}}` is replaced with
 :math:`\mathring{Y}^{\mathrm{LF}}_{\ell}` in
-Equation `[EQ: MLMF estimator] <#EQ: MLMF estimator>`__ and they can be
+Eq. :eq:`MLMF estimator` and they can be
 linked through the two ratios
 
 .. math::
