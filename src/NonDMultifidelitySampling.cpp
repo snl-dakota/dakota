@@ -146,8 +146,8 @@ void NonDMultifidelitySampling::multifidelity_mc()
 		      N_H_alloc, approxSequence, eval_ratios, hf_targets);
   else // for consistency with pilot projection
     // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
-    projected_lf_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
-			    /*deltaNActualLF,*/ deltaEquivHF);
+    update_projected_lf_samples(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
+				/*deltaNActualLF,*/ deltaEquivHF);
 }
 
 
@@ -216,8 +216,8 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
 		      N_H_alloc, approxSequence, eval_ratios, hf_targets);
   else // for consistency with pilot projection
     // N_H is converged from offline pilot --> do not compute deltaNActualHF
-    projected_lf_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
-			    /*deltaNActualLF,*/ deltaEquivHF);
+    update_projected_lf_samples(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
+				/*deltaNActualLF,*/ deltaEquivHF);
 }
 
 
@@ -265,8 +265,8 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // Compute EstVar ratios:
   // ----------------------
   // No LF increments or final moments for pilot projection
-  projected_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
-		       deltaNActualHF, /*deltaNActualLF,*/ deltaEquivHF);
+  update_projected_samples(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
+			   deltaNActualHF, /*deltaNActualLF,*/ deltaEquivHF);
   // Compute the ratio of MC and MFMC mean squared errors, which incorporates
   // anticipated variance reduction from upcoming application of eval_ratios.
   // > Note: this could be redundant for tol-based targets with m1* > pilot
@@ -366,10 +366,11 @@ update_hf_targets(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
 
 /** LF only */
 void NonDMultifidelitySampling::
-projected_lf_increments(const RealVector& hf_targets,
-			const RealMatrix& eval_ratios,
-			const SizetArray& N_H_actual, size_t& N_H_alloc,
-			/*SizetArray& delta_N_L_actual,*/ Real& delta_equiv_hf)
+update_projected_lf_samples(const RealVector& hf_targets,
+			    const RealMatrix& eval_ratios,
+			    const SizetArray& N_H_actual, size_t& N_H_alloc,
+			    //SizetArray& delta_N_L_actual,
+			    Real& delta_equiv_hf)
 {
   Sizet2DArray N_L_actual;  inflate(N_H_actual, N_L_actual);
   SizetArray   N_L_alloc;   inflate(N_H_alloc,  N_L_alloc);
@@ -394,16 +395,16 @@ projected_lf_increments(const RealVector& hf_targets,
 
 /** LF and HF */
 void NonDMultifidelitySampling::
-projected_increments(const RealVector& hf_targets,
-		     const RealMatrix& eval_ratios,
-		     const SizetArray& N_H_actual, size_t& N_H_alloc,
-		     size_t& delta_N_H_actual, //SizetArray& delta_N_L_actual,
-		     Real& delta_equiv_hf)
+update_projected_samples(const RealVector& hf_targets,
+			 const RealMatrix& eval_ratios,
+			 const SizetArray& N_H_actual, size_t& N_H_alloc,
+			 size_t& delta_N_H_actual,
+			 /*SizetArray& delta_N_L_actual,*/ Real& delta_equiv_hf)
 {
   // The N_L baseline is the shared set PRIOR to delta_N_H --> important for
   // cost incr even if lf_targets is defined robustly (hf_targets * eval_ratios)
-  projected_lf_increments(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
-			  /*delta_N_L_actual,*/ delta_equiv_hf);
+  update_projected_lf_samples(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
+			      /*delta_N_L_actual,*/ delta_equiv_hf);
 
   size_t alloc_incr = one_sided_delta(N_H_alloc, average(hf_targets)),
     actual_incr = (backfillFailures) ?

@@ -78,17 +78,6 @@ protected:
 			       SizetArray& approx_sequence,
 			       RealMatrix& eval_ratios, Real& avg_hf_target);
 
-  void projected_lf_increments(const RealVector& hf_targets,
-			       const RealMatrix& eval_ratios,
-			       const SizetArray& N_H_actual, size_t& N_H_alloc,
-			       //SizetArray& delta_N_L_actual,
-			       Real& delta_equiv_hf);
-  void projected_increments(const RealVector& hf_targets,
-			    const RealMatrix& eval_ratios,
-			    const SizetArray& N_H_actual, size_t& N_H_alloc,
-			    size_t& delta_N_H_actual,
-			    //SizetArray& delta_N_L_actual,
-			    Real& delta_equiv_hf);
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
@@ -179,6 +168,18 @@ private:
   //void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   //			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
 
+  void update_projected_lf_samples(const RealVector& hf_targets,
+				   const RealMatrix& eval_ratios,
+				   const SizetArray& N_H_actual,
+				   size_t& N_H_alloc,
+				   //SizetArray& delta_N_L_actual,
+				   Real& delta_equiv_hf);
+  void update_projected_samples(const RealVector& hf_targets,
+				const RealMatrix& eval_ratios,
+				const SizetArray& N_H_actual,
+				size_t& N_H_alloc, size_t& delta_N_H_actual,
+				//SizetArray& delta_N_L_actual,
+				Real& delta_equiv_hf);
   //
   //- Heading: Data
   //
