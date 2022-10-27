@@ -694,6 +694,7 @@ can be written as (for further details see
 
 .. math::
    :label: MLMF mean
+   
    \begin{split}
    \mathbb{V}ar\left(\hat{Q}_M^{MLMF}\right) &= \sum_{l=0}^{L_{\mathrm{HF}}} \left( \dfrac{1}{N_{\ell}^{\mathrm{HF}}} \mathbb{V}ar\left(Y^{\mathrm{HF}}_{\ell}\right) 
                                              + \dfrac{\alpha_\ell^2 r_\ell}{(1+r_\ell) N_{\ell}^{\mathrm{HF}}} \mathbb{V}ar\left(Y^{\mathrm{HF}}_{\ell}\right) \right. \\
