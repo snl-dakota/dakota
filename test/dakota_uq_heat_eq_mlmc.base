@@ -1,10 +1,10 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 340 total (340 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.6890000000e+01
+<<<<< Online number of equivalent high fidelity evaluations: 2.6890000000e+01
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    4.3032856774e+01
-      Final MLMC / pilot ratio:       9.4759369396e-02
+     Online MLMC (sample profile):    4.3032856774e+01
+     Online MLMC / pilot ratio:       9.4759369396e-02
  Equivalent   MC (   27 HF samples):  3.5250715251e+02
  Equivalent MLMC / MC ratio:          1.2207654928e-01
 Sample moment statistics for each response function:
@@ -12,11 +12,11 @@ Sample moment statistics for each response function:
  response_fn_1  3.4818878260e+01  9.7359731568e+01  1.7046236294e+00  5.0267548551e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 2766 total (2766 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 3.5077750000e+01
+<<<<< Online number of equivalent high fidelity evaluations: 3.5077750000e+01
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    4.3473831827e+00
-      Final MLMC / pilot ratio:       9.5730406903e-03
+     Online MLMC (sample profile):    4.3473831827e+00
+     Online MLMC / pilot ratio:       9.5730406903e-03
  Equivalent   MC (   35 HF samples):  3.2612176844e+02
  Equivalent MLMC / MC ratio:          1.3330551970e-02
 Sample moment statistics for each response function:
@@ -24,11 +24,11 @@ Sample moment statistics for each response function:
  response_fn_1  3.9997888340e+01  1.0695614925e+02  2.3005197137e+00  7.5312341428e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 26412 total (26412 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 1.1620600000e+02
+<<<<< Online number of equivalent high fidelity evaluations: 1.1620600000e+02
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    4.4602821701e-01
-      Final MLMC / pilot ratio:       9.8216469334e-04
+     Online MLMC (sample profile):    4.4602821701e-01
+     Online MLMC / pilot ratio:       9.8216469334e-04
  Equivalent   MC (  116 HF samples):  9.8377755201e+01
  Equivalent MLMC / MC ratio:          4.5338320243e-03
 Sample moment statistics for each response function:
@@ -36,11 +36,11 @@ Sample moment statistics for each response function:
  response_fn_1  4.1277632856e+01  1.0692093070e+02  2.1745744266e+00  7.0328542373e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 3367 total (3367 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 3.7673125000e+01
+<<<<< Online number of equivalent high fidelity evaluations: 3.7673125000e+01
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    3.5297508105e+00
-      Final MLMC / pilot ratio:       7.7725948496e-03
+     Online MLMC (sample profile):    3.5297508105e+00
+     Online MLMC / pilot ratio:       7.7725948496e-03
  Equivalent   MC (   38 HF samples):  2.9904326096e+02
  Equivalent MLMC / MC ratio:          1.1803478865e-02
 Sample moment statistics for each response function:
@@ -48,11 +48,11 @@ Sample moment statistics for each response function:
  response_fn_1  4.1563814150e+01  1.0614091648e+02  2.2101715313e+00  7.6341972575e+00
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 23603 total (23603 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 1.6323575000e+02
+<<<<< Online number of equivalent high fidelity evaluations: 1.6323575000e+02
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    5.2606416106e-01
-      Final MLMC / pilot ratio:       1.1584057370e-03
+     Online MLMC (sample profile):    5.2606416106e-01
+     Online MLMC / pilot ratio:       1.1584057370e-03
  Equivalent   MC (  163 HF samples):  7.3636232394e+01
  Equivalent MLMC / MC ratio:          7.1440939326e-03
 Sample moment statistics for each response function:
@@ -60,11 +60,11 @@ Sample moment statistics for each response function:
  response_fn_1  4.2838764495e+01  1.0963605986e+02  2.1818073193e+00  6.9255226975e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 340 total (340 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.6890000000e+01
+<<<<< Online number of equivalent high fidelity evaluations: 2.6890000000e+01
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    4.3032856774e+01
-      Final MLMC / pilot ratio:       9.4759369396e-02
+     Online MLMC (sample profile):    4.3032856774e+01
+     Online MLMC / pilot ratio:       9.4759369396e-02
  Equivalent   MC (   27 HF samples):  3.5250715251e+02
  Equivalent MLMC / MC ratio:          1.2207654928e-01
 Sample moment statistics for each response function:
@@ -72,11 +72,11 @@ Sample moment statistics for each response function:
  response_fn_1  3.4818878260e+01  9.7359731568e+01  1.7046236294e+00  5.0267548551e+00
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 2766 total (2766 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 3.5077750000e+01
+<<<<< Online number of equivalent high fidelity evaluations: 3.5077750000e+01
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    4.3473831827e+00
-      Final MLMC / pilot ratio:       9.5730406903e-03
+     Online MLMC (sample profile):    4.3473831827e+00
+     Online MLMC / pilot ratio:       9.5730406903e-03
  Equivalent   MC (   35 HF samples):  3.2612176844e+02
  Equivalent MLMC / MC ratio:          1.3330551970e-02
 Sample moment statistics for each response function:
@@ -84,11 +84,11 @@ Sample moment statistics for each response function:
  response_fn_1  3.9997888340e+01  1.0695614925e+02  2.3005197137e+00  7.5312341428e+00
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 26412 total (26412 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 1.1620600000e+02
+<<<<< Online number of equivalent high fidelity evaluations: 1.1620600000e+02
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    4.4602821701e-01
-      Final MLMC / pilot ratio:       9.8216469334e-04
+     Online MLMC (sample profile):    4.4602821701e-01
+     Online MLMC / pilot ratio:       9.8216469334e-04
  Equivalent   MC (  116 HF samples):  9.8377755201e+01
  Equivalent MLMC / MC ratio:          4.5338320243e-03
 Sample moment statistics for each response function:
@@ -96,11 +96,11 @@ Sample moment statistics for each response function:
  response_fn_1  4.1277632856e+01  1.0692093070e+02  2.1745744266e+00  7.0328542373e+00
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 3367 total (3367 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 3.7673125000e+01
+<<<<< Online number of equivalent high fidelity evaluations: 3.7673125000e+01
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    3.5297508105e+00
-      Final MLMC / pilot ratio:       7.7725948496e-03
+     Online MLMC (sample profile):    3.5297508105e+00
+     Online MLMC / pilot ratio:       7.7725948496e-03
  Equivalent   MC (   38 HF samples):  2.9904326096e+02
  Equivalent MLMC / MC ratio:          1.1803478865e-02
 Sample moment statistics for each response function:
@@ -108,11 +108,11 @@ Sample moment statistics for each response function:
  response_fn_1  4.1563814150e+01  1.0614091648e+02  2.2101715313e+00  7.6341972575e+00
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 23603 total (23603 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 1.6323575000e+02
+<<<<< Online number of equivalent high fidelity evaluations: 1.6323575000e+02
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    5.2606416106e-01
-      Final MLMC / pilot ratio:       1.1584057370e-03
+     Online MLMC (sample profile):    5.2606416106e-01
+     Online MLMC / pilot ratio:       1.1584057370e-03
  Equivalent   MC (  163 HF samples):  7.3636232394e+01
  Equivalent MLMC / MC ratio:          7.1440939326e-03
 Sample moment statistics for each response function:
@@ -120,11 +120,11 @@ Sample moment statistics for each response function:
  response_fn_1  4.2838764495e+01  1.0963605986e+02  2.1818073193e+00  6.9255226975e+00
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 10587 total (10587 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 6.5087375000e+01
+<<<<< Online number of equivalent high fidelity evaluations: 6.5087375000e+01
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     1.4683928949e+02
-      Final MLMC (sample profile):    1.1297501554e+00
-      Final MLMC / pilot ratio:       7.6937865834e-03
+     Online MLMC (sample profile):    1.1297501554e+00
+     Online MLMC / pilot ratio:       7.6937865834e-03
  Equivalent   MC (   65 HF samples):  1.7942376670e+02
  Equivalent MLMC / MC ratio:          6.2965468634e-03
 Sample moment statistics for each response function:
@@ -132,11 +132,11 @@ Sample moment statistics for each response function:
  response_fn_1  4.1678105074e+01  1.0806582247e+02  2.0995111298e+00  6.4524074325e+00
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 187015 total (187015 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 1.1206016250e+03
+<<<<< Online number of equivalent high fidelity evaluations: 1.1206016250e+03
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    6.2922496221e-02
-      Final MLMC / pilot ratio:       1.3855682634e-04
+     Online MLMC (sample profile):    6.2922496221e-02
+     Online MLMC / pilot ratio:       1.3855682634e-04
  Equivalent   MC ( 1121 HF samples):  1.0223092345e+01
  Equivalent MLMC / MC ratio:          6.1549376742e-03
 Sample moment statistics for each response function:
@@ -144,11 +144,11 @@ Sample moment statistics for each response function:
  response_fn_1  4.1701399424e+01  1.0703277019e+02  2.1422073530e+00  6.8123932705e+00
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 187015 total (187015 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 1.1206016250e+03
+<<<<< Online number of equivalent high fidelity evaluations: 1.1206016250e+03
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     4.5412772423e+02
-      Final MLMC (sample profile):    6.2922496221e-02
-      Final MLMC / pilot ratio:       1.3855682634e-04
+     Online MLMC (sample profile):    6.2922496221e-02
+     Online MLMC / pilot ratio:       1.3855682634e-04
  Equivalent   MC ( 1121 HF samples):  1.0223092345e+01
  Equivalent MLMC / MC ratio:          6.1549376742e-03
 Sample moment statistics for each response function:

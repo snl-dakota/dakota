@@ -95,13 +95,13 @@ Test Number 8 succeeded
 <<<<< Function evaluation summary: 15300 total (15300 new, 0 duplicate)
 <<<<< Function evaluation summary: 15300 total (15300 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.4300000000000002e+00 outer_theta1
+                      1.1299999999999999e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      2.5345408265061648e-03
+                      4.9292288020090123e-04
 <<<<< Best constraint values   =
-                      9.9985528516085810e+02
-<<<<< Best evaluation ID: 45
+                      9.9987875362599709e+02
+<<<<< Best evaluation ID: 30
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 15300 total (15300 new, 0 duplicate)
 <<<<< Function evaluation summary: 15300 total (15300 new, 0 duplicate)
@@ -221,16 +221,16 @@ Test Number 18 succeeded
                       1.0004458921963873e+03
 <<<<< Best evaluation ID not available
 Test Number 19 succeeded
-<<<<< Function evaluation summary: 971250 total (377500 new, 593750 duplicate)
-<<<<< Function evaluation summary: 971250 total (377500 new, 593750 duplicate)
-<<<<< Function evaluation summary: 971250 total (377500 new, 593750 duplicate)
+<<<<< Function evaluation summary: 108750 total (43750 new, 65000 duplicate)
+<<<<< Function evaluation summary: 108750 total (43750 new, 65000 duplicate)
+<<<<< Function evaluation summary: 108750 total (43750 new, 65000 duplicate)
 <<<<< Best parameters          =
-                      1.0162458585776006e+00 outer_theta1
-                      5.2360052954978054e-01 outer_theta2
+                      1.0162803097464244e+00 outer_theta1
+                      5.2359880791558955e-01 outer_theta2
 <<<<< Best objective function  =
-                      3.2010969345055767e-04
+                      3.2010319574124133e-04
 <<<<< Best constraint values   =
-                      1.0000913683215139e+03
+                      1.0001195855277864e+03
 <<<<< Best evaluation ID not available
 Test Number 20 succeeded
 <<<<< Function evaluation summary: 30000 total (12250 new, 17750 duplicate)
@@ -242,5 +242,5 @@ Test Number 20 succeeded
 <<<<< Best objective function  =
                       5.3574649933855057e-04
 <<<<< Best constraint values   =
-                      9.9960211382298871e+02
+                      9.9960211382298883e+02
 <<<<< Best evaluation ID not available
