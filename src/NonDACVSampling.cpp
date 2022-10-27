@@ -165,8 +165,8 @@ void NonDACVSampling::approximate_control_variate()
 		      N_H_alloc, avg_eval_ratios, avg_hf_target);
   else
     // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
-    projected_lf_increments(avg_hf_target, avg_eval_ratios, N_H_actual,
-			    N_H_alloc, deltaEquivHF);
+    update_projected_lf_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
+				N_H_alloc, deltaEquivHF);
 }
 
 
@@ -243,8 +243,8 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
 		      N_H_alloc, avg_eval_ratios, avg_hf_target);
   else
     // N_H is converged from offline pilot --> do not compute deltaNActualHF
-    projected_lf_increments(avg_hf_target, avg_eval_ratios, N_H_actual,
-			    N_H_alloc, deltaEquivHF);
+    update_projected_lf_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
+				N_H_alloc, deltaEquivHF);
 }
 
 
@@ -297,8 +297,8 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   ++mlmfIter;
 
   // No LF increments or final moments for pilot projection
-  projected_increments(avg_hf_target, avg_eval_ratios, N_H_actual, N_H_alloc,
-		       deltaNActualHF, deltaEquivHF);
+  update_projected_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
+			   N_H_alloc, deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::nonhierarch_numerical_solution() recovers N*
   // from the numerical solve and computes projected avgEstVar{,Ratio}
@@ -1117,9 +1117,11 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 
 /** LF only */
 void NonDACVSampling::
-projected_lf_increments(Real avg_hf_target, const RealVector& avg_eval_ratios,
-			const SizetArray& N_H_actual, size_t& N_H_alloc,
-			/*SizetArray& delta_N_L_actual,*/ Real& delta_equiv_hf)
+update_projected_lf_samples(Real avg_hf_target,
+			    const RealVector& avg_eval_ratios,
+			    const SizetArray& N_H_actual, size_t& N_H_alloc,
+			    //SizetArray& delta_N_L_actual,
+			    Real& delta_equiv_hf)
 {
   Sizet2DArray N_L_actual;  inflate(N_H_actual, N_L_actual);
   SizetArray   N_L_alloc;   inflate(N_H_alloc,  N_L_alloc);
@@ -1142,15 +1144,15 @@ projected_lf_increments(Real avg_hf_target, const RealVector& avg_eval_ratios,
 
 /** LF and HF */
 void NonDACVSampling::
-projected_increments(Real avg_hf_target, const RealVector& avg_eval_ratios,
-		     const SizetArray& N_H_actual, size_t& N_H_alloc,
-		     size_t& delta_N_H_actual, //SizetArray& delta_N_L_actual,
-		     Real& delta_equiv_hf)
+update_projected_samples(Real avg_hf_target, const RealVector& avg_eval_ratios,
+			 const SizetArray& N_H_actual, size_t& N_H_alloc,
+			 size_t& delta_N_H_actual,
+			 /*SizetArray& delta_N_L_actual,*/ Real& delta_equiv_hf)
 {
   // The N_L baseline is the shared set PRIOR to delta_N_H --> important for
   // cost incr even if lf_targets is defined robustly (hf_targets * eval_ratios)
-  projected_lf_increments(avg_hf_target, avg_eval_ratios, N_H_actual, N_H_alloc,
-			  /*delta_N_L_actual,*/ delta_equiv_hf);
+  update_projected_lf_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
+			      N_H_alloc, /*delta_N_L_actual,*/ delta_equiv_hf);
 
   size_t alloc_incr = one_sided_delta(N_H_alloc, avg_hf_target),
     actual_incr = (backfillFailures) ?
