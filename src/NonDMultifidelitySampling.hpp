@@ -78,6 +78,11 @@ protected:
 			       SizetArray& approx_sequence,
 			       RealMatrix& eval_ratios, Real& avg_hf_target);
 
+  void projected_lf_increments(const RealVector& hf_targets,
+			       const RealMatrix& eval_ratios,
+			       const SizetArray& N_H_actual, size_t& N_H_alloc,
+			       //SizetArray& delta_N_L_actual,
+			       Real& delta_equiv_hf);
   void projected_increments(const RealVector& hf_targets,
 			    const RealMatrix& eval_ratios,
 			    const SizetArray& N_H_actual, size_t& N_H_alloc,
@@ -105,14 +110,6 @@ protected:
 			 const RealVector& estvar_iter0,
 			 RealVector& estvar_ratios, RealVector& hf_targets);
   //void update_hf_targets(const SizetArray& N_H, RealVector& hf_targets);
-
-  void update_projected_samples(const RealVector& hf_targets,
-				const RealMatrix& eval_ratios,
-				const SizetArray& N_H_actual, size_t& N_H_alloc,
-				const Sizet2DArray& N_L_actual,
-				SizetArray& N_L_alloc, size_t& delta_N_H_actual,
-				//SizetArray& delta_N_L_actual,
-				Real& delta_equiv_hf);
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,

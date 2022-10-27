@@ -68,6 +68,11 @@ protected:
   void approximate_control_variate_offline_pilot();
   void approximate_control_variate_pilot_projection();
 
+  void projected_lf_increments(Real avg_hf_targets,
+			       const RealVector& avg_eval_ratios,
+			       const SizetArray& N_H_actual, size_t& N_H_alloc,
+			       //SizetArray& delta_N_L_actual,
+			       Real& delta_equiv_hf);
   void projected_increments(Real avg_hf_targets,
 			    const RealVector& avg_eval_ratios,
 			    const SizetArray& N_H_actual, size_t& N_H_alloc,
@@ -166,14 +171,6 @@ private:
 			   RealSymMatrix& sum_LL_q, RealMatrix& sum_LH,
 			   size_t N_shared_q, const RealSymMatrix& F,
 			   size_t qoi, RealVector& beta);
-
-  void update_projected_samples(Real avg_hf_target,
-				const RealVector& avg_eval_ratios,
-				const SizetArray& N_H_actual, size_t& N_H_alloc,
-				const Sizet2DArray& N_L_actual,
-				SizetArray& N_L_alloc, size_t& delta_N_H_actual,
-				//SizetArray& delta_N_L_actual,
-				Real& delta_equiv_hf);
 
   //
   //- Heading: Data

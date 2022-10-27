@@ -164,8 +164,9 @@ void NonDACVSampling::approximate_control_variate()
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
 		      N_H_alloc, avg_eval_ratios, avg_hf_target);
   else
-    projected_increments(avg_hf_target, avg_eval_ratios, N_H_actual, N_H_alloc,
-			 deltaNActualHF, deltaEquivHF);
+    // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
+    projected_lf_increments(avg_hf_target, avg_eval_ratios, N_H_actual,
+			    N_H_alloc, deltaEquivHF);
 }
 
 
@@ -241,8 +242,9 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
 		      N_H_alloc, avg_eval_ratios, avg_hf_target);
   else
-    projected_increments(avg_hf_target, avg_eval_ratios, N_H_actual, N_H_alloc,
-			 deltaNActualHF, deltaEquivHF);
+    // N_H is converged from offline pilot --> do not compute deltaNActualHF
+    projected_lf_increments(avg_hf_target, avg_eval_ratios, N_H_actual,
+			    N_H_alloc, deltaEquivHF);
 }
 
 
@@ -297,26 +299,9 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   // No LF increments or final moments for pilot projection
   projected_increments(avg_hf_target, avg_eval_ratios, N_H_actual, N_H_alloc,
 		       deltaNActualHF, deltaEquivHF);
-}
-
-
-void NonDACVSampling::
-projected_increments(Real avg_hf_target, const RealVector& avg_eval_ratios,
-		     const SizetArray& N_H_actual, size_t& N_H_alloc,
-		     size_t& delta_N_H_actual, //SizetArray& delta_N_L_actual,
-		     Real& delta_equiv_hf)
-{  
-  // overwrite incurred N_H_actual with projected N_H_actual
-  //SizetArray N_H_actual_proj = N_H_actual;//fine-grained bookkeeping if needed
-
-  Sizet2DArray N_L_actual;      inflate(N_H_actual, N_L_actual);
-  SizetArray   N_L_alloc_proj;  inflate(N_H_alloc,  N_L_alloc_proj);
-  update_projected_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
-			   N_H_alloc, N_L_actual, N_L_alloc_proj,
-			   delta_N_H_actual, //delta_N_L_actual,
-			   delta_equiv_hf);
-  //increment_samples(N_L_actual_proj, delta_N_L_actual);
-  finalize_counts(N_L_actual, N_L_alloc_proj);
+  // No need for updating estimator variance given deltaNActualHF since
+  // NonDNonHierarchSampling::nonhierarch_numerical_solution() recovers N*
+  // from the numerical solve and computes projected avgEstVar{,Ratio}
 }
 
 
@@ -1130,23 +1115,15 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 }
 
 
+/** LF only */
 void NonDACVSampling::
-update_projected_samples(Real avg_hf_target, const RealVector& avg_eval_ratios,
-			 const SizetArray&   N_H_actual, size_t&     N_H_alloc,
-			 const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
-			 size_t& delta_N_H_actual,
-			 //SizetArray& delta_N_L_actual,
-			 Real& delta_equiv_hf)
+projected_lf_increments(Real avg_hf_target, const RealVector& avg_eval_ratios,
+			const SizetArray& N_H_actual, size_t& N_H_alloc,
+			/*SizetArray& delta_N_L_actual,*/ Real& delta_equiv_hf)
 {
-  size_t alloc_incr = one_sided_delta(N_H_alloc, avg_hf_target),
-    actual_incr = (backfillFailures) ?
-      one_sided_delta(average(N_H_actual), avg_hf_target) : alloc_incr;
-  //increment_samples(N_H_actual, actual_incr);
-  delta_N_H_actual += actual_incr;  N_H_alloc += alloc_incr;
-  increment_equivalent_cost(actual_incr, sequenceCost, numApprox,
-			    delta_equiv_hf);
-
-  size_t approx;  Real lf_target;
+  Sizet2DArray N_L_actual;  inflate(N_H_actual, N_L_actual);
+  SizetArray   N_L_alloc;   inflate(N_H_alloc,  N_L_alloc);
+  size_t approx, alloc_incr, actual_incr;  Real lf_target;
   for (approx=0; approx<numApprox; ++approx) {
     lf_target = avg_eval_ratios[approx] * avg_hf_target;
     const SizetArray& N_L_actual_a = N_L_actual[approx];
@@ -1154,11 +1131,33 @@ update_projected_samples(Real avg_hf_target, const RealVector& avg_eval_ratios,
     alloc_incr  = one_sided_delta(N_L_alloc_a, lf_target);
     actual_incr = (backfillFailures) ?
       one_sided_delta(average(N_L_actual_a), lf_target) : alloc_incr;
-    //increment_samples(N_L_actual_a, actual_incr);
     /*delta_N_L_actual[approx] += actual_incr;*/  N_L_alloc_a += alloc_incr;
     increment_equivalent_cost(actual_incr, sequenceCost, approx,
 			      delta_equiv_hf);
   }
+
+  finalize_counts(N_L_actual, N_L_alloc);
+}
+
+
+/** LF and HF */
+void NonDACVSampling::
+projected_increments(Real avg_hf_target, const RealVector& avg_eval_ratios,
+		     const SizetArray& N_H_actual, size_t& N_H_alloc,
+		     size_t& delta_N_H_actual, //SizetArray& delta_N_L_actual,
+		     Real& delta_equiv_hf)
+{
+  // The N_L baseline is the shared set PRIOR to delta_N_H --> important for
+  // cost incr even if lf_targets is defined robustly (hf_targets * eval_ratios)
+  projected_lf_increments(avg_hf_target, avg_eval_ratios, N_H_actual, N_H_alloc,
+			  /*delta_N_L_actual,*/ delta_equiv_hf);
+
+  size_t alloc_incr = one_sided_delta(N_H_alloc, avg_hf_target),
+    actual_incr = (backfillFailures) ?
+      one_sided_delta(average(N_H_actual), avg_hf_target) : alloc_incr;
+  delta_N_H_actual += actual_incr;  N_H_alloc += alloc_incr;
+  increment_equivalent_cost(actual_incr, sequenceCost, numApprox,
+			    delta_equiv_hf);
 }
 
 } // namespace Dakota
