@@ -1051,7 +1051,7 @@ message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
 
 
 # Top-level dakota.environment Python module
-if(DAKOTA_PYBIND11)
+if(DAKOTA_PYTHON_WRAPPER)
   # NOTE: Library name "environment" is really generic due to overly
   # simple Python packaging scheme we're using; revisit.
   # TODO: Need to always compile libs PIC when using Python
