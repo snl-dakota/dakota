@@ -1194,7 +1194,6 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
 
     // update avgEstVar for final variance report and finalStats
     estvar_ratios_to_avg_estvar(estVarRatios, var_H, N_H, avgEstVar);
-    Cout << "N_H:\n" << N_H << std::endl;
 
     if (outputLevel >= NORMAL_OUTPUT) {
       bool ordered = approx_sequence.empty();
