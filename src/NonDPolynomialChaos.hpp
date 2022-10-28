@@ -46,7 +46,8 @@ public:
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
 		      short rule_nest, short rule_growth,
-		      bool piecewise_basis, bool use_derivs);
+		      bool piecewise_basis, bool use_derivs,
+                      String exp_expansion_file = "");
   /// alternate constructor for regression (least squares, CS, OLI)
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		      unsigned short exp_order, const RealVector& dim_pref,
@@ -57,7 +58,8 @@ public:
 		      bool piecewise_basis, bool use_derivs, bool cv_flag,
 		      const String& import_build_pts_file,
 		      unsigned short import_build_format,
-		      bool import_build_active_only);
+		      bool import_build_active_only,
+                      String exp_expansion_file = "");
 
   /// destructor
   ~NonDPolynomialChaos();
@@ -129,6 +131,8 @@ protected:
   void update_samples_from_order_increment();
   void sample_allocation_metric(Real& sparsity_metric, Real power);
 
+  /// Inherit to allow on-the-fly instances to customize behavior
+  virtual void post_run(std::ostream& s) override;
   /// print the final coefficients and final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   /// print the PCE coefficient array for the orthogonal basis
