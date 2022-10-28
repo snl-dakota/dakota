@@ -769,13 +769,15 @@ compute_eval_ratios(const RealVector& sum_L_shared, const RealVector& sum_H,
   if (rho2_LH.empty())         rho2_LH.sizeUninitialized(numFunctions);
   if (var_H.empty())             var_H.sizeUninitialized(numFunctions);
 
-  //Real eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
 
     Real& rho_sq = rho2_LH[qoi];
     compute_mf_correlation(sum_L_shared[qoi], sum_H[qoi], sum_LL[qoi],
 			   sum_LH[qoi], sum_HH[qoi], N_shared[qoi],
 			   var_H[qoi], rho_sq);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "rho_LH (Pearson correlation) for QoI " << qoi+1 << " = "
+	   << std::setw(9) << std::sqrt(rho_sq) << '\n';
 
     // compute evaluation ratio which determines increment for LF samples
     // > the sample increment optimizes the total computational budget and is
@@ -785,28 +787,16 @@ compute_eval_ratios(const RealVector& sum_L_shared, const RealVector& sum_H,
     // this does not seem to behave as well in limited numerical experience.
     //if (rho_sq > Pecos::SMALL_NUMBER_SQ) {
     //  avg_inv_eval_ratio += std::sqrt((1. - rho_sq)/(cost_ratio * rho_sq));
-    if (rho_sq < 1.) { // protect against division by 0, sqrt(negative)
-      eval_ratios[qoi] = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
-      if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "evaluation_ratios() QoI " << qoi+1 << ": cost_ratio = "
-	     << cost_ratio << " rho_sq = " << rho_sq << " eval_ratio = "
-	     << eval_ratios[qoi] << std::endl;
-      //avg_eval_ratio += eval_ratios[qoi];
-      //++num_avg;
-    }
-    else // should not happen, but provide a reasonable upper bound
-      eval_ratios[qoi] = (Real)maxFunctionEvals / average(N_shared);
-
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "rho_LH (Pearson correlation) for QoI " << qoi+1 << " = "
-	   << std::setw(9) << std::sqrt(rho_sq) << '\n';
+    eval_ratios[qoi] = (rho_sq < 1.) ? // prevent division by 0, sqrt(negative)
+      std::sqrt(cost_ratio * rho_sq / (1. - rho_sq)) :
+      std::sqrt(cost_ratio / Pecos::SMALL_NUMBER); // should not happen
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "evaluation_ratios() QoI " << qoi+1 << ": cost_ratio = "
+	   << cost_ratio << " rho_sq = " << rho_sq << " eval_ratio = "
+	   << eval_ratios[qoi] << std::endl;
   }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "variance of HF Q:\n" << var_H;
-
-  //if (num_avg) avg_eval_ratio /= num_avg;
-  //else         avg_eval_ratio  = (Real)maxFunctionEvals / average(N_shared);
-  //return avg_eval_ratio;
 }
 
 

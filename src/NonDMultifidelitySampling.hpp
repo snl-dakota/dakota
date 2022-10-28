@@ -104,7 +104,8 @@ protected:
 			       const RealVector& var_H, const SizetArray& N_H,
 			       const RealVector& hf_targets,
 			       const SizetArray& approx_sequence,
-			       const RealMatrix& eval_ratios);
+			       const RealMatrix& eval_ratios,
+			       RealVector& estvar_ratios, Real& avg_est_var);
 
 private:
 

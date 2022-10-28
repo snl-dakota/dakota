@@ -959,31 +959,22 @@ compute_eval_ratios(RealMatrix& sum_L_shared, RealMatrix& sum_H,
     compute_mf_correlation(sum_L_shared(qoi,lev), sum_H(qoi,lev),
 			   sum_LL(qoi,lev), sum_LH(qoi,lev), sum_HH(qoi,lev),
 			   N_shared[qoi], var_H(qoi,lev), rho_sq);
-
-    if (rho_sq < 1.) { // protect against division by 0
-      eval_ratios[qoi] = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
-      if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = " << cost_ratio
-	     << " rho_sq = " << rho_sq << " eval_ratio = " << eval_ratios[qoi]
-	     << std::endl;
-      //avg_eval_ratio += eval_ratio;
-      //++num_avg;
-    }
-    else // should not happen, but provide a reasonable upper bound
-      eval_ratios[qoi] = (Real)maxFunctionEvals / average(N_shared);
-
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "rho_LH (Pearson correlation) for QoI " << qoi+1 << " = "
 	   << std::setw(9) << std::sqrt(rho_sq) << '\n';
+
+    eval_ratios[qoi] = (rho_sq < 1.) ? // protect against division by 0
+      std::sqrt(cost_ratio * rho_sq / (1. - rho_sq)) :
+      std::sqrt(cost_ratio / Pecos::SMALL_NUMBER); // should not happen
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = " << cost_ratio
+	   << " rho_sq = " << rho_sq << " eval_ratio = " << eval_ratios[qoi]
+	   << std::endl;
   }
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "variance of HF Q[" << lev << "]:\n";
     write_col_vector_trans(Cout, (int)lev, (int)numFunctions, var_H);
   }
-
-  //if (num_avg) avg_eval_ratio /= num_avg;
-  //else         avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
-  //return avg_eval_ratio;
 }
 
 
@@ -1006,7 +997,6 @@ compute_eval_ratios(RealMatrix& sum_Ll,        RealMatrix& sum_Llm1,
   else {
     if (eval_ratios.empty()) eval_ratios.sizeUninitialized(numFunctions);
     Real beta_dot, gamma;
-    //Real eval_ratio, avg_eval_ratio = 0.;  size_t num_avg = 0;
     for (size_t qoi=0; qoi<numFunctions; ++qoi) {
       Real& rho_dot_sq = rho_dot2_LH(qoi,lev);
       compute_mlmf_control(sum_Ll(qoi,lev), sum_Llm1(qoi,lev), sum_Hl(qoi,lev),
@@ -1017,31 +1007,22 @@ compute_eval_ratios(RealMatrix& sum_Ll,        RealMatrix& sum_Llm1,
 			   sum_Hl_Hl(qoi,lev), sum_Hl_Hlm1(qoi,lev),
 			   sum_Hlm1_Hlm1(qoi,lev), N_shared[qoi],
 			   var_YHl(qoi,lev), rho_dot_sq, beta_dot, gamma);
-
-      if (rho_dot_sq < 1.) { // protect against division by 0
-	eval_ratios[qoi] = std::sqrt(cost_ratio * rho_dot_sq / (1.-rho_dot_sq));
-	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = "
-	       << cost_ratio << " rho_dot_sq = " << rho_dot_sq
-	       << " eval_ratio = " << eval_ratios[qoi] << std::endl;
-	//avg_eval_ratio += eval_ratio;
-	//++num_avg;
-      }
-      else // should not happen, but provide a reasonable upper bound
-	eval_ratios[qoi] = (Real)maxFunctionEvals / average(N_shared);
-
       if (outputLevel >= NORMAL_OUTPUT)
 	Cout << "rho_dot_LH for QoI " << qoi+1 << " = " << std::setw(9)
 	     << std::sqrt(rho_dot_sq) << '\n';
+
+      eval_ratios[qoi] = (rho_dot_sq < 1.) ? // protect against division by 0
+	std::sqrt(cost_ratio * rho_dot_sq / (1.-rho_dot_sq)) :
+	std::sqrt(cost_ratio / Pecos::SMALL_NUMBER); // should not happen
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = "
+	     << cost_ratio << " rho_dot_sq = " << rho_dot_sq
+	     << " eval_ratio = " << eval_ratios[qoi] << std::endl;
     }
     if (outputLevel >= DEBUG_OUTPUT) {
       Cout << "variance of HF Y[" << lev << "]:\n";
       write_col_vector_trans(Cout, (int)lev, (int)numFunctions, var_YHl);
     }
-
-    //if (num_avg) avg_eval_ratio /= num_avg;
-    //else         avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
-    //return avg_eval_ratio;
   }
 }
 

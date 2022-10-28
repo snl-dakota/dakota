@@ -30,7 +30,7 @@ namespace Dakota {
 // special values for optSubProblemForm
 enum { ANALYTIC_SOLUTION = 1, REORDERED_ANALYTIC_SOLUTION,
        R_ONLY_LINEAR_CONSTRAINT, N_VECTOR_LINEAR_CONSTRAINT,
-       R_AND_N_NONLINEAR_CONSTRAINT };
+       R_AND_N_NONLINEAR_CONSTRAINT, N_VECTOR_LINEAR_OBJECTIVE };
 
 
 /// Perform Approximate Control Variate Monte Carlo sampling for UQ.
@@ -101,6 +101,9 @@ protected:
 			 Sizet2DArray& num_LH);
   void finalize_counts(Sizet2DArray& N_L_actual, SizetArray& N_L_alloc);
 
+  Real compute_equivalent_cost(Real avg_hf_target,
+			       const RealVector& avg_eval_ratios,
+			       const RealVector& cost);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t index, Real& equiv_hf_evals);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
@@ -239,30 +242,48 @@ private:
   //- Heading: helper functions
   //
 
+  Real update_hf_target(Real avg_estvar, Real avg_N_H,
+			const RealVector& estvar0);
+  Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
+			const RealVector& estvar0);
+
   /// objective helper function shared by NPSOL/OPT++ static evaluators
-  Real objective_function(const RealVector& r_and_N);
-  //void objective_gradient(const RealVector& r_and_N, RealVector& obj_grad);
+  Real average_estimator_variance(const RealVector& r_and_N);
+  /// flattens contours of average_estimator_variance() using std::log
+  Real log_average_estvar(const RealVector& r_and_N);
+
   /// constraint helper function shared by NPSOL/OPT++ static evaluators
-  Real nonlinear_constraint(const RealVector& r_and_N);
-  /// constraint gradient helper function shared by NPSOL/OPT++
-  /// static evaluators
-  void nonlinear_constraint_gradient(const RealVector& r_and_N,
-				     RealVector& grad_c);
+  Real linear_cost(const RealVector& N_vec);
+  /// constraint helper function shared by NPSOL/OPT++ static evaluators
+  Real nonlinear_cost(const RealVector& r_and_N);
+  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
+  void linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c);
+  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
+  void nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c);
 
   /// static function used by NPSOL for the objective function
-  static void npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
-					double* grad_f, int& nstate);
-  /// static function used by OPT++ for the objective function
-  static void optpp_objective_evaluator(int n, const RealVector& x,
-					double& f, int& result_mode);
+  static void npsol_objective(int& mode, int& n, double* x, double& f,
+			      double* grad_f, int& nstate);
   /// static function used by NPSOL for the nonlinear constraints, if present
-  static void npsol_constraint_evaluator(int& mode, int& ncnln, int& n,
-					 int& nrowj, int* needc, double* x,
-					 double* c, double* cjac, int& nstate);
-  /// static function used by OPT++ for the nonlinear constraints, if present
-  static void optpp_constraint_evaluator(int mode, int n, const RealVector& x,
-					 RealVector& g, RealMatrix& grad_g,
-					 int& result_mode);
+  static void npsol_constraint(int& mode, int& ncnln, int& n, int& nrowj,
+			       int* needc, double* x, double* c, double* cjac,
+			       int& nstate);
+
+  /// static NLF1 function used by OPT++ for the objective function/gradient
+  static void optpp_nlf1_objective(int mode, int n, const RealVector& x,
+				   double& f, RealVector& grad_f,
+				   int& result_mode);
+  /// static FDNLF1 function used by OPT++ for the objective function
+  static void optpp_fdnlf1_objective(int n, const RealVector& x, double& f,
+				     int& result_mode);
+  /// static NLF1 function used by OPT++ for the nonlinear constraints
+  static void optpp_nlf1_constraint(int mode, int n, const RealVector& x,
+				    RealVector& c, RealMatrix& grad_c,
+				    int& result_mode);
+  /// static FDNLF1 function used by OPT++ for the nonlinear constraints
+  static void optpp_fdnlf1_constraint(int n, const RealVector& x,
+				      RealVector& c, int& result_mode);
+
   /// static function used by MinimizerAdapterModel for response data
   /// (objective and nonlinear constraint, if present)
   static void response_evaluator(const Variables& vars, const ActiveSet& set,
@@ -363,6 +384,19 @@ finalize_counts(Sizet2DArray& N_L_actual, SizetArray& N_L_alloc)
   // Update LF counts only as HF counts are directly updated by reference:
   inflate_approx_samples(N_L_actual, multilev, secondaryIndex, NLevActual);
   inflate_approx_samples(N_L_alloc,  multilev, secondaryIndex, NLevAlloc);
+}
+
+
+inline Real NonDNonHierarchSampling::
+compute_equivalent_cost(Real avg_hf_target, const RealVector& avg_eval_ratios,
+			const RealVector& cost)
+{
+  size_t approx, len = cost.length(), hf_index = len-1;
+  Real cost_ref = cost[hf_index];
+  Real equiv_hf_ratio = 1.; // apply avg_hf_target at end
+  for (approx=0; approx<hf_index; ++approx)
+    equiv_hf_ratio += avg_eval_ratios[approx] * cost[approx] / cost_ref;
+  return equiv_hf_ratio * avg_hf_target;
 }
 
 
@@ -467,6 +501,37 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Average evaluation ratios rescaled to budget:\n"
 	 << avg_eval_ratios << std::endl;
+}
+
+
+inline Real NonDNonHierarchSampling::
+update_hf_target(Real avg_estvar, Real avg_N_H, const RealVector& estvar0)
+{
+  // Note: there is a circular dependency between estvar_ratios and hf_targets
+  RealVector hf_targets(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    hf_targets[qoi] = avg_estvar * avg_N_H
+                    / (convergenceTol * estvar0[qoi]);
+  Real avg_hf_target = average(hf_targets);
+  Cout << "Scaling profile for convergenceTol = " << convergenceTol
+       << ": average HF target = " << avg_hf_target << std::endl;
+  return avg_hf_target;
+}
+
+
+inline Real NonDNonHierarchSampling::
+update_hf_target(Real avg_estvar, const SizetArray& N_H,
+		 const RealVector& estvar0)
+{
+  // Note: there is a circular dependency between estvar_ratios and hf_targets
+  RealVector hf_targets(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    hf_targets[qoi] = avg_estvar * N_H[qoi]
+                    / (convergenceTol * estvar0[qoi]);
+  Real avg_hf_target = average(hf_targets);
+  Cout << "Scaling profile for convergenceTol = " << convergenceTol
+       << ": average HF target = " << avg_hf_target << std::endl;
+  return avg_hf_target;
 }
 
 
