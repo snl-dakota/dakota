@@ -603,13 +603,9 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
     Real*   eval_ratios_a = eval_ratios[approx];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       rho_sq = rho2_LH_a[qoi];
-      if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
-	eval_ratios_a[qoi] = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
-      else {
-	hf_indices(hf_form_index, hf_lev_index);
-	eval_ratios_a[qoi] = (Real)maxFunctionEvals
-	                   / (Real)NLevAlloc[hf_form_index][hf_lev_index];
-      }
+      eval_ratios_a[qoi] = (rho_sq < 1.) ? // prevent div by 0, sqrt(negative)
+	std::sqrt(cost_ratio * rho_sq / (1. - rho_sq)) :
+	std::sqrt(cost_ratio / Pecos::SMALL_NUMBER); // should not happen
     }
   }
 }
@@ -1022,7 +1018,6 @@ nonhierarch_numerical_solution(const RealVector& cost,
       // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L
       // > can also under-relax the budget allocation to enable additional N_H
       //   increments + associated shared sample sets to refine shared stats.
-      Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
       avg_hf_target = allocate_budget(avg_eval_ratios, cost);
     }
     else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: detect user spec
@@ -1030,12 +1025,11 @@ nonhierarch_numerical_solution(const RealVector& cost,
       //               = curr_estvar * N_curr / N_target
       //  --> N_target = curr_estvar * N_curr / (convTol * estvar_iter0)
       // Note: estvar_iter0 is fixed based on pilot
-      Cout << "Scaling profile for convergenceTol = " << convergenceTol;
-      avg_hf_target = avg_estvar * avg_N_H
-	            / (convergenceTol * average(estVarIter0));
+      avg_hf_target = (backfillFailures) ?
+	update_hf_target(avg_estvar, N_H_actual, estVarIter0) :
+	update_hf_target(avg_estvar, N_H_alloc,  estVarIter0);
     }
     //avg_hf_target = std::min(budget_target, ctol_target); // enforce both
-    Cout << ": average HF target = " << avg_hf_target << std::endl;
     break;
   default:
     // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
@@ -1132,7 +1126,7 @@ average_estimator_variance(const RealVector& r_and_N)
   case R_AND_N_NONLINEAR_CONSTRAINT: {  // N is a scalar optimization variable
     Real N = r_and_N[numApprox];
     for (qoi=0; qoi<numFunctions; ++qoi)
-      est_var[qoi] = varH[qoi] / N         * estvar_ratios[qoi];
+      est_var[qoi] = varH[qoi] / N * estvar_ratios[qoi];
     break;
   }
   }
@@ -1144,7 +1138,6 @@ average_estimator_variance(const RealVector& r_and_N)
 	 << "average((1. - Rsq) varH / N) = " << avg_estvar << '\n';
   return avg_estvar;
 }
-
 
 
 Real NonDNonHierarchSampling::log_average_estvar(const RealVector& r_and_N)

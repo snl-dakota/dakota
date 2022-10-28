@@ -1094,14 +1094,6 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 			const RealVector& cost,  SizetArray& approx_sequence,
 			RealMatrix& eval_ratios, Real& avg_hf_target)
 {
-  /* *** TO DO ***: carry accuracy-based through this logic
-  if (maxFunctionEvals == SZ_MAX) {
-    Cerr << "Error: evaluation budget required for numerical MFMC "
-	 << "(convergence tolerance option not yet supported)." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  */
-
   size_t qoi, approx, num_am1 = numApprox - 1, hf_form_index, hf_lev_index;
   hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
@@ -1111,6 +1103,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   RealVector avg_eval_ratios;
 
   if (mlmfIter == 0) {
+
+    /* *** TO DO ***: carry accuracy-based through this logic */
 
     if (equivHFEvals >= budget) // only 1 feasible pt, no need for solve
       { eval_ratios = 1.;  avg_hf_target = avg_N_H;  return; }

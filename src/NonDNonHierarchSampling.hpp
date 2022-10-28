@@ -101,6 +101,9 @@ protected:
 			 Sizet2DArray& num_LH);
   void finalize_counts(Sizet2DArray& N_L_actual, SizetArray& N_L_alloc);
 
+  Real compute_equivalent_cost(Real avg_hf_target,
+			       const RealVector& avg_eval_ratios,
+			       const RealVector& cost);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t index, Real& equiv_hf_evals);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
@@ -238,6 +241,11 @@ private:
   //
   //- Heading: helper functions
   //
+
+  Real update_hf_target(Real avg_estvar, Real avg_N_H,
+			const RealVector& estvar0);
+  Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
+			const RealVector& estvar0);
 
   /// objective helper function shared by NPSOL/OPT++ static evaluators
   Real average_estimator_variance(const RealVector& r_and_N);
@@ -379,6 +387,19 @@ finalize_counts(Sizet2DArray& N_L_actual, SizetArray& N_L_alloc)
 }
 
 
+inline Real NonDNonHierarchSampling::
+compute_equivalent_cost(Real avg_hf_target, const RealVector& avg_eval_ratios,
+			const RealVector& cost)
+{
+  size_t approx, len = cost.length(), hf_index = len-1;
+  Real cost_ref = cost[hf_index];
+  Real equiv_hf_ratio = 1.; // apply avg_hf_target at end
+  for (approx=0; approx<hf_index; ++approx)
+    equiv_hf_ratio += avg_eval_ratios[approx] * cost[approx] / cost_ref;
+  return equiv_hf_ratio * avg_hf_target;
+}
+
+
 inline void NonDNonHierarchSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  size_t index,    Real& equiv_hf_evals)
@@ -447,6 +468,8 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
   for (size_t approx=0; approx<numApprox; ++approx)
     inner_prod += cost[approx] * avg_eval_ratios[approx];
   Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
+  Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals
+       << ": average HF target = " << avg_hf_target << std::endl;
   return avg_hf_target;
 }
 
@@ -480,6 +503,37 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Average evaluation ratios rescaled to budget:\n"
 	 << avg_eval_ratios << std::endl;
+}
+
+
+inline Real NonDNonHierarchSampling::
+update_hf_target(Real avg_estvar, Real avg_N_H, const RealVector& estvar0)
+{
+  // Note: there is a circular dependency between estvar_ratios and hf_targets
+  RealVector hf_targets(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    hf_targets[qoi] = avg_estvar * avg_N_H
+                    / (convergenceTol * estvar0[qoi]);
+  Real avg_hf_target = average(hf_targets);
+  Cout << "Scaling profile for convergenceTol = " << convergenceTol
+       << ": average HF target = " << avg_hf_target << std::endl;
+  return avg_hf_target;
+}
+
+
+inline Real NonDNonHierarchSampling::
+update_hf_target(Real avg_estvar, const SizetArray& N_H,
+		 const RealVector& estvar0)
+{
+  // Note: there is a circular dependency between estvar_ratios and hf_targets
+  RealVector hf_targets(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    hf_targets[qoi] = avg_estvar * N_H[qoi]
+                    / (convergenceTol * estvar0[qoi]);
+  Real avg_hf_target = average(hf_targets);
+  Cout << "Scaling profile for convergenceTol = " << convergenceTol
+       << ": average HF target = " << avg_hf_target << std::endl;
+  return avg_hf_target;
 }
 
 

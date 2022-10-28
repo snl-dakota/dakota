@@ -174,6 +174,9 @@ private:
 				//SizetArray& delta_N_L_actual,
 				Real& delta_equiv_hf);
 
+  Real update_hf_target(const RealVector& avg_eval_ratios,
+			const RealVector& var_H, const RealVector& estvar0);
+
   //
   //- Heading: Data
   //
