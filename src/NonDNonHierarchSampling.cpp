@@ -1031,15 +1031,20 @@ nonhierarch_numerical_solution(const RealVector& cost,
     }
     //avg_hf_target = std::min(budget_target, ctol_target); // enforce both
     break;
-  default:
+  case R_AND_N_NONLINEAR_CONSTRAINT:
     // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
     // N_VECTOR: N*_i is leading part of r_and_N and N* is trailing part
     copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r_i | N_i
     avg_hf_target = cv_star[numApprox];  // N*, bounded by linear ineq constr
     break;
-  }
-  if (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT)
+  case N_VECTOR_LINEAR_OBJECTIVE: case N_VECTOR_LINEAR_CONSTRAINT:
+    // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
+    // N_VECTOR: N*_i is leading part of r_and_N and N* is trailing part
+    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r_i | N_i
+    avg_hf_target = cv_star[numApprox];  // N*, bounded by linear ineq constr
     avg_eval_ratios.scale(1. / avg_hf_target); // r*_i = N*_i / N*
+    break;
+  }
 
   // compute sample increment for HF from current to target:
   num_samples = (truthFixedByPilot) ? 0 :
@@ -1122,7 +1127,7 @@ average_estimator_variance(const RealVector& r_and_N)
       est_var[qoi] = varH[qoi] / N_H_actual[qoi] * estvar_ratios[qoi];
     break;
   }
-  case N_VECTOR_LINEAR_CONSTRAINT:
+  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
   case R_AND_N_NONLINEAR_CONSTRAINT: {  // N is a scalar optimization variable
     Real N = r_and_N[numApprox];
     for (qoi=0; qoi<numFunctions; ++qoi)
