@@ -22,6 +22,7 @@
 #include "dakota_data_types.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
+#include "RestartVersion.hpp"
 #ifdef HAVE_PDB_H
 #include <pdb.h>
 #endif
@@ -226,6 +227,9 @@ void print_restart(StringArray pos_args, String print_dest)
 
   try {
 
+    RestartVersion rst_ver =
+      RestartVersion::check_restart_version(read_restart_filename);
+
     std::ifstream restart_input_fs(read_restart_filename.c_str(),
 				   std::ios::binary);
     if (!restart_input_fs.good()) {
@@ -309,6 +313,9 @@ void print_restart_pdb(StringArray pos_args, String print_dest)
          << endl;
     exit(-1);
   }
+
+  RestartVersion rst_ver =
+    RestartVersion::check_restart_version(pos_args[0]);
 
   std::ifstream restart_input_fs(pos_args[0].c_str(), std::ios::binary);
   if (!restart_input_fs.good()) {
@@ -465,6 +472,9 @@ void print_restart_tabular(StringArray pos_args, String print_dest,
   const String& read_restart_filename = pos_args[0];
 
   try {
+
+    RestartVersion rst_ver =
+      RestartVersion::check_restart_version(read_restart_filename);
 
     std::ifstream restart_input_fs(read_restart_filename.c_str(),
 				   std::ios::binary);
@@ -696,6 +706,9 @@ void repair_restart(StringArray pos_args, String identifier_type)
 
   try {
 
+    RestartVersion rst_ver =
+      RestartVersion::check_restart_version(read_restart_filename);
+
     std::ifstream restart_input_fs(read_restart_filename.c_str(),
 				   std::ios::binary);
     if (!restart_input_fs.good()) {
@@ -805,6 +818,9 @@ void concatenate_restart(StringArray pos_args)
     cout << "Writing new restart file " << write_restart_filename << '\n';
 
     for(const String& rst_file : pos_args) {
+
+      RestartVersion rst_ver =
+	RestartVersion::check_restart_version(rst_file);
 
       std::ifstream restart_input_fs(rst_file.c_str(), std::ios::binary);
       if (!restart_input_fs.good()) {

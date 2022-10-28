@@ -10,6 +10,9 @@
 #ifndef _DAKOTA_RESTART_VERSION_H_
 #define _DAKOTA_RESTART_VERSION_H_
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
+#include <limits>
 #include <string>
 
 namespace Dakota {
@@ -47,12 +50,13 @@ public:
   /// diagnostic messages
   static const std::string firstSupportedDakotaVersion() { return "6.17.0"; }
 
+
   /// default ctor used for reading a RestartVersion
   RestartVersion() { /* empty ctor */ };
 
   /// constructor used for emitting restart version information to file
-  RestartVersion(const String& dakota_release_ver,
-		 const String& dakota_release_sha1):
+  RestartVersion(const std::string& dakota_release_ver,
+		 const std::string& dakota_release_sha1):
     restartVersion(latestRestartVersion),
     dakotaRelease(dakota_release_ver), dakotaSHA1(dakota_release_sha1)
   { /* empty ctor */ }
@@ -63,6 +67,11 @@ public:
     return (restartVersion < restartFirstVersionNumber) ? 0 :
       restartVersion - restartFirstVersionNumber;
   }
+
+  /// check the read rst_filename's version and issue diagnostic info
+  /// vs. current Dakota version
+  static RestartVersion check_restart_version(const std::string& rst_filename);
+
 
   // Member data corresponding to that stored in a restart file
   

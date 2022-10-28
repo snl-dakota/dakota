@@ -28,6 +28,7 @@
 #include "dakota_tabular_io.hpp"
 #include "ResultsDBAny.hpp"
 #include "EvaluationStore.hpp"
+#include "RestartVersion.hpp"
 
 #ifdef DAKOTA_HAVE_HDF5
 #include "HDF5_IO.hpp"
@@ -711,6 +712,10 @@ void OutputManager::read_write_restart(bool restart_requested,
     
     // catch errors with opening files and reading headers
     try {
+
+      // warn on old restart file
+      RestartVersion rst_ver =
+	RestartVersion::check_restart_version(read_restart_filename);
 
       std::ifstream restart_input_fs(read_restart_filename.c_str(),
 				     std::ios::binary);
