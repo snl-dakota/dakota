@@ -298,7 +298,7 @@ update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
   Real cost_H = cost[numApprox], inner_prod, budget = (Real)maxFunctionEvals;
   switch (optSubProblemForm) {
   // cases which average eval_ratios over QoI: can flatten loops
-  case REORDERED_ANALYTIC_SOLUTION: //case N_VECTOR_LINEAR_CONSTRAINT:
+  case REORDERED_ANALYTIC_SOLUTION:
     inner_prod = cost_H; // raw cost (un-normalized)
     for (approx=0; approx<numApprox; ++approx)
       inner_prod += cost[approx] * eval_ratios(0, approx);

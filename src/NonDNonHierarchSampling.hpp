@@ -468,8 +468,6 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
   for (size_t approx=0; approx<numApprox; ++approx)
     inner_prod += cost[approx] * avg_eval_ratios[approx];
   Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
-  Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals
-       << ": average HF target = " << avg_hf_target << std::endl;
   return avg_hf_target;
 }
 

@@ -452,14 +452,14 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       else // compute reordered MFMC for averaged rho; monotonic r not reqd
 	mfmc_reordered_analytic_solution(rho2LH, cost, approxSequence,
 					 eval_ratios1, false);
-      Cout << "MFMC eval_ratios:\n" << eval_ratios1 << std::endl;
+      //Cout << "MFMC eval_ratios:\n" << eval_ratios1 << std::endl;
 
       // > Option 2 is ensemble of independent two-model CVMCs, rescaled to an
       //   aggregate budget.  This is more ACV-like in the sense that it is not
       //   recursive, but it neglects the covariance C among approximations.
       //   It is also insensitive to model sequencing.
       cvmc_ensemble_solutions(rho2LH, cost, eval_ratios2);
-      Cout << "CVMC eval_ratios:\n" << eval_ratios2 << std::endl;
+      //Cout << "CVMC eval_ratios:\n" << eval_ratios2 << std::endl;
 
       // any rho2_LH re-ordering from MFMC initial guess can be ignored (later
       // gets replaced with r_i ordering for approx_increments() sampling)
@@ -585,8 +585,6 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
     hf_targets[qoi] = var_H[qoi] * estvar_ratios[qoi]
                     / (convergenceTol * estvar0[qoi]);
   Real avg_hf_target = average(hf_targets);
-  Cout << "Scaling profile for convergenceTol = " << convergenceTol
-       << ": average HF target = " << avg_hf_target << std::endl;
   return avg_hf_target;
 }
 
