@@ -154,20 +154,22 @@ void OutputManager::check_input_redirs(std::istream& input_stream,
 				       std::string& error_filename)
 {
   // RATIONALE: This doesn't allow abbreviations due to similar
-  // keywords output_filter and error_factors.
+  // keywords output_filter and error_factors. The regexs for
+  // output/error_file require it to be anchored at word boundary (\b)
+  // to avoid matching prefixed content or similar keywords.
 
   // symmetric-quoted filename with a match group for the contained filename;
   // the filename sub-group will always exist if the regex matches
   const std::string quoted_filename = "(['\"])(.+?)\\1";
   auto const quoted_filename_re = boost::regex(quoted_filename);
-  auto const out_kw = boost::regex("output_file");
+  auto const out_kw = boost::regex("\\boutput_file");
   // NIDR accepts keyword with adjoining token without whitespace (?!), but
   // we prohibit multiple =
   auto const out_kw_with_filename =
-    boost::regex("output_file\\s*=?\\s*" + quoted_filename);
-  auto const err_kw = boost::regex("error_file");
+    boost::regex("\\boutput_file\\s*=?\\s*" + quoted_filename);
+  auto const err_kw = boost::regex("\\berror_file");
   auto const err_kw_with_filename =
-    boost::regex("error_file\\s*=?\\s*" + quoted_filename);
+    boost::regex("\\berror_file\\s*=?\\s*" + quoted_filename);
 
   std::string line;
   while (std::getline(input_stream, line)) {

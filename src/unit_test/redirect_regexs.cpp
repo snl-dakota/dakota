@@ -21,7 +21,7 @@ std::string valid_redirs = R"(
 environment
 output_file  =    'dakota.log'
 some_other_keyword
-error_file "dakota.err"
+  error_file "dakota.err"
 )";
 
 // apparently NIDR permits this
@@ -42,7 +42,7 @@ error_file "dakota.err" # trailing comment
 
 std::string valid_redirs_intervening_lines = R"(
 environment
-output_file  # where to output
+  output_file  # where to output
   # If you really want to,
   # change the log here:
   'dakota.log'# trailing comment
@@ -62,6 +62,17 @@ some_other_keyword
 # full line comment error_file "dakota.err" # trailing comment
 )";
 
+// Preceding word characters should not cause a redirect
+std::string no_redirs_adjacentword = R"(
+environment
+results_output_file  =    'dakota.log'# trailing comment
+  ANoutput_file  'dakota.log' 
+some_other_keyword
+# full line comment
+  Berror_file "dakota.err" # trailing comment
+  error_fileC "dakota.err" # trailing comment
+)";
+
 
 // This mess shouldn't cause a redirect
 // TODO: Or should it? Not yet tested.
@@ -76,7 +87,7 @@ error_file
    malformed content
    'noredir.err'
 )";
-
+// for syntax highlighting: '
 
 BOOST_AUTO_TEST_CASE(test_valid_redirs)
 {
@@ -93,12 +104,18 @@ BOOST_AUTO_TEST_CASE(test_valid_redirs)
     BOOST_TEST(errfile == "dakota.err");
   }
 
-  std::string outfile, errfile;
-  std::istringstream infile(no_redirs_comments);
-  Dakota::OutputManager::check_input_redirs(infile, outfile, errfile);
+  std::vector<std::string> invalid_inputs =
+    { no_redirs_comments , no_redirs_adjacentword };
+  for (const auto& input_text : invalid_inputs) {
+    std::string outfile, errfile;
+    std::istringstream infile(input_text);
+    Dakota::OutputManager::check_input_redirs(infile, outfile, errfile);
 
-  BOOST_TEST(outfile == "");
-  BOOST_TEST(errfile == "");
+    BOOST_TEST(outfile == "");
+    BOOST_TEST(errfile == "");
+  }
+
+
 }
 
 
