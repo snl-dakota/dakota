@@ -5,17 +5,13 @@ macro(dakota_find_python)
     message(STATUS "Dakota enabling Python (Interpreter)")
     set(dakota_python_components Interpreter)
 
-    if(DAKOTA_PYTHON_DIRECT_INTERFACE)
-      message(STATUS "Dakota enabling Python direct interface (Development)")
+    if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR
+	DAKOTA_PYTHON_WRAPPER OR DAKOTA_PYBIND11)
+      message(STATUS "Dakota enabling Python (Development) for direct or surrogate interface")
       list(APPEND dakota_python_components Development)
 
       if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	message(STATUS "Dakota enabling Python direct interface with NumPy")
-	if (CMAKE_VERSION VERSION_LESS 3.14)
-	  message(WARNING "Enabling Dakota's NumPy interface requires CMake "
-	    "3.14 or newer;\nsee option DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY")
-	endif()
-
 	list(APPEND dakota_python_components NumPy)
       endif()
 
@@ -59,9 +55,11 @@ macro(dakota_find_python)
     message(STATUS
       "DAKOTA_PYTHON = ${DAKOTA_PYTHON}; disabling all Python components")
     set(DAKOTA_PYTHON_DIRECT_INTERFACE OFF CACHE BOOL
-      "Direct interface disabled based on DAKOTA_PYTHON=${DAKOTA_PYTHON}")
+      "Python direct interface disabled based on DAKOTA_PYTHON=${DAKOTA_PYTHON}")
     set(DAKOTA_PYTHON_SURROGATES OFF CACHE BOOL
-      "Direct interface disabled based on DAKOTA_PYTHON=${DAKOTA_PYTHON}")
+      "Python surrogates interface disabled based on DAKOTA_PYTHON=${DAKOTA_PYTHON}")
+    set(DAKOTA_PYTHON_WRAPPER OFF CACHE BOOL
+      "Python Dakota wrapper disabled based on DAKOTA_PYTHON=${DAKOTA_PYTHON}")
 
   endif()
 

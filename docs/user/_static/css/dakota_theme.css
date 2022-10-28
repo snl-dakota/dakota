@@ -31,3 +31,16 @@ div.wy-nav-content {
   }
 
 }
+
+
+/* Workaround an issue where the RTD theme labels equations above
+   instead of to the right. References:
+   https://stackoverflow.com/questions/67065252/how-to-put-equation-numbers-on-the-right-on-readthedocs
+   https://stackoverflow.com/questions/14110790/numbered-math-equations-in-restructuredtext/52509369#52509369
+ */
+.math {
+    text-align: left;
+}
+.eqno {
+    float: right;
+}

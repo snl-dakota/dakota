@@ -21,7 +21,7 @@
 #include "dakota_stat_util.hpp"
 
 #include <boost/math/distributions/normal.hpp>
-#include <random>
+#include <boost/random/uniform_real.hpp>
 
 #define DEBUG
 
@@ -295,8 +295,9 @@ void NonDWASABIBayesCalibration::calibrate()
   ////////////////////////////////////////////////////////
 
   std::vector<int> points_to_keep;
-  std::mt19937 rng;
-  std::uniform_real_distribution<double> distribution(0.0, 1.0);
+  // TODO: Why isn't this bound to the seed (or a sequence from it)?
+  boost::mt19937 rng;
+  boost::random::uniform_real_distribution<double> distribution(0.0, 1.0);
 
   if ( !generateRandomPosteriorSamples || !evaluatePosteriorDensity ){
     Cout << "Must specify at least one of generate_posterior_samples "

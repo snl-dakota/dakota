@@ -2809,7 +2809,7 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 
 	// Verify that there's a non-zero step (zero yield is acceptable).
 	// Don't update anything (including history) if step is zero.
-	if (norm_s > Pecos::SMALL_NUMBER) {
+	if (!Pecos::is_small(norm_s)) {
 
 	  // -------------------------------------------
 	  // Apply initial scaling prior to first update
@@ -2825,8 +2825,8 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 	    // numerics.  In the case of no yield in gradients (no observed
 	    // curvature), 0 is assigned as the initial scaling.
 	    Real scaling2 = 0.;
-	    if (norm_y > Pecos::SMALL_NUMBER)
-	      scaling2 = (std::sqrt(std::fabs(scaling1)) > Pecos::SMALL_NUMBER)
+	    if (!Pecos::is_small(norm_y))
+	      scaling2 = (!Pecos::is_small(std::sqrt(std::fabs(scaling1))))
                        ? norm_y_sq/scaling1 : 1.;
 	    for (j=0; j<numDerivVars; j++)
 	      quasiHessians[i](j,j) = scaling2;
@@ -2942,7 +2942,7 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
       }
 
       // history updates for next iteration
-      if ( numQuasiUpdates[i] == 0 || norm_s > Pecos::SMALL_NUMBER ) {
+      if ( numQuasiUpdates[i] == 0 || !Pecos::is_small(norm_s) ) {
 	// store previous data independently for each response fn.  So long
 	// as at least one previous data pt has been stored, we do not need
 	// to track the presence of active grads in particular responses.

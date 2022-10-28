@@ -15,9 +15,8 @@
 #ifndef PSUADE_DESIGN_COMP_EXP_H
 #define PSUADE_DESIGN_COMP_EXP_H
 
-#include <random>
-
 #include "DakotaPStudyDACE.hpp"
+#include "dakota_mersenne_twister.hpp"
 
 namespace Dakota {
 
@@ -104,7 +103,7 @@ private:
   int randomSeed;
 
   // RNG to persist for varying pattern
-  std::mt19937 rng;
+  boost::mt19937 rng;
 
   // MOATSampling *psuadeSampler;
   // MOATAnalyzer *psuadeAnalyzer;

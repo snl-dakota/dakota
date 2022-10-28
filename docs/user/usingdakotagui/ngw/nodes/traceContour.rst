@@ -1,0 +1,55 @@
+.. _ngw-node-traceContour:
+
+============
+traceContour
+============
+
+.. figure:: img/contour_plot.png
+   :name: ngw-node-traceContour-figure
+   :alt: Example contour plot
+   :width: 400
+   :align: center
+   
+   Example contour plot
+
+-----------
+Description
+-----------
+
+Creates a contour plot from a three-dimensional dataset.
+
+----------
+Properties
+----------
+
+- **Trace Name**: The name of the trace. If this node is the final destination on the way to displaying
+  the plot, this field will be used as the plot's title that displays across the top. Otherwise,
+  this field can be used to identify the trace among several traces (for instance, by using the legend
+  provided with the plotWindow node).
+- **Contour Lower Edge**: The lower bound on the Z-axis where data for contours should be considered.
+- **Contour Upper Edge**: The upper bound on the Z-axis where data for contours should be considered.
+- **Contour Division Range**: The range on the Z-axis used to determine how frequently contour lines should be drawn.
+- **Contour Coloring Style**: There are different modes available for coloring contour plots. 
+
+  - *Fill*: Coloring is done evenly between each contour level.
+  - *Heatmap*: A heatmap gradient coloring is applied between each contour level.
+  - *Lines*: Coloring is done only on the contour lines.
+  - *None*: No coloring is applied on this trace.
+  
+- **Color Scale Settings**: The Color Scale settings group allows you to create ranges of colors across your plot. Refer to the main :ref:`Color Scale documentation <chartreuse-color-scales>` for more information.
+- **Show Color Scale Legend**: Display a bar next to your plot that indicates color scale ranges.
+
+-----------
+Input Ports
+-----------
+
+- **X**: Data for the X axis.
+- **Y**: Data for the Y axis.
+- **Z**: Data for the Z axis.
+
+------------
+Output Ports
+------------
+
+- **trace**: The data of the plot trace. Use this to forward the plot trace for further aggregation onto aplot canvas.
+- **plotFileDataOut**: A complete, serialized version of the plot that can be written out to a file for later viewing.Use a file node to save your plot to a file.

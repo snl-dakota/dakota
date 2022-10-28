@@ -88,7 +88,9 @@ protected:
   int seed_sequence(size_t index);
 
   /// increment samples array with a shared scalar
-  void increment_samples(SizetArray& N_l, size_t num_samples);
+  void increment_samples(SizetArray& N_l, size_t incr);
+  /// increment 2D samples array with a shared 1D array (additional dim is QoI)
+  void increment_samples(Sizet2DArray& N_l, const SizetArray& incr);
 
   /// compute the variance of the mean estimator (Monte Carlo sample average)
   void compute_mc_estimator_variance(const RealVector& var_l,
@@ -167,7 +169,10 @@ protected:
 
   /// total number of successful sample evaluations (excluding faults)
   /// for each model form, discretization level, and QoI
-  Sizet3DArray NLev;
+  Sizet3DArray NLevActual;
+  /// total number of allocated sample evaluations (prior to any faults)
+  /// for each model form and discretization level (same for all QoI)
+  Sizet2DArray NLevAlloc;
 
   /// store the pilot_samples input specification, prior to run-time
   /// invocation of load_pilot_sample()
@@ -188,12 +193,19 @@ protected:
   /// major iteration counter
   size_t mlmfIter;
 
+  /// (inactive) option to backfill simulation failures by comparing targets
+  /// against successful sample completions rather than sample allocations
+  bool backfillFailures;
+
   /// final estimator variance for targeted moment (usually mean), averaged
   /// across QoI
   Real avgEstVar;
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
+  /// for sample projections, the calculated increment in equivHFEvals that
+  /// would be incurred if full iteration/statistics were needed
+  Real deltaEquivHF;
 
   /// variances for HF truth (length numFunctions)
   RealVector varH;
@@ -331,13 +343,26 @@ estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
 
 
 inline void NonDEnsembleSampling::
-increment_samples(SizetArray& N_l, size_t new_samples)
+increment_samples(SizetArray& N_samp, size_t incr)
 {
-  if (new_samples) {
-    size_t q, nq = N_l.size();
-    for (q=0; q<nq; ++q)
-      N_l[q] += new_samples;
+  if (!incr) return;
+  size_t q, nq = N_samp.size();
+  for (q=0; q<nq; ++q)
+    N_samp[q] += incr;
+}
+
+
+inline void NonDEnsembleSampling::
+increment_samples(Sizet2DArray& N_samp, const SizetArray& incr)
+{
+  size_t l, nl = N_samp.size();
+  if (incr.size() != nl) {
+    Cerr << "Error: inconsistent array sizes in NonDEnsembleSampling::"
+	 << "increment_samples()." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
+  for (l=0; l<nl; ++l)
+    increment_samples(N_samp[l], incr[l]);
 }
 
 

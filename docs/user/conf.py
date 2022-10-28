@@ -96,3 +96,10 @@ html_math_renderer = 'mathjax'
 
 # Enable numref
 numfig = True
+
+# Could consider numbering equations with chapter or even section
+# instead of globally across document, but would require uses
+# :eq:`label`; https://github.com/sphinx-doc/sphinx/pull/4166
+
+##math_numfig = True
+##numfig_secnum_depth = 1

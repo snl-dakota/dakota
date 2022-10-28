@@ -36,6 +36,18 @@ Dakota
 - **Show advanced keyword options** If checked, all Dakota keyword options will be presented in
   the :ref:`Dakota Visual Editor. <gui-visual-editor-main>`  Otherwise, less common keywords will be hidden.
 
+Dakota > Chartreuse
+-------------------
+
+The sheer number of Dakota configuration options for Chartreuse are vast:
+
+.. image:: img/GettingStarted_Preferences_7.png
+   :alt: Dakota Chartreuse preferences
+
+- **Show Dakota eval id on plot trace points as hover text**: This very specific configuration option should
+  hopefully be self-evident, but if not, checking this will enable the display of Dakota's eval id number
+  when hovering over plot trace points while using :ref:`Chartreuse <chartreuse-main>`.
+
 .. _gui-preferences-dakota-examples:
 
 Dakota > Examples Search
@@ -48,7 +60,7 @@ Dakota > Examples Search
 - Set the top-level radio button to "Search remote Git repo" to cause the Dakota Examples Search dialog :ref:`to look online for Dakota examples <gui-examples-online>`.
 
 Remote Git Repo Configuration
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Note that you can configure Dakota GUI to clone examples from not one but many repos.  To import from an online Git repo directly into your workspace, you must first tell the
 Dakota GUI which repo you want to clone from, as well as provide credentials if necessary.
@@ -72,15 +84,46 @@ enough time has passed.
 
 When finished, click "Apply and Close."
 
-Dakota > Reference Manual
--------------------------
+Dakota > Manual
+---------------
 
 .. image:: img/GettingStarted_Preferences_4.png
-   :alt: Dakota reference manual preferences
+   :alt: Dakota manual preferences
 
-- **Dakota reference manual path** Configure where the Dakota GUI will look for the Dakota reference manual.  By default,
-  `the online version of the Dakota reference manual <https://dakota.sandia.gov/content/latest-reference-manual>`__ is used, but you can also switch to a local version of
-  the reference manual if you are working without an Internet connection.
+- **Dakota manual path** Configure where the Dakota GUI will look for the Dakota manual.  By default,
+  the online version of the Dakota manual (hosted at dakota.sandia.gov) is used, but you can also switch to a local version of
+  the manual if you are working without an Internet connection.
+
+Dakota > Text Editor
+--------------------
+
+.. image:: img/GettingStarted_Preferences_6.png
+   :alt: Dakota text editor preferences
+   
+Configuration options for the Dakota text editor.
+
+- **Default Indentation Type:** Specify whether to use tabs or spaces for indentation.
+- **Default Indentation Amount:** Specify how many tabs or spaces to indent by.
+- **Default Quote Type:** Specify whether single or double quotes are used for Dakota strings.
+- **Add line breaks to lists of elements when generating studies:** Automatically formats element lists to make them easier to read.
+- **Colors:** Configure the colors used in the Dakota Text editor
+
+.. _gui-preferences-dakota-workflow:
+
+Dakota > Workflow Support
+-------------------------
+
+.. image:: img/GettingStarted_Preferences_8.png
+   :alt: Dakota Chartreuse preferences
+   
+- **Workflow Interface Manifest Driver Template Style:** This configuration option allows you to specify the
+  default pre-processing style when specifying a Next-Gen Workflow based driver for Dakota. There are two
+  styles recognized by Dakota GUI:
+  
+  - *{DRIVER} (dprepro markup)* - uses DPREPRO to activate the relationship between a Dakota study and
+    a Next-Gen Workflow analysis driver. Refer to the section on the :ref:`relationship between DREPRO and Next-Gen Workflow <ngw-analysisdrivers-dprepro>` for more information.
+  - *SAW_DRIVER= (magic string)* - a legacy option for interacting with Next-Gen Workflow that is nevertheless
+    still useful in some contexts. Refer to the section on the :ref:`usage of "SAW_DRIVER=" string <ngw-analysisdrivers-sawdriverstring>` here.
 
 .. _gui-preferences-chartreuse:
 
@@ -110,7 +153,7 @@ Highlighter
 - **Default Pre-processing Marker** This setting controls what pre-processor markup type is used by default.
 
   - **APREPRO** APREPRO is an algebraic pre-processor that reads a file containing both general text and algebraic, string, or conditional expressions.
-    `You can learn more about APREPRO here. <https://gsjaardema.github.io/seacas/aprepro.pdf>`__
+    `You can learn more about APREPRO here. <https://sandialabs.github.io/seacas-docs/sphinx/html/#aprepro>`__
   - **DPREPRO** DPREPRO is a Dakota-developed derivation of APREPRO with similar syntax.
     :ref:`You can learn more about DPREPRO here. <interfaces:dprepro-and-pyprepro>`
   - **Positional Preprocessor** A special type of pre-processor used by Dakota GUI.  Rather than marking up a text file, a positional pre-processor

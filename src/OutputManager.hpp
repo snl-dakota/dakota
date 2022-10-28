@@ -316,6 +316,22 @@ public:
   /// Archive the input file to the results database
   void archive_input(const ProgramOptions &prog_opts) const;
 
+
+  /// check the specified input file contents for output/error redirection
+  static void check_inputfile_redirs(const std::string& input_string,
+				     std::string& output_filename,
+				     std::string& error_filename);
+
+  /// check the specified input string contents for output/error redirection
+  static void check_inputstring_redirs(const std::string& input_string,
+				       std::string& output_filename,
+				       std::string& error_filename);
+
+  /// check the passed input file stream for output/error redirection
+  static void check_input_redirs(std::istream& input_stream,
+				 std::string& output_filename,
+				 std::string& error_filename);
+
   // -----
   // Data to later be made private
   // -----

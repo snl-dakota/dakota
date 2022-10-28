@@ -14,8 +14,18 @@
 #include "util_common.hpp"
 
 #include <boost/filesystem.hpp>
+#include <boost/version.hpp>
+#if (BOOST_VERSION < 107000) && !defined(BOOST_ALLOW_DEPRECATED_HEADERS)
+// could alternately use: #define BOOST_PENDING_INTEGER_LOG2_HPP 1
+#define BOOST_ALLOW_DEPRECATED_HEADERS 1
+#include <boost/random.hpp>
+#include <boost/random/uniform_real.hpp>
+#undef BOOST_ALLOW_DEPRECATED_HEADERS
+#else
+#include <boost/random.hpp>
+#include <boost/random/uniform_real.hpp>
+#endif
 #include <boost/test/minimal.hpp>
-#include <random>
 
 using namespace dakota;
 using namespace dakota::util;
@@ -41,14 +51,16 @@ void get_samples(int num_vars, int num_samples, MatrixXd& samples) {
 
   int seed = 1337;
 
-  // BMA: The change from Boost uniform_real (or
-  // uniform_real_distribution) to std uniform_real_distribution
-  // causes numerical differences (the change in RNG itself does not),
-  // so this test is no longer consistent with
+  // This choice allows consistent comparison with
   // pecos/surrogates/models/src/RegressionBuilder
-  std::uniform_real_distribution<double> distribution( -1.0, 1.0 );
-  std::mt19937 generator(seed);
-  auto numberGenerator = std::bind(distribution, generator);
+  typedef boost::uniform_real<> NumberDistribution;
+  // Using Boost unif real dist for cross-platform stability
+  boost::uniform_real<double> distribution(-1.0, 1.0);
+  // Using Boost MT since need it anyway for unif real dist
+  boost::mt19937 generator;
+  generator.seed(seed);
+  boost::variate_generator<boost::mt19937, NumberDistribution> numberGenerator(
+      generator, distribution);
 
   for (int j = 0; j < num_vars; ++j) {
     for (int i = 0; i < num_samples; ++i) {

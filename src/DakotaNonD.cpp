@@ -528,8 +528,8 @@ load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
 
 
 void NonD::
-load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
-		  Sizet2DArray& delta_N_l)
+load_pilot_sample(const SizetArray& pilot_spec, short seq_type,
+		  const Sizet3DArray& N_l, Sizet2DArray& delta_N_l)
 {
   size_t i, num_samp, pilot_size = pilot_spec.size(), num_mf = N_l.size();
   delta_N_l.resize(num_mf);
@@ -574,37 +574,8 @@ load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
   }
 
   Cout << "\nMultilevel-multifidelity pilot sample:\n";
-  print_multilevel_evaluation_summary(Cout, delta_N_l);
-}
-
-
-void NonD::
-inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
-		      size_t secondary_index, Sizet3DArray& N_l_3D)
-{
-  // 2D array is num_steps x num_qoi
-  // 3D array is num_mf x num_lev x num_qoi which we slice as either:
-  // > MF case: 1:num_mf x active_lev x 1:num_qoi
-  // > ML case: active_mf x 1:num_lev x 1:num_qoi
-
-  size_t i, num_mf = N_l_3D.size();  
-  if (multilev) // ML case
-    N_l_3D[secondary_index] = N_l_2D;
-  else { // MF case
-    if (secondary_index == SZ_MAX) {
-      ModelList& sub_models = iteratedModel.subordinate_models(false);
-      ModelLIter m_iter = sub_models.begin();
-      size_t m_soln_lev, active_lev;
-      for (i=0; i<num_mf && m_iter != sub_models.end(); ++i, ++m_iter) {
-	m_soln_lev = m_iter->solution_level_cost_index();
-	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
-	N_l_3D[i][active_lev] = N_l_2D[i];  // assign vector of qoi samples
-      }
-    }
-    else // valid secondary_index
-      for (i=0; i<num_mf; ++i)
-	N_l_3D[i][secondary_index] = N_l_2D[i]; // assign vector of qoi samples
-  }
+  print_multilevel_model_summary(Cout, delta_N_l, "Pilot", seq_type,
+				 discrepancy_sample_counts());
 }
 
 
@@ -1139,20 +1110,21 @@ void NonD::print_system_mappings(std::ostream& s) const
 
 
 void NonD::
-print_multilevel_evaluation_summary(std::ostream& s, const SizetArray& N_samp)
+print_multilevel_evaluation_summary(std::ostream& s, const SizetArray& N_m)
 {
-  size_t j, width = write_precision+7, num_lev = N_samp.size();
+  size_t j, width = write_precision+7, num_lev = N_m.size();
   for (j=0; j<num_lev; ++j)
-    s << "                     " << std::setw(width) << N_samp[j] << '\n';
+    s << "                     " << std::setw(width) << N_m[j]
+      << "  QoI_lev" << j << '\n'; // QoI counts
 }
 
 
 void NonD::
-print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
+print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_m)
 {
-  size_t j, width = write_precision+7, num_lev = N_samp.size();
+  size_t j, width = write_precision+7, num_lev = N_m.size();
   for (j=0; j<num_lev; ++j) {
-    const SizetArray& N_j = N_samp[j];
+    const SizetArray& N_j = N_m[j];
     if (!N_j.empty()) {
       s << "                     " << std::setw(width) << N_j[0];
       if (!homogeneous(N_j)) { // print all counts in this 1D array
@@ -1160,32 +1132,92 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
 	for (size_t q=1; q<num_q; ++q)
 	  s << ' ' << N_j[q];
       }
-      s << '\n';
+      s << "  QoI_lev" << j << '\n';
     }
   }
 }
 
 
 void NonD::
-print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp,
-				    String type)
+print_multilevel_discrepancy_summary(std::ostream& s, const SizetArray& N_m)
 {
-  size_t i, j, num_mf = N_samp.size(), width = write_precision+7;
-  if (num_mf == 1) {
-    s << "<<<<< " << type << " samples per level:\n";
-    print_multilevel_evaluation_summary(s, N_samp[0]);
+  size_t j, N_unroll, width = write_precision+7, num_lev = N_m.size(),
+    num_discrep = num_lev - 1;
+  for (j=0; j<num_lev; ++j) {
+    s << std::setw(width) << N_m[j] << "  DeltaQoI_lev" << j;
+    N_unroll = (j<num_discrep) ?  N_m[j] + N_m[j+1] : N_m[j];
+    s << std::setw(width) << N_unroll  << "  QoI_lev"      << j << '\n';
   }
-  else {
-    ModelList& sub_models = iteratedModel.subordinate_models(false);
-    ModelLIter m_iter = sub_models.begin();
-    s << "<<<<< " << type << " samples per model form:\n";
-    for (i=0; i<num_mf; ++i) {
-      s << "      Model Form ";
-      if (m_iter != sub_models.end())
-	{ s << m_iter->model_id() << ":\n"; ++m_iter; }
-      else s << i+1 << ":\n";
-      print_multilevel_evaluation_summary(s, N_samp[i]);
-    }
+}
+
+
+void NonD::
+print_multilevel_discrepancy_summary(std::ostream& s, const SizetArray& N_m,
+				     const SizetArray& N_mp1)
+{
+  size_t j, width = write_precision+7,
+    num_lev = std::min(N_m.size(), N_mp1.size());
+  for (j=0; j<num_lev; ++j) { // should be 1 for current use cases
+    s << std::setw(width) << N_m[j] << "  DeltaQoI_lev" << j;
+    s << std::setw(width) << N_m[j] + N_mp1[j]  << "  QoI_lev"   << j << '\n';
+  }
+}
+
+
+void NonD::
+print_multilevel_discrepancy_summary(std::ostream& s, const Sizet2DArray& N_m)
+{
+  size_t j, N_unroll, width = write_precision+7, num_lev = N_m.size(),
+    num_discrep = num_lev - 1;
+  for (j=0; j<num_lev; ++j) {
+    const SizetArray& N_mj = N_m[j];
+    if (N_mj.empty()) continue;
+
+    print_multilevel_row(s, N_mj);  s << "  DeltaQoI_lev" << j;
+    if (j<num_discrep) print_multilevel_row(s, N_mj, N_m[j+1]);
+    else               print_multilevel_row(s, N_mj);
+    s << "  QoI_lev" << j << '\n';
+  }
+}
+
+
+void NonD::
+print_multilevel_discrepancy_summary(std::ostream& s, const Sizet2DArray& N_m,
+				     const Sizet2DArray& N_mp1)
+{
+  size_t j, N_unroll, width = write_precision+7,
+    num_lev = std::min(N_m.size(), N_mp1.size());
+  for (j=0; j<num_lev; ++j) { // should be 1 for current use cases
+    const SizetArray& N_mj = N_m[j];
+    if (N_mj.empty()) continue;
+
+    print_multilevel_row(s, N_mj);            s << "  DeltaQoI_lev" << j;
+    print_multilevel_row(s, N_mj, N_mp1[j]);  s << "  QoI_lev" << j << '\n';
+  }
+}
+
+
+void NonD::
+print_multilevel_row(std::ostream& s, const SizetArray& N_j)
+{
+  s << std::setw(write_precision+7) << N_j[0];
+  if (!homogeneous(N_j)) { // print all QoI counts in this 1D array
+    size_t q, num_q = N_j.size();
+    for (size_t q=1; q<num_q; ++q)
+      s << ' ' << N_j[q];
+  }
+}
+
+
+void NonD::
+print_multilevel_row(std::ostream& s, const SizetArray& N_j,
+		     const SizetArray& N_jp1)
+{
+  s << std::setw(write_precision+7) << N_j[0] + N_jp1[0];
+  if (!homogeneous(N_j) || !homogeneous(N_jp1)) {
+    size_t q, num_q = N_j.size();
+    for (size_t q=1; q<num_q; ++q)
+      s << ' ' << N_j[q] + N_jp1[q];
   }
 }
 

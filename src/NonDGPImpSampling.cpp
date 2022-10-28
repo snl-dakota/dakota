@@ -25,6 +25,8 @@
 #include "pecos_data_types.hpp"
 #include "NormalRandomVariable.hpp"
 #include "DakotaApproximation.hpp"
+#include "dakota_mersenne_twister.hpp"
+#include <boost/random/uniform_real_distribution.hpp>
 
 static const char rcsId[]="@(#) $Id: NonDGPImpSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -471,11 +473,11 @@ RealVector NonDGPImpSampling::drawNewX(int this_k)
   }
   // NOTE: This was historically unbound to randomSeed,
   // but was likely relying on rand() without srand() ==> srand(1)
-  std::mt19937 rng(randomSeed);
+  boost::mt19937 rng(randomSeed);
   // This is imperfect to sample on [0, 1] inclusive per
   // https://en.cppreference.com/w/cpp/numeric/random/uniform_real_distributio
   // But likely doesn't matter for this use case
-  std::uniform_real_distribution<> unif_real
+  boost::random::uniform_real_distribution<> unif_real
     (0.0, std::nextafter(1.0, std::numeric_limits<double>::max()));
   double rand_cdf = unif_real(rng);
   //Cout << "randcdf " << rand_cdf << '\n';

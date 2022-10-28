@@ -1,8 +1,8 @@
 .. _gui-visual-editor-main:
 
-""""""""""""""""""""""""
-The Dakota Visual Editor
-""""""""""""""""""""""""
+""""""""""""""""""""
+Dakota Visual Editor
+""""""""""""""""""""
 
 ============
 Introduction
@@ -38,7 +38,7 @@ Also note the green play button in the action bar.  This will allow you to run t
 auto-generated :ref:`run configuration <gui-run-configurations-eclipse-run-configs>` with default settings.
 
 Finally, note that there are "?" buttons throughout the editors for specific Dakota blocks (typically to the far-right of an individual editor control).
-The "?" button will take you to the appropriate page in the Dakota Reference Manual for that keyword.
+The "?" button will take you to the appropriate :ref:`keyword reference page in this manual <keyword-reference-area>`.
 
 When you are done making changes to the Dakota input file, simply save the file as you would with any other text editor.
 
@@ -131,7 +131,7 @@ The editor for a variables block is slightly more involved and warrants some add
     and then by user-customized ordering within that category.  This button allows you to configure the latter.
   - **Auto-Visualize Variable** For variable types that have an uncertainty/probability functions associated with them,
     this button allows you to visualize the curve (according to the properties set for this variable) in the :ref:`Chartreuse Sandbox View <chartreuse-sandbox-main>`.
-  - **Open Dakota Reference Manual for Variable Category** For the currently selected variable's category, open the appropriate page in the Dakota Reference Manual.
+  - **Open Dakota Manual for Variable Category** For the currently selected variable's category, open the appropriate page in this manual.
   - **Active variables dropdown** Allows you to manually specify the active variable set of this Dakota variables block.
     Refer to the :ref:`section on active variables <variables-active>` for more information.
   - **Variable Domain** Located below the table, this dropdown allows you to manually specify a :ref:`mixed <variables-mixed>` or :ref:`mixed <variables-relaxed>` domain for this variables block.
@@ -201,12 +201,12 @@ Response Blocks
   - **Remove Response** Removes the currently selected response from the block.
   - **Response Ordering within Category** Dakota responses are ordered first by *response category* (either "scalar" or "field" within the specified type
     of response), and then by user-customized ordering within that category.  This button allows you to configure the latter.
-  - **Open Dakota Reference Manual** For the currently selected responses's category, open the appropriate page in the Dakota Reference Manual.
+  - **Response Metadata** Refer to the :ref:`metadata keyword page <responses-metadata>` for more information on responses metadata.
 
 Within the table, the columns are as follows (from left to right):
 
 - **#** The Dakota spec order for this response.  Dakota variables are ordered first by *response category* and then by user-customized ordering within that category.
-- **Response** The name (or "descriptor") of the response.
+- **Response Name** The name (or "descriptor") of the response.
 - **Category** The category that this response belongs to.  Changing the category will automatically cause a reordering of Dakota responses based on the new category position of this response.
 
 Response Properties Dialog

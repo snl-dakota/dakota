@@ -19,8 +19,11 @@
 #include "PHXCppApi.h"
 #endif
 #include <boost/tokenizer.hpp>
+// Using Boost MT since need it anyway for dist
+#include "dakota_mersenne_twister.hpp"
+// Using Boost dist for cross-platform stability
+#include <boost/random/normal_distribution.hpp>
 #include <boost/assign.hpp>
-#include <random>
 #include <vector>
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "NonDLHSSampling.hpp"
@@ -5246,8 +5249,8 @@ int TestDriverInterface::aniso_quad_form()
       }
     }
 
-    std::mt19937 vec_RNG(seed);
-    std::normal_distribution<> sampler;
+    boost::random::mt19937 vec_RNG(seed);
+    boost::random::normal_distribution<> sampler;
 
     size_t num_prin_direc = eigenvals.size();
 

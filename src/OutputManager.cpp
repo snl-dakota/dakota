@@ -15,6 +15,7 @@
 #include <memory>
 #include <utility>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/regex.hpp>
 #include "dakota_global_defs.hpp"
 #include "OutputManager.hpp"
 #include "ProgramOptions.hpp"
@@ -94,17 +95,120 @@ void OutputManager::initial_redirects(const ProgramOptions& prog_opts)
   // will still be true.  This behavior is okay because the redirector
   // will see the same filename and not reopen the file.
 
+  std::string input_specified_output, input_specified_error;
+  if (!prog_opts.input_file().empty())
+    check_inputfile_redirs(prog_opts.input_file(), input_specified_output,
+			   input_specified_error);
+  else if (!prog_opts.input_string().empty())
+    check_inputstring_redirs(prog_opts.input_string(), input_specified_output,
+			     input_specified_error);
+
+  std::string output_file;
+  if (prog_opts.user_stdout_redirect())
+    output_file = prog_opts.output_file();
+  else if (!input_specified_output.empty())
+    output_file = input_specified_output;
+
   //  if output file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
+  if (worldRank == 0 && !output_file.empty()) {
     if (outputLevel >= DEBUG_OUTPUT)
-      std::cout << "\nRedirecting Cout on rank 0 to " << prog_opts.output_file()
-                << std::endl;
-    coutRedirector.push_back(prog_opts.output_file());
+      std::cout << "\nRedirecting Dakota standard output on rank 0 to "
+		<< output_file << std::endl;
+    coutRedirector.push_back(output_file);
   }
 
+  std::string error_file;
+  if (prog_opts.user_stderr_redirect())
+    error_file = prog_opts.error_file();
+  else if (!input_specified_error.empty())
+    error_file = input_specified_error;
+
   //  if error file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && prog_opts.user_stderr_redirect())
-    cerrRedirector.push_back(prog_opts.error_file());
+  if (worldRank == 0 && !error_file.empty())
+    cerrRedirector.push_back(error_file);
+}
+
+
+void OutputManager::check_inputfile_redirs(const std::string& input_filename,
+					   std::string& output_filename,
+					   std::string& error_filename)
+{
+  // TODO: Check file operation exceptions
+  std::ifstream infile(input_filename);
+  OutputManager::check_input_redirs(infile, output_filename, error_filename);
+}
+
+
+void OutputManager::check_inputstring_redirs(const std::string& input_string,
+					     std::string& output_filename,
+					     std::string& error_filename)
+{
+  std::istringstream infile(input_string);
+  OutputManager::check_input_redirs(infile, output_filename, error_filename);
+}
+
+
+/** This has a stream API to permit multiline matching. */
+void OutputManager::check_input_redirs(std::istream& input_stream,
+				       std::string& output_filename,
+				       std::string& error_filename)
+{
+  // RATIONALE: This doesn't allow abbreviations due to similar
+  // keywords output_filter and error_factors. The regexs for
+  // output/error_file require it to be anchored at word boundary (\b)
+  // to avoid matching prefixed content or similar keywords.
+
+  // symmetric-quoted filename with a match group for the contained filename;
+  // the filename sub-group will always exist if the regex matches
+  const std::string quoted_filename = "(['\"])(.+?)\\1";
+  auto const quoted_filename_re = boost::regex(quoted_filename);
+  auto const out_kw = boost::regex("\\boutput_file");
+  // NIDR accepts keyword with adjoining token without whitespace (?!), but
+  // we prohibit multiple =
+  auto const out_kw_with_filename =
+    boost::regex("\\boutput_file\\s*=?\\s*" + quoted_filename);
+  auto const err_kw = boost::regex("\\berror_file");
+  auto const err_kw_with_filename =
+    boost::regex("\\berror_file\\s*=?\\s*" + quoted_filename);
+
+  std::string line;
+  while (std::getline(input_stream, line)) {
+
+    boost::smatch matches;
+
+    if(boost::regex_search(line, matches, out_kw_with_filename) && 
+       !strcontains(matches.prefix(), "#") )
+      output_filename = matches.str(2);
+    // match only the keyword, then look ahead
+    else if(boost::regex_search(line, matches, out_kw) &&
+       !strcontains(matches.prefix(), "#") ) {
+      // search until an uncommented quoted file name
+      while (std::getline(input_stream, line)) {
+	if (boost::regex_search(line, matches, quoted_filename_re) &&
+	    !strcontains(matches.prefix(), "#")) {
+	  output_filename = matches.str(2);
+	  break;
+	}
+      }
+    }
+
+    if(boost::regex_search(line, matches, err_kw_with_filename) &&
+       !strcontains(matches.prefix(), "#") )
+      error_filename = matches.str(2);
+    // match only the keyword, then look ahead
+    else if(boost::regex_search(line, matches, err_kw) &&
+       !strcontains(matches.prefix(), "#") ) {
+      // search until an uncommented quoted file name
+      while (std::getline(input_stream, line)) {
+	if (boost::regex_search(line, matches, quoted_filename_re) &&
+	    !strcontains(matches.prefix(), "#")) {
+	  error_filename = matches.str(2);
+	  break;
+	}
+      }
+    }
+
+  }
 }
 
 

@@ -1,12 +1,16 @@
 .. _gui-nestedworkflowtutorial-main:
 
-""""""""""""""""""""""""""""""""""""""""""
-Create a Nested Workflow Driver for Dakota
-""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""
+Tutorial: Create an NGW Analysis Driver for Dakota
+""""""""""""""""""""""""""""""""""""""""""""""""""
 
 This section shows you the concrete steps for creating a workflow-based Dakota analysis driver.  This is meant to be an exemplary tutorial,
 and not the "only" way to do things.  In practice, you can use any combination of nodes to get from point A to point B; in fact, you are
 encouraged to experiment with NGW to see what it is capable of.
+
+.. note::
+
+   You can read more about the relationship between Dakota analysis drivers and Next-Gen Workflow :ref:`here <ngw-analysisdrivers>`.
 
 We will use the classic cantilever beam problem for this example, :ref:`available in the shipped Dakota example files. <gui-examples-offline>`
 
@@ -33,8 +37,8 @@ These nodes were generated thanks to the Workflow-Based Dakota Driver wizard.  N
 Pre-Processing
 --------------
 
-Let's focus on pre-processing first.  In the Palette view, expand the "Dakota" folder.  Select "pyprepro" and drag it onto the workflow canvas.  This node is responsible
-for running the "pyprepro" pre-processing utility that typically comes shipped with Dakota.
+Let's focus on pre-processing first.  In the Palette view, expand the "Dakota" folder.  Select :ref:`"pyprepro" <ngw-node-pyprepro>` and drag it onto the workflow canvas.  This node is responsible
+for running the :ref:`pyprepro pre-processing utility<interfaces:dprepro-and-pyprepro>` that typically comes shipped with Dakota.
 
 .. image:: img/NewDakotaStudy_Drivers_Workflow_7.png
    :alt: pyprepro node
@@ -80,7 +84,9 @@ Click on the externalProcess node to bring up its properties in the Settings edi
 
 In the "command" field seen in the Settings editor view, type the following:
 
-	python ${cantilever} ${outputFile}
+.. code-block::
+
+   python ${cantilever} ${outputFile}
 
 Note the syntax of dollar signs and curly brackets.  These are **tokens** that will get replaced at runtime as appropriate.  They will be replaced
 because *the token names match the names of input ports for this node*, so NGW will know what to replace the tokens with.  Essentially, what we
@@ -91,27 +97,28 @@ change as the workflow is running.
 Post-Processing
 ---------------
 
-Now let’s post-process the output from our cantilever executable.  From the "Dakota" folder in the Palette view, drag a qoiExtractor node onto the canvas:
+Now let’s post-process the output from our cantilever executable.  From the "Dakota" folder in the Palette view, drag a :ref:`"qoiExtractor" <ngw-node-qoiExtractor>`
+node onto the canvas:
 
 .. image:: img/NewDakotaStudy_Drivers_Workflow_13.png
    :alt: Adding a QOIExtractor node
 
-The "qoiExtractor" node works with "QOIs" (short for "quantity of interest"), which is simply a value extracted from a body of unstructured text.
+The :ref:`"qoiExtractor" <ngw-node-qoiExtractor>` node works with "QOIs" (short for "quantity of interest"), which is simply a value extracted from a body of unstructured text.
 These are the values that will eventually be returned to Dakota as responses.
 
 Our cantilever black-box simulation model only prints out to the console, so we can grab the externalProcess node's "stdout" output port, and drag a connector
-from it to the qoiExtractor node's "inputText" port to forward all output stream text into the qoiExtractor node:
+from it to the :ref:`"qoiExtractor" <ngw-node-qoiExtractor>` node's "inputText" port to forward all output stream text into the qoiExtractor node:
 
 .. image:: img/NewDakotaStudy_Drivers_Workflow_14.png
    :alt: Connecting the nodes
 
-Click on the qoiExtractor node to bring up its properties in the Settings editor view:
+Click on the :ref:`"qoiExtractor" <ngw-node-qoiExtractor>` node to bring up its properties in the Settings editor view:
 
 .. image:: img/NewDakotaStudy_Drivers_Workflow_15.png
    :alt: The Settings editor for the QOIExtractor node
 
 We need to now tell this node what quantities of interest (QOIs) to extract from the stream of input text it's going to receive.
-Because the qoiExtractor node will connect directly to our already-created response nodes, we're going to need to extract three QOIs
+Because the :ref:`"qoiExtractor" <ngw-node-qoiExtractor>` node will connect directly to our already-created response nodes, we're going to need to extract three QOIs
 from the text – “mass,” “stress,” and “displacement.”
 
 Click on "Add QOI Extractor."  In the first dialog that pops up, type in "mass" and click OK.  Use the next dialog to extract "mass" from the expected output of the "cantilever" executable.
@@ -125,8 +132,8 @@ When you’re done, your settings editor view should look something like this:
 .. image:: img/NewDakotaStudy_Drivers_Workflow_16.png
    :alt: The Settings editor for the QOIExtractor node, populated
 
-Click on Apply in the bottom-right corner of the Settings editor view to save the changes.  Note that something has happened to the qoiExtractor node.
-For each new QOI extractor that we added, a new output port with the same name has been added to the qoiExtractor node.  Each output port knows how to
+Click on Apply in the bottom-right corner of the Settings editor view to save the changes.  Note that something has happened to the :ref:`"qoiExtractor" <ngw-node-qoiExtractor>` node.
+For each new QOI extractor that we added, a new output port with the same name has been added to the :ref:`"qoiExtractor" <ngw-node-qoiExtractor>` node.  Each output port knows how to
 forward the value of the corresponding extracted QOI, so now all that remains is to connect each of these output ports to the already-created response nodes.
 
 .. image:: img/NewDakotaStudy_Drivers_Workflow_17.png
@@ -146,5 +153,5 @@ as well as test whether it's working as expected.  It's highly recommended that 
 
 So, we now have a workflow that can read in parameters and return response values.  This is cool, but what we want eventually is for Dakota to provide new parameters on each Dakota iteration.  How do we do that?
 
-1. :ref:`We need to create a Dakota study that will drive the workflow, using the New Dakota Study wizard. <gui-wizards-main>`
+1. :ref:`We need to create a Dakota study that will drive the workflow, using the New Dakota Study wizard. <wizards-newdakotastudy>`
 2. :ref:`After that, we will need to create a second, outer workflow that knows how to launch a Dakota study that uses the workflow engine as its analysis driver. <wizards-newwrapperworkflow-main>`

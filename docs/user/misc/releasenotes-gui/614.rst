@@ -4,6 +4,9 @@
 Version 6.14 - Koindozer Klamber (2021/05)
 """"""""""""""""""""""""""""""""""""""""""
 
+.. image:: img/DakotaGui_KoindozerKlamber.png
+   :alt: Dakota GUI 6.14 splash screen
+
 **Dakota Surrogates**
 
 - New GUI support for serialized Dakota surrogates files.

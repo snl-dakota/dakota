@@ -71,10 +71,12 @@ protected:
   void approx_increments(IntRealMatrixMap& sum_L_baselineH,
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
-			 IntRealMatrixMap& sum_LH, const SizetArray& N_shared,
-			 const RealVector& avg_eval_ratios, Real avg_hf_target);
+			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
+			 size_t N_H_alloc, const RealVector& avg_eval_ratios,
+			 Real avg_hf_target);
   bool acv_approx_increment(const RealVector& avg_eval_ratios,
-			    const Sizet2DArray& N_L_refined, Real hf_target,
+			    const Sizet2DArray& N_L_actual_refined,
+			    SizetArray& N_L_alloc_refined, Real hf_target,
 			    size_t iter, const SizetArray& approx_sequence,
 			    size_t start, size_t end);
 
@@ -159,10 +161,18 @@ private:
 			   size_t N_shared_q, const RealSymMatrix& F,
 			   size_t qoi, RealVector& beta);
 
-  void update_projected_samples(Real avg_hf_target,
+  void update_projected_lf_samples(Real avg_hf_targets,
+				   const RealVector& avg_eval_ratios,
+				   const SizetArray& N_H_actual,
+				   size_t& N_H_alloc,
+				   //SizetArray& delta_N_L_actual,
+				   Real& delta_equiv_hf);
+  void update_projected_samples(Real avg_hf_targets,
 				const RealVector& avg_eval_ratios,
-				SizetArray& N_H_projected,
-				Sizet2DArray& N_L_projected);
+				const SizetArray& N_H_actual, size_t& N_H_alloc,
+				size_t& delta_N_H_actual,
+				//SizetArray& delta_N_L_actual,
+				Real& delta_equiv_hf);
 
   //
   //- Heading: Data

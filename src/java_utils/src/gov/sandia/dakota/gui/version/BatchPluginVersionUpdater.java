@@ -34,6 +34,7 @@ public class BatchPluginVersionUpdater {
 	//
 	// PHASE 2
 	// 1. For every feature, look at list of plugins and see what has changed from Phase 1.
+	//    Any newly-added plugins must be at version 0.0.0 to be considered "new."
 	// 2. Update feature.xml with new plugin version numbers. Features can also update each
 	//    other if they include child features with version numbers.
 	// 3. If ReleaseNotes file exists, add comment to ReleaseNotes file documenting the change
@@ -67,6 +68,7 @@ public class BatchPluginVersionUpdater {
 		"gov.sandia.aleph.ui",
 		"gov.sandia.aleph.workflow.runtime",
 		"gov.sandia.aleph.workflow.ui",
+		"gov.sandia.apc.editor.calore",
 		"gov.sandia.apc.JobSubmission",
 		"gov.sandia.apc.terminal",
 		"gov.sandia.chartreuse.impl.plotly.mac",
@@ -110,8 +112,8 @@ public class BatchPluginVersionUpdater {
 	private static final boolean UPDATE_FEATURE_XML = true;
 	private static final boolean UPDATE_FEATURE_RELEASENOTES = true;
 	private static final boolean UPDATE_DAKOTAGUI_PRODUCT = true;
-	private static final String GUI_VERSION = "6.16.0";
-	private static final String BUILD_DATE = "2022/05/12";
+	private static final String GUI_VERSION = "6.17.0";
+	private static final String BUILD_DATE = "2022/10/11";
 	
 	////////////
 	// FIELDS //

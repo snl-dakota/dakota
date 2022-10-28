@@ -668,7 +668,7 @@ void NonDLocalReliability::mean_value()
     // the impFactors matrix.  These two-way factors are not the same as Sobol'
     // interaction indices since the Taylor series basis is not orthogonal; as
     // a result, two-way factors (unlike univariate factors) can be negative.
-    if (std_dev > Pecos::SMALL_NUMBER) {
+    if (!Pecos::is_small(std_dev)) {
       Real* imp_fact = impFactor[respFnCount];
       Real* fn_grad  = fnGradsMeanX[respFnCount];
       if (correlation_flag) {
@@ -698,7 +698,7 @@ void NonDLocalReliability::mean_value()
 	= requestedRespLevels[respFnCount][levelCount];
       // compute beta and p from z
       Real beta, p;
-      if (std_dev > Pecos::SMALL_NUMBER) {
+      if (!Pecos::is_small(std_dev)) {
 	Real ratio = (mean - z)/std_dev;
         beta = computedRelLevels[respFnCount][levelCount]
 	  = computedGenRelLevels[respFnCount][levelCount]
@@ -2797,7 +2797,7 @@ void NonDLocalReliability::print_results(std::ostream& s, short results_state)
 	<< std::setw(width) << momentStats(0,i)
 	<< "\n  Approximate Standard Deviation of Response = "
 	<< std::setw(width)<< std_dev << '\n';
-      if (std_dev < Pecos::SMALL_NUMBER)
+      if (Pecos::is_small(std_dev))
 	s << "  Importance Factors not available.\n";
       else {
 	imp_fact_i = impFactor[i];
@@ -2829,7 +2829,7 @@ void NonDLocalReliability::print_results(std::ostream& s, short results_state)
     if (num_levels) {
       Real std_dev = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
 	std::sqrt(momentStats(1,i)) : momentStats(1,i);
-      if (!mppSearchType && std_dev < Pecos::SMALL_NUMBER)
+      if (!mppSearchType && Pecos::is_small(std_dev))
         s << "\nWarning: negligible standard deviation renders CDF results "
           << "suspect.\n\n";
       if (cdfFlag)
