@@ -141,8 +141,7 @@ private:
 
   Real acv_estimator_variance(const RealVector& avg_eval_ratios,
 			      Real avg_hf_target);
-  Real acv_estimator_variance(const RealMatrix& eval_ratios, Real avg_N_H,
-			      const RealVector& cost,
+  Real acv_estimator_variance(Real avg_N_H, const RealVector& cost,
 			      RealVector& avg_eval_ratios, Real& avg_hf_target);
 
   void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
@@ -309,11 +308,9 @@ acv_estimator_variance(const RealVector& avg_eval_ratios, Real avg_hf_target)
 
 
 inline Real NonDACVSampling::
-acv_estimator_variance(const RealMatrix& eval_ratios, Real avg_N_H,
-		       const RealVector& cost, RealVector& avg_eval_ratios,
-		       Real& avg_hf_target)
+acv_estimator_variance(Real avg_N_H, const RealVector& cost,
+		       RealVector& avg_eval_ratios, Real& avg_hf_target)
 {
-  average(eval_ratios, 0, avg_eval_ratios);
   scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target);
   return acv_estimator_variance(avg_eval_ratios, avg_hf_target);
 }
