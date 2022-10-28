@@ -9,6 +9,7 @@
 
 #include "OutputManager.hpp"
 #include "ParamResponsePair.hpp"
+#include "RestartVersion.hpp"
 #include "SimulationResponse.hpp"
 
 #ifdef _WIN32
@@ -29,6 +30,38 @@
 
 using namespace Dakota;
 
+// generate PRP with just 1 var and resp
+PRPArray generate_minimal_prps(const int num_evals, RestartWriter &rst_writer)
+{
+  // Mock up a single variable
+  SizetArray vc_totals(NUM_VC_TOTALS);
+  vc_totals[0] = 1;
+  std::pair<short, short> view(MIXED_ALL, EMPTY_VIEW);
+  SharedVariablesData svd(view, vc_totals);
+  Variables vars(svd);
+
+  // Mock up a single response
+  // active set with 1 var / 1 resp
+  ActiveSet as(1, 1);
+  // TODO: can't default construct srd...
+  SharedResponseData srd(as);
+  Response resp(srd);
+
+  String iface_id = "RST_IFACE";
+
+  PRPArray prps_out;
+  for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
+    vars.continuous_variable(M_LOG2E + (Real) (eval_id-1), 0);
+    resp.function_value(M_PI + (Real) (eval_id-1), 0);
+    // TODO: code is not robust to writing empty PRP (seg fault)
+    // NOTE: This makes a deep copy of vars/resp by default:
+    ParamResponsePair prp_out(vars, iface_id, resp, eval_id);
+    prps_out.push_back(prp_out);
+    rst_writer.append_prp(prp_out);
+  }
+
+  return prps_out;
+}
 
 /// generate num_evals PRPs, write to the passed RestartWriter, and return in array
 PRPArray generate_and_write_prps(const int num_evals, RestartWriter &rst_writer)
@@ -104,11 +137,9 @@ PRPArray generate_and_write_prps(const int num_evals, RestartWriter &rst_writer)
 }
 
 /// read PRPs from specified restart file to an array and return
-PRPArray read_prps(const int num_evals, const std::string& rst_filename)
+PRPArray read_prps(const int num_evals, boost::archive::binary_iarchive& restart_input_archive)
 {
   PRPArray prps_in;
-  std::ifstream restart_input_fs(rst_filename, std::ios::binary);
-  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
   for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
     ParamResponsePair prp_in;
     restart_input_archive & prp_in;
@@ -124,45 +155,18 @@ TEUCHOS_UNIT_TEST(io, restart_1var)
   // explicitly a binary stream (std::ios::binary)
   std::stringstream rst_stream;
 
-  // Mock up a single variable
-  SizetArray vc_totals(NUM_VC_TOTALS);
-  vc_totals[0] = 1;
-  std::pair<short, short> view(MIXED_ALL, EMPTY_VIEW);
-  SharedVariablesData svd(view, vc_totals);
-  Variables vars(svd);
-
-  // Mock up a single response
-  // active set with 1 var / 1 resp
-  ActiveSet as(1, 1);
-  // TODO: can't default construct srd...
-  SharedResponseData srd(as);
-  Response resp(srd);
-
-  String iface_id = "RST_IFACE";
-
   int num_evals = 10;
   PRPArray prps_out, prps_in;
   // added scope to force destruction of writer/reader and close the file
   {
     RestartWriter rst_writer(rst_stream);
-
-    for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
-      vars.continuous_variable(M_LOG2E + (Real) (eval_id-1), 0);
-      resp.function_value(M_PI + (Real) (eval_id-1), 0);
-      // TODO: code is not robust to writing empty PRP (seg fault)
-      // NOTE: This makes a deep copy of vars/resp by default:
-      ParamResponsePair prp_out(vars, iface_id, resp, eval_id);
-      prps_out.push_back(prp_out);
-      rst_writer.append_prp(prp_out);
-    }
+    prps_out = generate_minimal_prps(num_evals, rst_writer);
   }
-  {
-    boost::archive::binary_iarchive restart_input_archive(rst_stream);
-    for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
-      ParamResponsePair prp_in;
-      restart_input_archive & prp_in;
-      prps_in.push_back(prp_in);
-    }
+  boost::archive::binary_iarchive restart_input_archive(rst_stream);
+  for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
+    ParamResponsePair prp_in;
+    restart_input_archive & prp_in;
+    prps_in.push_back(prp_in);
   }
 
   TEST_EQUALITY(prps_in, prps_out);
@@ -184,12 +188,133 @@ TEUCHOS_UNIT_TEST(io, restart_allvar)
     RestartWriter rst_writer(rst_filename);
     prps_out = generate_and_write_prps(num_evals, rst_writer);
   }
-  prps_in = read_prps(num_evals, rst_filename);
+  std::ifstream restart_input_fs(rst_filename, std::ios::binary);
+  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
+  prps_in = read_prps(num_evals, restart_input_archive);
   TEST_EQUALITY(prps_in, prps_out);
 
   // std::cout << std::setprecision(20) << std::setw(30) << prp_in << '\n'
   // 	    << std::setprecision(20)  << prp_out << '\n';
+
+  boost::filesystem::remove(rst_filename);
+}
+
+
+// Verify can detect reading an old (pre-versioning) restart file
+TEUCHOS_UNIT_TEST(io, restart_read_oldfile)
+{
+  std::string rst_filename("old.rst");
+  boost::filesystem::remove(rst_filename);
+
+  // an old restart file started with a PRP, instead of versioning, so
+  // mock one up
+  const int num_evals = 1;
+  PRPArray prps_out, prps_in;
+  // scope to force destruction of writer and close the file
+  {
+    RestartWriter rst_writer(rst_filename);
+    prps_out = generate_and_write_prps(num_evals, rst_writer);
+  }
+
+  std::ifstream ifs(rst_filename, std::ios::binary);
+  boost::archive::binary_iarchive inarch(ifs);
+
+  RestartVersion rst_ver;
+  inarch & rst_ver;
+  
+  std::cout << "Reading pre-Dakota " << rst_ver.firstSupportedDakotaVersion()
+	    << " restart file with assumed version "
+	    << rst_ver.friendly_rst_version() << "; " << rst_ver.dakotaRelease
+	    << ", " << rst_ver.dakotaSHA1 << std::endl;
+
+  // make sure we're reading an old file
+  TEST_ASSERT(rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber);
+  TEST_ASSERT(rst_ver.dakotaRelease == "<unknown>");
+  TEST_ASSERT(rst_ver.dakotaSHA1 == "<unknown>");
+
+  ifs.seekg(0);
+  boost::archive::binary_iarchive inarch2(ifs);
+  prps_in = read_prps(num_evals, inarch2);
+  TEST_EQUALITY(prps_in, prps_out);
+
+  boost::filesystem::remove(rst_filename);
+}
+
+
+// Verify can detect reading an old (pre-versioning) restart file
+// when the contained PRP is minimal
+TEUCHOS_UNIT_TEST(io, restart_read_minimal_oldfile)
+{
+  std::string rst_filename("old.rst");
+  boost::filesystem::remove(rst_filename);
+
+  // an old restart file started with a PRP, instead of versioning, so mock one up
+  const int num_evals = 1;
+  PRPArray prps_out, prps_in;
+  // scope to force destruction of writer and close the file
+  {
+    RestartWriter rst_writer(rst_filename);
+    prps_out = generate_minimal_prps(num_evals, rst_writer);
+  }
+
+  std::ifstream ifs(rst_filename, std::ios::binary);
+  boost::archive::binary_iarchive inarch(ifs);
+
+  RestartVersion rst_ver;
+  inarch & rst_ver;
+
+  std::cout << "Reading pre-Dakota " << rst_ver.firstSupportedDakotaVersion()
+	    << " restart file with assumed version "
+	    << rst_ver.friendly_rst_version() << "; " << rst_ver.dakotaRelease
+	    << ", " << rst_ver.dakotaSHA1  << std::endl;
+
+  // make sure we're reading an old file, which didn't contain versioning info
+  TEST_ASSERT(rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber);
+  TEST_ASSERT(rst_ver.dakotaRelease == "<unknown>");
+  TEST_ASSERT(rst_ver.dakotaSHA1 == "<unknown>");
+
+  ifs.seekg(0);
+  boost::archive::binary_iarchive inarch2(ifs);
+  prps_in = read_prps(num_evals, inarch2);
+  TEST_EQUALITY(prps_in, prps_out);
+
+  boost::filesystem::remove(rst_filename);
+}
+
+TEUCHOS_UNIT_TEST(io, restart_read_newfile)
+{
+  std::string rst_filename("new.rst");
+  boost::filesystem::remove(rst_filename);
+
+  const int num_evals = 1;
+  PRPArray prps_out, prps_in;
+  // scope to force destruction of writer and close the file
+  {
+    RestartWriter rst_writer(rst_filename);
+    RestartVersion rst_ver("6.16.0+", "a1b2c3d4e5f6");
+    rst_writer & rst_ver;
+    prps_out = generate_and_write_prps(num_evals, rst_writer);
+  }
+
+  std::ifstream ifs(rst_filename, std::ios::binary);
+  boost::archive::binary_iarchive inarch(ifs);
+
+  RestartVersion rst_ver;
+  inarch & rst_ver;
+
+  std::cout << "Reading Dakota " << rst_ver.dakotaRelease
+	    << " restart file with version " << rst_ver.friendly_rst_version()
+	    << "; " << rst_ver.dakotaRelease << ", " << rst_ver.dakotaSHA1
+	    << std::endl;
+
+  // make sure we're reading a new file
+  TEST_ASSERT(rst_ver.restartVersion >= RestartVersion::restartFirstVersionNumber);
+  TEST_ASSERT(rst_ver.dakotaRelease == "6.16.0+");
+  TEST_ASSERT(rst_ver.dakotaSHA1 == "a1b2c3d4e5f6");
+
+  prps_in = read_prps(num_evals, inarch);
+  TEST_EQUALITY(prps_in, prps_out);
 
   boost::filesystem::remove(rst_filename);
 }

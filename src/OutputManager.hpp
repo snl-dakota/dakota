@@ -135,7 +135,11 @@ public:
   /// output filename for this writer
   const String& filename();
 
-  // TODO: operator &
+  /// serialize the passed data_out to the restart file
+  template<typename T>
+  void operator&(const T& data_out)
+  { restartOutputArchive->operator&(data_out); }
+
   /// add the passed pair to the restart file
   void append_prp(const ParamResponsePair& prp_in);
 
