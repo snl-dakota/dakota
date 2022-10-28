@@ -1178,8 +1178,10 @@ sample_allocation_metric(Real& sparsity_metric, Real power)
 void NonDPolynomialChaos::post_run(std::ostream& s)
 {
   Analyzer::post_run(s);
-  if (!expansionExportFile.empty())
-    print_results(s, FINAL_RESULTS);
+  // allow quiet helper methods to still export their expansion:
+  if (!summaryOutputFlag && !expansionExportFile.empty())
+    export_coefficients();
+  // else post_run will export during print_results
 }
 
 
