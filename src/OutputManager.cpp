@@ -28,7 +28,6 @@
 #include "dakota_tabular_io.hpp"
 #include "ResultsDBAny.hpp"
 #include "EvaluationStore.hpp"
-#include "RestartVersion.hpp"
 
 #ifdef DAKOTA_HAVE_HDF5
 #include "HDF5_IO.hpp"
@@ -731,6 +730,10 @@ void OutputManager::read_write_restart(bool restart_requested,
 	   << "using -stop_restart\n  to truncate the read may help."
 	   << std::endl;
 
+      // re-read the full, correct version info from the new stream
+      if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+	restart_input_archive & rst_ver;
+
       // The -stop_restart input for restricting the number of
       // evaluations read in from the restart file is very useful when
       // the last few evaluations in a run were corrupted.  Note that
@@ -1002,7 +1005,8 @@ RestartWriter::RestartWriter()
 {  /* empty ctor */  }
 
 
-RestartWriter::RestartWriter(const String& write_restart_filename):
+RestartWriter::RestartWriter(const String& write_restart_filename,
+			     bool write_version):
   restartOutputFilename(write_restart_filename),
   restartOutputFS(restartOutputFilename.c_str(), std::ios::binary)
 {
@@ -1013,12 +1017,39 @@ RestartWriter::RestartWriter(const String& write_restart_filename):
   }
 
   restartOutputArchive.reset(new boost::archive::binary_oarchive(restartOutputFS));
+
+  if (write_version) {
+    RestartVersion rst_version(DakotaBuildInfo::get_release_num(),
+			       DakotaBuildInfo::get_rev_number());
+    restartOutputArchive->operator&(rst_version);
+  }
+}
+
+
+RestartWriter::RestartWriter(const String& write_restart_filename,
+			     const RestartVersion& rst_version):
+  restartOutputFilename(write_restart_filename),
+  restartOutputFS(restartOutputFilename.c_str(), std::ios::binary)
+{
+  if (!restartOutputFS.good()) {
+    Cerr << "\nError: could not open restart file '"
+	 << write_restart_filename << "' for writing."<< std::endl;
+    abort_handler(IO_ERROR);
+  }
+
+  restartOutputArchive.reset(new boost::archive::binary_oarchive(restartOutputFS));
+
+  restartOutputArchive->operator&(rst_version);
 }
 
 
 RestartWriter::RestartWriter(std::ostream& write_restart_ostream):
   restartOutputArchive(new boost::archive::binary_oarchive(write_restart_ostream))
-{  /* empty ctor */  }
+{
+  RestartVersion rst_version(DakotaBuildInfo::get_release_num(),
+			     DakotaBuildInfo::get_rev_number());
+  restartOutputArchive->operator&(rst_version);
+}
 
 
 const String& RestartWriter::filename()

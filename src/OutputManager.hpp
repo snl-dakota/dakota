@@ -21,6 +21,7 @@
 #include "dakota_global_defs.hpp"
 #include "dakota_tabular_io.hpp"
 #include "DakotaGraphics.hpp"
+#include "RestartVersion.hpp"
 #include <memory>
 
 
@@ -126,7 +127,12 @@ public:
   RestartWriter();
 
   /// typical ctor taking a filename; this class encapsulates the output stream
-  RestartWriter(const String& write_restart_filename);
+  RestartWriter(const String& write_restart_filename,
+		bool write_version = true);
+
+  /// alternate ctor taking non-default version info, helpful for testing
+  RestartWriter(const String& write_restart_filename,
+		const RestartVersion& rst_version);
 
   /// alternate ctor taking a stream, helpful for testing; assumes
   /// client manages the output stream

@@ -13,9 +13,13 @@
 #include "RestartVersion.hpp"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/export.hpp>
 
 namespace Dakota {
 
+/** This creates its own iarchive for the restart file as if the file
+    doesn't contain full restart information, need to rewind and
+    create a new iarchive anyway. */
 RestartVersion
 RestartVersion::check_restart_version(const std::string& rst_filename)
 {
@@ -64,3 +68,5 @@ RestartVersion::check_restart_version(const std::string& rst_filename)
 }
 
 }
+
+BOOST_CLASS_EXPORT(Dakota::RestartVersion)

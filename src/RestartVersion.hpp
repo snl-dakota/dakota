@@ -72,7 +72,6 @@ public:
   /// vs. current Dakota version
   static RestartVersion check_restart_version(const std::string& rst_filename);
 
-
   // Member data corresponding to that stored in a restart file
   
   /// the restart version being processed (defaults to 0 for unknown)
@@ -85,6 +84,9 @@ public:
   /// repository revision info
   std::string dakotaSHA1 = "<unknown>";
 
+
+private:
+
   /// Boost::serialization serializer
   template<class Archive>
   void serialize(Archive &ar, const unsigned int version) {
@@ -92,7 +94,9 @@ public:
     ar & restartVersion;
     // pre-6.17.0 files don't have version information, and certainly
     // not these members:
-    if (restartVersion >= restartFirstVersionNumber) {
+    if (restartVersion < restartFirstVersionNumber)
+      restartVersion = 0; // reset any short variables view to zero
+    else {
       ar & dakotaRelease;
       ar & dakotaSHA1;
     }

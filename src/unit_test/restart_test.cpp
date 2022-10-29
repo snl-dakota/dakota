@@ -163,6 +163,8 @@ TEUCHOS_UNIT_TEST(io, restart_1var)
     prps_out = generate_minimal_prps(num_evals, rst_writer);
   }
   boost::archive::binary_iarchive restart_input_archive(rst_stream);
+  RestartVersion rst_ver;
+  restart_input_archive & rst_ver;
   for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
     ParamResponsePair prp_in;
     restart_input_archive & prp_in;
@@ -191,6 +193,9 @@ TEUCHOS_UNIT_TEST(io, restart_allvar)
   std::ifstream restart_input_fs(rst_filename, std::ios::binary);
   boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
+  RestartVersion rst_ver;
+  restart_input_archive & rst_ver;
+
   prps_in = read_prps(num_evals, restart_input_archive);
   TEST_EQUALITY(prps_in, prps_out);
 
@@ -213,7 +218,7 @@ TEUCHOS_UNIT_TEST(io, restart_read_oldfile)
   PRPArray prps_out, prps_in;
   // scope to force destruction of writer and close the file
   {
-    RestartWriter rst_writer(rst_filename);
+    RestartWriter rst_writer(rst_filename, false);
     prps_out = generate_and_write_prps(num_evals, rst_writer);
   }
 
@@ -254,7 +259,7 @@ TEUCHOS_UNIT_TEST(io, restart_read_minimal_oldfile)
   PRPArray prps_out, prps_in;
   // scope to force destruction of writer and close the file
   {
-    RestartWriter rst_writer(rst_filename);
+    RestartWriter rst_writer(rst_filename, false);
     prps_out = generate_minimal_prps(num_evals, rst_writer);
   }
 
@@ -291,9 +296,8 @@ TEUCHOS_UNIT_TEST(io, restart_read_newfile)
   PRPArray prps_out, prps_in;
   // scope to force destruction of writer and close the file
   {
-    RestartWriter rst_writer(rst_filename);
     RestartVersion rst_ver("6.16.0+", "a1b2c3d4e5f6");
-    rst_writer & rst_ver;
+    RestartWriter rst_writer(rst_filename, rst_ver);
     prps_out = generate_and_write_prps(num_evals, rst_writer);
   }
 

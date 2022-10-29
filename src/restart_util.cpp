@@ -239,6 +239,10 @@ void print_restart(StringArray pos_args, String print_dest)
     }
     boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
+    // re-read the full, correct version info from the new stream
+    if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+      restart_input_archive & rst_ver;
+
     cout << "Reading restart file '" << read_restart_filename << "'."
 	 << std::endl;
 
@@ -323,6 +327,10 @@ void print_restart_pdb(StringArray pos_args, String print_dest)
     exit(-1);
   }
   boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+  // re-read the full, correct version info from the new stream
+  if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+    restart_input_archive & rst_ver;
 
   size_t i, j, num_evals = 0;
   PRPCache read_pairs;
@@ -484,6 +492,10 @@ void print_restart_tabular(StringArray pos_args, String print_dest,
       exit(-1);
     }
     boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+    // re-read the full, correct version info from the new stream
+    if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+      restart_input_archive & rst_ver;
 
     cout << "Reading restart file '" << read_restart_filename << "'."
 	 << std::endl;
@@ -718,6 +730,10 @@ void repair_restart(StringArray pos_args, String identifier_type)
     }
     boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
+    // re-read the full, correct version info from the new stream
+    if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+      restart_input_archive & rst_ver;
+
     std::ofstream restart_output_fs(write_restart_filename.c_str(),
 				    std::ios::binary);
     if (!restart_output_fs.good()) {
@@ -829,6 +845,10 @@ void concatenate_restart(StringArray pos_args)
 	exit(-1);
       }
       boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+      // re-read the full, correct version info from the new stream
+      if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+	restart_input_archive & rst_ver;
 
       int cntr = 0;
       restart_input_fs.peek();  // peek to force EOF if no records in restart file
