@@ -55,6 +55,9 @@ RestartVersion::check_restart_version(const std::string& rst_filename)
 	   << std::endl;
       // abort_handler(IO_ERROR);
     }
+    else {
+      Cout << "Reading restart file '" << rst_filename << "' containing: " << rst_ver;
+    }
   }
   catch (const std::exception& e) {
     Cout << "Warning: Unknown error reading version info from restart file '"
