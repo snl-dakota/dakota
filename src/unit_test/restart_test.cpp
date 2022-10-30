@@ -190,14 +190,18 @@ TEUCHOS_UNIT_TEST(io, restart_allvar)
     RestartWriter rst_writer(rst_filename);
     prps_out = generate_and_write_prps(num_evals, rst_writer);
   }
-  std::ifstream restart_input_fs(rst_filename, std::ios::binary);
-  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
-  RestartVersion rst_ver;
-  restart_input_archive & rst_ver;
+  // scope to destruct ifstream so file can be removed
+  {
+    std::ifstream restart_input_fs(rst_filename, std::ios::binary);
+    boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
-  prps_in = read_prps(num_evals, restart_input_archive);
-  TEST_EQUALITY(prps_in, prps_out);
+    RestartVersion rst_ver;
+    restart_input_archive & rst_ver;
+
+    prps_in = read_prps(num_evals, restart_input_archive);
+    TEST_EQUALITY(prps_in, prps_out);
+  }
 
   // std::cout << std::setprecision(20) << std::setw(30) << prp_in << '\n'
   // 	    << std::setprecision(20)  << prp_out << '\n';
@@ -222,26 +226,29 @@ TEUCHOS_UNIT_TEST(io, restart_read_oldfile)
     prps_out = generate_and_write_prps(num_evals, rst_writer);
   }
 
-  std::ifstream ifs(rst_filename, std::ios::binary);
-  boost::archive::binary_iarchive inarch(ifs);
+  // scope to destruct ifstream so file can be removed
+  {
+    std::ifstream ifs(rst_filename, std::ios::binary);
+    boost::archive::binary_iarchive inarch(ifs);
 
-  RestartVersion rst_ver;
-  inarch & rst_ver;
+    RestartVersion rst_ver;
+    inarch & rst_ver;
   
-  std::cout << "Reading pre-Dakota " << rst_ver.firstSupportedDakotaVersion()
-	    << " restart file with assumed version "
-	    << rst_ver.friendly_rst_version() << "; " << rst_ver.dakotaRelease
-	    << ", " << rst_ver.dakotaSHA1 << std::endl;
+    std::cout << "Reading pre-Dakota " << rst_ver.firstSupportedDakotaVersion()
+	      << " restart file with assumed version "
+	      << rst_ver.friendly_rst_version() << "; " << rst_ver.dakotaRelease
+	      << ", " << rst_ver.dakotaSHA1 << std::endl;
 
-  // make sure we're reading an old file
-  TEST_ASSERT(rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber);
-  TEST_ASSERT(rst_ver.dakotaRelease == "<unknown>");
-  TEST_ASSERT(rst_ver.dakotaSHA1 == "<unknown>");
+    // make sure we're reading an old file
+    TEST_ASSERT(rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber);
+    TEST_ASSERT(rst_ver.dakotaRelease == "<unknown>");
+    TEST_ASSERT(rst_ver.dakotaSHA1 == "<unknown>");
 
-  ifs.seekg(0);
-  boost::archive::binary_iarchive inarch2(ifs);
-  prps_in = read_prps(num_evals, inarch2);
-  TEST_EQUALITY(prps_in, prps_out);
+    ifs.seekg(0);
+    boost::archive::binary_iarchive inarch2(ifs);
+    prps_in = read_prps(num_evals, inarch2);
+    TEST_EQUALITY(prps_in, prps_out);
+  }
 
   boost::filesystem::remove(rst_filename);
 }
@@ -251,7 +258,7 @@ TEUCHOS_UNIT_TEST(io, restart_read_oldfile)
 // when the contained PRP is minimal
 TEUCHOS_UNIT_TEST(io, restart_read_minimal_oldfile)
 {
-  std::string rst_filename("old.rst");
+  std::string rst_filename("minimal_old.rst");
   boost::filesystem::remove(rst_filename);
 
   // an old restart file started with a PRP, instead of versioning, so mock one up
@@ -263,26 +270,29 @@ TEUCHOS_UNIT_TEST(io, restart_read_minimal_oldfile)
     prps_out = generate_minimal_prps(num_evals, rst_writer);
   }
 
-  std::ifstream ifs(rst_filename, std::ios::binary);
-  boost::archive::binary_iarchive inarch(ifs);
+  // scope to destruct ifstream so file can be removed
+  {
+    std::ifstream ifs(rst_filename, std::ios::binary);
+    boost::archive::binary_iarchive inarch(ifs);
 
-  RestartVersion rst_ver;
-  inarch & rst_ver;
+    RestartVersion rst_ver;
+    inarch & rst_ver;
 
-  std::cout << "Reading pre-Dakota " << rst_ver.firstSupportedDakotaVersion()
-	    << " restart file with assumed version "
-	    << rst_ver.friendly_rst_version() << "; " << rst_ver.dakotaRelease
-	    << ", " << rst_ver.dakotaSHA1  << std::endl;
+    std::cout << "Reading pre-Dakota " << rst_ver.firstSupportedDakotaVersion()
+	      << " restart file with assumed version "
+	      << rst_ver.friendly_rst_version() << "; " << rst_ver.dakotaRelease
+	      << ", " << rst_ver.dakotaSHA1  << std::endl;
 
-  // make sure we're reading an old file, which didn't contain versioning info
-  TEST_ASSERT(rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber);
-  TEST_ASSERT(rst_ver.dakotaRelease == "<unknown>");
-  TEST_ASSERT(rst_ver.dakotaSHA1 == "<unknown>");
+    // make sure we're reading an old file, which didn't contain versioning info
+    TEST_ASSERT(rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber);
+    TEST_ASSERT(rst_ver.dakotaRelease == "<unknown>");
+    TEST_ASSERT(rst_ver.dakotaSHA1 == "<unknown>");
 
-  ifs.seekg(0);
-  boost::archive::binary_iarchive inarch2(ifs);
-  prps_in = read_prps(num_evals, inarch2);
-  TEST_EQUALITY(prps_in, prps_out);
+    ifs.seekg(0);
+    boost::archive::binary_iarchive inarch2(ifs);
+    prps_in = read_prps(num_evals, inarch2);
+    TEST_EQUALITY(prps_in, prps_out);
+  }
 
   boost::filesystem::remove(rst_filename);
 }
@@ -301,24 +311,27 @@ TEUCHOS_UNIT_TEST(io, restart_read_newfile)
     prps_out = generate_and_write_prps(num_evals, rst_writer);
   }
 
-  std::ifstream ifs(rst_filename, std::ios::binary);
-  boost::archive::binary_iarchive inarch(ifs);
+  // scope to destruct ifstream so file can be removed
+  {
+    std::ifstream ifs(rst_filename, std::ios::binary);
+    boost::archive::binary_iarchive inarch(ifs);
 
-  RestartVersion rst_ver;
-  inarch & rst_ver;
+    RestartVersion rst_ver;
+    inarch & rst_ver;
 
-  std::cout << "Reading Dakota " << rst_ver.dakotaRelease
-	    << " restart file with version " << rst_ver.friendly_rst_version()
-	    << "; " << rst_ver.dakotaRelease << ", " << rst_ver.dakotaSHA1
-	    << std::endl;
+    std::cout << "Reading Dakota " << rst_ver.dakotaRelease
+	      << " restart file with version " << rst_ver.friendly_rst_version()
+	      << "; " << rst_ver.dakotaRelease << ", " << rst_ver.dakotaSHA1
+	      << std::endl;
 
-  // make sure we're reading a new file
-  TEST_ASSERT(rst_ver.restartVersion >= RestartVersion::restartFirstVersionNumber);
-  TEST_ASSERT(rst_ver.dakotaRelease == "6.16.0+");
-  TEST_ASSERT(rst_ver.dakotaSHA1 == "a1b2c3d4e5f6");
+    // make sure we're reading a new file
+    TEST_ASSERT(rst_ver.restartVersion >= RestartVersion::restartFirstVersionNumber);
+    TEST_ASSERT(rst_ver.dakotaRelease == "6.16.0+");
+    TEST_ASSERT(rst_ver.dakotaSHA1 == "a1b2c3d4e5f6");
 
-  prps_in = read_prps(num_evals, inarch);
-  TEST_EQUALITY(prps_in, prps_out);
+    prps_in = read_prps(num_evals, inarch);
+    TEST_EQUALITY(prps_in, prps_out);
+  }
 
   boost::filesystem::remove(rst_filename);
 }
