@@ -326,6 +326,12 @@ public:
   /// Archive the input file to the results database
   void archive_input(const ProgramOptions &prog_opts) const;
 
+  /// Checked the passed input file or string for output/error_file
+  /// and redirect accordingly. Command line options take precedence
+  /// over input file options.
+  void check_input_redirs(const ProgramOptions& prog_opts,
+			  const std::string& input_file,
+			  const std::string& input_string);
 
   /// check the specified input file contents for output/error redirection
   static void check_inputfile_redirs(const std::string& input_string,
@@ -338,9 +344,9 @@ public:
 				       std::string& error_filename);
 
   /// check the passed input file stream for output/error redirection
-  static void check_input_redirs(std::istream& input_stream,
-				 std::string& output_filename,
-				 std::string& error_filename);
+  static void check_input_redirs_impl(std::istream& input_stream,
+				      std::string& output_filename,
+				      std::string& error_filename);
 
   // -----
   // Data to later be made private

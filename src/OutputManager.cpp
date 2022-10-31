@@ -95,37 +95,45 @@ void OutputManager::initial_redirects(const ProgramOptions& prog_opts)
   // will still be true.  This behavior is okay because the redirector
   // will see the same filename and not reopen the file.
 
-  std::string input_specified_output, input_specified_error;
-  if (!prog_opts.input_file().empty())
-    check_inputfile_redirs(prog_opts.input_file(), input_specified_output,
-			   input_specified_error);
-  else if (!prog_opts.input_string().empty())
-    check_inputstring_redirs(prog_opts.input_string(), input_specified_output,
-			     input_specified_error);
-
-  std::string output_file;
-  if (prog_opts.user_stdout_redirect())
-    output_file = prog_opts.output_file();
-  else if (!input_specified_output.empty())
-    output_file = input_specified_output;
-
   //  if output file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && !output_file.empty()) {
+  if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
     if (outputLevel >= DEBUG_OUTPUT)
-      std::cout << "\nRedirecting Dakota standard output on rank 0 to "
-		<< output_file << std::endl;
-    coutRedirector.push_back(output_file);
+      std::cout << "\nRedirecting Cout on rank 0 to " << prog_opts.output_file()
+                << std::endl;
+    coutRedirector.push_back(prog_opts.output_file());
   }
 
-  std::string error_file;
-  if (prog_opts.user_stderr_redirect())
-    error_file = prog_opts.error_file();
-  else if (!input_specified_error.empty())
-    error_file = input_specified_error;
-
   //  if error file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && !error_file.empty())
-    cerrRedirector.push_back(error_file);
+  if (worldRank == 0 && prog_opts.user_stderr_redirect())
+    cerrRedirector.push_back(prog_opts.error_file());
+}
+
+
+void OutputManager::check_input_redirs(const ProgramOptions& prog_opts,
+				       const std::string& input_file,
+				       const std::string& input_string)
+{
+  std::string input_specified_output, input_specified_error;
+  if (!input_file.empty())
+    check_inputfile_redirs(input_file, input_specified_output,
+			   input_specified_error);
+  else if (!input_string.empty())
+    check_inputstring_redirs(input_string, input_specified_output,
+			     input_specified_error);
+
+  //  if output file specified, redirect immediately, possibly rebind later
+  if (!prog_opts.user_stdout_redirect() && !input_specified_output.empty() &&
+      worldRank == 0) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      std::cout << "\nRedirecting Dakota standard output on rank 0 to "
+		<< input_specified_output << std::endl;
+    coutRedirector.push_back(input_specified_output);
+  }
+
+  // if error file specified, redirect immediately, possibly rebind later
+  if (!prog_opts.user_stderr_redirect() && !input_specified_error.empty() &&
+      worldRank == 0)
+    cerrRedirector.push_back(input_specified_error);
 }
 
 
@@ -135,7 +143,7 @@ void OutputManager::check_inputfile_redirs(const std::string& input_filename,
 {
   // TODO: Check file operation exceptions
   std::ifstream infile(input_filename);
-  OutputManager::check_input_redirs(infile, output_filename, error_filename);
+  OutputManager::check_input_redirs_impl(infile, output_filename, error_filename);
 }
 
 
@@ -144,14 +152,14 @@ void OutputManager::check_inputstring_redirs(const std::string& input_string,
 					     std::string& error_filename)
 {
   std::istringstream infile(input_string);
-  OutputManager::check_input_redirs(infile, output_filename, error_filename);
+  OutputManager::check_input_redirs_impl(infile, output_filename, error_filename);
 }
 
 
 /** This has a stream API to permit multiline matching. */
-void OutputManager::check_input_redirs(std::istream& input_stream,
-				       std::string& output_filename,
-				       std::string& error_filename)
+void OutputManager::check_input_redirs_impl(std::istream& input_stream,
+					    std::string& output_filename,
+					    std::string& error_filename)
 {
   // RATIONALE: This doesn't allow abbreviations due to similar
   // keywords output_filter and error_factors. The regexs for

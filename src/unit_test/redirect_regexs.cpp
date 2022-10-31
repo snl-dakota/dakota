@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(test_valid_redirs)
   for (const auto& input_text : valid_inputs) {
     std::string outfile, errfile;
     std::istringstream infile(input_text);
-    Dakota::OutputManager::check_input_redirs(infile, outfile, errfile);
+    Dakota::OutputManager::check_input_redirs_impl(infile, outfile, errfile);
 
     BOOST_TEST(outfile == "dakota.log");
     BOOST_TEST(errfile == "dakota.err");
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(test_valid_redirs)
   for (const auto& input_text : invalid_inputs) {
     std::string outfile, errfile;
     std::istringstream infile(input_text);
-    Dakota::OutputManager::check_input_redirs(infile, outfile, errfile);
+    Dakota::OutputManager::check_input_redirs_impl(infile, outfile, errfile);
 
     BOOST_TEST(outfile == "");
     BOOST_TEST(errfile == "");

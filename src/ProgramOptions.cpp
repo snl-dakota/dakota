@@ -129,6 +129,9 @@ bool ProgramOptions::preproc_input() const
 const String& ProgramOptions::preproc_cmd() const
 { return preprocCmd; }
 
+const String& ProgramOptions::preprocessed_file() const
+{ return preprocFilename; }
+
 const String& ProgramOptions::parser_options() const
 { return parserOptions; }
 
@@ -260,6 +263,9 @@ void ProgramOptions::preproc_input(bool pp_flag)
 
 void ProgramOptions::preproc_cmd(const String& pp_cmd)
 { preprocCmd = pp_cmd; }
+
+void ProgramOptions::preprocessed_file(const String& prepro_file)
+{ preprocFilename = prepro_file; }
 
 void ProgramOptions::output_file(const String& out_file)
 { outputFile = out_file; }

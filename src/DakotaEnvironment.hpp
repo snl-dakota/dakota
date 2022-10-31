@@ -128,6 +128,10 @@ protected:
   //- Heading: Member functions
   //
 
+  // Acquire the input, whether from stdin or template processing and
+  // perform any early input file-based redirects.
+  void preprocess_inputs();
+
   /// parse inputs, callbacks, and optionally check and broadcast
   void parse(bool check_bcast_database = true, 
 	     DbCallbackFunctionPtr callback = NULL, void* callback_data = NULL);

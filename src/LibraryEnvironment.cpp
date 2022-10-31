@@ -35,6 +35,8 @@ LibraryEnvironment(ProgramOptions prog_opts, bool check_bcast_construct,
 		   DbCallbackFunctionPtr callback, void* callback_data):
   Environment(BaseConstructor(), prog_opts)
 {
+  preprocess_inputs();
+
   // TODO: support run modes help, version, check
   outputManager.output_startup_message();
 
@@ -54,6 +56,8 @@ LibraryEnvironment(MPI_Comm dakota_mpi_comm,
 		   DbCallbackFunctionPtr callback, void* callback_data):
   Environment(BaseConstructor(), prog_opts, dakota_mpi_comm)
 { 
+  preprocess_inputs();
+
   // TODO: support run modes help, version, check
   outputManager.output_startup_message();
 

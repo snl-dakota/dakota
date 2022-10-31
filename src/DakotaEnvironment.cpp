@@ -18,6 +18,7 @@
 #include "WorkdirHelper.hpp"
 #include "ProblemDescDB.hpp"
 #include "IteratorScheduler.hpp"
+#include "dakota_preproc_util.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaEnvironment.cpp 6749 2010-05-03 17:11:57Z briadam $";
 
@@ -211,6 +212,59 @@ void Environment::exit_mode(const String& mode)
     abort_handler(-1);
   }
 }
+
+
+void Environment::preprocess_inputs() {
+
+  // Only the leader parses inputs
+  if (parallelLib.world_rank() != 0)
+    return;
+
+  if ( !programOptions.input_file().empty() &&
+       !programOptions.input_string().empty() ) {
+    Cerr << "\nError: preprocess_inputs called with both input file and input "
+	 << "string." << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
+
+  // Read the input from stdin if the user provided "-" as the filename
+  if(programOptions.input_file() == "-") {
+    Cout << "Reading Dakota input from standard input" << std::endl;
+    String stdin_string;
+    char in = std::cin.get();
+    while(std::cin.good()) {
+      stdin_string.push_back(in);
+      in = std::cin.get();
+    }
+    programOptions.input_file("");
+    programOptions.input_string(stdin_string);
+  }
+
+  if (programOptions.preproc_input()) {
+    std::string tmpl_file = programOptions.input_file();
+    if (!programOptions.input_string().empty())
+      // must generate to file on disk for pyprepro
+      tmpl_file = string_to_tmpfile(programOptions.input_string());
+
+    // run the pre-processor on the file
+    std::string preproc_file = pyprepro_input(tmpl_file,
+					      programOptions.preproc_cmd());
+    programOptions.preprocessed_file(preproc_file);
+
+    if (!programOptions.input_string().empty())
+      boost::filesystem::remove(tmpl_file);
+
+    // once pre-processed, check for any input file redirs
+    outputManager.check_input_redirs(programOptions, preproc_file,
+				     std::string());
+  }
+  else {
+    outputManager.check_input_redirs(programOptions,
+				     programOptions.input_file(),
+				     programOptions.input_string());
+  }
+}
+
 
 
 /** Parse input file and invoked any callbacks, then optionally check
