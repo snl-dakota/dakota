@@ -1,5 +1,0 @@
-Blurb::
-Sets the target of the MLMC sample allocation, i.e. the constraint of the MLMC sample allocation problem
-
-<b> Default Behavior </b>
-"variance_constraint"

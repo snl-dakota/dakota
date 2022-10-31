@@ -1,0 +1,42 @@
+Blurb::
+Percentage of evaluations to do to escape local minima.
+Description::
+The ``variable_neighborhood_search`` keyword is used to set the
+percentage (in decimal form) of function evaluations used to escape
+local minima.  The mesh adaptive direct search method will try to
+perform a maximum of that percentage of the function evaluations
+within this more extensive search.
+
+*Default Behavior*
+
+By default, ``variable_neighborhood_search`` is not used.
+
+*Usage Tips*
+
+Using ``variable_neighborhood_search`` results in an increased number
+of function evaluations.  If the desired result is a local minimum,
+the added cost is of little or no value, so the recommendation is not
+to use it.  If the desired result is the best local minimum possible
+within a computational budget, then there is value in setting this
+parameter.  Note that the higher the value, the greater the
+computational cost.  The value should be no greater than 1.0.
+Topics::
+
+Examples::
+The following example shows the syntax used to set
+``variable_neighborhood_search``.
+
+
+.. code-block::
+
+    method
+      mesh_adaptive_search
+        seed = 1234
+        variable_neighborhood_search = 0.1
+
+
+Theory::
+
+Faq::
+
+See_Also::

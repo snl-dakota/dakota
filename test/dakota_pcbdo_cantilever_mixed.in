@@ -1,4 +1,5 @@
 #@ *: DakotaConfig=HAVE_DOT
+#@ s*: Label=FastTest
 # DAKOTA Input File: dakota_pcbdo_cantilever_mixed.in
 # PCBDO with mixed insertion/augmentation using the cantilever test function.
 

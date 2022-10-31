@@ -1,0 +1,38 @@
+Blurb::
+Read initial solutions from file
+Description::
+``flat_file`` allows the initial population to be read from a flat
+file. If ``flat_file`` is specified, a file name must be given.
+
+Variables can be delimited in the flat file in any way you see fit
+with a few exceptions. The delimiter must be the same on any given
+line of input with the exception of leading and trailing whitespace.
+So a line could look like: 1.1, 2.2 ,3.3 for example but could not
+look like: 1.1, 2.2 3.3. The delimiter can vary from line to line
+within the file which can be useful if data from multiple sources is
+pasted into the same input file.  The delimiter can be any string that
+does not contain any of the characters .+-dDeE or any of the digits
+0-9. The input will be read until the end of the file. The algorithm
+will discard any configurations for which it was unable to retrieve at
+least the number of design variables. The objective and constraint
+entries are not required but if ALL are present, they will be recorded
+and the design will be tagged as evaluated so that evaluators may
+choose not to re-evaluate them.
+
+Setting the size for this initializer has the effect of requiring a
+minimum number of designs to create. If this minimum number has not
+been created once the files are all read, the rest are created using
+the ``unique_random`` initializer and then the ``simple_random``
+initializer if necessary.  If more designs are found in the
+initialization files than specified by the initial size, then the
+initial size is ignored and all designs read out of the files are kept
+in the initial population.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

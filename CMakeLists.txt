@@ -8,9 +8,10 @@
 #  _______________________________________________________________________
 
 # Dakota itself requires this CMake version; some TPLs may require even newer
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.17)
 
 set(CMAKE_MODULE_PATH
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/semsCMake
   ${CMAKE_MODULE_PATH}
@@ -41,22 +42,7 @@ include(DakotaOptions)
 # -----
 # Dakota version and optional tags
 # -----
-
-set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 16)
-set(Dakota_VERSION_PATCH 0)
-
-# --- Release time toggles
-
-# Toggle this to append to the version number for stable
-#set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
-set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
-
-# If empty, the build date will be used as the release date (could consider 
-# using the Git rev date); use format Mmm dd yyyy, as in asctime()
-#set(Dakota_RELEASE_DATE "May 16 2022")    # Versioned release date Mmm dd yyyy
-set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date
-
+include(DakotaVersion)
 # Define convenience variables used here and in subdirs, such as
 #   Dakota_VERSION_{PAIR, TRIPLE, STRING, SRC}
 include(DakotaVersionUtils)
@@ -93,8 +79,8 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION)
   set(DAKOTA_VERSION_FOUND TRUE)
 else()
   dakota_version_from_git()
+  dakota_create_version_file()
 endif()
-
 
 
 include(DakotaCPack)
@@ -244,31 +230,31 @@ endif()
 
 if(DAKOTA_MODULE_DAKOTA)
 
-add_subdirectory(packages)
+  add_subdirectory(packages)
 
-add_subdirectory(src)
-# Build the executables in the test directory even if BUILD_TESTING is OFF
-if(DAKOTA_ENABLE_TESTS)
-  add_subdirectory(test)
-endif()
+  add_subdirectory(src)
+  # Build the executables in the test directory even if BUILD_TESTING is OFF
+  if(DAKOTA_ENABLE_TESTS)
+    add_subdirectory(test)
+  endif()
 
-if(ENABLE_DAKOTA_DOCS)
-  add_subdirectory(docs)
-endif()
+  if(ENABLE_DAKOTA_DOCS)
+    add_subdirectory(docs)
+  endif()
 
-# Legacy examples
-add_subdirectory(examples)
-# New examples library, taking care to guard against empty directory
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dakota-examples/CMakeLists.txt")
-  add_subdirectory(dakota-examples)
-endif()
+  # Legacy examples
+  add_subdirectory(examples)
+  # New examples library, taking care to guard against empty directory
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dakota-examples/CMakeLists.txt")
+    add_subdirectory(dakota-examples)
+  endif()
 
-add_subdirectory(interfaces)
+  add_subdirectory(interfaces)
 
-# Install helper scripts to bin/:
-# NOTE: This directory manages dynamic library manipulation at install time,
-# as the install script must be called after src/ and test/ are installed.
-add_subdirectory("scripts")
+  # Install helper scripts to bin/:
+  # NOTE: This directory manages dynamic library manipulation at install time,
+  # as the install script must be called after src/ and test/ are installed.
+  add_subdirectory("scripts")
 
 endif()  # DAKOTA_MODULE_DAKOTA
 
@@ -279,7 +265,6 @@ endif()  # DAKOTA_MODULE_DAKOTA
 
 # Top-level install rules from source (binary rules are in subdirs)
 install(FILES INSTALL LICENSE COPYRIGHT README
-  ${DAKOTA_VERSION_file_path}VERSION
   DESTINATION ${DAKOTA_TOPFILES_INSTALL}
   )
 
@@ -297,6 +282,11 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   PATTERN "*.f" EXCLUDE 
   )
 
+if(DAKOTA_VERSION_FOUND)
+   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/VERSION DESTINATION
+    ${DAKOTA_TOPFILES_INSTALL})
+endif()
+ 
 # Final CPack settings
 dakota_cpack_finalize()
 include(CPack)

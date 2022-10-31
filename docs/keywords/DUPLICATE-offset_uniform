@@ -1,0 +1,15 @@
+Blurb::
+Set mutation offset to use a uniform distribution
+Description::
+The ``offset_uniform`` mutator introduces random variation by adding a uniform
+random amount to a variable value. The random amount depends on the
+``mutation_scale``.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

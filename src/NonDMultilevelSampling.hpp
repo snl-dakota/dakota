@@ -61,6 +61,8 @@ protected:
   void nested_response_mappings(const RealMatrix& primary_coeffs,
 				const RealMatrix& secondary_coeffs);
 
+  bool discrepancy_sample_counts() const;
+
   //
   //- Heading: Member functions
   //
@@ -72,7 +74,7 @@ protected:
   /// increment the equivalent number of HF evaluations based on new
   /// model evaluations
   void increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost,
-				    Real ref_cost);
+				    Real ref_cost, Real& equiv_hf);
 
   /// compute MLMC estimator variance from level QoI variances
   void compute_ml_estimator_variance(const RealMatrix&   var_Y,
@@ -159,10 +161,12 @@ private:
   /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		       IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
-		       Sizet2DArray& N_pilot, Sizet2DArray& N_online,
-		       SizetArray& delta_N_l, RealMatrix& var_Y,
-		       RealMatrix& var_qoi, RealVector& eps_sq_div_2,
-		       bool increment_cost, bool pilot_estvar);
+		       Sizet2DArray& N_actual_pilot,
+		       Sizet2DArray& N_actual_online, SizetArray& N_alloc_pilot,
+		       SizetArray& N_alloc_online, SizetArray& delta_N_l,
+		       RealMatrix& var_Y, RealMatrix& var_qoi,
+		       RealVector& eps_sq_div_2, bool increment_cost,
+		       bool pilot_estvar);
 
   // initialize the ML accumulators for computing means, variances, and
   // covariances across fidelity levels
@@ -189,8 +193,11 @@ private:
 			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
 			   SizetArray& num_Q);
 
+  /// increment the allocated samples counter
+  void increment_alloc_samples(size_t& N_l_alloc, const Real* N_l_target);
+
   // compute the equivalent number of HF evaluations (includes any sim faults)
-  void compute_ml_equivalent_cost(const SizetArray& raw_N_l,
+  Real compute_ml_equivalent_cost(const SizetArray& raw_N_l,
 				  const RealVector& cost);
 
   /// populate finalStatErrors for MLMC based on Q sums
@@ -201,8 +208,10 @@ private:
 
   /// for pilot projection, advance the sample counts and aggregate cost based
   /// on projected rather than actual samples
-  void update_projected_samples(const SizetArray& delta_N_l, Sizet2DArray& N_l,
-				const RealVector& cost);
+  void update_projected_samples(const SizetArray& delta_N_l,
+				//Sizet2DArray& N_actual,
+				SizetArray& N_alloc, const RealVector& cost,
+				Real& delta_equiv_hf);
 
   /// compute variance from sum accumulators
   /// necessary for sample allocation optimization
@@ -312,22 +321,24 @@ private:
 
   /// compute sample allocation delta based on a budget constraint
   void compute_sample_allocation_target(const RealMatrix& var_qoi, 
-    const RealVector& cost, const Sizet2DArray& N_l, SizetArray& delta_N_l);
+    const RealVector& cost, const Sizet2DArray& N_actual,
+    const SizetArray& N_alloc, SizetArray& delta_N_l);
 
   /// compute sample allocation delta based on current samples and based on allocation target. Single allocation target for each qoi, aggregated using max operation.
-  void compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
-         const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2_in, 
-         const RealMatrix& var_qoi, const RealVector& cost, 
-         const Sizet2DArray& N_pilot, const Sizet2DArray& N_online, SizetArray& delta_N_l);
-  
+  void compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql,
+    const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1,
+    const RealVector& eps_sq_div_2_in, const RealMatrix& var_qoi,
+    const RealVector& cost, const Sizet2DArray& N_pilot,
+    const Sizet2DArray& N_online, const SizetArray& N_alloc,
+    SizetArray& delta_N_l);  
 
   // Roll up expected value estimators for central moments.  Final expected
   // value is sum of expected values from telescopic sum.  Note: raw moments
   // have no bias correction (no additional variance from an estimated center).
   void compute_moments(const IntRealMatrixMap& sum_Ql, 
-  								const IntRealMatrixMap& sum_Qlm1, 
-  								const IntIntPairRealMatrixMap& sum_QlQlm1, 
-  								const Sizet2DArray& N_l);
+		       const IntRealMatrixMap& sum_Qlm1, 
+		       const IntIntPairRealMatrixMap& sum_QlQlm1, 
+		       const Sizet2DArray& N_l);
 
   /// compute the unbiased product of two sampling means
   static Real unbiased_mean_product_pair(const Real sumQ1, const Real sumQ2, 
@@ -536,8 +547,8 @@ private:
   RealMatrix scalarizationCoeffs;
 
   /// Helper data structure to store intermedia sample allocations
-  RealMatrix NTargetQoi;
-  RealMatrix NTargetQoiFN;
+  RealMatrix NTargetQoI;
+  //RealMatrix NTargetQoIFN;
 
   IntRealMatrixMap levQoisamplesmatrixMap;
   bool storeEvals;
@@ -570,6 +581,10 @@ level_cost(const RealVector& cost, size_t step)
     cost[step] + cost[step-1] : // aggregated {HF,LF} mode
     cost[step];                 //     uncorrected LF mode
 }
+
+
+inline bool NonDMultilevelSampling::discrepancy_sample_counts() const
+{ return true; }
 
 
 inline void NonDMultilevelSampling::
@@ -939,36 +954,48 @@ compute_ml_estimator_variance(const RealMatrix&   var_Y,
 
 
 inline void NonDMultilevelSampling::
-update_projected_samples(const SizetArray& delta_N_l, Sizet2DArray& N_l,
-			 const RealVector& cost)
+update_projected_samples(const SizetArray& delta_N_l, //Sizet2DArray& N_actual,
+			 SizetArray& N_alloc, const RealVector& cost,
+			 Real& delta_equiv_hf)
 {
   size_t incr, lev, num_lev = cost.length();
   Real ref_cost = cost[num_lev-1];
   for (lev=0; lev<num_lev; ++lev) {
     incr = delta_N_l[lev];
-    increment_samples(N_l[lev], incr);
-    increment_ml_equivalent_cost(incr, level_cost(cost, lev), ref_cost);
+    //increment_samples(N_actual[lev], incr);
+    increment_ml_equivalent_cost(incr, level_cost(cost, lev), ref_cost,
+				 delta_equiv_hf);
+    if (backfillFailures)
+      increment_alloc_samples(N_alloc[lev], NTargetQoI[lev]);
+    else
+      N_alloc[lev] += incr;
   }
 }
 
 
 inline void NonDMultilevelSampling::
-increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost, Real ref_cost)
+increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost, Real ref_cost,
+			     Real& equiv_hf)
 {
   // increment the equivalent number of HF evaluations
-  if (new_N_l)
-    equivHFEvals += new_N_l * lev_cost / ref_cost; // normalize into equiv HF
+  if (new_N_l) {
+    equiv_hf += new_N_l * lev_cost / ref_cost; // normalize into equiv HF
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "ML incremented by " << new_N_l << " level samples.  "
+	   << "equivalent HF evals = " << equiv_hf << std::endl;
+  }
 }
 
 
-inline void NonDMultilevelSampling::
+inline Real NonDMultilevelSampling::
 compute_ml_equivalent_cost(const SizetArray& raw_N_l, const RealVector& cost)
 {
-  size_t step, num_steps = raw_N_l.size();
-  equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
+  size_t step, num_steps = raw_N_l.size();  Real equiv_hf = 0.;
+  equiv_hf = raw_N_l[0] * cost[0]; // first level is single eval
   for (step=1; step<num_steps; ++step) // subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_l[step] * (cost[step] + cost[step - 1]);
-  equivHFEvals /= cost[num_steps - 1]; // normalize into equivalent HF evals
+    equiv_hf += raw_N_l[step] * (cost[step] + cost[step - 1]);
+  equiv_hf /= cost[num_steps - 1]; // normalize into equivalent HF evals
+  return equiv_hf;
 }
 
 

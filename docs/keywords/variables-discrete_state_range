@@ -1,0 +1,17 @@
+Blurb::
+State variables - discrete range-valued
+Description::
+Discrete state variables defined by bounds (an integer interval).
+
+See :ref:`variables:state` for details on the behavior of state
+variables.
+
+Topics::
+discrete_variables, state_variables
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

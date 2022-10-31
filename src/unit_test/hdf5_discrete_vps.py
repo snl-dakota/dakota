@@ -100,9 +100,11 @@ class Evaluations(unittest.TestCase):
 
             # discrete string variables
             for vi, vn in enumerate(self._ds_vars):
-                for t, h in zip(self._tdata[vn], results["discrete_string_variables"][:,vi]):
-                    self.assertAlmostEqual(t,h, 
-                            msg="parameter_sets doesn't match tabular data for variable %s" % vn)
+                for t, h in zip(self._tdata[vn], hce.numpy_strings(results["discrete_string_variables"][:,vi])):
+                    self.assertEqual(t, h,
+                                     msg="parameter_sets doesn't match tabular data for variable %s" % vn)
+
+                           
            
             # discrete real variables
             for vi, vn in enumerate(self._dr_vars):
@@ -116,8 +118,7 @@ class Evaluations(unittest.TestCase):
             for var_space, var_labels in zip( 
                     ("continuous", "discrete_integer", "discrete_string", "discrete_real"),
                     (self._c_vars, self._di_vars, self._ds_vars, self._dr_vars)):
-                for hl, el in zip(var_group[var_space].dims[1][0], var_labels):
-                    self.assertEqual(hl, el, 
+                self.assertListEqual(var_labels, hce.h5py_strings(var_group[var_space].dims[1][0]),
                             msg="Descriptors for variables of space %s are not correct." % var_space)
     
     def test_variable_ids(self):
@@ -136,8 +137,7 @@ class Evaluations(unittest.TestCase):
             for var_space, var_types in zip( 
                     ("continuous", "discrete_integer", "discrete_string", "discrete_real"),
                     (self._c_var_types, self._di_var_types, self._ds_var_types, self._dr_var_types)):
-                for hl, el in zip(var_group[var_space].dims[1][2], var_types):
-                    self.assertEqual(hl, el, 
+                self.assertListEqual(var_types, hce.h5py_strings(var_group[var_space].dims[1][2]),
                             msg="Types for variables of space %s are not correct." % var_space)
 
 

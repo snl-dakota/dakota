@@ -65,10 +65,10 @@ public:
   }
 
   //
-  //- Heading: Public members functions that perform for boostrap sampling
+  //- Heading: Public members functions that perform for bootstrap sampling
   //
 
-  /// Generate and store a new boostrapped sample into bootstrapped_sample
+  /// Generate and store a new bootstrapped sample into bootstrapped_sample
   virtual void operator()(size_t num_samp, Data& bootstrapped_sample) = 0;
 
   /// Obatin the number of samples used in the empirical distribution
@@ -77,13 +77,13 @@ public:
     return dataSize;
   }
 
-  /// Generate and store an dataSize out of dataSize boostrap sample
+  /// Generate and store an dataSize out of dataSize bootstrap sample
   virtual void operator()(Data& bootstrapped_sample)
   {
     (*this)(dataSize, bootstrapped_sample);
   }
 
-  /// Return boostrapped sample
+  /// Return bootstrapped sample
   virtual Data operator()()
   {
     Data sample(origData);
@@ -95,11 +95,13 @@ protected:
 
   // Internal static members for random variate generation
 
+  // Using Boost MT since need it anyway for unif int dist
   /// Random number generator to use for sampling
   static boost::random::mt19937 bootstrapRNG;
 
   // Internal instance members
 
+  // Using Boost unif int dist for cross-platform stability
   /// Uniform distribution to provide samples from the empirical distribution
   boost::random::uniform_int_distribution<> sampler;
 
@@ -143,7 +145,7 @@ public:
   {
     if(block_size &&
       (block_size > this->dataSize || orig_data.size() % block_size != 0))
-        throw "Boostrap sampler data size must be a multiple of block size.";
+        throw "Bootstrap sampler data size must be a multiple of block size.";
   }
 
   /// Destructor
@@ -153,7 +155,7 @@ public:
   }
 
   //
-  //- Heading: Public members functions that perform for boostrap sampling
+  //- Heading: Public members functions that perform for bootstrap sampling
   //
 
   virtual void operator()(size_t num_samp, Data& bootstrapped_sample)
@@ -184,7 +186,7 @@ protected:
 };
 
 
-/// Bootstrap sampler that is specialized to allow for the boostrapping of
+/// Bootstrap sampler that is specialized to allow for the bootstrapping of
 /// RealMatrix
 template<typename OrdinalType, typename ScalarType>
 class BootstrapSampler<Teuchos::SerialDenseMatrix<OrdinalType, ScalarType> > :
@@ -211,7 +213,7 @@ public:
   {
     if(block_size &&
       (block_size > this->dataSize || orig_data.numCols() % block_size != 0))
-        throw "Boostrap sampler data size must be a multiple of block size.";
+        throw "Bootstrap sampler data size must be a multiple of block size.";
   }
 
   /// Destructor
@@ -221,7 +223,7 @@ public:
   }
 
   //
-  //- Heading: Public members functions that perform boostrap sampling
+  //- Heading: Public members functions that perform bootstrap sampling
   //
 
   virtual void operator()(size_t num_samp, MatType& bootstrapped_sample)
@@ -229,7 +231,7 @@ public:
     OrdinalType stride = this->origData.stride();
     if(stride != bootstrapped_sample.stride())
       throw
-          std::out_of_range("Dimension of a boostrapped sample differs from "
+          std::out_of_range("Dimension of a bootstrapped sample differs from "
                             "the dimension of the original dataset");
 
     if(num_samp > bootstrapped_sample.numCols()/blockSize)
@@ -286,10 +288,10 @@ public:
   }
 
   //
-  //- Heading: Public members functions that perform for boostrap sampling
+  //- Heading: Public members functions that perform for bootstrap sampling
   //
 
-  /// Generate and store a new boostrapped sample into bootstrapped_sample
+  /// Generate and store a new bootstrapped sample into bootstrapped_sample
   /// TODO: bounds checking
   virtual void operator()(size_t num_samp, Data& bootstrapped_sample)
   {

@@ -1,0 +1,35 @@
+Blurb::
+Run a pre-processing script before the analysis drivers
+Description::
+The
+optional ``input_filter`` and ``output_filter`` specifications provide
+the names of separate pre- and post-processing programs or scripts
+which assist in mapping Dakota parameters files into analysis input
+files and mapping analysis output files into Dakota results files,
+respectively.
+
+If there is only a single analysis driver, then it is
+usually most convenient to combine pre- and post-processing
+requirements into a single analysis driver script and omit the
+separate input and output filters. However, in the case of multiple
+analysis drivers, the input and output filters provide a convenient
+location for non-repeated pre- and post-processing requirements. That
+is, input and output filters are only executed once per function
+evaluation, regardless of the number of analysis drivers, which makes
+them convenient locations for data processing operations that are
+shared among the analysis drivers.
+
+The :ref:`interface-analysis_drivers-fork-verbatim<interface-analysis_drivers-fork-verbatim>` keyword applies
+to input and output filters as well as analysis drivers, and Dakota
+also will substitute the names of the parameters and results files for the
+tokens `{PARAMETERS}` and `{RESULTS}` in input and output filer strings,
+as explained in the documentation for :ref:`interface-analysis_drivers<interface-analysis_drivers>`.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

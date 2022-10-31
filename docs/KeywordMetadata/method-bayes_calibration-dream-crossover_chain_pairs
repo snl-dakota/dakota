@@ -1,7 +1,0 @@
-Blurb::  Number of chains used in crossover.
-Description::   The number of chains randomly selected to be used in the crossover each time a crossover occurs.
-Topics::        bayesian_calibration	
-Examples::
-Theory::
-Faq::
-See_Also::	

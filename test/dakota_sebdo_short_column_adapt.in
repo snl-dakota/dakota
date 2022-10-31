@@ -1,5 +1,5 @@
 #@ *: DakotaConfig=HAVE_NPSOL
-#@ s6: TimeoutDelay=480
+#@ s*: Label=FastTest
 
 # DAKOTA Input File: dakota_pcbdo_short_column.in
 # Optimization under uncertainty using polynomial chaos methods within a
@@ -68,7 +68,8 @@ method,
 #	    dimension_adaptive generalized	#s8,#s9
 	    max_refinement_iterations  = 2	#s0,#s2
 #	    max_refinement_iterations  = 5	#s1,#s3,#s4,#s5,#s6,#s7
-	    convergence_tol = 1.e-4
+	    convergence_tol = 1.e-4             #s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s9
+#	    convergence_tol = 5.e-3             #s6
 	  num_response_levels = 0 1
 	  response_levels = 0.0
 	  compute reliabilities

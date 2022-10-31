@@ -1,0 +1,17 @@
+Blurb::
+First parameter of the lognormal distribution (option 3)
+Description::
+For the lognormal variables, one may specify the mean
+:math:`\lambda`  ("lambda")
+and standard deviation
+:math:`\zeta`  ("zeta")
+of the underlying normal distribution.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

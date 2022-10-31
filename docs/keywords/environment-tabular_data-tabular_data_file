@@ -1,0 +1,14 @@
+Blurb::
+File name for tabular data output
+Description::
+Specifies a name to use for the tabular data file, overriding the
+default ``dakota_tabular``.dat.
+Topics::
+dakota_output
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

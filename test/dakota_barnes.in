@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s1: DakotaConfig=HAVE_DOT
 #@ s2: DakotaConfig=HAVE_DOT
 #@ s3: DakotaConfig=HAVE_OPTPP

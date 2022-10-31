@@ -161,14 +161,16 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short num_int, const RealVector& dim_pref,
 		    short u_space_type, short refine_type, short refine_control,
 		    short covar_control, short rule_nest, short rule_growth,
-		    bool piecewise_basis, bool use_derivs):
+		    bool piecewise_basis, bool use_derivs,
+                    String exp_expansion_file ):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, dim_pref, 0,
 		refine_type, refine_control, covar_control, 0., rule_nest,
 		rule_growth, piecewise_basis, use_derivs), 
   // Note: non-zero seed would be needed for expansionSampler, if defined
   crossValidation(false), crossValidNoiseOnly(false),
   maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
-  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type),
+  expansionExportFile(exp_expansion_file)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
   // ----------------
@@ -241,7 +243,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    bool piecewise_basis, bool use_derivs, bool cv_flag,
 		    const String& import_build_pts_file,
 		    unsigned short import_build_format,
-		    bool import_build_active_only):
+		    bool import_build_active_only,
+                    String exp_expansion_file ):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, dim_pref, seed,
 		refine_type, refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
@@ -250,7 +253,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   maxCVOrderCandidates(USHRT_MAX), respScaling(false),
   importBuildPointsFile(import_build_pts_file), l2Penalty(0.),
   numAdvance(3), expOrderSpec(exp_order), collocPtsSpec(colloc_pts),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  normalizedCoeffOutput(false), uSpaceType(u_space_type),
+  expansionExportFile(exp_expansion_file)
   //resizedFlag(false), callResize(false)
 {
   // ----------------
@@ -1238,6 +1242,16 @@ sample_allocation_metric(Real& sparsity_metric, Real power)
     sum /= numFunctions;
     sparsity_metric = (pow_1) ? sum : std::pow(sum, 1. / power);
   }
+}
+
+
+void NonDPolynomialChaos::post_run(std::ostream& s)
+{
+  Analyzer::post_run(s);
+  // allow quiet helper methods to still export their expansion:
+  if (!summaryOutputFlag && !expansionExportFile.empty())
+    export_coefficients();
+  // else post_run will export during print_results
 }
 
 

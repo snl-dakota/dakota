@@ -2191,7 +2191,7 @@ compute_covariance_metric(bool revert, bool print_metric)
     RealVector resp_var_ref, delta_resp_var = respVariance; // deep copy
     if (revert) resp_var_ref = respVariance;
     if (relativeMetric)
-      scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
+      scale = std::max(Pecos::SMALL_NUMBER_SQ, respVariance.normFrobenius());
 
     compute_moments(); // little to no additional cost (see above)
     //compute_covariance(); // minimal variance computation
@@ -2219,7 +2219,7 @@ compute_covariance_metric(bool revert, bool print_metric)
     RealSymMatrix resp_covar_ref, delta_resp_covar = respCovariance;// deep copy
     if (revert) resp_covar_ref = respCovariance;
     if (relativeMetric)
-      scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
+      scale = std::max(Pecos::SMALL_NUMBER_SQ, respCovariance.normFrobenius());
 
     compute_moments(); // little to no additional cost (see above)
     compute_off_diagonal_covariance();
@@ -2837,7 +2837,7 @@ void NonDExpansion::compute_level_mappings()
       for (j=0; j<rl_len; ++j, ++cntr)
 	if (final_asv[cntr] & 1) {
 	  z_bar = requestedRespLevels[i][j];
-	  if (sigma > Pecos::SMALL_NUMBER)
+	  if (!Pecos::is_small(sigma))
 	    computedRelLevels[i][j] = (cdfFlag) ?
 	      (mu - z_bar)/sigma : (z_bar - mu)/sigma;
 	  else
@@ -3108,7 +3108,7 @@ void NonDExpansion::compute_analytic_statistics()
 	// *** beta
 	if (final_asv[cntr] & 1) {
 	  Real z_bar = requestedRespLevels[i][j];
-	  if (sigma > Pecos::SMALL_NUMBER) {
+	  if (!Pecos::is_small(sigma)) {
 	    Real ratio = (mu - z_bar)/sigma;
 	    computedRelLevels[i][j] = beta = (cdfFlag) ? ratio : -ratio;
 	  }
@@ -3122,7 +3122,7 @@ void NonDExpansion::compute_analytic_statistics()
 	if (final_asv[cntr] & 2) {
 	  if (final_stat_grad.empty())
 	    final_stat_grad.sizeUninitialized(num_final_grad_vars);
-	  if (sigma > Pecos::SMALL_NUMBER) {
+	  if (!Pecos::is_small(sigma)) {
 	    Real z_bar = requestedRespLevels[i][j];
 	    for (k=0; k<num_final_grad_vars; ++k) {
 	      Real dratio_dx = (sigma*mu_grad[k] - (mu-z_bar)*sigma_grad[k])
@@ -3688,10 +3688,14 @@ void NonDExpansion::archive_sobol_indices() {
     if (approx_i.expansion_coefficient_flag()) {
       // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
       // In this case, we cannot screen effectively at this level.
+      if (covarianceControl == DIAGONAL_COVARIANCE)
+        assert(respVariance[i] >= 0.0 );
+      if (covarianceControl == FULL_COVARIANCE)
+        assert(respCovariance(i,i) >= 0.0 );
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
-			    respVariance[i]     <= Pecos::SMALL_NUMBER ) ||
+			    Pecos::is_small(std::sqrt(respVariance[i])),approx_i.mean() ) ||
 			  ( covarianceControl   == FULL_COVARIANCE &&
-			    respCovariance(i,i) <= Pecos::SMALL_NUMBER ) )
+			    Pecos::is_small(std::sqrt(respCovariance(i,i)),approx_i.mean())) )
 	              ? false : true;
       if (well_posed) {
 	const RealVector& total_indices = approx_i.total_sobol_indices();
@@ -4037,12 +4041,26 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
   for (i=0; i<numFunctions; ++i) {
     Approximation& approx_i = poly_approxs[i];
     if (approx_i.expansion_coefficient_flag()) {
+
+      // Skip output for negative (co-)variances
+      // ---  Should more be done besides warning ? RWH
+      if ( (covarianceControl == DIAGONAL_COVARIANCE) && (respVariance[i] < 0.0) ) {
+	s << fn_labels[i] << " Sobol' indices not available due to negative "
+	  << "variance\n";
+        continue;
+      }
+      if ( (covarianceControl == FULL_COVARIANCE) && (respCovariance(i,i) < 0.0) ) {
+	s << fn_labels[i] << " Sobol' indices not available due to negative "
+	  << "covariance\n";
+        continue;
+      }
+
       // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
       // In this case, we cannot screen effectively at this level.
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
-			    respVariance[i]     <= Pecos::SMALL_NUMBER ) ||
+			    Pecos::is_small(std::sqrt(respVariance[i]),approx_i.mean()) ) ||
 			  ( covarianceControl   == FULL_COVARIANCE &&
-			    respCovariance(i,i) <= Pecos::SMALL_NUMBER ) )
+			    Pecos::is_small(std::sqrt(respCovariance(i,i)),approx_i.mean()) ) )
 	              ? false : true;
       if (well_posed) {
 	const RealVector& total_indices = approx_i.total_sobol_indices();

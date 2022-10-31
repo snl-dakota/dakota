@@ -1,0 +1,22 @@
+Blurb::
+Number of iterations allowed for optimizers and adaptive UQ methods
+Description::
+The maximum number of iterations is used as a stopping criterion for
+optimizers and some adaptive UQ methods.  If it has not reached any
+other stopping criteria first, the method will stop after it has
+performed ``max_iterations`` iterations.  In cases where there are
+multiple nested iterations to be controlled, ``max_iterations``
+generally controls the outer-most context.
+
+*Default Behavior*
+
+Default value is 100.
+Topics::
+method_independent_controls
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

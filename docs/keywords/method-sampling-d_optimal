@@ -1,0 +1,40 @@
+Blurb::
+Generate a D-optimal sampling design
+Description::
+This option will generate a sampling design that is approximately
+determinant-optimal (D-optimal) by downselecting from a set of
+candidate sample points.
+
+*Default Behavior*
+
+If not specified, a standard sampling design (MC or LHS) will be
+generated.  When ``d_optimal`` is specified, 100 candidate designs will
+be generated and the most D-optimal will be selected.
+
+*Usage Tips*
+
+D-optimal designs are only supported for
+:ref:`variables:uncertain:auv`.  The default candidate-based
+D-optimal strategy works for all submethods except incremental LHS (
+``lhs`` with ``refinement_samples``).  The Leja sampling option only works
+for continuous variables, and when used with LHS designs, the
+candidates point set will be Latin, but the final design will not be.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        samples = 20
+        d_optimal
+
+
+Theory::
+
+Faq::
+
+See_Also::

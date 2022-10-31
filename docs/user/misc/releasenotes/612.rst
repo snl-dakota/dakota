@@ -1,0 +1,95 @@
+.. _releasenotes-612:
+
+"""""""""""""""""""""""""
+Version 6.12 (2020/06/15)
+"""""""""""""""""""""""""
+
+As a forward-looking release, Dakota 6.12 highlights several nascent algorithm capabilities that will lead to improved method concurrency, advanced surrogate-based optimization and UQ, including Bayesian inference, and more flexible use of surrogates in meta-methods and workflows. These new features labeled experimental are lightly tested and available to early adopters to use with care. The 6.12 release also features a number of bug fixes and enhancements, notably improved batch parallel operations, new plotting and other features in the graphical user interface, and more flexible specification of specialized surrogates as models vs. methods.
+
+**Highlight: EGO Parallelism**
+
+The efficient_global method for optimization and least squares now supports concurrent refinement (adding multiple points). Previously, Dakota updated the underlying Gaussian process one point at a time. Concurrent refinement exposes greater available concurrency, enabling users to take greater advantage of parallel computing resources.
+
+Refinement candidates are generated for concurrent evaluation using a liar-based approach (refinement candidate evaluations by the truth model are temporarily replaced with approximate GP predictions to allow for look-aheads that complete the set of refinement points within a batch).
+
+*Enabling/Acccessing:* Use batch_size keyword to select the number of additional points to add each iteration.
+
+*Documentation:* Refer to Reference Manual documentation for "efficient_global" in combination with the "batch_size" keyword.
+
+**Highlight: MUQ for Bayesian Inference**
+
+(Experimental) The MIT Uncertainty Quantification (MUQ) MUQ2 library (Parno, Davis, Marzouk, et al.) enhances Dakota's Bayesian inference capability with new Markov Chain Monte Carlo (MCMC) sampling methods. MCMC samplers available in Dakota (under method > bayes_calibration > muq) include Metropolis-Hastings and Adaptive Metropolis. Future work will activate MUQ's more advanced samplers, including surrogate-based and derivative-enhanced sampling, as well as delayed rejection schemes.
+
+*Enabling / Accessing:* This experimental capability is new and evolving. It is off by default, so needs to be activated with the Dakota CMake option HAVE_MUQ:BOOL=TRUE, and requires Boost 1.58 or newer. The MUQ2 MCMC samplers will then be active in your Dakota binary.
+
+*Documentation:* Refer to Reference Manual documentation for "bayes_calibration" in combination with the "muq" keywords.
+
+**Highlight: Multilevel / Multifidelity Function Train**
+
+(Experimental) Dakota 6.12 extends functional tensor train (FTT) surrogate models from the C3 library (Gorodetsky, University of Michigan) to support building FTT approximations across a sequence of model fidelities (multifidelity FTT) or model resolutions (multilevel FTT). As with related multilevel / multifidelity polynomial chaos and stochastic collocation, multifidelity FTT supports either individual refinement (no allocation_control) or integrated greedy refinement (allocation_control greedy), and multilevel FTT supports sample allocation based on assumed estimator variance rates (allocation_control estimator_variance) or over-sampling the regression size resulting from a recovered set of ranks (allocation_control rank_sampling).
+
+*Enabling / Accessing:* This experimental capability is new and evolving. It is off by default, so needs to be activated with the Dakota CMake option HAVE_C3:BOOL=TRUE. Then single-level, multilevel, and multifidelity FTT are available with the different allocation control options described above. 
+
+*Documentation:* Refer to Reference Manual documentation for function_train, multilevel_function_train, and multifidelity_function_train.
+
+**Improvements by Category**
+
+*Interfaces, Input/Output*
+
+- Mulitlevel Sampling Output: The multilevel_sampling method writes moments to the HDF5 results file. All ML/MF methods record the equivalent number of high fidelity evaluations in the 'equiv_hf_evals' attribute on their execution groups.
+- Batch Evaluations in dakota.interfacing: Reading a batch parameters file in batch mode creates BatchParameters and BatchResults objects, which can be accessed by index or iterated to retrieve Parameters and Results objects for individual evaluations in the batch.
+- Parallel tiling arguments: The dakota.interfacing parallel tiling methods tile_run_static() and tile_run_dynamic() forward unrecognized keyword arguments to the Popen constructor that invokes mpirun. This change enables users to provide Popen with their own stdout or stderr streams, or to specify a different current working directory, for example.
+
+*Surrogate Models*
+
+- (Experimental) New Gaussian Process Surrogate: An experimental Gaussian process model is one of the inaugural members of a new surrogates module, which is default enabled in Dakota builds, and aims to unify Dakota, Pecos, and Surfpack surrogates. Like Dakota's exisiting Gaussian process surrogates it supports the use of a polynomial trend function. Distinct features of this implementation include:
+
+  - Gradient-based optimization with restarts is employed for simultaneous estimation of hyperparameters and trend function coefficients using analytical expressions for the components of the gradient instead of finite difference approximations.
+  - The "nugget" may optionally be treated as a hyperparameter and determined through maximum likelihood estimation.
+  - Linear algebra support is provided by the Eigen TPL, which is now distributed with Dakota and enabled by default.
+
+*Optimization Methods*
+
+- Calibration Bug Fixes:
+
+  - Specifying experiment data now works in conjunction with constraints and/or field responses
+  - Scaling and weighting have been improved to work meaningfully with scalar and/or field responses, and tighter error checking added for scaling specifications. See the Reference Manual for updated documentation.
+  
+- Scaling: The "none" option for scaling has been removed. To omit some elements from being scaled, use a value = 1.0. Calibration terms no longer admit a scale_type keyword as the only valid scaling type is "value".
+
+*UQ Methods*
+
+- Multilevel Monte Carlo (MLMC) Sample Allocation: MLMC can now optimally allocate samples on each model level to target a prescribed variance for the variance estimator. Multiple QoIs can be managed using either the sum or the max (worst case) of the estimator variance. Requiring accurate resolution of higher-order moments (potentially for the worst-case) results in a more challenging resource allocation problem, requiring either computation of a numerical solution to a nonlinear optimization problem or use of an approximate analytical solution that reduces computational cost. This is joint work with the Technical University of Munich.
+- Adapted Basis for Dimension Reduction: A new experimental adapted basis approach uses a polynomial-chaos expansion (PCE) to compute a basis rotation. Once the PCE model is created, it can be rotated and employed for further UQ analysis. Methods for exploiting this strategy for dimension reduction, based on an effective truncation of the rotation matrix, are under current development, to enable more effective UQ with larger dimensional parameter spaces. This is joint work with the University of Southern California.
+- Function Train Method: The function_train method can now be specified directly using only a simulation model, analogous to the traditional specification of polynomial_chaos and stoch_collocation (where the surrogate model creation is hidden). Specifying function_train as a global surrogate model remains an option, as introduced in the v6.11 release, and can now be exercised using the generic UQ method surrogate_based_uq.
+- ML/MF Random Seed Sequencing: In multilevel / multifidelity methods, multiple sample sets are generated and were previously controlled by a single seed specification. For sample sets beyond the first, this involved continuation of a random sequence that could be challenging to reproduce in other contexts.  In order to simplify restart and allow better sharing of data among multilevel / multifidelity and single-fidelity studies, a new seed_sequence specification has been implemented, allowing a finer grain of control in random sample set generation.
+
+*Architecture/Developer Features*
+
+- Eigen Linear Algebra: Dakota's new surrogates module uses Eigen and provides mappings to/from Teuchos SerialDense containers used in core Dakota. Eigen is included with Dakota source and enabled by default, so no external TPL is required.
+- CMake Options: Top-level CMake options have largely been consolidated into source/cmake/DakotaOptions.cmake and some helper files in source/cmake for more convenient viewing of the typical options.
+- Refactor model keys: In support of multi-fidelity/multi-level hierarchical Models, new model keys distinguish raw, synthetic, and aggregated data sets using a generalized tuple design for model indices, facilitating the consolidation of approximation data into a single database per QoI and the consolidation of distinct and recursive discrepancy approaches based on synthetic data sets.
+
+**Miscellaneous Enhancements and Bugfixes**
+
+- Enhancement/Bug fix: Make initial points consistent in Bayesian inference, across MAP pre-solves and Markov chains, and for cases with and without variable transformation.
+- Bug fix: Fix bug with repeated updating of distribution parameters for parameterized polynomials such as Jacobi, generalized Laguerre, and numerically generated.
+- Enhancement: Cache sets of collocation points/weights computed for orthogonal polynomials to enhance efficiency.
+- Enhancement: Dakota Git submodules are now specified with relative paths, permitting more seamless checkout with SSH vs. HTTPS. A git submodule update should suffice, but it may be necessary for some users to remove and re-checkout Dakota's submodules under packages: external, pecos, and surfpack.
+
+**Deprecated and Changed**
+
+- Modified options for multilevel and multifidelity surrogate methods, consolidating individual and integrated greedy refinement options within the multifidelity specifications. This reserves multilevel specifications to approaches that explicitly estimate an optimal sample profile.
+- Scaling keywords have been updated (see calibraiton note above).
+
+**Compatibility**
+
+- No mandatory changes to required compilers or third-party libraries.
+- Compiling with the MUQ Bayesian inference methods requires Boost 1.58 or newer.
+- Dakota has been smoke tested on newer gcc-7.x, gcc-8.x, and Clang compilers, but not fully tested. Dakota should work with newer C++ standards than its required C++11, and has been manually tested with C++14.
+
+**Other Notes and Known Issues**
+
+- Dakota 6.12 will not compile with Cray Fortran compiler with default package selections. Patches to Dakota's CMake files are available on request to dakota-users@software.sandia.gov, or it's potentially possible (untested) to turn off DAKOTA_F90:BOOL=FALSE, HAVE_LHS:BOOL=FALSE in your CMake configuration.
+- Dakota's new surrogates and util modules will not work properly with the master branch of the external Trilinos project (github.com:/trilinos/Trilinos), nor when Dakota is configured under the Trilinos TriKota package. A hotfix is being developed as of May 2020.
+

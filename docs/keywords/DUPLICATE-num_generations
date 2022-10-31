@@ -1,0 +1,16 @@
+Blurb::
+Define the convergence criterion for JEGA methods
+Description::
+The ``num_generations`` is the number of generations over which the
+metric value should be tracked. Convergence will be attained if the
+recorded metric is below ``percent_change`` for ``num_generations``
+consecutive generations.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

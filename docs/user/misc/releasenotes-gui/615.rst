@@ -1,0 +1,28 @@
+.. _releasenotes-gui-615:
+
+""""""""""""""""""""""""""""""""""""""""
+Version 6.15 -  Lakeside Limbo (2021/11)
+""""""""""""""""""""""""""""""""""""""""
+
+.. image:: img/DakotaGui_LakesideLimbo.png
+   :alt: Dakota GUI 6.15 splash screen
+
+**Multi-level / Multi-fidelity Editor (Experimental)**
+
+- New Dakota input file editor tailored to working with multi-level / multi-fidelity studies.  Allows for easy manipulation of model hierarchies and solution level costs.
+
+**Chartreuse**
+
+- New Next-Gen Workflow node for simultaneously visualizing the uncertainty distributions of all study variables
+- Support more variable distribution types (histogram\_bin\_uncertain, histogram\_point\_uncertain)
+- Enhancements and bugfixes for the calibrationHistory node in Next-Gen Workflow.
+- Chartreuse section of Preferences dialog now shows you a preview of the default color scale.
+
+**Dakota Help**
+
+- GUI now reverts to the most recently released documentation URL if a specific version of Dakota's reference manual cannot be loaded
+
+**Visual Editor**
+
+- Added form-based editing support for OPT++ family of methods.
+- Some options now available in context menus throughout the Visual Editor (pre-processor replacement, Dakota reference manual access)

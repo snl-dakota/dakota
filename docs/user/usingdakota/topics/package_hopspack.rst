@@ -1,0 +1,16 @@
+.. _`topic-package_hopspack`:
+
+Package: HOPSPACK
+=================
+
+The HOPSPACK software
+:cite:p:`Plantenga2009` contains the
+asynchronous parallel pattern search (APPS) algorithm
+:cite:p:`GrKo06`. It can handle unconstrained
+problems as well as those with bound constraints, linear constraints,
+and general nonlinear constraints.
+
+HOPSPACK is available to the
+public under the GNU LGPL and the source code is included with Dakota.
+HOPSPACK-specific software documentation is available from
+https://software.sandia.gov/trac/hopspack.

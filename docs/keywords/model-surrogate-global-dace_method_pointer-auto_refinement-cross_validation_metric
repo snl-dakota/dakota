@@ -1,0 +1,33 @@
+Blurb::
+Choice of error metric to satisfy
+Description::
+The cross-validation score that the auto-refinement routine seeks
+to satisfy is based on an error metric. Any of the surrogate diagnostic
+:ref:`model-surrogate-global-metrics<model-surrogate-global-metrics>` may be used. These include:
+
+
+- root_mean_squared
+
+- mean_abs
+
+- rsquared
+
+- sum_squared
+
+- mean_squared
+
+- sum_abs
+
+- max_abs
+
+*Default Behavior*
+The default metric is the the root mean squared error ('root_mean_squared').
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

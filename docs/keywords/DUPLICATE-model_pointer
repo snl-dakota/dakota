@@ -1,0 +1,80 @@
+Blurb::
+Identifier for model block to be used by a method
+Description::
+The ``model_pointer`` is used to specify which :ref:`model<model>` block will be
+used to perform the function evaluations needed by the Dakota method.
+
+*Default Behavior*
+
+If not specified, a Dakota method will use the last model block
+parsed.  If specified, there must be a :ref:`model<model>` block in the Dakota
+input file that has a corresponding ``id_model`` with the same name.
+
+*Usage Tips*
+
+When doing advanced analyses that involve using multiple methods and
+multiple models, defining a ``model_pointer`` for each method is
+imperative.
+
+See :ref:`topic-block_pointer<topic-block_pointer>` for details about pointers.
+Topics::
+block_pointer
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+      method_pointer = 'UQ'
+    
+    method
+      id_method = 'UQ'
+      model_pointer = 'SURR'
+      sampling,
+        samples = 10
+        seed = 98765 rng rnum2
+        response_levels = 0.1 0.2 0.6
+                          0.1 0.2 0.6
+                                0.1 0.2 0.6
+        sample_type lhs
+        distribution cumulative
+    
+    model
+      id_model = 'SURR'
+        surrogate global,
+        dace_method_pointer = 'DACE'
+        polynomial quadratic
+    
+    method
+      id_method = 'DACE'
+        model_pointer = 'DACE_M'
+        sampling sample_type lhs
+        samples = 121 seed = 5034 rng rnum2
+    
+    model
+      id_model = 'DACE_M'
+      single
+      interface_pointer = 'I1'
+    
+    variables
+      uniform_uncertain = 2
+        lower_bounds =  0.   0.
+        upper_bounds =  1.   1.
+        descriptors  = 'x1' 'x2'
+    
+    interface
+      id_interface = 'I1'
+      system asynch evaluation_concurrency = 5
+        analysis_driver = 'text_book'
+    
+    responses
+      response_functions = 3
+      no_gradients
+      no_hessians
+
+
+Theory::
+
+Faq::
+
+See_Also::

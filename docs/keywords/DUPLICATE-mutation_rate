@@ -1,0 +1,17 @@
+Blurb::
+Set probability of a mutation
+Description::
+All mutation types have a ``mutation_rate``, which controls the number of
+mutations performed. For ``replace_uniform`` and all the ``offset_*`` types,
+the number of mutations performed is the product of ``mutation_rate`` and
+``population_size``. For ``bit_random``, it's the product of the
+``mutation_rate``, number of design variables, and population size
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

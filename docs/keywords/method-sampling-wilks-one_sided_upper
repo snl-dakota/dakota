@@ -1,0 +1,27 @@
+Blurb::
+Specifies one-sided upper portion order statistics to be used when
+determining sample sizes for random sampling using Wilks order statistics.
+Description::
+This option causes the sample size to be based on the uppermost N outputs
+for order N statistics (default N=1).
+
+*Default Behavior*
+This is the default for Wilks.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        wilks
+          one_sided_upper
+
+
+Theory::
+
+Faq::
+
+See_Also::

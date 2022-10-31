@@ -351,7 +351,7 @@ protected:
 
   /// flags whether to use backfill to enforce uniqueness of discrete
   /// LHS samples
-  bool backfillFlag;
+  bool backfillDuplicates;
 
   /// Minimum and maximum values of response functions for epistemic
   /// calculations (calculated in compute_intervals()),

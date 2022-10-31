@@ -1,0 +1,40 @@
+.. _releasenotes-gui-614:
+
+""""""""""""""""""""""""""""""""""""""""""
+Version 6.14 - Koindozer Klamber (2021/05)
+""""""""""""""""""""""""""""""""""""""""""
+
+.. image:: img/DakotaGui_KoindozerKlamber.png
+   :alt: Dakota GUI 6.14 splash screen
+
+**Dakota Surrogates**
+
+- New GUI support for serialized Dakota surrogates files.
+
+**Dakota Input File Editing**
+
+- Editing support for the coliny_ea method.
+- Editing support for individual response properties.
+- Added support for pre-processor syntax in the Dakota Visual Editor with the hotkey Ctrl+Shift+P.
+
+**Chartreuse (Next-Gen Workflow Integration)**
+
+- New CalibrationHistory plotting node.
+- New ScatterPlotSuite node, for paging through large sets of scatter plots.
+- Custom X/Y labels for basic Chartreuse plotting nodes in workflow
+
+**Next-Gen Workflow**
+
+- New surrogates node, for applying Dakota surrogates files to workflows. 
+- New variablePdfVisualizer node
+- Refactored the Dakota node for advanced handling of Dakota parameters and results files
+
+**Chartreuse**
+
+- Show Dakota eval id on point hover text
+- weibull and log_normal supported for variable distribution visualization
+
+**Misc.**
+
+- *Deprecation note:* Output stream scraping has been removed from Dakota GUI
+- Using GUI surrogates interface may require judicious population of LD_LIBRARY_PATH and/or DYLD_LIBRARY_PATH, inquire on the dakota-users mailing list if you need help.

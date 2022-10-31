@@ -1,7 +1,0 @@
-Blurb::
-(Deprecated keyword) Augments an existing random sampling study
-
-Description::
-This keyword is deprecated.  Instead specify \c sample_type \c random
-with \c refinement_samples.
-

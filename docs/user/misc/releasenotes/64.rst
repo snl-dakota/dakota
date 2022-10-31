@@ -1,0 +1,139 @@
+.. _releasenotes-64:
+
+""""""""""""""""""""""""
+Version 6.4 (2016/05/16)
+""""""""""""""""""""""""
+
+**Highlights**
+
+- Training materials were significantly refreshed to emphasize practical approaches to Dakota usage. Videos of training are also now available on the Dakota web portal.
+- Building with more modern toolchains, including GCC 5.1.0 and Intel 16, now is supported. Dakota is also now compatible with CMake 3.0.
+- Select UQ improvements:  The active subspace capability has been matured significantly, there is an initial random field generation and propagation approach, and the Bayesian calibration methods have a set of improved controls and options (including chain post-processing and printing of statistics and prediction intervals on filtered chains).
+- Multi-level Monte Carlo sampling, which can treat hierarchical model fidelities and discretization controls to adaptively sample across levels, has been added as an experimental feature.
+- Several sampling method enhancements were introduced, including batch sampling to augment initial samples, a new capability for D-optimal designs, and a new option for Wilks-based tolerance intervals for sample size determination.
+
+**Uncertainty Quantification (UQ)**
+
+- Initial random field approximation capability for propagating field-valued uncertainties through simulation codes:
+
+  - Use data (e.g. ensemble samples over a random field) to generate a random field model which is in the form of a summation of basis functions weighted by random coefficients, e.g. a Karhunen-Loeve expansion
+  - Generate sample realizations of the random field model
+  - Propagate the random field sample realizations through a simulation code
+
+- Greatly matured active subspace capability, including ability to perform UQ with various methods (PCE, sampling, local reliability)
+
+  - User can now specify a model of type 'subspace'
+  - Various metrics for subspace detection (explicit control, Constantine metric, Bing Li metric, and eigenvalue energy)
+  - Transformation to standardized probability space
+  - Automatic response gradient scaling
+  - Late runtime updates and resizing, parallel communication
+  - Basic technique for handling inactive variables
+  - Finite differences in the reduced space
+
+- New sampling options:
+
+  - Improved ability for batch sampling to augment initial samples with a sequence of refinement samples.  Note: incremental random and LHS sampling require new input file syntax (refinment_samples instead of previous_samples)
+  - Incremental random and LHS sampling no longer require restart processing and can evaluate any points missing from a previous run
+  - New (experimental) option for D-optimal (determinant optimal) sample designs
+  - New option for Wilks tolerance interval-based sample size selection
+
+- Bayesian calibration algorithms:
+
+  - Surrogate-based adaptive inference now uses Leja sequences for improved point selection in refining the surrogates
+  - New output of credible and prediction intervals
+  - User can filter the posterior chain to discard burn-in or sub-sample; final statistics and chain output are based on the filtered chain
+
+- Bayesian calibration usability:
+
+  - Optins for adaptive surrogates, MAP pre-solve, and Hessian updates all work independently
+  - DREAM method supports all Dakota uncertain variable types
+  - Inferred distribution bounds define the calibration domain
+
+- There is an experimental capability to perform multi-level Monte Carlo sampling, which can treat hierarchical model fidelities and discretization controls to adaptively sample across levels.
+
+**Optimization and Calibration**
+
+**Methods (general)**
+
+- Surrogate models may now be refined iteratively through addition of training data (auto_refinement). Refinement continues until a cross-validation quality metric has been achieved or max_iterations or max_function_evaluations has been surpassed.
+- If credible and prediction intervals (specified by "probability_levels" with Bayesian calibration using QUESO or DREAM) are desired for examples with field calibration terms, the number of intervals specified must be divisible by the length of the field responses (specified with the keyword "lengths") rather than by the number of calibration terms. 
+- Multifidelity stochastic expansions: now compute low fidelity first, followed by discrepancy to allow flexbility in nesting/ordering.
+- Piecewise Voronoi Surrogates received a bugfix to address a scalling issue that affected POF and RKD. Better output for visualation was also added.
+
+*Framework*
+
+- Model abstraction changes:
+
+  - SimulationModel replaces SingleModel, and compute_response becomes evaluate()
+  - RecastModel generalized to support new use cases: SubspaceModel, RandomFieldModel
+
+*Build System / TPLs*
+
+- Moved dprepro to scripts directory to make easier to find and install it and other scripts with proper permissions.
+- Refactor motif/sciplot third-party library into Dakota vs. third-party components
+- Greater compiler support:
+
+  - Newer compilers now supported, GCC 5.1.0 and Intel 16.
+  - Standard C++-11 now supported via compiler flag:  -std=c++11.
+  - Jenkins nightly builds using GCC 5.1.0.
+  - KNOWN LIMITATION:  Methods using algorithms from the ACRO library will FAIL due to runtime exception when compiled with Intel 15 or Intel 16.
+
+*Documentation*
+
+- Enabled search in developer Doxygen manual
+
+**User Experience**
+
+- Training videos and exercise materials are available on the Dakota web portal.
+- New sensitivity analysis and uncertainty quantification training materials (presentations and exercises). Improved training materials on interfacing, optimization, calibration, and model characterization.
+
+**Miscellaneous Enhancements**
+
+*Architecture*
+
+- Substantial cleanup of correlation calculations, including use of  QR factorization to calculate partial correlations.  This fix will enable more stable behavior, especially in cases with discrete variables or poorly conditioned sample data sets.  The rank and partial correlations now will return Nan or Inf when appropriate.
+- Bug: Fix library mode segmentation fault due to uninitialized data members (thanks to Rich Drake) and memory leaks in POF and VPS methods.
+- Bug: Fixed latent bug in discrete variables when experiment data present.
+- Approximations now know their own names and have better APIs for diagnostics and cross-validation.
+- New ProbabilityTransformModel (a lightweight RecastModel) to perform a Nataf transform
+- Probability transformations received several enhancements. Bounds are now more closely managed, and include options for distribution, truncated, or unbounded. Fixed latent bug with variable counters.  Also new ProbabilityTransformModel (a lightweight RecastModel)
+- New RandomVariable component from Pecos now allows drawing realizations, enabling arbitrary priors in DREAM/WASABI (and QUESO)  
+- New Pecos support for discrete orthoginal polynomials
+- API name changes: core_run instead of find_optimum, minimize_residuals, quantify_uncertainy, etc.; evaluate instead of compute_response
+- Code cleanup on std:: namespace, streams, char*, POSIX functions, switch(bool), and various small fixes for compiler portability
+
+*Build / Test System*
+
+- New CTest labels Experimental, CarryDiff, StochDiff allow exclusion of experimental, DIFF-ing, and stochastic behaving tests, respectively.  New FastTest label facilitates quick testing.
+- Improved build system dependencies so parser files are generated reliably and without duplication, and so QUESO doesn't needlessly rebuild.  No longer generated uneeded GUI-related files.
+- CMake 3.x can now be used to configure Dakota (required fixing Java utilities)
+- Reduced cross-platform/compiler testing variability by fixing seeds, updating baselines, and properly differencing NaN/Inf.
+- The system/fork interface has been changed to direct for several tests to speed up testing.
+- The training examples under examples/training/201508/solutions are now included under testing.  Use ctest label "TrainingTest" to run them.
+- ENH: Improved spectral diffusion test problem to match published results and allow more configuration options.  New 1-D heat equation tester.
+
+*Examples / Tests*
+
+- Improved steady state 1D diffusion test problem to match published results and allow more configuration options. New transient 1D diffusion test problem.
+
+*Methods*
+
+- ENH: (UQ) More accurate probability to/from reliability level mappings so negative probabilities aren't reported
+
+**Miscellaneous Bug Fixes**
+
+- Bug: Surrogates models that lacked a dace_method_pointer and were built purely from imported training data can now be exported.
+- Bug: Dakota's CMake probe for MPI now skips probing the environment when the user wants to force use of wrapper scripts
+- Bug: Properly pass strings to Fortran using ISO C bindings to avoid memory corruption when calling LHS and some optimizers.
+- Bug: When Bayesian calibrating hyper-parameters, gradient data was improperly indexed
+- Bug: Dakota issues a correct error message instead of the unhelpful Error: continuous_design_upper_bounds needs 42 elements, not 42.
+- Bug: When scaling constraints, but not primary functions they wouldn't get scaled.
+- Bug: Surfpack C interface discarded last element of point at which to evaluate
+- Bug: Corrected object access bug in branch-and-bound that was leading to seg faults.
+- Bug: Use of import and challenge points for surrogates involving non-string mixed variable types are now work and are under regression testing.  String variables are still disallowed.
+- Bug: fixed bug with PEBBL mixed integer optimizer
+- Bug: Finite differences near domain bounds corrected; further improvements for memory efficiency made
+- Bug: Correct library mode segfault due to uninitialized data members (thanks to Rich Drake); and memory leaks in POF and VPS.
+- Bug: Fix latent bug in discrete variables when experiment data present
+
+**Known Limitations**

@@ -1,0 +1,43 @@
+Blurb::
+Name the responses block; helpful when there are multiple
+Description::
+The optional ``id_responses`` keyword accepts a string that uniquely
+identifies this responses block.  A model can then use these responses
+by specifying the same string in its ``responses_pointer``
+specification.
+
+*Default Behavior*
+
+If the ``id_responses`` specification is omitted, a particular
+responses specification will be used by a model only if that model
+does not include an ``responses_pointer`` and the responses block was
+the last (or only) one parsed.
+
+*Usage Tips*
+
+- It is a best practice to always use explicit responses IDs and  pointers to avoid confusion.
+
+
+- If only one responses block exists, then ``id_responses`` can be  safely omitted from the responses block (and ``responses_pointer``  omitted from the model specification(s)), since there is no  ambiguity.
+Topics::
+block_identifier
+Examples::
+For example, a model specification including
+
+.. code-block::
+
+    model
+      responses_pointer = 'R1'
+
+will link to a response set with
+
+.. code-block::
+
+      id_responses = 'R1'
+
+
+Theory::
+
+Faq::
+
+See_Also::

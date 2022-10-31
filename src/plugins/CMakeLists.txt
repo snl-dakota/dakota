@@ -7,13 +7,13 @@
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.17)
 project(DakotaPlugins CXX)
 
 # Currently Python plugins require Boost DLL headers (to load libpython.so)
 option(DAKOTA_PLUGINS_USE_BOOST "Whether to use Boost to build plugins" ON)
 if(DAKOTA_PLUGINS_USE_BOOST)
-  find_package(Boost 1.69 REQUIRED)
+  find_package(Boost 1.69 REQUIRED COMPONENTS filesystem)
 endif()
 
 find_package(Python COMPONENTS Interpreter Development)
@@ -23,7 +23,7 @@ add_library(generic_python_plugin SHARED DakotaPythonPlugin.cpp)
 set_target_properties(generic_python_plugin PROPERTIES CXX_STANDARD 11)
 set_target_properties(generic_python_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 target_link_libraries(generic_python_plugin
-  PUBLIC Boost::boost
+  PUBLIC Boost::boost Boost::filesystem
   PRIVATE pybind11::embed Python::Python
 )
 

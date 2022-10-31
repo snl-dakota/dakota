@@ -1,0 +1,42 @@
+Blurb::
+Stopping criterion based on objective function or statistics convergence
+Description::
+The ``convergence_tolerance`` specification provides a real value for
+controlling the termination of iteration.
+
+For optimization, it is most commonly a *relative convergence
+tolerance* for the objective function; i.e., if the change in the
+objective function between successive iterations divided by the
+previous objective function is less than the amount specified by
+convergence_tolerance, then this convergence criterion is satisfied on
+the current iteration.
+
+Therefore, permissible values are between 0 and 1, non-inclusive.
+
+*Behavior Varies by Package/Library*
+
+This control is used with most optimization and least squares
+iterators (DOT, CONMIN, NLPQLP, NPSOL, NLSSOL, OPT++, and SCOLIB).
+Most other Dakota methods (such as DACE or parameter studies) do not use
+this control, but some adaptive methods, such as adaptive UQ, do.
+
+Since no progress may be made on one iteration followed by significant
+progress on a subsequent iteration, some libraries require that the
+convergence tolerance be satisfied on two or more consecutive
+iterations prior to termination of iteration.
+
+Notes on each library:
+
+- DOT: relative tolerance that must be satisfied for two consecutive iterations
+- NL2SOL: See :ref:`method-nl2sol<method-nl2sol>`
+- NLPQLP: used as Lagrangian gradient norm tolerance (ACC), not as a relative convergence tolerance
+- NPSOL: used as a line search tolerance, not as a relative convergence tolerance
+Topics::
+method_independent_controls
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

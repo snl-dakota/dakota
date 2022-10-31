@@ -24,7 +24,7 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = '20210218.1'
+__version__ = '20220601.0'
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
@@ -789,7 +789,7 @@ def _delim_capture(txt,delim,sub=None):
     #      Also re-add the closing text since it was removed in split
     #   5. Store capture block (and sub if applicable)
     #   6. Continue until break
-    
+ 
     # Set up the regexes and the output
     OPEN,CLOSE = delim.split()
     rOPEN,rCLOSE = [re.escape(d) for d in (OPEN,CLOSE)]
@@ -819,15 +819,15 @@ def _delim_capture(txt,delim,sub=None):
         quote_rep = defaultdict(lambda:_rnd_str(20))            # will return random string but store it
         txt = reQUOTE.sub(lambda m:quote_rep[m.group(0)],txt)   # Replace quotes with random string
         
-        # Find the end
+        # Find the end but make sure to cut off the open in case it is the same as CLOSE
         try:
-            cap,txt = reCLOSE.split(txt,1)
+            cap,txt = reCLOSE.split(txt[len(OPEN) :],1)
         except ValueError: # There was no close. Restore txt and break
             outtxt.append(_mult_replace(txt,quote_rep,_invert=True))
             break
         
         # Restore both captured and txt
-        cap = _mult_replace(cap,quote_rep,_invert=True) + CLOSE
+        cap = OPEN + _mult_replace(cap,quote_rep,_invert=True) + CLOSE
         txt = _mult_replace(txt,quote_rep,_invert=True)
         
         captured.append(cap)

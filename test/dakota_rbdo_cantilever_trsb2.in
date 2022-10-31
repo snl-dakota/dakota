@@ -1,5 +1,6 @@
 #@ TODO REVIEW: Do the reliability methods also need NPSOL?
 #@ *: DakotaConfig=HAVE_DOT
+#@ s*: Label=FastTest
 # DAKOTA Input File: dakota_rbdo_cantilever_trsb2.in
 # Trust-region surrogate-based RBDO using the cantilever test function.
 

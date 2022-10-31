@@ -1,0 +1,36 @@
+Blurb::
+Generates random numbers using the Mersenne twister
+Description::
+The ``mt19937`` keyword directs Dakota to use the Mersenne twister to
+generate random numbers.  Additional information can be found on
+wikipedia: http://en.wikipedia.org/wiki/Mersenne_twister.
+
+*Default Behavior*
+
+``mt19937`` is the default random number generator.  To specify it
+explicitly in the Dakota input file, however, it must be specified in
+conjuction with the ``rng`` keyword.
+
+*Usage Tips*
+
+Use of the Mersenne twister random number generator ( ``mt19937``) is
+recommended.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type lhs
+        samples = 10
+        seed = 98765
+        rng mt19937
+
+
+Theory::
+
+Faq::
+
+See_Also::

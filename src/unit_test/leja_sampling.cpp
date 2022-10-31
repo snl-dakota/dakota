@@ -20,6 +20,9 @@
 #include <cassert>
 #include <iostream>
 
+// Using Boost distributions for cross-platform stability
+// Using Boost MT since using Boost distributions
+
 // Portability for deprecated Boost integer_log2.hpp header used in
 // Boost 1.69 random library. To be removed once we migrate to std
 // library RNG.
@@ -108,38 +111,20 @@ initialize_homogeneous_uniform_aleatory_dist_params( short utype,
 	samples(i,j) = rvt();
   }
 
-  template void generate_samples(boost::variate_generator< boost::mt19937, 
-				 boost::random::uniform_real_distribution<Real> > &rvt, 
-				 int num_vars, int num_samples, 
-				 RealMatrix &samples);
-  template void generate_samples(boost::variate_generator< boost::mt19937, 
-				 boost::random::poisson_distribution<> > &rvt, 
-				 int num_vars, int num_samples, 
-				 RealMatrix &samples);
-  template void generate_samples(boost::variate_generator< boost::mt19937, 
-				 boost::random::binomial_distribution<> > &rvt, 
-				 int num_vars, int num_samples, 
-				 RealMatrix &samples);
-  template void generate_samples(boost::variate_generator< boost::mt19937, 
-				 boost::random::negative_binomial_distribution<> > &rvt, 
-				 int num_vars, int num_samples, 
-				 RealMatrix &samples);
-
   /**  Note this function sets specific distribution parameters 
        that are not general. They must coincide with the parameters used
        in initialize_homogeneous_uniform_aleatory_dist_params
   */
 void generate_samples(short utype, int num_vars, int num_candidate_samples, 
 		      int seed, RealMatrix &candidate_samples){
-    boost::mt19937 gen;
-    gen.seed(seed);
+    boost::mt19937 gen(seed);
 
     switch (utype){
     case Pecos::STD_UNIFORM:
       {
 	boost::random::uniform_real_distribution<Real> un_dist(-1.,1.);
 	boost::variate_generator< boost::mt19937, 
-	  boost::random::uniform_real_distribution<Real> > un_rvt(gen, un_dist);
+          boost::random::uniform_real_distribution<Real> > un_rvt(gen, un_dist);
 	generate_samples( un_rvt, num_vars, num_candidate_samples, 
 			  candidate_samples );
 	break;
@@ -149,7 +134,7 @@ void generate_samples(short utype, int num_vars, int num_candidate_samples,
 	Real poisson_lambda = 100.;
 	boost::poisson_distribution<> po_dist(poisson_lambda);
 	boost::variate_generator< boost::mt19937, 
-	  boost::poisson_distribution<> > po_rvt(gen, po_dist);
+          boost::poisson_distribution<> > po_rvt(gen, po_dist);
 	generate_samples( po_rvt, num_vars, num_candidate_samples, 
 			  candidate_samples );
       break;
@@ -160,7 +145,7 @@ void generate_samples(short utype, int num_vars, int num_candidate_samples,
       Real p=0.5;
       boost::random::binomial_distribution<> bi_dist(n,p);
       boost::variate_generator<boost::mt19937, 
-	boost::random::binomial_distribution<> > bi_rvt(gen, bi_dist);
+        boost::random::binomial_distribution<> > bi_rvt(gen, bi_dist);
       generate_samples( bi_rvt, num_vars, num_candidate_samples, 
 			candidate_samples );
       break;
@@ -171,8 +156,8 @@ void generate_samples(short utype, int num_vars, int num_candidate_samples,
       Real p=0.5;
       boost::random::negative_binomial_distribution<> nbi_dist(n,p);
       boost::variate_generator<boost::mt19937, 
-	boost::random::negative_binomial_distribution<> > 
-	nbi_rvt(gen, nbi_dist);
+        boost::random::negative_binomial_distribution<> > 
+        nbi_rvt(gen, nbi_dist);
       generate_samples( nbi_rvt, num_vars, num_candidate_samples, 
 			candidate_samples );
     }

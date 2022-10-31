@@ -1,0 +1,30 @@
+Blurb::
+Perform deterministic optimization for MAP before Bayesian calibration
+Description::
+When specified, Dakota will perform a deterministic derivative-based
+optimization to maximize the log posterior (minimize the negative log
+posterior = misfit - log_prior + constant normalization factors).  The
+Markov chain in Bayesian calibration will subsequently be started at
+the best point found in the optimization (the MAP point), which can
+eliminate the need for "burn in" of the chain in which some initial
+portion of the chain is discarded.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      bayes_calibration queso
+        samples = 2000 seed = 348
+        delayed_rejection
+        emulator
+          pce sparse_grid_level = 2
+          pre_solve nip # default for emulators
+
+
+Theory::
+
+Faq::
+
+See_Also::

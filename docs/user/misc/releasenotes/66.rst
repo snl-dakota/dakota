@@ -1,0 +1,82 @@
+.. _releasenotes-66:
+
+""""""""""""""""""""""""
+Version 6.6 (2017/05/15)
+""""""""""""""""""""""""
+
+**Highlights**
+
+- Generalize multifidelity surrogate-based local optimization to recur across multiple model fidelities, instead of just two. Implement recursive trust-region model management, including surrogate construction and correction, subproblem minimization, and step validation. This moves beyond the common bi-fidelity approach to support deep model hierarchies, pushing more of the computational work down to less expensive modeling alternatives.
+- Preliminary model discrepancy implementation. We have added a capability for the user to estimate a model discrepancy function, which reflects the difference between a calibrated model and the observational (experimental) data. The model discrepancy is a function of configuration or scenario variables, following a Kennedy and O'Hagan formulation. The user can specify the type of function estimating the model discrepancy (Gaussian process or polynomial regression) and the number and location of new prediction configurations at which the user would like the model discrepancy estimated. The model discrepancy itself can be exported to a file, along with the corrected model values and their associated prediction intervals.
+- Minimum CMake 2.8.12. Dakota now requires CMake 2.8.12
+- Recommend Boost 1.53.0. Dakota recommends Boost 1.53.0 (minimum 1.49)
+- C++11 Requirement. Dakota version 6.6 is last version that will not require C++11 compiler. Our next version will require C++11 compiler.
+
+**Uncertainty Quantification (UQ)**
+
+- Precompute quadrature rules of maximal order for efficiency, when lower-order rules can be derived from a single higher-order solve. When employing numerically-generated polynomial bases within stochastic expansion methods, some methods (e.g., sparse grids) will tend to sweep through quadrature rules from lowest to highest order, requiring separate eigensolutions for each rule of increasing order. This new capability instead pre-computes the highest-order target, from which all required rules can be efficiently retrieved in a single pass.
+- Enable use of multilevel sampling within nested studies, targeting OUU. Enable the use of hierarchical surrogates on the inner loop of a nested iteration by mapping any inactive variables through the mapping initialization for the hierarchical model. This, combined with minor fixes for multilevel Monte Carlo (MLMC) re-entrancy, enables the use of MLMC within optimization under uncertainty.
+- Estimates of standard error for MC and MLMC statistics. Created an alternative multilevel Monte Carlo (MLMC) implementation that accumulates additional quantities to enable extended error estimation, especially the variance of the ML variance estimator. These error estimates are propagated through Model recursions, notably the roll up of errors within the nested model mappings for optimization under uncertainty.
+- PCE regression: Improved linear solver selection logic and more robust order control for variance-based decomposition. Three refinements for PCE regression: (i) Resolve solver selection inconsistencies between cross-validation solves with partial data sets and final solves with full data and optimized settings; (ii) spare expansions are now activated based on solver support rather than over- or under-determined systems; and (iii) VBD order control has been corrected for sparse expansions.
+- Moment calculation type. New option to calculate central, standard, or no moments in select UQ methods (sampling, multilevel sampling, local reliability, stochastic expansion), for inclusion in the final statistics returned to an outer context. This enables alternative mappings of the final statistics for use in optimization under uncertainty or mixed aleatory-epistemic UQ formulations. In addition, support for central moments (e.g., variance) admits additional options for statistical error estimation (see SNOWPAC item).
+- Warning messages for nonfinite correlation coefficients. Improved warning/informational messages about potential causes of nonfinite (NaN/Inf) correlation coefficients.
+- Notice of rnum2 deprecation. The random number generator (RNG) rnum2 has been deprecated to improve cross-platform consistency of Dakota results. The default RNG, mt19937, is recommended.
+- BUG: Fixed error in reporting number of samples. Properly report number of samples used in calculating statistics for incremental and refinement sampling studies
+- BUG: UQ PCE/SC data imports. PCE/SC data imports for build vs. approximate evaluation points weren't being correctly read and used, resulting in incorrect results.
+- BUG: Global reliability convergence tolerance fix. Global reliability ignored user-specified convergence tolerance
+
+**Optimization and Calibration**
+
+- Experimental (developers only): (S)NOWPAC optimizer wrapper. Support gradient-free deterministic (NOWPAC) and stochastic (SNOWPAC) optimization solvers from MIT. SNOWPAC utilizes new (statistical) error estimation facilities, virtual within the Model hierarchy. Of particular interest are estimator variances for Monte Carlo and multilevel Monte Carlo sampling. Includes initial test coverage and documentation, but requires separate TPL installs and cmake bindings.
+- Extend surrogate-based local optimization to support full Newton sub-problem solves. Extend surrogate-based local optimization algorithms (data fit and hierarchical) to support full Newton solution of approximate subproblems, through extension of merit function and constraint recastings to support Hessian data. The solver support is distinct from the Hessian computation approach, admitting analytic, numerical, accumulated secant, or mixed Hessians.
+- Warm starting of accumulated BFGS/SR1 Hessian approximations across sub-problem solves, leveraging full Newton optimizers. When employing surrogate-based local optimization with Hessian-based solution of approximate subproblems, accumulated secant approximations (BFGS, SR1) to objective and constraint Hessians can now be warm-started across multiple subproblem solves. This accelerates subproblem solves be eliminating the need to re-accumulate these approximations from scratch.
+- BUG: Allow OPT++ to work with hierarchical surrogate-based optimization. OPT++ unconditionally extracted an interface specification option related to ASV control, and a hierarchical surrogate model has no interface specification of its own. OPT++ now queries the state of the database and utilizes a default setting when the interface specification is locked, allowing its use with hierarchical surrogate models.
+- QUESO Update. Update to QUESO 0.57.0, with improvements to CMake build system for improved cross-platform consistency and reliability
+- Prediction interval calculation improvements. More efficient prediction interval calculations
+- BUG: MCMC standardize space export. Chain export to tabular file was wrong with standardized space. Known limitation: it will still be wrong if underlying model is a hierarchical surrogate
+
+**Methods (general)**
+
+**Framework**
+
+- Input specification ordering. Reorder and clean up interface, environment, and model blocks to follow more natural ordering and support GUI integration.
+
+*Interfaces*
+
+- Reordering of Dakota Example Inputs. Several of Dakota's shipped example input files have been reordered to work out-of-the-box in the GUI.
+- Release of mpitile and dakota.interfacing.parallel. mpitile is a wrapper for OpenMPI's mpirun command that greatly simplifies 'Evaluation Tiling' parallelism when using SLURM. It is based on a new Python module, dakota.interfacing.parallel.
+- Bugfixes in export_dakota_params.sh. The interface helper script export_dakota_params.sh now properly sanitizes Dakota variable names
+
+**User Experience**
+
+- Coliny option parsing. More accurate parsing of coliny-related specifications
+
+**Miscellaneous Enhancements**
+
+*Architecture*
+
+- NIDR Parser Utilities. Developer productivity: NIDR utilities built on all platforms to allow fewer NIDR-generated files in repository and input file reordering in GUI
+
+*Build / Test System*
+
+- Dakota Docker development environment. Developer productivity: Established a cross-platform CentOS 7 Docker container so developers can reproduce RHEL 7 test results on RHEL 6 or Mac, for instance
+- Valgrind testing options. Added testing options to run tests in Valgrind mode
+
+*Examples / Tests*
+
+- Use of examples in GUI. Examples from training, users, and advanced directories are now ordered and debugged to work in GUI
+
+*Interfaces*
+
+- Renamed dipy; miscellaneous bugfixes and improvements. The dipy module (Dakota's Python black-box interfacing package) was renamed to 'interfacing' and made a part of the 'dakota' Python package. It is now compatible with Python3, recognizes hierarchical evaluation tags, and attempts to automatically convert Dakota parameters to the appropriate type (string, integer, real).
+
+**Miscellaneous Bug Fixes**
+
+- Valgrind memory access errors. Various memory fixes from Valgrind testing (uninitialized or invalid memory access): JEGA, DOT, OPT++, scaling transformations, subspace models, D-optimal, NLPQL
+- User input validation. Validate user input for continuous interval variables BPAs and renormalized as needed
+- Field lengths validation. Validate field lengths specified in a responses block
+- Compiler warnings silenced. Silence compiler warnings for type conversions in public API headers
+- Correct response names in parallel Dakota. When running Dakota in parallel, response names that appeared in parameters file ASVs were incorrect on remote evaluation servers. This bug was partially addressed. Response names and other response characteristics may still be incorrect when more than one interface shares a response block.
+- Update cylinder head example problem. Docs for cylinder head example problem did not reflect implementation
+
+**Known Limitations**

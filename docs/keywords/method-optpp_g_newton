@@ -1,0 +1,34 @@
+Blurb::
+Newton method based least-squares calbration
+Description::
+The Gauss-Newton algorithm is available as ``optpp_g_newton`` and
+supports unconstrained, bound-constrained, and generally-constrained
+problems. When interfaced with the unconstrained, bound-constrained,
+and nonlinear interior point full-Newton optimizers from the OPT++
+library, it provides a Gauss-Newton least squares capability which --
+on zero-residual test problems -- can exhibit quadratic convergence
+rates near the solution.  (Real problems almost never have zero
+residuals, i.e., perfect fits.)
+
+See :ref:`topic-package_optpp<topic-package_optpp>` for info related to all ``optpp`` methods.
+
+*Expected HDF5 Output*
+
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
+
+
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-lsq_confidence_intervals<hdf5_results-lsq_confidence_intervals>` (when :ref:`responses-calibration_terms-calibration_data-num_experiments<responses-calibration_terms-calibration_data-num_experiments>` equals 1)
+Topics::
+package_optpp, local_optimization_methods
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

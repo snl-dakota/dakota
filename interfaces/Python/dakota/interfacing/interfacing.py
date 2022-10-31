@@ -730,57 +730,57 @@ class BatchResults(object):
 # Collections of regexes for parsing aprepro and dprepro formatted Dakota 
 # parameter files
 
-_aprepro_re_base = " {{20}}{{ {tag} += +{value} }}\n"
-_dakota_re_base = "\s*{value} {tag}\n"
+_aprepro_re_base = r" {{20}}{{ {tag} += +{value} }}\n"
+_dakota_re_base = r"\s*{value} {tag}\n"
 
 _pRE = {
         "APREPRO":{"num_variables":re.compile(_aprepro_re_base.format(
-            value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_VARS)")),
+            value=r"(?P<value>\d+)", tag=r"(?P<tag>DAKOTA_VARS)")),
             "num_functions":re.compile(_aprepro_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_FNS)")),
+                value=r"(?P<value>\d+)", tag=r"(?P<tag>DAKOTA_FNS)")),
             "num_deriv_vars":re.compile(_aprepro_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_DER_VARS)")),
+                value=r"(?P<value>\d+)", tag=r"(?P<tag>DAKOTA_DER_VARS)")),
             "num_an_comps":re.compile(_aprepro_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_AN_COMPS)")),
+                value=r"(?P<value>\d+)", tag=r"(?P<tag>DAKOTA_AN_COMPS)")),
             "num_metadata":re.compile(_aprepro_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_METADATA)")),
+                value=r"(?P<value>\d+)", tag=r"(?P<tag>DAKOTA_METADATA)")),
             "eval_id":re.compile(_aprepro_re_base.format(
-                value="(?P<value>\d+(?::\d+)*)",
+                value=r"(?P<value>\d+(?::\d+)*)",
                 tag="(?P<tag>DAKOTA_EVAL_ID)")),
             "variable":re.compile(_aprepro_re_base.format(
-                value="\"?(?P<value>.+?)\"?", tag ="(?P<tag>\S+)")),
+                value=r"\"?(?P<value>.+?)\"?", tag =r"(?P<tag>\S+)")),
             "function":re.compile(_aprepro_re_base.format(
-                value="(?P<value>[0-7])", tag="ASV_\d+:(?P<tag>\S+)")),
+                value=r"(?P<value>[0-7])", tag=r"ASV_\d+:(?P<tag>\S+)")),
             "deriv_var":re.compile(_aprepro_re_base.format(
-                value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
+                value=r"(?P<value>\d+)", tag=r"DVV_\d+:(?P<tag>\S+)")),
 	    "an_comp":re.compile(_aprepro_re_base.format(
-		value="\"(?P<value>.+?)\"", tag="AC_\d+:(?P<tag>.+?)")),
+		value=r"\"(?P<value>.+?)\"", tag=r"AC_\d+:(?P<tag>.+?)")),
 	    "metadata":re.compile(_aprepro_re_base.format(
-		value="\"(?P<value>.+?)\"", tag="(?P<tag>MD_\d+)"))
+		value=r"\"(?P<value>.+?)\"", tag=r"(?P<tag>MD_\d+)"))
 	    },
 	"DAKOTA":{"num_variables":re.compile(_dakota_re_base.format(
-            value="(?P<value>\d+)", tag="(?P<tag>variables)")),
+            value=r"(?P<value>\d+)", tag=r"(?P<tag>variables)")),
             "num_functions":re.compile(_dakota_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>functions)")),
+                value=r"(?P<value>\d+)", tag=r"(?P<tag>functions)")),
             "num_deriv_vars":re.compile(_dakota_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>derivative_variables)")),
+                value=r"(?P<value>\d+)", tag=r"(?P<tag>derivative_variables)")),
             "num_an_comps":re.compile(_dakota_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>analysis_components)")),
+                value=r"(?P<value>\d+)", tag=r"(?P<tag>analysis_components)")),
             "num_metadata":re.compile(_dakota_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>metadata)")),
+                value=r"(?P<value>\d+)", tag=r"(?P<tag>metadata)")),
             "eval_id":re.compile(_dakota_re_base.format(
-                value="(?P<value>\d+(?::\d+)*)", tag="(?P<tag>eval_id)")),
+                value=r"(?P<value>\d+(?::\d+)*)", tag=r"(?P<tag>eval_id)")),
             # A lookahead assertion is required to catch string variables with
             # spaces
-            "variable":re.compile("\s*(?P<value>.+?)(?= \S+\n) (?P<tag>\S+)\n"),
+            "variable":re.compile(r"\s*(?P<value>.+?)(?= \S+\n) (?P<tag>\S+)\n"),
             "function":re.compile(_dakota_re_base.format(
-                value="(?P<value>[0-7])", tag="ASV_\d+:(?P<tag>\S+)")),
+                value=r"(?P<value>[0-7])", tag=r"ASV_\d+:(?P<tag>\S+)")),
             "deriv_var":re.compile(_dakota_re_base.format(
-                value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
+                value=r"(?P<value>\d+)", tag=r"DVV_\d+:(?P<tag>\S+)")),
             "an_comp":re.compile(_dakota_re_base.format(
-                value="(?P<value>.+?)", tag="AC_\d+:(?P<tag>.+?)")),
+                value=r"(?P<value>.+?)", tag=r"AC_\d+:(?P<tag>.+?)")),
             "metadata":re.compile(_dakota_re_base.format(
-                value="(?P<value>.+?)", tag="(?P<tag>MD_\d+)"))
+                value=r"(?P<value>.+?)", tag=r"(?P<tag>MD_\d+)"))
             }
         }
 

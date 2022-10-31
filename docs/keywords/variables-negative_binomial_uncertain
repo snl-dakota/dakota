@@ -1,0 +1,28 @@
+Blurb::
+Aleatory uncertain discrete variable - negative binomial
+
+Description::
+The density function for the negative binomial distribution is given by:
+
+.. math:: f(x) = \left(\begin{array}{c}{n+x-1}\\{x}\end{array}\right){p^n}{(1-p)^{x}},
+
+where
+
+- :math:`p`  is the probability of success per trial
+- :math:`n`  is the number of successful trials
+- :math:`x`  is the number of failures
+
+Topics::
+discrete_variables, aleatory_uncertain_variables
+
+Examples::
+
+Theory::
+The negative binomial distribution is typically used to predict
+the number of failures observed when repeating a test until a
+total of :math:`n` successes have occurred, where each test has a
+probability :math:`p` of success.
+
+Faq::
+
+See_Also::

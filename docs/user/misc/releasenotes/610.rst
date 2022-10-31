@@ -1,0 +1,79 @@
+.. _releasenotes-610:
+
+"""""""""""""""""""""""""
+Version 6.10 (2019/05/15)
+"""""""""""""""""""""""""
+
+**Highlight: HDF5 Evaluation Storage**
+
+Dakota now can write model and interface evaluations to an HDF5 format output file, in addition to method results.
+
+HDF5 is a common storage format for scientific software and can be accessed using many popular tools and programming languages, such as the Python h5py package. Dakota's HDF5 output is intended as a more convenient, robust, and information-rich alternative to the existing tabular file format and Dakota's console output.
+
+New in 6.10, Dakota can write evaluation data--variables, responses, and metadata such as the active set vector--for all interfaces and models. This includes intermediate transformations of variables and responses, such as scaling, residuals, summed objective functions, and estimated gradients. New keyword groups (model_selection, interface_selection) provide fine-grained control over the models and interfaces for which these data are stored.
+
+*Enabling / Accessing:* HDF5 support is available in all Dakota binary downloads. When building from source, HDF5 1.10.4 with C++ enabled is required. The hdf5 keyword group enables and controls HDF5 output.
+
+*Documentation:* The Dakota HDF5 Output section of the Reference Manual provides a brief overview of HDF5 and describes in detail how Dakota results and evaluations are organized. Documentation for the hdf5 keyword group explains how to select models and interfaces for output.
+
+**Highlight: Multi-level/Multi-fidelity UQ Methods**
+
+*Highlights:*
+
+Expand and harden capabilities for multilevel polynomial chaos expansion (ML PCE) and multilevel stochastic collocation (SC):
+
+- Expand capabilities for adaptive definition of the sample profile across the model hierarchy (allocation_control: estimator_variance, rip_sampling, and greedy).
+- Harden full set of multilevel PCE/SC capabilities for a single modeling dimension, supporting adaptive refinement using projection, regression, and interpolation.
+
+*Details:*
+
+- Efficiency: Address computational efficiency of hierarchical SC using incremental updating of product interpolants (these interpolants are required for direct calculation of statistical increments used for candidate selection in greedy refinement).  ~400x speedup for SS diffusion benchmark.
+- Completeness: Cover range of adaptivity goals: response covariance + level mapping metrics. Expand hierarchical increments to include moment-based reliability mappings.  Cover combinations of uniform/anisotropic/generalized refinement strategies for tensor quadrature, cubature, sparse grids.
+- Accuracy: Define a combined multilevel sparse grid, required for accurate resolution of numerical moments when assessing Nodal SC candidates and when computing final PCE statistics (alternate moments from numerical integration).
+- Efficiency/Completeness: add capability for synthetic surrogate data, since a single set of collocation data no longer exists for combined multilevel expansions. This synthetic data allows reuse of existing collocation-based code, restoring both variance-based decomposition capabilities for multilevel SC as well as a return to more efficient numerical moment integrators.
+
+*Documentation:* See the Dakota Reference Manual for more information.
+
+**Improvements by Category**
+
+*Application Interface*
+
+The tokens {PARAMETERS} and {RESULTS} in input_filter, output_filter and analysis_drivers strings will be replaced by the parameters and results file names for that evaluation/analysis just prior to execution. This feature, in combination with the verbatim keyword, gives greater flexibility in the form of filter and driver commands.
+
+*Bayesian Calibration*
+
+Input options for Bayesian calibration have been extended to allow for weighting and scaling of residuals, in a manner that is consistent with least-squares calibration. Furthermore, the convergence of Markov chain Monte Carlo (MCMC) sampling schemes can now be monitored through new chain diagnostics that provide confidence intervals on the computed (posterior) moments (mean and variance) of both parameters and responses.
+
+*Quickstart for adding a new Optimization TPL to Dakota*
+
+Steps for adding a new Optimization Third-Party Library (TPL) to Daktoa along with working but inactive demonstration code has been added to the source code in $DAKOTA_SRC/packages/external/demo_tpl.  See the README.md file within that directory for details.
+
+**Miscellaneous Enhancements and Bugfixes**
+
+ - JEGA optimizers (MOGA, SOGA) updated to latest upstream code, including memory-related bug fixes.
+ - Direct Python interface now supports Python 3. Thanks to Andrea Brambilla for the patch.
+ - Docker configuration updated; notably now includes HDF5
+ - Add Acro support for boost::signals2, which lets Dakota build with newer Boost. Thanks to James Ramsey for reporting and others for triaging.
+ - Remove Pecos requirement on complex BLAS. Thanks to Lloyd Arrowood for reporting.
+ - Make some unit and regression tests configuration-dependent so they will work better across Dakota variants and user sites.
+ - Bug: Resolved runtime memory errors with gcc-8.x, including in Dakota core and several third-party libraries. Thanks to Kayla Coleman and Irina Tezaur for helpful feedback.
+ - Bug: Multi-dimensional parameter study now works correctly with discrete integer variables, some (or all) of which have 0 partitions. Thanks to Nikolas Antolin for the bug report.
+ - Bug: BLAS/LAPACK configuration varied across Dakota and it's third-party libraries; they are now more in sync. Thanks to James Ramsey for reporting.
+ - Bug: Fix user-reported bugs with linking Pecos libaries within the Dakota build. Thanks to Stephan Ruoff and others for reporting/helping.
+ - Bug: Restore Pecos Python surrogate wrappers.
+ - Bug: Method names are correctly added as attributes to method groups in HDF5.
+ - Bug: Fixed a group ID "leak" in HDF5 that was causing file corruption.
+
+**Deprecated and Changed**
+
+To support evaluation storage in HDF5, Dakota now generates Id strings for most interfaces, models, and methods that formerly would have been empty.
+
+**Compatibility**
+
+- HDF5 v1.10.4 or higher is required to compile Dakota with the HDF5-based method results output enabled. HDFView may be helpful in viewing the output database, and Python h5py is necessary to run tests and examples.
+- No mandatory changes to required compilers or third-party libraries. Dakota has been smoke tested on newer gcc-7.x and gcc-8.x compilers, but not fully tested.
+
+**Other Notes and Known Issues**
+
+- HDF5 output is known to be incompatible with some types of studies involving hierarchical surrogate models.
+- There are known issues with the multifidelity_stoch_collocation method in combination with the use_derivatives keyword.

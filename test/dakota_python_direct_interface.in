@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ *: DakotaConfig=DAKOTA_PYTHON_DIRECT_INTERFACE
 #@ *: ReqFiles=driver_text_book.py
 

@@ -1,0 +1,34 @@
+Blurb::
+Radial basis function (RBF) model
+Description::
+Radial basis functions :math:`\phi`  are functions whose value typically
+depends on the distance from a center point, called the centroid,
+:math:`{\bf c}` .
+
+The surrogate model approximation comprises a sum of K weighted radial
+basis functions:
+
+.. math::  \hat{f}({\bf x})=\sum_{k=1}^{K}w_{k}\phi({\parallel {\bf x} - {\bf c_{k}} \parallel}) 
+
+These basis functions take many forms, but Gaussian kernels or splines
+are most common.  The Dakota implementation uses a Gaussian radial
+basis function.  The weights are determined via a linear least squares
+solution approach.  See :cite:p:`Orr96` for more details.
+
+*Known Issue: When using discrete variables, there have been
+sometimes significant differences in surrogate behavior observed
+across computing platforms in some cases.  The cause has not yet been
+fully diagnosed and is currently under investigation.  In addition,
+guidance on appropriate construction and use of surrogates with
+discrete variables is under development.  In the meantime, users
+should therefore be aware that there is a risk of inaccurate results
+when using surrogates with discrete variables.*
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

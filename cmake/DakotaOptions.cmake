@@ -89,10 +89,12 @@ option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
   "Dakota Python direct interface uses NumPy (only has effect when DAKOTA_PYTHON_DIRECT_INTERFACE is ON)" 
   ON
   )
+# Top-level dakota.environment Python wrapper defaults off to avoid
+# Python library deps
+option(DAKOTA_PYTHON_WRAPPER
+  "Top-level Dakota Python interface (dakota.environment wrapper)" OFF)
 
-# Does not yet exist and needs a better name:
-##option(DAKOTA_PYTHON_TOP_INTERFACE "Top-level Dakota Python interface" OFF)
-if(DAKOTA_PYTHON_DIRECT_INTERFACE)
+if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_WRAPPER)
   set(DAKOTA_PYBIND11 ON CACHE BOOL
     "Dakota using Pybind11 for interfaces.")
 endif()
@@ -133,7 +135,9 @@ option(DAKOTA_API_JAVA "Unsupported: Enable Dakota library Java API" OFF)
 mark_as_advanced(DAKOTA_API_JAVA)
 
 
-option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
+option(ENABLE_DAKOTA_DOCS "Enable Dakota documentation build." OFF)
+option(DAKOTA_DOCS_LEGACY "Enable pre-2022 Dakota docs build." OFF)
+# TODO: Can probably relax this for Sphinx and Doxygen docs...
 if(ENABLE_DAKOTA_DOCS AND NOT UNIX)
   message(FATAL_ERROR
     "Dakota documentation build only available on UNIX platforms")

@@ -1,9 +1,0 @@
-Blurb::
-Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising \f$\ell_1\f$-minimization problem using second order cone optimization.
-Description::
-Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising \f$\ell_1\f$-minimization problem using second order cone optimization.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	

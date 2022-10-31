@@ -1,0 +1,39 @@
+Blurb::
+Calculate the Kernel Density Estimate of the posterior distribution
+Description::
+A kernel density estimate (KDE) is a non-parametric, smooth approximation of
+the probability density function of a random variable. It is calculated using
+a set of samples of the random variable. If :math:`X`  is a univariate random
+variable with unknown density :math:`f`  and independent and identically
+distributed samples :math:`x_{1}, x_{2}, \ldots, x_{n}` , the KDE is given by
+
+.. math:: 
+
+   \hat{f} = \frac{1}{nh} \sum_{i = 1}^{n} K \left( \frac{x - x_{i}}{h} \right).
+
+The kernel :math:`K`  is a non-negative function which integrates to one. Although
+the kernel can take many forms, such as uniform or triangular, Dakota uses a
+normal kernel. The bandwidth :math:`h`  is a smoothing parameter that should be
+optimized. Choosing a large value of :math:`h`  yields a wide KDE with large
+variance, while choosing a small value of :math:`h`  yields a choppy KDE with
+large bias. Dakota approximates the bandwidth using Silverman's rule of thumb,
+
+.. math:: 
+
+   h = \hat{\sigma} \left( \frac{4}{3n} \right)^{1/5},
+
+where :math:`\hat{\sigma}`  is the standard deviation of the sample set
+:math:`\left\{ x_{i} \right\}` .
+
+For multivariate cases, the random variables are treated as independent, and a
+separate KDE is calculated for each.
+
+*Expected Output*
+
+If ``kde`` is specified, calculated values of :math:`\hat{f}`  will be output to
+the file ``kde_posterior``.dat. Example output is given below.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

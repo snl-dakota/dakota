@@ -1,0 +1,15 @@
+Blurb::
+Polynomial Chaos Expansion surrogate model
+Description::
+Selects a polynomial chaos expansion (PCE) surrogate model to use in
+the Bayesian likelihood calculations. Most specification options are
+carried over for using PCE as a surrogate within the Bayesian framework.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

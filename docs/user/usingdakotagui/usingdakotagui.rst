@@ -1,0 +1,106 @@
+.. _dakota-gui-main:
+
+""""""""""""""""
+Using Dakota GUI
+""""""""""""""""
+
+The Dakota GUI is an application that allows you to easily edit Dakota input files, run Dakota, and visually plot Dakota's output data.  The Dakota GUI also aids in the process of defining a simulation model and connecting Dakota to that simulation model, without the need to write pre-processing or post-processing scripts.
+
+============
+Introduction
+============
+
+.. toctree::
+   :maxdepth: 1
+   
+   introduction/launching
+   introduction/quickstart
+
+==============
+Example Search
+==============
+
+.. toctree::
+   :maxdepth: 2
+
+   examples/DakotaExamples
+
+=======
+Wizards
+=======
+
+.. toctree::
+   :maxdepth: 1
+   
+   wizards/NewDakotaProject
+   wizards/NewDakotaStudy
+   wizards/NewScriptDriver
+   wizards/NewWorkflowDriver
+   wizards/NewDakotaWrapperWorkflow
+
+==========================
+Editing Dakota Input Files
+==========================
+   
+.. toctree::
+   :maxdepth: 1
+   
+   inputfiles/DakotaVisualEditor
+   inputfiles/DakotaTextEditor
+   inputfiles/DakotaTreeView
+   inputfiles/MlmfEditor
+   
+=================
+Simulation Models
+=================
+
+.. toctree::
+   :maxdepth: 1
+   
+   simulationmodels
+   
+==============
+Running Dakota
+==============
+
+.. toctree::
+   :maxdepth: 1
+   
+   running/DakotaRunConfiguration
+   running/DakotaRunWorkflow
+   
+==================
+Output from Dakota
+==================
+
+.. toctree::
+   :maxdepth: 1
+
+   output/HDF
+   
+=========
+GUI Tools
+=========
+   
+.. toctree::
+   :maxdepth: 1
+   
+   bmf/BMF
+   chartreuse/Chartreuse
+   ngw/NextGenWorkflow
+   qoi/QOI
+   
+=============
+Miscellaneous
+=============
+
+.. toctree::
+   :maxdepth: 2
+   
+   miscgui/ContextMenuTools
+   
+.. toctree::
+   :maxdepth: 1
+   
+   miscgui/Preferences
+   miscgui/Eclipse

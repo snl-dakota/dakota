@@ -1,0 +1,76 @@
+.. _releasenotes-33:
+
+""""""""""""""""""""""""
+Version 3.3 (2004/12/23)
+""""""""""""""""""""""""
+
+**Framework enhancements:**
+
+- Revisions to the Iterator class hierarchy to bring together the uncertainty quantification, parameter study, and design of experiments classes so that common statistical analysis routines can be shared. Iterator is now divided into two branches, "Minimizer" (for optimization and nonlinear least squares) and "Analyzer" (for uncertainty quantification, parameter studies, and design of experiments).
+- Major redesign of multilevel parallelism classes to be more modular and extensible (the number of parallelism levels is now open-ended) and to allow multiple parallel configurations to coexist (previously, only a sequence of partitions could be used, one at a time). This development was driven by two needs: (1) performing communicator partitioning at construction time instead of run time (for simplifying parallel set-up for direct simulation interfaces), and (2) allowing more complete parallelism management in strategies which have more than one active model at a time (e.g., multifidelity SBO, see Strategies section below). Features include:
+
+  - The new design uses an open-ended list of ParallelLevel objects which collectively contain all of the communicator partitions. This list is managed with a list of ParallelConfiguration objects, each of which identifies the set of ParallelLevels which define a particular multilevel parallel configuration.
+  - Additional encapsulation of message-passing routines through addition of more MPI wrappers.
+  - Addition of a component parallel mode (INTERFACE, SUBMODEL, or none) facility to the Model hierarchy to manage the Model component whose parallel configuration is currently active.
+
+- Addition of finite-difference numerical Hessians and BFGS/SR1 quasi-Newton Hessians to DAKOTA's derivative estimation routines. Previously, DAKOTA relied on vendor optimization algorithms to perform these calculations, but a native capability was needed for FD- and quasi-second-order surrogate corrections. Features include:
+
+  - Numerical Hessians may use 1st-order gradient differencing or 2nd-order function-value differencing. This selection is automatically determined based on the gradient specification: the former if analytic gradients and the latter otherwise. FD Hessians from 1st-order gradient differences have a symmetry enforcement [H = 1/2 (H + H^T)]
+  - As for numerical gradients, the numerical Hessians support the ability to be fully asynchronous (i.e., multiple gradient/Hessian data sets may be evaluated concurrently, each of which involves multiple finite difference evaluations).
+  - Quasi-Newton safeguarding: the BFGS update may be damped or undamped. In the SR1 and undamped BFGS cases, the update is skipped if the denominator is near zero.
+  - Quasi-Newton scaling: an initial scaling of y'y/y's I (Shanno & Phua) is used for both BFGS and SR1 to accelerate the updating process.
+
+- General support for variable insertion in nested models. This enables (1) optimization under uncertainty, in which design variables are distribution parameters, and (2) second-order probability, in which epistemic uncertainties are modeled as intervals on distribution parameters and realizations of these parameters are used within sets of aleatory probabilistic analyses. Nested models can update sub-model active/inactive variables using any combination of variable insertions and augmentations (see variable mappings in Method Independent Controls).
+- Extensions to DAKOTA's library mode. This mode has now stabilized and is in use in several Sandia and external simulation frameworks. It supports a "sandwich" implementation in which DAKOTA provides iteration services to a simulation framework, and the simulation framework provides a direct interface plug-in to DAKOTA.
+
+**Iterative methods**
+
+- Optimization:
+
+  - New Acro release with updated COLINY methods supporting general nonlinear constraints: APPS, DIRECT, Solis-Wets, Pattern search, and Cobyla. Updated DAKOTA input specification now captures the relevant method options.
+  - The multiobjective genetic algorithm (MOGA) now returns the "best" design to DAKOTA for use in multi-level strategies which require a starting point for subsequent iteration. This best design is defined to be the point in the Pareto set that has minimum distance from the "utopia" point (the point of extreme values for each objective function).
+
+- Parameter estimation:
+
+  - Revision of NL2SOL specification mappings to be more consistent with other methods.
+  
+- Uncertainty quantification:
+
+  - New capability for variance-based decomposition with the following sampling methods: LHS, DDACE, and FSUDace. VBD provides global sensitivity indices for each uncertain variable, where a higher sensitivity index means that the uncertainty in that input has a larger effect on the variance of the output.
+  - Addition of a 2nd-order probability capability as enabled by the generic variable insertion capability described above. An epistemic level can sample over uncertain variables, whose realizations are then inserted into the distribution parameters for an uncertainty analysis at an aleatory level.
+  - Addition of a subset of the GNU Scientific Library (GSL). In particular, new routines for random number generation (the Tausworthe RNG) and various statistical distributions have been added. Confidence interval calculations for sample means and sample standard deviations have been added to DAKOTA to take advantage of these new capabilities.
+  - Improved logic in reliability methods for conditionally computing response means/std deviations via MVFOSM analysis. The new logic makes use of improved data management in nested models to determine when these additional statistics are needed.
+  
+- Parameter studies/design of experiments:
+
+  - New FSUDace library for quasi-Monte Carlo (QMC) and Centroidal Voronoi Tessellation (CVT) designs of experiments. The quasi-Monte Carlo methods currently available are Hammersley and Halton sequences. These new QMC and CVT methods support latinization of samples, calculation of volumetric quality metrics, and variance-based decomposition. This library was developed by Max Gunzburger and John Burkardt at Florida State University.
+  - DDACE now supports volumetric quality metrics and variance-based decomposition.
+
+**Strategies**
+
+- Surrogate-based optimization (SBO)
+ 
+  - Multifidelity SBO can now use more practical second-order corrections based on the numerical and quasi-Newton Hessian capabilities discussed above.
+  - Multifidelity SBO now supports parallelism in both the low and high fidelity models, as enabled by the parallelism redesign discussed above.
+   
+- Optimization under uncertainty (OUU)
+
+  - The generic variable insertion capability described above enables reliability-based design optimization studies where the design variables define distribution parameters (means, std deviations) for uncertain variables.
+  - Nested models now compute a request vector for the sub-iterator and support gradients/Hessians in their response mappings. This enables sub-iterator sensitivities for accelerating nested RBDO. Code for RIA/PMA reliability sensitivities has been fleshed out, but is not active yet.
+
+**Miscellaneous**
+
+- Bug fixes:
+
+  - Extensions to IDR parser to provide more helpful error messages in the case of unmatched keywords.
+  - Improved linear constraint management for mixed variable optimizers and additional linear constraint error checking.
+  - Fixed discrete variable mappings in JEGA.
+  - Removal of static attributes from ProblemDescDB to correct approach of multiple instantiations in library mode.
+  - Repaired long-standing memory leak in IDR. Static IDR table pointers are now properly deallocated.
+  - Fixed bug with setup of random, chc, elitist selection in SGOPT GAs.
+  
+- SQA/Porting:
+
+  - Mac OSX port extended to include F90 LHS, MPICH, and BLAS linking from g77.
+  - Initial support for g95 on Linux, OSX, Cygwin.
+  - Extensions to configure system to support --enable-debugging.

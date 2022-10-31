@@ -1,0 +1,45 @@
+Blurb::
+Output file for prediction variance calculations
+Description::
+Enables the user to specify the name and format of the file to which
+corrected model variance information is output. The file will contain the
+values of the variances computed at those points specified with
+``num_predictions``, ``prediction_configs``, or ``import_prediction_configs``.
+
+For scalar responses, the prediction variance for each observable :math:`d_i`  is
+calculated according to
+
+
+.. math:: 
+
+   \Sigma_{total}(x) = \Sigma_{\delta}(x) + \sigma^2_{exp}I.
+
+Here, :math:`\Sigma_{\delta}(x)`  is the (co)variance calculated from the
+Gaussian process or polynomial regression model, details of which can be
+found in the Dakota User's and Theory Manuals. If experimental variance
+information is provided for the calibration, the maximum variance found for
+the observable :math:`d_i`  is used as :math:`\sigma^2_{exp}` . For more details,
+see the Dakota User's and Theory Manuals. For field responses, the variance
+of the discrepancy model alone is output to this file.
+
+*Default Behavior*
+
+If ``export_corrected_variance_file`` is not specified, information will be
+automatically output to ``dakota_discrepancy_variance_tabular``.dat.
+
+*Usage Tips*
+
+Dakota exports tabular data in one of three formats:
+
+- ``annotated`` (default)
+- ``custom_annotated``
+- ``freeform``
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

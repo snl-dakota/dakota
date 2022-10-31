@@ -1,9 +1,0 @@
-Blurb::
-First parameter of the beta distribution
-Description::
-Specifies the list of \f$\alpha\f$ parameters to define the distributions of the beta random variables. Length must match the other parameters and the number of beta random variables.
-Topics::	
-Examples::
-Theory::
-Faq::
-See_Also::	

@@ -1,0 +1,19 @@
+Blurb::
+increment used when adapting the basis order in function train methods
+Description::
+Used in combination with ``adapt_order``, ``kick_order``
+defines the size of the increment that is used during the cross
+validation process, within the range of ``start_order`` and ``max_order``.
+
+*Default Behavior*
+
+Default is 1.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

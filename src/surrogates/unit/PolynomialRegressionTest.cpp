@@ -54,10 +54,9 @@ void get_samples(int num_vars, int num_samples, MatrixXd& samples) {
   // This choice allows consistent comparison with
   // pecos/surrogates/models/src/RegressionBuilder
   typedef boost::uniform_real<> NumberDistribution;
-  typedef boost::mt19937 RNG;
-  typedef boost::variate_generator<RNG&, NumberDistribution> Generator;
-
+  // Using Boost unif real dist for cross-platform stability
   boost::uniform_real<double> distribution(-1.0, 1.0);
+  // Using Boost MT since need it anyway for unif real dist
   boost::mt19937 generator;
   generator.seed(seed);
   boost::variate_generator<boost::mt19937, NumberDistribution> numberGenerator(
@@ -96,12 +95,40 @@ void cubic_bivariate_function(const MatrixXd& samples, MatrixXd& func_vals,
     double x = samples(i, 0);
     double y = samples(i, 1);
     func_vals(i, 0) = 1 + x + y + scale_cross * (x * y) +
-                      scale_cross * (std::pow(x, 2) * std::pow(y, 2)) +
+      // This term has degree 4, so removing :
+      //              scale_cross * (std::pow(x, 2) * std::pow(y, 2)) +
                       scale_cross * (std::pow(x, 2) * y) +
                       scale_cross * (std::pow(y, 2) * x) + std::pow(x, 3) +
                       std::pow(y, 3);
   }
 }
+
+// Gradient includes cross-terms
+MatrixXd cubic_bivariate_withcross_gradient(const MatrixXd& samples)
+{
+  MatrixXd gradients(samples.rows(), samples.cols());
+  for (int i = 0; i < samples.rows(); ++i) {
+    double x = samples(i, 0);
+    double y = samples(i, 1);
+    gradients(i, 0) = 1 + y + 2*x*y + y*y +3*x*x;
+    gradients(i, 1) = 1 + x + 2*x*y + x*x +3*y*y;
+  }
+  return gradients;
+}
+
+// Hessian includes cross-terms
+MatrixXd cubic_bivariate_withcross_hessian(const MatrixXd& sample)
+{
+  double x = sample(0, 0);
+  double y = sample(0, 1);
+
+  MatrixXd hessian(2,2);
+  hessian <<
+    2*y + 6*x,      1 + 2*x + 2*y,
+    1 + 2*x + 2*y,  2*x + 6*y;
+  return hessian;
+}
+
 
 /* Unit tests */
 
@@ -287,19 +314,18 @@ void PolynomialRegressionSurrogate_gradient_and_hessian() {
   Teuchos::ParameterList config_options("Polynomial Test Parameters");
   config_options.set("max degree", degree);
 
+  // This model should be able to recover the exact original function
   PolynomialRegression pr(samples, responses, config_options);
 
   MatrixXd gradient, hessian;
   gradient = pr.gradient(samples.topRows(2));
   hessian = pr.hessian(samples.topRows(1));
 
-  MatrixXd gold_gradient(2, 2);
-  gold_gradient << 1.59711, 1.06684, 0.691654, 2.90352;
+  MatrixXd gold_gradient = cubic_bivariate_withcross_gradient(samples.topRows(2));
+  MatrixXd gold_hessian = cubic_bivariate_withcross_hessian(samples.topRows(1));
 
-  MatrixXd gold_hessian(2, 2);
-  gold_hessian << -2.75852, 0.04462, 0.04462, -1.83287;
-
-  BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-4));
+  BOOST_CHECK(matrix_equals(gold_gradient, gradient, 1.0e-10));
+  BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-10));
 }
 
 void PolynomialRegressionSurrogate_parameter_list_import() {
@@ -309,6 +335,7 @@ void PolynomialRegressionSurrogate_parameter_list_import() {
   get_samples(num_vars, num_samples, samples);
   cubic_bivariate_function(samples, responses);
 
+  // This model should be able to recover the exact original function
   PolynomialRegression pr(samples, responses,
                           "pr_test_data/pr_parameter_list.yaml");
 
@@ -316,13 +343,11 @@ void PolynomialRegressionSurrogate_parameter_list_import() {
   gradient = pr.gradient(samples.topRows(2));
   hessian = pr.hessian(samples.topRows(1));
 
-  MatrixXd gold_gradient(2, 2);
-  gold_gradient << 1.59711, 1.06684, 0.691654, 2.90352;
+  MatrixXd gold_gradient = cubic_bivariate_withcross_gradient(samples.topRows(2));
+  MatrixXd gold_hessian = cubic_bivariate_withcross_hessian(samples.topRows(1));
 
-  MatrixXd gold_hessian(2, 2);
-  gold_hessian << -2.75852, 0.04462, 0.04462, -1.83287;
-
-  BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-4));
+  BOOST_CHECK(matrix_equals(gold_gradient, gradient, 1.0e-9));
+  BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-9));
 }
 
 /// Create, evaluate, and save a basic polynomial; load and verify

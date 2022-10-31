@@ -1,0 +1,23 @@
+Blurb::
+Create new population randomly
+Description::
+The ``replacement_type`` controls how current populations and newly
+generated individuals are combined to create a new population.  Each
+of the ``replacement_type`` selections accepts an integer value, which
+is referred as the ``replacement_size``:
+
+The ``random`` setting creates a new population using:
+
+
+- ``replacement_size`` randomly selected individuals from the current population, and
+
+- ``population_size`` - ``replacement_size`` individuals randomly selected from among the newly generated individuals (the number of which is optionally specified using ``new_solutions_generated``) that are created for each generation (using the selection, crossover, and mutation procedures).
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

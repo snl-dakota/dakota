@@ -1,0 +1,19 @@
+Blurb::
+Second parameter of the lognormal distribution (option 1)
+Description::
+For the lognormal variables, one may specify either the mean
+:math:`\mu` 
+and standard deviation
+:math:`\sigma` 
+of the actual lognormal distribution.
+
+This corresponds to the standard deviation of the lognormal random variable.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

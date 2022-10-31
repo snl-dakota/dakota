@@ -1,0 +1,16 @@
+Blurb::
+Select a crossover type
+Description::
+The ``crossover_type`` controls what approach is employed for combining parent
+genetic information to create offspring. The SCOLIB EA method supports three
+forms of crossover, ``two_point``, ``blend``, and ``uniform``, which generate a
+new individual through combinations of two parent individuals.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

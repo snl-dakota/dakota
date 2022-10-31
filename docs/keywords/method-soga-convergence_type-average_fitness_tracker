@@ -1,0 +1,17 @@
+Blurb::
+Tracks the average fitness of the population
+Description::
+The ``convergence_type`` called ``average_fitness_tracker`` keeps track
+of the average fitness in a population. If this average fitness does
+not change more than ``percent_change`` over some number of
+generations, ``num_generations``, then the solution is reported as
+converged and the algorithm terminates.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

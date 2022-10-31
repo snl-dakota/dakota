@@ -1,0 +1,22 @@
+Blurb::
+Specify a scalar data file to complement field data files (mixed case)
+Description::
+When calibrating both scalar and field calibration terms, to
+associated experimental data, the scalar data may be provided in the
+file named by ``scalar_data_file``.  This file follows the same format
+as: :ref:`responses-calibration_terms-calibration_data_file<responses-calibration_terms-calibration_data_file>`.
+
+*Default Behavior*
+
+If ``scalar_data_file`` is omitted, all calibration data, including for
+scalar responses, will be read from the generic field
+``calibration_data`` format.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

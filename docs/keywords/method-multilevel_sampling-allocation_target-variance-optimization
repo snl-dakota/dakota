@@ -1,0 +1,29 @@
+Blurb::
+Solve the optimization problem for the sample allocation by numerical optimization in the case of sampling estimator targeting the variance.
+Description::
+Employ numerical optimization to solve the optimization problem for finding the optimal sample allocation when targeting the variance. This option needs NPSOL (preferred choice) or OPTPP (alternative choice) installed.
+
+*Default Behavior*
+"off"
+Topics::
+
+Examples::
+The following method block
+
+.. code-block::
+
+    method,
+     model_pointer = 'HIERARCH'
+            multilevel_sampling
+       pilot_samples = 20 seed = 1237
+       convergence_tolerance = .01
+       allocation_target = variance
+        optimization
+
+
+uses the variance as sample allocation target and solves the resulting optimization problem using numerical optimization.
+Theory::
+
+Faq::
+
+See_Also::

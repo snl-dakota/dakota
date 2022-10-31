@@ -1,0 +1,17 @@
+Blurb::
+First parameter of the lognormal distribution (options 1 & 2)
+
+Description::
+For the lognormal variables, one may specify either the mean :math:`\mu`  and standard deviation :math:`\sigma`  of the actual lognormal distribution, the mean :math:`\mu` and error factor :math:`\epsilon`  of the actual lognormal distribution.
+
+This corresponds to the mean of the lognormal random variable
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

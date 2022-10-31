@@ -1,0 +1,10 @@
+.. _`topic-design_and_analysis_of_computer_experiments`:
+
+Design and Analysis of Computer Experiments (DACE)
+==================================================
+
+Design and Analysis of Computer Experiments (DACE) methods compute
+response data sets at a selection of points in the parameter space.
+Three libraries are provided for performing these studies: DDACE,
+FSUDace, and PSUADE. The design of experiments methods do not
+currently make use of any of the method independent controls.

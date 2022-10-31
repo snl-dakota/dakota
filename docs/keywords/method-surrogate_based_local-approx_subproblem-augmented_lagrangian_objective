@@ -1,0 +1,30 @@
+Blurb::
+Augmented Lagrangian approximate subproblem formulation
+Description::
+For SBL problems with nonlinear constraints, a number of algorithm
+formulations exist as described in :cite:p:`Eld06b`
+and as summarized in the Advanced Examples section of
+the Models chapter of the Users Manual :cite:p:`UsersMan`.
+First, the "primary" functions (that is, the objective
+functions or calibration terms) in the approximate subproblem can be
+selected to be surrogates of the original primary functions (
+``original_primary``), a single objective function ( ``,single_objective``)
+formed from the primary function surrogates, or either an augmented
+Lagrangian merit function ( ``augmented_lagrangian_objective``) or a
+Lagrangian merit function ( ``lagrangian_objective``) formed from the
+primary and secondary function surrogates.  The former option may
+imply the use of a nonlinear least squares method, a multiobjective
+optimization method, or a single objective optimization method to
+solve the approximate subproblem, depending on the definition of the
+primary functions.  The latter three options all imply the use of a
+single objective optimization method regardless of primary function
+definition.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,18 @@
+Blurb::
+Dynamically load a plugin analysis driver
+Description::
+Dakota 6.16 allows for run-time loading of a C++ or Python plugin
+analysis driver as a shared object file.
+
+Python plugins support batch evaluations ( :ref:`interface-batch<interface-batch>`)
+through a list of dictionaries.
+Topics::
+
+Examples::
+See ``dakota/src/plugins`` and ``dakota/share/dakota/test/dakota_plugin``.in
+for C++ and Python demos. These have only been tested on Linux.
+Theory::
+
+Faq::
+
+See_Also::

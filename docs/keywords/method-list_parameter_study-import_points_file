@@ -1,0 +1,34 @@
+Blurb::
+File containing list of variable values to evaluate in a list parameter study
+Description::
+The ``import_points_file`` specifies a file containing a list of variable
+values at which to compute a model response.
+
+*Default Behavior*
+
+By default, methods do not import points from a file.
+
+*Usage Tips*
+
+Dakota parses input files without regard to whitespace, but the
+import_points_file must be in one of three formats:
+
+- ``annotated`` (default)
+- ``custom_annotated``
+- ``freeform``
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      list_parameter_study
+        import_points_file = 'dakota_pstudy.3.dat'
+
+
+Theory::
+
+Faq::
+
+See_Also::

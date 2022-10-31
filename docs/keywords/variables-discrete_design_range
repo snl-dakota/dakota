@@ -1,0 +1,17 @@
+Blurb::
+Design variable - discrete range-valued
+
+Description::
+These variables take on a range of integer values from the specified
+lower bound to the specified upper bound (integer interval).
+
+Topics::
+discrete_variables, design_variables
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

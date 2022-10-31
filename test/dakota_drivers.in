@@ -1,6 +1,7 @@
 #@ *: DakotaConfig=HAVE_NPSOL
 #@ On Windows: 4-6 abort; refork?
 #@ *: DakotaConfig=UNIX
+#@ s*: Label=FastTest
 #@ p0: MPIProcs=3
 #@ p1: MPIProcs=6
 #@ p2: MPIProcs=6

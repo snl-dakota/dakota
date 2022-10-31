@@ -1,0 +1,46 @@
+@import 'theme.css'; /* for the Read the Docs theme */
+
+div.wy-side-nav-search {
+    background-color: #b6f8fc;
+}
+
+div.wy-side-nav-search a {
+    color: #50bfc7;
+}
+
+/* make sure version number doesn't disappear */
+.wy-side-nav-search > div.version {
+    color: #448FAA;
+}
+
+div.wy-nav-content {
+    max-width: 1200px;
+}
+
+/* override table width restrictions */
+@media screen and (min-width: 767px) {
+
+  .wy-table-responsive table td {
+    /* !important prevents the common CSS stylesheets from
+       overriding this as on RTD they are loaded after this stylesheet */
+    white-space: normal !important;
+  }
+
+  .wy-table-responsive {
+    overflow: visible !important;
+  }
+
+}
+
+
+/* Workaround an issue where the RTD theme labels equations above
+   instead of to the right. References:
+   https://stackoverflow.com/questions/67065252/how-to-put-equation-numbers-on-the-right-on-readthedocs
+   https://stackoverflow.com/questions/14110790/numbered-math-equations-in-restructuredtext/52509369#52509369
+ */
+.math {
+    text-align: left;
+}
+.eqno {
+    float: right;
+}

@@ -31,8 +31,11 @@
 #include "BasisPolynomial.hpp"
 #include "OrthogPolyApproximation.hpp"
 
-#include "boost/random.hpp"
-#include "boost/generator_iterator.hpp"
+// Using Boost MT since need it anyway for unif int dist
+#include "dakota_mersenne_twister.hpp"
+// Using Boost unif int dist for cross-platform stability
+#include "boost/random/uniform_int_distribution.hpp"
+#include "boost/random/variate_generator.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDLHSSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -679,11 +682,11 @@ Real NonDLHSSampling::bootstrap_covariance(const size_t qoi){
   RealVector mean_bs(nb_bs_samples);
   RealVector sigma_bs(nb_bs_samples);
   Real mean_mean_bs = 0, mean_sigma_bs = 0, covmeansigma = 0;
-  typedef boost::mt19937 RNGType;
 
-  RNGType rng(randomSeed);
-  boost::uniform_int<> rand_int_range( 0, numSamples-1);
-  boost::variate_generator< RNGType, boost::uniform_int<> >
+  boost::mt19937 rng(randomSeed);
+  boost::random::uniform_int_distribution<> rand_int_range(0, numSamples-1);
+  boost::variate_generator
+    < boost::mt19937, boost::random::uniform_int_distribution<> >
     rand_int(rng, rand_int_range);
 
   for(int bs_resample = 0; bs_resample < nb_bs_samples; ++bs_resample){

@@ -1,0 +1,24 @@
+Blurb::
+Sequence of expansion samples used in a multi-stage polynomial chaos expansion
+
+Each level entry of the ``expansion_samples_sequence`` applies to one
+expansion within a multi-stage expansion.  Current multi-stage
+expansions that support expansion samples sequences include multilevel
+and multifidelity polynomial chaos.
+
+If adaptive refinement is active, then this sequence specifies the
+starting point for each level within either an individual or
+integrated refinement approach.
+
+A corresponding scalar specification is documented at, e.g.,
+:ref:`method-polynomial_chaos-expansion_order-expansion_samples<method-polynomial_chaos-expansion_order-expansion_samples>`
+Description::
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

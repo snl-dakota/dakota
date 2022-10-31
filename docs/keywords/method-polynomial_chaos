@@ -1,0 +1,213 @@
+Blurb::
+Uncertainty quantification using polynomial chaos expansions
+Description::
+The polynomial chaos expansion (PCE) is a general framework for
+the approximate representation of random response functions in terms
+of finite-dimensional series expansions in standardized random variables
+
+
+.. math:: R = \sum_{i=0}^P \alpha_i \Psi_i(\xi) 
+
+where :math:`\alpha_i`  is a deterministic coefficient, :math:`\Psi_i`  is a
+multidimensional orthogonal polynomial and :math:`\xi`  is a vector of
+standardized random variables. An important distinguishing feature of
+the methodology is that the functional relationship between random
+inputs and outputs is captured, not merely the output statistics as in
+the case of many nondeterministic methodologies.
+
+
+
+*Basis polynomial family (Group 1)*
+
+Group 1 keywords are used to select the type of basis,
+:math:`\Psi_i` , of the expansion. Three approaches may be employed:
+
+
+- Wiener: employs standard normal random variables in a transformed   probability space, corresponding to Hermite orthogonal basis   polynomials (see :ref:`method-polynomial_chaos-wiener<method-polynomial_chaos-wiener>`).
+- Askey: employs standard normal, standard uniform, standard   exponential, standard beta, and standard gamma random variables in a   transformed probability space, corresponding to Hermite, Legendre,   Laguerre, Jacobi, and generalized Laguerre orthogonal basis   polynomials, respectively (see :ref:`method-polynomial_chaos-askey<method-polynomial_chaos-askey>`).
+- Extended (default if no option is selected): The Extended option   avoids the use of any nonlinear variable transformations by   augmenting the Askey approach with numerically-generated orthogonal   polynomials for non-Askey probability density functions.  Extended   polynomial selections with numerically-generated polynomials that are
+  orthogonal to the prescribed probability density functions replace each of the sub-optimal Askey basis   selections    for bounded normal, lognormal, bounded lognormal, loguniform,   triangular, gumbel, frechet, weibull, and bin-based histogram.
+
+For supporting correlated random variables, certain fallbacks must
+be implemented.
+
+- The Extended option is the default and supports only  Gaussian correlations.
+- If needed to support prescribed correlations (not under user  control), the Extended and Askey options will fall back to the Wiener option *on a per variable basis*. If the prescribed  correlations are also unsupported by Wiener expansions, then Dakota  will exit with an error.
+
+These defaults can be overridden by the user by supplying the keyword
+``askey`` to request restriction to the use of Askey bases only or by
+supplying the keyword ``wiener`` to request restriction to the use of
+exclusively Hermite bases.
+
+Refer to :ref:`topic-variable_support<topic-variable_support>` for additional information on
+supported variable types, with and without correlation.
+
+*Coefficient estimation approach (Group 2)*
+
+To obtain the coefficients :math:`\alpha_i`  of the expansion, seven
+options are provided:
+
+
+
+1. multidimensional integration by a tensor-product of Gaussian quadrature rules (specified with ``quadrature_order``, and, optionally, ``dimension_preference``).
+
+2. multidimensional integration by the Smolyak sparse grid method (specified with ``sparse_grid_level`` and, optionally, ``dimension_preference``)
+
+3. multidimensional integration by Stroud cubature rules and extensions as specified with ``cubature_integrand``.
+
+4. multidimensional integration by Latin hypercube sampling (specified with ``expansion_order`` and ``expansion_samples``).
+
+5. linear regression (specified with ``expansion_order`` and either ``collocation_points`` or ``collocation_ratio``), using either over-determined (least squares) or under-determined (compressed sensing) approaches.
+
+6. orthogonal least interpolation (specified with ``orthogonal_least_interpolation`` and ``collocation_points``)
+
+7. coefficient import from a file (specified with ``import_expansion_file``). The expansion can be comprised of a general set of expansion terms, as indicated by the multi-index annotation within the file.
+
+
+It is important to note that, for polynomial chaos using a single
+model fidelity, ``quadrature_order``, ``sparse_grid_level``, and
+``expansion_order`` are scalar inputs used for a single expansion
+estimation.  These scalars can be augmented with a
+``dimension_preference`` to support anisotropy across the random dimension
+set.  This differs from the use of sequence arrays in advanced use
+cases such as multilevel and multifidelity polynomial chaos, where
+multiple grid resolutions can be employed across a model hierarchy.
+
+*Active Variables*
+
+The default behavior is to form expansions over aleatory
+uncertain continuous variables. To form expansions
+over a broader set of variables, one needs to specify
+``active`` followed by ``state``, ``epistemic``, ``design``, or ``all``
+in the variables specification block.
+
+For continuous design, continuous state, and continuous
+epistemic uncertain variables included in the expansion,
+Legendre chaos bases are used to model the bounded intervals for these
+variables. However, these variables are not assumed to have any
+particular probability distribution, only that they are independent
+variables. Moreover, when probability integrals are evaluated, only
+the aleatory random variable domain is integrated, leaving behind a
+polynomial relationship between the statistics and the remaining
+design/state/epistemic variables.
+
+*Covariance type (Group 3)*
+
+These two keywords are used to specify how this method computes, stores,
+and outputs the covariance of the responses.  In particular, the diagonal
+covariance option is provided for reducing post-processing overhead and
+output volume in high dimensional applications.
+
+*Optional Keywords regarding method outputs*
+
+Each of these sampling specifications refer to sampling on the PCE
+approximation for the purposes of generating approximate statistics.
+
+- ``sample_type``
+- ``samples``
+- ``seed``
+- ``fixed_seed``
+- ``rng``
+- ``probability_refinement``
+- ``distribution``
+- ``reliability_levels``
+- ``response_levels``
+- ``probability_levels``
+- ``gen_reliability_levels``
+
+which should be distinguished from simulation sampling for generating
+the PCE coefficients as described in options 4, 5, and 6 above
+(although these options will share the ``sample_type``, ``seed``, and
+``rng`` settings, if provided).
+
+When using the ``probability_refinement`` control, the number of
+refinement samples is not under the user's control (these evaluations
+are approximation-based, so management of this expense is less
+critical). This option allows for refinement of probability and
+generalized reliability results using importance sampling.
+
+
+*Usage Tips*
+
+If *n* is small (e.g., two or three), then tensor-product Gaussian
+quadrature is quite effective and can be the preferred choice. For
+moderate to large *n* (e.g., five or more), tensor-product quadrature
+quickly becomes too expensive and the sparse grid and regression
+approaches are preferred. Random sampling for coefficient
+estimation is generally not recommended due to its slow convergence
+rate.
+
+.. 
+   HIDDEN: For large \e n (e.g., more than ten), point
+   collocation may begin to suffer from ill-conditioning and sparse
+   grids are generally recommended.
+
+..
+   HIDDEN:, although it does hold the advantage that the simulation
+   budget is more flexible than that required by the other approaches.
+
+For incremental studies, approaches 4 and 5 support reuse of previous
+samples through the :ref:`method-sampling-sample_type-incremental_lhs<method-sampling-sample_type-incremental_lhs>`
+and :ref:`model-surrogate-global-reuse_points<model-surrogate-global-reuse_points>`
+specifications, respectively.
+
+In the quadrature and sparse grid cases, growth rates for nested and
+non-nested rules can be synchronized for consistency. For a
+non-nested Gauss rule used within a sparse grid, linear
+one-dimensional growth rules of :math:`m=2l+1`  are used to enforce odd
+quadrature orders, where *l* is the grid level and *m* is the number
+of points in the rule. The precision of this Gauss rule is then
+:math:`i=2m-1=4l+1` . For nested rules, order growth with level is
+typically exponential; however, the default behavior is to restrict
+the number of points to be the lowest order rule that is available
+that meets the one-dimensional precision requirement implied by either
+a level *l* for a sparse grid ( :math:`i=4l+1` ) or an order *m* for a
+tensor grid ( :math:`i=2m-1` ). This behavior is known as "restricted
+growth" or "delayed sequences." To override this default behavior in
+the case of sparse grids, the ``unrestricted`` keyword can be used; it
+cannot be overridden for tensor grids using nested rules since it also
+provides a mapping to the available nested rule quadrature orders. An
+exception to the default usage of restricted growth is the
+``dimension_adaptive`` ``p_refinement`` ``generalized`` sparse grid case
+described previously, since the ability to evolve the index sets of a
+sparse grid in an unstructured manner eliminates the motivation for
+restricting the exponential growth of nested rules.
+
+*Additional Resources*
+
+Dakota provides access to PCE methods through the NonDPolynomialChaos
+class. Refer to the Uncertainty Quantification Capabilities chapter of
+the Users Manual :cite:p:`UsersMan` and the Stochastic Expansion Methods
+chapter of the Theory Manual :cite:p:`TheoMan` for additional information
+on the PCE algorithm.
+
+*Expected HDF5 Output*
+
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
+
+
+- :ref:`hdf5_results-se_moments<hdf5_results-se_moments>`
+- :ref:`hdf5_results-pdf<hdf5_results-pdf>`
+- :ref:`hdf5_results-level_mappings<hdf5_results-level_mappings>`
+- :ref:`hdf5_results-vbd<hdf5_results-vbd>`
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+     polynomial_chaos
+       sparse_grid_level = 2
+       samples = 10000 seed = 12347 rng rnum2
+       response_levels = .1 1. 50. 100. 500. 1000.
+       variance_based_decomp
+
+
+Theory::
+
+Faq::
+
+See_Also::

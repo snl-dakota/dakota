@@ -1,0 +1,18 @@
+Blurb::
+Discrete state variables, each defined by a set of permissible integers
+Description::
+Discrete state variables defined by a set of permissible integers.
+
+See :ref:`variables:usage` for tips on specifying discrete set
+variables and :ref:`variables:state` for details on the behavior
+of state variables.
+
+Topics::
+discrete_variables, state_variables
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

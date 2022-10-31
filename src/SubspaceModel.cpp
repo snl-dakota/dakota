@@ -297,6 +297,15 @@ void SubspaceModel::uncertain_vars_to_subspace()
     reduced_rv_types[i] = native_rv_types[i+cv_diff];
   reduced_dist_rep->initialize_types(reduced_rv_types, reduced_active_vars);
   reduced_dist_rep->active_correlations(reduced_active_corr);
+
+  // copy the RVs for any active complement variables, so clients of
+  // the subspace model will have access to their properties
+  for (i=0; i<start_reduction; ++i)              // same as native
+    reduced_dist_rep->random_variable(i) =
+      native_dist_rep->random_variable(i);
+  for (i=end_reduction; i<num_reduced_rv; ++i)   // same as native
+    reduced_dist_rep->random_variable(i) =
+      native_dist_rep->random_variable(i + cv_diff);
 }
 
 

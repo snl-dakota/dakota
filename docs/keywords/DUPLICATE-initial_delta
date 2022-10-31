@@ -1,0 +1,68 @@
+Blurb::
+Initial step size for derivative-free optimizers
+Description::
+The ``initial_delta`` keyword defines the size of the first search step
+in derivative-free optimization methods, specifically
+``asynch_pattern_search``, ``coliny_cobyla``, ``coliny_pattern_search``,
+``coliny_solis_wets``, and ``mesh_adaptive_search``.  It is applied in an
+absolute sense to all search directions.
+
+*Default Behavior*
+
+The default value is 1.0.
+
+*Usage Tips*
+
+It is recommended that ``initial_delta`` be the approximate distance
+from the initial point to the solution.  If this distance is unknown,
+it is advisable to err on the side of choosing an ``initial_delta``
+that is too large or to not specify it.  Relative application of
+``initial_delta`` is not available unless the user scales the problem
+accordingly.
+Topics::
+
+Examples::
+Three example method input blocks appear below.
+
+For ``asynch_pattern_search``:
+
+.. code-block::
+
+    method
+      asynch_pattern_search
+        initial_delta = .5
+        contraction_factor = 0.25
+        merit_function merit1_smooth
+        smoothing_factor = 1.0
+        constraint_tolerance = 1.e-6
+
+
+For ``coliny_pattern_search``:
+
+.. code-block::
+
+    method
+      coliny_pattern_search
+        initial_delta = .2
+        variable_tolerance = 1.e-4
+        max_iterations 100
+        solution_accuracy = 1.e-6
+        seed = 1234
+        max_function_evaluations = 1000
+
+
+For ``mesh_adaptive_search``
+
+.. code-block::
+
+    method
+      mesh_adaptive_search
+        initial_delta = 2.0
+        seed = 1234
+
+
+Theory::
+
+Faq::
+
+See_Also::

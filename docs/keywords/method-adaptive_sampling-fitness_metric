@@ -1,0 +1,22 @@
+Blurb::
+(Experimental) Specify the ``fitness_metric`` used to select the next point
+Description::
+``adaptive`` sampling is an experimental capability that is not ready
+for production use at this time.
+
+The user can specify the ``fitness_metric`` used to select the
+next point (or points) to evaluate and add to the set.
+The fitness metrics used for scoring candidate points include:
+
+- ``predicted_variance``
+- ``distance``
+- ``gradient``
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

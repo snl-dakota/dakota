@@ -1,0 +1,7 @@
+.. _releasenotes-gui-610:
+
+""""""""""""""""""""""""""""""""""""""""""
+Version 6.10 - Gangplank Galleon (2019/05)
+""""""""""""""""""""""""""""""""""""""""""
+
+The Dakota 6.9 GUI has been updated to work with Dakota 6.10, but not substantially changed. New GUI features will be released with the next Dakota release.

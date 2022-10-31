@@ -1,0 +1,11 @@
+.. _releasenotes-gui-66:
+
+""""""""""""""""""""""""""""""""""""
+Version 6.6 - Coral Capers (2017/05)
+""""""""""""""""""""""""""""""""""""
+
+- **Plotly Plotting Integration.** The GUI now integrates the Plotly plotting library. You can perform basic scatter plots, histograms, and box-and-whisker plots against Dakota tabular output data.
+- **Input specification ordering.** Reorder and clean up interface, environment, and model blocks to follow more natural ordering and support GUI integration.
+- **Reordering of Dakota Example Inputs.** Several of Dakota's shipped example input files have been reordered to work out-of-the-box in the GUI.
+- **NIDR Parser Utilities.** Developer productivity: NIDR utilities built on all platforms to allow fewer NIDR-generated files in repository and input file reordering in GUI
+- **Use of examples in GUI.** Examples from training, users, and advanced directories are now ordered and debugged to work in GUI

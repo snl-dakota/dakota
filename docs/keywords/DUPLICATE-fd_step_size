@@ -1,0 +1,48 @@
+Blurb::
+Step size used when computing gradients and Hessians
+Description::
+``fd_step_size`` specifies the relative finite
+difference step size to be used in the computations. Either a single
+value may be entered for use with all parameters, or a list of step
+sizes may be entered, one for each parameter.
+
+The latter option of a list of step sizes is only valid for use with
+the Dakota finite differencing routine. For Dakota with an interval
+scaling type of ``absolute``, the differencing interval will be
+``fd_step_size``.
+
+For Dakota with and interval scaling type of ``bounds``, the
+differencing intervals are computed by multiplying
+``fd_step_size`` with the range of the parameter. For Dakota
+(with an interval scaling type of ``relative``), DOT, CONMIN, and
+OPT++, the differencing intervals are computed by multiplying the
+``fd_step_size`` with the current parameter value. In this case,
+a minimum absolute differencing interval is needed when the current
+parameter value is close to zero. This prevents finite difference
+intervals for the parameter which are too small to distinguish
+differences in the response quantities being computed. Dakota, DOT,
+CONMIN, and OPT++ all use <tt>.01*fd_step_size</tt> as their
+minimum absolute differencing interval. With a
+<tt>fd_step_size = .001</tt>, for example, Dakota, DOT,
+CONMIN, and OPT++ will use intervals of .001*current value with a
+minimum interval of 1.e-5. NPSOL and NLSSOL use a different formula
+for their finite difference intervals:
+<tt>fd_step_size*(1+|current parameter value|)</tt>. This
+definition has the advantage of eliminating the need for a minimum
+absolute differencing interval since the interval no longer goes to
+zero as the current parameter value goes to zero.
+
+ROL's finite difference step size can not be controlled via Dakota.
+Therefore, ``fd_step_size`` will be ignored when ROL's finite
+differencing routines are used (vendor FD gradients are specified).
+ROL's differencing intervals are computed by multiplying the current
+parameter value with the square root of machine precision.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

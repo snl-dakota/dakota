@@ -1,9 +1,0 @@
-Blurb::
-Use cross validation to choose the 'best' polynomial order of a polynomial chaos expansion.
-Description::
-Use cross validation to choose the 'best' polynomial degree of a polynomial chaos expansion. 10 fold cross validation is used to estimate the cross validation error of a total-order polynomial expansion for orders 1 through to order. The order chosen is the one that produces the lowest cross validation error. If there are not enough points to perform 10 fold cross validation then one-at-a-time cross validation will be performed.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	

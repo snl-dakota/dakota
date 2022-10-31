@@ -1,0 +1,69 @@
+Blurb::
+Global Surrogate Based Optimization, a.k.a. EGO
+Description::
+The Efficient Global Optimization (EGO) method was first developed by
+Jones, Schonlau, and Welch :cite:p:`Jon98`. In EGO,
+a stochastic response surface approximation for the objective function
+is developed based on some sample points from the "true" simulation.
+
+Note that several major differences exist between our implementation
+and that of :cite:p:`Jon98`. First, rather than
+using a branch and bound method to find the point which maximizes the
+EIF, we use the DIRECT global optimization method.
+
+Second, we support both global optimization and global nonlinear least
+squares as well as general nonlinear constraints through abstraction
+and subproblem recasting.
+
+The efficient global method is in prototype form. Currently, we do not
+expose any specification controls for the underlying Gaussian process
+model used or for the optimization of the expected improvement
+function (which is currently performed by the NCSU DIRECT algorithm
+using its internal defaults).
+
+By default, EGO uses the Surfpack GP (Kriging) model, but the Dakota
+implementation may be selected instead. If ``use_derivatives`` is
+specified the GP model will be built using available derivative data
+(Surfpack GP only).
+
+*Expected HDF5 Output*
+
+If Dakota was built with HDF5 support and run with the
+:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+writes the following results to HDF5:
+
+
+- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
+- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
+- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+Topics::
+global_optimization_methods, surrogate_based_optimization_methods
+Examples::
+
+Theory::
+The particular response surface used is a Gaussian process (GP). The
+GP allows one to calculate the prediction at a new input location as
+well as the uncertainty associated with that prediction. The key idea
+in EGO is to maximize the Expected Improvement Function (EIF). The EIF
+is used to select the location at which a new training point should be
+added to the Gaussian process model by maximizing the amount of
+improvement in the objective function that can be expected by adding
+that point. A point could be expected to produce an improvement in the
+objective function if its predicted value is better than the current
+best solution, or if the uncertainty in its prediction is such that
+the probability of it producing a better solution is high. Because the
+uncertainty is higher in regions of the design space with few
+observations, this provides a balance between exploiting areas of the
+design space that predict good solutions, and exploring areas where
+more information is needed. EGO trades off this "exploitation
+vs. exploration." The general procedure for these EGO-type methods is:
+
+
+- Build an initial Gaussian process model of the objective function
+- Find the point that maximizes the EIF. If the EIF value at this point is sufficiently small, stop.
+- Evaluate the objective function at the point where the EIF is maximized. Update the Gaussian process model using this new point.
+- Return to the previous step.
+Faq::
+
+See_Also::

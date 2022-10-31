@@ -1,0 +1,50 @@
+Blurb::
+Perform Bayesian inference in standardized probability space
+Description::
+This option transforms the inference process (MCMC sampling
+and any emulator model management) into a standardized probability space.
+
+The variable transformations performed are as described in
+:ref:`method-polynomial_chaos-askey<method-polynomial_chaos-askey>`.
+
+*Default Behavior*
+
+The default for the Gaussian process and no emulator options is to
+perform inference in the original probability space (no
+transformation).  Polynomial chaos and stochastic collocation
+emulators, on the other hand, are always formed in standardized
+probability space, such that the inference process is also performed
+in this standardized space.
+
+*Expected Output*
+
+The user will see the truth model evaluations performed in the
+original space, whereas any method diagnostics relating to the MCMC
+samples (e.g., QUESO data in the outputData directory) will report
+points and response data (response gradients and Hessians, if present,
+will differ but response values will not) that correspond to the
+transformed space.
+
+*Usage Tips*
+
+Selecting standardized_space generally has the effect of scaling the
+random variables to be of comparable magnitude, which can improve the
+efficiency of the Bayesian inference process.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+            bayes_calibration queso
+              samples = 2000 seed = 348
+              dram
+              standardized_space
+
+
+Theory::
+
+Faq::
+
+See_Also::

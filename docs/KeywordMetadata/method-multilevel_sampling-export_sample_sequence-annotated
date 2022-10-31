@@ -1,7 +1,0 @@
-Blurb:: Export sample sequences with descriptors
-
-Description:: 
-Sample sequences are written on file using header descriptors for the data set
-and a per-level progressive number, \c eval_id. The interface identifier, \c interface_id,
-is also reported as well as the model descriptors.
-

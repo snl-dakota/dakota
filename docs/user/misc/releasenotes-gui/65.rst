@@ -1,0 +1,9 @@
+.. _releasenotes-gui-65:
+
+""""""""""""""""""""""""""""""""""""""""
+Version 6.5 - Blazing Bazookas (2016/11)
+""""""""""""""""""""""""""""""""""""""""
+
+*(aka GUI Version 0.2)*
+
+The first beta release of the new Dakota GUI is now available for download.

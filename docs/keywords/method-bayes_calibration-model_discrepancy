@@ -1,0 +1,99 @@
+Blurb::
+(Experimental) Post-calibration calculation of model discrepancy correction
+Description::
+The goal of parameter calibration is to minimize the difference between
+experimental data, :math:`d(x)` , and model observations, :math:`M(\theta, x)` ,
+where :math:`\theta`  are the model parameters and :math:`x`  is a configuration
+variable, such as temperature or pressure. However, it is not uncommon that, at
+the conclusion of parameter calibration, the agreement between experimental
+data and the calibrated model is not "close enough." This is often due to
+model form or structural error. In this case, the canonical equation
+
+
+.. math:: 
+
+   d (x) = M (\theta, x) + \varepsilon
+
+is replaced by one that also includes model discrepancy :math:`\delta(x)` ,
+
+
+.. math:: 
+
+   d (x) = M (\theta, x) + \delta(x) + \varepsilon.
+
+In the Dakota implementation, the calculation of :math:`\delta(x)`  is performed
+after the model parameters :math:`\theta`  are calibrated. For each observable
+:math:`d_i` , the discrepancy
+
+
+.. math:: 
+
+   \delta_i(x_j) = d_i(x_j) - M_i(\theta^*, x_j)
+
+is calculated for each value :math:`x_j`  of the configuration variable, where
+:math:`\theta^*`  is the optimal parameter value obtained during the
+calibration. For scalar responses, the model discrepancy is only a function of
+the configuration variables, and there is one discrepancy regression model for
+each observable :math:`d_{i}` .
+This set of discrepancy
+models may be specified to be either Gaussian process or polynomial regression
+models of constant, linear, or quadratic order, and each model is fit to the
+calculated discrepancy values. See the
+:ref:`method-bayes_calibration-model_discrepancy-discrepancy_type<method-bayes_calibration-model_discrepancy-discrepancy_type>`
+command for more details regarding these options.
+For field responses, the model discrepancy is
+a function of the configuration variables as well as the independent field
+coordinates (such as time or space), and there is one discrepancy regression
+model for each field.
+In this case, the discrepancy models are Gaussian process models. The
+calculation of model discrepancy has not been tested for cases in which
+responses are mixed scalar and field responses.
+
+
+
+The user
+may then specify new or "prediction" configurations at which the corrected
+model :math:`M(\theta^*, x_{new}) + \delta(x_{new})`  should be calculated, using
+one of the ``num_prediction_configs``, ``prediction_configs``, or
+``import_prediction_configs`` keywords. If none of these keywords is specified,
+the number of prediction configurations is set to 10 for scalar responses.
+The corresponding prediction variances are also calculated, according to
+
+
+.. math:: 
+
+   \Sigma_{total}(x) = \Sigma_{\delta}(x) + \sigma^2_{exp}I.
+
+Here, :math:`\Sigma_{\delta}(x)`  is the (co)variance calculated from the
+Gaussian process or polynomial regression model, and :math:`\sigma^2_{exp}`  is
+the maximum variance, taken over all configuration variables for that
+observation. In the case of field responses, the default prediction
+configurations are set equal to the input configurations, and the variance
+information contains only the variance calculated from the Gaussian process
+correction model. Further details can be found in the Dakota User's and Theory
+Manuals.
+
+*Usage Tips*
+
+For field responses, the keyword
+:ref:`responses-calibration_terms-field_calibration_terms-read_field_coordinates<responses-calibration_terms-field_calibration_terms-read_field_coordinates>`
+<i>must</i> be specified when computing the model discrepancy. See
+:ref:`responses-calibration_terms-field_calibration_terms<responses-calibration_terms-field_calibration_terms>` for more information
+regarding options for calibration with field responses.
+
+*Expected Output*
+
+The resulting values of
+:math:`\delta(x_{new})`  will be exported to the file specified using
+``export_discrepancy_file`` or to the default file
+``dakota_discrepancy_tabular``.dat. The values of the corrected model at the
+specified prediction configurations will be exported to the file specified
+using ``export_corrected_model_file`` or to the default file
+``dakota_corrected_model_tabular``.dat, and the corresponding prediction
+variances will be exported to ``dakota_discrepancy_variance_tabular``.dat
+or the file specified with ``export_corrected_variance_file``.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

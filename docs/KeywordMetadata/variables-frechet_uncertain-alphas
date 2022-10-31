@@ -1,9 +1,0 @@
-Blurb::
-First parameter of the Frechet distribution
-Description::
-Specifies the list of \f$\alpha\f$ parameters to define the distributions of the Frechet random variables. Length must match the other parameters and the number of Frechet random variables.
-Topics::	
-Examples::
-Theory::
-Faq::
-See_Also::	

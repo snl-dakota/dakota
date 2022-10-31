@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 
 method,
 	model_pointer = 'HIERARCH'

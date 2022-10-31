@@ -1,0 +1,87 @@
+.. _releasenotes-40:
+
+""""""""""""""""""""""""
+Version 4.0 (2006/05/12)
+""""""""""""""""""""""""
+
+**Autotools**
+
+- Upgrade from Cygnus configure to the latest GNU autotools (e.g., autoconf, automake). This renders the configure/make system much more scalable to emerging platform build targets. It moves from a host/target-based approach to a feature-based approach, where configure probes are used to detect available compiler features. The 4.0 release supports our primary platform targets (Red Hat, Solaris, AIX, IRIX, and OSF). Continuing refinements to the new configuration system are planned, and future VOTD and interim releases will support Mac OSX, Cygwin, and mingw, among others.
+
+**JAGUAR and AMPL**
+
+- A JAVA front end for DAKOTA (JAGUAR) is now available. At the time of DAKOTA v4.0 release, JAGUAR is in 1.0 beta, but the basics of defining a DAKOTA input file are available. Future enhancements for graphical simulation interfacing and visualization of results are planned.
+- As part of supporting the JAGUAR equation editor capability, DAKOTA now supports an interface to the AMPL solver library. This allows for the use of algebraic problem definitions to define any subset of an Interface's mapping of Variables to Responses. The algebraic_mappings keyword specifies file names that define AMPL expression graphs, and the AMPL solver library processes the files to perform the algebraic mappings as well as evaluate any derivatives.
+
+**Framework enhancements:**
+
+- Addition of "model" as a sixth keyword specification block. This increases flexibility in model recursion for local and hierarchical surrogates (the previous approach of embedding the model recursion controls within the method specification was too restricting since no method is used in the construction of these surrogates). This specifically targets multifidelity and local Taylor-series based surrogate-based optimization where the surrogate models involve additional recursions (e.g., additional data fits or uncertainty analyses). This change is backwards compatible for simple (i.e., single method) input files, but is incompatible for more advanced multi-method input files such as SBO, OUU, RBDO, etc.
+- Migration of the previous approximation interface specification into the new surrogate model specification. This allows for the consolidation of previous layered model/approximation interface specification pairs (present in many SBO input files) into new surrogate model specifications. As there is no longer an application/approximation selection in the interface keyword, the application keyword has also been removed.
+- Active set generalization: application interfaces are now passed an additional derivative values vector (DVV) to specify the required derivative components. This is important for analytic gradients in optimization under uncertainty (see RBDO item below), but unfortunately, also defines a change in parameters file format which is not backwards compatible.
+- Addition of analysis_components to system and fork application interfaces. Again, this required extension of the parameters file format. Also consolidated the previous modelcenter_file specification within this new specification.
+- Revised dependency management to allow broader usage of global utilities. This particularly improves error handling in templated data types.
+- Introduced the use of std::set<> and std::map<>. With the removal of support for some old C++ compilers, these STL constructs have replaced many previous uses of std::list<> for evaluation bookkeeping.
+- Modified the creation mechanisms for Iterator/Model/Variables/Interface/Responses objects to cache new object creations and reuse them where appropriate. This reduces memory consumption in multi-Iterator/multi-Model strategies, and also supports evaluation counter persistence in reused Models and Interfaces. It does, however, require more sophisticated management of parallel configurations within the Model classes (since a single model may now be used in multiple parallel contexts). Iterators and Strategies now manage evaluation counters with explicit control over absolute or relative counts.
+- Expanded the problem description database class into a class hierarchy, with separation of generic parser operations and IDR-specific parser operations. An XML database (using Xerces plus the JAGUAR XML Schema) is envisioned for eventual addition to the hierarchy.
+- Added support for a much finer grain of evaluation reporting. This is needed for algorithmic performance analysis and is activated only for output = verbose or debug. Value/gradient/Hessian evaluation counters are used for each response function. This supplements the previous counters which only track total/new calls to Interface::map() and do not track the particular data requests for each call.
+- Library mode extensions: addition of new model/interface access functions, repair of model recursion access functions for altering envelope data, repair of parallel configuration initialization for interface plug-ins, addition of parallel configuration option for splitting intra-communicators down to a single processor (COMM_SPLIT_TO_SINGLE), and development of a sample interface plug-in class.
+
+**Iterative methods**
+
+- Update to JEGA v2.0, which adds convergence and niche pressure operators for MOGA, improved and configurable user output, improvements to core data structures, and numerous bug fixes.
+- Update to the latest version of OPT++, which adds namespace support and upgrades to NEWMAT11.
+- Update to the latest version of DDACE, which adds support for oa_lhs and one-way analysis of variance (ANOVA).
+- SGOPT methods have been deprecated and replaced with new COLINY methods. Most COLINY methods support general nonlinear constraints, and the COLINY GA supports mixed integer design variables.
+- Consolidation of specification (where possible) between JEGA and COLINY genetic algorithms.
+- All optimizers and least squares methods now support scaling in variables, linear constraints, and nonlinear constraints. Scaling may be user-specified characteristic value, by 2-sided bounds, or by 1-sided bounds.
+- Second-order integrations, second-order limit state approximations, two-point adaptive nonlinear limit state approximations (TANA-3), and second-order mean estimations are now supported for both RIA and PMA reliability methods. Second-order PMA uses a backtracking Newton solve to update the PMA reliability target given a second-order probability target. Hessians may be analytic, numerical, or based on quasi-Newton updates.
+- The uncertain variable specification has been extended to include new triangular, beta, gamma, Gumbel, Frechet, and interval distributions. The reliability methods have been extended to support gamma, Gumbel, Frechet, Weibull, uncorrelated loguniform, uncorrelated triangular, and uncorrelated beta distributions, and the nondeterministic sampling methods have been extended to include beta, gamma, and triangular distributions.
+- An initial sampling-based implementation of Dempster-Shafer theory of evidence is now available.
+- An interface to NLPQLP has been added. Thanks to Bengt Abel at BMW for providing the initial version.
+- Granularity has been added to the virtual Iterator functions to support additional abstract Iterator operations. The previous construct/run/destruct progression has been extended to a construct/pre_run/run/post_run/destruct progression.
+
+**Model components**
+
+- Previous versions of neural network, kriging, MARS, and regression polynomials have been deprecated and replaced with the initial release of Surfpack. Surfpack adds support for equality-constrained regression and will provide radial basis function approximations in the future.
+- Multipoint approximations are now supported in the Approximation hierarchy. The Two-point Adaptive Nonlinearity Approximation (TANA-3) has been added and may be invoked either as a general approximation method or as a special limit state approximation selection within reliability analysis.
+- Gaussian process global approximations are now supported in the Approximation hierarchy. This class utilizes OPT++ to solve for the approximation coefficients.
+- Approximation classes extended to support an anchor point, a special data point for which exact matching is enforced (e.g., using equality-constrained least squares). Data requirement estimation is now more consistent, through the estimation of the number of approximation coefficients, the number of constraints, and the data content per sample. Improved efficiency of SurrogateDataPoint lists by adopting a reference counting design and eliminating unnecessary data copying.
+- Migration of nonlinear constraint data from Iterator to Model in support of strategies (e.g., new homotopy constraint-relaxation in surrogate-based optimization) that modify nonlinear constraint bounds and targets. All Iterators now pull constraint data at run time such that any Model updates are properly captured.
+- Variables objects have been generalized to utilize a pair of variables views, one for the active view and another for the inactive view. This renders the classes more general and more encapsulated from external logic.
+- Response objects are now dynamically resized when DVV lengths are updated. Response objects now support derivatives with respect to either active or inactive continuous variables in a more direct and efficient manner. Derivative estimation and management in Model has been generalized to support dynamic derivative needs based on the current content of the DVV.
+- Addition of a direct interface to the MATLAB engine. This currently requires a dynamically linked DAKOTA executable.
+
+**Strategies**
+
+- Reliability-based design optimization (RBDO) now supports analytic sensitivities of reliability, probability, and response levels with respect to design variables that either augment the uncertain variables or define distribution parameters for the uncertain variables. This enables fully-analytic bi-level RBDO approaches.
+- The new model recursion and sensitivity capabilities described above enable a new capability for sequential RBDO using a trust-region surrogate-based approach. In this approach, reliability estimates and sensitivities are used to form surrogate contraints based on Taylor series. This approach is the most computationally efficient RBDO approach available in DAKOTA to date. First-order and quasi-Newton-based second-order Taylor series are currently supported.
+- The new model recursion facilities described above enable a new capability for multifidelity surrogate-based optimization in which the low fidelity model involves a data fit surrogate.
+- The surrogate-based optimization strategy has been extended to support iterate acceptance via a filter method, trust region ratio calculation via an augmented Lagrangian merit function, constraint relaxation via a homotopy method, and hard convergence assessment via nonnegative least squares Lagrange multiplier estimation. Lawson & Hanson least squares routines have been added for these Lagrange multiplier estimations. SBO with global data fits has been restructured to allow hard convergence checks prior to surrogate construction and passing of anchor points as embedded consistency constraints (this allows the surrogate to be constructed once per cycle with embedded consistency, rather than initially built, updated with the center, and then corrected).
+
+**Packages and Utilities**
+
+- GSL updated to version 1.7.
+- Epetra updated to version 3.4. This enables access to LAPACK serial dense eigensolvers (used in second-order probability integrations).
+- PLplot updated to version 5.5.2.
+- DPrePro updated to support more flexibility in parameters file formats and numerical field regular expression matching.
+- Extensions to the Perl regression testing tool (Dakota/test/sqa/dakota_test.perl) to support individual test extraction and execution.
+- A new Perl utility (Dakota/test/sqa/dakota_update_input.perl) is available for upgrading old v3.x input files to v4.0.
+- DAKOTA now supports a "dry run" mode, in which all parsing is performed and all objects are instantiated, but the analysis is not performed. This is selected using the new "-check" command line argument and is useful for checking input files for errors prior to parallel queue submission.
+
+**Documentation**
+
+- The DAKOTA Users Manual has been migrated from FrameMaker to LaTeX and is now managed in Dakota/docs. This simplifies the management of the Users Manual and will promote more regular updating.
+- SQE process documents updated to version 2.0.
+- Addition of example files for utilizing multilevel parallelism with concurrent mpiexec launches within a single PBS allocation.
+
+**Bug fixes**
+
+- Resolution of Bugzilla ids 1044, 1260, 1263, 1264, 1265, 1266, 1340, 1341, 1351, 1364, 1391, 1398, 1445, 1882, 1893, 1894, 1914, 1962, 1965, 1968, 2013, 2145, 2146, and 2161. A selected subset is listed below (emphasis on resolution of reported 3.3 issues).
+- Graphics windows and tabular data are now properly updated for Iterators which employ nonblocking synchronization (requires data caching until evaluation sequences are complete).
+- Corrected bug when using secondary file tagging with fork interfaces.
+- JEGA now properly configures processor allocations for message-passing parallelism.
+- Central composite and Box-Behnken designs of experiments, which are inflexible in their supported sample size, now support improved logic for managing user inputs, specification defaults, and minimum sample requirements.
+- population_size may now be specified independently from initialization_type in COLINY and JEGA genetic algorithms.
+- corrected SBO graphics and uninitialized additive correction arrays in the case of a multiplicative to additive on-the-fly correction switch (performed when numerical issues are encountered with multiplicative corrections).
+- corrected "random" keyword duplication in initialization_type and replacement_type for SGOPT/COLINY GAs.
+- protected sample statistics calculations (standard deviations and confidence intervals) for the case of only one sample.

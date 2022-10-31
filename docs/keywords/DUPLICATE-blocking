@@ -1,0 +1,26 @@
+Blurb::
+Complete concurrent evaluation of all evaluations within a batch
+Description::
+In the ``blocking`` case, all of the concurrent evaluations in the batch must be completed and all results are returned together to the algorithm.
+
+
+
+These runs are reproducible, assuming use of the same seed in cases with random number generation.
+Topics::
+
+Examples::
+
+- In the specific context of parallel pattern search, if the best of
+  these trial points is an improving point, then it becomes the next
+  iterate.
+
+- In the specific context of adaptive refinement of Gaussian process
+  (GP) models, all look-aheads are replaced with truth data and a new
+  set of refinement candidates can then be generated based on the
+  updated state of the GP.
+
+Theory::
+
+Faq::
+
+See_Also::

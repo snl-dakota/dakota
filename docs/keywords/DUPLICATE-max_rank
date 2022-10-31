@@ -1,0 +1,14 @@
+Blurb::
+Limits the maximum rank that is explored during a rank adaptation.
+Description::
+The ``adapt_rank`` procedure increments the rank on each iteration, and
+the maximum value is limited by ``max_rank``
+
+*Default Behavior*
+
+Max rank is unbounded (adaptive sweep will stop when CV error increases).
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

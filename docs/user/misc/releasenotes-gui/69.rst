@@ -1,0 +1,76 @@
+.. _releasenotes-gui-69:
+
+"""""""""""""""""""""""""""""""""""""""
+Version 6.9 - Frantic Factory (2018/11)
+"""""""""""""""""""""""""""""""""""""""
+
+**Highlights:**
+
+- All-new Dakota Study Wizard which guides you through a series of questions to configure a Dakota input file, including choosing an appropriate method.
+- Improved simulation inferfacing - Stronger interoperation between wizard-generated Python driver scripts, Next-Gen Workflow drivers, and Dakota studies generated using the New Dakota Study Wizard.
+- A variety of Dakota input file text editor enhancements, including completion proposals, alias recognition, more reliable error markers, and formatting options.
+- Next-Gen Workflow engine supports graphical plotting nodes.
+
+**Details:**
+
+- New Dakota Study Wizard
+
+  - The wizard supports a host of different data sources for generating Dakota studies.
+  - The wizard asks you a series of questions to help you choose a Dakota method.
+  - Some chosen methods are pre-populated with heuristic "getting started" settings for your study problem.
+  - The wizard has seamless support for both GUI-generated Python scripts and nested workflows as your study's target analysis driver.
+
+- Script-Based Dakota Driver Wizard (formerly Dakota-to-Python Interface Wizard)
+
+  - In addition to a Python driver script, this wizard now generates an "interface manifest" file (see below)
+  - Generated Python script can be configured to echo stdout of underlying simulation model, as well as prepend its stdout stream with Dakota run number information.
+
+- Nested Workflow for Dakota Driver Wizard:
+
+  - A new wizard that auto-populates a Next-Gen Workflow file with parameters and responses based on your Dakota study.
+
+- Interface Manifest Support
+
+  - Dakota GUI now accepts arbitrary drivers that define "interface manifest" files - that is, a file that formally states what input and output the driver expects to receive and send.  This interface manifest feature allows files to present themselves as Dakota drivers in multiple contexts, making for easier connection to multiple Dakota studies.
+  - Recognized driver formats now include:  Python scripts, SH and CSH scripts, Windows BAT scripts, Next-Gen Workflow files, Perl scripts, VBS scripts.
+  - "Recognize as Analysis Driver" context menu option for creating interface manifests for arbitrary files that should be recognized as Dakota drivers.
+
+- Dakota Text Editor
+
+  - Support for Eclipse completion proposals
+  - The Dakota text editor now reports errors for duplicate IDs
+  - The Dakota text editor now reports that multiple methods without IDs are ambiguous
+  - Better error markup for unrecognized keywords and unrecognized parameter list keywords.
+  - Text editor now observes both keyword aliases (i.e. alternate keywords according to the Dakota grammar) and partial, non-ambiguous keywords (within reason)
+  - Defaults for Dakota text file indentation & quote type are configurable in the Preferences dialog
+
+- Project Navigator View
+
+  - "Add Keyword" context menu option for Dakota input files
+
+- Next-Gen Workflow
+
+  - "Expert mode" flag added to DakotaNode.  Leaving unchecked allows nested workflows to run with fewer nodes.
+  - Most Chartreuse plot types supported as Next-Gen Workflow nodes.
+  - Changed DakotaNode’s "search order" for the location of the runtime workflow install directory.
+
+- Chartreuse (aka Integrated plotly.js Plotting)
+
+  - Support for contour plots
+  - Plot data providers inform the plotting dialogs about completeness of data
+  - The Dakota plot data provider now sets reasonable defaults for simple cases.
+
+- Dakota Console
+
+  - Errors related to launching Dakota from the GUI are now explicitly shown via pop-up dialogs.
+
+- Misc.
+
+  - More robust behavior around resolving the path to Dakota at launch time.
+  
+**Bugfixes:**
+
+- Script-Based Dakota Driver Wizard:  Feature to auto-substitute new interface block into Dakota input file is no longer broken.
+- Dakota Text Editor:  The Dakota text editor now scopes variable duplicate checking to be per-block.
+- Dakota Console:  Output and error streams no longer interleave characters together.
+- Project Navigator View:  Fixed bug where navigator view of Dakota input file wouldn't always update on a change to the text.

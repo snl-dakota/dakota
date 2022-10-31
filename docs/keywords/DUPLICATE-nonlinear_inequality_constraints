@@ -1,0 +1,40 @@
+Blurb::
+Group to specify nonlinear inequality constraints
+Description::
+Specifies the number of nonlinear inequality constraint functions
+returned by the interface.
+
+The ``lower_bounds`` and ``upper_bounds`` specifications provide the
+lower and upper bounds for 2-sided nonlinear inequalities of the form
+
+.. math:: g_l \leq g(x) \leq g_u
+
+When constraint bounds are not specified, the problem is assumed to
+have one-sided inequalities bounded above by zero:
+
+.. math:: g(x) \leq 0.0.
+
+This provides backwards compatibility with previous Dakota versions.
+
+In a user bounds specification, any upper bound values greater than
+````+bigRealBoundSize (1.e+30, as defined in Minimizer) are treated as
++infinity and any lower bound values less than ``-bigRealBoundSize``
+are treated as -infinity. This feature is commonly used to drop one of
+the bounds in order to specify a 1-sided constraint (just as the
+default lower bounds drop out since ``-DBL_MAX`` <
+
+``-bigRealBoundSize``). The same approach is used for nonexistent linearinequality bounds and for nonexistent design variable bounds.
+
+The ``scale_types`` and ``scales`` keywords are related to scaling of
+:math:`g \left( x \right)` .  See the scaling information under
+specific methods, e.g., method-\*-scaling for details on how to use
+this keyword.
+Topics::
+nonlinear_constraints
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

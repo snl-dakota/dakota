@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s0: ReqFiles=oscillatorC.1.dat,oscB_scalar.summary
 
 # DP-171: Test calibration with fields, data, and transforms

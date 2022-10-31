@@ -593,13 +593,13 @@ compute_covariance_metric(bool revert, bool print_metric)
     switch (covarianceControl) {
     case DIAGONAL_COVARIANCE:
       if (relativeMetric) // norm of reference variance, bounded from zero
-	scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
+	scale = std::max(Pecos::SMALL_NUMBER_SQ, respVariance.normFrobenius());
       compute_delta_variance(update_ref, print_metric);
       delta_norm = deltaRespVariance.normFrobenius();
       break;
     case FULL_COVARIANCE:
       if (relativeMetric) // norm of reference covariance, bounded from zero
-	scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
+	scale = std::max(Pecos::SMALL_NUMBER_SQ, respCovariance.normFrobenius());
       compute_delta_covariance(update_ref, print_metric);
       delta_norm = deltaRespCovariance.normFrobenius();
       break;

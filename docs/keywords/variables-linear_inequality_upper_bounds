@@ -1,0 +1,35 @@
+Blurb::
+Define upper bounds for the linear inequality constraint
+
+Description::
+In the inequality case, the lower :math:`a_l`  and upper :math:`a_u`  bounds provide constraint limits for the two-sided formulation:
+
+.. math:: a_l \leq Ax \leq a_u
+
+Where :math:`A`  is the constrain matrix of variable coefficients.
+
+As with nonlinear inequality constraints (see :ref:`responses-objective_functions<responses-objective_functions>`), the
+default linear inequality constraint bounds are selected so that one-sided inequalities of the form
+
+.. math:: Ax \leq 0.0
+
+result when there are no user bounds specifications (this provides backwards compatibility with previous Dakota versions).
+
+In a user bounds specification, any upper bound values greater than
+``+bigRealBoundSize`` (1.e+30, as defined in Minimizer) are treated as
++infinity and any lower bound values less than ``-bigRealBoundSize``
+are treated as -infinity.
+
+This feature is commonly used to drop one of the bounds in order to specify a 1-sided constraint (just as the default lower bounds drop out since ``-DBL_MAX`` < ``-bigRealBoundSize``).
+
+Topics::
+linear_constraints
+
+Examples::
+Examples of specifying linear inequality constraints to Dakota are provided on the :ref:`variables-linear_inequality_constraint_matrix<variables-linear_inequality_constraint_matrix>` page.
+
+Theory::
+
+Faq::
+
+See_Also::

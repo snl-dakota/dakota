@@ -1,5 +1,3 @@
-#@ s*: Label=FastTest
-#@ p*: Label=FastTest
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=3
 #@ s*: TimeoutAbsolute=3600

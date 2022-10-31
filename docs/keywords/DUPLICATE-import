@@ -1,0 +1,16 @@
+Blurb::
+Importance sampling option for probability refinement
+Description::
+``import`` centers a sampling
+density at one of the initial LHS samples identified in the failure region.
+It then generates the importance samples, weights them by their probability of occurence
+given the original density, and calculates the required probability (CDF or CCDF level).
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

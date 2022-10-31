@@ -1,0 +1,14 @@
+Blurb::
+The increment in rank employed during each iteration of the rank adaptation.
+Description::
+The ``adapt_rank`` procedure increments the rank on each iteration, using an
+increment defined by ``kick_rank``
+
+*Default Behavior*
+
+Default is 1.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

@@ -46,7 +46,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
-  backfillFlag(probDescDB.get_bool("method.backfill")),
+  backfillDuplicates(probDescDB.get_bool("method.backfill")),
   wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0)
 {
   // pushed down as some derived classes (MLMC) use a MC default
@@ -119,8 +119,8 @@ NonDSampling(unsigned short method_name, Model& model,
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
   sampleType(sample_type), wilksFlag(false), samplesIncrement(0),
   statsFlag(false), allDataFlag(true), samplingVarsMode(sampling_vars_mode),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern), backfillFlag(false),
-  numLHSRuns(0)
+  sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern),
+  backfillDuplicates(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -154,7 +154,7 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
   numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
   samplesIncrement(0), statsFlag(false), allDataFlag(true),
   samplingVarsMode(ACTIVE_UNIFORM), sampleRanksMode(IGNORE_RANKS),
-  varyPattern(true), backfillFlag(false), numLHSRuns(0)
+  varyPattern(true), backfillDuplicates(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -180,7 +180,7 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
   numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
   samplesIncrement(0), statsFlag(false), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS), varyPattern(true),
-  backfillFlag(false), numLHSRuns(0)
+  backfillDuplicates(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -202,7 +202,7 @@ NonDSampling(Model& model, const RealMatrix& sample_matrix):
   samplesSpec(sample_matrix.numCols()), sampleType(SUBMETHOD_DEFAULT),
   wilksFlag(false), samplesIncrement(0), statsFlag(true), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS),
-  varyPattern(false), backfillFlag(false), numLHSRuns(0)
+  varyPattern(false), backfillDuplicates(false), numLHSRuns(0)
 {
   allSamples = sample_matrix; compactMode = true;
   samplesRef = numSamples = samplesSpec;
@@ -319,7 +319,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
   case ACTIVE: { // utilize model view to sample active variables
     Pecos::MultivariateDistribution& mv_dist
       = model.multivariate_distribution();
-    if (backfillFlag)
+    if (backfillDuplicates)
       lhsDriver.generate_unique_samples(mv_dist.random_variables(),
 	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
 	mv_dist.active_variables(), mv_dist.active_correlations());
@@ -338,7 +338,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
     mode_bits(model.current_variables(), active_vars, active_corr);
     Pecos::MultivariateDistribution& mv_dist
       = model.multivariate_distribution();
-    if (backfillFlag)
+    if (backfillDuplicates)
       lhsDriver.generate_unique_samples(mv_dist.random_variables(),
 	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
 	active_vars, active_corr);
@@ -1669,7 +1669,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	for (j=0; j<rl_len; j++, ++cntr) {
 	  // *** beta
 	  Real z_bar = requestedRespLevels[i][j];
-	  if (stdev > Pecos::SMALL_NUMBER)
+	  if (!Pecos::is_small(stdev))
 	    computedRelLevels[i][j] = (cdfFlag) ?
 	      (mean - z_bar)/stdev : (z_bar - mean)/stdev;
 	  else
@@ -1679,7 +1679,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	  // *** beta gradient
 	  if (final_asv[cntr] & 2) {
 	    RealVector beta_grad = finalStatistics.function_gradient_view(cntr);
-	    if (stdev > Pecos::SMALL_NUMBER) {
+	    if (!Pecos::is_small(stdev)) {
 	      for (k=0; k<num_deriv_vars; ++k) {
 		Real stdev_grad = (central_mom) ?
 		  mom2_grad[k] / (2.*stdev) : mom2_grad[k];

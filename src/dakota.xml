@@ -4641,7 +4641,7 @@
           <keyword  id="initial_point2" name="initial_point" code="{N_vam(ivec,discreteDesignSetIntVars)}" label="Initial point"  minOccurs="0" default="middle set value, or rounded down" >
             <param type="INTEGERLIST" constraint="LEN integer" />
           </keyword>
-          <keyword  id="descriptors2" name="descriptors" code="{N_vam(strL,discreteDesignSetIntLabels)}" label="Descriptors"  minOccurs="0" >
+          <keyword  id="descriptors2" name="descriptors" code="{N_vam(strL,discreteDesignSetIntLabels)}" label="Descriptors"  minOccurs="0" default="ddsiv_{i}">
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
@@ -4661,7 +4661,7 @@
           <keyword  id="initial_point3" name="initial_point" code="{N_vam(strL,discreteDesignSetStrVars)}" label="Initial point"  minOccurs="0" default="middle set value, or rounded down" >
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
-          <keyword  id="descriptors3" name="descriptors" code="{N_vam(strL,discreteDesignSetStrLabels)}" label="Descriptors"  minOccurs="0" >
+          <keyword  id="descriptors3" name="descriptors" code="{N_vam(strL,discreteDesignSetStrLabels)}" label="Descriptors"  minOccurs="0"  default="ddssv_{i}" >
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
@@ -4684,7 +4684,7 @@
           <keyword  id="initial_point4" name="initial_point" code="{N_vam(rvec,discreteDesignSetRealVars)}" label="initial_point"  minOccurs="0" default="middle set value, or rounded down" >
             <param type="REALLIST" constraint="LEN real" />
           </keyword>
-          <keyword  id="descriptors4" name="descriptors" code="{N_vam(strL,discreteDesignSetRealLabels)}" label="Descriptors"  minOccurs="0" >
+          <keyword  id="descriptors4" name="descriptors" code="{N_vam(strL,discreteDesignSetRealLabels)}" label="Descriptors"  minOccurs="0"  default="ddsrv_{i}" >
             <param type="STRINGLIST" constraint="LEN real" />
           </keyword>
         </keyword>

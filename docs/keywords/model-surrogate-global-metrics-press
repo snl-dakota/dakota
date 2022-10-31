@@ -1,0 +1,15 @@
+Blurb::
+Leave-one-out cross validation
+Description::
+Leave-one-out (PRESS) cross validation may be performed by specifying
+``press``.  The cross-validation statistics will be calculated for all
+metrics.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

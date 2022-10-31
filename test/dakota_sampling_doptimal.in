@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # Tests for D-optimal sampling
 # Currently only support aleatory variables
 # With Leja option, only support continuous aleatory variables

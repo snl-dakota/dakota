@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s*: ReqFiles=dcfc_scalar.dat,dcfc_field.1.dat,dcfc_field.2.dat,dcfc_field.3.dat
 
 # DP-497: Test calibration with fields, data, and nonlinear constraints

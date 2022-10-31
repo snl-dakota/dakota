@@ -1,0 +1,92 @@
+.. _releasenotes-54:
+
+""""""""""""""""""""""""
+Version 5.4 (2013/11/15)
+""""""""""""""""""""""""
+
+**Highlights**
+
+- New OptDarts for global optimization: New optimization algorithm, in the spirit of DIRECT, but based on dart-throwing concepts (as in Dakota's POF-DARTS). OptDarts decomposes the parameter domain into spherical regions, instead of the hyper-rectangles of DIRECT, which should result in better scalability for optimization in higher-dimensions.
+- Parallel configuration logic revamped to better account for user overrides (number of servers, processors per server, scheduling approach) for each parallelism level and partition constraints (minimum and maximum allowable partition sizes) defined from the aggregation of levels. New use cases (peer dynamic scheduling, excess idle servers) are supported and previous error cases (multiprocessor fork/system) are now handled more gracefully.
+- New global optimizer OptDarts. Similar to the DIRECT method, but decomposes parameter space into spherical regions rather than rectangles, resulting in better scaling in high-dimensional optimization.
+- Improved capability for importance sampling. Variables from any distribution can be used in importance sampling, including variables with bounded and unbounded distributions.
+- Reference Manual overhaul. The Reference Manual has been reformatted and organized by keyword and topic. Each keyword has a separate page with description, and search capability has been added.
+- Retirement of the 'strategy' block in Dakota input files. Dakota is undergoing changes to improve parallelism in advanced model recursions (optimization under uncertainty, mixed aleatory/epistemic UQ). Dakota 6.0 incorporates the first phase. The strategy block has been eliminated, with some of its functionality moving to a new 'environment' block, and some moving to new meta-iterator methods. This refactor also improves library interfaces.
+
+**Uncertainty Quantification (UQ)**
+
+- Critical bug fix with UQ methods on native windows due to Teuchos copy ctor
+- Suppress Sobol index output when variance is negligible.
+- Initial point specification for uncertain variables, allows local reliability to specify initial point.
+- Improved capability for importance sampling, typically used to refine an initial set of samples for failure probability estimation in global or local reliability methods or polynomial chaos, though can also be used in standalone mode (importance_sampling followed by import, adapt_import, or mm_adapt_import). The improvements allow variables from any distribution (not solely normal distributions) in importance sampling, including variables with bounded and unbounded support as well as better treatment of small failure probabilities.
+- Significant improvements to aleatory post-processing based UQ for use in probability of failure calculations with external post-processing.
+
+**Optimization and Calibration**
+
+- Bayesian methods: update to new QUESO APIs and support additional algorithm options. Improve QUESO integration, management of GSL, and default deployment of DREAM.
+- OPT++ (i.e., optpp_* methods) Improvements
+
+  - Rectified the incomplete implementation of optpp_fdnewton in OPT++ when bound constraints are present.
+  - Vendor numerical gradients for OPT++ methods now respect bound constraints.
+
+**Methods (general)**
+
+- ENH: significant improvement in number of responses treatable by surrogates in general and PCE/SC in particular, also performance improvements.
+
+**Framework**
+
+- Significant change to Dakota's library interface, including examples and documentation. Library clients can now instantiate and interact through a single LibraryEnvironment object, together with their traditional plugin DirectApplicInterface.
+
+*Input/Output*
+
+- Refactor of approximation hierarchies in Pecos and Dakota to share approximation data in order to improve scalability with respect to the number of response quantity of interest. In benchmark testing, up to 2x reduction in memory footprint and up to 20x reduction in run time.
+- Tolerance-based evaluation cache. Improves the portability of restart files.
+- Surrogate data export now accounts for transformations, so that variables and approximate response data are exported in the original un-transformed space.
+- Allow tabular import for PCE coefficient/index set data PCE import capability to allow for any expansion formulation by utilizing import of both coefficients and expansion term multi-index. Also add support for corresponding PCE coefficient export. Including tensor grid regression case.
+- New restart capability based on Boost serialization, also correct bugs with managing multiple restart files and restart in cases with multiple interfaces.
+
+*Interfaces*
+
+- Tolerance-based evaluation cache check to allow near matches when reading restart
+
+*Build System / TPLs*
+
+- Compiled and tested Dakota on BlueGene/Q platforms.
+- Always enable Dakota plugin interfaces and enable/test DLL interfaces on all platforms.
+- Automatically embed version and build information from build time into binaries.
+- Improved test coverage on native Windows, including compiling Python interface
+
+**User Experience**
+
+**Miscellaneous Enhancements**
+
+- ENH: Make detection of analysis_drivers more tolerant of executable file extensions allowed on Windows via PATHEXT environment variable.
+
+*Build / Test System*
+
+- ENH: Initial capability for export Makefile to support library integrators.
+- ENH: Reorganize and simplify Dakota repo to use fewer externals and no file level externals
+
+*Examples / Tests*
+
+- ENH: Add scalable direct test problems: Genz corner peak and oscillatory functions.
+- ENH: Add V&V tank problems for community challenge workshop
+
+*Methods*
+
+- ENH: JEGA SOGA now returns the best feasible solution instead of the best fitness solution as the best fitness solution might not be feasible.
+- ENH: output of the number of grid samples for PCE and SC when dakota is in -check mode.
+
+**Miscellaneous Bug Fixes**
+
+- BUG: Address issues to allow surrogates to be built and evaluated over different variable spaces.
+- BUG: Fixed inverted indexing of functionGradients in ResponseRep::{read,write}_data()
+- BUG: AIS omissions: final statistics update and support for asynchronous sample batch execution
+- BUG: SC all-variables: (a) re-interpolation weight array updates, (b) variance reuse (partial variance moment output hidden by total_variance if VBD), and (c) VBD (wrong total_mean in partial variance reference point)
+- BUG: Rework computed moment tracking to allow for mixed std/all mode invocations, such as required for all-variables VBD (VBD uses full integration, which was conflicting with partial integrations for SC moments).
+- BUG: Fixed error with update of high fidelity model when computing model discrepancy in parallel
+- BUG: Fixed GP with (only) discrete variables
+- BUG: Address native Windows compilation issues for DLL API
+- BUG: Resolve a number of compiler warnings with system functions and string literals in legacy APIs.
+
+**Known Limitations**

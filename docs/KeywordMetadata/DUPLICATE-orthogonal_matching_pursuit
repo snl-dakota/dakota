@@ -1,9 +1,0 @@
-Blurb::
-Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)
-Description::
-Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP). Orthogonal matching pursuit (OMP) is a greedy algorithm that is usefult when solving underdetermined linear systems.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	

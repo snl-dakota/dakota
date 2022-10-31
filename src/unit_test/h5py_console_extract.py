@@ -10,9 +10,38 @@
 import os
 import subprocess
 import re
+import sys
 import copy
 from collections import OrderedDict
 import numpy as np
+import h5py
+
+
+# Beginning with version 3 of h5py, h5py returns strings as byte strings.
+# The asstr() accessor must be used to convert a dataset to Python
+# strings.
+def _h5py_ver_2_ds_strings(ds):
+    return [i for i in ds]
+
+
+def _h5py_ver_2_np_strings(a):
+    return a 
+
+
+def _h5py_ver_3_ds_strings(ds):
+    return [i for i in ds.asstr()]
+
+
+def _h5py_ver_3_np_strings(a):
+    return [i.decode('utf-8') for i in a]
+
+
+if h5py.version.version_tuple.major >= 3:
+    h5py_strings = _h5py_ver_3_ds_strings
+    numpy_strings = _h5py_ver_3_np_strings
+else:
+    h5py_strings = _h5py_ver_2_ds_strings
+    numpy_strings = _h5py_ver_2_np_strings
 
 ## Capture the output here, once.
 __OUTPUT = ""
@@ -81,7 +110,7 @@ def extract_equiv_num_hf_evals():
     global __OUTPUT
     lines_iter = iter(__OUTPUT)
     for line in lines_iter:
-        if line.startswith("<<<<< Equivalent number of high fidelity evaluations:"):
+        if line.startswith("<<<<< Online number of equivalent high fidelity evaluations:"):
             msg, val = line.split(':')
             return float(val)
     return None
@@ -631,7 +660,7 @@ def read_restart_file(restart_file):
             data["metadata"][d].append(r)
     return data
 
-              
+          
 def run_dakota(input_file):
     """Run Dakota on the input_file and capture output
 

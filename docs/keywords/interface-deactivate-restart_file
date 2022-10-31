@@ -1,0 +1,23 @@
+Blurb::
+Deactivate writing to the restart file
+Description::
+Eliminate the output of each new function evaluation to the binary
+restart file. This can increase speed and reduce disk storage
+requirements, but at the expense of a loss in the ability to recover
+and continue a run that terminates prematurely (e.g., due to a system
+crash or network problem).
+
+*Usage Tips*
+
+
+- This option is not recommended when function evaluations are     costly or prone to failure.
+- Using the ``deactivate`` ``restart_file`` specification will result     in a zero length restart file with the default name ``dakota``.rst.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

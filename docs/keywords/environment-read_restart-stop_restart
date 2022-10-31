@@ -1,0 +1,15 @@
+Blurb::
+Restart record number at which to stop reading the restart file.
+Description::
+This option is overridden by any command-line
+
+-stop_restart option.
+Topics::
+dakota_IO
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

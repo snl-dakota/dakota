@@ -265,7 +265,7 @@ The following are instructions for building Dakota on a Unix-like platform
 in a Bash shell. You may need to use appropriate commands to work for your
 particular platform or shell.
 
-1. Install CMake 3.12 (or later) and ensure it is in your $PATH.
+1. Install CMake 3.17 (or later) and ensure it is in your $PATH.
 
 2. Extract Dakota source archive file. In the example below, Dakota will
    be extracted into the user's home directory, /home/username. 
@@ -286,10 +286,10 @@ particular platform or shell.
    $ export DAK_BUILD=/path/to/Dakota/build/directory
    
 4. Make a copy of the template BuildDakotaTemplate.cmake to customize a CMake
-   Dakota build for our platform. Keep file in the $DAK_SRC/cmake directory 
+   Dakota build for your platform. Keep file in the $DAK_SRC/cmake directory 
    to use for subsequent Dakota CMake builds.
 
-   $ cp $DAK_SRC/cmake/BuildDakotaTemplate.cmake \
+   $ cp $DAK_SRC/cmake/examples/BuildDakotaTemplate.cmake \
         $DAK_SRC/cmake/BuildDakotaCustom.cmake
 
 5. Update $DAK_SRC/cmake/BuildDakotaCustom.cmake file to reflect your platform

@@ -1,0 +1,19 @@
+Blurb::
+Stopping critiera based on L2 norm of gradient
+Description::
+The ``gradient_tolerance`` control defines the
+threshold value on the L2 norm of the objective function gradient
+(for unconstrained minimum or no active constraints) or the
+Lagrangian gradient (for constrained minimum) that
+indicates convergence to a stationary point.
+The ``gradient_tolerance`` control is currently defined
+only for the OPT++ and ROL libraries.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

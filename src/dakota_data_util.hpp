@@ -17,6 +17,7 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/functional/hash/hash.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
 #include <boost/regex.hpp>
 #include <algorithm>
 #include "Teuchos_SerialDenseHelpers.hpp"
@@ -1288,7 +1289,7 @@ template <typename OrdinalType, typename ScalarType>
 inline ScalarType find_min(
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec)
 {
-  size_t i, len = vec.length();
+  OrdinalType i, len = vec.length();
   ScalarType min = (len) ? vec[0] : std::numeric_limits<ScalarType>::max();
   for (i=1; i<len; ++i)
     if (vec[i] < min)
@@ -1297,12 +1298,11 @@ inline ScalarType find_min(
 }
 
 
-template <typename ScalarType>
-inline ScalarType find_min(const ScalarType* vec, size_t len)
+template <typename OrdinalType, typename ScalarType>
+inline ScalarType find_min(const ScalarType* vec, OrdinalType len)
 {
-  size_t i;
   ScalarType min = (len) ? vec[0] : std::numeric_limits<ScalarType>::max();
-  for (i=1; i<len; ++i)
+  for (OrdinalType i=1; i<len; ++i)
     if (vec[i] < min)
       min = vec[i];
   return min;
@@ -1325,9 +1325,20 @@ template <typename OrdinalType, typename ScalarType>
 inline ScalarType find_max(
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec)
 {
-  size_t i, len = vec.length();
+  OrdinalType i, len = vec.length();
   ScalarType max = (len) ? vec[0] : std::numeric_limits<ScalarType>::min();
   for (i=1; i<len; ++i)
+    if (vec[i] > max)
+      max = vec[i];
+  return max;
+}
+
+
+template <typename OrdinalType, typename ScalarType>
+inline ScalarType find_max(const ScalarType* vec, const OrdinalType len)
+{
+  ScalarType max = (len) ? vec[0] : std::numeric_limits<ScalarType>::min();
+  for (OrdinalType i=1; i<len; ++i)
     if (vec[i] > max)
       max = vec[i];
   return max;
@@ -1504,6 +1515,36 @@ inline bool contains(const DakContainerType& v,
                      const typename DakContainerType::value_type& val)
 {
   return ( std::find(v.begin(), v.end(), val) != v.end() ) ? true : false;
+}
+
+
+/// Random shuffle with C++17 shuffle API, but using Boost for portability
+/*
+   Should be portable for a given version of Boost, when passing either a std
+   or boost URBG, such as mt19937.
+
+   Taken from reference implementation example at
+   https://en.cppreference.com/w/cpp/algorithm/random_shuffle, which is similar
+   to the libc++ implementation (and perhaps less optimized than libstdc++).
+
+   RATIONALE: While the Mersenne Twister and other RNGs are cross-platform
+   deterministic, shuffle and uniform_int_distribution themselves have
+   implementation details that vary. Using the boost uniform_int_distribution
+   with a custom shuffle stabilizes this for a given Boost version.
+*/
+template<class RandomIt, class URBG>
+void rand_shuffle(RandomIt first, RandomIt last, URBG&& g)
+{
+  typedef typename std::iterator_traits<RandomIt>::difference_type diff_t;
+  // uses the Boost distribution from cross-platform portability (though may
+  // change between Boost versions)
+  typedef boost::random::uniform_int_distribution<diff_t> distr_t;
+  typedef typename distr_t::param_type param_t;
+
+  distr_t D;
+  diff_t n = last - first;
+  for (diff_t i = n-1; i > 0; --i)
+      std::swap(first[i], first[D(g, param_t(0, i))]);
 }
 
 

@@ -1,0 +1,38 @@
+Blurb::
+Computes statistics according to complementary cumulative functions
+Description::
+Statistics on model responses will be computed according to a
+complementary cumulative distribution/belief/plausibility function.
+
+*Default Behavior*
+
+By default, a complementary cumulative
+distribution/belief/plausibility function will not be used.  To change
+that behavior, the ``complementary`` keyword must be appear in
+conjunction with the ``distribution`` keyword.
+
+*Expected Outputs*
+
+Output will be a set of model response-probability pairs determined
+according to a complementary cumulative
+distribution/belief/plausibility function.  The probabilities reported
+are the probabilities that the model response falls above given
+response threshholds.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type lhs
+        samples = 10
+        distribution complementary
+
+
+Theory::
+
+Faq::
+
+See_Also::

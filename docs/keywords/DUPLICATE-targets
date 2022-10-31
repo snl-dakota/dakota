@@ -1,0 +1,22 @@
+Blurb::
+Target values for the nonlinear equality constraint
+Description::
+The ``targets`` specification provides the targets for nonlinear
+equalities of the form
+
+.. math:: g(x) = g_t
+
+and the defaults for the equality targets enforce a value of ``0``.0
+for each constraint:
+
+.. math:: g(x) = 0.0
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

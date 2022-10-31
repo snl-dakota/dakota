@@ -1,0 +1,42 @@
+Blurb::
+File containing points you wish to use to build a surrogate
+Description::
+The ``import_build_points_file`` allows the user to specify a file that
+contains a list of points and truth model responses used to construct
+a surrogate model.  These can be used by all methods that (explicitly,
+e.g. surrogate-based optimization, or implicitly, e.g. efficient
+global optimization) operate on a surrogate.  In particular, these
+points and responses are used in place of truth model evaluations to
+construct the initial surrogate.  When used to construct surrogate
+models or emulators these are often called build points or training
+data.
+
+*Default Behavior*
+
+By default, methods do not import points from a file.
+
+*Usage Tips*
+
+Dakota parses input files without regard to whitespace, but the
+import_build_points_file must be in one of three formats:
+
+- ``annotated`` (default)
+- ``custom_annotated``
+- ``freeform``
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      polynomial_chaos
+        expansion_order = 4
+        import_build_points_file = 'dakota_uq_rosenbrock_pce_import.annot.pts.dat'
+
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -19,7 +19,9 @@
 #include "PHXCppApi.h"
 #endif
 #include <boost/tokenizer.hpp>
+// Using Boost MT since need it anyway for dist
 #include "dakota_mersenne_twister.hpp"
+// Using Boost dist for cross-platform stability
 #include <boost/random/normal_distribution.hpp>
 #include <boost/assign.hpp>
 #include <vector>

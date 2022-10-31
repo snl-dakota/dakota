@@ -1,0 +1,25 @@
+Blurb::
+Number of candidate sampling designs from which to select the most D-optimal
+Description::
+Dakota will generate ``candidate_designs`` using the specified sampling
+strategy and select the one that is more determinant-optimal
+(D-optimal)
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        samples = 20
+        d_optimal
+          candidate_designs = 500
+
+
+Theory::
+
+Faq::
+
+See_Also::

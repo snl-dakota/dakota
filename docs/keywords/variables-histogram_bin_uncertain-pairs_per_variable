@@ -1,0 +1,16 @@
+Blurb::
+Number of pairs defining each histogram bin variable
+Description::
+By default, the list of ``abscissas`` and ``counts`` or ``ordinates``
+will be evenly divided among the ``histogram_bin_uncertain``
+variables. ``pairs_per_variable`` is a list of integers that specify
+the number of pairs to apportion to each variable.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

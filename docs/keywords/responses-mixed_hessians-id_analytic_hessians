@@ -1,0 +1,20 @@
+Blurb::
+Identify which analytical Hessian corresponds to which response
+Description::
+The ``id_analytic_hessians`` list
+specifies by number the functions which have analytic Hessians, and
+the ``id_numerical_hessians`` and ``id_quasi_hessians`` lists specify by
+number the functions which must use numerical Hessians and
+secant Hessian updates, respectively. Each function identifier,
+from 1 through the total number of functions, must appear once and
+only once within the union of the ``id_analytic_hessians``,
+``id_numerical_hessians``, and ``id_quasi_hessians`` lists.
+Topics::
+objective_function_pointer
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,9 +1,0 @@
-Blurb::
-Calculate the coefficients of a polynomial chaos expansion using the singular value decomposition.
-Description::
-Calculate the coefficients of a polynomial chaos expansion using the singular value decomposition. When the number of model runs exceeds the number of terms in the PCE, the solution returned will be the least-squares solution, otherwise the solution will be the minimum norm solution computed using the pseudo-inverse.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	

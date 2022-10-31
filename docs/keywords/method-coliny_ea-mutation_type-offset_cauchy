@@ -1,0 +1,13 @@
+Blurb::
+Use a Cauchy distribution for the mutation offset
+Description::
+The ``offset_cauchy`` type is an "offset" mutation that adds a 0-mean random variable with a cauchy distribution to the existing coordinate value. The offset is limited in magnitude by ``mutation_scale``.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

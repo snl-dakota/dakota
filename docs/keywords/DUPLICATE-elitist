@@ -1,0 +1,20 @@
+Blurb::
+Use the best designs to form a new population
+Description::
+The ``elitist`` (default) setting creates a new population using (a)
+the ``replacement_size`` best individuals from the current population,
+(b) and ``population_size`` - ``replacement_size`` individuals randomly
+selected from the newly generated individuals.  It is possible in this
+case to lose a good solution from the newly generated individuals if
+it is not randomly selected for replacement; however, the default
+``new_solutions_generated`` value is set such that the entire set of newly
+generated individuals will be selected for replacement.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

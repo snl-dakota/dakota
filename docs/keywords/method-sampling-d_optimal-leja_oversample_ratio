@@ -1,0 +1,30 @@
+Blurb::
+Oversampling ratio for generating candidate point set
+Description::
+When generating a D-Optimal point set of size N, the
+``oversample_ratio`` R controls the number of candidate points R x N from
+which the D-Optimal points are chosen.
+
+*Default Behavior*
+
+The default when not specified is to perform candidate-based sample
+design selection (non-Leja)
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type random
+        samples = 20
+        d_optimal
+          oversample_ratio = 2.0
+
+
+Theory::
+
+Faq::
+
+See_Also::

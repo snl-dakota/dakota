@@ -1,0 +1,35 @@
+Blurb::
+Reuses the same seed value for multiple random sampling sets
+Description::
+The ``fixed_seed`` flag is relevant if multiple sampling sets will be
+generated over the coarse of a Dakota analysis. This occurs when using
+advance methods (e.g., surrogate-based optimization, optimization
+under uncertainty).  The same seed value is reused for each of these
+multiple sampling sets, which can be important for reducing
+variability in the sampling results.
+
+*Default Behavior*
+
+The default behavior is to not use a fixed seed, as the repetition of
+the same sampling pattern can result in a modeling weakness that an
+optimizer could potentially exploit (resulting in actual reliabilities
+that are lower than the estimated reliabilities).  For repeatable
+studies, the ``seed`` must also be specified.
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type lhs
+        samples = 10
+        fixed_seed
+
+
+Theory::
+
+Faq::
+
+See_Also::

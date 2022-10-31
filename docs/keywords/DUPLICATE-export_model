@@ -1,0 +1,58 @@
+Blurb::
+Exports surrogate model in user-specified format(s)
+Description::
+Export the surrogate for later re-import to Dakota or evaluation using
+the surfpack exectuable ( ``bin/surfpack``) or a user-developed
+tool. Export format is controlled using the ``formats``
+specification. Four formats are available in Dakota; however, not all
+have been enabled for all surrogates.
+
+The four formats are:
+
+
+- ``text_archive`` - Plain-text, machine-readable archive for re-import or use with the surfpack executable
+
+- ``binary_archive`` - Binary, machine-readable archive for re-import or use with the surfpack executable
+
+- ``algebraic_file`` - Plain-text, human-readable file intended for use with user-created tools; not compatible with Dakota or the surfpack executable
+
+- ``algebraic_console`` - Print the model in algebraic format to the screen; not compatible with Dakota or the surfpack executable
+
+
+These global surrogates can be exported in all four formats:
+
+
+- Gaussian process (keyword ``gaussian_process`` surfpack)
+
+- Artificial neural network (keyword ``neural_network``)
+
+- Radial basis Funtions (keyword ``radial_basis``)
+
+- Polynomial (keyword ``polynomial``)
+
+
+However, for experimental Gaussian Process and polynomial models as
+well as Multivariate Adaptive Regression Spline (keyword ``mars``) and
+moving least squares (keyword ``moving_least_squares``) models, only
+``text_archive`` and ``binary_archive`` formats may be used.
+
+Currently, no other surrogate models can be exported.
+
+*Default Behavior*
+<p>No export.
+
+*Expected Output*
+<p>Output depends on selected format; see the ``formats`` specification.
+
+*Additional Discussion*
+<p>The Dakota examples include a demonstration of using the surfpack
+executable with an exported model file.
+Topics::
+surrogate_models
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

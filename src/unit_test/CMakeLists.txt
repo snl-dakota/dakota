@@ -104,6 +104,12 @@ if(DAKOTA_H5PY_FOUND)
   #dakota_add_h5py_test(mutlisolution_opt)
 endif()
 
+dakota_add_unit_test(NAME redirect_regexs
+  SOURCES redirect_regexs.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(redirect_regexs Boost::boost)
+
 dakota_add_unit_test(NAME response_io
   SOURCES response_io.cpp
   LINK_DAKOTA_LIBS
@@ -237,16 +243,16 @@ endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
 
 
 # Test top-level dakota.dakota module
-if(DAKOTA_PYBIND11)
-  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/test_dakota.in"
+if(DAKOTA_PYTHON_WRAPPER)
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/test_dakota_python_env.in"
     dakota_unit_test_copied_files
     )
-  add_test(NAME dakota_python
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.py
+  add_test(NAME dakota_python_env
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.py
     $<TARGET_FILE_DIR:environment>
     )
-  set_property(TEST dakota_python PROPERTY LABELS Unit)
+  set_property(TEST dakota_python_env PROPERTY LABELS Unit)
 endif()
 
 

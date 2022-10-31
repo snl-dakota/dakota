@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s0: UserMan=mogatest1_opt_sbo
 # DAKOTA INPUT FILE - dakota_su_mogatest1.in
 # Dakota Input File: mogatest1_opt_sbo.in       #s0

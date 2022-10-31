@@ -1,0 +1,72 @@
+Blurb::
+Specify which MPP search option to use
+Description::
+The ``x_taylor_mean`` MPP search option performs a
+single Taylor series approximation in the space of the original
+uncertain variables ("x-space") centered at the uncertain variable
+means, searches for the MPP for each response/probability level using
+this approximation, and performs a validation response evaluation at
+each predicted MPP. This option is commonly known as the Advanced
+Mean Value (AMV) method. The ``u_taylor_mean`` option is identical to
+the ``x_taylor_mean`` option, except that the approximation is
+performed in u-space. The ``x_taylor_mpp`` approach starts with an
+x-space Taylor series at the uncertain variable means, but iteratively
+updates the Taylor series approximation at each MPP prediction until
+the MPP converges. This option is commonly known as the AMV+ method.
+The ``u_taylor_mpp`` option is identical to the ``x_taylor_mpp`` option,
+except that all approximations are performed in u-space. The order of
+the Taylor-series approximation is determined by the corresponding
+``responses`` specification and may be first or second-order. If
+second-order (methods named :math:`AMV^2`  and :math:`AMV^2+`  in
+:cite:p:`Eld06a`), the series may employ
+analytic, finite difference, or quasi Hessians (BFGS or SR1).
+The ``x_two_point`` MPP search option uses an x-space Taylor series
+approximation at the uncertain variable means for the initial MPP
+prediction, then utilizes the Two-point Adaptive Nonlinear
+Approximation (TANA) outlined in :cite:p:`Xu98`
+for all subsequent MPP predictions. The ``u_two_point`` approach is
+identical to ``x_two_point``, but all the approximations are performed
+in u-space. The ``x_taylor_mpp`` and ``u_taylor_mpp``, ``x_two_point``
+and ``u_two_point`` approaches utilize the ``max_iterations`` and
+``convergence_tolerance`` method independent controls to control the
+convergence of the MPP iterations (the maximum number of MPP
+iterations per level is limited by ``max_iterations``, and the MPP
+iterations are considered converged when
+:math:`\parallel {\bf u}^{(k+1)} - {\bf u}^{(k)} \parallel_2`  <
+``convergence_tolerance``). And, finally, the ``.no_approx`` option
+performs the MPP search on the original response functions without
+the use of any approximations. The optimization algorithm used to
+perform these MPP searches can be selected to be either sequential
+quadratic programming (uses the ``npsol_sqp`` optimizer) or nonlinear
+interior point (uses the ``optpp_q_newton`` optimizer) algorithms
+using the ``sqp`` or ``nip`` keywords.
+
+In addition to the MPP search specifications, one may select among
+different integration approaches for computing probabilities at the
+MPP by using the ``integration`` keyword followed by either
+``first_order`` or ``second_order``. Second-order integration employs the
+formulation of :cite:p:`Hoh88`
+(the approach of :cite:p:`Bre84` and the correction
+of :cite:p:`Hon99` are also implemented, but are not active).
+Combining the ``no_approx`` option of the MPP search with first- and
+second-order integrations results in the traditional first- and
+second-order reliability methods (FORM and SORM). These integration
+approximations may be subsequently refined using importance sampling.
+The ``refinement`` specification allows the seletion of basic
+importance sampling ( ``import``), adaptive importance sampling (
+``adapt_import``), or multimodal adaptive importance sampling (
+``mm_adapt_import``), along with the specification of number of samples
+( ``samples``) and random seed ( ``seed``). Additional details
+on these methods are available in :cite:p:`Eld04`
+and :cite:p:`Eld06a` and in the Uncertainty
+Quantification Capabilities chapter of the Users Manual
+:cite:p:`UsersMan`.
+Topics::
+uncertainty_quantification, reliability_methods
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

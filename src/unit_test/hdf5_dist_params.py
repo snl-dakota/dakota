@@ -664,6 +664,8 @@ for the case that the field is a vector."""
             message = "Error for %s/%s at %d. Baseline is %%s and result is %%s" %(name, field, i)
         # if either are strings, do a normal assertEqual
         if isinstance(b, str) or isinstance(r, str):
+            b = b.decode('utf-8') if isinstance(b, bytes) else b
+            r = r.decode('utf-8') if isinstance(r, bytes) else r
             self.assertEqual(b,r, msg=message %(b,r))
         # The next three cases account are special handling of NaNs, +inf, and -inf.
         elif math.isnan(b) or math.isnan(r):

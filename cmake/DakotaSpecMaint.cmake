@@ -12,7 +12,7 @@ function(DakotaXml2Nspec)
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml xml2nidr
     COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidr_jar}
-            gov.sandia.dart.dakota.XMLToNIDRTranslator
+            gov.sandia.dart.dakota.xml.XMLToNIDRTranslator
 	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
 	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
     )

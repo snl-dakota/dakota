@@ -38,6 +38,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   pilotMgmtMode(
     problem_db.get_short("method.nond.ensemble_sampling_solution_mode")),
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
+  backfillFailures(false), // inactive option for now
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
@@ -47,6 +48,70 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     problem_db.get_ushort("method.nond.export_samples_format")),
   seedIndex(SZ_MAX)
 {
+  ModelList& model_ensemble = iteratedModel.subordinate_models(false);
+  size_t i, num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
+    md_index, num_md;
+  ModelLRevIter ml_rit; // reverse iteration for prev_lev tracking
+  bool err_flag = false, mlmf = (methodName==MULTILEVEL_MULTIFIDELITY_SAMPLING);
+  NLevActual.resize(num_mf);  NLevAlloc.resize(num_mf);
+  costMetadataIndices.resize(num_mf);
+  for (i=num_mf-1, ml_rit=model_ensemble.rbegin();
+       ml_rit!=model_ensemble.rend(); --i, ++ml_rit) { // high fid to low fid
+    // only SimulationModel supports solution_{levels,costs} and cost metadata.
+    // metadata indices only vary per response specification (model form).
+    num_lev  = ml_rit->solution_levels(); // lower bound is 1 soln level
+    md_index = ml_rit->cost_metadata_index();
+    num_md   = ml_rit->current_response().metadata().size();
+
+    if (mlmf && num_lev > prev_lev) {
+      Cerr << "\nWarning: unused solution levels in multilevel-multifidelity "
+	   << "sampling for model " << ml_rit->model_id() << ".\n         "
+	   << "Ignoring " << num_lev - prev_lev << " of " << num_lev
+	   << " levels." << std::endl;
+      num_lev = prev_lev;
+    }
+
+    // Ensure there is consistent cost data available as SimulationModel must
+    // be allowed to have empty solnCntlCostMap (when optional solution control
+    // is not specified).  Passing false bypasses lower bound of 1.
+    // > Previous option below uses solution_levels() with and without false,
+    //   which can only differ if SimulationModel::solnCntlCostMap is empty.
+    //if (md_index == SZ_MAX && num_lev > ml_rit->solution_levels(false)) { }
+    if (md_index == SZ_MAX && ml_rit->solution_levels(false) == 0) {
+      Cerr << "Error: insufficient cost data provided for ensemble sampling."
+	   << "\n       Please provide offline solution_level_cost "
+	   << "estimates or activate\n       online cost recovery for model "
+	   << ml_rit->model_id() << '.' << std::endl;
+      err_flag = true;
+    }
+
+    //Sizet2DArray& Nl_i = NLevActual[i];
+    NLevActual[i].resize(num_lev); //Nl_i.resize(num_lev);
+    //for (j=0; j<num_lev; ++j)
+    //  Nl_i[j].resize(numFunctions); // defer to pre_run()
+    NLevAlloc[i].resize(num_lev);
+    // Must manage N_actual vs. N_actual_proj in final roll ups:
+    // > "Actual" should mean succeeded --> suppress projection-based
+    //   updates to actual counters
+    // > migrate projection-based reporting to Alloc (+ other cached state as
+    //   needed), which retains strict linkage with accumulated sums/stats.
+    //   BUT, projected variance reduction calcs reuse best available varH in
+    //   combination with projected NLevActual, so:
+    //   >> Use NLevActual in multilevel_eval_summary();
+    //      use NLevActual + deltaNLevActual in print_variance_reduction(),
+    //      (for stats like varH, actual + proj is preferred to projected alloc)
+    //      where Proj can be lower dimensional even for backfill
+    //      (actual_incr is averaged over QoI)
+    //   >> Projections are allocations --> include in final NLevAlloc
+    //   >> use similar approach with equivHFEvals (tracks actual) + delta
+    //      (separated projection)
+
+    costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
+    prev_lev = num_lev;
+  }
+  if (err_flag)
+    abort_handler(METHOD_ERROR);
+
   // Support multilevel LHS as a specification override.  The estimator variance
   // is known/correct for MC and an assumption/approximation for LHS.  To get an
   // accurate LHS estimator variance, one would need:
@@ -124,7 +189,8 @@ void NonDEnsembleSampling::pre_run()
   // Note: numLHSRuns is interpreted differently here (accumulation of LHS runs
   //       for each execution of ensemble sampler) than for base NonDSampling
   //       (total accumulation of LHS runs)
-  mlmfIter = numLHSRuns = 0;  equivHFEvals = 0.;
+  mlmfIter = numLHSRuns = 0;
+  equivHFEvals = deltaEquivHF = 0.;
   seedSpec = randomSeed = seed_sequence(0); // (re)set seeds to sequence
 }
 
@@ -180,8 +246,8 @@ void NonDEnsembleSampling::update_final_statistics()
   */
   switch (finalStatsType) {
   case ESTIMATOR_PERFORMANCE:
-    finalStatistics.function_value(avgEstVar,    0);
-    finalStatistics.function_value(equivHFEvals, 1);
+    finalStatistics.function_value(avgEstVar, 0);
+    finalStatistics.function_value(equivHFEvals + deltaEquivHF, 1);
     break;
   case QOI_STATISTICS: // final stats: moments + level mappings
     NonD::update_final_statistics(); break;
@@ -205,36 +271,45 @@ void NonDEnsembleSampling::active_set_mapping()
 
 void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
 {
-  if (statsFlag)
-    switch (pilotMgmtMode) {
-    case PILOT_PROJECTION:
-      print_multilevel_evaluation_summary(s, NLev, "Projected");
-      s << "<<<<< Projected number of equivalent high fidelity evaluations: "
-	<< std::scientific  << std::setprecision(write_precision)
-	<< equivHFEvals << '\n';
-      print_variance_reduction(s);
+  if (!statsFlag)
+    return;
 
-      //s << "\nStatistics based on multilevel sample set:\n";
-      //print_moments(s, "response function",
-      //	      iteratedModel.truth_model().response_labels());
-      //archive_moments();
-      //archive_equiv_hf_evals(equivHFEvals);
-      break;
-    default:
-      print_multilevel_evaluation_summary(s, NLev);
-      s << "<<<<< Equivalent number of high fidelity evaluations: "
-	<< std::scientific  << std::setprecision(write_precision)
-	<< equivHFEvals << '\n';
-      print_variance_reduction(s);
+  bool pilot_projection = (pilotMgmtMode == PILOT_PROJECTION),
+       discrep_flag     = discrepancy_sample_counts(),
+       cv_projection    = (finalStatsType == ESTIMATOR_PERFORMANCE),
+       projections      = (pilot_projection || cv_projection);
+  String summary_type = (pilot_projection) ? "Projected " : "Online ";
 
-      s << "\nStatistics based on multilevel sample set:\n";
-      //print_statistics(s);
-      print_moments(s, "response function",
-		    iteratedModel.truth_model().response_labels());
-      archive_moments();
-      archive_equiv_hf_evals(equivHFEvals);
-      break;
-    }
+  // Always report allocated, then optionally report actual.
+  // Any offline pilot samples (N_pilot in *_offline()) are excluded.
+  print_multilevel_model_summary(s, NLevAlloc, summary_type + "allocation of",
+				 sequenceType, discrep_flag);
+  Real proj_equiv_hf = equivHFEvals + deltaEquivHF;
+  s << "<<<<< " << summary_type
+    << "number of equivalent high fidelity evaluations: " << std::scientific
+    << std::setprecision(write_precision) << proj_equiv_hf <<'\n';
+  archive_equiv_hf_evals(proj_equiv_hf);
+
+  if (projections || differ(NLevAlloc, NLevActual)) {
+    // NLevActual includes successful sample accumulations used for stats
+    // equivHFEvals includes incurred cost for evaluations, successful or not
+    print_multilevel_model_summary(s, NLevActual, "Actual accumulated",
+                                   sequenceType, discrep_flag);
+    s << "<<<<< Incurred cost in equivalent high fidelity evaluations: "
+      << std::scientific << std::setprecision(write_precision) << equivHFEvals
+      << '\n';
+    //archive_incurred_equiv_hf_evals(equivHFEvals);
+  }
+
+  print_variance_reduction(s);
+
+  if (!projections) {
+    s << "\nStatistics based on multilevel sample set:\n";
+    //print_statistics(s);
+    print_moments(s, "response function",
+		  iteratedModel.truth_model().response_labels());
+    archive_moments();
+  }
 }
 
 

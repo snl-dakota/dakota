@@ -1,0 +1,31 @@
+.. _releasenotes-gui-613:
+
+"""""""""""""""""""""""""""""""""""""
+Version 6.13 - Jungle Japes (2020/11)
+"""""""""""""""""""""""""""""""""""""
+
+.. image:: img/DakotaGui_JungleJapes.png
+   :alt: Dakota GUI 6.13 splash screen
+
+**Chartreuse**
+
+- New "Sandbox View" for fast visualizations of generic data using Chartreuse.
+- Support added to Chartreuse for CSV files
+- Four-dimensional Chartreuse scatter plots (i.e. time-based node coloring)
+
+**Dakota Input File Editing**
+
+- New form-based editors for Dakota interface blocks and hybrid method blocks.
+- Limited support for visualization of Dakota uncertainty variables (normal, lognormal, weibull)
+- Pre-processing markup supported in Dakota text editor, which also provides a new mechanism for assigning multiple NGW-based analysis drivers at runtime.
+- Dark theme support for Dakota text editor
+
+**QOI**
+
+- New column-based QOI extractors for extracting fields from tabular/CSV-based data
+- *Warning:*  The qoiExtractor node in Next-Gen Workflow has received backwards-incompatible changes.  You must delete your qoiExtractor nodes and reconfigure them upon switching to 6.13
+
+**Misc.**
+
+- "dprepro" node added to Next-Gen Workflow
+- General enhancements for the New Dakota Study wizard

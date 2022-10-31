@@ -16,8 +16,6 @@
 #include "DataFitSurrModel.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "dakota_mersenne_twister.hpp"
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/variate_generator.hpp>
 
 namespace Dakota {
 
@@ -881,11 +879,7 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
     Cout << "\nSubspace Model: Beginning cross validation subspace id "
          << "method.\n" << std::endl;
 
-  // TODO: replace with C++11 std::mt19937 and related components
   boost::mt19937 rnum_generator(randomSeed);
-  boost::uniform_int<> uniform_dist;
-  boost::variate_generator<boost::mt19937&, boost::uniform_int<> >
-    rnum_variate_gen(rnum_generator, uniform_dist);
 
   int num_folds = 10, poly_degree = 2; // quadratic bases
 
@@ -962,8 +956,8 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
     for (int ind = 0; ind < n; ++ind)
       random_index_vec.push_back(ind);
     // shuffle these indices:
-    std::random_shuffle(random_index_vec.begin(), random_index_vec.end(),
-			rnum_variate_gen);
+    Dakota::rand_shuffle(random_index_vec.begin(), random_index_vec.end(),
+			 rnum_generator);
 
     // Compute the size of each fold:
     std::vector<int> fold_size(num_folds, n / num_folds);

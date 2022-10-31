@@ -171,7 +171,7 @@ Tran, A. and {(with Menhorn, F. and Zeng, X.)}"
   Year        = {2009}
 }
 
-@conference{Aug07,
+@InProceedings{Aug07,
 	Address = {Detroit, MI},
 	Author = {Aughenbaugh, J.~M. and Paredis, C.~J.~J.},
 	Number = {SAE-2007-01-1480},
@@ -285,12 +285,12 @@ issn = {0021-9991},
 doi = {10.1016/j.jcp.2010.12.021},
 url = {http://www.sciencedirect.com/science/article/pii/S0021999110006856},
 author = {Géraud Blatman and Bruno Sudret},
-keywords = {Least angle regression},
-keywords = {Adaptive stochastic finite elements},
-keywords = {Sequential experimental design},
-keywords = {Sparse polynomial chaos expansion},
-keywords = {Sensitivity analysis},
-keywords = {Response surfaces}
+keywords = { {Least angle regression},
+             {Adaptive stochastic finite elements},
+             {Sequential experimental design},
+             {Sparse polynomial chaos expansion},
+             {Sensitivity analysis},
+             {Response surfaces} }
 }
 
 @Book{Bli96,
@@ -595,11 +595,11 @@ issn = {0021-9991},
 doi = {10.1016/j.jcp.2011.01.002},
 url = {http://www.sciencedirect.com/science/article/pii/S0021999111000106},
 author = {Doostan,A . and Owhadi, H.},
-keywords = {Polynomial chaos},
-keywords = {Uncertainty quantification},
-keywords = {Stochastic PDE},
-keywords = {Compressive sampling},
-keywords = {Sparse approximation}
+keywords = { {Polynomial chaos},
+             {Uncertainty quantification},
+             {Stochastic PDE},
+             {Compressive sampling},
+             {Sparse approximation} }
 }
 
 @Article{Du99,
@@ -620,7 +620,7 @@ keywords = {Sparse approximation}
   pages =	 {225--233}
 }
 
-@Conference{Duarte_WB_SPARS_2005,
+@InProceedings{Duarte_WB_SPARS_2005,
   author = {Marco F. Duarte and Michael B. Wakin and Richard G. Baraniuk},
   title = {Fast Reconstruction of Piecewise Smooth Signals from Random
   Projections},
@@ -690,6 +690,7 @@ keywords = {Sparse approximation}
 @TechReport{Eck09, 
   author = {Eckstein, J. and Phillips, C.~A. and Hart, W.~E.},
   title = {{PEBBL} 1.0 User Guide},
+  institution =  {N/A},
   year = {October 2009},
   note = {\url{http://www.researchgate.net/publication/266173679_PEBBL_1.0_User_Guide}} 
 } 
@@ -924,6 +925,15 @@ author={Eldred, M.S. and Adams, B.M. and Gay, D.M. and Swiler, L.P. and Haskell,
   pages = {117--124}
 }
 
+@Article{Fairbanks2017,
+  author        = {Fairbanks, H.R. and Doostan, A. and Ketelsen, C. and Iaccarino, G.},
+  title         = {A low-rank control variate for multilevel Monte Carlo simulation of high-dimensional uncertain systems},
+  journal       = {Journal of Computational Physics},
+  year          = {2017},
+  pages         = {121--139},
+  volume        = {341},
+}
+
 @Article{Fer06,
   author = 	 {Ferson, S. and Tucker, W.~T.},
   title =        {Sensitivity Analysis using Probability Bounding},  
@@ -1058,6 +1068,20 @@ author={Eldred, M.S. and Adams, B.M. and Gay, D.M. and Swiler, L.P. and Haskell,
   institution = {Sandia National Laboratories},
   number = {SAND2008-2261P},
   note = {Available as \url{http://dakota.sandia.gov/papers/nidr08.pdf}}
+}
+
+@inproceedings{geraci_multifidelity_2017,
+	title = {A multifidelity multilevel {Monte} {Carlo} method for uncertainty propagation in aerospace applications},
+	isbn = {978-1-62410-452-7},
+	url = {http://arc.aiaa.org/doi/10.2514/6.2017-1951},
+	doi = {10.2514/6.2017-1951},
+	language = {en},
+	urldate = {2019-10-04},
+	booktitle = {19th {AIAA} {Non}-{Deterministic} {Approaches} {Conference}},
+	publisher = {AIAA},
+	author = {Geraci, Gianluca and Eldred, Michael S. and Iaccarino, Gianluca},
+	month = jan,
+	year = {2017},
 }
 
 @article{gerstner_griebel_98,
@@ -1469,15 +1493,14 @@ pages={259–328}
 }
 
 % BMA: FIX
-@Volumes{Helton2004,
+@Book{Helton2004,
   author = {Helton, J.~C. and Oberkampf, W.~L.},
-  year= 2004,
-  title = {Special Issue of Reliability Engineering and System Safety: 
-Issue on Alternative Representations of Epistemic Uncertainty},
+  title = {Special Issue of Reliability Engineering and System Safety: Issue on Alternative Representations of Epistemic Uncertainty},
   volume = 85, 
-  number = {1--3},
-  month = {Jul--Sep},
-  year = 2004
+  number = {1-3},
+  month = {Jul-Sep},
+  year = 2004,
+  publisher = {TODO}
 } 
 
 @Article{Hel07,
@@ -1650,7 +1673,7 @@ Issue on Alternative Representations of Epistemic Uncertainty},
 }
 
 @Article{Kocis1997,
-  authors = {Kocis, L. and Whiten W.},
+  author = {Kocis, L. and Whiten W.},
   year = 1997,
   title = {Computational Investigations of Low-Discrepancy Sequences},
   journal = {ACM Transactions on Mathematical Software},
@@ -1730,8 +1753,10 @@ Issue on Alternative Representations of Epistemic Uncertainty},
   title={{Optimization Subject to Hidden Constraints via Statistical Emulation}},
   author={Lee, H. and Gramacy, R. and Linkletter, C. and Gray, G.},
   journal={Pacific Journal of Optimization},
-  year={to appear},
-
+  year={2011},
+  volume={7},
+  number={3},
+  pages={467--478}
 }
 
 @article{Kra04,
@@ -1953,6 +1978,33 @@ Issue on Alternative Representations of Epistemic Uncertainty},
   address = 	{Honolulu, HI},
 }
 
+@article{peherstorfer2016optimal,
+  title={Optimal model management for multifidelity Monte Carlo estimation},
+  author={Peherstorfer, Benjamin and Willcox, Karen and Gunzburger, Max},
+  journal={SIAM Journal on Scientific Computing},
+  volume={38},
+  number={5},
+  pages={A3163--A3194},
+  year={2016},
+  publisher={SIAM}
+}
+
+@article{peherstorfer_survey_2018,
+	title = {Survey of {Multifidelity} {Methods} in {Uncertainty} {Propagation}, {Inference}, and {Optimization}},
+	volume = {60},
+	issn = {0036-1445, 1095-7200},
+	url = {https://epubs.siam.org/doi/10.1137/16M1082469},
+	doi = {10.1137/16M1082469},
+	language = {en},
+	number = {3},
+	urldate = {2019-10-04},
+	journal = {SIAM Review},
+	author = {Peherstorfer, Benjamin and Willcox, Karen and Gunzburger, Max},
+	month = jan,
+	year = {2018},
+	pages = {550--591},
+}
+
 @TechReport{webster1,
   author = 	 {Nobile, F. and Tempone, R. and Webster, C.~G.},
   title = 	 {A Sparse Grid Stochastic Collocation Method for Partial Differential Equations with Random Input Data},
@@ -1981,6 +2033,19 @@ Issue on Alternative Representations of Epistemic Uncertainty},
   year = 1999
 }
 
+@article{Nobile2015,
+author="Nobile, Fabio
+and Tesei, Francesco",
+title="A Multi Level Monte Carlo method with control variate for elliptic PDEs with log-normal coefficients",
+journal="Stochastic Partial Differential Equations: Analysis and Computations",
+year="2015",
+month="Sep",
+day="01",
+volume="3",
+number="3",
+pages="398--444"
+}
+
 @Article{Nutt04,
   author = {Nutt, W.T. and Wallis, G.B.},
   title = {Evaluation of nuclear safety from the outputs of computer codes in the presence of uncertainties},
@@ -1991,7 +2056,7 @@ Issue on Alternative Representations of Epistemic Uncertainty},
 }
 
 @TechReport{Obe03,
-  author = {Oberkampf, W.~.L. and Helton, J.~C.},
+  author = {Oberkampf, W.~L. and Helton, J.~C.},
   title = {Evidence Theory for Engineering Applications},
   number = {SAND2003-3559P},
   institution = {Sandia National Laboratories},
@@ -2035,6 +2100,15 @@ journal = {IMA Journal of Numerical Analysis}
   volume = 	{2},
   number = 	{2},
   pages = 	{439-452},
+}
+
+
+@book{OwenMC,
+   author = {Art B. Owen},
+   year = 2013,
+   title = {Monte Carlo theory, methods and examples},
+   publisher = {Art Owen},
+   url = {https://artowen.su.domains/mc/},
 }
 
 @InProceedings{Per02,
@@ -2104,6 +2178,7 @@ Sttural Dynamics, and Materials Conference},
       publisher = {MATHICSE},
       address = {Ecublens},
       year = {2017},
+      journal = {TODO},
       note = {MATHICSE Technical Report Nr. 23.2017 October 2017},
       abstract = {In this work we introduce and analyze a novel multilevel  Monte Carlo (MLMC) estimator for the accurate approximation  of central moments of system outputs affected by  uncertainties. Central moments play a central role in many  disciplines to characterize a random system output's  distribution and are of primary importance in many  prediction, optimization, and decision making processes  under uncertainties. We detail how to effectively tune the  MLMC algorithm for central moments of any order and present  a complete practical algorithm that is implemented in our  accompanying Python library cmlmc-py1. In fact, we validate  the methodology on selected reference problems and apply it  to an aerodynamic relevant test case, namely the transonic  RAE 2822 airfoil affected by operating and geometric  uncertain- ties.},
       url = {http://infoscience.epfl.ch/record/263564},
@@ -2855,7 +2930,8 @@ year = {2005},
   title={Combining eigenvalues and variation of eigenvectors for order determination},
   author={Luo, W. and Li, B.},
   year={2015},
-  publisher={SIAM}
+  publisher={SIAM},
+  journal={TODO}
 }
 
 % Geraci sampling ...

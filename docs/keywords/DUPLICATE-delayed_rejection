@@ -1,0 +1,38 @@
+Blurb::
+Use the Delayed Rejection MCMC algorithm
+Description::
+This keyword specifies the use of the Delayed Rejection algorithm in
+which there can be a delay in rejecting samples from the chain.  That
+is, the "DR" part of DRAM is used but the "AM" part is not, rather a
+regular Metropolis-Hastings algorithm is used.
+
+*Default Behavior*
+
+Five MCMC algorithm variants are supported: ``dram``,
+``delayed_rejection``, ``adaptive_metropolis``, ``metropolis_hastings``, and
+``multilevel``.  The default is ``dram``.
+
+*Usage Tips*
+
+If the user knows something about the proposal covariance or the
+proposal covariance is informed through derivative information, using
+``delayed_rejection`` is preferred over ``dram``: the proposal covariance is
+already being informed by derivative information and the adaptive
+metropolis is not necessary.
+Topics::
+bayesian_calibration
+Examples::
+
+.. code-block::
+
+    method,
+            bayes_calibration queso
+              delayed_rejection
+              samples = 10000 seed = 348
+
+
+Theory::
+
+Faq::
+
+See_Also::

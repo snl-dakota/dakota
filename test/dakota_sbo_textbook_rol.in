@@ -1,4 +1,5 @@
 #@ *: DakotaConfig=HAVE_ROL
+#@ s*: Label=FastTest
 environment,
 	method_pointer = 'SBLO'
 
