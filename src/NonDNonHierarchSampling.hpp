@@ -252,15 +252,9 @@ private:
   /// flattens contours of average_estimator_variance() using std::log
   Real log_average_estvar(const RealVector& r_and_N);
 
-<<<<<<< HEAD
   /// constraint helper function shared by NPSOL/OPT++ static evaluators
   Real linear_cost(const RealVector& N_vec);
   /// constraint helper function shared by NPSOL/OPT++ static evaluators
-=======
-  /// constraint helper function shared by NPSOL/OPT++ static evaluators
-  Real linear_cost(const RealVector& N_vec);
-  /// constraint helper function shared by NPSOL/OPT++ static evaluators
->>>>>>> origin/devel
   Real nonlinear_cost(const RealVector& r_and_N);
   /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
   void linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c);

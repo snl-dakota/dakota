@@ -307,7 +307,7 @@ void NonDBayesCalibration::construct_mcmc_model()
     else if (emulatorType == PCE_EMULATOR) {
       const String& exp_import_file
 	= probDescDB.get_string("method.nond.import_expansion_file");
-      const String& exp_import_file
+      const String& exp_export_file
         = probDescDB.get_string("method.nond.export_expansion_file");
       unsigned short ssg_level
 	= probDescDB.get_ushort("method.nond.sparse_grid_level");
@@ -335,18 +335,18 @@ void NonDBayesCalibration::construct_mcmc_model()
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  exp_coeff_approach, ssg_level, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
-	  exp_import_file);
+	  exp_export_file);
       }
       else if (tpq_order != USHRT_MAX)
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  Pecos::QUADRATURE, tpq_order, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
-	  exp_import_file);
+	  exp_export_file);
       else if (cub_int != USHRT_MAX)
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  Pecos::CUBATURE, cub_int, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
-	  exp_import_file);
+	  exp_export_file);
       else { // regression PCE: LeastSq/CS, OLI
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
@@ -359,7 +359,7 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
 	  probDescDB.get_bool("method.import_build_active_only"),
-	  exp_import_file);
+	  exp_export_file);
       }
       mcmcDerivOrder = 7; // Hessian computations implemented for PCE
     }
