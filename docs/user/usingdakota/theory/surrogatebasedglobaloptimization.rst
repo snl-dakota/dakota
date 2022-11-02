@@ -63,7 +63,7 @@ Gaussian Process Model
 
 Gaussian process (GP) models are set apart from other surrogate models
 because they provide not just a predicted value at an unsampled point,
-but also and estimate of the prediction variance. This variance gives an
+but also an estimate of the prediction variance. This variance gives an
 indication of the uncertainty in the GP model, which results from the
 construction of the covariance function. This function is based on the
 idea that when input points are near one another, the correlation
@@ -90,9 +90,9 @@ covariance between outputs of the Gaussian process :math:`Z()` at points
 :math:`{\bf a}` and :math:`{\bf b}` is defined as:
 
 .. math::
+   :label: eq:cov
 
    Cov \left[ Z({\bf a}),Z({\bf b}) \right] = \sigma_Z^2 R({\bf a},{\bf b})
-   \label{eq:cov}
 
 where :math:`\sigma_Z^2` is the process variance and :math:`R()` is the
 correlation function. There are several options for the correlation
@@ -111,22 +111,29 @@ The expected value :math:`\mu_G()` and variance :math:`\sigma_G^2()` of
 the GP model prediction at point :math:`{\bf u}` are:
 
 .. math::
+   :label: eq:exp
 
    \begin{aligned}
    \mu_G({\bf u}) &= {\bf h}({\bf u})^T{\boldsymbol \beta} + 
-     {\bf r}({\bf u})^T{\bf R}^{-1}({\bf g} - {\bf F}{\boldsymbol \beta}) 
-     \label{eq:exp} \\
+     {\bf r}({\bf u})^T{\bf R}^{-1}({\bf g} - {\bf F}{\boldsymbol \beta})
+   \end{aligned}
+
+.. math::
+   :label: eq:var
+
+   \begin{aligned}
    \sigma_G^2({\bf u}) &= \sigma_Z^2 - 
      \begin{bmatrix} {\bf h}({\bf u})^T  & 
                      {\bf r}({\bf u})^T  \end{bmatrix}
      \begin{bmatrix} {\bf 0} & {\bf F}^T \\ 
                      {\bf F} & {\bf R}   \end{bmatrix}^{-1}
      \begin{bmatrix} {\bf h}({\bf u})    \\ 
-                     {\bf r}({\bf u})    \end{bmatrix} \label{eq:var}\end{aligned}
+                     {\bf r}({\bf u})    \end{bmatrix}
+   \end{aligned}
 
 where :math:`{\bf r}({\bf u})` is a vector containing the covariance
 between :math:`{\bf u}` and each of the :math:`n` training points
-(defined by Eq. `[eq:cov] <#eq:cov>`__), :math:`{\bf R}` is an
+(defined by Eq. :math:numref:`eq:cov`), :math:`{\bf R}` is an
 :math:`n \times n` matrix containing the correlation between each pair
 of training points, :math:`{\bf g}` is the vector of response outputs at
 each of the training points, and :math:`{\bf F}` is an
@@ -145,10 +152,10 @@ the log of the probability of observing the response values
 be written as: :cite:p:`Sac89`
 
 .. math::
+   :label: eq:like
 
    \log \left[ p({\bf g} | {\bf R}) \right] = 
      -\frac{1}{n} \log \lvert{\bf R}\rvert - \log(\hat{\sigma}_Z^2) 
-     \label{eq:like}
 
 where :math:`\lvert {\bf R} \rvert` indicates the determinant of
 :math:`{\bf R}`, and :math:`\hat{\sigma}_Z^2` is the optimal value of
@@ -170,7 +177,7 @@ defined by:
      {\bf F}^T{\bf R}^{-1}{\bf g}
    \end{equation}
 
-Maximizing Eq. `[eq:like] <#eq:like>`__ gives the maximum likelihood
+Maximizing Eq. :math:numref:`eq:like` gives the maximum likelihood
 estimate of :math:`\boldsymbol \theta`, which in turn defines
 :math:`\sigma_Z^2`.
 
@@ -183,7 +190,8 @@ The acquisition function determines the location of the next sampling
 point or refinement points, in the sense that maximizing the acquisition
 function yields the next sampling point, as
 
-.. math:: {\bf u}^* = \argmax_{\bf u} a({\bf u}).
+.. math::
+   {\bf u}^* = \underset{\bf u}{\text{argmax}}~a({\bf u}).
 
 .. _`uq:ego:acq:eif`:
 
@@ -204,7 +212,7 @@ distribution:
 .. math:: \hat{G}({\bf u}) \sim \mathcal{N}\left( \mu_G({\bf u}), \sigma_G({\bf u}) \right)
 
 where the mean :math:`\mu_G()` and the variance :math:`\sigma_G^2()`
-were defined in Eqs. `[eq:exp] <#eq:exp>`__ and `[eq:var] <#eq:var>`__,
+were defined in Eqs. :math:numref:`eq:exp` and :math:numref:`eq:var`,
 respectively. The EIF is defined as: :cite:p:`Jon98`
 
 .. math::
@@ -219,27 +227,28 @@ computed by integrating over the distribution :math:`\hat{G}({\bf u})`
 with :math:`G^*` held constant:
 
 .. math::
+   :label: eq:eif_int
 
    EI\bigl( \hat{G}({\bf u}) \bigr) = 
      \int_{-\infty}^{G^*} \left( G^* - G \right) \, \hat{G}({\bf u}) \; dG  
-     \label{eq:eif_int}
 
 where :math:`G` is a realization of :math:`\hat{G}`. This integral can
 be expressed analytically as: :cite:p:`Jon98`
 
 .. math::
+   :label: eq:eif
 
    EI\bigl( \hat{G}({\bf u}) \bigr) = \left( G^* - \mu_G \right) \,
      \Phi\left( \frac{G^* - \mu_G}{\sigma_G} \right) + \sigma_G \,
-     \phi\left( \frac{G^* - \mu_G}{\sigma_G} \right) \label{eq:eif}
+     \phi\left( \frac{G^* - \mu_G}{\sigma_G} \right)
 
 where it is understood that :math:`\mu_G` and :math:`\sigma_G` are
 functions of :math:`{\bf u}`. Rewritting in a more compact manner and
 dropping the subscript :math:`_G`,
 
 .. math::
+   :label: eq:eifShort
 
-   \label{eq:eifShort}
    a_\text{EI}({\bf u}, \{{\bf u}_i,y_i \}_{i=1}^N,\theta)) = \sigma({\bf u}) \cdot( \gamma({\bf u}) \Phi(\gamma({\bf u}) ) + \phi(\gamma({\bf u})) ),
 
 where
@@ -262,7 +271,7 @@ to run to convergence. In Dakota, an implementation of the DIRECT global
 optimization algorithm is used :cite:p:`Gab01`.
 
 It is important to understand how the use of this EIF leads to optimal
-solutions. Eq. `[eq:eif] <#eq:eif>`__ indicates how much the objective
+solutions. Eq. :math:numref:`eq:eif` indicates how much the objective
 function value at :math:`{\bf x}` is expected to be less than the
 predicted value at the current best solution. Because the GP model
 provides a Gaussian distribution at each predicted point, expectations
@@ -273,10 +282,10 @@ expected values and greater variance (exploration).
 
 The application of EGO to reliability analysis, however, is made more
 complicated due to the inclusion of equality constraints (see
-Eqs. `[eq:ria_opt] <#eq:ria_opt>`__-`[eq:pma_opt] <#eq:pma_opt>`__). For
+Eqs. :math:numref:`eq:ria_opt`- :math:numref:`eq:pma_opt`). For
 inverse reliability analysis, this extra complication is small. The
 response being modeled by the GP is the objective function of the
-optimization problem (see Eq. `[eq:pma_opt] <#eq:pma_opt>`__) and the
+optimization problem (see Eq. :math:numref:`eq:pma_opt`) and the
 deterministic constraint might be handled through the use of a merit
 function, thereby allowing EGO to solve this equality-constrained
 optimization problem. Here the problem lies in the interpretation of the
@@ -296,7 +305,7 @@ Probability Improvement Acquisition Function
 The probability of improvement (PI) acquisition function is proposed by
 :cite:p:`kushner1964new`, using the same argument that the GP
 prediction is a Gaussian distribution. Similar to Equation
-`[eq:eifShort] <#eq:eifShort>`__, the PI acquisition function is given
+:math:numref:`eq:eifShort`, the PI acquisition function is given
 by
 
 .. math:: a_{\text{PI}}({\bf u}) = \Phi(\gamma({\bf u})).
@@ -335,7 +344,7 @@ Batch-sequential parallel
 -------------------------
 
 The batch-sequential parallelization is mainly motivated by exploiting
-the computational resource, where multiple sampling point
+the computational resource, where multiple sampling points
 :math:`{\bf u}` can be queried concurrently on a high-performance
 computing platform. The benefit of batch implementation is that the
 physical time to converge to the optimal solution is significantly

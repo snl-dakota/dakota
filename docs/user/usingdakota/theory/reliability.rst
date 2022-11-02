@@ -205,10 +205,12 @@ formulated as computing the minimum distance in u-space from the origin
 to the :math:`\bar{z}` contour of the limit state response function:
 
 .. math::
+   :label: eq:ria_opt
 
    \begin{aligned}
    {\rm minimize}     & {\bf u}^T {\bf u} \nonumber \\
-   {\rm subject \ to} & G({\bf u}) = \bar{z} \label{eq:ria_opt}\end{aligned}
+   {\rm subject \ to} & G({\bf u}) = \bar{z}
+   \end{aligned}
 
 where :math:`{\bf u}` is a vector centered at the origin in u-space and
 :math:`g({\bf x}) \equiv G({\bf u})` by definition. For PMA, the MPP
@@ -218,10 +220,12 @@ computing the minimum/maximum response function value corresponding to a
 prescribed distance from the origin in u-space:
 
 .. math::
+   :label: eq:pma_opt
 
    \begin{aligned}
    {\rm minimize}     & \pm G({\bf u}) \nonumber \\
-   {\rm subject \ to} & {\bf u}^T {\bf u} = \bar{\beta}^2 \label{eq:pma_opt}\end{aligned}
+   {\rm subject \ to} & {\bf u}^T {\bf u} = \bar{\beta}^2
+   \end{aligned}
 
 where :math:`\bar{\beta}` is computed from :math:`\bar{p}` using
 Eq. `[eq:beta_cdf] <#eq:beta_cdf>`__
@@ -579,8 +583,8 @@ Optimization algorithms
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 The next algorithmic variation involves the optimization algorithm
-selection for solving Eqs. `[eq:ria_opt] <#eq:ria_opt>`__
-and `[eq:pma_opt] <#eq:pma_opt>`__. The Hasofer-Lind Rackwitz-Fissler
+selection for solving Eqs. :math:numref:`eq:ria_opt`
+and :math:numref:`eq:pma_opt`. The Hasofer-Lind Rackwitz-Fissler
 (HL-RF) algorithm :cite:p:`Hal00` is a classical approach that
 has been broadly applied. It is a Newton-based approach lacking line
 search/trust region globalization, and is generally regarded as
