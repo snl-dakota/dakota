@@ -26,7 +26,7 @@ Orthogonal polynomials
 Askey scheme
 ~~~~~~~~~~~~
 
-Table `1.1 <#TAB:askey>`__ shows the set of classical orthogonal
+:numref:`stochastic-table1` shows the set of classical orthogonal
 polynomials which provide an optimal basis for different continuous
 probability distribution types. It is derived from the family of
 hypergeometric orthogonal polynomials known as the Askey
@@ -39,46 +39,42 @@ when placed in a standard form. The density and weighting functions
 differ by a constant factor due to the requirement that the integral of
 the PDF over the support range is one.
 
-.. container::
-   :name: TAB:askey
+.. list-table:: *Linkage between standard forms of continuous probability distributions and Askey scheme of continuous hyper-geometric polynomials.*
+   :name: stochastic-table1
+   :header-rows: 1   
+   :align: center
+   :widths: auto
 
-   .. table:: Linkage between standard forms of continuous probability
-      distributions and Askey scheme of continuous hyper-geometric
-      polynomials.
-
-      +-------------+-------------+-------------+-------------+-------------+
-      | D           | Density     | Polynomial  | Weight      | Support     |
-      | istribution | function    |             | function    | range       |
-      +=============+=============+=============+=============+=============+
-      | Normal      | :mat        | Hermite     | :mat        | :ma         |
-      |             | h:`\frac{1} | :mat        | h:`e^{\frac | th:`[-\inft |
-      |             | {\sqrt{2\pi | h:`He_n(x)` | {-x^2}{2}}` | y, \infty]` |
-      |             | }} e^{\frac |             |             |             |
-      |             | {-x^2}{2}}` |             |             |             |
-      +-------------+-------------+-------------+-------------+-------------+
-      | Uniform     | :math:`\    | Legendre    | :math:`1`   | :ma         |
-      |             | frac{1}{2}` | :ma         |             | th:`[-1,1]` |
-      |             |             | th:`P_n(x)` |             |             |
-      +-------------+-------------+-------------+-------------+-------------+
-      | Beta        | :math:`     | Jacobi      | :math:`     | :math:`     |
-      |             | \frac{(1-   | :math:`P^   | (1-x)^      | [-1,1]`     |
-      |             | x)^{\alpha} | {(\alpha,\b | {\alpha}(1+ |             |
-      |             | (1+x)^{\bet | eta)}_n(x)` | x)^{\beta}` |             |
-      |             | a}}{2^{\alp |             |             |             |
-      |             | ha+\beta+1} |             |             |             |
-      |             | B(\alpha+1  |             |             |             |
-      |             | ,\beta+1)}` |             |             |             |
-      +-------------+-------------+-------------+-------------+-------------+
-      | Exponential | :math:`     | Laguerre    | :math:`     | :math:`[    |
-      |             | e^{-x}`     | :math:`     | e^{-x}`     | 0, \infty]` |
-      |             |             | L_n(x)`     |             |             |
-      +-------------+-------------+-------------+-------------+-------------+
-      | Gamma       | :math:`     | Generalized | :math:`     | :math:`[    |
-      |             | \frac{x^{\  | Laguerre    | x^{\alp     | 0, \infty]` |
-      |             | alpha} e^{- | :math:`     | ha} e^{-x}` |             |
-      |             | x}}{\Gamma( | L^{(\al     |             |             |
-      |             | \alpha+1)}` | pha)}_n(x)` |             |             |
-      +-------------+-------------+-------------+-------------+-------------+
+   * - Distribution
+     - Density function
+     - Polynomial
+     - Weight function
+     - Support range
+   * - Normal
+     - :math:`\frac{1}{\sqrt{2\pi}} e^{\frac{-x^2}{2}}`
+     - Hermite :math:`He_n(x)`
+     - :math:`e^{\frac{-x^2}{2}}`
+     - :math:`[-\infty, \infty]`
+   * - Uniform   
+     - :math:`\frac{1}{2}`
+     - Legendre :math:`P_n(x)`
+     - :math:`1`
+     - :math:`[-1,1]`
+   * - Beta
+     - :math:`\frac{(1-x)^{\alpha}(1+x)^{\beta}}{2^{\alpha+\beta+1}B(\alpha+1,\beta+1)}`
+     - Jacobi :math:`P^{(\alpha,\beta)}_n(x)`
+     - :math:`(1-x)^{\alpha}(1+x)^{\beta}`
+     - :math:`[-1,1]`
+   * - Exponential
+     - :math:`e^{-x}`
+     - Laguerre :math:`L_n(x)`
+     - :math:`e^{-x}`
+     - :math:`[0, \infty]`
+   * - Gamma
+     - :math:`\frac{x^{\alpha} e^{-x}}{\Gamma(\alpha+1)}`
+     - Generalized Laguerre :math:`L^{(\alpha)}_n(x)`
+     - :math:`x^{\alpha} e^{-x}`
+     - :math:`[0, \infty]`
 
 Note that Legendre is a special case of Jacobi for
 :math:`\alpha = \beta = 0`, Laguerre is a special case of generalized
@@ -90,7 +86,7 @@ necessary when specifying the :math:`\alpha` and :math:`\beta`
 parameters for the Jacobi and generalized Laguerre polynomials since the
 orthogonal polynomial conventions :cite:p:`abram_stegun`
 differ from the common statistical PDF conventions. The former
-conventions are used in Table `1.1 <#TAB:askey>`__.
+conventions are used in :numref:`stochastic-table1`.
 
 .. _`theory:uq:expansion:orth:beyond_askey`:
 
@@ -101,8 +97,8 @@ If all random inputs can be described using independent normal, uniform,
 exponential, beta, and gamma distributions, then Askey polynomials can
 be directly applied. If correlation or other distribution types are
 present, then additional techniques are required. One solution is to
-employ nonlinear variable transformations as described in
-Section `1.5 <#theory:uq:expansion:trans>`__ such that an Askey basis can be
+employ :ref:`nonlinear variable transformations <theory:uq:expansion:trans>`
+such that an Askey basis can be
 applied in the transformed space. This can be effective as shown
 in :cite:p:`Eld07`, but convergence rates are typically
 degraded. In addition, correlation coefficients are warped by the
@@ -121,7 +117,7 @@ sets having arbitrary probability density functions and eliminate the
 need to induce additional nonlinearity through variable transformations,
 but performing this process for general joint density functions with
 correlation is a topic of ongoing research (refer to
-Section `1.5 <#theory:uq:expansion:trans>`__ for additional details).
+:ref:`"Transformations to uncorrelated standard variables" <theory:uq:expansion:trans>` for additional details).
 
 ..
    TODO (in above):
@@ -154,7 +150,10 @@ For value-based interpolation of a response function :math:`R` in one
 dimension at an interpolation level :math:`l` containing :math:`m^l`
 points, the expression
 
-.. math:: R(\xi) \cong I^l(R) = \sum_{j=1}^{m_l} r(\xi_j)\,L_j(\xi) \label{eq:lagrange_interp_1d}
+.. math::
+   :label: lagrange_interp_1d
+
+   R(\xi) \cong I^l(R) = \sum_{j=1}^{m_l} r(\xi_j)\,L_j(\xi)
 
 reproduces the response values :math:`r(\xi_j)` at the interpolation
 points and smoothly interpolates between these values at other points.
@@ -166,9 +165,9 @@ For the case of gradient-enhancement, interpolation of a one-dimensional
 function involves both type 1 and type 2 interpolation polynomials,
 
 .. math::
+   :label: hermite_interp_1d
 
-   R(\xi) \cong I^l(R) = \sum_{j=1}^{m_l} \left[ r(\xi_j) H_j^{(1)}(\xi) + 
-     \frac{dr}{d\xi}(\xi_j) H_j^{(2)}(\xi) \right] \label{eq:hermite_interp_1d}
+   R(\xi) \cong I^l(R) = \sum_{j=1}^{m_l} \left[ r(\xi_j) H_j^{(1)}(\xi) + \frac{dr}{d\xi}(\xi_j) H_j^{(2)}(\xi) \right]
 
 where the former interpolate a particular value while producing a zero
 gradient (:math:`i^{th}` type 1 interpolant produces a value of 1 for
@@ -188,9 +187,10 @@ Lagrange polynomials interpolate a set of points in a single dimension
 using the functional form
 
 .. math::
+   :label: lagrange_poly_1d
 
    L_j = \prod_{\stackrel{\scriptstyle k=1}{k \ne j}}^m 
-   \frac{\xi - \xi_k}{\xi_j - \xi_k} \label{eq:lagrange_poly_1d}
+   \frac{\xi - \xi_k}{\xi_j - \xi_k}
 
 where it is evident that :math:`L_j` is 1 at :math:`\xi = \xi_j`, is 0
 for each of the points :math:`\xi = \xi_k`, and has order :math:`m - 1`.
@@ -200,38 +200,39 @@ formulation :cite:p:`BerTref04,Higham04` is used. We define
 the barycentric weights :math:`w_j` as
 
 .. math::
+   :label: barycentric_weights
 
    w_j = \prod_{\stackrel{\scriptstyle k=1}{k \ne j}}^m 
-   \frac{1}{\xi_j - \xi_k} \label{eq:barycentric_weights}
+   \frac{1}{\xi_j - \xi_k}
 
 and we precompute them for a given interpolation point set
 :math:`\xi_j, j \in 1, ..., m`. Then, defining the quantity
 :math:`l(\xi)` as
 
 .. math:: l(\xi) = \prod_{k=1}^m (\xi - \xi_k) \label{eq:barycentric_prod}
+   :label: stochastic-eq5
 
 which will be computed for each new interpolated point :math:`\xi`, we
-can rewrite Eq. `[eq:lagrange_interp_1d] <#eq:lagrange_interp_1d>`__ as
+can rewrite :eq:`lagrange_interp_1d` as
 
 .. math::
+   :label: barycentric_lagrange1_1d
 
    R(\xi) = l(\xi) \sum_{j=1}^m \frac{w_j}{x-x_j} r(\xi_j) 
-   \label{eq:barycentric_lagrange1_1d}
 
 where much of the computational work has been moved outside the
-summation.
-Eq. `[eq:barycentric_lagrange1_1d] <#eq:barycentric_lagrange1_1d>`__ is
-the first form of barycentric interpolation. Using an identity from the
+summation. :eq:`barycentric_lagrange1_1d` is the first form of barycentric interpolation.
+Using an identity from the
 interpolation of unity (:math:`R(\xi) = 1` and each :math:`r(\xi_j) = 1`
-in Eq. `[eq:barycentric_lagrange1_1d] <#eq:barycentric_lagrange1_1d>`__)
+in :eq:`barycentric_lagrange1_1d`)
 to eliminate :math:`l(x)`, we arrive at the second form of the
 barycentric interpolation formula:
 
 .. math::
+   :label: eq:barycentric_lagrange2_1d
 
    R(\xi) = 
    \frac{\sum_{j=1}^m \frac{w_j}{x-x_j} r(\xi_j)}{\sum_{j=1}^m \frac{w_j}{x-x_j}}
-   \label{eq:barycentric_lagrange2_1d}
 
 For both formulations, we reduce the computational effort for evaluating
 the interpolant from :math:`O(m^2)` to :math:`O(m)` operations per
@@ -241,8 +242,8 @@ avoid division by zero when :math:`\xi` matches one of the
 additional advantage that common factors within the :math:`w_j` can be
 canceled (possible for Clenshaw-Curtis and Newton-Cotes point sets, but
 not for general Gauss points), further reducing the computational
-requirements. Barycentric formulations can also be used for hierarchical
-interpolation (Section `1.2.2 <#theory:uq:expansion:interp:hierarch>`__) with
+requirements. Barycentric formulations can also be used for
+:ref:`hierarchical interpolation <theory:uq:expansion:interp:hierarch>` with
 Lagrange interpolation polynomials, but they are not applicable to local
 spline or gradient-enhanced Hermite interpolants.
 
@@ -252,7 +253,7 @@ Global gradient-enhanced
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Hermite interpolation polynomials (not to be confused with Hermite
-orthogonal polynomials shown in Table `1.1 <#TAB:askey>`__) interpolate
+orthogonal polynomials shown in :numref:`stochastic-table1`) interpolate
 both values and derivatives. In our case, we are interested in
 interpolating values and first derivatives, i.e, gradients.
 One-dimensional polynomials satisfying the interpolation constraints for
@@ -274,6 +275,7 @@ For the case of non-equidistant closed points (e.g., Clenshaw-Curtis),
 the linear spline polynomials are defined as
 
 .. math::
+   :label: eq:local_value_based_1
 
    L_j(\xi) = 
    \begin{cases}
@@ -288,6 +290,7 @@ For the case of equidistant closed points (i.e., Newton-Cotes), this can
 be simplified to
 
 .. math::
+   :label: eq:local_value_based_2
 
    L_j(\xi) = 
    \begin{cases}
@@ -308,6 +311,7 @@ Local gradient-enhanced
 Type 1 cubic spline interpolants are formulated as follows:
 
 .. math::
+   :label: eq:local_gradient_enhanced_1
 
    H_j^{(1)}(\xi) = 
    \begin{cases}
@@ -323,6 +327,7 @@ values and zero-zero-zero property for left-center-right gradients. Type
 2 cubic spline interpolants are formulated as follows:
 
 .. math::
+   :label: eq:local_gradient_enhanced_2
 
    H_j^{(2)}(\xi) =
    \begin{cases}
@@ -350,21 +355,24 @@ Hierarchical interpolation
 In a hierarchical formulation, we reformulate the interpolation in terms
 of differences between interpolation levels:
 
-.. math:: \Delta^l(R) = I^l(R) - I^{l-1}(R), ~~l \geq 1 \label{eq:interp_diff}
+.. math:: 
+   :label: interp_diff
+
+   \Delta^l(R) = I^l(R) - I^{l-1}(R), ~~l \geq 1
 
 where :math:`I^l(R)` is as defined in
-Eqs. `[eq:lagrange_interp_1d] <#eq:lagrange_interp_1d>`__–`[eq:hermite_interp_1d] <#eq:hermite_interp_1d>`__
+:eq:`lagrange_interp_1d` - :eq:`hermite_interp_1d`
 using the same local or global definitions for :math:`L_j(\xi)`,
 :math:`H_j^{(1)}(\xi)`, and :math:`H_j^{(2)}(\xi)`, and
 :math:`I^{l-1}(R)` is evaluated as :math:`I^l(I^{l-1}(R))`, indicating
 reinterpolation of the lower level interpolant across the higher level
 point set :cite:p:`spinterp,AgaAlu09`.
 
-Utilizing
-Eqs. `[eq:lagrange_interp_1d] <#eq:lagrange_interp_1d>`__–`[eq:hermite_interp_1d] <#eq:hermite_interp_1d>`__,
+Utilizing :eq:`lagrange_interp_1d` - :eq:`hermite_interp_1d`,
 we can represent this difference interpolant as
 
 .. math::
+   :label: interp_diff_detail
 
    \Delta^l(R) = 
    \begin{cases}
@@ -374,14 +382,13 @@ we can represent this difference interpolant as
    + \left[ \frac{dr}{d\xi}(\xi_j) - \frac{dI^{l-1}(R)}{d\xi}(\xi_j) \right] 
    \,H^{(2)}_j(\xi) \right) & \text{gradient-enhanced}
    \end{cases}
-   \label{eq:interp_diff_detail}
 
 where :math:`I^{l-1}(R)(\xi_j)` and
 :math:`\frac{dI^{l-1}(R)}{d\xi}(\xi_j)` are the value and gradient,
 respectively, of the lower level interpolant evaluated at the higher
 level points. We then define hierarchical surpluses
 :math:`{s, s^{(1)}, s^{(2)}}` at a point :math:`\xi_j` as the bracketed
-terms in Eq `[eq:interp_diff_detail] <#eq:interp_diff_detail>`__. These
+terms in :eq:`interp_diff_detail`. These
 surpluses can be interpreted as local interpolation error estimates
 since they capture the difference between the true values and the values
 predicted by the previous interpolant.
@@ -396,6 +403,7 @@ are zero, allowing us to restrict the summations above to
 becomes
 
 .. math::
+   :label: hierarch_interp_1
 
    \Delta^l(R) = 
    \begin{cases}
@@ -407,29 +415,35 @@ becomes
 The original interpolant :math:`I^l(R)` can be represented as a
 summation of these difference interpolants
 
-.. math:: I^l(R) = \Delta^l(R) + I^{l-1}(R) = \sum_{i=1}^{l} \Delta^l(R)
+.. math::
+   :label: hierarch_interp_2
+   
+   I^l(R) = \Delta^l(R) + I^{l-1}(R) = \sum_{i=1}^{l} \Delta^l(R)
 
-We will employ these hierarchical definitions within stochastic
-collocation on sparse grids in
-Section `1.4.3 <#theory:uq:expansion:sc:hierarch>`__.
+.. note::
+
+   We will employ these hierarchical definitions within stochastic
+   collocation on sparse grids in the
+   :ref:`main Hierarchical section <theory:uq:expansion:sc:hierarch>`.
 
 .. _`theory:uq:expansion:pce`:
 
 Generalized Polynomial Chaos
 ----------------------------
 
-The set of polynomials from `1.1.1 <#theory:uq:expansion:orth:askey>`__
-and `1.1.2 <#theory:uq:expansion:orth:beyond_askey>`__ are used as an
-orthogonal basis to approximate the functional form between the
+The set of polynomials from :ref:`Orthogonal polynomials <theory:uq:expansion:orth:askey>`
+and :ref:`Numerically generated orthogonal polynomials <theory:uq:expansion:orth:beyond_askey>`
+are used as an orthogonal basis to approximate the functional form between the
 stochastic response output and each of its random inputs. The chaos
 expansion for a response :math:`R` takes the form
 
 .. math::
+   :label: expansion_long
 
    R = a_0 B_0 + \sum_{i_1=1}^{\infty} a_{i_1} B_1(\xi_{i_1}) + 
    \sum_{i_1=1}^{\infty} \sum_{i_2=1}^{i_1} a_{i_1i_2} B_2(\xi_{i_1},\xi_{i_2}) +
    \sum_{i_1=1}^{\infty} \sum_{i_2=1}^{i_1} \sum_{i_3=1}^{i_2} a_{i_1i_2i_3}
-   B_3(\xi_{i_1},\xi_{i_2},\xi_{i_3}) + ...\label{eq:expansion_long}
+   B_3(\xi_{i_1},\xi_{i_2},\xi_{i_3}) + ...
 
 where the random vector dimension is unbounded and each additional set
 of nested summations indicates an additional order of polynomials in the
@@ -437,9 +451,9 @@ expansion. This expression can be simplified by replacing the
 order-based indexing with a term-based indexing
 
 .. math::
+   :label: expansion_short
 
    R = \sum_{j=0}^{\infty} \alpha_j \Psi_j(\boldsymbol{\xi})
-   \label{eq:expansion_short}
 
 where there is a one-to-one correspondence between
 :math:`a_{i_1i_2...i_n}` and :math:`\alpha_j` and between
@@ -451,20 +465,22 @@ multivariate Hermite polynomial :math:`B(\boldsymbol{\xi})` of order
 :math:`n` is defined from
 
 .. math::
+   :label: eq:multivar_gen
 
    B_n(\xi_{i_1}, ..., \xi_{i_n}) = 
    e^{\frac{1}{2}\boldsymbol{\xi}^T\boldsymbol{\xi}} (-1)^n 
    \frac{\partial^n}{\partial \xi_{i_1} ... \partial \xi_{i_n}} 
-   e^{-\frac{1}{2}\boldsymbol{\xi}^T\boldsymbol{\xi}} \label{eq:multivar_gen}
+   e^{-\frac{1}{2}\boldsymbol{\xi}^T\boldsymbol{\xi}}
 
 which can be shown to be a product of one-dimensional Hermite
 polynomials involving an expansion term multi-index :math:`t_i^j`:
 
 .. math::
+   :label: eq:multivar_prod
 
    B_n(\xi_{i_1}, ..., \xi_{i_n}) = 
    \Psi_j(\boldsymbol{\xi}) = 
-   \prod_{i=1}^{n} \psi_{t_i^j}(\xi_i) \label{eq:multivar_prod}
+   \prod_{i=1}^{n} \psi_{t_i^j}(\xi_i)
 
 ..
    TODO:
