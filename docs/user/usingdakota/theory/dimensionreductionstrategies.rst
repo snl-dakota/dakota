@@ -62,22 +62,24 @@ function: :cite:p:`constantine2015active`
 
 .. math:: f(x) = \exp\left(0.7x_1 + 0.3x_2\right).
 
-Figure `[fig:activesubspace] <#fig:activesubspace>`__\ (a) is a contour
+Figure :numref:`fig:activesubspace` (a) is a contour
 plot of :math:`f(x)`. The black arrows indicate the eigenvectors of the
 matrix :math:`\hat{\mathbf{C}}`. Figure
-`[fig:activesubspace] <#fig:activesubspace>`__\ (b) is the same function
+:numref:`fig:activesubspace` (b) is the same function
 but rotated so that the axes are aligned with the eigenvectors. We
 arbitrarily give these rotated axes the labels :math:`y_1` and
 :math:`y_2`. From
-fig. `[fig:activesubspace] <#fig:activesubspace>`__\ (b) it is clear
+fig. :numref:`fig:activesubspace` (b) it is clear
 that all of the variation is along :math:`y_1` and the dimension of the
 rotated input space can be reduced to 1.
 
-TODO: Fix images here:
+.. figure:: img/rotation_examples.png
+   :alt: Example of a 2D function with a 1D active subspace
+   :name: fig:activesubspace
+   :align: center
 
-.. container:: subfigmatrix
+   Example of a 2D function with a 1D active subspace
 
-   2
 
 For additional information, see
 references :cite:p:`Constantine-preprint-active,constantine2014active,constantine2015active`.
@@ -136,7 +138,9 @@ truncation methods.
 
 #. Compute the average distance between nominal and bootstrap subspaces,
 
-   .. math:: e^*_n = \frac{1}{M_{boot}}\sum_j^{M_{boot}} \text{dist}(\text{ran}(\hat{\mathbf{W}}_n), \text{ran}(\hat{\mathbf{W}}_{j,n}^*)) = \frac{1}{M_{boot}}\sum_j^{M_{boot}} \left\| \hat{\mathbf{W}}_n\hat{\mathbf{W}}_n^T - \hat{\mathbf{W}}_{j,n}^*\left(\hat{\mathbf{W}}_{j,n}^*\right)^T\right\|,
+   .. math:: e^*_n = \frac{1}{M_{boot}}\sum_j^{M_{boot}} \text{dist}(\text{ran}(\hat{\mathbf{W}}_n),
+             \text{ran}(\hat{\mathbf{W}}_{j,n}^*)) = \frac{1}{M_{boot}}\sum_j^{M_{boot}}
+             \left\| \hat{\mathbf{W}}_n\hat{\mathbf{W}}_n^T - \hat{\mathbf{W}}_{j,n}^*\left(\hat{\mathbf{W}}_{j,n}^*\right)^T\right\|,
 
    where :math:`M_{boot}` is the number of bootstrap samples,
    :math:`\hat{\mathbf{W}}_n` and :math:`\hat{\mathbf{W}}_{j,n}^*` both
@@ -247,20 +251,20 @@ adaptation approach relies on the construction of a Polynomial Chaos
 Expansion (PCE) that is subsequently rotated to decrease the
 dimensionality of the problem.
 
-As in the case of PCE, let’s be :math:`\mathcal{H}` the Hilbert space
-formed by the closed linear span of :math:`\bm{\xi}` and let
+As in the case of PCE, let :math:`\mathcal{H}` be the Hilbert space
+formed by the closed linear span of :math:`\boldsymbol{\xi}` and let
 :math:`\mathcal{F}(\mathcal{H})` be the :math:`\sigma`-algebra generated
-by :math:`\bm{\xi}`. A generic QoI :math:`Q` can be approximated by the
+by :math:`\boldsymbol{\xi}`. A generic QoI :math:`Q` can be approximated by the
 PCE up to order :math:`p` as
 
-.. math:: Q(\bm \xi) = \sum_{\bm{\alpha}\in\mathcal{J}_{d,p}}Q_{\bm{\alpha}}\psi_{\bm \alpha}(\bm \xi)\,,
+.. math:: Q(\boldsymbol \xi) = \sum_{\boldsymbol{\alpha}\in\mathcal{J}_{d,p}}Q_{\boldsymbol{\alpha}}\psi_{\boldsymbol \alpha}(\boldsymbol \xi)\,,
 
 where
-:math:`\bm{\alpha} = (\alpha_1,...,\alpha_d) \in \mathcal{J}_{d,p}:=(\mathbb{N}_0)^d`
-with :math:`|\bm{\alpha}| = \sum_{i=1}^{d} \alpha_i<= d` is multi-index
+:math:`\boldsymbol{\alpha} = (\alpha_1,...,\alpha_d) \in \mathcal{J}_{d,p}:=(\mathbb{N}_0)^d`
+with :math:`|\boldsymbol{\alpha}| = \sum_{i=1}^{d} \alpha_i<= d` is multi-index
 of dimension :math:`d` and order up to :math:`p`. In this chapter, for
 simplicity of exposure, we assume the expansion with respect to a basis
-of (normalized) Hermite polynomials and :math:`\bm\xi` is assumed to
+of (normalized) Hermite polynomials and :math:`\boldsymbol\xi` is assumed to
 have standard multivariate Gaussian distribution. The general case of
 arbitrary distribution can be handled, at least from a theoretical
 standpoint, by resorting to input parameter transformations as the
@@ -268,64 +272,64 @@ inverse of cumulative distribution function or other more sophisticated
 transformations like the Rosenblatt transformation. The
 :math:`P={n+p\choose p}` PCE coefficients can be computed by projecting
 :math:`Q` to the space spanned by
-:math:`\{\psi_{\bm \alpha}, \bm{\alpha} \in \mathcal{J}_{d,p} \}` (or
+:math:`\{\psi_{\boldsymbol \alpha}, \boldsymbol{\alpha} \in \mathcal{J}_{d,p} \}` (or
 other methods like Monte Carlo and regression) as
 
-.. math:: Q_{\bm{\alpha}} = \frac{\langle Q, \psi_{\bm \alpha} \rangle}{\langle \psi_{\bm \alpha}^2 \rangle} =\langle Q, \psi_{\bm \alpha} \rangle,  \quad \bm{\alpha} \in \mathcal{J}_{d,p}\,.
+.. math:: Q_{\boldsymbol{\alpha}} = \frac{\langle Q, \psi_{\boldsymbol \alpha} \rangle}{\langle \psi_{\boldsymbol \alpha}^2 \rangle} =\langle Q, \psi_{\boldsymbol \alpha} \rangle,  \quad \boldsymbol{\alpha} \in \mathcal{J}_{d,p}\,.
 
 The basis adaptation method tries to rotate the input Gaussian variables
 by an isometry such that the QoI can be well approximated by PCE of the
-first several dimensions of the new orthogonal basis. Let :math:`\bm A`
+first several dimensions of the new orthogonal basis. Let :math:`\boldsymbol A`
 be an isometry on :math:`\mathbb{R}^{d\times d}` such that
-:math:`\bm{AA^T}=\bm I`, and :math:`\bm \eta` be defined as
+:math:`\boldsymbol{AA^T}=\boldsymbol I`, and :math:`\boldsymbol \eta` be defined as
 
-.. math:: \bm \eta = \bm{A\xi}, \qquad \bm \eta = \begin{Bmatrix} \bm{\eta}_r\\ \bm{\eta }_{\neg r}\end{Bmatrix} \,,
+.. math:: \boldsymbol \eta = \boldsymbol{A\xi}, \qquad \boldsymbol \eta = \begin{Bmatrix} \boldsymbol{\eta}_r\\ \boldsymbol{\eta }_{\neg r}\end{Bmatrix} \,,
 
-It follows that :math:`\bm{\eta}` also has multivariate Gaussian
-distribution. Then the expansion :math:`{Q}^{\bm A}` in terms of
-:math:`\bm{\eta}` can be obtained as
+It follows that :math:`\boldsymbol{\eta}` also has multivariate Gaussian
+distribution. Then the expansion :math:`{Q}^{\boldsymbol A}` in terms of
+:math:`\boldsymbol{\eta}` can be obtained as
 
-.. math:: {Q}^{\bm A}(\bm{\eta}) = \sum_{\bm{\beta}\in\mathcal{J}_{d,p}}Q_{\bm{\beta}}^{\bm A}\psi_{\bm \beta}(\bm \eta) \,.
+.. math:: {Q}^{\boldsymbol A}(\boldsymbol{\eta}) = \sum_{\boldsymbol{\beta}\in\mathcal{J}_{d,p}}Q_{\boldsymbol{\beta}}^{\boldsymbol A}\psi_{\boldsymbol \beta}(\boldsymbol \eta) \,.
 
-Since :math:`\{{\psi_{ \bm{\alpha}}(\bm{\xi})}\}` and
-:math:`\{{\psi_{ \bm{\beta}}(\bm{\eta})}\}` span the same space,
-:math:`{Q}^{\bm{A}}(\bm{\eta}(\bm{\xi})) \triangleq {Q}(\bm{\xi})`, and
+Since :math:`\{{\psi_{ \boldsymbol{\alpha}}(\boldsymbol{\xi})}\}` and
+:math:`\{{\psi_{ \boldsymbol{\beta}}(\boldsymbol{\eta})}\}` span the same space,
+:math:`{Q}^{\boldsymbol{A}}(\boldsymbol{\eta}(\boldsymbol{\xi})) \triangleq {Q}(\boldsymbol{\xi})`, and
 thus
 
 .. math::
 
    \label{eq14}
-   Q_{\bm{\alpha}} = \sum_{\bm{\beta}\in\mathcal{J}_{d,p}}Q_{\bm{\beta}}^{\bm A}\langle\psi_{\bm \beta}^{\bm A},\psi_{\bm \alpha}\rangle, \ \bm{\alpha}\in \mathcal{J}_{d,p}\,.
+   Q_{\boldsymbol{\alpha}} = \sum_{\boldsymbol{\beta}\in\mathcal{J}_{d,p}}Q_{\boldsymbol{\beta}}^{\boldsymbol A}\langle\psi_{\boldsymbol \beta}^{\boldsymbol A},\psi_{\boldsymbol \alpha}\rangle, \ \boldsymbol{\alpha}\in \mathcal{J}_{d,p}\,.
 
 This latter equation provides foundation to transform PCE from the
-original space spanned by :math:`\bm{\xi}` to the new space spanned by
-:math:`\bm{\eta}`. In the classical Gaussian adaptation, also called
-linear adaptation, the rotation matrix :math:`\bm A` is constructed such
+original space spanned by :math:`\boldsymbol{\xi}` to the new space spanned by
+:math:`\boldsymbol{\eta}`. In the classical Gaussian adaptation, also called
+linear adaptation, the rotation matrix :math:`\boldsymbol A` is constructed such
 that
 
 .. math::
 
    \label{eq15}
-   \eta_1 = \sum_{\bm{\alpha}\in\mathcal{J}_{d,1}} Q_{\bm{\alpha}}\psi_{\bm \alpha}(\bm{\xi}) = \sum_{i=1}^{d}Q_{\bm e_i} \xi_i
+   \eta_1 = \sum_{\boldsymbol{\alpha}\in\mathcal{J}_{d,1}} Q_{\boldsymbol{\alpha}}\psi_{\boldsymbol \alpha}(\boldsymbol{\xi}) = \sum_{i=1}^{d}Q_{\boldsymbol e_i} \xi_i
 
-where :math:`\bm e_i` is :math:`d`-dimensional multi-index with 1 at
+where :math:`\boldsymbol e_i` is :math:`d`-dimensional multi-index with 1 at
 :math:`i`-th location and zeros elsewhere, *i.e.* the first order PCE
 coefficients in the original space are placed in the first row of the
-initial construction of :math:`\bm{A}`. The benefit of this approach is
+initial construction of :math:`\boldsymbol{A}`. The benefit of this approach is
 that the complete Gaussian components of :math:`Q` are contained in the
 variable :math:`\eta_1`. Note that the first order PC coefficients also
 represent the sensitivities of the input parameters because the
 derivative of the first order PCE expansion with respect to each
 variable is always equal to its coefficient. Once the first the row of
-:math:`\bm{A}` is defined, the first order PC coefficient with largest
-absolute value are placed on each subsequent row of :math:`\bm{A}` in
-the same columns as they appear in the first row of :math:`\bm{A}`. All
+:math:`\boldsymbol{A}` is defined, the first order PC coefficient with largest
+absolute value are placed on each subsequent row of :math:`\boldsymbol{A}` in
+the same columns as they appear in the first row of :math:`\boldsymbol{A}`. All
 other elements are equal to zero. For instance, if we consider the
 following PCE expansion
 
-.. math:: Q(\bm{\xi}) = \beta_0 + 2 \xi_1 + 5 \xi_2 + 1 \xi_3,
+.. math:: Q(\boldsymbol{\xi}) = \beta_0 + 2 \xi_1 + 5 \xi_2 + 1 \xi_3,
 
-the corresponding :math:`\bm{A}` would be
+the corresponding :math:`\boldsymbol{A}` would be
 
 .. math::
 
@@ -337,51 +341,51 @@ the corresponding :math:`\bm{A}` would be
 
 The procedure described above reflects the relative
 importance/sensitivities with respect to the original input parameters.
-A Gram-Schmidt procedure is then applied to make :math:`\bm{A}` an
+A Gram-Schmidt procedure is then applied to make :math:`\boldsymbol{A}` an
 isometry. The transformed variables has descending importance in the
 probabilistic space which is the foundation that we could achieve
 accurate representation of QoI by only the first several dimensions.
 
 Suppose the dimension after reduction is :math:`r<d`, we can project
 :math:`Q` to the space spanned by Hermite polynomials
-:math:`\{ \psi_{ \bm{\beta} }^{ \bm{A}_r }, \bm\beta \in \mathcal{J}_{r,p}\}`,
+:math:`\{ \psi_{ \boldsymbol{\beta} }^{ \boldsymbol{A}_r }, \boldsymbol\beta \in \mathcal{J}_{r,p}\}`,
 
 .. math::
 
    \label{eq10}
-   {Q}^{\bm{A}_r}(\bm{\eta}_r)
-   = {Q}^{\bm{A}}\left(\begin{Bmatrix} \bm{\eta}_r \\ \bm{0} \end{Bmatrix}\right)
-   = \sum_{\bm{\beta}\in\mathcal{J}_{r,p}} Q_{\bm{\beta}}^{\bm{A}_r} \psi_{\bm{\beta}}(\bm{\eta}_r)
+   {Q}^{\boldsymbol{A}_r}(\boldsymbol{\eta}_r)
+   = {Q}^{\boldsymbol{A}}\left(\begin{Bmatrix} \boldsymbol{\eta}_r \\ \boldsymbol{0} \end{Bmatrix}\right)
+   = \sum_{\boldsymbol{\beta}\in\mathcal{J}_{r,p}} Q_{\boldsymbol{\beta}}^{\boldsymbol{A}_r} \psi_{\boldsymbol{\beta}}(\boldsymbol{\eta}_r)
 
 where :math:`\mathcal{J}_{r,p}\subset\mathcal{J}_{d,p}` is the set of
 multi-indices that only have non-zero entries regarding
-:math:`\bm{\eta}_r`; :math:`\bm{A}_r` are the first :math:`r` rows of
-the rotation matrix :math:`\bm{A}`; and the superscript :math:`\bm{A}_r`
-stresses that the expansion is in terms of :math:`\bm{\eta}_r`. PC
+:math:`\boldsymbol{\eta}_r`; :math:`\boldsymbol{A}_r` are the first :math:`r` rows of
+the rotation matrix :math:`\boldsymbol{A}`; and the superscript :math:`\boldsymbol{A}_r`
+stresses that the expansion is in terms of :math:`\boldsymbol{\eta}_r`. PC
 coefficients of the above expansion are obtained by projecting :math:`Q`
 to the space spanned by
-:math:`\{\psi_{\bm{\beta}}^{\bm{A}_r}, \bm\beta \in \mathcal{J}_{r,p}\}`
+:math:`\{\psi_{\boldsymbol{\beta}}^{\boldsymbol{A}_r}, \boldsymbol\beta \in \mathcal{J}_{r,p}\}`
 
 .. math::
 
    \label{eq11}
-   Q_{\bm{\beta}}^{\bm{A}_r} = \langle Q, \psi_{ \bm{\beta}}^{\bm{A}_r} \rangle\,.
+   Q_{\boldsymbol{\beta}}^{\boldsymbol{A}_r} = \langle Q, \psi_{ \boldsymbol{\beta}}^{\boldsymbol{A}_r} \rangle\,.
 
 The PC coefficient in :math:`\eta` space can be transformed to
 :math:`\xi` space by eq. (`[eq14] <#eq14>`__) as
 
-.. math:: \tilde{Q}_{\bm{\alpha}} = \sum_{\bm{\beta}\in\mathcal{J}_{r,p}} Q_{\bm{\beta}}^{\bm{A}_r} \langle \psi_{\bm{\beta}}^{\bm{A}_r}, \psi_{\bm \alpha} \rangle\,.
+.. math:: \tilde{Q}_{\boldsymbol{\alpha}} = \sum_{\boldsymbol{\beta}\in\mathcal{J}_{r,p}} Q_{\boldsymbol{\beta}}^{\boldsymbol{A}_r} \langle \psi_{\boldsymbol{\beta}}^{\boldsymbol{A}_r}, \psi_{\boldsymbol \alpha} \rangle\,.
 
 If we define the vectors of the PCE coefficients
-:math:`\tilde{\bm{Q}}_{coeff} := \{\tilde{Q}_{\bm{\alpha}},\, \bm{\alpha}\in\mathcal{J}_{d,p}\}`
+:math:`\tilde{\boldsymbol{Q}}_{coeff} := \{\tilde{Q}_{\boldsymbol{\alpha}},\, \boldsymbol{\alpha}\in\mathcal{J}_{d,p}\}`
 and
-:math:`\bm{Q}_{coeff} := \{Q_{\bm{\alpha}},\, \bm{\alpha}\in\mathcal{J}_{d,p}\}`,
+:math:`\boldsymbol{Q}_{coeff} := \{Q_{\boldsymbol{\alpha}},\, \boldsymbol{\alpha}\in\mathcal{J}_{d,p}\}`,
 the relative 2-norm error of PCE in :math:`\xi` space can be measured by
 
 .. math::
 
    \label{eq19}
-   \bm{\epsilon}_D = \frac{\left\| \bm{Q}_{coeff} - \tilde{\bm{Q}}_{coeff} \right\|_2} {\left\| \bm{Q}_{coeff} \right\|_2} \,.
+   \boldsymbol{\epsilon}_D = \frac{\left\| \boldsymbol{Q}_{coeff} - \tilde{\boldsymbol{Q}}_{coeff} \right\|_2} {\left\| \boldsymbol{Q}_{coeff} \right\|_2} \,.
 
 Note that although (`[eq19] <#eq19>`__) provides a way to compare the
 :math:`r`-d adaptation with the full dimensional PCE, in practical, it
@@ -396,11 +400,11 @@ implementation relies on the sample average of the weighted 2-norm of
 the difference between the physical coordinates of the pilot samples,
 :math:`\xi^{(i)}`, and their approximation after the mapping through the
 reduced rotation matrix,
-:math:`\tilde{\xi}^{(i)} = \bm{A}_r^{\mathrm{T}} \bm{\eta}_r^{(i)} = \bm{A}_r^{\mathrm{T}} \bm{A}_r \xi^{(i)}`:
+:math:`\tilde{\xi}^{(i)} = \boldsymbol{A}_r^{\mathrm{T}} \boldsymbol{\eta}_r^{(i)} = \boldsymbol{A}_r^{\mathrm{T}} \boldsymbol{A}_r \xi^{(i)}`:
 
-.. math:: \varpi = \frac{1}{N_p} \sum_{i=1}^{N_p} \parallel \bm{w} \odot \tilde{\bm{\xi}}^{(i)} - \bm{w} \odot {\bm{\xi}}^{(i)} \parallel_2.
+.. math:: \varpi = \frac{1}{N_p} \sum_{i=1}^{N_p} \parallel \boldsymbol{w} \odot \tilde{\boldsymbol{\xi}}^{(i)} - \boldsymbol{w} \odot {\boldsymbol{\xi}}^{(i)} \parallel_2.
 
-The weights :math:`\bm{w}` in this metrics are the :math:`d` first order
+The weights :math:`\boldsymbol{w}` in this metrics are the :math:`d` first order
 coefficients, obtained after the pilot samples in the original space.
 Subsequent approximations for :math:`\tilde{\xi}^{(i)}` are considered
 for :math:`r=1,\dots,d` and the final truncation dimension is determined
