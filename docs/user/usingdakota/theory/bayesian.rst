@@ -1,4 +1,4 @@
-.. _`uq:bayes`:
+ .. _`uq:bayes`:
 
 Bayesian Methods
 ================
@@ -383,6 +383,7 @@ in :numref:`fig:rosen_prop_covar_b`.
 .. figure:: img/rosen_00_prior.png
    :alt: Proposal covariance defined from uniform prior.
    :name: fig:rosen_prop_covar_a
+   :width: 600
    :align: center
 
    Proposal covariance defined from uniform prior.
@@ -390,6 +391,7 @@ in :numref:`fig:rosen_prop_covar_b`.
 .. figure:: img/rosen_00_pce_hessian.png
    :alt: Proposal covariance defined from misfit Hessian.
    :name: fig:rosen_prop_covar_b
+   :width: 600
    :align: center
 
    Proposal covariance defined from uniform prior.
@@ -414,6 +416,7 @@ MCMC improvements.
 .. figure:: img/rosen_restart_mle_map.png
    :alt: Restarted chain
    :name: fig:rosen_restart_a
+   :width: 600
    :align: center
 
    Restarted chain
@@ -421,6 +424,7 @@ MCMC improvements.
 .. figure:: img/rosen_pce_m11_50up_stdnormal_rejection.png
    :alt: Rejection rates
    :name: fig:rosen_restart_b
+   :width: 600
    :align: center
 
    Rejection rates
@@ -711,6 +715,7 @@ insufficiently captures the given experimental data.
          truth :math:`y(t,x)`, and experimental data :math:`d(t,x)` for
          configurations :math:`x = 10` and :math:`x = 15`.
    :name: fig:md_uncorr
+   :width: 600
    :align: center
 
    Graphs of the uncorrected model output :math:`m(t,x)`, the truth
@@ -816,9 +821,9 @@ remaining temperatures will be used to evaluate the performance of the
 corrected model. The calibration data and the resulting calibrated model
 are shown in Figure `1.4 <#fig:mat_uncorr>`__. With experimental data,
 the observations may not be taken at the same independent field
-coordinates, so the keyword ``interpolate`` can be used in the
-``responses`` block of the Dakota input file. The uncorrected model does
-not adequately capture the experimental data.
+coordinates, so the keyword :dakkw:`responses-calibration_terms-calibration_data-interpolate`
+can be used in the :dakkw:`responses` block of the Dakota input file.
+The uncorrected model does not adequately capture the experimental data.
 
 .. figure:: img/moddiscrep_ExpAllData.png
    :alt: Graphs of the experimental data :math:`d(t,x)` for
@@ -859,6 +864,8 @@ discrepancy model.
          for configurations (temperatures) :math:`x = 
          373.15K`, :math:`x = 673.15K`, and :math:`x = 973.15K`.
    :name: fig:mat_uncorr
+   :width: 600
+   :align: center
 
    Graphs of the calibration data :math:`d(t,x)` and uncorrected
    calibrated model :math:`m(t, \boldsymbol{\theta}, x)` for
@@ -873,7 +880,7 @@ Experimental Design
 Experimental design algorithms seek to add observational data that
 informs model parameters and reduces their uncertainties. Typically, the
 observational data :math:`\boldsymbol{d}` used in the Bayesian
-update `[eq:BayesThm] <#eq:BayesThm>`__ is taken from physical
+update :eq:`BayesThm` is taken from physical
 experiments. However, it is also common to use the responses or output
 from a high-fidelity model as :math:`\boldsymbol{d}` in the calibration
 of a low-fidelity model. Furthermore, this calibration can be done with
@@ -914,25 +921,29 @@ integral role in the calculation of the likelihood. Let us rewrite
 Bayes’ Rule as
 
 .. math::
+   :label: expdesign_bayes
 
    {f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d(\xi)} \right) 
    = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta} \right)
    \mathcal{L}\left( \boldsymbol{\theta;d(\xi)} \right)}}
    {{{f_{\boldsymbol{D}}}\left( \boldsymbol{d(\xi)} \right)}},
-   \label{eq:expdesign_bayes}
 
 making explicit the dependence of the data on the design conditions. As
-in Section `1.1 <#uq:bayes:basic>`__, the difference between the
+in :ref:`Fundamentals <uq:bayes:basic>`, the difference between the
 high-fidelity and low-fidelity model responses is assumed to be Gaussian
 such that
 
-.. math:: d_{i}(\boldsymbol{\xi_{j}}) = q_{i}(\boldsymbol{\theta,\xi}_{j}) + \epsilon_{i},
+.. math::
+   :label: expdesign_bayes_2
+
+   d_{i}(\boldsymbol{\xi_{j}}) = q_{i}(\boldsymbol{\theta,\xi}_{j}) + \epsilon_{i},
 
 where :math:`\boldsymbol{\xi}_{j}` are the configuration specifications
 of the :math:`j`\ th experiment. The experiments are considered to be
 independent, making the misfit
 
 .. math::
+   :label: expdesign_bayes_3
 
    M(\boldsymbol{\theta, d(\xi)}) = \frac{1}{2} \sum_{j = 1}^{m} 
    \left( \boldsymbol{d}(\boldsymbol{\xi}_{j}) - 
@@ -948,14 +959,15 @@ space. Among these candidates, we seek that which maximizes the mutual
 information,
 
 .. math::
+   :label: optimal_design
 
-   \boldsymbol{\xi}^{*} = \argmax_{\boldsymbol{\xi}_{j}} I(\boldsymbol{\theta},
-   \boldsymbol{d}(\boldsymbol{\xi}_{j}) ),
-   \label{eq:optimal_design}
+   \boldsymbol{\xi}^{*} = \text{arg max}_{\boldsymbol{\xi}_{j}} I(\boldsymbol{\theta},
+   \boldsymbol{d}(\boldsymbol{\xi}_{j}) ),   
 
 where the mutual information is given by
 
 .. math::
+   :label: mutual_info
 
    I(\boldsymbol{\theta}, \boldsymbol{d}(\boldsymbol{\xi}_{j})) = \iint 
    {f_{\boldsymbol{\Theta ,D}}}\left( \boldsymbol{\theta ,d(\xi}_{j}) \right)
@@ -963,12 +975,11 @@ where the mutual information is given by
    \right)}{f_{\boldsymbol{\Theta}}\left(\boldsymbol{\theta} \right) 
    f_{\boldsymbol{D}}\left(\boldsymbol{d}(\boldsymbol{\xi}_{j}) \right) }
    d\boldsymbol{\theta} d\boldsymbol{d}.
-   \label{eq:mutual_info}
 
 The mutual information must, therefore, be computed for each candidate
 design point :math:`\boldsymbol{\xi}_{j}`. There are two
 :math:`k`-nearest neighbor methods available in Dakota that can be used
-to approximate Eq. `[eq:mutual_info] <#eq:mutual_info>`__, both of which
+to approximate :eq:`mutual_info`, both of which
 are derived in :cite:p:`Kra04`. Within Dakota, the posterior
 distribution
 :math:`f_{\boldsymbol{\Theta | D}}\left(\boldsymbol{\theta | d(\xi)}\right)`
@@ -995,8 +1006,8 @@ is the number of responses that lie within :math:`\varepsilon_{i}` of
 as :cite:p:`Kra04`
 
 .. math::
-
-   \label{eq:ksg1}
+   :label: ksg1
+   
    I(\boldsymbol{\theta}, \boldsymbol{d}(\boldsymbol{\xi}_{j})) \approx
    \psi(k) + \psi(N) - \frac{1}{N-1} \sum_{i = 1}^{N} \left[ 
    \psi(n_{\boldsymbol{\theta},i}) - \psi(n_{\boldsymbol{d},i}) \right],
@@ -1025,19 +1036,21 @@ number of responses that lie within
 The mutual information then is approximated as :cite:p:`Kra04`
 
 .. math::
-
-   \label{eq:ksg2}
+   :label: ksg2
+   
    I(\boldsymbol{\theta}, \boldsymbol{d}(\boldsymbol{\xi}_{j})) \approx
    \psi(k) + \psi(N) - \frac{1}{k} - \frac{1}{N-1} \sum_{i = 1}^{N} \left[ 
    \psi(n_{\boldsymbol{\theta},i}) - \psi(n_{\boldsymbol{d},i}) \right].
 
-By default, Dakota uses Eq. `[eq:ksg1] <#eq:ksg1>`__ to approximate the
+By default, Dakota uses :eq:`ksg1` to approximate the
 mutual information. The user may decide to use
-Eq. `[eq:ksg2] <#eq:ksg2>`__ by including the keyword ``ksg2`` in the
-Dakota input script. An example can be found
-in :cite:p:`RefMan`. Users also have the option of specifying
+:eq:`ksg2` by including the keyword :dakkw:`method-bayes_calibration-experimental_design-ksg2` in the
+Dakota input file.
+
+Users also have the option of specifying
 statistical noise in the low-fidelity model through the
-``simulation_variance`` keyword. When this option is included in the
+:dakkw:`responses-calibration_terms-simulation_variance` keyword.
+When this option is included in the
 Dakota input file, a random “error" is added to the low-fidelity model
 responses when the matrix :math:`X` is built. This random error is
 normally distributed, with variance equal to ``simulation_variance``.
@@ -1062,10 +1075,8 @@ using the newly updated parameters. These stopping criteria are:
 -  the user-specified maximum number of high-fidelity model evaluations
    is reached (this does not include those needed to create the initial
    data set)
-
 -  the relative change in mutual information from one iteration to the
    next is sufficiently small (less than :math:`5\%`)
-
 -  the set of proposed candidate design conditions has been exhausted
 
 If any one of these criteria is met, the algorithm is considered
@@ -1077,53 +1088,51 @@ Batch Point Selection
 The details of the experimental design algorithm above assume only one
 optimal design point is being selected for each iteration of the
 algorithm. The user may specify the number of optimal design points to
-be concurrently selected by including the ``batch_size`` in the input
-script. The optimality
-condition `[eq:optimal_design] <#eq:optimal_design>`__ is then replaced
-by
+be concurrently selected by including the :dakkw:`method-bayes_calibration-experimental_design-batch_size`
+in the input file. The optimality condition :eq:`optimal_design` is then replaced by
 
 .. math::
+   :label: batch_xi_true
 
-   \left\{ \boldsymbol{\xi}^{*} \right\} = \argmax I\left(\boldsymbol{\theta}, 
+   \left\{ \boldsymbol{\xi}^{*} \right\} = \text{arg max} I\left(\boldsymbol{\theta}, 
    \left\{ \boldsymbol{d}(\boldsymbol{\xi})\right\}\right),
-   \label{eq:batch_xi_true}
 
-where
-:math:`\left\{ \boldsymbol{\xi}^{*} \right\} = \left\{ \boldsymbol{\xi}^{*}_{1},
+where :math:`\left\{ \boldsymbol{\xi}^{*} \right\} = \left\{ \boldsymbol{\xi}^{*}_{1},
 \boldsymbol{\xi}_{2}^{*}, \ldots, \boldsymbol{\xi}_{s}^{*} \right\}` is
 the set of optimal designs, :math:`s` being defined by ``batch_size``.
 If the set of design points from which the optimal designs are selected
-is of size :math:`m`, finding
-:math:`\left\{ \boldsymbol{\xi}^{*} \right\}` as
-in `[eq:batch_xi_true] <#eq:batch_xi_true>`__ would require
-:math:`m!/(m-s)!` mutual information calculations, which may become
-quite costly. Dakota therefore implements a greedy batch point selection
-algorithm in which the first optimal design,
+is of size :math:`m`, finding :math:`\left\{ \boldsymbol{\xi}^{*} \right\}` as
+in :eq:`batch_xi_true` would require :math:`m!/(m-s)!` mutual information
+calculations, which may become quite costly. Dakota therefore implements a
+greedy batch point selection algorithm in which the first optimal design,
 
 .. math::
+   :label: bayes_bps_1
 
-   \boldsymbol{\xi}^{*}_{1} = \argmax_{\boldsymbol{\xi}_{j}} I(\boldsymbol{\theta},
+   \boldsymbol{\xi}^{*}_{1} = \text{arg max}_{\boldsymbol{\xi}_{j}} I(\boldsymbol{\theta},
    \boldsymbol{d}(\boldsymbol{\xi}_{j}) ),
 
 is identified, and then used to find the second,
 
 .. math::
+   :label: bayes_bps_2
 
-   \boldsymbol{\xi}^{*}_{2} = \argmax_{\boldsymbol{\xi}_{j}} 
+   \boldsymbol{\xi}^{*}_{2} = \text{arg max}_{\boldsymbol{\xi}_{j}} 
    I(\boldsymbol{\theta}, \boldsymbol{d}(\boldsymbol{\xi}_{j}) |
    \boldsymbol{d}(\boldsymbol{\xi}_{1}^{*})).
 
 Generally, the :math:`i^{th}` selected design will satisfy
 
 .. math::
+   :label: bayes_bps_3
 
-   \boldsymbol{\xi}^{*}_{i} = \argmax_{\boldsymbol{\xi}_{j}} 
+   \boldsymbol{\xi}^{*}_{i} = \text{arg max}_{\boldsymbol{\xi}_{j}} 
    I(\boldsymbol{\theta}, \boldsymbol{d}(\boldsymbol{\xi}_{j}) |
    \boldsymbol{d}(\boldsymbol{\xi}_{1}^{*}), \ldots, 
    \boldsymbol{d}(\boldsymbol{\xi}_{i-1}^{*})).
 
 The same mutual information calculation
-algorithms `[eq:ksg1] <#eq:ksg1>`__ and `[eq:ksg2] <#eq:ksg2>`__
+algorithms :eq:`ksg1` and :eq:`ksg2`
 described above are applied when calculating the conditional mutual
 information. The additional low-fidelity model information is appended
 to the responses portion of the matrix :math:`X`, and the calculation of
@@ -1144,9 +1153,9 @@ variable :math:`X \in \mathcal{X}` with probability distribution
 function :math:`p`, the entropy :math:`h` is given by
 
 .. math::
+   :label: ent_cont
 
    h(p) = -\int_{\mathcal{X}} p(x) \log p(x) dx.
-   \label{ent_cont}
 
 The entropy captures the average uncertainty in a random
 variable :cite:p:`Cov2006`, and is therefore quite commonly
@@ -1160,24 +1169,30 @@ probability distributions. It is characterized by the Kullback-Leibler
 Divergence,
 
 .. math::
+   :label: dkl_discrete
 
    D_{KL}(p \| q) = \int p(x) \log \frac{p(x)}{q(x)} dx,
-   \label{dkl_discrete}
 
 which can also be written as
 
-.. math:: D_{KL}( p \| q)  = h(p,q) - h(p),
+.. math::
+   :label: dkl_discrete_2
+
+   D_{KL}( p \| q)  = h(p,q) - h(p),
 
 where :math:`h(p,q)` is the cross entropy of two distributions,
 
-.. math:: h(p,q) = \int p(x) \log q(x) dx.
+.. math::
+   :label: dkl_discrete_3
+
+   h(p,q) = \int p(x) \log q(x) dx.
 
 Because it is not symmetric
 (:math:`D_{KL} (p \| q) \neq D_{KL} (q \| p)`), the Kullback-Leibler
 Divergence is sometimes referred to as a pseudo-metric. However, it is
 non-negative, and equals zero if and only if :math:`p = q`.
 
-As in Section `1.7 <#uq:bayes_experimental_design>`__, the
+As in :ref:`Experimental Design <uq:bayes_experimental_design>`, the
 Kullback-Leibler Divergence is approximated with the :math:`k`-nearest
 neighbor method advocated in :cite:p:`Per2008`. Let the
 distributions :math:`p` and :math:`q` be represented by a collection of
@@ -1193,6 +1208,7 @@ neighbor distance is found, yielding a more general notation:
 to :math:`k`. Then
 
 .. math::
+   :label: itt_eq_misc_1
 
    D_{KL}(p \| q) \approx \frac{d}{n} \sum_{i=1}^{n} \left[ \log \frac{
    \nu_{k_{i}}(i)}{\rho_{l_{i}}(i)} \right] + \frac{1}{n} \sum_{i=1}^{n} 
@@ -1205,6 +1221,7 @@ The Kullback-Leibler Divergence is used within Dakota to quantify the
 amount of information gained during Bayesian calibration,
 
 .. math::
+   :label: itt_eq_misc_2
 
    IG( f_{\boldsymbol{\Theta | D}}(\boldsymbol{\theta| d}); 
    f_{\boldsymbol{\Theta}}(\boldsymbol{\theta}))
@@ -1219,7 +1236,10 @@ mutual information quantifies how much information they contain about
 each other. In this sense, it is a measure of the mutual dependence of
 two random variables. For continuous :math:`X` and :math:`Y`,
 
-.. math:: I(X, Y) = \iint p(x,y) \log \frac{ p(x,y) }{p(x)p(y)} \; dx \, dy,
+.. math::
+   :label: itt_eq_misc_3
+
+   I(X, Y) = \iint p(x,y) \log \frac{ p(x,y) }{p(x)p(y)} \; dx \, dy,
 
 where :math:`p(x,y)` is the joint pdf of :math:`X` and :math:`Y`, while
 :math:`p(x)` and :math:`p(y)` are the marginal pdfs of :math:`X` and
@@ -1228,10 +1248,13 @@ non-negative, with zero indicating the independence of :math:`X` and
 :math:`Y`. It is related to the Kullback-Leibler Divergence through the
 expression
 
-.. math:: I(X,Y) = D_{KL} ( p(x,y) \| p(x) p(y) ).
+.. math::
+   :label: itt_eq_misc_4
+   
+   I(X,Y) = D_{KL} ( p(x,y) \| p(x) p(y) ).
 
 The uses of the mutual information within Dakota have been noted in
-Section `1.7 <#uq:bayes_experimental_design>`__.
+:ref:`Experimental Design <uq:bayes_experimental_design>`.
 
 .. _`uq:cbayes`:
 
@@ -1303,13 +1326,16 @@ that :math:`Q` is a measurable map between the measurable spaces
 :math:`(\mathbf{\mathcal{D}}, \mathcal{B}_{\mathbf{\mathcal{D}}})`. For
 any :math:`A\in\mathcal{B}_{\mathbf{\mathcal{D}}}`, we then have
 
-.. math:: Q^{-1}(A) = \left\{ \lambda \in \mathbf{\Lambda}\ | \ Q(\lambda) \in A \right\}\in\mathcal{B}_{\mathbf{\Lambda}}, \quad \text{and} \quad Q(Q^{-1}(A))=A.
+.. math::
+   :label: mtsi_eq_misc_1
+
+   Q^{-1}(A) = \left\{ \lambda \in \mathbf{\Lambda}\ | \ Q(\lambda) \in A \right\}\in\mathcal{B}_{\mathbf{\Lambda}}, \quad \text{and} \quad Q(Q^{-1}(A))=A.
 
 Furthermore, given any :math:`B\in\mathcal{B}_{\mathbf{\Lambda}}`,
 
 .. math::
-
-   \label{:eq:mapprops}
+   :label: mapprops
+   
    B \subseteq Q^{-1}(Q(B)),
 
 although we note that in most cases :math:`B\neq Q^{-1}(Q(B))` even when
@@ -1323,8 +1349,8 @@ the stochastic inverse problem seeks a probability measure
 induced by the map, :math:`Q(\lambda)`, satisfies
 
 .. math::
-
-   \label{:eq:invdefn}
+   :label: invdefn
+   
    P_\mathbf{\Lambda}(Q^{-1}(A)) = P^{Q(P_\mathbf{\Lambda})}_\mathbf{\mathcal{D}}(A) = P_{\mathbf{\mathcal{D}}}^{\text{obs}}(A),
 
 for any :math:`A\in \mathcal{B}_{\mathbf{\mathcal{D}}}`.
@@ -1341,8 +1367,8 @@ probability measure and the map induce a push-forward measure
 :math:`A\in \mathcal{B}_{\mathbf{\mathcal{D}}}`,
 
 .. math::
-
-   \label{:eq:pfprior}
+   :label: pfprior
+   
    P_{\mathbf{\mathcal{D}}}^{Q(\text{prior})}(A) = P_{\mathbf{\Lambda}}^{\text{prior}}(Q^{-1}(A)).
 
 We assume that all of the probability measures (prior, observed and
@@ -1360,8 +1386,8 @@ density, when interpreted through a disintegration theorem, solves the
 stochastic inverse problem:
 
 .. math::
-
-   \label{:eq:postpdf}
+   :label: postpdf
+   
    \pi_{\mathbf{\Lambda}}^{\text{post}}(\lambda) = \pi_{\mathbf{\Lambda}}^{\text{prior}}(\lambda)\frac{\pi_{\mathbf{\mathcal{D}}}^{\text{obs}}(Q(\lambda))}{\pi_{\mathbf{\mathcal{D}}}^{Q(\text{prior})}(Q(\lambda))}, \quad \lambda \in \mathbf{\Lambda}.
 
 One can immediately observe that if
