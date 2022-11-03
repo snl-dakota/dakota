@@ -1,13 +1,15 @@
+TEMPLATE
 Blurb::
-
-Sets the type of the convergence tolerance.
 
 Description::
 
-Can be absolute or relative.
-
 **Default Behavior**
-`"relative"`
+
+**Expected Output**
+
+**Usage Tips**
+
+**Additional Discussion**
 
 Topics::
 

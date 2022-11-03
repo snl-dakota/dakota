@@ -1,7 +1,18 @@
 Blurb::
+
+Minimizes the cost while targeting a certain variance given in keyword
+`convergence_tolerance`.
+
 Description::
+
+(Undocumented keyword)
+
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
+
 See_Also::

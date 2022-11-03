@@ -1,7 +1,16 @@
 Blurb::
-Description::
+
+(Experimental Capability) Filename for samples at which the user would
+like the posterior density calculated
+
+Description:: (Undocumented Keyword)
+
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
+
 See_Also::

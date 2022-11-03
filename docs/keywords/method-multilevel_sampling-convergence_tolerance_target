@@ -1,7 +1,21 @@
 Blurb::
-Description::
+
+Sets the target of the MLMC sample allocation, i.e. the constraint of
+the MLMC sample allocation problem
+
+Description:: 
+
+(Undocumented keyword)
+
+**Default Behavior**
+`"variance_constraint"`
+
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
+
 See_Also::
