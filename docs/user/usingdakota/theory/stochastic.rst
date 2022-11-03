@@ -209,8 +209,10 @@ and we precompute them for a given interpolation point set
 :math:`\xi_j, j \in 1, ..., m`. Then, defining the quantity
 :math:`l(\xi)` as
 
-.. math:: l(\xi) = \prod_{k=1}^m (\xi - \xi_k) \label{eq:barycentric_prod}
-   :label: stochastic-eq5
+.. math::
+   :label: barycentric_prod
+   
+   l(\xi) = \prod_{k=1}^m (\xi - \xi_k)
 
 which will be computed for each new interpolated point :math:`\xi`, we
 can rewrite :eq:`lagrange_interp_1d` as
@@ -1258,16 +1260,12 @@ bounds within an interval, respectively:
 .. math::
    :label: growth_Gauss_nonlin
 
-   \begin{aligned}
-   {\rm open~nonlinear:}~~m = 2^i - 1 \label{eq:}
-   \end{aligned}
+   {\rm open~nonlinear:}~~m = 2^i - 1
    
 .. math::
    :label: growth_Gauss_lin
 
-   \begin{aligned}
    {\rm open~linear:}   ~~m = 2 i - 1
-   \end{aligned}
 
 Nonlinear growth rules are used for fully nested rules (e.g.,
 Clenshaw-Curtis is closed fully nested and Gauss-Patterson is open fully
@@ -1519,7 +1517,7 @@ collocation ratio with typical values :math:`0.1 \leq r \leq 2`).
 Additional regression equations can be obtained through the use of
 derivative information (gradients and Hessians) from each collocation
 point (see the
-:ref:`use_derivatives <method-polynomial_chaos-expansion_order-collocation_ratio-use_derivatives>`
+:dakkw:`method-polynomial_chaos-expansion_order-collocation_ratio-use_derivatives`
 keyword), which can aid in scaling with respect to the number of random variables,
 particularly for adjoint-based derivative approaches.
 
@@ -1717,8 +1715,8 @@ minimizing
 and choose the tuning parameters
 
 .. math::
-
-   \label{eq:optimal_tuning-parameters}
+   :label: optimal_tuning-parameters
+   
    \boldsymbol{\beta}^\star = \text{arg min}\, CV(\hat{f}_{\boldsymbol{\beta}})\mathrm{Var}[e(\hat{f}_{\boldsymbol{\beta}}^{-k})]
 
 to construct the final “best” PCE approximation of :math:`f` that the
@@ -1883,6 +1881,7 @@ horizontal child exist.
          backwards neighbors exists in every dimension.
    :name: fig:index-dmissibiliy-examples
    :align: center
+   :width: 600
 
    Identification of the admissible indices of an index (red). The
    indices of the current basis :math:`\Lambda` are gray and
@@ -1961,10 +1960,10 @@ Mean and covariance of polynomial chaos expansions are available in
 simple closed form:
 
 .. math::
-   :label: covar_pce_1
+   :label: mean_pce
 
    \mu_i = \langle R_i \rangle ~~\cong~~ \sum_{k=0}^P \alpha_{ik} \langle 
-   \Psi_k(\boldsymbol{\xi}) \rangle ~=~ \alpha_{i0} \label{eq:mean_pce}
+   \Psi_k(\boldsymbol{\xi}) \rangle ~=~ \alpha_{i0}
 
 .. math::
    :label: covar_pce_2
@@ -2079,9 +2078,10 @@ Similar expressions may be derived for stochastic collocation, starting
 from :eq:`lagrange_interp_nd`:
 
 .. math::
+   :label: dR_dxi_sc
 
    \frac{dR}{d\xi_i} = \sum_{j=1}^{N_p} r_j 
-   \frac{d\boldsymbol{L}_j}{d\xi_i}(\boldsymbol{\xi}) \label{eq:dR_dxi_sc}
+   \frac{d\boldsymbol{L}_j}{d\xi_i}(\boldsymbol{\xi})
 
 where the multidimensional interpolant :math:`\boldsymbol{L}_j` is
 formed over either tensor-product quadrature points or a Smolyak sparse
@@ -2205,17 +2205,17 @@ an expansion to synchronize with this increased grid resolution. In the
 case of increasing the order of an isotropic tensor-product quadrature
 grid or the level of an isotropic Smolyak sparse grid, a p-refinement
 approach increases the order of the global basis polynomials
-(:ref:`Sections 1.1 <theory:uq:expansion:orth>`,
-:ref:`1.2.1.1 <theory:uq:expansion:interp:Lagrange>`,
-and :ref:`1.2.1.2 <theory:uq:expansion:interp:Hermite>`) in a synchronized manner
+(See :ref:`Orthogonal polynomials <theory:uq:expansion:orth>`,
+:ref:`Global value-based <theory:uq:expansion:interp:Lagrange>`,
+and :ref:`Global gradient-enhanced <theory:uq:expansion:interp:Hermite>`) in a synchronized manner
 and an h-refinement approach reduces the approximation range of fixed
 order local basis polynomials
-(Sections :ref:`1.2.1.3 <theory:uq:expansion:interp:linear>`
-and :ref:`1.2.1.4 <theory:uq:expansion:interp:cubic>`). And in the case of
+(See :ref:`Local value-based <theory:uq:expansion:interp:linear>`
+and :ref:`Local gradient-enhanced <theory:uq:expansion:interp:cubic>`). And in the case of
 uniform p-refinement with PCE regression, the collocation oversampling
-ratio (refer to Methods specification within Dakota Reference
-Manual :cite:p:`RefMan`) is held fixed, such that an increment
-in isotropic expansion order is matched with a corresponding increment
+ratio (see :dakkw:`method-polynomial_chaos-expansion_order-collocation_ratio`)
+is held fixed, such that an increment in isotropic expansion order is matched
+with a corresponding increment
 in the number of structured (probabilistic collocation) or unstructured
 samples (point collocation) employed in the linear least squares solve.
 
@@ -2244,7 +2244,7 @@ global sensitivity analysis, a posteriori error estimation, or decay
 rate estimation. In the current release, we focus on global sensitivity
 analysis and decay rate estimation. In the former case, dimension
 preference is defined from total Sobol’ indices
-(Eq. `[eq:total_sobol] <#eq:total_sobol>`__) and is updated on every
+(see :eq:`total_sobol`) and is updated on every
 iteration of the adaptive refinement procedure, where higher variance
 attribution for a dimension indicates higher preference for that
 dimension. In the latter case, the spectral decay rates for the
@@ -2256,9 +2256,8 @@ Richardson extrapolation. The dimension preference is then defined from
 the inverse of the rate: slowly converging dimensions need greater
 refinement pressure. For both of these cases, the dimension preference
 vector supports anisotropic sparse grids based on a linear index-set
-constraint
-(Eq. `[eq:aniso_smolyak_constr] <#eq:aniso_smolyak_constr>`__) or
-anisotropic tensor grids (Eq. `[eq:multi_tensor] <#eq:multi_tensor>`__)
+constraint (see :eq:`aniso_smolyak_constr`) or
+anisotropic tensor grids (see :eq:`multi_tensor`)
 with dimension order scaled proportionately to preference; for both
 grids, dimension refinement lower bound constraints are enforced to
 ensure that all previously evaluated points remain in new refined grids.
@@ -2271,15 +2270,15 @@ ensure that all previously evaluated points remain in new refined grids.
 Given an anisotropic global grid, the expansion refinement proceeds as
 for the uniform case, in that the p-refinement approach increases the
 order of the global basis polynomials
-(Sections `1.1 <#theory:uq:expansion:orth>`__,
-`1.2.1.1 <#theory:uq:expansion:interp:Lagrange>`__,
-and `1.2.1.2 <#theory:uq:expansion:interp:Hermite>`__) in a synchronized manner
+(see :ref:`Orthogonal polynomials <theory:uq:expansion:orth>`,
+:ref:`Global value-based <theory:uq:expansion:interp:Lagrange>`,
+and :ref:`Global gradient-based <theory:uq:expansion:interp:Hermite>`) in a synchronized manner
 and an h-refinement approach reduces the approximation range of fixed
 order local basis polynomials
-(Sections `1.2.1.3 <#theory:uq:expansion:interp:linear>`__
-and `1.2.1.4 <#theory:uq:expansion:interp:cubic>`__). Also, the same grid
+(See :ref:`Local value-based <theory:uq:expansion:interp:linear>`
+and :ref:`Local gradient-enhanced <theory:uq:expansion:interp:cubic>`). Also, the same grid
 change requirements and convergence criteria described for uniform
-refinement (Section `1.11.1 <#theory:uq:expansion:refine:uniform>`__) are
+refinement (See :ref:`Uniform refinement with unbiased grids <theory:uq:expansion:refine:uniform>`) are
 applied in this case.
 
 Goal-oriented dimension-adaptive refinement with greedy adaptation
@@ -2304,7 +2303,7 @@ refinement of stochastic expansions using the following customizations:
    polynomial chaos expansions for each active and accepted index set.
    Pushing and popping index sets then involves increments of tensor
    chaos expansions (as described in
-   Section `1.6.3 <#theory:uq:expansion:spectral_sparse>`__) along with
+   :ref:`Smolyak sparse grids <theory:uq:expansion:spectral_sparse>`) along with
    corresponding increments to the Smolyak combinatorial coefficients.
 
 -  Since we support bases for more than uniform distributions on a
@@ -2337,10 +2336,11 @@ refinement of stochastic expansions using the following customizations:
 Hierarchical increments in a variety of statistical QoI may be derived,
 starting from increments in response mean and covariance. The former is
 defined from computing the expectation of the difference interpolants in
-Eqs. `[eq:hierarch_interp_nd_L] <#eq:hierarch_interp_nd_L>`__-`[eq:hierarch_interp_nd_H] <#eq:hierarch_interp_nd_H>`__,
+:eq:`hierarch_interp_nd_L` - :eq:`hierarch_interp_nd_H`,
 and the latter is defined as:
 
 .. math::
+   :label: greedy-adaptation-1
 
    \Delta \Sigma_{ij} = \Delta E[R_i R_j] - \mu_{R_i} \Delta E[R_j] - 
    \mu_{R_j} \Delta E[R_i] - \Delta E[R_i] \Delta E[R_j]
@@ -2348,7 +2348,7 @@ and the latter is defined as:
 Increments in standard deviation and reliability indices can
 subsequently be defined, where care is taken to preserve numerical
 precision through the square root operation (e.g., via Boost
-sqrt1pm1()).
+``sqrt1pm1()``).
 
 ..
    TODO:
@@ -2431,46 +2431,53 @@ To accomplish this goal, an expansion will first be formed for the model
 discrepancy (the difference between response results if additive
 correction or the ratio of results if multiplicative correction). These
 discrepancy functions are the same functions approximated in
-surrogate-based minimization (see Surrogate Models section within the
-Models chapter of the User’s Manual :cite:p:`UsersMan`). The
+:ref:`surrogate-based minimization <models:surrogate>`. The
 exact discrepancy functions are
 
 .. math::
+   :label: exact_A
 
-   \begin{aligned}
-   A(\boldsymbol{\xi}) & = & R_{hi}(\boldsymbol{\xi}) - R_{lo}(\boldsymbol{\xi})
-   \label{eq:exact_A} \\
-   B(\boldsymbol{\xi}) & = & 
-   \frac{R_{hi}(\boldsymbol{\xi})}{R_{lo}(\boldsymbol{\xi})} \label{eq:exact_B}\end{aligned}
+   A(\boldsymbol{\xi}) = R_{hi}(\boldsymbol{\xi}) - R_{lo}(\boldsymbol{\xi})
+
+.. math::
+   :label: exact_B
+
+   B(\boldsymbol{\xi}) = \frac{R_{hi}(\boldsymbol{\xi})}{R_{lo}(\boldsymbol{\xi})}
 
 Approximating the high-fidelity response functions using approximations
 of these discrepancy functions then involves
 
 .. math::
+   :label: correct_val_add
 
-   \begin{aligned}
-   \hat{R}_{hi_A}(\boldsymbol{\xi}) & = & R_{lo}(\boldsymbol{\xi}) + 
-   \hat{A}(\boldsymbol{\xi}) \label{eq:correct_val_add} \\
-   \hat{R}_{hi_B}(\boldsymbol{\xi}) & = & 
-   R_{lo}(\boldsymbol{\xi}) \hat{B}(\boldsymbol{\xi}) \label{eq:correct_val_mult}\end{aligned}
+   \hat{R}_{hi_A}(\boldsymbol{\xi}) = R_{lo}(\boldsymbol{\xi}) +  \hat{A}(\boldsymbol{\xi})
+
+.. math::
+   :label: correct_val_mult
+   
+   \hat{R}_{hi_B}(\boldsymbol{\xi}) = R_{lo}(\boldsymbol{\xi}) \hat{B}(\boldsymbol{\xi})
 
 where :math:`\hat{A}(\boldsymbol{\xi})` and
 :math:`\hat{B}(\boldsymbol{\xi})` are stochastic expansion
 approximations to the exact correction functions:
 
 .. math::
-
-   \begin{aligned}
-   \hat{A}(\boldsymbol{\xi}) & = & 
+   :label: stoch_exp_A
+   
+   \hat{A}(\boldsymbol{\xi}) = 
    \sum_{j=0}^{P_{hi}} \alpha_j \Psi_j(\boldsymbol{\xi}) ~~~\text{or}~~~ 
-   \sum_{j=1}^{N_{hi}} a_j \boldsymbol{L}_j(\boldsymbol{\xi}) \label{eq:stoch_exp_A} \\
-   \hat{B}(\boldsymbol{\xi}) & = &  
+   \sum_{j=1}^{N_{hi}} a_j \boldsymbol{L}_j(\boldsymbol{\xi})
+  
+.. math::
+   :label: stoch_exp_B
+   
+   \hat{B}(\boldsymbol{\xi}) = 
    \sum_{j=0}^{P_{hi}} \beta_j \Psi_j(\boldsymbol{\xi}) ~~~\text{or}~~~ 
-   \sum_{j=1}^{N_{hi}} b_j \boldsymbol{L}_j(\boldsymbol{\xi}) \label{eq:stoch_exp_B}\end{aligned}
+   \sum_{j=1}^{N_{hi}} b_j \boldsymbol{L}_j(\boldsymbol{\xi})
 
 where :math:`\alpha_j` and :math:`\beta_j` are the spectral coefficients
 for a polynomial chaos expansion (evaluated via
-Eq. `[eq:coeff_extract] <#eq:coeff_extract>`__, for example) and
+:eq:`coeff_extract`, for example) and
 :math:`a_j` and :math:`b_j` are the interpolation coefficients for
 stochastic collocation (values of the exact discrepancy evaluated at the
 collocation points).
@@ -2482,11 +2489,11 @@ that required to resolve the discrepancy (:math:`P_{lo} \gg P_{hi}` or
 order/level selections or automatically through adaptive refinement):
 
 .. math::
+   :label: stoch_exp_LF
 
    R_{lo}(\boldsymbol{\xi}) \cong
    \sum_{j=0}^{P_{lo}} \gamma_j \Psi_j(\boldsymbol{\xi}) ~~~\text{or}~~~ 
    \sum_{j=1}^{N_{lo}} r_{lo_j} \boldsymbol{L}_j(\boldsymbol{\xi}) 
-   \label{eq:stoch_exp_LF}
 
 Then the two expansions are combined (added or multiplied) into a new
 expansion that approximates the high fidelity model, from which the
@@ -2508,6 +2515,7 @@ this combination entails:
    form):
 
    .. math::
+      :label: stoch_exp_multiplicative_case
 
       \begin{aligned}
       \sum_{k=0}^{P_z} z_k \Psi_k(\boldsymbol{\xi}) & = & \sum_{i=0}^{P_x} \sum_{j=0}^{P_y}
