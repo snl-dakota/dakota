@@ -86,6 +86,7 @@ probability :math:`p(g > z)`, :math:`\beta_{\rm CDF}`, and
 :math:`\beta_{\rm CCDF}` are related to one another through
 
 .. math::
+   :label: eq:beta_cdf_ccdf
 
    \begin{aligned}
    p(g \le z)  & = & \Phi(-\beta_{\rm CDF})     \label{eq:p_cdf} \\

@@ -10,8 +10,8 @@ Reliability-Based Design Optimization (RBDO)
 
 Reliability-based design optimization (RBDO) methods are used to perform
 design optimization accounting for reliability metrics. The reliability
-analysis capabilities described in
-Section `[theory:uq:reliability:local] <#theory:uq:reliability:local>`__ provide a
+analysis capabilities described in Section :ref:`Local Reliability Methods <theory:uq:reliability:local>`
+provide a
 substantial foundation for exploring a variety of gradient-based RBDO
 formulations. :cite:p:`Eld05` investigated bi-level,
 fully-analytic bi-level, and first-order sequential RBDO approaches
@@ -40,20 +40,25 @@ reliability analysis maps :math:`\bar{z}` to :math:`p/\beta`, so RIA
 RBDO constrains :math:`p/\beta`:
 
 .. math::
+   :label: eq:rbdo_ria
 
-   \begin{aligned}
-     {\rm minimize }     & f \nonumber \\
-     {\rm subject \ to } & \beta \ge \bar{\beta} \nonumber \\
-     {\rm or }           & p \le \bar{p} \label{eq:rbdo_ria}\end{aligned}
+
+     \begin{aligned}
+     {\rm minimize }     & f \nonumber \\ 
+     {\rm subject \ to   } & \beta \ge \bar{\beta} \nonumber \\
+     {\rm or   }           & p \le \bar{p} 
+     \end{aligned}
 
 And PMA reliability analysis maps :math:`\bar{p}/\bar{\beta}` to
 :math:`z`, so PMA RBDO constrains :math:`z`:
 
 .. math::
+   :label: eq:rbdo_pma
 
-   \begin{aligned}
+     \begin{aligned}
      {\rm minimize }     & f \nonumber \\
-     {\rm subject \ to } & z \ge \bar{z} \label{eq:rbdo_pma}\end{aligned}
+     {\rm subject \ to } & z \ge \bar{z} 
+     \end{aligned}
 
 where :math:`z \ge \bar{z}` is used as the RBDO constraint for a
 cumulative failure probability (failure defined as
@@ -75,16 +80,16 @@ parameters), then the following first-order expressions may be
 used :cite:p:`Hoh86,Kar92,All04`:
 
 .. math::
+   :label: eq:deriv_z
 
    \begin{aligned}
-   \nabla_{\bf d} z           & = & \nabla_{\bf d} g \label{eq:deriv_z} \\
+   \nabla_{\bf d} z           & = & \nabla_{\bf d} g  \\
    \nabla_{\bf d} \beta_{cdf} & = & \frac{1}{{\parallel \nabla_{\bf u} G 
-   \parallel}} \nabla_{\bf d} g \label{eq:deriv_beta} \\
+   \parallel}} \nabla_{\bf d} g  \\
    \nabla_{\bf d} p_{cdf}     & = & -\phi(-\beta_{cdf}) \nabla_{\bf d} \beta_{cdf}
-   \label{eq:deriv_p}\end{aligned}
+   \end{aligned}
 
-where it is evident from
-Eqs. `[eq:beta_cdf_ccdf] <#eq:beta_cdf_ccdf>`__-`[eq:p_cdf_ccdf] <#eq:p_cdf_ccdf>`__
+where it is evident from Eqs. :math:numref:`eq:beta_cdf_ccdf`
 that :math:`\nabla_{\bf d} \beta_{ccdf} = -\nabla_{\bf d} \beta_{cdf}`
 and :math:`\nabla_{\bf d} p_{ccdf} = -\nabla_{\bf d} p_{cdf}`. In the
 case of second-order integrations, Eq. `[eq:deriv_p] <#eq:deriv_p>`__
@@ -92,13 +97,14 @@ must be expanded to include the curvature correction. For Breitung’s
 correction (Eq. `[eq:p_2nd_breit] <#eq:p_2nd_breit>`__),
 
 .. math::
+   :label: eq:deriv_p_breit
 
    \nabla_{\bf d} p_{cdf} = \left[ \Phi(-\beta_p) \sum_{i=1}^{n-1} 
    \left( \frac{-\kappa_i}{2 (1 + \beta_p \kappa_i)^{\frac{3}{2}}}
    \prod_{\stackrel{\scriptstyle j=1}{j \ne i}}^{n-1} 
    \frac{1}{\sqrt{1 + \beta_p \kappa_j}} \right) - 
    \phi(-\beta_p) \prod_{i=1}^{n-1} \frac{1}{\sqrt{1 + \beta_p \kappa_i}} 
-   \right] \nabla_{\bf d} \beta_{cdf} \label{eq:deriv_p_breit}
+   \right] \nabla_{\bf d} \beta_{cdf} 
 
 where :math:`\nabla_{\bf d} \kappa_i` has been neglected and
 :math:`\beta_p \ge 0` (see
@@ -113,7 +119,10 @@ formulation using well-behaved :math:`\beta` constraints, a generalized
 reliability index can be introduced where, similar to
 Eq. `[eq:beta_cdf] <#eq:beta_cdf>`__,
 
-.. math:: \beta^*_{cdf} = -\Phi^{-1}(p_{cdf}) \label{eq:gen_beta}
+.. math:: 
+   :label: eq:gen_beta
+
+   \beta^*_{cdf} = -\Phi^{-1}(p_{cdf}) 
 
 for second-order :math:`p_{cdf}`. This reliability index is no longer
 equivalent to the magnitude of :math:`{\bf u}`, but rather is a
@@ -122,9 +131,10 @@ estimates. The corresponding generalized reliability index sensitivity,
 similar to Eq. `[eq:deriv_p] <#eq:deriv_p>`__, is
 
 .. math::
+   :label: eq:deriv_gen_beta
 
    \nabla_{\bf d} \beta^*_{cdf} = -\frac{1}{\phi(-\beta^*_{cdf})}
-   \nabla_{\bf d} p_{cdf} \label{eq:deriv_gen_beta}
+   \nabla_{\bf d} p_{cdf} 
 
 where :math:`\nabla_{\bf d} p_{cdf}` is defined from
 Eq. `[eq:deriv_p_breit] <#eq:deriv_p_breit>`__. Even when
@@ -139,12 +149,14 @@ Eqs. `[eq:deriv_z] <#eq:deriv_z>`__
 and `[eq:deriv_beta] <#eq:deriv_beta>`__ become
 
 .. math::
+   :label: eq:deriv_z_ds
 
    \begin{aligned}
    \nabla_{\bf d} z           & = & \nabla_{\bf d} {\bf x} \nabla_{\bf x} g
-   \label{eq:deriv_z_ds} \\
+   \\
    \nabla_{\bf d} \beta_{cdf} & = & \frac{1}{{\parallel \nabla_{\bf u} G 
-   \parallel}} \nabla_{\bf d} {\bf x} \nabla_{\bf x} g \label{eq:deriv_beta_ds}\end{aligned}
+   \parallel}} \nabla_{\bf d} {\bf x} \nabla_{\bf x} g
+   \end{aligned}
 
 where the design Jacobian of the transformation
 (:math:`\nabla_{\bf d} {\bf x}`) may be obtained analytically for
@@ -196,6 +208,7 @@ models of :math:`f` and :math:`p/\beta` within a trust region
 surrogates:
 
 .. math::
+   :label: eq:rbdo_surr1_ria
 
    \begin{aligned}
      {\rm minimize }     & f({\bf d}_c) + \nabla_d f({\bf d}_c)^T
@@ -205,11 +218,12 @@ surrogates:
      {\rm or }           & p ({\bf d}_c) + \nabla_d p({\bf d}_c)^T 
    ({\bf d} - {\bf d}_c) \le \bar{p} \nonumber \\
    & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
-   \label{eq:rbdo_surr1_ria}\end{aligned}
+   \end{aligned}
 
 and for second-order surrogates:
 
 .. math::
+   :label: eq:rbdo_surr2_ria
 
    \begin{aligned}
      {\rm minimize }     & f({\bf d}_c) + \nabla_{\bf d} f({\bf d}_c)^T
@@ -223,13 +237,14 @@ and for second-order surrogates:
    ({\bf d} - {\bf d}_c) + \frac{1}{2} ({\bf d} - {\bf d}_c)^T 
    \nabla^2_{\bf d} p({\bf d}_c) ({\bf d} - {\bf d}_c) \le \bar{p} \nonumber \\
    & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
-   \label{eq:rbdo_surr2_ria}\end{aligned}
+   \end{aligned}
 
 For PMA trust-region surrogate-based RBDO, surrogate models of :math:`f`
 and :math:`z` are employed within a trust region :math:`\Delta^k`
 centered at :math:`{\bf d}_c`. For first-order surrogates:
 
 .. math::
+   :label: eq:rbdo_surr1_pma
 
    \begin{aligned}
      {\rm minimize }     & f({\bf d}_c) + \nabla_d f({\bf d}_c)^T
@@ -237,11 +252,12 @@ centered at :math:`{\bf d}_c`. For first-order surrogates:
      {\rm subject \ to } & z({\bf d}_c) + \nabla_d z({\bf d}_c)^T ({\bf d} - {\bf d}_c) 
    \ge \bar{z} \nonumber \\
    & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
-   \label{eq:rbdo_surr1_pma}\end{aligned}
+   \end{aligned}
 
 and for second-order surrogates:
 
 .. math::
+   :label: eq:rbdo_surr2_pma
 
    \begin{aligned}
      {\rm minimize }     & f({\bf d}_c) + \nabla_{\bf d} f({\bf d}_c)^T
@@ -251,7 +267,7 @@ and for second-order surrogates:
     + \frac{1}{2} ({\bf d} - {\bf d}_c)^T \nabla^2_{\bf d} z({\bf d}_c) 
    ({\bf d} - {\bf d}_c) \ge \bar{z} \nonumber \\
    & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
-   \label{eq:rbdo_surr2_pma}\end{aligned}
+   \end{aligned}
 
 where the sense of the :math:`z` constraint may vary as described
 previously. The second-order information in
@@ -287,43 +303,48 @@ probabilistic variables :math:`\boldsymbol{\xi}` has the functional
 relationship:
 
 .. math::
+   :label: eq:R_alpha_s_psi_xi
 
    R(\boldsymbol{\xi}, \boldsymbol{s}) \cong \sum_{j=0}^P \alpha_j(\boldsymbol{s}) 
-   \Psi_j(\boldsymbol{\xi}) \label{eq:R_alpha_s_psi_xi}
+   \Psi_j(\boldsymbol{\xi})
 
 For computing sensitivities of response mean and variance, the
 :math:`ij` indices may be dropped from
 Eqs. `[eq:mean_pce] <#eq:mean_pce>`__
 and `[eq:covar_pce] <#eq:covar_pce>`__, simplifying to
 
-.. math:: \mu(s) ~=~ \alpha_0(s), ~~~~\sigma^2(s) = \sum_{k=1}^P \alpha^2_k(s) \langle \Psi^2_k \rangle \label{eq:var_pce}
+.. math:: 
+   :label: eq:var_pce
+
+\mu(s) ~=~ \alpha_0(s), ~~~~\sigma^2(s) = \sum_{k=1}^P \alpha^2_k(s) \langle \Psi^2_k \rangle 
 
 Sensitivities of Eq. `[eq:var_pce] <#eq:var_pce>`__ with respect to the
 nonprobabilistic variables are as follows, where independence of
 :math:`\boldsymbol{s}` and :math:`\boldsymbol{\xi}` is assumed:
 
 .. math::
+   :label: eq:dmuR_ds_xi_pce
 
    \begin{aligned}
    \frac{d\mu}{ds} &=& \frac{d\alpha_0}{ds} ~~=~~ 
    %\frac{d}{ds} \langle R \rangle ~~=~~ 
-   \langle \frac{dR}{ds} \rangle \label{eq:dmuR_ds_xi_pce} \\
+   \langle \frac{dR}{ds} \rangle  \\
    \frac{d\sigma^2}{ds} &=& \sum_{k=1}^P \langle \Psi_k^2 \rangle 
    \frac{d\alpha_k^2}{ds} ~~=~~ 
-   2 \sum_{k=1}^P \alpha_k \langle \frac{dR}{ds}, \Psi_k \rangle 
-   \label{eq:dsigR_ds_xi_pce}
+   2 \sum_{k=1}^P \alpha_k \langle \frac{dR}{ds}, \Psi_k \
    %2 \sigma \frac{d\sigma}{ds} &=& 2 
    %\sum_{k=1}^P \alpha_k \frac{d\alpha_k}{ds} \langle \Psi_k^2 \rangle \\
    %\frac{d\sigma}{ds} &=& \frac{1}{\sigma} 
    %\sum_{k=1}^P \alpha_k \frac{d}{ds} \langle R, \Psi_k \rangle 
-   %\label{eq:dsigR_ds_xi_pce}\end{aligned}
+   \end{aligned}
 
 where
 
 .. math::
+   :label: eq:dalpha_k_ds
 
    \frac{d\alpha_k}{ds} = \frac{\langle \frac{dR}{ds}, \Psi_k \rangle}
-   {\langle \Psi^2_k \rangle} \label{eq:dalpha_k_ds}
+   {\langle \Psi^2_k \rangle} 
 
 has been used. Due to independence, the coefficients calculated in
 Eq. `[eq:dalpha_k_ds] <#eq:dalpha_k_ds>`__ may be interpreted as either
@@ -348,23 +369,25 @@ nonprobabilistic variables are modified.
 Similarly for stochastic collocation,
 
 .. math::
+   :label: eq:R_r_s_K_xi
 
    R(\boldsymbol{\xi}, \boldsymbol{s}) \cong \sum_{k=1}^{N_p} r_k(\boldsymbol{s}) 
-   \boldsymbol{L}_k(\boldsymbol{\xi}) \label{eq:R_r_s_L_xi}
+   \boldsymbol{L}_k(\boldsymbol{\xi}) 
 
 leads to
 
 .. math::
+   :label: eq:var_sc
 
    \begin{aligned}
-   \mu(s) &=& \sum_{k=1}^{N_p} r_k(s) w_k, ~~~~\sigma^2(s) ~=~ \sum_{k=1}^{N_p} r^2_k(s) w_k - \mu^2(s) \label{eq:var_sc} \\
+   \mu(s) &=& \sum_{k=1}^{N_p} r_k(s) w_k, ~~~~\sigma^2(s) ~=~ \sum_{k=1}^{N_p} r^2_k(s) w_k - \mu^2(s)  \\
    \frac{d\mu}{ds} &=& %\frac{d}{ds} \langle R \rangle ~~=~~ 
    %\sum_{k=1}^{N_p} \frac{dr_k}{ds} \langle \boldsymbol{L}_k \rangle ~~=~~ 
-   \sum_{k=1}^{N_p} w_k \frac{dr_k}{ds} \label{eq:dmuR_ds_xi_sc} \\
+   \sum_{k=1}^{N_p} w_k \frac{dr_k}{ds} \\
    \frac{d\sigma^2}{ds} &=& \sum_{k=1}^{N_p} 2 w_k r_k \frac{dr_k}{ds}
    - 2 \mu \frac{d\mu}{ds} 
    ~~=~~ \sum_{k=1}^{N_p} 2 w_k (r_k - \mu) \frac{dr_k}{ds}
-   \label{eq:dsigR_ds_xi_sc}\end{aligned}
+   \end{aligned}
 
 ..
    TODO: based on differentiation of Eqs.~\ref{eq:mean_sc}-\ref{eq:covar_sc}.
@@ -382,9 +405,10 @@ chaos basis would be appropriate for each of the dimensions in
 :math:`\boldsymbol{s}` within a polynomial chaos expansion.
 
 .. math::
+   :label: eq:R_alpha_psi_xi_s
 
    R(\boldsymbol{\xi}, \boldsymbol{s}) \cong \sum_{j=0}^P \alpha_j 
-   \Psi_j(\boldsymbol{\xi}, \boldsymbol{s}) \label{eq:R_alpha_psi_xi_s}
+   \Psi_j(\boldsymbol{\xi}, \boldsymbol{s}) 
 
 In this case, design sensitivities for the mean and variance do not
 require response sensitivity data, but this comes at the cost of forming
@@ -396,14 +420,15 @@ leaving behind the desired polynomial dependence of the moments on
 :math:`\boldsymbol{s}`:
 
 .. math::
+   :label: eq:muR_comb_pce
 
    \begin{aligned}
    \mu_R(\boldsymbol{s}) &=& \sum_{j=0}^P \alpha_j \langle \Psi_j(\boldsymbol{\xi},
-   \boldsymbol{s}) \rangle_{\boldsymbol{\xi}} \label{eq:muR_comb_pce} \\
+   \boldsymbol{s}) \rangle_{\boldsymbol{\xi}}  \\
    \sigma^2_R(\boldsymbol{s}) &=& \sum_{j=0}^P \sum_{k=0}^P \alpha_j \alpha_k 
    \langle \Psi_j(\boldsymbol{\xi}, \boldsymbol{s}) \Psi_k(\boldsymbol{\xi},
    \boldsymbol{s}) \rangle_{\boldsymbol{\xi}} ~-~ \mu^2_R(\boldsymbol{s})
-   \label{eq:sigR_comb_pce}\end{aligned}
+   \end{aligned}
 
 The remaining polynomials may then be differentiated with respect to
 :math:`\boldsymbol{s}`. In this approach, the combined PCE is valid for
@@ -434,22 +459,25 @@ accuracy of the sensitivities is required.
 Similarly for stochastic collocation,
 
 .. math::
+   :label: eq:eq:R_r_L_xi_s
 
    R(\boldsymbol{\xi}, \boldsymbol{s}) \cong \sum_{j=1}^{N_p} r_j 
-   \boldsymbol{L}_j(\boldsymbol{\xi}, \boldsymbol{s}) \label{eq:R_r_L_xi_s}
+   \boldsymbol{L}_j(\boldsymbol{\xi}, \boldsymbol{s}) 
 
 leads to
 
 .. math::
+   :label: eq:muR_both_sc
 
    \begin{aligned}
    \mu_R(\boldsymbol{s}) &=& \sum_{j=1}^{N_p} r_j \langle 
    \boldsymbol{L}_j(\boldsymbol{\xi}, \boldsymbol{s}) \rangle_{\boldsymbol{\xi}} 
-   \label{eq:muR_both_sc} \\
+    \\
    \sigma^2_R(\boldsymbol{s}) &=& \sum_{j=1}^{N_p} \sum_{k=1}^{N_p} r_j r_k 
    \langle \boldsymbol{L}_j(\boldsymbol{\xi}, \boldsymbol{s}) 
    \boldsymbol{L}_k(\boldsymbol{\xi}, \boldsymbol{s}) \rangle_{\boldsymbol{\xi}}
-   ~-~ \mu^2_R(\boldsymbol{s}) \label{eq:sigR_both_sc}\end{aligned}
+   ~-~ \mu^2_R(\boldsymbol{s}) 
+   \end{aligned}
 
 where the remaining polynomials not eliminated by the expectation over
 :math:`\boldsymbol{\xi}` are again differentiated with respect to
@@ -561,10 +589,12 @@ Consider the common reliability-based design example of a deterministic
 objective function with a reliability constraint:
 
 .. math::
+   :label: eq:rbdo
 
    \begin{aligned}
      {\rm minimize }     & f \nonumber \\
-     {\rm subject \ to } & \beta \ge \bar{\beta} \label{eq:rbdo}\end{aligned}
+     {\rm subject \ to } & \beta \ge \bar{\beta} 
+   \end{aligned}
 
 where :math:`\beta` is computed relative to a prescribed threshold
 response value :math:`\bar{z}` (e.g., a failure threshold) and is
@@ -581,10 +611,12 @@ enforcing a variance upper-bound :math:`\bar{\sigma}^2` (maximum
 allowable variance in the design):
 
 .. math::
+   :label: eq:rdo
 
    \begin{aligned}
      {\rm minimize }     & f \nonumber \\
-     {\rm subject \ to } & \sigma^2 \le \bar{\sigma}^2 \label{eq:rdo}\end{aligned}
+     {\rm subject \ to } & \sigma^2 \le \bar{\sigma}^2 
+   \end{aligned}
 
 Solving these problems using a bi-level approach involves computing
 :math:`\beta` and :math:`\frac{d\beta}{d\boldsymbol{s}}` for
@@ -629,6 +661,7 @@ reliability-based design employs surrogate models of :math:`f` and
 :math:`{\bf s}_c`:
 
 .. math::
+   :label: eq:rbdo_surr
 
    \begin{aligned}
      {\rm minimize }     & f({\bf s}_c) + \nabla_s f({\bf s}_c)^T
@@ -636,13 +669,14 @@ reliability-based design employs surrogate models of :math:`f` and
      {\rm subject \ to } & \beta({\bf s}_c) + \nabla_s \beta({\bf s}_c)^T
    ({\bf s} - {\bf s}_c) \ge \bar{\beta} \\
    & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
-   \label{eq:rbdo_surr}\end{aligned}
+   \end{aligned}
 
 and trust-region surrogate-based optimization for robust design employs
 surrogate models of :math:`f` and :math:`\sigma^2` within a trust region
 :math:`\Delta^k` centered at :math:`{\bf s}_c`:
 
 .. math::
+   :label: eq:rdo_surr
 
    \begin{aligned}
      {\rm minimize }     & f({\bf s}_c) + \nabla_s f({\bf s}_c)^T
@@ -650,7 +684,7 @@ surrogate models of :math:`f` and :math:`\sigma^2` within a trust region
      {\rm subject \ to } & \sigma^2({\bf s}_c) + \nabla_s \sigma^2({\bf s}_c)^T 
    ({\bf s} - {\bf s}_c) \le \bar{\sigma}^2 \\
    & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
-   \label{eq:rdo_surr}\end{aligned}
+   \end{aligned}
 
 Second-order local surrogates may also be employed, where the Hessians
 are typically approximated from an accumulation of curvature information
@@ -741,22 +775,24 @@ Multifidelity optimization for reliability-based design can be
 formulated as:
 
 .. math::
+   :label: eq:rbdo_mf
 
    \begin{aligned}
      {\rm minimize }     & f({\bf s}) \nonumber \\
      {\rm subject \ to } & \hat{\beta_{hi}}({\bf s}) \ge \bar{\beta} \\
    & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
-   \label{eq:rbdo_mf}\end{aligned}
+   \end{aligned}
 
 and multifidelity optimization for robust design can be formulated as:
 
 .. math::
+   :label: eq:rdo_mf
 
    \begin{aligned}
      {\rm minimize }     & f({\bf s}) \nonumber \\
      {\rm subject \ to } & \hat{\sigma_{hi}}^2({\bf s}) \le \bar{\sigma}^2 \\
    & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
-   \label{eq:rdo_mf}\end{aligned}
+   \end{aligned}
 
 where the deterministic objective function is not approximated and
 :math:`\hat{\beta_{hi}}` and :math:`\hat{\sigma_{hi}}^2` are the
@@ -764,12 +800,14 @@ approximated high-fidelity UQ results resulting from correction of the
 low-fidelity UQ results. In the case of an additive correction function:
 
 .. math::
+   :label: eq:corr_lf_sigma
 
    \begin{aligned}
    \hat{\beta_{hi}}({\bf s})    &=& \beta_{lo}({\bf s}) + 
-   \alpha_{\beta}({\bf s})  \label{eq:corr_lf_beta} \\
+   \alpha_{\beta}({\bf s})   \\
    \hat{\sigma_{hi}}^2({\bf s}) &=& \sigma_{lo}^2({\bf s}) + 
-   \alpha_{\sigma^2}({\bf s}) \label{eq:corr_lf_sigma}\end{aligned}
+   \alpha_{\sigma^2}({\bf s}) 
+   \end{aligned}
 
 where correction functions :math:`\alpha({\bf s})` enforcing first-order
 consistency :cite:p:`Eld04` are typically employed.
@@ -799,6 +837,7 @@ In this case, the sample-average approximation to the design derivative
 of the mean and standard deviation are:
 
 .. math::
+   :label: eq:smp_ouu
 
    \begin{aligned}
      \frac{d\mu}{ds}    &=& \frac{1}{N} \sum_{i=1}^N \frac{dQ}{ds} \\
