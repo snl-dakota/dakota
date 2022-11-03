@@ -36,9 +36,9 @@ if the ``grep`` command finds the string ``ERROR`` anywhere in the
 “bit bucket” and the ``grep`` command
 output is discarded by redirecting it to this destination. The
 ``$status`` shell variable contains the exit status of the last command
-executed:cite:p:`And86`, which is the exit status of ``grep``
+executed :cite:p:`And86`, which is the exit status of ``grep``
 in this case (0 if successful in finding the error string, nonzero
-otherwise). For Bourne shells:cite:p:`Bli96`, the ``$?``
+otherwise). For Bourne shells :cite:p:`Bli96`, the ``$?``
 shell variable serves the same purpose as ``$status`` for C shells. In a
 related approach, if the return code from a simulation can be used
 directly for failure detection purposes, then ``$status`` or ``$?``
@@ -85,16 +85,14 @@ Failure mitigation
 
 Once the analysis failure has been communicated, Dakota will attempt to
 recover from the failure using one of the following four mechanisms, as
-governed by the interface specification in the user’s input file (see
-the Interface Commands chapter in the Dakota Reference
-Manual:cite:p:`RefMan` for additional information).
+governed by the :dakkw:`interface` specification in the user’s input file.
 
 .. _`failure:mitigation:abort`:
 
 Abort (default)
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
-If the ``abort`` option is active (the default), then Dakota will
+If the :dakkw:`interface-failure_capture-abort` option is active (the default), then Dakota will
 terminate upon detecting a failure. Note that if the problem causing the
 failure can be corrected, Dakota’s restart capability (see
 :ref:`The Dakota Restart Utility<dakota_restart_utility>`) can be used to continue the study.
@@ -102,9 +100,9 @@ failure can be corrected, Dakota’s restart capability (see
 .. _`failure:mitigation:retry`:
 
 Retry
-~~~
+~~~~~
 
-If the ``retry`` option is specified, then Dakota will re-invoke the
+If the :dakkw:`interface-failure_capture-retry` option is specified, then Dakota will re-invoke the
 failed simulation up to the specified number of retries. If the
 simulation continues to fail on each of these retries, Dakota will
 terminate. The retry option is appropriate for those cases in which
@@ -115,9 +113,9 @@ or networking problems.
 .. _`failure:mitigation:recover`:
 
 Recover
-~~~~~
+~~~~~~~
 
-If the ``recover`` option is specified, then Dakota will not attempt the
+If the :dakkw:`interface-failure_capture-recover` option is specified, then Dakota will not attempt the
 failed simulation again. Rather, it will return a “dummy” set of
 function values as the results of the function evaluation. The dummy
 function values to be returned are specified by the user. Any gradient
@@ -131,9 +129,9 @@ region.
 .. _`failure:mitigation:continuation`:
 
 Continuation
-~~~~~~~~~~
+~~~~~~~~~~~~
 
-If the ``continuation`` option is specified, then Dakota will attempt to
+If the :dakkw:`interface-failure_capture-continuation` option is specified, then Dakota will attempt to
 step towards the failing “target” simulation from a nearby “source”
 simulation through the use of a continuation algorithm. This option is
 appropriate for those cases in which a failed simulation may be caused
@@ -156,7 +154,7 @@ to aborting the Dakota process.
 While Dakota manages the interval halving and function evaluation
 invocations, the user is responsible for managing the initial guess for
 the simulation program. For example, in a GOMA input
-file:cite:p:`Sch95`, the user specifies the files to be used
+file :cite:p:`Sch95`, the user specifies the files to be used
 for reading initial guess data and writing solution data. When using the
 last successful evaluation in the continuation algorithm, the
 translation of initial guess data can be accomplished by simply copying
@@ -183,11 +181,11 @@ In IEEE arithmetic, “NaN” indicates “not a number” and
 :math:`\pm`\ “Inf” or :math:`\pm`\ “Infinity" indicates positive or
 negative infinity. These special values may be returned directly in
 function evaluation results from a simulation interface or they may be
-specified in a user’s input file within the ``recover`` specification
+specified in a user’s input file within the :dakkw:`interface-failure_capture-recover` specification
 described in :ref:`Recover<failure:mitigation:recover>`. There is a
 key difference between these two cases. In the former case of direct
 simulation return, failure mitigation can be managed on a per response
-function basis. When using ``recover``, however, the failure applies to
+function basis. When using :dakkw:`interface-failure_capture-recover`, however, the failure applies to
 the complete set of simulation results.
 
 In both of these cases, the handling of NaN or Inf is managed using
