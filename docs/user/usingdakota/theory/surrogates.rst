@@ -277,9 +277,9 @@ points during optimization or to otherwise improve the surrogate. The
 adjusted variance is
 
 .. math::
+   :label: KrigVar
 
    \begin{aligned}
-   \label{Eq:KrigVar}
    {\rm Var}\left(\hat{y}\right) &=& {\rm Var}\left(\hat{f}\left(\underline{x}\right)|\underline{f}\left(\underline{\underline{X}}\right)\right) \\ 
    &=&\hat{\sigma}^2\left(1-\underline{r}\left(\underline{x}\right)^T\ \underline{\underline{R}}^{-1}\underline{r}\left(\underline{x}\right) + \right. ... \\
    &&\left. \left(\underline{g}\left(\underline{x}\right)^T-\underline{r}\left(\underline{x}\right)^T\ \underline{\underline{R}}^{-1}\underline{\underline{G}}\right) \left(\underline{\underline{G}}^T\underline{\underline{R}}^{-1} \underline{\underline{G}}\right)^{-1}\left(\underline{g}\left(\underline{x}\right)^T-\underline{r}\left(\underline{x}\right)^T\ \underline{\underline{R}}^{-1}\underline{\underline{G}}\right)^T\right)\end{aligned}
@@ -924,11 +924,11 @@ the training points, the estimated variance is given by
 
 where :math:`MSE` is the mean-squared error of the approximation over
 all of the training points. For any new design parameter, the prediction
-variance is given by
+variance is given by 
 
 .. math::
+   :label: poly_var
 
-   \label{eq:poly_var}
    \sigma^{2}\left(\hat{f}(x_{new})\right) = MSE\left(1 + v_{x_{new}}^{T} 
    (X^{T} X)^{-1} v_{x_{new}} \right).
 
