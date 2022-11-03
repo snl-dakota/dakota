@@ -325,7 +325,7 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
     const String& surr_type = problem_db.get_string("model.surrogate.type");
     if (surr_type == "hierarchical")
       return std::make_shared<HierarchSurrModel>(problem_db);
-    else if (surr_type == "non_hierarchical")
+    else if (surr_type == "ensemble")
       return std::make_shared<NonHierarchSurrModel>(problem_db);
     else // all other surrogates (local/multipt/global) managed by DataFitSurr
       return std::make_shared<DataFitSurrModel>(problem_db);

@@ -4363,8 +4363,8 @@
                 </oneOf>
               </keyword>
             </keyword>
-            <keyword  id="non_hierarchical" name="non_hierarchical" code="{N_mom(lit,surrogateType_non_hierarchical)}" label="Nonhierarchical Approximation"  >
-	      <alias name="model_ensemble"/>
+            <keyword  id="ensemble" name="ensemble" code="{N_mom(lit,surrogateType_ensemble)}" label="Ensemble Model Approximation"  >
+	      <alias name="non_hierarchical"/>
               <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"   >
 		<alias name="actual_model_pointer"/>
             	<param type="STRING" in_taglist="model" />

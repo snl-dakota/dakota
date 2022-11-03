@@ -55,11 +55,11 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
 
   // check iteratedModel for model form hi1erarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
-  if (iteratedModel.surrogate_type() == "non_hierarchical")
+  if (iteratedModel.surrogate_type() == "ensemble")
     aggregated_models_mode(); // truth model + all approx models
   else {
-    Cerr << "Error: Non-hierarchical sampling requires a non-hierarchical "
-         << "surrogate model specification." << std::endl;
+    Cerr << "Error: sampling the full range of a model ensemble requires an "
+	 << "ensemble surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 

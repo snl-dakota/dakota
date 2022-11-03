@@ -6529,7 +6529,7 @@ KEYWORD model {N_mom3(start,0,stop)}
        ]
      )
     |
-    ( non_hierarchical ALIAS model_ensemble {N_mom(lit,surrogateType_non_hierarchical)}
+    ( ensemble ALIAS non_hierarchical {N_mom(lit,surrogateType_ensemble)}
       truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
       [ unordered_model_fidelities ALIAS approximation_models STRINGLIST {N_mom(strL,ensembleModelPointers)} ]
      )
