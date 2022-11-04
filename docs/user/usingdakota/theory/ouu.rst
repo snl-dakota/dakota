@@ -23,7 +23,7 @@ the following sections.
 
 .. _`ouu:rbdo:bilev`:
 
-Bi-level RBDO
+Bi-level RBDO 
 ~~~~~~~~~~~~~
 
 The simplest and most direct RBDO approach is the bi-level approach in
@@ -44,9 +44,9 @@ RBDO constrains :math:`p/\beta`:
 
 
      \begin{aligned}
-     {\rm minimize }     & f \nonumber \\ 
-     {\rm subject \ to   } & \beta \ge \bar{\beta} \nonumber \\
-     {\rm or   }           & p \le \bar{p} 
+     {\rm minimize\ }     & f \nonumber \\ 
+     {\rm subject \ to\   } & \beta \ge \bar{\beta} \nonumber \\
+     {\rm or\   }           & p \le \bar{p} 
      \end{aligned}
 
 And PMA reliability analysis maps :math:`\bar{p}/\bar{\beta}` to
@@ -56,8 +56,8 @@ And PMA reliability analysis maps :math:`\bar{p}/\bar{\beta}` to
    :label: eq:rbdo_pma
 
      \begin{aligned}
-     {\rm minimize }     & f \nonumber \\
-     {\rm subject \ to } & z \ge \bar{z} 
+     {\rm minimize\ }     & f \nonumber \\
+     {\rm subject \ to\ } & z \ge \bar{z} 
      \end{aligned}
 
 where :math:`z \ge \bar{z}` is used as the RBDO constraint for a
@@ -92,9 +92,9 @@ used :cite:p:`Hoh86,Kar92,All04`:
 where it is evident from Eqs. :math:numref:`eq:beta_cdf_ccdf`
 that :math:`\nabla_{\bf d} \beta_{ccdf} = -\nabla_{\bf d} \beta_{cdf}`
 and :math:`\nabla_{\bf d} p_{ccdf} = -\nabla_{\bf d} p_{cdf}`. In the
-case of second-order integrations, Eq. `[eq:deriv_p] <#eq:deriv_p>`__
+case of second-order integrations, Eq. :math:numref:`eq:deriv_z`
 must be expanded to include the curvature correction. For Breitung’s
-correction (Eq. `[eq:p_2nd_breit] <#eq:p_2nd_breit>`__),
+correction (Eq. :math:numref:`eq:p_2nd_breit`  ),
 
 .. math::
    :label: eq:deriv_p_breit
@@ -108,16 +108,16 @@ correction (Eq. `[eq:p_2nd_breit] <#eq:p_2nd_breit>`__),
 
 where :math:`\nabla_{\bf d} \kappa_i` has been neglected and
 :math:`\beta_p \ge 0` (see
-Section `[theory:uq:reliability:local:mpp:int] <#theory:uq:reliability:local:mpp:int>`__).
+Section :ref:`Local Reliability Integration <theory:uq:reliability:local:mpp:int>`.
 Other approaches assume the curvature correction is nearly independent
 of the design variables :cite:p:`Rac02`, which is equivalent
 to neglecting the first term in
-Eq. `[eq:deriv_p_breit] <#eq:deriv_p_breit>`__.
+Eq. :math:numref:`eq:deriv_p_breit` .
 
 To capture second-order probability estimates within an RIA RBDO
 formulation using well-behaved :math:`\beta` constraints, a generalized
 reliability index can be introduced where, similar to
-Eq. `[eq:beta_cdf] <#eq:beta_cdf>`__,
+Eq. :math:numref:`eq:beta_cdf` ,
 
 .. math:: 
    :label: eq:gen_beta
@@ -128,7 +128,7 @@ for second-order :math:`p_{cdf}`. This reliability index is no longer
 equivalent to the magnitude of :math:`{\bf u}`, but rather is a
 convenience metric for capturing the effect of more accurate probability
 estimates. The corresponding generalized reliability index sensitivity,
-similar to Eq. `[eq:deriv_p] <#eq:deriv_p>`__, is
+similar to Eq. :math:numref:`eq:deriv_z`, is
 
 .. math::
    :label: eq:deriv_gen_beta
@@ -137,16 +137,16 @@ similar to Eq. `[eq:deriv_p] <#eq:deriv_p>`__, is
    \nabla_{\bf d} p_{cdf} 
 
 where :math:`\nabla_{\bf d} p_{cdf}` is defined from
-Eq. `[eq:deriv_p_breit] <#eq:deriv_p_breit>`__. Even when
+Eq. :math:numref:`eq:deriv_p_breit`. Even when
 :math:`\nabla_{\bf d} g` is estimated numerically,
-Eqs. `[eq:deriv_z] <#eq:deriv_z>`__-`[eq:deriv_gen_beta] <#eq:deriv_gen_beta>`__
+Eqs. :math:numref:`eq:deriv_z` - :math:numref:`eq:deriv_gen_beta` 
 can be used to avoid numerical differencing across full reliability
 analyses.
 
 When the design variables are distribution parameters of the uncertain
 variables, :math:`\nabla_{\bf d} g` is expanded with the chain rule and
-Eqs. `[eq:deriv_z] <#eq:deriv_z>`__
-and `[eq:deriv_beta] <#eq:deriv_beta>`__ become
+Eqs.  :math:numref:`eq:deriv_z`
+and   :math:numref:`eq:deriv_beta`  become
 
 .. math::
    :label: eq:deriv_z_ds
@@ -162,15 +162,14 @@ where the design Jacobian of the transformation
 (:math:`\nabla_{\bf d} {\bf x}`) may be obtained analytically for
 uncorrelated :math:`{\bf x}` or semi-analytically for correlated
 :math:`{\bf x}` (:math:`\nabla_{\bf d} {\bf L}` is evaluated
-numerically) by differentiating Eqs. `[eq:trans_zx] <#eq:trans_zx>`__
-and `[eq:trans_zu] <#eq:trans_zu>`__ with respect to the distribution
+numerically) by differentiating Eqs. :math:numref:`eq:trans_zx` 
+and   :math:numref:`eq:trans_zu` _ with respect to the distribution
 parameters.
-Eqs. `[eq:deriv_p] <#eq:deriv_p>`__-`[eq:deriv_gen_beta] <#eq:deriv_gen_beta>`__
-remain the same as before. For this design variable case, all required
+Eqs. :math:numref:`eq:deriv_z` - :math:numref:`eq:deriv_gen_beta` remain the same as before. For this design variable case, all required
 information for the sensitivities is available from the MPP search.
 
 Since
-Eqs. `[eq:deriv_z] <#eq:deriv_z>`__-`[eq:deriv_beta_ds] <#eq:deriv_beta_ds>`__
+Eqs. :math:numref:`eq:deriv_z` __- :math:numref:`eq:deriv_beta_ds` 
 are derived using the Karush-Kuhn-Tucker optimality conditions for a
 converged MPP, they are appropriate for RBDO using AMV+,
 AMV\ :math:`^2`\ +, TANA, FORM, and SORM, but not for RBDO using MVFOSM,
@@ -192,7 +191,7 @@ approximations :cite:p:`Du04`.
 
 A particularly effective approach for updating the optimization goals is
 to use the :math:`p/\beta/z` sensitivity analysis of
-Eqs. `[eq:deriv_z] <#eq:deriv_z>`__-`[eq:deriv_beta_ds] <#eq:deriv_beta_ds>`__
+Eqs.  :math:numref:`eq:deriv_z` __- :math:numref:`eq:deriv_beta_ds`
 in combination with local surrogate models :cite:p:`Zou04`. In
 :cite:p:`Eld05` and :cite:p:`Eld06a`, first-order
 and second-order Taylor series approximations were employed within a
@@ -211,11 +210,11 @@ surrogates:
    :label: eq:rbdo_surr1_ria
 
    \begin{aligned}
-     {\rm minimize }     & f({\bf d}_c) + \nabla_d f({\bf d}_c)^T
+     {\rm minimize\ }     & f({\bf d}_c) + \nabla_d f({\bf d}_c)^T
    ({\bf d} - {\bf d}_c) \nonumber \\
-     {\rm subject \ to } & \beta({\bf d}_c) + \nabla_d \beta({\bf d}_c)^T
+     {\rm subject \ to\ } & \beta({\bf d}_c) + \nabla_d \beta({\bf d}_c)^T
    ({\bf d} - {\bf d}_c) \ge \bar{\beta} \nonumber \\
-     {\rm or }           & p ({\bf d}_c) + \nabla_d p({\bf d}_c)^T 
+     {\rm or\ }           & p ({\bf d}_c) + \nabla_d p({\bf d}_c)^T 
    ({\bf d} - {\bf d}_c) \le \bar{p} \nonumber \\
    & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
    \end{aligned}
@@ -226,14 +225,14 @@ and for second-order surrogates:
    :label: eq:rbdo_surr2_ria
 
    \begin{aligned}
-     {\rm minimize }     & f({\bf d}_c) + \nabla_{\bf d} f({\bf d}_c)^T
+     {\rm minimize\ }     & f({\bf d}_c) + \nabla_{\bf d} f({\bf d}_c)^T
    ({\bf d} - {\bf d}_c)  + \frac{1}{2} ({\bf d} - {\bf d}_c)^T 
    \nabla^2_{\bf d} f({\bf d}_c) ({\bf d} - {\bf d}_c) \nonumber \\
-     {\rm subject \ to } & \beta({\bf d}_c) + \nabla_{\bf d} \beta({\bf d}_c)^T
+     {\rm subject \ to\ } & \beta({\bf d}_c) + \nabla_{\bf d} \beta({\bf d}_c)^T
    ({\bf d} - {\bf d}_c) + \frac{1}{2} ({\bf d} - {\bf d}_c)^T 
    \nabla^2_{\bf d} \beta({\bf d}_c) ({\bf d} - {\bf d}_c) \ge \bar{\beta}
    \nonumber \\
-     {\rm or }           & p ({\bf d}_c) + \nabla_{\bf d} p({\bf d}_c)^T 
+     {\rm or\ }           & p ({\bf d}_c) + \nabla_{\bf d} p({\bf d}_c)^T 
    ({\bf d} - {\bf d}_c) + \frac{1}{2} ({\bf d} - {\bf d}_c)^T 
    \nabla^2_{\bf d} p({\bf d}_c) ({\bf d} - {\bf d}_c) \le \bar{p} \nonumber \\
    & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
@@ -247,9 +246,9 @@ centered at :math:`{\bf d}_c`. For first-order surrogates:
    :label: eq:rbdo_surr1_pma
 
    \begin{aligned}
-     {\rm minimize }     & f({\bf d}_c) + \nabla_d f({\bf d}_c)^T
+     {\rm minimize\ }     & f({\bf d}_c) + \nabla_d f({\bf d}_c)^T
    ({\bf d} - {\bf d}_c) \nonumber \\
-     {\rm subject \ to } & z({\bf d}_c) + \nabla_d z({\bf d}_c)^T ({\bf d} - {\bf d}_c) 
+     {\rm subject \ to\ } & z({\bf d}_c) + \nabla_d z({\bf d}_c)^T ({\bf d} - {\bf d}_c) 
    \ge \bar{z} \nonumber \\
    & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
    \end{aligned}
@@ -260,10 +259,10 @@ and for second-order surrogates:
    :label: eq:rbdo_surr2_pma
 
    \begin{aligned}
-     {\rm minimize }     & f({\bf d}_c) + \nabla_{\bf d} f({\bf d}_c)^T
+     {\rm minimize\ }     & f({\bf d}_c) + \nabla_{\bf d} f({\bf d}_c)^T
    ({\bf d} - {\bf d}_c) + \frac{1}{2} ({\bf d} - {\bf d}_c)^T 
    \nabla^2_{\bf d} f({\bf d}_c) ({\bf d} - {\bf d}_c) \nonumber \\
-     {\rm subject \ to } & z({\bf d}_c) + \nabla_{\bf d} z({\bf d}_c)^T ({\bf d} - {\bf d}_c)
+     {\rm subject \ to\ } & z({\bf d}_c) + \nabla_{\bf d} z({\bf d}_c)^T ({\bf d} - {\bf d}_c)
     + \frac{1}{2} ({\bf d} - {\bf d}_c)^T \nabla^2_{\bf d} z({\bf d}_c) 
    ({\bf d} - {\bf d}_c) \ge \bar{z} \nonumber \\
    & {\parallel {\bf d} - {\bf d}_c \parallel}_\infty \le \Delta^k
@@ -271,8 +270,8 @@ and for second-order surrogates:
 
 where the sense of the :math:`z` constraint may vary as described
 previously. The second-order information in
-Eqs. `[eq:rbdo_surr2_ria] <#eq:rbdo_surr2_ria>`__ and
-`[eq:rbdo_surr2_pma] <#eq:rbdo_surr2_pma>`__ will typically be
+Eqs. :math:numref:`eq:rbdo_surr2_ria`  and
+:math:numref:`eq:rbdo_surr2_pma`  will typically be
 approximated with quasi-Newton updates.
 
 .. _`ouu:sebdo`:
@@ -285,7 +284,7 @@ Stochastic Expansion-Based Design Optimization (SEBDO)
 Stochastic Sensitivity Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Section `[theory:uq:expansion:rvsa] <#theory:uq:expansion:rvsa>`__ describes
+Section :ref:`Expansion RVSA <theory:uq:expansion:rvsa>` describes
 sensitivity analysis of the polynomial chaos expansion with respect to
 the expansion variables. Here we extend this analysis to include
 sensitivity analysis of probabilistic moments with respect to
@@ -310,15 +309,15 @@ relationship:
 
 For computing sensitivities of response mean and variance, the
 :math:`ij` indices may be dropped from
-Eqs. `[eq:mean_pce] <#eq:mean_pce>`__
-and `[eq:covar_pce] <#eq:covar_pce>`__, simplifying to
+Eqs.  :math:numref:`eq:mean_pce`  
+and  :math:numref:`eq:covar_pce`  , simplifying to
 
 .. math:: 
    :label: eq:var_pce
 
-\mu(s) ~=~ \alpha_0(s), ~~~~\sigma^2(s) = \sum_{k=1}^P \alpha^2_k(s) \langle \Psi^2_k \rangle 
+   \mu(s) ~=~ \alpha_0(s), ~~~~\sigma^2(s) = \sum_{k=1}^P \alpha^2_k(s) \langle \Psi^2_k \rangle 
 
-Sensitivities of Eq. `[eq:var_pce] <#eq:var_pce>`__ with respect to the
+Sensitivities of Eq. :math:numref:`eq:var_pce`  with respect to the
 nonprobabilistic variables are as follows, where independence of
 :math:`\boldsymbol{s}` and :math:`\boldsymbol{\xi}` is assumed:
 
@@ -328,15 +327,17 @@ nonprobabilistic variables are as follows, where independence of
    \begin{aligned}
    \frac{d\mu}{ds} &=& \frac{d\alpha_0}{ds} ~~=~~ 
    %\frac{d}{ds} \langle R \rangle ~~=~~ 
-   \langle \frac{dR}{ds} \rangle  \\
+   \langle \frac{dR}{ds} \rangle \\
    \frac{d\sigma^2}{ds} &=& \sum_{k=1}^P \langle \Psi_k^2 \rangle 
    \frac{d\alpha_k^2}{ds} ~~=~~ 
-   2 \sum_{k=1}^P \alpha_k \langle \frac{dR}{ds}, \Psi_k \
+   2 \sum_{k=1}^P \alpha_k \langle \frac{dR}{ds}, \Psi_k \rangle 
+   \end{aligned}
+   \begin{aligned}
    %2 \sigma \frac{d\sigma}{ds} &=& 2 
    %\sum_{k=1}^P \alpha_k \frac{d\alpha_k}{ds} \langle \Psi_k^2 \rangle \\
    %\frac{d\sigma}{ds} &=& \frac{1}{\sigma} 
    %\sum_{k=1}^P \alpha_k \frac{d}{ds} \langle R, \Psi_k \rangle 
-   \end{aligned}
+   %\end{aligned}
 
 where
 
@@ -347,7 +348,7 @@ where
    {\langle \Psi^2_k \rangle} 
 
 has been used. Due to independence, the coefficients calculated in
-Eq. `[eq:dalpha_k_ds] <#eq:dalpha_k_ds>`__ may be interpreted as either
+Eq.  :math:numref:`eq:dalpha_k_ds`   may be interpreted as either
 the derivatives of the expectations or the expectations of the
 derivatives, or more precisely, the nonprobabilistic sensitivities of
 the chaos coefficients for the response expansion or the chaos
@@ -495,9 +496,9 @@ probabilistic variables, and “inserted,” where the nonprobabilistic
 variables define distribution parameters for the probabilistic
 variables. Any inserted nonprobabilistic variable sensitivities must be
 handled using
-Eqs. `[eq:dmuR_ds_xi_pce] <#eq:dmuR_ds_xi_pce>`__-`[eq:dsigR_ds_xi_pce] <#eq:dsigR_ds_xi_pce>`__
+Eqs.  :math:numref:`eq:dmuR_ds_xi_pce`  
 and
-Eqs. `[eq:dmuR_ds_xi_sc] <#eq:dmuR_ds_xi_sc>`__-`[eq:dsigR_ds_xi_sc] <#eq:dsigR_ds_xi_sc>`__
+Eqs.  :math:numref:`eq:dmuR_ds_xi_sc`  
 where :math:`\frac{dR}{ds}` is calculated as
 :math:`\frac{dR}{dx} \frac{dx}{ds}` and :math:`\frac{dx}{ds}` is the
 Jacobian of the variable transformation
@@ -533,7 +534,7 @@ response variance, control or bounding of reliability requires
 sensitivities of tail statistics. In this work, the sensitivity of
 simple moment-based approximations to cumulative distribution function
 (CDF) and complementary cumulative distribution function (CCDF) mappings
-(Eqs. `[eq:mv_ria] <#eq:mv_ria>`__–`[eq:mv_pma] <#eq:mv_pma>`__) are
+(Eqs.  :math:numref:`eq:mv_ria`  –  :math:numref:`eq:mv_pma`  ) are
 employed for this purpose, such that it is straightforward to form
 approximate design sensitivities of reliability index :math:`\beta`
 (forward reliability mapping :math:`\bar{z} \rightarrow \beta`) or
@@ -581,7 +582,7 @@ Bi-level SEBDO
 
 The simplest and most direct approach is to employ these analytic
 statistics and their design derivatives from
-Section `1.2.1 <#ouu:sebdo:ssa>`__ directly within an optimization loop.
+Section :ref:`SEBDO SSA <theory:uq:sebdo:ssa>` directly within an optimization loop.
 This approach is known as bi-level OUU, since there is an inner level
 uncertainty analysis nested within an outer level optimization.
 
@@ -592,8 +593,8 @@ objective function with a reliability constraint:
    :label: eq:rbdo
 
    \begin{aligned}
-     {\rm minimize }     & f \nonumber \\
-     {\rm subject \ to } & \beta \ge \bar{\beta} 
+     {\rm minimize\ }     & f \nonumber \\
+     {\rm subject \ to\ } & \beta \ge \bar{\beta} 
    \end{aligned}
 
 where :math:`\beta` is computed relative to a prescribed threshold
@@ -614,14 +615,14 @@ allowable variance in the design):
    :label: eq:rdo
 
    \begin{aligned}
-     {\rm minimize }     & f \nonumber \\
-     {\rm subject \ to } & \sigma^2 \le \bar{\sigma}^2 
+     {\rm minimize\ }     & f \nonumber \\
+     {\rm subject \ to\ } & \sigma^2 \le \bar{\sigma}^2 
    \end{aligned}
 
 Solving these problems using a bi-level approach involves computing
 :math:`\beta` and :math:`\frac{d\beta}{d\boldsymbol{s}}` for
-Eq. `[eq:rbdo] <#eq:rbdo>`__ or :math:`\sigma^2` and
-:math:`\frac{d\sigma^2}{d\boldsymbol{s}}` for Eq. `[eq:rdo] <#eq:rdo>`__
+Eq.  :math:numref:`eq:rbdo`   or :math:`\sigma^2` and
+:math:`\frac{d\sigma^2}{d\boldsymbol{s}}` for Eq.  :math:numref:`eq:rdo`
 for each set of design variables :math:`\boldsymbol{s}` passed from the
 optimizer. This approach is supported for both probabilistic and
 combined expansions using PCE and SC.
@@ -664,9 +665,9 @@ reliability-based design employs surrogate models of :math:`f` and
    :label: eq:rbdo_surr
 
    \begin{aligned}
-     {\rm minimize }     & f({\bf s}_c) + \nabla_s f({\bf s}_c)^T
+     {\rm minimize\ }     & f({\bf s}_c) + \nabla_s f({\bf s}_c)^T
    ({\bf s} - {\bf s}_c) \nonumber \\
-     {\rm subject \ to } & \beta({\bf s}_c) + \nabla_s \beta({\bf s}_c)^T
+     {\rm subject \ to\ } & \beta({\bf s}_c) + \nabla_s \beta({\bf s}_c)^T
    ({\bf s} - {\bf s}_c) \ge \bar{\beta} \\
    & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
    \end{aligned}
@@ -679,9 +680,9 @@ surrogate models of :math:`f` and :math:`\sigma^2` within a trust region
    :label: eq:rdo_surr
 
    \begin{aligned}
-     {\rm minimize }     & f({\bf s}_c) + \nabla_s f({\bf s}_c)^T
+     {\rm minimize\ }     & f({\bf s}_c) + \nabla_s f({\bf s}_c)^T
    ({\bf s} - {\bf s}_c) \nonumber \\
-     {\rm subject \ to } & \sigma^2({\bf s}_c) + \nabla_s \sigma^2({\bf s}_c)^T 
+     {\rm subject \ to\ } & \sigma^2({\bf s}_c) + \nabla_s \sigma^2({\bf s}_c)^T 
    ({\bf s} - {\bf s}_c) \le \bar{\sigma}^2 \\
    & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
    \end{aligned}
@@ -689,8 +690,8 @@ surrogate models of :math:`f` and :math:`\sigma^2` within a trust region
 Second-order local surrogates may also be employed, where the Hessians
 are typically approximated from an accumulation of curvature information
 using quasi-Newton updates :cite:p:`Noc99` such as
-Broyden-Fletcher-Goldfarb-Shanno (BFGS, Eq. `[eq:bfgs] <#eq:bfgs>`__) or
-symmetric rank one (SR1, Eq. `[eq:sr1] <#eq:sr1>`__). The sequential
+Broyden-Fletcher-Goldfarb-Shanno (BFGS, Eq.  :math:numref:`eq:bfgs`  or
+symmetric rank one (SR1, Eq.  :math:numref:`eq:sr1`  . The sequential
 approach is available for probabilistic expansions using PCE and SC.
 
 .. _`ouu:sebdo:form:mf`:
@@ -742,10 +743,10 @@ reformed for each change in design variables, but it only requires a
 single evaluation of a response function and its derivative to
 approximate the response mean and variance from the input mean and
 covariance
-(Eqs. `[eq:mv_mean1] <#eq:mv_mean1>`__–`[eq:mv_std_dev] <#eq:mv_std_dev>`__)
+(Eqs.  :math:numref:`eq:mv_mean1`   –  :math:numref:`eq:mv_std_dev`  
 from which forward/inverse CDF/CCDF reliability mappings can be
 generated using
-Eqs. `[eq:mv_ria] <#eq:mv_ria>`__–`[eq:mv_pma] <#eq:mv_pma>`__. This is
+Eqs.  :math:numref:`eq:mv_ria`  –  :math:numref:`eq:mv_pma`  . This is
 the least expensive UQ option, but its limited accuracy [1]_ may dictate
 the use of small trust regions, resulting in greater iterations to
 convergence. The expense of optimizing a combined expansion, on the
@@ -778,8 +779,8 @@ formulated as:
    :label: eq:rbdo_mf
 
    \begin{aligned}
-     {\rm minimize }     & f({\bf s}) \nonumber \\
-     {\rm subject \ to } & \hat{\beta_{hi}}({\bf s}) \ge \bar{\beta} \\
+     {\rm minimize\ }     & f({\bf s}) \nonumber \\
+     {\rm subject \ to\ } & \hat{\beta_{hi}}({\bf s}) \ge \bar{\beta} \\
    & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
    \end{aligned}
 
@@ -789,8 +790,8 @@ and multifidelity optimization for robust design can be formulated as:
    :label: eq:rdo_mf
 
    \begin{aligned}
-     {\rm minimize }     & f({\bf s}) \nonumber \\
-     {\rm subject \ to } & \hat{\sigma_{hi}}^2({\bf s}) \le \bar{\sigma}^2 \\
+     {\rm minimize\ }     & f({\bf s}) \nonumber \\
+     {\rm subject \ to\ } & \hat{\sigma_{hi}}^2({\bf s}) \le \bar{\sigma}^2 \\
    & {\parallel {\bf s} - {\bf s}_c \parallel}_\infty \le \Delta^k \nonumber
    \end{aligned}
 
