@@ -4,13 +4,17 @@ Additional Examples
 ===================
 
 This chapter contains additional examples of available methods being
-applied to several test problems. The examples are organized by the test
-problem being used. See Section `[intro:files] <#intro:files>`__ for
-help in finding the files referenced here.
+applied to several test problems. The examples are organized by the
+test problem being used. Many of these examples are also used as code
+verification tests. The examples are run periodically and the results
+are checked against known solutions. This ensures that the algorithms
+are correctly implemented.
 
-Many of these examples are also used as code verification tests. The
-examples are run periodically and the results are checked against known
-solutions. This ensures that the algorithms are correctly implemented.
+..
+   TODO: Fix
+
+   See Section `[intro:files] <#intro:files>`__ for help in finding
+   the files referenced here.
 
 .. _`additional:textbook`:
 
@@ -21,105 +25,104 @@ The two-variable version of the “textbook” test problem provides a
 nonlinearly constrained optimization test case. It is formulated as:
 
 .. math::
+   :label: additional:textbook_f
 
-   \begin{aligned}
-   \texttt{minimize }
-   & & f = (x_1-1)^{4}+(x_2-1)^{4}     \nonumber \\
-   \texttt{subject to }
-   & & g_1 = x_1^2-\frac{x_2}{2} \le 0 \nonumber \\
-   & & g_2 = x_2^2-\frac{x_1}{2} \le 0 \label{additional:textbook_f} \\
-   & &  0.5 \le x_1 \le 5.8            \nonumber \\
-   & & -2.9 \le x_2 \le 2.9            \nonumber\end{aligned}
+   \texttt{minimize } & f = (x_1-1)^{4}+(x_2-1)^{4} \\
+   \texttt{subject to } & g_1 = x_1^2-\frac{x_2}{2} \le 0 \\
+   & g_2 = x_2^2-\frac{x_1}{2} \le 0 \\
+   &  0.5 \le x_1 \le 5.8 \\
+   & -2.9 \le x_2 \le 2.9
 
 Contours of this test problem are illustrated in
-Figure `[additional:textbook_prob] <#additional:textbook_prob>`__\ (a),
-with a close-up view of the feasible region given in
-Figure `[additional:textbook_prob] <#additional:textbook_prob>`__\ (b).
+:numref:`additional:textbook_contours`, with a close-up view of the
+feasible region given in :numref:`additional:textbook_closeup`.
 
-TODO: Missing images
+.. figure:: img/textbook_contours.png
+   :name: additional:textbook_contours
+   :align: center
+   :width: 25%
 
-======= ========
-|image| |image1|
-(a)     (b)
-======= ========
+   Contours of the textbook problem on the :math:`[-3,4] \times
+   [-3,4]` domain with the constrained optimum point :math:`(x_1,x_2)
+   = (0.5,0.5)`. The feasible region lies at the intersection of the
+   two constraints :math:`g_1` (solid) and :math:`g_2` (dashed).
+
+.. figure:: img/textbook_closeup.png
+   :name: additional:textbook_closeup
+   :align: center
+   :width: 25%
+
+   Contours of the textbook problem zoomed into an area containing the
+   constrained optimum point :math:`(x_1,x_2) = (0.5,0.5)`. The
+   feasible region lies at the intersection of the two constraints
+   :math:`g_1` (solid) and :math:`g_2` (dashed).
 
 For the textbook test problem, the unconstrained minimum occurs at
 :math:`(x_1,x_2) = (1,1)`. However, the inclusion of the constraints
-moves the minimum to :math:`(x_1,x_2) = (0.5,0.5)`.
-Equation `[additional:textbook_f] <#additional:textbook_f>`__ presents
-the 2-dimensional form of the textbook problem. An extended formulation
-is stated as
+moves the minimum to :math:`(x_1,x_2) = (0.5,0.5)`.  Equation
+:eq:`additional:textbook_f` presents the 2-dimensional form of the
+textbook problem. An extended formulation is given by
 
 .. math::
+   :label: additional:tbe
 
-   \begin{aligned}
-   \texttt{minimize }   & & f = \sum_{i=1}^{n}(x_i-1)^4 \nonumber\\
-   \texttt{subject to } & & g_1 = x_1^2-\frac{x_2}{2} \leq 0
-     \label{additional:tbe}\\
-     & & g_2=x_2^2-\frac{x_1}{2} \leq 0\nonumber\\
-     & & 0.5 \leq x_1 \leq 5.8\nonumber\\
-     & & -2.9 \leq x_2 \leq 2.9\nonumber\end{aligned}
+   \texttt{minimize }   & f = \sum_{i=1}^{n}(x_i-1)^4 \\
+   \texttt{subject to } & g_1 = x_1^2-\frac{x_2}{2} \leq 0 \\
+   & g_2=x_2^2-\frac{x_1}{2} \leq 0 \\
+   & 0.5 \leq x_1 \leq 5.8 \\
+   & -2.9 \leq x_2 \leq 2.9 \\
 
 where :math:`n` is the number of design variables. The objective
 function is designed to accommodate an arbitrary number of design
 variables in order to allow flexible testing of a variety of data sets.
 Contour plots for the :math:`n=2` case have been shown previously in
-Figure `[additional:textbook_prob] <#additional:textbook_prob>`__.
+:numref:`additional:textbook_contours`.
 
-| For the optimization problem given in
-  Equation `[additional:tbe] <#additional:tbe>`__, the unconstrained
-  solution
-| (``num_nonlinear_inequality_constraints`` set to zero) for two design
-  variables is:
+For the optimization problem given in Equation :eq:`additional:tbe`,
+the unconstrained solution ``num_nonlinear_inequality_constraints =
+0`` for two design variables is:
 
-  .. math::
+.. math::
 
-     \begin{aligned}
-         x_1 &=& 1.0 \\
-         x_2 &=& 1.0\end{aligned}
+   x_1 &= 1.0 \\
+   x_2 &= 1.0
 
-  with
+with
 
-  .. math::
+.. math::
 
-     \begin{aligned}
-         f^{\ast} &=& 0.0\end{aligned}
+   f^{\ast} = 0.0
 
-| The solution for the optimization problem constrained by :math:`g_1`
-| (``num_nonlinear_inequality_constraints`` set to one) is:
+The solution for the optimization problem constrained by :math:`g_1`
+(``num_nonlinear_inequality_constraints = 1``) is:
 
-  .. math::
+.. math::
 
-     \begin{aligned}
-         x_1 &=& 0.763 \\
-         x_2 &=& 1.16\end{aligned}
+   x_1 &= 0.763 \\
+   x_2 &= 1.16
 
-  with
+with
 
-  .. math::
+.. math::
 
-     \begin{aligned}
-           f^{\ast} &=& 0.00388 \\
-         g_1^{\ast} &=& 0.0 ~~\mathrm{(active)}\end{aligned}
+   f^{\ast} &= 0.00388 \\
+   g_1^{\ast} &= 0.0 ~~\mathrm{(active)}
 
-| The solution for the optimization problem constrained by :math:`g_1`
-  and :math:`g_2`
-| (``num_nonlinear_inequality_constraints`` set to two) is:
+The solution for the optimization problem constrained by :math:`g_1`
+and :math:`g_2` (``num_nonlinear_inequality_constraints = 2``) is:
 
-  .. math::
+.. math::
 
-     \begin{aligned}
-         x_1 &=& 0.500 \\
-         x_2 &=& 0.500\end{aligned}
+   x_1 &= 0.500 \\
+   x_2 &= 0.500
 
-  with
+with
 
-  .. math::
+.. math::
 
-     \begin{aligned}
-           f^{\ast} &=& 0.125 \\
-         g_1^{\ast} &=& 0.0 ~~\mathrm{(active)} \\
-         g_2^{\ast} &=& 0.0 ~~\mathrm{(active)}\end{aligned}
+   f^{\ast} &= 0.125 \\
+   g_1^{\ast} &= 0.0 ~~\mathrm{(active)}
+   g_2^{\ast} &= 0.0 ~~\mathrm{(active)}
 
 Note that as constraints are added, the design freedom is restricted
 (the additional constraints are active at the solution) and an increase
@@ -138,16 +141,15 @@ Gradient-based Constrained Optimization
 This example demonstrates the use of a gradient-based optimization
 algorithm on a nonlinearly constrained problem. The Dakota input file
 for this example is shown in
-:numref:`additional:textbook_grad_constr`.
-This input file is similar to the input file for the unconstrained
-gradient-based optimization example involving the Rosenbrock function,
-seen in
-Section `[tutorial:examples:optimization] <#tutorial:examples:optimization>`__.
-Note the addition of commands in the responses block of the input file
-that identify the number and type of constraints, along with the upper
-bounds on these constraints. The commands ``direct`` and
-``analysis_driver = ’text_book’`` specify that Dakota will use its
-internal version of the textbook problem.
+:numref:`additional:textbook_grad_constr`.  This input file is similar
+to the input file for the unconstrained gradient-based optimization
+example involving the Rosenbrock function, seen in
+:ref:`examples-gettingstarted-optimization` Note the addition of
+commands in the responses block of the input file that identify the
+number and type of constraints, along with the upper bounds on these
+constraints. The commands ``direct`` and ``analysis_driver =
+’text_book’`` specify that Dakota will use its internal version of the
+textbook problem.
 
 .. literalinclude:: ../samples/textbook_opt_conmin.in
    :language: dakota
@@ -158,48 +160,50 @@ internal version of the textbook problem.
    :name: additional:textbook_grad_constr
 
 The ``conmin_mfd`` keyword in
-:numref:`additional:textbook_grad_constr`
-tells Dakota to use the CONMIN package’s implementation of the Method of
-Feasible Directions (see
-Section `[opt:methods:gradient:constrained] <#opt:methods:gradient:constrained>`__
-for more details).
-
-A significantly faster alternative is the DOT package’s Modified Method
+:numref:`additional:textbook_grad_constr` tells Dakota to use the
+CONMIN package’s implementation of the Method of Feasible Directions
+(see :ref:`opt:methods:gradient:constrained` for more details). A
+significantly faster alternative is the DOT package’s Modified Method
 of Feasible Directions, i.e. ``dot_mmfd`` (see
-Section `[opt:methods:gradient:constrained] <#opt:methods:gradient:constrained>`__
-for more details). However, DOT is licensed software that may not be
-available on a particular system. If it is installed on your system and
-Dakota has been configured and compiled with ``HAVE_DOT:BOOL=ON`` flag,
-you may use it by commenting out the line with ``conmin_mfd`` and
-uncommenting the line with ``dot_mmfd``.
+:ref:`opt:methods:gradient:constrained` for more details). However,
+DOT is licensed software that may not be available on a particular
+system. If it is installed on your system and Dakota has been
+configured and compiled with ``HAVE_DOT:BOOL=ON`` flag, you may use it
+by commenting out the line with ``conmin_mfd`` and uncommenting the
+line with ``dot_mmfd``.
 
 The results of the optimization example are listed at the end of the
-output file (see
-Section `[tutorial:quickstart:output] <#tutorial:quickstart:output>`__.
-This information shows that the optimizer stopped at the point
-:math:`(x_1,x_2) = (0.5,0.5)`, where both constraints are approximately
-satisfied, and where the objective function value is :math:`0.128`. The
-progress of the optimization algorithm is shown in
-Figure `[additional:textbook_grad_constr_graphics] <#additional:textbook_grad_constr_graphics>`__\ (b)
-where the dots correspond to the end points of each iteration in the
+output file (see discussion in :ref:`helloworld-results`).  This
+information shows that the optimizer stopped at the point
+:math:`(x_1,x_2) = (0.5,0.5)`, where both constraints are
+approximately satisfied, and where the objective function value is
+:math:`0.128`. The progress of the optimization algorithm is shown in
+:numref:`additional:textbook_grad_constr_graphics_iterhist` where the
+dots correspond to the end points of each iteration in the
 algorithm. The starting point is :math:`(x_1,x_2) = (0.9,1.1)`, where
 both constraints are violated. The optimizer takes a sequence of steps
 to minimize the objective function while reducing the infeasibility of
 the constraints. Dakota’s legacy X Windows-based graphics for the
 optimization are also shown in
-Figure `[additional:textbook_grad_constr_graphics] <#additional:textbook_grad_constr_graphics>`__\ (a).
+:numref:`additional:textbook_grad_constr_graphics_obj`.
 
-+----------+
-| |image2| |
-+----------+
-| (a)      |
-+----------+
-|          |
-+----------+
-| |image3| |
-+----------+
-| (b)      |
-+----------+
+.. figure::  img/textbook_history.png
+   :name: additional:textbook_grad_constr_graphics_iterhist
+   :align: center
+   :width: 40%
+
+   Textbook gradient-based constrained optimization example: iteration
+   history (iterations marked by solid dots).
+
+.. figure::  img/textbook_opt_hist.png
+   :name: additional:textbook_grad_constr_graphics_obj
+   :align: center
+   :width: 60%
+
+   Textbook gradient-based constrained optimization example:
+   screen capture of the legacy Dakota X Windows-based graphics
+   shows how the objective function was reduced during the search for
+   a feasible design point
 
 .. _`additional:textbook:least`:
 
@@ -219,8 +223,9 @@ This test problem may also be used to exercise least squares
 solution methods by modifying the problem formulation to:
 
 .. math::
+   :label: additional:tbls
 
-   \texttt{minimize } (f)^2+(g_1)^2+(g_2)^2 \label{additional:tbls}
+   \texttt{minimize } (f)^2+(g_1)^2+(g_2)^2
 
 This modification is performed by simply changing the responses
 specification for the three functions from ``num_objective_functions =
@@ -234,15 +239,15 @@ formulations are not equivalent and have different solutions.
    equivalent to the optimization formulation would be to select the
    residual functions to be :math:`(x_{i}-1)^2`. However, this formulation
    requires modification to :file:`dakota_source/test/text_book.cpp` and will
-   not be presented here. Equation~\ref{additional:tbls}, on the other
+   not be presented here. Equation :eq:`additional:tbls`, on the other
    hand, can use the existing ``text_book`` without modification.
 
-Refer to Section~\ref{additional:rosenbrock} for an example of
+Refer to :ref:`additional:rosenbrock` for an example of
 minimizing the same objective function using both optimization and
 least squares approaches.
 
 The solution for the least squares problem given in
-Equation~\ref{additional:tbls} is:
+:eq:`additional:tbls` is:
 
 .. math::
 
@@ -270,7 +275,7 @@ specification.
 Rosenbrock
 ----------
 
-The Rosenbrock function :cite:p:`Gil81` is a well known test problem
+The Rosenbrock function :cite:p:`Gil81` is a well known test problem
 for optimization algorithms. The standard formulation includes two
 design variables, and computes a single objective function, while
 generalizations can support arbitrary many design variables. This
@@ -278,44 +283,45 @@ problem can also be posed as a least-squares optimization problem with
 two residuals to be minimized because the objective function is
 comprised of a sum of squared terms.
 
-**Standard Formulation**
-The standard two-dimensional formulation can be stated as
+**Standard Formulation:** The standard two-dimensional formulation is
 
-  .. math:: \texttt{minimize } f=100(x_2-x_1^2)^2+(1-x_1)^2 \label{additional:rosenstd}
+.. math::
+   :label: additional:rosenstd
 
-Surface and contour plots for this function have been shown previously
-in Figure `[tutorial:rosenbrock_prob] <#tutorial:rosenbrock_prob>`__.
+   \texttt{minimize } f(x) = 100(x_2-x_1^2)^2+(1-x_1)^2
 
-The optimal solution is:
+Surface and contour plots for this function can be seen in
+:ref:`examples-gettingstarted-rosenbrock`. The optimal solution is:
 
 .. math::
 
-   \begin{aligned}
-       x_1 &=& 1.0 \\
-       x_2 &=& 1.0\end{aligned}
+   x_1 &= 1.0 \\
+   x_2 &= 1.0
 
 with
 
 .. math::
 
-   \begin{aligned}
-       f^{\ast} &=& 0.0\end{aligned}
+   f^{\ast} = 0.0
 
 A discussion of gradient based optimization to minimize this function is
-in
-Section `[tutorial:examples:optimization] <#tutorial:examples:optimization>`__.
+in :ref:`examples-gettingstarted-optimization`
 
-**"Extended" Formulation:** The formulation in :cite:p:`Noc99` is
-called the "extended Rosenbrock" and is defined as:
+**"Extended" Formulation:** The formulation in :cite:p:`Noc99`, called
+the "extended Rosenbrock", is defined by:
 
 .. math::
-   f = \sum_{i=1}^{n/2} \left[ \alpha (x_{2i}-x_{2i-1}^2)^2+(1-x_{2i-1})^2 \right] \label{additional:rosenexd}
+   :label: additional:rosenexd
+
+   f = \sum_{i=1}^{n/2} \left[ \alpha (x_{2i}-x_{2i-1}^2)^2+(1-x_{2i-1})^2 \right]
 
 **"Generalized" Formulation:** Another n-dimensional formulation was
 propsed in :cite:p:`Sch87`:
 
 .. math::
-   f = \sum_{i=1}^{n-1} \left[ 100 (x_{i+1}-x_i^2)^2+(1-x_i)^2 \right] \label{additional:rosengen}
+   :label: additional:rosengen
+
+   f = \sum_{i=1}^{n-1} \left[ 100 (x_{i+1}-x_i^2)^2+(1-x_i)^2 \right]
 
 ..
    TODO: Not sure why this is in this section...
@@ -328,42 +334,106 @@ propsed in :cite:p:`Sch87`:
    \label{additional:gerstner_aniso3}
    \end{equation}
 
-**A Least-Squares Optimization Formulation**
-This test problem may also be used to exercise least-squares solution
-methods by recasting the standard problem formulation into:
+**A Least-Squares Optimization Formulation:** This test problem may
+also be used to exercise least-squares solution methods by recasting
+the standard problem formulation into:
 
-  .. math:: \texttt{minimize } f = (f_1)^2+(f_2)^2 \label{additional:rosenls}
+.. math::
+   :label: additional:rosenls
 
-  where
+   \texttt{minimize } f(x) = (f_1)^2+(f_2)^2
 
-  .. math:: f_1 = 10 (x_2 - x_1^2) \label{additional:rosenr1}
+where
 
-  and
+.. math::
+   :label: additional:rosenr1
 
-  .. math:: f_2 = 1 - x_1 \label{additional:rosenr2}
+    f_1 = 10 (x_2 - x_1^2)
 
-  are residual terms.
+and
+
+.. math::
+   :label: additional:rosenr2
+
+   f_2 = 1 - x_1
+
+are residual terms.
 
 The included analysis driver can handle both formulations. In the
-``dakota/share/dakota/test``
-directory, the ``rosenbrock`` executable (compiled from 
-``dakota_source/test/rosenbrock.cpp``) checks the
+``dakota/share/dakota/test`` directory, the ``rosenbrock`` executable
+(compiled from ``dakota_source/test/rosenbrock.cpp``) checks the
 number of response functions passed in the parameters file and returns
 either an objective function (as computed from
-Equation `[additional:rosenstd] <#additional:rosenstd>`__) for use with
-optimization methods or two least squares terms (as computed from
-Equations `[additional:rosenr1] <#additional:rosenr1>`__-`[additional:rosenr2] <#additional:rosenr2>`__)
-for use with least squares methods. Both cases support analytic
-gradients of the function set with respect to the design variables. See
-Figure `[tutorial:rosenbrock_grad] <#tutorial:rosenbrock_grad>`__ (std
-formulation) and
-:numref:`additional:rosenbrock_nls`
-(least squares formulation) for examples of each usage.
+:eq:`additional:rosenstd`) for use with optimization methods or two
+least squares terms (as computed from :eq:`additional:rosenr1` and
+:eq:`additional:rosenr2`) for use with least squares methods. Both
+cases support analytic gradients of the function set with respect to
+the design variables. See :numref:`tutorial:rosenbrock_grad` (standard
+formulation) and :numref:`additional:rosenbrock_nls` (least squares
+formulation) for usage examples.
 
-.. _`additional:rosenbrock:results`:
+.. _`additional:rosenbrock:examples:lsq`:
 
-Optimization Results
-~~~~~~~~~~~~~~~~~~~~
+Least-Squares Optimization
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Least squares methods are often used for calibration or parameter
+estimation, that is, to seek parameters maximizing agreement of models
+with experimental data. The least-squares formulation was described in
+the previous section.
+
+When using a least-squares approach to minimize a function, each of
+the least-squares terms :math:`f_1, f_2,\ldots` is driven toward
+zero. This formulation permits the use of specialized algorithms that
+can be more efficient than general purpose optimization
+algorithms. See :ref:`nls` for more detail on the algorithms used for
+least-squares minimization, as well as a discussion on the types of
+engineering design problems (e.g., parameter estimation) that can make
+use of the least-squares approach.
+
+:numref:`additional:rosenbrock_nls` is a listing of the Dakota input
+file ``rosen_opt_nls.in``.  This differs from the input file shown in
+:ref:`tutorial:rosenbrock_grad` in several key areas. The responses
+block of the input file uses the keyword ``calibration_terms = 2``
+instead of ``objective_functions = 1``. The method block of the input
+file shows that the NL2SOL algorithm :cite:p:`Den81` (``nl2sol``) is
+used in this example. (The Gauss-Newton, NL2SOL, and NLSSOL SQP
+algorithms are currently available for exploiting the special
+mathematical structure of least squares minimization problems).
+
+.. literalinclude:: ../samples/rosen_opt_nls.in
+   :language: dakota
+   :tab-width: 2
+   :caption: Rosenbrock nonlinear least squares example: the Dakota
+       input file -- see
+       ``dakota/share/dakota/examples/users/rosen_opt_nls.in``
+   :name: additional:rosenbrock_nls
+
+The results at the end of the output file show that the least squares
+minimization approach has found the same optimum design point,
+:math:`(x1,x2) = (1.0,1.0)`, as was found using the conventional
+gradient-based optimization approach. The iteration history of the
+least squares minimization is shown in
+:numref:`additional:rosenbrock_nls_graphics`, and shows that 14
+function evaluations were needed for convergence. In this example the
+least squares approach required about half the number of function
+evaluations as did conventional gradient-based optimization. In many
+cases a good least squares algorithm will converge more rapidly in the
+vicinity of the solution.
+
+.. figure:: img/nonlin_paramest_hist.png
+   :alt: Rosenbrock nonlinear least squares example: iteration history
+         for least squares terms :math:`f_1` and :math:`f_2`.
+   :name: additional:rosenbrock_nls_graphics
+   :width: 30%
+   :align: center
+
+   Rosenbrock nonlinear least squares example: iteration history for
+   least squares terms :math:`f_1` and :math:`f_2`.
+
+
+Method Comparison
+~~~~~~~~~~~~~~~~~
 
 ..
    TODO: Per khu, consider moving this discussion to a methods section
@@ -493,65 +563,7 @@ method starting from ``cdv_initial_point = 0.8, 0.7``:
      Total CPU        =       0.01 [parent =   0.017997, child =  -0.007997]
      Total wall clock =  0.0672231
 
-.. _`additional:rosenbrock:examples:nonlinear`:
 
-Least-Squares Optimization
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Least squares methods are often used for calibration or parameter
-estimation, that is, to seek parameters maximizing agreement of models
-with experimental data. The least-squares formulation was described in
-the previous section.
-
-When using a least-squares approach to minimize a function, each of the
-least-squares terms :math:`f_1, f_2,\ldots` is driven toward zero. This
-formulation permits the use of specialized algorithms that can be more
-efficient than general purpose optimization algorithms. See
-Chapter `[nls] <#nls>`__ for more detail on the algorithms used for
-least-squares minimization, as well as a discussion on the types of
-engineering design problems (e.g., parameter estimation) that can make
-use of the least-squares approach.
-
-:numref:`additional:rosenbrock_nls` is a
-listing of the Dakota input file ``rosen_opt_nls.in``.
-This differs from the input file shown in
-Figure `[tutorial:rosenbrock_grad] <#tutorial:rosenbrock_grad>`__ in
-several key areas. The responses block of the input file uses the
-keyword ``calibration_terms = 2`` instead of
-``objective_functions = 1``. The method block of the input file shows
-that the NL2SOL algorithm :cite:p:`Den81` (``nl2sol``) is used
-in this example. (The Gauss-Newton, NL2SOL, and NLSSOL SQP algorithms
-are currently available for exploiting the special mathematical
-structure of least squares minimization problems).
-
-.. literalinclude:: ../samples/rosen_opt_nls.in
-   :language: dakota
-   :tab-width: 2
-   :caption: Rosenbrock nonlinear least squares example: the Dakota
-       input file -- see
-       ``dakota/share/dakota/examples/users/rosen_opt_nls.in``
-   :name: additional:rosenbrock_nls
-
-The optimization results at the end of the output file show that the
-least squares minimization approach has found the same optimum design
-point, :math:`(x1,x2) = (1.0,1.0)`, as was found using the conventional
-gradient-based optimization approach. The iteration history of the least
-squares minimization is given in
-Figure `1.1 <#additional:rosenbrock_nls_graphics>`__, and shows that 14
-function evaluations were needed for convergence. In this example the
-least squares approach required about half the number of function
-evaluations as did conventional gradient-based optimization. In many
-cases a good least squares algorithm will converge more rapidly in the
-vicinity of the solution.
-
-.. figure:: img/nonlin_paramest_hist.png
-   :alt: Rosenbrock nonlinear least squares example: iteration history
-         for least squares terms :math:`f_1` and :math:`f_2`.
-   :name: additional:rosenbrock_nls_graphics
-   :height: 4in
-
-   Rosenbrock nonlinear least squares example: iteration history for
-   least squares terms :math:`f_1` and :math:`f_2`.
 
 Herbie, Smooth Herbie, and Shubert
 ----------------------------------
@@ -562,7 +574,7 @@ is separable and each dimension is identical it is easily generalized to
 an arbitrary number of dimensions. The generalized (to :math:`M`
 dimensions) Herbie function is
 
-.. math:: {\rm herb}(\underline{x})=-\prod_{k=1}^M w_{herb}\left(x_k\right)
+.. math:: {\rm herb}(x)=-\prod_{k=1}^M w_{herb}\left(x_k\right)
 
 where
 
@@ -576,16 +588,18 @@ oscillatory function. For this reason, the “smooth Herbie” test function
 omits the high frequency sine term but is otherwise identical to the
 Herbie function. The formula for smooth Herbie is
 
-.. math:: {\rm herb_{sm}}(\underline{x})=-\prod_{k=1}^M w_{sm}\left(x_k\right)
+.. math:: {\rm herb_{sm}}(x)=-\prod_{k=1}^M w_{sm}\left(x_k\right)
 
 where
 
 .. math:: w_{sm}\left(x_k\right)=\exp(-(x_k-1)^2)+\exp(-0.8(x_k+1)^2).
 
 Two dimensional versions of the ``herbie`` and ``smooth_herbie`` test
-functions are plotted in Figure `1.2 <#fig:2D_herbie__smooth_herbie>`__.
+functions are plotted in :numref:`fig:2D_herbie__smooth_herbie`.
 
 .. figure:: img/DAK5pt2_2D__herbie__smooth_herbie.png
+   :align: center
+   :width: 60%
    :alt: Plots of the ``herbie`` (left) and ``smooth_herbie`` (right)
          test functions in 2 dimensions. They can accept an arbitrary number
          of inputs. The direction of the z-axis has been reversed (negative is
@@ -602,19 +616,28 @@ function. Its analytical formula is
 
 .. math::
 
-   \begin{aligned}
-   {\rm shu}(\underline{x})= \prod_{k=1}^M w_{shu}\left(x_k\right) \\
-   w_{shu}\left(x_k\right)= \sum_{i=1}^5 i\cos((i+1)x_k+i)\end{aligned}
+   {\rm shu}(x) &= \prod_{k=1}^M w_{shu}\left(x_k\right) \\
+   w_{shu}\left(x_k\right) &= \sum_{i=1}^5 i\cos((i+1)x_k+i)
 
 The 2D version of the ``shubert`` function is shown in
-Figure `1.3 <#fig:2D_shubert>`__.
+:numref:`fig:2D_shubert`.
+
+.. figure:: img/DAK5pt2_2D_shubert.png
+   :align: center
+   :width: 40%
+   :alt: Plot of the ``shubert`` test function in 2 dimensions. It can
+         accept an arbitrary number of inputs.
+   :name: fig:2D_shubert
+
+   Plot of the ``shubert`` test function in 2 dimensions. It can accept
+   an arbitrary number of inputs.
 
 Efficient Global Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Dakota input file ``herbie_shubert_opt_ego.in`` 
 shows how to use efficient global optimization
-(ego) to minimize the 5D version of any of these 3 separable functions.
+(EGO) to minimize the 5D version of any of these 3 separable functions.
 The input file is shown in
 :numref:`additional:herbie_shubert_ego`.
 Note that in the variables section the ``5*`` preceding the values -2.0
@@ -629,36 +652,30 @@ of these functions is :math:`-2\le x_k \le 2` for all dimensions.
        ``dakota/share/dakota/examples/users/herbie_shubert_opt_ego.in``
    :name: additional:herbie_shubert_ego
 
-.. figure:: img/DAK5pt2_2D_shubert.png
-   :alt: Plot of the ``shubert`` test function in 2 dimensions. It can
-         accept an arbitrary number of inputs.
-   :name: fig:2D_shubert
-
-   Plot of the ``shubert`` test function in 2 dimensions. It can accept
-   an arbitrary number of inputs.
 
 Sobol and Ishigami Functions
 ----------------------------
 
-These functions are often used to test sensitivity analysis methods.
-These are documented in  :cite:p:`storlie_09`. The first is
-the Sobol rational function, given by the equation:
+These functions, documented in :cite:p:`storlie_09`, are often used to
+test sensitivity analysis methods.  The Sobol rational function is
+given by the equation:
 
 .. math:: f({\bf x})=\frac{(x_2+0.5)^4}{(x_1+0.5)^4}
 
-This function is monotonic across each of the inputs. However, there is
-substantial interaction between :math:`x_1` and :math:`x_2` which makes
-sensitivity analysis difficult. This function in shown in
-Figure `1.4 <#fig:sobol_rational>`__.
+This function is monotonic across each of the inputs. However, there
+is substantial interaction between :math:`x_1` and :math:`x_2` which
+makes sensitivity analysis difficult. This function in shown in
+:numref:`fig:sobol_rational`.
 
 .. figure:: img/sobol_rational.png
+   :align: center
+   :width: 50%
    :alt: Plot of the ``sobol_rational`` test function in 2 dimensions.
    :name: fig:sobol_rational
 
    Plot of the ``sobol_rational`` test function in 2 dimensions.
 
-The Ishigami test problem :cite:p:`storlie_09` is a smooth
-:math:`C^{\infty}` function:
+The Ishigami test problem is a smooth :math:`C^{\infty}` function:
 
 .. math::
 
@@ -670,9 +687,11 @@ are *iid* uniform on [0,1]. This function was created as a test for
 global sensitivity analysis methods, but is challenging for any method
 based on low-order structured grids (e.g., due to term cancellation at
 midpoints and bounds). This function in shown in
-Figure `1.5 <#fig:sobol_ishigami>`__.
+:numref:`fig:sobol_ishigami`.
 
 .. figure:: img/sobol_ishigami.png
+   :align: center
+   :width: 50%
    :alt: Plot of the ``sobol_ishigami`` test function as a function of
          x1 and x3.
    :name: fig:sobol_ishigami
@@ -680,10 +699,9 @@ Figure `1.5 <#fig:sobol_ishigami>`__.
    Plot of the ``sobol_ishigami`` test function as a function of x1 and
    x3.
 
-At the opposite end of the smoothness spectrum, Sobol’s
-g-function :cite:p:`storlie_09` is :math:`C^0` with the
-absolute value contributing a slope discontinuity at the center of the
-domain:
+At the opposite end of the smoothness spectrum, Sobol’s g-function is
+:math:`C^0` with the absolute value contributing a slope discontinuity
+at the center of the domain:
 
 .. math::
 
@@ -692,13 +710,16 @@ domain:
 
 The distributions for :math:`x_j` for :math:`j=1,2,3,4,5` are *iid*
 uniform on [0,1]. This function in shown in
-Figure `1.6 <#fig:sobol_g_function>`__.
+:numref:`fig:sobol_g_function`.
 
 .. figure:: img/sobol_g_function.png
+   :align: center
+   :width: 50%
    :alt: Plot of the ``sobol_g_function`` test function.
    :name: fig:sobol_g_function
 
    Plot of the ``sobol_g_function`` test function.
+
 
 .. _`additional:cylinder`:
 
@@ -708,16 +729,15 @@ Cylinder Head
 The cylinder head test problem is stated as:
 
 .. math::
+   :label: additional:cylhead
 
-   \begin{aligned}
-   \texttt{minimize }   & & f=-1\bigg(\frac{\mathtt{horsepower}}{250}+
-     \frac{\mathtt{warranty}}{100000}\bigg) \nonumber\\
-   \texttt{subject to } & & \sigma_{max} \leq 0.5 \sigma_{yield}
-     \label{additional:cylhead}\\
-                        & & \mathtt{warranty} \geq 100000          \nonumber\\
-                        & & \mathtt{time_{cycle}} \leq 60          \nonumber\\
-                        & & 1.5 \leq \mathtt{d_{intake}} \leq 2.164\nonumber\\
-                        & & 0.0 \leq \mathtt{flatness} \leq 4.0    \nonumber\end{aligned}
+   \texttt{minimize } & f=-1\bigg(\frac{\mathtt{horsepower}}{250}+
+   \frac{\mathtt{warranty}}{100000}\bigg) \\
+   \texttt{subject to } & \sigma_{max} \leq 0.5 \sigma_{yield} \\
+                        & \mathtt{warranty} \geq 100000 \\
+                        & \mathtt{time_{cycle}} \leq 60 \\
+                        & 1.5 \leq \mathtt{d_{intake}} \leq 2.164 \\
+                        & 0.0 \leq \mathtt{flatness} \leq 4.0
 
 This formulation seeks to simultaneously maximize normalized engine
 horsepower and engine warranty over variables of valve intake diameter
@@ -726,42 +746,39 @@ horsepower and engine warranty over variables of valve intake diameter
 inequality constraints that the maximum stress cannot exceed half of
 yield, that warranty must be at least 100000 miles, and that
 manufacturing cycle time must be less than 60 seconds. Since the
-constraints involve different scales, they should be nondimensionalized
-(note: the nonlinear constraint scaling described in
-Section `[opt:additional:scaling] <#opt:additional:scaling>`__ can now
-do this automatically). In addition, they can be converted to the
-standard 1-sided form :math:`g(\mathbf{x}) \leq 0` as follows:
+constraints involve different scales, they should be
+nondimensionalized (note: the nonlinear constraint scaling described
+in :ref:`opt:additional:scaling` can now do this automatically). In
+addition, they can be converted to the standard 1-sided form
+:math:`g(\mathbf{x}) \leq 0` as follows:
 
 .. math::
+   :label: additional:cylheadaltg
 
-   \begin{aligned}
-     & & g_1=\frac{2\sigma_{\mathtt{max}}}{\sigma_{\mathtt{yield}}}-1 \leq 0
-     \nonumber\\
-     & & g_2=1-\frac{\mathtt{warranty}}{100000} \leq 0
-     \label{additional:cylheadaltg}\\
-     & & g_3=\frac{\mathtt{time_{cycle}}}{60}-1 \leq 0\nonumber\end{aligned}
+   & & g_1=\frac{2\sigma_{\mathtt{max}}}{\sigma_{\mathtt{yield}}}-1 \leq 0 \\
+   & & g_2=1-\frac{\mathtt{warranty}}{100000} \leq 0 \\
+   & & g_3=\frac{\mathtt{time_{cycle}}}{60}-1 \leq 0
 
 The objective function and constraints are related analytically to the
 design variables according to the following simple expressions:
 
 .. math::
+   :label: additional:cylheadexp
 
-   \begin{aligned}
-   \mathtt{warranty}     &=& 100000+15000(4-\mathtt{flatness})\nonumber\\
-   \mathtt{time_{cycle}} &=& 45+4.5(4-\mathtt{flatness})^{1.5}\nonumber\\
-   \mathtt{horsepower}   &=& 250+200\bigg(\frac{\mathtt{d_{intake}}}{1.833}-1\bigg)
-     \label{additional:cylheadexp}\\
-   \sigma_{\mathtt{max}} &=& 750+\frac{1}{(\mathtt{t_{wall}})^{2.5}}\nonumber\\
-   \mathtt{t_{wall}}     &=& \mathtt{offset_{intake}-offset_{exhaust}}-
-     \frac{(\mathtt{d_{intake}+d_{exhaust}})}{2}\nonumber\end{aligned}
+   \mathtt{warranty}     &= 100000+15000(4-\mathtt{flatness}) \\
+   \mathtt{time_{cycle}} &= 45+4.5(4-\mathtt{flatness})^{1.5} \\
+   \mathtt{horsepower}   &= 250+200\bigg(\frac{\mathtt{d_{intake}}}{1.833}-1\bigg) \\
+   \sigma_{\mathtt{max}} &= 750+\frac{1}{(\mathtt{t_{wall}})^{2.5}} \\
+   \mathtt{t_{wall}}     &= \mathtt{offset_{intake}-offset_{exhaust}}-
+     \frac{(\mathtt{d_{intake}+d_{exhaust}})}{2}
 
-where the constants in
-Equation `[additional:cylheadaltg] <#additional:cylheadaltg>`__ and
-Equation `[additional:cylheadexp] <#additional:cylheadexp>`__ assume
-the following values: :math:`\sigma_{\mathtt{yield}}=3000`,
+where the constants in :eq:`additional:cylheadaltg` and
+:eq:`additional:cylheadexp` assume the following values:
+:math:`\sigma_{\mathtt{yield}}=3000`,
 :math:`\mathtt{offset_{intake}}=3.25`,
 :math:`\mathtt{offset_{exhaust}}=1.34`, and
 :math:`\mathtt{d_{exhaust}}=1.556`.
+
 
 Constrained Gradient Based Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -790,30 +807,27 @@ The solution for the constrained optimization problem is:
 
 .. math::
 
-   \begin{aligned}
-       \mathrm{intake\_dia} &=& 2.122 \\
-       \mathrm{flatness}    &=& 1.769\end{aligned}
+   \mathrm{intake\_dia} &= 2.122 \\
+   \mathrm{flatness}    &= 1.769
 
 with
 
 .. math::
 
-   \begin{aligned}
-         f^{\ast} &=& -2.461 \\
-       g_1^{\ast} &=&  0.0    ~~\mathrm{(active)} \\
-       g_2^{\ast} &=& -0.3347 ~~\mathrm{(inactive)} \\
-       g_3^{\ast} &=&  0.0    ~~\mathrm{(active)}\end{aligned}
+   f^{\ast} &= -2.461 \\
+   g_1^{\ast} &=  0.0    ~~\mathrm{(active)} \\
+   g_2^{\ast} &= -0.3347 ~~\mathrm{(inactive)} \\
+   g_3^{\ast} &=  0.0    ~~\mathrm{(active)}
 
 which corresponds to the following optimal response quantities:
 
 .. math::
 
-   \begin{aligned}
-       \mathrm{warranty}        &=& 133472 \\
-       \mathrm{cycle\_time}     &=& 60 \\
-       \mathrm{wall\_thickness} &=& 0.0707906 \\
-       \mathrm{horse\_power}    &=& 281.579 \\
-       \mathrm{max\_stress}     &=& 1500\end{aligned}
+   \mathrm{warranty}        &= 133472 \\
+   \mathrm{cycle\_time}     &= 60 \\
+   \mathrm{wall\_thickness} &= 0.0707906 \\
+   \mathrm{horse\_power}    &= 281.579 \\
+   \mathrm{max\_stress}     &= 1500
 
 The final report from the Dakota output is as follows:
 
@@ -853,6 +867,8 @@ the container wall forming a seal through a crimping operation.
 .. figure:: img/end_cap.png
    :alt: Container wall-to-end-cap seal
    :name: additional:figure01
+   :align: center
+   :width: 30%
 
    Container wall-to-end-cap seal
 
@@ -897,16 +913,20 @@ waste is
 
 or
 
-.. math:: A=2(1.15)(1.12)\pi\frac{D^2}{4}+(1.05)\pi DH \label{additional:contA}
+.. math::
+   :label: additional:contA
+
+   A = 2(1.15)(1.12)\pi\frac{D^2}{4}+(1.05)\pi DH
 
 where :math:`D` and :math:`H` are the diameter and height of the
 finished product in units of inches, respectively. The volume of the
 finished product is specified to be
 
 .. math::
+   :label: additional:contV
 
    V=\pi\frac{D^2H}{4}=(1.1\mathtt{qt})(57.75 \mathtt{in}^3/\mathtt{qt})
-     \label{additional:contV}
+
 
 The equation for area is the objective function for this problem; it is
 to be minimized. The equation for volume is an equality constraint; it
@@ -939,15 +959,15 @@ optimization problem if desired. The optimization problem can then be
 stated in a standardized form as
 
 .. math::
+   :label: additional:contFH
 
-   \begin{aligned}
-   \texttt{minimize}   & & 2(1.15)(1.12)\pi\frac{D^2}{4}+(1.05)^2\pi DH\nonumber\\
-   \texttt{subject to} & & \pi\frac{D^2H}{4}=
-     (1.1\mathtt{qt})(57.75 \mathtt{in}^3/\mathtt{qt}) \label{additional:contFH}\\
-                       & & -D \leq 0\hbox{, }-H \leq 0\nonumber\end{aligned}
+   \texttt{minimize}   & 2(1.15)(1.12)\pi\frac{D^2}{4}+(1.05)^2\pi DH \\
+   \texttt{subject to} & \pi\frac{D^2H}{4}=
+     (1.1\mathtt{qt})(57.75 \mathtt{in}^3/\mathtt{qt}) \\
+                       & & -D \leq 0\hbox{, }-H \leq 0
 
 A graphical view of the container optimization test problem appears in
-Figure `1.8 <#additional:figure02>`__. The 3-D surface defines the area,
+:numref:`additional:figure02`. The 3-D surface defines the area,
 :math:`A`, as a function of diameter and height. The curved line that
 extends across the surface defines the areas that satisfy the volume
 equality constraint, :math:`V`. Graphically, the container optimization
@@ -960,6 +980,8 @@ optimal values for diameter and height of the final product.
    :alt: A graphical representation of the container optimization
          problem.
    :name: additional:figure02
+   :align: center
+   :width: 40%
 
    A graphical representation of the container optimization problem.
 
@@ -998,14 +1020,15 @@ Cantilever
 ----------
 
 This test problem is adapted from the reliability-based design
-optimization
-literature :cite:p:`Sue01`, :cite:p:`Wu01` and
-involves a simple uniform cantilever beam as shown in
-Figure `1.9 <#additional:figure03>`__.
+optimization literature:cite:p:`Sue01`, :cite:p:`Wu01` and involves a
+simple uniform cantilever beam as shown in
+:numref:`additional:figure03`.
 
 .. figure:: img/cantilever_beam.png
    :alt: Cantilever beam test problem.
    :name: additional:figure03
+   :align: center
+   :width: 50%
 
    Cantilever beam test problem.
 
@@ -1021,60 +1044,58 @@ constants include :math:`L = 100\mathtt{in}` and :math:`D_{0} = 2.2535
 \mathtt{in}`. The constraints have the following analytic form:
 
 .. math::
+   :label: additional:cant
 
-   \begin{aligned}
-   \mathtt{stress}&=&\frac{600}{w t^2}Y+\frac{600}{w^2t}X \leq R
-     \label{additional:cant}\\
-   \mathtt{displacement}&=&\frac{4L^3}{E w t}
+   \mathtt{stress} &= \frac{600}{w t^2}Y+\frac{600}{w^2t}X \leq R \\
+   \mathtt{displacement} &= \frac{4L^3}{E w t}
      \sqrt{\bigg(\frac{Y}{t^2}\bigg)^2+\bigg(\frac{X}{w^2}\bigg)^2}
-     \leq D_{0} \nonumber\end{aligned}
+     \leq D_{0}
 
 or when scaled:
 
 .. math::
+   :label: additional:cantscale
 
-   \begin{aligned}
-     g_{S}&=&\frac{\mathtt{stress}}{R}-1 \leq 0\label{additional:cantscale}\\
-     g_{D}&=&\frac{\mathtt{displacement}}{D_{0}}-1 \leq 0\nonumber\\\end{aligned}
+   g_{S} &=\frac{\mathtt{stress}}{R}-1 \leq 0 \\
+   g_{D} &=\frac{\mathtt{displacement}}{D_{0}}-1 \leq 0
 
-| **Deterministic Formulation**
-| If the random variables :math:`E`, :math:`R`, :math:`X`, and :math:`Y`
-  are fixed at their means, the resulting deterministic design problem
-  can be formulated as
+**Deterministic Formulation:** If the random variables :math:`E`,
+:math:`R`, :math:`X`, and :math:`Y` are fixed at their means, the
+resulting deterministic design problem can be formulated as
 
-  .. math::
+.. math::
+   :label: additional:cantopt
 
-     \begin{aligned}
-     \texttt{minimize }   & & f = w t            \nonumber\\
-     \texttt{subject to } & & g_{S} \leq 0 \label{additional:cantopt}\\
-                          & & g_{D} \leq 0       \nonumber\\
-                          & & 1.0 \leq w \leq 4.0\nonumber\\
-                          & & 1.0 \leq t \leq 4.0\nonumber\end{aligned}
+   \texttt{minimize }   & f = w t            \\
+   \texttt{subject to } & g_{S} \leq 0       \\
+                        & g_{D} \leq 0       \\
+                        & 1.0 \leq w \leq 4.0 \\
+                        & 1.0 \leq t \leq 4.0
 
-| **Stochastic Formulation**
-| If the normal distributions for the random variables :math:`E`,
-  :math:`R`, :math:`X`, and :math:`Y` are included, a stochastic design
-  problem can be formulated as
+**Stochastic Formulation:** If the normal distributions for the random
+variables :math:`E`, :math:`R`, :math:`X`, and :math:`Y` are included,
+a stochastic design problem can be formulated as
 
-  .. math::
+.. math::
+   :label: additional:cantouu
 
-     \begin{aligned}
-     \texttt{minimize }   & & f = w t            \nonumber\\
-     \texttt{subject to } & & \beta_{D} \geq 3   \label{additional:cantouu}\\
-                          & & \beta_{S} \geq 3   \nonumber\\
-                          & & 1.0 \leq w \leq 4.0\nonumber\\
-                          & & 1.0 \leq t \leq 4.0\nonumber\end{aligned}
+   \texttt{minimize }   & f = w t            \\
+   \texttt{subject to } & \beta_{D} \geq 3   \\ 
+                        & \beta_{S} \geq 3   \\
+                        & 1.0 \leq w \leq 4.0 \\
+                        & 1.0 \leq t \leq 4.0 
 
-  where a 3-sigma reliability level (probability of failure = 0.00135 if
-  responses are normally-distributed) is being sought on the scaled
-  constraints.
+where a 3-sigma reliability level (probability of failure = 0.00135 if
+responses are normally-distributed) is being sought on the scaled
+constraints.
 
 .. _constrained-gradient-based-optimization-2:
 
 Constrained Gradient Based Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The test problem is solved using ``cantilever_opt_npsol.in``:
+Here, the Cantilever test problem is solved using
+``cantilever_opt_npsol.in``:
 
 .. literalinclude:: ../samples/cantilever_opt_npsol.in
    :language: dakota
@@ -1113,8 +1134,8 @@ Optimization Under Uncertainty
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Optimization under uncertainty solutions to the stochastic problem are
-described in :cite:p:`Eld02,Eld05,Eld06a`, for which the
-solution is :math:`(w,t)=(2.45,3.88)` with an objective function of
+described in :cite:p:`Eld02,Eld05,Eld06a`, for which the solution is
+:math:`(w,t)=(2.45,3.88)` with an objective function of
 :math:`9.52`. This demonstrates that a more conservative design is
 needed to satisfy the probabilistic constraints.
 
@@ -1854,13 +1875,6 @@ The model is simply the sum of the d input parameters:
 where the input varaibles :math:`x_i` can be any uncertain variable type
 but are typically considered as uniform or normal uncertain inputs.
 
-.. |image| image:: img/textbook_contours.png
-   :height: 2.5in
-.. |image1| image:: img/textbook_closeup.png
-   :height: 2.5in
-.. |image2| image:: img/textbook_opt_hist.png
-.. |image3| image:: img/textbook_history.png
-   :height: 2.5in
 .. |image4| image:: img/log_ratio_cdf_ria.png
 .. |image5| image:: img/log_ratio_cdf_pma.png
 .. |image6| image:: img/short_col_cdf_ria.png
