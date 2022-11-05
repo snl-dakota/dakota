@@ -53,16 +53,18 @@ def dakota_keyword_role(name, rawtext, text, lineno, inliner, options={}, conten
     src_file = inliner.document.attributes['source']
     src_path = pathlib.Path(src_file)
     src_parts = src_path.parts
-    if (not 'usingdakota' in src_parts):
+    # src_parts will typically include source/docs/user/usingdakota/.../file.rst
+
+    if (not 'user' in src_parts):
         msg = inliner.reporter.error(
-            f'Dakota keyword reference "{rawtext}" can only be used in usingdakota chapter, not in file {src_file}', line=lineno)
+            f'Dakota keyword reference "{rawtext}" can only be used within source/docs/user, not in file {src_file}', line=lineno)
         prb = inliner.problematic(rawtext, rawtext, msg)
         return [prb], [msg]
 
     # TODO: resolve and validate the reference?
-    levels = len(src_parts) - src_parts.index('usingdakota') - 2
+    levels = len(src_parts) - src_parts.index('user') - 2
     rel_uri = ('../' * levels +
-              'reference/' + kw_full + '.html')
+              'usingdakota/reference/' + kw_full + '.html')
     ref = nodes.reference(rawtext, title, refuri=rel_uri, **options)
     # Wrap in a literal node for formatting
     literal_ref = nodes.literal('', '', ref)
