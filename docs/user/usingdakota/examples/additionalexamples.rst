@@ -961,20 +961,20 @@ stated in a standardized form as
 .. math::
    :label: additional:contFH
 
-   \texttt{minimize}   & 2(1.15)(1.12)\pi\frac{D^2}{4}+(1.05)^2\pi DH \\
-   \texttt{subject to} & \pi\frac{D^2H}{4}=
-     (1.1\mathtt{qt})(57.75 \mathtt{in}^3/\mathtt{qt}) \\
-                       & & -D \leq 0\hbox{, }-H \leq 0
+   \texttt{minimize }   & 2(1.15)(1.12)\pi\frac{D^2}{4}+(1.05)^2\pi DH \\
+   \texttt{subject to } & \pi\frac{D^2H}{4}=
+   (1.1\mathtt{qt})(57.75 \mathtt{in}^3/\mathtt{qt}) \\
+                       & -D \leq 0\hbox{, }-H \leq 0
 
 A graphical view of the container optimization test problem appears in
 :numref:`additional:figure02`. The 3-D surface defines the area,
 :math:`A`, as a function of diameter and height. The curved line that
 extends across the surface defines the areas that satisfy the volume
-equality constraint, :math:`V`. Graphically, the container optimization
-problem can be viewed as one of finding the point along the constraint
-line with the smallest 3-D surface height in
-Figure `1.8 <#additional:figure02>`__. This point corresponds to the
-optimal values for diameter and height of the final product.
+equality constraint, :math:`V`. Graphically, the container
+optimization problem can be viewed as one of finding the point along
+the constraint line with the smallest 3-D surface height in
+:numref:`additional:figure02`. This point corresponds to the optimal
+values for diameter and height of the final product.
 
 .. figure:: img/graphical_container_opt.png
    :alt: A graphical representation of the container optimization
@@ -1161,8 +1161,8 @@ Often multi-objective problems are addressed by simply assigning weights
 to the individual objectives, summing the weighted objectives, and
 turning the problem into a single-objective one which can be solved with
 a variety of optimization techniques. While this approach provides a
-useful “first cut” analysis (and is supported within Dakota—see
-Section `[opt:additional:multiobjective] <#opt:additional:multiobjective>`__),
+useful “first cut” analysis (and is supported within Dakota -- see
+:ref:`opt:additional:multiobjective`),
 this approach has many limitations. The major limitation is that a local
 solver with a weighted sum objective will only find one point on the
 Pareto front; if one wants to understand the effects of changing
@@ -1173,16 +1173,14 @@ parametric understanding of the influence of the weights and to achieve
 a good sampling of the entire Pareto frontier.
 
 There are three examples that are taken from a multiobjective
-evolutionary algorithm (MOEA) test suite described by Van Veldhuizen et.
-al. in :cite:p:`Coe02`. These three examples illustrate the
+evolutionary algorithm (MOEA) test suite described by Van Veldhuizen
+et.  al. in :cite:p:`Coe02`. These three examples illustrate the
 different forms that the Pareto set may take. For each problem, we
 describe the Dakota input and show a graph of the Pareto front. These
 problems are all solved with the ``moga`` method. The first example is
-discussed in
-Section `[opt:additional:multiobjective] <#opt:additional:multiobjective>`__.
-The next two are discussed below.
-Section `[opt:additional:multiobjective] <#opt:additional:multiobjective>`__
-provide more information on multiobjective optimization.
+discussed in :ref:`opt:additional:multiobjective`, which also provides
+more information on multiobjective optimization. The other two are
+described below.
 
 .. _`additional:multiobjective:problem2`:
 
@@ -1198,18 +1196,16 @@ bounded by :math:`0 \leq x_{i} \leq 1`, and:
 
 .. math::
 
-   \begin{aligned}
-   f_1(x) &=& x_1 \\
-   f_2(x) &=& (1+10x_2) \times \left[1-\bigg(\frac{x_1}{1+10x_2}\bigg)^2-
-   \frac{x_1}{1+10x_2}\sin(8\pi x_1)\right]\end{aligned}
+   f_1(x) &= x_1 \\
+   f_2(x) &= (1+10x_2) \times \left[1-\bigg(\frac{x_1}{1+10x_2}\bigg)^2-
+   \frac{x_1}{1+10x_2}\sin(8\pi x_1)\right]
 
 The input file for this example is shown in
-:numref:`additional:moga2inp`, which
-references the ``mogatest2`` executable (compiled from
-``dakota_source/test/mogatest2.cpp``) as the
-simulator. The Pareto front is shown in
-Figure `1.10 <#additional:moga2front>`__. Note the discontinuous nature
-of the front in this example.
+:numref:`additional:moga2inp`, which references the ``mogatest2``
+executable (compiled from :file:`dakota_source/test/mogatest2.cpp`) as
+the simulator. The Pareto front is shown in
+:numref:`additional:moga2front`. Note the discontinuous nature of the
+front in this example.
 
 .. literalinclude:: ../samples/mogatest2.in
    :language: dakota
@@ -1222,6 +1218,8 @@ of the front in this example.
    :alt: Pareto Front showing Tradeoffs between Function F1 and Function
          F2 for mogatest2
    :name: additional:moga2front
+   :align: center
+   :width: 50%
 
    Pareto Front showing Tradeoffs between Function F1 and Function F2
    for mogatest2
@@ -1240,29 +1238,26 @@ optimize :math:`f_1` and :math:`f_2` given two input variables,
 
 .. math::
 
-   \begin{aligned}
-   f_1(x) &=& (x_1-2)^2+(x_2-1)^2+2 \\
-   f_2(x) &=& 9x_1-(x_2-1)^2\end{aligned}
+   f_1(x) &= (x_1-2)^2+(x_2-1)^2+2 \\
+   f_2(x) &= 9x_1-(x_2-1)^2
 
 The constraints are:
 
 .. math::
 
-   \begin{aligned}
-   0 &\leq& x_1^2+x_2^2-225 \\
-   0 &\leq& x_1-3x_2+10\end{aligned}
+   0 &\leq x_1^2+x_2^2-225 \\
+   0 &\leq x_1-3x_2+10
 
 The input file for this example is shown in
 :numref:`additional:moga3inp`. It differs from
-:numref:`additional:moga2inp` in the variables
-and responses specifications, in the use of the ``mogatest3`` executable
-(compiled from ``dakota_source/test/mogatest3.cpp``)
-as the simulator, and in the
-``max_function_evaluations`` and ``mutation_type`` MOGA controls. The
-Pareto set is shown in Figure `1.11 <#additional:moga3set>`__. Note the
-discontinuous nature of the Pareto set (in the design space) in this
-example. The Pareto front is shown in
-Figure `1.12 <#additional:moga3front>`__.
+:numref:`additional:moga2inp` in the variables and responses
+specifications, in the use of the ``mogatest3`` executable (compiled
+from ``dakota_source/test/mogatest3.cpp``) as the simulator, and in
+the ``max_function_evaluations`` and ``mutation_type`` MOGA
+controls. The Pareto set is shown in
+:numref:`additional:moga3set`. Note the discontinuous nature of the
+Pareto set (in the design space) in this example. The Pareto front is
+shown in :numref:`additional:moga3front`.
 
 ..
    TODO:
@@ -1281,6 +1276,8 @@ Figure `1.12 <#additional:moga3front>`__.
    :alt: Pareto Set of Design Variables corresponding to the Pareto
          front for mogatest3
    :name: additional:moga3set
+   :align: center
+   :width: 50%
 
    Pareto Set of Design Variables corresponding to the Pareto front for
    mogatest3
@@ -1289,6 +1286,8 @@ Figure `1.12 <#additional:moga3front>`__.
    :alt: Pareto Front showing Tradeoffs between Function F1 and Function
          F2 for mogatest3
    :name: additional:moga3front
+   :align: center
+   :width: 50%
 
    Pareto Front showing Tradeoffs between Function F1 and Function F2
    for mogatest3
@@ -1298,7 +1297,7 @@ Figure `1.12 <#additional:moga3front>`__.
 Morris
 ------
 
-Morris :cite:p:`Mor91` includes a screening design test
+Morris :cite:p:`Mor91` includes a screening design test
 problem with a single-output analytical test function. The output
 depends on 20 inputs with first- through fourth-order interaction terms,
 some having large fixed coefficients and others small random
@@ -1308,9 +1307,8 @@ model is:
 
 .. math::
 
-   \begin{aligned}
    y = &\;\beta_0 + \sum_{i=1}^{20}{\beta_i w_i} + \sum_{i<j}^{20}{\beta_{i,j} w_i w_j} + \sum_{i<j<l}^{20}{\beta_{i,j,l} w_i w_j w_l} \\
-       &+  \sum_{i<j<l<s}^{20}{\beta_{i,j,l,s} w_i w_j w_l w_s},\end{aligned}
+       &+  \sum_{i<j<l<s}^{20}{\beta_{i,j,l,s} w_i w_j w_l w_s},
 
 where :math:`w_i = 2(x_i-0.5)` except for
 :math:`i=3, 5, \mbox{ and } 7`, where
@@ -1318,10 +1316,12 @@ where :math:`w_i = 2(x_i-0.5)` except for
 assigned as
 
 .. math::
+   :nowrap:
 
    \begin{aligned}
-   &\beta_i = +20 & &i=1,\ldots,10; \;&\beta_{i,j} = -15& &i,j = 1, \ldots, 6; \\
-   &\beta_{i,j,l} = -10& &i,j,l=1,\ldots,5; \;&\beta_{i,j,l,s} = +5& &i,j,l,s = 1, \ldots, 4.\end{aligned}
+   \beta_i = +20 & &i=1,\ldots,10; \;&\beta_{i,j} = -15& &i,j = 1, \ldots, 6; \\
+   \beta_{i,j,l} = -10& &i,j,l=1,\ldots,5; \;&\beta_{i,j,l,s} = +5& &i,j,l,s = 1, \ldots, 4.
+   \end{aligned}
 
 The remaining first- and second-order coefficients :math:`\beta_i` and
 :math:`\beta_{i,j}`, respectively, are independently generated from a
@@ -1330,7 +1330,7 @@ the remaining third- and fourth-order coefficients are set to zero.
 
 Examination of the test function reveals that one should be able to
 conclude the following (stated and verified computationally
-in :cite:p:`Sal04`) for this test problem:
+in :cite:p:`Sal04`) for this test problem:
 
 #. the first ten factors are important;
 
@@ -1343,13 +1343,14 @@ in :cite:p:`Sal04`) for this test problem:
 Morris One-at-a-Time Sensitivity Study
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The dakota input ``morris_ps_moat.in`` exercises the MOAT algorithm described in
-Section `[dace:psuade] <#dace:psuade>`__ on the Morris problem. The
-Dakota output obtained is shown in
-Figures `[FIG:moat:out_preamble] <#FIG:moat:out_preamble>`__
-and `[FIG:moat:out_results] <#FIG:moat:out_results>`__.
+The dakota input ``morris_ps_moat.in`` exercises the MOAT algorithm
+described in :ref:`dace:psuade` on the Morris problem. The Dakota
+output obtained is shown in :numref:`FIG:moat:out_preamble` and
+:numref:`FIG:moat:out_results`.
 
-::
+.. code-block::
+   :name: FIG:moat:out_preamble
+   :caption: Dakota MOAT output: preamble.
 
    Running MPI executable in serial mode.
    Dakota version 6.0 release.
@@ -1365,7 +1366,9 @@ and `[FIG:moat:out_results] <#FIG:moat:out_results>`__.
    PSUADE DACE method = psuade_moat Samples = 84 Seed (user-specified) = 500
                Partitions = 3 (Levels = 4)
 
-::
+.. code-block::
+   :name: FIG:moat:out_results
+   :caption: Dakota MOAT output: final results.
 
    >>>>>> PSUADE MOAT output for function 0:
 
@@ -1396,28 +1399,30 @@ and `[FIG:moat:out_results] <#FIG:moat:out_results>`__.
 
 The MOAT analysis output reveals that each of the desired observations
 can be made for the test problem. These are also reflected in
-Figure `1.13 <#FIG:mustar_sigma>`__. The modified mean (based on
+:numref:`FIG:mustar_sigma`. The modified mean (based on
 averaging absolute values of elementary effects) shows a clear
-difference in inputs 1–10 as compared to inputs 11–20. The standard
+difference in inputs 1--10 as compared to inputs 11--20. The standard
 deviation of the (signed) elementary effects indicates correctly that
-inputs 1–7 have substantial interaction-based or nonlinear effect on the
+inputs 1--7 have substantial interaction-based or nonlinear effect on the
 output, while the others have less. While some of inputs 11–20 have
 nontrivial values of :math:`\sigma`, their relatively small modified
 means :math:`\mu^*` indicate they have little overall influence.
 
 .. figure:: img/moat_mustar_sigma.png
-   :alt: [FIG:mustar_sigma] Standard deviation of elementary effects
-         plotted against modified mean for Morris for each of 20 inputs. Red
-         circles 1–7 correspond to inputs having interactions or nonlinear
-         effects, blue squares 8–10 indicate those with mainly linear effects,
-         and black Xs denote insignificant inputs.
+   :alt: Standard deviation of elementary effects plotted against
+         modified mean for Morris for each of 20 inputs. Red circles
+         1–7 correspond to inputs having interactions or nonlinear
+         effects, blue squares 8–10 indicate those with mainly linear
+         effects, and black Xs denote insignificant inputs.
    :name: FIG:mustar_sigma
+   :align: center
+   :width: 60%
 
-   [FIG:mustar_sigma] Standard deviation of elementary effects plotted
-   against modified mean for Morris for each of 20 inputs. Red circles
-   1–7 correspond to inputs having interactions or nonlinear effects,
-   blue squares 8–10 indicate those with mainly linear effects, and
-   black Xs denote insignificant inputs.
+   Standard deviation of elementary effects plotted against modified
+   mean for Morris for each of 20 inputs. Red circles 1–7 correspond
+   to inputs having interactions or nonlinear effects, blue squares
+   8–10 indicate those with mainly linear effects, and black Xs denote
+   insignificant inputs.
 
 .. _`additional:reliabilityproblems`:
 
@@ -1425,19 +1430,22 @@ Test Problems for Reliability Analyses
 --------------------------------------
 
 This section includes several test problems and examples related to
-reliability analyses. **These are NOT included in the
-``dakota/share/dakota/examples/users`` directory, but are in the
-``dakota/share/dakota/test`` directory.**
+reliability analyses.
+
+.. note::
+
+   These are included in the
+   :file:`dakota/share/dakota/examples/users` directory, rather are in
+   the :file:`dakota/share/dakota/test` directory.
 
 .. _`additional:logratio`:
 
 Log Ratio
 ~~~~~~~~~
 
-This test problem, mentioned previously in
-Section `[uq:reliability:ex] <#uq:reliability:ex>`__, has a limit state
-function defined by the ratio of two lognormally-distributed random
-variables.
+This test problem, mentioned previously in :ref:`uq:reliability:ex`,
+has a limit state function defined by the ratio of two
+lognormally-distributed random variables.
 
 .. math:: g({\bf x}) = \frac{x_1}{x_2}
 
@@ -1447,32 +1455,41 @@ The distributions for both :math:`x_1` and :math:`x_2` are Lognormal(1,
 **Reliability Analyses**
 
 First-order and second-order reliability analysis (FORM and SORM) are
-performed in the ``logratio_uq_reliability.in`` in the directory
-``dakota/share/dakota/examples/users`` and
-``dakota_logratio_taylor2.in`` in directory
-``dakota/share/dakota/test``.
+performed in
+:file:`dakota/share/dakota/examples/users/logratio_uq_reliability.in`
+and :file:`dakota/share/dakota/test/dakota_logratio_taylor2.in`.
 
 For the reliability index approach (RIA), 24 response levels (.4, .5,
-.55, .6, .65, .7, .75, .8, .85, .9, 1, 1.05, 1.15, 1.2, 1.25, 1.3, 1.35,
-1.4, 1.5, 1.55, 1.6, 1.65, 1.7, and 1.75) are mapped into the
+.55, .6, .65, .7, .75, .8, .85, .9, 1, 1.05, 1.15, 1.2, 1.25, 1.3,
+1.35, 1.4, 1.5, 1.55, 1.6, 1.65, 1.7, and 1.75) are mapped into the
 corresponding cumulative probability levels. For performance measure
-approach (PMA), these 24 probability levels (the fully converged results
-from RIA FORM) are mapped back into the original response levels.
-Figure `[fig:log_ratio_cdf] <#fig:log_ratio_cdf>`__ overlays the
-computed CDF values for a number of first-order reliability method
-variants as well as a Latin Hypercube reference solution of :math:`10^6`
-samples.
+approach (PMA), these 24 probability levels (the fully converged
+results from RIA FORM) are mapped back into the original response
+levels.  :numref:`fig:log_ratio_cdf_ria` and
+:numref:`fig:log_ratio_cdf_pma` overlay the computed CDF values for a
+number of first-order reliability method variants as well as a Latin
+Hypercube reference solution of :math:`10^6` samples.
 
-|image4| |image5|
+.. figure:: img/log_ratio_cdf_ria.png
+   :name: fig:log_ratio_cdf_ria
+   :align: center
+   :width: 50%
 
-(a) RIA methods(b) PMA methods
+   Lognormal ratio cumulative distribution function, RIA method.
+
+.. figure:: img/log_ratio_cdf_pma.png
+   :name: fig:log_ratio_cdf_pma
+   :align: center
+   :width: 50%
+
+   Lognormal ratio cumulative distribution function, PMA method.
 
 .. _`additional:steel_section`:
 
 Steel Section
 ~~~~~~~~~~~~~
 
-This test problem is used extensively in :cite:p:`Hal00`. It
+This test problem is used extensively in :cite:p:`Hal00`. It
 involves a W16x31 steel block of A36 steel that must carry an applied
 deterministic bending moment of 1140 kip-in. For Dakota, it has been
 used as a code verification test for second-order integrations in
@@ -1483,22 +1500,20 @@ reliability methods. The limit state function is defined as:
 where :math:`F_y` is Lognormal(38., 3.8), :math:`Z` is Normal(54., 2.7),
 and the variables are uncorrelated.
 
-The ``dakota/share/dakota/test/dakota_steel_section.in``
-input file computes a first-order CDF probability of
-:math:`p(g \leq 0.)` = 1.297e-07 and a second-order CDF probability of
-:math:`p(g \leq 0.)` = 1.375e-07. This second-order result differs from
-that reported in :cite:p:`Hal00`, since Dakota uses the Nataf
-nonlinear transformation to u-space (see MPP Search Methods block in
-Reliability Methods chapter of Dakota Theory
-Manual :cite:p:`TheoMan`) and :cite:p:`Hal00` uses a
-linearized transformation.
+The :file:`dakota/share/dakota/test/dakota_steel_section.in` input
+file computes a first-order CDF probability of :math:`p(g \leq 0.) =
+1.297e-07` and a second-order CDF probability of :math:`p(g \leq 0.) =
+1.375e-07`. This second-order result differs from that reported in
+:cite:p:`Hal00`, since Dakota uses the Nataf nonlinear transformation
+to u-space (see :ref:`theory:uq:reliability:local:mpp` for the
+formulation, while :cite:p:`Hal00` uses a linearized transformation.
 
 .. _`additional:portal_frame`:
 
 Portal Frame
 ~~~~~~~~~~~~
 
-This test problem is taken from :cite:p:`Tve90,Hon99`. It
+This test problem is taken from :cite:p:`Tve90,Hon99`. It
 involves a plastic collapse mechanism of a simple portal frame. It also
 has been used as a verification test for second-order integrations in
 reliability methods. The limit state function is defined as:
@@ -1509,12 +1524,13 @@ where :math:`x_1 - x_4` are Lognormal(120., 12.), :math:`x_5` is
 Lognormal(50., 15.), :math:`x_6` is Lognormal(40., 12.), and the
 variables are uncorrelated.
 
-While the limit state is linear in x-space, the nonlinear transformation
-of lognormals to u-space induces curvature. The input file 
-``dakota/share/dakota/test/dakota_portal_frame.in`` computes a
-first-order CDF probability of :math:`p(g \leq 0.)` = 9.433e-03 and a
-second-order CDF probability of :math:`p(g \leq 0.)` = 1.201e-02. These
-results agree with the published results from the literature.
+While the limit state is linear in x-space, the nonlinear
+transformation of lognormals to u-space induces curvature. The input
+file :file:`dakota/share/dakota/test/dakota_portal_frame.in` computes
+a first-order CDF probability of :math:`p(g \leq 0.) = 9.433e-03` and a
+second-order CDF probability of :math:`p(g \leq 0.) =
+1.201e-02`. These results agree with the published results from the
+literature.
 
 .. _`additional:short_column`:
 
@@ -1525,7 +1541,7 @@ This test problem involves the plastic analysis and design of a short
 column with rectangular cross section (width :math:`b` and depth
 :math:`h`) having uncertain material properties (yield stress :math:`Y`)
 and subject to uncertain loads (bending moment :math:`M` and axial force
-:math:`P`) :cite:p:`Kus97`. The limit state function is
+:math:`P`) :cite:p:`Kus97`. The limit state function is
 defined as:
 
 .. math:: g({\bf x}) = 1 - \frac{4M}{b h^2 Y} - \frac{P^2}{b^2 h^2 Y^2}
@@ -1539,24 +1555,34 @@ and :math:`h` are 5 and 15, respectively.
 **Reliability Analyses**
 
 First-order and second-order reliability analysis are performed in the
-``dakota_short_column.in`` and ``dakota_short_column_taylor2.in``
-input files in ``dakota/share/dakota/test``.
-For RIA, 43 response levels (-9.0, -8.75, -8.5,
--8.0, -7.75, -7.5, -7.25, -7.0, -6.5, -6.0, -5.5, -5.0, -4.5, -4.0,
--3.5, -3.0, -2.5, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3,
--1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2,
--0.1, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25) are mapped into the
+:file:`dakota_short_column.in` and
+:file:`dakota_short_column_taylor2.in` input files in
+:file:`dakota/share/dakota/test`.  For RIA, 43 response levels (-9.0,
+-8.75, -8.5, -8.0, -7.75, -7.5, -7.25, -7.0, -6.5, -6.0, -5.5, -5.0,
+-4.5, -4.0, -3.5, -3.0, -2.5, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5,
+-1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4,
+-0.3, -0.2, -0.1, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25) are mapped into the
 corresponding cumulative probability levels. For PMA, these 43
 probability levels (the fully converged results from RIA FORM) are
-mapped back into the original response levels.
-Figure `[fig:short_col_cdf] <#fig:short_col_cdf>`__ overlays the
-computed CDF values for several first-order reliability method
-variants as well as a Latin Hypercube reference solution of
-:math:`10^6` samples.
+mapped back into the original response
+levels. :numref:`fig:short_col_cdf_ria` and
+:numref:`fig:short_col_cdf_pma` overlay the computed CDF values for
+several first-order reliability method variants as well as a Latin
+Hypercube reference solution of :math:`10^6` samples.
 
-|image6| |image7|
+.. figure:: img/short_col_cdf_ria.png
+   :name: fig:short_col_cdf_ria
+   :align: center
+   :width: 50%
 
-(a) RIA methods(b) PMA methods
+   Short column cumulative distribution function, RIA method.
+
+.. figure:: img/short_col_cdf_pma.png
+   :name: fig:short_col_cdf_pma
+   :align: center
+   :width: 50%
+
+   Short column cumulative distribution function, PMA method.
 
 **Reliability-Based Design Optimization**
 
@@ -1568,23 +1594,22 @@ problem:
 
 .. math::
 
-   \begin{aligned}
-   \min       & & bh \nonumber \\
-   {\rm s.t.} & & \beta \geq 2.5 \nonumber \\
-              & &  5.0 \leq b \leq 15.0 \nonumber \\
-              & & 15.0 \leq h \leq 25.0\end{aligned}
+   \min       \  & bh \\
+   \text{s.t.}\  & \beta \geq 2.5 \\
+                 &  5.0 \leq b \leq 15.0 \\
+                 & 15.0 \leq h \leq 25.0
 
 As is evident from the UQ results shown in
-Figure `[fig:short_col_cdf] <#fig:short_col_cdf>`__, the initial
-design of :math:`(b, h) = (5,
-15)` is infeasible and the optimization must add material to obtain
-the target reliability at the optimal design
-:math:`(b, h) = (8.68, 25.0)`. Simple bi-level, fully analytic
-bi-level, and sequential RBDO methods are explored in input files 
-``dakota_rbdo_short_column.in``, ``dakota_rbdo_short_column_analytic.in``,
-and ``dakota_rbdo_short_column_trsb.in``, with results as described
-in :cite:p:`Eld05,Eld06a`.
-These files are located in ``dakota/share/dakota/test``.
+:numref:`fig:short_col_cdf_ria` or :numref:`fig:short_col_cdf_pma`,
+the initial design of :math:`(b, h) = (5, 15)` is infeasible and the
+optimization must add material to obtain the target reliability at the
+optimal design :math:`(b, h) = (8.68, 25.0)`. Simple bi-level, fully
+analytic bi-level, and sequential RBDO methods are explored in input
+files :file:`dakota_rbdo_short_column.in`,
+:file:`dakota_rbdo_short_column_analytic.in`, and
+:file:`dakota_rbdo_short_column_trsb.in`, with results as described in
+:cite:p:`Eld05,Eld06a`.  These files are located in
+:file:`dakota/share/dakota/test`.
 
 .. _`additional:steel_column`:
 
@@ -1592,7 +1617,7 @@ Steel Column
 ~~~~~~~~~~~~
 
 This test problem involves the trade-off between cost and reliability
-for a steel column :cite:p:`Kus97`. The cost is defined as
+for a steel column :cite:p:`Kus97`. The cost is defined as
 
 .. math:: Cost = b d + 5 h
 
@@ -1614,51 +1639,53 @@ mm), and Young’s modulus :math:`E` (Weibull with :math:`\mu/\sigma` =
 .. math::
 
    g = F_s - P \left( \frac{1}{2 B D} +
-   \frac{F_0}{B D H} \frac{E_b}{E_b - P} \right)\\
+   \frac{F_0}{B D H} \frac{E_b}{E_b - P} \right)
 
 where
 
 .. math::
 
-   \begin{aligned}
-   P   & = & P_1 + P_2 + P_3 \\
-   E_b & = & \frac{\pi^2 E B D H^2}{2 L^2}\end{aligned}
+   P   &=  P_1 + P_2 + P_3 \\
+   E_b &=  \frac{\pi^2 E B D H^2}{2 L^2}
 
 and the column length :math:`L` is 7500 mm.
 
-This design problem (``dakota_rbdo_steel_column.in`` in
-``dakota/share/dakota/test``) demonstrates design variable insertion into
+This design problem (:file:`dakota_rbdo_steel_column.in` in
+:file:`dakota/share/dakota/test`) demonstrates design variable insertion into
 random variable distribution parameters through the design of the mean
 flange breadth, flange thickness, and profile height. The RBDO
 formulation maximizes the reliability subject to a cost constraint:
 
 .. math::
 
-   \begin{aligned}
-   {\rm maximize }   & & \beta                   \nonumber \\
-   {\rm subject to } & & Cost  \leq 4000.       \nonumber \\
-                     & & 200.0 \leq b \leq 400.0 \\
-                     & &  10.0 \leq d \leq  30.0 \nonumber \\
-                     & & 100.0 \leq h \leq 500.0 \nonumber\end{aligned}
+   \text{maximize }   & \beta                   \\
+   \text{subject to } & Cost  \leq 4000.        \\
+                      & 200.0 \leq b \leq 400.0 \\
+                      &  10.0 \leq d \leq  30.0 \\
+                      & 100.0 \leq h \leq 500.0 
 
-which has the solution (:math:`b`, :math:`d`, :math:`h`) = (200.0,
-17.50, 100.0) with a maximal reliability of 3.132.
+which has the solution :math:`(b, d, h) = (200.0, 17.50, 100.0)` with
+a maximal reliability of 3.132.
 
 .. _`additional:fwd_uq`:
 
-Test Problems for Forward Uncertainty Quantification
-----------------------------------------------------
+Test Problems for Forward UQ
+----------------------------
 
 This section includes several test problems and examples related to
-forward uncertainty quantification. **These are NOT included in the
-``dakota/share/dakota/examples/users`` directory, but are in the
-``dakota/share/dakota/test`` directory.**
+forward uncertainty quantification.
+
+.. note::
+
+   These are not included in the
+   :file:`dakota/share/dakota/examples/users` directory, rather are in
+   the :file:`dakota/share/dakota/test` directory.
 
 Genz functions
 ~~~~~~~~~~~~~~
 
 The Genz functions have traditionally been used to test quadrature
-methods, however more recently they hav also been used to test forward
+methods, however more recently they have also been used to test forward
 UQ methdos. Here we consider the oscilatory and corner-peak test
 functions, respectively given by
 
@@ -1676,47 +1703,47 @@ specifically
    c^{(1)}_k=\frac{k-\frac{1}{2}}{d},\quad c_k^{(2)}=\frac{1}{k^2}\quad \text{and}
    \quad c_k^{(3)} = \exp\left(\frac{k\log(10^{-8})}{d}\right), \quad k=1,\ldots,d
 
-normalizing such that for the oscillatory function
-:math:`\sum_{k=1}^d c_k =
-4.5` and for the corner peak function :math:`\sum_{k=1}^d c_k = 0.25`.
-The different decay rates of the coefficients represent increasing
-levels of anisotropy and decreasing effective dimensionality. Anisotropy
-refers to the dependence of the function variability.
+normalizing such that for the oscillatory function :math:`\sum_{k=1}^d
+c_k = 4.5` and for the corner peak function :math:`\sum_{k=1}^d c_k =
+0.25`.  The different decay rates of the coefficients represent
+increasing levels of anisotropy and decreasing effective
+dimensionality. Anisotropy refers to the dependence of the function
+variability.
 
 In Dakota the genz function can be set by specifying
 ``analysis_driver=’genz’``. The type of coefficients decay can be set by
-sepcifying ``os1, cp1`` which uses :math:`\mathbf{c}^{(1)}`,
+specifying ``os1, cp1`` which uses :math:`\mathbf{c}^{(1)}`,
 ``os2, cp2`` which uses :math:`\mathbf{c}^{(2)}`, and ``os3, cp3`` which
 uses :math:`\mathbf{c}^{(3)}`, where ``os`` is to be used with the
-oscillatory function and ``cp`` for the corner peak function
+oscillatory function and ``cp`` for the corner peak function.
 
 Elliptic Partial differential equation with uncertain coefficients
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Consider the following problem with :math:`d \ge 1` random dimensions:
 
-  .. math::
+.. math::
+   :label: eq:hetrogeneous-diffusion
 
-     \label{eq:hetrogeneous-diffusion}
-     -\frac{d}{dx}\left[a(x,\boldsymbol{\xi})\frac{du}{dx}(x,\boldsymbol{\xi})\right] = 10,\quad
-     (x,\boldsymbol{\xi})\in(0,1)\times I_{\boldsymbol{\xi}}
+   -\frac{d}{dx}\left[a(x,\boldsymbol{\xi})\frac{du}{dx}(x,\boldsymbol{\xi})\right] = 10,\quad
+   (x,\boldsymbol{\xi})\in(0,1)\times I_{\boldsymbol{\xi}}
 
-  subject to the physical boundary conditions
+subject to the physical boundary conditions
 
-  .. math:: u(0,\boldsymbol{\xi})=0,\quad u(1,\boldsymbol{\xi})=0.
+.. math:: u(0,\boldsymbol{\xi})=0,\quad u(1,\boldsymbol{\xi})=0.
 
-  We are interested in quantifying the uncertainty in the solution
-  :math:`u` at a number of locations :math:`x\in[0,1]` which can be
-  specified by the user. This function can be run using dakota by
-  specifying ``analysis_driver=’steady_state_diffusion_1d’``.
+We are interested in quantifying the uncertainty in the solution
+:math:`u` at a number of locations :math:`x\in[0,1]` which can be
+specified by the user. This function can be run using dakota by
+specifying ``analysis_driver='steady_state_diffusion_1d'``.
 
 We represent the random diffusivity field :math:`a` using two types of
 expansions. The first option is to use represent the *logarithm* of the
 diffusivity field as Karhunen Loéve expansion
 
 .. math::
+   :label: eq:diffusivityZ
 
-   \label{eq:diffusivityZ}
    \log(a(x,\boldsymbol{\xi}))=\bar{a}+\sigma_a\sum_{k=1}^d\sqrt{\lambda_k}\phi_k(x)\xi_k
 
 where :math:`\{\lambda_k\}_{k=1}^d` and :math:`\{\phi_k(x)\}_{k=1}^d`
@@ -1724,12 +1751,12 @@ are, respectively, the eigenvalues and eigenfunctions of the covariance
 kernel
 
 .. math::
+   :label: eq:heat-eq-qoi
 
-   \label{eq:heat-eq-qoi}
-    C_a(x_1,x_2) = \exp\left[-\frac{(x_1-x_2)^p}{l_c}\right].
+   C_a(x_1,x_2) = \exp\left[-\frac{(x_1-x_2)^p}{l_c}\right].
 
 for some power :math:`p=1,2`. The variability of the diffusivity
-field `[eq:diffusivityZ] <#eq:diffusivityZ>`__ is controlled by
+field :eq:`eq:diffusivityZ` is controlled by
 :math:`\sigma_a` and the correlation length :math:`l_c` which determines
 the decay of the eigenvalues :math:`\lambda_k`. Dakota sets
 :math:`\sigma_a=1.` but allows the number of random variables :math:`d`,
@@ -1739,12 +1766,12 @@ to vary. The random variables can be bounded or unbounded.
 The second expansion option is to represent the diffusivity by
 
 .. math::
+   :label: diffusivityZ
 
-   \label{diffusivityZ}
    a(x,\boldsymbol{\xi})=1+\sigma\sum_{k=1}^d\frac{1}{k^2\pi^2}\cos(2\pi kx)\boldsymbol{\xi}_k
 
 where :math:`\boldsymbol{\xi}_k\in[-1,1]`, :math:`k=1,\ldots,d` are
-bounded random variables. The form of `[diffusivityZ] <#diffusivityZ>`__
+bounded random variables. The form of :eq:`diffusivityZ`
 is similar to that obtained from a Karhunen-Loève expansion. If the
 variables are i.i.d. uniform in [-1,1] the the diffusivity satisfies
 satisfies the auxiliary properties
@@ -1760,20 +1787,20 @@ Consider a damped linear oscillator subject to external forcing with six
 unknown parameters :math:`\boldsymbol{\xi}=(\gamma,k,f,\omega,x_0,x_1)`
 
 .. math::
+   :label: eq:oscillator_ode
 
-   \label{eq:oscillator_ode}
    \frac{d^2x}{dt^2}(t,\boldsymbol{\xi})+\gamma\frac{dx}{dt}+k x=f\cos(\omega t),
 
 subject to the initial conditions
 
-.. math:: x(0)=x_0,\quad \dot{x}(0)=x_1,
+.. math:: x(0)=x_0,\quad \dot{x}(0)=x_1.
 
 Here we assume the damping coefficient :math:`\gamma`, spring constant
 :math:`k`, forcing amplitude :math:`f` and frequency :math:`\omega`, and
 the initial conditions :math:`x_0` and :math:`x_1` are all uncertain.
 
 This test function can be specified with
-``analysis_driver=’damped_oscillator’``. This function only works with
+``analysis_driver='damped_oscillator'``. This function only works with
 the uncertain variables defined over certain ranges. These ranges are
 
 .. math:: \gamma_k\in[0.08,0.12],k\in[0.03,0.04],f\in[0.08,0.12],\omega\in[0.8,1.2],x_0\in[0.45,0.55],x_1\in[-0.05,0.05].
@@ -1792,23 +1819,20 @@ governing a competitive Lotka–Volterra model of the population dynamics
 of species competing for some common resource. The model is given by
 
 .. math::
+   :label: eq:predprey
 
-   \label{eq:predprey}
    \begin{cases}
    \frac{du_i}{dt} = r_iu_i\left(1-\sum_{j=1}^3\alpha_{ij}u_j\right), & \quad t\in (0,10],\\
-   u_i(0) = u_{i,0}
-   \end{cases},
+   u_i(0) = u_{i,0},
+   \end{cases}
 
 for :math:`i = 1,2,3`. The initial condition, :math:`u_{i,0}`, and the
 self-interacting terms, :math:`\alpha_{ii}`, are given, but the
 remaining interaction parameters, :math:`\alpha_{ij}` with
-:math:`i\neq j` as well as the re-productivity parameters, :math:`r_i`,
-are unknown. We approximate the solution
-to `[eq:predprey] <#eq:predprey>`__ in time using a Backward Euler
-method.
-
-This test function can be specified with
-``analysis_driver=’predator_prey’``.
+:math:`i\neq j` as well as the re-productivity parameters,
+:math:`r_i`, are unknown. We approximate the solution to
+:eq:`eq:predprey` in time using a Backward Euler method. This test
+function can be specified with ``analysis_driver='predator_prey'``.
 
 We assume that these parameters are bounded. We have tested this model
 with all 9 parameters :math:`\xi_i\in[0.3,0.7]`. However larger bounds
@@ -1821,15 +1845,19 @@ Dakota returns the population of each species :math:`u_i(T)` at the
 final time :math:`T`. The final time and the number of time-steps can be
 changed.
 
+
+Test Problems for Inverse UQ
+----------------------------
+
 Experimental Design
 ~~~~~~~~~~~~~~~~~~~
 
 This example tests the Bayesian experimental design algorithm described
-in Section `[sec:bayes_expdesign] <#sec:bayes_expdesign>`__, in which a
+in :ref:`sec:bayes_expdesign`, in which a
 low-fidelity model is calibrated to optimally-selected data points of a
 high-fidelity model. The ``analysis_driver`` for the the low and
 high-fidelity models implement the steady state heat example given
-in :cite:p:`Lew16`. The high-fidelity model is the analytic
+in :cite:p:`Lew16`. The high-fidelity model is the analytic
 solution to the example described therein,
 
 .. math:: T(x) = c_{1} \exp(-\gamma x) + c_{2} \exp(\gamma x) + T_{amb},
@@ -1838,11 +1866,10 @@ where
 
 .. math::
 
-   \begin{aligned}
-   c_{1} &=& - \frac{\Phi}{K \gamma} \left[ \frac{ \exp(\gamma L) (h + K \gamma) }
+   c_{1} &= - \frac{\Phi}{K \gamma} \left[ \frac{ \exp(\gamma L) (h + K \gamma) }
    {\exp(-\gamma L) (h-K\gamma) + \exp(\gamma L) (h+K\gamma)} \right], \\
-   c_{2} &=& \frac{\Phi}{K\gamma} + c_{1}, \\
-   \gamma &=& \sqrt{ \frac{ 2(a+b)h }{ abK } }.\end{aligned}
+   c_{2} &= \frac{\Phi}{K\gamma} + c_{1}, \\
+   \gamma &= \sqrt{ \frac{ 2(a+b)h }{ abK } }.
 
 The ambient room temperature :math:`T_{amb}`, thermal conductivity
 coefficient :math:`K`, convective heat transfer coefficient :math:`h`,
@@ -1856,8 +1883,7 @@ appears in the low-fidelity model,
 
 The goal of this example is to calibrate the low-fidelity model
 parameters :math:`A, B`, and :math:`C` with the Bayesian experimental
-design algorithm. Refer to
-Section `[sec:bayes_expdesign] <#sec:bayes_expdesign>`__ for further
+design algorithm. Refer to :ref:`sec:bayes_expdesign` for further
 details regarding the Dakota implementation of this example.
 
 .. _`sec:bayes_linear`:
@@ -1867,15 +1893,10 @@ Bayes linear
 
 This is a simple model that is only available by using the ``direct``
 interface with ``’bayes_linear’``. The model is discussed extensively in
- :cite:p:`CASL2014` both on pages 93–102 and in Appendix A.
+:cite:p:`CASL2014` both on pages 93--102 and in Appendix A.
 The model is simply the sum of the d input parameters:
 
 .. math:: y = \sum\limits_{i=1}^d x_i
 
 where the input varaibles :math:`x_i` can be any uncertain variable type
 but are typically considered as uniform or normal uncertain inputs.
-
-.. |image4| image:: img/log_ratio_cdf_ria.png
-.. |image5| image:: img/log_ratio_cdf_pma.png
-.. |image6| image:: img/short_col_cdf_ria.png
-.. |image7| image:: img/short_col_cdf_pma.png
