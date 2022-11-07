@@ -5,11 +5,8 @@ Reliability Methods
 
 .. _`theory:uq:reliability:local`:
 
-..
-   TODO:
-   This chapter explores local and global reliability methods in greater
-   detail than that provided in the Uncertainty Quantification chapter of
-   the User's Manual.
+This theory chapter explores local and global reliability methods in greater
+detail the overview in :ref:`uq`.
 
 Local Reliability Methods
 -------------------------
@@ -38,11 +35,11 @@ The expressions for approximate response mean :math:`\mu_g` and
 approximate response variance :math:`\sigma^2_g` are
 
 .. math::
+   :label: eq:mv
 
-   \begin{aligned}
-   \mu_g      & = & g(\mu_{\bf x})  \label{eq:mv_mean1} \\
-   \sigma^2_g & = & \sum_i \sum_j Cov(i,j) \frac{dg}{dx_i}(\mu_{\bf x})
-                    \frac{dg}{dx_j}(\mu_{\bf x}) \label{eq:mv_std_dev}\end{aligned}
+   \mu_g      & = g(\mu_{\bf x})  & \text{ (a)} \label{eq:mv_mean1} \\
+   \sigma^2_g & = \sum_i \sum_j Cov(i,j) \frac{dg}{dx_i}(\mu_{\bf x})
+                  \frac{dg}{dx_j}(\mu_{\bf x}) & \text{ (b)} \label{eq:mv_std_dev}
 
 where :math:`{\bf x}` are the uncertain values in the space of the
 original uncertain variables (“x-space”), :math:`g({\bf x})` is the
@@ -54,14 +51,14 @@ for mappings from response target to approximate reliability level
 response level (:math:`\bar{\beta} \to z`) using
 
 .. math::
+   :label: eq:mv_ria_pma
 
-   \begin{aligned}
-   \bar{z} \rightarrow \beta: & ~ & 
+   \bar{z} \rightarrow \beta: & ~
    \beta_{\rm CDF} = \frac{\mu_g - \bar{z}}{\sigma_g}, ~~~~~
-   \beta_{\rm CCDF} = \frac{\bar{z} - \mu_g}{\sigma_g} \label{eq:mv_ria} \\
-   \bar{\beta} \rightarrow z: & ~ & 
+   \beta_{\rm CCDF} = \frac{\bar{z} - \mu_g}{\sigma_g} & \text{ (RIA)} \label{eq:mv_ria} \\
+   \bar{\beta} \rightarrow z: & ~
    z = \mu_g - \sigma_g \bar{\beta}_{\rm CDF}, ~~~~~
-   z = \mu_g + \sigma_g \bar{\beta}_{\rm CCDF} \label{eq:mv_pma}\end{aligned}
+   z = \mu_g + \sigma_g \bar{\beta}_{\rm CCDF} & \text{ (PMA)} \label{eq:mv_pma}
 
 respectively, where :math:`\beta_{\rm CDF}` and :math:`\beta_{\rm CCDF}`
 are the reliability indices corresponding to the cumulative and
@@ -72,14 +69,15 @@ With the introduction of second-order limit state information, MVSOSM
 calculates a second-order mean as
 
 .. math::
+   :label: eq:mv_mean2
 
    \mu_g = g(\mu_{\bf x}) + \frac{1}{2} \sum_i \sum_j Cov(i,j) 
-   \frac{d^2g}{dx_i dx_j}(\mu_{\bf x}) \label{eq:mv_mean2}
+   \frac{d^2g}{dx_i dx_j}(\mu_{\bf x})
 
 This is commonly combined with a first-order variance
-(Equation `[eq:mv_std_dev] <#eq:mv_std_dev>`__), since second-order
-variance involves higher order distribution moments (skewness,
-kurtosis) :cite:p:`Hal00` which are often unavailable.
+((b) in :eq:`eq:mv`), since
+second-order variance involves higher order distribution moments
+(skewness, kurtosis) :cite:p:`Hal00` which are often unavailable.
 
 The first-order CDF probability :math:`p(g \le z)`, first-order CCDF
 probability :math:`p(g > z)`, :math:`\beta_{\rm CDF}`, and
@@ -88,13 +86,12 @@ probability :math:`p(g > z)`, :math:`\beta_{\rm CDF}`, and
 .. math::
    :label: eq:beta_cdf_ccdf
 
-   \begin{aligned}
-   p(g \le z)  & = & \Phi(-\beta_{\rm CDF})     \label{eq:p_cdf} \\
-   p(g > z)    & = & \Phi(-\beta_{\rm CCDF})    \label{eq:p_ccdf} \\
-   \beta_{\rm CDF}  & = & -\Phi^{-1}(p(g \le z)) \label{eq:beta_cdf} \\
-   \beta_{\rm CCDF} & = & -\Phi^{-1}(p(g > z))   \label{eq:beta_ccdf} \\
-   \beta_{\rm CDF}  & = & -\beta_{\rm CCDF}       \label{eq:beta_cdf_ccdf} \\
-   p(g \le z)  & = & 1 - p(g > z)             \label{eq:p_cdf_ccdf}\end{aligned}
+   p(g \le z)  & =  \Phi(-\beta_{\rm CDF})      & \text{ (a)} \label{eq:p_cdf} \\
+   p(g > z)    & =  \Phi(-\beta_{\rm CCDF})     & \text{ (b)} \label{eq:p_ccdf} \\
+   \beta_{\rm CDF}  & =  -\Phi^{-1}(p(g \le z)) & \text{ (c)} \label{eq:beta_cdf} \\
+   \beta_{\rm CCDF} & =  -\Phi^{-1}(p(g > z))   & \text{ (d)} \label{eq:beta_ccdf} \\
+   \beta_{\rm CDF}  & =  -\beta_{\rm CCDF}      & \text{ (e)} \label{eq:beta_cdf_ccdf} \\
+   p(g \le z)  & =  1 - p(g > z)                & \text{ (f)} \label{eq:p_cdf_ccdf}
 
 where :math:`\Phi()` is the standard normal cumulative distribution
 function, indicating the introduction of a Gaussian assumption on the
@@ -124,7 +121,7 @@ determined as follows for each of :math:`n` random variables:
      \frac{dg}{dx_i}(\mu_{\bf x}) \right]^2, ~~~~ i = 1, \dots, n
 
 where it is evident that these importance factors correspond to the
-diagonal terms in Eq. `[eq:mv_std_dev] <#eq:mv_std_dev>`__ normalized by
+diagonal terms in :eq:`eq:mv`, (b) normalized by
 the total response variance. In the case where the input variables are
 correlated resulting in off-diagonal terms for the input covariance, we
 can also compute a two-way importance factor as
@@ -143,7 +140,7 @@ can also compute a two-way importance factor as
 
 These two-way factors differ from the Sobol’ interaction terms that are
 computed in variance-based decomposition (refer to
-Section `[theory:uq:expansion:vbd] <#theory:uq:expansion:vbd>`__) due to the
+:ref:`theory:uq:expansion:vbd`) due to the
 non-orthogonality of the Taylor series basis. Due to this
 non-orthogonality, two-way importance factors may be negative, and due
 to normalization by the total response variance, the set of importance
@@ -208,10 +205,9 @@ to the :math:`\bar{z}` contour of the limit state response function:
 .. math::
    :label: eq:ria_opt
 
-   \begin{aligned}
-   {\rm minimize}     & {\bf u}^T {\bf u} \nonumber \\
-   {\rm subject \ to} & G({\bf u}) = \bar{z}
-   \end{aligned}
+   \texttt{minimize }   & {\bf u}^T {\bf u}
+
+   \texttt{subject to } & G({\bf u}) = \bar{z}
 
 where :math:`{\bf u}` is a vector centered at the origin in u-space and
 :math:`g({\bf x}) \equiv G({\bf u})` by definition. For PMA, the MPP
@@ -223,41 +219,39 @@ prescribed distance from the origin in u-space:
 .. math::
    :label: eq:pma_opt
 
-   \begin{aligned}
-   {\rm minimize}     & \pm G({\bf u}) \nonumber \\
-   {\rm subject \ to} & {\bf u}^T {\bf u} = \bar{\beta}^2
-   \end{aligned}
+   \texttt{minimize }   & \pm G({\bf u})
 
-where :math:`\bar{\beta}` is computed from :math:`\bar{p}` using
-Eq. `[eq:beta_cdf] <#eq:beta_cdf>`__
-or `[eq:beta_ccdf] <#eq:beta_ccdf>`__ in the latter case of a prescribed
+   \texttt{subject to } & {\bf u}^T {\bf u} = \bar{\beta}^2
+
+where :math:`\bar{\beta}` is computed from :math:`\bar{p}` using (c)
+and (d) in :eq:`eq:beta_cdf_ccdf` in the latter case of a prescribed
 first-order probability level. For a specified generalized reliability
 level :math:`\bar{\beta^*}` or second-order probability level
 :math:`\bar{p}`, the equality constraint is reformulated in terms of the
 generalized reliability index:
 
 .. math::
+   :label: eq:pma2_opt
 
-   \begin{aligned}
-   {\rm minimize}     & \pm G({\bf u}) \nonumber \\
-   {\rm subject \ to} & \beta^*({\bf u}) = \bar{\beta^*} \label{eq:pma2_opt}\end{aligned}
+   \texttt{minimize }   & \pm G({\bf u})
+
+   \texttt{subject to } & \beta^*({\bf u}) = \bar{\beta^*}
 
 where :math:`\bar{\beta^*}` is computed from :math:`\bar{p}` using
-Eq. `[eq:gen_beta] <#eq:gen_beta>`__ (or its CCDF complement) in the
+:eq:`eq:gen_beta` (or its CCDF complement) in the
 latter case of a prescribed second-order probability level.
 
 In the RIA case, the optimal MPP solution :math:`{\bf u}^*` defines the
 reliability index from :math:`\beta = \pm \|{\bf u}^*\|_2`, which in
-turn defines the CDF/CCDF probabilities (using
-Equations `[eq:p_cdf] <#eq:p_cdf>`__-`[eq:p_ccdf] <#eq:p_ccdf>`__ in the
+turn defines the CDF/CCDF probabilities (using (a) and (b) in
+:eq:`eq:beta_cdf_ccdf` in the
 case of first-order integration). The sign of :math:`\beta` is defined
 by
 
 .. math::
 
-   \begin{aligned}
    G({\bf u}^*) > G({\bf 0}): \beta_{\rm CDF} < 0, \beta_{\rm CCDF} > 0 \\
-   G({\bf u}^*) < G({\bf 0}): \beta_{\rm CDF} > 0, \beta_{\rm CCDF} < 0\end{aligned}
+   G({\bf u}^*) < G({\bf 0}): \beta_{\rm CDF} > 0, \beta_{\rm CCDF} < 0
 
 where :math:`G({\bf 0})` is the median limit state response computed at
 the origin in u-space [2]_ (where :math:`\beta_{\rm CDF}` =
@@ -272,9 +266,8 @@ level)
 
 .. math::
 
-   \begin{aligned}
    \bar{\beta}_{\rm CDF} < 0, \bar{\beta}_{\rm CCDF} > 0: {\rm maximize \ } G({\bf u}) \\
-   \bar{\beta}_{\rm CDF} > 0, \bar{\beta}_{\rm CCDF} < 0: {\rm minimize \ } G({\bf u})\end{aligned}
+   \bar{\beta}_{\rm CDF} > 0, \bar{\beta}_{\rm CCDF} < 0: {\rm minimize \ } G({\bf u})
 
 where the limit state at the MPP (:math:`G({\bf u}^*)`) defines the
 desired response level result.
@@ -298,38 +291,40 @@ second-order and multipoint approximations. These techniques include:
    approach is commonly known as the Advanced Mean Value (AMV) method:
 
    .. math::
+      :label: eq:linear_x_mean
 
       g({\bf x}) \cong g(\mu_{\bf x}) + \nabla_x g(\mu_{\bf x})^T 
-      ({\bf x} - \mu_{\bf x}) \label{eq:linear_x_mean}
+      ({\bf x} - \mu_{\bf x})
 
    and the second-order approach has been named AMV\ :math:`^2`:
 
    .. math::
+      :label: eq:taylor2_x_mean
 
       g({\bf x}) \cong g(\mu_{\bf x}) + \nabla_{\bf x} g(\mu_{\bf x})^T 
       ({\bf x} - \mu_{\bf x}) + \frac{1}{2} ({\bf x} - \mu_{\bf x})^T 
       \nabla^2_{\bf x} g(\mu_{\bf x}) ({\bf x} - \mu_{\bf x})
-      \label{eq:taylor2_x_mean}
 
 #. same as AMV/AMV\ :math:`^2`, except that the Taylor series is
    expanded in u-space. The first-order option has been termed the
    u-space AMV method:
 
    .. math::
+      :label: eq:linear_u_mean
 
       G({\bf u}) \cong G(\mu_{\bf u}) + \nabla_u G(\mu_{\bf u})^T 
-      ({\bf u} - \mu_{\bf u}) \label{eq:linear_u_mean}
+      ({\bf u} - \mu_{\bf u})
 
    where :math:`\mu_{\bf u} = T(\mu_{\bf x})` and is nonzero in general,
    and the second-order option has been named the u-space
    AMV\ :math:`^2` method:
 
    .. math::
+      :label: eq:taylor2_u_mean
 
       G({\bf u}) \cong G(\mu_{\bf u}) + \nabla_{\bf u} G(\mu_{\bf u})^T 
       ({\bf u} - \mu_{\bf u}) + \frac{1}{2} ({\bf u} - \mu_{\bf u})^T 
       \nabla^2_{\bf u} G(\mu_{\bf u}) ({\bf u} - \mu_{\bf u}) 
-      \label{eq:taylor2_u_mean}
 
 #. an initial Taylor series approximation in x-space at the uncertain
    variable means, with iterative expansion updates at each MPP estimate
@@ -337,35 +332,37 @@ second-order and multipoint approximations. These techniques include:
    is commonly known as AMV+:
 
    .. math::
+      :label: eq:linear_x_mpp
 
       g({\bf x}) \cong g({\bf x}^*) + \nabla_x g({\bf x}^*)^T ({\bf x} - {\bf x}^*)
-      \label{eq:linear_x_mpp}
 
    and the second-order option has been named AMV\ :math:`^2`\ +:
 
    .. math::
+      :label: eq:taylor2_x_mpp
 
       g({\bf x}) \cong g({\bf x}^*) + \nabla_{\bf x} g({\bf x}^*)^T 
       ({\bf x} - {\bf x}^*) + \frac{1}{2} ({\bf x} - {\bf x}^*)^T 
-      \nabla^2_{\bf x} g({\bf x}^*) ({\bf x} - {\bf x}^*) \label{eq:taylor2_x_mpp}
+      \nabla^2_{\bf x} g({\bf x}^*) ({\bf x} - {\bf x}^*)
 
 #. same as AMV+/AMV\ :math:`^2`\ +, except that the expansions are
    performed in u-space. The first-order option has been termed the
    u-space AMV+ method.
 
    .. math::
+      :label: eq:linear_u_mpp      
 
       G({\bf u}) \cong G({\bf u}^*) + \nabla_u G({\bf u}^*)^T ({\bf u} - {\bf u}^*)
-      \label{eq:linear_u_mpp}
 
    and the second-order option has been named the u-space
    AMV\ :math:`^2`\ + method:
 
    .. math::
+      :label: eq:taylor2_u_mpp
 
       G({\bf u}) \cong G({\bf u}^*) + \nabla_{\bf u} G({\bf u}^*)^T 
       ({\bf u} - {\bf u}^*) + \frac{1}{2} ({\bf u} - {\bf u}^*)^T 
-      \nabla^2_{\bf u} G({\bf u}^*) ({\bf u} - {\bf u}^*) \label{eq:taylor2_u_mpp}
+      \nabla^2_{\bf u} G({\bf u}^*) ({\bf u} - {\bf u}^*)
 
 #. a multipoint approximation in x-space. This approach involves a
    Taylor series approximation in intermediate variables where the
@@ -377,25 +374,28 @@ second-order and multipoint approximations. These techniques include:
    limit state as:
 
    .. math::
+      :label: eq:tana_g
 
       g({\bf x}) \cong g({\bf x}_2) + \sum_{i=1}^n 
       \frac{\partial g}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i} 
       (x_i^{p_i} - x_{i,2}^{p_i}) + \frac{1}{2} \epsilon({\bf x}) \sum_{i=1}^n 
-      (x_i^{p_i} - x_{i,2}^{p_i})^2 \label{eq:tana_g}
+      (x_i^{p_i} - x_{i,2}^{p_i})^2
 
    where :math:`n` is the number of uncertain variables and:
 
    .. math::
+      :label: eq:tana_g_details
 
-      \begin{aligned}
-      p_i & = & 1 + \ln \left[ \frac{\frac{\partial g}{\partial x_i}({\bf x}_1)}
+      p_i & = 1 + \ln \left[ \frac{\frac{\partial g}{\partial x_i}({\bf x}_1)}
       {\frac{\partial g}{\partial x_i}({\bf x}_2)} \right] \left/ 
-      \ln \left[ \frac{x_{i,1}}{x_{i,2}} \right] \right. \label{eq:tana_pi_x} \\
-      \epsilon({\bf x}) & = & \frac{H}{\sum_{i=1}^n (x_i^{p_i} - x_{i,1}^{p_i})^2 + 
-      \sum_{i=1}^n (x_i^{p_i} - x_{i,2}^{p_i})^2} \label{eq:tana_eps_x} \\
-      H & = & 2 \left[ g({\bf x}_1) - g({\bf x}_2) - \sum_{i=1}^n 
+      \ln \left[ \frac{x_{i,1}}{x_{i,2}} \right] \right. & \text{ (a)} \label{eq:tana_pi_x}
+
+      \epsilon({\bf x}) & = \frac{H}{\sum_{i=1}^n (x_i^{p_i} - x_{i,1}^{p_i})^2 + 
+      \sum_{i=1}^n (x_i^{p_i} - x_{i,2}^{p_i})^2}  & \text{ (b)} \label{eq:tana_eps_x}
+
+      H & = 2 \left[ g({\bf x}_1) - g({\bf x}_2) - \sum_{i=1}^n 
       \frac{\partial g}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i} 
-      (x_{i,1}^{p_i} - x_{i,2}^{p_i}) \right] \label{eq:tana_H_x}\end{aligned}
+      (x_{i,1}^{p_i} - x_{i,2}^{p_i}) \right]  & \text{ (c)} \label{eq:tana_H_x}
 
    and :math:`{\bf x}_2` and :math:`{\bf x}_1` are the current and
    previous MPP estimates in x-space, respectively. Prior to the
@@ -405,25 +405,28 @@ second-order and multipoint approximations. These techniques include:
    approximates the limit state as:
 
    .. math::
+      :label: eq:tana_capG
 
       G({\bf u}) \cong G({\bf u}_2) + \sum_{i=1}^n 
       \frac{\partial G}{\partial u_i}({\bf u}_2) \frac{u_{i,2}^{1-p_i}}{p_i} 
       (u_i^{p_i} - u_{i,2}^{p_i}) + \frac{1}{2} \epsilon({\bf u}) \sum_{i=1}^n 
-      (u_i^{p_i} - u_{i,2}^{p_i})^2 \label{eq:tana_G}
+      (u_i^{p_i} - u_{i,2}^{p_i})^2
 
    where:
 
    .. math::
+      :label: eq:tana_capG_details
 
-      \begin{aligned}
-      p_i & = & 1 + \ln \left[ \frac{\frac{\partial G}{\partial u_i}({\bf u}_1)}
+      p_i & = 1 + \ln \left[ \frac{\frac{\partial G}{\partial u_i}({\bf u}_1)}
       {\frac{\partial G}{\partial u_i}({\bf u}_2)} \right] \left/ 
-      \ln \left[ \frac{u_{i,1}}{u_{i,2}} \right] \right. \label{eq:tana_pi_u} \\
-      \epsilon({\bf u}) & = & \frac{H}{\sum_{i=1}^n (u_i^{p_i} - u_{i,1}^{p_i})^2 + 
-      \sum_{i=1}^n (u_i^{p_i} - u_{i,2}^{p_i})^2} \label{eq:tana_eps_u} \\
-      H & = & 2 \left[ G({\bf u}_1) - G({\bf u}_2) - \sum_{i=1}^n 
+      \ln \left[ \frac{u_{i,1}}{u_{i,2}} \right] \right.  & \text{ (a)} \label{eq:tana_pi_u}
+
+      \epsilon({\bf u}) & = \frac{H}{\sum_{i=1}^n (u_i^{p_i} - u_{i,1}^{p_i})^2 + 
+      \sum_{i=1}^n (u_i^{p_i} - u_{i,2}^{p_i})^2}  & \text{ (b)} \label{eq:tana_eps_u}
+
+      H & = 2 \left[ G({\bf u}_1) - G({\bf u}_2) - \sum_{i=1}^n 
       \frac{\partial G}{\partial u_i}({\bf u}_2) \frac{u_{i,2}^{1-p_i}}{p_i} 
-      (u_{i,1}^{p_i} - u_{i,2}^{p_i}) \right] \label{eq:tana_H_u}\end{aligned}
+      (u_{i,1}^{p_i} - u_{i,2}^{p_i}) \right]  & \text{ (c)} \label{eq:tana_H_u}
 
    and :math:`{\bf u}_2` and :math:`{\bf u}_1` are the current and
    previous MPP estimates in u-space, respectively. Prior to the
@@ -450,14 +453,16 @@ the MPP. It is possible for the MPP iterates to oscillate or even
 diverge. However, to date, this occurrence has been relatively rare, and
 Dakota contains checks that monitor for this behavior. Another concern
 with TANA is numerical safeguarding (e.g., the possibility of raising
+
 negative :math:`x_i` or :math:`u_i` values to nonintegral :math:`p_i`
-exponents in Equations `[eq:tana_g] <#eq:tana_g>`__,
-`[eq:tana_eps_x] <#eq:tana_eps_x>`__-`[eq:tana_G] <#eq:tana_G>`__,
-and `[eq:tana_eps_u] <#eq:tana_eps_u>`__-`[eq:tana_H_u] <#eq:tana_H_u>`__).
+exponents in :eq:`eq:tana_g`, :eq:`eq:tana_g_details` (b) --
+:eq:`eq:tana_capG`, and :eq:`eq:tana_capG_details` (b) and (c). 
+
+
 Safeguarding involves offseting negative :math:`x_i` or :math:`u_i` and,
 for potential numerical difficulties with the logarithm ratios in
-Equations `[eq:tana_pi_x] <#eq:tana_pi_x>`__
-and `[eq:tana_pi_u] <#eq:tana_pi_u>`__, reverting to either the linear
+(b) in each of :eq:`eq:tana_g_details` and :eq:`eq:tana_capG_details`,
+reverting to either the linear
 (:math:`p_i = 1`) or reciprocal (:math:`p_i = -1`) approximation based
 on which approximation has lower error in
 :math:`\frac{\partial g}{\partial x_i}({\bf x}_1)` or
@@ -471,16 +476,16 @@ Probability integrations
 The second algorithmic variation involves the integration approach for
 computing probabilities at the MPP, which can be selected to be
 first-order
-(Equations `[eq:p_cdf] <#eq:p_cdf>`__-`[eq:p_ccdf] <#eq:p_ccdf>`__) or
+((a) and (b) in :eq:`eq:beta_cdf_ccdf`) or
 second-order integration. Second-order integration involves applying a
 curvature correction :cite:p:`Bre84,Hoh88,Hon99`. Breitung
 applies a correction based on asymptotic
-analysis :cite:p:`Bre84`:
+analysis :cite:p:`Bre84`:
 
 .. math::
+   :label: eq:p_2nd_breit
 
    p = \Phi(-\beta_p) \prod_{i=1}^{n-1} \frac{1}{\sqrt{1 + \beta_p \kappa_i}}
-   \label{eq:p_2nd_breit}
 
 where :math:`\kappa_i` are the principal curvatures of the limit state
 function (the eigenvalues of an orthonormal transformation of
@@ -492,13 +497,14 @@ in :cite:p:`Hoh88` is consistent in the asymptotic regime
 integration for :math:`\beta_p = 0`:
 
 .. math::
+   :label: eq:p_2nd_hr
 
    p = \Phi(-\beta_p) \prod_{i=1}^{n-1} 
-   \frac{1}{\sqrt{1 + \psi(-\beta_p) \kappa_i}} \label{eq:p_2nd_hr}
+   \frac{1}{\sqrt{1 + \psi(-\beta_p) \kappa_i}}
 
 where :math:`\psi() = \frac{\phi()}{\Phi()}` and :math:`\phi()` is the
 standard normal density function. :cite:p:`Hon99` applies
-further corrections to Equation `[eq:p_2nd_hr] <#eq:p_2nd_hr>`__ based
+further corrections to :eq:`eq:p_2nd_hr` based
 on point concentration methods. At this time, all three approaches are
 available within the code, but the Hohenbichler-Rackwitz correction is
 used by default (switching the correction is a compile-time option in
@@ -531,12 +537,10 @@ using
 
 .. math::
 
-   \begin{array}{l}
    \nabla^2 g ({\bf x}) \cong \frac{g({\bf x} + h {\bf e}_i + h {\bf e}_j) - 
    g({\bf x} + h {\bf e}_i - h {\bf e}_j) - 
    g({\bf x} - h {\bf e}_i + h {\bf e}_j) + 
    g({\bf x} - h {\bf e}_i - h {\bf e}_j)}{4h^2}
-   \end{array}
 
 to estimate the :math:`ij^{th}` Hessian term when gradients are not
 directly available. This approach has the advantage of locally-accurate
@@ -553,10 +557,11 @@ Hessian terms. The quasi-Newton approximations of interest include the
 Broyden-Fletcher-Goldfarb-Shanno (BFGS) update
 
 .. math::
+   :label: eq:bfgs
 
    {\bf B}_{k+1} = {\bf B}_{k} - \frac{{\bf B}_k {\bf s}_k {\bf s}_k^T {\bf B}_k}
    {{\bf s}_k^T {\bf B}_k {\bf s}_k} + 
-   \frac{{\bf y}_k {\bf y}_k^T}{{\bf y}_k^T {\bf s}_k} \label{eq:bfgs}
+   \frac{{\bf y}_k {\bf y}_k^T}{{\bf y}_k^T {\bf s}_k}
 
 which yields a sequence of symmetric positive definite Hessian
 approximations, and the Symmetric Rank 1 (SR1) update
@@ -584,9 +589,9 @@ Optimization algorithms
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 The next algorithmic variation involves the optimization algorithm
-selection for solving Eqs. :math:numref:`eq:ria_opt`
-and :math:numref:`eq:pma_opt`. The Hasofer-Lind Rackwitz-Fissler
-(HL-RF) algorithm :cite:p:`Hal00` is a classical approach that
+selection for solving Eqs. :eq:`eq:ria_opt`
+and :eq:`eq:pma_opt`. The Hasofer-Lind Rackwitz-Fissler
+(HL-RF) algorithm :cite:p:`Hal00` is a classical approach that
 has been broadly applied. It is a Newton-based approach lacking line
 search/trust region globalization, and is generally regarded as
 computationally efficient but occasionally unreliable. Dakota takes the
@@ -594,7 +599,7 @@ approach of employing robust, general-purpose optimization algorithms
 with provable convergence properties. In particular, we employ the
 sequential quadratic programming (SQP) and nonlinear interior-point
 (NIP) optimization algorithms from the NPSOL :cite:p:`Gil86`
-and OPT++ :cite:p:`MeOlHoWi07` libraries, respectively.
+and OPT++ :cite:p:`MeOlHoWi07` libraries, respectively.
 
 Warm Starting of MPP Searches
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -622,9 +627,8 @@ function that is nonsmooth, local gradient-based optimizers may stall
 due to gradient inaccuracy and fail to converge to an MPP. Moreover, if
 the limit state is multimodal (multiple MPPs), then a gradient-based
 local method can, at best, locate only one local MPP solution. Finally,
-a linear (Eqs. `[eq:p_cdf] <#eq:p_cdf>`__–`[eq:p_ccdf] <#eq:p_ccdf>`__)
-or parabolic
-(Eqs. `[eq:p_2nd_breit] <#eq:p_2nd_breit>`__–`[eq:p_2nd_hr] <#eq:p_2nd_hr>`__)
+a linear (Eqs. (a) and (b) in :eq:`eq:beta_cdf_ccdf`) or parabolic
+(Eqs. :eq:`eq:p_2nd_breit` -- :eq:`eq:p_2nd_hr`)
 approximation to the limit state at this MPP may fail to adequately
 capture the contour of a highly nonlinear limit state.
 
@@ -654,7 +658,7 @@ capture the contour of a highly nonlinear limit state.
 A reliability analysis method that is both efficient when applied to
 expensive response functions and accurate for a response function of any
 arbitrary shape is needed. This section develops such a method based on
-efficient global optimization :cite:p:`Jon98` (EGO) to the
+efficient global optimization :cite:p:`Jon98` (EGO) to the
 search for multiple points on or near the limit state throughout the
 random variable space. By locating multiple points on the limit state,
 more complex limit states can be accurately modeled, resulting in a more
@@ -662,7 +666,7 @@ accurate assessment of the reliability. It should be emphasized here
 that these multiple points exist on a single limit state. Because of its
 roots in efficient global optimization, this method of reliability
 analysis is called efficient global reliability analysis
-(EGRA) :cite:p:`Bichon2007`. The following two subsections
+(EGRA) :cite:p:`Bichon2007`. The following two subsections
 describe two capabilities that are incorporated into the EGRA algorithm:
 importance sampling and EGO.
 
@@ -684,7 +688,7 @@ samples will lie the region of interest, thus increasing the efficiency
 of the sampling method. Adaptive importance sampling (AIS) further
 improves the efficiency by adaptively updating the sampling density
 function. Multimodal adaptive importance
-sampling :cite:p:`Dey98,Zou02` is a variation of AIS that
+sampling :cite:p:`Dey98,Zou02` is a variation of AIS that
 allows for the use of multiple sampling densities making it better
 suited for cases where multiple sections of the limit state are highly
 probable.
@@ -713,8 +717,10 @@ reliability analysis tool.
 Efficient Global Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Chapter `[uq:ego] <#uq:ego>`__ is now rewritten to support EGO/Bayesian
-optimization theory.
+.. note::
+
+   Chapter :ref:`uq:ego` has been substantially revised to discuss
+   EGO/Bayesian optimization theory.
 
 .. _`theory:uq:reliability:global:ego:eff`:
 
@@ -730,8 +736,8 @@ value. The expected feasibility function (EFF) is introduced here to
 provide an indication of how well the true value of the response is
 expected to satisfy the equality constraint
 :math:`G({\bf u})\!=\!\bar{z}`. Inspired by the contour estimation work
-in :cite:p:`Ran08`, this expectation can be calculated in a
-similar fashion as Eq. `[eq:eif_int] <#eq:eif_int>`__ by integrating
+in :cite:p:`Ran08`, this expectation can be calculated in a
+similar fashion as :eq:`eq:eif_int` by integrating
 over a region in the immediate vicinity of the threshold value
 :math:`\bar{z}\pm\epsilon`:
 
@@ -747,20 +753,24 @@ denote :math:`\bar{z}\pm\epsilon`, respectively, this integral can be
 expressed analytically as:
 
 .. math::
+   :label: eq:eff
 
-   \begin{aligned}
    EF\bigl( \hat{G}({\bf u}) \bigr) &= \left( \mu_G - \bar{z} \right)
               \left[ 2 \, \Phi\left( \frac{\bar{z} - \mu_G}{\sigma_G} \right) -
                           \Phi\left( \frac{  z^-   - \mu_G}{\sigma_G} \right) -
                           \Phi\left( \frac{  z^+   - \mu_G}{\sigma_G} \right) 
-             \right] \notag \\ & \ \ \ \ \ \ \ \ - 
+             \right]
+
+   & \ \ \ \ \ \ \ \ - 
      \sigma_G \left[ 2 \, \phi\left( \frac{\bar{z} - \mu_G}{\sigma_G} \right) \, -
                           \phi\left( \frac{  z^-   - \mu_G}{\sigma_G} \right) \, -
                           \phi\left( \frac{  z^+   - \mu_G}{\sigma_G} \right) 
-             \right] \notag \\ & \ \ \ \ \ \ \ \ + \ \ \,
+             \right]
+
+   & \ \ \ \ \ \ \ \ + \ \ \,
      \epsilon \left[      \Phi\left( \frac{  z^+   - \mu_G}{\sigma_G} \right) -
                           \Phi\left( \frac{  z^-   - \mu_G}{\sigma_G} \right)
-             \right] \label{eq:eff}\end{aligned}
+             \right]
 
 where :math:`\epsilon` is proportional to the standard deviation of the
 GP predictor (:math:`\epsilon\propto\sigma_G`). In this case,
@@ -785,5 +795,5 @@ the prediction will have large expected feasibility values.
 
 .. [3]
    computed by inverting the second-order probability relationships
-   described in Section `1.1.2.2 <#theory:uq:reliability:local:mpp:int>`__ at
+   described in :ref:`theory:uq:reliability:local:mpp:int` at
    the current :math:`{\bf u}^*` iterate.
