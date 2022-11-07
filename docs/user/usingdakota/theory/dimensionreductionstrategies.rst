@@ -1,4 +1,4 @@
-.. _`Chap:DimRed`:
+.. _`Theory:DimensionReduction`:
 
 Dimension Reduction Strategies
 ==============================
@@ -14,7 +14,7 @@ In the following two approaches are introduced, namely the Active
 Subspace method :cite:p:`constantine2015active` and the Basis
 Adaptation :cite:p:`Tip14`.
 
-.. _`Chap:ActSub`:
+.. _`Theory:ActiveSubspace`:
 
 Active Subspace Models
 ----------------------
@@ -84,7 +84,7 @@ rotated input space can be reduced to 1.
 For additional information, see
 references :cite:p:`Constantine-preprint-active,constantine2014active,constantine2015active`.
 
-.. _`Sec:trunc`:
+.. _`Theory:AS:trunc`:
 
 Truncation Methods
 ~~~~~~~~~~~~~~~~~~
@@ -100,7 +100,7 @@ active subspace detection and truncation methods implemented:
 
 -  and Energy metric.
 
-.. _`SubSec:constantine`:
+.. _`Theory:AS:trunc:constantine`:
 
 Constantine metric
 ^^^^^^^^^^^^^^^^^^
@@ -153,7 +153,7 @@ truncation methods.
 For additional information, see
 Ref. :cite:p:`constantine2015active`.
 
-.. _`SubSec:bingli`:
+.. _`Theory:AS:trunc:bingli`:
 
 Bing Li metric
 ^^^^^^^^^^^^^^
@@ -217,7 +217,7 @@ truncation methods.
 
 For additional information, see Ref. :cite:p:`bing-li`.
 
-.. _`SubSec:energy`:
+.. _`Theory:AS:trunc:energy`:
 
 Energy metric
 ^^^^^^^^^^^^^
@@ -236,7 +236,7 @@ where :math:`\epsilon` is the ``truncation_tolerance``, :math:`n` is the
 estimated subspace size, :math:`N` is the size of the full space, and
 :math:`\lambda_i` are the eigenvalues of the derivative matrix.
 
-.. _`Chap:BasAdapt`:
+.. _`Theory:BasisAdaptation`:
 
 Basis Adaptation Models
 -----------------------
