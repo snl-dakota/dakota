@@ -9,8 +9,8 @@ iterator server. That is, if the automatic configuration is
 undesirable for some reason, the user can enforce a desired server size
 at the iterator parallelism level. Currently, ``hybrid``, ``multi_start``,
 and ``pareto_set`` component-based iterators support concurrency in their
-sub-iterators. Refer to ParallelLibrary and the Parallel Computing chapter
-of the Users Manual :cite:p:`UsersMan` for additional information.
+sub-iterators. Refer to ParallelLibrary and
+the :ref:`Parallel Computing section <parallel>` for additional information.
 Topics::
 concurrency_and_parallelism
 Examples::

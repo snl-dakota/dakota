@@ -15,8 +15,7 @@ supplied by the iterator package in use (DOT, CONMIN, NPSOL, NL2SOL, NLSSOL,
 ROL, and OPT++ each have their own internal finite differencing
 routines). The ``dakota`` routine is the default since it can execute
 in parallel and exploit the concurrency in finite difference
-evaluations (see Exploiting Parallelism in the Users Manual
-:cite:p:`UsersMan`).
+evaluations (see the discussion on :ref:`exploiting parallelism <parallel:overview:cat>`).
 
 However, the ``vendor`` setting can be desirable in some cases since
 certain libraries will modify their algorithm when the finite

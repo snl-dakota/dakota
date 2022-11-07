@@ -8,8 +8,7 @@ local optimization runs from different starting points for the design
 variables), but the concept and the code are more general.
 Multi-start iteration is implemented within the MetaIterator branch of
 the Iterator hierarchy within the ConcurrentMetaIterator class.
-Additional information on the multi-start algorithm is available in
-the Users Manual :cite:p:`UsersMan`.
+Additional information on the multi-start algorithm is available :ref:`here <adv_meth:multistart>`.
 
 The ``multi_start`` meta-iterator must specify a sub-iterator using
 either a ``method_pointer`` or a ``method_name`` plus optional

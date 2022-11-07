@@ -190,9 +190,7 @@ grid order *m*).
 *Additional Resources*
 
 Dakota provides access to SC methods through the NonDStochCollocation
-class. Refer to the Uncertainty Quantification Capabilities chapter of
-the Users Manual :cite:p:`UsersMan` and the Stochastic Expansion Methods
-chapter of the Theory Manual :cite:p:`TheoMan` for additional information
+class. Refer to :ref:`uq` and :ref:`theory:uq:expansion` for additional information
 on the SC algorithm.
 
 *Expected HDF5 Output*

@@ -26,8 +26,7 @@ command can be specified as the analysis driver and the
 Note, this will not allow the use of ``file_tag``, because the
 exact command must be specified.
 
-For additional information on invocation syntax, see the Interfaces
-chapter of the Users Manual :cite:p:`UsersMan`.
+For additional information on invocation syntax, see the :ref:`Interfaces section <interfaces:main>`.
 Topics::
 
 Examples::
