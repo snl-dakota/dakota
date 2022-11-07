@@ -664,6 +664,8 @@ which include experimental variance information.
    
    add comments regarding interpolation vs extrapolation? kam
 
+.. _`uq:model_disc:scalar_example`:
+
 Scalar Responses Example
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -787,6 +789,8 @@ within the prediction intervals.
    The graphs of :math:`y(t,x)` for :math:`x = 7.5, 12.5, 17.5` are
    compared to the corrected model and its prediction intervals. The
    uncorrected model is also shown to illustrate its inadequacy.
+
+.. _`uq:model_disc:field_example`:
 
 Field Responses Example
 ~~~~~~~~~~~~~~~~~~~~~~~

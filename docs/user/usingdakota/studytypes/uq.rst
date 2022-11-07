@@ -358,22 +358,21 @@ variables, depending on the active view (see
 Sampling Methods
 ----------------
 
-Sampling techniques are selected using the ``sampling`` method
+Sampling techniques are selected using the :dakkw:`method-sampling` method
 selection. This method generates sets of samples according to the
 probability distributions of the uncertain variables and maps them into
 corresponding sets of response functions, where the number of samples is
-specified by the ``samples`` integer specification. Means, standard
+specified by the :dakkw:`method-sampling-samples` integer specification. Means, standard
 deviations, coefficients of variation (COVs), and 95% confidence
 intervals are computed for the response functions. Probabilities and
-reliabilities may be computed for ``response_levels`` specifications,
-and response levels may be computed for either ``probability_levels`` or
-``reliability_levels`` specifications (refer to the Method keywords
-section in the Dakota Reference Manual :cite:p:`RefMan` for
-additional information).
+reliabilities may be computed for :dakkw:`method-sampling-response_levels` specifications,
+and response levels may be computed for either :dakkw:`method-sampling-probability_levels` or
+:dakkw:`method-sampling-reliability_levels` specifications.
 
 Currently, traditional Monte Carlo (MC) and Latin hypercube sampling
 (LHS) are supported by Dakota and are chosen by specifying
-``sample_type`` as ``random`` or ``lhs``. In Monte Carlo sampling, the
+:dakkw:`method-sampling-sample_type` as :dakkw:`method-sampling-sample_type-random`
+or :dakkw:`method-sampling-sample_type-lhs`. In Monte Carlo sampling, the
 samples are selected randomly according to the user-specified
 probability distributions. Latin hypercube sampling is a stratified
 sampling technique for which the range of each uncertain variable is
@@ -925,10 +924,9 @@ find multiple MPPs if they exist.
 Local Reliability Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Dakota Theory Manual :cite:p:`TheoMan` provides the
-algorithmic details for the local reliability methods, including the
-Mean Value method and the family of most probable point (MPP) search
-methods.
+:ref:`The main section on Local Reliability Methods <theory:uq:reliability:local>`
+provides the algorithmic details for the local reliability methods, including the Mean Value method
+and the family of most probable point (MPP) search methods.
 
 .. _`uq:reliability:local:map`:
 
@@ -973,9 +971,8 @@ regular font indicates other supported combinations.
    | no_approx     | **FORM**                | **SORM**                |
    +---------------+-------------------------+-------------------------+
 
-Within the Dakota specification (refer to ``local_reliability`` in the
-keywords section of the Reference Manual :cite:p:`RefMan`)
-within the Reference Manual), the MPP search and integration order
+Within the Dakota specification (refer to :dakkw:`method-local_reliability`),
+the MPP search and integration order
 selections are explicit in the method specification, but the order of
 the approximation is inferred from the associated response specification
 (as is done with local taylor series approximations described in
@@ -1153,9 +1150,8 @@ the inputs. The mean value method is extremely cheap computationally
 (only five runs were required for the textbook function), but can be
 quite inaccurate, especially for nonlinear problems and/or problems with
 uncertain inputs that are significantly non-normal. More detail on the
-mean value method can be found in the Local Reliability Methods section
-of the Dakota Theory Manual :cite:p:`TheoMan`, and more detail
-on reliability methods in general (including the more advanced methods)
+mean value method can be found in the main :ref:`Local Reliability Methods section <theory:uq:reliability:local>`,
+and more detail on reliability methods in general (including the more advanced methods)
 is found in :ref:`uq:reliability`.
 
 Example output from the mean value method is displayed in
@@ -1293,8 +1289,7 @@ approximate mean and standard deviation of the response, the importance
 factors for each uncertain variable, and approximate
 probability/reliability levels for the prescribed response levels that
 have been inferred from the approximate mean and standard deviation (see
-Mean Value section in Reliability Methods Chapter of Dakota Theory
-Manual :cite:p:`TheoMan`). It is evident that the statistics
+the :ref:`Mean Value section of the main Reliability Methods page <theory:uq:reliability:local:mv>`). It is evident that the statistics
 are considerably different from the fully converged FORM results;
 however, these rough approximations are also much less expensive to
 calculate. The importance factors are a measure of the sensitivity of
@@ -1413,11 +1408,10 @@ subset of tensor Gauss points (“probabilistic
 collocation” :cite:p:`Tat95`). Various methods can be used to
 solve the resulting linear system, including least squares methods for
 over-determined systems and compressed sensing methods for
-under-determined systems. Details of these methods are documented in the
-Linear regression section of the Dakota Theory
-Manual :cite:p:`TheoMan` and the necessary specifications
-needed to activate these techniques are listed in the keyword section of
-the Dakota Reference Manual :cite:p:`RefMan`.
+under-determined systems. Details of these methods are documented in
+:ref:`theory:uq:expansion:regress` and the necessary specifications
+needed to activate these techniques are provided in the documentation
+for the :dakkw:`method-polynomial_chaos` keyword.
 
 Stochastic collocation (SC) is another stochastic expansion technique
 for UQ that is closely related to PCE. As for PCE, exponential
@@ -1438,12 +1432,12 @@ linear spline), we have the feature that the :math:`i^{th}`
 interpolation polynomial has a value of 1 at collocation point :math:`i`
 and a value of 0 for all other collocation points, leading to the use of
 expansion coefficients that are just the response values at each of the
-collocation points. In the gradient-enhanced case (Hermite or piecewise
-cubic spline), SC includes both “type 1” and “type 2” interpolation
+collocation points. In the gradient-enhanced case (:ref:`Hermite <theory:uq:expansion:interp:Hermite>`
+or :ref:`piecewise cubic spline <theory:uq:expansion:interp:linear>`),
+SC includes both “type 1” and “type 2” interpolation
 polynomials, where the former interpolate the values while producing
 zero gradients and the latter interpolate the gradients while producing
-zero values (refer to :cite:p:`TheoMan` for additional
-details). Sparse interpolants are weighted sums of these tensor
+zero values. Sparse interpolants are weighted sums of these tensor
 interpolants;
 
 ..
@@ -1463,8 +1457,9 @@ be extended to sparse grids based on standard Gauss rules, provided that
 a sparse PCE is formed based on a weighted sum of tensor
 expansions :cite:p:`ConstSSG`.
 
-The Dakota Theory Manual :cite:p:`TheoMan` provides full
-algorithmic details for the PCE and SC methods.
+.. note::
+
+   :ref:`theory:uq:expansion` provides full algorithmic details for the PCE and SC methods.
 
 A recent addition is functional tensor train (FTT) expansions which
 leverage concepts from data/image compression using products of
@@ -1483,10 +1478,12 @@ FTT theory will be provided in future releases as this capability is
 promoted to a default part of the Dakota software configuration.
 
 Finally, advanced multilevel and multifidelity approaches are provided
-for PCE, SC, and FT, as described in the Reference
-Manual :cite:p:`RefMan` (refer to
-``multilevel_polynomial_chaos, multifidelity_polynomial_chaos, multilevel_function_train, multifidelity_function_train``
-and ``multifidelity_stoch_collocation``). These approaches decompose the
+for PCE, SC, and FT (refer to
+:dakkw:`method-multilevel_polynomial_chaos`,
+:dakkw:`method-multifidelity_polynomial_chaos`,
+:dakkw:`method-multilevel_function_train`,
+:dakkw:`method-multifidelity_function_train`
+and :dakkw:`method-multifidelity_stoch_collocation`). These approaches decompose the
 input-output mapping and form multiple expansions in order to reduce
 reliance on the most expensive computational models by integrating
 information from low cost modeling alternatives.
@@ -1668,9 +1665,7 @@ is shown in :numref:`uq:figure11`. Note that the
 dimension preference of :math:`(2,1)` is inverted to define a
 :math:`\gamma` weighting vector of :math:`(0.5,1)` (and
 :math:`\underline{\gamma}` of :math:`0.5`) for use in the anisotropic
-Smolyak index set constraint (see Smolyak sparse grids section in
-Stochastic Expansion Methods chapter in Dakota Theory
-Manual :cite:p:`TheoMan`). In this example, we compute CDF
+Smolyak index set constraint (see :ref:`theory:uq:expansion:spectral_sparse`). In this example, we compute CDF
 probabilities for six response levels of Rosenbrock’s function. This
 example requires 19 function evaluations to calculate the interpolating
 polynomials in stochastic collocation and the resulting expansion
@@ -1699,9 +1694,7 @@ samples, which will be evaluated on the expansion to compute the CDF
 probabilities. In :numref:`uq:figure12`, excerpts from
 the results summary are presented. We first see the moment statistics
 for mean, standard deviation, skewness, and kurtosis computed by
-numerical integration (see Analytic moments section in Stochastic
-Expansion Methods chapter in Dakota Theory
-Manual :cite:p:`TheoMan`), where the numerical row corresponds
+numerical integration (see :ref:`theory:uq:expansion:moment`), where the numerical row corresponds
 to integration using the original response values and the expansion row
 corresponds to integration using values from the interpolant. The
 response covariance (collapsing to a single variance value for one
@@ -2686,8 +2679,8 @@ an emulator, the derivative-based proposal covariance should be updated
 periodically using the ``posterior_adaptive`` specification. This will
 add simulation truth evaluations in areas of high-likelihood to the
 emulator training data, thus refining the Hessian. For more detail about
-derivative-based formulations involving the misfit Hessian, refer to the
-Theory Manual.
+derivative-based formulations involving the misfit Hessian, refer to
+:ref:`uq:bayes:prop`.
 
 An additional control for QUESO is to perform a logit transformation
 (``logit_transform``) which performs an internal variable transformation
@@ -2737,7 +2730,7 @@ between the posterior and the prior distributions such that
 This quantity represents the amount of information gained about the
 parameters during the Bayesian update. Further details regarding the
 calculation and use of :math:`D_{KL}` can be found
-in :cite:p:`TheoMan`.
+in :ref:`uq:info_theory`.
 
 DREAM
 ~~~~~
@@ -2777,9 +2770,8 @@ approach developed by the Los Alamos group, and implemented in QUESO and
 therefore Dakota, is provided in :cite:p:`Hig08`. It includes
 an embedded discrepancy model and the ability to estimate various
 hyper-parameters of the Gaussian process, observation error model, and
-discrepancy model. Dakota’s GPMSA capability is an experimental
-prototype with a number of limitations. See the Dakota Reference
-Manual :cite:p:`RefMan` for more information.
+discrepancy model. Dakota’s :dakkw:`method-bayes_calibration-gpmsa` capability is an experimental
+prototype with a number of limitations.
 
 MUQ
 ~~~
@@ -2824,8 +2816,8 @@ through the model and represents a forward propagation of uncertainty.
    \pi_{post}(\boldsymbol{\theta})=\pi_{prior}(\boldsymbol{\theta})\frac{\pi_{D}^{obs}(q(\boldsymbol{\theta}))}{\pi_{D}^{q_{prior}}(q(\boldsymbol{\theta}))}. 
    \label{eq:consistentBayesEq}
 
-The Theory Manual :cite:p:`TheoMan` has more detail about the
-assumptions and mathematical foundations for this method. Note a major
+:ref:`The Fundamentals section of the main Bayesian Methods theory page <uq:bayes:basic>`
+has more detail about the assumptions and mathematical foundations for this method. Note a major
 difference in interpretation of the posterior results with respect to a
 standard Bayesian approach: In a standard Bayesian approach, the
 posterior reflects an updated state of information about the prior
@@ -2833,8 +2825,8 @@ distribution on parameter values induced by the observational data. In
 consistent Bayes, the posterior reflects a stochastic mapping of
 parameter values such that the posterior parameters, when pushed-forward
 through the model, give results that are consistent with the density of
-the observational data. WASABI is a prototype capability. See the Dakota
-Reference Manual :cite:p:`RefMan` for more information.
+the observational data. Dakota's :dakkw:`method-bayes_calibration-wasabi`
+keyword is a prototype capability.
 
 Feature Comparison
 ~~~~~~~~~~~~~~~~~~
@@ -2953,8 +2945,10 @@ and the implementation of metrics for chain convergence is undergoing
 active development in Dakota, and can be triggered during a Bayesian
 calibration study through the use of the keyword ``chain_diagnostics``.
 
-As of Dakota 6.10, ``confidence_intervals`` is the only diagnostic
-implemented.
+.. note::
+
+   As of Dakota 6.10, ``confidence_intervals`` is the only diagnostic
+   implemented.
 
 Suppose :math:`g` is a function that represents some characteristic
 (e.g. moment) of an underlying distribution, such as the mean or
@@ -2979,7 +2973,7 @@ over the batches. The confidence intervals produced are 95% confidence
 intervals, and they are calculated for the mean and variance (first and
 second moments) for each parameter and each response. Further details
 regarding the default settings for these calculations can be found in
-the Dakota Theory Manual :cite:p:`TheoMan`.
+:ref:`uq:chain_diagnostics`.
 
 Confidence intervals may be used as a chain diagnostic by setting
 fixed-width stopping rules :cite:p:`Rob18`. For example, if
@@ -3052,15 +3046,14 @@ Scaling and Weighting of Residuals
 Dakota’s scaling options, described in
 :ref:`opt:additional:scaling`,
 can be used on Bayesian calibration problems, using the
-``calibration_term_scales`` keyword, to scale the residuals between
+:dakkw:`responses-calibration_terms-primary_scales` keyword, to scale the residuals between
 the data points and the model predictions, if desired.  Additionally,
 Bayesian calibration residuals-squared can be weighted via the
-``calibration_terms_weights`` specification. Neither set of weights nor
+:dakkw:`responses-calibration_terms-weights` specification. Neither set of weights nor
 scales are adjusted during calibration. When response scaling is active,
-it is applied after error variance weighting and before ``weights``
-application. The ``calibration_terms`` keyword documentation in the Dakota
-Reference Manual :cite:p:`RefMan` has more detail about weighting and
-scaling of the residual terms.
+it is applied after error variance weighting and before :dakkw:`responses-calibration_terms-weights`
+application. The :dakkw:`responses-calibration_terms` documentation
+has more detail about weighting and scaling of the residual terms.
 
 Model Evidence
 ~~~~~~~~~~~~~~
@@ -3259,8 +3252,8 @@ provided with the experimental data, such that
 
 for each observable :math:`i`. Further details of how the variance
 :math:`\Sigma_{\delta,i}(x)` is computed for Gaussian process and
-polynomial regression models can be found in the Dakota Theory
-Manual :cite:p:`TheoMan`. The experimental variance provided
+polynomial regression models can be found in :ref:`uq:model_disc`.
+The experimental variance provided
 for parameter calibration may vary for the same observable from
 experiment to experiment, thus :math:`\sigma^{2}_{exp,i}` is taken to be
 the maximum variance given for each observable. That is,
@@ -3288,8 +3281,10 @@ the variance of the Gaussian process alone. Future work includes
 calculation of combined experimental variance and discrepancy model
 variance for field responses.
 
-Additional details and an illustrative example of these calculations are
-given in the Dakota Theory Manual :cite:p:`TheoMan`.
+.. note::
+
+   Additional details and an illustrative example of these calculations are
+   given in :ref:`uq:model_disc:scalar_example` and :ref:`uq:model_disc:field_example`.
 
 .. _`sec:bayes_expdesign`:
 
@@ -3339,7 +3334,7 @@ should be consistent in both blocks. Each ``interface`` block should
 point to the appropriate high- or low-fidelity code, and the
 ``responses`` blocks should contain consistent details about the
 responses from each code. For example, both of the models should return
-the same number of ``calibration_terms``.
+the same number of :dakkw:`responses-calibration_terms`.
 
 .. literalinclude:: ../samples//bayes_experimental_design.in
    :language: dakota
@@ -3348,35 +3343,39 @@ the same number of ``calibration_terms``.
    :name: figure:uq_expdesign1
 
 The mutual information experimental design algorithm is selected by
-specifying ``bayesian_calibration``, ``queso``, and
-``experimental_design`` within the ``method`` block of the input file,
-and the first ``model`` block should contain the ``hierarchical``
-specification of the ``surrogate`` keyword. The algorithm starts by
+specifying :dakkw:`method-bayes_calibration`, :dakkw:`method-bayes_calibration-queso`, and
+:dakkw:`method-bayes_calibration-experimental_design` within the 
+:dakkw:`method` block of the input file, and the first :dakkw:`model`
+block should contain the :dakkw:`model-surrogate-hierarchical`
+specification of the :dakkw:`model-surrogate` keyword. The algorithm starts by
 performing a Bayesian calibration using a number of data points,
-specified in Dakota by ``initial_samples``. These initial data points
-can be pulled from external data using the ``calibration_data_file``
-keyword in the high-fidelity ``response`` block. In this case,
-``num_config_variables`` should be specified and set to the number of
-configuration variables captured in the ``variables`` blocks.
+specified in Dakota by :dakkw:`method-bayes_calibration-experimental_design-initial_samples`.
+These initial data points can be pulled from external data using the
+:dakkw:`responses-calibration_terms-calibration_data_file`
+keyword in the high-fidelity :dakkw:`responses` block. In this case,
+:dakkw:`responses-calibration_terms-calibration_data_file-num_config_variables`
+should be specified and set to the number of
+configuration variables captured in the :dakkw:`variables` blocks.
 Furthermore, for use in Bayesian experimental design,
-``calibration_data_file`` should contain the configuration variables and
+:dakkw:`responses-calibration_terms-calibration_data_file`
+should contain the configuration variables and
 the corresponding high-fidelity model responses. Scalar variance
 information may be included for the calibration data through the use of
-the ``experimental_variance_type`` or ``simulation_variance`` command
-within the high-fidelity ``responses`` block. The former is applied to
-any user-provided data, such as through the ``calibration_data_file``
-keyword, while the latter applies only to those high-fidelity model
-responses produced by the high-fidelity code run by Dakota. Further
-information can be found in the Dakota Reference
-Manual :cite:p:`RefMan`. If the number of points taken from
-this file is less than ``initial_samples``, or if no such file is
+the :dakkw:`responses-calibration_terms-calibration_data_file-experiment_variance_type`
+or :dakkw:`responses-calibration_terms-simulation_variance` command
+within the high-fidelity :dakkw:`responses` block. The former is applied to
+any user-provided data, such as through the
+:dakkw:`responses-calibration_terms-calibration_data_file` keyword, while
+the latter applies only to those high-fidelity model responses produced by
+the high-fidelity code run by Dakota. If the number of points taken from
+this file is less than :dakkw:`method-bayes_calibration-experimental_design-initial_samples`, or if no such file is
 provided, Latin Hypercube Sampling is used to draw samples of the design
 space, and the high-fidelity model is run at these points to supplement
 the user-specified data. After this initial calibration, a set of design
-conditions (i.e. configuration variables) of size ``num_candidates`` is
+conditions (i.e. configuration variables) of size :dakkw:`method-bayes_calibration-experimental_design-num_candidates` is
 proposed. Users may specify these candidate points through the
-``import_candidate_points_file`` command. Again, if the number of points
-in this file is less than ``num_candidates``, or if no such file is
+:dakkw:`method-bayes_calibration-experimental_design-import_candidate_points_file` command. Again, if the number of points
+in this file is less than :dakkw:`method-bayes_calibration-experimental_design-num_candidates`, or if no such file is
 provided, Latin Hypercube Sampling is used to draw samples of the design
 space.
 
@@ -3389,9 +3388,9 @@ high-fidelity model to create a new observation, which is appended to
 the initial data. This updated data is used to recalculate the Bayesian
 posterior, and the process repeats until one of three stopping criteria
 are met. Multiple optimal designs may be selected concurrently by
-specifying ``batch_size`` in the input script. These designs are
-selected using the greedy algorithm described in detail
-in :cite:p:`TheoMan`. In this case, the high-fidelity model is
+specifying :dakkw:`method-bayes_calibration-experimental_design-batch_size` in the input script.
+These designs are selected using the greedy algorithm described in detail
+in :ref:`uq:bayes_experimental_design`. In this case, the high-fidelity model is
 run at all batch-selected optimal designs before the Bayesian posterior
 is recalculated with the updated data for an ensuing iteration of the
 experimental design algorithm.
@@ -3403,13 +3402,12 @@ within Dakota; the second may be selected by including the keyword
 ``ksg2`` in the Dakota input script. Furthermore, the user may choose to
 include, during the computation of the mutual information, a stochastic
 error term on the low-fidelity model responses. This is done by
-specifying ``simulation_variance`` in the ``responses`` block
-corresponding to the low-fidelity model. See the Dakota Theory
-Manual :cite:p:`TheoMan` for more information regarding the
-implementation of the mutual information calculations.
+specifying :dakkw:`responses-calibration_terms-simulation_variance` in the :dakkw:`responses` block
+corresponding to the low-fidelity model. See :ref:`uq:bayes_experimental_design` for more
+information regarding the implementation of the mutual information calculations.
 
 There are three criteria by which this algorithm is considered complete.
-The user may specify ``max_hifi_evaluations``, which limits the number of
+The user may specify :dakkw:`method-bayes_calibration-experimental_design-max_hifi_evaluations`, which limits the number of
 high-fidelity model simulations Dakota will run. Note that this does not
 include any simulations needed to perform the initial Bayesian calibration
 of the low-fidelity model parameters. Alternatively, if the change in the
