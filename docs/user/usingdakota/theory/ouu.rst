@@ -331,11 +331,7 @@ nonprobabilistic variables are as follows, where independence of
    \frac{d\sigma^2}{ds} &=& \sum_{k=1}^P \langle \Psi_k^2 \rangle 
    \frac{d\alpha_k^2}{ds} ~~=~~ 
    2 \sum_{k=1}^P \alpha_k \langle \frac{dR}{ds}, \Psi_k \rangle 
-   %2 \sigma \frac{d\sigma}{ds} &=& 2 
-   %\sum_{k=1}^P \alpha_k \frac{d\alpha_k}{ds} \langle \Psi_k^2 \rangle \\
-   %\frac{d\sigma}{ds} &=& \frac{1}{\sigma} 
-   %\sum_{k=1}^P \alpha_k \frac{d}{ds} \langle R, \Psi_k \rangle 
-   %\end{aligned}
+   \end{aligned}
 
 where
 
