@@ -146,7 +146,7 @@ analyses.
 When the design variables are distribution parameters of the uncertain
 variables, :math:`\nabla_{\bf d} g` is expanded with the chain rule and
 Eqs.  :math:numref:`eq:deriv_z`
-and   :math:numref:`eq:deriv_beta`  become
+and   :math:numref:`eq:deriv_z` (2)  become
 
 .. math::
    :label: eq:deriv_z_ds
@@ -331,8 +331,6 @@ nonprobabilistic variables are as follows, where independence of
    \frac{d\sigma^2}{ds} &=& \sum_{k=1}^P \langle \Psi_k^2 \rangle 
    \frac{d\alpha_k^2}{ds} ~~=~~ 
    2 \sum_{k=1}^P \alpha_k \langle \frac{dR}{ds}, \Psi_k \rangle 
-   \end{aligned}
-   \begin{aligned}
    %2 \sigma \frac{d\sigma}{ds} &=& 2 
    %\sum_{k=1}^P \alpha_k \frac{d\alpha_k}{ds} \langle \Psi_k^2 \rangle \\
    %\frac{d\sigma}{ds} &=& \frac{1}{\sigma} 
@@ -498,7 +496,7 @@ variables. Any inserted nonprobabilistic variable sensitivities must be
 handled using
 Eqs.  :math:numref:`eq:dmuR_ds_xi_pce`  
 and
-Eqs.  :math:numref:`eq:dmuR_ds_xi_sc`  
+Eqs.  :math:numref:`eq:var_sc`  
 where :math:`\frac{dR}{ds}` is calculated as
 :math:`\frac{dR}{dx} \frac{dx}{ds}` and :math:`\frac{dx}{ds}` is the
 Jacobian of the variable transformation
