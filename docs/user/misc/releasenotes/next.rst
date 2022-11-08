@@ -56,8 +56,23 @@ Dakota's `Discussions page <https://github.com/orgs/snl-dakota/discussions>`_.
 
 *UQ Methods*
 
-- MLMF sampling: Fixed bugs and improved debug output when using
-  online cost recovery.
+- MLMF sampling: Refined sample summary output to distinguish the
+  allocated sample profile from the successfully evaluated samples,
+  clarifying the final results.  These counts may differ in the
+  presence of solution_mode pilot_projection, final_statistics
+  estimator_performance, or simulation fault tolerance.
+
+- MLMF sampling: For fault tolerant sampling, allocations no longer
+  backfill for simulation failures by default (reflecting the
+  observation that simulation faults are almost always biased in the
+  parameter space, and backfill amplifies this bias.)
+
+- MLMF sampling: For numerical solutions in ACV and MFMC based on
+  solving optimization subproblems, add support for minimizing total
+  cost with respect to an accuracy constraint and support these alternate
+  objective/constraint definitions within bi-level model tuning.
+
+- MLMF sampling: Hardened online cost recovery for edge cases.
 
 - Update (experimental) MUQ package for Bayesian calibration
  
