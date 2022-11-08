@@ -623,7 +623,7 @@ Bi-level SEBDO
 
 The simplest and most direct approach is to employ these analytic
 statistics and their design derivatives from
-Section :ref:`SEBDO SSA <theory:uq:sebdo:ssa>` directly within an optimization loop.
+Section :ref:`SEBDO SSA <theory:ouu:sebdo:ssa>` directly within an optimization loop.
 This approach is known as bi-level OUU, since there is an inner level
 uncertainty analysis nested within an outer level optimization.
 
