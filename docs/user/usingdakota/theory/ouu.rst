@@ -351,7 +351,7 @@ nonprobabilistic variables are as follows, where independence of
 .. math::
    :label: eq:dsigR_ds_xi_pce
 
-   \begin{aligned
+   \begin{aligned}
    \frac{d\sigma^2}{ds} &=& \sum_{k=1}^P \langle \Psi_k^2 \rangle 
    \frac{d\alpha_k^2}{ds} ~~=~~ 
    2 \sum_{k=1}^P \alpha_k \langle \frac{dR}{ds}, \Psi_k \rangle 
