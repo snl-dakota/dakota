@@ -84,8 +84,20 @@ used :cite:p:`Hoh86,Kar92,All04`:
 
    \begin{aligned}
    \nabla_{\bf d} z           & = & \nabla_{\bf d} g  \\
+   \end{aligned}
+
+.. math::
+   :label: eq:deriv_beta
+
+   \begin{aligned}
    \nabla_{\bf d} \beta_{cdf} & = & \frac{1}{{\parallel \nabla_{\bf u} G 
    \parallel}} \nabla_{\bf d} g  \\
+   \end{aligned}  
+
+.. math::
+   :label: eq:deriv_p
+
+   \begin{aligned}
    \nabla_{\bf d} p_{cdf}     & = & -\phi(-\beta_{cdf}) \nabla_{\bf d} \beta_{cdf}
    \end{aligned}
 
@@ -146,7 +158,7 @@ analyses.
 When the design variables are distribution parameters of the uncertain
 variables, :math:`\nabla_{\bf d} g` is expanded with the chain rule and
 Eqs.  :math:numref:`eq:deriv_z`
-and   :math:numref:`eq:deriv_z` (2)  become
+and   :math:numref:`eq:deriv_beta` (2)  become
 
 .. math::
    :label: eq:deriv_z_ds
@@ -154,6 +166,12 @@ and   :math:numref:`eq:deriv_z` (2)  become
    \begin{aligned}
    \nabla_{\bf d} z           & = & \nabla_{\bf d} {\bf x} \nabla_{\bf x} g
    \\
+   \end{aligned}
+
+.. math::
+   :label: eq:deriv_beta_ds
+
+   \begin{aligned}
    \nabla_{\bf d} \beta_{cdf} & = & \frac{1}{{\parallel \nabla_{\bf u} G 
    \parallel}} \nabla_{\bf d} {\bf x} \nabla_{\bf x} g
    \end{aligned}
@@ -169,7 +187,7 @@ Eqs. :math:numref:`eq:deriv_z` - :math:numref:`eq:deriv_gen_beta` remain the sam
 information for the sensitivities is available from the MPP search.
 
 Since
-Eqs. :math:numref:`eq:deriv_z` __- :math:numref:`eq:deriv_beta_ds` 
+Eqs. :math:numref:`eq:deriv_z` - :math:numref:`eq:deriv_beta_ds` 
 are derived using the Karush-Kuhn-Tucker optimality conditions for a
 converged MPP, they are appropriate for RBDO using AMV+,
 AMV\ :math:`^2`\ +, TANA, FORM, and SORM, but not for RBDO using MVFOSM,
@@ -191,7 +209,7 @@ approximations :cite:p:`Du04`.
 
 A particularly effective approach for updating the optimization goals is
 to use the :math:`p/\beta/z` sensitivity analysis of
-Eqs.  :math:numref:`eq:deriv_z` __- :math:numref:`eq:deriv_beta_ds`
+Eqs.  :math:numref:`eq:deriv_z` - :math:numref:`eq:deriv_beta_ds`
 in combination with local surrogate models :cite:p:`Zou04`. In
 :cite:p:`Eld05` and :cite:p:`Eld06a`, first-order
 and second-order Taylor series approximations were employed within a
@@ -328,6 +346,12 @@ nonprobabilistic variables are as follows, where independence of
    \frac{d\mu}{ds} &=& \frac{d\alpha_0}{ds} ~~=~~ 
    %\frac{d}{ds} \langle R \rangle ~~=~~ 
    \langle \frac{dR}{ds} \rangle \\
+   \end{aligned}
+
+.. math::
+   :label: eq:dsigR_ds_xi_pce
+
+   \begin{aligned
    \frac{d\sigma^2}{ds} &=& \sum_{k=1}^P \langle \Psi_k^2 \rangle 
    \frac{d\alpha_k^2}{ds} ~~=~~ 
    2 \sum_{k=1}^P \alpha_k \langle \frac{dR}{ds}, \Psi_k \rangle 
@@ -376,9 +400,21 @@ leads to
 
    \begin{aligned}
    \mu(s) &=& \sum_{k=1}^{N_p} r_k(s) w_k, ~~~~\sigma^2(s) ~=~ \sum_{k=1}^{N_p} r^2_k(s) w_k - \mu^2(s)  \\
+   \end{aligned}
+
+.. math::
+   :label: eq:dmuR_ds_xi_sc
+
+   \begin{aligned}
    \frac{d\mu}{ds} &=& %\frac{d}{ds} \langle R \rangle ~~=~~ 
    %\sum_{k=1}^{N_p} \frac{dr_k}{ds} \langle \boldsymbol{L}_k \rangle ~~=~~ 
    \sum_{k=1}^{N_p} w_k \frac{dr_k}{ds} \\
+   \end{aligned}
+
+.. math::
+   :label: eq:dsigR_ds_xi_sc
+
+   \begin{aligned}
    \frac{d\sigma^2}{ds} &=& \sum_{k=1}^{N_p} 2 w_k r_k \frac{dr_k}{ds}
    - 2 \mu \frac{d\mu}{ds} 
    ~~=~~ \sum_{k=1}^{N_p} 2 w_k (r_k - \mu) \frac{dr_k}{ds}
@@ -420,6 +456,12 @@ leaving behind the desired polynomial dependence of the moments on
    \begin{aligned}
    \mu_R(\boldsymbol{s}) &=& \sum_{j=0}^P \alpha_j \langle \Psi_j(\boldsymbol{\xi},
    \boldsymbol{s}) \rangle_{\boldsymbol{\xi}}  \\
+   \end{aligned}
+   
+.. math::
+   :label: eq:sigR_comb_pce
+
+   \begin{aligned}
    \sigma^2_R(\boldsymbol{s}) &=& \sum_{j=0}^P \sum_{k=0}^P \alpha_j \alpha_k 
    \langle \Psi_j(\boldsymbol{\xi}, \boldsymbol{s}) \Psi_k(\boldsymbol{\xi},
    \boldsymbol{s}) \rangle_{\boldsymbol{\xi}} ~-~ \mu^2_R(\boldsymbol{s})
@@ -467,7 +509,12 @@ leads to
    \begin{aligned}
    \mu_R(\boldsymbol{s}) &=& \sum_{j=1}^{N_p} r_j \langle 
    \boldsymbol{L}_j(\boldsymbol{\xi}, \boldsymbol{s}) \rangle_{\boldsymbol{\xi}} 
-    \\
+   \end{aligned}
+
+.. math::
+   :label: eq:sigR_both_sc
+
+   \begin{aligned}
    \sigma^2_R(\boldsymbol{s}) &=& \sum_{j=1}^{N_p} \sum_{k=1}^{N_p} r_j r_k 
    \langle \boldsymbol{L}_j(\boldsymbol{\xi}, \boldsymbol{s}) 
    \boldsymbol{L}_k(\boldsymbol{\xi}, \boldsymbol{s}) \rangle_{\boldsymbol{\xi}}
@@ -795,11 +842,17 @@ approximated high-fidelity UQ results resulting from correction of the
 low-fidelity UQ results. In the case of an additive correction function:
 
 .. math::
-   :label: eq:corr_lf_sigma
+   :label: eq:corr_lf_beta
 
    \begin{aligned}
    \hat{\beta_{hi}}({\bf s})    &=& \beta_{lo}({\bf s}) + 
    \alpha_{\beta}({\bf s})   \\
+   \end{aligned}
+   
+.. math::
+   :label: eq:corr_lf_sigma
+
+   \begin{aligned}
    \hat{\sigma_{hi}}^2({\bf s}) &=& \sigma_{lo}^2({\bf s}) + 
    \alpha_{\sigma^2}({\bf s}) 
    \end{aligned}
