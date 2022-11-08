@@ -21,8 +21,6 @@ new compendium is invited.
 *Enabling / Accessing:* Primarily from https://dakota.sandia.gov, also
 in :file:`<dakota_src>/docs/user`.
 
-*Documentation:* Where to learn more
-
 **Highlight: User Support Moves to Github**
 
 External user support is moving to Github Discussions. Discussions offers
@@ -50,9 +48,8 @@ Dakota's `Discussions page <https://github.com/orgs/snl-dakota/discussions>`_.
 - Allow the experimental Python plugin interface to work correctly
   as a callback underneath a top-level Dakota Python environment.
 
-*Models*
-
-*Optimization Methods*
+- Updated version of ``pyprepro/dprepro`` addresses numerous small
+  issues.
 
 *UQ Methods*
 
@@ -75,6 +72,12 @@ Dakota's `Discussions page <https://github.com/orgs/snl-dakota/discussions>`_.
 - MLMF sampling: Hardened online cost recovery for edge cases.
 
 - Update (experimental) MUQ package for Bayesian calibration
+
+*Documentation Infrastructure*
+
+- New Sphinx-based documentation infrastructure unifies historical
+  manuals and permits building the Dakota documentation on its own or
+  as part of a CMake-based Dakota build.
  
 **Miscellaneous Enhancements and Bugfixes**
 
@@ -92,11 +95,20 @@ Dakota's `Discussions page <https://github.com/orgs/snl-dakota/discussions>`_.
   version information and will attempt to detect whether an imported
   file is compatible.
 
+- Enh: Refined check for zero variance QoIs and other cases that could
+  lead to numerical exceptions, e.g., in calculating Sobol' indices.
+
+- Enh: Enable exporting PCE coefficients when using in Bayesian
+  calibration.
+
 - Bug fix: MLMF UQ methods properly generate tabular output for
   concurrent evaluations
 
 - Bug fix: Dakota should now compile when using a C++17-compliant
   compiler. (Thanks to Heidi Thornquist for reporting and testing.)
+
+- Bug fix: Properly map inactive variables through subspace models,
+  notably discrete string variables.
 
 **Deprecated and Changed**
 
