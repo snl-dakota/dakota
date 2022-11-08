@@ -1,13 +1,10 @@
-Blurb::
-
-Sets the type of the convergence tolerance.
+Blurb:: Select absolute or relative convergence tolerance
 
 Description::
 
-Can be absolute or relative.
+Sets the type of the convergence tolerance: ``absolute`` or ``relative``.
 
-**Default Behavior**
-`"relative"`
+**Default Behavior:** ``relative``
 
 Topics::
 

@@ -1,14 +1,13 @@
 Blurb::
 
-Sets the target of the MLMC sample allocation, i.e. the constraint of
-the MLMC sample allocation problem
+Select target for MLMC sample allocation
 
 Description:: 
 
-(Undocumented keyword)
+Sets the target of the MLMC sample allocation, i.e. the constraint of
+the MLMC sample allocation problem
 
-**Default Behavior**
-`"variance_constraint"`
+**Default Behavior:** ``variance_constraint``
 
 Topics::
 

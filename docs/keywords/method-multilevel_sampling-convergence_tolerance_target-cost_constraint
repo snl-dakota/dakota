@@ -1,11 +1,11 @@
 Blurb:: 
 
-Minimizes the variance of the estimator while targeting a certain cost
-given in keyword `convergence_tolerance`.
+Allocate samples to target specified cost
 
 Description::
 
-(Undocumented keyword)
+Minimizes the variance of the estimator while targeting a certain cost
+given in keyword ``convergence_tolerance``.
 
 Topics::
 
