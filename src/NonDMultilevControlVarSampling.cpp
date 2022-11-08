@@ -1351,7 +1351,7 @@ accumulate_mlmf_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
 	// followed by LF (previous/decremented model key)
 	q_l_prod   = q_l   = fn_vals[qoi];
 	q_lm1_prod = q_lm1 = fn_vals[qoi+numFunctions];
@@ -1391,12 +1391,12 @@ void NonDMultilevControlVarSampling::
 accumulate_mlmf_Ysums(IntRealMatrixMap& sum_Y, size_t lev, SizetArray& num_Y)
 {
   // uses one set of allResponses in BYPASS_SURROGATE (level 0) or
-  // AGGREGATED_MODELS (lev > 0) modes.  IntRealMatrixMap is a multilevel
+  // AGGREGATED_MODEL_PAIR (lev > 0) modes.  IntRealMatrixMap is a multilevel
   // case with discrepancies, indexed by level.
 
   if (lev == 0)
     accumulate_ml_Qsums(sum_Y, lev, num_Y);
-  else { // AGGREGATED_MODELS -> 2 sets of qoi per response map
+  else { // AGGREGATED_MODEL_PAIR -> 2 sets of qoi per response map
     using std::isfinite;
     Real fn_l, prod_l, fn_lm1, prod_lm1;
     int ord, active_ord; size_t qoi;
@@ -1406,7 +1406,7 @@ accumulate_mlmf_Ysums(IntRealMatrixMap& sum_Y, size_t lev, SizetArray& num_Y)
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
 	// followed by LF (previous/decremented model key)
 	prod_l   = fn_l   = fn_vals[qoi];
 	prod_lm1 = fn_lm1 = fn_vals[qoi+numFunctions];
@@ -1571,13 +1571,13 @@ accumulate_mlmf_Ysums(const IntResponseMap& lf_resp_map,
 		      SizetArray& num_L, SizetArray& num_H)
 {
   // uses two sets of responses (LF & HF) in BYPASS_SURROGATE (level 0) or
-  // AGGREGATED_MODELS (lev > 0) modes.  IntRealMatrixMap are for multilevel
-  // case with discrepancies, indexed by level.
+  // AGGREGATED_MODEL_PAIR (lev > 0) modes.  IntRealMatrixMaps are for
+  // multilevel case with discrepancies, indexed by level.
 
   if (lev == 0) // BYPASS_SURROGATE -> 1 set of qoi per response map
     accumulate_mlmf_Qsums(lf_resp_map, hf_resp_map, sum_L_shared, sum_L_refined,
 			  sum_H, sum_LL, sum_LH, sum_HH, lev, num_L, num_H);
-  else { // AGGREGATED_MODELS -> 2 sets of qoi per response map
+  else { // AGGREGATED_MODEL_PAIR -> 2 sets of qoi per response map
     using std::isfinite;
     Real lf_l, lf_l_prod, lf_lm1, lf_lm1_prod,
          hf_l, hf_l_prod, hf_lm1, hf_lm1_prod;
@@ -1594,7 +1594,7 @@ accumulate_mlmf_Ysums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// response mode AGGREGATED_MODELS orders level l (active model key)
+	// response mode AGGREGATED_MODEL_PAIR orders level l (active model key)
 	// followed by level l-1 (previous/decremented model key)
 	lf_l_prod   = lf_l   = lf_fn_vals[qoi];
 	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi+numFunctions];
@@ -1687,8 +1687,8 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 		      SizetArray& num_L, SizetArray& num_H)
 {
   // uses two sets of responses (LF & HF) in BYPASS_SURROGATE (level 0) or
-  // AGGREGATED_MODELS (lev > 0) modes.  IntRealMatrixMap are for multilevel
-  // case with discrepancies, indexed by level.
+  // AGGREGATED_MODEL_PAIR (lev > 0) modes.  IntRealMatrixMaps are for
+  // multilevel case with discrepancies, indexed by level.
 
   if (lev == 0) // level lm1 not available; accumulate only level l
     accumulate_mlmf_Qsums(lf_resp_map, hf_resp_map, sum_Ll, sum_Ll_refined,
@@ -1714,7 +1714,7 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// response mode AGGREGATED_MODELS orders level l (active model key)
+	// response mode AGGREGATED_MODEL_PAIR orders level l (active model key)
 	// followed by level l-1 (previous/decremented model key)
 	lf_l_prod   = lf_l   = lf_fn_vals[qoi];
 	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi+numFunctions];
@@ -1870,7 +1870,7 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 		      size_t lev, SizetArray& N_shared)
 {
   // uses two sets of responses (LF & HF) in BYPASS_SURROGATE (level 0) or
-  // AGGREGATED_MODELS (lev > 0) modes.
+  // AGGREGATED_MODEL_PAIR (lev > 0) modes.
 
   if (lev == 0) // level lm1 not available; accumulate only level l
     accumulate_mlmf_Qsums(lf_resp_map, hf_resp_map, sum_Ll, sum_Ll_refined,
@@ -1891,7 +1891,7 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// response mode AGGREGATED_MODELS orders level l (active model key)
+	// response mode AGGREGATED_MODEL_PAIR orders level l (active model key)
 	// followed by level l-1 (previous/decremented model key)
 	lf_l_prod   = lf_l   = lf_fn_vals[qoi];
 	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi+numFunctions];

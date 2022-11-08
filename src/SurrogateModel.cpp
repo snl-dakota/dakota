@@ -32,6 +32,7 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   surrogateFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
   corrType(problem_db.get_short("model.surrogate.correction_type")),
+  corrOrder(problem_db.get_short("model.surrogate.correction_order")),
   surrModelEvalCntr(0), approxBuilds(0)
 {
   // assign default responseMode based on correction specification;
@@ -61,7 +62,7 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   // Allow DFSModel to employ sizing differences (e.g., consuming aggregations)
   Model(LightWtBaseConstructor(), svd, share_svd, srd, share_srd, set,
 	output_level, problem_db, parallel_lib),
-  corrType(corr_type), surrModelEvalCntr(0), approxBuilds(0)
+  corrType(corr_type), corrOrder(0), surrModelEvalCntr(0), approxBuilds(0)
 {
   modelType = "surrogate";
 
@@ -279,7 +280,7 @@ void SurrogateModel::init_model_labels(Model& model)
 
   if (model.response_labels().empty()) // should not happen
     switch (responseMode) {
-    case AGGREGATED_MODELS: {
+    case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR: {
       StringArray qoi_labels;
       copy_data_partial(currentResponse.function_labels(),
 			0, model.qoi(), qoi_labels);
@@ -674,7 +675,7 @@ void SurrogateModel::update_response_from_model(const Model& model)
   if (!approxBuilds &&
       currentResponse.function_labels().empty()) // should not happen
     switch (responseMode) {
-    case AGGREGATED_MODELS: {
+    case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR: {
       const StringArray& model_labels = model.response_labels();
       size_t i, start = 0, num_fns = currentResponse.num_functions(),
 	qoi = model.qoi(), num_repl = num_fns / qoi;
@@ -1189,10 +1190,10 @@ asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
 {
   size_t i, num_qoi = qoi();
   switch (responseMode) {
-  case AGGREGATED_MODELS: {
+  case AGGREGATED_MODEL_PAIR: {
     // split actual & approx asv (can ignore build_flag)
     if (orig_asv.size() != 2*num_qoi) {
-      Cerr << "Error: ASV not aggregated for AGGREGATED_MODELS mode in "
+      Cerr << "Error: ASV not aggregated for AGGREGATED_MODEL_PAIR mode in "
 	   << "SurrogateModel::asv_split()." << std::endl;
       abort_handler(MODEL_ERROR);
     }

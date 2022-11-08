@@ -80,8 +80,9 @@ protected:
   void active_model_key(const Pecos::ActiveKey& key);
   const Pecos::ActiveKey& active_model_key() const;
 
-  /// return responseMode
   short surrogate_response_mode() const;
+  short correction_type() const;
+  short correction_order() const;
 
   /// return the current evaluation id for this Model
   int derived_evaluation_id() const;
@@ -128,7 +129,7 @@ protected:
 
   /// distributes the incoming orig_asv among actual_asv and approx_asv
   void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
-		 ShortArray& approx_asv, bool build_flag);
+		 ShortArray& approx_asv, bool build_flag = false);
   /// distributes the incoming orig_asv among actual_asv and approx_asv
   void asv_split(const ShortArray& orig_asv, Short2DArray& indiv_asv);
 
@@ -201,6 +202,12 @@ protected:
 
   /// type of correction: additive, multiplicative, or combined
   short corrType;
+  /// order of correction: 0 (value), 1 (gradient), or 2 (Hessian)
+  short corrOrder;
+  /// map of raw continuous variables used by apply_correction().
+  /// Model::varsList cannot be used for this purpose since it does
+  /// not contain lower level variables sets from finite differencing.
+  IntVariablesMap rawVarsMap;
 
   /// counter for calls to derived_evaluate()/derived_evaluate_nowait();
   /// used to key response maps from SurrogateModels
@@ -351,6 +358,14 @@ inline void SurrogateModel::check_key(int key1, int key2) const
     abort_handler(MODEL_ERROR);
   }
 }
+
+
+inline short SurrogateModel::correction_type() const
+{ return corrType; }
+
+
+inline short SurrogateModel::correction_order() const
+{ return corrOrder; }
 
 
 /*

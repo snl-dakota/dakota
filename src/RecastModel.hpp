@@ -297,11 +297,11 @@ protected:
   //void link_multilevel_approximation_data();
 
   /// retrieve subModel's correction type
-  short correction_type();
+  short correction_type() const;
   /// update subModel's correction type
   void correction_type(short corr_type);
   /// retrieve subModel's correction order
-  short correction_order();
+  short correction_order() const;
 
   /// retrieve error estimates corresponding to the subModel
   const RealVector& error_estimates();
@@ -858,7 +858,7 @@ inline void RecastModel::surrogate_response_mode(short mode)
 //{ subModel.link_multilevel_approximation_data(); }
 
 
-inline short RecastModel::correction_type()
+inline short RecastModel::correction_type() const
 { return subModel.correction_type(); }
 
 
@@ -866,7 +866,7 @@ inline void RecastModel::correction_type(short corr_type)
 { subModel.correction_type(corr_type); }
 
 
-inline short RecastModel::correction_order()
+inline short RecastModel::correction_order() const
 { return subModel.correction_order(); }
 
 

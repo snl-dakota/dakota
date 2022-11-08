@@ -581,7 +581,7 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
     iteratedModel.active_model_key(hf_key); // one active fidelity
   }
   else {
-    aggregated_models_mode();
+    aggregated_model_pair_mode();
 
     Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
     bool success = lf_key.decrement_key(seq_type); // seq_index defaults to 0
@@ -615,7 +615,7 @@ void NonDMultilevelSampling::evaluate_ml_sample_increment(unsigned short step)
   // *** TO DO: Even though these samples typically involve {truth,surrogate}
   //     aggregation, we currently tag with the truth_model's interface id.
   //     This is correct for bypass_surrogate_mode(), but consider the new
-  //     integrated tabular format for aggregated_models_mode().
+  //     integrated tabular format for aggregated_model_pair_mode().
   if (exportSampleSets)
     export_all_samples("ml_", iteratedModel.truth_model(), mlmfIter, step);
 
@@ -761,7 +761,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
 	// followed by LF (previous/decremented model key)
 	q_l_prod   = q_l   = fn_vals[qoi];
 	q_lm1_prod = q_lm1 = fn_vals[qoi+numFunctions];
@@ -854,7 +854,7 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
 	// followed by LF (previous/decremented model key)
 	hf_prod = hf_fn = fn_vals[qoi];
 	lf_prod = lf_fn = fn_vals[qoi+numFunctions];
@@ -913,7 +913,7 @@ accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY, size_t lev,
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
 	// followed by LF (previous/decremented model key)
 	hf_prod = hf_fn = fn_vals[qoi];
 	lf_prod = lf_fn = fn_vals[qoi+numFunctions];

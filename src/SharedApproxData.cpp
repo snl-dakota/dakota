@@ -273,7 +273,7 @@ SharedApproxData::~SharedApproxData()
 
 void SharedApproxData::active_model_key(const Pecos::ActiveKey& key)
 {
-  // > AGGREGATED_MODELS uses {HF,LF} order, as does ApproxInterface::*_add()
+  // > AGGREGATED_MODEL_PAIR uses {HF,LF} order as does ApproxInterface::*_add()
   // > When managing distinct sets of paired truth,surrogate data (e.g., one set
   //   of data for Q_l - Q_lm1 and another for Q_lm1 - Q_lm2, it is important to
   //   identify the lm1 data with a specific pairing --> data group index

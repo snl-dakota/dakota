@@ -521,22 +521,22 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case MULTILEVEL_SAMPLING:
     return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
   case MULTIFIDELITY_SAMPLING:
-    // Hierarch and NonHierarch SurrModels can both have an open ended number of
-    // model forms.  Former treats them pairwise and latter as a full group.  
+    // Hierarch and NonHierarch SurrModels can both have an open ended number
+    // of model forms.  Former treats them pairwise and latter as a full group.
     // > Would be nice to separate ordered/unordered from pairwise/full since
-    //   the former is subtle (unordered still manifests as a list) while the
-    //   latter is more critical (implementation uses active model key with full
-    //   batch + ASV blocks versus active key that changes pairs).
+    //   the former is not a hard constraint (unordered still uses a list) while
+    //   the latter is more critical (implementation uses active model key with
+    //   full batch + ASV blocks versus active key that changes pairs).
     // > But the Model needs to be instantiated from its spec without knowledge
     //   of the Iterator context --> Iterators like MFMC must adapt to
-    //   limitations of a HierarchSurrModel even though it *is* a
+    //   limitations of a EnsembleSurrModel even though it *is* a
     //   hierarchical/recursive method.
     //   >> Might need to collapse the two Model classes after all if we
     //      want to avoid these adaptations caused by mis-specification;
     //      or enforce hard errors when an Iterator is passed a Model that
     //      limits its capability.
     //   >> Perhaps base EnsembleSurrModel can switch between functions
-    //      implementations (replacing inheritance with code switches)
+    //      implementations at run time (replace inheritance w/ code switches)
 
     //if (model.surrogate_type() == "hierarchical")
     //  return std::make_shared<NonDControlVariateSampling>(problem_db, model);

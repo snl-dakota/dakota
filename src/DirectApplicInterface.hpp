@@ -259,7 +259,7 @@ inline const StringArray& DirectApplicInterface::analysis_drivers() const
 
 
 /** Process init issues as warnings since some contexts (e.g.,
-    HierarchSurrModel) initialize more configurations than will be
+    EnsembleSurrModel) initialize more configurations than will be
     used and DirectApplicInterface allows override by derived plug-ins. */
 inline void DirectApplicInterface::
 init_communicators_checks(int max_eval_concurrency)

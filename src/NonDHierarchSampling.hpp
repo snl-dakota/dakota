@@ -63,8 +63,8 @@ protected:
   //- Heading: Member functions
   //
 
-  // synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
-  //void aggregated_models_mode();
+  // synchronize iteratedModel and activeSet on AGGREGATED_MODEL_PAIR mode
+  //void aggregated_model_pair_mode();
   // synchronize iteratedModel and activeSet on BYPASS_SURROGATE mode
   //void bypass_surrogate_mode();
   /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode

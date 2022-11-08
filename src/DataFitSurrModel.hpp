@@ -87,9 +87,7 @@ protected:
   size_t qoi() const;
 
   DiscrepancyCorrection& discrepancy_correction();
-  short correction_type();
-  void  correction_type(short corr_type);
-  short correction_order();
+  void correction_type(short corr_type);
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
@@ -428,11 +426,6 @@ private:
   /// portions were still pending.
   IntResponseMap cachedApproxRespMap;
 
-  /// map of raw continuous variables used by apply_correction().
-  /// Model::varsList cannot be used for this purpose since it does
-  /// not contain lower level variables sets from finite differencing.
-  IntVariablesMap rawVarsMap;
-
   /// total points the user specified to construct the surrogate
   int pointsTotal;
   /// configuration for points management in build_global()
@@ -515,11 +508,11 @@ inline size_t DataFitSurrModel::qoi() const
 {
   // Response inflation from aggregation does not proliferate above
   // this Model recursion level
-  return (responseMode == AGGREGATED_MODELS && !actualModel.is_null()) ?
+  return (responseMode == AGGREGATED_MODEL_PAIR && !actualModel.is_null()) ?
     actualModel.qoi() : response_size();
 
   //switch (responseMode) {
-  //case AGGREGATED_MODELS:
+  //case AGGREGATED_MODEL_PAIR:
   //  if (actualModel.is_null()) return response_size();
   //  else                       return actualModel.qoi();
   //  break;
@@ -532,16 +525,8 @@ inline DiscrepancyCorrection& DataFitSurrModel::discrepancy_correction()
 { return deltaCorr; }
 
 
-inline short DataFitSurrModel::correction_type()
-{ return deltaCorr.correction_type(); }
-
-
 inline void DataFitSurrModel::correction_type(short corr_type)
-{ deltaCorr.correction_type(corr_type); }
-
-
-inline short DataFitSurrModel::correction_order()
-{ return deltaCorr.correction_order(); }
+{ corrType = corr_type; deltaCorr.correction_type(corr_type); }
 
 
 inline void DataFitSurrModel::total_points(int points)
@@ -739,7 +724,7 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
     actualModel.surrogate_response_mode(mode); // recurse in this case
     //approxInterface.deactivate_multilevel_approximation_data();
     break;
-  case AGGREGATED_MODELS:
+  case AGGREGATED_MODEL_PAIR:
     //approxInterface.activate_multilevel_approximation_data();
     break;
   }

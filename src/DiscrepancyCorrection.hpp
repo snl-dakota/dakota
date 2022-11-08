@@ -226,8 +226,8 @@ private:
   std::vector<Approximation> multCorrections;
 
   /// shallow copy of the surrogate model instance as returned by
-  /// Model::surrogate_model() (the DataFitSurrModel or
-  /// HierarchSurrModel::lowFidelityModel instance) 
+  /// Model::surrogate_model() (the DataFitSurrModel or or one of
+  /// EnsembleSurrModel::approxModels) 
   Model surrModel;
 
   /// factors for combining additive and multiplicative corrections.

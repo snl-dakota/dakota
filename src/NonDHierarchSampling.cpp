@@ -42,7 +42,7 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   // (i.e. a SimulationModel with resolution hyper-parameters is insufficient).
   bool err_flag = false;
   if (iteratedModel.surrogate_type() == "hierarchical")
-    aggregated_models_mode();
+    aggregated_model_pair_mode();
   else {
     Cerr << "Error: Hierarchical sampling requires a hierarchical surrogate "
 	 << "model specification." << std::endl;

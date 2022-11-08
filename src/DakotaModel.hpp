@@ -399,17 +399,21 @@ public:
   virtual void correction_type(short corr_type);
   /// return the correction type from the DiscrepancyCorrection object
   /// used by SurrogateModels
-  virtual short correction_type();
+  virtual short correction_type() const;
   /// return the correction order from the DiscrepancyCorrection object
   /// used by SurrogateModels
-  virtual short correction_order();
+  virtual short correction_order() const;
+  /// return correctionMode
+  virtual unsigned short correction_mode() const;
+  /// set correctionMode
+  virtual void correction_mode(unsigned short corr_mode);
 
   /// apply a DiscrepancyCorrection to correct an approximation within
-  /// a HierarchSurrModel
+  /// an EnsembleSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
 			    const Pecos::ActiveKey& paired_key);
   /// apply a sequence of DiscrepancyCorrections to recursively correct an 
-  /// approximation within a HierarchSurrModel
+  /// approximation within an EnsembleSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
 
   /// update componentParallelMode for supporting parallelism in model

@@ -55,9 +55,8 @@ class ProblemDescDB
   friend class Model;
   /// SimulationModel requires access to get_interface()
   friend class SimulationModel;
-  /// HierarchSurrModel and NonHierarchSurrModel require access to get_model()
-  friend class HierarchSurrModel;
-  friend class NonHierarchSurrModel;
+  /// EnsembleSurrModel requires access to get_model()
+  friend class EnsembleSurrModel;
   /// DataFitSurrModel requires access to get_iterator() and get_model()
   friend class DataFitSurrModel;
   /// NestedModel requires access to get_interface(), get_response(),

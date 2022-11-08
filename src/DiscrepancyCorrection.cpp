@@ -39,7 +39,7 @@ initialize(Model& surr_model, const SizetSet& surr_fn_indices,
 
   surrogateFnIndices = surr_fn_indices;
   // = surrModel.surrogate_function_indices() would work for DataFitSurrModel,
-  // but not for HierarchSurrModel's surrogate
+  // but not for EnsembleSurrModel
 
   initialize(corr_type, corr_order, approx_type, approx_order);
 }
@@ -850,7 +850,7 @@ search_db(const Variables& search_vars, const ShortArray& search_asv)
   // is to employ approx center data; this approach is used when surrModel has
   // not been initialized (see apply_multiplicative()).  Recomputation can occur
   // either for ApproximationInterface data in DataFitSurrModels or low fidelity
-  // data in HierarchSurrModels that involves additional model recursions, since
+  // data in EnsembleSurrModels that involves additional model recursions, since
   // neither of these data sets are catalogued in data_pairs.
 
   // query data_pairs to extract the response at the current pt

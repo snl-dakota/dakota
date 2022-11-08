@@ -36,7 +36,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
-  if (iteratedModel.surrogate_type() != "hierarchical") {
+  if (iteratedModel.surrogate_type() != "ensemble") {
     Cerr << "Error: HierarchSurrBasedLocalMinimizer requires a hierarchical "
          << "surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -438,8 +438,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   set_active_model(minimizeIndex);
 
   // set up recursive corrections across all model forms
-  (std::static_pointer_cast<HierarchSurrModel>(iteratedModel.model_rep()))->
-    correction_mode(FULL_MODEL_FORM_CORRECTION);
+  iteratedModel.correction_mode(FULL_MODEL_FORM_CORRECTION);
 
   // Set the trust region center and bounds for approxSubProbOptimizer
   SurrBasedLevelData& tr_min = trustRegions[minimizeIndex];
@@ -839,8 +838,7 @@ optimize(const RealVector &x, size_t max_iter, int index)
   set_active_model(index);
 
   // set up recursive corrections across all solution levels
-  (std::static_pointer_cast<HierarchSurrModel>(iteratedModel.model_rep()))->
-    correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
+  iteratedModel.correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
 
   iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);

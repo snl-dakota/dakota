@@ -86,7 +86,7 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   //		[approx_offset = <LISTof><REAL>]
   // An outstanding question was which approximation types to support, i.e. 
   // (1) global: primary use, (2) local/multipoint: somewhat useful, and
-  // (3) hierarchical:  not supported in HierarchSurrModel and not that useful
+  // (3) hierarchical:  not supported in EnsembleSurrModel and not that useful
   // since correction is required.
   //
   // Since that time, the capability for specifying inequality constraint bounds

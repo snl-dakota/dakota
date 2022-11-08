@@ -80,7 +80,7 @@ void NonDControlVariateSampling::core_run()
   hf_key.form_key(0, hf_form, hf_lev);  lf_key.form_key(0, lf_form, lf_lev);
   active_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
 
-  aggregated_models_mode();
+  aggregated_model_pair_mode();
   iteratedModel.active_model_key(active_key); // data group 0
 
   // Two-model control variate approach (Ng and Willcox, 2014) using a
@@ -495,7 +495,7 @@ accumulate_mf_sums(IntRealVectorMap& sum_L_shared,
 		   IntRealVectorMap& sum_LH, RealVector& sum_HH,
 		   SizetArray& N_shared)
 {
-  // uses one set of allResponses in AGGREGATED_MODELS mode
+  // uses one set of allResponses in AGGREGATED_MODEL_PAIR mode
   // IntRealVectorMap is not a multilevel case so no discrepancies
 
   using std::isfinite;
@@ -509,7 +509,7 @@ accumulate_mf_sums(IntRealVectorMap& sum_L_shared,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // response mode AGGREGATED_MODELS orders HF (active model key)
+      // response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
       // followed by LF (previous/decremented model key)
       hf_prod = hf_fn = fn_vals[qoi];
       lf_prod = lf_fn = fn_vals[qoi+numFunctions];
@@ -573,7 +573,7 @@ void NonDControlVariateSampling::
 accumulate_mf_sums(RealVector& sum_L, RealVector& sum_H, RealVector& sum_LL,
 		   RealVector& sum_LH, RealVector& sum_HH, SizetArray& N_shared)
 {
-  // uses one set of allResponses in AGGREGATED_MODELS mode
+  // uses one set of allResponses in AGGREGATED_MODEL_PAIR mode
   // IntRealVectorMap is not a multilevel case so no discrepancies
 
   using std::isfinite;
@@ -584,7 +584,7 @@ accumulate_mf_sums(RealVector& sum_L, RealVector& sum_H, RealVector& sum_LL,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // response mode AGGREGATED_MODELS orders HF (active model key)
+      // response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
       // followed by LF (previous/decremented model key)
       hf_fn = fn_vals[qoi];
       lf_fn = fn_vals[qoi+numFunctions];
@@ -612,7 +612,7 @@ shared_increment(const Pecos::ActiveKey& agg_key, size_t iter, size_t lev)
   Cout << "LF = " << numSamples << " HF = " << numSamples << '\n';
 
   if (numSamples) {
-    aggregated_models_mode();
+    aggregated_model_pair_mode();
     iteratedModel.active_model_key(agg_key);
 
     // generate new MC parameter sets

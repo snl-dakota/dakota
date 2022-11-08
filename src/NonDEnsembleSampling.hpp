@@ -77,6 +77,8 @@ protected:
 
   /// synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
   void aggregated_models_mode();
+  /// synchronize iteratedModel and activeSet on AGGREGATED_MODEL_PAIR mode
+  void aggregated_model_pair_mode();
   /// synchronize iteratedModel and activeSet on BYPASS_SURROGATE mode
   void bypass_surrogate_mode();
   // synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
@@ -254,7 +256,18 @@ inline void NonDEnsembleSampling::print_variance_reduction(std::ostream& s)
 inline void NonDEnsembleSampling::aggregated_models_mode()
 {
   if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set HF,LF
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+    // synch activeSet with iteratedModel.response_size()
+    activeSet.reshape(iteratedModel.response_size());
+    activeSet.request_values(1);
+  }
+}
+
+
+inline void NonDEnsembleSampling::aggregated_model_pair_mode()
+{
+  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODEL_PAIR) {
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR); // set HF,LF
     // synch activeSet with iteratedModel.response_size()
     activeSet.reshape(iteratedModel.response_size());
     activeSet.request_values(1);

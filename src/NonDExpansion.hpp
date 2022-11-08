@@ -544,8 +544,8 @@ private:
   /// initialize data based on variable counts
   void initialize_counts();
 
-  /// set response mode to AGGREGATED_MODELS and recur response size updates
-  void aggregated_models_mode();
+  /// set response mode to AGGREGATED_MODEL_PAIR and recur response size updates
+  void aggregated_model_pair_mode();
   /// set response mode to BYPASS_SURROGATE and recur response size updates
   void bypass_surrogate_mode();
 
@@ -701,13 +701,13 @@ inline size_t NonDExpansion::collocation_points() const
 { return 0; }
 
 
-inline void NonDExpansion::aggregated_models_mode()
+inline void NonDExpansion::aggregated_model_pair_mode()
 {
   // update iteratedModel / uSpaceModel in separate calls rather than using
   // uSpaceModel.surrogate_response_mode(mode) since DFSurrModel must pass
   // mode along to iteratedModel (a HierarchSurrModel) without absorbing it
-  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
+  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODEL_PAIR) {
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);//MODEL_DISCREP
     uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
   }
 }

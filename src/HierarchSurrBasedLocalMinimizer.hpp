@@ -19,7 +19,7 @@
 #define HIERARCH_SURR_BASED_LOCAL_MINIMIZER_H
 
 #include "SurrBasedLocalMinimizer.hpp"
-#include "HierarchSurrModel.hpp"
+#include "EnsembleSurrModel.hpp"
 #include "DakotaModel.hpp"
 #include "SurrBasedLevelData.hpp"
 

@@ -22,12 +22,18 @@
 
 namespace Dakota {
 
+enum { DEFAULT_CORRECTION = 0, SINGLE_CORRECTION, FULL_MODEL_FORM_CORRECTION,
+       FULL_SOLUTION_LEVEL_CORRECTION, SEQUENCE_CORRECTION };
+
 
 /// Derived model class within the surrogate model branch for managing
-/// subordinate models of varying fidelity.
+/// a truth model alongside approximation models of varying fidelity.
 
 /** The EnsembleSurrModel class manages subordinate models of varying
-    fidelity. */
+    fidelity.  The class contains a truth model and an array of
+    approximation models, where each model form may also contain a set
+    of solution levels (space/time discretization, convergence
+    tolerances, etc.). */
 
 class EnsembleSurrModel: public SurrogateModel
 {
@@ -40,33 +46,22 @@ public:
   EnsembleSurrModel(ProblemDescDB& problem_db); ///< constructor
   ~EnsembleSurrModel();                         ///< destructor
 
+  //
+  //- Heading: Member functions
+  //
+
+
 protected:
-
-  //
-  //- Heading: New virtual functions
-  //
-
-  virtual void derived_synchronize_sequential(
-    IntResponseMapArray& model_resp_maps_rekey, bool block) = 0;
-  virtual void derived_synchronize_combine(
-    IntResponseMapArray& model_resp_maps,
-    IntResponseMap&      combined_resp_map) = 0;
-  virtual void derived_synchronize_combine_nowait(
-    IntResponseMapArray& model_resp_maps,
-    IntResponseMap&      combined_resp_map) = 0;
-
-  /// return the number of models that approximate the truth model
-  virtual size_t num_approximation_models() const = 0;
-  /// initialize truth and surrogate model keys to default values
-  virtual void assign_default_keys() = 0;
-  /// size id_maps and cached_resp_maps arrays according to responseMode
-  virtual void resize_maps() = 0;
-  /// resize currentResponse based on responseMode
-  virtual void resize_response(bool use_virtual_counts = true) = 0;
 
   //
   //- Heading: Virtual function redefinitions
   //
+
+  bool initialize_mapping(ParLevLIter pl_iter);
+  bool finalize_mapping();
+
+  void derived_evaluate(const ActiveSet& set);
+  void derived_evaluate_nowait(const ActiveSet& set);
 
   size_t qoi() const;
 
@@ -113,9 +108,130 @@ protected:
   /// (request forwarded to truth and surrogate models)
   void set_evaluation_reference();
 
+  void create_tabular_datastream();
+  void derived_auto_graphics(const Variables& vars, const Response& resp);
+
+  size_t insert_response_start(size_t position);
+  void insert_metadata(const RealArray& md, size_t position,
+		       Response& agg_response);
+
+  DiscrepancyCorrection& discrepancy_correction();
+  void correction_type(short corr_type);
+  unsigned short correction_mode() const;
+  void correction_mode(unsigned short corr_mode);
+
+  /// use the high fidelity model to compute the truth values needed for
+  /// correction of the low fidelity model results
+  void build_approximation();
+  // Uses the c_vars/response anchor point to define highFidResponse
+  //bool build_approximation(const RealVector& c_vars,const Response& response);
+
+  /// return the model corresponding to surrModelKeys[i] (spanning either
+  /// model forms or resolutions)
+  Model& surrogate_model(size_t i = _NPOS);
+  /// return the model corresponding to surrModelKeys[i] (spanning either
+  /// model forms or resolutions)
+  const Model& surrogate_model(size_t i = _NPOS) const;
+
+  /// return truthModel
+  Model& truth_model();
+  /// return truthModel
+  const Model& truth_model() const;
+
+  /// for model pairings, return the higher fidelity model within the
+  /// active pair
+  Model& high_fidelity_model();
+  /// for model pairings, return the lower fidelity model within the active pair
+  Model& low_fidelity_model();
+
+  /// define the active model key and extract {truth,surr}ModelKeys
+  void active_model_key(const Pecos::ActiveKey& key);
+  /// remove keys for any approximations underlying {truth,approx}Models
+  void clear_model_keys();
+
+  /// return {approxModels,truthModel} and, optionally, their
+  /// sub-model recursions
+  void derived_subordinate_models(ModelList& ml, bool recurse_flag);
+
+  /// resize currentResponse if needed when one of the subordinate
+  /// models has been resized
+  void resize_from_subordinate_model(size_t depth = SZ_MAX);
+  /// update currentVariables using non-active data from the passed model
+  /// (one of {approxModels,truthModel})
+  void update_from_subordinate_model(size_t depth = SZ_MAX);
+
+  /// set the relative weightings for multiple objective functions or least
+  /// squares terms and optionally recurses into LF/HF models
+  void primary_response_fn_weights(const RealVector& wts,
+                                   bool recurse_flag = true);
+
+  /// update component parallel mode for supporting parallelism in
+  /// the low ad high fidelity models
+  void component_parallel_mode(short mode);
+
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency);
+
+  /// set up parallel operations for the array of subordinate models
+  /// {approxModels,truthModel}
+  void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                                  bool recurse_flag = true);
+  /// set up serial operations for the array of subordinate models
+  /// {approxModels,truthModel}
+  void derived_init_serial();
+  /// set active parallel configuration within the current low and
+  /// high fidelity models identified by {low,high}FidelityKey
+  void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                                 bool recurse_flag = true);
+  /// deallocate communicator partitions for the EnsembleSurrModel
+  /// (request forwarded to the the array of subordinate models
+  /// {approxModels,truthModel})
+  void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                                  bool recurse_flag = true);
+
+  /// Service the low and high fidelity model job requests received from the
+  /// master; completes when termination message received from stop_servers().
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
+
+  /// update the Model's inactive view based on higher level (nested)
+  /// context and optionally recurse into
+  void inactive_view(short view, bool recurse_flag = true);
+
+  /// if recurse_flag, return true if evaluation cache usage in
+  /// subordinate models {approxModels,truthModel}
+  bool evaluation_cache(bool recurse_flag = true) const;
+  /// if recurse_flag, return true if restart file usage in
+  /// subordinate models {approxModels,truthModel}
+  bool restart_file(bool recurse_flag = true) const;
+
+  /// request fine-grained evaluation reporting within the low and high
+  /// fidelity models
+  void fine_grained_evaluation_counters();
+  /// print the evaluation summary for the EnsembleSurrModel
+  /// (request forwarded to the low and high fidelity models)
+  void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
+                                bool relative_count = true) const;
+
+  /// set the warm start flag, including for the subordinate models
+  /// {approxModels,truthModel}
+  void warm_start_flag(const bool flag);
+
   //
   //- Heading: member functions
   //
+
+  void derived_synchronize_sequential(
+    IntResponseMapArray& model_resp_maps_rekey, bool block);
+  void derived_synchronize_combine(IntResponseMapArray& model_resp_maps,
+    IntResponseMap& combined_resp_map);
+  void derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
+    IntResponseMap& combined_resp_map);
+
+  /// initialize truth and surrogate model keys to default values
+  void assign_default_keys();
+  /// size id_maps and cached_resp_maps arrays according to responseMode
+  void resize_maps();
+  /// resize currentResponse based on responseMode
+  void resize_response(bool use_virtual_counts = true);
 
   /// initialize model variables that corresponsd to nested mappings that could
   /// change once per set of evaluations (e.g., an outer iterator execution)
@@ -137,8 +253,16 @@ protected:
   //- Heading: Data members
   //
 
+  /// the single truth reference model
+  Model truthModel;
+  /// set of model approximations
+  ModelArray approxModels;
+
   /// key defining active model form / resolution level for the truth model
   Pecos::ActiveKey truthModelKey;
+  /// keys defining model forms / resolution levels for the active set of
+  /// approximations
+  std::vector<Pecos::ActiveKey> surrModelKeys;
 
   /// flag indicating that the {low,high}FidelityKey correspond to the
   /// same model instance, requiring modifications to updating and evaluation
@@ -158,7 +282,8 @@ protected:
   /// size of MPI buffer containing responseMode and an aggregated activeKey
   int modeKeyBufferSize;
 
-  /// map from evaluation ids of truthModel/unorderedModels to
+  // *** TO DO ***: consolidate with DataFitSurrModel::{truthId,surrId,cachedApproxResp}Map
+  /// map from evaluation ids of truthModel/approxModels to
   /// EnsembleSurrModel ids
   IntIntMapArray modelIdMaps;
   /// maps of responses retrieved in derived_synchronize_nowait() that
@@ -197,10 +322,78 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// synchronize the HF model's solution level control with truthModelKey
+  void assign_truth_key();
+  /// synchronize the LF model's solution level control with surrModelKey
+  void assign_surrogate_key(size_t i);
+  // assign the resolution level for the model form indicated by the key
+  //void assign_key(const Pecos::ActiveKey& key);
+  /// assign the resolution level for the i-th model key
+  void assign_key(size_t i);
+
+  /// define truth and surrogate keys from incoming active key.  In case of
+  /// singleton, use responseMode to disambiguate.
+  void extract_truth_key(const Pecos::ActiveKey& active_key,
+			 Pecos::ActiveKey& truth_key);
+  /// define truth and surrogate keys from incoming active key.  In case of
+  /// singleton, use responseMode to disambiguate.
+  void extract_subordinate_keys(const Pecos::ActiveKey& active_key,
+				Pecos::ActiveKey& truth_key,
+				std::vector<Pecos::ActiveKey>& surr_keys);
+  // define truth and surrogate keys from incoming active key.  In case of
+  // singleton, use component parallel mode to disambiguate.
+  //void extract_subordinate_keys(const Pecos::ActiveKey& active_key,
+  //			          Pecos::ActiveKey& truth_key,
+  //			          std::vector<Pecos::ActiveKey>& surr_keys,
+  //			          short parallel_mode);
+
+  /// check for matching interface ids among active truth/surrogate models
+  /// (varies based on active keys)
+  bool matching_active_interface_ids();
+  /// check for matching interface ids across full set of models (invariant)
+  bool matching_all_interface_ids();
+  /// update sameInterfaceInstance based on interface ids for models
+  /// identified by current {low,high}FidelityKey
+  void check_model_interface_instance();
+
+  /// stop the servers for the model instance identified by the passed id
+  void stop_model(short model_id);
+
+  /// check whether incoming ASV has any active content
+  bool test_asv(const ShortArray& asv);
+
   // check whether there are any non-empty maps
   bool test_id_maps(const IntIntMapArray& id_maps);
   // count number of non-empty maps
   size_t count_id_maps(const IntIntMapArray& id_maps);
+
+  /// helper function used in the AUTO_CORRECTED_SURROGATE responseMode
+  /// for computing a correction and applying it to lf_resp_map
+  void compute_apply_delta(IntResponseMap& lf_resp_map);
+
+  /// helper function for applying a single response correction corresponding
+  /// to deltaCorr[paired_key]
+  void single_apply(const Variables& vars, Response& resp,
+		    const Pecos::ActiveKey& paired_key);
+  /// helper function for applying a correction across a sequence of
+  /// model forms or discretization levels
+  void recursive_apply(const Variables& vars, Response& resp);
+
+  //
+  //- Heading: Data
+  //
+
+  /// manages construction and application of correction functions that are
+  /// applied to a surrogate model in order to reproduce high fidelity data
+  std::map<Pecos::ActiveKey, DiscrepancyCorrection> deltaCorr;
+  /// one of {DEFAULT,SINGLE,FULL_SOLUTION_LEVEL,FULL_MODEL_FORM}_CORRECTION
+  unsigned short correctionMode;
+  // sequence of discrepancy corrections to apply in SEQUENCE_CORRECTION mode
+  //std::vector<Pecos::ActiveKey> corrSequence;
+
+  /// map of reference truth (high fidelity) responses computed in
+  /// build_approximation() and used for calculating corrections
+  std::map<Pecos::ActiveKey, Response> truthResponseRef;
 };
 
 
@@ -210,11 +403,12 @@ inline EnsembleSurrModel::~EnsembleSurrModel()
 
 inline size_t EnsembleSurrModel::qoi() const
 {
+  // resize_response() aggregates {truth,approx} model response fns
   switch (responseMode) {
-  // Note: resize_response() aggregates {truth,surrogate}_model().num_fns(),
-  //       such that code below is a bit more general that currResp num_fns/2
-  case AGGREGATED_MODELS:  return truth_model().qoi();  break;
-  default:                 return response_size();      break;
+  case AGGREGATED_MODELS:  case AGGREGATED_MODEL_PAIR:
+    return truthModel.qoi();  break;
+  default:
+    return response_size();   break;
   }
 }
 
@@ -237,6 +431,16 @@ nested_variable_mappings(const SizetArray& c_index1,
   //secondaryADIVarMapTargets = di_target2;
   //secondaryADSVarMapTargets = ds_target2;
   //secondaryADRVarMapTargets = dr_target2;
+
+  size_t i, num_approx = approxModels.size();
+  for (i=0; i<num_approx; ++i)
+    approxModels[i].nested_variable_mappings(c_index1, di_index1, ds_index1,
+					     dr_index1, c_target2, di_target2,
+					     ds_target2, dr_target2);
+
+  truthModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+				      dr_index1, c_target2, di_target2,
+				      ds_target2, dr_target2);
 }
 
 
@@ -245,12 +449,12 @@ inline const SizetArray& EnsembleSurrModel::nested_acv1_indices() const
 
 
 inline const ShortArray& EnsembleSurrModel::nested_acv2_targets() const
-{ return truth_model().nested_acv2_targets(); }//secondaryACVarMapTargets
+{ return truthModel.nested_acv2_targets(); }//secondaryACVarMapTargets
 
 
 inline short EnsembleSurrModel::
 query_distribution_parameter_derivatives() const
-{ return truth_model().query_distribution_parameter_derivatives(); }
+{ return truthModel.query_distribution_parameter_derivatives(); }
 
 
 inline void EnsembleSurrModel::
@@ -272,20 +476,20 @@ inline bool EnsembleSurrModel::multifidelity() const
   // > we rely on mfPrecedence passed from NonDExpansion::configure_sequence()
   //   based on the ML/MF algorithm selection; otherwise defaults to true
 
-  return ( num_approximation_models() &&
-	   ( mfPrecedence || truth_model().solution_levels() <= 1 ) );
+  return ( approxModels.size() &&
+	   ( mfPrecedence || truthModel.solution_levels() <= 1 ) );
 }
 
 
 inline bool EnsembleSurrModel::multilevel() const
 {
-  return ( truth_model().solution_levels() > 1 &&
-	   ( !mfPrecedence || !num_approximation_models() ) );
+  return ( truthModel.solution_levels() > 1 &&
+	   ( !mfPrecedence || approxModels.empty() ) );
 }
 
 
 inline bool EnsembleSurrModel::multilevel_multifidelity() const
-{ return (num_approximation_models() && truth_model().solution_levels() > 1); }
+{ return (approxModels.size() && truthModel.solution_levels() > 1); }
 
 
 inline bool EnsembleSurrModel::multifidelity_precedence() const
@@ -308,7 +512,7 @@ inline void EnsembleSurrModel::set_evaluation_reference()
 
   // don't recurse this, since the eval reference is for the top level iteration
   //if (responseMode == BYPASS_SURROGATE)
-  //  truth_model().set_evaluation_reference();
+  //  truthModel.set_evaluation_reference();
 
   // may want to add this in time
   //surrModelEvalRef = surrModelEvalCntr;
@@ -339,6 +543,18 @@ inline void EnsembleSurrModel::surrogate_response_mode(short mode)
 {
   responseMode = mode;
 
+  // Trap the combination of no user correction specification with either
+  // AUTO_CORRECTED_SURROGATE (NO_CORRECTION defeats the point for HSModel) or
+  // MODEL_DISCREPANCY (which formulation for computing discrepancy?) modes.
+  if ( !corrType && ( mode == AUTO_CORRECTED_SURROGATE ||
+		      mode == MODEL_DISCREPANCY ) ) {
+    Cerr << "Error: activation of mode ";
+    if (mode == AUTO_CORRECTED_SURROGATE) Cerr << "AUTO_CORRECTED_SURROGATE";
+    else                                  Cerr << "MODEL_DISCREPANCY";
+    Cerr << " requires specification of a correction type." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
   // if necessary, resize the response for entering/exiting an aggregated mode.
   // Since parallel job scheduling only involves either the LF or HF model at
   // any given time, this call does not need to be matched on serve_run() procs.
@@ -350,7 +566,7 @@ inline void EnsembleSurrModel::surrogate_response_mode(short mode)
   // don't pass to approx models since point of a surrogate bypass is to get
   // a surrogate-free truth evaluation
   if (mode == BYPASS_SURROGATE) // recurse in this case
-    truth_model().surrogate_response_mode(mode);
+    truthModel.surrogate_response_mode(mode);
 }
 
 
@@ -361,6 +577,620 @@ surrogate_function_indices(const SizetSet& surr_fn_indices)
 
 inline void EnsembleSurrModel::stop_servers()
 { component_parallel_mode(0); }
+
+
+inline bool EnsembleSurrModel::matching_all_interface_ids()
+{
+  size_t i, num_approx = approxModels.size();
+  const String& hf_id  = truthModel.interface_id();
+  for (i=0; i<num_approx; ++i)
+    if (approxModels[i].interface_id() != hf_id)
+      return false;
+  return true;
+}
+
+
+inline bool EnsembleSurrModel::matching_active_interface_ids()
+{
+  size_t i, num_approx = surrModelKeys.size();  unsigned short lf_form;
+  const String& hf_id  = truthModel.interface_id();
+  for (i=0; i<num_approx; ++i) {
+    lf_form = surrModelKeys[i].retrieve_model_form();
+    if (approxModels[lf_form].interface_id() != hf_id)
+      return false;
+  }
+  return true;
+}
+
+
+inline void EnsembleSurrModel::check_model_interface_instance()
+{
+  unsigned short hf_form = truthModelKey.retrieve_model_form();
+
+  size_t i, num_approx = surrModelKeys.size();
+  if (hf_form == USHRT_MAX || num_approx == 0)
+    sameModelInstance = sameInterfaceInstance = false;
+  else {
+    sameModelInstance = true;
+    for (i=0; i<num_approx; ++i)
+      if (surrModelKeys[i].retrieve_model_form() != hf_form)
+	{ sameModelInstance = false; break; }
+    sameInterfaceInstance = (sameModelInstance) ? true :
+      matching_active_interface_ids();
+  }
+}
+
+
+inline size_t EnsembleSurrModel::insert_response_start(size_t position)
+{
+  size_t i, start = 0, num_approx = approxModels.size();
+  for (i=0; i<position; ++i) {
+    unsigned short form = surrModelKeys[i].retrieve_model_form();
+    Model& model_i = (form < num_approx) ? approxModels[form] : truthModel;
+    start += model_i.current_response().active_set_request_vector().size();
+  }
+  return start;
+
+  /* *** TO DO: order reversed!
+  bool err_flag = false;
+  switch (position) {
+  case 0: return 0; break; // no offset
+  case 1: // offset by HF size
+    if (responseMode == AGGREGATED_MODELS)
+      return
+	truth_model().current_response().active_set_request_vector().size();
+    else err_flag = true;
+    break;
+  default: err_flag = true; break;
+  }
+  if (err_flag) {
+    Cerr << "Error: invalid position (" << position << ") in HierarchSurrModel"
+	 << "::insert_response_start()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return SZ_MAX;
+  */
+}
+
+
+inline void EnsembleSurrModel::
+insert_metadata(const RealArray& md, size_t position, Response& agg_response)
+{
+  size_t i, start = 0, num_approx = approxModels.size();
+  for (i=0; i<position; ++i) {
+    unsigned short form = surrModelKeys[i].retrieve_model_form();
+    Model& model_i = (form < num_approx) ? approxModels[form] : truthModel;
+    start += model_i.current_response().metadata().size();
+  }
+  agg_response.metadata(md, start);
+
+  /* *** TO DO: order reversed!
+  bool err_flag = false;
+  switch (position) {
+  case 0: agg_response.metadata(md, 0); break; // no offset
+  case 1: // offset by HF size
+    if (responseMode == AGGREGATED_MODELS)
+      agg_response.metadata(md,
+	truth_model().current_response().metadata().size());
+    else err_flag = true;
+    break;
+  default: err_flag = true; break;
+  }
+  if (err_flag) {
+    Cerr << "Error: invalid position (" << position << ") in HierarchSurrModel"
+	 << "::insert_metadata()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  */
+}
+
+
+inline Model& EnsembleSurrModel::surrogate_model(size_t i)
+{
+  if (i == _NPOS) {
+    //unsigned short lf_form = surrModelKeys[0].retrieve_model_form();
+    //i = (lf_form == USHRT_MAX) // empty key or undefined model form
+    //  ? 0 : lf_form;
+    Cerr << "Error: model form must be specified in EnsembleSurrModel::"
+	 << "surrogate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  else if (i >= surrModelKeys.size()) {
+    Cerr << "Error: model form (" << i << ") out of range in "
+	 << "EnsembleSurrModel::surrogate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  unsigned short lf_form = surrModelKeys[i].retrieve_model_form();
+  if (lf_form == USHRT_MAX) {
+    Cerr << "Warning: resorting to default model form in EnsembleSurrModel::"
+	 << "surrogate_model()" << std::endl;
+    return approxModels[0];
+  }
+  else
+    return approxModels[lf_form];
+}
+
+
+inline const Model& EnsembleSurrModel::surrogate_model(size_t i) const
+{
+  if (i == _NPOS) {
+    //unsigned short lf_form = surrModelKeys[0].retrieve_model_form();
+    //i = (lf_form == USHRT_MAX) // empty key or undefined model form
+    //  ? 0 : lf_form;
+    Cerr << "Error: model index must be specified in EnsembleSurrModel::"
+	 << "surrogate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  if (i >= surrModelKeys.size()) {
+    Cerr << "Error: model index (" << i << ") out of range in "
+	 << "EnsembleSurrModel::surrogate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  unsigned short lf_form = surrModelKeys[i].retrieve_model_form();
+  if (lf_form == USHRT_MAX) {
+    Cerr << "Warning: resorting to default model form in EnsembleSurrModel::"
+	 << "surrogate_model()" << std::endl;
+    return approxModels[0];
+  }
+  else
+    return approxModels[lf_form];
+}
+
+
+inline Model& EnsembleSurrModel::truth_model()
+{ return truthModel; }
+
+
+inline const Model& EnsembleSurrModel::truth_model() const
+{ return truthModel; }
+
+
+inline Model& EnsembleSurrModel::high_fidelity_model()
+{
+  unsigned short hf_form = truthModelKey.retrieve_model_form();
+  if (hf_form == USHRT_MAX) {
+    Cerr << "Warning: resorting to default model form in EnsembleSurrModel::"
+	 << "high_fidelity_model()" << std::endl;
+    return truthModel;
+  }
+  else
+    return (hf_form < approxModels.size()) ? approxModels[hf_form] : truthModel;
+}
+
+
+inline Model& EnsembleSurrModel::low_fidelity_model()
+{ return surrogate_model(0); }
+
+
+inline void EnsembleSurrModel::assign_truth_key()
+{
+  unsigned short hf_form = truthModelKey.retrieve_model_form();
+  if (hf_form != USHRT_MAX)
+    approxModels[hf_form].solution_level_cost_index(
+      truthModelKey.retrieve_resolution_level());
+}
+
+
+inline void EnsembleSurrModel::assign_surrogate_key(size_t i)
+{
+  unsigned short lf_form = surrModelKeys[i].retrieve_model_form();
+  if (lf_form != USHRT_MAX)
+    approxModels[lf_form].solution_level_cost_index(
+      surrModelKeys[i].retrieve_resolution_level());
+}
+
+
+/*
+inline void EnsembleSurrModel::assign_key(const Pecos::ActiveKey& key)
+{
+  unsigned short form = key.retrieve_model_form();
+  if (form != USHRT_MAX) {
+    Model& model = (form < approxModels.size()) ?
+      approxModels[form] : truthModel;
+    model.solution_level_cost_index(key.retrieve_resolution_level());
+  }
+}
+*/
+
+
+inline void EnsembleSurrModel::assign_key(size_t i)
+{
+  if      (i  < surrModelKeys.size()) assign_surrogate_key(i);
+  else if (i != _NPOS)                assign_truth_key();
+}
+
+
+inline void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
+{
+  // assign activeKey
+  SurrogateModel::active_model_key(key);
+  // update truthModelKey and surrModelKeys
+  extract_subordinate_keys(key, truthModelKey, surrModelKeys);
+  // assign same{Model,Interface}Instance
+  check_model_interface_instance();
+
+  // assign extracted keys
+  // If model forms are distinct (multifidelity case), can activate soln level
+  // indices now and will persist; else (multilevel case) soln level is managed
+  // for LF & HF contributions in derived_evaluate().
+  // > Special case: multilevel data import in DataFitSurrModel::consistent()
+  //   requires correct state prior to evaluations in order to find level data
+  if (sameModelInstance) {
+    switch (responseMode) {
+    case BYPASS_SURROGATE:      case NO_SURROGATE:
+      assign_truth_key();       break;
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      assign_surrogate_key(0);  break;
+  //case AGGREGATED_MODELS: break; // defer setting active solution levels
+    }
+  }
+  else { // approximations are separate models
+    size_t i, num_approx = surrModelKeys.size();
+    for (i=0; i<num_approx; ++i)
+      assign_surrogate_key(i);
+    assign_truth_key();
+  }
+
+  // Pull inactive variable change up into top-level currentVariables,
+  // so that data flows correctly within Model recursions?  No, current
+  // design is that forward pushes are automated, but inverse pulls are 
+  // generally special case invocations from Iterator code (e.g., with
+  // locally-managed Model recursions).
+  //update_from_model(truthModel);
+
+  // Initialize deltaCorr for paired models
+  switch (responseMode) {
+  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE: {
+    unsigned short lf_form = surrModelKeys[0].retrieve_model_form();
+    if (lf_form != USHRT_MAX) {// LF form def'd
+      DiscrepancyCorrection& delta_corr = deltaCorr[key]; // per data group
+      if (!delta_corr.initialized())
+	delta_corr.initialize(surrogate_model(0), surrogateFnIndices,
+			      corrType, corrOrder);
+    }
+    break;
+  }
+  }
+}
+
+
+inline void EnsembleSurrModel::clear_model_keys()
+{
+  size_t i, num_approx = approxModels.size();
+  for (i=0; i<num_approx; ++i)
+    approxModels[i].clear_model_keys();
+  truthModel.clear_model_keys();
+}
+
+
+inline void EnsembleSurrModel::
+extract_subordinate_keys(const Pecos::ActiveKey& active_key,
+			 Pecos::ActiveKey& truth_key,
+			 std::vector<Pecos::ActiveKey>& surr_keys)
+{
+  if (active_key.aggregated()) // AGGREGATED_MODELS, MODEL_DISCREPANCY
+    active_key.extract_keys(truth_key, surr_keys);
+  else // singleton key: assign to truth | surr based on responseMode
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      surr_keys.assign(1, active_key); truth_key.clear();  break;
+    default: // {BYPASS,NO}_SURROGATE
+      truth_key = active_key;          surr_keys.clear();  break;
+    }
+}
+
+
+inline void EnsembleSurrModel::
+extract_truth_key(const Pecos::ActiveKey& active_key,
+		  Pecos::ActiveKey& truth_key)
+{
+  if (active_key.aggregated()) // AGGREGATED_MODELS, MODEL_DISCREPANCY
+    active_key.extract_key(0, truth_key);
+  else // singleton key: assign to truth based on responseMode
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      truth_key.clear();      break;
+    default: // {BYPASS,NO}_SURROGATE
+      truth_key = active_key; break;
+    }
+}
+
+
+/*
+inline void EnsembleSurrModel::
+extract_subordinate_keys(const Pecos::ActiveKey& active_key,
+			 Pecos::ActiveKey& truth_key,
+			 std::vector<Pecos::ActiveKey>& surr_keys,
+			 short parallel_mode)
+{
+  if (active_key.aggregated())
+    active_key.extract_keys(truth_key, surr_keys);
+  else// single key: this version assigns to truth | surr based on parallel mode
+    switch (parallel_mode) {
+    case SURROGATE_MODEL_MODE:
+      surr_key.assign(1, active_key);  truth_key.clear();  break;
+    case TRUTH_MODEL_MODE:
+      truth_key = active_key;          surr_keys.clear();  break;
+    }
+}
+
+
+inline bool EnsembleSurrModel::multilevel_from_keys() const
+{
+  bool ml = true;
+  unsigned short hf_form = truthModelKey.retrieve_model_form();
+  //if (hf_lev == SZ_MAX) return false;
+
+  size_t         hf_lev  = truthModelKey.retrieve_resolution_level(),
+    i, num_approx = surrModelKeys.size();
+  for (i=0; i<num_approx; ++i) {
+    const Pecos::ActiveKey& surr_key = surrModelKeys[i];
+    if (surr_key.retrieve_model_form()       == hf_form &&
+	surr_key.retrieve_resolution_level() != hf_lev)
+      return true;
+  }
+  return false;
+}
+*/
+
+
+inline void EnsembleSurrModel::resize_maps()
+{
+  size_t num_steps = surrModelKeys.size();
+  if (!truthModelKey.empty()) num_steps += 1;
+  if (modelIdMaps.size()    != num_steps)    modelIdMaps.resize(num_steps);
+  if (cachedRespMaps.size() != num_steps) cachedRespMaps.resize(num_steps);
+}
+
+
+inline bool EnsembleSurrModel::test_asv(const ShortArray& asv)
+{
+  size_t i, num_fns = asv.size();
+  for (i=0; i<num_fns; ++i)
+    if (asv[i])
+      return true;
+  return false;
+}
+
+
+inline void EnsembleSurrModel::
+derived_subordinate_models(ModelList& ml, bool recurse_flag)
+{
+  size_t i, num_approx = approxModels.size();
+  for (i=0; i<num_approx; ++i) {
+    ml.push_back(approxModels[i]);
+    if (recurse_flag)
+      approxModels[i].derived_subordinate_models(ml, true);
+  }
+  // models are ordered low to high, so append truth last
+  ml.push_back(truthModel);
+  if (recurse_flag)
+    truthModel.derived_subordinate_models(ml, true);
+}
+
+
+inline void EnsembleSurrModel::resize_from_subordinate_model(size_t depth)
+{
+  bool all_approx_resize = false, approx0_resize = false, truth_resize = false;
+  switch (responseMode) {
+  case AGGREGATED_MODELS:
+    all_approx_resize = truth_resize = true; break;
+  case BYPASS_SURROGATE: case NO_SURROGATE:
+    truth_resize = true;                     break;
+  case MODEL_DISCREPANCY:
+    approx0_resize = truth_resize = true;    break;
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    approx0_resize = true;                   break;
+  }
+
+  // bottom-up data flow, so recurse first
+  size_t i, num_approx = 0;
+  if   (all_approx_resize) num_approx = approxModels.size();
+  else if (approx0_resize) num_approx = 1;
+  for (i=0; i<num_approx; ++i) {
+    Model& model_i = approxModels[i];
+    if (depth == SZ_MAX)
+      model_i.resize_from_subordinate_model(depth);// retain special val (inf)
+    else if (depth)
+      model_i.resize_from_subordinate_model(depth - 1);
+  }
+  if (truth_resize) {
+    if (depth == SZ_MAX)
+      truthModel.resize_from_subordinate_model(depth);// retain special value
+    else if (depth)
+      truthModel.resize_from_subordinate_model(depth - 1);
+  }
+  // now resize this Models' response
+  if (all_approx_resize || approx0_resize || truth_resize)
+    resize_response();
+}
+
+
+inline void EnsembleSurrModel::update_from_subordinate_model(size_t depth)
+{
+  // bottom-up data flow: recurse first, then pull updates from subordinate
+  switch (responseMode) {
+  case UNCORRECTED_SURROGATE:      // LF only
+  case AUTO_CORRECTED_SURROGATE: { // LF is active
+    Model& lf_model = surrogate_model(0);
+    if (depth == SZ_MAX)
+      lf_model.update_from_subordinate_model(depth); // retain special value
+    else if (depth)
+      lf_model.update_from_subordinate_model(depth - 1);
+    update_from_model(lf_model);
+    break;
+  }
+  case BYPASS_SURROGATE:   case NO_SURROGATE:      // HF only
+  case AGGREGATED_MODELS:  case MODEL_DISCREPANCY: // prefer truth model
+    if (depth == SZ_MAX)
+      truthModel.update_from_subordinate_model(depth); // retain special value
+    else if (depth)
+      truthModel.update_from_subordinate_model(depth - 1);
+    update_from_model(truthModel);
+    break;
+  }
+}
+
+
+inline void EnsembleSurrModel::
+primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
+{
+  primaryRespFnWts = wts;
+  if (recurse_flag) {
+    size_t i, num_approx = approxModels.size();
+    for (i=0; i<num_approx; ++i)
+      approxModels[i].primary_response_fn_weights(wts, recurse_flag);
+    truthModel.primary_response_fn_weights(wts, recurse_flag);
+  }
+}
+
+
+inline IntIntPair EnsembleSurrModel::
+estimate_partition_bounds(int max_eval_concurrency)
+{
+  // responseMode is a run-time setting, so we are conservative on usage of
+  // max_eval_concurrency as in derived_init_communicators()
+
+  probDescDB.set_db_model_nodes(truthModel.model_id());
+  IntIntPair min_max_i,
+    min_max = truthModel.estimate_partition_bounds(max_eval_concurrency);
+
+  size_t i, num_approx = approxModels.size();
+  for (i=0; i<num_approx; ++i) {
+    Model& model_i = approxModels[i];
+    probDescDB.set_db_model_nodes(model_i.model_id());
+    min_max_i = model_i.estimate_partition_bounds(max_eval_concurrency);
+    if (min_max_i.first  < min_max.first)  min_max.first  = min_max_i.first;
+    if (min_max_i.second > min_max.second) min_max.second = min_max_i.second;
+  }
+
+  return min_max;
+
+  // list nodes are reset at the calling level after completion of recursion
+}
+
+
+inline void EnsembleSurrModel::derived_init_serial()
+{
+  size_t i, num_approx = approxModels.size();
+  for (i=0; i<num_approx; ++i)
+    approxModels[i].init_serial();
+  truthModel.init_serial();
+}
+
+
+inline void EnsembleSurrModel::stop_model(short model_id)
+{
+  if (model_id) {
+    short  model_index = model_id - 1; // id to index
+    Model& model = (model_index < approxModels.size()) ?
+      approxModels[model_index] : truthModel;
+    ParConfigLIter pc_it = model.parallel_configuration_iterator();
+    size_t pl_index = model.mi_parallel_level_index();
+    if (pc_it->mi_parallel_level_defined(pl_index) &&
+	pc_it->mi_parallel_level(pl_index).server_communicator_size() > 1)
+      model.stop_servers();
+  }
+}
+
+
+inline void EnsembleSurrModel::inactive_view(short view, bool recurse_flag)
+{
+  currentVariables.inactive_view(view);
+  userDefinedConstraints.inactive_view(view);
+  if (recurse_flag) {
+    size_t i, num_approx = approxModels.size();
+    for (i=0; i<num_approx; ++i)
+      approxModels[i].inactive_view(view, recurse_flag);
+    truthModel.inactive_view(view, recurse_flag);
+  }
+}
+
+
+inline bool EnsembleSurrModel::evaluation_cache(bool recurse_flag) const
+{
+  if (recurse_flag) {
+    if (truthModel.evaluation_cache(recurse_flag))
+      return true;
+    size_t i, num_approx = approxModels.size();
+    for (i=0; i<num_approx; ++i)
+      if (approxModels[i].evaluation_cache(recurse_flag))
+	return true;
+    return false;
+  }
+  else
+    return false;
+}
+
+
+inline bool EnsembleSurrModel::restart_file(bool recurse_flag) const
+{
+  if (recurse_flag) {
+    if (truthModel.restart_file(recurse_flag))
+      return true;
+    size_t i, num_approx = approxModels.size();
+    for (i=0; i<num_approx; ++i)
+      if (approxModels[i].restart_file(recurse_flag))
+	return true;
+    return false;
+  }
+  else
+    return false;
+}
+
+
+inline void EnsembleSurrModel::fine_grained_evaluation_counters()
+{
+  size_t i, num_approx = approxModels.size();
+  for (i=0; i<num_approx; ++i)
+    approxModels[i].fine_grained_evaluation_counters();
+  truthModel.fine_grained_evaluation_counters();
+}
+
+
+inline void EnsembleSurrModel::
+print_evaluation_summary(std::ostream& s, bool minimal_header,
+                         bool relative_count) const
+{
+  size_t i, num_approx = approxModels.size();
+  for (i=0; i<num_approx; ++i)
+    approxModels[i].print_evaluation_summary(s, minimal_header, relative_count);
+  // emulate low to high ordering
+  truthModel.print_evaluation_summary(s, minimal_header, relative_count);
+}
+
+
+inline void EnsembleSurrModel::warm_start_flag(const bool flag)
+{
+  // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
+  warmStartFlag = flag; // for completeness
+
+  size_t i, num_approx = approxModels.size();
+  for (i=0; i<num_approx; ++i)
+    approxModels[i].warm_start_flag(flag);
+  truthModel.warm_start_flag(flag);
+}
+
+
+inline DiscrepancyCorrection& EnsembleSurrModel::discrepancy_correction()
+{ return deltaCorr[activeKey]; }
+
+
+inline void EnsembleSurrModel::correction_type(short corr_type)
+{
+  corrType = corr_type;
+  std::map<Pecos::ActiveKey, DiscrepancyCorrection>::iterator it;
+  for (it=deltaCorr.begin(); it!=deltaCorr.end(); ++it)
+    it->second.correction_type(corr_type);
+}
+
+
+inline unsigned short EnsembleSurrModel::correction_mode() const
+{ return correctionMode; }
+
+
+inline void EnsembleSurrModel::correction_mode(unsigned short corr_mode)
+{ correctionMode = corr_mode; }
 
 } // namespace Dakota
 

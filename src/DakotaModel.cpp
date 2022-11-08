@@ -20,8 +20,7 @@
 #include "SimulationModel.hpp"
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
-#include "HierarchSurrModel.hpp"
-#include "NonHierarchSurrModel.hpp"
+#include "EnsembleSurrModel.hpp"
 #include "ActiveSubspaceModel.hpp"
 #include "AdaptedBasisModel.hpp"
 #include "RandomFieldModel.hpp"
@@ -323,10 +322,8 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
     return std::make_shared<NestedModel>(problem_db);
   else if ( model_type == "surrogate") {
     const String& surr_type = problem_db.get_string("model.surrogate.type");
-    if (surr_type == "hierarchical")
-      return std::make_shared<HierarchSurrModel>(problem_db);
-    else if (surr_type == "ensemble")
-      return std::make_shared<NonHierarchSurrModel>(problem_db);
+    if (surr_type == "ensemble")
+      return std::make_shared<EnsembleSurrModel>(problem_db);
     else // all other surrogates (local/multipt/global) managed by DataFitSurr
       return std::make_shared<DataFitSurrModel>(problem_db);
   }
@@ -2973,7 +2970,7 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
 
   // *_asv_out[i] have all been initialized to zero
 
-  // For HierarchSurr and Recast models with no scaling (which contain no
+  // For EnsembleSurr and Recast models with no scaling (which contain no
   // interface object, only subordinate models), pass the ActiveSet through to
   // the sub-models in one piece and do not break it apart here. This preserves
   // sub-model parallelism.
@@ -4320,7 +4317,7 @@ DiscrepancyCorrection& Model::discrepancy_correction()
 }
 
 
-short Model::correction_type()
+short Model::correction_type() const
 {
   if (modelRep) // envelope fwd to letter
     return modelRep->correction_type();
@@ -4337,12 +4334,29 @@ void Model::correction_type(short corr_type)
 }
 
 
-short Model::correction_order()
+short Model::correction_order() const
 {
   if (modelRep) // envelope fwd to letter
     return modelRep->correction_order();
   else
     return -1; // special value for no correction (0 = value correction)
+}
+
+
+unsigned short Model::correction_mode() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->correction_mode();
+  else
+    return DEFAULT_CORRECTION; // default for non-surrogate models
+}
+
+
+void Model::correction_mode(unsigned short corr_mode)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->correction_mode(corr_mode);
+  //else no-op
 }
 
 
@@ -4432,7 +4446,7 @@ void Model::cache_unmatched_responses()
 }
 
 
-/** SimulationModels and HierarchSurrModels redefine this virtual function.
+/** SimulationModels and EnsembleSurrModels redefine this virtual function.
     A default value of "synchronous" prevents asynch local operations for:
 \li NestedModels: a subIterator can support message passing parallelism,
     but not asynch local.
@@ -4447,7 +4461,7 @@ short Model::local_eval_synchronization()
 }
 
 
-/** SimulationModels and HierarchSurrModels redefine this virtual function. */
+/** SimulationModels and EnsembleSurrModels redefine this virtual function. */
 int Model::local_eval_concurrency()
 {
   if (modelRep) // should not occur: protected fn only used by the letter
@@ -5687,7 +5701,7 @@ int Model::derived_evaluation_id() const
 
 /** Only Models including ApplicationInterfaces support an evaluation cache:
     surrogate, nested, and recast mappings are not stored in the cache. 
-    Possible exceptions: HierarchSurrModel, NestedModel::optionalInterface. */
+    Possible exceptions: EnsembleSurrModel, NestedModel::optionalInterface. */
 bool Model::evaluation_cache(bool recurse_flag) const
 {
   if (modelRep) // envelope fwd to letter

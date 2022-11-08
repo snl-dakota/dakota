@@ -1282,7 +1282,7 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
   else { // 3 data sets: HF, either LF or LF-hat, and discrep
     switch (multilevDiscrepEmulation) {
     case DISTINCT_EMULATION:
-      aggregated_models_mode(); // two model evaluations
+      aggregated_model_pair_mode(); // two model evaluations
       break;
     case RECURSIVE_EMULATION:
       bypass_surrogate_mode(); // still only one model evaluation
@@ -1342,10 +1342,10 @@ void NonDExpansion::assign_hierarchical_response_mode()
   // ML-MF {PCE,SC,FT} are based on model discrepancies, but multi-index cases
   // may evolve towards BYPASS_SURROGATE as sparse grids in model space will
   // manage QoI differences.
-  // > AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
+  // > AGGREGATED_MODEL_PAIR avoids decimation of data and can simplify methods,
   //   but requires additional discrepancy keys for high-low QoI combinations
   else
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);//MODEL_DISCREP
 }
 
 
