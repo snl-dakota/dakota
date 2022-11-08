@@ -23,13 +23,18 @@ in :file:`<dakota_src>/docs/user`.
 
 *Documentation:* Where to learn more
 
-**Highlight: Highlight B**
+**Highlight: User Support Moves to Github**
 
-Short description...
+External user support is moving to Github Discussions. Discussions offers
+many advantages over the dakota-users listserv, including threaded
+conversations, advanced formatting via markdown, LaTeX-formatted mathematical
+expressions, and more.
 
-*Enabling / Accessing:* How to get at it...
+We plan to operate dakota-users and the new Discussions forums concurrently
+until February 15, 2023, when dakota-users will be shut down.
 
-*Documentation:* Where to learn more
+*Enabling / Accessing:* Create an account on https://github.com/ and visit
+Dakota's `Discussions page <https://github.com/orgs/snl-dakota/discussions>`_.
 
 
 **Improvements by Category**
