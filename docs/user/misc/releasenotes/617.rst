@@ -1,15 +1,8 @@
-.. _releasenotes-next:
+.. _releasenotes-617:
 
-.. note::
-
-   These are release notes for the development / stable version of
-   Dakota, accumulated since the last release.  It will typically
-   contain template prompts to be removed when finalizing release
-   notes and promoting to a versioned page.
-
-""""""""""""""""""""""""""""""""""""""
-Version 6.17 (2022/11/15; pre-release)
-""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""
+Version 6.17 (2022/11/15)
+"""""""""""""""""""""""""
 
 **Highlight: Integrated User Manual**
 

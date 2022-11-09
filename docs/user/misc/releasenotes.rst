@@ -12,8 +12,8 @@ Dakota
    :maxdepth: 1
    
    releasenotes/next
-   releasenotes/616
    releasenotes/617
+   releasenotes/616
    releasenotes/615
    releasenotes/614
    releasenotes/613
