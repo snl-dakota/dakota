@@ -77,8 +77,8 @@ void NonDControlVariateSampling::core_run()
     else
       hf_lev = lf_lev = secondaryIndex;
   }
-  hf_key.form_key(0, hf_form, hf_lev);  lf_key.form_key(0, lf_form, lf_lev);
-  active_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
+  lf_key.form_key(0, lf_form, lf_lev);  hf_key.form_key(0, hf_form, hf_lev);
+  active_key.aggregate_keys(lf_key, hf_key, Pecos::RAW_DATA);
 
   aggregated_model_pair_mode();
   iteratedModel.active_model_key(active_key); // data group 0
@@ -199,7 +199,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     // after N_hf has converged, which simplifies maxFnEvals / convTol logic
     // (no need to further interrogate these throttles below)
     IntRealVectorMap sum_L_refined = sum_L_shared;
-    Pecos::ActiveKey lf_key;        active_key.extract_key(1, lf_key);
+    Pecos::ActiveKey lf_key;  active_key.extract_key(0, lf_key);
     RealVector lf_targets;
     if (backfillFailures) { // increment relative to successful samples
       lf_increment(lf_key, eval_ratios, N_actual_lf, hf_targets, lf_targets,
@@ -276,7 +276,7 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
   if (finalStatsType == QOI_STATISTICS) {
     IntRealVectorMap sum_L_refined = sum_L_shared;
     // shared LF/HF samples to this point, as tracked by N_*_shared
-    Pecos::ActiveKey lf_key;  active_key.extract_key(1, lf_key);
+    Pecos::ActiveKey lf_key;  active_key.extract_key(0, lf_key);
     RealVector lf_targets;
     if (backfillFailures) { // increment relative to successful samples
       lf_increment(lf_key, eval_ratios, N_actual_lf, hf_targets, lf_targets,
@@ -509,10 +509,9 @@ accumulate_mf_sums(IntRealVectorMap& sum_L_shared,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
-      // followed by LF (previous/decremented model key)
-      hf_prod = hf_fn = fn_vals[qoi];
-      lf_prod = lf_fn = fn_vals[qoi+numFunctions];
+      // response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+      lf_prod = lf_fn = fn_vals[qoi];
+      hf_prod = hf_fn = fn_vals[qoi+numFunctions];
 
       // sync sample counts for all L and H interactions at this level
       if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
@@ -584,10 +583,9 @@ accumulate_mf_sums(RealVector& sum_L, RealVector& sum_H, RealVector& sum_LL,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
-      // followed by LF (previous/decremented model key)
-      hf_fn = fn_vals[qoi];
-      lf_fn = fn_vals[qoi+numFunctions];
+      // response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+      lf_fn = fn_vals[qoi];
+      hf_fn = fn_vals[qoi+numFunctions];
 
       // sync sample counts for all L and H interactions at this level
       if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf

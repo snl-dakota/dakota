@@ -67,7 +67,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     // Mirrors HierarchSurrModel::assign_default_keys() for MF case
     // TO DO: generalize (at least) to 1D multilevel cases;
     //        consider sharing iteratedModel.active_model_key()
-    tr_data.paired_key(i, i+1, SZ_MAX, i, SZ_MAX, Pecos::SINGLE_REDUCTION);
+    tr_data.paired_key(i, i, SZ_MAX, i+1, SZ_MAX, Pecos::SINGLE_REDUCTION);
   }
 
   // Simpler case than DFSBLM:

@@ -1335,44 +1335,44 @@ response_combine(const Response& actual_response,
 
 
 void SurrogateModel::
-aggregate_response(const Response& hf_resp, const Response& lf_resp,
+aggregate_response(const Response& resp1, const Response& resp2,
 		   Response& agg_resp)
 {
   if (agg_resp.is_null())
     agg_resp = currentResponse.copy(); // resized to 2x in resize_response()
 
-  const ShortArray& lf_asv =  lf_resp.active_set_request_vector();
-  const ShortArray& hf_asv =  hf_resp.active_set_request_vector();
+  const ShortArray& asv1 =  resp1.active_set_request_vector();
+  const ShortArray& asv2 =  resp2.active_set_request_vector();
   ShortArray&      agg_asv = agg_resp.active_set_request_vector();
-  size_t i, offset_i, num_lf_fns = lf_asv.size(), num_hf_fns = hf_asv.size();
+  size_t i, offset_i, num_fns2 = asv2.size(), num_fns1 = asv1.size();
   short asv_i;
 
   // Order with HF first since it corresponds to the active model key
-  for (i=0; i<num_hf_fns; ++i) {
-    agg_asv[i] = asv_i = hf_asv[i];
-    if (asv_i & 1) agg_resp.function_value(hf_resp.function_value(i), i);
+  for (i=0; i<num_fns1; ++i) {
+    agg_asv[i] = asv_i = asv1[i];
+    if (asv_i & 1) agg_resp.function_value(resp1.function_value(i), i);
     if (asv_i & 2)
-      agg_resp.function_gradient(hf_resp.function_gradient_view(i), i);
+      agg_resp.function_gradient(resp1.function_gradient_view(i), i);
     if (asv_i & 4)
-      agg_resp.function_hessian(hf_resp.function_hessian(i), i);
+      agg_resp.function_hessian(resp1.function_hessian(i), i);
   }
 
   // Order with LF second since it corresponds to a previous/decremented key
-  for (i=0; i<num_lf_fns; ++i) {
-    offset_i = i + num_hf_fns;
-    agg_asv[offset_i] = asv_i = lf_asv[i];
-    if (asv_i & 1) agg_resp.function_value(lf_resp.function_value(i), offset_i);
+  for (i=0; i<num_fns2; ++i) {
+    offset_i = i + num_fns1;
+    agg_asv[offset_i] = asv_i = asv2[i];
+    if (asv_i & 1) agg_resp.function_value(resp2.function_value(i), offset_i);
     if (asv_i & 2)
-      agg_resp.function_gradient(lf_resp.function_gradient_view(i), offset_i);
+      agg_resp.function_gradient(resp2.function_gradient_view(i), offset_i);
     if (asv_i & 4)
-      agg_resp.function_hessian(lf_resp.function_hessian(i), offset_i);
+      agg_resp.function_hessian(resp2.function_hessian(i), offset_i);
   }
 
-  const RealArray& hf_md = hf_resp.metadata();
-  agg_resp.metadata(hf_md, 0);
-  agg_resp.metadata(lf_resp.metadata(), hf_md.size());
+  const RealArray& md1 = resp1.metadata();
+  agg_resp.metadata(md1, 0);
+  agg_resp.metadata(resp2.metadata(), md1.size());
   //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "HF Metadata:\n" << hf_md << "LF Metadata:\n"<<lf_resp.metadata();
+  //  Cout << "Metadata 1:\n" << md1 << "Metadata 2:\n" << resp2.metadata();
 }
 
 

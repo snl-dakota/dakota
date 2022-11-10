@@ -414,13 +414,16 @@ private:
   /// order to reproduce high fidelity data.
   DiscrepancyCorrection deltaCorr;
 
+  // Note: the following Maps are a simpler case of the more general
+  // {modelId,cachedResp}Maps in EnsembleSurrModel (consolidating would
+  // add overhead for DFSModel).
+
   /// map from actualModel/highFidelityModel evaluation ids to
   /// DataFitSurrModel/HierarchSurrModel ids
   IntIntMap truthIdMap;
   /// map from approxInterface/lowFidelityModel evaluation ids to
   /// DataFitSurrModel/HierarchSurrModel ids
   IntIntMap surrIdMap;
-
   /// map of approximate responses retrieved in derived_synchronize_nowait()
   /// that could not be returned since corresponding truth model response
   /// portions were still pending.
@@ -591,7 +594,7 @@ inline void DataFitSurrModel::clear_model_keys()
 
 inline Model& DataFitSurrModel::surrogate_model(size_t i)
 {
-  if (i && i != _NPOS) { // allow either 0 or no index
+  if (i && i != _NPOS) { // allow either 0 or no index (defaults to _NPOS)
     Cerr << "Error: bad index (" << i << ") in DataFitSurrModel::"
 	 << "surrogate_model()." << std::endl;
     abort_handler(MODEL_ERROR);
@@ -608,7 +611,7 @@ inline Model& DataFitSurrModel::surrogate_model(size_t i)
 
 inline const Model& DataFitSurrModel::surrogate_model(size_t i) const
 {
-  if (i && i != _NPOS) { // allow either 0 or no index
+  if (i && i != _NPOS) { // allow either 0 or no index (defaults to _NPOS)
     Cerr << "Error: bad index (" << i << ") in DataFitSurrModel::"
 	 << "surrogate_model()." << std::endl;
     abort_handler(MODEL_ERROR);

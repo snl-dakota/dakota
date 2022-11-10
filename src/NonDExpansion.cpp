@@ -1294,7 +1294,7 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
     // using same child key for either LF or LF-hat
     lf_key.decrement_key(seq_type); // seq_index defaults to 0
     // For ML/MF PCE/SC/FT, we both aggregate raw levels and apply a reduction
-    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_WITH_REDUCTION);
+    discrep_key.aggregate_keys(lf_key, hf_key, Pecos::RAW_WITH_REDUCTION);
     uSpaceModel.active_model_key(discrep_key);
   }
 }

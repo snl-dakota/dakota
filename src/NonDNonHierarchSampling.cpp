@@ -162,7 +162,7 @@ void NonDNonHierarchSampling::assign_active_key(bool multilev)
       approx_keys[approx].form_key(0, approx, secondaryIndex);
     //truth_form = numApprox;  truth_lev = secondaryIndex;
   }
-  active_key.aggregate_keys(truth_key, approx_keys, Pecos::RAW_DATA);
+  active_key.aggregate_keys(approx_keys, truth_key, Pecos::RAW_DATA);
   aggregated_models_mode();
   iteratedModel.active_model_key(active_key); // data group 0
 }

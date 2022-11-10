@@ -102,7 +102,7 @@ void EnsembleSurrModel::assign_default_keys()
     //}
   }
   // raw data only (no data reduction)
-  activeKey.aggregate_keys(truthModelKey, surrModelKeys, Pecos::RAW_DATA);
+  activeKey.aggregate_keys(surrModelKeys, truthModelKey, Pecos::RAW_DATA);
 
   /* Old approach for paired models:
   unsigned short id = 0, last_m = approxModels.size();
@@ -133,7 +133,7 @@ void EnsembleSurrModel::assign_default_keys()
     truthModelKey = Pecos::ActiveKey(id, r_type, last_m, truth_soln_lev - 1);
     surrModelKey  = Pecos::ActiveKey(id, r_type, last_m, 0);
   }
-  activeKey.aggregate_keys(truthModelKey, surrModelKey,
+  activeKey.aggregate_keys(surrModelKey, truthModelKey,
 			   Pecos::SINGLE_REDUCTION); // default: reduction only
   */
 
@@ -282,7 +282,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       size_t i, num_approx = approxModels.size(), num_models = num_approx + 1;
       int cap_i;
       for (i=1; i<num_models; ++i) {
-	Model& model_i = (i<num_approx) ? approxModels[i] : truthModel;
+	Model& model_i = model_from_index(i);
 	if (use_deriv_conc) {
 	  int deriv_conc_i = model_i.derivative_concurrency();
 	  model_i.set_communicators(pl_iter, deriv_conc_i);
@@ -549,8 +549,9 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
       hi_fi_eval = !hi_fi_asv.empty(); lo_fi_eval = !lo_fi_asv.empty();
       mixed_eval = (hi_fi_eval && lo_fi_eval);            break;
     }
-    Model&   hf_model = (hi_fi_eval) ? high_fidelity_model() : dummy_model;
-    Model&   lf_model = (lo_fi_eval) ?  low_fidelity_model() : dummy_model;
+    // Extract models corresponding to truthModelKey and surrModelKeys[0]
+    Model&   hf_model = (hi_fi_eval) ?     truth_model()  : dummy_model;
+    Model&   lf_model = (lo_fi_eval) ? surrogate_model(0) : dummy_model;
     Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.'+std::to_string(surrModelEvalCntr+1);
@@ -662,7 +663,7 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
       break;
     }
     case AGGREGATED_MODEL_PAIR:
-      aggregate_response(hi_fi_response, lf_model.current_response(),
+      aggregate_response(lf_model.current_response(), hi_fi_response,
 			 currentResponse);
       break;
     case UNCORRECTED_SURROGATE:   case AUTO_CORRECTED_SURROGATE:
@@ -704,7 +705,7 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     // first pass for nonblocking models
     for (i=0; i<num_steps; ++i) {
       m_index = (multilev) ? num_approx : i;
-      Model& model_i = (m_index<num_approx) ? approxModels[m_index]: truthModel;
+      Model& model_i = model_from_index(m_index);
       ShortArray& asv_i = indiv_asv[i];
       if (model_i.asynch_flag() && test_asv(asv_i)) {
 	assign_key(i);
@@ -717,7 +718,7 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     // second pass for blocking models
     for (i=0; i<num_steps; ++i) {
       m_index = (multilev) ? num_approx : i;
-      Model& model_i = (m_index<num_approx) ? approxModels[m_index]: truthModel;
+      Model& model_i = model_from_index(m_index);
       ShortArray& asv_i = indiv_asv[i];
       if (!model_i.asynch_flag() && test_asv(asv_i)) {
 	assign_key(i);
@@ -755,8 +756,9 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv);
       hi_fi_eval = !hi_fi_asv.empty();  lo_fi_eval = !lo_fi_asv.empty();  break;
     }
-    Model&   hf_model = (hi_fi_eval) ? high_fidelity_model() : dummy_model;
-    Model&   lf_model = (lo_fi_eval) ?  low_fidelity_model() : dummy_model;
+    // Extract models corresponding to truthModelKey and surrModelKeys[0]
+    Model&   hf_model = (hi_fi_eval) ?     truth_model()  : dummy_model;
+    Model&   lf_model = (lo_fi_eval) ? surrogate_model(0) : dummy_model;
     Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
     bool asynch_hi_fi = (hi_fi_eval) ? hf_model.asynch_flag() : false,
          asynch_lo_fi = (lo_fi_eval) ? lf_model.asynch_flag() : false;
@@ -1027,7 +1029,7 @@ derived_synchronize_combine(IntResponseMapArray& model_resp_maps,
       for (; hf_cit != hf_resp_map.end() && lf_it != lf_resp_map.end();
 	   ++hf_cit, ++lf_it) {
 	check_key(hf_cit->first, lf_it->first);
-	aggregate_response(hf_cit->second, lf_it->second,
+	aggregate_response(lf_it->second, hf_cit->second,
 			   combined_resp_map[hf_cit->first]);
       }
       break;
@@ -1244,7 +1246,7 @@ derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
 	  dc_it->second.compute(hf_cit->second, lf_it->second,
 				surrResponseMap[hf_eval_id], quiet_flag); break;
 	case AGGREGATED_MODEL_PAIR:
-	  aggregate_response(hf_cit->second, lf_it->second,
+	  aggregate_response(lf_it->second, hf_cit->second,
 			     surrResponseMap[hf_eval_id]);                break;
 	default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
 	  response_combine(hf_cit->second, lf_it->second,
@@ -1252,6 +1254,60 @@ derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
 	}
 	++hf_cit;  ++lf_it;
       }
+    }
+    break;
+  }
+  }
+}
+
+
+void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
+{
+  // assign activeKey
+  SurrogateModel::active_model_key(key);
+  // update truthModelKey and surrModelKeys
+  extract_subordinate_keys(key, surrModelKeys, truthModelKey);
+  // assign same{Model,Interface}Instance
+  check_model_interface_instance();
+
+  // assign extracted keys
+  // If model forms are distinct (multifidelity case), can activate soln level
+  // indices now and will persist; else (multilevel case) soln level is managed
+  // for LF & HF contributions in derived_evaluate().
+  // > Special case: multilevel data import in DataFitSurrModel::consistent()
+  //   requires correct state prior to evaluations in order to find level data
+  if (sameModelInstance) {
+    switch (responseMode) {
+    case BYPASS_SURROGATE:      case NO_SURROGATE:
+      assign_truth_key();       break;
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      assign_surrogate_key(0);  break;
+  //case AGGREGATED_MODELS: break; // defer setting active solution levels
+    }
+  }
+  else { // approximations are separate models
+    size_t i, num_approx = surrModelKeys.size();
+    for (i=0; i<num_approx; ++i)
+      assign_surrogate_key(i);
+    assign_truth_key();
+  }
+
+  // Pull inactive variable change up into top-level currentVariables,
+  // so that data flows correctly within Model recursions?  No, current
+  // design is that forward pushes are automated, but inverse pulls are 
+  // generally special case invocations from Iterator code (e.g., with
+  // locally-managed Model recursions).
+  //update_from_model(truthModel);
+
+  // Initialize deltaCorr for paired models
+  switch (responseMode) {
+  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE: {
+    unsigned short lf_form = surrModelKeys[0].retrieve_model_form();
+    if (lf_form != USHRT_MAX) {// LF form def'd
+      DiscrepancyCorrection& delta_corr = deltaCorr[key]; // per data group
+      if (!delta_corr.initialized())
+	delta_corr.initialize(surrogate_model(0), surrogateFnIndices,
+			      corrType, corrOrder);
     }
     break;
   }
@@ -1596,7 +1652,7 @@ void EnsembleSurrModel::resize_response(bool use_virtual_counts)
     numFns = num_truth_fns;  num_meta = num_truth_md;
     for (i=0; i<num_approx; ++i) {
       unsigned short form = surrModelKeys[i].retrieve_model_form();
-      Model& model_i = (form < num_approx) ? approxModels[form] : truthModel;
+      Model& model_i = model_from_index(form);
       numFns += (use_virtual_counts) ? model_i.qoi() : model_i.response_size();
       num_meta += model_i.current_response().metadata().size();
     }
@@ -1710,7 +1766,7 @@ void EnsembleSurrModel::component_parallel_mode(short model_id)
   bool restart = false;
   if (componentParallelMode != par_mode || componentParallelKey != activeKey) {
     Pecos::ActiveKey old_hf_key; std::vector<Pecos::ActiveKey> old_lf_keys;
-    extract_subordinate_keys(componentParallelKey, old_hf_key, old_lf_keys,
+    extract_subordinate_keys(componentParallelKey, old_lf_keys, old_hf_key,
 		             componentParallelMode);
     switch (componentParallelMode) {
     case SURROGATE_MODEL_MODE:
@@ -2035,8 +2091,8 @@ void EnsembleSurrModel::recursive_apply(const Variables& vars, Response& resp)
 			      Pecos::SINGLE_REDUCTION);
     for (i = lf_form; i < num_models - 1; ++i) {
       paired_key.id(i); // consistent with current pair sequences
-      paired_key.assign_model_form(i+1, 0); // HF model form in KeyData[0]
-      paired_key.assign_model_form(i,   1); // LF model form in KeyData[1]
+      paired_key.assign_model_form(i,   0); // LF model form in KeyData[0]
+      paired_key.assign_model_form(i+1, 1); // HF model form in KeyData[1]
       single_apply(vars, resp, paired_key);
     }
     break;
@@ -2058,8 +2114,8 @@ void EnsembleSurrModel::recursive_apply(const Variables& vars, Response& resp)
 			      Pecos::SINGLE_REDUCTION);
     for (i = lf_lev; i < num_levels - 1; ++i) {
       paired_key.id(i); // consistent with current pair sequences
-      paired_key.assign_resolution_level(i+1, 0); //   fine res in KeyData[0]
-      paired_key.assign_resolution_level(i,   1); // coarse res in KeyData[1]
+      paired_key.assign_resolution_level(i,   0); // coarse res in KeyData[0]
+      paired_key.assign_resolution_level(i+1, 1); //   fine res in KeyData[1]
       single_apply(vars, resp, paired_key);
     }
     break;

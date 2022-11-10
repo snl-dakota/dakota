@@ -66,9 +66,9 @@ public:
   /// assign pairedKey
   void paired_key(const Pecos::ActiveKey& aggregate_key);
   /// initialize pairedKey from model forms and discretization levels
-  void paired_key(unsigned short group, unsigned short truth_form,
-		  size_t truth_level,   unsigned short approx_form,
-		  size_t approx_level,  unsigned short reduction);
+  void paired_key(unsigned short group, unsigned short approx_form,
+		  size_t approx_level,  unsigned short truth_form,
+		  size_t truth_level,   unsigned short reduction);
 
   /// perform several reset operations to restore initialized state
   void reset();
@@ -259,12 +259,12 @@ paired_key(const Pecos::ActiveKey& aggregate_key)
 
 
 inline void SurrBasedLevelData::
-paired_key(unsigned short group, unsigned short truth_form, size_t truth_level,
-	   unsigned short approx_form, size_t approx_level,
-	   unsigned short reduction)
+paired_key(unsigned short group, unsigned short approx_form,
+	   size_t approx_level,  unsigned short truth_form,
+	   size_t truth_level,   unsigned short reduction)
 {
-  pairedKey.form_key(group, truth_form, truth_level, approx_form, approx_level,
-		     reduction);
+  pairedKey.form_key(group, approx_form, approx_level,
+		     truth_form, truth_level, reduction);
 }
 
 

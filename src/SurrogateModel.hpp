@@ -173,8 +173,8 @@ protected:
                         const Response& approx_response,
                         Response& combined_response);
 
-  /// aggregate {HF,LF} response data to create a new response with 2x size
-  void aggregate_response(const Response& hf_resp, const Response& lf_resp,
+  /// aggregate 2 sets of response data to create a new response with 2x size
+  void aggregate_response(const Response& resp1, const Response& resp2,
 			  Response& agg_resp);
   // aggregate response array to create a new response with accumulated size
   //void aggregate_response(const ResponseArray& resp_array,Response& agg_resp);

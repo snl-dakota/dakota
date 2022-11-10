@@ -597,7 +597,7 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
       lf_key.assign_resolution_level(lf_lev);
     }
 
-    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
+    discrep_key.aggregate_keys(lf_key, hf_key, Pecos::RAW_DATA);
     iteratedModel.active_model_key(discrep_key); // two active fidelities
   }
 }
@@ -761,10 +761,9 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	// response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
-	// followed by LF (previous/decremented model key)
-	q_l_prod   = q_l   = fn_vals[qoi];
-	q_lm1_prod = q_lm1 = fn_vals[qoi+numFunctions];
+	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+	q_lm1_prod = q_lm1 = fn_vals[qoi];
+	q_l_prod   = q_l   = fn_vals[qoi+numFunctions];
 
 	// sync sample counts for Ql and Qlm1
 	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
@@ -854,10 +853,9 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
-	// followed by LF (previous/decremented model key)
-	hf_prod = hf_fn = fn_vals[qoi];
-	lf_prod = lf_fn = fn_vals[qoi+numFunctions];
+	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+	lf_prod = lf_fn = fn_vals[qoi];
+	hf_prod = hf_fn = fn_vals[qoi+numFunctions];
 	if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
 
 	  // add to sum_YY: running sums across all sample increments
@@ -913,10 +911,9 @@ accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY, size_t lev,
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
-	// followed by LF (previous/decremented model key)
-	hf_prod = hf_fn = fn_vals[qoi];
-	lf_prod = lf_fn = fn_vals[qoi+numFunctions];
+	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+	lf_prod = lf_fn = fn_vals[qoi];
+	hf_prod = hf_fn = fn_vals[qoi+numFunctions];
 	if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
 	  ++num_Y[qoi];
 

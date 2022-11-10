@@ -401,7 +401,6 @@ inline void ApproximationInterface::finalize_approximation()
 {
   sharedData.pre_finalize(); // do shared aggregation first
 
-  size_t fn_index, key_index, num_keys;
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
     // Approximation::approxData (finalize for top & potentially embedded keys)

@@ -99,7 +99,7 @@ void NonDMultilevControlVarSampling::core_run()
   unsigned short lf_form = 0, hf_form = NLevActual.size() - 1;//ordered low:high
   size_t lev = SZ_MAX; // defer on assigning soln levels
   Pecos::ActiveKey active_key;
-  active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
+  active_key.form_key(0, lf_form, lev, hf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
 
   switch (pilotMgmtMode) {
@@ -1351,10 +1351,9 @@ accumulate_mlmf_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	// response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
-	// followed by LF (previous/decremented model key)
-	q_l_prod   = q_l   = fn_vals[qoi];
-	q_lm1_prod = q_lm1 = fn_vals[qoi+numFunctions];
+	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+	q_lm1_prod = q_lm1 = fn_vals[qoi];
+	q_l_prod   = q_l   = fn_vals[qoi+numFunctions];
 
 	// sync sample counts for Ql and Qlm1
 	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
@@ -1406,10 +1405,9 @@ accumulate_mlmf_Ysums(IntRealMatrixMap& sum_Y, size_t lev, SizetArray& num_Y)
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	// response mode AGGREGATED_MODEL_PAIR orders HF (active model key)
-	// followed by LF (previous/decremented model key)
-	prod_l   = fn_l   = fn_vals[qoi];
-	prod_lm1 = fn_lm1 = fn_vals[qoi+numFunctions];
+	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+	prod_lm1 = fn_lm1 = fn_vals[qoi];
+	prod_l   = fn_l   = fn_vals[qoi+numFunctions];
 
 	if (isfinite(fn_l) && isfinite(fn_lm1)) { // neither NaN nor +/-Inf
 	  y_it = sum_Y.begin(); ord = y_it->first; active_ord = 1;
@@ -1594,12 +1592,11 @@ accumulate_mlmf_Ysums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// response mode AGGREGATED_MODEL_PAIR orders level l (active model key)
-	// followed by level l-1 (previous/decremented model key)
-	lf_l_prod   = lf_l   = lf_fn_vals[qoi];
-	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi+numFunctions];
-	hf_l_prod   = hf_l   = hf_fn_vals[qoi];
-	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi+numFunctions];
+	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi];
+	lf_l_prod   = lf_l   = lf_fn_vals[qoi+numFunctions];
+	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi];
+	hf_l_prod   = hf_l   = hf_fn_vals[qoi+numFunctions];
 
 	// sync sample counts for all L and H interactions at this level
 	if (isfinite(lf_l) && isfinite(lf_lm1) &&
@@ -1714,12 +1711,11 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// response mode AGGREGATED_MODEL_PAIR orders level l (active model key)
-	// followed by level l-1 (previous/decremented model key)
-	lf_l_prod   = lf_l   = lf_fn_vals[qoi];
-	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi+numFunctions];
-	hf_l_prod   = hf_l   = hf_fn_vals[qoi];
-	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi+numFunctions];
+	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi];
+	lf_l_prod   = lf_l   = lf_fn_vals[qoi+numFunctions];
+	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi];
+	hf_l_prod   = hf_l   = hf_fn_vals[qoi+numFunctions];
 
 	// sync sample counts for all L and H interactions at this level
 	if (isfinite(lf_l) && isfinite(lf_lm1) &&
@@ -1891,12 +1887,11 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// response mode AGGREGATED_MODEL_PAIR orders level l (active model key)
-	// followed by level l-1 (previous/decremented model key)
-	lf_l_prod   = lf_l   = lf_fn_vals[qoi];
-	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi+numFunctions];
-	hf_l_prod   = hf_l   = hf_fn_vals[qoi];
-	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi+numFunctions];
+	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi];
+	lf_l_prod   = lf_l   = lf_fn_vals[qoi+numFunctions];
+	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi];
+	hf_l_prod   = hf_l   = hf_fn_vals[qoi+numFunctions];
 
 	// sync sample counts for all L and H interactions at this level
 	if (isfinite(lf_l) && isfinite(lf_lm1) &&
