@@ -243,7 +243,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
     mf_greedy = (mf && multilevAllocControl == GREEDY_REFINEMENT);
 
   // define tie breaker for hierarchy of model forms versus resolution levels
-  if (iteratedModel.surrogate_type() == "hierarchical")
+  if (iteratedModel.surrogate_type() == "ensemble")
     iteratedModel.multifidelity_precedence(mf);//reassign default keys if needed
 
   // Check for suitable distribution types.
@@ -1331,9 +1331,9 @@ void NonDExpansion::assign_hierarchical_response_mode()
   // comms for the ordered Models within HierarchSurrModel::set_communicators(),
   // which precedes mode updates in {multifidelity,multilevel}_expansion().
 
-  if (iteratedModel.surrogate_type() != "hierarchical") {
-    Cerr << "Error: multilevel/multifidelity expansions require a "
-	 << "hierarchical model." << std::endl;
+  if (iteratedModel.surrogate_type() != "ensemble") {
+    Cerr << "Error: multilevel/multifidelity expansions require an ensemble "
+	 << "model." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 

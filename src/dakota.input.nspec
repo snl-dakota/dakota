@@ -6513,25 +6513,25 @@ KEYWORD model {N_mom3(start,0,stop)}
       truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
      )
     |
-    ( hierarchical {N_mom(lit,surrogateType_hierarchical)}
-      ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST {N_mom(strL,ensembleModelPointers)}
-      [ correction {0}
-        zeroth_order {N_mom(order,approxCorrectionOrder_0)}
-        |
-        first_order {N_mom(order,approxCorrectionOrder_1)}
-        |
-        second_order {N_mom(order,approxCorrectionOrder_2)}
-        additive {N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}
-        |
-        multiplicative {N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}
-        |
-        combined {N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}
-       ]
-     )
-    |
-    ( ensemble ALIAS non_hierarchical {N_mom(lit,surrogateType_ensemble)}
-      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
-      [ unordered_model_fidelities ALIAS approximation_models STRINGLIST {N_mom(strL,ensembleModelPointers)} ]
+    ( ensemble {N_mom(lit,surrogateType_ensemble)}
+      ( ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST {N_mom(strL,ensembleModelPointers)}
+        [ correction {0}
+          zeroth_order {N_mom(order,approxCorrectionOrder_0)}
+          |
+          first_order {N_mom(order,approxCorrectionOrder_1)}
+          |
+          second_order {N_mom(order,approxCorrectionOrder_2)}
+          additive {N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}
+          |
+          multiplicative {N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}
+          |
+          combined {N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}
+         ]
+       )
+      |
+      ( truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
+        [ approximation_models ALIAS unordered_model_fidelities STRINGLIST {N_mom(strL,ensembleModelPointers)} ]
+       )
      )
    )
   |

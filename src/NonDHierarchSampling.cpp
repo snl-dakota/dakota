@@ -41,7 +41,7 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   // we require a hierarchical model to manage aggregations, reductions, etc.
   // (i.e. a SimulationModel with resolution hyper-parameters is insufficient).
   bool err_flag = false;
-  if (iteratedModel.surrogate_type() == "hierarchical")
+  if (iteratedModel.surrogate_type() == "ensemble")
     aggregated_model_pair_mode();
   else {
     Cerr << "Error: Hierarchical sampling requires a hierarchical surrogate "

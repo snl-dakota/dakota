@@ -32,7 +32,7 @@ method,
 model,
 	id_model = 'NONHIER'
 	variables_pointer = 'HF_VARS'
-	surrogate ensemble #non_hierarchical
+	surrogate ensemble
 	  truth_model = 'HF'
 	  unordered_model_fidelities = 'LF1' 'LF2' 'LF3' 'LF4'	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s12,#s13,#p0,#p1
 #	  unordered_model_fidelities = 'LF2' 'LF1' 'LF4' 'LF3'	#s11

@@ -26,11 +26,10 @@ method,
 model,
 	id_model = 'HIERARCH'
 	variables_pointer = 'HF_VARS'
-	surrogate hierarchical		#s0,#s1,#s2,#s3,#s4,#s5,#s9,#s10,#p0,#p1,#p2,#p3
+	surrogate ensemble
 	  ordered_model_fidelities = 'MF' 'HF'		#s0,#s1,#p0
 #	  ordered_model_fidelities = 'LF' 'HF'		#s2,#s3,#s4,#s9,#s10,#p1,#p2,#p3
 #	  ordered_model_fidelities = 'LF' 'MF' 'HF'	#s5
-#	surrogate non_hierarchical   	       		#s6,#s7,#s8,#p4
 #	  truth_model = 'HF'				#s6,#s7,#s8,#p4
 #	  unordered_model_fidelities = 'LF'		#s6,#s7
 #	  unordered_model_fidelities = 'LF' 'MF'	#s8,#p4

@@ -31,7 +31,7 @@ method,
 model,
 	id_model = 'SURROGATE'
 	variables_pointer = 'HF_VARS'
-	surrogate hierarchical
+	surrogate ensemble
 	  ordered_model_fidelities = 'LOW_FID' 'MED_FID' 'HIGH_FID'
 	  correction additive first_order
 

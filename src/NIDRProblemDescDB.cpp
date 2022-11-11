@@ -7339,7 +7339,6 @@ static Model_mp_lit
 	MP2(modelType,random_field),
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
-	MP2(surrogateType,hierarchical),
 	MP2(surrogateType,ensemble),
 	MP2(surrogateType,global_exp_gauss_proc),
 	MP2(surrogateType,global_exp_poly),

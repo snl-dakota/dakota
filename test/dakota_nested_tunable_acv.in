@@ -118,11 +118,10 @@ model,
 	id_model = 'ENSEMBLE'
 	variables_pointer = 'HF_VARS'			#s0,#s1,#s2,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s17,#s18
 #	variables_pointer = 'ENSEMBLE_VARS'		#s15,#s16,#s19,#s20,#s21,#s22
-	surrogate hierarchical 	       	     		#s0,#s1,#s2,#s5,#s6,#s7,#s10,#s11,#s12
+	surrogate ensemble
 	  ordered_model_fidelities = 'LF2' 'LF1' 'HF'	#s0,#s5,#s10
 #	  ordered_model_fidelities = 'LF1' 'HF'		#s1,#s6,#s11
 #	  ordered_model_fidelities = 'LF2' 'HF'		#s2,#s7,#s12
-#	surrogate ensemble				#s3,#s4,#s8,#s9,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22
 #	  truth_model = 'HF'				#s3,#s4,#s8,#s9,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22
 #	  unordered_model_fidelities = 'LF2' 'LF1' 	#s3,#s4,#s8,#s9,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22
 
