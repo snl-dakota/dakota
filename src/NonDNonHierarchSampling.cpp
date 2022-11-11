@@ -53,10 +53,10 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   optSubProblemSolver = sub_optimizer_select(
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"),SUBMETHOD_OPTPP);
 
-  // check iteratedModel for model form hi1erarchy and/or discretization levels;
+  // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
   if (iteratedModel.surrogate_type() == "ensemble")
-    aggregated_models_mode(); // truth model + all approx models
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
   else {
     Cerr << "Error: sampling the full range of a model ensemble requires an "
 	 << "ensemble surrogate model specification." << std::endl;
@@ -163,8 +163,9 @@ void NonDNonHierarchSampling::assign_active_key(bool multilev)
     //truth_form = numApprox;  truth_lev = secondaryIndex;
   }
   active_key.aggregate_keys(approx_keys, truth_key, Pecos::RAW_DATA);
-  aggregated_models_mode();
+  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
   iteratedModel.active_model_key(active_key); // data group 0
+  resize_active_set();
 }
 
 
@@ -198,8 +199,9 @@ void NonDNonHierarchSampling::shared_increment(size_t iter)
   Cout << numSamples << '\n';
 
   if (numSamples) {
-    //aggregated_models_mode();
+    //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
     //iteratedModel.active_model_key(agg_key);
+    //resize_active_set();
 
     activeSet.request_values(1);
     ensemble_sample_increment(iter, numApprox+1); // BLOCK if not shared_approx_increment()  *** TO DO: step value
@@ -215,8 +217,9 @@ void NonDNonHierarchSampling::shared_approx_increment(size_t iter)
   Cout << numSamples << '\n';
 
   if (numSamples) {
-    //aggregated_models_mode();
+    //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
     //iteratedModel.active_model_key(agg_key);
+    //resize_active_set();
 
     size_t approx_qoi = numApprox  * numFunctions,
                   end = approx_qoi + numFunctions;

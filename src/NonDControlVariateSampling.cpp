@@ -80,8 +80,9 @@ void NonDControlVariateSampling::core_run()
   lf_key.form_key(0, lf_form, lf_lev);  hf_key.form_key(0, hf_form, hf_lev);
   active_key.aggregate_keys(lf_key, hf_key, Pecos::RAW_DATA);
 
-  aggregated_model_pair_mode();
+  iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);
   iteratedModel.active_model_key(active_key); // data group 0
+  resize_active_set();
 
   // Two-model control variate approach (Ng and Willcox, 2014) using a
   // hierarchical model (requires model pairing)
@@ -610,9 +611,10 @@ shared_increment(const Pecos::ActiveKey& agg_key, size_t iter, size_t lev)
   Cout << "LF = " << numSamples << " HF = " << numSamples << '\n';
 
   if (numSamples) {
-    aggregated_model_pair_mode();
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);
     iteratedModel.active_model_key(agg_key);
-
+    resize_active_set();
+ 
     // generate new MC parameter sets
     get_parameter_sets(iteratedModel);// pull dist params from any model
 
@@ -634,8 +636,9 @@ lf_increment(const Pecos::ActiveKey& lf_key, const RealVector& eval_ratios,
   lf_allocate_samples(eval_ratios, N_lf, hf_targets, lf_targets);
 
   if (numSamples) {
-    uncorrected_surrogate_mode(); // also needed for lf_key assignment below
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
     iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
+    resize_active_set();
 
     return lf_perform_samples(iter, lev);
   }
@@ -653,8 +656,9 @@ lf_increment(const Pecos::ActiveKey& lf_key, const RealVector& eval_ratios,
   lf_allocate_samples(eval_ratios, N_lf_sa, hf_targets, lf_targets);
 
   if (numSamples) {
-    uncorrected_surrogate_mode(); // also needed for lf_key assignment below
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
     iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
+    resize_active_set();
 
     return lf_perform_samples(iter, lev);
   }

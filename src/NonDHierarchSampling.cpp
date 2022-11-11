@@ -35,16 +35,16 @@ NonDHierarchSampling::
 NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   NonDEnsembleSampling(problem_db, model)
 {
-  // ensure iteratedModel is a hierarchical surrogate model and set initial
+  // ensure iteratedModel is an ensemble surrogate model and set initial
   // response mode (for set_communicators() which precedes core_run()).
-  // Note: even though the hierarchy may be multilevel | multifidelity | both,
-  // we require a hierarchical model to manage aggregations, reductions, etc.
+  // Note: even though hierarchical sampling might involve a single model form,
+  // we require an ensemble model to manage aggregations, reductions, etc.
   // (i.e. a SimulationModel with resolution hyper-parameters is insufficient).
   bool err_flag = false;
   if (iteratedModel.surrogate_type() == "ensemble")
-    aggregated_model_pair_mode();
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);
   else {
-    Cerr << "Error: Hierarchical sampling requires a hierarchical surrogate "
+    Cerr << "Error: Hierarchical sampling requires an ensemble surrogate "
 	 << "model specification." << std::endl;
     err_flag = true;
   }

@@ -1367,6 +1367,14 @@ void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
     assign_truth_key();
   }
 
+  // if necessary, resize the response for new responseMode (performed by a
+  // separate preceding update) and new active keys (above).  Since parallel
+  // job scheduling only involves only 1 model at any given time, this call
+  // does not need to be matched on serve_run() procs.
+  resize_response();
+  /// allocate modelIdMaps and cachedRespMaps arrays based on active keys
+  resize_maps();
+
   // Pull inactive variable change up into top-level currentVariables,
   // so that data flows correctly within Model recursions?  No, current
   // design is that forward pushes are automated, but inverse pulls are 

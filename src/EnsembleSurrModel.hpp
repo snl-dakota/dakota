@@ -547,7 +547,8 @@ inline size_t EnsembleSurrModel::count_id_maps(const IntIntMapArray& id_maps)
 
 inline void EnsembleSurrModel::surrogate_response_mode(short mode)
 {
-  responseMode = mode;
+  if (responseMode == mode) return;
+  else responseMode = mode;
 
   // Trap the combination of no user correction specification with either
   // AUTO_CORRECTED_SURROGATE (NO_CORRECTION defeats the point for HSModel) or
@@ -560,14 +561,6 @@ inline void EnsembleSurrModel::surrogate_response_mode(short mode)
     Cerr << " requires specification of a correction type." << std::endl;
     abort_handler(MODEL_ERROR);
   }
-
-  // if necessary, resize the response for entering/exiting an aggregated mode.
-  // Since parallel job scheduling only involves either the LF or HF model at
-  // any given time, this call does not need to be matched on serve_run() procs.
-  resize_response();
-
-  /// allocate modelIdMaps and cachedRespMaps arrays based on responseMode
-  resize_maps();
 
   // don't pass to approx models since point of a surrogate bypass is to get
   // a surrogate-free truth evaluation
@@ -602,7 +595,7 @@ inline bool EnsembleSurrModel::matching_active_interface_ids()
   const String& hf_id  = truthModel.interface_id();
   for (i=0; i<num_approx; ++i) {
     lf_form = surrModelKeys[i].retrieve_model_form();
-    if (approxModels[lf_form].interface_id() != hf_id)
+    if (model_from_index(lf_form).interface_id() != hf_id)
       return false;
   }
   return true;
@@ -785,7 +778,7 @@ inline void EnsembleSurrModel::assign_truth_key()
 {
   unsigned short hf_form = truthModelKey.retrieve_model_form();
   if (hf_form != USHRT_MAX)
-    approxModels[hf_form].solution_level_cost_index(
+    model_from_index(hf_form).solution_level_cost_index(
       truthModelKey.retrieve_resolution_level());
 }
 
@@ -794,7 +787,7 @@ inline void EnsembleSurrModel::assign_surrogate_key(size_t i)
 {
   unsigned short lf_form = surrModelKeys[i].retrieve_model_form();
   if (lf_form != USHRT_MAX)
-    approxModels[lf_form].solution_level_cost_index(
+    model_from_index(lf_form).solution_level_cost_index(
       surrModelKeys[i].retrieve_resolution_level());
 }
 
@@ -803,11 +796,9 @@ inline void EnsembleSurrModel::assign_surrogate_key(size_t i)
 inline void EnsembleSurrModel::assign_key(const Pecos::ActiveKey& key)
 {
   unsigned short form = key.retrieve_model_form();
-  if (form != USHRT_MAX) {
-    Model& model = (form < approxModels.size()) ?
-      approxModels[form] : truthModel;
-    model.solution_level_cost_index(key.retrieve_resolution_level());
-  }
+  if (form != USHRT_MAX)
+    model_from_index(form).solution_level_cost_index(
+      key.retrieve_resolution_level());
 }
 */
 

@@ -409,8 +409,8 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   compute_ml_estimator_variance(var_Y, N_actual_online, estVar);
   avgEstVar = average(estVar);
   // post final N_online back to NLevActual (needed for final eval summary)
-  inflate_sequence_samples(N_actual_online, multilev,secondaryIndex,NLevActual);
-  inflate_sequence_samples(N_alloc_online,  multilev,secondaryIndex,NLevAlloc);
+  inflate_sequence_samples(N_actual_online,multilev, secondaryIndex,NLevActual);
+  inflate_sequence_samples(N_alloc_online, multilev, secondaryIndex, NLevAlloc);
 }
 
 
@@ -512,7 +512,9 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       evaluate_ml_sample_increment(step);
       accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
 			  N_actual_pilot[step]);
-      increment_alloc_samples(N_alloc_pilot[step], NTargetQoI[step]);
+      if (backfillFailures && mlmfIter)
+	increment_alloc_samples(N_alloc_pilot[step], NTargetQoI[step]);
+      else N_alloc_pilot[step] += numSamples;
       variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
 		    sum_Ql.at(2)[step], sum_QlQlm1.at(pr11)[step],
 		    sum_Qlm1.at(2)[step], N_actual_pilot[step], step,
@@ -577,11 +579,12 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
   if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
        (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0)) {
     // step 0 in the sequence
-    bypass_surrogate_mode();
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
     iteratedModel.active_model_key(hf_key); // one active fidelity
+    resize_active_set();
   }
   else {
-    aggregated_model_pair_mode();
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);
 
     Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
     bool success = lf_key.decrement_key(seq_type); // seq_index defaults to 0
@@ -596,9 +599,9 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
 	= iteratedModel.surrogate_model(lf_form).solution_level_cost_index();
       lf_key.assign_resolution_level(lf_lev);
     }
-
     discrep_key.aggregate_keys(lf_key, hf_key, Pecos::RAW_DATA);
     iteratedModel.active_model_key(discrep_key); // two active fidelities
+    resize_active_set();
   }
 }
 
@@ -614,8 +617,8 @@ void NonDMultilevelSampling::evaluate_ml_sample_increment(unsigned short step)
   // and variables sets (no responses).
   // *** TO DO: Even though these samples typically involve {truth,surrogate}
   //     aggregation, we currently tag with the truth_model's interface id.
-  //     This is correct for bypass_surrogate_mode(), but consider the new
-  //     integrated tabular format for aggregated_model_pair_mode().
+  //     This is correct for BYPASS_SURROGATE mode, but consider the new
+  //     integrated tabular format for AGGREGATED_MODEL_PAIR mode.
   if (exportSampleSets)
     export_all_samples("ml_", iteratedModel.truth_model(), mlmfIter, step);
 
@@ -1316,17 +1319,18 @@ compute_cov(const RealVector& samples_X, const RealVector& samples_Y){
 void NonDMultilevelSampling::
 increment_alloc_samples(size_t& N_l_alloc, const Real* N_l_target)
 {
-  if (backfillFailures && mlmfIter)
-    switch (qoiAggregation) {
-    case QOI_AGGREGATION_SUM:
-      N_l_alloc += one_sided_delta(N_l_alloc, N_l_target[0]); break;
-    case QOI_AGGREGATION_MAX:
-      N_l_alloc += one_sided_delta(N_l_alloc,
-				   find_max(N_l_target, numFunctions));
-      break;
-    }
-  else
-    N_l_alloc += numSamples;
+  switch (qoiAggregation) {
+  case QOI_AGGREGATION_SUM:
+    N_l_alloc += one_sided_delta(N_l_alloc, N_l_target[0]);
+    break;
+  case QOI_AGGREGATION_MAX:
+    N_l_alloc += one_sided_delta(N_l_alloc, find_max(N_l_target, numFunctions));
+    break;
+  default:
+    Cerr << "Error: QoI aggregation mode " << qoiAggregation << " not supported"
+	 << "in NonDMultilevelSampling::increment_alloc_samples()."<< std::endl;
+    abort_handler(METHOD_ERROR);  break;
+  }
 }
 
 
