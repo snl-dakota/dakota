@@ -506,8 +506,7 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
 	assign_key(i);
 	m_index = (multilev) ? num_approx : i;
 	component_parallel_mode(m_index+1); // index to id (0 is reserved)
-	Model& model_i = (m_index<num_approx) ?
-	  approxModels[m_index] : truthModel;
+	Model& model_i = model_from_index(m_index);
 	if (!sameModelInstance) update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate(set_i);
@@ -536,30 +535,30 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
   // data from an id_surrogates spec
 
   default: { // paired cases: manage LF/HF evaluation requirements
-    ShortArray hi_fi_asv, lo_fi_asv;  bool hi_fi_eval, lo_fi_eval, mixed_eval;
+    ShortArray lo_fi_asv, hi_fi_asv;  bool lo_fi_eval, hi_fi_eval, mixed_eval;
     Response lo_fi_response, hi_fi_response; // don't use truthResponseRef
     size_t m_index, num_approx = approxModels.size();
     bool multilev = multilevel();
     switch (responseMode) {
     // Note: incoming ASV is expanded size only for AGGREGATED_MODEL_PAIR
     case MODEL_DISCREPANCY:
-      hi_fi_eval = lo_fi_eval = mixed_eval = true;        break;
+      lo_fi_eval = hi_fi_eval = mixed_eval = true;        break;
     default: // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
-      asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv);
-      hi_fi_eval = !hi_fi_asv.empty(); lo_fi_eval = !lo_fi_asv.empty();
-      mixed_eval = (hi_fi_eval && lo_fi_eval);            break;
+      asv_split(set.request_vector(), lo_fi_asv, hi_fi_asv);
+      lo_fi_eval = !lo_fi_asv.empty();  hi_fi_eval = !hi_fi_asv.empty();
+      mixed_eval = (lo_fi_eval && hi_fi_eval);            break;
     }
     // Extract models corresponding to truthModelKey and surrModelKeys[0]
-    Model&   hf_model = (hi_fi_eval) ?     truth_model()  : dummy_model;
     Model&   lf_model = (lo_fi_eval) ? surrogate_model(0) : dummy_model;
+    Model&   hf_model = (hi_fi_eval) ?     truth_model()  : dummy_model;
     Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.'+std::to_string(surrModelEvalCntr+1);
       if (sameModelInstance)
 	same_model.eval_tag_prefix(eval_tag);
       else {
-	if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
 	if (lo_fi_eval) lf_model.eval_tag_prefix(eval_tag);
+	if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
       }
     }
     if (sameModelInstance) update_model(same_model);
@@ -746,29 +745,29 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     break;
 
   default: { // paired cases: manage LF/HF evaluation requirements
-    ShortArray hi_fi_asv, lo_fi_asv;  bool hi_fi_eval, lo_fi_eval;
+    ShortArray lo_fi_asv, hi_fi_asv;  bool lo_fi_eval, hi_fi_eval;
     size_t m_index, num_approx = approxModels.size();
     bool multilev = multilevel();
     switch (responseMode) {
     case MODEL_DISCREPANCY:
-      hi_fi_eval = lo_fi_eval = true;                                     break;
+      lo_fi_eval = hi_fi_eval = true;                                     break;
     default: // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
-      asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv);
-      hi_fi_eval = !hi_fi_asv.empty();  lo_fi_eval = !lo_fi_asv.empty();  break;
+      asv_split(set.request_vector(), lo_fi_asv, hi_fi_asv);
+      lo_fi_eval = !lo_fi_asv.empty();  hi_fi_eval = !hi_fi_asv.empty();  break;
     }
     // Extract models corresponding to truthModelKey and surrModelKeys[0]
-    Model&   hf_model = (hi_fi_eval) ?     truth_model()  : dummy_model;
     Model&   lf_model = (lo_fi_eval) ? surrogate_model(0) : dummy_model;
+    Model&   hf_model = (hi_fi_eval) ?     truth_model()  : dummy_model;
     Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
-    bool asynch_hi_fi = (hi_fi_eval) ? hf_model.asynch_flag() : false,
-         asynch_lo_fi = (lo_fi_eval) ? lf_model.asynch_flag() : false;
+    bool asynch_lo_fi = (lo_fi_eval) ? lf_model.asynch_flag() : false,
+         asynch_hi_fi = (hi_fi_eval) ? hf_model.asynch_flag() : false;
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.'+std::to_string(surrModelEvalCntr+1);
       if (sameModelInstance)
 	same_model.eval_tag_prefix(eval_tag);
       else {
-	if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
 	if (lo_fi_eval) lf_model.eval_tag_prefix(eval_tag);
+	if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
       }
     }
     if (sameModelInstance) update_model(same_model);
@@ -927,8 +926,7 @@ derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
       IntIntMap& model_id_map_i = modelIdMaps[i];
       if (!model_id_map_i.empty()) { // synchronize evals for i-th Model
 	component_parallel_mode(m_index+1); // index to id (0 is reserved)
-	Model& model_i = (m_index < num_approx) ?
-	  approxModels[m_index] : truthModel;
+	Model& model_i = model_from_index(m_index);
 	// Note: unmatched Model::responseMap are moved to Model::
 	//       cachedResponseMap for return on next synchronize()
 	deep_copy = (auto_corr && i < num_surr_keys);
@@ -1257,6 +1255,83 @@ derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
     }
     break;
   }
+  }
+}
+
+
+void EnsembleSurrModel::
+asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
+	  ShortArray& actual_asv, bool build_flag)
+{
+  size_t i, num_qoi = qoi();
+  switch (responseMode) {
+  case AGGREGATED_MODEL_PAIR: {
+    // split actual & approx asv (can ignore build_flag)
+    if (orig_asv.size() != 2*num_qoi) {
+      Cerr << "Error: ASV not aggregated for AGGREGATED_MODEL_PAIR mode in "
+	   << "SurrogateModel::asv_split()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    approx_asv.resize(num_qoi); actual_asv.resize(num_qoi);
+    // aggregated response uses {HF,LF} order:
+    for (i=0; i<num_qoi; ++i)
+      approx_asv[i] = orig_asv[i];
+    for (i=0; i<num_qoi; ++i)
+      actual_asv[i] = orig_asv[i+num_qoi];
+    break;
+  }
+  default: // non-aggregated modes have consistent ASV request vector lengths
+    if (surrogateFnIndices.size() == num_qoi) {
+      if (build_flag) actual_asv = orig_asv;
+      else            approx_asv = orig_asv;
+    }
+    // else response set is mixed:
+    else if (build_flag) { // construct mode: define actual_asv
+      actual_asv.assign(num_qoi, 0);
+      for (StSIter it=surrogateFnIndices.begin();
+	   it!=surrogateFnIndices.end(); ++it)
+	actual_asv[*it] = orig_asv[*it];
+    }
+    else { // eval mode: define actual_asv & approx_asv contributions
+      for (i=0; i<num_qoi; ++i) {
+	short orig_asv_val = orig_asv[i];
+	if (orig_asv_val) {
+	  if (surrogateFnIndices.count(i)) {
+	    if (approx_asv.empty()) // keep empty if no active requests
+	      approx_asv.assign(num_qoi, 0);
+	    approx_asv[i] = orig_asv_val;
+	  }
+	  else {
+	    if (actual_asv.empty()) // keep empty if no active requests
+	      actual_asv.assign(num_qoi, 0);
+	    actual_asv[i] = orig_asv_val;
+	  }
+	}
+      }
+    }
+    break;
+  }
+}
+
+
+void EnsembleSurrModel::
+asv_split(const ShortArray& aggregate_asv, Short2DArray& indiv_asv)
+{
+  // This API only used for AGGREGATED_MODELS mode
+
+  size_t i, j, num_qoi = qoi();
+  if (aggregate_asv.size() % num_qoi) {
+    Cerr << "Error: size remainder for aggregated ASV in SurrogateModel::"
+	 << "asv_split()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  size_t num_indiv = aggregate_asv.size() / num_qoi, cntr = 0;
+  indiv_asv.resize(num_indiv);
+  for (i=0; i<num_indiv; ++i) {
+    ShortArray& asv_i = indiv_asv[i];
+    asv_i.resize(num_qoi);
+    for (j=0; j<num_qoi; ++j, ++cntr)
+      asv_i[j] = aggregate_asv[cntr];
   }
 }
 
@@ -1831,8 +1906,7 @@ void EnsembleSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       // propagate resolution level to server (redundant since send_evaluation()
       // sends all of variables object, including inactive state)
       //assign_key(m_index);
-      Model& model = (m_index < approxModels.size()) ?
-	approxModels[m_index] : truthModel;
+      Model& model = model_from_index(m_index);
       model.serve_run(pl_iter, max_eval_concurrency);
 
       /* Old code supporting paired model cases:
@@ -1940,14 +2014,14 @@ void EnsembleSurrModel::build_approximation()
   copy_data(hf_vars.inactive_discrete_real_variables(), referenceIDRVars);
 
   // compute the response for the high fidelity model
-  ShortArray total_asv, hf_asv, lf_asv;
+  ShortArray total_asv, lf_asv, hf_asv;
   std::map<Pecos::ActiveKey, DiscrepancyCorrection>::iterator dc_it
     = deltaCorr.find(activeKey);
   if (dc_it!=deltaCorr.end() && dc_it->second.initialized())
     total_asv.assign(numFns, dc_it->second.data_order());
   else
     total_asv.assign(numFns, 1); // default: values only if no deriv correction
-  asv_split(total_asv, hf_asv, lf_asv, true);
+  asv_split(total_asv, lf_asv, hf_asv, true);
 
   if ( truthResponseRef.find(truthModelKey) == truthResponseRef.end() )
     truthResponseRef[truthModelKey] = currentResponse.copy();

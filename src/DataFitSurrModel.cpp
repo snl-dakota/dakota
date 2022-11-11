@@ -1563,17 +1563,17 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  ShortArray actual_asv, approx_asv; bool actual_eval, approx_eval, mixed_eval;
+  ShortArray approx_asv, actual_asv; bool actual_eval, approx_eval, mixed_eval;
   Response actual_response, approx_response; // empty handles
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    asv_split_eval(set.request_vector(), actual_asv, approx_asv);
-    actual_eval = !actual_asv.empty(); approx_eval = !approx_asv.empty();
-    mixed_eval = (actual_eval && approx_eval); break;
+    asv_split(set.request_vector(), approx_asv, actual_asv);
+    approx_eval = !approx_asv.empty(); actual_eval = !actual_asv.empty();
+    mixed_eval = (approx_eval && actual_eval); break;
   case BYPASS_SURROGATE:
-    actual_eval = true; approx_eval = false;   break;
+    approx_eval = false; actual_eval = true;   break;
   case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
-    actual_eval = approx_eval = true;          break;
+    approx_eval = actual_eval = true;          break;
   }
 
   if (hierarchicalTagging) {
@@ -1631,10 +1631,11 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     //component_parallel_mode(SURROGATE_MODEL_MODE); // does not use parallelism
     //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     //parallelLib.parallel_configuration_iterator(modelPCIter);
-    if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
+    if (interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
-          approxInterface.interface_id(), "approximation", currentVariables, currentResponse,
-          default_interface_active_set(), approxInterface.analysis_components());
+        approxInterface.interface_id(), "approximation", currentVariables,
+	currentResponse, default_interface_active_set(),
+	approxInterface.analysis_components());
     
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
@@ -1642,22 +1643,26 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       approx_set.request_vector(approx_asv);
       approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
       approxInterface.map(currentVariables, approx_set, approx_response);
-      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
-        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
-          approxInterface.evaluation_id(), approx_set, currentVariables);
-        evaluationsDB.store_interface_response(modelId, approxInterface.interface_id(),
-          approxInterface.evaluation_id(), approx_response);
+      if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+        evaluationsDB.store_interface_variables(modelId,
+	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approx_set, currentVariables);
+        evaluationsDB.store_interface_response(modelId,
+	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approx_response);
       }
       break;
     }
     case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
       approx_response = currentResponse.copy(); // TO DO
       approxInterface.map(currentVariables, set, approx_response);
-      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
-        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
-          approxInterface.evaluation_id(), set, currentVariables);
-        evaluationsDB.store_interface_response(modelId, approxInterface.interface_id(),
-          approxInterface.evaluation_id(), approx_response);
+      if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+        evaluationsDB.store_interface_variables(modelId,
+	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  set, currentVariables);
+        evaluationsDB.store_interface_response(modelId,
+	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approx_response);
       }
       break;
     }
@@ -1718,15 +1723,15 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  ShortArray actual_asv, approx_asv; bool actual_eval, approx_eval;
+  ShortArray approx_asv, actual_asv; bool approx_eval, actual_eval;
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    asv_split_eval(set.request_vector(), actual_asv, approx_asv);
-    actual_eval = !actual_asv.empty(); approx_eval = !approx_asv.empty(); break;
+    asv_split(set.request_vector(), approx_asv, actual_asv);
+    approx_eval = !approx_asv.empty(); actual_eval = !actual_asv.empty(); break;
   case BYPASS_SURROGATE:
-    actual_eval = true; approx_eval = false;                              break;
+    approx_eval = false; actual_eval = true;                              break;
   case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
-    actual_eval = approx_eval = true;                                     break;
+    approx_eval = actual_eval = true;                                     break;
   }
 
   if (hierarchicalTagging) {
@@ -2115,8 +2120,8 @@ asv_inflate_build(const ShortArray& orig_asv, ShortArray& actual_asv)
 
 
 void DataFitSurrModel::
-asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
-	       ShortArray& approx_asv)
+asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
+	  ShortArray& actual_asv)
 {
   if (actualModel.is_null() || surrogateFnIndices.size() == numFns)
     { approx_asv = orig_asv; return; } // don't inflate approx_asv
@@ -2126,7 +2131,7 @@ asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
   // occurring in actualModel
   size_t num_orig = orig_asv.size(), num_actual = actualModel.response_size();
   if (num_orig != numFns || num_actual < num_orig || num_actual % num_orig) {
-    Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_split_eval()."
+    Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_split()."
 	 << std::endl;
     abort_handler(MODEL_ERROR);
   }

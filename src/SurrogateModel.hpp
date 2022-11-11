@@ -127,12 +127,6 @@ protected:
   /// check sub_model for consistency in response QoI counts
   bool check_response_qoi(const Model& sub_model);
 
-  /// distributes the incoming orig_asv among actual_asv and approx_asv
-  void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
-		 ShortArray& approx_asv, bool build_flag = false);
-  /// distributes the incoming orig_asv among actual_asv and approx_asv
-  void asv_split(const ShortArray& orig_asv, Short2DArray& indiv_asv);
-
   /// initialize model with linear/nonlinear constraint data that could change
   /// once per set of evaluations (e.g., an outer iterator execution)
   void init_model_constraints(Model& model);

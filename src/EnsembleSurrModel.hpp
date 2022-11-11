@@ -227,6 +227,12 @@ protected:
   void derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
     IntResponseMap& combined_resp_map);
 
+  /// distributes the incoming orig_asv among actual_asv and approx_asv
+  void asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
+		 ShortArray& actual_asv, bool build_flag = false);
+  /// distributes the incoming orig_asv among actual_asv and approx_asv
+  void asv_split(const ShortArray& orig_asv, Short2DArray& indiv_asv);
+
   /// initialize truth and surrogate model keys to default values
   void assign_default_keys();
   /// size id_maps and cached_resp_maps arrays according to responseMode
@@ -1043,8 +1049,7 @@ inline void EnsembleSurrModel::stop_model(short model_id)
 {
   if (model_id) {
     short  model_index = model_id - 1; // id to index
-    Model& model = (model_index < approxModels.size()) ?
-      approxModels[model_index] : truthModel;
+    Model& model = model_from_index(model_index);
     ParConfigLIter pc_it = model.parallel_configuration_iterator();
     size_t pl_index = model.mi_parallel_level_index();
     if (pc_it->mi_parallel_level_defined(pl_index) &&

@@ -126,8 +126,8 @@ protected:
   /// split incoming ASV into actual and approximate evaluation requests,
   /// managing any mismatch in sizes due to response aggregation modes in
   /// actualModel
-  void asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
-		      ShortArray& approx_asv);
+  void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
+		 ShortArray& approx_asv);
 
   /// return daceIterator
   Iterator& subordinate_iterator();

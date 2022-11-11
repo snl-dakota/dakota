@@ -487,7 +487,7 @@ add(const Variables& vars, bool v_copy, const Response& response,
     approxRep->add(vars, v_copy, response, fn_index, r_copy, anchor_flag,
 		   eval_id, key_index);
   else { // not virtual: all derived classes use following definition
-    assign_key_index(key_index); // *** INDEXING CONSISTENCY???
+    assign_key_index(key_index);
     Pecos::SurrogateDataVars sdv = variables_to_sdv(vars);             //shallow
     Pecos::SurrogateDataResp sdr = response_to_sdr(response, fn_index);//shallow
     add(sdv, v_copy, sdr, r_copy, anchor_flag); // deep copies managed here
