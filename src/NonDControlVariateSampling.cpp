@@ -724,7 +724,7 @@ bool NonDControlVariateSampling::lf_perform_samples(size_t iter, size_t lev)
   get_parameter_sets(iteratedModel);// pull dist params from any model
   // export separate output files for each data set:
   if (exportSampleSets)
-    export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
+    export_all_samples("cv_", iteratedModel.active_surrogate_model(0),iter,lev);
 
   // Iteration 0 is defined as the pilot sample + initial CV increment, and
   // each subsequent iter can be defined as a pair of ML + CV increments.  If

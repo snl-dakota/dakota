@@ -120,14 +120,23 @@ public:
   /// return number of unique response functions (managing any aggregations)
   virtual size_t qoi() const;
 
-  /// return the active approximation sub-model in surrogate models
+  /// return the i-th approximation sub-model in surrogate models
   virtual Model& surrogate_model(size_t i = _NPOS);
-  /// return the active approximation sub-model in surrogate models
+  /// return the i-th approximation sub-model in surrogate models
   virtual const Model& surrogate_model(size_t i = _NPOS) const;
-  /// return the active truth sub-model in surrogate models
+  /// return the truth sub-model in surrogate models
   virtual Model& truth_model();
-  /// return the active truth sub-model in surrogate models
+  /// return the truth sub-model in surrogate models
   virtual const Model& truth_model() const;
+
+  /// return the i-th active approximation sub-model in surrogate models
+  virtual Model& active_surrogate_model(size_t i = _NPOS);
+  /// return the i-th active approximation sub-model in surrogate models
+  virtual const Model& active_surrogate_model(size_t i = _NPOS) const;
+  /// return the active truth sub-model in surrogate models
+  virtual Model& active_truth_model();
+  /// return the active truth sub-model in surrogate models
+  virtual const Model& active_truth_model() const;
 
   /// identify if hierarchy is across model forms
   virtual bool multifidelity() const;

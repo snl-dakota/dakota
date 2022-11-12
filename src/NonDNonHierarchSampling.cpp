@@ -268,9 +268,10 @@ ensemble_sample_increment(size_t iter, size_t step)
 
   // export separate output files for each data set:
   if (exportSampleSets) { // for HF+LF models, use the HF tags
-    export_all_samples("cv_", iteratedModel.truth_model(), iter, step);
+    export_all_samples("cv_", iteratedModel.active_truth_model(), iter, step);
     for (size_t i=0; i<numApprox; ++i)
-      export_all_samples("cv_", iteratedModel.surrogate_model(i), iter, step);
+      export_all_samples("cv_", iteratedModel.active_surrogate_model(i),
+			 iter, step);
   }
 
   // compute allResponses from allVariables using non-hierarchical model

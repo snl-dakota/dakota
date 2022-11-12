@@ -3411,6 +3411,48 @@ const Model& Model::truth_model() const
 }
 
 
+/** return by reference requires use of dummy objects, but is
+    important to allow use of assign_rep() since this operation must
+    be performed on the original envelope object. */
+Model& Model::active_surrogate_model(size_t i)
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_surrogate_model(i);
+  else // letter lacking redefinition of virtual fn.
+    return surrogate_model(i); // default is no active distinction
+}
+
+
+const Model& Model::active_surrogate_model(size_t i) const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_surrogate_model(i);
+  else // letter lacking redefinition of virtual fn.
+    return surrogate_model(i); // default is no active distinction
+}
+
+
+/** return by reference requires use of dummy objects, but is
+    important to allow use of assign_rep() since this operation must
+    be performed on the original envelope object. */
+Model& Model::active_truth_model()
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_truth_model();
+  else // letter lacking redefinition of virtual fn.
+    return truth_model(); // default is no active distinction
+}
+
+
+const Model& Model::active_truth_model() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_truth_model();
+  else // letter lacking redefinition of virtual fn.
+    return truth_model(); // default is no active distinction
+}
+
+
 bool Model::multifidelity() const
 {
   if (modelRep) return modelRep->multifidelity();

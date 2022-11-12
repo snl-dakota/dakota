@@ -126,24 +126,25 @@ protected:
   // Uses the c_vars/response anchor point to define highFidResponse
   //bool build_approximation(const RealVector& c_vars,const Response& response);
 
-  /// return the model from {approxModels,truthModel} corresponding to m_index
-  Model& model_from_index(size_t m_index);
-  /// return the model from {approxModels,truthModel} corresponding to m_index
-  const Model& model_from_index(size_t m_index) const;
-  /// return the model from corresponding to surrModelKeys[i]
-  unsigned short surrogate_model_form(size_t i) const;
-
-  /// return the model corresponding to surrModelKeys[i] (spanning either
-  /// model forms or resolutions)
+  /// return approxModels[i]
   Model& surrogate_model(size_t i = _NPOS);
-  /// return the model corresponding to surrModelKeys[i] (spanning either
-  /// model forms or resolutions)
+  /// return approxModels[i]
   const Model& surrogate_model(size_t i = _NPOS) const;
-
   /// return truthModel
   Model& truth_model();
   /// return truthModel
   const Model& truth_model() const;
+
+  /// return the model corresponding to surrModelKeys[i] (spanning either
+  /// model forms or resolutions)
+  Model& active_surrogate_model(size_t i = _NPOS);
+  /// return the model corresponding to surrModelKeys[i] (spanning either
+  /// model forms or resolutions)
+  const Model& active_surrogate_model(size_t i = _NPOS) const;
+  /// return the model corresponding to truthModelKey
+  Model& active_truth_model();
+  /// return the model corresponding to truthModelKey
+  const Model& active_truth_model() const;
 
   /// define the active model key and extract {truth,surr}ModelKeys
   void active_model_key(const Pecos::ActiveKey& key);
@@ -226,6 +227,18 @@ protected:
     IntResponseMap& combined_resp_map);
   void derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
     IntResponseMap& combined_resp_map);
+
+  /// return the model from {approxModels,truthModel} corresponding to m_index
+  Model& model_from_index(size_t m_index);
+  /// return the model from {approxModels,truthModel} corresponding to m_index
+  const Model& model_from_index(size_t m_index) const;
+  /// return approxModels[m_index]
+  Model& approx_model_from_index(size_t m_index);
+  /// return approxModels[m_index]
+  const Model& approx_model_from_index(size_t m_index) const;
+
+  /// return the model from corresponding to surrModelKeys[i]
+  unsigned short active_surrogate_model_form(size_t i) const;
 
   /// distributes the incoming orig_asv among actual_asv and approx_asv
   void asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
@@ -681,7 +694,34 @@ inline const Model& EnsembleSurrModel::model_from_index(size_t m_index) const
 }
 
 
-inline unsigned short EnsembleSurrModel::surrogate_model_form(size_t i) const
+inline Model& EnsembleSurrModel::approx_model_from_index(size_t m_index)
+{
+  size_t num_approx = approxModels.size();
+  if (m_index <  num_approx) return approxModels[m_index];
+  else { // includes _NPOS
+    Cerr << "Error: model index (" << m_index << ") out of range in "
+	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+inline const Model& EnsembleSurrModel::
+approx_model_from_index(size_t m_index) const
+{
+  size_t num_approx = approxModels.size();
+  if (m_index <  num_approx) return approxModels[m_index];
+  else { // includes _NPOS
+    Cerr << "Error: model index (" << m_index << ") out of range in "
+	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+/* active cases are Key-based */
+inline unsigned short EnsembleSurrModel::
+active_surrogate_model_form(size_t i) const
 {
   if (i == _NPOS)
     return USHRT_MAX; // defer error/warning/mitigation to calling code
@@ -694,13 +734,13 @@ inline unsigned short EnsembleSurrModel::surrogate_model_form(size_t i) const
 }
 
 
-inline Model& EnsembleSurrModel::surrogate_model(size_t i)
+inline Model& EnsembleSurrModel::active_surrogate_model(size_t i)
 {
   unsigned short lf_form;
   extern Model dummy_model;
   switch (responseMode) {
   case AGGREGATED_MODELS: // array of surrogates: require valid index
-    lf_form = surrogate_model_form(i);
+    lf_form = active_surrogate_model_form(i);
     if (lf_form == USHRT_MAX) {
       Cerr << "Error: model form undefined in EnsembleSurrModel::"
 	   << "surrogate_model()" << std::endl;
@@ -712,7 +752,8 @@ inline Model& EnsembleSurrModel::surrogate_model(size_t i)
   case AGGREGATED_MODEL_PAIR: case MODEL_DISCREPANCY: // paired cases
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     // One surrModelKey: allow client to quietly rely on default (_NPOS)
-    lf_form = (i == _NPOS) ? surrogate_model_form(0) : surrogate_model_form(i);
+    lf_form = (i == _NPOS) ? active_surrogate_model_form(0)
+                           : active_surrogate_model_form(i);
     return //(lf_form == USHRT_MAX) ? model_from_index(0) :
       model_from_index(lf_form);
     break;
@@ -720,13 +761,13 @@ inline Model& EnsembleSurrModel::surrogate_model(size_t i)
 }
 
 
-inline const Model& EnsembleSurrModel::surrogate_model(size_t i) const
+inline const Model& EnsembleSurrModel::active_surrogate_model(size_t i) const
 {
   unsigned short lf_form;
   extern Model dummy_model;
   switch (responseMode) {
   case AGGREGATED_MODELS: // array of surrModelKeys: require valid index
-    lf_form = surrogate_model_form(i);
+    lf_form = active_surrogate_model_form(i);
     if (lf_form == USHRT_MAX) {
       Cerr << "Error: model form undefined in EnsembleSurrModel::"
 	   << "surrogate_model()" << std::endl;
@@ -738,7 +779,8 @@ inline const Model& EnsembleSurrModel::surrogate_model(size_t i) const
   case AGGREGATED_MODEL_PAIR: case MODEL_DISCREPANCY:        // 1 surrModelKey
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: // (paired cases)
     // One surrModelKey: allow client to quietly rely on default (_NPOS)
-    lf_form = (i == _NPOS) ? surrogate_model_form(0) : surrogate_model_form(i);
+    lf_form = (i == _NPOS) ? active_surrogate_model_form(0)
+                           : active_surrogate_model_form(i);
     return //(lf_form == USHRT_MAX) ? model_from_index(0) :
       model_from_index(lf_form);
     break;
@@ -746,7 +788,21 @@ inline const Model& EnsembleSurrModel::surrogate_model(size_t i) const
 }
 
 
-inline Model& EnsembleSurrModel::truth_model()
+inline Model& EnsembleSurrModel::surrogate_model(size_t i)
+{
+  return (i == _NPOS) ? approx_model_from_index(0)
+                      : approx_model_from_index(i);
+}
+
+
+inline const Model& EnsembleSurrModel::surrogate_model(size_t i) const
+{
+  return (i == _NPOS) ? approx_model_from_index(0)
+                      : approx_model_from_index(i);
+}
+
+
+inline Model& EnsembleSurrModel::active_truth_model()
 {
   // In ensemble cases, truthModelKey will return truthModel
   // In paired cases, truthModelKey will return the active HF in the pair
@@ -762,7 +818,7 @@ inline Model& EnsembleSurrModel::truth_model()
 }
 
 
-inline const Model& EnsembleSurrModel::truth_model() const
+inline const Model& EnsembleSurrModel::active_truth_model() const
 {
   unsigned short hf_form = truthModelKey.retrieve_model_form();
   if (hf_form == USHRT_MAX) { // should not happen
@@ -772,6 +828,14 @@ inline const Model& EnsembleSurrModel::truth_model() const
   }
   else return model_from_index(hf_form);
 }
+
+
+inline Model& EnsembleSurrModel::truth_model()
+{ return truthModel; }
+
+
+inline const Model& EnsembleSurrModel::truth_model() const
+{ return truthModel; }
 
 
 inline void EnsembleSurrModel::assign_truth_key()
