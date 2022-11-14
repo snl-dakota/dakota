@@ -9,3 +9,4 @@ Running Dakota
    running/commandline
    running/runningexamples
    running/executionphases
+   running/restart

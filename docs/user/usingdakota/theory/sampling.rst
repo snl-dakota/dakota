@@ -10,7 +10,7 @@ strategies for multilevel and multifidelity sampling are introduced
 within this context. Hereafter, multilevel refers to the possibility of
 exploiting distinct discretization levels (i.e. space/time resolution)
 within a single model form, whereas multifidelity involves the use of
-more than one model form. In :ref:`uq:sampling:mfmc:`,
+more than one model form. In :ref:`uq:sampling:mfmc`,
 we describe the multifidelity Monte Carlo and its single fidelity model version, the control variate Monte Carlo, 
 that we align with
 multifidelity sampling, and in :ref:`uq:sampling:multilevel`, we
@@ -164,6 +164,7 @@ The MFMC estimator is still unbiased (similarly to MC) and share similarities wi
 The optimal resource allocation problem is also obtainable in closed-form if, as demonstrated in :cite:p:`peherstorfer2016optimal` the following conditions, for the models' correlations and costs, hold 
 
 .. math:: |\rho_1| > |\rho_2| > \dots > |\rho_M|
+
 .. math:: \frac{\mathcal{C}_{i-1}}{\mathcal{C}_{i}} > \frac{ \rho_{i-1}^2 - \rho_{i}^2 }{ \rho_{i}^2 - \rho_{i+1}^2 },
 
 leading to 
@@ -625,7 +626,7 @@ Even for this case, the sample allocation problem can be solved by
 resorting to a numerical optimization given a prescribed target.
 
 
-.. _`uq:sampling:mlmf`:
+.. _uq:sampling:mlmf:
 
 A multilevel-multifidelity approach
 -----------------------------------
@@ -635,14 +636,14 @@ be related to a recursive control variate technique in that it
 seeks to reduce the variance of the target function in order to limit
 the sampling at high resolution. In addition, the difference function
 :math:`Y_\ell` for each level can itself be the target of an additional
-control variate (refer to :ref:`uq:sampling:controlvariate`). A
+control variate (refer to :ref:`uq:sampling:mfmc`). A
 practical scenario is when not only different resolution levels are
 available (multilevel part), but also a cheaper computational model can
 be used (multifidelity part). The combined approach is a
 multilevel-multifidelity algorithm :cite:p:`Fairbanks2017,Nobile2015,GeraciCTR`, and in particular, a
 multilevel-control variate Monte Carlo sampling approach.
 
-.. _`uq:sampling:mlmf:Ycorr`:
+.. _uq:sampling:mlmf:Ycorr:
 
 :math:`Y_l` correlations
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -726,8 +727,7 @@ ratio :math:`r_\ell`:
    \end{split}
 
 Note that :math:`\Lambda_{\ell}(r_\ell)` represents a penalty with
-respect to the classical control variate approach presented in
-§\ `1.2 <#uq:sampling:controlvariate>`__, which stems from the need to
+respect to the classical control variate approach presented in :ref:`uq:sampling:mfmc`, which stems from the need to
 evaluate the unknown function
 :math:`\mathbb{E}\left[Y^{\mathrm{LF}}_{\ell}\right]`. However, the
 ratio :math:`r_\ell/(r_\ell+1)` is dependent on the additional number of
@@ -772,7 +772,7 @@ the efficiency of the LF model, i.e. how fast a simulation runs with
 respect to the HF model, but also to the correlation between the LF and
 HF model.
 
-.. _`uq:sampling:mlmf:Qcorr`:
+.. _uq:sampling:mlmf:Qcorr:
 
 :math:`Q_l` correlations
 ~~~~~~~~~~~~~~~~~~~~~~~~

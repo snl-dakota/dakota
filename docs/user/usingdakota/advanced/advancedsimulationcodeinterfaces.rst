@@ -58,11 +58,9 @@ descriptor strings:
 .. literalinclude:: ../samples/dakota_ampl_fma.row
 
 The variable and objective function names declared within AMPL should be
-a subset of the variable descriptors and response descriptors used by
-Dakota (see the Dakota Reference Manual :cite:p:`RefMan` for
-information on Dakota variable and response descriptors). Ordering of
-the inputs and outputs within the AMPL declaration is not important, as
-Dakota will reorder data as needed. The following listing shows an
+a subset of the :ref:`variable descriptors <variables:main>` and :ref:`response descriptors <responses:main>`
+used by Dakota. Ordering of the inputs and outputs within the AMPL declaration
+is not important, as Dakota will reorder data as needed. The following listing shows an
 excerpt from ``dakota/share/dakota/test/dakota_ampl_fma.in``,
 which demonstrates a combined algebraic/simulation-based
 mapping in which algebraic mappings from the ``fma`` definition are
@@ -133,8 +131,8 @@ simulation code.
 
 Three approaches are outlined below for developing direct linking
 between Dakota and a simulation: extension, derivation, and sandwich.
-For additional information, refer to “Interfacing with Dakota as a
-Library” in the Dakota Developers Manual :cite:p:`DevMan`.
+For additional information, refer to :ref:`"Interfacing with Dakota as a
+Library" <interfacing_with_dakota_as_library>`.
 
 Once performed, Dakota can bind with the new direct simulation interface
 using the ``direct`` interface specification in combination with an
@@ -192,28 +190,28 @@ member functions. In this case, the following steps are performed:
 
 Various header files may have to be included, particularly within the
 **DirectFnApplicInterface** class, in order to recognize new external
-functions and compile successfully. Refer to the Dakota Developers
-Manual :cite:p:`DevMan` for additional information on the
-**DirectFnApplicInterface** class and the Dakota data types.
+functions and compile successfully. Refer to Dakota's source code documentation
+for additional information on the **DirectFnApplicInterface** class
+and the Dakota data types.
 
 .. _`advint:direct:derivation`:
 
 Derivation
 ~~~~~~~~~~
 
-As described in “Interfacing with Dakota as a Library” in the Dakota
-Developers Manual :cite:p:`DevMan`, a derivation approach can
-be employed to further increase the level of independence between Dakota
-and the host application. In this case, rather than *adding* a new
-function to the existing **DirectFnApplicInterface** class, a new
-interface class is derived from **DirectFnApplicInterface** which
-*redefines* the **derived_map_if()**, **derived_map_ac()**, and
-**derived_map_of()** virtual functions.
+As described in :ref:`"Interfacing with Dakota as a Library" <interfacing_with_dakota_as_library>`,
+a derivation approach can be employed to further increase the level
+of independence between Dakota and the host application. In this
+case, rather than *adding* a new function to the existing
+**DirectFnApplicInterface** class, a new interface class is derived
+from **DirectFnApplicInterface** which *redefines* the
+**derived_map_if()**, **derived_map_ac()**, and **derived_map_of()**
+virtual functions.
 
 ..
    TODO: % Note: this approach has benefits primarily in library mode:
 
-In the approach of Section :ref:`advint:direct:sandwich` below,
+In the approach of the :ref:`sandwich section <advint:direct:sandwich>` below,
 the class derivation approach avoids the need to recompile the Dakota
 library when the simulation or its direct interface class is modified.
 
@@ -226,13 +224,12 @@ In a “sandwich” implementation, a simulator provides both the “front
 end” and “back end” with Dakota sandwiched in the middle. To accomplish
 this approach, the simulation code is responsible for interacting with
 the user (the front end), links Dakota in as a library (refer to
-“Interfacing with Dakota as a Library” in the Dakota Developers
-Manual :cite:p:`DevMan`), and plugs in a derived direct
-interface class to provide a closely-coupled mechanism for performing
-function evaluations (the back end). This approach makes Dakota services
-available to other codes and frameworks and is currently used by Sandia
-codes such as Xyce (electrical simulation), Sage (CFD), and SIERRA
-(multiphysics).
+:ref:`"Interfacing with Dakota as a Library" <interfacing_with_dakota_as_library>`),
+and plugs in a derived direct interface class to provide a closely-coupled
+mechanism for performing function evaluations (the back end). This
+approach makes Dakota services available to other codes and frameworks
+and is currently used by Sandia codes such as Xyce (electrical simulation),
+Sage (CFD), and SIERRA (multiphysics).
 
 .. _`advint:existingdirect`:
 

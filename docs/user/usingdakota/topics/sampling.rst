@@ -3,23 +3,22 @@
 Sampling
 ========
 
-Sampling techniques are selected using the ``sampling``
+Sampling techniques are selected using the :dakkw:`method-sampling`
 method selection. This method generates sets of samples according to
 the probability distributions of the uncertain variables and maps them
 into corresponding sets of response functions, where the number of
-samples is specified by the ``samples`` integer specification.
+samples is specified by the :dakkw:`method-sampling-samples` integer specification.
 Means, standard deviations, coefficients of variation (COVs), and 95\%
 confidence intervals are computed for the response functions.
 Probabilities and reliabilities may be computed for
-``response_levels`` specifications, and response levels may be
-computed for either ``probability_levels`` or
-``reliability_levels`` specifications (refer to the Method
-Commands chapter in the Dakota Reference Manual :cite:p:`RefMan` for
-additional information).
+:dakkw:`method-sampling-response_levels` specifications, and response levels may be
+computed for either :dakkw:`method-sampling-probability_levels` or
+:dakkw:`method-sampling-reliability_levels` specifications.
 
 Currently, traditional Monte Carlo (MC) and Latin hypercube sampling
 (LHS) are supported by Dakota and are chosen by specifying
-``sample_type`` as ``random`` or ``lhs``. In Monte
+:dakkw:`method-sampling-sample_type` as :dakkw:`method-sampling-sample_type-random`
+or :dakkw:`method-sampling-sample_type-lhs`. In Monte
 Carlo sampling, the samples are selected randomly according to the
 user-specified probability distributions. Latin hypercube sampling is
 a stratified sampling technique for which the range of each uncertain

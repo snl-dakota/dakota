@@ -8,9 +8,8 @@ to specify multiprocessor analysis partitions. As with the
 ``analysis_self_scheduling``, and ``analysis_static_scheduling``
 specifications, ``processors_per_analysis`` provides a means for the
 user to override the automatic parallel configuration (refer to
-ParallelLibrary and the Parallel Computing chapter of the Users Manual
-:cite:p:`UsersMan`) for the number of processors used for each analysis
-partition.
+ParallelLibrary and the :ref:`Parallel Computing section <parallel>`)
+for the number of processors used for each analysis partition.
 
 *Usage Tips*
 

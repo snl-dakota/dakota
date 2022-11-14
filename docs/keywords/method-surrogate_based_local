@@ -50,8 +50,7 @@ Examples::
 Theory::
 For surrogate_based_local problems with nonlinear constraints, a
 number of algorithm formulations exist as described in :cite:p:`Eld06b`
-and as summarized in the Advanced Examples
-section of the Models chapter of the Users Manual :cite:p:`UsersMan`.
+and as summarized in :ref:`adv_meth:sbm:sblm`.
 Faq::
 
 See_Also::

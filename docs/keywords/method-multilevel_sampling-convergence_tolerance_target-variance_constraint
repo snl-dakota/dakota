@@ -1,7 +1,18 @@
 Blurb::
+
+Allocate samples to target specified variance
+
 Description::
+
+Minimizes the cost while targeting a certain estimator variance given
+in keyword ``convergence_tolerance``.
+
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
+
 See_Also::

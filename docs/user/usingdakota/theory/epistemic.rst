@@ -22,29 +22,35 @@ be a :math:`\sigma`-algebra over :math:`\mathcal{S}`. The operator
 :math:`m` is defined to be
 
 .. math::
+   :label: epistemic-eq-1
 
    \begin{aligned}
    m(\mathcal{U}) 
-   &=&  \left\{
+   =  \left\{
    \begin{array}{rr}
    > 0 & \mathrm{if} \ \mathcal{U} \in \mathbb{S}\\
    0 & \mathrm{if} \ \mathcal{U} \subset \mathcal{S} \ \mathrm{and} \ \mathcal{U} \notin \mathbb{S} 
    \end{array} \right.\end{aligned}
 
 .. math::
+   :label: epistemic-eq-2
 
    \begin{aligned}
-   \displaystyle\sum_{\mathcal{U} \in \mathbb{S}} m(\mathcal{U}) &=& 1\end{aligned}
+   \displaystyle\sum_{\mathcal{U} \in \mathbb{S}} m(\mathcal{U}) = 1\end{aligned}
 
 where :math:`m(\mathcal{U})` is known as the basic probability
 assignment (BPA) of the set :math:`\mathcal{U}`. In the DSTE framework,
 belief and plausibility are defined as:
 
 .. math::
+   :label: bel
 
-   \begin{aligned}
-       \mathrm{Bel}(\mathcal{E}) &=& \displaystyle\sum_{\{ \mathcal{U} \ | \ \mathcal{U} \subset \mathcal{E}, \ \mathcal{U} \in \mathbb{S}\}} m(\mathcal{U}) \label{eq:bel}\\
-       \mathrm{Pl}(\mathcal{E}) &=& \displaystyle\sum_{\{ \mathcal{U} \ | \ \mathcal{U} \cap \mathcal{E} \neq \emptyset, \ \mathcal{U} \in \mathbb{S}\}} m(\mathcal{U}) \label{eq:pl}\end{aligned}
+   \mathrm{Bel}(\mathcal{E}) = \displaystyle\sum_{\{ \mathcal{U} \ | \ \mathcal{U} \subset \mathcal{E}, \ \mathcal{U} \in \mathbb{S}\}} m(\mathcal{U})
+   
+.. math::
+   :label: pl
+   
+   \mathrm{Pl}(\mathcal{E}) = \displaystyle\sum_{\{ \mathcal{U} \ | \ \mathcal{U} \cap \mathcal{E} \neq \emptyset, \ \mathcal{U} \in \mathbb{S}\}} m(\mathcal{U})
 
 The belief Bel(:math:`\mathcal{E}`) is interpreted to be the minimum
 likelihood that is associated with the event :math:`\mathcal{E}`.

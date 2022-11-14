@@ -39,9 +39,8 @@ each major iteration.
 NPSOL is not a parallel algorithm and cannot directly take advantage
 of concurrent evaluations. However, if ``numerical_gradients`` with
 ``method_source`` ``dakota`` is specified, then the finite difference
-function evaluations can be performed concurrently (using any of the
-parallel modes described in the Users Manual
-:cite:p:`UsersMan`).
+function evaluations can be performed concurrently (using any of
+:ref:`the parallel modes <parallel>`).
 
 An important related
 observation is the fact that NPSOL uses two different line searches

@@ -8,9 +8,30 @@ Help Resources
 Public User Community
 =====================
 
-Dakota is an open source and publicly available project with a significant worldwide user base. Our vision is that Dakota
-users will increasingly help each other with questions and issues. We encourage general usage questions about how to use Dakota,
-including how to install, choose algorithms, or interface to an application code, be posted to our public users' email list.
+Dakota is an open source and publicly available project with a
+significant worldwide user base. Our vision is that Dakota users will
+increasingly help each other with questions and issues. We especially
+encourage general usage questions about how to use Dakota, including
+how to install, choose algorithms, or interface to an application
+code, but all Dakota topics are welcome.
+
+New: Dakota Github Discussions
+------------------------------
+
+2022-11-15: External user support is moving to Github
+Discussions. Discussions offers many advantages over the dakota-users
+listserv, including threaded conversations, advanced formatting via
+markdown, LaTeX-formatted mathematical expressions, and more.
+
+We plan to operate dakota-users and the new Discussions forums concurrently
+until February 15, 2023, when dakota-users will be shut down.
+
+*To discuss Dakota:* Create an account on https://github.com/ and
+visit Dakota's `Discussions page
+<https://github.com/orgs/snl-dakota/discussions>`_.
+
+Deprecated: Dakota Users Mailing List
+-------------------------------------
 
 Simply email your question to `dakota-users@software.sandia.gov <mailto:dakota-users@software.sandia.gov>`__. Your first message will
 be held for moderation, and after it is approved, you will be subscribed to the list. Please refer to the guidance in our FAQ when
@@ -21,6 +42,9 @@ demand that we prioritize requests as follows:
 - CRADA and other DOE users and partners, e.g., NNSA/ASC labs, NEAMS and CASL Nuclear Energy initiatives
 - Close research or software collaborators
 - Other users
+
+Additional details on Dakota's mailing lists and managing your
+subscriptions appear below.
 
 .. _help-mailing:
 

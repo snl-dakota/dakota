@@ -140,6 +140,9 @@ The following sample input file shows a 1-D vector parameter study using the Tex
     no_gradients
     no_hessians
 
+
+.. _examples-gettingstarted-optimization:
+
 ============
 Optimization
 ============

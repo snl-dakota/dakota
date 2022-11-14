@@ -1,7 +1,21 @@
 Blurb::
+
+(Experimental Capability) Generate random samples from the
+posterior density
+
 Description::
+
+This keyword will result in samples from the prior that have a high
+posterior density being printed to a file called `psamples.txt` as a
+default, or to a file specified by the
+`posterior_samples_export_filename`.
+
 Topics::
+
 Examples::
+
 Theory::
+
 Faq::
+
 See_Also::

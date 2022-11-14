@@ -8,8 +8,8 @@ usage with the APREPRO pre-processing tool
 using the ``aprepro`` specification
 
 Without this keyword, the parameters file are written in
-DPrePro format. DPrePro is a utility included with Dakota,
-described in the Users Manual :cite:p:`UsersMan`.
+DPrePro format. :ref:`DPrePro <interfaces:dprepro-and-pyprepro>` is
+a utility included with Dakota.
 Topics::
 file_formats
 Examples::

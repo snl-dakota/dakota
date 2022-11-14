@@ -29,6 +29,8 @@ Example Search
 Wizards
 =======
 
+.. _gui-wizards-main:
+
 .. toctree::
    :maxdepth: 1
    
@@ -41,6 +43,8 @@ Wizards
 ==========================
 Editing Dakota Input Files
 ==========================
+
+.. _gui-inputfiles-main:
    
 .. toctree::
    :maxdepth: 1

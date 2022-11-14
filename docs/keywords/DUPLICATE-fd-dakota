@@ -3,8 +3,7 @@ Blurb::
 Description::
 The ``dakota`` routine is the default since it can execute
 in parallel and exploit the concurrency in finite difference
-evaluations (see Exploiting Parallelism in the Users Manual
-:cite:p:`UsersMan`).
+evaluations (see the discussion on :ref:`exploiting parallelism <parallel:overview:cat>`).
 
 When the ``method_source`` is ``dakota``, the user may also specify the
 type of scaling desired when determining the finite difference step

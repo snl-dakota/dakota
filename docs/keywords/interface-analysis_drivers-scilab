@@ -1,9 +1,8 @@
 Blurb::
 Run Scilab through a direct interface - requires special Dakota build
 Description::
-Dakota supports a library-linked interface to Scilab, but it must be
-explicitly enabled when compiling Dakota from source. Consult the
-Users Manual :cite:p:`UsersMan` for discussion and examples.  Contact the
+Dakota supports :ref:`a library-linked interface to Scilab <advint:scilab>`, but it must be
+explicitly enabled when compiling Dakota from source.  Contact the
 Dakota users mailing list for assistance building and using Dakota
 with these interfaces.
 

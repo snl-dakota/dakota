@@ -35,14 +35,12 @@ The set of interpolation techniques known as Kriging, also referred to
 as Gaussian Processes, were originally developed in the geostatistics
 and spatial statistics communities to produce maps of underground
 geologic deposits based on a set of widely and irregularly spaced
-borehole sites:cite:p:`Cre91`. Building a Kriging model
+borehole sites :cite:p:`Cre91`. Building a Kriging model
 typically involves the
 
-#. Choice of a trend function,
-
-#. Choice of a correlation function, and
-
-#. Estimation of correlation parameters.
+1. Choice of a trend function,
+2. Choice of a correlation function, and
+3. Estimation of correlation parameters.
 
 A Kriging emulator, :math:`\hat{f}\left(\underline{x}\right)`, consists
 of a trend function (frequently a least squares fit to the data,
@@ -72,7 +70,7 @@ to
 
 where
 
-.. math:: \delta\left(\underline{x}-\underline{x}'\right)=\left\{\begin{tabular}{ll} 1 & if $\underline{x}-\underline{x}'=\underline{0}$ \\ 0 & otherwise \end{tabular} \right.
+.. math:: \delta\left(\underline{x}-\underline{x}'\right)=\left\{\begin{array}{ll} 1 & if & \underline{x}-\underline{x}'=\underline{0} \\ 0 & otherwise \end{array} \right.
 
 and :math:`\Delta^2` is the variance of the measurement error. In this
 work, the term “nugget” refers to the ratio
@@ -122,9 +120,9 @@ families of correlation functions:
 -  **Powered-Exponential**
 
    .. math::
+      :label: PowExpCorrFunc
 
       r\left(\underline{X_i},\underline{X_j}\right)=\exp\left(-\sum_{k=1}^M \theta_k\left|X_{i,k}-X_{j,k}\right|^\gamma\right)
-              \label{Eqn:PowExpCorrFunc}
 
    where :math:`0<\gamma\le2` and :math:`0<\theta_k`.
 
@@ -149,8 +147,8 @@ discussion of the properties of and relationships between these three
 families. Some additional correlation functions include the Dagum family
 :cite:p:`Ber08` and cubic splines.
 
-The squared exponential or Gaussian correlation function (Equation
-`[Eqn:PowExpCorrFunc] <#Eqn:PowExpCorrFunc>`__ with :math:`\gamma=2`)
+The squared exponential or Gaussian correlation function
+(Equation :eq:`PowExpCorrFunc` with :math:`\gamma=2`)
 was selected to be the first correlation function implemented in Dakota
 on the basis that its infinite smoothness or differentiability should
 aid in leveraging the anticipated and hopefully sparse data. For the
@@ -158,7 +156,10 @@ Gaussian correlation function, the correlation parameters,
 :math:`\underline{\theta}`, are related to the correlation lengths,
 :math:`\underline{L}`, by
 
-.. math:: \theta_k=\frac{1}{2\ L_k^2}.
+.. math::
+   :label: GaussCorrFunc
+
+   \theta_k=\frac{1}{2\ L_k^2}.
 
 Here, the correlation lengths, :math:`\underline{L}`, are analogous to
 standard deviations in the Gaussian or normal distribution and often
@@ -166,9 +167,9 @@ have physical meaning. The adjusted (by data) mean of the emulator is a
 best linear unbiased estimator of the unknown true function,
 
 .. math::
+   :label: KrigMean
 
    \hat{y}={\rm E}\left(\hat{f}\left(\underline{x}\right)|\underline{f}\left(\underline{\underline{X}}\right)\right)=\underline{g}\left(\underline{x}\right)^T\underline{\hat{\beta}}+\underline{r}\left(\underline{x}\right)^T\ \underline{\underline{R}}^{-1}\underline{\epsilon}.
-   \label{Eq:KrigMean}
 
 Here,
 :math:`\underline{\epsilon}=\left(\underline{Y}-\underline{\underline{G}}\ \underline{\hat{\beta}}\right)`
@@ -211,7 +212,7 @@ is that the row or columns of an ill-conditioned matrix contain a
 significant amount of duplicate information, and that when discarded,
 duplicate information should be easy to predict.
 
-As of version 5.2, Dakota’s ``kriging`` model has a similar “discard
+Dakota’s :dakkw:`model-surrogate-global-gaussian_process-surfpack` model has a similar “discard
 near duplicate points” capability. However, it explicitly addresses the
 issue of unique information content. Points are **not** discarded prior
 to the construction of the Kriging model. Instead, for each vector
@@ -277,9 +278,9 @@ points during optimization or to otherwise improve the surrogate. The
 adjusted variance is
 
 .. math::
+   :label: KrigVar
 
    \begin{aligned}
-   \label{Eq:KrigVar}
    {\rm Var}\left(\hat{y}\right) &=& {\rm Var}\left(\hat{f}\left(\underline{x}\right)|\underline{f}\left(\underline{\underline{X}}\right)\right) \\ 
    &=&\hat{\sigma}^2\left(1-\underline{r}\left(\underline{x}\right)^T\ \underline{\underline{R}}^{-1}\underline{r}\left(\underline{x}\right) + \right. ... \\
    &&\left. \left(\underline{g}\left(\underline{x}\right)^T-\underline{r}\left(\underline{x}\right)^T\ \underline{\underline{R}}^{-1}\underline{\underline{G}}\right) \left(\underline{\underline{G}}^T\underline{\underline{R}}^{-1} \underline{\underline{G}}\right)^{-1}\left(\underline{g}\left(\underline{x}\right)^T-\underline{r}\left(\underline{x}\right)^T\ \underline{\underline{R}}^{-1}\underline{\underline{G}}\right)^T\right)\end{aligned}
@@ -293,13 +294,13 @@ There are two types of numerical approaches to choosing
 such as Markov Chain Monte Carlo to obtain a distribution represented by
 an ensemble of vectors :math:`\underline{\theta}`. In this case,
 evaluating the emulator’s mean involves taking a weighted average of
-Equation `[Eq:KrigMean] <#Eq:KrigMean>`__ over the ensemble of
-:math:`\underline{\theta}` vectors.
+Equation :eq:`KrigMean` over the ensemble of :math:`\underline{\theta}` vectors.
 
 The other, more common, approach to constructing a Kriging model
 involves using optimization to find the set of correlation parameters
 :math:`\underline{\theta}` that maximizes the likelihood of the model
-given the data. Dakota’s ``gaussian_process`` and ``kriging`` models use
+given the data. Dakota’s :dakkw:`model-surrogate-global-gaussian_process` and
+:dakkw:`model-surrogate-global-gaussian_process-surfpack` models use
 the maximum likelihood approach. It is equivalent, and more convenient
 to maximize the natural logarithm of the likelihood, which assuming a
 vague prior is,
@@ -307,8 +308,9 @@ vague prior is,
 .. math::
 
    \begin{aligned}
-   \log\left({\rm lik}\left(\underline{\theta}\right)\right)&=&-\frac{1}{2}\Bigg(\left(N-N_{\beta}\right)\left(\frac{\hat{\sigma}^2}{\sigma^2}+\log\left(\sigma^2\right)+\log(2\pi)\right)+...\\
-   && \hspace{0.4truein}\log\left(\det\left(\underline{\underline{R}}\right)\right)+\log\left(\det\left(\underline{\underline{G}}^T\underline{\underline{R}}^{-1}\underline{\underline{G}}\right)\right)\Bigg).\end{aligned}
+   \log\left({\rm lik}\left(\underline{\theta}\right)\right)&=&
+   -\frac{1}{2}\Bigg(\left(N-N_{\beta}\right)\left(\frac{\hat{\sigma}^2}{\sigma^2}+\log\left(\sigma^2\right)+\log(2\pi)\right)+...\\
+   && \log\left(\det\left(\underline{\underline{R}}\right)\right)+\log\left(\det\left(\underline{\underline{G}}^T\underline{\underline{R}}^{-1}\underline{\underline{G}}\right)\right)\Bigg).\end{aligned}
 
 And, if one substitutes the maximum likelihood estimate
 :math:`\hat{\sigma}^2` in for :math:`\sigma^2`, then it is equivalent to
@@ -339,8 +341,8 @@ the emulator incapable of reproducing the data from which it was built.
 This is because a singular :math:`\underline{\underline{R}}` makes
 :math:`\log\left(\det\left(\underline{\underline{R}}\right)\right)=-\infty`
 and the *estimate* of likelihood infinite. Constraints are therefore
-required. Two types of constraints are used in Dakota’s ``kriging``
-models.
+required. Two types of constraints are used in Dakota’s
+:dakkw:`model-surrogate-global-gaussian_process-surfpack` models.
 
 The first of these is an explicit constraint on LAPACK’s fast estimate
 of the (reciprocal of the) condition number,
@@ -360,7 +362,7 @@ optimization. Many global optimizers, such as the DIRECT (DIvision of
 RECTangles) used by Dakota’s Gaussian Process (as the only option) and
 Kriging (as the default option) models, require a box constraint
 definition for the range of acceptable parameters. By default, Dakota’s
-``kriging`` model defines the input space to be the smallest
+:dakkw:`model-surrogate-global-gaussian_process-surfpack` model defines the input space to be the smallest
 hyper-rectangle that contains the sample design. The user has the option
 to define a larger input space that includes a region where they wish to
 extrapolate. Note that the emulator can be evaluated at points outside
@@ -418,7 +420,7 @@ information into Kriging. These are
    are treated as separate but correlated output variables and a
    Co-Kriging model is built for the set of output variables. This would
    use
-   :math:`\left(\begin{tabular}{c}`\ M+2\ :math:`\\ `\ 2\ :math:`\end{tabular}\right)`
+   :math:`\left(\begin{array}{c} M+2 \\ 2 \end{array}\right)`
    :math:`\underline{\theta}` vectors.
 
 #. **Direct**: The relationship between the response value and its
@@ -426,17 +428,16 @@ information into Kriging. These are
    by assuming
 
    .. math::
+      :label: GEKCovAssume
 
       {\rm Cov}\left(y\left(\underline{x^1}\right),\frac{\partial y\left(\underline{x^2}\right)}{\partial x_k^2}\right)=\frac{\partial}{\partial x_k^2}\left({\rm Cov}\left(y\left(\underline{x^1}\right),y\left(\underline{x^2}\right)\right)\right).
-              \label{Eqn:GEKCovAssume}
 
-Dakota 5.2 and later includes an implementation of the direct approach,
+Dakota includes an implementation of the direct approach,
 herein referred to simply as Gradient Enhanced (universal) Kriging
 (GEK). The equations for GEK can be derived by assuming Equation
-`[Eqn:GEKCovAssume] <#Eqn:GEKCovAssume>`__ and then taking the same
+:eq:`GEKCovAssume` and then taking the same
 steps used to derive function value only Kriging. The superscript on
-:math:`\underline{x}` in Equation
-`[Eqn:GEKCovAssume] <#Eqn:GEKCovAssume>`__ and below indicates whether
+:math:`\underline{x}` in Equation :eq:`GEKCovAssume` and below indicates whether
 it’s the 1st or 2nd input to
 :math:`r\left(\underline{x^1},\underline{x^2}\right)`. Note that when
 the first and second arguments are the same, the derivative of
@@ -459,14 +460,14 @@ is the number of equations rather than the number of points,
    \frac{\partial \underline{Y}}{\partial X_{:,2}} \\ \\ 
    \vdots \\ \\
    \frac{\partial \underline{Y}}{\partial X_{:,M}}
-   \end{bmatrix}, \hspace{0.25truein}
+   \end{bmatrix}, 
    \underline{\underline{G_{\nabla}}}=\begin{bmatrix}
    \underline{\underline{G}}\\ \\
    \frac{\partial \underline{\underline{G}}}{\partial X_{:,1}}\\ \\
    \frac{\partial \underline{\underline{G}}}{\partial X_{:,2}}\\ \\
    \vdots \\ \\
    \frac{\partial \underline{\underline{G}}}{\partial X_{:,M}}
-   \end{bmatrix}, \hspace{0.25truein}
+   \end{bmatrix}, 
    \underline{r_{\nabla}}=\begin{bmatrix} 
    \underline{r} \\ \\
    \frac{\partial \underline{r}}{\partial X_{:,1}} \\ \\
@@ -510,18 +511,15 @@ A straight-forward implementation of GEK tends be significantly more
 accurate than Kriging given the same sample design provided that the
 
 -  Derivatives are accurate
-
 -  Derivatives are not infinite (or nearly so)
-
 -  Function is sufficiently smooth, and
-
 -  :math:`\underline{\underline{R_{\nabla}}}` is not ill-conditioned
    (this can be problematic).
 
 If gradients can be obtained cheaply (e.g. by automatic differentiation
 or adjoint techniques) and the previous conditions are met, GEK also
 tends to outperform Kriging for the same computational budget. Previous
-works, such as Dwight:cite:p:`Dwi09`, state that the direct
+works, such as Dwight :cite:p:`Dwi09`, state that the direct
 approach to GEK is significantly better conditioned than the indirect
 approach. While this is true, (direct) GEK’s
 :math:`\underline{\underline{R_{\nabla}}}` matrix can still be, and
@@ -579,13 +577,15 @@ This can (and often did) significantly degrade the accuracy of the GEK
 predictions. The implication is that derivative equations contain more
 information than, but are not as reliable as, function value equations.
 
-.. figure:: img/PivotCholSelectEqnAlgorithm.pdf
+.. figure:: img/PivotCholSelectEqnAlgorithm.png
    :alt: A diagram with pseudo code for the pivoted Cholesky algorithm
          used to select the subset of equations to retain when
          :math:`\underline{\underline{R_{\nabla}}}` is ill-conditioned.
          Although it is part of the algorithm, the equilibration of
          :math:`\underline{\underline{R_{\nabla}}}` is not shown in this
          figure. The pseudo code uses MATLAB notation.
+   :align: center
+   :width: 600
    :name: fig:SubsetSelectAlgorithm
 
    A diagram with pseudo code for the pivoted Cholesky algorithm used to
@@ -645,8 +645,8 @@ Cholesky approach for GEK was modified to:
    :math:`\underline{\underline{\tilde{R}_{\nabla}}}` but use different
    numbers of rows/columns, :math:`\tilde{N}_{\nabla}`.
 
-This algorithm is visually depicted in Figure
-`1.1 <#fig:SubsetSelectAlgorithm>`__. Because inverting/factorizing a
+This algorithm is visually depicted in
+:numref:`fig:SubsetSelectAlgorithm`. Because inverting/factorizing a
 matrix with :math:`n` rows and columns requires
 :math:`\mathcal{O}\left(n^3\right)` flops, the cost to perform pivoted
 Cholesky on :math:`\underline{\underline{R}}` will be much less than,
@@ -677,6 +677,7 @@ We consider an anisotropic squared exponential kernel
 the literature:
 
 .. math::
+   :label: ExpGP_eq1
 
    \begin{gathered}
      \begin{aligned}
@@ -698,6 +699,7 @@ As of Dakota 6.14, the Matérn :math:`\nu = \frac{3}{2}` and
 exponential kernel.
 
 .. math::
+   :label: ExpGP_eq2
 
    \begin{gathered}
      \begin{aligned}
@@ -715,6 +717,7 @@ hyperparameters :math:`\boldsymbol{\theta}` according to the
 transformation
 
 .. math::
+   :label: ExpGP_eq3
 
    \begin{gathered}
    \theta_i = \log \left( \frac{p_i}{p_{\text{ref}}} \right),\end{gathered}
@@ -726,6 +729,7 @@ their squares as is done by some authors. The log-transformed version of
 the squared exponential and white kernels are
 
 .. math::
+   :label: ExpGP_eq4
 
    \begin{gathered}
      \begin{aligned}
@@ -744,6 +748,7 @@ An important quantity in Gaussian process regression is the *Gram
 matrix* :math:`\boldsymbol{G}`:
 
 .. math::
+   :label: ExpGP_eq5
 
    \begin{gathered}
    G_{ij} := k(\boldsymbol{x}^i,\boldsymbol{x}^j),\end{gathered}
@@ -767,6 +772,7 @@ squared exponential piece of the kernel :math:`\boldsymbol{K}` and
 another associated with the nugget term
 
 .. math::
+   :label: ExpGP_eq6
 
    \begin{gathered}
    \boldsymbol{G} =  \boldsymbol{K} + \exp(2 \theta_{-1})  \boldsymbol{I}.\end{gathered}
@@ -776,6 +782,7 @@ distances between points in the space of build points for dimension
 :math:`m`:
 
 .. math::
+   :label: ExpGP_eq7
 
    \begin{gathered}
    D_{ijm}  = \left( x^i_m - x^j_m \right)^2.\end{gathered}
@@ -783,6 +790,7 @@ distances between points in the space of build points for dimension
 The derivatives of :math:`\boldsymbol{G}` are
 
 .. math::
+   :label: ExpGP_eq8
 
    \begin{gathered}
    \begin{aligned}
@@ -800,6 +808,7 @@ likelihood estimation :math:`J` depends on the residual
 :math:`\boldsymbol{z} := \boldsymbol{y} - \Phi \boldsymbol{\beta}`.
 
 .. math::
+   :label: ExpGP_eq9
 
    \begin{gathered}
    J(\boldsymbol{\theta},\boldsymbol{\beta}) = \frac{1}{2} \log \left( \text{det} \left( \boldsymbol{G} \right) \right) + \frac{1}{2} \boldsymbol{z}^T \boldsymbol{G}^{-1} \boldsymbol{z} + \frac{N}{2} \log \left( 2 \pi \right).\end{gathered}
@@ -808,6 +817,7 @@ The gradient of the objective function can be computed analytically
 using the derivatives of the Gram matrix. First we introduce
 
 .. math::
+   :label: ExpGP_eq10
 
    \begin{gathered}
    \begin{aligned}
@@ -818,6 +828,7 @@ using the derivatives of the Gram matrix. First we introduce
 The gradient is
 
 .. math::
+   :label: ExpGP_eq11
 
    \begin{gathered}
    \begin{aligned}
@@ -840,6 +851,7 @@ associated basis matrix :math:`\boldsymbol{\Phi}^*`. Some useful
 quantities are
 
 .. math::
+   :label: ExpGP_eq12
 
    \begin{gathered}
    \begin{aligned}
@@ -852,6 +864,7 @@ quantities are
 The mean and covariance of the GP at the prediction points are
 
 .. math::
+   :label: ExpGP_eq13
 
    \begin{gathered}
    \begin{aligned}
@@ -865,19 +878,22 @@ Polynomial Models
 -----------------
 
 A preliminary discussion of the surrogate polynomial models available in
-Dakota is presented in the Surrogate Models Chapter of the User’s
-Manual :cite:p:`UsersMan`, with select details reproduced
-here. For ease of notation, the discussion in this section assumes that
-the model returns a single response :math:`\hat{f}` and that the design
-parameters :math:`x` have dimension :math:`n`.
+Dakota is presented in the :ref:`main Surrogate Models section <models:surrogate>`,
+with select details reproduced here. For ease of notation, the discussion
+in this section assumes that the model returns a single response :math:`\hat{f}`
+and that the design parameters :math:`x` have dimension :math:`n`.
 
 For each point :math:`x`, a linear polynomial model is approximated by
 
-.. math:: \hat{f}(x) \approx c_0 + \sum_{i = 1}^{n} c_i x_i,
+.. math::
+   :label: polynomial_eq1
+
+   \hat{f}(x) \approx c_0 + \sum_{i = 1}^{n} c_i x_i,
 
 a quadratic polynomial model is
 
 .. math::
+   :label: polynomial_eq2
 
    \hat{f}(x) \approx c_0 + \sum_{i = 1}^{n} c_i x_i + \sum_{i = 1}^{n} 
    \sum_{j \geq i}^{n} c_{ij} x_i x_j,
@@ -885,6 +901,7 @@ a quadratic polynomial model is
 and a cubic polynomial model is
 
 .. math::
+   :label: polynomial_eq3
 
    \hat{f}(x) \approx c_0 + \sum_{i = 1}^{n} c_i x_i + \sum_{i = 1}^{n} 
    \sum_{j \geq i}^{n} c_{ij} x_i x_j + \sum_{i = 1}^{n} \sum_{j \geq i}^{n}
@@ -900,6 +917,7 @@ coefficients present in the polynomial expression. For the linear,
 quadratic, and cubic polynomials, respectively,
 
 .. math::
+   :label: polynomial_eq4
 
    \begin{aligned}
    n_{c}   &=& n+1, \\
@@ -912,7 +930,10 @@ of a training point. Thus, given :math:`m` training points,
 n_c}`. Approximating the polynomial model then amounts to approximating
 the solution to
 
-.. math:: Xb = Y,
+.. math::
+   :label: polynomial_eq5
+
+   Xb = Y,
 
 where :math:`b` is the vector of the polynomial coefficients described
 above, and :math:`Y` contains the true responses :math:`y(x)`. Details
@@ -920,15 +941,18 @@ regarding the solution or approximate solution of this equation can be
 found in most mathematical texts and are not discussed here. For any of
 the training points, the estimated variance is given by
 
-.. math:: \sigma^{2}\left(\hat{f}(x)\right) = MSE\left(v_x^{T} (X^{T} X)^{-1} v_x\right),
+.. math::
+   :label: polynomial_eq6
+
+   \sigma^{2}\left(\hat{f}(x)\right) = MSE\left(v_x^{T} (X^{T} X)^{-1} v_x\right),
 
 where :math:`MSE` is the mean-squared error of the approximation over
 all of the training points. For any new design parameter, the prediction
-variance is given by
+variance is given by 
 
 .. math::
+   :label: poly_var
 
-   \label{eq:poly_var}
    \sigma^{2}\left(\hat{f}(x_{new})\right) = MSE\left(1 + v_{x_{new}}^{T} 
    (X^{T} X)^{-1} v_{x_{new}} \right).
 
