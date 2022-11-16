@@ -587,7 +587,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
          << "\t" << "\n";
   }
   */
-  /*
+  
   myfile.open("windse_sampleallocation.txt", std::ofstream::out | std::ofstream::app); 
   if(num_steps==2){
     myfile << N_l[0][0]             << "\t" << N_l[1][0] 
@@ -608,7 +608,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
          << "\t" << noise_qoi[0]
          << "\t" << "\n";
   }
-  */
+  
+  /*
   myfile.open("rosenbrock_sampleallocation.txt", std::ofstream::out | std::ofstream::app);
   myfile << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]
          << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))<< "\t" << NTargetQoi(0, 2)
@@ -616,6 +617,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
          << "\t" << noise_qoi[0]
          << "\t" << "\n";
   myfile.close();
+  */
  
   /////
 }
