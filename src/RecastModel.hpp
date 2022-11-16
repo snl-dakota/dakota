@@ -250,15 +250,23 @@ protected:
   /// remove keys in subModel
   void clear_model_keys();
 
-  /// return surrogate model, if present, within subModel
+  /// return the i-th surrogate model within subModel
   Model& surrogate_model(size_t i = _NPOS);
-  /// return surrogate model, if present, within subModel
+  /// return the i-th surrogate model within subModel
   const Model& surrogate_model(size_t i = _NPOS) const;
+  /// return the i-th active surrogate model within subModel
+  Model& active_surrogate_model(size_t i = _NPOS);
+  /// return the i-th active surrogate model within subModel
+  const Model& active_surrogate_model(size_t i = _NPOS) const;
 
-  /// return truth model, if present, within subModel
+  /// return the truth model within subModel
   Model& truth_model();
-  /// return truth model, if present, within subModel
+  /// return the truth model within subModel
   const Model& truth_model() const;
+  /// return the active truth model within subModel
+  Model& active_truth_model();
+  /// return the active truth model within subModel
+  const Model& active_truth_model() const;
 
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -753,12 +761,28 @@ inline const Model& RecastModel::surrogate_model(size_t i) const
 { return subModel.surrogate_model(i); }
 
 
+inline Model& RecastModel::active_surrogate_model(size_t i)
+{ return subModel.active_surrogate_model(i); }
+
+
+inline const Model& RecastModel::active_surrogate_model(size_t i) const
+{ return subModel.active_surrogate_model(i); }
+
+
 inline Model& RecastModel::truth_model()
 { return subModel.truth_model(); }
 
 
 inline const Model& RecastModel::truth_model() const
 { return subModel.truth_model(); }
+
+
+inline Model& RecastModel::active_truth_model()
+{ return subModel.active_truth_model(); }
+
+
+inline const Model& RecastModel::active_truth_model() const
+{ return subModel.active_truth_model(); }
 
 
 inline void RecastModel::

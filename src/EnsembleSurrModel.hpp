@@ -237,8 +237,14 @@ protected:
   /// return approxModels[m_index]
   const Model& approx_model_from_index(size_t m_index) const;
 
+  /// return the key from {truthModel,surrModel}Key{,s} corresponding to k_index
+  Pecos::ActiveKey& key_from_index(size_t k_index);
+
   /// return the model from corresponding to surrModelKeys[i]
   unsigned short active_surrogate_model_form(size_t i) const;
+
+  /// identify whether a model form is currently included within active keys
+  bool find_model_in_keys(size_t m_index);
 
   /// distributes the incoming orig_asv among actual_asv and approx_asv
   void asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
@@ -668,6 +674,19 @@ insert_metadata(const RealArray& md, size_t position, Response& agg_response)
 }
 
 
+inline Pecos::ActiveKey& EnsembleSurrModel::key_from_index(size_t k_index)
+{
+  size_t num_approx = surrModelKeys.size();
+  if      (k_index <  num_approx) return surrModelKeys[k_index];
+  else if (k_index == num_approx) return truthModelKey;
+  else { // includes _NPOS
+    Cerr << "Error: key index (" << k_index << ") out of range in "
+	 << "EnsembleSurrModel::key_from_index()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 inline Model& EnsembleSurrModel::model_from_index(size_t m_index)
 {
   size_t num_approx = approxModels.size();
@@ -716,6 +735,20 @@ approx_model_from_index(size_t m_index) const
 	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
+}
+
+
+inline bool EnsembleSurrModel::find_model_in_keys(size_t m_index)
+{
+  if (!truthModelKey.empty() && truthModelKey.retrieve_model_form() == m_index)
+    return true;
+  else {
+    size_t k, num_k = surrModelKeys.size();
+    for (k=0; k<num_k; ++k)
+      if (surrModelKeys[k].retrieve_model_form() == m_index)
+	return true;
+  }
+  return false;
 }
 
 
