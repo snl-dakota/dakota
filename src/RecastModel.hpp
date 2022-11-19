@@ -300,6 +300,8 @@ protected:
   /// update the subModel's surrogate response mode
   /// (SurrogateModel::responseMode)
   void surrogate_response_mode(short mode);
+  /// update the subModel's discrepancy emulation mode
+  void discrepancy_emulation_mode(short mode);
 
   // link SurrogateData instances within the subModel
   //void link_multilevel_approximation_data();
@@ -876,6 +878,10 @@ surrogate_function_indices(const SizetSet& surr_fn_indices)
 // but Recast should allow mode set followed by reset for underlying surrogate.
 inline void RecastModel::surrogate_response_mode(short mode)
 { /* if (mode == BYPASS_SURROGATE) */ subModel.surrogate_response_mode(mode); }
+
+
+inline void RecastModel::discrepancy_emulation_mode(short mode)
+{ subModel.discrepancy_emulation_mode(mode); }
 
 
 //inline void RecastModel::link_multilevel_approximation_data()

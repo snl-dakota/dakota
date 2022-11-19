@@ -187,7 +187,6 @@ NonDMultilevelStochCollocation::~NonDMultilevelStochCollocation()
 { }
 
 
-/*
 void NonDMultilevelStochCollocation::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
@@ -198,11 +197,14 @@ void NonDMultilevelStochCollocation::initialize_u_space_model()
   // initializes ExpansionConfigOptions, among other things
   NonDStochCollocation::initialize_u_space_model();
 
+  // emulation mode needed for ApproximationInterface::qoi_set_to_key_index()
+  uSpaceModel.discrepancy_emulation_mode(multilevDiscrepEmulation);
+
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
   // PecosApproximation
   //uSpaceModel.link_multilevel_approximation_data();
 }
-*/
+
 
 
 bool NonDMultilevelStochCollocation::resize()

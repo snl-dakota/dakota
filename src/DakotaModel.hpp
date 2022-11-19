@@ -392,6 +392,13 @@ public:
   /// forming currentResponse
   virtual short surrogate_response_mode() const;
 
+  /// set discrepancy emulation mode used in SurrogateModels for
+  /// approximating response differences
+  virtual void discrepancy_emulation_mode(short mode);
+  // return discrepancy emulation mode used in SurrogateModels for
+  // approximating response differences
+  //virtual short discrepancy_emulation_mode() const;
+
   // link together more than one SurrogateData instance (DataFitSurrModel)
   //virtual void link_multilevel_approximation_data();
 

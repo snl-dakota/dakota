@@ -4330,7 +4330,24 @@ short Model::surrogate_response_mode() const
 }
 
 
+void Model::discrepancy_emulation_mode(short mode)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->discrepancy_emulation_mode(mode);
+  // else: default implementation is no-op
+}
+
+
 /*
+short Model::discrepancy_emulation_mode() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->discrepancy_emulation_mode();
+  else // letter lacking redefinition of virtual fn.
+    return DEFAULT_EMULATION; // default for non-surrogate models
+}
+
+
 void Model::link_multilevel_approximation_data()
 {
   if (modelRep) // envelope fwd to letter

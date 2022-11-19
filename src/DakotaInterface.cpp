@@ -1470,12 +1470,22 @@ const StringArray& Interface::analysis_drivers() const
   return interfaceRep->analysis_drivers();
 }
 
-const String2DArray & Interface::analysis_components() const
+
+const String2DArray& Interface::analysis_components() const
 {
   if(interfaceRep)
     return interfaceRep->analysis_components();
   return analysisComponents;
 }
+
+
+void Interface::discrepancy_emulation_mode(short mode)
+{
+  if (interfaceRep)
+    interfaceRep->discrepancy_emulation_mode(mode);
+  //else no-op
+}
+
 
 bool Interface::evaluation_cache() const
 {

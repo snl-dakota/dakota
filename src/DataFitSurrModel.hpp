@@ -163,6 +163,8 @@ protected:
   /// set responseMode and pass any bypass request on to actualModel for
   /// any lower-level surrogates.
   void surrogate_response_mode(short mode);
+  /// set approxInterface.sharedData.discrepEmulationMode
+  void discrepancy_emulation_mode(short mode);
 
   // link together more than one SurrogateData instance within
   // approxInterface.functionSurfaces[i].approxData[j]
@@ -590,6 +592,10 @@ inline void DataFitSurrModel::active_model_key(const Pecos::ActiveKey& key)
 
 inline void DataFitSurrModel::clear_model_keys()
 { approxInterface.clear_model_keys(); }
+
+
+inline void DataFitSurrModel::discrepancy_emulation_mode(short mode)
+{ approxInterface.discrepancy_emulation_mode(mode); }
 
 
 inline Model& DataFitSurrModel::surrogate_model(size_t i)

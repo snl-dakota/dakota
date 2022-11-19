@@ -184,6 +184,11 @@ public:
   /// return active multi-index key
   const Pecos::ActiveKey& active_model_key() const;
 
+  /// set discrepancy emulation mode for approximating response differences
+  void discrepancy_emulation_mode(short mode);
+  /// return discrepancy emulation mode for approximating response differences
+  short discrepancy_emulation_mode() const;
+
   /// query whether the form of an approximation has been updated
   bool formulation_updated() const;
   /// assign the status of approximation formulation updates
@@ -245,6 +250,10 @@ protected:
   // SurrogateData for each Approximation
   //UShort2DArray approxDataKeys;
 
+  /// approach for emulating response differences:
+  /// {DEFAULT,DISTINCT,RECURSIVE}_EMULATION
+  short discrepEmulationMode;
+
   /// Prefix for model export files
   String modelExportPrefix;
   /// Bitmapped format request for exported models
@@ -301,6 +310,17 @@ private:
 
 inline const Pecos::ActiveKey& SharedApproxData::active_model_key() const
 { return (dataRep) ? dataRep->activeKey : activeKey; }
+
+
+inline void SharedApproxData::discrepancy_emulation_mode(short mode)
+{
+  if (dataRep) dataRep->discrepEmulationMode = mode;
+  else                  discrepEmulationMode = mode;
+}
+
+
+inline short SharedApproxData::discrepancy_emulation_mode() const
+{ return (dataRep) ? dataRep->discrepEmulationMode : discrepEmulationMode; }
 
 
 inline void SharedApproxData::

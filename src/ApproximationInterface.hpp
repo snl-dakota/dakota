@@ -22,6 +22,7 @@
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
 #include "PRPMultiIndex.hpp"
+#include "DataMethod.hpp"
 
 
 namespace Dakota {
@@ -133,6 +134,8 @@ protected:
 
   const RealVector& approximation_variances(const Variables& vars);
 
+  void discrepancy_emulation_mode(short mode);
+
   bool formulation_updated() const;
   void formulation_updated(bool update);
 
@@ -191,6 +194,12 @@ private:
   /// which may enumerate multiple embedded keys, restore the active approxData
   /// to the nominal key
   void restore_data_key();
+
+  /// check on valid indices for singleton active keys
+  void check_singleton_key_index(size_t index);
+  /// for aggregate active keys that input a single set of data, some
+  /// mapping from QoI sets to key indices may be required
+  void qoi_set_to_key_index(size_t qoi_set, size_t& key_index);
 
   /// Load approximation test points from user challenge points file
   void read_challenge_points();
@@ -334,6 +343,87 @@ inline void ApproximationInterface::restore_data_key()
     if (reduce_key) fn_surf.surrogate_data().synchronize_reduction_size();
   }
 }
+
+
+inline void ApproximationInterface::check_singleton_key_index(size_t index)
+{
+  if (index > 0) {
+    Cerr << "Error: invalid index (" << index << ") for singleton "
+	 << "active key in ApproximationInterface." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+inline void ApproximationInterface::
+qoi_set_to_key_index(size_t qoi_set, size_t& key_index)
+{
+  // After switching previous {HF,LF} pairings to use a consistent low-to-high
+  // ordering for all ensembles, the shortcut enumeration of key_index using
+  // the QoI set index was no longer sufficient for some advanced cases.
+
+  // In particular, we need to manage unusual combinations resulting from use
+  // of synthetic data, i.e. for recursive surrogate emulation.  
+  // > aggregate key for {synthetic LF, simulation HF} + discrepancy reduction,
+  //   combined with a responseMode for adding simulation data only
+  //   --> need key index = 1 (HF) for incoming qoi_set index = 0 (one QoI set)
+  // > Other cases are identity mappings
+
+  // Options:
+  // > could return to {HF,LF} ordering --> No, just flips the logic problem
+  //   to an unused combination --> would have bad indexing with {LF,HF} pairs
+  //   for SURROGATE modes w/i aggregated key (not used since no synthetic HF)
+  // > Alter key management logic: augment activeKey storage with extracted
+  //   key(s) that identify approximation data targets for *_add()
+  // > Simpler: map qoi_set to key_index using mode information (accesses
+  //   the desired embedded key without needing to cache it separately):
+
+  size_t num_key_data = sharedData.active_model_key().data_size();
+  if (num_key_data > 1) {
+
+    /* Logic based on surrogate response mode:
+    // > AGGREGATED modes: key_index = qoi_set
+    // > SURROGATE modes:  key_index = qoi_set = 0
+    // > TRUTH modes + aggregated key (synth data): qoi_set = 0 --> key = last
+    // Issue is advanced MLMF response modes are managed within iteratedModel
+    // (the EnsembleSurrModel), not uSpaceModel (the DataFitSurrModel)
+    //
+    switch (sharedData.surrogate_response_mode()) {
+    case BYPASS_SURROGATE:  case NO_SURROGATE:
+      check_singleton_key_index(qoi_set);  // incoming should be zero
+      key_index = num_key_data -1;// - qoi_set;// reverse indexing (maps 0 to 1)
+      break;
+    case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
+    case MODEL_DISCREPANCY:
+      check_singleton_key_index(qoi_set); // incoming should be zero
+      key_index = 0;        break;
+    default: // identity map for AGGREGATED modes
+      key_index = qoi_set;  break;
+    }
+    */
+
+    // Logic based on discrepancy mode: access embedded truth key if recursive
+    switch (sharedData.discrepancy_emulation_mode()) {
+    case RECURSIVE_EMULATION:
+      check_singleton_key_index(qoi_set);  // incoming should be zero
+      key_index = num_key_data -1;// - qoi_set;// reverse indexing (maps 0 to 1)
+      // Note: reduction data is assigned to aggregate key
+      // (not another embedded: embedded keys track "raw" data sources)
+      break;
+    default: // DISTINCT_EMULATION
+      key_index = qoi_set;  break;
+    }
+
+  }
+  else {
+    check_singleton_key_index(qoi_set);
+    key_index = qoi_set;
+  }
+}
+
+
+inline void ApproximationInterface::discrepancy_emulation_mode(short mode)
+{ sharedData.discrepancy_emulation_mode(mode); }
 
 
 inline void ApproximationInterface::

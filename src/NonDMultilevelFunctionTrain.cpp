@@ -252,6 +252,9 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
   uSpaceModel.shared_approximation().construct_basis(u_dist);
+
+  // emulation mode needed for ApproximationInterface::qoi_set_to_key_index()
+  uSpaceModel.discrepancy_emulation_mode(multilevDiscrepEmulation);
 }
 
 
