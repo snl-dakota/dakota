@@ -17,20 +17,19 @@ code. Consider this option if:
 Compiling Dakota from source requires:
 
 - A :ref:`development environment <devenv>` that has Dakota's
-  dependencies
+  dependencies.
 
-- :ref:`Obtaining the source code <getsource>` via download or Git
+- :ref:`Obtaining the source code <getsource>` via download or Git.
 
 - :ref:`Configuring with CMake <configure>` to (1) set Dakota options
   as well as external software locations and options, and (2) generate
   a development environment-specific build tree.
 
-- Running the development environment's build process to compile and
-  link, e.g., Unix ``make`` or Windows Visual Studio or ``nmake``.
+- Building, that is, running the development environment's :ref:`build
+  process <build>` to compile and link, e.g., Unix ``make`` or Windows
+  Visual Studio or ``nmake``.
 
-- Testing the build
-
-- Installing the build
+- :ref:`Running and assessing tests <test>`.
 
 
 **Quickstart Build**
@@ -67,3 +66,4 @@ and options in more detail.
    configure
    build
    test
+   examples
