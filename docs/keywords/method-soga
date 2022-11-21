@@ -14,13 +14,13 @@ library.
 The genetic algorithm configurations are:
 
 
--fitness
--replacement
--convergence
--initialization
--crossover
--mutation
--population size
+* fitness
+* replacement
+* convergence
+* initialization
+* crossover
+* mutation
+* population size
 
 The pool of potential members is the current population and the
 current set of offspring.  Choice of fitness assessors is strongly
