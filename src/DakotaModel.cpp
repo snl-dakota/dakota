@@ -3411,6 +3411,24 @@ const Model& Model::truth_model() const
 }
 
 
+unsigned short Model::active_surrogate_model_form(size_t i) const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_surrogate_model_form(i);
+  else // letter lacking redefinition of virtual fn.
+    return 0; // default (two models)
+}
+
+
+unsigned short Model::active_truth_model_form() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_truth_model_form();
+  else // letter lacking redefinition of virtual fn.
+    return 1; // default (two models)
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */

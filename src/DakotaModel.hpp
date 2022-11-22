@@ -129,6 +129,11 @@ public:
   /// return the truth sub-model in surrogate models
   virtual const Model& truth_model() const;
 
+  /// return the model form of the i-th active surrogate model
+  virtual unsigned short active_surrogate_model_form(size_t i) const;
+  /// return the model form of the active truth model
+  virtual unsigned short active_truth_model_form() const;
+
   /// return the i-th active approximation sub-model in surrogate models
   virtual Model& active_surrogate_model(size_t i = _NPOS);
   /// return the i-th active approximation sub-model in surrogate models

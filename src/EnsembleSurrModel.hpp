@@ -135,6 +135,11 @@ protected:
   /// return truthModel
   const Model& truth_model() const;
 
+  /// return the model form corresponding to surrModelKeys[i]
+  unsigned short active_surrogate_model_form(size_t i) const;
+  /// return the model form corresponding to truthModelKey
+  unsigned short active_truth_model_form() const;
+
   /// return the model corresponding to surrModelKeys[i] (spanning either
   /// model forms or resolutions)
   Model& active_surrogate_model(size_t i = _NPOS);
@@ -229,22 +234,19 @@ protected:
     IntResponseMap& combined_resp_map);
 
   /// return the model from {approxModels,truthModel} corresponding to m_index
-  Model& model_from_index(size_t m_index);
+  Model& model_from_index(unsigned short m_index);
   /// return the model from {approxModels,truthModel} corresponding to m_index
-  const Model& model_from_index(size_t m_index) const;
+  const Model& model_from_index(unsigned short m_index) const;
   /// return approxModels[m_index]
-  Model& approx_model_from_index(size_t m_index);
+  Model& approx_model_from_index(unsigned short m_index);
   /// return approxModels[m_index]
-  const Model& approx_model_from_index(size_t m_index) const;
+  const Model& approx_model_from_index(unsigned short m_index) const;
 
   /// return the key from {truthModel,surrModel}Key{,s} corresponding to k_index
   Pecos::ActiveKey& key_from_index(size_t k_index);
 
-  /// return the model from corresponding to surrModelKeys[i]
-  unsigned short active_surrogate_model_form(size_t i) const;
-
   /// identify whether a model form is currently included within active keys
-  bool find_model_in_keys(size_t m_index);
+  bool find_model_in_keys(unsigned short m_index);
 
   /// distributes the incoming orig_asv among actual_asv and approx_asv
   void asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
@@ -687,7 +689,7 @@ inline Pecos::ActiveKey& EnsembleSurrModel::key_from_index(size_t k_index)
 }
 
 
-inline Model& EnsembleSurrModel::model_from_index(size_t m_index)
+inline Model& EnsembleSurrModel::model_from_index(unsigned short m_index)
 {
   size_t num_approx = approxModels.size();
   if      (m_index <  num_approx) return approxModels[m_index];
@@ -700,7 +702,8 @@ inline Model& EnsembleSurrModel::model_from_index(size_t m_index)
 }
 
 
-inline const Model& EnsembleSurrModel::model_from_index(size_t m_index) const
+inline const Model& EnsembleSurrModel::
+model_from_index(unsigned short m_index) const
 {
   size_t num_approx = approxModels.size();
   if      (m_index <  num_approx) return approxModels[m_index];
@@ -713,7 +716,7 @@ inline const Model& EnsembleSurrModel::model_from_index(size_t m_index) const
 }
 
 
-inline Model& EnsembleSurrModel::approx_model_from_index(size_t m_index)
+inline Model& EnsembleSurrModel::approx_model_from_index(unsigned short m_index)
 {
   size_t num_approx = approxModels.size();
   if (m_index <  num_approx) return approxModels[m_index];
@@ -726,7 +729,7 @@ inline Model& EnsembleSurrModel::approx_model_from_index(size_t m_index)
 
 
 inline const Model& EnsembleSurrModel::
-approx_model_from_index(size_t m_index) const
+approx_model_from_index(unsigned short m_index) const
 {
   size_t num_approx = approxModels.size();
   if (m_index <  num_approx) return approxModels[m_index];
@@ -738,7 +741,7 @@ approx_model_from_index(size_t m_index) const
 }
 
 
-inline bool EnsembleSurrModel::find_model_in_keys(size_t m_index)
+inline bool EnsembleSurrModel::find_model_in_keys(unsigned short m_index)
 {
   if (!truthModelKey.empty() && truthModelKey.retrieve_model_form() == m_index)
     return true;
@@ -835,13 +838,17 @@ inline const Model& EnsembleSurrModel::surrogate_model(size_t i) const
 }
 
 
+inline unsigned short EnsembleSurrModel::active_truth_model_form() const
+{ return truthModelKey.retrieve_model_form(); }
+
+
 inline Model& EnsembleSurrModel::active_truth_model()
 {
   // In ensemble cases, truthModelKey will return truthModel
   // In paired cases, truthModelKey will return the active HF in the pair
   //return truthModel;
 
-  unsigned short hf_form = truthModelKey.retrieve_model_form();
+  unsigned short hf_form = active_truth_model_form();
   if (hf_form == USHRT_MAX) { // should not happen
     Cerr << "Warning: resorting to default model form in EnsembleSurrModel::"
 	 << "truth_model()" << std::endl;
@@ -853,7 +860,7 @@ inline Model& EnsembleSurrModel::active_truth_model()
 
 inline const Model& EnsembleSurrModel::active_truth_model() const
 {
-  unsigned short hf_form = truthModelKey.retrieve_model_form();
+  unsigned short hf_form = active_truth_model_form();
   if (hf_form == USHRT_MAX) { // should not happen
     Cerr << "Warning: resorting to default model form in EnsembleSurrModel::"
 	 << "truth_model()" << std::endl;

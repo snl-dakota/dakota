@@ -153,11 +153,11 @@ public:
 
   unsigned short data_group();
 
-  unsigned short truth_model_form();
-  size_t truth_model_level();
-
   unsigned short approx_model_form();
   size_t approx_model_level();
+
+  unsigned short truth_model_form();
+  size_t truth_model_level();
 
   const RealVector& tr_lower_bounds() const;
   Real tr_lower_bound(size_t i) const;
@@ -426,19 +426,19 @@ inline unsigned short SurrBasedLevelData::data_group()
 { return pairedKey.id(); } // USHRT_MAX if empty key
 
 
-inline unsigned short SurrBasedLevelData::truth_model_form()
+inline unsigned short SurrBasedLevelData::approx_model_form()
 { return pairedKey.retrieve_model_form(0); } // {d,m}_index=0
 
 
-inline size_t SurrBasedLevelData::truth_model_level()
+inline size_t SurrBasedLevelData::approx_model_level()
 { return pairedKey.retrieve_resolution_level(0); } // {d,hp}_index=0
 
 
-inline unsigned short SurrBasedLevelData::approx_model_form()
+inline unsigned short SurrBasedLevelData::truth_model_form()
 { return pairedKey.retrieve_model_form(1); } // d_index=1,m_index=0
 
 
-inline size_t SurrBasedLevelData::approx_model_level()
+inline size_t SurrBasedLevelData::truth_model_level()
 { return pairedKey.retrieve_resolution_level(1); } // d_index=1,hp_index=0
 
 

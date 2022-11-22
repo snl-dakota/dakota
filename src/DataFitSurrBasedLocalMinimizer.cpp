@@ -399,6 +399,7 @@ void DataFitSurrBasedLocalMinimizer::minimize()
   // *******************************************************
   // Run iterator on approximation (with correction applied)
   // *******************************************************
+  iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
   SurrBasedLocalMinimizer::minimize();
 
   // ****************************************

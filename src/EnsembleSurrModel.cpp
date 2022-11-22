@@ -515,7 +515,7 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
 
   currentResponse.active_set(set);
 
-  size_t m_index;
+  unsigned short m_index;
   switch (responseMode) {
 
   case AGGREGATED_MODELS: {
@@ -716,7 +716,7 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 
   // For notes on repetitive use of assign_key(), see derived_evaluate() above
 
-  size_t m_index;
+  unsigned short m_index;
   switch (responseMode) {
   case AGGREGATED_MODELS: {
     // extract eval requirements from composite ASV
@@ -930,7 +930,7 @@ void EnsembleSurrModel::
 derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
 			       bool block)
 {
-  size_t i, num_steps = modelIdMaps.size(), m_index;
+  size_t i, num_steps = modelIdMaps.size();  unsigned short m_index;
   if (sameModelInstance) {
 
     // Seems sufficient to do this once and not reassign the i-th key on the
@@ -1934,7 +1934,7 @@ void EnsembleSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       // extract {truth,surr}ModelKeys, assign same{Model,Interface}Instance:
       active_model_key(activeKey);
 
-      size_t m_index = componentParallelMode - 1; // id to index
+      unsigned short m_index = componentParallelMode - 1; // id to index
       // propagate resolution level to server (redundant since send_evaluation()
       // sends all of variables object, including inactive state)
       //assign_key(m_index);
@@ -2031,7 +2031,9 @@ void EnsembleSurrModel::build_approximation()
   }
 
   // set EnsembleSurrModel parallelism mode to HF model
-  component_parallel_mode(TRUTH_MODEL_MODE);
+  unsigned short m_index = truthModelKey.retrieve_model_form();
+  component_parallel_mode(m_index + 1); // index to id (0 is reserved)
+  //component_parallel_mode(TRUTH_MODEL_MODE);
 
   // update HF model with current variable values/bounds/labels
   update_model(truthModel);
