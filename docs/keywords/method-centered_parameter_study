@@ -31,8 +31,8 @@ If Dakota was built with HDF5 support and run with the
 writes the following results to HDF5:
 
 
-- :ref:`hdf5_results-pstudies<hdf5_results-pstudies>`
-- :ref:`hdf5_results-var_slices<hdf5_results-var_slices>`
+- :ref:`hdf5_results-pstudies`
+- :ref:`hdf5_results-var_slices`
 Topics::
 parameter_studies
 Examples::

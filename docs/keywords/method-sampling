@@ -60,15 +60,18 @@ If Dakota was built with HDF5 support and run with the
 writes the following results to HDF5:
 
 
-- When :ref:`method-sampling-variance_based_decomp<method-sampling-variance_based_decomp>` is enabled  - :ref:`hdf5_results-vbd<hdf5_results-vbd>`
+* When :ref:`method-sampling-variance_based_decomp<method-sampling-variance_based_decomp>` is enabled  
+   * :ref:`hdf5_results-vbd`
 
-- For aleatory UQ studies  - :ref:`hdf5_results-pdf<hdf5_results-pdf>`
-  - :ref:`hdf5_results-level_mappings<hdf5_results-level_mappings>`
-  - :ref:`hdf5_results-sampling_moments<hdf5_results-sampling_moments>`
-  - :ref:`hdf5_results-correlations<hdf5_results-correlations>`
+* For aleatory UQ studies  
+   * :ref:`hdf5_results-pdf`
+   * :ref:`hdf5_results-level_mappings`
+   * :ref:`hdf5_results-sampling_moments`
+   * :ref:`hdf5_results-correlations`
 
-- For epistemic UQ studies  - :ref:`hdf5_results-extreme_responses<hdf5_results-extreme_responses>`
-  - :ref:`hdf5_results-correlations<hdf5_results-correlations>`
+* For epistemic UQ studies
+   * :ref:`hdf5_results-extreme_responses`
+   * :ref:`hdf5_results-correlations`
 
 *Usage Tips*
 
