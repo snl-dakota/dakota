@@ -541,7 +541,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     //if (model.surrogate_type() == "hierarchical")
     //  return std::make_shared<NonDControlVariateSampling>(problem_db, model);
     //else // non-hierarchical sampling supports #models > 2
-      return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
+    return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
     break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
     return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
@@ -556,7 +556,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
     break;
   case SURROGATE_BASED_LOCAL:
-    if (model.surrogate_type() == "hierarchical")
+    if (model.surrogate_type() == "ensemble")
       return std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
     else
       return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);

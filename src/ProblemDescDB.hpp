@@ -728,7 +728,7 @@ inline bool ProblemDescDB::model_has_interface(const DataModelRep& model_rep) co
   return ( model_rep.modelType == "simulation" ||
 	   model_rep.modelType == "nested" ||
 	   ( model_rep.modelType == "surrogate" &&
-	     model_rep.surrogateType != "hierarchical") );
+	     model_rep.surrogateType != "ensemble") );
 }
 
 } // namespace Dakota
