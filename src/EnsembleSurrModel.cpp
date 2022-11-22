@@ -1683,11 +1683,12 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 
   case AGGREGATED_MODEL_PAIR: case MODEL_DISCREPANCY: // two models/resolutions
   case BYPASS_SURROGATE: { // use same #Cols since commonly alternated
-    Model& lf_model = active_surrogate_model(0);
+    Model& lf_model = active_surrogate_model(0); // rtns dummy_model for BYPASS
     Model& hf_model = active_truth_model();
     // Output interface ids, potentially paired
     bool one_iface_id = matching_all_interface_ids(),
-      truth_key = !truthModelKey.empty(), surr_key = !surrModelKeys[0].empty();
+      truth_key = !truthModelKey.empty(),
+      surr_key  = (!surrModelKeys.empty() && !surrModelKeys[0].empty());
     StringArray iface_ids;
     if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
       iface_ids.push_back(hf_model.interface_id());
@@ -1733,8 +1734,8 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
       output_mgr.add_tabular_data(resp);        // include EOL
     else { // inactive: match header by padding empty cols with "N/A"
       output_mgr.add_tabular_data(resp, false); // defer EOL
-      size_t qoi, num_qoi = lf_model.qoi();
-      for (qoi=0; qoi<num_qoi; ++qoi) // pad response data
+      size_t q, num_qoi = qoi();
+      for (q=0; q<num_qoi; ++q) // pad response data
 	output_mgr.add_tabular_scalar("N/A");
       output_mgr.add_eol(); // now return the row
     }
