@@ -229,6 +229,10 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     update_projected_lf_samples(hf_targets, eval_ratios, cost_ratio,
 				N_actual_lf, N_alloc_lf, deltaEquivHF);
 
+  // estVarRatios is NOT scaled when overshooting hf_target --> since lf_targets
+  // are computed from eval_ratios * hf_targets, taking credit for all of
+  // N_actual and all of eval/estvar ratios is inaccurate/optimistic.  This
+  // deprecated implementation gets fixed in the MFMC 2-model replacement.
   estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
 }
 
@@ -305,6 +309,7 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
     update_projected_lf_samples(hf_targets, eval_ratios, cost_ratio,
 				N_actual_lf, N_alloc_lf, deltaEquivHF);
 
+  // For offline, no concern w/ inaccurate estvar from overshooting hf_targets
   estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
 }
 
@@ -333,6 +338,7 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
 			   N_alloc_lf, deltaNActualHF, deltaEquivHF);
   SizetArray N_actual_shared_proj = N_actual_shared;
   increment_samples(N_actual_shared_proj, deltaNActualHF);
+  // For pilot proj, see note re inaccurate estvar from overshooting hf_targets
   estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared_proj,
 			      avgEstVar);
 }
