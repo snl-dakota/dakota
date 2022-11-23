@@ -763,7 +763,7 @@ active_surrogate_model_form(size_t i) const
     return USHRT_MAX; // defer error/warning/mitigation to calling code
   else if (i >= surrModelKeys.size()) { // hard error
     Cerr << "Error: model form (" << i << ") out of range in "
-	 << "EnsembleSurrModel::surrogate_model()" << std::endl;
+	 << "EnsembleSurrModel::active_surrogate_model_form()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
   return surrModelKeys[i].retrieve_model_form();
@@ -779,7 +779,7 @@ inline Model& EnsembleSurrModel::active_surrogate_model(size_t i)
     lf_form = active_surrogate_model_form(i);
     if (lf_form == USHRT_MAX) {
       Cerr << "Error: model form undefined in EnsembleSurrModel::"
-	   << "surrogate_model()" << std::endl;
+	   << "active_surrogate_model()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
     return model_from_index(lf_form);  break;
@@ -806,7 +806,7 @@ inline const Model& EnsembleSurrModel::active_surrogate_model(size_t i) const
     lf_form = active_surrogate_model_form(i);
     if (lf_form == USHRT_MAX) {
       Cerr << "Error: model form undefined in EnsembleSurrModel::"
-	   << "surrogate_model()" << std::endl;
+	   << "active_surrogate_model()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
     return model_from_index(lf_form);  break;

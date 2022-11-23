@@ -444,8 +444,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   update_approx_sub_problem(tr_min);
 
   // solve the approximate optimization sub-problem:
-  unsigned short m_index
-    = iteratedModel.active_surrogate_model_form(minimizeIndex);
+  unsigned short m_index = iteratedModel.active_surrogate_model_form(0);
   iteratedModel.component_parallel_mode(m_index + 1);
   //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
   SurrBasedLocalMinimizer::minimize();
@@ -597,8 +596,7 @@ void HierarchSurrBasedLocalMinimizer::find_center_approx(size_t tr_index)
 
   if (!approx_found) {
     Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
-    unsigned short m_index
-      = iteratedModel.active_surrogate_model_form(tr_index);
+    unsigned short m_index = iteratedModel.active_surrogate_model_form(0);
     iteratedModel.component_parallel_mode(m_index + 1);
     //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
@@ -621,8 +619,7 @@ void HierarchSurrBasedLocalMinimizer::find_star_approx(size_t tr_index)
 
   if (!approx_found) {
     Cout <<"\n>>>>> Evaluating approximation at candidate optimum.\n";
-    unsigned short m_index
-      = iteratedModel.active_surrogate_model_form(tr_index);
+    unsigned short m_index = iteratedModel.active_surrogate_model_form(0);
     iteratedModel.component_parallel_mode(m_index + 1);
     //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
