@@ -89,12 +89,11 @@ accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
   // costMetadataIndices follows ordered models
   const SizetSizetPair& cost1_mdi = costMetadataIndices[form1_index];
   size_t md1_index = cost1_mdi.first, md1_len = cost1_mdi.second,
-         md2_index, prev_step = SZ_MAX;
+    md2_index, step1, step2;
   if (step) {
     unsigned short form2 = key.retrieve_model_form(1);
     size_t form2_index = (form2 == USHRT_MAX) ? 0 : (size_t)form2;
     md2_index = costMetadataIndices[form2_index].first;
-    prev_step = step - 1;
   }
 
   using std::isfinite;  Real cost1, cost2;  IntRespMCIter r_cit;
@@ -103,33 +102,26 @@ accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
   for (r_cit=allResponses.begin(); r_cit!=allResponses.end(); ++r_cit) {
     const std::vector<RespMetadataT>& md = r_cit->second.metadata();//aggregated
 
+    if (step) { step1 = step - 1; step2 = step; }
+    else        step1 = step;
+
+    cost1 = md[md1_index]; // offset by metadata index
+    if (isfinite(cost1)) {
+      accum_cost[step1] += cost1;
+      ++num_cost[step1];
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Metadata:\n" << md << "Model key1 cost: accum_cost = "
+	     << accum_cost[step1] << " num_cost = "<<num_cost[step1]<<std::endl;
+    }
+
     if (step) {
-      cost1 = md[md1_index]; // offset by metadata index
-      if (isfinite(cost1)) {
-	accum_cost[prev_step] += cost1;
-	++num_cost[prev_step];
-	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "Metadata:\n" << md << "Model key1 cost: accum_cost = "
-	       << accum_cost[prev_step] << " num_cost = " << num_cost[prev_step]
-	       << std::endl;
-      }
       cost2 = md[md1_len + md2_index]; // offset by metadata index
       if (isfinite(cost2)) {
-	accum_cost[step] += cost2;
-	++num_cost[step];
+	accum_cost[step2] += cost2;
+	++num_cost[step2];
 	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "Model key2 cost: accum_cost = " << accum_cost[step]
-	       << " num_cost = " << num_cost[step] << std::endl;
-      }
-    }
-    else {
-      cost1 = md[md1_index]; // offset by metadata index
-      if (isfinite(cost1)) {
-	accum_cost[step] += cost1;
-	++num_cost[step];
-	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "Metadata:\n" << md << "Model key1 cost: accum_cost = "
-	       << accum_cost[step] <<" num_cost = "<< num_cost[step]<<std::endl;
+	  Cout << "Model key2 cost: accum_cost = " << accum_cost[step2]
+	       << " num_cost = " << num_cost[step2] << std::endl;
       }
     }
   }
