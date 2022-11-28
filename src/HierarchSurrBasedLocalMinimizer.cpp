@@ -481,7 +481,7 @@ void HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
   Variables& vars_star = tr_data.vars_star(); // candidate iterate
 
   set_active_model(tr_index);
-  Model& truth_model = iteratedModel.truth_model();
+  Model& truth_model = iteratedModel.active_truth_model();
 
   Cout << "\n>>>>> Evaluating approximate solution with truth model.\n";
   unsigned short m_index = iteratedModel.active_truth_model_form();
@@ -522,7 +522,7 @@ find_center_truth(size_t tr_index, bool search_db)
 {
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
   const Variables&   v_center = tr_data.vars_center();
-  Model&          truth_model = iteratedModel.truth_model();
+  Model&          truth_model = iteratedModel.active_truth_model();
 
   bool truth_found;
   if (search_db)
@@ -556,7 +556,7 @@ find_star_truth(size_t tr_index, bool search_db)
 {
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
   const Variables&     v_star = tr_data.vars_star();
-  Model&          truth_model = iteratedModel.truth_model();
+  Model&          truth_model = iteratedModel.active_truth_model();
 
   bool truth_found;
   if (search_db)
