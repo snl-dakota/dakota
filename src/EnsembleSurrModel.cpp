@@ -523,7 +523,7 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
     Short2DArray indiv_asv;  asv_split(set.request_vector(), indiv_asv);
     ActiveSet set_i(set); // copy DVV
     size_t i, num_steps = indiv_asv.size();
-    if (sameModelInstance) update_model(truthModel);
+    if (sameModelInstance) update_model(active_truth_model());
     for (i=0; i<num_steps; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       if (test_asv(asv_i)) {
@@ -723,7 +723,7 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     Short2DArray indiv_asv;  asv_split(set.request_vector(), indiv_asv);
     size_t i, num_steps = indiv_asv.size();
     ActiveSet set_i(set); // copy DVV
-    if (sameModelInstance) update_model(truthModel);
+    if (sameModelInstance) update_model(active_truth_model());
 
     // first pass for nonblocking models
     for (i=0; i<num_steps; ++i) {
@@ -2026,9 +2026,11 @@ void EnsembleSurrModel::build_approximation()
   //lf_model.evaluate(temp_set);
   //const Response& lo_fi_response = lf_model.current_response();
 
+  assign_truth_key();
+  Model& hf_model = active_truth_model();
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
-    truthModel.eval_tag_prefix(eval_tag);
+    hf_model.eval_tag_prefix(eval_tag);
   }
 
   // set EnsembleSurrModel parallelism mode to HF model
@@ -2037,12 +2039,12 @@ void EnsembleSurrModel::build_approximation()
   //component_parallel_mode(TRUTH_MODEL_MODE);
 
   // update HF model with current variable values/bounds/labels
-  update_model(truthModel);
+  update_model(hf_model);
 
   // store inactive variable values for use in determining whether an
   // automatic rebuild of an approximation is required
   // (reference{C,D}{L,U}Bnds are not needed in the hierarchical case)
-  const Variables& hf_vars = truthModel.current_variables();
+  const Variables& hf_vars = hf_model.current_variables();
   copy_data(hf_vars.inactive_continuous_variables(),    referenceICVars);
   copy_data(hf_vars.inactive_discrete_int_variables(),  referenceIDIVars);
   referenceIDSVars = hf_vars.inactive_discrete_string_variables();
@@ -2062,9 +2064,8 @@ void EnsembleSurrModel::build_approximation()
     truthResponseRef[truthModelKey] = currentResponse.copy();
   ActiveSet hf_set = currentResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
-  assign_truth_key();
-  truthModel.evaluate(hf_set);
-  truthResponseRef[truthModelKey].update(truthModel.current_response());
+  hf_model.evaluate(hf_set);
+  truthResponseRef[truthModelKey].update(hf_model.current_response());
 
   // could compute the correction to LF model here, but rely on an external
   // call for consistency with DataFitSurr and to facilitate SBO logic.  In
@@ -2095,8 +2096,8 @@ build_approximation(const RealVector& c_vars, const Response& response)
 
     // are these updates necessary?
     currentVariables.continuous_variables(c_vars);
-    update_model(truthModel);
-    const Variables& hf_vars = truthModel.current_variables();
+    update_model(hf_model);
+    const Variables& hf_vars = hf_model.current_variables();
     copy_data(hf_vars.inactive_continuous_variables(), referenceICVars);
     copy_data(hf_vars.inactive_discrete_variables(),   referenceIDVars);
 
