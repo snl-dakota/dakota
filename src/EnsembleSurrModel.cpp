@@ -2016,10 +2016,14 @@ void EnsembleSurrModel::build_approximation()
   // automatic rebuild of an approximation is required
   // (reference{C,D}{L,U}Bnds are not needed in the hierarchical case)
   const Variables& hf_vars = hf_model.current_variables();
-  copy_data(hf_vars.inactive_continuous_variables(),    referenceICVars);
-  copy_data(hf_vars.inactive_discrete_int_variables(),  referenceIDIVars);
-  referenceIDSVars = hf_vars.inactive_discrete_string_variables();
-  copy_data(hf_vars.inactive_discrete_real_variables(), referenceIDRVars);
+  copy_data(hf_vars.inactive_continuous_variables(),
+	    referenceICVars[truthModelKey]);
+  copy_data(hf_vars.inactive_discrete_int_variables(),
+	    referenceIDIVars[truthModelKey]);
+  referenceIDSVars[truthModelKey]
+    = hf_vars.inactive_discrete_string_variables();
+  copy_data(hf_vars.inactive_discrete_real_variables(),
+	    referenceIDRVars[truthModelKey]);
 
   // compute the response for the high fidelity model
   ShortArray total_asv, lf_asv, hf_asv;

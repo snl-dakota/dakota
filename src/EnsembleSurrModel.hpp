@@ -120,6 +120,8 @@ protected:
   unsigned short correction_mode() const;
   void correction_mode(unsigned short corr_mode);
 
+  bool force_rebuild();
+
   /// use the high fidelity model to compute the truth values needed for
   /// correction of the low fidelity model results
   void build_approximation();
@@ -421,6 +423,42 @@ private:
   /// map of reference truth (high fidelity) responses computed in
   /// build_approximation() and used for calculating corrections
   std::map<Pecos::ActiveKey, Response> truthResponseRef;
+
+  /// stores a reference copy of the inactive continuous variables when the
+  /// approximation is built using a Distinct view; used to detect when a
+  /// rebuild is required.
+  std::map<Pecos::ActiveKey, RealVector> referenceICVars;
+  /// stores a reference copy of the inactive discrete int variables when
+  /// the approximation is built using a Distinct view; used to detect when
+  /// a rebuild is required.
+  std::map<Pecos::ActiveKey, IntVector> referenceIDIVars;
+  /// stores a reference copy of the inactive discrete string variables when
+  /// the approximation is built using a Distinct view; used to detect when
+  /// a rebuild is required.
+  std::map<Pecos::ActiveKey, StringMultiArray> referenceIDSVars;
+  /// stores a reference copy of the inactive discrete real variables when
+  /// the approximation is built using a Distinct view; used to detect when
+  /// a rebuild is required.
+  std::map<Pecos::ActiveKey, RealVector> referenceIDRVars;
+
+  /// stores a reference copy of active continuous lower bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  std::map<Pecos::ActiveKey, RealVector> referenceCLBnds;
+  /// stores a reference copy of active continuous upper bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  std::map<Pecos::ActiveKey, RealVector> referenceCUBnds;
+  /// stores a reference copy of active discrete int lower bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  std::map<Pecos::ActiveKey, IntVector> referenceDILBnds;
+  /// stores a reference copy of active discrete int upper bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  std::map<Pecos::ActiveKey, IntVector> referenceDIUBnds;
+  /// stores a reference copy of active discrete real lower bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  std::map<Pecos::ActiveKey, RealVector> referenceDRLBnds;
+  /// stores a reference copy of active discrete real upper bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  std::map<Pecos::ActiveKey, RealVector> referenceDRUBnds;
 };
 
 
@@ -482,6 +520,17 @@ inline const ShortArray& EnsembleSurrModel::nested_acv2_targets() const
 inline short EnsembleSurrModel::
 query_distribution_parameter_derivatives() const
 { return truthModel.query_distribution_parameter_derivatives(); }
+
+
+inline bool EnsembleSurrModel::force_rebuild()
+{
+  return check_rebuild(referenceICVars[truthModelKey],
+    referenceIDIVars[truthModelKey], referenceIDSVars[truthModelKey],
+    referenceIDRVars[truthModelKey], referenceCLBnds[truthModelKey],
+    referenceCUBnds[truthModelKey],  referenceDILBnds[truthModelKey],
+    referenceDIUBnds[truthModelKey], referenceDRLBnds[truthModelKey],
+    referenceDRUBnds[truthModelKey]);
+}
 
 
 inline void EnsembleSurrModel::
