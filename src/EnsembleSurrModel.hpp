@@ -1046,20 +1046,21 @@ inline void EnsembleSurrModel::resize_from_subordinate_model(size_t depth)
 
   // bottom-up data flow, so recurse first
   size_t i, num_approx = 0;
-  if   (all_approx_resize) num_approx = approxModels.size();
+  if   (all_approx_resize) num_approx = surrModelKeys.size();
   else if (approx0_resize) num_approx = 1;
   for (i=0; i<num_approx; ++i) {
-    Model& model_i = approxModels[i];
+    Model& model_i = active_surrogate_model(i);
     if (depth == SZ_MAX)
       model_i.resize_from_subordinate_model(depth);// retain special val (inf)
     else if (depth)
       model_i.resize_from_subordinate_model(depth - 1);
   }
   if (truth_resize) {
+    Model& truth_model = active_truth_model();
     if (depth == SZ_MAX)
-      truthModel.resize_from_subordinate_model(depth);// retain special value
+      truth_model.resize_from_subordinate_model(depth);// retain special value
     else if (depth)
-      truthModel.resize_from_subordinate_model(depth - 1);
+      truth_model.resize_from_subordinate_model(depth - 1);
   }
   // now resize this Models' response
   if (all_approx_resize || approx0_resize || truth_resize)
@@ -1070,26 +1071,14 @@ inline void EnsembleSurrModel::resize_from_subordinate_model(size_t depth)
 inline void EnsembleSurrModel::update_from_subordinate_model(size_t depth)
 {
   // bottom-up data flow: recurse first, then pull updates from subordinate
-  switch (responseMode) {
-  case UNCORRECTED_SURROGATE:      // LF only
-  case AUTO_CORRECTED_SURROGATE: { // LF is active
-    Model& lf_model = surrogate_model(0);
-    if (depth == SZ_MAX)
-      lf_model.update_from_subordinate_model(depth); // retain special value
-    else if (depth)
-      lf_model.update_from_subordinate_model(depth - 1);
-    update_from_model(lf_model);
-    break;
-  }
-  case BYPASS_SURROGATE:   case NO_SURROGATE:      // HF only
-  case AGGREGATED_MODELS:  case MODEL_DISCREPANCY: // prefer truth model
-    if (depth == SZ_MAX)
-      truthModel.update_from_subordinate_model(depth); // retain special value
-    else if (depth)
-      truthModel.update_from_subordinate_model(depth - 1);
-    update_from_model(truthModel);
-    break;
-  }
+  Model& sub_model = ( responseMode ==    UNCORRECTED_SURROGATE ||
+		       responseMode == AUTO_CORRECTED_SURROGATE ) ?
+    active_surrogate_model(0) : active_truth_model();
+  if (depth == SZ_MAX)
+    sub_model.update_from_subordinate_model(depth); // retain special value
+  else if (depth)
+    sub_model.update_from_subordinate_model(depth - 1);
+  update_from_model(sub_model);
 }
 
 

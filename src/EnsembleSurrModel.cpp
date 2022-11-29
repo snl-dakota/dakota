@@ -2190,7 +2190,7 @@ void EnsembleSurrModel::recursive_apply(const Variables& vars, Response& resp)
 	   << "within model key." << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    size_t i, num_levels = surrogate_model(0).solution_levels();
+    size_t i, num_levels = active_surrogate_model(0).solution_levels();
     // perform a 1D sweep starting from current surrModelKey; this could be
     // part of a multidimensional sweep, so don't target truthModelKey at end
     Pecos::ActiveKey paired_key;// = activeKey.copy();

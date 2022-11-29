@@ -544,11 +544,6 @@ private:
   /// initialize data based on variable counts
   void initialize_counts();
 
-  // set response mode to AGGREGATED_MODEL_PAIR and recur response size updates
-  //void aggregated_model_pair_mode();
-  // set response mode to BYPASS_SURROGATE and recur response size updates
-  //void bypass_surrogate_mode();
-
   /// generate a set of reference expansions across a model hierarchy
   void multifidelity_reference_expansion();
   /// separately refine each of the multifidelity reference expansions
@@ -699,32 +694,6 @@ inline const Model& NonDExpansion::algorithm_space_model() const
 
 inline size_t NonDExpansion::collocation_points() const
 { return 0; }
-
-
-/*
-inline void NonDExpansion::aggregated_model_pair_mode()
-{
-  // update iteratedModel / uSpaceModel in separate calls rather than using
-  // uSpaceModel.surrogate_response_mode(mode) since DFSurrModel must pass
-  // mode along to iteratedModel (a HierarchSurrModel) without absorbing it
-  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODEL_PAIR) {
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);//MODEL_DISCREP
-    uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
-  }
-}
-
-
-inline void NonDExpansion::bypass_surrogate_mode()
-{
-  // update iteratedModel / uSpaceModel in separate calls rather than using
-  // uSpaceModel.surrogate_response_mode(mode) since DFSurrModel must pass
-  // mode along to iteratedModel (a HierarchSurrModel) without absorbing it
-  if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // single level
-    uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
-  }
-}
-*/
 
 
 inline Real NonDExpansion::sequence_cost(size_t step, const RealVector& cost)
