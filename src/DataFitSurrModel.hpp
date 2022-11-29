@@ -174,6 +174,8 @@ protected:
   /// and ApproximationInterface::approxFnIndices
   void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
+  bool force_rebuild();
+
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points
   void build_approximation();
@@ -411,6 +413,18 @@ private:
   //- Heading: Data members
   //
 
+  /// manages the building and subsequent evaluation of the approximations
+  /// (required for both global and local)
+  Interface approxInterface;
+  /// the truth model which provides evaluations for building the surrogate
+  /// (optional for global, required for local)
+  /** actualModel is unrestricted in type; arbitrary nestings are possible. */
+  Model actualModel;
+  /// selects parameter sets on which to evaluate actualModel in order
+  /// to generate the necessary data for building global approximations
+  /// (optional for global since restart data may also be used)
+  Iterator daceIterator;
+
   /// manages construction and application of correction functions that
   /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
   /// order to reproduce high fidelity data.
@@ -456,19 +470,41 @@ private:
   /// output file stream for \c export_approx_variance_file specification
   std::ofstream exportVarianceFileStream;
 
-  /// manages the building and subsequent evaluation of the approximations
-  /// (required for both global and local)
-  Interface approxInterface;
+  /// stores a reference copy of the inactive continuous variables when the
+  /// approximation is built using a Distinct view; used to detect when a
+  /// rebuild is required.
+  RealVector referenceICVars;
+  /// stores a reference copy of the inactive discrete int variables when
+  /// the approximation is built using a Distinct view; used to detect when
+  /// a rebuild is required.
+  IntVector referenceIDIVars;
+  /// stores a reference copy of the inactive discrete string variables when
+  /// the approximation is built using a Distinct view; used to detect when
+  /// a rebuild is required.
+  StringMultiArray referenceIDSVars;
+  /// stores a reference copy of the inactive discrete real variables when
+  /// the approximation is built using a Distinct view; used to detect when
+  /// a rebuild is required.
+  RealVector referenceIDRVars;
 
-  /// the truth model which provides evaluations for building the surrogate
-  /// (optional for global, required for local)
-  /** actualModel is unrestricted in type; arbitrary nestings are possible. */
-  Model actualModel;
-
-  /// selects parameter sets on which to evaluate actualModel in order
-  /// to generate the necessary data for building global approximations
-  /// (optional for global since restart data may also be used)
-  Iterator daceIterator;
+  /// stores a reference copy of active continuous lower bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  RealVector referenceCLBnds;
+  /// stores a reference copy of active continuous upper bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  RealVector referenceCUBnds;
+  /// stores a reference copy of active discrete int lower bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  IntVector referenceDILBnds;
+  /// stores a reference copy of active discrete int upper bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  IntVector referenceDIUBnds;
+  /// stores a reference copy of active discrete real lower bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  RealVector referenceDRLBnds;
+  /// stores a reference copy of active discrete real upper bounds when the
+  /// approximation is built; used to detect when a rebuild is required.
+  RealVector referenceDRUBnds;
 };
 
 
@@ -506,6 +542,15 @@ inline short DataFitSurrModel::query_distribution_parameter_derivatives() const
 {
   return (actualModel.is_null()) ? NO_DERIVS :
     actualModel.query_distribution_parameter_derivatives(); // forward along
+}
+
+
+inline bool DataFitSurrModel::force_rebuild()
+{
+  return check_rebuild(referenceICVars,  referenceIDIVars, referenceIDSVars,
+		       referenceIDRVars, referenceCLBnds,  referenceCUBnds,
+		       referenceDILBnds, referenceDIUBnds, referenceDRLBnds,
+		       referenceDRUBnds);
 }
 
 

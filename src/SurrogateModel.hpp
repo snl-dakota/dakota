@@ -157,7 +157,11 @@ protected:
 
   /// evaluate whether a rebuild of the approximation should be
   /// forced based on changes in the inactive data
-  bool force_rebuild();
+  bool check_rebuild(const RealVector& ref_icv, const IntVector& ref_idiv,
+    const StringMultiArray& ref_idsv, const RealVector& ref_idrv,
+    const RealVector& ref_c_l_bnds,   const RealVector& ref_c_u_bnds,
+    const IntVector&  ref_di_l_bnds,  const IntVector&  ref_di_u_bnds,
+    const RealVector& ref_dr_l_bnds,  const RealVector& ref_dr_u_bnds);
 
   /// reconstitutes a combined_asv from actual_asv and approx_asv
   void asv_combine(const ShortArray& actual_asv, const ShortArray& approx_asv,
@@ -219,42 +223,6 @@ protected:
   /// (corresponding to ParallelConfiguration::miPLIters) used at runtime
   size_t miPLIndex;
 
-  /// stores a reference copy of active continuous lower bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  RealVector referenceCLBnds;
-  /// stores a reference copy of active continuous upper bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  RealVector referenceCUBnds;
-  /// stores a reference copy of active discrete int lower bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  IntVector referenceDILBnds;
-  /// stores a reference copy of active discrete int upper bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  IntVector referenceDIUBnds;
-  /// stores a reference copy of active discrete real lower bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  RealVector referenceDRLBnds;
-  /// stores a reference copy of active discrete real upper bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  RealVector referenceDRUBnds;
-
-  /// stores a reference copy of the inactive continuous variables when the
-  /// approximation is built using a Distinct view; used to detect when a
-  /// rebuild is required.
-  RealVector referenceICVars;
-  /// stores a reference copy of the inactive discrete int variables when
-  /// the approximation is built using a Distinct view; used to detect when
-  /// a rebuild is required.
-  IntVector referenceIDIVars;
-  /// stores a reference copy of the inactive discrete string variables when
-  /// the approximation is built using a Distinct view; used to detect when
-  /// a rebuild is required.
-  StringMultiArray referenceIDSVars;
-  /// stores a reference copy of the inactive discrete real variables when
-  /// the approximation is built using a Distinct view; used to detect when
-  /// a rebuild is required.
-  RealVector referenceIDRVars;
-
 private:
 
   //
@@ -270,12 +238,6 @@ private:
   //- Heading: Data
   //
 
-  /// copy of the truth model variables object used to simplify conversion 
-  /// among differing variable views in force_rebuild()
-  Variables   truthModelVars;
-  /// copy of the truth model constraints object used to simplify conversion 
-  /// among differing variable views in force_rebuild()
-  Constraints truthModelCons;
 };
 
 

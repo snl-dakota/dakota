@@ -898,7 +898,12 @@ void SurrogateModel::update_complement_variables_from_model(const Model& model)
     the sub-model variables view, the approximation type, and whether
     the active approximation bounds or inactive variable values have
     changed since the last approximation build. */
-bool SurrogateModel::force_rebuild()
+bool SurrogateModel::
+check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
+	      const StringMultiArray& ref_idsv, const RealVector& ref_idrv,
+	      const RealVector& ref_c_l_bnds,   const RealVector& ref_c_u_bnds,
+	      const IntVector&  ref_di_l_bnds,  const IntVector&  ref_di_u_bnds,
+	      const RealVector& ref_dr_l_bnds,  const RealVector& ref_dr_u_bnds)
 {
   // force rebuild for change in inactive vars based on sub-model view.  It
   // is assumed that any recastings within Model recursions do not affect the
@@ -907,37 +912,37 @@ bool SurrogateModel::force_rebuild()
 
   // for global surrogates, force rebuild for change in active bounds
 
-  Model& actual_model = truth_model();
+  Model& actual_model = active_truth_model();
 
   // Don't force rebuild for active subspace model:
-  // JAM TODO: There is probably a more elegant way to accomodate subspace models
+  // JAM TODO: there's probably a more elegant way to accomodate subspace models
   if (actual_model.model_type() == "active_subspace")
     return false;
 
   short approx_active_view = currentVariables.view().first;
   if (actual_model.is_null()) {
     // compare reference vars against current inactive top-level data
-    if ( referenceICVars  != currentVariables.inactive_continuous_variables() ||
-	 referenceIDIVars !=
+    if ( ref_icv  != currentVariables.inactive_continuous_variables() ||
+	 ref_idiv !=
 	 currentVariables.inactive_discrete_int_variables()                   ||
-	 referenceIDSVars !=
+	 ref_idsv !=
 	 currentVariables.inactive_discrete_string_variables()                ||
-	 referenceIDRVars !=
+	 ref_idrv !=
 	 currentVariables.inactive_discrete_real_variables() )
       return true;
 
     if ( strbegins(surrogateType, "global_") &&
 	 // compare reference bounds against current active top-level data
-	 ( referenceCLBnds != userDefinedConstraints.continuous_lower_bounds()||
-	   referenceCUBnds != userDefinedConstraints.continuous_upper_bounds()||
-	   referenceDILBnds !=
+	 ( ref_c_l_bnds != userDefinedConstraints.continuous_lower_bounds()||
+	   ref_c_u_bnds != userDefinedConstraints.continuous_upper_bounds()||
+	   ref_di_l_bnds !=
 	   userDefinedConstraints.discrete_int_lower_bounds()                 ||
-	   referenceDIUBnds !=
+	   ref_di_u_bnds !=
 	   userDefinedConstraints.discrete_int_upper_bounds()                 ||
 	   // no discrete string bounds
-	   referenceDRLBnds !=
+	   ref_dr_l_bnds !=
 	   userDefinedConstraints.discrete_real_lower_bounds()                ||
-	   referenceDRUBnds !=
+	   ref_dr_u_bnds !=
 	   userDefinedConstraints.discrete_real_upper_bounds() ) )
 	return true;
   }
@@ -949,36 +954,33 @@ bool SurrogateModel::force_rebuild()
     if ( approx_active_view == sub_model_active_view  &&
 	 approx_active_view >= RELAXED_DESIGN &&
 	 // compare inactive top-level data against inactive sub-model data
-	 ( referenceICVars != currentVariables.inactive_continuous_variables()||
-	   referenceIDIVars !=
-	   currentVariables.inactive_discrete_int_variables()                 ||
-	   referenceIDSVars !=
-	   currentVariables.inactive_discrete_string_variables()              ||
-	   referenceIDRVars !=
-	   currentVariables.inactive_discrete_real_variables() ) )
+	 ( ref_icv  != currentVariables.inactive_continuous_variables()      ||
+	   ref_idiv != currentVariables.inactive_discrete_int_variables()    ||
+	   ref_idsv != currentVariables.inactive_discrete_string_variables() ||
+	   ref_idrv != currentVariables.inactive_discrete_real_variables() ) )
       return true;
     else if ( ( approx_active_view == RELAXED_ALL ||
 		approx_active_view == MIXED_ALL ) &&
 	      sub_model_active_view >= RELAXED_DESIGN ) {
-      // coerce top level data to sub-model view, but don't update sub-model
-      if (truthModelVars.is_null())
-	truthModelVars = actual_vars.copy();
-      truthModelVars.all_continuous_variables(
-        currentVariables.continuous_variables());
-      truthModelVars.all_discrete_int_variables(
-        currentVariables.discrete_int_variables());
-      truthModelVars.all_discrete_string_variables(
-        currentVariables.discrete_string_variables());
-      truthModelVars.all_discrete_real_variables(
-        currentVariables.discrete_real_variables());
-      // perform check on inactive data at sub-model level
-      if ( referenceICVars  != truthModelVars.inactive_continuous_variables() ||
-	   referenceIDIVars !=
-	   truthModelVars.inactive_discrete_int_variables() ||
-	   referenceIDSVars !=
-	   truthModelVars.inactive_discrete_string_variables() ||
-	   referenceIDRVars !=
-	   truthModelVars.inactive_discrete_real_variables() )
+      // coerce top level data to sub-model view (by creating inactive views
+      // from all arrays), but don't update sub-model
+      const RealVector& ac_vars  = currentVariables.continuous_variables();
+      const IntVector&  adi_vars = currentVariables.discrete_int_variables();
+      StringMultiArrayConstView ads_vars
+	= currentVariables.discrete_string_variables();
+      const RealVector& adr_vars = currentVariables.discrete_real_variables();
+      const SharedVariablesData& sm_svd = actual_vars.shared_data();
+      RealVector ic_vars(Teuchos::View,
+	const_cast<Real*>(&ac_vars[sm_svd.icv_start()]), sm_svd.icv());
+      IntVector idi_vars(Teuchos::View,
+	const_cast<int*>(&adi_vars[sm_svd.idiv_start()]), sm_svd.idiv());
+      StringMultiArrayConstView	ids_vars(ads_vars[boost::indices[
+	idx_range(sm_svd.idsv_start(), sm_svd.idsv())]]);
+      RealVector idr_vars(Teuchos::View,
+	const_cast<Real*>(&adr_vars[sm_svd.idrv_start()]), sm_svd.idrv());
+      // perform check on data that is inactive at sub-model level
+      if ( ref_icv  != ic_vars  || ref_idiv != idi_vars ||
+	   ref_idsv != ids_vars || ref_idrv != idr_vars )
 	return true;
     }
     // TO DO: extend for aleatory/epistemic uncertain views
@@ -986,10 +988,10 @@ bool SurrogateModel::force_rebuild()
     Model sub_model = actual_model.subordinate_model();
     while (sub_model.model_type() == "recast")
       sub_model = sub_model.subordinate_model();
-    if ( referenceICVars  != sub_model.inactive_continuous_variables()      ||
-         referenceIDIVars != sub_model.inactive_discrete_int_variables()    ||
-         referenceIDSVars != sub_model.inactive_discrete_string_variables() ||
-         referenceIDRVars != sub_model.inactive_discrete_real_variables() )
+    if ( ref_icv  != sub_model.inactive_continuous_variables()      ||
+         ref_idiv != sub_model.inactive_discrete_int_variables()    ||
+         ref_idsv != sub_model.inactive_discrete_string_variables() ||
+         ref_idrv != sub_model.inactive_discrete_real_variables() )
       return true;
     */
 
@@ -1017,76 +1019,84 @@ bool SurrogateModel::force_rebuild()
 	while (sub_model.model_type() == "recast")
 	  sub_model = sub_model.subordinate_model();
 
-	if (referenceCLBnds  != sub_model.continuous_lower_bounds()    ||
-	    referenceCUBnds  != sub_model.continuous_upper_bounds()    ||
-	    referenceDILBnds != sub_model.discrete_int_lower_bounds()  ||
-	    referenceDIUBnds != sub_model.discrete_int_upper_bounds()  ||
+	if (ref_c_l_bnds  != sub_model.continuous_lower_bounds()    ||
+	    ref_c_u_bnds  != sub_model.continuous_upper_bounds()    ||
+	    ref_di_l_bnds != sub_model.discrete_int_lower_bounds()  ||
+	    ref_di_u_bnds != sub_model.discrete_int_upper_bounds()  ||
 	    // no discrete string bounds
-	    referenceDRLBnds != sub_model.discrete_real_lower_bounds() ||
-	    referenceDRUBnds != sub_model.discrete_real_upper_bounds())
+	    ref_dr_l_bnds != sub_model.discrete_real_lower_bounds() ||
+	    ref_dr_u_bnds != sub_model.discrete_real_upper_bounds())
 	  return true;
       }
       else if ( approx_active_view == sub_model_active_view && 
 		// compare active top-level data against active sub-model data
-		( referenceCLBnds !=
+		( ref_c_l_bnds !=
 		  userDefinedConstraints.continuous_lower_bounds()    ||
-		  referenceCUBnds !=
+		  ref_c_u_bnds !=
 		  userDefinedConstraints.continuous_upper_bounds()    ||
-		  referenceDILBnds !=
+		  ref_di_l_bnds !=
 		  userDefinedConstraints.discrete_int_lower_bounds()  ||
-		  referenceDIUBnds !=
+		  ref_di_u_bnds !=
 		  userDefinedConstraints.discrete_int_upper_bounds()  ||
 		  // no discrete string bounds
-		  referenceDRLBnds !=
+		  ref_dr_l_bnds !=
 		  userDefinedConstraints.discrete_real_lower_bounds() ||
-		  referenceDRUBnds !=
+		  ref_dr_u_bnds !=
 		  userDefinedConstraints.discrete_real_upper_bounds() ) )
 	return true;
       else if ( approx_active_view >= RELAXED_DESIGN &&
 		( sub_model_active_view == RELAXED_ALL ||
 		  sub_model_active_view == MIXED_ALL ) && 
 		// compare top-level data in All view w/ active sub-model data
-		( referenceCLBnds !=
+		( ref_c_l_bnds !=
 		  userDefinedConstraints.all_continuous_lower_bounds()     ||
-		  referenceCUBnds != 
+		  ref_c_u_bnds != 
 		  userDefinedConstraints.all_continuous_upper_bounds()     ||
-		  referenceDILBnds !=
+		  ref_di_l_bnds !=
 		  userDefinedConstraints.all_discrete_int_lower_bounds()   ||
-		  referenceDIUBnds !=
+		  ref_di_u_bnds !=
 		  userDefinedConstraints.all_discrete_int_upper_bounds()   ||
 		  // no discrete string bounds
-		  referenceDRLBnds !=
+		  ref_dr_l_bnds !=
 		  userDefinedConstraints.all_discrete_real_lower_bounds()  ||
-		  referenceDRUBnds !=
+		  ref_dr_u_bnds !=
 		  userDefinedConstraints.all_discrete_real_upper_bounds() ) )
 	return true;
       else if ( ( approx_active_view  == RELAXED_ALL ||
 		  approx_active_view  == MIXED_ALL ) &&
 		sub_model_active_view >= RELAXED_DESIGN ) {
-	// coerce top level data to sub-model view, but don't update sub-model
-	if (truthModelCons.is_null())
-	  truthModelCons = actual_model.user_defined_constraints().copy();
-	truthModelCons.all_continuous_lower_bounds(
-	  userDefinedConstraints.continuous_lower_bounds());
-	truthModelCons.all_continuous_upper_bounds(
-	  userDefinedConstraints.continuous_upper_bounds());
-	truthModelCons.all_discrete_int_lower_bounds(
-	  userDefinedConstraints.discrete_int_lower_bounds());
-	truthModelCons.all_discrete_int_upper_bounds(
-	  userDefinedConstraints.discrete_int_upper_bounds());
-	// no discrete string bounds
-	truthModelCons.all_discrete_real_lower_bounds(
-	  userDefinedConstraints.discrete_real_lower_bounds());
-	truthModelCons.all_discrete_real_upper_bounds(
-	  userDefinedConstraints.discrete_real_upper_bounds());
-	// perform check on active data at sub-model level
-	if ( referenceCLBnds  != truthModelCons.continuous_lower_bounds()    ||
-	     referenceCUBnds  != truthModelCons.continuous_upper_bounds()    ||
-	     referenceDILBnds != truthModelCons.discrete_int_lower_bounds()  ||
-	     referenceDIUBnds != truthModelCons.discrete_int_upper_bounds()  ||
+	// coerce top level data to sub-model view (by creating inactive views
+	// from all arrays), but don't update sub-model
+	const SharedVariablesData& sm_svd = actual_vars.shared_data();
+	const RealVector& ac_l_bnds
+	  = userDefinedConstraints.continuous_lower_bounds();
+	const RealVector& ac_u_bnds
+	  = userDefinedConstraints.continuous_upper_bounds();
+	const IntVector&  adi_l_bnds
+	  = userDefinedConstraints.discrete_int_lower_bounds();
+	const IntVector&  adi_u_bnds
+	  = userDefinedConstraints.discrete_int_upper_bounds();
+	const RealVector& adr_l_bnds
+	  = userDefinedConstraints.discrete_real_lower_bounds();
+	const RealVector& adr_u_bnds
+	  = userDefinedConstraints.discrete_real_upper_bounds();
+	size_t cv_s = sm_svd.cv_start(),  n_cv  = sm_svd.cv(),
+	      div_s = sm_svd.div_start(), n_div = sm_svd.div(),
+	      drv_s = sm_svd.drv_start(), n_drv = sm_svd.drv();
+	RealVector
+	  c_l_bnds(Teuchos::View, const_cast<Real*>(&ac_l_bnds[cv_s]), n_cv),
+	  c_u_bnds(Teuchos::View, const_cast<Real*>(&ac_u_bnds[cv_s]), n_cv);
+	IntVector
+	  di_l_bnds(Teuchos::View, const_cast<int*>(&adi_l_bnds[div_s]), n_div),
+	  di_u_bnds(Teuchos::View, const_cast<int*>(&adi_u_bnds[div_s]), n_div);
+	RealVector
+	  dr_l_bnds(Teuchos::View, const_cast<Real*>(&adr_l_bnds[drv_s]),n_drv),
+	  dr_u_bnds(Teuchos::View, const_cast<Real*>(&adr_u_bnds[drv_s]),n_drv);
+	// perform check on data that is active at sub-model level
+	if ( ref_c_l_bnds  != c_l_bnds   || ref_c_u_bnds  != c_u_bnds   ||
+	     ref_di_l_bnds != di_l_bnds  || ref_di_u_bnds != di_u_bnds  ||
 	     // no discrete string bounds
-	     referenceDRLBnds != truthModelCons.discrete_real_lower_bounds() ||
-	     referenceDRUBnds != truthModelCons.discrete_real_upper_bounds() )
+	     ref_dr_l_bnds != dr_l_bnds  || ref_dr_u_bnds != dr_u_bnds )
 	  return true;
       }
 

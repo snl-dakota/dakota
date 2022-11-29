@@ -360,23 +360,23 @@ qoi_set_to_key_index(size_t qoi_set, size_t& key_index)
 {
   // After switching previous {HF,LF} pairings to use a consistent low-to-high
   // ordering for all ensembles, the shortcut enumeration of key_index using
-  // the QoI set index was no longer sufficient for some advanced cases.
+  // the QoI set index was no longer sufficient for all cases.
 
   // In particular, we need to manage unusual combinations resulting from use
   // of synthetic data, i.e. for recursive surrogate emulation.  
   // > aggregate key for {synthetic LF, simulation HF} + discrepancy reduction,
   //   combined with a responseMode for adding simulation data only
   //   --> need key index = 1 (HF) for incoming qoi_set index = 0 (one QoI set)
-  // > Other cases are identity mappings
+  // > All other current use cases are identity mappings
 
   // Options:
-  // > could return to {HF,LF} ordering --> No, just flips the logic problem
-  //   to an unused combination --> would have bad indexing with {LF,HF} pairs
-  //   for SURROGATE modes w/i aggregated key (not used since no synthetic HF)
-  // > Alter key management logic: augment activeKey storage with extracted
-  //   key(s) that identify approximation data targets for *_add()
-  // > Simpler: map qoi_set to key_index using mode information (accesses
-  //   the desired embedded key without needing to cache it separately):
+  // > could return to {HF,LF} ordering --> No, just flips the logic gap to an
+  //   unused combination --> would have bad indexing with {HF,LF} pairs for
+  //   SURROGATE modes w/i aggregated key (not currently used; no synthetic HF)
+  // > Alter key management logic: extract the approximation data targets for
+  //   {mixed,shallow}_add() from activeKey data based on modes
+  // > Simpler: just map qoi_set to key_index using mode information (accesses
+  //   the desired embedded key without needing to cache it separately).
 
   size_t num_key_data = sharedData.active_model_key().data_size();
   if (num_key_data > 1) {
@@ -404,12 +404,14 @@ qoi_set_to_key_index(size_t qoi_set, size_t& key_index)
 
     // Logic based on discrepancy mode: access embedded truth key if recursive
     switch (sharedData.discrepancy_emulation_mode()) {
-    case RECURSIVE_EMULATION:
-      check_singleton_key_index(qoi_set);  // incoming should be zero
-      key_index = num_key_data -1;// - qoi_set;// reverse indexing (maps 0 to 1)
+    case RECURSIVE_EMULATION: {
+      check_singleton_key_index(qoi_set); // incoming should be zero
+      size_t last_index = num_key_data - 1;
+      key_index = last_index - qoi_set; // reverse indexing (maps 0->1 for now)
       // Note: reduction data is assigned to aggregate key
-      // (not another embedded: embedded keys track "raw" data sources)
+      // (embedded keys track "raw" data sources)
       break;
+    }
     default: // DISTINCT_EMULATION
       key_index = qoi_set;  break;
     }
