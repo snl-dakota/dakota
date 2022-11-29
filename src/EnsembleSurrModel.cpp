@@ -160,27 +160,26 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   if (recurse_flag) {
     size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
-              num_approx  = approxModels.size();
+              num_models  = approxModels.size();
+    if (!truthModel.is_null()) ++num_models;
 
-    bool extra_deriv_config
-      = (probDescDB.get_ushort("method.algorithm") & MINIMIZER_BIT);
-    //(responseMode == UNCORRECTED_SURROGATE ||
-    // responseMode == BYPASS_SURROGATE ||
-    // responseMode == AUTO_CORRECTED_SURROGATE);
+    // For now, use the DB method name to construct a list of methods that
+    // might perform gradient-based minimization.  Note: EnsembleSurrModel
+    // has no construct on the fly option at this time.
+    unsigned short method_name = probDescDB.get_ushort("method.algorithm");
+    bool extra_deriv_config = (method_name  & MINIMIZER_BIT      ||
+			       method_name == BAYES_CALIBRATION  ||
+			       method_name == LOCAL_RELIABILITY  ||
+			       method_name == LOCAL_INTERVAL_EST ||
+			       method_name == LOCAL_EVIDENCE);
 
-    for (i=0; i<num_approx; ++i) {
-      Model& model_i = approxModels[i];
+    for (i=0; i<num_models; ++i) {
+      Model& model_i = model_from_index(i);
       probDescDB.set_db_model_nodes(model_i.model_id());
       model_i.init_communicators(pl_iter, max_eval_concurrency);
       if (extra_deriv_config)
         model_i.init_communicators(pl_iter, model_i.derivative_concurrency());
     }
-
-    probDescDB.set_db_model_nodes(truthModel.model_id());
-    truthModel.init_communicators(pl_iter, max_eval_concurrency);
-    if (extra_deriv_config)
-      truthModel.init_communicators(pl_iter,
-				    truthModel.derivative_concurrency());
 
     // OLD LOGIC:
     // init and free must cover possible subset of active responseModes and
@@ -240,9 +239,10 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     //if (pl_iter->server_communicator_size() > 1)
     //  parallelLib.bcast(responseMode, *pl_iter);
 
-    // see notes in previous implementation below
-    bool use_deriv_conc = (responseMode == AUTO_CORRECTED_SURROGATE);
+    /* Consolidated approach not good for asynchEvalFlag, evaluationCapacity
 
+    // use_deriv_conc consistent with case logic in other code block below
+    bool use_deriv_conc = (responseMode == AUTO_CORRECTED_SURROGATE);
     // Loop over all models:
     size_t i, num_models = approxModels.size();  int cap_i;
     if (!truthModel.is_null()) ++num_models;
@@ -261,26 +261,26 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       cap_i = model_i.evaluation_capacity();
       if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
     }
+    */
 
     // This aggressive logic is appropriate for invocations of the Model via
     // Iterator::run(), but is fragile w.r.t. invocations of the Model outside
     // this scope (e.g., Model::evaluate() within SBLMinimizer).  The default
     // responseMode value is {AUTO_,UN}CORRECTED_SURROGATE, which mitigates
     // the specific case of SBLMinimizer, but the general fragility remains.
-    /*
     switch (responseMode) {
 
     // CASES WITH A SINGLE ACTIVE MODEL:
  
     case UNCORRECTED_SURROGATE: {
-      Model& lf_model = surrogate_model(0);
+      Model& lf_model = active_surrogate_model(0);
       lf_model.set_communicators(pl_iter, max_eval_concurrency);
       asynchEvalFlag     = lf_model.asynch_flag();
       evaluationCapacity = lf_model.evaluation_capacity();
       break;
     }
     case BYPASS_SURROGATE: {
-      Model& hf_model = truth_model();
+      Model& hf_model = active_truth_model();
       hf_model.set_communicators(pl_iter, max_eval_concurrency);
       asynchEvalFlag     = hf_model.asynch_flag();
       evaluationCapacity = hf_model.evaluation_capacity();
@@ -289,23 +289,20 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
     // CASES WHERE ANY/ALL MODELS COULD BE ACTIVE:
 
-    case AUTO_CORRECTED_SURROGATE: {
-      // Lowest fidelity model is interfaced with minimizer:
-      Model& approx_model_0 = approxModels[0];
-      approx_model_0.set_communicators(pl_iter, max_eval_concurrency);
-      asynchEvalFlag     = approx_model_0.asynch_flag();
-      evaluationCapacity = approx_model_0.evaluation_capacity();
+    default: { // AUTO_CORRECTED_SURROGATE, MODEL_DISCREPANCY,
+               // AGGREGATED_MODEL_PAIR, AGGREGATED_MODELS
 
       // TO DO: this will not be true for multigrid optimization:
-      bool use_deriv_conc = true; // only verifications/corrections
+      bool use_deriv_conc = (responseMode == AUTO_CORRECTED_SURROGATE &&
+			     corrType && corrOrder);
       // Either need detection logic, a passed option, or to abandon the
       // specialization and just generalize init/set/free to use the max
       // of the two values...
 
-      // Loop over all higher fidelity models:
-      size_t i, num_approx = approxModels.size(), num_models = num_approx + 1;
-      int cap_i;
-      for (i=1; i<num_models; ++i) {
+      size_t i, num_models = approxModels.size();  int cap_i;
+      if (!truthModel.is_null()) ++num_models;
+      asynchEvalFlag = false;  evaluationCapacity = 1;
+      for (i=0; i<num_models; ++i) {
 	Model& model_i = model_from_index(i);
 	if (use_deriv_conc) {
 	  int deriv_conc_i = model_i.derivative_concurrency();
@@ -321,27 +318,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       }
       break;
     }
-    case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
-    case AGGREGATED_MODELS: {
-      size_t i, num_approx = approxModels.size(); int cap_i;
-      asynchEvalFlag = false; evaluationCapacity = 1;
-
-      for (i=0; i<num_approx; ++i) {
-	Model& model_i = approxModels[i];
-	model_i.set_communicators(pl_iter, max_eval_concurrency);
-	if (model_i.asynch_flag()) asynchEvalFlag = true;
-	cap_i = model_i.evaluation_capacity();
-	if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
-      }
-
-      truthModel.set_communicators(pl_iter, max_eval_concurrency);
-      if (truthModel.asynch_flag()) asynchEvalFlag = true;
-      cap_i = truthModel.evaluation_capacity();
-      if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
-      break;
     }
-    }
-    */
   }
 }
 
@@ -352,21 +329,15 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   if (recurse_flag) {
 
-    size_t i, num_approx = approxModels.size();
-    bool extra_deriv_config = true;//(responseMode == UNCORRECTED_SURROGATE ||
-                                   // responseMode == BYPASS_SURROGATE ||
-                                   // responseMode == AUTO_CORRECTED_SURROGATE);
-    for (i=0; i<num_approx; ++i) {
-      Model& model_i = approxModels[i];
+    size_t i, num_models = approxModels.size();
+    if (!truthModel.is_null()) ++num_models;
+    bool extra_deriv_config = true; // falls through if not defined
+    for (i=0; i<num_models; ++i) {
+      Model& model_i = model_from_index(i);
       model_i.free_communicators(pl_iter, max_eval_concurrency);
       if (extra_deriv_config)
         model_i.free_communicators(pl_iter, model_i.derivative_concurrency());
     }
-
-    truthModel.free_communicators(pl_iter, max_eval_concurrency);
-    if (extra_deriv_config)
-      truthModel.free_communicators(pl_iter,
-				    truthModel.derivative_concurrency());
 
     // OLD LOGIC:
     /* This version does not support runtime updating of responseMode:
@@ -2060,12 +2031,15 @@ void EnsembleSurrModel::build_approximation()
     total_asv.assign(numFns, 1); // default: values only if no deriv correction
   asv_split(total_asv, lf_asv, hf_asv, true);
 
-  if ( truthResponseRef.find(truthModelKey) == truthResponseRef.end() )
-    truthResponseRef[truthModelKey] = currentResponse.copy();
+  std::map<Pecos::ActiveKey, Response>::iterator it
+    = truthResponseRef.find(truthModelKey);
+  if (it == truthResponseRef.end())
+    it = truthResponseRef.insert(std::pair<Pecos::ActiveKey, Response>(
+				 truthModelKey, currentResponse.copy())).first;
   ActiveSet hf_set = currentResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
   hf_model.evaluate(hf_set);
-  truthResponseRef[truthModelKey].update(hf_model.current_response());
+  it->second.update(hf_model.current_response());
 
   // could compute the correction to LF model here, but rely on an external
   // call for consistency with DataFitSurr and to facilitate SBO logic.  In
