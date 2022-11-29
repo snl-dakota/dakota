@@ -626,7 +626,7 @@ shared_increment(const Pecos::ActiveKey& agg_key, size_t iter, size_t lev)
 
     // export separate output files for each data set:
     if (exportSampleSets) // for HF+LF models, use the HF tags
-      export_all_samples("cv_", iteratedModel.truth_model(), iter, lev);
+      export_all_samples("cv_", iteratedModel.active_truth_model(), iter, lev);
 
     // compute allResponses from allVariables using hierarchical model
     evaluate_parameter_sets(iteratedModel, true, false);
