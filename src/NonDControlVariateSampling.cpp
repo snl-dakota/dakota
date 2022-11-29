@@ -77,11 +77,12 @@ void NonDControlVariateSampling::core_run()
     else
       hf_lev = lf_lev = secondaryIndex;
   }
-  hf_key.form_key(0, hf_form, hf_lev);  lf_key.form_key(0, lf_form, lf_lev);
-  active_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
+  lf_key.form_key(0, lf_form, lf_lev);  hf_key.form_key(0, hf_form, hf_lev);
+  active_key.aggregate_keys(lf_key, hf_key, Pecos::RAW_DATA);
 
-  aggregated_models_mode();
+  iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);
   iteratedModel.active_model_key(active_key); // data group 0
+  resize_active_set();
 
   // Two-model control variate approach (Ng and Willcox, 2014) using a
   // hierarchical model (requires model pairing)
@@ -199,7 +200,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     // after N_hf has converged, which simplifies maxFnEvals / convTol logic
     // (no need to further interrogate these throttles below)
     IntRealVectorMap sum_L_refined = sum_L_shared;
-    Pecos::ActiveKey lf_key;        active_key.extract_key(1, lf_key);
+    Pecos::ActiveKey lf_key;  active_key.extract_key(0, lf_key);
     RealVector lf_targets;
     if (backfillFailures) { // increment relative to successful samples
       lf_increment(lf_key, eval_ratios, N_actual_lf, hf_targets, lf_targets,
@@ -228,6 +229,10 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     update_projected_lf_samples(hf_targets, eval_ratios, cost_ratio,
 				N_actual_lf, N_alloc_lf, deltaEquivHF);
 
+  // estVarRatios is NOT scaled when overshooting hf_target --> since lf_targets
+  // are computed from eval_ratios * hf_targets, taking credit for all of
+  // N_actual and all of eval/estvar ratios is inaccurate/optimistic.  This
+  // deprecated implementation gets fixed in the MFMC 2-model replacement.
   estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
 }
 
@@ -276,7 +281,7 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
   if (finalStatsType == QOI_STATISTICS) {
     IntRealVectorMap sum_L_refined = sum_L_shared;
     // shared LF/HF samples to this point, as tracked by N_*_shared
-    Pecos::ActiveKey lf_key;  active_key.extract_key(1, lf_key);
+    Pecos::ActiveKey lf_key;  active_key.extract_key(0, lf_key);
     RealVector lf_targets;
     if (backfillFailures) { // increment relative to successful samples
       lf_increment(lf_key, eval_ratios, N_actual_lf, hf_targets, lf_targets,
@@ -304,6 +309,7 @@ control_variate_mc_offline_pilot(const Pecos::ActiveKey& active_key)
     update_projected_lf_samples(hf_targets, eval_ratios, cost_ratio,
 				N_actual_lf, N_alloc_lf, deltaEquivHF);
 
+  // For offline, no concern w/ inaccurate estvar from overshooting hf_targets
   estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared, avgEstVar);
 }
 
@@ -332,6 +338,7 @@ control_variate_mc_pilot_projection(const Pecos::ActiveKey& active_key)
 			   N_alloc_lf, deltaNActualHF, deltaEquivHF);
   SizetArray N_actual_shared_proj = N_actual_shared;
   increment_samples(N_actual_shared_proj, deltaNActualHF);
+  // For pilot proj, see note re inaccurate estvar from overshooting hf_targets
   estvar_ratios_to_avg_estvar(estVarRatios, varH, N_actual_shared_proj,
 			      avgEstVar);
 }
@@ -495,7 +502,7 @@ accumulate_mf_sums(IntRealVectorMap& sum_L_shared,
 		   IntRealVectorMap& sum_LH, RealVector& sum_HH,
 		   SizetArray& N_shared)
 {
-  // uses one set of allResponses in AGGREGATED_MODELS mode
+  // uses one set of allResponses in AGGREGATED_MODEL_PAIR mode
   // IntRealVectorMap is not a multilevel case so no discrepancies
 
   using std::isfinite;
@@ -509,10 +516,9 @@ accumulate_mf_sums(IntRealVectorMap& sum_L_shared,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // response mode AGGREGATED_MODELS orders HF (active model key)
-      // followed by LF (previous/decremented model key)
-      hf_prod = hf_fn = fn_vals[qoi];
-      lf_prod = lf_fn = fn_vals[qoi+numFunctions];
+      // response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+      lf_prod = lf_fn = fn_vals[qoi];
+      hf_prod = hf_fn = fn_vals[qoi+numFunctions];
 
       // sync sample counts for all L and H interactions at this level
       if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
@@ -573,7 +579,7 @@ void NonDControlVariateSampling::
 accumulate_mf_sums(RealVector& sum_L, RealVector& sum_H, RealVector& sum_LL,
 		   RealVector& sum_LH, RealVector& sum_HH, SizetArray& N_shared)
 {
-  // uses one set of allResponses in AGGREGATED_MODELS mode
+  // uses one set of allResponses in AGGREGATED_MODEL_PAIR mode
   // IntRealVectorMap is not a multilevel case so no discrepancies
 
   using std::isfinite;
@@ -584,10 +590,9 @@ accumulate_mf_sums(RealVector& sum_L, RealVector& sum_H, RealVector& sum_LL,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // response mode AGGREGATED_MODELS orders HF (active model key)
-      // followed by LF (previous/decremented model key)
-      hf_fn = fn_vals[qoi];
-      lf_fn = fn_vals[qoi+numFunctions];
+      // response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+      lf_fn = fn_vals[qoi];
+      hf_fn = fn_vals[qoi+numFunctions];
 
       // sync sample counts for all L and H interactions at this level
       if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
@@ -612,9 +617,10 @@ shared_increment(const Pecos::ActiveKey& agg_key, size_t iter, size_t lev)
   Cout << "LF = " << numSamples << " HF = " << numSamples << '\n';
 
   if (numSamples) {
-    aggregated_models_mode();
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);
     iteratedModel.active_model_key(agg_key);
-
+    resize_active_set();
+ 
     // generate new MC parameter sets
     get_parameter_sets(iteratedModel);// pull dist params from any model
 
@@ -636,8 +642,9 @@ lf_increment(const Pecos::ActiveKey& lf_key, const RealVector& eval_ratios,
   lf_allocate_samples(eval_ratios, N_lf, hf_targets, lf_targets);
 
   if (numSamples) {
-    uncorrected_surrogate_mode(); // also needed for lf_key assignment below
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
     iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
+    resize_active_set();
 
     return lf_perform_samples(iter, lev);
   }
@@ -655,8 +662,9 @@ lf_increment(const Pecos::ActiveKey& lf_key, const RealVector& eval_ratios,
   lf_allocate_samples(eval_ratios, N_lf_sa, hf_targets, lf_targets);
 
   if (numSamples) {
-    uncorrected_surrogate_mode(); // also needed for lf_key assignment below
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
     iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
+    resize_active_set();
 
     return lf_perform_samples(iter, lev);
   }
@@ -722,7 +730,7 @@ bool NonDControlVariateSampling::lf_perform_samples(size_t iter, size_t lev)
   get_parameter_sets(iteratedModel);// pull dist params from any model
   // export separate output files for each data set:
   if (exportSampleSets)
-    export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
+    export_all_samples("cv_", iteratedModel.active_surrogate_model(0),iter,lev);
 
   // Iteration 0 is defined as the pilot sample + initial CV increment, and
   // each subsequent iter can be defined as a pair of ML + CV increments.  If

@@ -53,13 +53,13 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   optSubProblemSolver = sub_optimizer_select(
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"),SUBMETHOD_OPTPP);
 
-  // check iteratedModel for model form hi1erarchy and/or discretization levels;
+  // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
-  if (iteratedModel.surrogate_type() == "non_hierarchical")
-    aggregated_models_mode(); // truth model + all approx models
+  if (iteratedModel.surrogate_type() == "ensemble")
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
   else {
-    Cerr << "Error: Non-hierarchical sampling requires a non-hierarchical "
-         << "surrogate model specification." << std::endl;
+    Cerr << "Error: sampling the full range of a model ensemble requires an "
+	 << "ensemble surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
@@ -162,9 +162,10 @@ void NonDNonHierarchSampling::assign_active_key(bool multilev)
       approx_keys[approx].form_key(0, approx, secondaryIndex);
     //truth_form = numApprox;  truth_lev = secondaryIndex;
   }
-  active_key.aggregate_keys(truth_key, approx_keys, Pecos::RAW_DATA);
-  aggregated_models_mode();
+  active_key.aggregate_keys(approx_keys, truth_key, Pecos::RAW_DATA);
+  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
   iteratedModel.active_model_key(active_key); // data group 0
+  resize_active_set();
 }
 
 
@@ -198,8 +199,9 @@ void NonDNonHierarchSampling::shared_increment(size_t iter)
   Cout << numSamples << '\n';
 
   if (numSamples) {
-    //aggregated_models_mode();
+    //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
     //iteratedModel.active_model_key(agg_key);
+    //resize_active_set();
 
     activeSet.request_values(1);
     ensemble_sample_increment(iter, numApprox+1); // BLOCK if not shared_approx_increment()  *** TO DO: step value
@@ -215,8 +217,9 @@ void NonDNonHierarchSampling::shared_approx_increment(size_t iter)
   Cout << numSamples << '\n';
 
   if (numSamples) {
-    //aggregated_models_mode();
+    //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
     //iteratedModel.active_model_key(agg_key);
+    //resize_active_set();
 
     size_t approx_qoi = numApprox  * numFunctions,
                   end = approx_qoi + numFunctions;
@@ -265,9 +268,10 @@ ensemble_sample_increment(size_t iter, size_t step)
 
   // export separate output files for each data set:
   if (exportSampleSets) { // for HF+LF models, use the HF tags
-    export_all_samples("cv_", iteratedModel.truth_model(), iter, step);
+    export_all_samples("cv_", iteratedModel.active_truth_model(), iter, step);
     for (size_t i=0; i<numApprox; ++i)
-      export_all_samples("cv_", iteratedModel.surrogate_model(i), iter, step);
+      export_all_samples("cv_", iteratedModel.active_surrogate_model(i),
+			 iter, step);
   }
 
   // compute allResponses from allVariables using non-hierarchical model

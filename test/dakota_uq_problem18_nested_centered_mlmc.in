@@ -79,7 +79,7 @@
  	id_model = 'HIERARCH'
  	variables_pointer = 'UQ_V'
  	responses_pointer = 'UQ_R'
- 	surrogate hierarchical
+ 	surrogate ensemble
  	  ordered_model_fidelities = 'MLModel'
  
  model, 

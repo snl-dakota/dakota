@@ -32,7 +32,7 @@ model,
 	id_model = 'OPTIM_M'
 	variables_pointer  = 'OPTIM_V'
 	responses_pointer  = 'OPTIM_R'
-	surrogate hierarchical
+	surrogate ensemble
 	  ordered_model_fidelities = 'LO_FI' 'HI_FI'
 	  correction additive first_order	#s0,#s2,#s4,#s6
 #	  correction additive second_order	#s1,#s3,#s5,#s7,#s8

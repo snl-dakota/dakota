@@ -87,9 +87,7 @@ protected:
   size_t qoi() const;
 
   DiscrepancyCorrection& discrepancy_correction();
-  short correction_type();
-  void  correction_type(short corr_type);
-  short correction_order();
+  void correction_type(short corr_type);
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
@@ -128,8 +126,8 @@ protected:
   /// split incoming ASV into actual and approximate evaluation requests,
   /// managing any mismatch in sizes due to response aggregation modes in
   /// actualModel
-  void asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
-		      ShortArray& approx_asv);
+  void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
+		 ShortArray& approx_asv);
 
   /// return daceIterator
   Iterator& subordinate_iterator();
@@ -165,6 +163,8 @@ protected:
   /// set responseMode and pass any bypass request on to actualModel for
   /// any lower-level surrogates.
   void surrogate_response_mode(short mode);
+  /// set approxInterface.sharedData.discrepEmulationMode
+  void discrepancy_emulation_mode(short mode);
 
   // link together more than one SurrogateData instance within
   // approxInterface.functionSurfaces[i].approxData[j]
@@ -416,22 +416,20 @@ private:
   /// order to reproduce high fidelity data.
   DiscrepancyCorrection deltaCorr;
 
+  // Note: the following Maps are a simpler case of the more general
+  // {modelId,cachedResp}Maps in EnsembleSurrModel (consolidating would
+  // add overhead for DFSModel).
+
   /// map from actualModel/highFidelityModel evaluation ids to
   /// DataFitSurrModel/HierarchSurrModel ids
   IntIntMap truthIdMap;
   /// map from approxInterface/lowFidelityModel evaluation ids to
   /// DataFitSurrModel/HierarchSurrModel ids
   IntIntMap surrIdMap;
-
   /// map of approximate responses retrieved in derived_synchronize_nowait()
   /// that could not be returned since corresponding truth model response
   /// portions were still pending.
   IntResponseMap cachedApproxRespMap;
-
-  /// map of raw continuous variables used by apply_correction().
-  /// Model::varsList cannot be used for this purpose since it does
-  /// not contain lower level variables sets from finite differencing.
-  IntVariablesMap rawVarsMap;
 
   /// total points the user specified to construct the surrogate
   int pointsTotal;
@@ -515,11 +513,11 @@ inline size_t DataFitSurrModel::qoi() const
 {
   // Response inflation from aggregation does not proliferate above
   // this Model recursion level
-  return (responseMode == AGGREGATED_MODELS && !actualModel.is_null()) ?
+  return (responseMode == AGGREGATED_MODEL_PAIR && !actualModel.is_null()) ?
     actualModel.qoi() : response_size();
 
   //switch (responseMode) {
-  //case AGGREGATED_MODELS:
+  //case AGGREGATED_MODEL_PAIR:
   //  if (actualModel.is_null()) return response_size();
   //  else                       return actualModel.qoi();
   //  break;
@@ -532,16 +530,8 @@ inline DiscrepancyCorrection& DataFitSurrModel::discrepancy_correction()
 { return deltaCorr; }
 
 
-inline short DataFitSurrModel::correction_type()
-{ return deltaCorr.correction_type(); }
-
-
 inline void DataFitSurrModel::correction_type(short corr_type)
-{ deltaCorr.correction_type(corr_type); }
-
-
-inline short DataFitSurrModel::correction_order()
-{ return deltaCorr.correction_order(); }
+{ corrType = corr_type; deltaCorr.correction_type(corr_type); }
 
 
 inline void DataFitSurrModel::total_points(int points)
@@ -604,9 +594,13 @@ inline void DataFitSurrModel::clear_model_keys()
 { approxInterface.clear_model_keys(); }
 
 
+inline void DataFitSurrModel::discrepancy_emulation_mode(short mode)
+{ approxInterface.discrepancy_emulation_mode(mode); }
+
+
 inline Model& DataFitSurrModel::surrogate_model(size_t i)
 {
-  if (i && i != _NPOS) { // allow either 0 or no index
+  if (i && i != _NPOS) { // allow either 0 or no index (defaults to _NPOS)
     Cerr << "Error: bad index (" << i << ") in DataFitSurrModel::"
 	 << "surrogate_model()." << std::endl;
     abort_handler(MODEL_ERROR);
@@ -623,7 +617,7 @@ inline Model& DataFitSurrModel::surrogate_model(size_t i)
 
 inline const Model& DataFitSurrModel::surrogate_model(size_t i) const
 {
-  if (i && i != _NPOS) { // allow either 0 or no index
+  if (i && i != _NPOS) { // allow either 0 or no index (defaults to _NPOS)
     Cerr << "Error: bad index (" << i << ") in DataFitSurrModel::"
 	 << "surrogate_model()." << std::endl;
     abort_handler(MODEL_ERROR);
@@ -739,7 +733,7 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
     actualModel.surrogate_response_mode(mode); // recurse in this case
     //approxInterface.deactivate_multilevel_approximation_data();
     break;
-  case AGGREGATED_MODELS:
+  case AGGREGATED_MODEL_PAIR:
     //approxInterface.activate_multilevel_approximation_data();
     break;
   }

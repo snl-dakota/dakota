@@ -75,17 +75,13 @@ protected:
   //- Heading: Member functions
   //
 
-  /// synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
-  void aggregated_models_mode();
-  /// synchronize iteratedModel and activeSet on BYPASS_SURROGATE mode
-  void bypass_surrogate_mode();
-  // synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
-  //void uncorrected_surrogate_mode()
-
   /// advance any sequence specifications
   void assign_specification_sequence(size_t index);
   /// extract current random seed from randomSeedSeqSpec
   int seed_sequence(size_t index);
+
+  /// synchronize activeSet with iteratedModel's response size
+  void resize_active_set();
 
   /// increment samples array with a shared scalar
   void increment_samples(SizetArray& N_l, size_t incr);
@@ -251,33 +247,15 @@ inline void NonDEnsembleSampling::print_variance_reduction(std::ostream& s)
 { } // default is no-op
 
 
-inline void NonDEnsembleSampling::aggregated_models_mode()
+inline void NonDEnsembleSampling::resize_active_set()
 {
-  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set HF,LF
+  size_t m_resp_len = iteratedModel.response_size();
+  if (activeSet.request_vector().size() != m_resp_len) {
     // synch activeSet with iteratedModel.response_size()
     activeSet.reshape(iteratedModel.response_size());
     activeSet.request_values(1);
   }
 }
-
-
-inline void NonDEnsembleSampling::bypass_surrogate_mode()
-{
-  if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // HF
-    activeSet.reshape(numFunctions);// synch with model.response_size()
-  }
-}
-
-
-//inline void NonDEnsembleSampling::uncorrected_surrogate_mode()
-//{
-//  if (iteratedModel.surrogate_response_mode() != UNCORRECTED_SURROGATE) {
-//    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-//    activeSet.reshape(numFunctions);// synch with model.response_size()
-//  }
-//}
 
 
 /** extract an active seed from a seed sequence */

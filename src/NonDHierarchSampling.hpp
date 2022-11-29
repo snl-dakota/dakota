@@ -63,13 +63,6 @@ protected:
   //- Heading: Member functions
   //
 
-  // synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
-  //void aggregated_models_mode();
-  // synchronize iteratedModel and activeSet on BYPASS_SURROGATE mode
-  //void bypass_surrogate_mode();
-  /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
-  void uncorrected_surrogate_mode();
-
   /// average costs once accumulations are complete
   void average_online_cost(const RealVector& accum_cost,
 			   const SizetArray& num_cost, RealVector& seq_cost);
@@ -91,15 +84,6 @@ private:
   //
 
 };
-
-
-inline void NonDHierarchSampling::uncorrected_surrogate_mode()
-{
-  if (iteratedModel.surrogate_response_mode() != UNCORRECTED_SURROGATE) {
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-    activeSet.reshape(numFunctions);// synch with model.response_size()
-  }
-}
 
 
 inline void NonDHierarchSampling::

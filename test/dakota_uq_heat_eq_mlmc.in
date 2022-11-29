@@ -28,7 +28,7 @@ method,
 
 model,
 	id_model = 'HIERARCH'
-	surrogate hierarchical
+	surrogate ensemble
 	  ordered_model_fidelities = 'SIM1'
 
 model,

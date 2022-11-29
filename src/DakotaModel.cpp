@@ -20,8 +20,7 @@
 #include "SimulationModel.hpp"
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
-#include "HierarchSurrModel.hpp"
-#include "NonHierarchSurrModel.hpp"
+#include "EnsembleSurrModel.hpp"
 #include "ActiveSubspaceModel.hpp"
 #include "AdaptedBasisModel.hpp"
 #include "RandomFieldModel.hpp"
@@ -323,10 +322,8 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
     return std::make_shared<NestedModel>(problem_db);
   else if ( model_type == "surrogate") {
     const String& surr_type = problem_db.get_string("model.surrogate.type");
-    if (surr_type == "hierarchical")
-      return std::make_shared<HierarchSurrModel>(problem_db);
-    else if (surr_type == "non_hierarchical")
-      return std::make_shared<NonHierarchSurrModel>(problem_db);
+    if (surr_type == "ensemble")
+      return std::make_shared<EnsembleSurrModel>(problem_db);
     else // all other surrogates (local/multipt/global) managed by DataFitSurr
       return std::make_shared<DataFitSurrModel>(problem_db);
   }
@@ -2973,7 +2970,7 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
 
   // *_asv_out[i] have all been initialized to zero
 
-  // For HierarchSurr and Recast models with no scaling (which contain no
+  // For EnsembleSurr and Recast models with no scaling (which contain no
   // interface object, only subordinate models), pass the ActiveSet through to
   // the sub-models in one piece and do not break it apart here. This preserves
   // sub-model parallelism.
@@ -3411,6 +3408,66 @@ const Model& Model::truth_model() const
     return modelRep->truth_model();
   else // letter lacking redefinition of virtual fn.
     return *this; // default is no surrogate -> return this model instance
+}
+
+
+unsigned short Model::active_surrogate_model_form(size_t i) const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_surrogate_model_form(i);
+  else // letter lacking redefinition of virtual fn.
+    return 0; // default (two models)
+}
+
+
+unsigned short Model::active_truth_model_form() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_truth_model_form();
+  else // letter lacking redefinition of virtual fn.
+    return 1; // default (two models)
+}
+
+
+/** return by reference requires use of dummy objects, but is
+    important to allow use of assign_rep() since this operation must
+    be performed on the original envelope object. */
+Model& Model::active_surrogate_model(size_t i)
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_surrogate_model(i);
+  else // letter lacking redefinition of virtual fn.
+    return surrogate_model(i); // default is no active distinction
+}
+
+
+const Model& Model::active_surrogate_model(size_t i) const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_surrogate_model(i);
+  else // letter lacking redefinition of virtual fn.
+    return surrogate_model(i); // default is no active distinction
+}
+
+
+/** return by reference requires use of dummy objects, but is
+    important to allow use of assign_rep() since this operation must
+    be performed on the original envelope object. */
+Model& Model::active_truth_model()
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_truth_model();
+  else // letter lacking redefinition of virtual fn.
+    return truth_model(); // default is no active distinction
+}
+
+
+const Model& Model::active_truth_model() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_truth_model();
+  else // letter lacking redefinition of virtual fn.
+    return truth_model(); // default is no active distinction
 }
 
 
@@ -4291,7 +4348,24 @@ short Model::surrogate_response_mode() const
 }
 
 
+void Model::discrepancy_emulation_mode(short mode)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->discrepancy_emulation_mode(mode);
+  // else: default implementation is no-op
+}
+
+
 /*
+short Model::discrepancy_emulation_mode() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->discrepancy_emulation_mode();
+  else // letter lacking redefinition of virtual fn.
+    return DEFAULT_EMULATION; // default for non-surrogate models
+}
+
+
 void Model::link_multilevel_approximation_data()
 {
   if (modelRep) // envelope fwd to letter
@@ -4320,7 +4394,7 @@ DiscrepancyCorrection& Model::discrepancy_correction()
 }
 
 
-short Model::correction_type()
+short Model::correction_type() const
 {
   if (modelRep) // envelope fwd to letter
     return modelRep->correction_type();
@@ -4337,12 +4411,29 @@ void Model::correction_type(short corr_type)
 }
 
 
-short Model::correction_order()
+short Model::correction_order() const
 {
   if (modelRep) // envelope fwd to letter
     return modelRep->correction_order();
   else
     return -1; // special value for no correction (0 = value correction)
+}
+
+
+unsigned short Model::correction_mode() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->correction_mode();
+  else
+    return DEFAULT_CORRECTION; // default for non-surrogate models
+}
+
+
+void Model::correction_mode(unsigned short corr_mode)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->correction_mode(corr_mode);
+  //else no-op
 }
 
 
@@ -4432,7 +4523,7 @@ void Model::cache_unmatched_responses()
 }
 
 
-/** SimulationModels and HierarchSurrModels redefine this virtual function.
+/** SimulationModels and EnsembleSurrModels redefine this virtual function.
     A default value of "synchronous" prevents asynch local operations for:
 \li NestedModels: a subIterator can support message passing parallelism,
     but not asynch local.
@@ -4447,7 +4538,7 @@ short Model::local_eval_synchronization()
 }
 
 
-/** SimulationModels and HierarchSurrModels redefine this virtual function. */
+/** SimulationModels and EnsembleSurrModels redefine this virtual function. */
 int Model::local_eval_concurrency()
 {
   if (modelRep) // should not occur: protected fn only used by the letter
@@ -5687,7 +5778,7 @@ int Model::derived_evaluation_id() const
 
 /** Only Models including ApplicationInterfaces support an evaluation cache:
     surrogate, nested, and recast mappings are not stored in the cache. 
-    Possible exceptions: HierarchSurrModel, NestedModel::optionalInterface. */
+    Possible exceptions: EnsembleSurrModel, NestedModel::optionalInterface. */
 bool Model::evaluation_cache(bool recurse_flag) const
 {
   if (modelRep) // envelope fwd to letter

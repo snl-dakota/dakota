@@ -39,8 +39,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 {
   randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
 
-  assign_discrepancy_mode();
-  assign_hierarchical_response_mode();
+  assign_modes();
 
   // ----------------
   // Resolve settings
@@ -149,8 +148,7 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
 		      use_derivs),
   sequenceIndex(0)
 {
-  assign_discrepancy_mode();
-  assign_hierarchical_response_mode();
+  assign_modes();
 
   // ----------------
   // Resolve settings
@@ -238,8 +236,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 {
   randomSeedSeqSpec = seed_seq;
 
-  assign_discrepancy_mode();
-  assign_hierarchical_response_mode();
+  assign_modes();
 
   // ----------------
   // Resolve settings
@@ -300,7 +297,6 @@ NonDMultilevelPolynomialChaos::~NonDMultilevelPolynomialChaos()
 { }
 
 
-/*
 void NonDMultilevelPolynomialChaos::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
@@ -311,12 +307,16 @@ void NonDMultilevelPolynomialChaos::initialize_u_space_model()
   // initializes ExpansionConfigOptions, among other things
   NonDPolynomialChaos::initialize_u_space_model();
 
+  // emulation mode needed for ApproximationInterface::qoi_set_to_key_index()
+  uSpaceModel.discrepancy_emulation_mode(multilevDiscrepEmulation);
+
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
   // PecosApproximation
   //uSpaceModel.link_multilevel_approximation_data();
 }
 
 
+/*
 bool NonDMultilevelPolynomialChaos::resize()
 {
   //resizedFlag = true;
