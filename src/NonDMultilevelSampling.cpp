@@ -620,7 +620,8 @@ void NonDMultilevelSampling::evaluate_ml_sample_increment(unsigned short step)
   //     This is correct for BYPASS_SURROGATE mode, but consider the new
   //     integrated tabular format for AGGREGATED_MODEL_PAIR mode.
   if (exportSampleSets)
-    export_all_samples("ml_", iteratedModel.truth_model(), mlmfIter, step);
+    export_all_samples("ml_", iteratedModel.active_truth_model(),
+		       mlmfIter, step);
 
   // compute allResponses from allVariables using hierarchical model
   evaluate_parameter_sets(iteratedModel, true, false);
