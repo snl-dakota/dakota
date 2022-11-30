@@ -185,7 +185,7 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 template <typename VectorType>
 bool is_equal_vec( const RealVector & vec1,
 	           const VectorType & vec2)
-{ 
+{
   // Check for equality in array lengths
   int len = vec1.length();
   if ( (int)vec2.size() != len )
@@ -193,6 +193,41 @@ bool is_equal_vec( const RealVector & vec1,
   // Check each size_t
   for (int i=0; i<len; ++i)
     if ( vec1[i] != vec2[i] )
+      return false;
+  return true;
+}
+
+/// partial equality operator for navigating different views
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
+bool is_equal_partial(
+  const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& vec1,
+  const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& vec2,
+  OrdinalType2 start_index2)
+{
+  // Check for equality in array lengths
+  int i, len = vec1.length();
+  if ( vec2.length() < start_index2 + len ) {
+    Cerr << "Error: indexing out of bounds in is_equal_partial()." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=0; i<len; ++i)
+    if ( vec1[i] != vec2[start_index2+i] )
+      return false;
+  return true;
+}
+
+/// partial equality operator for navigating different views
+inline bool is_equal_partial(const StringMultiArray& ma1,
+			     const StringMultiArray& ma2, size_t start_index2)
+{
+  // Check for equality in array lengths
+  size_t i, len = ma1.size();
+  if ( ma2.size() < start_index2 + len ) {
+    Cerr << "Error: indexing out of bounds in is_equal_partial()." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=0; i<len; ++i)
+    if ( ma1[i] != ma2[start_index2+i] )
       return false;
   return true;
 }
