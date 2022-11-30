@@ -962,25 +962,17 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
     else if ( ( approx_active_view == RELAXED_ALL ||
 		approx_active_view == MIXED_ALL ) &&
 	      sub_model_active_view >= RELAXED_DESIGN ) {
-      // coerce top level data to sub-model view (by creating inactive views
-      // from all arrays), but don't update sub-model
-      const RealVector& ac_vars  = currentVariables.continuous_variables();
-      const IntVector&  adi_vars = currentVariables.discrete_int_variables();
-      StringMultiArrayConstView ads_vars
-	= currentVariables.discrete_string_variables();
-      const RealVector& adr_vars = currentVariables.discrete_real_variables();
+
       const SharedVariablesData& sm_svd = actual_vars.shared_data();
-      RealVector ic_vars(Teuchos::View,
-	const_cast<Real*>(&ac_vars[sm_svd.icv_start()]), sm_svd.icv());
-      IntVector idi_vars(Teuchos::View,
-	const_cast<int*>(&adi_vars[sm_svd.idiv_start()]), sm_svd.idiv());
-      StringMultiArrayConstView	ids_vars(ads_vars[boost::indices[
-	idx_range(sm_svd.idsv_start(), sm_svd.idsv())]]);
-      RealVector idr_vars(Teuchos::View,
-	const_cast<Real*>(&adr_vars[sm_svd.idrv_start()]), sm_svd.idrv());
-      // perform check on data that is inactive at sub-model level
-      if ( ref_icv  != ic_vars  || ref_idiv != idi_vars ||
-	   ref_idsv != ids_vars || ref_idrv != idr_vars )
+      if (!is_equal_partial(ref_icv, currentVariables.continuous_variables(),
+			    sm_svd.icv_start())  ||
+	  !is_equal_partial(ref_idiv, currentVariables.discrete_int_variables(),
+			    sm_svd.idiv_start()) ||
+	  !is_equal_partial(ref_idsv,
+			    currentVariables.discrete_string_variables(),
+			    sm_svd.idsv_start()) ||
+	  !is_equal_partial(ref_idrv,currentVariables.discrete_real_variables(),
+			    sm_svd.idrv_start()))
 	return true;
     }
     // TO DO: extend for aleatory/epistemic uncertain views
@@ -1065,38 +1057,23 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
       else if ( ( approx_active_view  == RELAXED_ALL ||
 		  approx_active_view  == MIXED_ALL ) &&
 		sub_model_active_view >= RELAXED_DESIGN ) {
-	// coerce top level data to sub-model view (by creating inactive views
-	// from all arrays), but don't update sub-model
+
 	const SharedVariablesData& sm_svd = actual_vars.shared_data();
-	const RealVector& ac_l_bnds
-	  = userDefinedConstraints.continuous_lower_bounds();
-	const RealVector& ac_u_bnds
-	  = userDefinedConstraints.continuous_upper_bounds();
-	const IntVector&  adi_l_bnds
-	  = userDefinedConstraints.discrete_int_lower_bounds();
-	const IntVector&  adi_u_bnds
-	  = userDefinedConstraints.discrete_int_upper_bounds();
-	const RealVector& adr_l_bnds
-	  = userDefinedConstraints.discrete_real_lower_bounds();
-	const RealVector& adr_u_bnds
-	  = userDefinedConstraints.discrete_real_upper_bounds();
-	size_t cv_s = sm_svd.cv_start(),  n_cv  = sm_svd.cv(),
-	      div_s = sm_svd.div_start(), n_div = sm_svd.div(),
-	      drv_s = sm_svd.drv_start(), n_drv = sm_svd.drv();
-	RealVector
-	  c_l_bnds(Teuchos::View, const_cast<Real*>(&ac_l_bnds[cv_s]), n_cv),
-	  c_u_bnds(Teuchos::View, const_cast<Real*>(&ac_u_bnds[cv_s]), n_cv);
-	IntVector
-	  di_l_bnds(Teuchos::View, const_cast<int*>(&adi_l_bnds[div_s]), n_div),
-	  di_u_bnds(Teuchos::View, const_cast<int*>(&adi_u_bnds[div_s]), n_div);
-	RealVector
-	  dr_l_bnds(Teuchos::View, const_cast<Real*>(&adr_l_bnds[drv_s]),n_drv),
-	  dr_u_bnds(Teuchos::View, const_cast<Real*>(&adr_u_bnds[drv_s]),n_drv);
-	// perform check on data that is active at sub-model level
-	if ( ref_c_l_bnds  != c_l_bnds   || ref_c_u_bnds  != c_u_bnds   ||
-	     ref_di_l_bnds != di_l_bnds  || ref_di_u_bnds != di_u_bnds  ||
+	size_t cv_s = sm_svd.cv_start(), div_s = sm_svd.div_start(),
+	      drv_s = sm_svd.drv_start();
+	if (!is_equal_partial(ref_c_l_bnds,
+	     userDefinedConstraints.continuous_lower_bounds(),     cv_s) ||
+	    !is_equal_partial(ref_c_u_bnds,
+	     userDefinedConstraints.continuous_upper_bounds(),     cv_s) ||
+	    !is_equal_partial(ref_di_l_bnds,
+	     userDefinedConstraints.discrete_int_lower_bounds(),  div_s) ||
+	    !is_equal_partial(ref_di_u_bnds,
+	     userDefinedConstraints.discrete_int_upper_bounds(),  div_s) ||
 	     // no discrete string bounds
-	     ref_dr_l_bnds != dr_l_bnds  || ref_dr_u_bnds != dr_u_bnds )
+	    !is_equal_partial(ref_dr_l_bnds,
+	     userDefinedConstraints.discrete_real_lower_bounds(), drv_s) ||
+	    !is_equal_partial(ref_dr_u_bnds,
+	     userDefinedConstraints.discrete_real_upper_bounds(), drv_s) )
 	  return true;
       }
 
