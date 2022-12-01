@@ -33,7 +33,6 @@
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevelSampling.hpp"
-//#include "NonDControlVariateSampling.hpp"
 #include "NonDMultilevControlVarSampling.hpp"
 #include "NonDACVSampling.hpp"
 #include "NonDMultifidelitySampling.hpp"
@@ -514,33 +513,24 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #endif
 //#ifdef HAVE_MUQ
 //  case MUQ_SAMPLING:
-//    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model); break;
+//    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model);break;
 //#endif
   case RANDOM_SAMPLING:
     return std::make_shared<NonDLHSSampling>(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
     return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
   case MULTIFIDELITY_SAMPLING:
-    // Hierarch and NonHierarch SurrModels can both have an open ended number
+    // Hierarch and NonHierarch SurrModels can both have an open-ended number
     // of model forms.  Former treats them pairwise and latter as a full group.
     // > Would be nice to separate ordered/unordered from pairwise/full since
     //   the former is not a hard constraint (unordered still uses a list) while
     //   the latter is more critical (implementation uses active model key with
     //   full batch + ASV blocks versus active key that changes pairs).
     // > But the Model needs to be instantiated from its spec without knowledge
-    //   of the Iterator context --> Iterators like MFMC must adapt to
-    //   limitations of a EnsembleSurrModel even though it *is* a
-    //   hierarchical/recursive method.
-    //   >> Might need to collapse the two Model classes after all if we
-    //      want to avoid these adaptations caused by mis-specification;
-    //      or enforce hard errors when an Iterator is passed a Model that
-    //      limits its capability.
-    //   >> Perhaps base EnsembleSurrModel can switch between functions
-    //      implementations at run time (replace inheritance w/ code switches)
-
-    //if (model.surrogate_type() == "hierarchical")
-    //  return std::make_shared<NonDControlVariateSampling>(problem_db, model);
-    //else // non-hierarchical sampling supports #models > 2
+    //   of Iterator context --> Iterators like MFMC must adapt to limitations
+    //   of HierarchSurrModel even though it *is* hierarchical/recursive.
+    //   --> collapse the two SurrModel classes to avoid the need for method
+    //       adaptations due to Model specification.
     return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
     break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
@@ -557,9 +547,11 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     break;
   case SURROGATE_BASED_LOCAL:
     if (model.surrogate_type() == "ensemble")
-      return std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
+      return
+	std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
     else
-      return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
+      return
+	std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
     break;
   case SURROGATE_BASED_GLOBAL:
     return std::make_shared<SurrBasedGlobalMinimizer>(problem_db, model); break;
