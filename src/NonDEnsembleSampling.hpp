@@ -398,7 +398,7 @@ project_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
 }
 
 
-/** For single-level moment calculations with a scalar Nlq. */
+/** For single-level moment calculations without a sample count. */
 inline void NonDEnsembleSampling::
 uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 		       Real& cm1, Real& cm2, Real& cm3, Real& cm4)
@@ -411,7 +411,7 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
   // > For sampling a portion of the population, central moments {2,3,4} are 
   //   biased estimators since the mean is approximated.  The conversion to
   //   unbiased requires a correction based on the number of samples, as
-  //   implemented in the subsequent function.
+  //   implemented in the function following this one.
 
   cm1 = rm1;             // mean
   cm2 = rm2 - cm1 * cm1; // variance 
