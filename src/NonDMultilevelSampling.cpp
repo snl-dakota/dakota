@@ -331,7 +331,12 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   if (finalStatsType == QOI_STATISTICS) {
     // roll up moment contributions
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l_actual);
+
+    // This approach leverages level roll-up for raw moment 2:
     recover_variance(momentStats, varH);
+    // Alternate approach could emulate MFMC/ACV by only using Q_L and N_L:
+    //compute_variance(sum_Ql.at(1)[L], sum_Ql.at(2)[L], N_l_actual[L]);
+
     // populate finalStatErrors
     compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l_actual);
   }
@@ -402,7 +407,12 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   if (finalStatsType == QOI_STATISTICS) {
     // roll up moment contributions
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_online);
+
+    // This approach leverages level roll-up for raw moment 2:
     recover_variance(momentStats, varH);
+    // Alternate approach could emulate MFMC/ACV by only using Q_L and N_L:
+    //compute_variance(sum_Ql.at(1)[L], sum_Ql.at(2)[L], N_l_actual[L]);
+
     // populate finalStatErrors
     compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_online);
   }
@@ -439,7 +449,11 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   // Only QOI_STATISTICS requires estimation of moments
   if (finalStatsType == QOI_STATISTICS) {
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual); // not reported
-    recover_variance(momentStats, varH); // momentStats only for varH
+
+    // This approach leverages level roll-up for raw moment 2:
+    recover_variance(momentStats, varH);
+    // Alternate approach could emulate MFMC/ACV by only using Q_L and N_L:
+    //compute_variance(sum_Ql.at(1)[L], sum_Ql.at(2)[L], N_l_actual[L]);
   }
   update_projected_samples(delta_N_l, N_alloc, sequenceCost, deltaEquivHF);
   Sizet2DArray N_actual_proj = N_actual;
@@ -1871,7 +1885,7 @@ compute_moments(const IntRealMatrixMap& sum_Ql,
 {
   //RealMatrix Q_raw_mom(numFunctions, 4);
   const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q2l = sum_Ql.at(2),
-      &sum_Q3l = sum_Ql.at(3), &sum_Q4l = sum_Ql.at(4),
+      &sum_Q3l   = sum_Ql.at(3),   &sum_Q4l   = sum_Ql.at(4),
       &sum_Q1lm1 = sum_Qlm1.at(1), &sum_Q2lm1 = sum_Qlm1.at(2),
       &sum_Q3lm1 = sum_Qlm1.at(3), &sum_Q4lm1 = sum_Qlm1.at(4);
   const IntIntPair pr11(1, 1);

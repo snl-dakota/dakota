@@ -595,20 +595,25 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 		     num_cv_lev, num_hf_lev, Y_mom);
     convert_moments(Y_mom, momentStats); // raw to final (central or std)
 
-    // A subtle point, but for consistency with MFMC/ACV, don't take "credit"
-    // for the final varH estimates after control variate roll-ups:
+    // This approach leverages the best available varH for est var reporting,
+    // similar to offline pilot mode:
+    recover_variance(momentStats, varH);
+    // Alternate approach 1: for more consistency with MFMC/ACV, don't take
+    // "credit" for the final varH estimates after control variate roll-ups:
     // > MFMC/ACV don't update the varH within the estvar calc after CV roll-up
     //   for moment 2, as this varH would be inconsistent with the iteration
     //   used to generate r*,N*.
     // > Since varH is not accumulated directly, utilize ML-only roll-up
     //   (same for MLCVMC & MLMC) for varH used in final variance reporting.
-    // Note: roll-ups start from unbiased estimates for raw moments 1 and 2
-    // and create biased estimates for central moment 2 via convert_moments().
-    RealMatrix Y_mlmc_mom(numFunctions, 4), mlmc_stats;
-    ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
-		   0, num_hf_lev, Y_mlmc_mom);
-    convert_moments(Y_mlmc_mom, mlmc_stats); // raw to final (central or std)
-    recover_variance(mlmc_stats, varH);
+    // > Counter example: offline pilot cases utilize offline varH...
+    //RealMatrix Y_mlmc_mom(numFunctions, 4), mlmc_stats;
+    //ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
+    // 		   0, num_hf_lev, Y_mlmc_mom);
+    //convert_moments(Y_mlmc_mom, mlmc_stats); // raw to final (central or std)
+    //recover_variance(mlmc_stats, varH);
+    //
+    // Alternate approach 2: for max MFMC/ACV consistency, only use H_L and N_L
+    //compute_variance(sum_Hl[1][L], sum_Hl[2][L],, N_actual_hf[L]);
   }
   else // for consistency with pilot projection
     update_projected_lf_samples(hf_targets, eval_ratios, hf_cost, N_actual_lf,
@@ -735,12 +740,13 @@ multilevel_control_variate_mc_offline_pilot()
     // Convert uncentered raw moment estimates to final moments (central or std)
     convert_moments(Y_mom, momentStats);
 
-    // For consistency, recover varH w/o CV refinements. See explanation above.
-    RealMatrix Y_mlmc_mom(numFunctions, 4), mlmc_stats;
-    ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
-		   0, num_hf_lev, Y_mlmc_mom);
-    convert_moments(Y_mlmc_mom, mlmc_stats); // raw to final (central or std)
-    recover_variance(mlmc_stats, varH);
+    recover_variance(momentStats, varH);
+    // See explanation of varH recovery options above.
+    //RealMatrix Y_mlmc_mom(numFunctions, 4), mlmc_stats;
+    //ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
+    // 		   0, num_hf_lev, Y_mlmc_mom);
+    //convert_moments(Y_mlmc_mom, mlmc_stats); // raw to final (central or std)
+    //recover_variance(mlmc_stats, varH);
   }
   else // for consistency with pilot projection
     update_projected_lf_samples(hf_targets_pilot, eval_ratios_pilot, hf_cost,
