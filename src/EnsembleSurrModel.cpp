@@ -1395,6 +1395,58 @@ void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
 }
 
 
+Model& EnsembleSurrModel::active_surrogate_model(size_t i)
+{
+  unsigned short lf_form;
+  switch (responseMode) {
+  case AGGREGATED_MODELS: // array of surrogates: require valid index
+    lf_form = active_surrogate_model_form(i);
+    if (lf_form == USHRT_MAX) {
+      Cerr << "Error: model form undefined in EnsembleSurrModel::"
+	   << "active_surrogate_model()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    return model_from_index(lf_form);  break;
+  case BYPASS_SURROGATE: case NO_SURROGATE:
+    return dummy_model;                break;
+  case AGGREGATED_MODEL_PAIR: case MODEL_DISCREPANCY: // paired cases
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    // One surrModelKey: allow client to quietly rely on default (_NPOS)
+    lf_form = (i == _NPOS) ? active_surrogate_model_form(0)
+                           : active_surrogate_model_form(i);
+    return //(lf_form == USHRT_MAX) ? model_from_index(0) :
+      model_from_index(lf_form);
+    break;
+  }
+}
+
+
+const Model& EnsembleSurrModel::active_surrogate_model(size_t i) const
+{
+  unsigned short lf_form;
+  switch (responseMode) {
+  case AGGREGATED_MODELS: // array of surrModelKeys: require valid index
+    lf_form = active_surrogate_model_form(i);
+    if (lf_form == USHRT_MAX) {
+      Cerr << "Error: model form undefined in EnsembleSurrModel::"
+	   << "active_surrogate_model()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    return model_from_index(lf_form);  break;
+  case BYPASS_SURROGATE: case NO_SURROGATE: // surrModelKeys are empty
+    return dummy_model;                break;
+  case AGGREGATED_MODEL_PAIR: case MODEL_DISCREPANCY:        // 1 surrModelKey
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: // (paired cases)
+    // One surrModelKey: allow client to quietly rely on default (_NPOS)
+    lf_form = (i == _NPOS) ? active_surrogate_model_form(0)
+                           : active_surrogate_model_form(i);
+    return //(lf_form == USHRT_MAX) ? model_from_index(0) :
+      model_from_index(lf_form);
+    break;
+  }
+}
+
+
 void EnsembleSurrModel::create_tabular_datastream()
 {
   // This function is invoked early at run time, for which the results of
