@@ -32,7 +32,7 @@ the core repository. It can be cloned using SSH
 **Primary branches:** The default branch for development is
 ``devel``. The ``master`` branch is a stable, release-quality branch
 that passed more extensive testing. Branches for specific Dakota
-versions, e.g, ``6.17``, are available too.
+versions, e.g, ``6.17``, are also available.
 
 **Submodules:** The Dakota repository is separated into public and
 private meta-packages. The core or top-level repository uses Git

@@ -25,9 +25,9 @@ Compiling Dakota from source requires:
   as well as external software locations and options, and (2) generate
   a development environment-specific build tree.
 
-- Building, that is, running the development environment's :ref:`build
-  process <build>` to compile and link, e.g., Unix ``make`` or Windows
-  Visual Studio or ``nmake``.
+- Building Dakota, i.e. running the development environment's :ref:`build
+  process <build>` to compile and link the Dakota executable, e.g.,
+  using Unix ``make`` or Windows Visual Studio or ``nmake``.
 
 - :ref:`Running and assessing tests <test>`.
 
@@ -51,7 +51,6 @@ options::
    ctest -j 4 -L Accept
 
    # install to the specified prefix
-   cd ..
    make install 
 
 

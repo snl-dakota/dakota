@@ -100,7 +100,7 @@ Packages
      - >= 1.15
      - Optional; required for QUESO Bayesian calibration, **induces
        GPL dependency**
-   * - `Trilinos <https://www.boost.org/>`_ (Teuchos and ROL)
+   * - `Trilinos <https://trilinos.github.io/>`_ (Teuchos and ROL)
      - >= 13.0
      - Optional, as Dakota includes a snapshot in
        :file:`packages/external/trilinos`
@@ -173,7 +173,7 @@ RHEL 7
 ------
 
 On RHEL 7 (most recently 7.8), we satisfied Dakota's dependencies with
-the following.  These are all from the standard package or EPEL (``yum
+the following which are all from either the standard package or EPEL (``yum
 install epel-release``) repositories and installed with yum install.
 
 Core development tools: GCC 4.8.5, Java 11, Python 2.7.5, Perl 5.16.3:
@@ -204,13 +204,13 @@ directories to point to, e.g., ``/usr/include/boost169``.
 RHEL 8
 ------
 
-The follow work for a trial Dakota build on CentOS or Rocky Linux 8 distro.
+The following list of packages work for a trial Dakota build on CentOS
+or Rocky Linux 8 distro.
 
 Base Packages resulting in GCC 8.5.0, Python 3.6.8, CMake 3.20.2, and
 OpenMPI 4.1.1::
 
    # yum or dnf install the following packages...
-    
    git make cmake gcc gcc-c++ gcc-gfortran python3 perl blas lapack openmpi openmpi-devel
     
    # Omit boost as will install 1.66
@@ -225,8 +225,7 @@ OpenMPI 4.1.1::
    # For Python features (optional)
    python3-h5py python3-numpy
     
-   # Enable enable the PowerTools repo via editing /etc/yum.repos.d/CentOS-PowerTools.repo and install
-
+   # Enable the PowerTools repo via editing /etc/yum.repos.d/CentOS-PowerTools.repo and install
    blas-devel lapack-devel
 
 EPEL Packages add Boost 1.69 and HDF 1.10.5::
@@ -293,7 +292,7 @@ approach currently.
 
    If you build your own toolchains, make sure that the TPLs are built
    with the compiler you intend to use for Dakota and not the system
-   compiler. It may be necessary in addition to enable C++11 when
+   compiler. It may be necessary to explicitly enable C++11 when
    compiling Boost, particularly with GCC compilers.
 
 
@@ -336,7 +335,7 @@ Boost:
 
      using darwin : : gcc-7 : <cxxflags>"-std=c++11" ;
 
-- At the top of the boost source directory, invoke b2 with the following options, being sure to replace/set ``$INSTALL_PATH`` and ``$BUILD_PATH`` to something convenient::
+- At the top of the boost source directory, invoke b2 with the following options, making sure to replace/set ``$INSTALL_PATH`` and ``$BUILD_PATH`` to something convenient::
 
      b2 link=static --without-python define=_GLIBCXX_USE_CXX11_ABI=1 --prefix=$INSTALL_PATH --build-dir=$BUILD_PATH install
 
@@ -358,11 +357,11 @@ HDF5::
    <https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html>`_. The
    above configuration produces a compatible Boost build.
 
-   Alternately, one might be able to explicitly turning it off by
+   Alternately, one might be able to explicitly disable this by
    adding ``-D_GLIBCXX_USE_CXX11_ABI=0`` to ``CMAKE_CXX_FLAGS``; CMake
    is smart enough to pass that option to the compiler only once, with
    it set to 0. Which of these is the best approach, building with the
-   define turned on or off, is unclear. Things just need to be
+   define turned on or off, is currently unclear. Things just need to be
    consistent.
 
 **Verified on OS X 10.12:** All homebrew approach. 

@@ -38,6 +38,13 @@ CMake GUIs.
    helpful to remove these files or delete the entire build directory
    contents. This avoids inadvertently using previous settings.
 
+.. attention::
+
+   When using the ``CMAKE_INSTALL_PREFIX`` CMake setting, configuration
+   information can be stored there as well, and it is good practice
+   to remove the installation directory contents when revising CMake
+   settings.
+
 ===============================
 Configuring at the Command Line
 ===============================
@@ -73,9 +80,9 @@ Configuring with a CMake Script
 ===============================
 
 Dakota build settings can be written in a CMake script file (referred
-to as build file here). The directory :file:`$DAK_SRC/cmake/` contains
+to as build file here). The directory :file:`$DAK_SRC/cmake/examples` contains
 a collection of build files. There are historical platform-specific
-files examples such as BuildRHEL7.cmake, BuildDarwin.cmake, and
+examples such as BuildRHEL7.cmake, BuildDarwin.cmake, and
 Build_win_msvc_ifort.cmake. The build file BuildDakotaTemplate.cmake
 is a template that contains the most commonly used Dakota CMake
 variables.
@@ -89,7 +96,7 @@ Some common settings in a build file include:
 
 **Simple Build File Example**
 
-See Using BuildDakotaTemplate.cmake Script for a description of the
+See :ref:`sec:using_dak_cmake_template` for a description of the
 variables and instructions for use. Once you have customized this
 script for your platform, run the CMake script as follows::
 
@@ -103,6 +110,8 @@ script for your platform, run the CMake script as follows::
 You can iteratively make changes to :file:`BuildDakota.cmake` for your
 platform (see link above). Once your script correctly builds Dakota,
 save it in a more permanent location for later reuse.
+
+.. _`sec:using_dak_cmake_template`:
 
 -------------------------------
 Using BuildDakotaTemplate.cmake
@@ -118,7 +127,7 @@ the minimum set of variables necessary to:
 
 Typically you would uncomment CMake variables *only* for values you
 need to change for your platform. Once you edit variables as needed,
-run CMake with script file.
+run CMake with the script file.
 
 **Linear Algebra:** Set BLAS, LAPACK library paths if in non-standard
 locations. ::
@@ -156,7 +165,7 @@ Boost install location. ::
   set( Boost_NO_SYSTEM_PATHS TRUE
      CACHE BOOL "Supress search paths other than BOOST_ROOT" FORCE)
 
-**Trilinos:** You will need to set the following variable if you want
+**Trilinos:** You will need to set the following variable if you
 have a custom Trilinos install location. If not set, the
 Dakota-shipped Trilinos will be built instead. ::
 
@@ -197,7 +206,7 @@ shown immediately above. For example: ::
   CMAKE_Fortran_FLAGS=-O2
 
 **Shared vs. Static libraries:** By default, Dakota builds and links
-external shared libraries, but can also build static libraries if you
+external shared libraries but can also build static libraries if you
 need to link against static libraries without position-independent
 code, e.g,. an installed libblas.a or libmpi.a. ::
 
@@ -205,7 +214,7 @@ code, e.g,. an installed libblas.a or libmpi.a. ::
   BUILD_SHARED_LIBS:BOOL=FALSE
 
 **Developer Convenience Macros:** These shortcuts are designed to help
- routine development:
+routine development:
 
 - ``-C cmake/DakotaDev.cmake``: enable MPI, docs, and specification
   maintenance.
@@ -240,7 +249,7 @@ Dakota uses the standard `CMake FindMPI
 <https://cmake.org/cmake/help/latest/module/FindMPI.html>`_ to find
 and configure MPI. The minimum for compiling Dakota with MPI is to
 make sure appropriate MPI binaries and libraries are on necessary
-PATHs and setting ``DAKOTA_HAVE_MPI:BOOL=TRUE``.
+PATHs and by setting ``DAKOTA_HAVE_MPI:BOOL=TRUE``.
 
 The recommended practice is to also specify a C++ compiler wrapper
 (and all specific compilers as discussed above to avoid mixed
@@ -316,17 +325,17 @@ To enable HDF5: ::
 
 In addition, the variable ``HDF5_ROOT`` should typically be set to the
 top-level HDF5 directory (i.e. that contains the include and lib
-folders). `CMake's FindHDF5
+folders), cf `CMake's FindHDF5
 <https://cmake.org/cmake/help/latest/module/FindHDF5.html>`_
 
 **External Trilinos**
 
 To compile Dakota against an externally installed Trilinos, set
-Trilinos_DIR to the directory in an install tree containing
+``Trilinos_DIR`` to the directory in an install tree containing
 ``TrilinosConfig.cmake``, e.g.,
 :file:`/usr/local/trilinos/lib/cmake/Trilinos/`, which contains
 ``TrilinosConfig.cmake`` (similarly ``Teuchos_DIR`` for location of
-``TeuchosConfig.cmake)``.
+``TeuchosConfig.cmake``).
 
 Set the variable ``DAKOTA_NO_FIND_TRILINOS:BOOL=TRUE`` to disallow
 Dakota from attempting to find the Trilinos package. This can be
@@ -342,15 +351,16 @@ common options.
 
 **Documentation**
 
-Building Dakota documentation build requires appropriate versions of
-Java, Perl, Doxygen, and Sphinx and only works on Unix platforms: set
+Building Dakota documentation requires appropriate versions of
+Java, Perl, Doxygen and Sphinx and only works on Unix platforms: set
 ``ENABLE_DAKOTA_DOCS:BOOL=TRUE``
 
-DAKOTA_DOCS_DEV
+..
+  TODO? DAKOTA_DOCS_DEV
 
 **Testing**
 
-The following options affect tests
+The following options affect tests:
 
 .. list-table:: Dakota Testing Options
    :header-rows: 1
@@ -363,7 +373,7 @@ The following options affect tests
      - Whether to enable Dakota system-level tests
    * - DAKOTA_EXPAND_SUBTESTS
      - OFF
-     - Whether to register on CTest test per system-level subtest
+     - Whether to register one CTest test per system-level subtest
    * - DAKOTA_ENABLE_TPL_TESTS
      - OFF
      - Whether to enable the following TPL tests
@@ -388,7 +398,7 @@ The following options affect tests
 
 **Specification maintenance**
 
-Dakota specification maintenance mode is used by developers when
+Dakota specification (input syntax) maintenance mode is used by developers when
 modifying Dakota XML input specification.  It generates ``nidrgen``
 and ``Dt`` binaries in :file:`packages/nidr` and when
 ``dakota.input.nspec`` changes, will use them to update relevant
@@ -478,8 +488,8 @@ The following CMake settings are necessary to enable QUESO: ::
 
 This table lists the most common CMake options for enabling or
 disabling specific Dakota sub-packages. Note that Dakota builds may
-not be tolerance of turning off many of these packages, even if not
-marked required, as various combinations of enable/disables aren't
+fail when disabling many of these packages, even if not
+marked as required, because various combinations of enable/disables aren't
 routinely tested.
 
 .. csv-table:: Dakota Package Options
@@ -525,11 +535,11 @@ inspect the console output/error. The files ``CMakeOutput.log`` and
 ``CMakeError.log`` contained in ``$DAK_BUILD/CMakeFiles`` are
 per-probe output and rarely help.
 
-**Mixing incompatible compilers:** Be careful incompatible compilers
-aren't selected automatically, e.g., mixing g77 with gfortran or
-mixing vendors even, by specifying to configure which C, C++, and
-Fortran compilers you want to use.  We often see a specific gfortran
-get combined with system /usr/bin/cc due to CMake probes.  Solution:
+**Mixing incompatible compilers:** Be careful that incompatible compilers
+aren't selected automatically, e.g., mixing g77 with gfortran or mixing
+compiler vendors.  We often see a specific gfortran get combined
+with system /usr/bin/cc due to CMake probes.  Best practice is to
+specify which C, C++, and Fortran compilers you want to use, e.g.
 explictly specify ``CMAKE_C_COMPILER``, ``CMAKE_CXX_COMPILER``, and
 ``CMAKE_Fortran_COMPILER``.
 
