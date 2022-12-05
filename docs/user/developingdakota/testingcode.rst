@@ -4,13 +4,120 @@
 Testing Dakota Code
 """""""""""""""""""
 
-This section provides a walkthrough for developers who wish to add a performance-based unit test. The procedure relies on setting up a problem description database using a Dakota input string and subsequently executing the environment. The last step involves extracting the quantities of interest (results) and testing an assertion for pass/fail labeling of the test.
 
-===========================
+==========
+Unit Tests
+==========
+
+Intended for testing specific units, classes, functions, when they can
+be readily constructed (and/or provided mocks) as needed.
+
+Historically we've used both Boost.Test and Teuchos Unit Test
+features. For minimal unit test examples, two ways to do with Boost
+and one with teuchos; see:
+
+- :file:`src/unit_test/min_unit_test.cpp` (Boost.Test unit_test.hpp)
+- :file:`src/unit_test/leja_sampling.cpp` (Boost.Test minimal.hpp)
+- :file:`src/unit_test/demo_teuchos.cpp` (Teuchos)
+
+.. note::
+
+   Prefer Boost test when adding new unit tests, but use Teuchos if
+   needed. Overall Teuchos has easier to use numerical computing
+   testing macros, but if you use the full Boost testing library, it's
+   not really that different. *Rationale: it's better to protect with
+   tests than not write them due to not picking...*
+
+Some more recent / modern examples:
+
+- :file:`src/util/unit/MathToolsTest.cpp`
+- :file:`src/util/unit/LinearSolverTest.cpp` (Teuchos)
+- :file:`src/surrogates/unit/PolynomialRegressionTest.cpp` (Boost)
+
+To add a test with a TDD mindset:
+
+#. Call out the source file ``my_test.cpp`` in ``CMakeLists.txt``,
+   e.g., :file:`src/surrogate/unit/CMakeLists.txt` by adding to an
+   existing or new test suite. Build will fail.
+
+#. Add a new ``my_test.cpp`` with a failing test macro to verify
+   build, but test fails.
+
+#. Iteratively add and refine tests and core source code as the
+   capability evolves.
+
+To run all unit tests:
+
+.. code-block::
+
+   cd dakota/build/ 
+    
+   # Run all unit tests:
+   ctest -L (--label-regex) UnitTest
+    
+   # With detailed output at top-level:
+   ctest -L (--label-regex) UnitTest -VV (--extra-verbose)
+    
+   # To run a single test, via regular expression:
+   ctest -L UnitTest -R surrogate_unit_tests
+
+
+For Teuchos-based unit tests:
+
+.. code-block::
+
+   cd build/src/unit_test (or other directory containing the test executable)
+    
+   # To see available sub-tests in this suite:
+   ./surrogate_unit_tests --no-op
+    
+   # To get detailed debugging info from a Teuchos-based unit test group (wildcards are also supported):
+   ./surrogate_unit_tests --group="reduced_basis"
+    
+   # Or a particular test by name
+   ./surrogate_unit_tests --test-name="*yaml*"
+
+================
+Regression Tests
+================
+
+- Primary located in source/test/dakota_*.in and gold standards in dakota_*.base
+- Documentation mainly in ``test/dakota_test.perl --man``
+
+
+=============================
+Unit Test-driven System Tests
+=============================
+
+These hybrid tests can be useful when it's difficult to mock up all
+the objects needed for testing, e.g., Dakota Model, Variables,
+Interface, Responses, yet want finer-grained control over results
+verification than with regression tests (below).
+
+- Registered as unit tests
+
+- Operate at the level of constructing a Dakota Environment from an
+  input file and running a whole study
+
+- Test criteria are more fine-grained and controllable
+
+- Key Example: Authoring unit tests for a Dakota input-file driven
+  example (see below and
+  :file:`src/unit_test/opt_tpl_rol_test_textbook.cpp`.
+
+This section provides a walkthrough for developers who wish to add a
+performance-based unit test that includes an end-to-end Dakota
+analysis. The procedure relies on setting up a problem description
+database using a Dakota input string and subsequently executing the
+environment. The last step involves extracting the quantities of
+interest (results) and testing an assertion for pass/fail labeling of
+the test.
+
 Test environment definition
-===========================
+---------------------------
 
-The developer defines a testing environment by providing a problem description database using a Dakota input string, e.g.
+The developer defines a testing environment by providing a problem
+description database using a Dakota input string, e.g.
 
 .. code-block::
 
@@ -61,9 +168,8 @@ The input string is then used in creating a Dakota environment:
 	// once done with changes: check database, broadcast, and construct iterators
 	env.done_modifying_db();
 
-=========================
 Executing the environment
-=========================
+-------------------------
 
 Once an evnironment is defined, we proceed with execution:
 
@@ -73,11 +179,12 @@ Once an evnironment is defined, we proceed with execution:
 	env.execute();
 
 
-======================================
 Extracting results and test assertions
-======================================
+--------------------------------------
 
-Following execution, the pertinent results are extracted and used in testing assertions of interest. This is performed using the Teuchos unit testing capabilities, e.g.
+Following execution, the pertinent results are extracted and used in
+testing assertions of interest. This is performed using the Teuchos
+unit testing capabilities, e.g.
 
 .. code-block::
 
@@ -108,11 +215,12 @@ Following execution, the pertinent results are extracted and used in testing ass
 	rel_err = fabs((resp.function_value(0) - target)/target);
 	TEST_COMPARE(rel_err,<, max_tol);
 
-========================
 Teuchos unit test macros
-========================
+------------------------
 
-The following is a list of Teuchos unit test macros (see `Teuchos Docs <https://trilinos.org/docs/dev/packages/teuchos/doc/html/group__Teuchos__UnitTestAssertMacros__grp.html#ga0794ff7d415d63cb6a741ecc7829d544>`_ for more):
+The following is a list of Teuchos unit test macros (see `Teuchos Docs
+<https://trilinos.org/docs/dev/packages/teuchos/doc/html/group__Teuchos__UnitTestAssertMacros__grp.html#ga0794ff7d415d63cb6a741ecc7829d544>`_
+for more):
 
 .. code-block::
 
@@ -134,11 +242,17 @@ The following is a list of Teuchos unit test macros (see `Teuchos Docs <https://
 											  // (otherwise the test fails).
 	TEST_NOTHROW(code)                        // Assert that the statement 'code' does not thrown any excpetions.
 
-==================================
 Compiling with existing unit tests
-==================================
+----------------------------------
 
-The source code can be compiled and run with the existing ensemble of unit tests by modifying the CMakeLists.txt file in the dakota/src/unit_test directory to include the source file containing the new unit tests. A line with the name of the source file containing the new unit tests is added to the set(dakota_teuchos_unit_tests ...) environment. Furthermore, Dakota must be configured and compiled with the DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS macro enabled. Finally, the tests can be executed with the command
+The source code can be compiled and run with the existing ensemble of
+unit tests by modifying the CMakeLists.txt file in the
+dakota/src/unit_test directory to include the source file containing
+the new unit tests. A line with the name of the source file containing
+the new unit tests is added to the set(dakota_teuchos_unit_tests ...)
+environment. Furthermore, Dakota must be configured and compiled with
+the DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS macro enabled. Finally, the tests
+can be executed with the command
 
 .. code-block::
 
