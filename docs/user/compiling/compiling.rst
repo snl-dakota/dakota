@@ -1,3 +1,5 @@
+.. _compiling-main:
+
 Compiling Dakota
 ================
 

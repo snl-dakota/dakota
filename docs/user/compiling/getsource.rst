@@ -131,7 +131,7 @@ enumerate them.
 
    Git submodule update may not be appropriate when co-developing
    submodules with Dakota; see discussion later in this guide in
-   :ref:`TODO:devman`.
+   :ref:`git-submodules`.
 
 **Submodules and Git Protocols:** Top-level Dakota refers to its three
 primary submodules using relative paths, so Git should by default

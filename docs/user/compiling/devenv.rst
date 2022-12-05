@@ -13,7 +13,7 @@ RHEL 7 configuration below. Regression tests will typically exhibit
 numerical differences when running on other platforms. For developers
 needing to reproduce RHEL 7 baselines on other platforms, e.g., for
 pre-push code verification, a Docker-based build/test process is also
-described in :ref:`TODO:devman`.
+described in :ref:`devenvironment-main`.
 
 .. note::
 
@@ -57,7 +57,9 @@ Toolchains
      - Optional; required for generating C++ code docs
    * - Sphinx
      - >= 5.0
-     - Optional; required for generating user docs
+     - Optional; required for generating user docs. Requires
+       sub-packages , myst-parser, sphinx-rtd-theme,
+       sphinxcontrib-bibtex
 
 Notes on toolchains:
 
@@ -72,6 +74,16 @@ Notes on toolchains:
   understand the consequences.
 
 - C99 is not supported by Dakota's AMPL package.
+
+- To install Sphinx into your preferred Python environment, use
+  ``pip`` or if targeting Python 3 when both 2 and 3 are installed,
+  ``pip3``::
+
+     pip install --user -U Sphinx
+     pip install --user -U myst-parser
+     pip install --user -U sphinx-rtd-theme
+     pip install --user -U sphinxcontrib-bibtex
+
 
 ========
 Packages
@@ -96,6 +108,10 @@ Packages
    * - `HDF5 <https://www.hdfgroup.org/>`_
      - = 1.10.4 (Dakota may work with 1.10.x for x > 4; untested)
      - Optional; required for Dakota structured results output
+   * - `h5py <https://www.h5py.org/>`_
+     -
+     - Optional; required to enable HDF5-based tests (recommended for
+       developers)
    * - `GSL <https://www.hdfgroup.org/>`_
      - >= 1.15
      - Optional; required for QUESO Bayesian calibration, **induces
@@ -176,11 +192,12 @@ On RHEL 7 (most recently 7.8), we satisfied Dakota's dependencies with
 the following which are all from either the standard package or EPEL (``yum
 install epel-release``) repositories and installed with yum install.
 
-Core development tools: GCC 4.8.5, Java 11, Python 2.7.5, Perl 5.16.3:
+Core development tools: GCC 4.8.5, Java 11, Python 3.6.8 (alternately
+2.7.5 via the ``python`` package), Perl 5.16.3:
 
 .. code-block::
 
-   yum install git cmake3 gcc gcc-c++ gcc-gfortran java-11-openjdk-devel python perl
+   yum install git cmake3 gcc gcc-c++ gcc-gfortran java-11-openjdk-devel python3 perl
 
 
 Libraries/runtimes: Boost 1.69, OpenMPI 1.10.3, GSL 1.15.
@@ -189,6 +206,9 @@ Libraries/runtimes: Boost 1.69, OpenMPI 1.10.3, GSL 1.15.
 
    yum install blas blas-devel lapack lapack-devel boost169 boost169-devel openmpi openmpi-devel gsl gsl-devel
 
+Enabling HDF5 requires compiling and installing HDF5 1.10.4 and
+optionally an h5py that uses it. (Dakota may work with, but hasn't
+been verified with, newer HDF5 1.10.x)
 
 If building documentation, see above for Python packages as well.
 
