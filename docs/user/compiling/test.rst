@@ -4,7 +4,7 @@
 Running Dakota Tests
 """"""""""""""""""""
 
-Dakota's test suite primarily consists system-level regression tests,
+Dakota's test suite primarily consists of system-level regression tests
 supplemented with a growing number of unit and system-level
 interfacing and workflow tests.
 
@@ -79,7 +79,7 @@ tests to run. Here are some examples, which overlap each other::
   ctest -N -R dakota_
 
 
-Sub-tests: Each Dakota CTest regression test corresponds a file
+Sub-tests: Each Dakota CTest regression test corresponds to a file
 ``test/dakota_*.in`` and represents a coarse level of testing in that
 it may be comprised of multiple variations of a base test. If any of
 these variations report DIFF or FAIL, the entire CTest test reports a

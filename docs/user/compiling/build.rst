@@ -18,9 +18,7 @@ processes. When ready to install or generate binary or source
 packages: ::
 
   make -j <N> install
-
   make package
-
   make package_source
 
 **Windows with Visual Studio:** To build Dakota on Windows:

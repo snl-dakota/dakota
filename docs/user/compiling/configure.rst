@@ -538,7 +538,7 @@ per-probe output and rarely help.
 **Mixing incompatible compilers:** Be careful that incompatible compilers
 aren't selected automatically, e.g., mixing g77 with gfortran or mixing
 compiler vendors.  We often see a specific gfortran get combined
-with system /usr/bin/cc due to CMake probes.  Best practice is to
+with system /usr/bin/cc due to CMake probes.  Solution:
 specify which C, C++, and Fortran compilers you want to use, e.g.
 explictly specify ``CMAKE_C_COMPILER``, ``CMAKE_CXX_COMPILER``, and
 ``CMAKE_Fortran_COMPILER``.
