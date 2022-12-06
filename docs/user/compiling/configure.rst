@@ -342,6 +342,9 @@ Dakota from attempting to find the Trilinos package. This can be
 useful when building Dakota as part of a large CMake project that
 includes Trilinos.
 
+
+.. _configure-dakota-features:
+
 ===============
 Dakota Features
 ===============

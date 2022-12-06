@@ -293,6 +293,8 @@ Other possibly helpful package names:
    doxygen texlive-latex-base openjdk-11-jre-headless 
 
 
+.. _devenv-mac:
+
 -------
 Mac OS
 -------
@@ -316,7 +318,9 @@ approach currently.
    compiling Boost, particularly with GCC compilers.
 
 
-**Verified on OS X 11:** System Clang + GFortran
+.. _devenv-mac-clang-homebrew:
+
+**Verified on MacOS 11 (Big Sur):** System Clang + GFortran
 
 Uses system-provided clang/clang++, perl, python, VecLib/Accelerate,
 with Homebrew GFortran. Demonstrated on Intel MacBook Pro (2020)
@@ -432,6 +436,9 @@ HDF5::
 **Verified on OS X 10.9 -- 10.12:** CMake from DMG, XCode, GCC
 compilers from http://hpc.sourceforge.net. Use them to build Boost,
 OpenMPI, and GSL from source.
+
+
+.. _devenv-windows:
 
 -------
 Windows
