@@ -1,3 +1,5 @@
+.. _writing_dakota_docs:
+
 """"""""""""""""""""""""""""
 Writing Dakota Documentation
 """"""""""""""""""""""""""""
@@ -12,6 +14,11 @@ Install Sphinx and Packages
 	pip install --user -U myst-parser
 	pip install --user -U sphinx-rtd-theme
 	pip install --user -U sphinxcontrib-bibtex
+	
+
+.. note::	
+
+   You may alternately use ``pip3`` if targeting Python 3 when both 2 and 3 are installed.
 
 ===============================
 Interactive Documentation Build

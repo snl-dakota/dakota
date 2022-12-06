@@ -75,15 +75,8 @@ Notes on toolchains:
 
 - C99 is not supported by Dakota's AMPL package.
 
-- To install Sphinx into your preferred Python environment, use
-  ``pip`` or if targeting Python 3 when both 2 and 3 are installed,
-  ``pip3``::
-
-     pip install --user -U Sphinx
-     pip install --user -U myst-parser
-     pip install --user -U sphinx-rtd-theme
-     pip install --user -U sphinxcontrib-bibtex
-
+- Refer to :ref:`Writing Dakota Documentation <writing_dakota_docs>` for detailed instructions on
+  installing Sphinx into your preferred Python environment.
 
 ========
 Packages

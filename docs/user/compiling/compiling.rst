@@ -29,7 +29,7 @@ Compiling Dakota from source requires:
 
 - Building Dakota, i.e. running the development environment's :ref:`build
   process <build>` to compile and link the Dakota executable, e.g.,
-  using Unix ``make`` or Windows Visual Studio or ``nmake``.
+  using Unix ``make``, Windows Visual Studio, or ``nmake``.
 
 - :ref:`Running and assessing tests <test>`.
 
