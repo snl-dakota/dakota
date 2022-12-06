@@ -97,20 +97,69 @@ lines of text indicating the version of dakota built, respectively.
 
    The following tips apply to all types of builds:
 
-   * 'make [-j#]': Dakota supports concurrent build processes
+   * ``make [-j#]``: Dakota supports concurrent build processes
 
-   * 'make install' requires write privileges in CMAKE_INSTALL_PREFIX.
+   * ``make install`` requires write privileges in ``CMAKE_INSTALL_PREFIX``.
 
    * Executing cmake without any options will result in an attempt to
-     build with as many vendor algorithms and packages as are available in
-     the distribution.  The Dakota website describes how to turn off
-     features.
+     build with as many vendor algorithms and packages as are
+     available in the distribution.  See options in
+     :ref:`configure-dakota-features` to turn off features.
 
    * Once make has successfully completed, the generated Dakota
-     executables (dakota and dakota_restart_util) will reside
-     in $DAK_BUILD/src.  If 'make install' is invoked, copies of
-     the   executables will be placed in CMAKE_INSTALL_PREFIX/bin
-     and copies of the libraries (libdakota.a, etc.) are placed in
-     CMAKE_INSTALL_PREFIX/lib. You may set CMAKE_INSTALL_PREFIX in
-     BuildDakotaCustom.cmake.
+     executables (dakota and dakota_restart_util) will reside in
+     :file:`$DAK_BUILD/src`.  If ``make install`` is invoked, copies
+     of the executables will be placed in ``CMAKE_INSTALL_PREFIX/bin``
+     and copies of the libraries (``libdakota.a``, etc.) are placed in
+     ``CMAKE_INSTALL_PREFIX/lib``. You may set
+     ``CMAKE_INSTALL_PREFIX`` in ``BuildDakotaCustom.cmake``.
 
+
+=====
+MacOS
+=====
+
+A terse example of how to build at the command line using the
+:ref:`mixed system Clang plus Homebrew gfortran example
+<devenv-mac-clang-homebrew>`
+
+.. code-block::
+
+   cmake -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_Fortran_COMPILER=gfortran \
+   -D BOOST_ROOT:PATH=/usr/local -D DAKOTA_HAVE_MPI:BOOL=TRUE \
+   -D HAVE_QUESO:BOOL=TRUE -D DAKOTA_HAVE_GSL:BOOL=TRUE
+   -D DAKOTA_HAVE_HDF5:BOOL=TRUE ../source
+
+   make -j 4
+
+==========
+Windows 10
+==========
+
+A terse example of how to build using the :ref:`devenv-windows`
+example environment. Representative paths to installed libraries are
+shown in the configuration commands below.
+
+In a command prompt (alternately can of course make CMake settings via
+the GUI or a cache initialization file):
+
+.. code-block::
+
+   cmake.exe -G "Visual Studio 16 2019" -A x64 ^
+   -D BLAS_LIBS=C:/local/64bit/lapack/3.10.1/static/lib/BLAS.lib -D LAPACK_LIBS=C:/local/64bit/lapack/3.10.1/static/lib/LAPACK.lib ^
+   -D Boost_INCLUDE_DIR=C:/local/64bit/boost_1_71_0 -D Boost_LIBRARY_DIR=C:/local/64bit/boost_1_71_0/lib64-msvc-14.2 ^
+   -D BUILD_SHARED_LIBS=FALSE ^
+   -DDAKOTA_HAVE_HDF5:BOOL=TRUE -DHDF5_USE_STATIC_LIBRARIES:BOOL=TRUE -DHDF5_ROOT="C:/local/64bit/hdf5.static.nozlib/1.10.8" ^
+   -D DAKOTA_PYTHON_DIRECT_INTERFACE:BOOL=TRUE -D DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY:BOOL=FALSE -D DAKOTA_PYTHON_SURROGATES:BOOL=FALSE ^
+   ../source
+
+Then:
+
+#. Open the Visual Studio solution file :file:`Dakota.sln` in Visual Studio
+
+#. Choose a build configuration, e.g., ``Release`` or ``Debug``, using Configuration Manager
+
+#. Build the ``ALL_BUILD`` and optionally ``INSTALL`` or ``PACKAGE`` targets
+
+Alternately the build can be driven with ``nmake``, ``devenv``, or
+``cmake --build`` with appropriate arguments.
