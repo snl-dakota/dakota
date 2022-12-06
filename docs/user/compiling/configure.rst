@@ -355,9 +355,6 @@ Building Dakota documentation requires appropriate versions of
 Java, Perl, Doxygen and Sphinx and only works on Unix platforms: set
 ``ENABLE_DAKOTA_DOCS:BOOL=TRUE``
 
-..
-  TODO? DAKOTA_DOCS_DEV
-
 **Testing**
 
 The following options affect tests:

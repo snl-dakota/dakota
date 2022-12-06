@@ -384,6 +384,11 @@ HDF5::
    define turned on or off, is currently unclear. Things just need to be
    consistent.
 
+.. attention::
+
+   The following details for OS X 12.12 are outdated but serve an archival
+   role for providing hints for building on Mac OS X more generally.
+
 **Verified on OS X 10.12:** All homebrew approach. 
 
 1. Follow the instructions on the homebrew website to install the
