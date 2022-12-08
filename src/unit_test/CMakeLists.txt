@@ -246,6 +246,30 @@ if (DAKOTA_MODULE_SURROGATES)
   )
 endif()
 
+# Unit test: Dakota output to binary HDF5 (depends on Teuchos and HDF5)
+if(DAKOTA_HAVE_HDF5)
+  include_directories(${HDF5_INCLUDE_DIRS})
+  link_directories(${HDF5_LIBRARY_DIRS})
+
+  dakota_add_unit_test(NAME dakota_hdf5_test_serial_boost_tests
+    SOURCES hdf5_test_serial.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_hdf5_test_serial_boost_tests Boost::boost)
+
+  dakota_add_unit_test(NAME dakota_hdf5_utils_boost_tests
+    SOURCES hdf5_utils.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_hdf5_utils_boost_tests Boost::boost)
+
+  dakota_add_unit_test(NAME dakota_ResultsDBHDF5_Test_boost_tests
+    SOURCES ResultsDBHDF5_Test.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_ResultsDBHDF5_Test_boost_tests Boost::boost)
+endif() # DAKOTA_HAVE_HDF5
+
 if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   set(dakota_utils_unit_tests
     demo_teuchos.cpp
@@ -279,17 +303,6 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     "${CMAKE_CURRENT_SOURCE_DIR}/dakota_tabular_svd.dat"
     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
     )
-
-# Unit test: Dakota output to binary HDF5 (depends on Teuchos and HDF5)
-  if(DAKOTA_HAVE_HDF5)
-    include_directories(${HDF5_INCLUDE_DIRS})
-    link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
-    dakota_add_unit_test(NAME hdf5_tests SOURCES teuchos_unit_test_driver hdf5_test_serial.cpp hdf5_utils.cpp ResultsDBHDF5_Test.cpp
-      LINK_DAKOTA_LIBS
-      )
-    target_link_libraries(hdf5_tests Boost::boost)
-  endif() # DAKOTA_HAVE_HDF5
-
 
 endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
 

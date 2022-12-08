@@ -17,7 +17,9 @@
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 
-#include <Teuchos_UnitTestHarness.hpp> 
+#define BOOST_TEST_MODULE dakota_hdf5_utils
+#include <boost/test/included/unit_test.hpp>
+
 #include <Teuchos_SerialDenseHelpers.hpp>
 #include "H5Cpp.h"
 #include "HDF5_IO.hpp"
@@ -68,7 +70,7 @@ namespace {
 
 
 
-TEUCHOS_UNIT_TEST(hdf5_cpp, scalar)
+BOOST_AUTO_TEST_CASE(test_hdf5_cpp_scalar)
 {
   const std::string file_name("hdf5_scalar.h5");
   const std::string ds_name("/SomeScalarData");
@@ -87,12 +89,12 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, scalar)
     h5_io.read_scalar(ds_name, value);
   }
 
-  TEST_ASSERT( true );
+  BOOST_CHECK( true );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(hdf5_cpp, realvec)
+BOOST_AUTO_TEST_CASE(test_hdf5_cpp_realvec)
 {
   const std::string file_name("hdf5_basic_realvec.h5");
   const std::string ds_name("/Level_1/level_2/SomeRealVectorData");
@@ -113,14 +115,14 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, realvec)
     h5_io.read_vector(ds_name, test_vec);
   }
 
-  TEST_EQUALITY( test_vec.length(), vec_out.length() );
+  BOOST_CHECK( test_vec.length() == vec_out.length() );
   double diff = max_diff( vec_out, test_vec );
-  TEST_COMPARE( diff, <, 1.e-15 );
+  BOOST_CHECK_LT( diff, 1.e-15 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(hdf5_cpp, stdvec)
+BOOST_AUTO_TEST_CASE(test_hdf5_cpp_stdvec)
 {
   const std::string file_name("hdf5_basic_stdvec.h5");
   const std::string ds_name("/Level_One/level_two/2/b/SomeStdVectorData");
@@ -146,13 +148,12 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, stdvec)
     h5_io.read_vector(ds_name, test_vec);
   }
 
-  TEST_EQUALITY( test_vec.size(), vec_out.size() );
-  TEST_COMPARE_ARRAYS( vec_out, test_vec );
+  BOOST_CHECK_EQUAL_COLLECTIONS( vec_out.begin(), vec_out.end(), test_vec.begin(), test_vec.end() );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(hdf5_cpp, stdstringvec)
+BOOST_AUTO_TEST_CASE(test_hdf5_cpp_stdstringvec)
 {
   const std::string file_name("hdf5_basic_stdstringvec.h5");
   const std::string ds_name("/Level_One/level_two/2/b/SomeStdStringVectorData");
@@ -173,12 +174,11 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, stdstringvec)
     HDF5IOHelper h5_io(file_name);
     h5_io.read_vector(ds_name, test_vec);
   }
-  TEST_EQUALITY( test_vec.size(), vec_out.size() );
-  TEST_COMPARE_ARRAYS( vec_out, test_vec );
+  BOOST_CHECK_EQUAL_COLLECTIONS( vec_out.begin(), vec_out.end(), test_vec.begin(), test_vec.end() );
 }
 
 
-TEUCHOS_UNIT_TEST(hdf5_cpp, element_store)
+BOOST_AUTO_TEST_CASE(test_hdf5_cpp_element_store)
 {
   const std::string file_name("hdf5_element_store.h5");
   const std::string ds_name("/element_ds");
@@ -207,11 +207,10 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, element_store)
     h5_io.read_vector(ds_name, test_vec);
   }
 
-  TEST_EQUALITY( test_vec.size(), vec_out.size() );
-  TEST_COMPARE_ARRAYS( vec_out, test_vec );
+  BOOST_CHECK_EQUAL_COLLECTIONS( vec_out.begin(), vec_out.end(), test_vec.begin(), test_vec.end() );
 }
 
-TEUCHOS_UNIT_TEST(hdf5_cpp, element_append)
+BOOST_AUTO_TEST_CASE(test_hdf5_cpp_element_append)
 {
   const std::string file_name("hdf5_element_append.h5");
   const std::string ds_name("/unlimited_ds");
@@ -240,11 +239,10 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, element_append)
     h5_io.read_vector(ds_name, test_vec);
   }
 
-  TEST_EQUALITY( test_vec.size(), vec_out.size() );
-  TEST_COMPARE_ARRAYS( vec_out, test_vec );
+  BOOST_CHECK_EQUAL_COLLECTIONS( vec_out.begin(), vec_out.end(), test_vec.begin(), test_vec.end() );
 }
 
-TEUCHOS_UNIT_TEST(hdf5_cpp, row_append)
+BOOST_AUTO_TEST_CASE(test_hdf5_cpp_row_append)
 {
   const std::string file_name("hdf5_row_append.h5");
   const std::string ds_name("/unlimited_rows");
@@ -274,12 +272,12 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, row_append)
     h5_io.read_matrix(ds_name, test_mat_original, false);
   }
 
-  TEST_EQUALITY(test_mat_original.numRows(), MAT_ROWS);
-  TEST_EQUALITY(test_mat_original.numCols(), MAT_COLS);
+  BOOST_CHECK(test_mat_original.numRows() == MAT_ROWS);
+  BOOST_CHECK(test_mat_original.numCols() == MAT_COLS);
   
   for(int i = 0; i < MAT_ROWS; ++i) {
     for(int j = 0; j < MAT_COLS; ++j) {
-      TEST_EQUALITY( rmat(i,j), test_mat_original(i,j) );
+      BOOST_CHECK( rmat(i,j) == test_mat_original(i,j) );
     }
   }
 
@@ -289,18 +287,18 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, row_append)
     h5_io.read_matrix(ds_name, test_mat_transposed, true);
   }
 
-  TEST_EQUALITY(test_mat_transposed.numRows(), MAT_COLS);
-  TEST_EQUALITY(test_mat_transposed.numCols(), MAT_ROWS);
+  BOOST_CHECK(test_mat_transposed.numRows() == MAT_COLS);
+  BOOST_CHECK(test_mat_transposed.numCols() == MAT_ROWS);
   
   for(int i = 0; i < MAT_ROWS; ++i) {
     for(int j = 0; j < MAT_COLS; ++j) {
-      TEST_EQUALITY( rmat(i,j), test_mat_transposed(j,i) );
+      BOOST_CHECK( rmat(i,j) == test_mat_transposed(j,i) );
     }
   }
 }
 
 /* This capability has been disabled for now
-  TEUCHOS_UNIT_TEST(hdf5_cpp, col_append)
+  BOOST_AUTO_TEST_CASE(test_hdf5_cpp_col_append)
 {
   const std::string file_name("hdf5_col_append.h5");
   const std::string ds_name("/unlimited_cols");
@@ -328,12 +326,12 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, row_append)
     h5_io.read_matrix(ds_name, test_mat_original, false);
   }
 
-  TEST_EQUALITY(test_mat_original.numRows(), MAT_ROWS);
-  TEST_EQUALITY(test_mat_original.numCols(), MAT_COLS);
+  BOOST_CHECK(test_mat_original.numRows() == MAT_ROWS);
+  BOOST_CHECK(test_mat_original.numCols() == MAT_COLS);
   
   for(int i = 0; i < MAT_ROWS; ++i) {
     for(int j = 0; j < MAT_COLS; ++j) {
-      TEST_EQUALITY( rmat(i,j), test_mat_original(i,j) );
+      BOOST_CHECK( rmat(i,j) == test_mat_original(i,j) );
     }
   }
 
@@ -343,18 +341,18 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, row_append)
     h5_io.read_matrix(ds_name, test_mat_transposed, true);
   }
 
-  TEST_EQUALITY(test_mat_transposed.numRows(), MAT_COLS);
-  TEST_EQUALITY(test_mat_transposed.numCols(), MAT_ROWS);
+  BOOST_CHECK(test_mat_transposed.numRows() == MAT_COLS);
+  BOOST_CHECK(test_mat_transposed.numCols() == MAT_ROWS);
   
   for(int i = 0; i < MAT_ROWS; ++i) {
     for(int j = 0; j < MAT_COLS; ++j) {
-      TEST_EQUALITY( rmat(i,j), test_mat_transposed(j,i) );
+      BOOST_CHECK( rmat(i,j) == test_mat_transposed(j,i) );
     }
   }
 }
 */
 
-TEUCHOS_UNIT_TEST(hdf5_cpp, matrix_append)
+BOOST_AUTO_TEST_CASE(test_hdf5_cpp_matrix_append)
 {
   const std::string file_name("hdf5_matrix_append.h5");
   const std::string ds_name("/original");
@@ -384,13 +382,13 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, matrix_append)
   }
    
   for(int i = 0; i < num_matrix; ++i) {
-    TEST_EQUALITY(original_vec_test[i].numRows(), MAT_COLS);
-    TEST_EQUALITY(original_vec_test[i].numCols(), MAT_ROWS);
+    BOOST_CHECK(original_vec_test[i].numRows() == MAT_COLS);
+    BOOST_CHECK(original_vec_test[i].numCols() == MAT_ROWS);
   }
   for(int mi = 0; mi < num_matrix; ++mi) {
     for(int i = 0; i < MAT_ROWS; ++i) {
       for(int j = 0; j < MAT_COLS; ++j) {
-        TEST_EQUALITY( original_vec[mi](i,j), original_vec_test[mi](j,i) );
+        BOOST_CHECK( original_vec[mi](i,j) == original_vec_test[mi](j,i) );
       }
     }
   }
@@ -414,20 +412,20 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, matrix_append)
   }
    
   for(int i = 0; i < num_matrix; ++i) {
-    TEST_EQUALITY(original_vec_test[i].numRows(), MAT_COLS);
-    TEST_EQUALITY(original_vec_test[i].numCols(), MAT_ROWS);
+    BOOST_CHECK(original_vec_test[i].numRows() == MAT_COLS);
+    BOOST_CHECK(original_vec_test[i].numCols() == MAT_ROWS);
   }
   for(int mi = 0; mi < num_matrix; ++mi) {
     for(int i = 0; i < MAT_ROWS; ++i) {
       for(int j = 0; j < MAT_COLS; ++j) {
-        TEST_EQUALITY( original_vec[mi](i,j), original_vec_test[mi](j,i) );
+        BOOST_CHECK( original_vec[mi](i,j) == original_vec_test[mi](j,i) );
       }
     }
   }
    
 }
 
-TEUCHOS_UNIT_TEST(hdf5_cpp, file_modes)
+BOOST_AUTO_TEST_CASE(test_hdf5_cpp_file_modes)
 {
   const std::string file_name("hdf5_file_modes.h5");
   const std::string ds_name("/a_scalar");
@@ -435,26 +433,26 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, file_modes)
   // Overwrite (potentially) existing file and write a scalar
   {
     HDF5IOHelper h5_io(file_name, /* overwrite */ true);
-    TEST_ASSERT(!h5_io.exists(ds_name));
+    BOOST_CHECK(!h5_io.exists(ds_name));
     h5_io.store_scalar(ds_name, 5);
   }
     
   // Read the scalar (make sure the file created above isn't truncated)
   {
     HDF5IOHelper h5_io(file_name,/* don't overwrite */ false);
-    TEST_ASSERT(h5_io.exists(ds_name));
+    BOOST_CHECK(h5_io.exists(ds_name));
     Real x;
     h5_io.read_scalar(ds_name, x);
-    TEST_EQUALITY(x, 5);
+    BOOST_CHECK(x == 5);
   }
   // Overwrite existing file again, which definitely now exists
   {
     HDF5IOHelper h5_io(file_name, /* overwrite */ true);
-    TEST_ASSERT(!h5_io.exists(ds_name));
+    BOOST_CHECK(!h5_io.exists(ds_name));
   }
 }   
 
-TEUCHOS_UNIT_TEST(hdf5_cpp, vector_matrix_append)
+BOOST_AUTO_TEST_CASE(test_hdf5_cpp_vector_matrix_append)
 {
   const std::string file_name("hdf5_vector_matrix_append.h5");
   const std::string ds_original_name("/original");
@@ -492,15 +490,15 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, vector_matrix_append)
    
   for(int i = 0; i < num_layer; ++i) {
     for(int j = 0; j < num_matrix; ++j) {
-      TEST_EQUALITY(original_vec_test[i][j].numRows(), MAT_COLS);
-      TEST_EQUALITY(original_vec_test[i][j].numCols(), MAT_ROWS);
+      BOOST_CHECK(original_vec_test[i][j].numRows() == MAT_COLS);
+      BOOST_CHECK(original_vec_test[i][j].numCols() == MAT_ROWS);
     }
   }
   for(int li = 0; li < num_layer; ++li) {
     for(int mi = 0; mi < num_matrix; ++mi) {
       for(int i = 0; i < MAT_ROWS; ++i) {
         for(int j = 0; j < MAT_COLS; ++j) {
-          TEST_EQUALITY( original_vec[li][mi](i,j), original_vec_test[li][mi](j,i) );
+          BOOST_CHECK( original_vec[li][mi](i,j) == original_vec_test[li][mi](j,i) );
         }
       }
     }
@@ -525,15 +523,15 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, vector_matrix_append)
    
   for(int i = 0; i < num_layer; ++i) {
     for(int j = 0; j < num_matrix; ++j) {
-      TEST_EQUALITY(original_vec_test[i][j].numRows(), MAT_COLS);
-      TEST_EQUALITY(original_vec_test[i][j].numCols(), MAT_ROWS);
+      BOOST_CHECK(original_vec_test[i][j].numRows() == MAT_COLS);
+      BOOST_CHECK(original_vec_test[i][j].numCols() == MAT_ROWS);
     }
   }
   for(int li = 0; li < num_layer; ++li) {
     for(int mi = 0; mi < num_matrix; ++mi) {
       for(int i = 0; i < MAT_ROWS; ++i) {
         for(int j = 0; j < MAT_COLS; ++j) {
-          TEST_EQUALITY( original_vec[li][mi](i,j), original_vec_test[li][mi](j,i) );
+          BOOST_CHECK( original_vec[li][mi](i,j) == original_vec_test[li][mi](j,i) );
         }
       }
     }
