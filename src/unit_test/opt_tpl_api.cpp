@@ -13,20 +13,21 @@
 #include <string>
 #include <map>
 
-#include <Teuchos_UnitTestHarness.hpp> 
+#define BOOST_TEST_MODULE dakota_opt_tpl_api
+#include <boost/test/included/unit_test.hpp>
 
 
 using namespace Dakota;
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_api, hopspack)
+BOOST_AUTO_TEST_CASE(test_hopspack)
 {
   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test_Fixture::create_default_env(Dakota::ASYNCH_PATTERN_SEARCH);
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Try to get the concrte Optimizer
   //Dakota::ProblemDescDB& problem_db = env.problem_description_db();
@@ -43,25 +44,25 @@ TEUCHOS_UNIT_TEST(opt_api, hopspack)
 
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
-  TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.50, max_tol );
-  TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  0.75, max_tol );
+  BOOST_CHECK_CLOSE( vars.continuous_variable(0), -1.50, max_tol );
+  BOOST_CHECK_CLOSE( vars.continuous_variable(1),  0.75, max_tol );
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
   //resp.function_values().print(Cout);
   //resp.write(Cout);
-  TEST_FLOATING_EQUALITY( resp.function_value(0)+1.0, 1.0, max_tol );
+  BOOST_CHECK_CLOSE( resp.function_value(0)+1.0, 1.0, max_tol );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_api, optpp)
+BOOST_AUTO_TEST_CASE(test_optpp)
 {
   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test_Fixture::create_default_env(Dakota::OPTPP_PDS);
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -69,14 +70,14 @@ TEUCHOS_UNIT_TEST(opt_api, optpp)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
   //vars.continuous_variables().print(Cout);
-  TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.50, 4.e-3 /* not so good tol */ );
-  TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  0.75, 2.e-2 /* ditto */ );
+  BOOST_CHECK_CLOSE( vars.continuous_variable(0), -1.50, 0.6 /* not so good tol */ );
+  BOOST_CHECK_CLOSE( vars.continuous_variable(1),  0.75, 2.0 /* ditto */ );
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
   //resp.function_values().print(Cout);
   //resp.write(Cout);
-  TEST_FLOATING_EQUALITY( resp.function_value(0)+1.0, 1.0, 2.e-4 /* not so good tol */ );
+  BOOST_CHECK_CLOSE( resp.function_value(0)+1.0, 1.0, 0.02 /* not so good tol */ );
 
   // Make sure to cleanup the object we own
   delete p_env;
@@ -86,13 +87,13 @@ TEUCHOS_UNIT_TEST(opt_api, optpp)
 // "Invalid iterator: nlpql_sqp not available."
 // //----------------------------------------------------------------
 
-// TEUCHOS_UNIT_TEST(opt_api, nlpqlp)
+// BOOST_AUTO_TEST_CASE(test_nlpqlp)
 // {
 //   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test_Fixture::create_default_env(Dakota::NLPQL_SQP);
 //   Dakota::LibraryEnvironment & env = *p_env;
 
 //   if (env.parallel_library().mpirun_flag())
-//     TEST_ASSERT( false ); // This test only works for serial builds
+//     BOOST_CHECK( false ); // This test only works for serial builds
 
 //   // Execute the environment
 //   env.execute();
@@ -102,14 +103,14 @@ TEUCHOS_UNIT_TEST(opt_api, optpp)
 //   // retrieve the final parameter values
 //   const Variables& vars = env.variables_results();
 //   //vars.continuous_variables().print(Cout);
-//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.50, max_tol );
-//   TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  0.75, max_tol );
+//   BOOST_CHECK_CLOSE( vars.continuous_variable(0), -1.50, max_tol );
+//   BOOST_CHECK_CLOSE( vars.continuous_variable(1),  0.75, max_tol );
 
 //   // retrieve the final response values
 //   const Response& resp  = env.response_results();
 //   //resp.function_values().print(Cout);
 //   //resp.write(Cout);
-//   TEST_FLOATING_EQUALITY( resp.function_value(0)+1.0, 1.0, max_tol );
+//   BOOST_CHECK_CLOSE( resp.function_value(0)+1.0, 1.0, max_tol );
 
 //   // Make sure to cleanup the object we own
 //   delete p_env;

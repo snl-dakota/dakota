@@ -131,6 +131,60 @@ dakota_add_unit_test(NAME dakota_utils_boost_tests
   )
 target_link_libraries(dakota_utils_boost_tests Boost::boost)
 
+dakota_add_unit_test(NAME dakota_opt_tpl_adapters_boost_tests
+  SOURCES opt_tpl_adapters.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_opt_tpl_adapters_boost_tests Boost::boost)
+
+dakota_add_unit_test(NAME dakota_opt_api_core_data_xfers_boost_tests
+  SOURCES opt_api_core_data_xfers.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_opt_api_core_data_xfers_boost_tests Boost::boost)
+
+dakota_add_unit_test(NAME dakota_opt_api_traits_boost_tests
+  SOURCES opt_api_traits.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_opt_api_traits_boost_tests Boost::boost)
+
+if (NOT DAKOTA_HAVE_MPI)
+  dakota_add_unit_test(NAME dakota_opt_tpl_api_boost_tests
+    SOURCES opt_tpl_api.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_opt_tpl_api_boost_tests Boost::boost)
+endif (NOT DAKOTA_HAVE_MPI)
+
+if (HAVE_ROL)
+
+  dakota_add_unit_test(NAME dakota_opt_tpl_rol_test_textbook_boost_tests
+    SOURCES opt_tpl_rol_test_textbook.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_opt_tpl_rol_test_textbook_boost_tests Boost::boost)
+
+  dakota_add_unit_test(NAME dakota_opt_tpl_rol_test_rol_pbs_boost_tests
+    SOURCES opt_tpl_rol_test_rol_pbs.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_opt_tpl_rol_test_rol_pbs_boost_tests Boost::boost)
+
+  dakota_add_unit_test(NAME dakota_rol_adapters_boost_tests
+    SOURCES rol_adapters.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_rol_adapters_boost_tests Boost::boost)
+
+  dakota_add_unit_test(NAME dakota_rol_integration_boost_tests
+    SOURCES rol_integration.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_rol_integration_boost_tests Boost::boost)
+
+endif (HAVE_ROL)
+
 if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   set(dakota_utils_unit_tests
     demo_teuchos.cpp
@@ -151,24 +205,6 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     wilks_sampling.cpp
     )
 
-  set(dakota_opt_unit_tests
-    opt_api_core_data_xfers.cpp
-    opt_tpl_adapters.cpp
-    opt_tpl_api.cpp
-    opt_api_traits.cpp
-    )
-  if (DAKOTA_HAVE_ROL)
-    list(APPEND 
-      rol_adapters.cpp
-      rol_integration.cpp
-      opt_tpl_rol_test_textbook.cpp
-      opt_tpl_rol_test_rol_pbs.cpp
-      )
-  endif(DAKOTA_HAVE_ROL)
-
-  if (DAKOTA_HAVE_MPI)
-    list(REMOVE_ITEM dakota_opt_unit_tests opt_tpl_api.cpp opt_tpl_test.cpp)
-  endif(DAKOTA_HAVE_MPI)
 
   dakota_add_unit_test(NAME utils_unit_tests
     SOURCES teuchos_unit_test_driver.cpp ${dakota_utils_unit_tests}
@@ -189,10 +225,6 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   endif()
   dakota_add_unit_test(NAME sampling_unit_tests
     SOURCES teuchos_unit_test_driver.cpp ${dakota_sampling_unit_tests}
-    LINK_DAKOTA_LIBS
-    )
-  dakota_add_unit_test(NAME opt_tpl_unit_tests
-    SOURCES teuchos_unit_test_driver.cpp ${dakota_opt_unit_tests}
     LINK_DAKOTA_LIBS
     )
   if (DAKOTA_HAVE_MUQ)
