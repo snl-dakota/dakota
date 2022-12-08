@@ -116,10 +116,6 @@ dakota_add_unit_test(NAME response_io
   )
 target_link_libraries(response_io Boost::boost)
 
-# Unit test: experiment data and readers
-# Demonstration of Teuchos test framework to driver several tests related to
-# ExperimentData and associated file readers
-option(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS "Enable Teuchos unit tests driver" ON)
 remove_definitions("-DHAVE_CONFIG_H")
 include_directories(${Teuchos_INCLUDE_DIRS})
 # Pecos is an unconditional Dakota dependency
@@ -295,19 +291,6 @@ if (HAVE_MUQ)
     )
   target_link_libraries(dakota_muq_mcmc_boost_tests Boost::boost)
 endif()
-
-
-if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
-  set(dakota_utils_unit_tests
-    demo_teuchos.cpp
-    )
-  dakota_add_unit_test(NAME utils_unit_tests
-    SOURCES teuchos_unit_test_driver.cpp ${dakota_utils_unit_tests}
-    LINK_DAKOTA_LIBS
-    )
-  target_link_libraries(utils_unit_tests Boost::boost)
-
-endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
 
 
 if(DAKOTA_TEST_PREPROC)
