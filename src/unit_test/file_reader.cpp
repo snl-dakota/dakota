@@ -13,7 +13,8 @@
 
 #include <string>
 
-#include <Teuchos_UnitTestHarness.hpp> 
+#define BOOST_TEST_MODULE dakota_file_reader
+#include <boost/test/included/unit_test.hpp>
 
 using namespace Dakota;
 
@@ -85,7 +86,7 @@ Cleanup_Helper cleanup_helper;
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, basic_write)
+BOOST_AUTO_TEST_CASE(test_basic_write)
 {
   const int DATA_PTS = 5;
   const int DATA_DIM = 3;
@@ -93,12 +94,12 @@ TEUCHOS_UNIT_TEST(file_reader, basic_write)
   create_field_data_file("test_table_out", field_data);
 
   // Test that we made it to this point
-  TEST_ASSERT( true );
+  BOOST_TEST( true );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_sized_data)
+BOOST_AUTO_TEST_CASE(test_read_sized_data)
 {
   const int DATA_PTS = 10;
   const int DATA_DIM = 3;
@@ -121,12 +122,12 @@ TEUCHOS_UNIT_TEST(file_reader, read_sized_data)
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
-    TEST_FLOATING_EQUALITY( field_data[i][j], test_vec_array[i][j], 1.e-14 );
+    BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_fixed_rowsize_data)
+BOOST_AUTO_TEST_CASE(test_read_fixed_rowsize_data)
 {
   const int NUM_RESP = 7;
   const int RESP_DIM = 2;
@@ -147,17 +148,17 @@ TEUCHOS_UNIT_TEST(file_reader, read_fixed_rowsize_data)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
-  TEST_EQUALITY( NUM_RESP, test_vec_array.size() );
+  BOOST_CHECK( NUM_RESP == test_vec_array.size() );
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
-    TEST_FLOATING_EQUALITY( field_data[i][j], test_vec_array[i][j], 1.e-14 );
+    BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_unsized_data)
+BOOST_AUTO_TEST_CASE(test_read_unsized_data)
 {
   const int NUM_RESP = 9;
   const int RESP_DIM = 4;
@@ -178,17 +179,17 @@ TEUCHOS_UNIT_TEST(file_reader, read_unsized_data)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
-  TEST_EQUALITY( NUM_RESP, test_vec_array.size() );
+  BOOST_CHECK( NUM_RESP == test_vec_array.size() );
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
-    TEST_FLOATING_EQUALITY( field_data[i][j], test_vec_array[i][j], 1.e-14 );
+    BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_sigma_scalar)
+BOOST_AUTO_TEST_CASE(test_read_sigma_scalar)
 {
   const int NUM_RESP = 1;
   const int RESP_DIM = 1;
@@ -205,16 +206,16 @@ TEUCHOS_UNIT_TEST(file_reader, read_sigma_scalar)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows and cols (responses)
-  TEST_EQUALITY( NUM_RESP, test_vec_array.size() );
-  TEST_EQUALITY( RESP_DIM, test_vec_array[0].length() );
+  BOOST_CHECK( NUM_RESP == test_vec_array.size() );
+  BOOST_CHECK( RESP_DIM == test_vec_array[0].length() );
 
   // Verify contents of what we wrote and what we read
-  TEST_FLOATING_EQUALITY( field_data[0][0], test_vec_array[0][0], 1.e-14 );
+  BOOST_CHECK_CLOSE( field_data[0][0], test_vec_array[0][0], 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_sigma_vector_row)
+BOOST_AUTO_TEST_CASE(test_read_sigma_vector_row)
 {
   const int NUM_ROW = 1;
   const int NUM_COL = 7;
@@ -231,18 +232,18 @@ TEUCHOS_UNIT_TEST(file_reader, read_sigma_vector_row)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows and cols (responses)
-  TEST_EQUALITY( NUM_ROW, test_vec_array.size() );
-  TEST_EQUALITY( NUM_COL, test_vec_array[0].length() );
+  BOOST_CHECK( NUM_ROW == test_vec_array.size() );
+  BOOST_CHECK( NUM_COL == test_vec_array[0].length() );
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
-      TEST_FLOATING_EQUALITY( field_data[i][j], test_vec_array[i][j], 1.e-14 );
+      BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_sigma_vector_col)
+BOOST_AUTO_TEST_CASE(test_read_sigma_vector_col)
 {
   const int NUM_ROW = 7;
   const int NUM_COL = 1;
@@ -259,17 +260,17 @@ TEUCHOS_UNIT_TEST(file_reader, read_sigma_vector_col)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
-  TEST_EQUALITY( NUM_ROW, test_vec_array.size() );
+  BOOST_CHECK( NUM_ROW == test_vec_array.size() );
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
-      TEST_FLOATING_EQUALITY( field_data[i][j], test_vec_array[i][j], 1.e-14 );
+      BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_sigma_matrix)
+BOOST_AUTO_TEST_CASE(test_read_sigma_matrix)
 {
   const int NUM_ROW = 5;
   const int NUM_COL = 5;
@@ -286,18 +287,18 @@ TEUCHOS_UNIT_TEST(file_reader, read_sigma_matrix)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
-  TEST_EQUALITY( NUM_ROW, test_vec_array.size() );
-  TEST_EQUALITY( NUM_COL, test_vec_array[0].length() );
+  BOOST_CHECK( NUM_ROW == test_vec_array.size() );
+  BOOST_CHECK( NUM_COL == test_vec_array[0].length() );
 
   // Verify contents of what we wrote and what we read
   for( int i=0; i<NUM_ROW; ++i )
     for( int j=0; j<NUM_COL; ++j )
-      TEST_FLOATING_EQUALITY( field_data[i][j], test_vec_array[i][j], 1.e-14 );
+      BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_bad_data1)
+BOOST_AUTO_TEST_CASE(test_read_bad_data1)
 {
   const int NUM_ROW = 5;
   const int NUM_COL = 3;
@@ -316,7 +317,7 @@ TEUCHOS_UNIT_TEST(file_reader, read_bad_data1)
 
   RealVectorArray test_vec_array;
   /////////////////  What we want to test
-  TEST_THROW(read_unsized_data(in_file, test_vec_array), std::runtime_error);
+  BOOST_CHECK_THROW(read_unsized_data(in_file, test_vec_array), std::runtime_error);
   /////////////////  What we want to test
 }
 

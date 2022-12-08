@@ -125,13 +125,18 @@ include_directories(${Teuchos_INCLUDE_DIRS})
 # Pecos is an unconditional Dakota dependency
 include_directories(${Pecos_SOURCE_DIR}/src)
 
+dakota_add_unit_test(NAME dakota_utils_boost_tests
+  SOURCES file_reader.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_utils_boost_tests Boost::boost)
+
 if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   set(dakota_utils_unit_tests
     demo_teuchos.cpp
     covariance_reader.cpp
     expt_data.cpp
     expt_data_reader.cpp
-    file_reader.cpp
     data_conversions.cpp
     restart_test.cpp
     stat_utils.cpp
