@@ -227,6 +227,25 @@ dakota_add_unit_test(NAME dakota_restart_test_boost_tests
   )
 target_link_libraries(dakota_restart_test_boost_tests Boost::boost)
 
+if (DAKOTA_MODULE_SURROGATES)
+  dakota_add_unit_test(NAME dakota_reduced_basis_boost_tests
+    SOURCES reduced_basis.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_reduced_basis_boost_tests dakota_surrogates Boost::boost)
+
+  dakota_add_unit_test(NAME dakota_gauss_proc_test_boost_tests
+    SOURCES gauss_proc_test.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_gauss_proc_test_boost_tests dakota_surrogates Boost::boost)
+
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/gauss_proc_test_files"
+    "${CMAKE_CURRENT_BINARY_DIR}/gauss_proc_test_files"
+    dakota_unit_test_copied_files
+  )
+endif()
+
 if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   set(dakota_utils_unit_tests
     demo_teuchos.cpp
@@ -237,23 +256,6 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     )
   target_link_libraries(utils_unit_tests Boost::boost)
 
-  set(dakota_surrogate_unit_tests
-    reduced_basis.cpp
-    gauss_proc_test.cpp
-    )
-
-  if (DAKOTA_MODULE_SURROGATES)
-    dakota_add_unit_test(NAME surrogate_unit_tests
-      SOURCES teuchos_unit_test_driver.cpp ${dakota_surrogate_unit_tests}
-      LINK_DAKOTA_LIBS
-      )
-    target_link_libraries(surrogate_unit_tests
-      dakota_surrogates)
-    dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/gauss_proc_test_files"
-      "${CMAKE_CURRENT_BINARY_DIR}/gauss_proc_test_files"
-      dakota_unit_test_copied_files
-    )
-  endif()
   if (DAKOTA_HAVE_MUQ)
     dakota_add_unit_test(NAME muq_mcmc
       SOURCES teuchos_unit_test_driver.cpp muq_mcmc.cpp

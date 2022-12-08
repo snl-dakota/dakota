@@ -12,12 +12,14 @@
 #include "opt_tpl_test.hpp"
 #include "opt_tpl_test_fixture.hpp"  // for plugin interface
 #include <string>
-#include <Teuchos_UnitTestHarness.hpp> 
+
+#define BOOST_TEST_MODULE dakota_gauss_proc_test
+#include <boost/test/included/unit_test.hpp>
 
 namespace Dakota {
   extern PRPCache data_pairs;
 
-TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
+BOOST_AUTO_TEST_CASE(test_surrogates_gp_base_test)
 {
   // Dakota input string:
   static const char dakota_input[] =
@@ -84,7 +86,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-6 );
+      BOOST_CHECK_CLOSE( tabular_data[i][j], gold_values[i][j], 1.e-4 );
     }
   }
 
@@ -92,7 +94,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
   data_pairs.clear();
 }
 
-TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read)
+BOOST_AUTO_TEST_CASE(test_surrogates_gp_yaml_read)
 {
   // Dakota input string:
   static const char dakota_input[] =
@@ -157,7 +159,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read)
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-5 );
+      BOOST_CHECK_CLOSE( tabular_data[i][j], gold_values[i][j], 1.e-3 );
     }
   }
 
@@ -165,7 +167,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read)
   data_pairs.clear();
 }
 
-TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read_alternate_parameters)
+BOOST_AUTO_TEST_CASE(test_surrogates_gp_yaml_read_alternate_parameters)
 {
   // This test uses the gold values from the surrogates_gp test above.
   // It is expected to get the same output result, despite using an Yaml
@@ -234,7 +236,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read_alternate_parameters)
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
+      BOOST_CHECK_CLOSE( tabular_data[i][j], gold_values[i][j], 1.e-5 );
     }
   }
 
@@ -243,7 +245,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read_alternate_parameters)
 }
 
 
-TEUCHOS_UNIT_TEST(surrogates_gp, reduced_quadratic)
+BOOST_AUTO_TEST_CASE(test_surrogates_gp_reduced_quadratic)
 {
   // Dakota input string:
   static const char dakota_input[] =
@@ -311,7 +313,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp, reduced_quadratic)
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-6 );
+      BOOST_CHECK_CLOSE( tabular_data[i][j], gold_values[i][j], 1.e-4 );
     }
   }
 }
