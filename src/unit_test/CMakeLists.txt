@@ -185,31 +185,63 @@ if (HAVE_ROL)
 
 endif (HAVE_ROL)
 
+dakota_add_unit_test(NAME dakota_wilks_sampling_boost_tests
+  SOURCES wilks_sampling.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_wilks_sampling_boost_tests Boost::boost)
+
+dakota_add_unit_test(NAME dakota_covariance_reader_boost_tests
+  SOURCES covariance_reader.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_covariance_reader_boost_tests Boost::boost)
+
+dakota_add_unit_test(NAME dakota_expt_data_boost_tests
+  SOURCES expt_data.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_expt_data_boost_tests Boost::boost)
+
+dakota_add_unit_test(NAME dakota_expt_data_reader_boost_tests
+  SOURCES expt_data_reader.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_expt_data_reader_boost_tests Boost::boost)
+
+dakota_add_unit_test(NAME dakota_data_conversions_boost_tests
+  SOURCES data_conversions.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_data_conversions_boost_tests Boost::boost)
+
+dakota_add_unit_test(NAME dakota_stat_utils_boost_tests
+  SOURCES stat_utils.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_stat_utils_boost_tests Boost::boost)
+
+dakota_add_unit_test(NAME dakota_restart_test_boost_tests
+  SOURCES restart_test.cpp
+  LINK_DAKOTA_LIBS
+  )
+target_link_libraries(dakota_restart_test_boost_tests Boost::boost)
+
 if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   set(dakota_utils_unit_tests
     demo_teuchos.cpp
-    covariance_reader.cpp
-    expt_data.cpp
-    expt_data_reader.cpp
-    data_conversions.cpp
-    restart_test.cpp
-    stat_utils.cpp
     )
+  dakota_add_unit_test(NAME utils_unit_tests
+    SOURCES teuchos_unit_test_driver.cpp ${dakota_utils_unit_tests}
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(utils_unit_tests Boost::boost)
 
   set(dakota_surrogate_unit_tests
     reduced_basis.cpp
     gauss_proc_test.cpp
     )
 
-  set(dakota_sampling_unit_tests
-    wilks_sampling.cpp
-    )
-
-  dakota_add_unit_test(NAME utils_unit_tests
-    SOURCES teuchos_unit_test_driver.cpp ${dakota_utils_unit_tests}
-    LINK_DAKOTA_LIBS
-    )
-  target_link_libraries(utils_unit_tests Boost::boost)
   if (DAKOTA_MODULE_SURROGATES)
     dakota_add_unit_test(NAME surrogate_unit_tests
       SOURCES teuchos_unit_test_driver.cpp ${dakota_surrogate_unit_tests}
@@ -222,10 +254,6 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
       dakota_unit_test_copied_files
     )
   endif()
-  dakota_add_unit_test(NAME sampling_unit_tests
-    SOURCES teuchos_unit_test_driver.cpp ${dakota_sampling_unit_tests}
-    LINK_DAKOTA_LIBS
-    )
   if (DAKOTA_HAVE_MUQ)
     dakota_add_unit_test(NAME muq_mcmc
       SOURCES teuchos_unit_test_driver.cpp muq_mcmc.cpp
