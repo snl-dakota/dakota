@@ -288,6 +288,14 @@ FILE( COPY
   DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
   )
 
+if (HAVE_MUQ)
+  dakota_add_unit_test(NAME dakota_muq_mcmc_boost_tests
+    SOURCES muq_mcmc.cpp
+    LINK_DAKOTA_LIBS
+    )
+  target_link_libraries(dakota_muq_mcmc_boost_tests Boost::boost)
+endif()
+
 
 if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   set(dakota_utils_unit_tests
@@ -299,13 +307,6 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     )
   target_link_libraries(utils_unit_tests Boost::boost)
 
-  if (DAKOTA_HAVE_MUQ)
-    dakota_add_unit_test(NAME muq_mcmc
-      SOURCES teuchos_unit_test_driver.cpp muq_mcmc.cpp
-      LINK_DAKOTA_LIBS
-      )
-    target_link_libraries(muq_mcmc Boost::boost)
-  endif()
 endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
 
 
