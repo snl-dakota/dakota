@@ -270,6 +270,25 @@ if(DAKOTA_HAVE_HDF5)
   target_link_libraries(dakota_ResultsDBHDF5_Test_boost_tests Boost::boost)
 endif() # DAKOTA_HAVE_HDF5
 
+# Copy needed unit test auxiliary data files
+dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
+  "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"
+  dakota_unit_test_copied_files
+  )
+dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/opt_tpl_test_files"
+  "${CMAKE_CURRENT_BINARY_DIR}/opt_tpl_test_files"
+  dakota_unit_test_copied_files
+  )
+dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/stat_util_test_files"
+  "${CMAKE_CURRENT_BINARY_DIR}/stat_util_test_files"
+  dakota_unit_test_copied_files
+  )
+FILE( COPY
+  "${CMAKE_CURRENT_SOURCE_DIR}/dakota_tabular_svd.dat"
+  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+  )
+
+
 if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   set(dakota_utils_unit_tests
     demo_teuchos.cpp
@@ -287,24 +306,8 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
       )
     target_link_libraries(muq_mcmc Boost::boost)
   endif()
-  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
-    "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"
-    dakota_unit_test_copied_files
-    )
-  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/opt_tpl_test_files"
-    "${CMAKE_CURRENT_BINARY_DIR}/opt_tpl_test_files"
-    dakota_unit_test_copied_files
-    )
-  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/stat_util_test_files"
-    "${CMAKE_CURRENT_BINARY_DIR}/stat_util_test_files"
-    dakota_unit_test_copied_files
-    )
-  FILE( COPY
-    "${CMAKE_CURRENT_SOURCE_DIR}/dakota_tabular_svd.dat"
-    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
-    )
-
 endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
+
 
 if(DAKOTA_TEST_PREPROC)
   dakota_add_unit_test(NAME preproc_tests SOURCES test_preproc.cpp
