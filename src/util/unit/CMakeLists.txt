@@ -7,8 +7,6 @@
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
-# BMA TODO: helpers to manage all these test registration steps
-
 include(DakotaUnitTest)
 
 # List of test files to copy into this directory
@@ -16,30 +14,28 @@ include(DakotaUnitTest)
 
 dakota_add_unit_test(NAME DataScalerTest
   SOURCES DataScalerTest.cpp
+  LINK_LIBS dakota_util
   )
-target_link_libraries(DataScalerTest PRIVATE dakota_util)
-
 
 dakota_add_unit_test(NAME MathToolsTest
   SOURCES MathToolsTest.cpp
+  LINK_LIBS dakota_util
   )
-target_link_libraries(MathToolsTest PRIVATE dakota_util)
 
 dakota_add_unit_test(NAME MetricsTest
   SOURCES MetricsTest.cpp
+  LINK_LIBS dakota_util
   )
-target_link_libraries(MetricsTest PRIVATE dakota_util)
-
 
 dakota_add_unit_test(NAME TeuchosEigenConversionTest
   SOURCES TeuchosEigenConversion.cpp
+  LINK_LIBS dakota_util
   )
-target_link_libraries(TeuchosEigenConversionTest PRIVATE dakota_util)
 
 dakota_add_unit_test(NAME LinearSolverTest
   SOURCES LinearSolverTest.cpp
+  LINK_LIBS dakota_util
   )
-target_link_libraries(LinearSolverTest PRIVATE dakota_util)
 
 #target_include_directories(DataScalerTest PRIVATE
 #  "${CMAKE_CURRENT_SOURCE_DIR}/.." "${Teuchos_INCLUDE_DIRS}")
