@@ -17,9 +17,8 @@
 #include "ROL_StdConstraint.hpp"
 #include "ROL_Bounds.hpp"
 
-#include "Teuchos_UnitTestHarness.hpp"
-#include "Teuchos_oblackholestream.hpp"
-#include "Teuchos_GlobalMPISession.hpp"
+#define BOOST_TEST_MODULE dakota_rol_integration
+#include <boost/test/included/unit_test.hpp>
 
 #include <memory>
 
@@ -97,7 +96,7 @@ public:
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(rol, basic1)
+BOOST_AUTO_TEST_CASE(test_rol_basic1)
 {
   using Teuchos::RCP; using Teuchos::rcp;
 
@@ -187,7 +186,7 @@ TEUCHOS_UNIT_TEST(rol, basic1)
 ///        and use the differences to assess correctness and 
 ///        pass/fail criteria.
 
-TEUCHOS_UNIT_TEST(rol, text_book_nln_ineq_const)
+BOOST_AUTO_TEST_CASE(test_rol_text_book_nln_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -223,7 +222,7 @@ TEUCHOS_UNIT_TEST(rol, text_book_nln_ineq_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();

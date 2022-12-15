@@ -1087,7 +1087,7 @@ if (DAKOTA_API_JAVA)
 endif()
 
 if(DAKOTA_ENABLE_TESTS AND BUILD_TESTING)
-  add_subdirectory(unit_test)
+  add_subdirectory(unit)
 endif()
 
 

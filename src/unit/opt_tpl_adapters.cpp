@@ -9,9 +9,11 @@
 
 #ifdef HAVE_DEMO_TPL
 
+#define BOOST_TEST_MODULE dakota_opt_tpl_adapters
+#include <boost/test/included/unit_test.hpp>
+
 #include <string>
 #include <map>
-#include <Teuchos_UnitTestHarness.hpp>
 
 #include "opt_tpl_test.hpp"
 
@@ -66,7 +68,7 @@ namespace {
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
+BOOST_AUTO_TEST_CASE(test_nln_ineq_demo)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -79,7 +81,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      TEST_ASSERT( false ); // This test only works for serial builds
+      BOOST_CHECK( false ); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -90,8 +92,8 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
   DemoOptTraits::VecT nln_ineqs(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
 
 
   //*********************************
@@ -108,8 +110,8 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-5.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-5.5, nln_ineqs[0], 1.e-12);
 
   // *********************************
 
@@ -128,9 +130,9 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(2, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs[0], 1.e-12);
-  TEST_FLOATING_EQUALITY(-1.5, nln_ineqs[1], 1.e-12);
+  BOOST_CHECK(2 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK_CLOSE(-1.5, nln_ineqs[1], 1.e-12);
   
   // *********************************
 
@@ -150,14 +152,14 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(2, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-5.5, nln_ineqs[0], 1.e-12);
-  TEST_FLOATING_EQUALITY(-1.5, nln_ineqs[1], 1.e-12);
+  BOOST_CHECK(2 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-5.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK_CLOSE(-1.5, nln_ineqs[1], 1.e-12);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_demo)
+BOOST_AUTO_TEST_CASE(test_nln_eq_demo)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -170,7 +172,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_demo)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      TEST_ASSERT( false ); // This test only works for serial builds
+      BOOST_CHECK( false ); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -181,8 +183,8 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_demo)
   DemoOptTraits::VecT nln_eqs(data_xfer->num_tpl_nonlin_eq_constraints());
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
 
 
   // Now test adapters when using nonzero nonlinear equality targets
@@ -199,13 +201,13 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_demo)
   nln_eqs.resize(data_xfer->num_tpl_nonlin_eq_constraints());
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(0.0, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_demo)
+BOOST_AUTO_TEST_CASE(test_nln_mixed_demo)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -219,7 +221,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_demo)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      TEST_ASSERT( false ); // This test only works for serial builds
+      BOOST_CHECK( false ); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -232,10 +234,10 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_demo)
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(80.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(80.0, nln_ineqs[0], 1.e-12);
 
 
   //*********************************
@@ -255,10 +257,10 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_demo)
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(0.0, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(75.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(75.0, nln_ineqs[0], 1.e-12);
 
   // *********************************
 
@@ -279,11 +281,11 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_demo)
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(2, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY( 80.0, nln_ineqs[0], 1.e-12);
-  TEST_FLOATING_EQUALITY(-82.0, nln_ineqs[1], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(2 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE( 80.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK_CLOSE(-82.0, nln_ineqs[1], 1.e-12);
   
   // *********************************
 
@@ -307,11 +309,11 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_demo)
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(0.0, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(2, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY( 75.0, nln_ineqs[0], 1.e-12);
-  TEST_FLOATING_EQUALITY(-82.0, nln_ineqs[1], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(2 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE( 75.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK_CLOSE(-82.0, nln_ineqs[1], 1.e-12);
 }
 
 
@@ -374,7 +376,7 @@ namespace
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
+BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -387,7 +389,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      TEST_ASSERT( false ); // This test only works for serial builds
+      BOOST_CHECK( false ); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -412,8 +414,8 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   TRAITS_TYPE1::VecT nln_ineqs(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(0.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(0.5, nln_ineqs[0], 1.e-12);
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -422,8 +424,8 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
 
 
   //*********************************
@@ -445,8 +447,8 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(5.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(5.5, nln_ineqs[0], 1.e-12);
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -455,8 +457,8 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
 
 
   // *********************************
@@ -481,9 +483,9 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(2, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(0.5, nln_ineqs[0], 1.e-12);
-  TEST_FLOATING_EQUALITY(1.5, nln_ineqs[1], 1.e-12);
+  BOOST_CHECK(2 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(0.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK_CLOSE(1.5, nln_ineqs[1], 1.e-12);
   
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -492,8 +494,8 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
 
 
   // *********************************
@@ -519,9 +521,9 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(2, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(5.5, nln_ineqs[0], 1.e-12);
-  TEST_FLOATING_EQUALITY(1.5, nln_ineqs[1], 1.e-12);
+  BOOST_CHECK(2 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(5.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK_CLOSE(1.5, nln_ineqs[1], 1.e-12);
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -530,13 +532,13 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
+BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -550,7 +552,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      TEST_ASSERT( false ); // This test only works for serial builds
+      BOOST_CHECK( false ); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -577,10 +579,10 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs  );
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-80.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-80.0, nln_ineqs[0], 1.e-12);
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -591,10 +593,10 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs  );
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(80.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(80.0, nln_ineqs[0], 1.e-12);
 
 
   //*********************************
@@ -619,10 +621,10 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(0.0, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-75.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-75.0, nln_ineqs[0], 1.e-12);
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -633,10 +635,10 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(0.0, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(80.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(80.0, nln_ineqs[0], 1.e-12);
 
 
   // *********************************
@@ -664,11 +666,11 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(2, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-80.0, nln_ineqs[0], 1.e-12);
-  TEST_FLOATING_EQUALITY( 82.0, nln_ineqs[1], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(2 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-80.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK_CLOSE( 82.0, nln_ineqs[1], 1.e-12);
   
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -679,10 +681,10 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(-0.5, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(80.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(80.0, nln_ineqs[0], 1.e-12);
 
 
   // *********************************
@@ -711,11 +713,11 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(0.0, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(2, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(-75.0, nln_ineqs[0], 1.e-12);
-  TEST_FLOATING_EQUALITY( 82.0, nln_ineqs[1], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(2 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(-75.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK_CLOSE( 82.0, nln_ineqs[1], 1.e-12);
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -726,16 +728,16 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  TEST_EQUALITY(1, nln_eqs.size());
-  TEST_FLOATING_EQUALITY(0.0, nln_eqs[0], 1.e-12);
-  TEST_EQUALITY(1, nln_ineqs.size());
-  TEST_FLOATING_EQUALITY(80.0, nln_ineqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_eqs.size());
+  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
+  BOOST_CHECK(1 == nln_ineqs.size());
+  BOOST_CHECK_CLOSE(80.0, nln_ineqs[0], 1.e-12);
 }
 
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
+BOOST_AUTO_TEST_CASE(test_nln_eq_traits)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -748,7 +750,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      TEST_ASSERT( false ); // This test only works for serial builds
+      BOOST_CHECK( false ); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -779,9 +781,9 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
   data_xfer3->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs3);
 
   // There should be no equality values because they are treated as two-sided inequalities
-  TEST_EQUALITY(0, nln_eqs1.size());
-  TEST_EQUALITY(0, nln_eqs2.size());
-  TEST_EQUALITY(0, nln_eqs3.size());
+  BOOST_CHECK(0 == nln_eqs1.size());
+  BOOST_CHECK(0 == nln_eqs2.size());
+  BOOST_CHECK(0 == nln_eqs3.size());
 
   DemoOptTraits::VecT nln_ineqs1(data_xfer1->num_tpl_nonlin_ineq_constraints());
   DemoOptTraits::VecT nln_ineqs2(data_xfer2->num_tpl_nonlin_ineq_constraints());
@@ -791,14 +793,14 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
   data_xfer3->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs3);
 
   // BUT there should be two inequality constraints for each model equality constraint
-  TEST_EQUALITY(2, nln_ineqs1.size());
-  TEST_EQUALITY(2, nln_ineqs2.size());
-  TEST_EQUALITY(2, nln_ineqs3.size());
+  BOOST_CHECK(2 == nln_ineqs1.size());
+  BOOST_CHECK(2 == nln_ineqs2.size());
+  BOOST_CHECK(2 == nln_ineqs3.size());
   // ... and they are all treated the same because they are transformed in a manner that works with any of the
   //     three inequality constraint formats
-  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs1[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.5, nln_ineqs1[1], 1.e-12);
-  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs2[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.5, nln_ineqs2[1], 1.e-12);
-  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs3[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.5, nln_ineqs3[1], 1.e-12);
+  BOOST_CHECK_CLOSE(-0.5, nln_ineqs1[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.5, nln_ineqs1[1], 1.e-12);
+  BOOST_CHECK_CLOSE(-0.5, nln_ineqs2[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.5, nln_ineqs2[1], 1.e-12);
+  BOOST_CHECK_CLOSE(-0.5, nln_ineqs3[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.5, nln_ineqs3[1], 1.e-12);
 
 
   // Now test adapters when using nonzero nonlinear equality targets
@@ -828,9 +830,9 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
   data_xfer2->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs2);
   data_xfer3->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs3);
 
-  TEST_EQUALITY(0, nln_eqs1.size());
-  TEST_EQUALITY(0, nln_eqs2.size());
-  TEST_EQUALITY(0, nln_eqs3.size());
+  BOOST_CHECK(0 == nln_eqs1.size());
+  BOOST_CHECK(0 == nln_eqs2.size());
+  BOOST_CHECK(0 == nln_eqs3.size());
 
   // Check correctness of inequality constraints
   nln_ineqs1.resize(data_xfer1->num_tpl_nonlin_ineq_constraints());
@@ -841,12 +843,12 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
   data_xfer2->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs2);
   data_xfer3->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs3);
 
-  TEST_EQUALITY(2, nln_ineqs1.size());
-  TEST_EQUALITY(2, nln_ineqs2.size());
-  TEST_EQUALITY(2, nln_ineqs3.size());
-  TEST_FLOATING_EQUALITY(0.0, nln_ineqs1[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.0, nln_ineqs1[1], 1.e-12);
-  TEST_FLOATING_EQUALITY(0.0, nln_ineqs2[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.0, nln_ineqs2[1], 1.e-12);
-  TEST_FLOATING_EQUALITY(0.0, nln_ineqs3[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.0, nln_ineqs3[1], 1.e-12);
+  BOOST_CHECK(2 == nln_ineqs1.size());
+  BOOST_CHECK(2 == nln_ineqs2.size());
+  BOOST_CHECK(2 == nln_ineqs3.size());
+  BOOST_CHECK_CLOSE(0.0, nln_ineqs1[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.0, nln_ineqs1[1], 1.e-12);
+  BOOST_CHECK_CLOSE(0.0, nln_ineqs2[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.0, nln_ineqs2[1], 1.e-12);
+  BOOST_CHECK_CLOSE(0.0, nln_ineqs3[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.0, nln_ineqs3[1], 1.e-12);
 }
 
 //----------------------------------------------------------------

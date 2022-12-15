@@ -10,7 +10,8 @@
 // #if 0 // comment to make this file active
 #ifdef DAKOTA_HAVE_HDF5
 
-#include <Teuchos_UnitTestHarness.hpp>
+#define BOOST_TEST_MODULE dakota_ResultsDBHDF5_Test
+#include <boost/test/included/unit_test.hpp>
 
 #include "hdf5.h"    // C API
 #include "hdf5_hl.h" // C API (HDF5 "high-level")
@@ -33,7 +34,7 @@ using namespace Dakota;
 /**
  *  Test creating and destroying a Dakota HDF5 database.
  */
-TEUCHOS_UNIT_TEST(tpl_hdf5, test_results_manager_init) {
+BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_results_manager_init) {
   std::string database_name = "database_1.h5";
  
   Dakota::ResultsManager results_manager;
@@ -41,10 +42,10 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_results_manager_init) {
   std::unique_ptr<ResultsDBHDF5> db_ptr(new ResultsDBHDF5(false /* in_core */, hdf5_helper_ptr));
   results_manager.add_database(std::move(db_ptr));
 
-  TEST_ASSERT( results_manager.active() );
+  BOOST_CHECK( results_manager.active() );
 }
 
-TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_groups) {
+BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_create_groups) {
   std::string database_name = "database_2.h5";
 
   Dakota::ResultsManager results_manager;
@@ -55,23 +56,23 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_groups) {
   Dakota::HDF5IOHelper helper(database_name, false);
   // methods treated like a dataset name
   helper.create_groups("/methods");
-  TEST_ASSERT(!helper.exists("/methods"));
+  BOOST_CHECK(!helper.exists("/methods"));
 
   // methods treated like a group
   helper.create_groups( "/methods",false );
-  TEST_ASSERT( helper.exists("/methods") );
+  BOOST_CHECK( helper.exists("/methods") );
 
   // sampling treated like a dataset
   helper.create_groups( "/methods/sampling");
-  TEST_ASSERT(!helper.exists("/methods/sampling") );
+  BOOST_CHECK(!helper.exists("/methods/sampling") );
 
   // sampling treated like a group
   helper.create_groups( "/methods/sampling", false);
-  TEST_ASSERT( helper.exists("/methods") );
-  TEST_ASSERT( helper.exists("/methods/sampling") );
+  BOOST_CHECK( helper.exists("/methods") );
+  BOOST_CHECK( helper.exists("/methods/sampling") );
 }
 
-TEUCHOS_UNIT_TEST(tpl_hdf5, test_insert_into) {
+BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_insert_into) {
   // TODO: This is not a very good test, yet. It passes if no exceptions are throw, but it doesn't read
   // the matrices back in to confirm that they were written correctly.
   std::string database_name = "database_3.h5";

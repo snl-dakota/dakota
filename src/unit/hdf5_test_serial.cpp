@@ -29,7 +29,8 @@
 
 #ifdef DAKOTA_HAVE_HDF5
 
-#include <Teuchos_UnitTestHarness.hpp> 
+#define BOOST_TEST_MODULE dakota_hdf5_test_serial
+#include <boost/test/included/unit_test.hpp>
 
 #include <iostream>
 #include <string>
@@ -54,7 +55,7 @@ const int     DIM0 = 8;		// size of dataset
 const int     DIM1 = 10;
 
 //int main (void)
-TEUCHOS_UNIT_TEST(tpl_hdf5, test_serial)
+BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_serial)
 {
     int     i,j;
     int     data[DIM0][DIM1], sdata[DIM0_SUB][DIM1_SUB], rdata[DIM0][DIM1];
@@ -175,24 +176,24 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_serial)
     catch(FileIException error)
     {
 	//error.printErrorStack();
-	TEST_ASSERT( false );
+	BOOST_CHECK( false );
     }
 
     // catch failure caused by the DataSet operations
     catch(DataSetIException error)
     {
 	//error.printErrorStack();
-	TEST_ASSERT( false );
+	BOOST_CHECK( false );
     }
 
     // catch failure caused by the DataSpace operations
     catch(DataSpaceIException error)
     {
 	//error.printErrorStack();
-	TEST_ASSERT( false );
+	BOOST_CHECK( false );
     }
 
-    TEST_ASSERT( true );  // successfully terminated
+    BOOST_CHECK( true );  // successfully terminated
 }
 
 #endif

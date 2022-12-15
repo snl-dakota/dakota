@@ -10,7 +10,8 @@
 #include "opt_tpl_test.hpp"
 #include <string>
 #include <map>
-#include <Teuchos_UnitTestHarness.hpp>
+#define BOOST_TEST_MODULE dakota_opt_tpl_tol_textbook
+#include <boost/test/included/unit_test.hpp>
 
 #include "ROLOptimizer.hpp"
 
@@ -20,7 +21,7 @@ using namespace Dakota;
 /// Unconstrained 3D textbook problem with known solution of
 /// {1,1,1}
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
+BOOST_AUTO_TEST_CASE(test_text_book_base)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -46,7 +47,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -62,17 +63,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -80,7 +81,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
   target = 0.0;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target));
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 
@@ -92,7 +93,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
 /// tolerances for this test and the looser ones for the above
 /// test
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
+BOOST_AUTO_TEST_CASE(test_text_book_options_file)
 {
   /// Dakota input string:
 
@@ -120,7 +121,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -136,17 +137,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -154,7 +155,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
   target = 0.0;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target));
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -164,7 +165,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
 /// for the unconstrained problem; other two variables have
 /// expected best value of 1 with a best objective 0f 0.5^4
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
+BOOST_AUTO_TEST_CASE(test_text_book_bound_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -192,7 +193,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -208,17 +209,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 0.5;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -226,7 +227,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
   target = 0.0625;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target));
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -237,7 +238,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
 /// expected best value of 1 with a best objective 0f 0.5^4
 /// This variant uses an analytic Hessian.
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_hessian)
+BOOST_AUTO_TEST_CASE(test_text_book_bound_const_hessian)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -265,7 +266,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_hessian)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -281,17 +282,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_hessian)
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 0.5;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -299,7 +300,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_hessian)
   target = 0.0625;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target));
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -310,7 +311,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_hessian)
 /// problem; other two variables have expected best value of 1 with a
 /// best objective 0f 0.5^4
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_reset)
+BOOST_AUTO_TEST_CASE(test_text_book_bound_const_reset)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -338,7 +339,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_reset)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment - this solves the problem as previously without any reset
   env.execute();
@@ -396,17 +397,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_reset)
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 0.3;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 0.6;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -414,7 +415,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_reset)
   target = 0.2657;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target));
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -428,7 +429,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_reset)
 /// value and therefore each should have a best value of 0.5 with
 /// a corresponding best objective of 16.125
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
+BOOST_AUTO_TEST_CASE(test_text_book_lin_eq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -457,7 +458,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -473,17 +474,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   target = 0.5;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 0.5;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 3.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -491,7 +492,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   target = 16.125;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -509,7 +510,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
 /// 1.163577604324929. The corresponding best objective is
 /// 3.884217188745469e-03
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
+BOOST_AUTO_TEST_CASE(test_text_book_nln_eq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -537,7 +538,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -554,18 +555,18 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
   // BMA: Needs review
   max_tol = 1.0e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.163577604324929;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   // BMA: Needs review
   max_tol = 1.0e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -573,7 +574,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
   target = 3.884217188745469e-03;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -586,7 +587,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
 /// third variable is expected to have a best value of 1 and
 /// therefore best objective is 1
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
+BOOST_AUTO_TEST_CASE(test_text_book_nln_lin_eq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -616,7 +617,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -632,18 +633,18 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 0.0;
   max_tol = 1.e-2;
   rel_err = fabs(vars.continuous_variable(1) - target);
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   // BMA: Needs review
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -651,7 +652,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -664,7 +665,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
 /// the best x_3 is 3 and x_1 = x_2 = 0.5 with a corresponding best
 /// objective of 16.125
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_1_lin_ineq_const)
+BOOST_AUTO_TEST_CASE(test_text_book_1_lin_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -694,7 +695,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_1_lin_ineq_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -710,17 +711,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_1_lin_ineq_const)
   target = 0.5;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 0.5;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 3.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -728,7 +729,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_1_lin_ineq_const)
   target = 16.125;
   max_tol = 1.e0;
   rel_err = fabs((resp.function_value(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -742,7 +743,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_1_lin_ineq_const)
 /// the best x_3 is 3 and x_1 = x_2 = 0.5 with a corresponding best
 /// objective of 16.125
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_2_lin_ineq_const)
+BOOST_AUTO_TEST_CASE(test_text_book_2_lin_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -772,7 +773,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_2_lin_ineq_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -788,17 +789,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_2_lin_ineq_const)
   target = 0.5;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 0.5;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 3.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -806,7 +807,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_2_lin_ineq_const)
   target = 16.125;
   max_tol = 1.e0;
   rel_err = fabs((resp.function_value(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -827,7 +828,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_2_lin_ineq_const)
 /// 1.125437799721614. The corresponding best objective is
 /// 1.442520331911729e-03
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
+BOOST_AUTO_TEST_CASE(test_text_book_nln_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -856,7 +857,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -872,18 +873,18 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
   target = 0.8140754878147402;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.125437799721614;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   // BMA: Needs review
   max_tol = 1.0e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -891,7 +892,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
   target = 1.442520331911729e-03;
   max_tol = 1.e-6;
   rel_err = fabs((resp.function_value(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -912,7 +913,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
 /// 1.125437799721614. The corresponding best objective is
 /// 1.001442520331912
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
+BOOST_AUTO_TEST_CASE(test_text_book_nln_lin_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -944,7 +945,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -960,17 +961,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
   target = 0.8140754878147402;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.125437799721614;
   max_tol = 1.e-2;
   rel_err = fabs(vars.continuous_variable(1) - target);
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 2.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -978,7 +979,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
   target = 1.001442520331912;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -1011,7 +1012,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
 /// x_3 = 2.831863531038414, along with a best objective of
 /// 11.322607724274398, with all constraints satisfied (and active).
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
+BOOST_AUTO_TEST_CASE(test_text_book_nln_lin_eq_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -1047,7 +1048,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -1063,17 +1064,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   target = 0.614041801350369;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 5.5409525784e-01;
   max_tol = 1.e-2;
   rel_err = fabs(vars.continuous_variable(1) - target);
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 2.831863531038414;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -1081,7 +1082,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   target = 11.322607724274398;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 
@@ -1089,7 +1090,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
 /// Unconstrained 3D textbook problem with known solution of
 /// {1,1,1} and utilizing Hessians from the problem
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_base_hessian)
+BOOST_AUTO_TEST_CASE(test_text_book_base_hessian)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -1115,7 +1116,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base_hessian)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -1131,17 +1132,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base_hessian)
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(2) - target) );
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -1149,7 +1150,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base_hessian)
   target = 0.0;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target));
-  TEST_COMPARE(rel_err,<, max_tol);
+  BOOST_CHECK_LT(rel_err, max_tol);
 }
 
 

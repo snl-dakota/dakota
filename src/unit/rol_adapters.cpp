@@ -17,9 +17,8 @@
 // #include "ROL_Teuchos_Constraint.hpp"
 #include "ROL_Bounds.hpp"
 
-#include "Teuchos_UnitTestHarness.hpp"
-#include "Teuchos_oblackholestream.hpp"
-#include "Teuchos_GlobalMPISession.hpp"
+#define BOOST_TEST_MODULE dakota_rol_adapters
+#include <boost/test/included/unit_test.hpp>
 
 #include "opt_tpl_test_fixture.hpp"
 
@@ -91,14 +90,13 @@ class DakotaModelObjective : public FactoryT::RObjT
 //----------------------------------------------------------------
 
 template<class FactoryT> 
-void rol_quad_solv( Teuchos::FancyOStream &out,
-                    bool & success )
+void rol_quad_solv()
 {
   std::shared_ptr<LibraryEnvironment> p_env(Opt_TPL_Test_Fixture::create_default_env(Dakota::OPTPP_PDS));
   LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT( false ); // This test only works for serial builds
+    BOOST_CHECK( false ); // This test only works for serial builds
 
   Dakota::Model & model = *(env.problem_description_db().model_list().begin());
 
@@ -141,25 +139,25 @@ void rol_quad_solv( Teuchos::FancyOStream &out,
   }
   catch (std::logic_error err) {
     *outStream << err.what() << "\n";
-    TEST_ASSERT( false );
+    BOOST_CHECK( false );
   }; // end try
 
   // Assess correctness
-  TEST_FLOATING_EQUALITY( (*x_rcp)[0], -1.50, 1.e-10 );
-  TEST_FLOATING_EQUALITY( (*x_rcp)[1],  0.75, 1.e-10 );
+  BOOST_CHECK_CLOSE( (*x_rcp)[0], -1.50, 1.e-4 );
+  BOOST_CHECK_CLOSE( (*x_rcp)[1],  0.75, 1.e-3 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(a_rol_std, quad)
+BOOST_AUTO_TEST_CASE(a_rol_std_quad)
 {
-  rol_quad_solv<StdFactory>(out, success);
+  rol_quad_solv<StdFactory>();
 }
 
 //----------------------------------------------------------------
 
- // TEUCHOS_UNIT_TEST(a_rol_teuchos, quad)
+ // BOOST_AUTO_TEST_CASE(a_rol_teuchos_quad)
  // {
- //   rol_quad_solv<TeuchosSerialDenseFactory>(out, success);
+ //   rol_quad_solv<TeuchosSerialDenseFactory>();
  // }
 
