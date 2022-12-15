@@ -15,43 +15,31 @@ include(DakotaUnitTest)
 #set(dakota_unit_test_copied_files)
 
 dakota_add_unit_test(NAME DataScalerTest
-  SOURCES util_test_driver.cpp DataScalerTest.cpp
+  SOURCES DataScalerTest.cpp
   )
-
-# Rationale: These all include Teuchos headers and need to link to the
-# unit test system
-target_include_directories(DataScalerTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
-target_link_libraries(DataScalerTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
+target_link_libraries(DataScalerTest PRIVATE dakota_util)
 
 
 dakota_add_unit_test(NAME MathToolsTest
-  SOURCES util_test_driver.cpp MathToolsTest.cpp
+  SOURCES MathToolsTest.cpp
   )
-
-target_include_directories(MathToolsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
-target_link_libraries(MathToolsTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
+target_link_libraries(MathToolsTest PRIVATE dakota_util)
 
 dakota_add_unit_test(NAME MetricsTest
-  SOURCES util_test_driver.cpp MetricsTest.cpp
+  SOURCES MetricsTest.cpp
   )
-
-target_include_directories(MetricsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
-target_link_libraries(MetricsTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
+target_link_libraries(MetricsTest PRIVATE dakota_util)
 
 
 dakota_add_unit_test(NAME TeuchosEigenConversionTest
-  SOURCES util_test_driver.cpp teuchos_eigen_conversion.cpp
+  SOURCES TeuchosEigenConversion.cpp
   )
-
-target_include_directories(TeuchosEigenConversionTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
-target_link_libraries(TeuchosEigenConversionTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
+target_link_libraries(TeuchosEigenConversionTest PRIVATE dakota_util)
 
 dakota_add_unit_test(NAME LinearSolverTest
-  SOURCES util_test_driver.cpp LinearSolverTest.cpp
+  SOURCES LinearSolverTest.cpp
   )
-
-target_include_directories(LinearSolverTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
-target_link_libraries(LinearSolverTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
+target_link_libraries(LinearSolverTest PRIVATE dakota_util)
 
 #target_include_directories(DataScalerTest PRIVATE
 #  "${CMAKE_CURRENT_SOURCE_DIR}/.." "${Teuchos_INCLUDE_DIRS}")
