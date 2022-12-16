@@ -590,3 +590,186 @@ check in ``path/to/dakotaSource/docs/keywords`` to make sure the
 expected files were created/removed. You can now populate the content
 of the created keyword metadata files. After you have entered all
 content, remove "TEMPLATE" from the top of the file.
+
+
+==================
+Authoring Examples
+==================
+
+Principles for authoring and testing examples in the
+``dakota/dakota-examples`` repository.
+
+-----------------
+Example Structure
+-----------------
+
+An example consists of an explanatory README in markdown format, plus
+other files provided for purposes of illustration. The README has two
+required sections:
+
+* Summary - (required) one or two sentence summary aimed at helping
+  users to make a quick determination whether the example will be
+  useful to them
+
+* Description - (required) Longer description (up to a few paragraphs)
+  describing the example. Executive Summary/Abstract.
+
+In addition, authors are asked to include sections using these names
+where applicable.
+
+* How to run the example - (optional) Describe how to run the example,
+  if applicable
+
+* Requirements - (optional) Requirements for running the
+  example. E.g. Python version, OS
+
+* Contents - (optional) list the contents and give a brief (few word)
+  description of what they are
+
+* Further Reading - (optional) Dakota documentation sections,
+  published papers, SAND reports, screencasts etc.
+
+Authors are free to add other sections or to subdivide the sections above.
+
+**Guidance for Writing a Good Example**
+
+* The purpose of the example, or what the user should learn from it,
+  should be clearly stated.
+
+* Keep the purpose of the example in mind as you write, and avoid
+  including detail that does not serve the purpose.
+
+* Avoid duplication of content from the manuals. Refer to them
+  instead. Although you can create hyperlinks to specific versions of
+  the documentation, it may be better in many cases to refer to the
+  most recent versions. Some handy URLs that we update at each
+  release:
+
+  - https://dakota.sandia.gov/content/manuals: Landing page for all the documentation, including older releases
+
+  - https://dakota.sandia.gov/sites/default/files/docs/latest_release/user-html/: Latest User Guide; for any user, reference, theory content
+
+  - https://dakota.sandia.gov/content/latest-developers-manual: Landing page for most recent version of the Developer's Manual
+
+  - https://dakota.sandia.gov/sites/default/files/docs/latest_release/user-html/usingdakota/reference/environment.html:
+    Example of linking to a specific keyword in the latest release of
+    the Reference Manual
+
+  - https://dakota.sandia.gov//sites/default/files/docs/latest_release/html-dev/classDakota_1_1Environment.html: Example of linking to specific class documentation in the latest release of the Developer's Manual
+
+  - https://dakota.sandia.gov/sites/default/files/docs/latest_release/user-html/usingdakotagui/usingdakotagui.html: Latest GUI Manual
+
+  - https://dakota.sandia.gov/sites/default/files/docs/latest_release/user-html/usingdakota/theory.html: Latest Theory Manual
+
+  - https://dakota.sandia.gov/content/latest-release-notes: Latest Release Notes
+
+* As much as possible, create examples that can run on all of our
+  supported platforms (Windows, Mac, and Linux).
+
+* Set up the example to be automatically tested. Testing ensures that
+  runnable parts of examples continue to work as Dakota evolves.
+
+----------------
+Testing Examples
+----------------
+
+This brief guide is intended to help Dakota developers set up
+automatic testing for an example in the Dakota Examples Library.
+
+**Why add tests?**
+
+We want examples to work as intended with the version of Dakota (and
+auxiliary tools) for which they were designed. The Examples Library
+will be automatically tested periodically.
+
+**How do I run the tests?**
+
+The Examples Library will be checked out as a submodule when you clone
+the main Dakota repository, and the tests can be run by ctest if the
+CMake variable ``DAKOTA_TEST_EXAMPLES_REPO:BOOL=TRUE`` was set at
+configure time.
+
+**What kinds of tests are supported?**
+
+Four kinds of tests are supported:
+
+#. Regression. These work just like regression tests in Dakota's test
+   folder. They have a baseline that Dakota's console output is
+   compared to, and have a PASS/DIFF/FAIL result. (The baseline
+   platform is RHEL7 and all examples should reliably PASS on RHEL7).
+
+#. Dakota Check. Run 'dakota -check' on a Dakota input to see whether
+   it passes basic parsing/construction. The result is PASS or FAIL.
+
+#. Dakota Run. Run Dakota on the input and just examine the
+   returncode. This is a way to make sure that an input + driver runs
+   to completion when you don't care much about the numerical
+   results. PASS/FAIL.
+
+#. Arbitrary Command. Run an arbitrary command and examine the
+   returncode. The command could be an Python script that contains
+   unit tests, for example. PASS/FAIL.
+
+In addition to Dakota executables built by the Dakota project, tests
+may use Python 3 (with the ``numpy`` and ``h5py`` modules), the
+``dakota.interfacing`` Python module, and the new surrogate
+capabilities.
+
+**How do I add tests?**
+
+Tests for all official examples are added by declaring them using the
+``dakota_example_test`` CMake function in
+``DakotaExamplesOfficial.cmake``. Multiple tests can be added in each
+call. The signature of this function looks like::
+
+  dakota_example_test(
+      PATH path
+      [CHECK input_name1 [input_name2 ...]]
+      [RUN input_name1 [input_name2 ...]]
+      [REGRESS input_name1 [input_name2 ...]]   
+      [COMMAND command1 ]
+      [DEPENDS test_name1 [test_name2 ...]]
+  )
+
+
+* ``PATH`` specifies the path of the folder that contains the tests,
+  relative to the top level folder of the Examples Library.
+
+* ``CHECK`` specifies the names of Dakota input files at PATH that
+  Dakota should run with the '-check' option.
+
+* ``RUN`` specifies the names of Dakota input files at PATH that
+  should be run. Their console output will not be checked, only
+  Dakota's returncode.
+
+* ``REGRESS`` specifies the names of Dakota input files for which
+  regression tests should be performed. The files, and corresponding
+  .base files, must also be present at PATH.
+
+* ``COMMAND`` specifies an arbitrary executable command to run. The
+  returncode of the command will be examined to determine whether the
+  test passes of fails.
+
+* ``DEPENDS`` specifies a dependency of the test; the test only runs
+  if the test it depends on passed. The argument is a test name, but
+  it's often more convenient to use the ${_last_test_added} variable
+  as an argument. Tests are added in the order that the keywords
+  appear in, here. It may be necessary to make several separate calls
+  to dakota_example_test (the calls will all have the same PATH) to
+  properly express dependencies.
+
+**Can I conditionally run tests?**
+
+Yes. Here's an example from DakotaExamplesOfficial.cmake that
+conditionally runs when Python is available and the system is UNIX::
+
+  if(Python_EXECUTABLE AND UNIX)
+    dakota_example_test(
+      PATH contributed/sampling/lhs_basic_incremental
+      COMMAND ${Python_EXECUTABLE} -V
+      DEPENDS ${_last_test_added}
+      )
+  endif()
+
+If your tests use optional Dakota features, you should protect them
+using conditionals, e.g., ``HAVE_DOT``, ``HAVE_MUQ``.
