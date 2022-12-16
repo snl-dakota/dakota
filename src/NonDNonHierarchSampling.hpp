@@ -762,7 +762,7 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
     }
     break;
   }
-  //case SUBMETHOD_ACV_KL: // TO DO: Eq. 42
+  //case SUBMETHOD_ACV_RD: // TO DO
   default:
     Cerr << "Error: bad sub-method name (" << mlmfSubMethod
 	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;

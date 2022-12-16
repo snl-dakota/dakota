@@ -2356,6 +2356,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"nond.regression_type", P_MET regressionType},
       {"nond.response_level_target", P_MET responseLevelTarget},
       {"nond.response_level_target_reduce", P_MET responseLevelTargetReduce},
+      {"nond.search_model_graphs", P_MET dagRecursionType},
       {"optpp.merit_function", P_MET meritFn},
       {"output", P_MET methodOutput},
       {"sbl.acceptance_logic", P_MET surrBasedLocalAcceptLogic},

@@ -150,6 +150,7 @@ typedef std::set<int>                  IntSet;
 typedef std::set<String>               StringSet;
 typedef std::set<unsigned short>       UShortSet;
 typedef std::set<size_t>               SizetSet;
+typedef std::set<UShortArray>          UShortArraySet;
 typedef std::set<RealRealPair>         RealRealPairSet;
 typedef std::vector<RealSet>           RealSetArray;
 typedef std::vector<IntSet>            IntSetArray;

@@ -62,16 +62,8 @@ NonDACVSampling::~NonDACVSampling()
     each of which may contain multiple discretization levels. */
 void NonDACVSampling::core_run()
 {
-  /*
-  switch (mlmfSubMethod) {
-  case SUBMETHOD_ACV_IS:  case SUBMETHOD_ACV_MF:
-    approximate_control_variate(); break;
-  //case SUBMETHOD_ACV_KL:
-    //for (k) for (l) approximate_control_variate(...); ???
-  }
-  */
-  if (mlmfSubMethod == SUBMETHOD_ACV_KL) {
-    Cerr << "Error: ACV KL not yet implemented." << std::endl;
+  if (mlmfSubMethod == SUBMETHOD_ACV_RD) {
+    Cerr << "Error: ACV recursive difference not yet implemented." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
