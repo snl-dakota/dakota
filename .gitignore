@@ -3,8 +3,9 @@
 cscope*
 tags
 .DS_Store
-docs-sphinx/build
-docs-sphinx/source/usingdakota/reference/*
+docs/user/build
+docs/user/usingdakota/reference
+docs/user/usingdakota/samples
 .vscode
 __pycache__
 *.pyc
