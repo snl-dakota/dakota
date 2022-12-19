@@ -96,10 +96,12 @@ dakota_add_unit_test(NAME dakota_file_reader
   LINK_DAKOTA_LIBS
   LINK_LIBS Boost::boost)
 
-dakota_add_unit_test(NAME dakota_opt_tpl_adapters
-  SOURCES opt_tpl_adapters.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+if (HAVE_DEMO_TPL)
+  dakota_add_unit_test(NAME dakota_opt_tpl_adapters
+    SOURCES opt_tpl_adapters.cpp
+    LINK_DAKOTA_LIBS
+    LINK_LIBS Boost::boost)
+endif()
 
 dakota_add_unit_test(NAME dakota_opt_api_core_data_xfers
   SOURCES opt_api_core_data_xfers.cpp
