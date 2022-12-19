@@ -48,17 +48,20 @@ endif(MSVC)
 dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/${ut_helper_script}
   ${script_dest_path}/${ut_helper_script} dakota_unit_test_copied_files)
 
-dakota_add_unit_test(NAME dakota_workdir_utils
-  SOURCES test_workdir_utils.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
-
 # Demo: BOOST_AUTO_TEST_CASE
 dakota_add_unit_test(NAME dakota_auto_unit
   SOURCES auto_unit_test.cpp
   LINK_DAKOTA_LIBS
   # need team buy-in for Boost.Test library deps
   #LINK_LIBS boost_unit_test_framework
+  LINK_LIBS Boost::boost)
+
+remove_definitions("-DHAVE_CONFIG_H")
+include_directories(${Teuchos_INCLUDE_DIRS})
+
+dakota_add_unit_test(NAME dakota_workdir_utils
+  SOURCES test_workdir_utils.cpp
+  LINK_DAKOTA_LIBS
   LINK_LIBS Boost::boost)
 
 dakota_add_unit_test(NAME dakota_bootstrap_util
@@ -293,8 +296,6 @@ if(DAKOTA_PYTHON_WRAPPER)
 endif()
 
 
-remove_definitions("-DHAVE_CONFIG_H")
-include_directories(${Teuchos_INCLUDE_DIRS})
 # Pecos is an unconditional Dakota dependency
 include_directories(${Pecos_SOURCE_DIR}/src)
 
