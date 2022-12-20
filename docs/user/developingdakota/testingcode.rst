@@ -9,42 +9,52 @@ Testing Dakota Code
 Unit Tests
 ==========
 
-Intended for testing specific units, classes, functions, when they can
-be readily constructed (and/or provided mocks) as needed.
+Unit tests are intended for testing specific units, classes and functions
+when they can be readily constructed (and/or provided mocks) as needed.
+Unit testing also serves as a mechanism for Test Driven Development
+(TDD) which represents a best practice for implementing new capability.
+Just a few of the benefits of TDD include the following:
 
-Historically we've used both Boost.Test and Teuchos Unit Test
-features. For minimal unit test examples, two ways to do with Boost
-and one with teuchos; see:
+ - Enforces (and measures) modularity of code and functionality
+ - Encourages incrementally correct development
+ - Ensures correct behavior
+ - Documents API and software contract
+ - Promotes code coverage and other Software Quality Assurance (SQA) metrics
 
-- :file:`src/unit_test/min_unit_test.cpp` (Boost.Test unit_test.hpp)
-- :file:`src/unit_test/leja_sampling.cpp` (Boost.Test minimal.hpp)
-- :file:`src/unit_test/demo_teuchos.cpp` (Teuchos)
+Historically, Dakota has used both Boost.Test and Teuchos Unit Test
+features but has recently officially adopted the former.  For a minimal
+example for unit testing see:
 
-.. note::
+- :file:`src/unit/min_unit_test.cpp` (Boost.Test unit_test.hpp)
+- :file:`src/unit/leja_sampling.cpp` (Boost.Test minimal.hpp)
 
-   Prefer Boost test when adding new unit tests, but use Teuchos if
-   needed. Overall Teuchos has easier to use numerical computing
-   testing macros, but if you use the full Boost testing library, it's
-   not really that different. *Rationale: it's better to protect with
-   tests than not write them due to not picking...*
-
-Some more recent / modern examples:
+Some more recent / modern examples include:
 
 - :file:`src/util/unit/MathToolsTest.cpp`
-- :file:`src/util/unit/LinearSolverTest.cpp` (Teuchos)
-- :file:`src/surrogates/unit/PolynomialRegressionTest.cpp` (Boost)
+- :file:`src/util/unit/LinearSolverTest.cpp`
+- :file:`src/surrogates/unit/PolynomialRegressionTest.cpp`
 
 To add a test with a TDD mindset:
 
-#. Call out the source file ``my_test.cpp`` in ``CMakeLists.txt``,
-   e.g., :file:`src/surrogate/unit/CMakeLists.txt` by adding to an
-   existing or new test suite. Build will fail.
+#. Call out the new unit test source file, e.g. ``my_test.cpp``, in
+   ``CMakeLists.txt``,e.g. :file:`src/surrogate/unit/CMakeLists.txt`.
+   See helper functions: dakota_add_unit_test (adds test, links libraries,
+   registers with ctest), dakota_copy_test_file (copies with dependency).
+   The build will fail because the file does not yet exist.
 
-#. Add a new ``my_test.cpp`` with a failing test macro to verify
-   build, but test fails.
+#. Add a new file ``my_test.cpp`` with a failing test macro,
+   e.g. ``BOOST_CHECK(false)`` to verify it builds but the test fails.
+   Name files and associated data directories in a helpful and consistent
+   manner.
 
-#. Iteratively add and refine tests and core source code as the
-   capability evolves.
+#. Use Boost utilities/macros to assess individual test conditions PASS /
+   FAIL as needed.
+
+#. Compile and run with ``ctest –L UnitTest`` or ``ctest –R my_test``.
+
+#. Iteratively add and refine tests and modify Dakota core source code
+   as the capability evolves.
+
 
 To run all unit tests:
 
@@ -62,27 +72,61 @@ To run all unit tests:
    ctest -L UnitTest -R surrogate_unit_tests
 
 
-For Teuchos-based unit tests:
+A failing CTest unit test can be diagnosed using the following as a
+starting point:
 
 .. code-block::
 
-   cd build/src/unit_test (or other directory containing the test executable)
+   cd build/src/unit (or other directory containing the test executable)
     
-   # To see available sub-tests in this suite:
-   ./surrogate_unit_tests --no-op
+   # First, manually run the failing test to see what information is provided related to the failure(s):
+   ./surrogate_unit_tests
+
+   # To see available Boost Test options:
+   ./surrogate_unit_tests --help
     
-   # To get detailed debugging info from a Teuchos-based unit test group (wildcards are also supported):
-   ./surrogate_unit_tests --group="reduced_basis"
+   # To get detailed debugging info from a unit test:
+   ./surrogate_unit_tests --log_level all
     
-   # Or a particular test by name
-   ./surrogate_unit_tests --test-name="*yaml*"
+.. note::
+
+   A google search can also provide current best practices with
+   Boost.Test and specifics related to the details of the test
+   failure(s)
+
 
 ================
 Regression Tests
 ================
 
-- Primary located in source/test/dakota_*.in and gold standards in dakota_*.base
-- Documentation mainly in ``test/dakota_test.perl --man``
+These tests involve complete Dakota studies albeit typically small,
+fast and using models that represent known behavior such as polynomials
+or other canonical problems.  In brief, these tests:
+
+- Are primarily located in source/test/dakota_*.in with gold standards
+  in dakota_*.base
+- Are categorized using CTest labels, e.g. use ``ctest --print-labels``
+  to view them
+- Are usually wrappers to the native Dakota ``test/dakota_test.perl``
+  utility, e.g. use the option ``--man`` for supported options
+
+If a regression test fails, steps to disgnose the failure include the
+following which are performed in the Dakota build directory:
+
+#. Remove previous test artifacts related to detailed differences and
+   failures via ``make dakota-diffs-clean``.
+
+#. Rerun the failing CTest: ``ctest -R test_name``
+
+#. Generate details for how the test differs from the corresponding
+   baseline: ``make dakota-diffs``.
+
+#. Go into the specific regression test directory and examine the
+   ``dakota_diffs.out`` file to see which subtest(s) failed.
+
+#. Compare the ``.tst`` file contents with the ``.base`` file contents
+   to determine which values have changed, if there was a catastrophic
+   failure of the executable, etc.
 
 
 =============================
@@ -90,34 +134,37 @@ Unit Test-driven System Tests
 =============================
 
 These hybrid tests can be useful when it's difficult to mock up all
-the objects needed for testing, e.g., Dakota Model, Variables,
-Interface, Responses, yet want finer-grained control over results
-verification than with regression tests (below).
+the objects needed for testing, e.g., Dakota Model, Variables, Interface,
+Responses, and yet finer-grained control over results verification is
+desired compared with that of regression tests.  One way to view these
+types of unit tests are those that construct most of a complete Dakota
+study as a mock and which then do fine grained testing of selected
+functionality from the instantiated objects.  In brief, these tests:
 
-- Registered as unit tests
+- Are registered as unit tests
 
 - Operate at the level of constructing a Dakota Environment from an
-  input file and running a whole study
+  input file and running a whole study to populate needed class data
 
-- Test criteria are more fine-grained and controllable
+- Test criteria that are more fine-grained and controllable than
+  regression tests
 
-- Key Example: Authoring unit tests for a Dakota input-file driven
-  example (see below and
-  :file:`src/unit_test/opt_tpl_rol_test_textbook.cpp`.
+An illustrative example is described next and in
+:file:`src/unit_test/opt_tpl_rol_test_textbook.cpp`.
 
-This section provides a walkthrough for developers who wish to add a
-performance-based unit test that includes an end-to-end Dakota
+
+The following provides a walkthrough for developers who wish to add a
+Test-driven System unit test that includes an end-to-end Dakota
 analysis. The procedure relies on setting up a problem description
 database using a Dakota input string and subsequently executing the
 environment. The last step involves extracting the quantities of
-interest (results) and testing an assertion for pass/fail labeling of
-the test.
+interest (results) to be tested using unit test macros.
 
 Test environment definition
 ---------------------------
 
-The developer defines a testing environment by providing a problem
-description database using a Dakota input string, e.g.
+The developer defines a testing environment by constructing a problem
+description database from a Dakota input string, e.g.
 
 .. code-block::
 
@@ -143,7 +190,7 @@ description database using a Dakota input string, e.g.
 	  "   no_gradients"
 	  "   no_hessians"; 
 
-The input string is then used in creating a Dakota environment:
+The input string is then used to create a Dakota environment:
 
 .. code-block::
 
@@ -168,10 +215,12 @@ The input string is then used in creating a Dakota environment:
 	// once done with changes: check database, broadcast, and construct iterators
 	env.done_modifying_db();
 
+
 Executing the environment
 -------------------------
 
-Once an evnironment is defined, we proceed with execution:
+Once an environment is defined, instantiation of Dakota objects and
+population of class data is achieved by executing the study:
 
 .. code-block::
 
@@ -182,9 +231,9 @@ Once an evnironment is defined, we proceed with execution:
 Extracting results and test assertions
 --------------------------------------
 
-Following execution, the pertinent results are extracted and used in
-testing assertions of interest. This is performed using the Teuchos
-unit testing capabilities, e.g.
+Following execution, the pertinent results are extracted and used to
+test correctness criteria. This is performed using the Boost unit test
+capabilities, e.g.
 
 .. code-block::
 
@@ -199,61 +248,26 @@ unit testing capabilities, e.g.
 	double target = 2.1224215765;
 	double max_tol = 1.e-5;
 	double rel_err = fabs((vars.continuous_variable(0) - target)/target);
-	TEST_COMPARE(rel_err,<, max_tol);
+	BOOST_CHECK(rel_err < max_tol);
 
 	// Convergence test: check that second continuous variable
 	// has reached optimal value within given tolerance
 	target = 1.7659069377;
 	max_tol = 1.e-2;
 	rel_err = fabs((vars.continuous_variable(1) - target)/target);
-	TEST_COMPARE(rel_err,<, max_tol);
+	BOOST_CHECK(rel_err < max_tol);
 
 	// Convergence test: check that the final response value
 	// has reached the corresponding minimum within given tolerance
 	target = -2.4614299775;
 	max_tol = 1.e-3;
 	rel_err = fabs((resp.function_value(0) - target)/target);
-	TEST_COMPARE(rel_err,<, max_tol);
+	BOOST_CHECK(rel_err < max_tol);
 
-Teuchos unit test macros
-------------------------
+Unit test macros
+----------------
 
-The following is a list of Teuchos unit test macros (see `Teuchos Docs
-<https://trilinos.org/docs/dev/packages/teuchos/doc/html/group__Teuchos__UnitTestAssertMacros__grp.html#ga0794ff7d415d63cb6a741ecc7829d544>`_
-for more):
-
-.. code-block::
-
-	ECHO(statement)                           // Echo the given statement before it is executed.
-	TEST_ASSERT(v1)                           // Assert the given statement is true.
-	TEST_EQUALITY_CONST(v1, v2)               // Assert the equality of v1 and constant v2.
-	TEST_EQUALITY(v1, v2)                     // Assert the equality of v1 and v2.
-	TEST_INEQUALITY_CONST(v1, v2)             // Assert the inequality of v1 and constant v2.
-	TEST_INEQUALITY(v1, v2)                   // Assert the inequality of v1 and v2.
-	TEST_FLOATING_EQUALITY(v1, v2, tol)       // Assert the relative floating-point equality of rel_error(v1,v2) <= tol.
-	TEST_ITER_EQUALITY(iter1, iter2)          // Assert that two iterators are equal.
-	TEST_ITER_INEQUALITY(iter1, iter2)        // Assert that two iterators are NOT equal.
-	TEST_ARRAY_ELE_EQUALITY(a, i, val)        // Assert that a[i] == val.
-	TEST_ARRAY_ELE_INEQUALITY(a, i, val)      // Assert that a[i] != val.
-	TEST_COMPARE(v1, comp, v2)                // Assert that v1 comp v2 (where comp = '==', '>=", "!=", etc).
-	TEST_COMPARE_ARRAYS(a1, a2)               // Assert that a1.size()==a2.size() and a[i]==b[i], i=0....
-	TEST_COMPARE_FLOATING_ARRAYS(a1, a2, tol) // Assert that a1.size()==a2.size() and rel_error(a[i],b[i]) <= tol, i=0....
-	TEST_THROW(code, ExceptType)              // Assert that the statement 'code' throws the exception 'ExceptType'
-											  // (otherwise the test fails).
-	TEST_NOTHROW(code)                        // Assert that the statement 'code' does not thrown any excpetions.
-
-Compiling with existing unit tests
-----------------------------------
-
-The source code can be compiled and run with the existing ensemble of
-unit tests by modifying the CMakeLists.txt file in the
-dakota/src/unit_test directory to include the source file containing
-the new unit tests. A line with the name of the source file containing
-the new unit tests is added to the set(dakota_teuchos_unit_tests ...)
-environment. Furthermore, Dakota must be configured and compiled with
-the DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS macro enabled. Finally, the tests
-can be executed with the command
-
-.. code-block::
-
-	ctest -R unit
+There are several unit test macros to support
+various comparisons, assertions, exceptions, etc.  See
+https://www.boost.org/doc/libs/1_69_0/libs/test/doc/html/boost_test/utf_reference/testing_tool_ref.html
+for details and exmaples.
