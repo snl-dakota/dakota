@@ -36,7 +36,7 @@ method,
 model,
 	id_model = 'NONHIER'
 	variables_pointer = 'HF_VARS'
-	surrogate model_ensemble #non_hierarchical
+	surrogate ensemble
 	  truth_model = 'HF'
 	  unordered_model_fidelities = 'LF' 'MF'
 

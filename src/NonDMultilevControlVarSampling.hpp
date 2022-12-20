@@ -17,7 +17,7 @@
 #define NOND_MULTILEV_CONTROL_VAR_SAMPLING_H
 
 #include "NonDMultilevelSampling.hpp"
-#include "NonDControlVariateSampling.hpp"
+//#include "NonDMultifidelitySampling.hpp"
 #include "DataMethod.hpp"
 
 namespace Dakota {
@@ -29,8 +29,8 @@ namespace Dakota {
     decay across model resolutions with variance reduction from a
     control variate across model fidelities. */
 
-class NonDMultilevControlVarSampling: public NonDControlVariateSampling,
-				      public NonDMultilevelSampling
+class NonDMultilevControlVarSampling: public NonDMultilevelSampling
+                                  //, public NonDMultifidelitySampling
 {
 public:
 
@@ -90,6 +90,8 @@ private:
   /// perform LF sample increment as indicated by evaluation ratios
   bool lf_increment(const RealVector& eval_ratios, size_t N_lf, Real hf_target,
 		    Real& lf_target, size_t iter, size_t lev);
+  /// parameter set definition and evaluation for LF sample increment
+  bool lf_perform_samples(size_t iter, size_t lev);
 
   /// compute the equivalent number of HF evaluations (includes any sim faults)
   Real compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
@@ -124,6 +126,11 @@ private:
 			   Real cost_ratio, size_t lev,
 			   const SizetArray& N_shared, RealMatrix& var_YHl,
 			   RealMatrix& rho_dot2_LH, RealVector& eval_ratios);
+
+  /// compute scalar variance and correlation parameters for control variates
+  void compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+			      Real sum_HH, size_t N_shared, Real& var_H,
+			      Real& rho2_LH);
 
   /// apply control variate parameters for MLMF MC to estimate raw
   /// moment contributions
@@ -180,6 +187,17 @@ private:
 			    const RealMatrix& sum_Hlm1_Hlm1,
 			    const SizetArray& N_shared, size_t lev,
 			    RealVector& beta_dot, RealVector& gamma);
+
+  /// apply scalar control variate parameter (beta) to approximate HF moment
+  void apply_mf_control(Real sum_H, Real sum_L_shared, size_t N_shared,
+			Real sum_L_refined, size_t N_refined, Real beta,
+			Real& H_raw_mom);
+  /// apply matrix control variate parameter (beta) to approximate HF moment
+  void apply_mf_control(const RealMatrix& sum_H, const RealMatrix& sum_L_shared,
+			const SizetArray& N_shared,
+			const RealMatrix& sum_L_refined,
+			const SizetArray& N_refined, size_t lev,
+			const RealVector& beta, RealVector& H_raw_mom);
 
   /// apply scalar control variate parameter (beta) to approximate HF moment
   void apply_mlmf_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll,
@@ -408,23 +426,22 @@ compute_mlmf_estimator_variance(const RealMatrix&   var_Y,
 }
 
 
-inline bool NonDMultilevControlVarSampling::
-lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
-	     Real hf_target, RealVector& lf_targets, size_t iter, size_t lev)
+inline void NonDMultilevControlVarSampling::
+compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+		       Real sum_HH, size_t N_shared, Real& var_H, Real& rho2_LH)
 {
-  RealVector hf_targets(eval_ratios.length(), false);  hf_targets = hf_target;
-  lf_allocate_samples(eval_ratios, N_lf, hf_targets, lf_targets);
+  //Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
 
-  return (numSamples) ? lf_perform_samples(iter, lev) : false;
-}
+  // unbiased mean estimator X-bar = 1/N * sum
+  Real mu_L = sum_L / N_shared, mu_H = sum_H / N_shared;
+  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
+  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
+  Real var_L = (sum_LL - mu_L * sum_L),// / (Real)(N_shared - 1),
+      cov_LH = (sum_LH - mu_L * sum_H);// / (Real)(N_shared - 1);
+  var_H      = (sum_HH - mu_H * sum_H);// / (Real)(N_shared - 1);
 
-
-inline bool NonDMultilevControlVarSampling::
-lf_increment(const RealVector& eval_ratios, size_t N_lf, Real hf_target,
-	     Real& lf_target, size_t iter, size_t lev)
-{
-  lf_allocate_samples(eval_ratios, N_lf, hf_target, lf_target);
-  return (numSamples) ? lf_perform_samples(iter, lev) : false;
+  rho2_LH = cov_LH / var_L * cov_LH / var_H; // bessel corrs would cancel
+  var_H  /= (Real)(N_shared - 1); // now apply denom portion of bessel
 }
 
 
@@ -451,6 +468,55 @@ compute_mlmf_control(const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
 			 sum_Hl_Hl(qoi,lev), sum_Hl_Hlm1(qoi,lev),
 			 sum_Hlm1_Hlm1(qoi,lev), N_shared[qoi], var_YHl,
 			 rho_dot2_LH, beta_dot[qoi], gamma[qoi]);
+}
+
+
+inline void NonDMultilevControlVarSampling::
+apply_mf_control(Real sum_H, Real sum_L_shared, size_t N_shared,
+		 Real sum_L_refined, size_t N_refined, Real beta,
+		 Real& H_raw_mom)
+{
+  // apply control for HF uncentered raw moment estimates:
+  H_raw_mom = sum_H / N_shared                    // mu_H from shared samples
+            - beta * (sum_L_shared  / N_shared -  // mu_L from shared samples
+		      sum_L_refined / N_refined); // refined_mu_L incl increment
+}
+
+
+inline void NonDMultilevControlVarSampling::
+apply_mf_control(const RealMatrix& sum_H,    const RealMatrix& sum_L_shared,
+		 const SizetArray& N_shared, const RealMatrix& sum_L_refined,
+		 const SizetArray& N_refined, size_t lev,
+		 const RealVector& beta, RealVector& H_raw_mom)
+{
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    Cout << "   QoI " << qoi+1 << ": control variate beta = "
+	 << std::setw(9) << beta[qoi] << '\n';
+    apply_mf_control(sum_H(qoi,lev), sum_L_shared(qoi,lev), N_shared[qoi],
+		     sum_L_refined(qoi,lev), N_refined[qoi], beta[qoi],
+		     H_raw_mom[qoi]);
+  }
+  if (numFunctions > 1) Cout << '\n';
+}
+
+
+inline void NonDMultilevControlVarSampling::
+apply_mlmf_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
+		   size_t N_shared,  Real sum_Ll_refined,
+		   Real sum_Llm1_refined, size_t N_refined, Real beta_dot,
+		   Real gamma, Real& H_raw_mom)
+{
+  // updated LF expectations following final sample increment:
+  Real mu_Hl = sum_Hl / N_shared,  mu_Hlm1 = sum_Hlm1 / N_shared,
+       mu_Ll = sum_Ll / N_shared,  mu_Llm1 = sum_Llm1 / N_shared;
+  Real refined_mu_Ll   =   sum_Ll_refined / N_refined;
+  Real refined_mu_Llm1 = sum_Llm1_refined / N_refined;
+
+  // apply control for HF uncentered raw moment estimates:
+  Real mu_YH            = mu_Hl - mu_Hlm1;
+  Real mu_YLdot         = gamma *         mu_Ll -         mu_Llm1;
+  Real refined_mu_YLdot = gamma * refined_mu_Ll - refined_mu_Llm1;
+  H_raw_mom             = mu_YH - beta_dot * (mu_YLdot - refined_mu_YLdot);
 }
 
 

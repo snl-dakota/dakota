@@ -127,7 +127,8 @@ chain, kernel, and proposal themselves.
 
 #include <boost/property_tree/ptree.hpp>
 
-#include <Teuchos_UnitTestHarness.hpp>
+#define BOOST_TEST_MODULE dakota_muq_mcmc
+#include <boost/test/included/unit_test.hpp>
 
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;
@@ -135,7 +136,7 @@ using namespace muq::SamplingAlgorithms;
 using namespace muq::Utilities;
 
 
-TEUCHOS_UNIT_TEST(muq, basic1)
+BOOST_AUTO_TEST_CASE(test_muq_basic1)
 {
   /***
   ### 1. Define the target density and set up sampling problem
@@ -248,6 +249,6 @@ At the base level, we specify the number of steps in the chain with the entry "N
   std::cout << "\nSample Third Moment = \n" << sampMom3 << std::endl << std::endl;
 
   // Test that we make it here - RWH
-  TEST_ASSERT( true );
+  BOOST_CHECK( true );
 }
 

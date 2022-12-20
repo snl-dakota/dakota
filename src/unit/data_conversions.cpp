@@ -13,7 +13,8 @@
 
 #include <string>
 
-#include <Teuchos_UnitTestHarness.hpp> 
+#define BOOST_TEST_MODULE dakota_data_conversions
+#include <boost/test/included/unit_test.hpp>
 
 using namespace Dakota;
 
@@ -39,7 +40,7 @@ namespace {
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(data_conversion, rva2rm)
+BOOST_AUTO_TEST_CASE(test_data_conversion_rva2rm)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -51,18 +52,18 @@ TEUCHOS_UNIT_TEST(data_conversion, rva2rm)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  TEST_EQUALITY( NROWS, test_rm.numRows() );
-  TEST_EQUALITY( NCOLS, test_rm.numCols() );
+  BOOST_CHECK( NROWS == test_rm.numRows() );
+  BOOST_CHECK( NCOLS == test_rm.numCols() );
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<NROWS; ++i )
     for( int j=0; j<NCOLS; ++j )
-    TEST_FLOATING_EQUALITY( test_rva[i][j], test_rm(i,j), 1.e-14 );
+    BOOST_CHECK_CLOSE( test_rva[i][j], test_rm(i,j), 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(data_conversion, mat2mat)
+BOOST_AUTO_TEST_CASE(test_data_conversion_mat2mat)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -75,23 +76,23 @@ TEUCHOS_UNIT_TEST(data_conversion, mat2mat)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  TEST_EQUALITY( NROWS, dest_mat.numRows() );
-  TEST_EQUALITY( NCOLS, dest_mat.numCols() );
+  BOOST_CHECK( NROWS == dest_mat.numRows() );
+  BOOST_CHECK( NCOLS == dest_mat.numCols() );
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<NROWS; ++i )
     for( int j=0; j<NCOLS; ++j )
-    TEST_FLOATING_EQUALITY( test_mat(i,j), dest_mat(i,j), 1.e-14 );
+    BOOST_CHECK_CLOSE( test_mat(i,j), dest_mat(i,j), 1.e-12 );
 
   // Verifiy that the copy is a deep copy
   dest_mat(1,1) *= 1.5;
   double diff = dest_mat(1,1) - test_mat(1,1);
-  TEST_FLOATING_EQUALITY( diff, 0.5*test_mat(1,1), 1.e-14 );
+  BOOST_CHECK_CLOSE( diff, 0.5*test_mat(1,1), 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(data_conversion, mat2mat_sub)
+BOOST_AUTO_TEST_CASE(test_data_conversion_mat2mat_sub)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -110,23 +111,23 @@ TEUCHOS_UNIT_TEST(data_conversion, mat2mat_sub)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  TEST_EQUALITY( 3, dest_mat.numRows() );
-  TEST_EQUALITY( 2, dest_mat.numCols() );
+  BOOST_CHECK( 3 == dest_mat.numRows() );
+  BOOST_CHECK( 2 == dest_mat.numCols() );
 
   // Verify contents of what we wrote and what we read
   for( int i=0; i<dest_mat.numRows(); ++i )
     for( int j=0; j<dest_mat.numCols(); ++j )
-    TEST_FLOATING_EQUALITY( test_mat(i+roffset,j+coffset), dest_mat(i,j), 1.e-14 );
+    BOOST_CHECK_CLOSE( test_mat(i+roffset,j+coffset), dest_mat(i,j), 1.e-12 );
 
   // Verifiy that the copy is a deep copy
   dest_mat(1,1) *= 1.5;
   double diff = dest_mat(1,1) - test_mat(1+roffset,1+coffset);
-  TEST_FLOATING_EQUALITY( diff, 0.5*test_mat(1+roffset,1+coffset), 1.e-14 );
+  BOOST_CHECK_CLOSE( diff, 0.5*test_mat(1+roffset,1+coffset), 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(data_conversion, mat2mat_sym)
+BOOST_AUTO_TEST_CASE(test_data_conversion_mat2mat_sym)
 {
   const int NROWS = 3;
   const int NCOLS = NROWS;
@@ -139,23 +140,23 @@ TEUCHOS_UNIT_TEST(data_conversion, mat2mat_sym)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  TEST_EQUALITY( NROWS, dest_mat.numRows() );
-  TEST_EQUALITY( NCOLS, dest_mat.numCols() );
+  BOOST_CHECK( NROWS == dest_mat.numRows() );
+  BOOST_CHECK( NCOLS == dest_mat.numCols() );
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<NROWS; ++i )
     for( int j=0; j<NCOLS; ++j )
-    TEST_FLOATING_EQUALITY( test_mat(i,j), dest_mat(i,j), 1.e-14 );
+    BOOST_CHECK_CLOSE( test_mat(i,j), dest_mat(i,j), 1.e-12 );
 
   // Verifiy that the copy is a deep copy
   dest_mat(1,1) *= 1.5;
   double diff = dest_mat(1,1) - test_mat(1,1);
-  TEST_FLOATING_EQUALITY( diff, 0.5*test_mat(1,1), 1.e-14 );
+  BOOST_CHECK_CLOSE( diff, 0.5*test_mat(1,1), 1.e-12 );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(data_conversion, mat_swap)
+BOOST_AUTO_TEST_CASE(test_data_conversion_mat_swap)
 {
   RealMatrix mat( 5, 5 );
   mat.random();
@@ -170,12 +171,12 @@ TEUCHOS_UNIT_TEST(data_conversion, mat_swap)
   bool op_result = ( (mat_swap == copy_mat) && (mat == copy_mat_swap) );
   //Cout << "shallow swap results -- "<< (op_result ? "successful" : "failed" )<<std::endl;
   if( !op_result )
-    TEST_ASSERT( false );
+    BOOST_CHECK( false );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(data_conversion, sym_mat_swap)
+BOOST_AUTO_TEST_CASE(test_data_conversion_sym_mat_swap)
 {
   RealSymMatrix mat( 5 );
   mat.random();
@@ -188,12 +189,12 @@ TEUCHOS_UNIT_TEST(data_conversion, sym_mat_swap)
   mat_swap.swap(mat);
   bool op_result = ( (mat_swap == copy_mat) && (mat == copy_mat_swap) );
   if( !op_result )
-    TEST_ASSERT( false );
+    BOOST_CHECK( false );
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(data_conversion, apply_matrix)
+BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -208,7 +209,7 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  TEST_EQUALITY( NROWS, v2.size() );
+  BOOST_CHECK( NROWS == v2.size() );
 
   // Verify correct values
   Real sum = 0.0;
@@ -217,7 +218,7 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix)
     sum = 0.0;
     for( int j=0; j<NCOLS; ++j )
       sum += mat(i,j);
-    TEST_FLOATING_EQUALITY( sum, v2[i], 1.e-14 );
+    BOOST_CHECK_CLOSE( sum, v2[i], 1.e-12 );
   }
 
   // Now test partial behavior
@@ -233,7 +234,7 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  TEST_EQUALITY( 2*NROWS, v4.size() );
+  BOOST_CHECK( 2*NROWS == v4.size() );
 
   // Verify correct values
   for( size_t i=0; i<v4.size(); ++i )
@@ -243,16 +244,16 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix)
       sum = 0.0;
       for( int j=0; j<NCOLS; ++j )
         sum += mat(i,j);
-      TEST_FLOATING_EQUALITY( 2.0*sum, v4[i], 1.e-14 );
+      BOOST_CHECK_CLOSE( 2.0*sum, v4[i], 1.e-12 );
     }
     else
-      TEST_FLOATING_EQUALITY( (Real)i, v4[i], 1.e-14 );
+      BOOST_CHECK_CLOSE( (Real)i, v4[i], 1.e-12 );
   }
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(data_conversion, apply_matrix_transpose)
+BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix_transpose)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -267,7 +268,7 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix_transpose)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  TEST_EQUALITY( NCOLS, v2.size() );
+  BOOST_CHECK( NCOLS == v2.size() );
 
   // Verify correct values
   Real sum = 0.0;
@@ -276,7 +277,7 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix_transpose)
     sum = 0.0;
     for( int j=0; j<NROWS; ++j )
       sum += mat(j,i);
-    TEST_FLOATING_EQUALITY( sum, v2[i], 1.e-14 );
+    BOOST_CHECK_CLOSE( sum, v2[i], 1.e-12 );
   }
 
   // Now test partial behavior
@@ -292,7 +293,7 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix_transpose)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  TEST_EQUALITY( 2*NCOLS, v4.size() );
+  BOOST_CHECK( 2*NCOLS == v4.size() );
 
   // Verify correct values
   for( size_t i=0; i<v4.size(); ++i )
@@ -302,10 +303,10 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix_transpose)
       sum = 0.0;
       for( int j=0; j<NROWS; ++j )
         sum += mat(j,i);
-      TEST_FLOATING_EQUALITY( 2.0*sum, v4[i], 1.e-14 );
+      BOOST_CHECK_CLOSE( 2.0*sum, v4[i], 1.e-12 );
     }
     else
-      TEST_FLOATING_EQUALITY( (Real)i, v4[i], 1.e-14 );
+      BOOST_CHECK_CLOSE( (Real)i, v4[i], 1.e-12 );
   }
 }
 

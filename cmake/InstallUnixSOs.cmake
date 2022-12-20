@@ -4,6 +4,19 @@
 # NOTE: This script will only work for make install from top of build tree
 # TODO: Review string quoting conventions and test with spaces in filename
 
+
+execute_process(COMMAND chrpath -v
+                OUTPUT_QUIET
+                ERROR_QUIET
+                RESULT_VARIABLE chrpath_exists_return)
+
+if(chrpath_exists_return EQUAL 0)
+  set(CHANGE_RPATH True)
+else()
+  set(CHANGE_RPATH False)
+  message(WARNING "Utility chrpath could not be run. Portability of package/install may be reduced.")
+endif()
+
 # Function to install a single Dakota dll dependency
 # (used by multiple platforms)
 function(dakota_install_dll dakota_dll)
@@ -15,6 +28,16 @@ function(dakota_install_dll dakota_dll)
 
     #    file(COPY "${dakota_dll}" DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" FILE_PERMISSIONS
     #  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE) 
+    if(CHANGE_RPATH)
+      execute_process(COMMAND
+          chrpath -r '\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../bin' ${CMAKE_INSTALL_PREFIX}/bin/${dll_filename}
+          OUTPUT_QUIET
+          RESULT_VARIABLE chrpath_return
+      )
+      if(NOT chrpath_return EQUAL 0)
+        message(WARNING "chrpath setting for ${dll_filename} failed; portability of install/package may be reduced")
+      endif()
+    endif()
   else()
     message(WARNING "Install couldn't find dynamic dependency ${dakota_dll}")
   endif()

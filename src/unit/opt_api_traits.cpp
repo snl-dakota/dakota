@@ -36,7 +36,8 @@
 #include <string>
 #include <map>
 
-#include <Teuchos_UnitTestHarness.hpp> 
+#define BOOST_TEST_MODULE dakota_opt_api_traits
+#include <boost/test/included/unit_test.hpp>
 
 
 using namespace Dakota;
@@ -98,9 +99,7 @@ namespace {
   //----------------------------------
 
   void check_variable_consistency( unsigned short methodName,
-                                   std::shared_ptr<TraitsBase> traits,
-                                   Teuchos::FancyOStream &out,
-                                   bool & success )
+                                   std::shared_ptr<TraitsBase> traits )
   {
     bool continuous_only_enum   = false;
     bool continuous_only_traits = false;
@@ -111,7 +110,7 @@ namespace {
 
     // Test Traits
     method_iter.reset( new Iterator(traits) );
-    TEST_ASSERT( method_iter->traits()->is_derived() );
+    BOOST_CHECK( method_iter->traits()->is_derived() );
 
     for( int i=0; i<2; ++i )
       for( int j=0; j<2; ++j )
@@ -120,29 +119,29 @@ namespace {
           {
             is_consistent_enums  = check_variables(methodName,            i, j, k, l, continuous_only_enum);
             is_consistent_traits = check_variables(method_iter->traits(), i, j, k, l, continuous_only_traits);
-            TEST_ASSERT( is_consistent_enums  == is_consistent_traits );
-            TEST_ASSERT( continuous_only_enum == continuous_only_traits );
+            BOOST_CHECK( is_consistent_enums  == is_consistent_traits );
+            BOOST_CHECK( continuous_only_enum == continuous_only_traits );
           }
   }
 }
 
 
-TEUCHOS_UNIT_TEST(opt_api_traits, var_consistency)
+BOOST_AUTO_TEST_CASE(test_opt_api_traits_var_consistency)
 {
   // Test various TPL Traits as they become available
 #ifdef DAKOTA_HOPS
-  check_variable_consistency( ASYNCH_PATTERN_SEARCH , std::shared_ptr<TraitsBase>(new AppsTraits())           , out, success );
+  check_variable_consistency( ASYNCH_PATTERN_SEARCH , std::shared_ptr<TraitsBase>(new AppsTraits())           );
 #endif
 #ifdef HAVE_JEGA
-  check_variable_consistency( MOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           , out, success );
-  check_variable_consistency( SOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           , out, success );
+  check_variable_consistency( MOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           );
+  check_variable_consistency( SOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           );
 #endif
-  check_variable_consistency( SURROGATE_BASED_GLOBAL, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits()), out, success );
+  check_variable_consistency( SURROGATE_BASED_GLOBAL, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits()));
 #ifdef HAVE_NOMAD
-  check_variable_consistency( MESH_ADAPTIVE_SEARCH  , std::shared_ptr<TraitsBase>(new NomadTraits())          , out, success );
+  check_variable_consistency( MESH_ADAPTIVE_SEARCH  , std::shared_ptr<TraitsBase>(new NomadTraits())          );
 #endif
 #ifdef HAVE_ACRO
-  check_variable_consistency( BRANCH_AND_BOUND      , std::shared_ptr<TraitsBase>(new PebbldTraits())         , out, success );
+  check_variable_consistency( BRANCH_AND_BOUND      , std::shared_ptr<TraitsBase>(new PebbldTraits())         );
 #endif
 }
 

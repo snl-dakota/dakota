@@ -80,7 +80,7 @@ void PecosApproximation::link_multilevel_surrogate_data()
 {
   // Manage {surr,modSurr}Data instances (activeKey and original/modified
   // approxData indices are managed in SharedPecosApproxData).
-  // > SurrogateModel::aggregate_response() uses order of HF,LF
+  // > SurrogateModel::aggregate_response() uses order of low to high fidelity
   // > ApproximationInterface::{mixed,shallow}_add() assigns aggregate response
   //   data to each approxData instance in turn.
 

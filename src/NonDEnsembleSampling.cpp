@@ -220,7 +220,11 @@ void NonDEnsembleSampling::initialize_final_statistics()
     finalStatistics = Response(SIMULATION_RESPONSE, set);
 
     StringArray stats_labels(num_final);
-    stats_labels[0] = "avg_est_var";  stats_labels[1] = "equiv_HF_cost";
+    if (maxFunctionEvals == SZ_MAX) // accuracy spec: equiv cost is objective
+      { stats_labels[0] = "equiv_HF_cost"; stats_labels[1] = "avg_est_var"; }
+    else                            // budget spec: equiv cost is constraint
+      { stats_labels[0] = "avg_est_var";   stats_labels[1] = "equiv_HF_cost"; }
+
     finalStatistics.function_labels(stats_labels);
     break;
   }
@@ -246,8 +250,14 @@ void NonDEnsembleSampling::update_final_statistics()
   */
   switch (finalStatsType) {
   case ESTIMATOR_PERFORMANCE:
-    finalStatistics.function_value(avgEstVar, 0);
-    finalStatistics.function_value(equivHFEvals + deltaEquivHF, 1);
+    if (maxFunctionEvals == SZ_MAX) { // accuracy spec: equiv cost is objective
+      finalStatistics.function_value(equivHFEvals + deltaEquivHF, 0);
+      finalStatistics.function_value(avgEstVar, 1);
+    }
+    else { // budget spec: equiv cost returned as constraint
+      finalStatistics.function_value(avgEstVar, 0);
+      finalStatistics.function_value(equivHFEvals + deltaEquivHF, 1);
+    }
     break;
   case QOI_STATISTICS: // final stats: moments + level mappings
     NonD::update_final_statistics(); break;

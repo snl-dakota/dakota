@@ -66,9 +66,9 @@ public:
   /// assign pairedKey
   void paired_key(const Pecos::ActiveKey& aggregate_key);
   /// initialize pairedKey from model forms and discretization levels
-  void paired_key(unsigned short group, unsigned short truth_form,
-		  size_t truth_level,   unsigned short approx_form,
-		  size_t approx_level,  unsigned short reduction);
+  void paired_key(unsigned short group, unsigned short approx_form,
+		  size_t approx_level,  unsigned short truth_form,
+		  size_t truth_level,   unsigned short reduction);
 
   /// perform several reset operations to restore initialized state
   void reset();
@@ -153,11 +153,11 @@ public:
 
   unsigned short data_group();
 
-  unsigned short truth_model_form();
-  size_t truth_model_level();
-
   unsigned short approx_model_form();
   size_t approx_model_level();
+
+  unsigned short truth_model_form();
+  size_t truth_model_level();
 
   const RealVector& tr_lower_bounds() const;
   Real tr_lower_bound(size_t i) const;
@@ -259,12 +259,12 @@ paired_key(const Pecos::ActiveKey& aggregate_key)
 
 
 inline void SurrBasedLevelData::
-paired_key(unsigned short group, unsigned short truth_form, size_t truth_level,
-	   unsigned short approx_form, size_t approx_level,
-	   unsigned short reduction)
+paired_key(unsigned short group, unsigned short approx_form,
+	   size_t approx_level,  unsigned short truth_form,
+	   size_t truth_level,   unsigned short reduction)
 {
-  pairedKey.form_key(group, truth_form, truth_level, approx_form, approx_level,
-		     reduction);
+  pairedKey.form_key(group, approx_form, approx_level,
+		     truth_form, truth_level, reduction);
 }
 
 
@@ -426,19 +426,19 @@ inline unsigned short SurrBasedLevelData::data_group()
 { return pairedKey.id(); } // USHRT_MAX if empty key
 
 
-inline unsigned short SurrBasedLevelData::truth_model_form()
+inline unsigned short SurrBasedLevelData::approx_model_form()
 { return pairedKey.retrieve_model_form(0); } // {d,m}_index=0
 
 
-inline size_t SurrBasedLevelData::truth_model_level()
+inline size_t SurrBasedLevelData::approx_model_level()
 { return pairedKey.retrieve_resolution_level(0); } // {d,hp}_index=0
 
 
-inline unsigned short SurrBasedLevelData::approx_model_form()
+inline unsigned short SurrBasedLevelData::truth_model_form()
 { return pairedKey.retrieve_model_form(1); } // d_index=1,m_index=0
 
 
-inline size_t SurrBasedLevelData::approx_model_level()
+inline size_t SurrBasedLevelData::truth_model_level()
 { return pairedKey.retrieve_resolution_level(1); } // d_index=1,hp_index=0
 
 

@@ -86,7 +86,7 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   //		[approx_offset = <LISTof><REAL>]
   // An outstanding question was which approximation types to support, i.e. 
   // (1) global: primary use, (2) local/multipoint: somewhat useful, and
-  // (3) hierarchical:  not supported in HierarchSurrModel and not that useful
+  // (3) hierarchical:  not supported in EnsembleSurrModel and not that useful
   // since correction is required.
   //
   // Since that time, the capability for specifying inequality constraint bounds
@@ -769,7 +769,7 @@ mixed_add(const Variables& vars, const IntResponsePair& response_pr,
   const Response&  resp = response_pr.second;
   const ShortArray& asv = resp.active_set_request_vector();
   size_t i, fn_index, num_fns = functionSurfaces.size(),
-    num_asv = asv.size(), key_index;
+    num_asv = asv.size(), qoi_set, key_index;
   Pecos::SurrogateDataVars sdv; bool first_vars = true;
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
@@ -777,8 +777,11 @@ mixed_add(const Variables& vars, const IntResponsePair& response_pr,
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
     // to vector of SurrogateData
-    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
+    for (i=fn_index, qoi_set=0; i<num_asv; i+=num_fns, ++qoi_set)
       if (asv[i]) {
+	// mapping required for advanced cases, such as recursive emulation
+	qoi_set_to_key_index(qoi_set, key_index);
+
 	// rather than unrolling the response (containing all response fns)
 	// into per-response function arrays for input to fn_surf, pass the
 	// complete response along with a response function index.
@@ -803,7 +806,7 @@ mixed_add(const Real* c_vars, const IntResponsePair& response_pr, bool anchor)
   const Response&  resp = response_pr.second;
   const ShortArray& asv = resp.active_set_request_vector();
   size_t i, fn_index, num_fns = functionSurfaces.size(),
-    num_asv = asv.size(), key_index;
+    num_asv = asv.size(), qoi_set, key_index;
   Pecos::SurrogateDataVars sdv; bool first_vars = true;
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
@@ -811,8 +814,12 @@ mixed_add(const Real* c_vars, const IntResponsePair& response_pr, bool anchor)
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
     // to vector of SurrogateData
-    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
+    for (i=fn_index, qoi_set=0; i<num_asv; i+=num_fns, ++qoi_set)
+
       if (asv[i]) {
+	// mapping required for advanced cases, such as recursive emulation
+	qoi_set_to_key_index(qoi_set, key_index);
+
 	// rather than unrolling the response (containing all response fns)
 	// into per-response function arrays for input to fn_surf, pass the
 	// complete response along with a response function index.
@@ -838,16 +845,19 @@ shallow_add(const Variables& vars, const IntResponsePair& response_pr,
   const Response&  resp = response_pr.second;
   const ShortArray& asv = resp.active_set_request_vector();
   size_t i, fn_index, num_fns = functionSurfaces.size(),
-    num_asv = asv.size(), key_index;
+    num_asv = asv.size(), qoi_set, key_index;
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
     Approximation& fn_surf = functionSurfaces[fn_index];
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
     // to vector of SurrogateData
-    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
-      if (asv[i]) // vars,resp copy = shallow,shallow
+    for (i=fn_index, qoi_set=0; i<num_asv; i+=num_fns, ++qoi_set)
+      if (asv[i]) { // vars,resp copy = shallow,shallow
+	// mapping required for advanced cases, such as recursive emulation
+	qoi_set_to_key_index(qoi_set, key_index);
 	fn_surf.add(vars, false, resp, i, false, anchor, eval_id, key_index);
+      }
   }
 }
 
@@ -857,14 +867,15 @@ update_pop_counts(const IntResponsePair& response_pr)
 {
   // update pop counts for data in response_pr
   const ShortArray& asv = response_pr.second.active_set_request_vector();
-  size_t i, key_index, fn_index, num_fns = functionSurfaces.size(),
+  size_t i, qoi_set, key_index, fn_index, num_fns = functionSurfaces.size(),
     num_asv = asv.size(), count;
   StSIter fn_it;
   for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
     fn_index = *fn_it;
     // asv may be larger than num_fns due to response aggregation modes
-    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index) {
+    for (i=fn_index, qoi_set=0; i<num_asv; i+=num_fns, ++qoi_set) {
       count = (asv[i]) ? 1 : 0; // either one or no pts appended
+      qoi_set_to_key_index(qoi_set, key_index);
       functionSurfaces[fn_index].pop_count(count, key_index);
     }
   }
@@ -874,15 +885,17 @@ update_pop_counts(const IntResponsePair& response_pr)
 void ApproximationInterface::update_pop_counts(const IntResponseMap& resp_map)
 {
   StSIter fn_it; IntRespMCIter r_it = resp_map.begin();
-  size_t i, count, key_index, fn_index, num_fns = functionSurfaces.size(),
+  size_t i, count, qoi_set, key_index, fn_index,
+    num_fns = functionSurfaces.size(),
     num_asv = r_it->second.active_set_request_vector().size();
   for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
     fn_index = *fn_it;
     // asv may be larger than num_fns due to response aggregation modes
-    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index) {
+    for (i=fn_index, qoi_set=0; i<num_asv; i+=num_fns, ++qoi_set) {
       for (r_it=resp_map.begin(), count=0; r_it!=resp_map.end(); ++r_it)
 	if (r_it->second.active_set_request_vector()[i])
 	  ++count;
+      qoi_set_to_key_index(qoi_set, key_index);
       functionSurfaces[fn_index].pop_count(count, key_index);
     }
   }

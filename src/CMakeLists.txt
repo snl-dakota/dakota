@@ -428,10 +428,9 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ProbabilityTransformModel.cpp
   ScalingModel.cpp ScalingOptions.cpp WeightingModel.cpp SurrogateModel.cpp
-  DataFitSurrModel.cpp EnsembleSurrModel.cpp HierarchSurrModel.cpp
-  NonHierarchSurrModel.cpp RandomFieldModel.cpp SubspaceModel.cpp
-  ActiveSubspaceModel.cpp AdaptedBasisModel.cpp AdapterModel.cpp
-  MinimizerAdapterModel.cpp DiscrepancyCorrection.cpp)
+  DataFitSurrModel.cpp EnsembleSurrModel.cpp RandomFieldModel.cpp
+  SubspaceModel.cpp ActiveSubspaceModel.cpp AdaptedBasisModel.cpp
+  AdapterModel.cpp MinimizerAdapterModel.cpp DiscrepancyCorrection.cpp)
 
 ## Constraint sources.
 set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
@@ -508,9 +507,8 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDSurrogateExpansion.cpp NonDCalibration.cpp NonDBayesCalibration.cpp
     NonDWASABIBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
     NonDEnsembleSampling.cpp NonDHierarchSampling.cpp NonDMultilevelSampling.cpp
-    NonDControlVariateSampling.cpp NonDMultilevControlVarSampling.cpp
-    NonDNonHierarchSampling.cpp NonDACVSampling.cpp
-    NonDMultifidelitySampling.cpp NonDAdaptImpSampling.cpp
+    NonDMultilevControlVarSampling.cpp NonDNonHierarchSampling.cpp
+    NonDACVSampling.cpp NonDMultifidelitySampling.cpp NonDAdaptImpSampling.cpp
     NonDGPImpSampling.cpp NonDPOFDarts.cpp NonDRKDDarts.cpp
     DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaTraitsBase.cpp
     DakotaLeastSq.cpp NonlinearCGOptimizer.cpp 
@@ -1089,7 +1087,7 @@ if (DAKOTA_API_JAVA)
 endif()
 
 if(DAKOTA_ENABLE_TESTS AND BUILD_TESTING)
-  add_subdirectory(unit_test)
+  add_subdirectory(unit)
 endif()
 
 

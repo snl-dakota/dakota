@@ -78,7 +78,7 @@ void DataFitSurrBasedLocalMinimizer::
 initialize_trust_region_data(const String& approx_type, short corr_order)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
-  if (iteratedModel.surrogate_type() == "hierarchical") {
+  if (iteratedModel.surrogate_type() == "ensemble") {
     Cerr << "Error: DataFitSurrBasedLocalMinimizer requires a local, multipoint"
 	 << ", or global surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -399,6 +399,7 @@ void DataFitSurrBasedLocalMinimizer::minimize()
   // *******************************************************
   // Run iterator on approximation (with correction applied)
   // *******************************************************
+  iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
   SurrBasedLocalMinimizer::minimize();
 
   // ****************************************

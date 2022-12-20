@@ -17,7 +17,7 @@ Test Number 1 succeeded
                       1.0700000000000001e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      9.5299437056578886e-04
+                      9.5418593074065325e-04
 <<<<< Best constraint values   =
                       5.0190332370354247e+02
 <<<<< Best evaluation ID: 27
@@ -135,7 +135,7 @@ Test Number 11 succeeded
 <<<<< Best objective function  =
                       9.7622965506764380e-04
 <<<<< Best constraint values   =
-                      5.0032347224117035e+02
+                      5.0032347224117029e+02
 <<<<< Best evaluation ID: 30
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 1314518 total (1314518 new, 0 duplicate)

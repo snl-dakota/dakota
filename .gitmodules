@@ -22,4 +22,4 @@
 	branch = devel
 [submodule "dakota-examples"]
 	path = dakota-examples
-	url = git@gitlab-ex.sandia.gov:dakota/dakota-examples
+	url = ../dakota-examples

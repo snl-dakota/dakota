@@ -18,13 +18,14 @@
 
 #include <string>
 
-#include <Teuchos_UnitTestHarness.hpp>
+#define BOOST_TEST_MODULE dakota_stat_utils
+#include <boost/test/included/unit_test.hpp>
 
 using namespace Dakota;
 
 //------------------------------------
 
-TEUCHOS_UNIT_TEST(stat_utils, system_seed)
+BOOST_AUTO_TEST_CASE(test_stat_utils_system_seed)
 {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -38,12 +39,12 @@ TEUCHOS_UNIT_TEST(stat_utils, system_seed)
       ++num_out_of_bounds_seeds;
     std::this_thread::sleep_for(std::chrono::microseconds(dis(gen)));
   }
-  TEST_EQUALITY(num_out_of_bounds_seeds, 0);
+  BOOST_CHECK(num_out_of_bounds_seeds == 0);
 }
 
 //------------------------------------
 
-TEUCHOS_UNIT_TEST(stat_utils, kl_divergence)
+BOOST_AUTO_TEST_CASE(test_stat_utils_kl_divergence)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -59,12 +60,12 @@ TEUCHOS_UNIT_TEST(stat_utils, kl_divergence)
   Real kl_est = NonDBayesCalibration::knn_kl_div(dist1, dist2, 1);
 
   Real gold_kl = 0.02459600677;
-  TEST_FLOATING_EQUALITY(kl_est, gold_kl, 1.e-5);
+  BOOST_CHECK_CLOSE(kl_est, gold_kl, 1.e-3);
 }
 
 //------------------------------------
 
-TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg1)
+BOOST_AUTO_TEST_CASE(test_stat_utils_mutual_info_ksg1)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -80,12 +81,12 @@ TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg1)
   Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1, 0);
 
   Real gold_mi = -0.02189544513;
-  TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 1.e-5);
+  BOOST_CHECK_CLOSE(mutualinfo_est, gold_mi, 1.e-3);
 }
 
 //------------------------------------
 
-TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg2)
+BOOST_AUTO_TEST_CASE(test_stat_utils_mutual_info_ksg2)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -101,12 +102,12 @@ TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg2)
   Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1, 1);
 
   Real gold_mi = -0.0561375052;
-  TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 5.e-3);
+  BOOST_CHECK_CLOSE(mutualinfo_est, gold_mi, 5.e-1);
 }
 
 //------------------------------------
 
-TEUCHOS_UNIT_TEST(stat_utils, batch_means_mean)
+BOOST_AUTO_TEST_CASE(test_stat_utils_batch_means_mean)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -122,13 +123,13 @@ TEUCHOS_UNIT_TEST(stat_utils, batch_means_mean)
 
   Real gold_lower_int = -6.3120595090e-02;
   Real gold_upper_int = 8.1516649910e-02;
-  TEST_FLOATING_EQUALITY(interval_matrix[0][0], gold_lower_int, 1.e-5);
-  TEST_FLOATING_EQUALITY(interval_matrix[0][1], gold_upper_int, 1.e-5);
+  BOOST_CHECK_CLOSE(interval_matrix[0][0], gold_lower_int, 1.e-3);
+  BOOST_CHECK_CLOSE(interval_matrix[0][1], gold_upper_int, 1.e-3);
 }
 
 //------------------------------------
 
-TEUCHOS_UNIT_TEST(stat_utils, batch_means_variance)
+BOOST_AUTO_TEST_CASE(test_stat_utils_batch_means_variance)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -144,13 +145,13 @@ TEUCHOS_UNIT_TEST(stat_utils, batch_means_variance)
 
   Real gold_lower_int = 9.1432956019e-01;
   Real gold_upper_int = 1.0688302101e+00;
-  TEST_FLOATING_EQUALITY(interval_matrix[0][0], gold_lower_int, 1.e-5);
-  TEST_FLOATING_EQUALITY(interval_matrix[0][1], gold_upper_int, 1.e-5);
+  BOOST_CHECK_CLOSE(interval_matrix[0][0], gold_lower_int, 1.e-3);
+  BOOST_CHECK_CLOSE(interval_matrix[0][1], gold_upper_int, 1.e-3);
 }
 
 //------------------------------------
 
-TEUCHOS_UNIT_TEST(stat_utils, batch_means_percentile)
+BOOST_AUTO_TEST_CASE(test_stat_utils_batch_means_percentile)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -167,8 +168,8 @@ TEUCHOS_UNIT_TEST(stat_utils, batch_means_percentile)
 
   Real gold_lower_int = 1.5047654078e+00;
   Real gold_upper_int = 1.7926345922e+00;
-  TEST_FLOATING_EQUALITY(interval_matrix[0][0], gold_lower_int, 1.e-5);
-  TEST_FLOATING_EQUALITY(interval_matrix[0][1], gold_upper_int, 1.e-5);
+  BOOST_CHECK_CLOSE(interval_matrix[0][0], gold_lower_int, 1.e-3);
+  BOOST_CHECK_CLOSE(interval_matrix[0][1], gold_upper_int, 1.e-3);
 }
 
 //------------------------------------

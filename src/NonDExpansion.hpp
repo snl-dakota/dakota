@@ -97,12 +97,6 @@ public:
   virtual void append_expansion(const RealMatrix& samples,
 				const IntResponseMap& resp_map);
 
-  /// verify supported and define default discrepancy emulation mode
-  virtual void assign_discrepancy_mode();
-  /// define the surrogate response mode for a hierarchical model in 
-  /// multilevel/multifidelity expansions
-  virtual void assign_hierarchical_response_mode();
-
   virtual void infer_pilot_sample(/*Real ratio, */size_t num_steps,
 				  SizetArray& delta_N_l);
 
@@ -198,6 +192,12 @@ protected:
   //
   //- Heading: Member functions
   //
+
+  /// verify supported and define default correction / emulation modes
+  void assign_modes();
+  /// define the surrogate response mode for an ensemble model in 
+  /// multilevel/multifidelity expansions
+  void assign_surrogate_response_mode();
 
   /// helper for initializing a numerical integration grid
   void initialize_u_space_grid();
@@ -544,11 +544,6 @@ private:
   /// initialize data based on variable counts
   void initialize_counts();
 
-  /// set response mode to AGGREGATED_MODELS and recur response size updates
-  void aggregated_models_mode();
-  /// set response mode to BYPASS_SURROGATE and recur response size updates
-  void bypass_surrogate_mode();
-
   /// generate a set of reference expansions across a model hierarchy
   void multifidelity_reference_expansion();
   /// separately refine each of the multifidelity reference expansions
@@ -699,30 +694,6 @@ inline const Model& NonDExpansion::algorithm_space_model() const
 
 inline size_t NonDExpansion::collocation_points() const
 { return 0; }
-
-
-inline void NonDExpansion::aggregated_models_mode()
-{
-  // update iteratedModel / uSpaceModel in separate calls rather than using
-  // uSpaceModel.surrogate_response_mode(mode) since DFSurrModel must pass
-  // mode along to iteratedModel (a HierarchSurrModel) without absorbing it
-  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
-    uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
-  }
-}
-
-
-inline void NonDExpansion::bypass_surrogate_mode()
-{
-  // update iteratedModel / uSpaceModel in separate calls rather than using
-  // uSpaceModel.surrogate_response_mode(mode) since DFSurrModel must pass
-  // mode along to iteratedModel (a HierarchSurrModel) without absorbing it
-  if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // single level
-    uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
-  }
-}
 
 
 inline Real NonDExpansion::sequence_cost(size_t step, const RealVector& cost)

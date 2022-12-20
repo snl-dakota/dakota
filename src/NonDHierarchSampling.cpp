@@ -35,16 +35,16 @@ NonDHierarchSampling::
 NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   NonDEnsembleSampling(problem_db, model)
 {
-  // ensure iteratedModel is a hierarchical surrogate model and set initial
+  // ensure iteratedModel is an ensemble surrogate model and set initial
   // response mode (for set_communicators() which precedes core_run()).
-  // Note: even though the hierarchy may be multilevel | multifidelity | both,
-  // we require a hierarchical model to manage aggregations, reductions, etc.
+  // Note: even though hierarchical sampling might involve a single model form,
+  // we require an ensemble model to manage aggregations, reductions, etc.
   // (i.e. a SimulationModel with resolution hyper-parameters is insufficient).
   bool err_flag = false;
-  if (iteratedModel.surrogate_type() == "hierarchical")
-    aggregated_models_mode();
+  if (iteratedModel.surrogate_type() == "ensemble")
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);
   else {
-    Cerr << "Error: Hierarchical sampling requires a hierarchical surrogate "
+    Cerr << "Error: Hierarchical sampling requires an ensemble surrogate "
 	 << "model specification." << std::endl;
     err_flag = true;
   }
@@ -84,44 +84,44 @@ accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
   // for ML and MLCV, accumulation can span two calls --> init outside
 
   const Pecos::ActiveKey& key = iteratedModel.active_model_key();
-  unsigned short hf_form = key.retrieve_model_form(0),
-    lf_form = (key.data_size() > 1) ? key.retrieve_model_form(1) : USHRT_MAX;
-  size_t hf_form_index = (hf_form == USHRT_MAX) ? 0 : (size_t)hf_form;
+  unsigned short form1 = key.retrieve_model_form(0);
+  size_t form1_index = (form1 == USHRT_MAX) ? 0 : (size_t)form1;
   // costMetadataIndices follows ordered models
-  const SizetSizetPair& hf_cost_mdi = costMetadataIndices[hf_form_index];
-  size_t hf_md_index = hf_cost_mdi.first, hf_md_len = hf_cost_mdi.second,
-    prev_step = (step) ? step - 1 : SZ_MAX, lf_md_index;
-  if (prev_step != SZ_MAX) {
-    size_t lf_form_index = (lf_form == USHRT_MAX) ? 0 : (size_t)lf_form;
-    lf_md_index = costMetadataIndices[lf_form_index].first;
+  const SizetSizetPair& cost1_mdi = costMetadataIndices[form1_index];
+  size_t md1_index = cost1_mdi.first, md1_len = cost1_mdi.second,
+    md2_index, step1, step2;
+  if (step) {
+    unsigned short form2 = key.retrieve_model_form(1);
+    size_t form2_index = (form2 == USHRT_MAX) ? 0 : (size_t)form2;
+    md2_index = costMetadataIndices[form2_index].first;
   }
 
-  using std::isfinite;
-  Real cost;
+  using std::isfinite;  Real cost1, cost2;  IntRespMCIter r_cit;
   // uses one set of allResponses with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
-  IntRespMCIter r_cit;
   for (r_cit=allResponses.begin(); r_cit!=allResponses.end(); ++r_cit) {
     const std::vector<RespMetadataT>& md = r_cit->second.metadata();//aggregated
 
-    // response metadata is paired {HF,LF} as for fn data
-    cost = md[hf_md_index]; // offset by metadata index
-    if (isfinite(cost)) {
-      accum_cost[step] += cost;
-      ++num_cost[step];
+    if (step) { step1 = step - 1; step2 = step; }
+    else        step1 = step;
+
+    cost1 = md[md1_index]; // offset by metadata index
+    if (isfinite(cost1)) {
+      accum_cost[step1] += cost1;
+      ++num_cost[step1];
       if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "Metadata:\n" << md << "HF cost: accum_cost = "
-	     << accum_cost[step] << " num_cost = " << num_cost[step]<<std::endl;
+	Cout << "Metadata:\n" << md << "Model key1 cost: accum_cost = "
+	     << accum_cost[step1] << " num_cost = "<<num_cost[step1]<<std::endl;
     }
 
-    if (prev_step != SZ_MAX) {
-      cost = md[hf_md_len + lf_md_index]; // offset by metadata index
-      if (isfinite(cost)) {
-	accum_cost[prev_step] += cost;
-	++num_cost[prev_step];
+    if (step) {
+      cost2 = md[md1_len + md2_index]; // offset by metadata index
+      if (isfinite(cost2)) {
+	accum_cost[step2] += cost2;
+	++num_cost[step2];
 	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "LF cost: accum_cost = " << accum_cost[prev_step]
-	       << " num_cost = " << num_cost[prev_step] << std::endl;
+	  Cout << "Model key2 cost: accum_cost = " << accum_cost[step2]
+	       << " num_cost = " << num_cost[step2] << std::endl;
       }
     }
   }

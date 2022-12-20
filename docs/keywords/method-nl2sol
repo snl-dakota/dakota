@@ -38,10 +38,10 @@ If Dakota was built with HDF5 support and run with the
 writes the following results to HDF5:
 
 
-- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
-- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
-- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
-- :ref:`hdf5_results-lsq_confidence_intervals<hdf5_results-lsq_confidence_intervals>` (when :ref:`responses-calibration_terms-calibration_data-num_experiments<responses-calibration_terms-calibration_data-num_experiments>` equals 1)
+- :ref:`hdf5_results-best_params`
+- :ref:`hdf5_results-best_constraints`
+- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-lsq_confidence_intervals` (when :ref:`responses-calibration_terms-calibration_data-num_experiments<responses-calibration_terms-calibration_data-num_experiments>` equals 1)
 Topics::
 nonlinear_least_squares
 Examples::

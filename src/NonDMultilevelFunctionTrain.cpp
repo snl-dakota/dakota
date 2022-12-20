@@ -38,8 +38,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
 {
   randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
 
-  assign_discrepancy_mode();
-  assign_hierarchical_response_mode();
+  assign_modes();
 
   // ----------------
   // Resolve settings
@@ -139,8 +138,7 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 {
   randomSeedSeqSpec = seed_seq;
 
-  assign_discrepancy_mode();
-  assign_hierarchical_response_mode();
+  assign_modes();
 
   // ----------------
   // Resolve settings
@@ -254,6 +252,9 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
   uSpaceModel.shared_approximation().construct_basis(u_dist);
+
+  // emulation mode needed for ApproximationInterface::qoi_set_to_key_index()
+  uSpaceModel.discrepancy_emulation_mode(multilevDiscrepEmulation);
 }
 
 

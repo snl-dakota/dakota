@@ -157,6 +157,21 @@
 	     <keyword  id="use_derivatives3" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only" />
 	     '>
 
+    <!ENTITY surrogate_correction '
+	     <keyword  id="correction" name="correction" code="{0}" label="Surrogate Correction Approach"  minOccurs="0" default="no surrogate correction" >
+                  <oneOf label="Correction Order">
+                    <keyword  id="zeroth_order" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="Zeroth Order"   />
+                    <keyword  id="first_order" name="first_order" code="{N_mom(order,approxCorrectionOrder_1)}" label="First Order"   />
+                    <keyword  id="second_order" name="second_order" code="{N_mom(order,approxCorrectionOrder_2)}" label="Second Order"   />
+                  </oneOf>
+                  <oneOf label="Correction Type">
+                    <keyword  id="additive" name="additive" code="{N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}" label="Additive"   />
+                    <keyword  id="multiplicative" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="Multiplicative"   />
+                    <keyword  id="combined" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="Combined"   />
+                  </oneOf>
+		</keyword>
+	     '>
+ 
     <!ENTITY method_export_approx_points_file '
 	     <keyword  id="export_approx_points_file5" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="export_approx_points_file"  minOccurs="0" default="no point export to a file" >
 	       <alias name="export_points_file"/>
@@ -4276,20 +4291,9 @@
 		  </oneOf>
 		</optional>
               </keyword>
-          <keyword  id="use_derivatives8" name="use_derivatives" code="{N_mom(true,modelUseDerivsFlag)}" label="Gradient Enhancement"  minOccurs="0" default="use function values only" complexity="1"/>
-          <keyword  id="correction" name="correction" code="{0}" label="Surrogate Correction Approach"  minOccurs="0" default="no surrogate correction" complexity="1">
-            <oneOf label="Correction Order">
-              <keyword  id="zeroth_order" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="Zeroth Order"   />
-              <keyword  id="first_order1" name="first_order" code="{N_mom(order,approxCorrectionOrder_1)}" label="First Order"   />
-              <keyword  id="second_order1" name="second_order" code="{N_mom(order,approxCorrectionOrder_2)}" label="Second Order"   />
-            </oneOf>
-            <oneOf label="Correction Type">
-              <keyword  id="additive" name="additive" code="{N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}" label="Additive"   />
-              <keyword  id="multiplicative" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="Multiplicative"   />
-              <keyword  id="combined" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="Combined"   />
-                </oneOf>
-              </keyword>
-              <keyword  id="metrics" name="metrics" code="{N_mom(strL,diagMetrics)}" label="Compute Surrogate Diagnostics"  minOccurs="0" default="No diagnostics" >
+          <keyword  id="use_derivatives8" name="use_derivatives" code="{N_mom(true,modelUseDerivsFlag)}" label="Gradient Enhancement"  minOccurs="0" default="use function values only" complexity="1" />
+          &surrogate_correction;
+             <keyword  id="metrics" name="metrics" code="{N_mom(strL,diagMetrics)}" label="Compute Surrogate Diagnostics"  minOccurs="0" default="No diagnostics" >
                 <alias name="diagnostics"/>
                 <param type="STRINGLIST" />
                 <keyword  id="cross_validation4" name="cross_validation" code="{N_mom(true,crossValidateFlag)}" label="Perform Cross Validation"  minOccurs="0" default="No cross validation" >
@@ -4340,42 +4344,32 @@
             </keyword>
             <keyword  id="local" name="local" code="{N_mom(lit,surrogateType_local_taylor)}" label="Local Approximation"  complexity="1">
               <keyword  id="taylor_series" name="taylor_series" code="{0}" label="Taylor Series Local Approximation "   />
-	        <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"  >
-                  <alias name="actual_model_pointer"/>
-                  <param type="STRING" in_taglist="model" />
+	      <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"  >
+                <alias name="actual_model_pointer"/>
+                <param type="STRING" in_taglist="model" />
+	      </keyword>
+            </keyword>
+            <keyword  id="ensemble" name="ensemble" code="{N_mom(lit,surrogateType_ensemble)}" label="Ensemble Model Approximation"  >
+	      <oneOf label="Ensemble model specification" >
+		<!-- Previous "hierarchical" spec: -->
+		<keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (Ordered by Fidelity)"   >
+                  <alias name="model_fidelity_sequence"/>
+                  <param type="STRINGLIST" in_taglist="model" />
+		  &surrogate_correction;
 		</keyword>
-              </keyword>
-            <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical Approximation"  >
-              <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (Ordered by Fidelity)"   >
-                <alias name="model_fidelity_sequence"/>
-                <param type="STRINGLIST" in_taglist="model" />
-              </keyword>
-              <keyword  id="correction1" name="correction" code="{0}" label="Surrogate Correction Approach"  minOccurs="0" default="no surrogate correction" >
-                <oneOf label="Correction Order">
-                  <keyword  id="zeroth_order1" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="Zeroth Order"   />
-                  <keyword  id="first_order2" name="first_order" code="{N_mom(order,approxCorrectionOrder_1)}" label="First Order"   />
-                  <keyword  id="second_order2" name="second_order" code="{N_mom(order,approxCorrectionOrder_2)}" label="Second Order"   />
-                </oneOf>
-                <oneOf label="Correction Type">
-                  <keyword  id="additive1" name="additive" code="{N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}" label="Additive"   />
-                  <keyword  id="multiplicative1" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="Multiplicative"   />
-                  <keyword  id="combined1" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="Combined"   />
-                </oneOf>
-              </keyword>
-            </keyword>
-            <keyword  id="non_hierarchical" name="non_hierarchical" code="{N_mom(lit,surrogateType_non_hierarchical)}" label="Nonhierarchical Approximation"  >
-	      <alias name="model_ensemble"/>
-              <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"   >
-		<alias name="actual_model_pointer"/>
-            	<param type="STRING" in_taglist="model" />
-              </keyword>
-              <keyword  id="unordered_model_fidelities" name="unordered_model_fidelities" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (unordered peer models)"  minOccurs="0"  >
-                <alias name="approximation_models"/>
-                <param type="STRINGLIST" in_taglist="model" />
-              </keyword>
-            </keyword>
-          </oneOf>
-        </keyword>
+		<!-- Previous "non_hierarchical" spec: -->
+		<keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"   >
+		  <alias name="actual_model_pointer"/>
+		  <param type="STRING" in_taglist="model" />
+		  <keyword  id="approximation_models" name="approximation_models" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (set of approximation models)"  minOccurs="0"  >
+                    <alias name="unordered_model_fidelities"/>
+                    <param type="STRINGLIST" in_taglist="model" />
+		  </keyword>
+		</keyword>
+              </oneOf>
+	    </keyword>
+            </oneOf>
+          </keyword>
         <keyword  id="nested2" name="nested" code="{N_mom(lit,modelType_nested)}" label="Nested"  complexity="1">
           <keyword  id="optional_interface_pointer" name="optional_interface_pointer" code="{N_mom(str,interfacePointer)}" label="Optional Interface Set Pointer"  minOccurs="0" default="no optional interface" >
             <param type="STRING" in_taglist="interface" />

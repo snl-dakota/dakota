@@ -36,7 +36,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
-  if (iteratedModel.surrogate_type() != "hierarchical") {
+  if (iteratedModel.surrogate_type() != "ensemble") {
     Cerr << "Error: HierarchSurrBasedLocalMinimizer requires a hierarchical "
          << "surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -63,11 +63,10 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     tr_data.initialize_data(ml_iter->current_variables(),
 			    ml_iter->current_response(),
 			    (++ml_iter)->current_response());
-    // assign the data group, HF form/lev, LF form/lev
-    // Mirrors HierarchSurrModel::assign_default_keys() for MF case
-    // TO DO: generalize (at least) to 1D multilevel cases;
+    // assign the data group, LF form/lev, HF form/lev
+    // TO DO: generalize (at least) from 1D model forms to 1D resolutions
     //        consider sharing iteratedModel.active_model_key()
-    tr_data.paired_key(i, i+1, SZ_MAX, i, SZ_MAX, Pecos::SINGLE_REDUCTION);
+    tr_data.paired_key(i, i, SZ_MAX, i+1, SZ_MAX, Pecos::SINGLE_REDUCTION);
   }
 
   // Simpler case than DFSBLM:
@@ -181,7 +180,7 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region(size_t tr_index_start)
     if (new_trust_region)//nested levels at/below this level must update TR bnds
       parent_update = true;
 
-    // if nested at all levels, only need to constraint from one level above:
+    // if nested at all levels, only need constraints from one level above:
     next_index = index + 1;
     if (nestedTrustRegions && next_index < num_tr) {
       if (parent_update) // update if any TR factors at/above level have changed
@@ -438,14 +437,16 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   set_active_model(minimizeIndex);
 
   // set up recursive corrections across all model forms
-  (std::static_pointer_cast<HierarchSurrModel>(iteratedModel.model_rep()))->
-    correction_mode(FULL_MODEL_FORM_CORRECTION);
+  iteratedModel.correction_mode(FULL_MODEL_FORM_CORRECTION);
 
   // Set the trust region center and bounds for approxSubProbOptimizer
   SurrBasedLevelData& tr_min = trustRegions[minimizeIndex];
   update_approx_sub_problem(tr_min);
 
   // solve the approximate optimization sub-problem:
+  unsigned short m_index = iteratedModel.active_surrogate_model_form(0);
+  iteratedModel.component_parallel_mode(m_index + 1);
+  //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
   SurrBasedLocalMinimizer::minimize();
 
   // Retrieve vars_star and responseStarCorrected[lf_model_form]
@@ -480,10 +481,12 @@ void HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
   Variables& vars_star = tr_data.vars_star(); // candidate iterate
 
   set_active_model(tr_index);
-  Model& truth_model = iteratedModel.truth_model();
+  Model& truth_model = iteratedModel.active_truth_model();
 
   Cout << "\n>>>>> Evaluating approximate solution with truth model.\n";
-  iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
+  unsigned short m_index = iteratedModel.active_truth_model_form();
+  iteratedModel.component_parallel_mode(m_index + 1);
+  //iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
   truth_model.active_variables(vars_star);
   truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE));
 
@@ -519,7 +522,7 @@ find_center_truth(size_t tr_index, bool search_db)
 {
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
   const Variables&   v_center = tr_data.vars_center();
-  Model&          truth_model = iteratedModel.truth_model();
+  Model&          truth_model = iteratedModel.active_truth_model();
 
   bool truth_found;
   if (search_db)
@@ -536,7 +539,9 @@ find_center_truth(size_t tr_index, bool search_db)
 
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
-    iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
+    unsigned short m_index = iteratedModel.active_truth_model_form();
+    iteratedModel.component_parallel_mode(m_index + 1);
+    //iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
     truth_model.active_variables(tr_data.vars_center());
     truth_model.evaluate(tr_data.active_set_center(TRUTH_RESPONSE));
 
@@ -551,7 +556,7 @@ find_star_truth(size_t tr_index, bool search_db)
 {
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
   const Variables&     v_star = tr_data.vars_star();
-  Model&          truth_model = iteratedModel.truth_model();
+  Model&          truth_model = iteratedModel.active_truth_model();
 
   bool truth_found;
   if (search_db)
@@ -568,7 +573,9 @@ find_star_truth(size_t tr_index, bool search_db)
 
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
-    iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
+    unsigned short m_index = iteratedModel.active_truth_model_form();
+    iteratedModel.component_parallel_mode(m_index + 1);
+    //iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
     truth_model.active_variables(tr_data.vars_star());
     truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE)); // vals only
 
@@ -589,7 +596,9 @@ void HierarchSurrBasedLocalMinimizer::find_center_approx(size_t tr_index)
 
   if (!approx_found) {
     Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
-    iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
+    unsigned short m_index = iteratedModel.active_surrogate_model_form(0);
+    iteratedModel.component_parallel_mode(m_index + 1);
+    //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
     iteratedModel.active_variables(v_center);
     iteratedModel.evaluate(tr_data.active_set_center(APPROX_RESPONSE));
@@ -610,7 +619,9 @@ void HierarchSurrBasedLocalMinimizer::find_star_approx(size_t tr_index)
 
   if (!approx_found) {
     Cout <<"\n>>>>> Evaluating approximation at candidate optimum.\n";
-    iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
+    unsigned short m_index = iteratedModel.active_surrogate_model_form(0);
+    iteratedModel.component_parallel_mode(m_index + 1);
+    //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
     iteratedModel.active_variables(v_star);
     iteratedModel.evaluate(tr_data.active_set_star(APPROX_RESPONSE));
@@ -839,8 +850,7 @@ optimize(const RealVector &x, size_t max_iter, int index)
   set_active_model(index);
 
   // set up recursive corrections across all solution levels
-  (std::static_pointer_cast<HierarchSurrModel>(iteratedModel.model_rep()))->
-    correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
+  iteratedModel.correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
 
   iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);

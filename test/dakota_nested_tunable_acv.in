@@ -58,10 +58,8 @@ model,
      	  primary_variable_mapping 'theta1' 'theta2'
 # Response mapping: inner loop returns alg perf: est_var, equiv_cost
 # Here we pull the estvar result for inner loop mapping of cost-bar -> estvar
-	  primary_response_mapping   = 1. 0.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20
-	  secondary_response_mapping = 0. 1.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20
-#	  primary_response_mapping   = 0. 1.		#s21,#s22
-#	  secondary_response_mapping = 1. 0.		#s21,#s22
+	  primary_response_mapping   = 1. 0.
+	  secondary_response_mapping = 0. 1.
 
 variables,
 	id_variables = 'TUNER_V'
@@ -80,8 +78,8 @@ responses,
 	objective_functions = 1
 	nonlinear_inequality_constraints = 1
 	nonlinear_inequality_upper_bounds = 1100.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20
-#	nonlinear_inequality_upper_bounds = 1.e-4	#s21,#s22
 	descriptors = 'avgEstVar' 'equivHFEvals'	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20
+#	nonlinear_inequality_upper_bounds = 1.e-4	#s21,#s22
 #	descriptors = 'equivHFEvals' 'avgEstVar'	#s21,#s22
 	no_gradients					#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s21,#s22
 #	numerical_gradients				#s19,#s20
@@ -120,11 +118,10 @@ model,
 	id_model = 'ENSEMBLE'
 	variables_pointer = 'HF_VARS'			#s0,#s1,#s2,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s17,#s18
 #	variables_pointer = 'ENSEMBLE_VARS'		#s15,#s16,#s19,#s20,#s21,#s22
-	surrogate hierarchical 	       	     		#s0,#s1,#s2,#s5,#s6,#s7,#s10,#s11,#s12
+	surrogate ensemble
 	  ordered_model_fidelities = 'LF2' 'LF1' 'HF'	#s0,#s5,#s10
 #	  ordered_model_fidelities = 'LF1' 'HF'		#s1,#s6,#s11
 #	  ordered_model_fidelities = 'LF2' 'HF'		#s2,#s7,#s12
-#	surrogate model_ensemble			#s3,#s4,#s8,#s9,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22
 #	  truth_model = 'HF'				#s3,#s4,#s8,#s9,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22
 #	  unordered_model_fidelities = 'LF2' 'LF1' 	#s3,#s4,#s8,#s9,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22
 

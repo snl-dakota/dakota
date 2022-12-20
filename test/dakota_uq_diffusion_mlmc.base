@@ -139,20 +139,20 @@ Sample moment statistics for each response function:
  response_fn_2  1.2894466528e-01  1.3546122586e-02  6.7533156454e-01 -5.0782922097e-01
  response_fn_3  2.5297645726e-02  6.5945128829e-03  7.8126537634e-01 -1.4129619100e-01
 Test Number 10 succeeded
-<<<<< Function evaluation summary: 13496 total (13496 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 9.4272705078e+01
+<<<<< Function evaluation summary: 3629 total (3629 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 2.4107666016e+01
 <<<<< Variance for mean estimator:
       Initial MC (   20 HF samples):  6.5592356880e-06
-     Online   MC (   91 HF samples):  1.0118732199e-06
-     Online CVMC (sample profile):    7.7400506673e-08
-     Online CVMC ratio (1 - R^2):     7.6492296816e-02
- Equivalent   MC (   94 HF samples):  9.7674573918e-07
- Equivalent CVMC ratio:               7.9243249873e-02
+     Online   MC (   20 HF samples):  6.5592356880e-06
+     Online MFMC (sample profile):    1.2575830912e-07
+     Online MFMC ratio (1 - R^2):     1.9172707782e-02
+ Equivalent   MC (   24 HF samples):  5.4416181838e-06
+ Equivalent MFMC ratio:               2.3110461791e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5340694550e-02  6.5739244510e-03  7.6662006213e-01 -2.0506278064e-01
- response_fn_2  1.2938851807e-01  1.3596764132e-02  9.3568100547e-01 -2.3324592726e-01
- response_fn_3  2.5340694550e-02  6.5739244510e-03  7.6662006204e-01 -2.0506278088e-01
+ response_fn_1  2.5408541347e-02  6.6580019582e-03  7.6456554443e-01 -1.7918795812e-01
+ response_fn_2  1.2900930892e-01  1.3200919079e-02  9.1734338387e-01  1.9339551993e-01
+ response_fn_3  2.5408541347e-02  6.6580019587e-03  7.6456554433e-01 -1.7918795882e-01
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 202941 total (202941 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 1.2556347656e+02
