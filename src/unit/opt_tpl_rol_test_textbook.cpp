@@ -10,6 +10,9 @@
 #include "opt_tpl_test.hpp"
 #include <string>
 #include <map>
+
+#include "dakota_windows.h"
+
 #define BOOST_TEST_MODULE dakota_opt_tpl_tol_textbook
 #include <boost/test/included/unit_test.hpp>
 

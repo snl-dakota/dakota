@@ -7,6 +7,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include "dakota_windows.h"
+
 #include "Teuchos_SerialDenseHelpers.hpp"
 #define BOOST_TEST_MODULE dakota_teuchos_eigen_conversion
 #include <boost/test/included/unit_test.hpp>

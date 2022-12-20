@@ -10,6 +10,8 @@
 
 #ifdef DAKOTA_HAVE_HDF5
 
+#include "dakota_windows.h"
+
 //#include <limits>
 #include <string>
 //#include <map>
