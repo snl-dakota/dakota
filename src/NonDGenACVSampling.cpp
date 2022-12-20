@@ -75,7 +75,7 @@ void NonDGenACVSampling::core_run()
 }
 
 
-/* *** Loop around core_run()?
+/* Loop around core_run()?
 void NonDGenACVSampling::generalized_acv()
 {
   for (dag_it=model_dags.begin(); dag_it!=model_dags.end(); ++dag_it) {
@@ -86,7 +86,7 @@ void NonDGenACVSampling::generalized_acv()
 */
 
 
-// *** Loop around individual ACV functions:
+// Loop around individual ACV functions:
 
 void NonDGenACVSampling::generalized_acv_online_pilot()
 {
@@ -105,6 +105,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   UShortArraySet::const_iterator dag_cit;
   for (dag_cit=model_dags.begin(); dag_cit!=model_dags.end(); ++dag_cit) {
     activeDAG = *dag_cit;
+    Cout << "Generalized ACV evaluating DAG:\n" << activeDAG << std::endl;
     //compute_parameterized_G_g(N_vec, activeDAG, G, g); // for testing
 
     approximate_control_variate_online_pilot(); // must rely on virtual G/g def
@@ -152,7 +153,7 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
       for (L=0; L<=numApprox; ++L) { // unordered single recursion ???
 	for (i=0; i<K;         ++i)  dag[i] = 0;
 	for (i=K; i<numApprox; ++i)  dag[i] = L;
-	if (contains(dag, 0)) // enforce constraints (contains 0, is cyclic)
+	if (contains(dag, 0)) // enforce constraints (contains 0, acyclic)
 	  model_graphs.insert(dag);
       }
     }
@@ -168,16 +169,28 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
 void NonDGenACVSampling::
 estimator_variance_ratios(const RealVector& N_vec, RealVector& estvar_ratios)
 {
-  RealMatrix G;  RealVector g;
+  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+
+  RealMatrix G, C_G_inv;  RealVector g, c_g;  Real R_sq;
   compute_parameterized_G_g(N_vec, activeDAG, G, g);
-  //genacv_estvar_ratios(G, g, estvar_ratios); // *** TO DO
+
+  // N is an opt. variable for
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    invert_C_G_matrix(covLL[qoi], G, C_G_inv);
+    //Cout << "C-G inverse =\n" << C_G_inv << std::endl;
+    compute_c_g_vector(covLH, qoi, g, c_g);
+    //Cout << "c-g vector =\n" << c_g << std::endl;
+    compute_R_sq(C_G_inv, c_g, varH[qoi], N_vec[numApprox], R_sq);
+    //Cout << "varH[" << qoi << "] = " << varH[qoi] << " Rsq[" << qoi << "] =\n"
+    //     << R_sq << std::endl;
+    estvar_ratios[qoi] = (1. - R_sq);
+  }
 }
 
 
 void NonDGenACVSampling::
 compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag,
 			  RealMatrix& G, RealVector& g)
-                        //RealSymMatrix& G, RealVector& g) // *** TO DO
 {
   // Invert N_vec ordering
   // > Dakota r_i ordering is low-to-high --> reversed from Peherstorfer
@@ -192,7 +205,7 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag,
   // "z^*_i" --> z^1_i, "z_i" --> z^2_i, "z_{i* U i}" --> z_i
 
   size_t i, j;
-  if (G.empty()) G.shapeUninitialized(numApprox, numApprox); // *** TO DO
+  if (G.empty()) G.shapeUninitialized(numApprox, numApprox);
   if (g.empty()) g.sizeUninitialized(numApprox);
 
   Real bi, bj, z_i, z1_i, z2_i;
@@ -219,11 +232,11 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag,
     Real z_H = N_vec[numApprox], z_j, z1_j, z2_j;
     for (i=0; i<numApprox; ++i) {
       bi = numApprox - dag[i]; // reverse DAG ordering for sample ordering
-      z_i = N_vec[i];  z1_i = N_vec[bi];  z2_i = z_i; // *** CONFIRM z2_i
+      z_i = z2_i = N_vec[i];  z1_i = N_vec[bi];  // *** CONFIRM z2_i
       g[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i) / z_H;
       for (j=0; j<numApprox; ++j) {
 	bj = numApprox - dag[j]; // reverse DAG ordering for sample ordering
-	z_j = N_vec[j];  z1_j = N_vec[bj];  z2_j = z_j; // *** CONFIRM z2_j
+	z_j = z2_j = N_vec[j];  z1_j = N_vec[bj]; // *** CONFIRM z2_j
 	G(i,j) = (std::min(z1_i, z1_j)/z1_j - std::min(z1_i, z2_j)/z2_j)/z1_i +
 	         (std::min(z2_i, z2_j)/z2_j - std::min(z2_i, z1_j)/z1_j)/z2_i;
       }

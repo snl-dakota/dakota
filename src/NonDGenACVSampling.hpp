@@ -77,6 +77,13 @@ private:
 				 const UShortArray& dag, RealMatrix& G,
 				 RealVector& g);
 
+  void invert_C_G_matrix(const RealSymMatrix& C, const RealMatrix& G,
+			 RealMatrix& C_G_inv);
+  void compute_c_g_vector(const RealMatrix& c, size_t qoi, const RealVector& g,
+			  RealVector& c_g);
+  void compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g,
+		    Real var_H_q, Real N_H, Real& R_sq_q);
+
   //
   //- Heading: Data
   //
@@ -86,6 +93,65 @@ private:
   /// the active instance from within the set computed by generate_dags()
   UShortArray activeDAG;
 };
+
+
+inline void NonDGenACVSampling::
+invert_C_G_matrix(const RealSymMatrix& C, const RealMatrix& G,
+		  RealMatrix& C_G_inv)
+{
+  size_t i, j, n = C.numRows();
+  if (C_G_inv.empty()) C_G_inv.shapeUninitialized(n, n);
+
+  for (i=0; i<n; ++i)
+    for (j=0; j<n; ++j)
+      C_G_inv(i,j) = C(i,j) * G(i,j);
+
+  RealSolver gen_solver;
+  gen_solver.setMatrix(Teuchos::rcp(&C_G_inv, false));
+  int code = gen_solver.invert(); // in place
+  if (code) {
+    Cerr << "Error: serial dense matrix inversion failure (LAPACK error code "
+	 << code << ") in NonDACVSampling::invert_C_G_matrix()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+inline void NonDGenACVSampling::
+compute_c_g_vector(const RealMatrix& c, size_t qoi, const RealVector& g,
+		   RealVector& c_g)
+{
+  size_t i, num_approx = g.length();
+  if (c_g.length() != num_approx) c_g.sizeUninitialized(num_approx);
+
+  for (i=0; i<num_approx; ++i) // {g} o {c}
+    c_g[i] = g(i) * c(qoi, i);
+}
+
+
+inline void NonDGenACVSampling::
+compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g, Real var_H_q,
+	     Real N_H, Real& R_sq_q)
+{
+  //RealSymMatrix trip(1, false);
+  //Teuchos::matTripleProduct(Teuchos::TRANS, 1./var_H_q, CF_inv, A, trip);
+  //R_sq_q = trip(0,0);
+
+  // compute triple product: Cov(\Delta,\hat{Q}_H)^T Cov(\Delta,\Delta)
+  //                         Cov(\Delta,\hat{Q}_H) = c_g^T C_G_inv c_g
+  // Est var = Var(\hat{Q}_H) - triple product = var_H_q / N_H - triple product
+  // Est var = var_H_q / N_H ( 1 - N_H * triple product / var_H_q )
+  // R^2     = N_H * triple product / var_H_q
+  size_t i, j, num_approx = c_g.length();  Real sum;
+  R_sq_q = 0.;
+  for (i=0; i<num_approx; ++i) {
+    sum = 0.;
+    for (j=0; j<num_approx; ++j)
+      sum += C_G_inv(i,j) * c_g[j];
+    R_sq_q += c_g[i] * sum;
+  }
+  R_sq_q *= N_H / var_H_q;
+}
 
 } // namespace Dakota
 
