@@ -72,7 +72,7 @@ void NonDACVSampling::core_run()
 
   switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated ACV (default)
-    approximate_control_variate();                  break;
+    approximate_control_variate_online_pilot();     break;
   case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
     approximate_control_variate_offline_pilot();    break;
   case PILOT_PROJECTION: // for algorithm assessment/selection
@@ -83,7 +83,7 @@ void NonDACVSampling::core_run()
 
 /** This function performs control variate MC across two combinations of 
     model form and discretization level. */
-void NonDACVSampling::approximate_control_variate()
+void NonDACVSampling::approximate_control_variate_online_pilot()
 {
   // retrieve cost estimates across soln levels for a particular model form
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
@@ -578,6 +578,27 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
                     / (convergenceTol * estvar0[qoi]);
   Real avg_hf_target = average(hf_targets);
   return avg_hf_target;
+}
+
+
+void NonDACVSampling::
+estimator_variance_ratios(const RealVector& r_and_N, RealVector& estvar_ratios)
+{
+  RealSymMatrix F;
+  switch (optSubProblemForm) {
+  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT: {
+    RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
+    r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
+    compute_F_matrix(r, F);
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    compute_F_matrix(r_and_N, F); // admits r as leading numApprox terms
+    break;
+  }
+  //Cout << "Objective evaluator: F =\n" << F << std::endl;
+  acv_estvar_ratios(F, estvar_ratios);
 }
 
 

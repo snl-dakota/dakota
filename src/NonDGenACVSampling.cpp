@@ -86,35 +86,36 @@ void NonDGenACVSampling::generalized_acv()
 */
 
 
-// *** Loop around individual acv fns?
+// *** Loop around individual ACV functions:
 
 void NonDGenACVSampling::generalized_acv_online_pilot()
 {
   UShortArraySet model_dags;
   generate_dags(model_dags);
 
-  UShortArraySet::const_iterator dag_cit;
+  /*
   RealMatrix G;  RealVector g, N_vec(numApprox+1), avg_eval_ratios;
   for (int i=0; i<=numApprox; ++i)
     N_vec[i] = (numApprox+1-i)*numSamples;
   copy_data_partial(N_vec, 0, (int)numApprox, avg_eval_ratios);
   avg_eval_ratios.scale(1./N_vec[numApprox]);
   Cout << "N_vec:\n" << N_vec << "r_i:\n" << avg_eval_ratios << std::endl;
+  */
 
+  UShortArraySet::const_iterator dag_cit;
   for (dag_cit=model_dags.begin(); dag_cit!=model_dags.end(); ++dag_cit) {
-    // for testing:
-    const UShortArray& dag = *dag_cit;
-    compute_parameterized_G_g(N_vec, dag, G, g);
+    activeDAG = *dag_cit;
+    //compute_parameterized_G_g(N_vec, activeDAG, G, g); // for testing
 
-    //set_active_dag(dag);
-    //approximate_control_variate(); // *** must rely on virtual G/g definition
+    approximate_control_variate_online_pilot(); // must rely on virtual G/g def
   }
 
+  /* Compare to F definition corresponding to DAG = {0,...,0}
   RealSymMatrix F;
   compute_F_matrix(avg_eval_ratios, F);
-  // Differs by a scaling...
-  F *= 1./(Real)numSamples;
+  F *= 1./(Real)numSamples; // Differs by 1/N (see end of Appendix D in JCP ACV)
   Cout << "Scaled F:\n" << F << std::endl;
+  */
 }
 
 
@@ -151,7 +152,7 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
       for (L=0; L<=numApprox; ++L) { // unordered single recursion ???
 	for (i=0; i<K;         ++i)  dag[i] = 0;
 	for (i=K; i<numApprox; ++i)  dag[i] = L;
-	if (contains(dag, 0)) // enforce constraints (this is one; also need cyclic check)
+	if (contains(dag, 0)) // enforce constraints (contains 0, is cyclic)
 	  model_graphs.insert(dag);
       }
     }
@@ -161,6 +162,15 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
     break;
   }
   }
+}
+
+
+void NonDGenACVSampling::
+estimator_variance_ratios(const RealVector& N_vec, RealVector& estvar_ratios)
+{
+  RealMatrix G;  RealVector g;
+  compute_parameterized_G_g(N_vec, activeDAG, G, g);
+  //genacv_estvar_ratios(G, g, estvar_ratios); // *** TO DO
 }
 
 

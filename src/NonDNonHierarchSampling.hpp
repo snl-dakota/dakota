@@ -76,6 +76,14 @@ protected:
   void method_recourse();
 
   //
+  //- Heading: New virtual functions
+  //
+
+  /// compute estimator variance ratios from HF samples and oversample ratios
+  virtual void estimator_variance_ratios(const RealVector& r_and_N,
+					 RealVector& estvar_ratios) = 0;
+
+  //
   //- Heading: member functions
   //
 
@@ -129,15 +137,6 @@ protected:
   void compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2,
 			  size_t N_shared, Real& cov_Q1Q2);
   
-  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
-			  const SizetArray& approx_sequence,
-			  const RealMatrix& eval_ratios,
-			  RealVector& estvar_ratios);
-  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
-			  const SizetArray& approx_sequence,
-			  const RealVector& avg_eval_ratios,
-			  RealVector& estvar_ratios);
-
   void mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 			      RealMatrix& eval_ratios,
 			      bool monotonic_r = false);
@@ -177,18 +176,6 @@ protected:
   void inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios);
   /// promote scalar to column vector
   void inflate(Real r_i, size_t num_rows, Real* eval_ratios_col);
-
-  void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
-  void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
-		 RealSymMatrix& CF_inv);
-  void compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
-			size_t qoi, RealVector& A);
-  void compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
-			size_t qoi, Real var_H_q, RealVector& A);
-  void compute_Rsq(const RealSymMatrix& CF_inv, const RealVector& A,
-		   Real var_H_q, Real& R_sq_q);
-
-  void acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios);
 
   //
   //- Heading: Data
@@ -723,135 +710,6 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t num_Q1,
   //     << std::endl;
 }
 */
-
-
-inline void NonDNonHierarchSampling::
-compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
-{
-  size_t i, j;
-  if (F.empty()) F.shapeUninitialized(numApprox);
-
-  switch (mlmfSubMethod) {
-  case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
-    size_t num_am1 = numApprox - 1;  Real r_i, r_ip1;
-    for (i=0; i<num_am1; ++i) {
-      r_i = r_and_N[i]; r_ip1 = r_and_N[i+1];
-      F(i,i) = (r_i - r_ip1) / (r_i * r_ip1);
-    }
-    r_i = r_and_N[num_am1]; //r_ip1 = 1.;
-    F(num_am1,num_am1) = (r_i - 1.) / r_i;
-    break;
-  }
-  case SUBMETHOD_ACV_IS: { // Eq. 30
-    Real ri_ratio;
-    for (i=0; i<numApprox; ++i) {
-      F(i,i)   = ri_ratio = (r_and_N[i] - 1.) / r_and_N[i];
-      for (j=0; j<i; ++j)
-	F(i,j) = ri_ratio * (r_and_N[j] - 1.) / r_and_N[j];
-    }
-    break;
-  }
-  case SUBMETHOD_ACV_MF: { // Eq. 34
-    Real r_i, min_r;
-    for (i=0; i<numApprox; ++i) {
-      r_i = r_and_N[i];  F(i,i) = (r_i - 1.) / r_i;
-      for (j=0; j<i; ++j) {
-	min_r = std::min(r_i, r_and_N[j]);
-	F(i,j) = (min_r - 1.) / min_r;
-      }
-    }
-    break;
-  }
-  //case SUBMETHOD_ACV_RD: // TO DO
-  default:
-    Cerr << "Error: bad sub-method name (" << mlmfSubMethod
-	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;
-    abort_handler(METHOD_ERROR); break;
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "F matrix for sub-method " << mlmfSubMethod << ":\n" << F
-	 << std::endl;
-}
-
-
-inline void NonDNonHierarchSampling::
-invert_CF(const RealSymMatrix& C, const RealSymMatrix& F, RealSymMatrix& CF_inv)
-{
-  size_t i, j, n = C.numRows();
-  if (CF_inv.empty()) CF_inv.shapeUninitialized(n);
-
-  for (i=0; i<n; ++i)
-    for (j=0; j<=i; ++j) {
-      CF_inv(i,j) = C(i,j) * F(i,j);
-      //Cout << "invert_CF: C(" << i << ',' << j << ") = " << C(i,j)
-      //     << " F("  << i << ',' << j << ") = " << F(i,j)
-      //     << " CF(" << i << ',' << j << ") = " << CF_inv(i,j) << '\n';
-    }
-
-  RealSpdSolver spd_solver;
-  spd_solver.setMatrix(Teuchos::rcp(&CF_inv, false));
-  spd_solver.invert(); // in place
-}
-
-
-inline void NonDNonHierarchSampling::
-compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
-		 size_t qoi, RealVector& A)
-{
-  size_t i, num_approx = F.numRows();
-  if (A.length() != num_approx) A.sizeUninitialized(num_approx);
-
-  for (i=0; i<num_approx; ++i) // diag(F) o c-bar
-    A[i] = F(i,i) * c(qoi, i); // this version defers c-bar scaling
-}
-
-
-inline void NonDNonHierarchSampling::
-compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
-		 size_t qoi, Real var_H_q, RealVector& A)
-{
-  compute_A_vector(F, c, qoi, A); // first use unscaled overload
-  A.scale(1./std::sqrt(var_H_q)); // scale from c to c-bar
-}
-
-
-inline void NonDNonHierarchSampling::
-compute_Rsq(const RealSymMatrix& CF_inv, const RealVector& A, Real var_H_q,
-	    Real& R_sq_q)
-{
-  RealSymMatrix trip(1, false);
-  Teuchos::symMatTripleProduct(Teuchos::TRANS, 1./var_H_q, CF_inv, A, trip);
-  R_sq_q = trip(0,0);
-
-  /*
-  size_t i, j, num_approx = CF_inv.numRows();
-  R_sq_q = 0.;
-  for (i=0; i<num_approx; ++i)
-    for (j=0; j<num_approx; ++j)
-      R_sq_q += A[i] * CF_inv(i,j) * A[j];
-  R_sq_q /= varH[qoi]; // c-bar normalization
-  */
-}
-
-
-inline void NonDNonHierarchSampling::
-acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
-{
-  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
-
-  RealSymMatrix CF_inv;  RealVector A;  Real R_sq;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    invert_CF(covLL[qoi], F, CF_inv);
-    //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
-    compute_A_vector(F, covLH, qoi, A);    // defer c-bar scaling
-    //Cout << "Objective eval: A =\n" << A << std::endl;
-    compute_Rsq(CF_inv, A, varH[qoi], R_sq); // apply scaling^2
-    //Cout << "Objective eval: varH[" << qoi << "] = " << varH[qoi]
-    //     << " Rsq[" << qoi << "] =\n" << R_sq << std::endl;
-    estvar_ratios[qoi] = (1. - R_sq);
-  }
-}
 
 
 inline void NonDNonHierarchSampling::

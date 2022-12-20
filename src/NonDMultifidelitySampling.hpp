@@ -60,6 +60,9 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   void print_variance_reduction(std::ostream& s);
 
+  void estimator_variance_ratios(const RealVector& r_and_N,
+				 RealVector& estvar_ratios);
+
   //
   //- Heading: member functions
   //
@@ -106,6 +109,14 @@ protected:
 			       const SizetArray& approx_sequence,
 			       const RealMatrix& eval_ratios,
 			       RealVector& estvar_ratios, Real& avg_est_var);
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const SizetArray& approx_sequence,
+			  const RealMatrix& eval_ratios,
+			  RealVector& estvar_ratios);
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const SizetArray& approx_sequence,
+			  const RealVector& avg_eval_ratios,
+			  RealVector& estvar_ratios);
 
 private:
 

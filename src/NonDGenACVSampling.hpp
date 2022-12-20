@@ -42,12 +42,6 @@ public:
   /// destructor
   ~NonDGenACVSampling();
 
-  //
-  //- Heading: Virtual function redefinitions
-  //
-
-  //bool resize();
-
 protected:
 
   //
@@ -59,6 +53,9 @@ protected:
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   //void print_variance_reduction(std::ostream& s);
+
+  void estimator_variance_ratios(const RealVector& N_vec,
+				 RealVector& estvar_ratios);
 
   //
   //- Heading: member functions
@@ -86,6 +83,8 @@ private:
 
   /// type of tunable recursion for defining set of DAGs: KL, SR, or MR
   short dagRecursionType;
+  /// the active instance from within the set computed by generate_dags()
+  UShortArray activeDAG;
 };
 
 } // namespace Dakota
