@@ -65,9 +65,9 @@ add_test(NAME dakota_surrogates_jni
   COMMAND ${Java_JAVA_EXECUTABLE} -classpath jni_test.jar
   gov.sandia.dakota.jni.test.DakotaJniTest
   )
-# This test uses the polynomial surrogates exported by PolynomialRegressionTest
+# This test uses the polynomial surrogates exported by surrogates_polynomial_regression
 # ../unit/poly_test.surr.*
 set_tests_properties(dakota_surrogates_jni PROPERTIES
-  DEPENDS PolynomialRegressionTest
+  DEPENDS surrogates_polynomial_regression
   LABELS Unit
   )
