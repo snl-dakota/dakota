@@ -4,7 +4,9 @@
 Git for Version Control
 """""""""""""""""""""""
 
-Dakota uses Git for version control.  This chapter has developer guidance for Git usage.
+Dakota uses Git for version control.  This chapter has developer
+guidance for Git usage and workflow that augments the basics described
+in :ref:`getsource`.
 
 .. toctree::
    :maxdepth: 1

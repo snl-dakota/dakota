@@ -1,8 +1,8 @@
+.. _`theory-main`:
+
 """""""""""""
 Dakota Theory
 """""""""""""
-
-.. _theory-main:
 
 .. _`topic-evidence_theory`: TODO This topic from the old Reference Manual needs a better location.
 
