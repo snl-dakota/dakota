@@ -84,6 +84,8 @@ private:
   void compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g,
 		    Real var_H_q, Real N_H, Real& R_sq_q);
 
+  void reset_acv();
+
   //
   //- Heading: Data
   //
@@ -92,6 +94,11 @@ private:
   short dagRecursionType;
   /// the active instance from within the set computed by generate_dags()
   UShortArray activeDAG;
+
+  /// the best performing model graph among the set from generate_dags()
+  UShortArray bestDAG;
+  /// track estimator variance for best model graph
+  Real bestAvgEstVar;
 };
 
 
@@ -151,6 +158,19 @@ compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g, Real var_H_q,
     R_sq_q += c_g[i] * sum;
   }
   R_sq_q *= N_H / var_H_q;
+}
+
+
+inline void NonDGenACVSampling::reset_acv()
+{
+  // from pre_run() up the hierarchy:
+  mlmfIter = numLHSRuns = deltaNActualHF = 0;
+  equivHFEvals = deltaEquivHF = 0.;
+  seedSpec = randomSeed = seed_sequence(0); // (re)set seeds to sequence
+
+  // Moved inside main loop:
+  //numSamples = pilotSamples[numApprox];
+  // Note: other sample counters are reset at top of each acv_*_pilot() call
 }
 
 } // namespace Dakota

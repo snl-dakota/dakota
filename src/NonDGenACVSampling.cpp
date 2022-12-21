@@ -61,35 +61,6 @@ NonDGenACVSampling::~NonDGenACVSampling()
     each of which may contain multiple discretization levels. */
 void NonDGenACVSampling::core_run()
 {
-  // Initialize for pilot sample
-  numSamples = pilotSamples[numApprox]; // last in pilot array
-
-  switch (pilotMgmtMode) {
-  case  ONLINE_PILOT: // iterated ACV (default)
-    generalized_acv_online_pilot();     break;
-  case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
-    generalized_acv_offline_pilot();    break;
-  case PILOT_PROJECTION: // for algorithm assessment/selection
-    generalized_acv_pilot_projection(); break;
-  }
-}
-
-
-/* Loop around core_run()?
-void NonDGenACVSampling::generalized_acv()
-{
-  for (dag_it=model_dags.begin(); dag_it!=model_dags.end(); ++dag_it) {
-    set_active_dag(dag);
-    NonDACVSampling::core_run();
-  }
-}
-*/
-
-
-// Loop around individual ACV functions:
-
-void NonDGenACVSampling::generalized_acv_online_pilot()
-{
   UShortArraySet model_dags;
   generate_dags(model_dags);
 
@@ -102,13 +73,30 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   Cout << "N_vec:\n" << N_vec << "r_i:\n" << avg_eval_ratios << std::endl;
   */
 
-  UShortArraySet::const_iterator dag_cit;
+  UShortArraySet::const_iterator dag_cit;  bestAvgEstVar = DBL_MAX;
   for (dag_cit=model_dags.begin(); dag_cit!=model_dags.end(); ++dag_cit) {
     activeDAG = *dag_cit;
     Cout << "Generalized ACV evaluating DAG:\n" << activeDAG << std::endl;
     //compute_parameterized_G_g(N_vec, activeDAG, G, g); // for testing
 
-    approximate_control_variate_online_pilot(); // must rely on virtual G/g def
+    NonDACVSampling::core_run(); // virtual est var ratios no longer work
+    /*
+    numSamples = pilotSamples[numApprox]; // last in pilot array
+    switch (pilotMgmtMode) {
+    case  ONLINE_PILOT: // iterated ACV (default)
+      approximate_control_variate_online_pilot();     break;
+    case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
+      approximate_control_variate_offline_pilot();    break;
+    case PILOT_PROJECTION: // for algorithm assessment/selection
+      approximate_control_variate_pilot_projection(); break;
+    }
+    */
+
+    // store best result:
+    if (avgEstVar < bestAvgEstVar)
+      { bestAvgEstVar = avgEstVar;  bestDAG = activeDAG; }
+    // reset state for next ACV execution:
+    reset_acv();
   }
 
   /* Compare to F definition corresponding to DAG = {0,...,0}
@@ -117,20 +105,44 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   F *= 1./(Real)numSamples; // Differs by 1/N (see end of Appendix D in JCP ACV)
   Cout << "Scaled F:\n" << F << std::endl;
   */
+
+  // Post-process
+  Cout << "Best estimator variance = " << bestAvgEstVar
+       << " from DAG:\n" << bestDAG << std::endl;
+  // *** TO DO: restore best state, compute/store/print final results
 }
 
 
-/** This function performs control variate MC across two combinations of 
-    model form and discretization level. */
-void NonDGenACVSampling::generalized_acv_offline_pilot()
-{ }
+/* Loop around core_run()
+void NonDGenACVSampling::generalized_acv()
+{
+  for (dag_it=model_dags.begin(); dag_it!=model_dags.end(); ++dag_it) {
+    set_active_dag(dag);
+    NonDACVSampling::core_run();
+  }
+}
 
 
-/** This function performs control variate MC across two combinations of 
-    model form and discretization level. */
-void NonDGenACVSampling::generalized_acv_pilot_projection()
-{ }
-  
+// Loop around individual ACV functions:
+void NonDGenACVSampling::generalized_acv_online_pilot()
+{
+  UShortArraySet model_dags;
+  generate_dags(model_dags);
+
+  UShortArraySet::const_iterator dag_cit;
+  for (dag_cit=model_dags.begin(); dag_cit!=model_dags.end(); ++dag_cit) {
+    activeDAG = *dag_cit;
+    Cout << "Generalized ACV evaluating DAG:\n" << activeDAG << std::endl;
+
+    approximate_control_variate_online_pilot(); // uses virtual est var ratios
+    // store result:
+    if (avgEstVar < bestAvgEstVar) {
+    }
+    reset_acv();
+  }
+}
+*/
+
 
 void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
 {

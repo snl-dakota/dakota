@@ -570,8 +570,12 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
 		 const RealVector& estvar0)
 {
   // Note: there is a circular dependency between estvar_ratios and hf_targets
-  RealSymMatrix F;           compute_F_matrix(avg_eval_ratios, F);
-  RealVector estvar_ratios;  acv_estvar_ratios(F, estvar_ratios);
+  RealVector estvar_ratios;
+  RealSymMatrix F; compute_F_matrix(avg_eval_ratios, F);
+  acv_estvar_ratios(F, estvar_ratios);
+  //eval_ratios_to_design_variables(avg_eval_ratios, r_and_N); // *** TO DO: based on optSubProblemForm, after verifying derived GenACV case...
+  //estimator_variance_ratios(r_and_N, estvar_ratios); // virtual for GenACV!
+
   RealVector hf_targets(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     hf_targets[qoi] = var_H[qoi] * estvar_ratios[qoi]
@@ -1126,7 +1130,7 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
   if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
 
   RealSymMatrix F, CF_inv;
-  compute_F_matrix(avg_eval_ratios, F);
+  compute_F_matrix(avg_eval_ratios, F); // *** TO DO
 
   size_t approx, qoi, N_shared_q;  Real sum_H_mq;
   RealVector beta(numApprox);
