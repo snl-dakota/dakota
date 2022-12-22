@@ -903,26 +903,34 @@ nonhierarch_numerical_solution(const RealVector& cost,
 
 
 Real NonDNonHierarchSampling::
-average_estimator_variance(const RealVector& r_and_N)
+average_estimator_variance(const RealVector& cd_vars)
 {
   RealVector estvar_ratios(numFunctions, false);
-  estimator_variance_ratios(r_and_N, estvar_ratios); // virtual: MFMC,ACV,GenACV
+  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
 
   // form estimator variances to pick up dependence on N
   RealVector est_var(numFunctions, false);  size_t qoi;
   switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT: { // N is a vector constant for opt sub-problem
-    size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
-    SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      est_var[qoi] = varH[qoi] / N_H_actual[qoi] * estvar_ratios[qoi];
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+    if (cd_vars.length() == numApprox) {
+      // N_H not provided so pull from latest counter values
+      size_t hf_form_index, hf_lev_index;
+      hf_indices(hf_form_index, hf_lev_index);
+      SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	est_var[qoi] = varH[qoi] / N_H_actual[qoi] * estvar_ratios[qoi];
+    }
+    else { // N_H appended for convenience or rescaling to updated HF target
+      Real N_H = cd_vars[numApprox];
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	est_var[qoi] = varH[qoi] / N_H * estvar_ratios[qoi];
+    }
     break;
-  }
   case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
   case R_AND_N_NONLINEAR_CONSTRAINT: {  // N is a scalar optimization variable
-    Real N = r_and_N[numApprox];
+    Real N_H = cd_vars[numApprox];
     for (qoi=0; qoi<numFunctions; ++qoi)
-      est_var[qoi] = varH[qoi] / N * estvar_ratios[qoi];
+      est_var[qoi] = varH[qoi] / N_H * estvar_ratios[qoi];
     break;
   }
   }
@@ -930,16 +938,15 @@ average_estimator_variance(const RealVector& r_and_N)
   Real avg_estvar = average(est_var);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "NonDNonHierarchSampling::average_estimator_variance(): "
-	 << "design vars:\n" << r_and_N << "EstVar ratios:\n" << estvar_ratios
+	 << "design vars:\n" << cd_vars << "EstVar ratios:\n" << estvar_ratios
 	 << "average((1. - Rsq) varH / N) = " << avg_estvar << '\n';
   return avg_estvar;
 }
 
 
-Real NonDNonHierarchSampling::log_average_estvar(const RealVector& r_and_N)
+Real NonDNonHierarchSampling::log_average_estvar(const RealVector& cd_vars)
 {
-  // protect against R_sq blow-up for N_i < N (if not enforced by linear constr)
-  Real avg_est_var = average_estimator_variance(r_and_N);
+  Real avg_est_var = average_estimator_variance(cd_vars);
   if (avg_est_var > 0.)
     return std::log(avg_est_var); // use log to flatten contours
   else

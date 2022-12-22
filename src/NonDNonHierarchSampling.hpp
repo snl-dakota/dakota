@@ -158,6 +158,14 @@ protected:
   void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
 				  const RealVector& cost, Real avg_N_H);
 
+  /// helper function that supports optimization APIs passing design variables
+  Real average_estimator_variance(const RealVector& cd_vars);
+
+  void r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H,
+			RealVector& N_vec);
+  void r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
+			      RealVector& cd_vars);
+
   /// define approx_sequence in increasing metric order
   bool ordered_approx_sequence(const RealVector& metric,
 			       SizetArray& approx_sequence,
@@ -234,10 +242,8 @@ private:
   Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
 			const RealVector& estvar0);
 
-  /// objective helper function shared by NPSOL/OPT++ static evaluators
-  Real average_estimator_variance(const RealVector& r_and_N);
   /// flattens contours of average_estimator_variance() using std::log
-  Real log_average_estvar(const RealVector& r_and_N);
+  Real log_average_estvar(const RealVector& cd_vars);
 
   /// constraint helper function shared by NPSOL/OPT++ static evaluators
   Real linear_cost(const RealVector& N_vec);
@@ -488,6 +494,33 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Average evaluation ratios rescaled to budget:\n"
 	 << avg_eval_ratios << std::endl;
+}
+
+
+inline void NonDNonHierarchSampling::
+r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H, RealVector& N_vec)
+{
+  N_vec.sizeUninitialized(numApprox+1);
+  for (size_t i=0; i<numApprox; ++i)
+    N_vec[i] = avg_eval_ratios[i] * N_H;
+  N_vec[numApprox] = N_H;
+}
+
+
+inline void NonDNonHierarchSampling::
+r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
+		       RealVector& cd_vars)
+{
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: // embed N at end of cd_vars for GenACV usage
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    cd_vars.sizeUninitialized(numApprox+1);
+    copy_data_partial(avg_eval_ratios, cd_vars, 0);
+    cd_vars[numApprox] = N_H;
+    break;
+  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
+    r_and_N_to_N_vec(avg_eval_ratios, N_H, cd_vars);  break;
+  }
 }
 
 

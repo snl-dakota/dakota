@@ -57,6 +57,14 @@ protected:
   void estimator_variance_ratios(const RealVector& N_vec,
 				 RealVector& estvar_ratios);
 
+  void acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
+		       IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
+		       IntRealSymMatrixArrayMap& sum_LL,
+		       IntRealMatrixMap& sum_LH,
+		       const RealVector& avg_eval_ratios,
+		       const SizetArray& N_shared,
+		       const Sizet2DArray& N_L_refined, RealMatrix& H_raw_mom);
+
   //
   //- Heading: member functions
   //
@@ -83,6 +91,14 @@ private:
 			  RealVector& c_g);
   void compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g,
 		    Real var_H_q, Real N_H, Real& R_sq_q);
+
+  void compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
+			      const RealMatrix& cov_LH, const RealVector& g,
+			      size_t qoi, RealVector& beta);
+  void compute_genacv_control(RealMatrix& sum_L, Real sum_H_q,
+			      RealSymMatrix& sum_LL_q, RealMatrix& sum_LH,
+			      size_t N_shared_q, const RealMatrix& G,
+			      const RealVector& g, size_t qoi,RealVector& beta);
 
   void reset_acv();
 
@@ -158,6 +174,40 @@ compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g, Real var_H_q,
     R_sq_q += c_g[i] * sum;
   }
   R_sq_q *= N_H / var_H_q;
+}
+
+
+inline void NonDGenACVSampling::
+compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
+		       const RealMatrix& cov_LH, const RealVector& g,
+		       size_t qoi, RealVector& beta)
+{
+  RealMatrix C_G_inv;  RealVector c_g;
+  invert_C_G_matrix(covLL[qoi], G, C_G_inv);
+  //Cout << "compute_genacv_control qoi " << qoi+1 << ": C_G_inv\n" << C_G_inv;
+  compute_c_g_vector(covLH, qoi, g, c_g);
+  //Cout << "compute_genacv_control qoi " << qoi+1 << ": c_g\n" << c_g;
+
+  size_t n = G.numRows();
+  if (beta.length() != n) beta.size(n);
+  beta.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_G_inv, c_g, 0.);
+  //Cout << "compute_acv_control qoi " << qoi+1 << ": beta\n" << beta;
+}
+
+
+inline void NonDGenACVSampling::
+compute_genacv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
+		       RealMatrix& sum_LH, size_t N_shared_q,
+		       const RealMatrix& G, const RealVector& g, size_t qoi,
+		       RealVector& beta)
+{
+  // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
+  // > cov_LH is sized for all qoi but only 1 row is used
+  RealSymMatrix cov_LL; RealMatrix cov_LH;
+  compute_acv_control_covariances(sum_L, sum_H_q, sum_LL_q, sum_LH, N_shared_q,
+				  qoi, cov_LL, cov_LH);
+  // forward to overload:
+  compute_genacv_control(cov_LL, G, cov_LH, g, qoi, beta);
 }
 
 

@@ -499,10 +499,13 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     }
     else { // Run one numerical soln from best of two starting points
       if (budget_constrained) { // same cost, compare accuracy
-	avg_estvar1 = acv_estimator_variance(avg_N_H, cost, avg_eval_ratios1,
-					     avg_hf_target1);
-	avg_estvar2 = acv_estimator_variance(avg_N_H, cost, avg_eval_ratios2,
-					     avg_hf_target2);
+	RealVector cd_vars;
+	scale_to_target(avg_N_H, cost, avg_eval_ratios1, avg_hf_target1);
+	r_and_N_to_design_vars(avg_eval_ratios1, avg_hf_target1, cd_vars);
+	avg_estvar1 = average_estimator_variance(cd_vars); // ACV or GenACV
+	scale_to_target(avg_N_H, cost, avg_eval_ratios2, avg_hf_target2);
+	r_and_N_to_design_vars(avg_eval_ratios2, avg_hf_target2, cd_vars);
+	avg_estvar2 = average_estimator_variance(cd_vars); // ACV or GenACV
 	mfmc_init = (avg_estvar1 <= avg_estvar2);
       }
       else { // same accuracy (convergenceTol * estVarIter0), compare cost 
@@ -570,11 +573,16 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
 		 const RealVector& estvar0)
 {
   // Note: there is a circular dependency between estvar_ratios and hf_targets
-  RealVector estvar_ratios;
-  RealSymMatrix F; compute_F_matrix(avg_eval_ratios, F);
-  acv_estvar_ratios(F, estvar_ratios);
-  //eval_ratios_to_design_variables(avg_eval_ratios, r_and_N); // *** TO DO: based on optSubProblemForm, after verifying derived GenACV case...
-  //estimator_variance_ratios(r_and_N, estvar_ratios); // virtual for GenACV!
+
+  // estimator variance uses actual (not alloc) so use same for defining G,g
+  // *** TO DO: but avg_hf_target defines delta relative to actual||alloc ***
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  Real N_H = //(backfillFailures) ?
+    average(NLevActual[hf_form_index][hf_lev_index]);// :
+    //NLevAlloc[hf_form_index][hf_lev_index];
+  RealVector cd_vars, estvar_ratios;
+  r_and_N_to_design_vars(avg_eval_ratios, N_H, cd_vars);
+  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual for ACV,GenACV
 
   RealVector hf_targets(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
@@ -582,27 +590,6 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
                     / (convergenceTol * estvar0[qoi]);
   Real avg_hf_target = average(hf_targets);
   return avg_hf_target;
-}
-
-
-void NonDACVSampling::
-estimator_variance_ratios(const RealVector& r_and_N, RealVector& estvar_ratios)
-{
-  RealSymMatrix F;
-  switch (optSubProblemForm) {
-  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT: {
-    RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
-    r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
-    compute_F_matrix(r, F);
-    break;
-  }
-  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    compute_F_matrix(r_and_N, F); // admits r as leading numApprox terms
-    break;
-  }
-  //Cout << "Objective evaluator: F =\n" << F << std::endl;
-  acv_estvar_ratios(F, estvar_ratios);
 }
 
 
@@ -1129,8 +1116,7 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 {
   if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
 
-  RealSymMatrix F, CF_inv;
-  compute_F_matrix(avg_eval_ratios, F); // *** TO DO
+  RealSymMatrix F;  compute_F_matrix(avg_eval_ratios, F);
 
   size_t approx, qoi, N_shared_q;  Real sum_H_mq;
   RealVector beta(numApprox);
@@ -1149,7 +1135,7 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
       else // compute variances/covariances for higher-order moment estimators
 	compute_acv_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
 			    N_shared_q, F, qoi, beta); // all use shared counts
-        // *** TO DO3: support shared_approx_increment() --> baselineL
+        // *** TO DO: support shared_approx_increment() --> baselineL
 
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);
       H_raw_mq = sum_H_mq / N_shared_q; // first term to be augmented

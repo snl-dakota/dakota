@@ -64,84 +64,25 @@ void NonDGenACVSampling::core_run()
   UShortArraySet model_dags;
   generate_dags(model_dags);
 
-  /*
-  RealMatrix G;  RealVector g, N_vec(numApprox+1), avg_eval_ratios;
-  for (int i=0; i<=numApprox; ++i)
-    N_vec[i] = (numApprox+1-i)*numSamples;
-  copy_data_partial(N_vec, 0, (int)numApprox, avg_eval_ratios);
-  avg_eval_ratios.scale(1./N_vec[numApprox]);
-  Cout << "N_vec:\n" << N_vec << "r_i:\n" << avg_eval_ratios << std::endl;
-  */
-
   UShortArraySet::const_iterator dag_cit;  bestAvgEstVar = DBL_MAX;
   for (dag_cit=model_dags.begin(); dag_cit!=model_dags.end(); ++dag_cit) {
     activeDAG = *dag_cit;
     Cout << "Generalized ACV evaluating DAG:\n" << activeDAG << std::endl;
-    //compute_parameterized_G_g(N_vec, activeDAG, G, g); // for testing
 
-    NonDACVSampling::core_run(); // virtual est var ratios no longer work
-    /*
-    numSamples = pilotSamples[numApprox]; // last in pilot array
-    switch (pilotMgmtMode) {
-    case  ONLINE_PILOT: // iterated ACV (default)
-      approximate_control_variate_online_pilot();     break;
-    case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
-      approximate_control_variate_offline_pilot();    break;
-    case PILOT_PROJECTION: // for algorithm assessment/selection
-      approximate_control_variate_pilot_projection(); break;
-    }
-    */
+    NonDACVSampling::core_run(); // {online,offline,projection} modes
 
     // store best result:
     if (avgEstVar < bestAvgEstVar)
-      { bestAvgEstVar = avgEstVar;  bestDAG = activeDAG; }
+      { bestAvgEstVar = avgEstVar;  bestDAG = activeDAG; }//***TO DO: REQD STATE
     // reset state for next ACV execution:
     reset_acv();
   }
-
-  /* Compare to F definition corresponding to DAG = {0,...,0}
-  RealSymMatrix F;
-  compute_F_matrix(avg_eval_ratios, F);
-  F *= 1./(Real)numSamples; // Differs by 1/N (see end of Appendix D in JCP ACV)
-  Cout << "Scaled F:\n" << F << std::endl;
-  */
 
   // Post-process
   Cout << "Best estimator variance = " << bestAvgEstVar
        << " from DAG:\n" << bestDAG << std::endl;
   // *** TO DO: restore best state, compute/store/print final results
 }
-
-
-/* Loop around core_run()
-void NonDGenACVSampling::generalized_acv()
-{
-  for (dag_it=model_dags.begin(); dag_it!=model_dags.end(); ++dag_it) {
-    set_active_dag(dag);
-    NonDACVSampling::core_run();
-  }
-}
-
-
-// Loop around individual ACV functions:
-void NonDGenACVSampling::generalized_acv_online_pilot()
-{
-  UShortArraySet model_dags;
-  generate_dags(model_dags);
-
-  UShortArraySet::const_iterator dag_cit;
-  for (dag_cit=model_dags.begin(); dag_cit!=model_dags.end(); ++dag_cit) {
-    activeDAG = *dag_cit;
-    Cout << "Generalized ACV evaluating DAG:\n" << activeDAG << std::endl;
-
-    approximate_control_variate_online_pilot(); // uses virtual est var ratios
-    // store result:
-    if (avgEstVar < bestAvgEstVar) {
-    }
-    reset_acv();
-  }
-}
-*/
 
 
 void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
@@ -179,12 +120,47 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
 
 
 void NonDGenACVSampling::
-estimator_variance_ratios(const RealVector& N_vec, RealVector& estvar_ratios)
+estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 {
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
 
-  RealMatrix G, C_G_inv;  RealVector g, c_g;  Real R_sq;
-  compute_parameterized_G_g(N_vec, activeDAG, G, g);
+  RealMatrix G, C_G_inv;  RealVector g, c_g;  Real R_sq, N_H;
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: {
+    RealVector N_vec(numApprox+1, false);
+    if (cd_vars.length() == numApprox) {
+      copy_data_partial(cd_vars, N_vec, 0);
+      // N_H not provided so pull from latest counter values
+      size_t hf_form_index, hf_lev_index;
+      hf_indices(hf_form_index, hf_lev_index);
+      // estimator variance uses actual (not alloc) so use same for defining G,g
+      // *** TO DO: but avg_hf_target defines delta relative to actual||alloc
+      N_vec[numApprox] = N_H = //(backfillFailures) ?
+	average(NLevActual[hf_form_index][hf_lev_index]);// :
+	//NLevAlloc[hf_form_index][hf_lev_index];
+    }
+    else { // N_H appended for convenience or rescaling to updated HF target
+      copy_data(cd_vars, N_vec);
+      N_H = N_vec[numApprox];
+    }
+    for (size_t i=0; i<numApprox; ++i)
+      N_vec[i] *= N_H; // N_i = r_i * N
+    compute_parameterized_G_g(N_vec, activeDAG, G, g);
+    break;
+  }
+  case R_AND_N_NONLINEAR_CONSTRAINT: { // convert r_and_N to N_vec:
+    RealVector N_vec;  copy_data(cd_vars, N_vec);
+    N_H = N_vec[numApprox];
+    for (size_t i=0; i<numApprox; ++i)
+      N_vec[i] *= N_H; // N_i = r_i * N
+    compute_parameterized_G_g(N_vec, activeDAG, G, g);
+    break;
+  }
+  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
+    compute_parameterized_G_g(cd_vars, activeDAG, G, g);
+    N_H = cd_vars[numApprox];
+    break;
+  }
 
   // N is an opt. variable for
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
@@ -192,7 +168,7 @@ estimator_variance_ratios(const RealVector& N_vec, RealVector& estvar_ratios)
     //Cout << "C-G inverse =\n" << C_G_inv << std::endl;
     compute_c_g_vector(covLH, qoi, g, c_g);
     //Cout << "c-g vector =\n" << c_g << std::endl;
-    compute_R_sq(C_G_inv, c_g, varH[qoi], N_vec[numApprox], R_sq);
+    compute_R_sq(C_G_inv, c_g, varH[qoi], N_H, R_sq);
     //Cout << "varH[" << qoi << "] = " << varH[qoi] << " Rsq[" << qoi << "] =\n"
     //     << R_sq << std::endl;
     estvar_ratios[qoi] = (1. - R_sq);
@@ -278,6 +254,59 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag,
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "For dag:\n" << dag << "G matrix:\n" << G << "g vector:\n" << g
 	 << std::endl;
+}
+
+
+// *** TO DO: can this share more code with the base ACV version?
+//            e.g., cache G,g,F and then virtual compute_control()
+void NonDGenACVSampling::
+acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
+		IntRealMatrixMap& sum_L_refined,   IntRealVectorMap& sum_H,
+		IntRealSymMatrixArrayMap& sum_LL,  IntRealMatrixMap& sum_LH,
+		const RealVector& avg_eval_ratios, const SizetArray& N_shared,
+		const Sizet2DArray& N_L_refined,   RealMatrix& H_raw_mom)
+{
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+
+  // Note: while G,g have a more explicit dependence on N_shared[qoi] than F,
+  // we mirror the averaged sample allocations and compute G,g once
+  RealMatrix G;  RealVector g, N_vec;
+  r_and_N_to_N_vec(avg_eval_ratios, average(N_shared), N_vec);
+  compute_parameterized_G_g(N_vec, activeDAG, G, g); // *** TO DO: pass bestDAG or set activeDAG = bestDAG before final roll-up?
+
+  size_t approx, qoi, N_shared_q;  Real sum_H_mq;
+  RealVector beta(numApprox);
+  for (int mom=1; mom<=4; ++mom) {
+    RealMatrix&     sum_L_base_m = sum_L_baseline[mom];
+    RealMatrix&      sum_L_ref_m = sum_L_refined[mom];
+    RealVector&          sum_H_m =         sum_H[mom];
+    RealSymMatrixArray& sum_LL_m =        sum_LL[mom];
+    RealMatrix&         sum_LH_m =        sum_LH[mom];
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Moment " << mom << " estimator:\n";
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      sum_H_mq = sum_H_m[qoi];  N_shared_q = N_shared[qoi];
+      if (mom == 1) // variances/covariances already computed for mean estimator
+	compute_genacv_control(covLL[qoi], G, covLH, g, qoi, beta);
+      else // compute variances/covariances for higher-order moment estimators
+	compute_genacv_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
+			       N_shared_q, G, g, qoi, beta);// shared counts
+        // *** TO DO: support shared_approx_increment() --> baselineL
+
+      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      H_raw_mq = sum_H_mq / N_shared_q; // first term to be augmented
+      for (approx=0; approx<numApprox; ++approx) {
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
+	       << "variate beta = " << std::setw(9) << beta[approx] << '\n';
+	// For ACV, shared counts are fixed at N_H for all approx
+	apply_control(sum_L_base_m(qoi,approx), N_shared_q,
+		      sum_L_ref_m(qoi,approx),  N_L_refined[approx][qoi],
+		      beta[approx], H_raw_mq);
+      }
+    }
+  }
+  if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
 }
 
 } // namespace Dakota

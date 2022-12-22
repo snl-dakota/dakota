@@ -545,31 +545,6 @@ mfmc_approx_increment(const RealMatrix& eval_ratios,
 
 
 void NonDMultifidelitySampling::
-estimator_variance_ratios(const RealVector& r_and_N, RealVector& estvar_ratios)
-{
-  // Note: ACV implementation based on F also works for MFMC, but since MFMC
-  // has diagonal F, it can be evaluated without per-QoI matrix inversion:
-  // > R_sq = a^T [ C o F ]^{-1} a = \Sum_i R_sq_i (sum across set of approx_i)
-  // > R_sq_i = F_ii^2 \bar{c}_ii^2 / (F_ii C_ii) for i = approximation number
-  //          = F_ii CovLH_i^2 / (VarH_i VarL_i) = F_ii rho2LH_i where
-  //   F_ii   = (r_i - r_{i+1}) / (r_i r_{i+1}).
-  switch (optSubProblemForm) {
-  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT: {
-    RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
-    r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
-    // Compiler can resolve overload with (inherited) vector type:
-    mfmc_estvar_ratios(rho2LH, approxSequence, r,       estvar_ratios);
-    break;
-  }
-  default: // use leading numApprox terms of r_and_N
-    // Compiler can resolve overload with (inherited) vector type:
-    mfmc_estvar_ratios(rho2LH, approxSequence, r_and_N, estvar_ratios);
-    break;
-  }
-}
-
-
-void NonDMultifidelitySampling::
 mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
 		   const RealMatrix& eval_ratios, RealVector& estvar_ratios)
 {
@@ -673,6 +648,31 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
     }
     break;
   }
+  }
+}
+
+
+void NonDMultifidelitySampling::
+estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
+{
+  // Note: ACV implementation based on F also works for MFMC, but since MFMC
+  // has diagonal F, it can be evaluated without per-QoI matrix inversion:
+  // > R_sq = a^T [ C o F ]^{-1} a = \Sum_i R_sq_i (sum across set of approx_i)
+  // > R_sq_i = F_ii^2 \bar{c}_ii^2 / (F_ii C_ii) for i = approximation number
+  //          = F_ii CovLH_i^2 / (VarH_i VarL_i) = F_ii rho2LH_i where
+  //   F_ii   = (r_i - r_{i+1}) / (r_i r_{i+1}).
+  switch (optSubProblemForm) {
+  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT: {
+    RealVector r;  copy_data_partial(cd_vars, 0, (int)numApprox, r); // N_i
+    r.scale(1./cd_vars[numApprox]); // r_i = N_i / N
+    // Compiler can resolve overload with (inherited) vector type:
+    mfmc_estvar_ratios(rho2LH, approxSequence, r,       estvar_ratios);
+    break;
+  }
+  default: // r_and_N provided: pass leading numApprox terms of cd_vars
+    // Compiler can resolve overload with (inherited) vector type:
+    mfmc_estvar_ratios(rho2LH, approxSequence, cd_vars, estvar_ratios);
+    break;
   }
 }
 
@@ -1432,7 +1432,7 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
   }
   // For numerical cases, mfmc_numerical_solution() must incorporate varH/N_H
   // in the objective and returns avg estvar as the final objective.  So estVar
-  // is more direct here than estVarRatios, as for NonDACVSampling.
+  // is more direct here than estVarRatios.
   //default:
   //  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
   //  for (size_t qoi=0; qoi<numFunctions; ++qoi)
