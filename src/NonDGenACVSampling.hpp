@@ -57,13 +57,12 @@ protected:
   void estimator_variance_ratios(const RealVector& N_vec,
 				 RealVector& estvar_ratios);
 
-  void acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
-		       IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
-		       IntRealSymMatrixArrayMap& sum_LL,
-		       IntRealMatrixMap& sum_LH,
-		       const RealVector& avg_eval_ratios,
-		       const SizetArray& N_shared,
-		       const Sizet2DArray& N_L_refined, RealMatrix& H_raw_mom);
+  void precompute_acv_control(const RealVector& avg_eval_ratios,
+			      const SizetArray& N_shared);
+  void compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
+			      RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
+			      size_t N_shared_q, size_t mom, size_t qoi,
+			      RealVector& beta);
 
   //
   //- Heading: member functions
@@ -82,8 +81,7 @@ private:
   void generate_dags(UShortArraySet& model_graphs);
 
   void compute_parameterized_G_g(const RealVector& N_vec,
-				 const UShortArray& dag, RealMatrix& G,
-				 RealVector& g);
+				 const UShortArray& dag);
 
   void invert_C_G_matrix(const RealSymMatrix& C, const RealMatrix& G,
 			 RealMatrix& C_G_inv);
@@ -105,6 +103,11 @@ private:
   //
   //- Heading: Data
   //
+
+  /// the "G" matrix in Bomarito et al.
+  RealMatrix GMat;
+  /// the "g" vector in Bomarito et al.
+  RealVector gVec;
 
   /// type of tunable recursion for defining set of DAGs: KL, SR, or MR
   short dagRecursionType;
@@ -182,10 +185,9 @@ compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
 		       const RealMatrix& cov_LH, const RealVector& g,
 		       size_t qoi, RealVector& beta)
 {
-  RealMatrix C_G_inv;  RealVector c_g;
-  invert_C_G_matrix(covLL[qoi], G, C_G_inv);
+  RealMatrix C_G_inv;  invert_C_G_matrix(covLL[qoi], G, C_G_inv);
   //Cout << "compute_genacv_control qoi " << qoi+1 << ": C_G_inv\n" << C_G_inv;
-  compute_c_g_vector(covLH, qoi, g, c_g);
+  RealVector c_g;      compute_c_g_vector(covLH, qoi, g, c_g);
   //Cout << "compute_genacv_control qoi " << qoi+1 << ": c_g\n" << c_g;
 
   size_t n = G.numRows();
@@ -198,8 +200,8 @@ compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
 inline void NonDGenACVSampling::
 compute_genacv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
 		       RealMatrix& sum_LH, size_t N_shared_q,
-		       const RealMatrix& G, const RealVector& g, size_t qoi,
-		       RealVector& beta)
+		       const RealMatrix& G, const RealVector& g,
+		       size_t qoi, RealVector& beta)
 {
   // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
   // > cov_LH is sized for all qoi but only 1 row is used
@@ -208,6 +210,32 @@ compute_genacv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
 				  qoi, cov_LL, cov_LH);
   // forward to overload:
   compute_genacv_control(cov_LL, G, cov_LH, g, qoi, beta);
+}
+
+
+inline void NonDGenACVSampling::
+precompute_acv_control(const RealVector& avg_eval_ratios,
+		       const SizetArray& N_shared)
+{
+  // Note: while G,g have a more explicit dependence on N_shared[qoi] than F,
+  // we mirror the averaged sample allocations and compute G,g once
+  RealVector N_vec; //, g;  RealMatrix G;
+  r_and_N_to_N_vec(avg_eval_ratios, average(N_shared), N_vec);
+  compute_parameterized_G_g(N_vec, activeDAG);
+}
+
+
+inline void NonDGenACVSampling::
+compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
+		       RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
+		       size_t N_shared_q, size_t mom, size_t qoi,
+		       RealVector& beta)
+{
+  if (mom == 1) // variances/covariances already computed for mean estimator
+    compute_genacv_control(covLL[qoi], GMat, covLH, gVec, qoi, beta);
+  else // compute variances/covariances for higher-order moment estimators
+    compute_genacv_control(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
+			   N_shared_q, GMat, gVec, qoi, beta); // shared counts
 }
 
 

@@ -67,15 +67,13 @@ protected:
   //- Heading: New virtual functions
   //
 
-  virtual void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
-			       IntRealMatrixMap& sum_L_refined,
-			       IntRealVectorMap& sum_H,
-			       IntRealSymMatrixArrayMap& sum_LL,
-			       IntRealMatrixMap& sum_LH,
-			       const RealVector& avg_eval_ratios,
-			       const SizetArray& N_shared,
-			       const Sizet2DArray& N_L_refined,
-			       RealMatrix& H_raw_mom);
+  virtual void precompute_acv_control(const RealVector& avg_eval_ratios,
+				      const SizetArray& N_shared);
+
+  virtual void compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
+				      RealSymMatrix& sum_LL_mq,
+				      RealMatrix& sum_LH_m, size_t N_shared_q,
+				      size_t mom, size_t qoi, RealVector& beta);
 
   //
   //- Heading: member functions
@@ -100,6 +98,16 @@ protected:
   void compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 		      RealVector& avg_eval_ratios, Real& avg_hf_target,
 		      Real& avg_estvar,            Real& avg_estvar_ratio);
+
+  void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
+		       IntRealMatrixMap& sum_L_refined,
+		       IntRealVectorMap& sum_H,
+		       IntRealSymMatrixArrayMap& sum_LL,
+		       IntRealMatrixMap& sum_LH,
+		       const RealVector& avg_eval_ratios,
+		       const SizetArray& N_shared,
+		       const Sizet2DArray& N_L_refined,
+		       RealMatrix& H_raw_mom);
 
   void compute_acv_control_covariances(RealMatrix& sum_L, Real sum_H_q,
 				       RealSymMatrix& sum_LL_q,
@@ -207,6 +215,9 @@ private:
 
   /// option for performing multiple ACV optimizations and taking the best
   bool multiStartACV;
+
+  /// the "F" matrix from Gorodetsky JCP paper
+  RealSymMatrix FMat;
 };
 
 
@@ -570,6 +581,29 @@ compute_acv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
   compute_acv_control(cov_LL, F, cov_LH, qoi, beta);
 }
 */
+
+
+inline void NonDACVSampling::
+precompute_acv_control(const RealVector& avg_eval_ratios,
+		       const SizetArray& N_shared)
+{
+  //RealSymMatrix F;
+  compute_F_matrix(avg_eval_ratios, FMat);
+}
+
+
+inline void NonDACVSampling::
+compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
+		       RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
+		       size_t N_shared_q, size_t mom, size_t qoi,
+		       RealVector& beta)
+{
+  if (mom == 1) // variances/covariances already computed for mean estimator
+    compute_acv_control(covLL[qoi], FMat, covLH, qoi, beta);
+  else // compute variances/covariances for higher-order moment estimators
+    compute_acv_control(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
+			N_shared_q, FMat, qoi, beta);// all use shared counts
+}
 
 } // namespace Dakota
 

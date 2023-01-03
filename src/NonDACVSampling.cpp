@@ -1116,7 +1116,7 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 {
   if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
 
-  RealSymMatrix F;  compute_F_matrix(avg_eval_ratios, F);
+  precompute_acv_control(avg_eval_ratios, N_shared); // virtual ACV|GenACV
 
   size_t approx, qoi, N_shared_q;  Real sum_H_mq;
   RealVector beta(numApprox);
@@ -1130,12 +1130,9 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
       Cout << "Moment " << mom << " estimator:\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
       sum_H_mq = sum_H_m[qoi];  N_shared_q = N_shared[qoi];
-      if (mom == 1) // variances/covariances already computed for mean estimator
-	compute_acv_control(covLL[qoi], F, covLH, qoi, beta);
-      else // compute variances/covariances for higher-order moment estimators
-	compute_acv_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
-			    N_shared_q, F, qoi, beta); // all use shared counts
-        // *** TO DO: support shared_approx_increment() --> baselineL
+      compute_acv_control_mq(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
+			     N_shared_q, mom, qoi, beta); // virtual ACV|GenACV
+      // *** TO DO: support shared_approx_increment() --> baselineL
 
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);
       H_raw_mq = sum_H_mq / N_shared_q; // first term to be augmented
