@@ -1234,10 +1234,16 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
 
-  if (pilotMgmtMode != OFFLINE_PILOT)
+  if (pilotMgmtMode != OFFLINE_PILOT) {
+    // > reporting estVarIter0 best shows the reference for convTol
+    // > recomputing with latest varH is more consistent with metrics to follow 
+    //RealVector initial_mc_estvar;
+    //compute_mc_estimator_variance(varH, numHIter0, initial_mc_estvar);
     s << "    Initial   MC (" << std::setw(5)
       << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
       << std::setw(wpp7) << average(estVarIter0) << '\n';
+    //<< std::setw(wpp7) << average(initial_mc_estvar) << '\n';
+  }
 
   String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "   Online";
   //String method = method_enum_to_string(methodName); // string too verbose

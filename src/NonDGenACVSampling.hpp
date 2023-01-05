@@ -93,14 +93,12 @@ private:
   void compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
 			      const RealMatrix& cov_LH, const RealVector& g,
 			      size_t qoi, RealVector& beta);
-  void compute_genacv_control(RealMatrix& sum_L, Real sum_H_q,
-			      RealSymMatrix& sum_LL_q, RealMatrix& sum_LH,
-			      size_t N_shared_q, const RealMatrix& G,
-			      const RealVector& g, size_t qoi,RealVector& beta);
 
-  void update_best();
-  void restore_best();
+  void update_best(const RealVector& avg_eval_ratios, Real avg_hf_target);
+  void restore_best(RealVector& avg_eval_ratios, Real& avg_hf_target);
   //void reset_acv();
+
+  bool valid_variance(Real var) const;
 
   //
   //- Heading: Data
@@ -121,8 +119,18 @@ private:
 
   /// the best performing model graph among the set from generate_dags()
   UShortArraySet::const_iterator bestDAGIter;
-  /// track estimator variance for best model graph
+  /// track average evaluation ratios for best model graph
+  RealVector bestAvgEvalRatios;
+  /// track average high-fideloity sample target for best model graph
+  Real bestAvgHFTarget;
+  /// track average estimator variance for best model graph
   Real bestAvgEstVar;
+  /// track average estimator variance ratio for best model graph
+  Real bestAvgEstVarRatio;
+  /// track initial MC estimator variance for best model graph
+  RealVector bestEstVarIter0;
+  /// track initial high-fidelity sample counts for best model graph
+  SizetArray bestNumHIter0;
 };
 
 
@@ -186,6 +194,18 @@ compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g, Real var_H_q,
 
 
 inline void NonDGenACVSampling::
+precompute_acv_control(const RealVector& avg_eval_ratios,
+		       const SizetArray& N_shared)
+{
+  // Note: while G,g have a more explicit dependence on N_shared[qoi] than F,
+  // we mirror the averaged sample allocations and compute G,g once
+  RealVector N_vec; //, g;  RealMatrix G;
+  r_and_N_to_N_vec(avg_eval_ratios, average(N_shared), N_vec);
+  compute_parameterized_G_g(N_vec, *activeDAGIter);
+}
+
+
+inline void NonDGenACVSampling::
 compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
 		       const RealMatrix& cov_LH, const RealVector& g,
 		       size_t qoi, RealVector& beta)
@@ -203,34 +223,6 @@ compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
 
 
 inline void NonDGenACVSampling::
-compute_genacv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
-		       RealMatrix& sum_LH, size_t N_shared_q,
-		       const RealMatrix& G, const RealVector& g,
-		       size_t qoi, RealVector& beta)
-{
-  // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
-  // > cov_LH is sized for all qoi but only 1 row is used
-  RealSymMatrix cov_LL; RealMatrix cov_LH;
-  compute_acv_control_covariances(sum_L, sum_H_q, sum_LL_q, sum_LH, N_shared_q,
-				  qoi, cov_LL, cov_LH);
-  // forward to overload:
-  compute_genacv_control(cov_LL, G, cov_LH, g, qoi, beta);
-}
-
-
-inline void NonDGenACVSampling::
-precompute_acv_control(const RealVector& avg_eval_ratios,
-		       const SizetArray& N_shared)
-{
-  // Note: while G,g have a more explicit dependence on N_shared[qoi] than F,
-  // we mirror the averaged sample allocations and compute G,g once
-  RealVector N_vec; //, g;  RealMatrix G;
-  r_and_N_to_N_vec(avg_eval_ratios, average(N_shared), N_vec);
-  compute_parameterized_G_g(N_vec, *activeDAGIter);
-}
-
-
-inline void NonDGenACVSampling::
 compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
 		       RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 		       size_t N_shared_q, size_t mom, size_t qoi,
@@ -238,9 +230,14 @@ compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
 {
   if (mom == 1) // variances/covariances already computed for mean estimator
     compute_genacv_control(covLL[qoi], GMat, covLH, gVec, qoi, beta);
-  else // compute variances/covariances for higher-order moment estimators
-    compute_genacv_control(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
-			   N_shared_q, GMat, gVec, qoi, beta); // shared counts
+  else { // compute variances/covariances for higher-order moment estimators
+    // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
+    // > cov_LH is sized for all qoi but only 1 row is used
+    RealSymMatrix cov_LL; RealMatrix cov_LH;
+    compute_acv_control_covariances(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
+				    N_shared_q, qoi, cov_LL, cov_LH);
+    compute_genacv_control(cov_LL, GMat, cov_LH, gVec, qoi, beta);
+  }
 }
 
 
@@ -257,6 +254,10 @@ inline void NonDGenACVSampling::reset_acv()
   // Note: other sample counters are reset at top of each acv_*_pilot() call
 }
 */
+
+
+inline bool NonDGenACVSampling::valid_variance(Real var) const
+{ return (isfinite(var) && var > 0.); }
 
 } // namespace Dakota
 

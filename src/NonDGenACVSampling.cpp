@@ -164,10 +164,10 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
       // variance reduction from application of avg_eval_ratios).
       compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
 		     avgEstVar, avgEstVarRatio);
-      update_best(); // store reqd state for restoration w/o any recomputation
+      update_best(avg_eval_ratios, avg_hf_target);// store state for restoration
       //reset_acv(); // reset state for next ACV execution
     }
-    restore_best();
+    restore_best(avg_eval_ratios, avg_hf_target);
     ++mlmfIter;
   }
 
@@ -218,10 +218,10 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
     // variance reduction from application of avg_eval_ratios).
     compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
 		   avgEstVar, avgEstVarRatio);
-    update_best(); // store reqd state for restoration w/o any recomputation
+    update_best(avg_eval_ratios, avg_hf_target); // store state for restoration
     //reset_acv(); // reset state for next ACV execution
   }
-  restore_best();
+  restore_best(avg_eval_ratios, avg_hf_target);
 
   // -----------------------------------
   // Perform "online" sample increments:
@@ -277,10 +277,10 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
     // variance reduction from application of avg_eval_ratios).
     compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
 		   avgEstVar, avgEstVarRatio);
-    update_best(); // store reqd state for restoration w/o any recomputation
+    update_best(avg_eval_ratios, avg_hf_target); // store state for restoration
     //reset_acv(); // reset state for next ACV execution
   }
-  restore_best();
+  restore_best(avg_eval_ratios, avg_hf_target);
 
   ++mlmfIter;
   // No LF increments or final moments for pilot projection
@@ -430,25 +430,51 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
 }
 
 
-void NonDGenACVSampling::update_best()
+void NonDGenACVSampling::
+update_best(const RealVector& avg_eval_ratios, Real avg_hf_target)
 {
-  // Store best result: *** TO DO: identify required state
-  // > if DAG evaluation mode will be same as final mode, then could go ahead
-  //   and post-process and store only best final stats for results reporting
-  // > if DAG evalation mode (projection) could differ from final mode
-  //   (iteration), then need to store intermediate state to allow additional
-  //   iteraton to pick up where it left off
-  if (avgEstVar < bestAvgEstVar)
-    { bestAvgEstVar = avgEstVar;  bestDAGIter = activeDAGIter; }// ... *** TO DO
+  // Store best result:
+  // > could potentially prune some of this tracking for final_statistics mode
+  //   = estimator_performance, 
+  if (valid_variance(avgEstVar) && avgEstVar < bestAvgEstVar) {
+    bestDAGIter        = activeDAGIter;
+    bestAvgEvalRatios  = avg_eval_ratios;
+    bestAvgHFTarget    = avg_hf_target;
+    // could recompute these to reduce tracking
+    bestAvgEstVar      = avgEstVar;
+    bestAvgEstVarRatio = avgEstVarRatio;
+    // reference points for output
+    if (pilotMgmtMode != OFFLINE_PILOT) {
+      bestEstVarIter0 = estVarIter0;
+      bestNumHIter0   = numHIter0;
+    }
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Updating best DAG to:\n" << *bestDAGIter << std::endl;
+  }
 }
 
 
-void NonDGenACVSampling::restore_best()
+void NonDGenACVSampling::
+restore_best(RealVector& avg_eval_ratios, Real& avg_hf_target)
 {
-  Cout << "Best estimator variance = " << bestAvgEstVar
+  Cout << "\nBest estimator variance = " << bestAvgEstVar
        << " from DAG:\n" << *bestDAGIter << std::endl;
-  // TO DO: restore best state for compute/archive/print final results
-  activeDAGIter = bestDAGIter;  avgEstVar = bestAvgEstVar; //... *** TO DO
+  // restore best state for compute/archive/print final results
+  if (activeDAGIter != bestDAGIter) { // best is not most recent
+    activeDAGIter   = bestDAGIter;
+    avg_eval_ratios = bestAvgEvalRatios;
+    avg_hf_target   = bestAvgHFTarget;
+    avgEstVar       = bestAvgEstVar;
+    avgEstVarRatio  = bestAvgEstVarRatio;
+    if (pilotMgmtMode != OFFLINE_PILOT) {
+      estVarIter0 = bestEstVarIter0;
+      numHIter0   = bestNumHIter0;
+    }
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Restoring best DAG to:\n" << *activeDAGIter
+	   << "with avg_hf_target = " << avg_hf_target
+	   << "\nand avg_eval_ratios =\n" << avg_eval_ratios << std::endl;
+  }
 }
 
 } // namespace Dakota
