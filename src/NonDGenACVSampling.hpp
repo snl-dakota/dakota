@@ -98,7 +98,9 @@ private:
 			      size_t N_shared_q, const RealMatrix& G,
 			      const RealVector& g, size_t qoi,RealVector& beta);
 
-  void reset_acv();
+  void update_best();
+  void restore_best();
+  //void reset_acv();
 
   //
   //- Heading: Data
@@ -111,11 +113,14 @@ private:
 
   /// type of tunable recursion for defining set of DAGs: KL, SR, or MR
   short dagRecursionType;
+  /// the set of admissible DAGs identifying the control variate
+  /// targets for each model in the ensemble
+  UShortArraySet modelDAGs;
   /// the active instance from within the set computed by generate_dags()
-  UShortArray activeDAG;
+  UShortArraySet::const_iterator activeDAGIter;
 
   /// the best performing model graph among the set from generate_dags()
-  UShortArray bestDAG;
+  UShortArraySet::const_iterator bestDAGIter;
   /// track estimator variance for best model graph
   Real bestAvgEstVar;
 };
@@ -221,7 +226,7 @@ precompute_acv_control(const RealVector& avg_eval_ratios,
   // we mirror the averaged sample allocations and compute G,g once
   RealVector N_vec; //, g;  RealMatrix G;
   r_and_N_to_N_vec(avg_eval_ratios, average(N_shared), N_vec);
-  compute_parameterized_G_g(N_vec, activeDAG);
+  compute_parameterized_G_g(N_vec, *activeDAGIter);
 }
 
 
@@ -239,6 +244,7 @@ compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
 }
 
 
+/*
 inline void NonDGenACVSampling::reset_acv()
 {
   // from pre_run() up the hierarchy:
@@ -250,6 +256,7 @@ inline void NonDGenACVSampling::reset_acv()
   //numSamples = pilotSamples[numApprox];
   // Note: other sample counters are reset at top of each acv_*_pilot() call
 }
+*/
 
 } // namespace Dakota
 

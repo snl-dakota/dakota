@@ -83,6 +83,30 @@ protected:
   void approximate_control_variate_offline_pilot();
   void approximate_control_variate_pilot_projection();
 
+  void initialize_acv_sums(IntRealMatrixMap& sum_L_baseline,
+			   IntRealVectorMap& sum_H,
+			   IntRealSymMatrixArrayMap& sum_LL,
+			   IntRealMatrixMap& sum_LH, RealVector& sum_HH);
+
+  void evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
+		      RealSymMatrixArray& sum_LL_pilot,
+		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
+		      SizetArray& N_shared_pilot, bool incr_cost);
+
+  void compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
+			     RealSymMatrixArray& sum_LL_pilot,
+			     RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
+			     SizetArray& N_shared_pilot, RealMatrix& var_L,
+			     RealVector& var_H, RealSymMatrixArray& cov_LL,
+			     RealMatrix& cov_LH);
+
+  // shared_increment() cases:
+  void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
+			   IntRealVectorMap& sum_H,
+			   IntRealSymMatrixArrayMap& sum_LL,
+			   IntRealMatrixMap& sum_LH, RealVector& sum_HH,
+			   SizetArray& N_shared);
+
   void approx_increments(IntRealMatrixMap& sum_L_baselineH,
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
@@ -115,16 +139,24 @@ protected:
 				       size_t qoi, RealSymMatrix& cov_LL,
 				       RealMatrix& cov_LH);
 
+  void update_projected_lf_samples(Real avg_hf_targets,
+				   const RealVector& avg_eval_ratios,
+				   const SizetArray& N_H_actual,
+				   size_t& N_H_alloc,
+				   //SizetArray& delta_N_L_actual,
+				   Real& delta_equiv_hf);
+  void update_projected_samples(Real avg_hf_targets,
+				const RealVector& avg_eval_ratios,
+				const SizetArray& N_H_actual, size_t& N_H_alloc,
+				size_t& delta_N_H_actual,
+				//SizetArray& delta_N_L_actual,
+				Real& delta_equiv_hf);
+
 private:
 
   //
   //- Heading: Helper functions
   //
-
-  void initialize_acv_sums(IntRealMatrixMap& sum_L_baseline,
-			   IntRealVectorMap& sum_H,
-			   IntRealSymMatrixArrayMap& sum_LL,
-			   IntRealMatrixMap& sum_LH, RealVector& sum_HH);
 
   void initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL);
 
@@ -133,11 +165,6 @@ private:
   //				  IntRealVectorMap& var_H);
 
   // shared_increment() cases:
-  void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
-			   IntRealVectorMap& sum_H,
-			   IntRealSymMatrixArrayMap& sum_LL,
-			   IntRealMatrixMap& sum_LH, RealVector& sum_HH,
-			   SizetArray& N_shared);
   void accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 			   RealSymMatrixArray& sum_LL, RealMatrix& sum_LH,
 			   RealVector& sum_HH, SizetArray& N_shared);
@@ -192,19 +219,6 @@ private:
 			   RealSymMatrix& sum_LL_q, RealMatrix& sum_LH,
 			   size_t N_shared_q, const RealSymMatrix& F,
 			   size_t qoi, RealVector& beta);
-
-  void update_projected_lf_samples(Real avg_hf_targets,
-				   const RealVector& avg_eval_ratios,
-				   const SizetArray& N_H_actual,
-				   size_t& N_H_alloc,
-				   //SizetArray& delta_N_L_actual,
-				   Real& delta_equiv_hf);
-  void update_projected_samples(Real avg_hf_targets,
-				const RealVector& avg_eval_ratios,
-				const SizetArray& N_H_actual, size_t& N_H_alloc,
-				size_t& delta_N_H_actual,
-				//SizetArray& delta_N_L_actual,
-				Real& delta_equiv_hf);
 
   Real update_hf_target(const RealVector& avg_eval_ratios,
 			const RealVector& var_H, const RealVector& estvar0);

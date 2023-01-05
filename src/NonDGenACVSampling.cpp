@@ -34,56 +34,14 @@ NonDGenACVSampling::
 NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDACVSampling(problem_db, model), dagRecursionType(KL_GRAPH_RECURSION)
 {
-  mlmfSubMethod = problem_db.get_ushort("method.sub_method");
-
-  if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
-    optSubProblemForm = N_VECTOR_LINEAR_OBJECTIVE;
-  else                     // budget constraint (maxFunctionEvals)
-    // truthFixedByPilot is a user-specified option for fixing the number of
-    // HF samples (to those in the pilot).  In this case, equivHF budget is
-    // allocated by optimizing r* for fixed N.
-    optSubProblemForm = (truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT) ?
-      R_ONLY_LINEAR_CONSTRAINT : N_VECTOR_LINEAR_CONSTRAINT;
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "ACV sub-method selection = " << mlmfSubMethod
-	 << " sub-method formulation = "  << optSubProblemForm
-	 << " sub-problem solver = "      << optSubProblemSolver << std::endl;
+  // Unless the ensemble changes, the set of admissible DAGS is invariant:
+  //UShortArraySet model_dags;
+  generate_dags(modelDAGs);
 }
 
 
 NonDGenACVSampling::~NonDGenACVSampling()
 { }
-
-
-/** The primary run function manages the general case: a hierarchy of model 
-    forms (from the ordered model fidelities within a HierarchSurrModel), 
-    each of which may contain multiple discretization levels. */
-void NonDGenACVSampling::core_run()
-{
-  UShortArraySet model_dags;
-  generate_dags(model_dags);
-
-  UShortArraySet::const_iterator dag_cit;  bestAvgEstVar = DBL_MAX;
-  for (dag_cit=model_dags.begin(); dag_cit!=model_dags.end(); ++dag_cit) {
-    activeDAG = *dag_cit;
-    Cout << "Generalized ACV evaluating DAG:\n" << activeDAG << std::endl;
-
-    NonDACVSampling::core_run(); // {online,offline,projection} modes
-
-    // store best result:
-    if (avgEstVar < bestAvgEstVar)
-      { bestAvgEstVar = avgEstVar;  bestDAG = activeDAG; }//***TO DO: REQD STATE
-    // reset state for next ACV execution:
-    reset_acv();
-  }
-
-  // Post-process
-  Cout << "Best estimator variance = " << bestAvgEstVar
-       << " from DAG:\n" << bestDAG << std::endl;
-  // TO DO: restore best state, compute/store/print final results
-  activeDAG = bestDAG;  avgEstVar = bestAvgEstVar; //...
-}
 
 
 void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
@@ -120,6 +78,220 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
 }
 
 
+/** The primary run function manages the general case: a hierarchy of model 
+    forms (from the ordered model fidelities within a HierarchSurrModel), 
+    each of which may contain multiple discretization levels. */
+void NonDGenACVSampling::core_run()
+{
+  // Initialize for pilot sample
+  numSamples = pilotSamples[numApprox]; // last in pilot array
+  bestAvgEstVar = DBL_MAX;
+
+  switch (pilotMgmtMode) {
+  case  ONLINE_PILOT: // iterated ACV (default)
+    generalized_acv_online_pilot();     break;
+  case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
+    generalized_acv_offline_pilot();    break;
+  case PILOT_PROJECTION: // for algorithm assessment/selection
+    generalized_acv_pilot_projection(); break;
+  }
+
+  /*
+  Initial DAG-enumeration of inherited implementations was wasteful:
+  > relied on duplication detection for reusing pilot
+  > allowed/defaulted to online mode for each DAG (wasteful for poor DAG)
+  Adopt same approach proposed for AAO hyper-parameter model tuning --> need
+  shared increments for online_pilot mode on outer-most loop around DAG/ensemble
+  selection, followed by LF increments only after finalization of config.
+
+  for (activeDAGIter=modelDAGs.begin(); activeDAGIter!=modelDAGs.end();
+       ++activeDAGIter) {
+    Cout << "Generalized ACV evaluating DAG:\n" << *activeDAGIter << std::endl;
+
+    NonDACVSampling::core_run(); // {online,offline,projection} modes
+
+    update_best(); // store reqd state for restoration w/o any recomputation
+    reset_acv();   // reset state for next ACV execution
+  }
+
+  restore_best();
+  // Post-process ...
+  */
+}
+
+
+/** This function performs control variate MC across two combinations of 
+    model form and discretization level. */
+void NonDGenACVSampling::generalized_acv_online_pilot()
+{
+  // retrieve cost estimates across soln levels for a particular model form
+  IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
+  IntRealSymMatrixArrayMap sum_LL;
+  RealVector sum_HH, avg_eval_ratios;  RealMatrix var_L;
+  //SizetSymMatrixArray N_LL;
+  initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
+
+  Real avg_hf_target = 0.;
+  while (numSamples && mlmfIter <= maxIterations) {
+
+    // --------------------------------------------------------------------
+    // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
+    // --------------------------------------------------------------------
+    shared_increment(mlmfIter); // spans ALL models, blocking
+    accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
+			sum_LH, sum_HH, N_H_actual);//, N_LL);
+    N_H_alloc += (backfillFailures && mlmfIter) ?
+      one_sided_delta(N_H_alloc, avg_hf_target) : numSamples;
+    // While online cost recovery could be continuously updated, we restrict
+    // to the pilot and do not not update after iter 0.  We could potentially
+    // update cost for shared samples, mirroring the covariance updates.
+    if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,
+			      equivHFEvals);
+    compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
+			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
+
+    for (activeDAGIter  = modelDAGs.begin();
+	 activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
+      //N_H_actual.assign(numFunctions, 0); N_H_alloc = 0; avg_hf_target = 0.;// ***
+
+      // compute the LF/HF evaluation ratios from shared samples and compute
+      // ratio of MC and ACV mean sq errors (which incorporates anticipated
+      // variance reduction from application of avg_eval_ratios).
+      compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
+		     avgEstVar, avgEstVarRatio);
+      update_best(); // store reqd state for restoration w/o any recomputation
+      //reset_acv(); // reset state for next ACV execution
+    }
+    restore_best();
+    ++mlmfIter;
+  }
+
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS)
+    approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
+		      N_H_alloc, avg_eval_ratios, avg_hf_target);
+  else
+    // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
+    update_projected_lf_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
+				N_H_alloc, deltaEquivHF);
+}
+
+
+/** This function performs control variate MC across two combinations of 
+    model form and discretization level. */
+void NonDGenACVSampling::generalized_acv_offline_pilot()
+{
+  // ------------------------------------------------------------
+  // Compute var L,H & covar LL,LH from (oracle) pilot treated as "offline" cost
+  // ------------------------------------------------------------
+  RealVector sum_H_pilot, sum_HH_pilot;
+  RealMatrix sum_L_pilot, sum_LH_pilot, var_L;
+  RealSymMatrixArray sum_LL_pilot;  SizetArray N_shared_pilot;
+  evaluate_pilot(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+		 sum_HH_pilot, N_shared_pilot, false);
+  compute_LH_statistics(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+			sum_HH_pilot, N_shared_pilot, var_L, varH, covLL,covLH);
+
+  // -----------------------------------
+  // Compute "online" sample increments:
+  // -----------------------------------
+  IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
+  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH, avg_eval_ratios;
+  initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  Real avg_hf_target;
+
+  for (activeDAGIter  = modelDAGs.begin();
+       activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
+    //N_H_actual.assign(numFunctions, 0); N_H_alloc = 0; avg_hf_target = 0.;// ***
+
+    // compute the LF/HF evaluation ratios from shared samples and compute
+    // ratio of MC and ACV mean sq errors (which incorporates anticipated
+    // variance reduction from application of avg_eval_ratios).
+    compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
+		   avgEstVar, avgEstVarRatio);
+    update_best(); // store reqd state for restoration w/o any recomputation
+    //reset_acv(); // reset state for next ACV execution
+  }
+  restore_best();
+
+  // -----------------------------------
+  // Perform "online" sample increments:
+  // -----------------------------------
+  // at least 2 samples reqd for variance (+ resetting allSamples from pilot)
+  numSamples = std::max(numSamples, (size_t)2);  ++mlmfIter;
+  shared_increment(mlmfIter); // spans ALL models, blocking
+  accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
+		      sum_LH, sum_HH, N_H_actual);//, N_LL);
+  N_H_alloc += numSamples;
+  increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,equivHFEvals);
+  // allow pilot to vary for C vs c
+
+  // Only QOI_STATISTICS requires application of oversample ratios and
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  if (finalStatsType == QOI_STATISTICS)
+    approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
+		      N_H_alloc, avg_eval_ratios, avg_hf_target);
+  else
+    // N_H is converged from offline pilot --> do not compute deltaNActualHF
+    update_projected_lf_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
+				N_H_alloc, deltaEquivHF);
+}
+
+
+/** This function performs control variate MC across two combinations of 
+    model form and discretization level. */
+void NonDGenACVSampling::generalized_acv_pilot_projection()
+{
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+
+  // --------------------------------------------------------------------
+  // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
+  // --------------------------------------------------------------------
+  RealVector sum_H, sum_HH;   RealMatrix sum_L_baselineH, sum_LH, var_L;
+  RealSymMatrixArray sum_LL;
+  evaluate_pilot(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
+		 N_H_actual, true);
+  compute_LH_statistics(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
+			N_H_actual, var_L, varH, covLL, covLH);
+  N_H_alloc = numSamples;
+
+  // -----------------------------------
+  // Compute "online" sample increments:
+  // -----------------------------------
+  RealVector avg_eval_ratios;  Real avg_hf_target = 0.;
+  for (activeDAGIter  = modelDAGs.begin();
+       activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
+    // compute the LF/HF evaluation ratios from shared samples and compute
+    // ratio of MC and ACV mean sq errors (which incorporates anticipated
+    // variance reduction from application of avg_eval_ratios).
+    compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
+		   avgEstVar, avgEstVarRatio);
+    update_best(); // store reqd state for restoration w/o any recomputation
+    //reset_acv(); // reset state for next ACV execution
+  }
+  restore_best();
+
+  ++mlmfIter;
+  // No LF increments or final moments for pilot projection
+  update_projected_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
+			   N_H_alloc, deltaNActualHF, deltaEquivHF);
+  // No need for updating estimator variance given deltaNActualHF since
+  // NonDNonHierarchSampling::nonhierarch_numerical_solution() recovers N*
+  // from the numerical solve and computes projected avgEstVar{,Ratio}
+}
+
+
 void NonDGenACVSampling::
 estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 {
@@ -146,7 +318,7 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     }
     for (size_t i=0; i<numApprox; ++i)
       N_vec[i] *= N_H; // N_i = r_i * N
-    compute_parameterized_G_g(N_vec, activeDAG);
+    compute_parameterized_G_g(N_vec, *activeDAGIter);
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT: { // convert r_and_N to N_vec:
@@ -154,11 +326,11 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     N_H = N_vec[numApprox];
     for (size_t i=0; i<numApprox; ++i)
       N_vec[i] *= N_H; // N_i = r_i * N
-    compute_parameterized_G_g(N_vec, activeDAG);
+    compute_parameterized_G_g(N_vec, *activeDAGIter);
     break;
   }
   case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
-    compute_parameterized_G_g(cd_vars, activeDAG);
+    compute_parameterized_G_g(cd_vars, *activeDAGIter);
     N_H = cd_vars[numApprox];
     break;
   }
@@ -255,6 +427,28 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "For dag:\n"  << dag  << "G matrix:\n" << GMat
 	 << "g vector:\n" << gVec << std::endl;
+}
+
+
+void NonDGenACVSampling::update_best()
+{
+  // Store best result: *** TO DO: identify required state
+  // > if DAG evaluation mode will be same as final mode, then could go ahead
+  //   and post-process and store only best final stats for results reporting
+  // > if DAG evalation mode (projection) could differ from final mode
+  //   (iteration), then need to store intermediate state to allow additional
+  //   iteraton to pick up where it left off
+  if (avgEstVar < bestAvgEstVar)
+    { bestAvgEstVar = avgEstVar;  bestDAGIter = activeDAGIter; }// ... *** TO DO
+}
+
+
+void NonDGenACVSampling::restore_best()
+{
+  Cout << "Best estimator variance = " << bestAvgEstVar
+       << " from DAG:\n" << *bestDAGIter << std::endl;
+  // TO DO: restore best state for compute/archive/print final results
+  activeDAGIter = bestDAGIter;  avgEstVar = bestAvgEstVar; //... *** TO DO
 }
 
 } // namespace Dakota

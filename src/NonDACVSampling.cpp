@@ -119,27 +119,8 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
     increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,
 			      equivHFEvals);
-    // allow pilot to vary for C vs c
-    // *** TO DO: numSamples logic after pilot (mlmfIter >= 1)
-    // *** Will likely require _baselineL and _baselineH
-    //if (mlmfIter == 0 && lf_shared_pilot > hf_shared_pilot) {
-    //  numSamples = lf_shared_pilot - hf_shared_pilot;
-    //  shared_approx_increment(mlmfIter); // spans all approx models
-    //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
-    //                      N_L_baselineL);
-    //  increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox,
-    //			          equivHFEvals);
-    //}
-
-    const RealMatrix&         sum_L_1  = sum_L_baselineH[1];
-    const RealVector&         sum_H_1  = sum_H[1];
-    const RealSymMatrixArray& sum_LL_1 = sum_LL[1];
-    compute_variance(sum_H_1, sum_HH, N_H_actual, varH);
-    if (mlmfIter == 0) compute_L_variance(sum_L_1, sum_LL_1, N_H_actual, var_L);
-    compute_LH_covariance(sum_L_1/*baseH*/, sum_H_1, sum_LH[1],
-			  N_H_actual, covLH);
-    compute_LL_covariance(sum_L_1/*baseL*/, sum_LL_1, N_H_actual, covLL);
-    //Cout << "var_H:\n"<< var_H << "cov_LH:\n"<< cov_LH << "cov_LL:\n"<<cov_LL;
+    compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
+			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
 
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
@@ -165,32 +146,16 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     model form and discretization level. */
 void NonDACVSampling::approximate_control_variate_offline_pilot()
 {
-  RealVector sum_H_pilot(numFunctions), sum_HH_pilot(numFunctions);
-  RealMatrix sum_L_pilot(numFunctions, numApprox),
-    sum_LH_pilot(numFunctions, numApprox), var_L;
-  RealSymMatrixArray sum_LL_pilot(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    sum_LL_pilot[qoi].shape(numApprox);
-  SizetArray N_shared_pilot;  //SizetSymMatrixArray N_LL_pilot;
-  N_shared_pilot.assign(numFunctions, 0);
-  //initialize_acv_counts(N_shared_pilot, N_LL_pilot);
   // ------------------------------------------------------------
   // Compute var L,H & covar LL,LH from (oracle) pilot treated as "offline" cost
   // ------------------------------------------------------------
-  // Initialize for pilot sample
-  size_t hf_shared_pilot = numSamples;
-  shared_increment(mlmfIter); // spans ALL models, blocking
-  accumulate_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
-		      sum_HH_pilot, N_shared_pilot);//, N_LL_pilot);
-  if (onlineCost) recover_online_cost(sequenceCost);
-  //increment_equivalent_cost(numSamples,sequenceCost,0,numSteps,equivHFEvals);
-  compute_variance(sum_H_pilot, sum_HH_pilot, N_shared_pilot, varH);
-  compute_L_variance(sum_L_pilot, sum_LL_pilot, N_shared_pilot, var_L);
-  compute_LH_covariance(sum_L_pilot, sum_H_pilot, sum_LH_pilot,
-			N_shared_pilot, covLH);
-  compute_LL_covariance(sum_L_pilot, sum_LL_pilot,
-			/*N_LL_pilot*/N_shared_pilot, covLL);
-  //Cout << "var_H:\n"<< var_H << "cov_LH:\n"<< cov_LH << "cov_LL:\n"<<cov_LL;
+  RealVector sum_H_pilot, sum_HH_pilot;
+  RealMatrix sum_L_pilot, sum_LH_pilot, var_L;
+  RealSymMatrixArray sum_LL_pilot;  SizetArray N_shared_pilot;
+  evaluate_pilot(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+		 sum_HH_pilot, N_shared_pilot, false);
+  compute_LH_statistics(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+			sum_HH_pilot, N_shared_pilot, var_L, varH, covLL,covLH);
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -225,7 +190,6 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
 		      sum_LH, sum_HH, N_H_actual);//, N_LL);
   N_H_alloc += numSamples;
   increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,equivHFEvals);
-  // allow pilot to vary for C vs c
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
@@ -243,43 +207,25 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
     model form and discretization level. */
 void NonDACVSampling::approximate_control_variate_pilot_projection()
 {
-  RealVector sum_H(numFunctions), sum_HH(numFunctions), avg_eval_ratios;
-  RealMatrix sum_L_baselineH(numFunctions, numApprox),
-    sum_LH(numFunctions, numApprox), var_L;
-  RealSymMatrixArray sum_LL(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    sum_LL[qoi].shape(numApprox);
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  //SizetSymMatrixArray N_LL;  initialize_acv_counts(N_H_actual, N_LL);
-  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  Real avg_hf_target = 0.;
-
-  // Initialize for pilot sample
-  size_t hf_shared_pilot = numSamples;
-  //, start=0, lf_shared_pilot = find_min(pilotSamples, start, numApprox-1);
 
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
-  shared_increment(mlmfIter); // spans ALL models, blocking
-  accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-		      sum_LH, sum_HH, N_H_actual);//, N_LL);
-  N_H_alloc += numSamples;
-  if (onlineCost) recover_online_cost(sequenceCost);
-  increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,equivHFEvals);
-  // allow pilot to vary for C vs c
-
-  compute_variance(sum_H, sum_HH, N_H_actual, varH);
-  compute_L_variance(sum_L_baselineH, sum_LL, N_H_actual, var_L);
-  compute_LH_covariance(sum_L_baselineH, sum_H, sum_LH, N_H_actual, covLH);
-  compute_LL_covariance(sum_L_baselineH/*baseL*/, sum_LL, N_H_actual, covLL);
-  //Cout << "var_H:\n"<< var_H << "cov_LH:\n"<< cov_LH << "cov_LL:\n"<<cov_LL;
+  RealVector sum_H, sum_HH;  RealMatrix sum_L_baselineH, sum_LH, var_L;
+  RealSymMatrixArray sum_LL;
+  evaluate_pilot(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
+		 N_H_actual, true);
+  compute_LH_statistics(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
+			N_H_actual, var_L, varH, covLL, covLH);
+  N_H_alloc = numSamples;
 
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
+  RealVector avg_eval_ratios;  Real avg_hf_target = 0.;
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
@@ -293,6 +239,67 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::nonhierarch_numerical_solution() recovers N*
   // from the numerical solve and computes projected avgEstVar{,Ratio}
+}
+
+
+void NonDACVSampling::
+evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
+	       RealSymMatrixArray& sum_LL_pilot, RealMatrix& sum_LH_pilot,
+	       RealVector& sum_HH_pilot, SizetArray& N_shared_pilot,
+	       bool incr_cost)
+{
+  sum_H_pilot.size(numFunctions); sum_HH_pilot.size(numFunctions);
+  sum_L_pilot.shape(numFunctions, numApprox);
+  sum_LH_pilot.shape(numFunctions, numApprox);
+  sum_LL_pilot.resize(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    sum_LL_pilot[qoi].shape(numApprox);
+  N_shared_pilot.assign(numFunctions, 0);
+  //initialize_acv_counts(N_shared_pilot, N_LL_pilot);
+
+  // ----------------------------------------
+  // Compute var L,H & covar LL,LH from pilot
+  // ----------------------------------------
+  // Initialize for pilot sample
+  shared_increment(mlmfIter); // spans ALL models, blocking
+  accumulate_acv_sums(sum_L_pilot/*_baselineH, sum_L_baselineL,*/,
+		      sum_H_pilot, sum_LL_pilot, sum_LH_pilot, sum_HH_pilot,
+		      N_shared_pilot);//, N_LL_pilot);
+  if (mlmfIter == 0) {
+    // TO DO: allow pilot to vary for C vs c.  numSamples logic after pilot
+    // (mlmfIter >= 1) will require _baseline{L,H}
+    //if (lf_shared_pilot > hf_shared_pilot) {
+    //  numSamples = lf_shared_pilot - hf_shared_pilot;
+    //  shared_approx_increment(mlmfIter); // spans all approx models
+    //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
+    //                      N_L_baselineL);
+    //  if (incr_cost)
+    //    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox,
+    //			            equivHFEvals);
+    //}
+    if (onlineCost) recover_online_cost(sequenceCost);
+  }
+  if (incr_cost)
+    increment_equivalent_cost(numSamples,sequenceCost,0,numSteps,equivHFEvals);
+}
+
+
+void NonDACVSampling::
+compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
+		      RealSymMatrixArray& sum_LL_pilot,
+		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
+		      SizetArray& N_shared_pilot, RealMatrix& var_L,
+		      RealVector& var_H, RealSymMatrixArray& cov_LL,
+		      RealMatrix& cov_LH)
+{
+  if (mlmfIter == 0) // see var_L usage in compute_ratios()
+    compute_L_variance(sum_L_pilot, sum_LL_pilot, N_shared_pilot, var_L);
+  compute_variance(sum_H_pilot, sum_HH_pilot, N_shared_pilot, var_H);
+  compute_LL_covariance(sum_L_pilot/*_baselineL*/, sum_LL_pilot,
+			/*N_LL_pilot*/N_shared_pilot, cov_LL);
+  compute_LH_covariance(sum_L_pilot/*baselineH*/, sum_H_pilot, sum_LH_pilot,
+			N_shared_pilot, cov_LH);
+  //Cout << "var_H:\n"<< var_H << "cov_LL:\n"<< cov_LL << "cov_LH:\n"<< cov_LH;
 }
 
 
