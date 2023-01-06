@@ -257,7 +257,7 @@ inline void NonDGenACVSampling::reset_acv()
 
 
 inline bool NonDGenACVSampling::valid_variance(Real var) const
-{ return (isfinite(var) && var > 0.); }
+{ return (std::isfinite(var) && var > 0.); }
 
 } // namespace Dakota
 

@@ -490,15 +490,15 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 	mfmc_init
 	  = (compute_equivalent_cost(avg_hf_target1, avg_eval_ratios1, cost)
 	  <= compute_equivalent_cost(avg_hf_target2, avg_eval_ratios2, cost));
-      Cout << "\nACV best solution from ";
+      Cout << "ACV best solution from ";
       if (mfmc_init) {
-	Cout << "analytic MFMC." << std::endl;
+	Cout << "analytic MFMC.\n" << std::endl;
 	avg_eval_ratios  = avg_eval_ratios1;  avg_hf_target = avg_hf_target1;
 	numSamples       = num_samp1;         avg_estvar    = avg_estvar1;
 	avg_estvar_ratio = avg_estvar_ratio1;
       }
       else {
-	Cout << "ensemble of two-model CVMC." << std::endl;
+	Cout << "ensemble of two-model CVMC.\n" << std::endl;
 	avg_eval_ratios  = avg_eval_ratios2;  avg_hf_target = avg_hf_target2;
 	numSamples       = num_samp2;         avg_estvar    = avg_estvar2;
 	avg_estvar_ratio = avg_estvar_ratio2;

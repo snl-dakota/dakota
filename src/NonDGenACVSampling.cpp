@@ -85,7 +85,6 @@ void NonDGenACVSampling::core_run()
 {
   // Initialize for pilot sample
   numSamples = pilotSamples[numApprox]; // last in pilot array
-  bestAvgEstVar = DBL_MAX;
 
   switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated ACV (default)
@@ -155,10 +154,9 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
 			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
 
+    bestAvgEstVar = DBL_MAX;
     for (activeDAGIter  = modelDAGs.begin();
 	 activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
-      //N_H_actual.assign(numFunctions, 0); N_H_alloc = 0; avg_hf_target = 0.;// ***
-
       // compute the LF/HF evaluation ratios from shared samples and compute
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
@@ -207,12 +205,12 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  Real avg_hf_target;
+  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
+  Real avg_hf_target = 0.;
 
+  bestAvgEstVar = DBL_MAX;
   for (activeDAGIter  = modelDAGs.begin();
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
-    //N_H_actual.assign(numFunctions, 0); N_H_alloc = 0; avg_hf_target = 0.;// ***
-
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
@@ -270,6 +268,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // Compute "online" sample increments:
   // -----------------------------------
   RealVector avg_eval_ratios;  Real avg_hf_target = 0.;
+  bestAvgEstVar = DBL_MAX;
   for (activeDAGIter  = modelDAGs.begin();
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
     // compute the LF/HF evaluation ratios from shared samples and compute
