@@ -198,17 +198,27 @@ private:
 		       RealVector& avg_eval_ratios, Real& avg_hf_target);
 
   void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
+  /*
   void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
 		 RealSymMatrix& CF_inv);
   void compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
 			size_t qoi, RealVector& A);
   void compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
 			size_t qoi, Real var_H_q, RealVector& A);
-  void compute_Rsq(const RealSymMatrix& CF_inv, const RealVector& A,
-		   Real var_H_q, Real& R_sq_q);
-
+  Real compute_R_sq(const RealSymMatrix& CF_inv, const RealVector& A,
+		    Real var_H_q);
+  */
+  void compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
+		       const RealMatrix& c, size_t qoi,
+		       RealSymMatrix& C_F, RealVector& c_f);
+  void solve_for_C_F_c_f(RealSymMatrix& C_F, const RealVector& c_f,
+			 RealVector& lhs);
+  Real solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
+				const RealMatrix&    c, size_t qoi);
+  Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
+		    const RealMatrix& c, size_t qoi, Real var_H_q);
+  
   void acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios);
-
   //Real acv_estimator_variance(const RealVector& avg_eval_ratios,
   //			        Real avg_hf_target);
 
@@ -392,6 +402,7 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
 }
 
 
+/*
 inline void NonDACVSampling::
 invert_CF(const RealSymMatrix& C, const RealSymMatrix& F, RealSymMatrix& CF_inv)
 {
@@ -408,6 +419,14 @@ invert_CF(const RealSymMatrix& C, const RealSymMatrix& F, RealSymMatrix& CF_inv)
 
   RealSpdSolver spd_solver;
   spd_solver.setMatrix(Teuchos::rcp(&CF_inv, false));
+  if (spd_solver.shouldEquilibrate()) {
+    spd_solver.factorWithEquilibration(true);
+    //if (outputLevel >= DEBUG_OUTPUT) {
+    //  Real rcond;  spd_solver.reciprocalConditionEstimate(rcond);
+    //  Cout << "Equilibrating in NonDACVSampling::invert_C_F(): reciprocal "
+    //	     << "condition number = " << rcond << std::endl;
+    //}
+  }
   spd_solver.invert(); // in place
 }
 
@@ -433,22 +452,22 @@ compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
 }
 
 
-inline void NonDACVSampling::
-compute_Rsq(const RealSymMatrix& CF_inv, const RealVector& A, Real var_H_q,
-	    Real& R_sq_q)
+inline Real NonDACVSampling::
+compute_R_sq(const RealSymMatrix& CF_inv, const RealVector& A, Real var_H_q)
 {
   RealSymMatrix trip(1, false);
   Teuchos::symMatTripleProduct(Teuchos::TRANS, 1./var_H_q, CF_inv, A, trip);
-  R_sq_q = trip(0,0);
+  return trip(0,0);
 
-  /*
-  size_t i, j, num_approx = CF_inv.numRows();
-  R_sq_q = 0.;
-  for (i=0; i<num_approx; ++i)
-    for (j=0; j<num_approx; ++j)
-      R_sq_q += A[i] * CF_inv(i,j) * A[j];
-  R_sq_q /= varH[qoi]; // c-bar normalization
-  */
+  //size_t i, j, num_approx = CF_inv.numRows();
+  //Real sum, inner_prod = 0.;
+  //for (i=0; i<num_approx; ++i) {
+  //  sum = 0.;
+  //  for (j=0; j<num_approx; ++j)
+  //    sum += CF_inv(i,j) * A[j];
+  //  inner_prod += A[i] * sum;
+  //}
+  //return inner_prod / varH[qoi]; // c-bar normalization
 }
 
 
@@ -463,7 +482,7 @@ acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
     //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
     compute_A_vector(F, covLH, qoi, A);    // defer c-bar scaling
     //Cout << "Objective eval: A =\n" << A << std::endl;
-    compute_Rsq(CF_inv, A, varH[qoi], R_sq); // apply scaling^2
+    R_sq = compute_R_sq(CF_inv, A, varH[qoi]); // apply scaling^2
     //Cout << "Objective eval: varH[" << qoi << "] = " << varH[qoi]
     //     << " Rsq[" << qoi << "] =\n" << R_sq << std::endl;
     estvar_ratios[qoi] = (1. - R_sq);
@@ -471,22 +490,99 @@ acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
 }
 
 
-/* This fn was specific to ACV base using F: replaced by
-   average_estimator_variance() --> virtual estimator_variance_ratios()
-inline Real NonDACVSampling::
-acv_estimator_variance(const RealVector& avg_eval_ratios, Real avg_hf_target)
+inline void NonDACVSampling::
+compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
+		    const RealMatrix& cov_LH, size_t qoi, RealVector& beta)
 {
-  RealSymMatrix F;  RealVector estvar_ratios, estvar(numFunctions, false);
-  compute_F_matrix(avg_eval_ratios, F);
-  acv_estvar_ratios(F, estvar_ratios);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    estvar[qoi] = varH[qoi] / avg_hf_target * estvar_ratios[qoi];
-  // Note: matrix ops performed for each QoI and then averaged.
-  //       While r_i is averaged such that there is only one F,
-  //       we use per-QoI covLL (C matrix) and covLH (c vector).
-  return average(estvar);
+  RealSymMatrix CF_inv;  RealVector A;
+  invert_CF(cov_LL, F, CF_inv);
+  //Cout << "compute_acv_control qoi " << qoi+1 << ": CF_inv\n" << CF_inv;
+  compute_A_vector(F, cov_LH, qoi, A); // no scaling (uses c, not c-bar)
+  //Cout << "compute_acv_control qoi " << qoi+1 << ": A\n" << A;
+
+  size_t n = F.numRows();
+  if (beta.length() != n) beta.size(n);
+  beta.multiply(Teuchos::LEFT_SIDE, 1., CF_inv, A, 0.); // for SymMatrix mult
+  //Cout << "compute_acv_control qoi " << qoi+1 << ": beta\n" << beta;
 }
 */
+
+
+inline void NonDACVSampling::
+compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
+		const RealMatrix& c, size_t qoi,
+		RealSymMatrix& C_F, RealVector& c_f)
+{
+  size_t i, j, n = C.numRows();
+  C_F.shapeUninitialized(n);  c_f.sizeUninitialized(n);
+  for (i=0; i<n; ++i) {
+    c_f[i] = c(qoi, i) * F(i,i);
+    for (j=0; j<=i; ++j)
+      C_F(i,j) = C(i,j) * F(i,j);
+  }
+}
+
+
+inline void NonDACVSampling::
+solve_for_C_F_c_f(RealSymMatrix& C_F, const RealVector& c_f, RealVector& lhs)
+{
+  RealVector rhs = c_f; // copy since rhs gets altered by equilibration
+  size_t n = rhs.length();
+  lhs.size(n); // not sure if initialization matters here...
+
+  // The idea behind this alternate approach is to leverage the solution
+  // refinement in solve() in addition to equilibration during factorization
+  // (inverting C_G in place can only leverage the latter).
+  RealSpdSolver spd_solver;
+  spd_solver.setMatrix(Teuchos::rcp(&C_F, false));
+  spd_solver.setVectors(Teuchos::rcp(&lhs, false), Teuchos::rcp(&rhs, false));
+  if (spd_solver.shouldEquilibrate())
+    spd_solver.factorWithEquilibration(true);
+  spd_solver.solveToRefinedSolution(true);
+  int code = spd_solver.solve();
+  if (code) {
+    Cerr << "Error: serial dense solver failure (LAPACK error code " << code
+	 << ") in NonDACV::solve_for_C_F_c_f()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+inline Real NonDACVSampling::
+solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
+			 const RealMatrix&    c, size_t qoi)
+{
+  RealSymMatrix C_F;  RealVector c_f, lhs;
+  compute_C_F_c_f(C, F, c, qoi, C_F, c_f);
+  solve_for_C_F_c_f(C_F, c_f, lhs);
+
+  size_t i, n = C.numRows();
+  Real trip_prod = 0.;
+  for (i=0; i<n; ++i)
+    trip_prod += c_f(i) * lhs(i);
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "GenACV::estimator_variance_ratios(): C-G =\n" << C_G
+  // 	   << "RHS c-g =\n" << c_g << "LHS soln =\n" << lhs
+  // 	   << "triple product = " << trip_prod << std::endl;
+  return trip_prod;
+}
+
+
+inline Real NonDACVSampling::
+compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
+	     const RealMatrix& c, size_t qoi, Real var_H_q)
+{ return solve_for_triple_product(C, F, c, qoi) / var_H_q; }
+
+
+inline void NonDACVSampling::
+acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
+{
+  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    estvar_ratios[qoi]
+      = 1. - compute_R_sq(covLL[qoi], F, covLH, qoi, varH[qoi]);
+}
 
 
 inline void NonDACVSampling::
@@ -538,16 +634,12 @@ inline void NonDACVSampling::
 compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 		    const RealMatrix& cov_LH, size_t qoi, RealVector& beta)
 {
-  RealSymMatrix CF_inv;  RealVector A;
-  invert_CF(cov_LL, F, CF_inv);
-  //Cout << "compute_acv_control qoi " << qoi+1 << ": CF_inv\n" << CF_inv;
-  compute_A_vector(F, cov_LH, qoi, A); // no scaling (uses c, not c-bar)
-  //Cout << "compute_acv_control qoi " << qoi+1 << ": A\n" << A;
+  RealSymMatrix C_F;  RealVector c_f;
+  compute_C_F_c_f(cov_LL, F, cov_LH, qoi, C_F, c_f);
+  solve_for_C_F_c_f(C_F, c_f, beta);
 
-  size_t n = F.numRows();
-  if (beta.length() != n) beta.size(n);
-  beta.multiply(Teuchos::LEFT_SIDE, 1., CF_inv, A, 0.); // for SymMatrix mult
-  //Cout << "compute_acv_control qoi " << qoi+1 << ": beta\n" << beta;
+  //Cout << "compute_acv_control qoi " << qoi+1 << ": C_F\n" << C_F
+  //     << "c_f\n" << c_f << "beta\n" << beta;
 }
 
 

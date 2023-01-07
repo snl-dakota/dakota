@@ -296,7 +296,8 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 {
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
 
-  RealMatrix C_G_inv;  RealVector c_g;  Real R_sq, N_H;
+  RealMatrix C_G_inv;  RealVector c_g;
+  Real R_sq, N_H;
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: {
     RealVector N_vec(numApprox+1, false);
@@ -334,15 +335,33 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     break;
   }
 
-  // N is an opt. variable for
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    invert_C_G_matrix(covLL[qoi], GMat, C_G_inv);
-    //Cout << "C-G inverse =\n" << C_G_inv << std::endl;
-    compute_c_g_vector(covLH, qoi, gVec, c_g);
-    //Cout << "c-g vector =\n" << c_g << std::endl;
-    compute_R_sq(C_G_inv, c_g, varH[qoi], N_H, R_sq);
-    //Cout << "varH[" << qoi << "] = " << varH[qoi] << " Rsq[" << qoi << "] =\n"
-    //     << R_sq << std::endl;
+    //invert_C_G_matrix(covLL[qoi], GMat, C_G_inv);
+    //compute_c_g_vector(covLH, qoi, gVec, c_g);
+    //R_sq = compute_R_sq(C_G_inv, c_g, varH[qoi], N_H);
+    //if (outputLevel >= DEBUG_OUTPUT)
+    //  Cout << "-----------------------------\n"
+    // 	     << "GenACV::estimator_variance_ratios(): C-G inverse =\n"
+    // 	     << C_G_inv << "c-g vector =\n" << c_g
+    // 	     << " Rsq[" << qoi << "] via invert() = " << R_sq
+    // 	     << "\n-----------------------------\n" << std::endl;
+
+    R_sq = compute_R_sq(covLL[qoi], GMat, covLH, gVec, qoi, varH[qoi], N_H);
+    //if (outputLevel >= DEBUG_OUTPUT)
+    //  Cout << "R_sq[" << qoi << "] via solve()  = " << R_sq
+    //       << "\n-----------------------------\n" << std::endl;
+
+    if (R_sq >= 1.) { // add nugget to C_G prior to solve()
+      Cerr << "Warning: numerical issues in GenACV: R^2 > 1." << std::endl;
+      /*
+      Real nugget = 1.e-6;
+      while (R_sq >= 1. and nugget_cntr <= 10) {
+	R_sq = compute_R_sq(covLL[qoi], GMat, covLH, gVec, qoi,
+	                    varH[qoi], N_H, nugget);
+	nugget *= 10.;  ++nugget_cntr;
+      }
+      */
+    }
     estvar_ratios[qoi] = (1. - R_sq);
   }
 }
@@ -435,7 +454,8 @@ update_best(const RealVector& avg_eval_ratios, Real avg_hf_target)
   // Store best result:
   // > could potentially prune some of this tracking for final_statistics mode
   //   = estimator_performance, 
-  if (valid_variance(avgEstVar) && avgEstVar < bestAvgEstVar) {
+  if (valid_variance(avgEstVar) && // *** TO DO: insufficient due to averaging --> use something like a badNumericsFlag to prevent adoption of bogus solve
+      avgEstVar < bestAvgEstVar) {
     bestDAGIter        = activeDAGIter;
     bestAvgEvalRatios  = avg_eval_ratios;
     bestAvgHFTarget    = avg_hf_target;

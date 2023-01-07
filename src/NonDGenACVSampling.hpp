@@ -83,12 +83,25 @@ private:
   void compute_parameterized_G_g(const RealVector& N_vec,
 				 const UShortArray& dag);
 
+  /*
   void invert_C_G_matrix(const RealSymMatrix& C, const RealMatrix& G,
 			 RealMatrix& C_G_inv);
   void compute_c_g_vector(const RealMatrix& c, size_t qoi, const RealVector& g,
 			  RealVector& c_g);
-  void compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g,
-		    Real var_H_q, Real N_H, Real& R_sq_q);
+  Real compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g,
+		    Real var_H_q, Real N_H);
+  */
+  void compute_C_G_c_g(const RealSymMatrix& C, const RealMatrix& G,
+		       const RealMatrix&    c, const RealVector& g,
+		       size_t qoi, RealMatrix& C_G, RealVector& c_g);
+  void solve_for_C_G_c_g(RealMatrix& C_G, const RealVector& c_g,
+			 RealVector& lhs);
+  Real solve_for_triple_product(const RealSymMatrix& C,	const RealMatrix& G,
+				const RealMatrix&    c, const RealVector& g,
+				size_t qoi);
+  Real compute_R_sq(const RealSymMatrix& C, const RealMatrix& G,
+		    const RealMatrix&    c, const RealVector& g,
+		    size_t qoi, Real var_H_q, Real N_H);
 
   void compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
 			      const RealMatrix& cov_LH, const RealVector& g,
@@ -134,6 +147,7 @@ private:
 };
 
 
+/*
 inline void NonDGenACVSampling::
 invert_C_G_matrix(const RealSymMatrix& C, const RealMatrix& G,
 		  RealMatrix& C_G_inv)
@@ -143,14 +157,24 @@ invert_C_G_matrix(const RealSymMatrix& C, const RealMatrix& G,
 
   for (i=0; i<n; ++i)
     for (j=0; j<n; ++j)
-      C_G_inv(i,j) = C(i,j) * G(i,j);
+      C_G_inv(i,j) = C(i,j) * G(i,j); // Ok for RealSymMatrix
 
   RealSolver gen_solver;
   gen_solver.setMatrix(Teuchos::rcp(&C_G_inv, false));
-  int code = gen_solver.invert(); // in place
+  if (gen_solver.shouldEquilibrate()) {
+    gen_solver.factorWithEquilibration(true);
+    // if (outputLevel >= DEBUG_OUTPUT) {
+    //   Real rcond;  gen_solver.reciprocalConditionEstimate(rcond);
+    //   Cout << "Equilibrating in GenACV::invert_C_G_matrix(): reciprocal "
+    // 	   << "condition number = " << rcond << std::endl;
+    // }
+  }
+  // Only useful for solve():
+  //gen_solver.solveToRefinedSolution(true);
+  int code = gen_solver.invert(); // inverts in place using factorization
   if (code) {
     Cerr << "Error: serial dense matrix inversion failure (LAPACK error code "
-	 << code << ") in NonDACVSampling::invert_C_G_matrix()." << std::endl;
+	 << code << ") in NonDGenACVSampling::invert_C_G_matrix()."<<std::endl;
     abort_handler(METHOD_ERROR);
   }
 }
@@ -164,13 +188,13 @@ compute_c_g_vector(const RealMatrix& c, size_t qoi, const RealVector& g,
   if (c_g.length() != num_approx) c_g.sizeUninitialized(num_approx);
 
   for (i=0; i<num_approx; ++i) // {g} o {c}
-    c_g[i] = g(i) * c(qoi, i);
+    c_g[i] = c(qoi, i) * g[i];
 }
 
 
-inline void NonDGenACVSampling::
-compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g, Real var_H_q,
-	     Real N_H, Real& R_sq_q)
+inline Real NonDGenACVSampling::
+compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g,
+	     Real var_H_q, Real N_H)
 {
   //RealSymMatrix trip(1, false);
   //Teuchos::matTripleProduct(Teuchos::TRANS, 1./var_H_q, CF_inv, A, trip);
@@ -181,16 +205,100 @@ compute_R_sq(const RealMatrix& C_G_inv, const RealVector& c_g, Real var_H_q,
   // Est var = Var(\hat{Q}_H) - triple product = var_H_q / N_H - triple product
   // Est var = var_H_q / N_H ( 1 - N_H * triple product / var_H_q )
   // R^2     = N_H * triple product / var_H_q
-  size_t i, j, num_approx = c_g.length();  Real sum;
-  R_sq_q = 0.;
+  size_t i, j, num_approx = c_g.length();  Real sum, trip_prod = 0.;
   for (i=0; i<num_approx; ++i) {
     sum = 0.;
     for (j=0; j<num_approx; ++j)
       sum += C_G_inv(i,j) * c_g[j];
-    R_sq_q += c_g[i] * sum;
+    trip_prod += c_g[i] * sum;
   }
-  R_sq_q *= N_H / var_H_q;
+  return trip_prod * N_H / var_H_q;
 }
+
+
+inline void NonDGenACVSampling::
+compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
+		       const RealMatrix& cov_LH, const RealVector& g,
+		       size_t qoi, RealVector& beta)
+{
+  RealMatrix C_G_inv;  invert_C_G_matrix(covLL[qoi], G, C_G_inv);
+  //Cout << "compute_genacv_control qoi " << qoi+1 << ": C_G_inv\n" << C_G_inv;
+  RealVector c_g;      compute_c_g_vector(covLH, qoi, g, c_g);
+  //Cout << "compute_genacv_control qoi " << qoi+1 << ": c_g\n" << c_g;
+
+  size_t n = G.numRows();
+  if (beta.length() != n) beta.size(n);
+  beta.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_G_inv, c_g, 0.);
+  //Cout << "compute_acv_control qoi " << qoi+1 << ": beta\n" << beta;
+}
+*/
+
+
+inline void NonDGenACVSampling::
+compute_C_G_c_g(const RealSymMatrix& C, const RealMatrix& G,
+		const RealMatrix&    c, const RealVector& g,
+		size_t qoi, RealMatrix& C_G, RealVector& c_g)
+{
+  size_t i, j, n = C.numRows();
+  C_G.shapeUninitialized(n, n);  c_g.sizeUninitialized(n);
+  for (i=0; i<n; ++i) {
+    c_g[i] = c(qoi, i) * g[i];
+    for (j=0; j<n; ++j)
+      C_G(i,j) = C(i,j) * G(i,j); // Ok for RealSymMatrix
+  }
+}
+
+
+inline void NonDGenACVSampling::
+solve_for_C_G_c_g(RealMatrix& C_G, const RealVector& c_g, RealVector& lhs)
+{
+  RealVector rhs = c_g; // copy since rhs gets altered by equilibration
+  size_t n = rhs.length();
+  lhs.size(n); // not sure if initialization matters here...
+
+  // The idea behind this alternate approach is to leverage the solution
+  // refinement in solve() in addition to equilibration during factorization
+  // (inverting C_G in place can only leverage the latter).
+  RealSolver gen_solver;
+  gen_solver.setMatrix(Teuchos::rcp(&C_G, false));
+  gen_solver.setVectors(Teuchos::rcp(&lhs, false), Teuchos::rcp(&rhs, false));
+  if (gen_solver.shouldEquilibrate())
+    gen_solver.factorWithEquilibration(true);
+  gen_solver.solveToRefinedSolution(true);
+  int code = gen_solver.solve();
+  if (code) {
+    Cerr << "Error: serial dense solver failure (LAPACK error code " << code
+	 << ") in GenACV::solve_for_C_G_c_g()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+inline Real NonDGenACVSampling::
+solve_for_triple_product(const RealSymMatrix& C, const RealMatrix& G,
+			 const RealMatrix&    c, const RealVector& g,
+			 size_t qoi)
+{
+  RealMatrix C_G;  RealVector c_g, lhs;
+  compute_C_G_c_g(C, G, c, g, qoi, C_G, c_g);
+  solve_for_C_G_c_g(C_G, c_g, lhs);
+
+  size_t i, n = C.numRows();
+  Real trip_prod = 0.;
+  for (i=0; i<n; ++i)
+    trip_prod += c_g(i) * lhs(i);
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "GenACV::solve_for_triple_product(): C-G =\n" << C_G
+  // 	   << "RHS c-g =\n" << c_g << "LHS soln =\n" << lhs
+  // 	   << "triple product = " << trip_prod << std::endl;
+  return trip_prod;
+}
+
+
+inline Real NonDGenACVSampling::
+compute_R_sq(const RealSymMatrix& C, const RealMatrix& G, const RealMatrix& c,
+	     const RealVector& g, size_t qoi, Real var_H_q, Real N_H)
+{ return solve_for_triple_product(C, G, c, g, qoi) * N_H / var_H_q; }
 
 
 inline void NonDGenACVSampling::
@@ -210,15 +318,12 @@ compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
 		       const RealMatrix& cov_LH, const RealVector& g,
 		       size_t qoi, RealVector& beta)
 {
-  RealMatrix C_G_inv;  invert_C_G_matrix(covLL[qoi], G, C_G_inv);
-  //Cout << "compute_genacv_control qoi " << qoi+1 << ": C_G_inv\n" << C_G_inv;
-  RealVector c_g;      compute_c_g_vector(covLH, qoi, g, c_g);
-  //Cout << "compute_genacv_control qoi " << qoi+1 << ": c_g\n" << c_g;
+  RealMatrix C_G;  RealVector c_g;
+  compute_C_G_c_g(cov_LL, G, cov_LH, g, qoi, C_G, c_g);
+  solve_for_C_G_c_g(C_G, c_g, beta);
 
-  size_t n = G.numRows();
-  if (beta.length() != n) beta.size(n);
-  beta.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_G_inv, c_g, 0.);
-  //Cout << "compute_acv_control qoi " << qoi+1 << ": beta\n" << beta;
+  //Cout << "compute_genacv_control qoi " << qoi+1 << ": C_G\n" << C_G
+  //     << "c_g\n" << c_g << "beta\n" << beta;
 }
 
 
