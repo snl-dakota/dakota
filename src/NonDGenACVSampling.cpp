@@ -453,7 +453,7 @@ update_best(const RealVector& avg_eval_ratios, Real avg_hf_target)
 {
   // Store best result:
   // > could potentially prune some of this tracking for final_statistics mode
-  //   = estimator_performance, 
+  //   = estimator_performance, but suppress this additional complexity for now
   if (valid_variance(avgEstVar) && // *** TO DO: insufficient due to averaging --> use something like a badNumericsFlag to prevent adoption of bogus solve
       avgEstVar < bestAvgEstVar) {
     bestDAGIter        = activeDAGIter;

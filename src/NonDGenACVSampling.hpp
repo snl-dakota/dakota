@@ -94,8 +94,8 @@ private:
   void compute_C_G_c_g(const RealSymMatrix& C, const RealMatrix& G,
 		       const RealMatrix&    c, const RealVector& g,
 		       size_t qoi, RealMatrix& C_G, RealVector& c_g);
-  void solve_for_C_G_c_g(RealMatrix& C_G, const RealVector& c_g,
-			 RealVector& lhs);
+  void solve_for_C_G_c_g(RealMatrix& C_G, RealVector& c_g, RealVector& lhs,
+			 bool copy_C_G = true, bool copy_c_g = true);
   Real solve_for_triple_product(const RealSymMatrix& C,	const RealMatrix& G,
 				const RealMatrix&    c, const RealVector& g,
 				size_t qoi);
@@ -250,18 +250,32 @@ compute_C_G_c_g(const RealSymMatrix& C, const RealMatrix& G,
 
 
 inline void NonDGenACVSampling::
-solve_for_C_G_c_g(RealMatrix& C_G, const RealVector& c_g, RealVector& lhs)
+solve_for_C_G_c_g(RealMatrix& C_G, const RealVector& c_g, RealVector& lhs,
+		  bool copy_C_G = true, bool copy_c_g = true)
 {
-  RealVector rhs = c_g; // copy since rhs gets altered by equilibration
-  size_t n = rhs.length();
+  // The idea behind this approach is to leverage both the solution refinement
+  // in solve() and equilibration during factorization (inverting C_G in place
+  // can only leverage the latter).
+
+  size_t n = c_g.length();
   lhs.size(n); // not sure if initialization matters here...
 
-  // The idea behind this alternate approach is to leverage the solution
-  // refinement in solve() in addition to equilibration during factorization
-  // (inverting C_G in place can only leverage the latter).
-  RealSolver gen_solver;
-  gen_solver.setMatrix(Teuchos::rcp(&C_G, false));
-  gen_solver.setVectors(Teuchos::rcp(&lhs, false), Teuchos::rcp(&rhs, false));
+  RealSolver gen_solver;  RealSymMatrix C_G_copy;  RealVector c_g_copy;
+  // Matrix & RHS get altered by equilibration --> make copies if needed later
+  if (copy_C_G) {
+    C_G_copy = C_G; // Teuchos::Copy by default
+    spd_solver.setMatrix(Teuchos::rcp(&C_G_copy, false));
+  }
+  else // Ok to modify C_G in place
+    spd_solver.setMatrix(Teuchos::rcp(&C_G, false));
+  if (copy_c_g) {
+    c_g_copy = c_g; // Teuchos::Copy by default
+    spd_solver.setVectors(Teuchos::rcp(&lhs, false),
+			  Teuchos::rcp(&c_g_copy, false));
+  }
+  else // Ok to modify c_g in place
+    spd_solver.setVectors(Teuchos::rcp(&lhs, false), Teuchos::rcp(&c_g, false));
+
   if (gen_solver.shouldEquilibrate())
     gen_solver.factorWithEquilibration(true);
   gen_solver.solveToRefinedSolution(true);
@@ -281,7 +295,7 @@ solve_for_triple_product(const RealSymMatrix& C, const RealMatrix& G,
 {
   RealMatrix C_G;  RealVector c_g, lhs;
   compute_C_G_c_g(C, G, c, g, qoi, C_G, c_g);
-  solve_for_C_G_c_g(C_G, c_g, lhs);
+  solve_for_C_G_c_g(C_G, c_g, lhs, false, true); // retain c_g for use below
 
   size_t i, n = C.numRows();
   Real trip_prod = 0.;
@@ -320,7 +334,7 @@ compute_genacv_control(const RealSymMatrix& cov_LL, const RealMatrix& G,
 {
   RealMatrix C_G;  RealVector c_g;
   compute_C_G_c_g(cov_LL, G, cov_LH, g, qoi, C_G, c_g);
-  solve_for_C_G_c_g(C_G, c_g, beta);
+  solve_for_C_G_c_g(C_G, c_g, beta, false, false); // Ok to modify C_G,c_g
 
   //Cout << "compute_genacv_control qoi " << qoi+1 << ": C_G\n" << C_G
   //     << "c_g\n" << c_g << "beta\n" << beta;

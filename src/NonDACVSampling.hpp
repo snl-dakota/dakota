@@ -211,8 +211,9 @@ private:
   void compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
 		       const RealMatrix& c, size_t qoi,
 		       RealSymMatrix& C_F, RealVector& c_f);
-  void solve_for_C_F_c_f(RealSymMatrix& C_F, const RealVector& c_f,
-			 RealVector& lhs);
+  void solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f,
+			 RealVector& lhs, bool copy_C_F = true,
+			 bool copy_c_f = true);
   Real solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
 				const RealMatrix&    c, size_t qoi);
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
@@ -524,22 +525,38 @@ compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
 
 
 inline void NonDACVSampling::
-solve_for_C_F_c_f(RealSymMatrix& C_F, const RealVector& c_f, RealVector& lhs)
+solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f, RealVector& lhs,
+		  bool copy_C_F, bool copy_c_f)
 {
-  RealVector rhs = c_f; // copy since rhs gets altered by equilibration
-  size_t n = rhs.length();
+  // The idea behind this approach is to leverage both the solution refinement
+  // in solve() and equilibration during factorization (inverting C_F in place
+  // can only leverage the latter).
+
+  size_t n = c_f.length();
   lhs.size(n); // not sure if initialization matters here...
 
-  // The idea behind this alternate approach is to leverage the solution
-  // refinement in solve() in addition to equilibration during factorization
-  // (inverting C_G in place can only leverage the latter).
-  RealSpdSolver spd_solver;
-  spd_solver.setMatrix(Teuchos::rcp(&C_F, false));
-  spd_solver.setVectors(Teuchos::rcp(&lhs, false), Teuchos::rcp(&rhs, false));
+  RealSpdSolver spd_solver;  RealSymMatrix C_F_copy;  RealVector c_f_copy;
+  // Matrix & RHS get altered by equilibration --> make copies if needed later
+  if (copy_C_F) {
+    C_F_copy = C_F; // Teuchos::Copy by default
+    spd_solver.setMatrix(Teuchos::rcp(&C_F_copy, false));
+  }
+  else // Ok to modify C_F in place
+    spd_solver.setMatrix(Teuchos::rcp(&C_F, false));
+  if (copy_c_f) {
+    c_f_copy = c_f; // Teuchos::Copy by default
+    spd_solver.setVectors(Teuchos::rcp(&lhs, false),
+			  Teuchos::rcp(&c_f_copy, false));
+  }
+  else // Ok to modify c_f in place
+    spd_solver.setVectors(Teuchos::rcp(&lhs, false), Teuchos::rcp(&c_f, false));
+
+  //Cout << "C_F before:\n" << C_F << "c_f before:\n" << c_f;
   if (spd_solver.shouldEquilibrate())
     spd_solver.factorWithEquilibration(true);
   spd_solver.solveToRefinedSolution(true);
   int code = spd_solver.solve();
+  //Cout << "C_F after:\n" << C_F << "c_f after:\n" << c_f;
   if (code) {
     Cerr << "Error: serial dense solver failure (LAPACK error code " << code
 	 << ") in NonDACV::solve_for_C_F_c_f()." << std::endl;
@@ -554,15 +571,15 @@ solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
 {
   RealSymMatrix C_F;  RealVector c_f, lhs;
   compute_C_F_c_f(C, F, c, qoi, C_F, c_f);
-  solve_for_C_F_c_f(C_F, c_f, lhs);
+  solve_for_C_F_c_f(C_F, c_f, lhs, false, true); // retain c_f for use below
 
   size_t i, n = C.numRows();
   Real trip_prod = 0.;
   for (i=0; i<n; ++i)
     trip_prod += c_f(i) * lhs(i);
   //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "GenACV::estimator_variance_ratios(): C-G =\n" << C_G
-  // 	   << "RHS c-g =\n" << c_g << "LHS soln =\n" << lhs
+  //  Cout << "ACV::solve_for_triple_product(): C-F =\n" << C_F
+  // 	   << "RHS c-f =\n" << c_f << "LHS soln =\n" << lhs
   // 	   << "triple product = " << trip_prod << std::endl;
   return trip_prod;
 }
@@ -636,7 +653,7 @@ compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 {
   RealSymMatrix C_F;  RealVector c_f;
   compute_C_F_c_f(cov_LL, F, cov_LH, qoi, C_F, c_f);
-  solve_for_C_F_c_f(C_F, c_f, beta);
+  solve_for_C_F_c_f(C_F, c_f, beta, false, false); // Ok to modify C_F,c_f
 
   //Cout << "compute_acv_control qoi " << qoi+1 << ": C_F\n" << C_F
   //     << "c_f\n" << c_f << "beta\n" << beta;
