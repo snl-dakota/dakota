@@ -49,11 +49,25 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
   // zero root directed acyclic graphs
   switch (dagRecursionType) {
   case KL_GRAPH_RECURSION: {
-    size_t i, K, L;  UShortArray dag(numApprox);
+    size_t i, K, L, M_minus_K;  UShortArray dag(numApprox);
+    // Dakota low-to-high ordering (enumerate valid KL values and convert)
     for (K=0; K<=numApprox; ++K) {
+      M_minus_K = numApprox - K;
+
+      // K highest fidelity approximations target root (numApprox):
+      for (i=M_minus_K; i<numApprox; ++i) dag[i] = numApprox;
+
       for (L=0; L<=K; ++L) { // ordered single recursion
+	// M-K lowest fidelity approximations target L:
+	for (i=0; i<M_minus_K; ++i)       dag[i] = numApprox - L;
+
+	/* ACV/GenACV ordering:
+	// K  highest fidelity approximations target root (0):
 	for (i=0; i<K;         ++i)  dag[i] = 0;
+	// M-K lowest fidelity approximations target L:
 	for (i=K; i<numApprox; ++i)  dag[i] = L;
+	*/
+
 	model_graphs.insert(dag);
       }
     }
@@ -75,6 +89,9 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
     break;
   }
   }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Model DAGs:\n" << model_graphs << std::endl;
 }
 
 
@@ -383,38 +400,47 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
   // "z^*_i" --> z^1_i, "z_i" --> z^2_i, "z_{i* U i}" --> z_i
 
   size_t i, j;
-  if (GMat.empty()) GMat.shapeUninitialized(numApprox, numApprox);
+  if (GMat.empty()) GMat.shapeUninitialized(numApprox);
   if (gVec.empty()) gVec.sizeUninitialized(numApprox);
 
-  Real bi, bj, z_i, z1_i, z2_i;
+  // define sample recursion sets backwards (from z_H down to lowest fid)
+  RealVector z1, z2;  Real bi, bj, z1_i, z1_j, z2_i, z_H = N_vec[numApprox];
+  if (mlmfSubMethod == SUBMETHOD_ACV_IS || mlmfSubMethod == SUBMETHOD_ACV_RD) {
+    z1.size(numApprox);  z2.size(numApprox+1);  z2[numApprox] = z_H;
+    for (int target=numApprox; target>=0; --target)
+      for (i=0; i<numApprox; ++i)
+	if (dag[i] == target)
+	  { z1[i] = z2[target];  z2[i] = N_vec[i] - z1[i]; }
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "GenACV unroll:\nz1:\n" << z1 << "z2:\n" << z2 << std::endl;
+  }
+
   switch (mlmfSubMethod) {
   case SUBMETHOD_ACV_IS: { // Bomarito Eqs. 21-22
-    Real z_j, zi_zj;//, z1_j, z2_j;
+    Real z_i, z_j, zi_zj;//, z2_j;
     for (i=0; i<numApprox; ++i) {
-      bi = numApprox - dag[i]; // reverse DAG ordering for sample ordering
-      z_i = N_vec[i];  z1_i = N_vec[bi];  z2_i = z_i - z1_i;
+      bi = dag[i];  z_i = N_vec[i];  z1_i = z1[i];  z2_i = z2[i];
       gVec[i] = (bi == numApprox) ? 1./z1_i - 1./z_i : 0.;
-      for (j=0; j<numApprox; ++j) {
-	bj = numApprox - dag[j]; // reverse DAG ordering for sample ordering
-	z_j = N_vec[j];  //z_1j = N_vec[bj];  z2_j = z_j - z1_j;
-	zi_zj = z_i * z_j;  GMat(i,j)  = 0.;
+      for (j=0; j<=i; ++j) {
+	bj = dag[j];  z_j = N_vec[j];  z1_j = z1[j];  //z2_j = z2[j];
+	GMat(i,j) = 0.;  zi_zj = z_i * z_j;
 	if (bi == bj)  GMat(i,j) += 1./z1_i - 1./z_i - 1./z_j + z1_i/zi_zj;
-	if (bi ==  j)  GMat(i,j) += z1_i/zi_zj - 1./z_j; // false for dag = 0
-	if (i  == bj)  GMat(i,j) += z2_i/zi_zj - 1./z_i; // false for dag = 0
+	if (bi ==  j)  GMat(i,j) += z1_i/zi_zj - 1./z_j; // false for dag = M
+	if (i  == bj)  GMat(i,j) += z1_j/zi_zj - 1./z_i; // false for dag = M
 	if (i  ==  j)  GMat(i,j) += z2_i/zi_zj;
       }
     }
     break;
   }
   case SUBMETHOD_ACV_MF: { // Bomarito Eqs. 16-17
-    Real z_H = N_vec[numApprox], z_j, z1_j, z2_j;
+    Real z2_j;
     for (i=0; i<numApprox; ++i) {
-      bi = numApprox - dag[i]; // reverse DAG ordering for sample ordering
-      z_i = z2_i = N_vec[i];  z1_i = N_vec[bi];  // *** CONFIRM z2_i
+      bi = dag[i];
+      z1_i = /*z2_bi = z_bi =*/ N_vec[bi];  z2_i = /*z_i =*/ N_vec[i];
       gVec[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i) / z_H;
-      for (j=0; j<numApprox; ++j) {
-	bj = numApprox - dag[j]; // reverse DAG ordering for sample ordering
-	z_j = z2_j = N_vec[j];  z1_j = N_vec[bj]; // *** CONFIRM z2_j
+      for (j=0; j<=i; ++j) {
+	bj = dag[j];
+	z1_j = /*z2_bj = z_bj =*/ N_vec[bj];  z2_j = /*z_j =*/ N_vec[j];
 	GMat(i,j)
 	  = (std::min(z1_i, z1_j)/z1_j - std::min(z1_i, z2_j)/z2_j)/z1_i
 	  + (std::min(z2_i, z2_j)/z2_j - std::min(z2_i, z1_j)/z1_j)/z2_i;
@@ -424,14 +450,14 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
   }
   case SUBMETHOD_ACV_RD: // Bomarito Eqs. 19-20
     for (i=0; i<numApprox; ++i) {
-      bi = numApprox - dag[i];
-      z_i = N_vec[i];  z1_i = N_vec[bi];  z2_i = z_i - z1_i;
+      bi = dag[i];  z1_i = z1[i];  z2_i = z2[i];
       gVec[i] = (bi == numApprox) ? 1./z1_i : 0.;
-      for (j=0; j<numApprox; ++j) {
-	bj = numApprox - dag[j];   GMat(i,j)  = 0.;
+      for (j=0; j<=i; ++j) {
+	bj = dag[j];  z1_j = z1[j];  //z2_j = z2[j];
+	GMat(i,j) = 0.;
 	if (bi == bj)  GMat(i,j) += 1./z1_i;
-	if (bi ==  j)  GMat(i,j) -= 1./z1_i; // always false for dag = 0
-	if ( i == bj)  GMat(i,j) -= 1./z2_i; // always false for dag = 0
+	if (bi ==  j)  GMat(i,j) -= 1./z1_i; // always false for dag = M
+	if ( i == bj)  GMat(i,j) -= 1./z1_j; // always false for dag = M
 	if ( i ==  j)  GMat(i,j) += 1./z2_i;
       }
     }
