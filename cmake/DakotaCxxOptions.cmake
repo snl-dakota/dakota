@@ -4,18 +4,18 @@
 # CMake deduce the compiler requirements
 macro(dakota_cxx_standard)
 
-  # Require C++11 at a minimum, but allow newer standards
+  # Require C++14 at a minimum, but allow newer standards
   # Do this prior to other flag settings and enabling the C++ language
   if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
-    set(CMAKE_CXX_STANDARD 11 CACHE STRING
-      "Dakota strictly requires C++11 or better")
+    set(CMAKE_CXX_STANDARD 14 CACHE STRING
+      "Dakota strictly requires C++14 or better")
   endif()
   if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
     set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL
       "Dakota prefers not to use compiler-specific C++ extensions")
   endif()
   set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL
-    "Dakota strictly requires C++11 or better")
+    "Dakota strictly requires C++14 or better")
 
 endmacro()
 
