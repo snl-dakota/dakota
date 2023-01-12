@@ -407,10 +407,32 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
   RealVector z1, z2;  Real bi, bj, z1_i, z1_j, z2_i, z_H = N_vec[numApprox];
   if (mlmfSubMethod == SUBMETHOD_ACV_IS || mlmfSubMethod == SUBMETHOD_ACV_RD) {
     z1.size(numApprox);  z2.size(numApprox+1);  z2[numApprox] = z_H;
+    unsigned short dag_curr, dag_next;
+    UShortList path;  UShortList::reverse_iterator rit;
+    for (i=0; i<numApprox; ++i) {
+      // walk+store path to root
+      dag_curr = i;  dag_next = dag[dag_curr];
+      path.clear();  path.push_back(dag_curr);  path.push_back(dag_next);
+      while (/*dag_next != numApprox &&*/ z2[dag_next] == 0) {
+	dag_curr = dag_next;  dag_next = dag[dag_curr];
+	path.push_back(dag_next);
+      }
+      // walk path in reverse direction to fill z1,z2
+      rit = path.rbegin();  dag_next = *rit;  ++rit;
+      for (; rit != path.rend(); ++rit) {
+	dag_curr = *rit;
+	z1[dag_curr] = z2[dag_next];
+	z2[dag_curr] = N_vec[dag_curr] - z1[dag_curr];
+	dag_next = dag_curr;
+      }
+    }
+    /*
+    // Ok for ordered single recusion (ACV-KL)
     for (int target=numApprox; target>=0; --target)
       for (i=0; i<numApprox; ++i)
 	if (dag[i] == target)
 	  { z1[i] = z2[target];  z2[i] = N_vec[i] - z1[i]; }
+    */
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "GenACV unroll:\nz1:\n" << z1 << "z2:\n" << z2 << std::endl;
   }

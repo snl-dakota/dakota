@@ -124,6 +124,7 @@ typedef std::vector<RealMulti3DArray>  BoostMA3DArray;
 
 typedef std::list<bool>                BoolList;
 typedef std::list<int>                 IntList;
+typedef std::list<unsigned short>      UShortList;
 typedef std::list<size_t>              SizetList;
 typedef std::list<Real>                RealList;
 typedef std::list<RealVector>          RealVectorList;
