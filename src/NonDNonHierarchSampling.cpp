@@ -493,7 +493,8 @@ nonhierarch_numerical_solution(const RealVector& cost,
     lin_eq_tgt, nln_ineq_lb(num_nln_con, false),
     nln_ineq_ub(num_nln_con, false), nln_eq_tgt;
   RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
-  x_ub = DBL_MAX; // no upper bounds
+  x_ub        =  DBL_MAX; // no upper bounds on x
+  lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
 
   // Note: ACV paper suggests additional linear constraints for r_i ordering
   switch (optSubProblemForm) {
@@ -504,19 +505,11 @@ nonhierarch_numerical_solution(const RealVector& cost,
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   \Sum_i w_i   r_i <= equivHF * w / N - w
     //   \Sum_i w_i/w r_i <= equivHF / N - 1
-    lin_ineq_lb    = -DBL_MAX;        // no lower bounds
     lin_ineq_ub[0] = (avg_N_H > 1.) ? // protect N_H==0 for offline pilot
       budget / avg_N_H - 1. : // normal case
       budget - 1.;            // bound N_H at 1 (TO DO: need to perform sample)
     for (approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
-    if (mlmfSubMethod == SUBMETHOD_MFMC)// N_i increasing w/ decreasing fidelity
-      for (i=1; i<=numApprox; ++i) {
-	approx     = (ordered) ? i   : approx_sequence[i];
-	approx_im1 = (ordered) ? i-1 : approx_sequence[i-1];
-	lin_ineq_coeffs(i, approx_im1) = -1.;
-	lin_ineq_coeffs(i, approx)     =  1.;
-      }
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
     copy_data_partial(avg_eval_ratios, x0, 0);          // r_i
@@ -530,15 +523,6 @@ nonhierarch_numerical_solution(const RealVector& cost,
 
     nln_ineq_lb[0] = -DBL_MAX; // no low bnd
     nln_ineq_ub[0] = budget;
-    if (mlmfSubMethod == SUBMETHOD_MFMC) {// N_i increasing w/ decreasing fidel
-      lin_ineq_lb = -DBL_MAX; // no lower bnds
-      for (i=0; i<numApprox; ++i) { // N_approx >= N_{approx+1}
-	approx     = (ordered) ? i   : approx_sequence[i];
-	approx_ip1 = (ordered) ? i+1 : approx_sequence[i+1];
-	lin_ineq_coeffs(i, approx)     = -1.;
-	lin_ineq_coeffs(i, approx_ip1) =  1.;
-      }
-    }
     break;
   case N_VECTOR_LINEAR_CONSTRAINT: {
     copy_data_partial(avg_eval_ratios, x0, 0);  x0[numApprox] = 1.;
@@ -550,29 +534,10 @@ nonhierarch_numerical_solution(const RealVector& cost,
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   N w + \Sum_i w_i N_i <= equivHF * w
     //   N + \Sum_i w_i/w N_i <= equivHF
-    lin_ineq_lb = -DBL_MAX;  // no lower bnds
     lin_ineq_ub[0] = budget; // remaining ub initialized to 0
     for (approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0, approx) = cost[approx] / cost_H;
     lin_ineq_coeffs(0, numApprox) = 1.;
-    // linear inequality constraints on sample counts:
-    if (mlmfSubMethod == SUBMETHOD_MFMC) {//N_i increases w/ decreasing fidelity
-      approx_im1 = (ordered) ? 0 : approx_sequence[0];
-      for (i=1; i<numApprox; ++i) {
-	approx = (ordered) ? i : approx_sequence[i];
-	lin_ineq_coeffs(i, approx_im1) = -1.;
-	lin_ineq_coeffs(i, approx)     =  1.;
-	approx_im1 = approx;
-      }
-      lin_ineq_coeffs(numApprox,    approx) = -1.;
-      lin_ineq_coeffs(numApprox, numApprox) =  1. + RATIO_NUDGE; // N_im1 > N
-    }
-    else //  N_i >  N (aka r_i > 1) prevents numerical exceptions
-         // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
-      for (approx=1; approx<=numApprox; ++approx) {
-	lin_ineq_coeffs(approx,  approx-1) = -1.;
-	lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
-      }
     break;
   }
   case N_VECTOR_LINEAR_OBJECTIVE: {
@@ -584,31 +549,13 @@ nonhierarch_numerical_solution(const RealVector& cost,
     // nonlinear constraint on estvar
     nln_ineq_lb = -DBL_MAX;  // no lower bnd
     nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
-
-    // linear inequality constraints on sample counts:
-    lin_ineq_lb = -DBL_MAX;  // no lower bnds, default-init upper bounds (0)
-    if (mlmfSubMethod == SUBMETHOD_MFMC) {//N_i increases w/ decreasing fidelity
-      approx = (ordered) ? 0 : approx_sequence[0];
-      size_t num_am1 = numApprox - 1;
-      for (i=0; i<num_am1; ++i) {
-	approx_ip1 = (ordered) ? i+1 : approx_sequence[i+1];
-	lin_ineq_coeffs(i, approx)     = -1.;
-	lin_ineq_coeffs(i, approx_ip1) =  1.;
-	approx = approx_ip1;
-      }
-      lin_ineq_coeffs(num_am1,    approx) = -1.;
-      lin_ineq_coeffs(num_am1, numApprox) =  1. + RATIO_NUDGE; // N_im1 > N
-    }
-    else //  N_i >  N (aka r_i > 1) prevents numerical exceptions
-         // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
-      for (approx=0; approx<numApprox; ++approx) {
-	lin_ineq_coeffs(approx,    approx) = -1.;
-	lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
-      }
     break;
   }
   }
+  // virtual augmentation of linear ineq (differs among MFMC, ACV, GenACV)
+  augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 
+  // configure the variance minimizer
   if (varianceMinimizer.is_null()) {
 
     bool use_adapter   = (optSubProblemSolver != SUBMETHOD_NPSOL &&

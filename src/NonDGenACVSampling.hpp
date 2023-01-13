@@ -57,6 +57,10 @@ protected:
   void estimator_variance_ratios(const RealVector& N_vec,
 				 RealVector& estvar_ratios);
 
+  void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				       RealVector& lin_ineq_lb,
+				       RealVector& lin_ineq_ub);
+
   void precompute_acv_control(const RealVector& avg_eval_ratios,
 			      const SizetArray& N_shared);
   void compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,

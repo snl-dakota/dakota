@@ -63,6 +63,10 @@ protected:
   void estimator_variance_ratios(const RealVector& r_and_N,
 				 RealVector& estvar_ratios);
 
+  void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				       RealVector& lin_ineq_lb,
+				       RealVector& lin_ineq_ub);
+
   //
   //- Heading: New virtual functions
   //

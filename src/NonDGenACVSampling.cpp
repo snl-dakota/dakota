@@ -309,6 +309,45 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
 
 
 void NonDGenACVSampling::
+augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				RealVector& lin_ineq_lb,
+				RealVector& lin_ineq_ub)
+{
+  switch (optSubProblemForm) {
+  case N_VECTOR_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
+  case N_VECTOR_LINEAR_OBJECTIVE: { // no other lin ineq
+    size_t source, target, lin_ineq_offset
+      = (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT) ? 1 : 0;
+
+    // Enforce DAG dependencies (ACV: all point to numApprox)
+    // N for each source model > N for model it targets
+    const UShortArray& dag = *activeDAGIter;
+    for (source=0; source<numApprox; ++source) {
+      target = dag[source];
+      lin_ineq_coeffs(source+lin_ineq_offset, source) = -1.;
+      lin_ineq_coeffs(source+lin_ineq_offset, target) =  1. + RATIO_NUDGE;
+    }
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT:
+    // *** TO DO: active for truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT
+    //     but r is not appropriate for general DAG != 0
+    // --> either need to alter handling or suppress this option...
+
+    Cerr << "Error: R_ONLY_LINEAR_CONSTRAINT not implemented in "
+	 << "NonDGenACVSampling::linear_constraints()." << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  case R_AND_N_NONLINEAR_CONSTRAINT: // not used
+    Cerr << "Error: R_AND_N_NONLINEAR_CONSTRAINT not supported in "
+	 << "NonDGenACVSampling::linear_constraints()." << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
+}
+
+
+void NonDGenACVSampling::
 estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 {
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
@@ -407,6 +446,7 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
   RealVector z1, z2;  Real bi, bj, z1_i, z1_j, z2_i, z_H = N_vec[numApprox];
   if (mlmfSubMethod == SUBMETHOD_ACV_IS || mlmfSubMethod == SUBMETHOD_ACV_RD) {
     z1.size(numApprox);  z2.size(numApprox+1);  z2[numApprox] = z_H;
+    // General approach should work for any recursion:
     unsigned short dag_curr, dag_next;
     UShortList path;  UShortList::reverse_iterator rit;
     for (i=0; i<numApprox; ++i) {
@@ -426,15 +466,15 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
 	dag_next = dag_curr;
       }
     }
-    /*
-    // Ok for ordered single recusion (ACV-KL)
+    /* Simple approach is sufficient for ordered single recusion (ACV-KL)
     for (int target=numApprox; target>=0; --target)
       for (i=0; i<numApprox; ++i)
 	if (dag[i] == target)
 	  { z1[i] = z2[target];  z2[i] = N_vec[i] - z1[i]; }
     */
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "GenACV unroll:\nz1:\n" << z1 << "z2:\n" << z2 << std::endl;
+      Cout << "GenACV-IS/RD unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
+	   << "and z2:\n" << z2 << std::endl;
   }
 
   switch (mlmfSubMethod) {

@@ -278,6 +278,31 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
 
 
 void NonDMultifidelitySampling::
+augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				RealVector& lin_ineq_lb,
+				RealVector& lin_ineq_ub)
+{
+  // linear inequality constraints on sample counts:
+  // N_i increases w/ decreasing fidelity
+
+  bool ordered = approxSequence.empty();
+  size_t i, num_am1 = numApprox - 1, approx_ip1,
+    approx = (ordered) ? 0 : approxSequence[0],
+    lin_ineq_offset = ( optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT  ||
+			optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
+  for (i=0; i<num_am1; ++i) { // N_im1 >= N_i
+    approx_ip1 = (ordered) ? i+1 : approxSequence[i+1];
+    lin_ineq_coeffs(i+lin_ineq_offset, approx)     = -1.;
+    lin_ineq_coeffs(i+lin_ineq_offset, approx_ip1) =  1.; // *** TO DO ***: check this --> would RATIO_NUDGE be helpful?
+    approx = approx_ip1;
+  }
+  // N_im1 > N
+  lin_ineq_coeffs(num_am1+lin_ineq_offset,   num_am1) = -1.;
+  lin_ineq_coeffs(num_am1+lin_ineq_offset, numApprox) =  1. + RATIO_NUDGE;
+}
+
+
+void NonDMultifidelitySampling::
 update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
 		  RealVector& hf_targets)
 {

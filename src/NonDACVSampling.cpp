@@ -575,6 +575,34 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 }
 
 
+void NonDACVSampling::
+augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				RealVector& lin_ineq_lb,
+				RealVector& lin_ineq_ub)
+{
+  // linear inequality constraints on sample counts:
+  //  N_i >  N (aka r_i > 1) prevents numerical exceptions
+  // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
+
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
+    break; // none to add (r lower bounds = 1)
+  case N_VECTOR_LINEAR_CONSTRAINT: // lin_ineq #0 is augmented
+    for (size_t approx=1; approx<=numApprox; ++approx) {
+      lin_ineq_coeffs(approx,  approx-1) = -1.;
+      lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
+    }
+    break;
+  case N_VECTOR_LINEAR_OBJECTIVE: // no other lin ineq
+    for (size_t approx=0; approx<numApprox; ++approx) {
+      lin_ineq_coeffs(approx,    approx) = -1.;
+      lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
+    }
+    break;
+  }
+}
+
+
 Real NonDACVSampling::
 update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
 		 const RealVector& estvar0)
