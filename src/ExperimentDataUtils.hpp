@@ -277,21 +277,6 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
 					 RealVector &eigenvalues, 
 					 RealMatrix &eigenvectors );
 
-/**
- * \brief Sort incoming vector with result and corresponding indices returned in passed arguments
- */
-void sort_vector( const RealVector & vec, RealVector & sort_vec, IntVector & indices );
-
-/**
- * \brief Sort incoming matrix columns with result and corresponding indices returned in passed arguments
- */
-void sort_matrix_columns( const RealMatrix & mat, RealMatrix & sort_mat, IntMatrix & indices );
-
-/**
- * \brief Test if incoming matrix is symmetric
- */
-bool is_matrix_symmetric( const RealMatrix & matrix );
-
 } // namespace dakota
 
 #endif //EXPERIMENT_DATA_UTILS

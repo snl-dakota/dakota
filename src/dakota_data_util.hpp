@@ -238,11 +238,24 @@ inline bool is_equal_partial(const StringMultiArray& ma1,
 
 /// Computes means of columns of matrix
 void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
+
 /// Computes standard deviations of columns of matrix
 void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
-      			  RealVector& std_devs);
+                        RealVector& std_devs);
+
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
+
+/// Sort incoming vector with result and corresponding indices returned in passed arguments
+void sort_vector( const RealVector & vec, RealVector & sort_vec,
+                  IntVector & indices );
+
+/// Sort incoming matrix columns with result and corresponding indices returned in passed arguments
+void sort_matrix_columns( const RealMatrix & mat, RealMatrix & sort_mat,
+                          IntMatrix & indices );
+
+/// Test if incoming matrix is symmetric
+bool is_matrix_symmetric( const RealMatrix & matrix );
 
 /// Applies a RealMatrix to a vector (or subset of vector) v1
 /** Optionally works with a subset of the passed vectors; applies the
