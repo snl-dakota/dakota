@@ -133,21 +133,6 @@ void SensAnalysisGlobal::values_to_ranks(RealMatrix& valid_data)
 }
 
 
-void SensAnalysisGlobal::center_rows(RealMatrix& data_matrix)
-{
-  int num_row = data_matrix.numRows(), num_col = data_matrix.numCols();
-  for (int i=0; i<num_row; i++) {
-    // normalize each row (input/output factor) by its mean across observations
-    Real row_mean = 0.0;
-    for (int j=0; j<num_col; j++)
-      row_mean += data_matrix(i,j);
-    row_mean /= (Real)num_col;
-    for (int j=0; j<num_col; j++)
-      data_matrix(i,j) -= row_mean;
-  }
-}
-
-
 void SensAnalysisGlobal::correl_adjust(Real& corr_value)
 {
   if (std::isfinite(corr_value) && std::abs(corr_value) > 1.0)
@@ -286,7 +271,7 @@ simple_corr(RealMatrix& total_data, const int& num_in, RealMatrix& corr_matrix)
 {
   int num_corr = total_data.numRows(), num_obs = total_data.numCols();
 
-  center_rows(total_data);
+  center_matrix_rows(total_data);
 
   for (int i=0; i<num_corr; i++) {
     // calculate sum of squares for each factor (row)
@@ -369,7 +354,7 @@ partial_corr(RealMatrix& total_data, const int num_in,
     return;
   }
 
-  center_rows(total_data);
+  center_matrix_rows(total_data);
 
   // matrix of X = [Vi | R ]; the response cols don't change per variable
   RealMatrix correl_factors_X(num_obs, 1 + num_out);

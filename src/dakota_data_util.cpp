@@ -278,6 +278,38 @@ void sort_matrix_columns( const RealMatrix & mat, RealMatrix & sort_mat, IntMatr
 
 //----------------------------------------------------------------
 
+void center_matrix_rows( RealMatrix & mat )
+{
+  int num_row = mat.numRows(), num_col = mat.numCols();
+  for (int i=0; i<num_row; i++) {
+    // normalize each row (input/output factor) by its mean across observations
+    Real row_mean = 0.0;
+    for (int j=0; j<num_col; j++)
+      row_mean += mat(i,j);
+    row_mean /= (Real)num_col;
+    for (int j=0; j<num_col; j++)
+      mat(i,j) -= row_mean;
+  }
+}
+
+//----------------------------------------------------------------
+
+void center_matrix_cols( RealMatrix & mat )
+{
+  int num_row = mat.numRows(), num_col = mat.numCols();
+  for (int j=0; j<num_col; j++) {
+    // normalize each column (input/output factor) by its mean across observations
+    Real col_mean = 0.0;
+    for (int i=0; i<num_row; i++)
+      col_mean += mat(i,j);
+    col_mean /= (Real)num_row;
+    for (int i=0; i<num_row; i++)
+      mat(i,j) -= col_mean;
+  }
+}
+
+//----------------------------------------------------------------
+
 bool is_matrix_symmetric( const RealMatrix & matrix )
 {
   int num_cols = matrix.numCols();
@@ -318,6 +350,28 @@ void remove_column(RealMatrix& matrix, int index)
   matrix = matrix_new;
 }
 
+//----------------------------------------------------------------
+
+void copy_data( const RealMatrix & src_mat, MatrixXd & dst_mat )
+{
+  const int nrows = src_mat.numRows();
+  const int ncols = src_mat.numCols();
+  dst_mat.resize(nrows, ncols);
+  for( int i=0; i<nrows; ++i )
+    for( int j=0; j<ncols; ++j )
+      dst_mat(i,j) = src_mat(i,j);
+}
+
+//----------------------------------------------------------------
+
+void view_data( const RealMatrix & src_mat, Eigen::Map<MatrixXd> & mat_view )
+{
+  const int nrows = src_mat.numRows();
+  const int ncols = src_mat.numCols();
+  new (&mat_view) Eigen::Map<MatrixXd>(src_mat.values(), nrows, ncols);
+}
+
+//----------------------------------------------------------------
 
 std::vector<std::string> strsplit(const std::string& input)
 {

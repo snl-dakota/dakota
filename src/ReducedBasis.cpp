@@ -41,17 +41,7 @@ ReducedBasis::center_matrix()
   if ( is_centered )
     return;
 
-  compute_col_means(matrix, column_means);
-  col_means_computed = true;
-
-  // working vector
-  RealVector column_vec(matrix.numRows());
-
-  for( int i=0; i<matrix.numCols(); ++i ) {
-    column_vec.putScalar(column_means(i));
-    RealVector matrix_column = Teuchos::getCol(Teuchos::View, matrix, i);
-    matrix_column -= column_vec;
-  }
+  center_matrix_cols(matrix);
 
   is_centered = true;
   is_valid_svd = false;
