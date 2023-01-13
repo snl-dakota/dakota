@@ -41,7 +41,7 @@ ReducedBasis::center_matrix()
   if ( is_centered )
     return;
 
-  compute_column_means(matrix, column_means);
+  compute_col_means(matrix, column_means);
   col_means_computed = true;
 
   // working vector

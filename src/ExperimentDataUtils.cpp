@@ -802,24 +802,6 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
 
 //----------------------------------------------------------------
 
-void compute_column_means( RealMatrix & matrix, RealVector & avg_vals )
-{
-  int num_cols = matrix.numCols();
-  int num_rows = matrix.numRows();
-
-  avg_vals.resize(num_cols);
-
-  RealVector ones_vec(num_rows);
-  ones_vec.putScalar(1.0);
-
-  for( int i=0; i<num_cols; ++i ) {
-    const RealVector & col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
-    avg_vals(i) = col_vec.dot(ones_vec)/(Real) num_rows;
-  }
-}
-
-//----------------------------------------------------------------
-
 void sort_vector( const RealVector & vec, RealVector & sort_vec, IntVector & indices )
 {
   if( indices.length() != vec.length() )

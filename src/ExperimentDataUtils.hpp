@@ -278,11 +278,6 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
 					 RealMatrix &eigenvectors );
 
 /**
- * \brief Compute the means of each column of an arbitrary matrix
- */
-void compute_column_means( RealMatrix & matrix, RealVector & avg_vals );
-
-/**
  * \brief Sort incoming vector with result and corresponding indices returned in passed arguments
  */
 void sort_vector( const RealVector & vec, RealVector & sort_vec, IntVector & indices );

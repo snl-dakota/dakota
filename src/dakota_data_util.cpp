@@ -195,6 +195,8 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
   }
 }
 
+//----------------------------------------------------------------
+
 void compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
 {
   int num_cols = matrix.numCols();
@@ -210,6 +212,8 @@ void compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
     avg_vals(i) = col_vec.dot(ones_vec)/((Real) num_rows);
   }
 }
+
+//----------------------------------------------------------------
 
 void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
                         RealVector& std_devs)

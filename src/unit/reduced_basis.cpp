@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_compute_col_means)
 
   // --------------- What we are testing
   RealVector column_means;
-  compute_column_means(matrix, column_means);
+  compute_col_means(matrix, column_means);
   // --------------- What we are testing
 
   // Test against Column Means obtained from matlab for the same matrix
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_simple_api2)
 
   // Center columns about their means
   RealVector column_means;
-  compute_column_means(matrix1, column_means);
+  compute_col_means(matrix1, column_means);
   RealVector const_vec(matrix1.numRows());
   RealVector col1 = Teuchos::getCol(Teuchos::View, matrix1, 0);
   RealVector col2 = Teuchos::getCol(Teuchos::View, matrix1, 1);
