@@ -248,12 +248,8 @@ evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 	       RealVector& sum_HH_pilot, SizetArray& N_shared_pilot,
 	       bool incr_cost)
 {
-  sum_H_pilot.size(numFunctions); sum_HH_pilot.size(numFunctions);
-  sum_L_pilot.shape(numFunctions, numApprox);
-  sum_LH_pilot.shape(numFunctions, numApprox);
-  sum_LL_pilot.resize(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    sum_LL_pilot[qoi].shape(numApprox);
+  initialize_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+		      sum_HH_pilot);
   N_shared_pilot.assign(numFunctions, 0);
   //initialize_acv_counts(N_shared_pilot, N_LL_pilot);
 
@@ -313,13 +309,10 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // Compute N_L increments based on eval ratio applied to final N_H
   // ---------------------------------------------------------------
   // Note: these results do not affect the iteration above and can be performed
-  // after N_H has converged, which simplifies maxFnEvals / convTol logic
-  // (no need to further interrogate these throttles below)
+  // after N_H has converged
 
-  // maxIterations == 0 is no longer reserved for the pilot only case.
-  // See notes in NonDMultifidelitySampling::multifidelity_mc().
-
-  // define approx_sequence in decreasing r_i order, directionally consistent
+  // Perform a sample sequence that reuses sample increments: define
+  // approx_sequence in decreasing r_i order, directionally consistent
   // with default approx indexing for well-ordered models
   // > approx 0 is lowest fidelity --> lowest corr,cost --> highest r_i
   SizetArray approx_sequence;  bool descending = true;
@@ -331,8 +324,9 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   SizetArray   N_L_alloc_refined;  inflate(N_H_alloc, N_L_alloc_refined);
   size_t start, end;
   for (end=numApprox; end>0; --end) {
+    // pairwise (IS and RD) or pyramid (MF):
+    start = (mlmfSubMethod == SUBMETHOD_ACV_MF) ? 0 : end - 1;
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
-    start = (mlmfSubMethod == SUBMETHOD_ACV_IS) ? end - 1 : 0;
     if (acv_approx_increment(avg_eval_ratios, N_L_actual_refined,
 			     N_L_alloc_refined, avg_hf_target, mlmfIter,
 			     approx_sequence, start, end)) {
@@ -373,8 +367,8 @@ acv_approx_increment(const RealVector& avg_eval_ratios,
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
 
-  bool ordered = approx_sequence.empty();
-  size_t approx = (ordered) ? end-1 : approx_sequence[end-1];
+  bool   ordered = approx_sequence.empty();
+  size_t  approx = (ordered) ? end-1 : approx_sequence[end-1];
   Real lf_target = avg_eval_ratios[approx] * hf_target;
   if (backfillFailures) {
     Real lf_curr = average(N_L_actual_refined[approx]);
@@ -1040,17 +1034,47 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 
 /** This version used by ACV following approx_increment() */
 void NonDACVSampling::
-accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
-		    Sizet2DArray& N_L_refined,
-		    const SizetArray& approx_sequence,
-		    size_t sequence_start, size_t sequence_end)
+accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& N_L_refined,
+		    const RealVector& fn_vals, size_t qoi, size_t approx)
 {
   // uses one set of allResponses with QoI aggregation across all Models,
   // led by the approx Model responses of interest
 
   using std::isfinite;
-  int lr_ord, active_ord;  size_t s, qoi, lf_index, approx;
-  Real lf_fn, lf_prod;  IntRespMCIter r_it;  IntRMMIter lr_it;
+  size_t lf_index = approx * numFunctions + qoi;
+  Real   lf_fn    = fn_vals[lf_index];
+
+  // Low accumulations:
+  if (isfinite(lf_fn)) {
+    ++N_L_refined[approx][qoi];
+    IntRMMIter lr_it = sum_L_refined.begin();
+    int  lr_ord  = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
+    Real lf_prod = lf_fn;  int active_ord = 1;
+    while (lr_ord) {
+
+      // Low refined
+      if (lr_ord == active_ord) { // support general key sequence
+	lr_it->second(qoi,approx) += lf_prod;  ++lr_it;
+	lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
+      }
+
+      lf_prod *= lf_fn;  ++active_ord;
+    }
+  }
+}
+
+
+/** This version used by ACV following approx_increment() */
+void NonDACVSampling::
+accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& N_L_refined,
+		    const SizetArray& approx_sequence, size_t sequence_start,
+		    size_t sequence_end)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // led by the approx Model responses of interest
+
+  using std::isfinite;
+  size_t s, qoi, approx;  IntRespMCIter r_it;
   bool ordered = approx_sequence.empty();
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
@@ -1059,30 +1083,33 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
     //const ShortArray& asv   = resp.active_set_request_vector();
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
-
       for (s=sequence_start; s<sequence_end; ++s) {
 	approx = (ordered) ? s : approx_sequence[s];
-	lf_index = approx * numFunctions + qoi;
-	lf_fn = fn_vals[lf_index];
-
-	// Low accumulations:
-	if (isfinite(lf_fn)) {
-	  ++N_L_refined[approx][qoi];
-	  lr_it = sum_L_refined.begin();
-	  lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
-	  lf_prod = lf_fn;  active_ord = 1;
-	  while (lr_ord) {
-    
-	    // Low refined
-	    if (lr_ord == active_ord) { // support general key sequence
-	      lr_it->second(qoi,approx) += lf_prod;  ++lr_it;
-	      lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
-	    }
-
-	    lf_prod *= lf_fn;  ++active_ord;
-	  }
-	}
+	accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, qoi, approx);
       }
+    }
+  }
+}
+
+
+/** This version used by ACV following approx_increment() */
+void NonDACVSampling::
+accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& N_L_refined,
+		    unsigned short root, const UShortSet& reverse_dag)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // led by the approx Model responses of interest
+
+  size_t qoi;  IntRespMCIter r_it;  UShortSet::const_iterator d_cit;
+  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    const Response&   resp    = r_it->second;
+    const RealVector& fn_vals = resp.function_values();
+    //const ShortArray& asv   = resp.active_set_request_vector();
+
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, qoi, root);
+      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit)
+	accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, qoi, *d_cit);
     }
   }
 }

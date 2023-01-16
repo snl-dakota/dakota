@@ -260,6 +260,34 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
 }
 
 
+bool NonDNonHierarchSampling::
+approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
+{
+  if (numSamples) {
+    Cout << "\nApprox sample increment = " << numSamples << " for root model "
+	 << root+1 << " and dependent nodes." << std::endl;
+
+    // Evaluate shared samples across a dependency: each z1[leaf] = z2[root]
+    activeSet.request_values(0);
+    size_t start_qoi = root * numFunctions;
+    activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
+    for (UShortSet::const_iterator cit=reverse_dag.begin();
+	 cit!=reverse_dag.end(); ++cit) {
+      start_qoi = *cit * numFunctions;
+      activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
+    }
+
+    ensemble_sample_increment(iter, root); // NON-BLOCK
+    return true;
+  }
+  else {
+    Cout << "\nNo approx sample increment for root model " << root+1
+	 << " and dependent nodes." << std::endl;
+    return false;
+  }
+}
+
+
 void NonDNonHierarchSampling::
 ensemble_sample_increment(size_t iter, size_t step)
 {
@@ -812,16 +840,14 @@ nonhierarch_numerical_solution(const RealVector& cost,
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
     // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
-    // N_VECTOR: N*_i is leading part of r_and_N and N* is trailing part
-    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r_i | N_i
-    avg_hf_target = cv_star[numApprox];  // N*, bounded by linear ineq constr
+    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r*
+    avg_hf_target = cv_star[numApprox];                             // N*
     break;
   case N_VECTOR_LINEAR_OBJECTIVE: case N_VECTOR_LINEAR_CONSTRAINT:
-    // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
     // N_VECTOR: N*_i is leading part of r_and_N and N* is trailing part
-    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r_i | N_i
-    avg_hf_target = cv_star[numApprox];  // N*, bounded by linear ineq constr
-    avg_eval_ratios.scale(1. / avg_hf_target); // r*_i = N*_i / N*
+    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // N*_i
+    avg_hf_target = cv_star[numApprox];                             // N*
+    avg_eval_ratios.scale(1. / avg_hf_target);        // r*_i = N*_i / N*
     break;
   }
 

@@ -95,6 +95,8 @@ protected:
   void shared_approx_increment(size_t iter);
   bool approx_increment(size_t iter, const SizetArray& approx_sequence,
 			size_t start, size_t end);
+  bool approx_increment(size_t iter, unsigned short root,
+			const UShortSet& reverse_dag);
   void ensemble_sample_increment(size_t iter, size_t step);
 
   // manage response mode and active model key from {group,form,lev} triplet.
@@ -123,10 +125,16 @@ protected:
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 const SizetArray& approx_sequence,
 				 size_t start, size_t end,Real& equiv_hf_evals);
+  void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+				 unsigned short root,
+				 const UShortSet& reverse_dag,
+				 Real& equiv_hf_evals);
 
   void increment_sample_range(SizetArray& N_L, size_t incr,
 			      const SizetArray& approx_sequence,
 			      size_t start, size_t end);
+  void increment_sample_range(SizetArray& N_L, size_t incr, unsigned short root,
+			      const UShortSet& reverse_dag);
 
   /// define model form and resolution level indices
   void hf_indices(size_t& hf_form_index, size_t& hf_lev_index);
@@ -412,11 +420,12 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  size_t start, size_t end, Real& equiv_hf_evals)
 {
   size_t index, len = cost.length(), hf_index = len-1;
-  Real cost_ref = cost[hf_index];
   if (end == len)
     { equiv_hf_evals += new_samp; --end; }
+  Real sum_cost = 0.;
   for (index=start; index<end; ++index)
-    equiv_hf_evals += (Real)new_samp * cost[index] / cost_ref;
+    sum_cost += cost[index];
+  equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
 }
 
 
@@ -429,14 +438,27 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     increment_equivalent_cost(new_samp, cost, start, end, equiv_hf_evals);
   else {
     size_t i, len = cost.length(), hf_index = len-1, approx;
-    Real cost_ref = cost[hf_index];
     if (end == len) // truth is always last
       { equiv_hf_evals += new_samp; --end; }
-    for (i=start; i<end; ++i) {
-      approx = approx_sequence[i];
-      equiv_hf_evals += (Real)new_samp * cost[approx] / cost_ref;
-    }
+    Real sum_cost = 0.;
+    for (i=start; i<end; ++i)
+      { approx = approx_sequence[i]; sum_cost += cost[approx]; }
+    equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
   }
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+			  unsigned short root, const UShortSet& reverse_dag,
+			  Real& equiv_hf_evals)
+{
+  Real sum_cost = cost[root];
+  UShortSet::const_iterator cit;
+  for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
+    sum_cost += cost[*cit];
+  size_t hf_index = cost.length() - 1;
+  equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
 }
 
 
@@ -451,6 +473,20 @@ increment_sample_range(SizetArray& N_L, size_t incr,
     approx = (ordered) ? i : approx_sequence[i];
     N_L[approx] += incr;
   }
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_sample_range(SizetArray& N_L, size_t incr, unsigned short root,
+		       const UShortSet& reverse_dag)
+{
+  if (!incr) return;
+
+  // Increment shared samples across a dependency: each z1[leaf] = z2[root]
+  N_L[root] += incr; // root must not be numApprox
+  UShortSet::const_iterator cit;
+  for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
+    N_L[*cit] += incr;
 }
 
 

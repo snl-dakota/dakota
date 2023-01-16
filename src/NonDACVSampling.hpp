@@ -79,6 +79,14 @@ protected:
 				      RealMatrix& sum_LH_m, size_t N_shared_q,
 				      size_t mom, size_t qoi, RealVector& beta);
 
+  virtual void approx_increments(IntRealMatrixMap& sum_L_baselineH,
+				 IntRealVectorMap& sum_H,
+				 IntRealSymMatrixArrayMap& sum_LL,
+				 IntRealMatrixMap& sum_LH,
+				 const SizetArray& N_H_actual, size_t N_H_alloc,
+				 const RealVector& avg_eval_ratios,
+				 Real avg_hf_target);
+
   //
   //- Heading: member functions
   //
@@ -87,6 +95,9 @@ protected:
   void approximate_control_variate_offline_pilot();
   void approximate_control_variate_pilot_projection();
 
+  void initialize_acv_sums(RealMatrix& sum_L, RealVector& sum_H,
+			   RealSymMatrixArray& sum_LL, RealMatrix& sum_LH,
+			   RealVector& sum_HH);
   void initialize_acv_sums(IntRealMatrixMap& sum_L_baseline,
 			   IntRealVectorMap& sum_H,
 			   IntRealSymMatrixArrayMap& sum_LL,
@@ -110,13 +121,11 @@ protected:
 			   IntRealSymMatrixArrayMap& sum_LL,
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH,
 			   SizetArray& N_shared);
+  // approx_increment() cases:
+  void accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
+			   Sizet2DArray& N_L_refined, unsigned short root,
+			   const UShortSet& reverse_dag);
 
-  void approx_increments(IntRealMatrixMap& sum_L_baselineH,
-			 IntRealVectorMap& sum_H,
-			 IntRealSymMatrixArrayMap& sum_LL,
-			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const RealVector& avg_eval_ratios,
-			 Real avg_hf_target);
   bool acv_approx_increment(const RealVector& avg_eval_ratios,
 			    const Sizet2DArray& N_L_actual_refined,
 			    SizetArray& N_L_alloc_refined, Real hf_target,
@@ -177,6 +186,9 @@ private:
 			   IntRealSymMatrixArrayMap& sum_LL,
 			   Sizet2DArray& N_L_shared);
   // approx_increment() cases:
+  void accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
+			   Sizet2DArray& N_L_refined, const RealVector& fn_vals,
+			   size_t qoi, size_t approx);
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
 			   Sizet2DArray& N_L_refined,
 			   const SizetArray& approx_sequence,
@@ -248,6 +260,21 @@ private:
   /// the "F" matrix from Gorodetsky JCP paper
   RealSymMatrix FMat;
 };
+
+
+inline void NonDACVSampling::
+initialize_acv_sums(RealMatrix& sum_L, RealVector& sum_H,
+		    RealSymMatrixArray& sum_LL, RealMatrix& sum_LH,
+		    RealVector& sum_HH)
+{
+  sum_L.shape(numFunctions, numApprox);
+  sum_H.size(numFunctions);
+  sum_LL.resize(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    sum_LL[qoi].shape(numApprox);
+  sum_LH.shape(numFunctions, numApprox);
+  sum_HH.size(numFunctions);
+}
 
 
 inline void NonDACVSampling::

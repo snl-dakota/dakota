@@ -7,8 +7,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDACVSampling
-//- Description: Implementation code for NonDACVSampling class
+//- Class:	 NonDGenACVSampling
+//- Description: Implementation code for NonDGenACVSampling class
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
@@ -22,7 +22,7 @@
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
 
-static const char rcsId[]="@(#) $Id: NonDACVSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
+static const char rcsId[]="@(#) $Id: NonDGenACVSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 namespace Dakota {
 
@@ -95,6 +95,27 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
 }
 
 
+void NonDGenACVSampling::generate_reverse_dag(const UShortArray& dag)
+{
+  reverseActiveDAG.clear();
+  reverseActiveDAG.resize(numApprox+1);
+
+  size_t i;  unsigned short dag_curr, dag_next;
+  for (i=0; i<numApprox; ++i) {
+    // walk+store path to root
+    dag_curr = i;  dag_next = dag[dag_curr];
+    reverseActiveDAG[dag_next].insert(dag_curr);
+    while (dag_next != numApprox) {
+      dag_curr = dag_next;  dag_next = dag[dag_curr];
+      reverseActiveDAG[dag_next].insert(dag_curr);
+    }
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Reverse active DAG:\n" << reverseActiveDAG << std::endl;
+}
+
+
 /** The primary run function manages the general case: a hierarchy of model 
     forms (from the ordered model fidelities within a HierarchSurrModel), 
     each of which may contain multiple discretization levels. */
@@ -151,6 +172,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
+  bool need_reverse_dag = (mlmfSubMethod != SUBMETHOD_ACV_MF); // IS or RD
   Real avg_hf_target = 0.;
   while (numSamples && mlmfIter <= maxIterations) {
 
@@ -174,6 +196,8 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     bestAvgEstVar = DBL_MAX;
     for (activeDAGIter  = modelDAGs.begin();
 	 activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
+      // sample set definitions are enabled by reversing the DAG direction:
+      if (need_reverse_dag) generate_reverse_dag(*activeDAGIter);
       // compute the LF/HF evaluation ratios from shared samples and compute
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
@@ -223,11 +247,14 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  Real avg_hf_target = 0.;
 
+  bool need_reverse_dag = (mlmfSubMethod != SUBMETHOD_ACV_MF); // IS or RD
+  Real avg_hf_target = 0.;
   bestAvgEstVar = DBL_MAX;
   for (activeDAGIter  = modelDAGs.begin();
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
+    // sample set definitions are enabled by reversing the DAG direction:
+    if (need_reverse_dag) generate_reverse_dag(*activeDAGIter);
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
@@ -284,10 +311,13 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
+  bool need_reverse_dag = (mlmfSubMethod != SUBMETHOD_ACV_MF); // IS or RD
   RealVector avg_eval_ratios;  Real avg_hf_target = 0.;
   bestAvgEstVar = DBL_MAX;
   for (activeDAGIter  = modelDAGs.begin();
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
+    // sample set definitions are enabled by reversing the DAG direction:
+    if (need_reverse_dag) generate_reverse_dag(*activeDAGIter);
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
@@ -309,6 +339,119 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
 
 
 void NonDGenACVSampling::
+approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
+		  IntRealSymMatrixArrayMap& sum_LL,  IntRealMatrixMap& sum_LH,
+		  const SizetArray& N_H_actual, size_t N_H_alloc,
+		  const RealVector& avg_eval_ratios, Real avg_hf_target)
+{
+  // ---------------------------------------------------------------
+  // Compute N_L increments based on eval ratio applied to final N_H
+  // ---------------------------------------------------------------
+  // Note: for consistency with MFMC/ACV, r* is always defined relative to N_H,
+  // even though an oversample may target a different model based on active DAG
+
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_MF:
+    // Could use reverse_dag_set here as well, but reordering based on
+    // avg_eval_ratios is sufficient for overlapping pyramid sample sets
+    NonDACVSampling::
+      approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
+			N_H_alloc, avg_eval_ratios, avg_hf_target);
+    break;
+  default: { // IS / RD sample management require DAG tracking
+    IntRealMatrixMap  sum_L_refined = sum_L_baselineH;//baselineL;
+    Sizet2DArray  N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
+    Sizet2DArray N_L_actual_refined = N_L_actual_shared;
+    SizetArray    N_L_alloc_refined;  inflate(N_H_alloc, N_L_alloc_refined);
+
+    // create an ordered list of roots that enable ordered sample increments
+    // by ensuring that root sample levels are defined
+    UShortList root_list;  unsigned short root;
+    root_list.push_back(numApprox);
+    UShortList::iterator it = root_list.begin(); 
+    while (it != root_list.end()) {
+      const UShortSet& reverse_dag = reverseActiveDAG[*it];
+      std::copy(reverse_dag.begin(), reverse_dag.end(), root_list.end());
+      ++it;
+    }
+    Cout << "Ordered root list in approx_increments():\n"<<root_list<<std::endl;
+
+    // now process shared sample increments based on this ordered list of roots
+    for (it=root_list.begin(); it!=root_list.end(); ++it) {
+      root = *it;  const UShortSet& reverse_dag_set = reverseActiveDAG[root];
+      // *** TO DO NON_BLOCKING: PERFORM PASS 2 ACCUMULATE AFTER PASS 1 LAUNCH
+      if (genacv_approx_increment(avg_eval_ratios, N_L_actual_refined,
+				  N_L_alloc_refined, avg_hf_target, mlmfIter,
+				  root, reverse_dag_set)) {
+	// ACV_IS/RD samples on [approx-1,approx) --> sum_L_refined
+	// ACV_MF    samples on [0, approx)       --> sum_L_refined
+	accumulate_acv_sums(sum_L_refined, N_L_actual_refined, root,
+			    reverse_dag_set);
+	increment_equivalent_cost(numSamples, sequenceCost, root,
+				  reverse_dag_set, equivHFEvals);
+      }
+    }
+
+    // -----------------------------------------------------------
+    // Compute/apply control variate parameter to estimate moments
+    // -----------------------------------------------------------
+    RealMatrix H_raw_mom(numFunctions, 4);
+    acv_raw_moments(sum_L_baselineH, sum_L_refined, sum_H, sum_LL, sum_LH,
+		    avg_eval_ratios, N_H_actual, N_L_actual_refined, H_raw_mom);
+    // Convert uncentered raw moment estimates to final moments (central or std)
+    convert_moments(H_raw_mom, momentStats);
+    // post final sample counts into format for final results reporting
+    finalize_counts(N_L_actual_refined, N_L_alloc_refined);
+    break;
+  }
+  }
+}
+
+
+bool NonDGenACVSampling::
+genacv_approx_increment(const RealVector& avg_eval_ratios,
+			const Sizet2DArray& N_L_actual_refined,
+			SizetArray& N_L_alloc_refined, Real hf_target,
+			size_t iter, unsigned short root,
+			const UShortSet& reverse_dag_set)
+{
+  // Update LF samples based on evaluation ratio
+  //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
+  // Notes:
+  // > the sample increment for the approx range is determined by approx[end-1]
+  //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
+  // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
+  //   allowing use of one_sided_delta() with latest counts
+
+  // *** TO DO ***: either skip or manage root = numApprox
+
+  Real lf_target = avg_eval_ratios[root] * hf_target;
+  if (backfillFailures) {
+    Real lf_curr = average(N_L_actual_refined[root]);
+    numSamples = one_sided_delta(lf_curr, lf_target); // average
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Approx samples (" << numSamples
+	   << ") computed from delta between LF target = " << lf_target
+	   << " and current average count = " << lf_curr << std::endl;
+    size_t N_alloc = one_sided_delta(N_L_alloc_refined[root], lf_target);
+    increment_sample_range(N_L_alloc_refined, N_alloc, root, reverse_dag_set);
+  }
+  else {
+    size_t lf_curr = N_L_alloc_refined[root];
+    numSamples = one_sided_delta((Real)lf_curr, lf_target);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Approx samples (" << numSamples
+	   << ") computed from delta between LF target " << lf_target
+	   << " and current allocation = " << lf_curr << std::endl;
+    increment_sample_range(N_L_alloc_refined, numSamples,root,reverse_dag_set);
+  }
+  // the approximation sequence can be managed within one set of jobs using
+  // a composite ASV with NonHierarchSurrModel
+  return approx_increment(iter, root, reverse_dag_set);
+}
+
+
+void NonDGenACVSampling::
 augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				RealVector& lin_ineq_lb,
 				RealVector& lin_ineq_ub)
@@ -320,18 +463,22 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
       = (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT) ? 1 : 0;
 
     // Enforce DAG dependencies (ACV: all point to numApprox)
-    // N for each source model > N for model it targets
+    // > N for each source model > N for model it targets
+    // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
     const UShortArray& dag = *activeDAGIter;
     for (source=0; source<numApprox; ++source) {
       target = dag[source];
       lin_ineq_coeffs(source+lin_ineq_offset, source) = -1.;
       lin_ineq_coeffs(source+lin_ineq_offset, target) =  1. + RATIO_NUDGE;
+      //Cout << "lin ineq: source = " << source
+      //     << " target = " << target << std::endl;
     }
     break;
   }
   case R_ONLY_LINEAR_CONSTRAINT:
-    // *** TO DO: active for truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT
-    //     but r is not appropriate for general DAG != 0
+    // *** TO DO ***:
+    // This is active for truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT
+    // but r is not appropriate for general DAG including multiple CV targets.
     // --> either need to alter handling or suppress this option...
 
     Cerr << "Error: R_ONLY_LINEAR_CONSTRAINT not implemented in "
@@ -446,6 +593,7 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
   RealVector z1, z2;  Real bi, bj, z1_i, z1_j, z2_i, z_H = N_vec[numApprox];
   if (mlmfSubMethod == SUBMETHOD_ACV_IS || mlmfSubMethod == SUBMETHOD_ACV_RD) {
     z1.size(numApprox);  z2.size(numApprox+1);  z2[numApprox] = z_H;
+    
     // General approach should work for any recursion:
     unsigned short dag_curr, dag_next;
     UShortList path;  UShortList::reverse_iterator rit;
@@ -453,7 +601,7 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
       // walk+store path to root
       dag_curr = i;  dag_next = dag[dag_curr];
       path.clear();  path.push_back(dag_curr);  path.push_back(dag_next);
-      while (/*dag_next != numApprox &&*/ z2[dag_next] == 0) {
+      while (z2[dag_next] == 0) { // dag_next != numApprox &&
 	dag_curr = dag_next;  dag_next = dag[dag_curr];
 	path.push_back(dag_next);
       }
@@ -466,12 +614,19 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
 	dag_next = dag_curr;
       }
     }
-    /* Simple approach is sufficient for ordered single recusion (ACV-KL)
-    for (int target=numApprox; target>=0; --target)
-      for (i=0; i<numApprox; ++i)
-	if (dag[i] == target)
-	  { z1[i] = z2[target];  z2[i] = N_vec[i] - z1[i]; }
-    */
+
+    // Approach leveraging reverseActiveDAG:
+    //for (int d_index=numApprox; d_index>=0; --d_index) {
+    //  const UShortSet& reverse_dag_set = reverseActiveDAG[d_index];
+    //  ...
+    //}
+
+    // Single sweep is sufficient for ordered single recursion (ACV-KL)
+    //for (int target=numApprox; target>=0; --target)
+    //  for (i=0; i<numApprox; ++i)
+    //	  if (dag[i] == target)
+    //      { z1[i] = z2[target];  z2[i] = N_vec[i] - z1[i]; }
+
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "GenACV-IS/RD unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
 	   << "and z2:\n" << z2 << std::endl;
@@ -515,11 +670,11 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
       bi = dag[i];  z1_i = z1[i];  z2_i = z2[i];
       gVec[i] = (bi == numApprox) ? 1./z1_i : 0.;
       for (j=0; j<=i; ++j) {
-	bj = dag[j];  z1_j = z1[j];  //z2_j = z2[j];
+	bj = dag[j];  //z1_j = z1[j];  z2_j = z2[j];
 	GMat(i,j) = 0.;
 	if (bi == bj)  GMat(i,j) += 1./z1_i;
-	if (bi ==  j)  GMat(i,j) -= 1./z1_i; // always false for dag = M
-	if ( i == bj)  GMat(i,j) -= 1./z1_j; // always false for dag = M
+	if (bi ==  j)  GMat(i,j) -= 1./z1_i;  // always false for dag = M
+	if ( i == bj)  GMat(i,j) -= 1./z1[j]; // always false for dag = M
 	if ( i ==  j)  GMat(i,j) += 1./z2_i;
       }
     }

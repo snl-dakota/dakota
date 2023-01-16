@@ -23,7 +23,7 @@
 namespace Dakota {
 
 
-/// Perform Approximate Control Variate Monte Carlo sampling for UQ.
+/// Perform Generalized Approximate Control Variate Monte Carlo sampling.
 
 /** Generalized versions of Approximate Control Variate (ACV) that
     enumerate different model graphs (CV inter-relationships) and
@@ -68,6 +68,13 @@ protected:
 			      size_t N_shared_q, size_t mom, size_t qoi,
 			      RealVector& beta);
 
+  void approx_increments(IntRealMatrixMap& sum_L_baselineH,
+			 IntRealVectorMap& sum_H,
+			 IntRealSymMatrixArrayMap& sum_LL,
+			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
+			 size_t N_H_alloc, const RealVector& avg_eval_ratios,
+			 Real avg_hf_target);
+
   //
   //- Heading: member functions
   //
@@ -83,6 +90,7 @@ private:
   //
 
   void generate_dags(UShortArraySet& model_graphs);
+  void generate_reverse_dag(const UShortArray& dag);
 
   void compute_parameterized_G_g(const RealVector& N_vec,
 				 const UShortArray& dag);
@@ -106,6 +114,12 @@ private:
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
 		    const RealMatrix&    c, const RealVector& g,
 		    size_t qoi, Real var_H_q, Real N_H);
+
+  bool genacv_approx_increment(const RealVector& avg_eval_ratios,
+			       const Sizet2DArray& N_L_actual_refined,
+			       SizetArray& N_L_alloc_refined, Real hf_target,
+			       size_t iter, unsigned short root,
+			       const UShortSet& reverse_dag_set);
 
   void compute_genacv_control(const RealSymMatrix& cov_LL,
 			      const RealSymMatrix& G, const RealMatrix& cov_LH,
@@ -133,6 +147,8 @@ private:
   UShortArraySet modelDAGs;
   /// the active instance from within the set computed by generate_dags()
   UShortArraySet::const_iterator activeDAGIter;
+  /// reverse of active DAG: for each model, the set of models that point to it
+  UShortSetArray reverseActiveDAG;
 
   /// the best performing model graph among the set from generate_dags()
   UShortArraySet::const_iterator bestDAGIter;
