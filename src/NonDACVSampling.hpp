@@ -71,6 +71,10 @@ protected:
   //- Heading: New virtual functions
   //
 
+  virtual void compute_ratios(const RealMatrix& var_L, const RealVector& cost,
+			      RealVector& avg_eval_ratios, Real& avg_hf_target,
+			      Real& avg_estvar, Real& avg_estvar_ratio);
+
   virtual void precompute_acv_control(const RealVector& avg_eval_ratios,
 				      const SizetArray& N_shared);
 
@@ -132,10 +136,6 @@ protected:
 			    size_t iter, const SizetArray& approx_sequence,
 			    size_t start, size_t end);
 
-  void compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
-		      RealVector& avg_eval_ratios, Real& avg_hf_target,
-		      Real& avg_estvar,            Real& avg_estvar_ratio);
-
   void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
 		       IntRealMatrixMap& sum_L_refined,
 		       IntRealVectorMap& sum_H,
@@ -164,6 +164,11 @@ protected:
 				size_t& delta_N_H_actual,
 				//SizetArray& delta_N_L_actual,
 				Real& delta_equiv_hf);
+
+  void scale_to_target(Real avg_N_H, const RealVector& cost,
+		       RealVector& avg_eval_ratios, Real& avg_hf_target);
+  Real update_hf_target(const RealVector& avg_eval_ratios,
+			const RealVector& var_H, const RealVector& estvar0);
 
 private:
 
@@ -210,9 +215,6 @@ private:
 			  const RealSymMatrixArray& sum_LL,
 			  const SizetArray& num_L, RealMatrix& var_L);
 
-  void scale_to_target(Real avg_N_H, const RealVector& cost,
-		       RealVector& avg_eval_ratios, Real& avg_hf_target);
-
   void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
   /*
   void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
@@ -246,9 +248,6 @@ private:
 			   RealSymMatrix& sum_LL_q, RealMatrix& sum_LH,
 			   size_t N_shared_q, const RealSymMatrix& F,
 			   size_t qoi, RealVector& beta);
-
-  Real update_hf_target(const RealVector& avg_eval_ratios,
-			const RealVector& var_H, const RealVector& estvar0);
 
   //
   //- Heading: Data

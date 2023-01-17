@@ -54,6 +54,10 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   //void print_variance_reduction(std::ostream& s);
 
+  void compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
+		      RealVector& avg_eval_ratios, Real& avg_hf_target,
+		      Real& avg_estvar,            Real& avg_estvar_ratio);
+
   void estimator_variance_ratios(const RealVector& N_vec,
 				 RealVector& estvar_ratios);
 
@@ -149,6 +153,10 @@ private:
   UShortArraySet::const_iterator activeDAGIter;
   /// reverse of active DAG: for each model, the set of models that point to it
   UShortSetArray reverseActiveDAG;
+
+  /// book-keeping of previous numerical solutions for each DAG;
+  /// used for warm starting
+  std::map<UShortArray, std::pair<RealVector, Real> > prevSolns;
 
   /// the best performing model graph among the set from generate_dags()
   UShortArraySet::const_iterator bestDAGIter;

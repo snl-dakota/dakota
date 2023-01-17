@@ -157,8 +157,15 @@ protected:
 					SizetArray& approx_sequence,
 					RealMatrix& eval_ratios,
 					bool monotonic_r);
+
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
 			       const RealVector& cost, RealMatrix& eval_ratios);
+  void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
+			       const RealMatrix& cov_LH,
+			       const RealVector& var_H, const RealVector& cost,
+			       const UShortArray& dag,
+			       RealMatrix& eval_ratios);
+
   void nonhierarch_numerical_solution(const RealVector& cost,
 				      const SizetArray& approx_sequence,
 				      RealVector& avg_eval_ratios,

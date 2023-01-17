@@ -374,8 +374,8 @@ acv_approx_increment(const RealVector& avg_eval_ratios,
     Real lf_curr = average(N_L_actual_refined[approx]);
     numSamples = one_sided_delta(lf_curr, lf_target); // average
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples (" << numSamples
-	   << ") computed from delta between LF target = " << lf_target
+      Cout << "Approx samples = " << numSamples
+	   << " computed from delta between LF target = " << lf_target
 	   << " and current average count = " << lf_curr << std::endl;
     size_t N_alloc = one_sided_delta(N_L_alloc_refined[approx], lf_target);
     increment_sample_range(N_L_alloc_refined, N_alloc, approx_sequence,
@@ -385,8 +385,8 @@ acv_approx_increment(const RealVector& avg_eval_ratios,
     size_t lf_curr = N_L_alloc_refined[approx];
     numSamples = one_sided_delta((Real)lf_curr, lf_target);
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples (" << numSamples
-	   << ") computed from delta between LF target " << lf_target
+      Cout << "Approx samples = " << numSamples
+	   << " computed from delta between LF target = " << lf_target
 	   << " and current allocation = " << lf_curr << std::endl;
     increment_sample_range(N_L_alloc_refined, numSamples, approx_sequence,
 			   start, end);
@@ -405,10 +405,12 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
   // --------------------------------------
   // Configure the optimization sub-problem
   // --------------------------------------
-
-  // Set initial guess based either on MFMC analytic solution (iter == 0)
+  // Set initial guess based either on related analytic solutions (iter == 0)
   // or warm started from previous solution (iter >= 1)
+
   if (mlmfIter == 0) {
+    // Set initial guess based on MFMC or pairwise CVMC analytic solutions
+
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];

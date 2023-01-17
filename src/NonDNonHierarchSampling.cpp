@@ -263,16 +263,19 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
 bool NonDNonHierarchSampling::
 approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
 {
+  UShortSet::const_iterator cit;
   if (numSamples) {
-    Cout << "\nApprox sample increment = " << numSamples << " for root model "
-	 << root+1 << " and dependent nodes." << std::endl;
+    Cout << "\nApprox sample increment = " << numSamples
+	 << " for root node index " << root << " and its leaf nodes { ";
+    for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
+      Cout << *cit << ' ';
+    Cout << "}." << std::endl;
 
     // Evaluate shared samples across a dependency: each z1[leaf] = z2[root]
     activeSet.request_values(0);
     size_t start_qoi = root * numFunctions;
     activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
-    for (UShortSet::const_iterator cit=reverse_dag.begin();
-	 cit!=reverse_dag.end(); ++cit) {
+    for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit) {
       start_qoi = *cit * numFunctions;
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
@@ -281,8 +284,11 @@ approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
     return true;
   }
   else {
-    Cout << "\nNo approx sample increment for root model " << root+1
-	 << " and dependent nodes." << std::endl;
+    Cout << "\nNo approx sample increment for root node index " << root
+	 << " and its leaf nodes { ";
+    for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
+      Cout << *cit << ' ';
+    Cout << "}." << std::endl;
     return false;
   }
 }
@@ -451,14 +457,50 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
     eval_ratios.shapeUninitialized(numFunctions, numApprox);
 
   // Compute an ensemble of two-model CVMC solutions:
-    size_t qoi, approx, hf_form_index, hf_lev_index;
-  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
+  size_t qoi, approx;  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
   for (approx=0; approx<numApprox; ++approx) {
     cost_ratio = cost_H / cost[approx];
     const Real* rho2_LH_a =     rho2_LH[approx];
     Real*   eval_ratios_a = eval_ratios[approx];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       rho_sq = rho2_LH_a[qoi];
+      eval_ratios_a[qoi] = (rho_sq < 1.) ? // prevent div by 0, sqrt(negative)
+	std::sqrt(cost_ratio * rho_sq / (1. - rho_sq)) :
+	std::sqrt(cost_ratio / Pecos::SMALL_NUMBER); // should not happen
+    }
+  }
+}
+
+
+void NonDNonHierarchSampling::
+cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
+			const RealMatrix& cov_LH, const RealVector& var_H,
+			const RealVector& cost,   const UShortArray& dag,
+			RealMatrix& eval_ratios)
+{
+  if (eval_ratios.empty())
+    eval_ratios.shapeUninitialized(numFunctions, numApprox);
+
+  // Compute an ensemble of two-model CVMC solutions:
+  size_t qoi, source, target;
+  Real cost_ratio, rho_sq, cost_H = cost[numApprox], var_L_qs, var_L_qt,
+    cov_LH_qs, cov_LL_qst;
+  for (source=0; source<numApprox; ++source) {
+    target = dag[source];
+    cost_ratio = cost[target] / cost[source];
+    Real* eval_ratios_a = eval_ratios[source];
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      const RealSymMatrix& cov_LL_q = cov_LL[qoi];
+      var_L_qs = cov_LL_q(source,source);
+      if (target == numApprox) {
+	cov_LH_qs = cov_LH(qoi,source);
+	rho_sq    = cov_LH_qs / var_L_qs * cov_LH_qs / var_H[qoi];
+      }
+      else {
+	cov_LL_qst = cov_LL_q(source,target);
+	var_L_qt   = cov_LL_q(target,target);
+	rho_sq     = cov_LL_qst / var_L_qs * cov_LL_qst / var_L_qt;
+      }
       eval_ratios_a[qoi] = (rho_sq < 1.) ? // prevent div by 0, sqrt(negative)
 	std::sqrt(cost_ratio * rho_sq / (1. - rho_sq)) :
 	std::sqrt(cost_ratio / Pecos::SMALL_NUMBER); // should not happen

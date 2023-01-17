@@ -371,13 +371,16 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
     UShortList::iterator it = root_list.begin(); 
     while (it != root_list.end()) {
       const UShortSet& reverse_dag = reverseActiveDAG[*it];
-      std::copy(reverse_dag.begin(), reverse_dag.end(), root_list.end());
-      ++it;
+      root_list.insert(root_list.end(), reverse_dag.begin(), reverse_dag.end());
+     ++it;
     }
-    Cout << "Ordered root list in approx_increments():\n"<<root_list<<std::endl;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Ordered root list in approx_increments():\n" << root_list
+	   << std::endl;
 
-    // now process shared sample increments based on this ordered list of roots
-    for (it=root_list.begin(); it!=root_list.end(); ++it) {
+    // Process shared sample increments based on the ordered list of roots, but
+    // skip initial root = numApprox as it is out of bounds for r* and LF counts
+    for (it=++root_list.begin(); it!=root_list.end(); ++it) {
       root = *it;  const UShortSet& reverse_dag_set = reverseActiveDAG[root];
       // *** TO DO NON_BLOCKING: PERFORM PASS 2 ACCUMULATE AFTER PASS 1 LAUNCH
       if (genacv_approx_increment(avg_eval_ratios, N_L_actual_refined,
@@ -430,8 +433,8 @@ genacv_approx_increment(const RealVector& avg_eval_ratios,
     Real lf_curr = average(N_L_actual_refined[root]);
     numSamples = one_sided_delta(lf_curr, lf_target); // average
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples (" << numSamples
-	   << ") computed from delta between LF target = " << lf_target
+      Cout << "Approx samples = " << numSamples << " for root node index "
+	   << root << " computed from delta between LF target = " << lf_target
 	   << " and current average count = " << lf_curr << std::endl;
     size_t N_alloc = one_sided_delta(N_L_alloc_refined[root], lf_target);
     increment_sample_range(N_L_alloc_refined, N_alloc, root, reverse_dag_set);
@@ -440,14 +443,111 @@ genacv_approx_increment(const RealVector& avg_eval_ratios,
     size_t lf_curr = N_L_alloc_refined[root];
     numSamples = one_sided_delta((Real)lf_curr, lf_target);
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples (" << numSamples
-	   << ") computed from delta between LF target " << lf_target
+      Cout << "Approx samples = " << numSamples << " for root node index "
+	   << root << " computed from delta between LF target = " << lf_target
 	   << " and current allocation = " << lf_curr << std::endl;
     increment_sample_range(N_L_alloc_refined, numSamples,root,reverse_dag_set);
   }
+
   // the approximation sequence can be managed within one set of jobs using
   // a composite ASV with NonHierarchSurrModel
   return approx_increment(iter, root, reverse_dag_set);
+}
+
+
+void NonDGenACVSampling::
+compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
+	       RealVector& avg_eval_ratios, Real& avg_hf_target,
+	       Real& avg_estvar,            Real& avg_estvar_ratio)
+{
+  // --------------------------------------
+  // Configure the optimization sub-problem
+  // --------------------------------------
+  // Set initial guess based either on related analytic solutions (iter == 0)
+  // or warm started from previous solution (iter >= 1)
+
+  approxSequence.clear(); // rho2_LH re-ordering from MFMC is not relevant here
+  const UShortArray& active_dag = *activeDAGIter;
+  if (mlmfIter == 0) {
+    // For general DAG, set initial guess based on pairwise CVMC analytic solns
+    // (analytic MFMC soln expected to be less relevant)
+
+    size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
+    SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+    size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+    // estVarIter0 only uses HF pilot since sum_L_shared / N_shared minus
+    // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
+    // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
+    // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
+    compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
+    numHIter0 = N_H_actual;
+    Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+    // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H)
+    // Can happen if shared pilot rolls up to exceed budget spec.
+    Real budget             = (Real)maxFunctionEvals;
+    bool budget_constrained = (maxFunctionEvals != SZ_MAX),
+         budget_exhausted   = (equivHFEvals >= budget);
+    //if (budget_exhausted) budget = equivHFEvals;
+
+    if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
+      if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
+      numSamples = 0; avg_eval_ratios = 1.; avg_hf_target = avg_N_H;
+      avg_estvar = average(estVarIter0);    avg_estvar_ratio = 1.;
+      return;
+    }
+
+    // compute initial estimate of r* from MFMC
+    //covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
+
+    // Use ensemble of independent 2-model CVMCs, rescaled to aggregate budget.
+    // Differs from derived ACV approach through use of paired DAG dependencies.
+    RealMatrix eval_ratios;
+    cvmc_ensemble_solutions(covLL, covLH, varH, cost, active_dag, eval_ratios);
+    Cout << "CVMC eval_ratios:\n" << eval_ratios << std::endl;
+    average(eval_ratios, 0, avg_eval_ratios);
+
+    if (budget_constrained) { // same cost, compare accuracy
+      RealVector cd_vars;
+      scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target);
+      r_and_N_to_design_vars(avg_eval_ratios, avg_hf_target, cd_vars);
+      avg_estvar = average_estimator_variance(cd_vars); // ACV or GenACV
+    }
+    else // same accuracy (convergenceTol * estVarIter0), compare cost 
+      avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "GenACV initial guess:\n  ensemble CVMC estvar = " << avg_estvar
+	   << "\nACV initial guess from ensemble of two-model CVMC "
+	   << "(average eval ratios):\n" << avg_eval_ratios << std::endl;
+    // Single solve initiated from lowest estvar
+    nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
+				   avg_hf_target, numSamples, avg_estvar,
+				   avg_estvar_ratio);
+    prevSolns[active_dag] // *** replace w/ ref to Map upstream
+      = std::pair<RealVector, Real>(avg_eval_ratios, avg_hf_target);
+  }
+  else { // warm start from previous eval_ratios solution
+    
+    // no scaling needed from prev soln (as in NonDLocalReliability) since
+    // updated avg_N_H now includes allocation from previous solution and is
+    // active on constraint bound (excepting integer sample rounding)
+
+    // warm start from previous solns for corresponding DAG
+    std::pair<RealVector, Real>& soln = prevSolns[active_dag];
+    nonhierarch_numerical_solution(cost, approxSequence, soln.first,
+				   soln.second, numSamples, avg_estvar,
+				   avg_estvar_ratio);
+    avg_eval_ratios = soln.first; // *** replace w/ ref to Map upstream
+    avg_hf_target   = soln.second;
+  }
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    for (size_t approx=0; approx<numApprox; ++approx)
+      Cout << "Approx " << approx+1 << ": average evaluation ratio = "
+	   << avg_eval_ratios[approx] << '\n';
+    Cout << "Average estimator variance = " << avg_estvar
+	 << "\nAverage GenACV variance / average MC variance = "
+	 << avg_estvar_ratio << std::endl;
+  }
 }
 
 
@@ -723,19 +823,21 @@ restore_best(RealVector& avg_eval_ratios, Real& avg_hf_target)
        << " from DAG:\n" << *bestDAGIter << std::endl;
   // restore best state for compute/archive/print final results
   if (activeDAGIter != bestDAGIter) { // best is not most recent
-    activeDAGIter   = bestDAGIter;
-    avg_eval_ratios = bestAvgEvalRatios;
-    avg_hf_target   = bestAvgHFTarget;
-    avgEstVar       = bestAvgEstVar;
-    avgEstVarRatio  = bestAvgEstVarRatio;
-    if (pilotMgmtMode != OFFLINE_PILOT) {
-      estVarIter0 = bestEstVarIter0;
-      numHIter0   = bestNumHIter0;
-    }
+    activeDAGIter    = bestDAGIter;
+    avg_eval_ratios  = bestAvgEvalRatios;
+    avg_hf_target    = bestAvgHFTarget;
+    avgEstVar        = bestAvgEstVar;
+    avgEstVarRatio   = bestAvgEstVarRatio;
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Restoring best DAG to:\n" << *activeDAGIter
 	   << "with avg_hf_target = " << avg_hf_target
 	   << "\nand avg_eval_ratios =\n" << avg_eval_ratios << std::endl;
+    if (finalStatsType == QOI_STATISTICS &&
+	pilotMgmtMode  != PILOT_PROJECTION &&
+	mlmfSubMethod  != SUBMETHOD_ACV_MF) // approx_increments() for IS/RD
+      generate_reverse_dag(*activeDAGIter);
+    if (pilotMgmtMode != OFFLINE_PILOT)
+      { estVarIter0 = bestEstVarIter0;  numHIter0 = bestNumHIter0; }
   }
 }
 
