@@ -23,6 +23,7 @@
 #include <algorithm>
 #include "Teuchos_SerialDenseHelpers.hpp"
 
+using dakota::VectorXd;
 using dakota::MatrixXd;
 
 // --------------

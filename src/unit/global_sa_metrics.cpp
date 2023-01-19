@@ -11,6 +11,7 @@
 #include "dakota_data_util.hpp"
 #include "SurrogatesPolynomialRegression.hpp"
 #include "util_common.hpp"
+#include "util_metrics.hpp"
 #include <string>
 
 #define BOOST_TEST_MODULE dakota_global_sa_metrics
@@ -59,8 +60,13 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
   /////////////////  What we want to test
 
   //Cout << "SRCs: \n" << polynomial_coeffs/polynomial_coeffs.sum() << std::endl;
-
   BOOST_CHECK(dakota::util::matrix_equals(fn_coeffs, polynomial_coeffs, 1.0e-10));
+
+  // Compute coefficient of determination, R^2
+  VectorXd sur_vals = pr.value(copy_samples);
+  double cod = dakota::util::compute_metric(sur_vals, copy_responses.col(0), "rsquared");
+  // R^2 should be 1.0 because we fit the surrogate using exact polynomial objective values
+  BOOST_CHECK_CLOSE(cod, 1.0, 1.e-13 /* NB this is a percent-based tol */);
 }
 
 //----------------------------------------------------------------
