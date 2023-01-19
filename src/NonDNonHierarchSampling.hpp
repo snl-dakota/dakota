@@ -513,38 +513,6 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
 
 
 inline void NonDNonHierarchSampling::
-scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
-			   Real avg_N_H)
-{
-  // retain the shape of an r* profile, but scale to budget constrained by
-  // incurred pilot cost
-
-  Real r_i, cost_r_i, factor, inner_prod = 0., cost_H = cost[numApprox],
-    budget = (Real)maxFunctionEvals;
-  for (size_t approx=0; approx<numApprox; ++approx)
-    inner_prod += cost[approx] * avg_eval_ratios[approx]; // Sum(w_i r_i)
-  factor = (budget / avg_N_H - 1.) / inner_prod * cost_H;
-  //avg_eval_ratios.scale(factor); // can result in infeasible r_i < 1
-
-  for (int i=numApprox-1; i>=0; --i) {
-    r_i = avg_eval_ratios[i] * factor;
-    if (r_i <= 1.) { // fix at 1+NUDGE and scale remaining r_i to reduced budget
-      cost_r_i  = avg_eval_ratios[i] = 1. + RATIO_NUDGE;
-      cost_r_i *= cost[i];
-      budget   -= avg_N_H * cost_r_i / cost_H;  inner_prod -= cost_r_i;
-      factor    = (budget / avg_N_H - 1.) / inner_prod * cost_H;
-    }
-    else
-      avg_eval_ratios[i] = r_i;
-    //Cout << " avg_eval_ratios[" << i << "] = " << avg_eval_ratios[i] << '\n';
-  }
-  if (outputLevel > NORMAL_OUTPUT)
-    Cout << "Average evaluation ratios rescaled to budget:\n"
-	 << avg_eval_ratios << std::endl;
-}
-
-
-inline void NonDNonHierarchSampling::
 r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H, RealVector& N_vec)
 {
   N_vec.sizeUninitialized(numApprox+1);

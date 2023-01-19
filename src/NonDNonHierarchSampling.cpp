@@ -488,6 +488,8 @@ cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
   for (source=0; source<numApprox; ++source) {
     target = dag[source];
     cost_ratio = cost[target] / cost[source];
+    //Cout << "CVMC source " << source << " target " << target
+    //     << " cost ratio = " << cost_ratio << ":\n";
     Real* eval_ratios_a = eval_ratios[source];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       const RealSymMatrix& cov_LL_q = cov_LL[qoi];
@@ -495,16 +497,66 @@ cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
       if (target == numApprox) {
 	cov_LH_qs = cov_LH(qoi,source);
 	rho_sq    = cov_LH_qs / var_L_qs * cov_LH_qs / var_H[qoi];
+	//Cout << "  QoI " << qoi << ": cov_LH " << cov_LH_qs << " var_L "
+	//     << var_L_qs << " var_H " << var_H[qoi] << " rho^2 = " << rho_sq
+	//     << std::endl;
       }
       else {
 	cov_LL_qst = cov_LL_q(source,target);
 	var_L_qt   = cov_LL_q(target,target);
 	rho_sq     = cov_LL_qst / var_L_qs * cov_LL_qst / var_L_qt;
+	//Cout << "  QoI " << qoi << ": cov_LL " << cov_LL_qst << " var_L "
+	//     << var_L_qs << " var_L " << var_L_qt << " rho^2 = " << rho_sq
+	//     << std::endl;
       }
       eval_ratios_a[qoi] = (rho_sq < 1.) ? // prevent div by 0, sqrt(negative)
 	std::sqrt(cost_ratio * rho_sq / (1. - rho_sq)) :
 	std::sqrt(cost_ratio / Pecos::SMALL_NUMBER); // should not happen
     }
+  }
+}
+
+
+void NonDNonHierarchSampling::
+scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
+			   Real avg_N_H)
+{
+  // retain the shape of an r* profile, but scale to budget constrained by
+  // incurred pilot cost
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nRescale to budget: incoming average evaluation ratios:\n"
+	 << avg_eval_ratios;
+
+  Real cost_r_i, approx_inner_prod = 0.;  size_t approx;
+  for (approx=0; approx<numApprox; ++approx)
+    approx_inner_prod += cost[approx] * avg_eval_ratios[approx];
+  // Apply factor: r_scaled = factor r^* which applies to LF (HF r remains 1)
+  // > N_pilot (r_scaled^T w + 1) = budget, where w_i = cost_i / cost_H
+  // > factor r*^T w = budget / N_pilot - 1
+  Real budget = (Real)maxFunctionEvals, cost_H = cost[numApprox],
+       factor = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
+  //avg_eval_ratios.scale(factor); // can result in infeasible r_i < 1
+
+  for (int i=numApprox-1; i>=0; --i) { // repair r_i < 1 first if possible
+    Real& r_i = avg_eval_ratios[i];
+    r_i *= factor;
+    if (r_i <= 1.) { // fix at 1+NUDGE --> scale remaining r_i to reduced budget
+      // > only valid for default DAG with all CV targets = truth, otherwise
+      //   tramples linear ineq for other source-target pairs
+      // > DAG-aware overload below preserves source-target ratio
+      r_i = 1. + RATIO_NUDGE;  cost_r_i = r_i * cost[i];
+      // update factor for next r_i: remove this r_i from budget/inner_prod
+      budget  -= avg_N_H * cost_r_i / cost_H;  approx_inner_prod -= cost_r_i;
+      factor   = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
+    }
+  }
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Real inner_prod = cost_H;
+    for (approx=0; approx<numApprox; ++approx)
+      inner_prod += cost[approx] * avg_eval_ratios[approx];
+    Cout << "Rescale to budget: average evaluation ratios\n" << avg_eval_ratios
+	 << "Equiv HF = " << avg_N_H * inner_prod / cost_H << std::endl;
   }
 }
 
@@ -986,13 +1038,13 @@ Real NonDNonHierarchSampling::nonlinear_cost(const RealVector& r_and_N)
 {
   // nln ineq constraint: N ( w + Sum(w_i r_i) ) <= C, where C = equivHF * w
   // -->  N ( 1 + Sum(w_i r_i) / w ) <= equivHF
-  Real inner_prod = 0.;
+  Real approx_inner_prod = 0.;
   for (size_t i=0; i<numApprox; ++i)
-    inner_prod += sequenceCost[i] * r_and_N[i];  //         Sum(w_i r_i)
-  inner_prod /= sequenceCost[numApprox];         //         Sum(w_i r_i) / w
+    approx_inner_prod += sequenceCost[i] * r_and_N[i]; //       Sum(c_i r_i)
+  approx_inner_prod /= sequenceCost[numApprox];        //       Sum(w_i r_i)
 
   Real nln_con
-    = r_and_N[numApprox] * (1. + inner_prod);    // N ( 1 + Sum(w_i r_i) / w )
+    = r_and_N[numApprox] * (1. + approx_inner_prod); // N ( 1 + Sum(w_i r_i) )
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "nonlinear cost: design vars:\n" << r_and_N
 	 << "cost = " << nln_con << std::endl;
@@ -1031,10 +1083,10 @@ nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c)
   for (i=0; i<r_len; ++i)
     grad_c[i] = N_over_w * sequenceCost[i];
 
-  Real inner_prod = 0.;
+  Real approx_inner_prod = 0.;
   for (i=0; i<numApprox; ++i)
-    inner_prod += sequenceCost[i] * r_and_N[i]; //     Sum(w_i r_i)
-  grad_c[r_len] = 1. + inner_prod / cost_H;     // 1 + Sum(w_i r_i) / w
+    approx_inner_prod += sequenceCost[i] * r_and_N[i]; //     Sum(c_i r_i)
+  grad_c[r_len] = 1. + approx_inner_prod / cost_H;     // 1 + Sum(w_i r_i)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "nonlinear cost gradient:\n" << grad_c << std::endl;
 }

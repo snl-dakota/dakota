@@ -95,6 +95,7 @@ private:
 
   void generate_dags(UShortArraySet& model_graphs);
   void generate_reverse_dag(const UShortArray& dag);
+  void root_list_from_reverse_dag(UShortList& root_list);
 
   void compute_parameterized_G_g(const RealVector& N_vec,
 				 const UShortArray& dag);
@@ -128,6 +129,12 @@ private:
   void compute_genacv_control(const RealSymMatrix& cov_LL,
 			      const RealSymMatrix& G, const RealMatrix& cov_LH,
 			      const RealVector& g, size_t qoi,RealVector& beta);
+
+  void scale_to_target(Real avg_N_H, const RealVector& cost,
+		       RealVector& avg_eval_ratios, Real& avg_hf_target,
+		       const UShortList& root_list);
+  void enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
+				       const UShortList& root_list);
 
   void update_best(const RealVector& avg_eval_ratios, Real avg_hf_target);
   void restore_best(RealVector& avg_eval_ratios, Real& avg_hf_target);

@@ -165,8 +165,6 @@ protected:
 				//SizetArray& delta_N_L_actual,
 				Real& delta_equiv_hf);
 
-  void scale_to_target(Real avg_N_H, const RealVector& cost,
-		       RealVector& avg_eval_ratios, Real& avg_hf_target);
   Real update_hf_target(const RealVector& avg_eval_ratios,
 			const RealVector& var_H, const RealVector& estvar0);
 
@@ -248,6 +246,9 @@ private:
 			   RealSymMatrix& sum_LL_q, RealMatrix& sum_LH,
 			   size_t N_shared_q, const RealSymMatrix& F,
 			   size_t qoi, RealVector& beta);
+
+  void scale_to_target(Real avg_N_H, const RealVector& cost,
+		       RealVector& avg_eval_ratios, Real& avg_hf_target);
 
   //
   //- Heading: Data
@@ -491,14 +492,14 @@ compute_R_sq(const RealSymMatrix& CF_inv, const RealVector& A, Real var_H_q)
   return trip(0,0);
 
   //size_t i, j, num_approx = CF_inv.numRows();
-  //Real sum, inner_prod = 0.;
+  //Real sum, approx_inner_prod = 0.;
   //for (i=0; i<num_approx; ++i) {
   //  sum = 0.;
   //  for (j=0; j<num_approx; ++j)
   //    sum += CF_inv(i,j) * A[j];
-  //  inner_prod += A[i] * sum;
+  //  approx_inner_prod += A[i] * sum;
   //}
-  //return inner_prod / varH[qoi]; // c-bar normalization
+  //return approx_inner_prod / varH[qoi]; // c-bar normalization
 }
 
 

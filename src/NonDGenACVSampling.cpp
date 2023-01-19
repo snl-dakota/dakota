@@ -116,6 +116,23 @@ void NonDGenACVSampling::generate_reverse_dag(const UShortArray& dag)
 }
 
 
+void NonDGenACVSampling::root_list_from_reverse_dag(UShortList& root_list)
+{
+  // create an ordered list of roots that enable ordered sample increments
+  // by ensuring that root sample levels are defined
+  root_list.clear(); root_list.push_back(numApprox);
+  UShortList::iterator it = root_list.begin(); 
+  while (it != root_list.end()) {
+    const UShortSet& reverse_dag = reverseActiveDAG[*it];
+    root_list.insert(root_list.end(), reverse_dag.begin(), reverse_dag.end());
+    ++it;
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Ordered root list in root_list_from_reverse_dag():\n" << root_list
+	 << std::endl;
+}
+
+
 /** The primary run function manages the general case: a hierarchy of model 
     forms (from the ordered model fidelities within a HierarchSurrModel), 
     each of which may contain multiple discretization levels. */
@@ -172,7 +189,6 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
-  bool need_reverse_dag = (mlmfSubMethod != SUBMETHOD_ACV_MF); // IS or RD
   Real avg_hf_target = 0.;
   while (numSamples && mlmfIter <= maxIterations) {
 
@@ -197,7 +213,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     for (activeDAGIter  = modelDAGs.begin();
 	 activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
       // sample set definitions are enabled by reversing the DAG direction:
-      if (need_reverse_dag) generate_reverse_dag(*activeDAGIter);
+      generate_reverse_dag(*activeDAGIter);
       // compute the LF/HF evaluation ratios from shared samples and compute
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
@@ -248,13 +264,12 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
-  bool need_reverse_dag = (mlmfSubMethod != SUBMETHOD_ACV_MF); // IS or RD
   Real avg_hf_target = 0.;
   bestAvgEstVar = DBL_MAX;
   for (activeDAGIter  = modelDAGs.begin();
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
     // sample set definitions are enabled by reversing the DAG direction:
-    if (need_reverse_dag) generate_reverse_dag(*activeDAGIter);
+    generate_reverse_dag(*activeDAGIter);
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
@@ -311,13 +326,12 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  bool need_reverse_dag = (mlmfSubMethod != SUBMETHOD_ACV_MF); // IS or RD
   RealVector avg_eval_ratios;  Real avg_hf_target = 0.;
   bestAvgEstVar = DBL_MAX;
   for (activeDAGIter  = modelDAGs.begin();
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
     // sample set definitions are enabled by reversing the DAG direction:
-    if (need_reverse_dag) generate_reverse_dag(*activeDAGIter);
+    generate_reverse_dag(*activeDAGIter);
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
@@ -366,20 +380,11 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
 
     // create an ordered list of roots that enable ordered sample increments
     // by ensuring that root sample levels are defined
-    UShortList root_list;  unsigned short root;
-    root_list.push_back(numApprox);
-    UShortList::iterator it = root_list.begin(); 
-    while (it != root_list.end()) {
-      const UShortSet& reverse_dag = reverseActiveDAG[*it];
-      root_list.insert(root_list.end(), reverse_dag.begin(), reverse_dag.end());
-     ++it;
-    }
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Ordered root list in approx_increments():\n" << root_list
-	   << std::endl;
+    UShortList root_list;  root_list_from_reverse_dag(root_list);
 
     // Process shared sample increments based on the ordered list of roots, but
     // skip initial root = numApprox as it is out of bounds for r* and LF counts
+    UShortList::iterator it;  unsigned short root;
     for (it=++root_list.begin(); it!=root_list.end(); ++it) {
       root = *it;  const UShortSet& reverse_dag_set = reverseActiveDAG[root];
       // *** TO DO NON_BLOCKING: PERFORM PASS 2 ACCUMULATE AFTER PASS 1 LAUNCH
@@ -425,8 +430,6 @@ genacv_approx_increment(const RealVector& avg_eval_ratios,
   //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
-
-  // *** TO DO ***: either skip or manage root = numApprox
 
   Real lf_target = avg_eval_ratios[root] * hf_target;
   if (backfillFailures) {
@@ -496,9 +499,6 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
       return;
     }
 
-    // compute initial estimate of r* from MFMC
-    //covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
-
     // Use ensemble of independent 2-model CVMCs, rescaled to aggregate budget.
     // Differs from derived ACV approach through use of paired DAG dependencies.
     RealMatrix eval_ratios;
@@ -506,23 +506,30 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     Cout << "CVMC eval_ratios:\n" << eval_ratios << std::endl;
     average(eval_ratios, 0, avg_eval_ratios);
 
-    if (budget_constrained) { // same cost, compare accuracy
+    // By using an ordered root list, we can repair sequentially, top down.
+    UShortList root_list;  root_list_from_reverse_dag(root_list);
+    if (budget_constrained) { // scale according to cost
+      // scale_to_target(..., root_list) incorporates linear ineq enforcement:
+      scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target, root_list);
       RealVector cd_vars;
-      scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target);
       r_and_N_to_design_vars(avg_eval_ratios, avg_hf_target, cd_vars);
       avg_estvar = average_estimator_variance(cd_vars); // ACV or GenACV
     }
-    else // same accuracy (convergenceTol * estVarIter0), compare cost 
+    else { // scale according to accuracy (convergenceTol * estVarIter0)
+      enforce_linear_ineq_constraints(avg_eval_ratios, root_list);// prevent NaN
       avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
+    }
     if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "GenACV initial guess:\n  ensemble CVMC estvar = " << avg_estvar
-	   << "\nACV initial guess from ensemble of two-model CVMC "
-	   << "(average eval ratios):\n" << avg_eval_ratios << std::endl;
+      Cout << "GenACV initial guess from ensemble CVMC:\n"
+	   << "  average eval ratios:\n" << avg_eval_ratios
+	   << "  average HF target = " << avg_hf_target
+	   << "  average estvar = " << avg_estvar << std::endl;
+
     // Single solve initiated from lowest estvar
     nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
 				   avg_hf_target, numSamples, avg_estvar,
 				   avg_estvar_ratio);
-    prevSolns[active_dag] // *** replace w/ ref to Map upstream
+    prevSolns[active_dag] // *** TO DO: replace w/ ref to Map upstream
       = std::pair<RealVector, Real>(avg_eval_ratios, avg_hf_target);
   }
   else { // warm start from previous eval_ratios solution
@@ -536,7 +543,7 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     nonhierarch_numerical_solution(cost, approxSequence, soln.first,
 				   soln.second, numSamples, avg_estvar,
 				   avg_estvar_ratio);
-    avg_eval_ratios = soln.first; // *** replace w/ ref to Map upstream
+    avg_eval_ratios = soln.first; // *** TO DO: replace w/ ref to Map upstream
     avg_hf_target   = soln.second;
   }
 
@@ -591,6 +598,95 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
     abort_handler(METHOD_ERROR);
     break;
   }
+}
+
+
+void NonDGenACVSampling::
+enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
+				const UShortList& root_list)
+{
+  // Enforce DAG dependencies (ACV: all point to numApprox)
+  // > N for each source model > N for model it targets
+  // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
+  UShortList::const_iterator rl_cit;  UShortSet::const_iterator rd_cit;
+  unsigned short source, target;  Real r_tgt;
+  for (rl_cit=root_list.begin(); rl_cit!=root_list.end(); ++rl_cit) {
+    target = *rl_cit;  const UShortSet& reverse_dag = reverseActiveDAG[target];
+    r_tgt = (target == numApprox) ? 1. : avg_eval_ratios[target];
+    for (rd_cit=reverse_dag.begin(); rd_cit!=reverse_dag.end(); ++rd_cit) {
+      source = *rd_cit;  Real& r_src = avg_eval_ratios[source];
+      if (r_src <= r_tgt) {
+	r_src = r_tgt * (1. + RATIO_NUDGE);
+	Cout << "Enforcing source = " << source << " target = " << target
+	     << ": r_src = " << r_src << " r_tgt = "<< r_tgt << std::endl;
+      }
+    }
+  }
+}
+
+
+void NonDGenACVSampling::
+scale_to_target(Real avg_N_H, const RealVector& cost,
+		RealVector& avg_eval_ratios, Real& avg_hf_target,
+		const UShortList& root_list)
+{
+  // scale to enforce budget constraint.  Since the profile does not emerge
+  // from pilot in ACV, don't select an infeasible initial guess:
+  // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
+  // > if N* > N_pilot, use initial = r*,N*
+  avg_hf_target = allocate_budget(avg_eval_ratios, cost); // r* --> N*
+  if (avg_N_H > avg_hf_target) {// replace N* with N_pilot, rescale r* to budget
+    avg_hf_target = avg_N_H;
+
+    // Could create another helper if there are additional clients:
+    //scale_to_budget_with_pilot(avg_eval_ratios,cost,avg_hf_target,root_list);
+
+    Real approx_inner_prod = 0.;  size_t approx;
+    for (approx=0; approx<numApprox; ++approx)
+      approx_inner_prod += cost[approx] * avg_eval_ratios[approx];
+    // Apply factor: r_scaled = factor r^* which applies to LF (HF r remains 1)
+    // > N_pilot (r_scaled^T w + 1) = budget, where w_i = cost_i / cost_H
+    // > factor r*^T w = budget / N_pilot - 1
+    Real budget = (Real)maxFunctionEvals, cost_H = cost[numApprox],
+         factor = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
+
+    // Enforce DAG dependencies (ACV: all point to numApprox)
+    // > N for each source model > N for model it targets
+    // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
+    UShortList::const_iterator rl_cit;  UShortSet::const_iterator rd_cit;
+    unsigned short source, target;
+    Real r_tgt, cost_r_src, budget_decr, inner_prod_decr;
+    for (rl_cit=root_list.begin(); rl_cit!=root_list.end(); ++rl_cit) {
+      target = *rl_cit; const UShortSet& reverse_dag = reverseActiveDAG[target];
+      r_tgt = (target == numApprox) ? 1. : avg_eval_ratios[target];
+      budget_decr = inner_prod_decr = 0.;
+      for (rd_cit=reverse_dag.begin(); rd_cit!=reverse_dag.end(); ++rd_cit) {
+	source = *rd_cit; Real& r_src = avg_eval_ratios[source];
+	r_src *= factor;
+	if (r_src <= 1.) {
+	  r_src = r_tgt * (1. + RATIO_NUDGE);
+	  Cout << "Enforcing source = " << source << " target = " << target
+	       << ": r_src = " << r_src << " r_tgt = "<< r_tgt << std::endl;
+	  // complete the reverse DAG using the same factor:
+	  cost_r_src       = r_src * cost[source];
+	  budget_decr     += avg_N_H * cost_r_src / cost_H;
+	  inner_prod_decr += cost_r_src;
+	}
+      }
+      // now update factor for next root: decrement budget/inner_prod
+      budget -= budget_decr;  approx_inner_prod -= inner_prod_decr;
+      factor  = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
+    }
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Real inner_prod = cost_H;
+      for (approx=0; approx<numApprox; ++approx)
+	inner_prod += cost[approx] * avg_eval_ratios[approx];
+      Cout << "Rescale to budget: average evaluation ratios\n"<< avg_eval_ratios
+	   << "budget = " << avg_N_H * inner_prod / cost_H << std::endl;
+    }
+  }
+  else
+    enforce_linear_ineq_constraints(avg_eval_ratios, root_list);
 }
 
 
