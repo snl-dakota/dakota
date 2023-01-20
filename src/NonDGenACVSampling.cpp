@@ -473,6 +473,7 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
   Real&       avg_hf_target    = soln.avgHFTarget;
   Real&       avg_estvar       = soln.avgEstVar;
   Real&       avg_estvar_ratio = soln.avgEstVarRatio;
+  bool      budget_constrained = (maxFunctionEvals != SZ_MAX);
   if (mlmfIter == 0) {
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
@@ -481,14 +482,13 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H)
     // Can happen if shared pilot rolls up to exceed budget spec.
     Real budget             = (Real)maxFunctionEvals;
-    bool budget_constrained = (maxFunctionEvals != SZ_MAX),
-         budget_exhausted   = (equivHFEvals >= budget);
+    bool budget_exhausted   = (equivHFEvals >= budget);
     //if (budget_exhausted) budget = equivHFEvals;
 
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
       numSamples = 0;  avg_eval_ratios = 1.;  avg_hf_target = avg_N_H;
-      avg_estvar = average(estVarIter0);    avg_estvar_ratio = 1.;
+      avg_estvar = average(estVarIter0);  avg_estvar_ratio = 1.;
       return;
     }
 
@@ -537,10 +537,12 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     for (size_t approx=0; approx<numApprox; ++approx)
       Cout << "Approx " << approx+1 << ": average evaluation ratio = "
 	   << avg_eval_ratios[approx] << '\n';
-    // *** TO DO: report cost for accuracy constrained
-    Cout << "Average estimator variance = " << avg_estvar
-	 << "\nAverage GenACV variance / average MC variance = "
-	 << avg_estvar_ratio << std::endl;
+    if (budget_constrained)
+      Cout << "Average estimator variance = " << avg_estvar
+	   << "\nAverage GenACV variance / average MC variance = "
+	   << avg_estvar_ratio << std::endl;
+    else
+      Cout << "Estimator cost allocation = " << soln.equivHFAlloc << std::endl;
   }
 }
 
@@ -876,13 +878,15 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
 
 void NonDGenACVSampling::update_best(DAGSolutionData& soln)
 {
-  // Store best result:
-  // > could potentially prune some of this tracking for final_statistics mode
-  //   = estimator_performance, but suppress this additional complexity for now
+  // Update tracking of best result
+
+  DAGSolutionData& best_soln = dagSolns[*bestDAGIter];
+  bool budget_constr = (maxFunctionEvals != SZ_MAX);
   Real avg_est_var = soln.avgEstVar;
   if ( valid_variance(avg_est_var) && // *** TO DO: insufficient due to averaging --> use something like a badNumericsFlag to prevent adoption of bogus solve
-      ( bestDAGIter == modelDAGs.end() ||
-	avg_est_var < dagSolns[*bestDAGIter].avgEstVar ) ) { // *** TO DO: add support for accuracy-constrained --> cost comparison
+       ( bestDAGIter == modelDAGs.end() ||
+	 ( budget_constr && avg_est_var       < best_soln.avgEstVar ) ||
+	 (!budget_constr && soln.equivHFAlloc < best_soln.equivHFAlloc ) ) ) {
     bestDAGIter = activeDAGIter;
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Updating best DAG to:\n" << *bestDAGIter << std::endl;
@@ -903,8 +907,7 @@ void NonDGenACVSampling::restore_best()
   Cout << "\nBest solution from DAG:\n" << active_dag << std::endl;
   if (outputLevel >= DEBUG_OUTPUT) {
     DAGSolutionData& soln = dagSolns[active_dag];
-    Cout //<< "with estimator variance = " << soln.avgEstVar// *** TO DO: add support for accuracy-constrained --> cost comparison
-	 << "\nwith avg_eval_ratios =\n" << soln.avgEvalRatios
+    Cout << "\nwith avg_eval_ratios =\n" << soln.avgEvalRatios
 	 << "and avg_hf_target = "       << soln.avgHFTarget << std::endl;
   }
 }

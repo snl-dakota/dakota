@@ -620,6 +620,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
   Real&         avg_hf_target = soln.avgHFTarget;
   Real&            avg_estvar = soln.avgEstVar;
   Real&      avg_estvar_ratio = soln.avgEstVarRatio;
+  Real&         equiv_hf_cost = soln.equivHFAlloc;
 
   // Note: ACV paper suggests additional linear constraints for r_i ordering
   switch (optSubProblemForm) {
@@ -902,8 +903,14 @@ nonhierarch_numerical_solution(const RealVector& cost,
   // = var_H / N_H (1 - R^2).  Notes:
   // > a QoI-vector prior to averaging would require recomputation from r*,N*)
   // > this value corresponds to N* (_after_ num_samples applied)
-  avg_estvar = (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) ?
-    std::exp(fn_vals_star(1)) : std::exp(fn_vals_star(0));
+  if (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) {
+    avg_estvar = std::exp(fn_vals_star[1]);
+    equiv_hf_cost       = fn_vals_star[0];
+  }
+  else {
+    avg_estvar = std::exp(fn_vals_star(0));
+    equiv_hf_cost       = fn_vals_star[1];
+  }
 
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:

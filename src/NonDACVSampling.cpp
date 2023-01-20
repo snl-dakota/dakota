@@ -404,6 +404,7 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
   // Set initial guess based either on related analytic solutions (iter == 0)
   // or warm started from previous solution (iter >= 1)
 
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX);
   if (mlmfIter == 0) {
     // Set initial guess based on MFMC or pairwise CVMC analytic solutions
 
@@ -420,8 +421,7 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H)
     // Can happen if shared pilot rolls up to exceed budget spec.
     Real budget             = (Real)maxFunctionEvals;
-    bool budget_constrained = (maxFunctionEvals != SZ_MAX),
-         budget_exhausted   = (equivHFEvals >= budget);
+    bool budget_exhausted   = (equivHFEvals >= budget);
     //if (budget_exhausted) budget = equivHFEvals;
 
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
@@ -511,14 +511,15 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
 	  = update_hf_target(soln1.avgEvalRatios, varH, estVarIter0);
 	soln2.avgHFTarget
 	  = update_hf_target(soln2.avgEvalRatios, varH, estVarIter0);
-	Real cost1 = compute_equivalent_cost(soln1.avgHFTarget,
-					     soln1.avgEvalRatios, cost),
-	     cost2 = compute_equivalent_cost(soln2.avgHFTarget,
-					     soln2.avgEvalRatios, cost);
+	soln1.equivHFAlloc = compute_equivalent_cost(soln1.avgHFTarget,
+						     soln1.avgEvalRatios, cost);
+	soln2.equivHFAlloc = compute_equivalent_cost(soln2.avgHFTarget,
+						     soln2.avgEvalRatios, cost);
 	if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "ACV initial guess candidates:\n  analytic MFMC cost = "
-	       << cost1 << "\n  ensemble CVMC cost = " << cost2 << '\n';
-	mfmc_init = (cost1 <= cost2);
+	       << soln1.equivHFAlloc << "\n  ensemble CVMC cost = "
+	       << soln2.equivHFAlloc << '\n';
+	mfmc_init = (soln1.equivHFAlloc <= soln2.equivHFAlloc);
       }
       soln = (mfmc_init) ? soln1 : soln2;
       if (outputLevel >= NORMAL_OUTPUT) {
@@ -558,9 +559,12 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     for (size_t approx=0; approx<numApprox; ++approx)
       Cout << "Approx " << approx+1 << ": average evaluation ratio = "
 	   << avg_eval_ratios[approx] << '\n';
-    Cout << "Average estimator variance = " << soln.avgEstVar
-	 << "\nAverage ACV variance / average MC variance = "
-	 << soln.avgEstVarRatio << std::endl;
+    if (budget_constrained)
+      Cout << "Average estimator variance = " << soln.avgEstVar
+	   << "\nAverage ACV variance / average MC variance = "
+	   << soln.avgEstVarRatio << std::endl;
+    else
+      Cout << "Estimator cost allocation = " << soln.equivHFAlloc << std::endl;
   }
 }
 

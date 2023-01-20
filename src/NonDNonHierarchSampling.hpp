@@ -53,7 +53,7 @@ public:
   DAGSolutionData();
   // full constructor
   DAGSolutionData(const RealVector& avg_eval_ratios, Real avg_hf_target,
-		  Real avg_est_var, Real avg_est_var_ratio);
+		  Real avg_est_var, Real avg_est_var_ratio, Real equiv_hf);
   /// copy constructor
   DAGSolutionData(const DAGSolutionData& sd);
   /// destructor
@@ -81,21 +81,24 @@ public:
   /// MC estimator variance using final N_H samples (not equivHF)
   Real avgEstVarRatio;
 
-  // for accuracy constrained:
-  //Real equivHFEvals;
+  // for accuracy constrained: total allocation for estimator in
+  // equivalent HF units (may differ from total actual = equivHFEvals)
+  Real equivHFAlloc;
 };
 
 
-inline DAGSolutionData::DAGSolutionData()
+inline DAGSolutionData::DAGSolutionData():
+  avgHFTarget(0.), avgEstVar(DBL_MAX), avgEstVarRatio(1.), equivHFAlloc(0.)
 { }
 
 
 inline DAGSolutionData::
 DAGSolutionData(const RealVector& avg_eval_ratios, Real avg_hf_target,
-		  Real avg_est_var, Real avg_est_var_ratio)
+		Real avg_est_var, Real avg_est_var_ratio, Real equiv_hf)
 {
   avgEvalRatios = avg_eval_ratios;  avgHFTarget    = avg_hf_target;
   avgEstVar     = avg_est_var;      avgEstVarRatio = avg_est_var_ratio;
+  equivHFAlloc  = equiv_hf;
 }
 
 
@@ -103,6 +106,7 @@ inline DAGSolutionData::DAGSolutionData(const DAGSolutionData& sd)
 {
   avgEvalRatios = sd.avgEvalRatios;  avgHFTarget    = sd.avgHFTarget;
   avgEstVar     = sd.avgEstVar;      avgEstVarRatio = sd.avgEstVarRatio;
+  equivHFAlloc  = sd.equivHFAlloc;
 }
 
 
@@ -114,6 +118,7 @@ inline DAGSolutionData& DAGSolutionData::operator=(const DAGSolutionData& sd)
 {
   avgEvalRatios = sd.avgEvalRatios;  avgHFTarget    = sd.avgHFTarget;
   avgEstVar     = sd.avgEstVar;      avgEstVarRatio = sd.avgEstVarRatio;
+  equivHFAlloc  = sd.equivHFAlloc;
 }
 
 
