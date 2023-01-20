@@ -32,12 +32,94 @@ enum { ANALYTIC_SOLUTION = 1, REORDERED_ANALYTIC_SOLUTION,
        R_ONLY_LINEAR_CONSTRAINT, N_VECTOR_LINEAR_CONSTRAINT,
        R_AND_N_NONLINEAR_CONSTRAINT, N_VECTOR_LINEAR_OBJECTIVE };
 
+  
+/// Container class for numerical solutions for a given DAG
 
-/// Perform Approximate Control Variate Monte Carlo sampling for UQ.
+/** Used for caching the optimization solution data that is required
+    for restoring a selected (best) DAG. */
 
-/** Approximate Control Variate (ACV) is a variance-reduction technique
-    that utilitizes lower fidelity simulations that have response QoI
-    that are correlated with the high-fidelity response QoI. */
+class DAGSolutionData
+{
+  //
+  //- Heading: Friends
+  //
+
+  // GenACV can access attributes of the body class directly
+  //friend class NonDGenACVSampling;
+
+public:
+
+  /// default constructor
+  DAGSolutionData();
+  // full constructor
+  DAGSolutionData(const RealVector& avg_eval_ratios, Real avg_hf_target,
+		  Real avg_est_var, Real avg_est_var_ratio);
+  /// copy constructor
+  DAGSolutionData(const DAGSolutionData& sd);
+  /// destructor
+  ~DAGSolutionData();
+  /// assignment operator
+  DAGSolutionData& operator=(const DAGSolutionData&);
+
+  //
+  //- Heading: Data
+  //
+
+  // optimization variables:
+
+  // average evaluation ratios for model graph
+  RealVector avgEvalRatios;
+  // average high-fidelity sample target for model graph
+  Real avgHFTarget;
+
+  // optimization results: (for budget constrained)
+
+  /// average estimator variance for model graph
+  Real avgEstVar;
+  /// average estimator variance ratio (1 - R^2) for model graph: the
+  /// ratio of final estimator variance (optimizer result) and final
+  /// MC estimator variance using final N_H samples (not equivHF)
+  Real avgEstVarRatio;
+
+  // for accuracy constrained:
+  //Real equivHFEvals;
+};
+
+
+inline DAGSolutionData::DAGSolutionData()
+{ }
+
+
+inline DAGSolutionData::
+DAGSolutionData(const RealVector& avg_eval_ratios, Real avg_hf_target,
+		  Real avg_est_var, Real avg_est_var_ratio)
+{
+  avgEvalRatios = avg_eval_ratios;  avgHFTarget    = avg_hf_target;
+  avgEstVar     = avg_est_var;      avgEstVarRatio = avg_est_var_ratio;
+}
+
+
+inline DAGSolutionData::DAGSolutionData(const DAGSolutionData& sd)
+{
+  avgEvalRatios = sd.avgEvalRatios;  avgHFTarget    = sd.avgHFTarget;
+  avgEstVar     = sd.avgEstVar;      avgEstVarRatio = sd.avgEstVarRatio;
+}
+
+
+inline DAGSolutionData::~DAGSolutionData()
+{ }
+
+
+inline DAGSolutionData& DAGSolutionData::operator=(const DAGSolutionData& sd)
+{
+  avgEvalRatios = sd.avgEvalRatios;  avgHFTarget    = sd.avgHFTarget;
+  avgEstVar     = sd.avgEstVar;      avgEstVarRatio = sd.avgEstVarRatio;
+}
+
+
+/// Base class for non-hierarchical ensemble-based Monte Carlo sampling.
+
+/** Derived classes include MFMC, ACV, and GenACV. */
 
 class NonDNonHierarchSampling: public NonDEnsembleSampling
 {
@@ -68,7 +150,7 @@ protected:
   //void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  void print_variance_reduction(std::ostream& s);
+  //void print_variance_reduction(std::ostream& s);
 
   /// return name of active optimizer method
   unsigned short uses_method() const;
@@ -168,9 +250,8 @@ protected:
 
   void nonhierarch_numerical_solution(const RealVector& cost,
 				      const SizetArray& approx_sequence,
-				      RealVector& avg_eval_ratios,
-				      Real& avg_hf_target, size_t& num_samples,
-				      Real& avg_estvar, Real& avg_estvar_ratio);
+				      DAGSolutionData& soln,
+				      size_t& num_samples);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
@@ -179,6 +260,9 @@ protected:
 
   /// helper function that supports optimization APIs passing design variables
   Real average_estimator_variance(const RealVector& cd_vars);
+  /// helper function that supports virtual print_variance_reduction(s)
+  void print_estimator_performance(std::ostream& s,
+				   const DAGSolutionData& soln);
 
   void r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H,
 			RealVector& N_vec);
@@ -246,9 +330,6 @@ protected:
 
   /// number of successful pilot evaluations of HF truth model (exclude faults)
   SizetArray numHIter0;
-  /// ratio of final estimator variance (optimizer result averaged across QoI)
-  /// and final MC estimator variance  (final varH / N_H averaged across QoI)
-  Real avgEstVarRatio;
 
 private:
 

@@ -564,9 +564,7 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 void NonDNonHierarchSampling::
 nonhierarch_numerical_solution(const RealVector& cost,
 			       const SizetArray& approx_sequence,
-			       RealVector& avg_eval_ratios,
-			       Real& avg_hf_target, size_t& num_samples,
-			       Real& avg_estvar, Real& avg_estvar_ratio)
+			       DAGSolutionData& soln, size_t& num_samples)
 {
   // --------------------------------------
   // Formulate the optimization sub-problem
@@ -617,6 +615,11 @@ nonhierarch_numerical_solution(const RealVector& cost,
   RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
   x_ub        =  DBL_MAX; // no upper bounds on x
   lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
+
+  RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  Real&         avg_hf_target = soln.avgHFTarget;
+  Real&            avg_estvar = soln.avgEstVar;
+  Real&      avg_estvar_ratio = soln.avgEstVarRatio;
 
   // Note: ACV paper suggests additional linear constraints for r_i ordering
   switch (optSubProblemForm) {
@@ -1296,7 +1299,8 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
 }
 
 
-void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
+void NonDNonHierarchSampling::
+print_estimator_performance(std::ostream& s, const DAGSolutionData& soln)
 {
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
@@ -1333,14 +1337,14 @@ void NonDNonHierarchSampling::print_variance_reduction(std::ostream& s)
     << (size_t)std::floor(average(N_H_actual) + deltaNActualHF + .5)
     << " HF samples): " << std::setw(wpp7) << average(final_mc_estvar)
     << "\n  " << type << method << " (sample profile):   "
-    << std::setw(wpp7) << avgEstVar
+    << std::setw(wpp7) << soln.avgEstVar
     << "\n  " << type << method << " ratio (1 - R^2):    "
-    << std::setw(wpp7) << avgEstVarRatio
+    << std::setw(wpp7) << soln.avgEstVarRatio
     << "\n Equivalent   MC (" << std::setw(5)
     << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
     << std::setw(wpp7) << avg_budget_mc_estvar
     << "\n Equivalent" << method << " ratio:              "
-    << std::setw(wpp7) << avgEstVar / avg_budget_mc_estvar << '\n';
+    << std::setw(wpp7) << soln.avgEstVar / avg_budget_mc_estvar << '\n';
 }
 
 } // namespace Dakota

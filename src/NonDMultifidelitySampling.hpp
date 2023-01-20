@@ -58,6 +58,7 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  Real estimator_accuracy_metric();
   void print_variance_reduction(std::ostream& s);
 
   void estimator_variance_ratios(const RealVector& r_and_N,
@@ -83,7 +84,7 @@ protected:
 			       const RealMatrix& rho2_LH,
 			       const RealVector& cost,
 			       SizetArray& approx_sequence,
-			       RealMatrix& eval_ratios, Real& avg_hf_target);
+			       RealMatrix& eval_ratios, RealVector& hf_targets);
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
@@ -208,7 +209,14 @@ private:
   /// model misordering (default = NUMERICAL_FALLBACK) or override for
   /// robustness, e.g., to pilot over-estimation (NUMERICAL_OVERRIDE)
   unsigned short numericalSolveMode;
+
+  /// final solution data for MFMC (default DAG = 1,2,...,numApprox)
+  DAGSolutionData mfmcSolnData;
 };
+
+
+inline Real NonDMultifidelitySampling::estimator_accuracy_metric()
+{ return mfmcSolnData.avgEstVar; }
 
 
 inline void NonDMultifidelitySampling::

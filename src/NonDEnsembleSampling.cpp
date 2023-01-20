@@ -251,12 +251,12 @@ void NonDEnsembleSampling::update_final_statistics()
   switch (finalStatsType) {
   case ESTIMATOR_PERFORMANCE:
     if (maxFunctionEvals == SZ_MAX) { // accuracy spec: equiv cost is objective
-      finalStatistics.function_value(equivHFEvals + deltaEquivHF, 0);
-      finalStatistics.function_value(avgEstVar, 1);
+      finalStatistics.function_value(estimator_cost_metric(),     0);
+      finalStatistics.function_value(estimator_accuracy_metric(), 1);
     }
     else { // budget spec: equiv cost returned as constraint
-      finalStatistics.function_value(avgEstVar, 0);
-      finalStatistics.function_value(equivHFEvals + deltaEquivHF, 1);
+      finalStatistics.function_value(estimator_accuracy_metric(), 0);
+      finalStatistics.function_value(estimator_cost_metric(),     1);
     }
     break;
   case QOI_STATISTICS: // final stats: moments + level mappings

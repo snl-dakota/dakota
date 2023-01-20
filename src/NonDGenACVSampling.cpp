@@ -37,6 +37,7 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
   //UShortArraySet model_dags;
   generate_dags(modelDAGs);
+  bestDAGIter = modelDAGs.end();
 }
 
 
@@ -149,28 +150,6 @@ void NonDGenACVSampling::core_run()
   case PILOT_PROJECTION: // for algorithm assessment/selection
     generalized_acv_pilot_projection(); break;
   }
-
-  /*
-  Initial DAG-enumeration of inherited implementations was wasteful:
-  > relied on duplication detection for reusing pilot
-  > allowed/defaulted to online mode for each DAG (wasteful for poor DAG)
-  Adopt same approach proposed for AAO hyper-parameter model tuning --> need
-  shared increments for online_pilot mode on outer-most loop around DAG/ensemble
-  selection, followed by LF increments only after finalization of config.
-
-  for (activeDAGIter=modelDAGs.begin(); activeDAGIter!=modelDAGs.end();
-       ++activeDAGIter) {
-    Cout << "Generalized ACV evaluating DAG:\n" << *activeDAGIter << std::endl;
-
-    NonDACVSampling::core_run(); // {online,offline,projection} modes
-
-    update_best(); // store reqd state for restoration w/o any recomputation
-    reset_acv();   // reset state for next ACV execution
-  }
-
-  restore_best();
-  // Post-process ...
-  */
 }
 
 
@@ -181,7 +160,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   // retrieve cost estimates across soln levels for a particular model form
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
   IntRealSymMatrixArrayMap sum_LL;
-  RealVector sum_HH, avg_eval_ratios;  RealMatrix var_L;
+  RealVector sum_HH;  RealMatrix var_L;
   //SizetSymMatrixArray N_LL;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
@@ -209,32 +188,36 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
 			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
 
-    bestAvgEstVar = DBL_MAX;
+    if (mlmfIter == 0) precompute_ratios(); // metrics not dependent on DAG
     for (activeDAGIter  = modelDAGs.begin();
 	 activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
       // sample set definitions are enabled by reversing the DAG direction:
-      generate_reverse_dag(*activeDAGIter);
+      const UShortArray& active_dag = *activeDAGIter;
+      generate_reverse_dag(active_dag);
       // compute the LF/HF evaluation ratios from shared samples and compute
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
-      compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
-		     avgEstVar, avgEstVarRatio);
-      update_best(avg_eval_ratios, avg_hf_target);// store state for restoration
+      DAGSolutionData& soln = dagSolns[active_dag];
+      compute_ratios(var_L, sequenceCost, soln);
+      update_best(soln);// store state for restoration
       //reset_acv(); // reset state for next ACV execution
     }
-    restore_best(avg_eval_ratios, avg_hf_target);
+    restore_best();
+    if (backfillFailures)
+      avg_hf_target = dagSolns[*activeDAGIter].avgHFTarget;
     ++mlmfIter;
   }
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  DAGSolutionData& soln = dagSolns[*activeDAGIter];
   if (finalStatsType == QOI_STATISTICS)
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, avg_eval_ratios, avg_hf_target);
+		      N_H_alloc, soln.avgEvalRatios, soln.avgHFTarget);
   else
     // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
-    update_projected_lf_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
-				N_H_alloc, deltaEquivHF);
+    update_projected_lf_samples(soln.avgHFTarget, soln.avgEvalRatios,
+				N_H_actual, N_H_alloc, deltaEquivHF);
 }
 
 
@@ -257,28 +240,28 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   // Compute "online" sample increments:
   // -----------------------------------
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
-  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH, avg_eval_ratios;
+  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
-  Real avg_hf_target = 0.;
-  bestAvgEstVar = DBL_MAX;
+  precompute_ratios(); // compute metrics not dependent on active DAG
   for (activeDAGIter  = modelDAGs.begin();
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
     // sample set definitions are enabled by reversing the DAG direction:
-    generate_reverse_dag(*activeDAGIter);
+    const UShortArray& active_dag = *activeDAGIter;
+    generate_reverse_dag(active_dag);
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
-    compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
-		   avgEstVar, avgEstVarRatio);
-    update_best(avg_eval_ratios, avg_hf_target); // store state for restoration
+    DAGSolutionData& soln = dagSolns[active_dag];
+    compute_ratios(var_L, sequenceCost, soln);
+    update_best(soln); // store state for restoration
     //reset_acv(); // reset state for next ACV execution
   }
-  restore_best(avg_eval_ratios, avg_hf_target);
+  restore_best();
 
   // -----------------------------------
   // Perform "online" sample increments:
@@ -294,13 +277,14 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  DAGSolutionData& soln = dagSolns[*activeDAGIter];
   if (finalStatsType == QOI_STATISTICS)
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, avg_eval_ratios, avg_hf_target);
+		      N_H_alloc, soln.avgEvalRatios, soln.avgHFTarget);
   else
     // N_H is converged from offline pilot --> do not compute deltaNActualHF
-    update_projected_lf_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
-				N_H_alloc, deltaEquivHF);
+    update_projected_lf_samples(soln.avgHFTarget, soln.avgEvalRatios,
+				N_H_actual, N_H_alloc, deltaEquivHF);
 }
 
 
@@ -326,25 +310,26 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  RealVector avg_eval_ratios;  Real avg_hf_target = 0.;
-  bestAvgEstVar = DBL_MAX;
+  precompute_ratios(); // compute metrics not dependent on active DAG
   for (activeDAGIter  = modelDAGs.begin();
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
     // sample set definitions are enabled by reversing the DAG direction:
-    generate_reverse_dag(*activeDAGIter);
+    const UShortArray& active_dag = *activeDAGIter;
+    generate_reverse_dag(active_dag);
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
-    compute_ratios(var_L, sequenceCost, avg_eval_ratios, avg_hf_target,
-		   avgEstVar, avgEstVarRatio);
-    update_best(avg_eval_ratios, avg_hf_target); // store state for restoration
+    DAGSolutionData& soln = dagSolns[active_dag];
+    compute_ratios(var_L, sequenceCost, soln);
+    update_best(soln); // store state for restoration
     //reset_acv(); // reset state for next ACV execution
   }
-  restore_best(avg_eval_ratios, avg_hf_target);
-
+  restore_best();
   ++mlmfIter;
+
   // No LF increments or final moments for pilot projection
-  update_projected_samples(avg_hf_target, avg_eval_ratios, N_H_actual,
+  DAGSolutionData& soln = dagSolns[*activeDAGIter];
+  update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, N_H_actual,
 			   N_H_alloc, deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::nonhierarch_numerical_solution() recovers N*
@@ -458,10 +443,25 @@ genacv_approx_increment(const RealVector& avg_eval_ratios,
 }
 
 
+void NonDGenACVSampling::precompute_ratios()
+{
+  approxSequence.clear(); // rho2_LH re-ordering from MFMC is not relevant here
+
+  size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+
+  // estVarIter0 only uses HF pilot since sum_L_shared / N_shared minus
+  // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
+  // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
+  // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
+  compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
+  numHIter0 = N_H_actual;
+}
+
+
 void NonDGenACVSampling::
-compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
-	       RealVector& avg_eval_ratios, Real& avg_hf_target,
-	       Real& avg_estvar,            Real& avg_estvar_ratio)
+compute_ratios(const RealMatrix& var_L, const RealVector& cost,
+	       DAGSolutionData& soln)
 {
   // --------------------------------------
   // Configure the optimization sub-problem
@@ -469,21 +469,14 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
   // Set initial guess based either on related analytic solutions (iter == 0)
   // or warm started from previous solution (iter >= 1)
 
-  approxSequence.clear(); // rho2_LH re-ordering from MFMC is not relevant here
-  const UShortArray& active_dag = *activeDAGIter;
+  RealVector& avg_eval_ratios  = soln.avgEvalRatios;
+  Real&       avg_hf_target    = soln.avgHFTarget;
+  Real&       avg_estvar       = soln.avgEstVar;
+  Real&       avg_estvar_ratio = soln.avgEstVarRatio;
   if (mlmfIter == 0) {
-    // For general DAG, set initial guess based on pairwise CVMC analytic solns
-    // (analytic MFMC soln expected to be less relevant)
-
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-    // estVarIter0 only uses HF pilot since sum_L_shared / N_shared minus
-    // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
-    // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
-    // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
-    compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
-    numHIter0 = N_H_actual;
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
     // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H)
     // Can happen if shared pilot rolls up to exceed budget spec.
@@ -494,15 +487,17 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
 
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
-      numSamples = 0; avg_eval_ratios = 1.; avg_hf_target = avg_N_H;
+      numSamples = 0;  avg_eval_ratios = 1.;  avg_hf_target = avg_N_H;
       avg_estvar = average(estVarIter0);    avg_estvar_ratio = 1.;
       return;
     }
 
-    // Use ensemble of independent 2-model CVMCs, rescaled to aggregate budget.
-    // Differs from derived ACV approach through use of paired DAG dependencies.
+    // For general DAG, set initial guess based on pairwise CVMC analytic solns
+    // (analytic MFMC soln expected to be less relevant).  Differs from derived
+    // ACV approach through use of paired DAG dependencies.
     RealMatrix eval_ratios;
-    cvmc_ensemble_solutions(covLL, covLH, varH, cost, active_dag, eval_ratios);
+    cvmc_ensemble_solutions(covLL, covLH, varH, cost, *activeDAGIter,
+			    eval_ratios);
     Cout << "CVMC eval_ratios:\n" << eval_ratios << std::endl;
     average(eval_ratios, 0, avg_eval_ratios);
 
@@ -522,15 +517,11 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "GenACV initial guess from ensemble CVMC:\n"
 	   << "  average eval ratios:\n" << avg_eval_ratios
-	   << "  average HF target = " << avg_hf_target
-	   << "  average estvar = " << avg_estvar << std::endl;
+	   << "  average HF target = " << avg_hf_target << std::endl;
+         //<< "  average estvar = " << avg_estvar << std::endl; // budget only
 
     // Single solve initiated from lowest estvar
-    nonhierarch_numerical_solution(cost, approxSequence, avg_eval_ratios,
-				   avg_hf_target, numSamples, avg_estvar,
-				   avg_estvar_ratio);
-    prevSolns[active_dag] // *** TO DO: replace w/ ref to Map upstream
-      = std::pair<RealVector, Real>(avg_eval_ratios, avg_hf_target);
+    nonhierarch_numerical_solution(cost, approxSequence, soln, numSamples);
   }
   else { // warm start from previous eval_ratios solution
     
@@ -539,18 +530,14 @@ compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
     // active on constraint bound (excepting integer sample rounding)
 
     // warm start from previous solns for corresponding DAG
-    std::pair<RealVector, Real>& soln = prevSolns[active_dag];
-    nonhierarch_numerical_solution(cost, approxSequence, soln.first,
-				   soln.second, numSamples, avg_estvar,
-				   avg_estvar_ratio);
-    avg_eval_ratios = soln.first; // *** TO DO: replace w/ ref to Map upstream
-    avg_hf_target   = soln.second;
+    nonhierarch_numerical_solution(cost, approxSequence, soln, numSamples);
   }
 
   if (outputLevel >= NORMAL_OUTPUT) {
     for (size_t approx=0; approx<numApprox; ++approx)
       Cout << "Approx " << approx+1 << ": average evaluation ratio = "
 	   << avg_eval_ratios[approx] << '\n';
+    // *** TO DO: report cost for accuracy constrained
     Cout << "Average estimator variance = " << avg_estvar
 	 << "\nAverage GenACV variance / average MC variance = "
 	 << avg_estvar_ratio << std::endl;
@@ -887,53 +874,38 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
 }
 
 
-void NonDGenACVSampling::
-update_best(const RealVector& avg_eval_ratios, Real avg_hf_target)
+void NonDGenACVSampling::update_best(DAGSolutionData& soln)
 {
   // Store best result:
   // > could potentially prune some of this tracking for final_statistics mode
   //   = estimator_performance, but suppress this additional complexity for now
-  if (valid_variance(avgEstVar) && // *** TO DO: insufficient due to averaging --> use something like a badNumericsFlag to prevent adoption of bogus solve
-      avgEstVar < bestAvgEstVar) {
-    bestDAGIter        = activeDAGIter;
-    bestAvgEvalRatios  = avg_eval_ratios;
-    bestAvgHFTarget    = avg_hf_target;
-    // could recompute these to reduce tracking
-    bestAvgEstVar      = avgEstVar;
-    bestAvgEstVarRatio = avgEstVarRatio;
-    // reference points for output
-    if (pilotMgmtMode != OFFLINE_PILOT) {
-      bestEstVarIter0 = estVarIter0;
-      bestNumHIter0   = numHIter0;
-    }
+  Real avg_est_var = soln.avgEstVar;
+  if ( valid_variance(avg_est_var) && // *** TO DO: insufficient due to averaging --> use something like a badNumericsFlag to prevent adoption of bogus solve
+      ( bestDAGIter == modelDAGs.end() ||
+	avg_est_var < dagSolns[*bestDAGIter].avgEstVar ) ) { // *** TO DO: add support for accuracy-constrained --> cost comparison
+    bestDAGIter = activeDAGIter;
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Updating best DAG to:\n" << *bestDAGIter << std::endl;
   }
 }
 
 
-void NonDGenACVSampling::
-restore_best(RealVector& avg_eval_ratios, Real& avg_hf_target)
+void NonDGenACVSampling::restore_best()
 {
-  Cout << "\nBest estimator variance = " << bestAvgEstVar
-       << " from DAG:\n" << *bestDAGIter << std::endl;
   // restore best state for compute/archive/print final results
   if (activeDAGIter != bestDAGIter) { // best is not most recent
-    activeDAGIter    = bestDAGIter;
-    avg_eval_ratios  = bestAvgEvalRatios;
-    avg_hf_target    = bestAvgHFTarget;
-    avgEstVar        = bestAvgEstVar;
-    avgEstVarRatio   = bestAvgEstVarRatio;
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Restoring best DAG to:\n" << *activeDAGIter
-	   << "with avg_hf_target = " << avg_hf_target
-	   << "\nand avg_eval_ratios =\n" << avg_eval_ratios << std::endl;
-    if (finalStatsType == QOI_STATISTICS &&
-	pilotMgmtMode  != PILOT_PROJECTION &&
+    activeDAGIter = bestDAGIter;
+    if (finalStatsType == QOI_STATISTICS && pilotMgmtMode != PILOT_PROJECTION &&
 	mlmfSubMethod  != SUBMETHOD_ACV_MF) // approx_increments() for IS/RD
       generate_reverse_dag(*activeDAGIter);
-    if (pilotMgmtMode != OFFLINE_PILOT)
-      { estVarIter0 = bestEstVarIter0;  numHIter0 = bestNumHIter0; }
+  }
+  const UShortArray& active_dag = *activeDAGIter;
+  Cout << "\nBest solution from DAG:\n" << active_dag << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT) {
+    DAGSolutionData& soln = dagSolns[active_dag];
+    Cout //<< "with estimator variance = " << soln.avgEstVar// *** TO DO: add support for accuracy-constrained --> cost comparison
+	 << "\nwith avg_eval_ratios =\n" << soln.avgEvalRatios
+	 << "and avg_hf_target = "       << soln.avgHFTarget << std::endl;
   }
 }
 

@@ -52,11 +52,8 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  //void print_variance_reduction(std::ostream& s);
-
-  void compute_ratios(const RealMatrix& var_L,     const RealVector& cost,
-		      RealVector& avg_eval_ratios, Real& avg_hf_target,
-		      Real& avg_estvar,            Real& avg_estvar_ratio);
+  Real estimator_accuracy_metric();
+  void print_variance_reduction(std::ostream& s);
 
   void estimator_variance_ratios(const RealVector& N_vec,
 				 RealVector& estvar_ratios);
@@ -97,6 +94,10 @@ private:
   void generate_reverse_dag(const UShortArray& dag);
   void root_list_from_reverse_dag(UShortList& root_list);
 
+  void precompute_ratios();
+  void compute_ratios(const RealMatrix& var_L, const RealVector& cost,
+		      DAGSolutionData& solution);
+
   void compute_parameterized_G_g(const RealVector& N_vec,
 				 const UShortArray& dag);
 
@@ -136,8 +137,8 @@ private:
   void enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
 				       const UShortList& root_list);
 
-  void update_best(const RealVector& avg_eval_ratios, Real avg_hf_target);
-  void restore_best(RealVector& avg_eval_ratios, Real& avg_hf_target);
+  void update_best(DAGSolutionData& solution);
+  void restore_best();
   //void reset_acv();
 
   bool valid_variance(Real var) const;
@@ -161,25 +162,20 @@ private:
   /// reverse of active DAG: for each model, the set of models that point to it
   UShortSetArray reverseActiveDAG;
 
-  /// book-keeping of previous numerical solutions for each DAG;
-  /// used for warm starting
-  std::map<UShortArray, std::pair<RealVector, Real> > prevSolns;
-
   /// the best performing model graph among the set from generate_dags()
   UShortArraySet::const_iterator bestDAGIter;
-  /// track average evaluation ratios for best model graph
-  RealVector bestAvgEvalRatios;
-  /// track average high-fideloity sample target for best model graph
-  Real bestAvgHFTarget;
-  /// track average estimator variance for best model graph
-  Real bestAvgEstVar;
-  /// track average estimator variance ratio for best model graph
-  Real bestAvgEstVarRatio;
-  /// track initial MC estimator variance for best model graph
-  RealVector bestEstVarIter0;
-  /// track initial high-fidelity sample counts for best model graph
-  SizetArray bestNumHIter0;
+  /// book-keeping of previous numerical optimization solutions for each DAG;
+  /// used for warm starting
+  std::map<UShortArray, DAGSolutionData> dagSolns;
 };
+
+
+inline Real NonDGenACVSampling::estimator_accuracy_metric()
+{ return dagSolns[*activeDAGIter].avgEstVar; }
+
+
+inline void NonDGenACVSampling::print_variance_reduction(std::ostream& s)
+{ print_estimator_performance(s, dagSolns[*activeDAGIter]); }
 
 
 /*

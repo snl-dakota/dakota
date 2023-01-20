@@ -58,7 +58,8 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  //void print_variance_reduction(std::ostream& s);
+  Real estimator_accuracy_metric();
+  void print_variance_reduction(std::ostream& s);
 
   void estimator_variance_ratios(const RealVector& r_and_N,
 				 RealVector& estvar_ratios);
@@ -70,10 +71,6 @@ protected:
   //
   //- Heading: New virtual functions
   //
-
-  virtual void compute_ratios(const RealMatrix& var_L, const RealVector& cost,
-			      RealVector& avg_eval_ratios, Real& avg_hf_target,
-			      Real& avg_estvar, Real& avg_estvar_ratio);
 
   virtual void precompute_acv_control(const RealVector& avg_eval_ratios,
 				      const SizetArray& N_shared);
@@ -234,7 +231,10 @@ private:
 				const RealMatrix&    c, size_t qoi);
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 		    const RealMatrix& c, size_t qoi, Real var_H_q);
-  
+
+  void compute_ratios(const RealMatrix& var_L, const RealVector& cost,
+		      DAGSolutionData& soln);
+
   void acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios);
   //Real acv_estimator_variance(const RealVector& avg_eval_ratios,
   //			        Real avg_hf_target);
@@ -259,7 +259,14 @@ private:
 
   /// the "F" matrix from Gorodetsky JCP paper
   RealSymMatrix FMat;
+
+  /// final solution data for ACV (default DAG = numApprox,...,numApprox)
+  DAGSolutionData acvSolnData;
 };
+
+
+inline Real NonDACVSampling::estimator_accuracy_metric()
+{ return acvSolnData.avgEstVar; }
 
 
 inline void NonDACVSampling::
@@ -758,6 +765,10 @@ compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
     compute_acv_control(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
 			N_shared_q, FMat, qoi, beta);// all use shared counts
 }
+
+
+inline void NonDACVSampling::print_variance_reduction(std::ostream& s)
+{ print_estimator_performance(s, acvSolnData); }
 
 } // namespace Dakota
 
