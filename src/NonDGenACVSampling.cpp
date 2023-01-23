@@ -193,6 +193,8 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 	 activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
       // sample set definitions are enabled by reversing the DAG direction:
       const UShortArray& active_dag = *activeDAGIter;
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
       generate_reverse_dag(active_dag);
       // compute the LF/HF evaluation ratios from shared samples and compute
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
@@ -252,6 +254,8 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
     // sample set definitions are enabled by reversing the DAG direction:
     const UShortArray& active_dag = *activeDAGIter;
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
     generate_reverse_dag(active_dag);
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
@@ -315,6 +319,8 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
     // sample set definitions are enabled by reversing the DAG direction:
     const UShortArray& active_dag = *activeDAGIter;
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
     generate_reverse_dag(active_dag);
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
@@ -498,7 +504,7 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     RealMatrix eval_ratios;
     cvmc_ensemble_solutions(covLL, covLH, varH, cost, *activeDAGIter,
 			    eval_ratios);
-    Cout << "CVMC eval_ratios:\n" << eval_ratios << std::endl;
+    //Cout << "CVMC eval_ratios:\n" << eval_ratios << std::endl;
     average(eval_ratios, 0, avg_eval_ratios);
 
     // By using an ordered root list, we can repair sequentially, top down.
@@ -881,13 +887,21 @@ void NonDGenACVSampling::update_best(DAGSolutionData& soln)
 {
   // Update tracking of best result
 
-  DAGSolutionData& best_soln = dagSolns[*bestDAGIter];
-  bool budget_constr = (maxFunctionEvals != SZ_MAX);
-  Real avg_est_var = soln.avgEstVar;
-  if ( valid_variance(avg_est_var) && // *** TO DO: insufficient due to averaging --> use something like a badNumericsFlag to prevent adoption of bogus solve
-       ( bestDAGIter == modelDAGs.end() ||
-	 ( budget_constr && avg_est_var       < best_soln.avgEstVar ) ||
-	 (!budget_constr && soln.equivHFAlloc < best_soln.equivHFAlloc ) ) ) {
+  bool update = false;
+  if (bestDAGIter == modelDAGs.end())
+    update = true;
+  else {
+    DAGSolutionData& best_soln = dagSolns[*bestDAGIter];
+    bool budget_constr = (maxFunctionEvals != SZ_MAX);
+    Real avg_est_var = soln.avgEstVar;
+    if (!valid_variance(avg_est_var)) // *** TO DO: insufficient due to averaging --> use something like a badNumericsFlag to prevent adoption of bogus solve
+      update = false;
+    else if (budget_constr)
+      update = (avg_est_var       < best_soln.avgEstVar);
+    else
+      update = (soln.equivHFAlloc < best_soln.equivHFAlloc);
+  }
+  if (update) {
     bestDAGIter = activeDAGIter;
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Updating best DAG to:\n" << *bestDAGIter << std::endl;
@@ -897,6 +911,12 @@ void NonDGenACVSampling::update_best(DAGSolutionData& soln)
 
 void NonDGenACVSampling::restore_best()
 {
+  if (bestDAGIter == modelDAGs.end()) {
+    Cout << "Warning: best DAG has not been updated in restore_best().\n"
+	 << "         Last active DAG will be used." << std::endl;
+    return;
+  }
+
   // restore best state for compute/archive/print final results
   if (activeDAGIter != bestDAGIter) { // best is not most recent
     activeDAGIter = bestDAGIter;
@@ -905,7 +925,8 @@ void NonDGenACVSampling::restore_best()
       generate_reverse_dag(*activeDAGIter);
   }
   const UShortArray& active_dag = *activeDAGIter;
-  Cout << "\nBest solution from DAG:\n" << active_dag << std::endl;
+  if (outputLevel > SILENT_OUTPUT)
+    Cout << "\nBest solution from DAG:\n" << active_dag << std::endl;
   if (outputLevel >= DEBUG_OUTPUT) {
     DAGSolutionData& soln = dagSolns[active_dag];
     Cout << "\nwith avg_eval_ratios =\n" << soln.avgEvalRatios
