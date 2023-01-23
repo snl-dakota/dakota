@@ -53,6 +53,7 @@ protected:
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   Real estimator_accuracy_metric();
+  //Real estimator_cost_metric();
   void print_variance_reduction(std::ostream& s);
 
   void estimator_variance_ratios(const RealVector& N_vec,
@@ -172,6 +173,10 @@ private:
 
 inline Real NonDGenACVSampling::estimator_accuracy_metric()
 { return dagSolns[*activeDAGIter].avgEstVar; }
+
+
+//inline Real NonDGenACVSampling::estimator_cost_metric()
+//{ return dagSolns[*activeDAGIter].equivHFAlloc; }
 
 
 inline void NonDGenACVSampling::print_variance_reduction(std::ostream& s)

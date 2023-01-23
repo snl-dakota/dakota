@@ -654,8 +654,9 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
 	r_src *= factor;
 	if (r_src <= 1.) {
 	  r_src = r_tgt * (1. + RATIO_NUDGE);
-	  Cout << "Enforcing source = " << source << " target = " << target
-	       << ": r_src = " << r_src << " r_tgt = "<< r_tgt << std::endl;
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "Enforcing source = " << source << " target = " << target
+		 << ": r_src = " << r_src << " r_tgt = "<< r_tgt << std::endl;
 	  // complete the reverse DAG using the same factor:
 	  cost_r_src       = r_src * cost[source];
 	  budget_decr     += avg_N_H * cost_r_src / cost_H;
