@@ -903,14 +903,8 @@ nonhierarch_numerical_solution(const RealVector& cost,
   // = var_H / N_H (1 - R^2).  Notes:
   // > a QoI-vector prior to averaging would require recomputation from r*,N*)
   // > this value corresponds to N* (_after_ num_samples applied)
-  if (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) {
-    avg_estvar = std::exp(fn_vals_star[1]);
-    equiv_hf_cost       = fn_vals_star[0];
-  }
-  else {
-    avg_estvar = std::exp(fn_vals_star(0));
-    equiv_hf_cost       = fn_vals_star[1];
-  }
+  avg_estvar = (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) ?
+    std::exp(fn_vals_star[1]) : std::exp(fn_vals_star(0));
 
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
@@ -953,6 +947,17 @@ nonhierarch_numerical_solution(const RealVector& cost,
     avg_hf_target = cv_star[numApprox];                             // N*
     avg_eval_ratios.scale(1. / avg_hf_target);        // r*_i = N*_i / N*
     break;
+  }
+
+  // Constraint recovery:
+  switch (optSubProblemForm) {
+  case N_VECTOR_LINEAR_OBJECTIVE:
+    equiv_hf_cost = fn_vals_star[0];  break;
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    equiv_hf_cost = fn_vals_star[1];  break;
+  default:
+    equiv_hf_cost
+      = compute_equivalent_cost(avg_hf_target, avg_eval_ratios, cost);  break;
   }
 
   // compute sample increment for HF from current to target:
@@ -1152,7 +1157,7 @@ npsol_constraint(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
     //  nonHierSampInstance->log_average_estvar_gradient(x_rv, grad_c_rv);
     //}
     break;
-  default:
+  case R_AND_N_NONLINEAR_CONSTRAINT:
     if (asv_request & 1)
       c[0] = nonHierSampInstance->nonlinear_cost(x_rv);
     if (asv_request & 2) {
@@ -1218,7 +1223,7 @@ optpp_nlf1_constraint(int mode, int n, const RealVector& x, RealVector& c,
       //result_mode |= OPTPP::NLPGradient;
     }
     break;
-  default:
+  case R_AND_N_NONLINEAR_CONSTRAINT:
     if (mode & OPTPP::NLPFunction) { // 1 bit is present, mode = 1 or 3
       c[0] = nonHierSampInstance->nonlinear_cost(x);
       result_mode |= OPTPP::NLPFunction; // adds 1 bit
