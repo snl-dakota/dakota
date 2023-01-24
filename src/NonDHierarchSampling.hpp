@@ -59,6 +59,8 @@ protected:
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
+  Real estimator_accuracy_metric();
+
   //
   //- Heading: Member functions
   //
@@ -77,6 +79,10 @@ protected:
   //- Heading: Data
   //
 
+  /// final estimator variance for targeted moment (usually mean), averaged
+  /// across QoI
+  Real avgEstVar;
+
 private:
 
   //
@@ -84,6 +90,10 @@ private:
   //
 
 };
+
+
+inline Real NonDHierarchSampling::estimator_accuracy_metric()
+{ return avgEstVar; }
 
 
 inline void NonDHierarchSampling::

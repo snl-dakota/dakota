@@ -34,7 +34,7 @@
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevelSampling.hpp"
 #include "NonDMultilevControlVarSampling.hpp"
-#include "NonDACVSampling.hpp"
+#include "NonDGenACVSampling.hpp"
 #include "NonDMultifidelitySampling.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
@@ -537,7 +537,10 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
     break;
   case APPROXIMATE_CONTROL_VARIATE:
-    return std::make_shared<NonDACVSampling>(problem_db, model);
+    if (probDescDB.get_short("method.nond.search_model_graphs"))
+      return std::make_shared<NonDGenACVSampling>(problem_db, model);
+    else
+      return std::make_shared<NonDACVSampling>(problem_db, model);
     break;
   case DATA_FIT_SURROGATE_BASED_LOCAL:
     return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
@@ -948,7 +951,7 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_OAS,               "oas")
   (SUBMETHOD_ACV_IS,            "acv_is")
   (SUBMETHOD_ACV_MF,            "acv_mf")
-  (SUBMETHOD_ACV_KL,            "acv_kl")
+  (SUBMETHOD_ACV_RD,            "acv_rd")
   (SUBMETHOD_DREAM,             "dream")
   (SUBMETHOD_WASABI,            "wasabi")
   (SUBMETHOD_GPMSA,             "gpmsa")

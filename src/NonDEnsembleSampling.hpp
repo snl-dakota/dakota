@@ -54,6 +54,7 @@ protected:
   //- Heading: New virtual functions
   //
 
+  virtual Real estimator_accuracy_metric() = 0;
   virtual void print_variance_reduction(std::ostream& s);
 
   //
@@ -74,6 +75,9 @@ protected:
   //
   //- Heading: Member functions
   //
+
+  /// return cost metric for entry into finalStatistics
+  Real estimator_cost_metric();
 
   /// advance any sequence specifications
   void assign_specification_sequence(size_t index);
@@ -193,9 +197,6 @@ protected:
   /// against successful sample completions rather than sample allocations
   bool backfillFailures;
 
-  /// final estimator variance for targeted moment (usually mean), averaged
-  /// across QoI
-  Real avgEstVar;
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
@@ -245,6 +246,10 @@ private:
 
 inline void NonDEnsembleSampling::print_variance_reduction(std::ostream& s)
 { } // default is no-op
+
+
+inline Real NonDEnsembleSampling::estimator_cost_metric()
+{ return equivHFEvals + deltaEquivHF; }
 
 
 inline void NonDEnsembleSampling::resize_active_set()

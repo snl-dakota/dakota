@@ -3105,10 +3105,17 @@
 	    <keyword  id="acv_multifidelity" name="acv_multifidelity" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}" label="acv_multifidelity" >
 	      <alias name="acv_mf"/>
 	    </keyword>
-	    <keyword  id="acv_kl" name="acv_kl" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}" label="acv_kl" >
-	      <alias name="acv_adaptive"/>
+	    <keyword  id="acv_recursive_diff" name="acv_recursive_diff" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_RD)}" label="acv_recursive_diff" >
+	      <alias name="acv_rd"/>
 	    </keyword>
 	  </oneOf>
+	  <keyword  id="search_model_graphs" name="search_model_graphs" code="{0}" label="search_model_graph" minOccurs="0" default="NO_GRAPH_RECURSION" >
+	    <oneOf label="DAG Ensemble Generation Option">
+	      <keyword  id="ordered_single_recursion" name="ordered_single_recursion" code="{N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}" label="ordered_single_recursion" />
+	      <keyword  id="single_recursion" name="single_recursion" code="{N_mdm(type,dagRecursionType_SINGLE_GRAPH_RECURSION)}" label="single_recursion" />
+	      <keyword  id="multiple_recursion" name="multiple_recursion" code="{N_mdm(type,dagRecursionType_MULTI_GRAPH_RECURSION)}" label="multiple_recursion" />
+	    </oneOf>
+	  </keyword>
 	  &mc_pilot_samples;
 	  &mc_solution_mode;
 	  <!--
