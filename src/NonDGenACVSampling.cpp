@@ -57,17 +57,12 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
 
       // K highest fidelity approximations target root (numApprox):
       for (i=M_minus_K; i<numApprox; ++i) dag[i] = numApprox;
+      // JCP ordering: for (i=0; i<K; ++i) dag[i] = 0; // root = 0
 
       for (L=0; L<=K; ++L) { // ordered single recursion
-	// M-K lowest fidelity approximations target L:
+	// M-K lowest fidelity approximations target numApprox - L:
 	for (i=0; i<M_minus_K; ++i)       dag[i] = numApprox - L;
-
-	/* ACV/GenACV ordering:
-	// K  highest fidelity approximations target root (0):
-	for (i=0; i<K;         ++i)  dag[i] = 0;
-	// M-K lowest fidelity approximations target L:
-	for (i=K; i<numApprox; ++i)  dag[i] = L;
-	*/
+	// JCP ordering: for (i=K; i<numApprox; ++i) dag[i] = L;
 
 	model_graphs.insert(dag);
       }
@@ -925,7 +920,7 @@ void NonDGenACVSampling::restore_best()
       generate_reverse_dag(*activeDAGIter);
   }
   const UShortArray& active_dag = *activeDAGIter;
-  if (outputLevel > SILENT_OUTPUT)
+  //if (outputLevel > SILENT_OUTPUT)
     Cout << "\nBest solution from DAG:\n" << active_dag << std::endl;
   if (outputLevel >= DEBUG_OUTPUT) {
     DAGSolutionData& soln = dagSolns[active_dag];
