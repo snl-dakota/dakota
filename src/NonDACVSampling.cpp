@@ -425,11 +425,12 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     //if (budget_exhausted) budget = equivHFEvals;
 
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
+      // For r_i = 1, C_F,c_f = 0 --> NUDGE for downstream CV numerics
       RealVector& avg_eval_ratios = soln.avgEvalRatios;
       if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
-      avg_eval_ratios = 1.;  soln.avgHFTarget = avg_N_H;  numSamples = 0;
+      avg_eval_ratios = 1. + RATIO_NUDGE;     soln.avgHFTarget = avg_N_H;
       soln.avgEstVar = average(estVarIter0);  soln.avgEstVarRatio = 1.;
-      return;
+      numSamples = 0;  return;
     }
 
     // compute initial estimate of r* from MFMC

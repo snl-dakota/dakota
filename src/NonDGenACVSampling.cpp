@@ -480,17 +480,22 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+
+    // By using an ordered root list, we can repair sequentially, top down.
+    UShortList root_list;  root_list_from_reverse_dag(root_list);
+
     // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H)
     // Can happen if shared pilot rolls up to exceed budget spec.
     Real budget             = (Real)maxFunctionEvals;
     bool budget_exhausted   = (equivHFEvals >= budget);
     //if (budget_exhausted) budget = equivHFEvals;
-
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
-      numSamples = 0;  avg_eval_ratios = 1.;  avg_hf_target = avg_N_H;
+      avg_eval_ratios = 1.;               avg_hf_target = avg_N_H;
       avg_estvar = average(estVarIter0);  avg_estvar_ratio = 1.;
-      return;
+      // For r_i = 1, C_G,c_g = 0 --> enforce constr for downstream CV numerics
+      enforce_linear_ineq_constraints(avg_eval_ratios, root_list);// prevent NaN
+      numSamples = 0;  return;
     }
 
     // For general DAG, set initial guess based on pairwise CVMC analytic solns
@@ -502,8 +507,6 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     //Cout << "CVMC eval_ratios:\n" << eval_ratios << std::endl;
     average(eval_ratios, 0, avg_eval_ratios);
 
-    // By using an ordered root list, we can repair sequentially, top down.
-    UShortList root_list;  root_list_from_reverse_dag(root_list);
     if (budget_constrained) { // scale according to cost
       // scale_to_target(..., root_list) incorporates linear ineq enforcement:
       scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target, root_list);
