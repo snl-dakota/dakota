@@ -119,6 +119,7 @@ inline DAGSolutionData& DAGSolutionData::operator=(const DAGSolutionData& sd)
   avgEvalRatios = sd.avgEvalRatios;  avgHFTarget    = sd.avgHFTarget;
   avgEstVar     = sd.avgEstVar;      avgEstVarRatio = sd.avgEstVarRatio;
   equivHFAlloc  = sd.equivHFAlloc;
+  return *this;
 }
 
 
