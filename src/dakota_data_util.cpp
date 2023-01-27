@@ -16,6 +16,11 @@
 #include "dakota_data_util.hpp"
 #include <boost/math/special_functions/round.hpp>
 #include <boost/algorithm/string.hpp>
+#include "SurrogatesPolynomialRegression.hpp"
+#include "util_metrics.hpp"
+
+using MatrixMap = Eigen::Map<Eigen::MatrixXd>;
+using VectorMap = Eigen::Map<Eigen::VectorXd>;
 
 namespace Dakota {
 
@@ -329,6 +334,84 @@ bool is_matrix_symmetric( const RealMatrix & matrix )
     }
 
   return is_symmetric;
+}
+
+//----------------------------------------------------------------
+
+Real compute_regression_coeffs( const RealMatrix & samples, const RealMatrix & resps,
+                                      RealVector & reg_coeffs )
+{
+  // Copy Teuchos data to Eigen data to work with surrogates
+  MatrixXd copy_samples;
+  MatrixXd copy_responses;
+
+  copy_data(samples, copy_samples);
+  copy_data(resps,   copy_responses);
+
+  Teuchos::ParameterList param_list("Polynomial Test Parameters");
+  // Use the defaults for now, cf
+  //     PolynomialRegression::default_options()
+  // ... which provides regular RCs (from linear model)
+
+  dakota::surrogates::PolynomialRegression pr(copy_samples, copy_responses, param_list);
+  const MatrixXd & coeffs = pr.get_polynomial_coeffs();
+
+  // Slice off the constant coeff
+  int slc = samples.numCols();
+
+  // A workaround to deal with the inability of RealVector to use const double* data
+  VectorXd nonconst_coeffs = coeffs.col(0).tail(slc);
+  reg_coeffs = RealVector(Teuchos::Copy, nonconst_coeffs.data(), slc);
+  
+  // Compute and return coefficient of determination, R^2
+  VectorXd sur_vals = pr.value(copy_samples);
+  return dakota::util::compute_metric(sur_vals, copy_responses.col(0), "rsquared");
+}
+
+//----------------------------------------------------------------
+
+Real compute_std_regression_coeffs( const RealMatrix & samples, const RealMatrix & resps,
+                                          RealVector & std_reg_coeffs)
+{
+  // Compute the non-standardized RCs and R^2
+  RealVector reg_coeffs;
+  Real r2 = compute_regression_coeffs(samples, resps, reg_coeffs);
+
+  // Then scale each RC by (stdev_i/stdev_r)
+  // where:
+  //    stdev_i is std dev of variable i
+  //    stdev_r is std dev of response
+
+  // We could avoid copying into MatrixXd and instead use RealMatrix
+  // objects if we implement a stddev utility for the RealMatrix columns.
+  MatrixXd copy_samples;
+  MatrixXd copy_responses;
+  copy_data(samples, copy_samples);
+  copy_data(resps,   copy_responses);
+
+  // Compute sample stddevs
+  int ncols = copy_samples.cols();
+  VectorXd means(ncols);
+  VectorXd stddevs(ncols);
+  double stddev;
+  for (int j = 0; j < ncols; j++) {
+    means(j) = copy_samples.col(j).mean();
+    VectorXd tmp = copy_samples.col(j).array() - means(j);
+    stddev = tmp.dot(tmp)/(copy_samples.rows()-1);
+    stddevs(j) = std::sqrt(stddev);
+  }
+
+  // Compute response stddev
+  VectorXd tmp = copy_responses.col(0).array() - copy_responses.col(0).mean();
+  double resp_stddev = std::sqrt(tmp.dot(tmp)/(copy_responses.rows()-1));
+
+  // Scale RCs by ratio of std devs, assumes linear regression model
+  VectorMap polynomial_coeffs(reg_coeffs.values(), ncols);
+  VectorXd std_polynomial_coeffs = (polynomial_coeffs.array()*stddevs.array())/resp_stddev;
+
+  std_reg_coeffs = RealVector(Teuchos::Copy, std_polynomial_coeffs.data(), ncols);
+  // We return the R^2 based on the non-standardized linear regression model
+  return r2;
 }
 
 //----------------------------------------------------------------
