@@ -12,7 +12,7 @@ namespace rol_interface {
     supports by overriding the default traits accessors in
     TraitsBase. */
 
-class Traits: public TraitsBase {
+class Traits: public Dakota::TraitsBase {
 public:
 
   //
@@ -42,19 +42,19 @@ public:
   bool supports_nonlinear_equality() override { return true; }
 
   /// Return ROL format for nonlinear equality constraints
-  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() {
-    return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY;
+  Dakota::NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() {
+    return Dakota::NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY;
   }
 
   /// Return flag indicating ROL supports nonlinear inequalities
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return ROL format for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() {
-    return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED;
+  DAKOTA::NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() {
+    return Dakota::NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED;
   }
 
-  inline static std::shared_ptr<TraitsBase> create() {
+  inline static std::shared_ptr<Dakota::TraitsBase> create() {
     return std::make_shared<ROLTraits>();
   }
 

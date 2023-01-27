@@ -53,6 +53,7 @@ Cache::update( const RealVector& x,
 //  }
   evalSet = dakotaModel.current_response().active_set();
   dakotaModel.continuous_variables(x);
+  dakotaModel.evaluate(evalSet);
 } // Cache::update
 
 

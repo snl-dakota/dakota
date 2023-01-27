@@ -18,6 +18,21 @@ void ROLOptimizer::Initializer::initialize( ROLOptimizer& opt ) {
 
   using ROL::makePtr;
 
+  if( opt->numLinearEqConstraints ) {
+    
+  }   
+  if( opt->numLinearIneqConstraints ) {
+
+  }   
+  if( opt->numNonlinearEqConstraints ) {
+
+  }   
+  if( opt->numiNonlinearIneqConstraints ) {
+
+  }   
+
+
+
   auto num_econ = opt->numLinearEqConstraints   
                 + opt->numNonlinearEqConstraints;
 
