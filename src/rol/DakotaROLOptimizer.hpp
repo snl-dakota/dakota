@@ -28,8 +28,8 @@ public:
 
 private:
 
-  Teuchos::RCP<RealVector> 
-  Ptr<Cache> modelCache;
+  ROL::Ptr<ROL::Problem<Real>> problem;
+  ROL::Ptr<Cache> modelCache;
 
   // -----------------------------------------------------------------
   /** Initializer is a helper class used to initialize ROLOptimizer. */

@@ -32,7 +32,8 @@ private:
 
   friend class Objective;
   friend class Constraint;
-  friend class LinearOperator;
+  friend class Hessian;
+  friend class Jacobian;
 
 }; // class Cache
 

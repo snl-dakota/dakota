@@ -4,7 +4,7 @@ namespace rol_interface {
 
 ROLOptimizer::ROLOptimizer( Dakota::ProblemDescDB& problem_db,
                             Dakota::Model&         model )
-  : Dakota::Optimzizer(problem_db, model, ROLTraits::create()),
+  : Dakota::Optimizer(problem_db, model, ROLTraits::create()),
   modelCache(model) {
   Initializer::initialize(*this);
 } 
@@ -17,12 +17,39 @@ ROLOptimizer::ROLOptimizer( Dakota::ProblemDescDB& problem_db,
 void ROLOptimizer::Initializer::initialize( ROLOptimizer& opt ) {
 
   using ROL::makePtr;
+  auto model = opt->iteratedModel;
+  auto cache = opt->modelCache;
+  auto obj = makePtr<Objective>(cache);
+  auto x = makePtr<ROL::TeuchosVector<int,Real>>(opt->numContinuousVars);
 
+  // Create unconstrained problem
+  opt->problem = makePtr<ROL::Problem<Real>>(obj,x);
+
+  // Add any constraints that are present
   if( opt->numLinearEqConstraints ) {
-    
+    auto A = makePtr<Jacobian>(cache,Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALITY);   
+    auto b = make_vector( opt->numLinearEqConstraints );
+    auto emul = b->dual().clone();
+    auto& b_ref = get_vector(b);
+    b_ref = model.linear_eq_constraint_targets();
+    b->scale(-1.0);
+    auto econ = makePtr<ROL::LinearConstraint<Real>>(A,b);
+    opt->problem->addLinearConstraint("Linear Equality Constraint",con,emul);
   }   
   if( opt->numLinearIneqConstraints ) {
-
+    auto A = makePtr<Jacobian>(cache,Dakota::CONSTRAINT_EQUALITY_TYPE::INEQUALITY);   
+    auto z = make_vector( opt->numLinearIneqConstraints );
+    z->zero();
+    auto icon = makePtr<ROL::LinearConstraint<Real>>(A,z);
+    auto l = make_vector( opt->numLinearIneqConstraints );
+    auto u = make_vector( opt->numLinearIneqConstraints );
+    auto l_ref = get_vector(l);
+    auto u_ref = get_vector(u);
+    l_ref = model.linear_ineq_constraint_lower_bounds(); 
+    u_ref = model.linear_ineq_constraint_upper_bounds(); 
+    auto ibnd = makePtr<ROL::Bounds<Real>>(l,u);
+    auto imul = l->dual().clone();
+    opt->problem->addLinearConstraint("Linear Inequality Constraint",icon,imul,ibnd);
   }   
   if( opt->numNonlinearEqConstraints ) {
 
