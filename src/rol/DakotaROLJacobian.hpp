@@ -43,6 +43,14 @@ public:
                      const ROL::Vector<Real>& v, 
                            Real&              tol ) const override;
 
+  inline static ROL::Ptr<Jacobian> make_inequality( const ROL::Ptr<Cache>& cache ) {
+    return ROL::makePtr<Jacobian>(cache,Dakota::CONSTRAINT_EQUALITY_TYPE::INEQUALITY);  
+  } 
+
+  inline static ROL::Ptr<Jacobian> make_equality( const ROL::Ptr<Cache>& cache ) { 
+    return ROL::makePtr<Jacobian>(model,Dakota::CONSTRAINT_EQUALITY_TYPE::INEQUALITY);  
+  } 
+
 private:
 
   using JacGetter = std::function<const Dakota::RealMatrix& (const Dakota::Model&)>; 

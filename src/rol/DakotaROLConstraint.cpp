@@ -17,8 +17,8 @@ Constraint::Constraint( const Ptr<Cache>&                      cache,
 void Constraint::update( const RealVector& x,
                                UpdateType  type,
                                int         iter ) {
-  if( haveNonlinear ) 
-    modelCache->update(c,type,iter);
+  modelCache->update(c,type,iter);
+
 } // Constraint::update  
 
 void Constraint::value(       RealVector& c,
@@ -26,7 +26,6 @@ void Constraint::value(       RealVector& c,
                               UpdateType  type,
                               int         iter ) {
   auto& model = cache->dakotaModel;
-  Dakota::apply_linear_constraints( model, constraintType, x, c );
    
 } // Constraint::value
 

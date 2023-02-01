@@ -7,15 +7,10 @@ Jacobian::Jacobian( const ROL::Ptr<Cache>&                 cache,
   : modelCache(cache), getMatrix(matrix_getter(modelCache->dakotaModel,type)) {
   auto model = modelCache->dakotaModel;
   nCols = model.cv();
-  nRows = 
-          model.num_linear_ineq_constraints();
+  nRows = type == Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALITY ? 
+          model.num_linear_eq_constraints() : model.num_linear_ineq_constraints();
 
-    auto A = model.linear_ineq_constraint_coeffs();
-    // Performs the matrix-vector operation: y <- alpha*A*x+beta*y or 
-    // y <- alpha*A'*x+beta*y where A is a general m by n matrix. 
-  }
-  else if( opType == Type::EqJacobian ) {
- }
+} // Jacobian::Jacobian
 
 
 void Jacobian::apply(       ROL::Vector<Real>& Jv,
@@ -28,7 +23,7 @@ void Jacobian::apply(       ROL::Vector<Real>& Jv,
   auto v_values  = get_vector_values(v); 
   auto J_values  = getMatrix(model).values();
   blas.GEMV(Teuchos::NO_TRANS, nRows, nCols, one, J_values, nRows, v_values, 1, zero, v, Jv_values, 1);
-}
+} // Jacobian::apply
 
 void Jacobian::applyAdjoint(       ROL::Vector<Real>& aJv,
                              const ROL::Vector<Real>& v,

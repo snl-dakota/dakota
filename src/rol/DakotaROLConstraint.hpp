@@ -39,9 +39,8 @@ public:
                                    Real&       tol ) override;  
 
 private:
-
   Ptr<Cache> modelCache;
-  bool hasLinear, hasNonlinear;
+
 }; // class Constraint
 
 } // namespace rol_interface

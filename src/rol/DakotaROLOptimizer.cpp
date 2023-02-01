@@ -17,44 +17,50 @@ ROLOptimizer::ROLOptimizer( Dakota::ProblemDescDB& problem_db,
 void ROLOptimizer::Initializer::initialize( ROLOptimizer& opt ) {
 
   using ROL::makePtr;
+  auto nx = opt->numContinuousVars;
+  auto nli = opt->numLinearIneqConstraints;
+  auto nle = opt->numLinearEqConstraints;
+  auto nni = opt->numNonlinearIneqConstraints;
+  auto nne = opt->numNonlinearEqConstraints;
   auto model = opt->iteratedModel;
   auto cache = opt->modelCache;
   auto obj = makePtr<Objective>(cache);
-  auto x = makePtr<ROL::TeuchosVector<int,Real>>(opt->numContinuousVars);
+  auto x = make_vector(nx);
 
   // Create unconstrained problem
   opt->problem = makePtr<ROL::Problem<Real>>(obj,x);
 
+  // Add a bound constraint if indicated
+  if( opt->boundConstraintFlag ) {
+    auto bnd = Bounds::make_continuous_variable(model);
+    opt->problem->addBoundConstraint(bnd);
+  }
+
+
   // Add any constraints that are present
-  if( opt->numLinearEqConstraints ) {
-    auto A = makePtr<Jacobian>(cache,Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALITY);   
-    auto b = make_vector( opt->numLinearEqConstraints );
+  if( nle ) {
+    auto A = Jacobian::make_equality(cache);
+    auto b = make_vector(nle);
     auto emul = b->dual().clone();
     auto& b_ref = get_vector(b);
     b_ref = model.linear_eq_constraint_targets();
     b->scale(-1.0);
     auto econ = makePtr<ROL::LinearConstraint<Real>>(A,b);
-    opt->problem->addLinearConstraint("Linear Equality Constraint",con,emul);
+    opt->problem->addLinearConstraint("Linear Equality Constraint",econ,emul);
   }   
-  if( opt->numLinearIneqConstraints ) {
-    auto A = makePtr<Jacobian>(cache,Dakota::CONSTRAINT_EQUALITY_TYPE::INEQUALITY);   
-    auto z = make_vector( opt->numLinearIneqConstraints );
+  if( nli ) {
+    auto A = Jacobian::make_inequality(cache);
+    auto z = make_vector(nli);
     z->zero();
     auto icon = makePtr<ROL::LinearConstraint<Real>>(A,z);
-    auto l = make_vector( opt->numLinearIneqConstraints );
-    auto u = make_vector( opt->numLinearIneqConstraints );
-    auto l_ref = get_vector(l);
-    auto u_ref = get_vector(u);
-    l_ref = model.linear_ineq_constraint_lower_bounds(); 
-    u_ref = model.linear_ineq_constraint_upper_bounds(); 
-    auto ibnd = makePtr<ROL::Bounds<Real>>(l,u);
+    auto ibnd = Bounds::make_linear_ineq_constraint(model);
     auto imul = l->dual().clone();
     opt->problem->addLinearConstraint("Linear Inequality Constraint",icon,imul,ibnd);
   }   
   if( opt->numNonlinearEqConstraints ) {
-
+    
   }   
-  if( opt->numiNonlinearIneqConstraints ) {
+  if( opt->numNonlinearIneqConstraints ) {
 
   }   
 
@@ -70,18 +76,7 @@ void ROLOptimizer::Initializer::initialize( ROLOptimizer& opt ) {
     return makePtr<vector_type>(dim,0.0);
   };
 
-  opt->xSol = make_vector(opt->numContinuousVars);
-
-
-  opt->objFun = makePtr<
-
-  if( opt->boundConstraintFlag ) {
-    opt->lBnd = make_vector(opt->numContinuousVars);
-    opt->uBnd = make_vector(opt->numContinuousVars);
-    opt->bndCon = ROL::makePtr<ROL::Bounds>(
-  }
-
-  opt->eMul = make_vector(num_econ);
+    opt->eMul = make_vector(num_econ);
 
   opt->iMul = make_vector(num_icon);
 
