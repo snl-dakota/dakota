@@ -1,7 +1,6 @@
 namespace Dakota {
 namespace rol_interface {
 
-
 Hessian::Hessian( const ROL::Ptr<Cache>& cache,
                         bool             has_inverse ) 
   : modelCache(cache), hasInverse(has_inverse) {

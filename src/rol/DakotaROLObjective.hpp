@@ -6,10 +6,11 @@ namespace Dakota {
 
 namespace rol_interface {
 
-class Objective : public ObjectiveType {
+class Objective : public ROL::Objective<Real> {
 public:
 
-  Objective( const Ptr<Cache>& cache );
+  Objective() = delete;
+  Objective( const ROL::Ptr<Cache>& cache );
     
   virtual ~Objective() = default;
 
@@ -29,10 +30,15 @@ public:
                  const RealVector& x,
                        Real&       tol ) override;
 
+  void invHessVec(        RealVector& ihv,
+                    const RealVector& v,
+                    const RealVector& x,
+                          Real&       tol ) override;
+
 private:
 
-  Ptr<Cache> modelCache;
-
+  ROL::Ptr<Cache>   modelCache;
+  ROL::Ptr<Hessian> hessOp;
 }; // class Objective
 
 

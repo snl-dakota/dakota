@@ -13,26 +13,26 @@ Jacobian::Jacobian( const ROL::Ptr<Cache>&                 cache,
 } // Jacobian::Jacobian
 
 
-void Jacobian::apply(       ROL::Vector<Real>& Jv,
+void Jacobian::apply(       ROL::Vector<Real>& jv,
                       const ROL::Vector<Real>& v,
                             Real&              tol ) const {
-  assert(Jv.dimension() == nRows);
+  assert(jv.dimension() == nRows);
   assert(v.dimension() == nCols);
   auto& model = modelCache->dakotaModel;
-  auto Jv_values = get_vector_values(Jv);      
+  auto jv_values = get_vector_values(jv);      
   auto v_values  = get_vector_values(v); 
   auto J_values  = getMatrix(model).values();
-  blas.GEMV(Teuchos::NO_TRANS, nRows, nCols, one, J_values, nRows, v_values, 1, zero, v, Jv_values, 1);
+  blas.GEMV(Teuchos::NO_TRANS, nRows, nCols, one, J_values, nRows, v_values, 1, zero, jv_values, 1);
 } // Jacobian::apply
 
-void Jacobian::applyAdjoint(       ROL::Vector<Real>& aJv,
+void Jacobian::applyAdjoint(       ROL::Vector<Real>& ajv,
                              const ROL::Vector<Real>& v,
                                    Real&              tol ) const {
   auto& model = modelCache->dakotaModel;
-  auto Jv_values = get_vector_values(Jv);      
+  auto jv_values = get_vector_values(jv);      
   auto v_values  = get_vector_values(v); 
   auto J_values  = getMatrix(model).values();
-  blas.GEMV(Teuchos::TRANS, nRows, nCols, one, J_values, nRows, v_values, 1, zero, v, Jv_values, 1);
+  blas.GEMV(Teuchos::TRANS, nRows, nCols, one, J_values, nRows, v_values, 1, zero, v, jv_values, 1);
 } // Jacobian::applyAdjoint
  
 

@@ -43,6 +43,9 @@ public:
   void applyInverse(       ROL::Vector<Real>& Hv, 
                      const ROL::Vector<Real>& v, 
                            Real&              tol ) const override;
+
+  bool has_inverse() const { return hasInverse; }
+
 private:
 
   static constexpr Real zero(0), one(1);

@@ -24,6 +24,9 @@ using BoundType      = ROL::BoundConstraint<Real>;
 using ProblemType    = ROL::Problem<Real>;
 using SolverType     = ROL::Solver<Real>;
 
+template<typename T>
+using ModelFunction = std::function<const T&(const Dakota::Model&)>;
+
 inline auto make_vector( int n ) noexcept {
   return ROL::makePtr<ROL::TeuchosVector<int,Real>>(n);
 }

@@ -35,11 +35,11 @@ public:
 
   virtual ~Jacobian() = default;
 
-  void apply(       ROL::Vector<Real>& Jv, 
+  void apply(       ROL::Vector<Real>& jv, 
               const ROL::Vector<Real>& v, 
                     Real&              tol ) const override;
 
-  void applyAdjoint(       ROL::Vector<Real>& aJv, 
+  void applyAdjoint(       ROL::Vector<Real>& ajv, 
                      const ROL::Vector<Real>& v, 
                            Real&              tol ) const override;
 
@@ -53,14 +53,12 @@ public:
 
 private:
 
-  using JacGetter = std::function<const Dakota::RealMatrix& (const Dakota::Model&)>; 
-
-  inline static JacGetter matrix_getter( const Dakota::Model& model,
-                                               Dakota::CONSTRAINT_EQUALITY_TYPE type ) {
-    if( type == Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALITY )
-      return &Dakota::Model::linear_eq_constraint_coeffs;
-    else
-      return &Dakota::Model::linear_ineq_constraint_coeffs;
+  inline static ModelFunction<Dakota::RealMatrix> 
+  matrix_getter( const Dakota::Model& model,
+                       Dakota::CONSTRAINT_EQUALITY_TYPE type ) noexcept {
+    return ( type == Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                    &Dakota::Model::linear_eq_constraint_coeffs   :
+                    &Dakota::Model::linear_ineq_constraint_coeffs;
   }
  
   static constexpr Real zero(0), one(1);

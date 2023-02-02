@@ -22,6 +22,10 @@ void ROLOptimizer::Initializer::initialize( ROLOptimizer& opt ) {
   auto nle = opt->numLinearEqConstraints;
   auto nni = opt->numNonlinearIneqConstraints;
   auto nne = opt->numNonlinearEqConstraints;
+  bool has_linear_equality = nle > 0;
+  bool has_linear_inequality = nli > 0;
+  bool has_nonlinear_equality = nle > 0;
+  bool has_nonlinear_inequality = nli > 0;
   auto model = opt->iteratedModel;
   auto cache = opt->modelCache;
   auto obj = makePtr<Objective>(cache);
@@ -38,7 +42,7 @@ void ROLOptimizer::Initializer::initialize( ROLOptimizer& opt ) {
 
 
   // Add any constraints that are present
-  if( nle ) {
+  if( has_linear_equality ) {
     auto A = Jacobian::make_equality(cache);
     auto b = make_vector(nle);
     auto emul = b->dual().clone();
@@ -48,7 +52,7 @@ void ROLOptimizer::Initializer::initialize( ROLOptimizer& opt ) {
     auto econ = makePtr<ROL::LinearConstraint<Real>>(A,b);
     opt->problem->addLinearConstraint("Linear Equality Constraint",econ,emul);
   }   
-  if( nli ) {
+  if( has_linear_inequality ) {
     auto A = Jacobian::make_inequality(cache);
     auto z = make_vector(nli);
     z->zero();
@@ -57,29 +61,16 @@ void ROLOptimizer::Initializer::initialize( ROLOptimizer& opt ) {
     auto imul = l->dual().clone();
     opt->problem->addLinearConstraint("Linear Inequality Constraint",icon,imul,ibnd);
   }   
-  if( opt->numNonlinearEqConstraints ) {
-    
+  if( has_nonlinear_equality ) {
+    auto econ = Constraint::make_equality(cache);
+    auto emul = econ->create_multiplier();  
+    opt->problem->addConstraint("Nonlinear Equality Constraint",econ,emul);
   }   
-  if( opt->numNonlinearIneqConstraints ) {
-
+  if( has_nonlinear_inequality ) {
+    auto icon = Constraint::make_inequality(cache);
+    auto imul = icon->create_multiplier();  
+    opt->problem->addConstraint("Nonlinear Inequality Constraint",icon,imul);
   }   
-
-
-
-  auto num_econ = opt->numLinearEqConstraints   
-                + opt->numNonlinearEqConstraints;
-
-  auto num_icon = opt->numLinearIneqConstraints 
-                + opt->numNonlinearIneqConstraints;
-
-  auto make_vector = []( size_t dim ) {
-    return makePtr<vector_type>(dim,0.0);
-  };
-
-    opt->eMul = make_vector(num_econ);
-
-  opt->iMul = make_vector(num_icon);
-
 
   auto& x_ref = get_vector(opt->xSol);
   Optimizer::get_initial_values(Iterator::iteratedModel,x_ref );

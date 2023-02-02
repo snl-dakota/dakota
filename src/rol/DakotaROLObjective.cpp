@@ -3,8 +3,12 @@
 namespace Dakota {
 namespace rol_interface {
 
-Objective::Objective( const Ptr<Cache>& cache ) 
-  : modelCache(cache) {}
+Objective::Objective( const Ptr<Cache>& cache, bool has_inverse=false ) 
+  : modelCache(cache) {
+  if( !cache->useDefaultDeriv2 ) {
+    hessOp = ROL::makePtr<Hessian>(cache,has_inverse);
+  }
+}
 
 void Objective::update( const RealVector& x,
                               UpdateType   type,
@@ -34,13 +38,24 @@ void Objective::hessVec(       RealVector& hv,
                          const RealVector& x,
                                Real&        tol ) {
   if( !cache->useDefaultDeriv2 ) {
-    auto& model = cache->dakotaModel;
-    auto h_mat  = model.current_response().function_hessian(0); 
-    Dakota::apply_matrix_partial(h_mat,v,hv);
+    hessOp->apply(hv,v,tol);
   else 
     ROL::Objective<Real>::hessVec(hv,v,x,tol);
 
 } // Objective::hessVec
+
+void Objective::invHessVec(       RealVector& hv, 
+                            const RealVector& v,
+                            const RealVector& x,
+                                  Real&        tol ) {
+  
+  if( !cache->useDefaultDeriv2 ) {
+    assert(hessOp->has_inverse());
+    hessOp->apply(ihv,v,tol);
+  else 
+    ROL::Objective<Real>::invHessVec(ihv,v,x,tol);
+
+} // Objective::invHessVec
 
 } // namespace rol_interface
 } // namespace Dakota

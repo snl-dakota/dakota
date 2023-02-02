@@ -9,7 +9,7 @@ class Constraint : public ConstraintType {
 public:
 
   Constraint() = delete;
-  Constraint( const Ptr<Cache>&                      cache, 
+  Constraint( const ROL::Ptr<Cache>& cache, 
                     Dakota::CONSTRAINT_EQUALITY_TYPE type );
 
   virtual ~Constraint() = default;
@@ -38,8 +38,50 @@ public:
                              const RealVector& x,
                                    Real&       tol ) override;  
 
+  inline ROL::Ptr<ROL::Vector<Real>> create_multiplier() const noexcept {
+    return isEquality ? make_vector(modelCache->dakotaModel.num_nonlinear_eq_constraints())->dual().clone()
+                      : make_vector(modelCache->dakotaModel.num_nonlinear_ineq_constraints())->dual().clone() 
+  }
+
+  inline static ROL::Ptr<Constraint> make_inequality( const ROL::Ptr<Cache>& cache ) {
+    return ROL::makePtr<Constraint>(cache,Dakota::CONSTRAINT_EQUALITY_TYPE::INEQUALTY);
+  }
+
+  inline static ROL::Ptr<Constraint> make_equality( const ROL::Ptr<Cache>& cache ) {
+    return ROL::makePtr<Constraint>(cache,Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALTY);
+  }
+
 private:
-  Ptr<Cache> modelCache;
+
+  using ModelVector = ModelFunction<Dakota::RealVector>;
+  using ModelMatrix = ModelFunction<Dakota::RealMatrix>;
+
+  inline static ModelVector
+  vector_getter( const Dakota::Model&                   model
+                       Dakota::CONSTRAINT_EQUALITY_TYPE type ) noexcept {
+    return ( type == Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                    &Dakota::Model::nonlinear_eq_constraints,
+                    &Dakota::Model::nonlinear_ineq_constraints );
+  }
+
+  inline static ModelMatrix
+  matrix_getter( const Dakota::Model&                   model
+                       Dakota::CONSTRAINT_EQUALITY_TYPE type ) noexcept {
+    return ( type == Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                    &Dakota::Model::nonlinear_eq_constraints,
+                    &Dakota::Model::nonlinear_ineq_constraints );
+  }
+
+  static constexpr Real zero(0), one(1);
+
+
+  Teuchos::BLAS<int,Real> blas;
+  ModelVector             constraintValues;
+  ModelJacobian           constraintJacobian;
+  Ptr<Cache>              modelCache;
+  size_t                  indexOffset;
+  bool                    isEquality;
+
 
 }; // class Constraint
 
