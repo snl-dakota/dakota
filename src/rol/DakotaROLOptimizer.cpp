@@ -69,7 +69,8 @@ void ROLOptimizer::Initializer::initialize( ROLOptimizer& opt ) {
   if( has_nonlinear_inequality ) {
     auto icon = Constraint::make_inequality(cache);
     auto imul = icon->create_multiplier();  
-    opt->problem->addConstraint("Nonlinear Inequality Constraint",icon,imul);
+    auto ibnd = Bounds::make_nonlinear_ineq_constraint(model);
+    opt->problem->addConstraint("Nonlinear Inequality Constraint",icon,imul,ibnd);
   }   
 
   auto& x_ref = get_vector(opt->xSol);
