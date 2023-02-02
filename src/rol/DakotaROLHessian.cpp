@@ -5,11 +5,11 @@ Hessian::Hessian( const ROL::Ptr<Cache>& cache,
                         bool             has_inverse ) 
   : modelCache(cache), hasInverse(has_inverse) {
 
-  auto model = modelCache->dakotaModel;
+  auto& model = modelCache->dakotaModel;
   nRows = model.cv();
-       if( hasInverse ) {
-        workMat = std::make_unique<Dakota::RealMatrix>(nCols,nCols);
-        iPiv = std::make_unique<int[]>(nCols);
+    f( hasInverse ) {
+    workMat = std::make_unique<Dakota::RealMatrix>(nCols,nCols);
+    iPiv = std::make_unique<int[]>(nCols);
   }
 } // Hessian::Hessian
 
@@ -33,7 +33,7 @@ void Hessian::apply(       ROL::Vector<Real>& Hv,
   assert(v.dimension() == nRows);
 
   auto& model = modelCache->dakotaModel;
-  auto Hv_ptr  = get_vector(Hv);      
+  auto& Hv_ptr  = get_vector(Hv);      
   auto v_ptr   = get_vector(v); 
   auto hdata = modelCache->dakotaModel.current_response().function_hessian(0).values(); 
   blas.SYMM(Teuchos::LEFT_SIDE,Teuchos::UPPER_TRI,nRows,1,one,hdata,nRows,v.values(),nRows,zero,Mv.values(),nRows);

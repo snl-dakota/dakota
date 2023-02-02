@@ -10,7 +10,7 @@ namespace rol_interface {
     ROL solver appropriate for the type of problem specified by the
     user. */
 
-class ROLOptimizer : public Optimizer {
+class ROLOptimizer : public Dakota::Optimizer {
 public:
 
   /// Standard constructor
@@ -22,7 +22,7 @@ public:
                       Dakota::Model&  model );
   
   /// Destructor
-  ~ROLOptimizer() = default;
+  virtual ~ROLOptimizer() = default;
 
   friend class Initializer;
 
@@ -30,13 +30,14 @@ private:
 
   ROL::Ptr<ROL::Problem<Real>> problem;
   ROL::Ptr<Cache> modelCache;
-
+  ROL::ParameterList parList;	
   // -----------------------------------------------------------------
   /** Initializer is a helper class used to initialize ROLOptimizer. */
 
   class Initializer {
 
-    static void initialize( ROLOptimizer& opt );
+    static void initialize( ROLOptimizer* opt );
+    static void set_default_parameters( ROLOptimizer* opt );
 
     friend class ROLOptimizer;
 

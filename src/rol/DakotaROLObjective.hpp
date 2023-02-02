@@ -35,6 +35,10 @@ public:
                     const RealVector& x,
                           Real&       tol ) override;
 
+  inline ROL::Ptr<Vector<Real>> make_opt_vector() noexcept {
+    return ROL::makePtr<ROL::TeuchosVector<int,Real>>(modelCache->dakotaModel.cv())
+  }
+
 private:
 
   ROL::Ptr<Cache>   modelCache;

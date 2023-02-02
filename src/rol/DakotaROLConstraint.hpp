@@ -5,7 +5,7 @@
 namespace Dakota {
 namespace rol_interface {
 
-class Constraint : public ConstraintType {
+class Constraint : public ROL::Constraint<Real> {
 public:
 
   Constraint() = delete;
@@ -37,16 +37,19 @@ public:
                              const RealVector& v,
                              const RealVector& x,
                                    Real&       tol ) override;  
-
-  inline ROL::Ptr<ROL::Vector<Real>> create_multiplier() const noexcept {
+  
+  /// Utility function to create a Lagrange multiplier vector in the dual constraint space
+  inline ROL::Ptr<ROL::Vector<Real>> make_multiplier() const noexcept {
     return isEquality ? make_vector(modelCache->dakotaModel.num_nonlinear_eq_constraints())->dual().clone()
                       : make_vector(modelCache->dakotaModel.num_nonlinear_ineq_constraints())->dual().clone() 
   }
 
+  /// Utility function to dynamically allocate a (nonlinear) inequality constraint
   inline static ROL::Ptr<Constraint> make_inequality( const ROL::Ptr<Cache>& cache ) {
     return ROL::makePtr<Constraint>(cache,Dakota::CONSTRAINT_EQUALITY_TYPE::INEQUALTY);
   }
 
+  /// Utility function to dynamically allocate a (nonlinear) equality constraint
   inline static ROL::Ptr<Constraint> make_equality( const ROL::Ptr<Cache>& cache ) {
     return ROL::makePtr<Constraint>(cache,Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALTY);
   }

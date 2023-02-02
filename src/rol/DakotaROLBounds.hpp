@@ -12,7 +12,8 @@ public:
   Bounds() = delete;
   virtual ~Bounds() = delete;
 
-  static ROL::Ptr<Bounds> make_continuous_variable( const Dakota& model ) {
+  /// Utility function to dynamically allocate a bound constraint on the optimization vector
+  static ROL::Ptr<Bounds> make_continuous_variable( const Dakota::Model& model ) {
     auto n = model.cv();
     auto l = make_vector(n);
     auto u = make_vector(n);
@@ -23,7 +24,8 @@ public:
     return ROL::makePtr<Bounds>(l,u);
   }
 
-  static ROL::Ptr<Bounds> make_linear_ineq_constraints( const Dakota& model ) {
+  /// Utility function to dynamically allocate a bound constraint on the linear inequality vector
+  static ROL::Ptr<Bounds> make_linear_ineq_constraints( const Dakota::Model& model ) {
     auto n = model.num_linear_ineq_constraints();
     auto l = make_vector(n);
     auto u = make_vector(n);
@@ -34,7 +36,8 @@ public:
     return ROL::makePtr<Bounds>(l,u);
   }
 
-  static ROL::Ptr<Bounds> make_nonlinear_ineq_constraints( const Dakota& model ) {
+  /// Utility function to dynamically allocate a bound constraint on the nonlinear inequality vector
+  static ROL::Ptr<Bounds> make_nonlinear_ineq_constraints( const Dakota::Model& model ) {
     auto n = model.num_nonlinear_ineq_constraints();
     auto l = make_vector(n);
     auto u = make_vector(n);

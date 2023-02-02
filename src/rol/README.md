@@ -7,8 +7,11 @@ interface to a simpler Problem/Solver interface. This new interface allows for
 distinction between linear and nonlinear (in)equality constraints as ROL offers 
 algorithms that can treat them differently. 
 
-The old ROLOptimzier used std::vector as the underlying container type which required quite a bit of copying and casting to/from Dakota's native RealMatrix/RealVector containers (Teuchos::SerialDenseMatrix and ..Vector) with utility functions defined in DakotaOptimizer.hpp. ROL is designed to work with user-defined containers and already provides
-adapters for Teuchos::SerialDense types.
+The old ROLOptimzier used std::vector as the underlying container type which required 
+quite a bit of copying and casting to/from Dakota's native RealMatrix/RealVector containers 
+(Teuchos::SerialDenseMatrix and ..Vector) with utility functions defined in DakotaOptimizer.hpp. 
+ROL is designed to work with user-defined containers and already provides adapters for 
+Teuchos::SerialDense types.
 
 
 ROL's representation of optimization problem components
