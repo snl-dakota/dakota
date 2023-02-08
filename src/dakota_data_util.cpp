@@ -341,6 +341,9 @@ bool is_matrix_symmetric( const RealMatrix & matrix )
 Real compute_regression_coeffs( const RealMatrix & samples, const RealMatrix & resps,
                                       RealVector & reg_coeffs )
 {
+  if (samples.numRows() == 0)
+    return 0.0;
+
   // Copy Teuchos data to Eigen data to work with surrogates
   MatrixXd copy_samples;
   MatrixXd copy_responses;
@@ -373,6 +376,9 @@ Real compute_regression_coeffs( const RealMatrix & samples, const RealMatrix & r
 Real compute_std_regression_coeffs( const RealMatrix & samples, const RealMatrix & resps,
                                           RealVector & std_reg_coeffs)
 {
+  if (samples.numRows() == 0)
+    return 0.0;
+
   // Compute the non-standardized RCs and R^2
   RealVector reg_coeffs;
   Real r2 = compute_regression_coeffs(samples, resps, reg_coeffs);
@@ -405,6 +411,13 @@ Real compute_std_regression_coeffs( const RealMatrix & samples, const RealMatrix
   VectorXd tmp = copy_responses.col(0).array() - copy_responses.col(0).mean();
   double resp_stddev = std::sqrt(tmp.dot(tmp)/(copy_responses.rows()-1));
 
+  // Handle the case of resp_stddev = 0 (based on Dakota's definition of small)
+  if (resp_stddev < Pecos::SMALL_NUMBER) {
+    std_reg_coeffs = reg_coeffs;
+    std_reg_coeffs.putScalar(0.0);
+    return 0.0;
+  }
+
   // Scale RCs by ratio of std devs, assumes linear regression model
   VectorMap polynomial_coeffs(reg_coeffs.values(), ncols);
   VectorXd std_polynomial_coeffs = (polynomial_coeffs.array()*stddevs.array())/resp_stddev;
@@ -431,6 +444,18 @@ void remove_column(RealMatrix& matrix, int index)
   }
   matrix.reshape(matrix.numRows(), num_cols-1);
   matrix = matrix_new;
+}
+
+//----------------------------------------------------------------
+
+void copy_data( const MatrixXd & src_mat, RealMatrix & dst_mat )
+{
+  const int nrows = src_mat.rows();
+  const int ncols = src_mat.cols();
+  dst_mat.reshape(nrows, ncols);
+  for( int i=0; i<nrows; ++i )
+    for( int j=0; j<ncols; ++j )
+      dst_mat(i,j) = src_mat(i,j);
 }
 
 //----------------------------------------------------------------

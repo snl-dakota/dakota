@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_rm2eigM)
   BOOST_CHECK( NROWS == test_mat.rows() );
   BOOST_CHECK( NCOLS == test_mat.cols() );
 
-  // Verify contents of what we wrote and what we read
+  // Verify contents
   for( size_t i=0; i<NROWS; ++i )
     for( int j=0; j<NCOLS; ++j )
     BOOST_CHECK_CLOSE( test_mat(i,j), rm(i,j), 1.e-12 );
@@ -349,6 +349,30 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_rm2eigM)
   // Verify correct behavior of view
   const Real new_norm = rm.normOne();
   BOOST_CHECK( 3.14*orig_norm == new_norm );
+}
+
+//----------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(test_data_conversion_eigM2rm)
+{
+  const int NROWS = 5;
+  const int NCOLS = 3;
+  MatrixXd em = MatrixXd::Random(NROWS, NCOLS);
+
+  RealMatrix test_mat;
+
+  /////////////////  What we want to test
+  copy_data(em, test_mat);
+  /////////////////  What we want to test
+
+  // Verify correct dimensions
+  BOOST_CHECK( NROWS == test_mat.numRows() );
+  BOOST_CHECK( NCOLS == test_mat.numCols() );
+
+  // Verify contents
+  for( size_t i=0; i<NROWS; ++i )
+    for( int j=0; j<NCOLS; ++j )
+    BOOST_CHECK_CLOSE( test_mat(i,j), em(i,j), 1.e-12 );
 }
 
 //----------------------------------------------------------------

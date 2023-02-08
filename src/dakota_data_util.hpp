@@ -508,6 +508,9 @@ void assign_value(vecType& target, valueType val, size_t start, size_t len)
 //  }
 //}
 
+/// Copy data from Eigen::MatrixXd to RealMatrix
+void copy_data(const MatrixXd & src_mat, RealMatrix & dst_mat);
+
 /// Copy data from RealMatrix to Eigen::MatrixXd
 void copy_data(const RealMatrix & src_mat, MatrixXd & dst_mat);
 

@@ -22,14 +22,49 @@ using MatrixMap = Eigen::Map<Eigen::MatrixXd>;
 
 using namespace Dakota;
 
+namespace {
+
+  MatrixXd create_samples()
+  {
+    const int NVARS = 4;
+    const int NSAMP = 20;
+    MatrixXd samplesXd(NSAMP, NVARS);
+    samplesXd << 0.680375,    -0.967399,  0.05349,     -0.52344,
+                 -0.211234,   -0.514226,  0.539828,    0.941268,
+                 0.566198,    -0.725537,  -0.199543,   0.804416,
+                 0.59688,     0.608354,   0.783059,    0.70184,
+                 0.823295,    -0.686642,  -0.433371,   -0.466669,
+                 -0.604897,   -0.198111,  -0.295083,   0.0795207,
+                 -0.329554,   -0.740419,  0.615449,    -0.249586,
+                 0.536459,    -0.782382,  0.838053,    0.520497,
+                 -0.444451,   0.997849,   -0.860489,   0.0250707,
+                 0.10794,     -0.563486,  0.898654,    0.335448,
+                 -0.0452059,  0.0258648,  0.0519907,   0.0632129,
+                 0.257742,    0.678224,   -0.827888,   -0.921439,
+                 -0.270431,   0.22528,    -0.615572,   -0.124725,
+                 0.0268018,   -0.407937,  0.326454,    0.86367,
+                 0.904459,    0.275105,   0.780465,    0.86162,
+                 0.83239,     0.0485744,  -0.302214,   0.441905,
+                 0.271423,    -0.012834,  -0.871657,   -0.431413,
+                 0.434594,    0.94555,    -0.959954,   0.477069,
+                 -0.716795,   -0.414966,  -0.0845965,  0.279958,
+                 0.213938,    0.542715,   -0.873808,   -0.291903;
+
+    return samplesXd;
+  }
+
+}
+
 //----------------------------------------------------------------
 
 BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
 {
-  const int NVARS = 4;
-  const int NSAMP = 20;
-  RealMatrix samples(NSAMP, NVARS);
-  samples.random();
+  MatrixXd samplesXd = create_samples();
+  const int NVARS = samplesXd.cols();
+  const int NSAMP = samplesXd.rows();
+
+  RealMatrix samples;
+  copy_data(samplesXd, samples);
 
   MatrixXd fn_coeffs(NVARS, 1);
   fn_coeffs << 10.0, 1.0, 0.1, 0.01;
@@ -64,7 +99,7 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
      from scipy.stats.mstats import zscore
      samp = np.genfromtxt("samples.txt", skip_header=0, unpack=False)
      resp = np.genfromtxt("responses.txt", skip_header=0, unpack=False)
-     print(sm.GLS(zscore(resp), zscore(samp)).fit().summary())
+     print(sm.OLS(zscore(resp), zscore(samp)).fit().summary())
      
    * Note that the stddevs used within the zscore values correspond to:
 
@@ -84,6 +119,44 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
   // Coefficient of determination, R^2 is the same value as the one above
   BOOST_CHECK_CLOSE(r2, 1.0, 1.e-13 /* NB this is a percent-based tol */);
   ///////////////////////////  What we want to test ///////////////////////////
+}
+
+//----------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(test_reg_coeffs_edge_cases)
+{
+  // Test for no samples
+  RealMatrix samples;
+  RealMatrix responses;
+
+  /////////////////////  What we want to test --> No Responses
+  RealVector rcoeffs;
+  Real r2 = compute_regression_coeffs(samples, responses, rcoeffs);
+  BOOST_CHECK(0.0 == r2);
+  r2 = compute_std_regression_coeffs(samples, responses, rcoeffs);
+  BOOST_CHECK(0.0 == r2);
+  ///////////////////////////  What we want to test ///////////////////////////
+
+
+  // Test for 0 stddev
+  MatrixXd samplesXd = create_samples();
+  const int NVARS = samplesXd.cols();
+  const int NSAMP = samplesXd.rows();
+
+  copy_data(samplesXd, samples);
+
+  responses.reshape(NSAMP, 1);
+  for( int i=0; i<NSAMP; ++i ) {
+    responses(i,0) = 1.0;
+  }
+
+  /////////////////////  What we want to test --> Response stddev = 0
+  r2 = compute_regression_coeffs(samples, responses, rcoeffs);
+  BOOST_CHECK(std::numeric_limits<Real>::infinity() == r2);
+  r2 = compute_std_regression_coeffs(samples, responses, rcoeffs);
+  BOOST_CHECK(0.0 == r2);
+  ///////////////////////////  What we want to test ///////////////////////////
+
 }
 
 //----------------------------------------------------------------
