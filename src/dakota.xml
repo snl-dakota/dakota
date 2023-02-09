@@ -3111,9 +3111,13 @@
 	  </oneOf>
 	  <keyword  id="search_model_graphs" name="search_model_graphs" code="{0}" label="search_model_graph" minOccurs="0" default="NO_GRAPH_RECURSION" >
 	    <oneOf label="DAG Ensemble Generation Option">
-	      <keyword  id="ordered_single_recursion" name="ordered_single_recursion" code="{N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}" label="ordered_single_recursion" />
-	      <keyword  id="single_recursion" name="single_recursion" code="{N_mdm(type,dagRecursionType_SINGLE_GRAPH_RECURSION)}" label="single_recursion" />
-	      <keyword  id="multiple_recursion" name="multiple_recursion" code="{N_mdm(type,dagRecursionType_MULTI_GRAPH_RECURSION)}" label="multiple_recursion" />
+	      <keyword  id="kl_recursion" name="kl_recursion" code="{N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}" label="kl_recursion" />
+	      <keyword  id="partial_recursion" name="partial_recursion" code="{N_mdm(type,dagRecursionType_PARTIAL_GRAPH_RECURSION)}" label="partial_recursion" >
+		<keyword  id="recursion_limit" name="recursion_limit" code="{N_mdm(ushint,dagRecursionLimit)}" label="recursion_limit" >
+		  <param type="INTEGER" />
+		</keyword>
+	      </keyword>
+	      <keyword  id="full_recursion" name="full_recursion" code="{N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}" label="full_recursion" />
 	    </oneOf>
 	  </keyword>
 	  &mc_pilot_samples;
