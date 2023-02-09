@@ -997,6 +997,8 @@ compute_statistics(const RealMatrix&     vars_samples,
 //    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
 //				      div_labels, dsv_labels, drv_labels,
 //				      iteratedModel.response_labels());
+    // We need to add a new input option for this instead of piggy backing here 
+    nonDSampCorr.compute_std_regress_coeffs(vars_samples, resp_samples);
   }
 
   // push results into finalStatistics
@@ -1815,6 +1817,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
         adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
     nonDSampCorr.print_correlations(s, cv_labels, div_labels, dsv_labels,
 				    drv_labels,iteratedModel.response_labels());
+    nonDSampCorr.print_std_regress_coeffs(s, cv_labels, iteratedModel.response_labels());
   }
 }
 
