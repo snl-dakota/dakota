@@ -16,8 +16,8 @@ method,
 	  seed = 8674132
 	  search_model_graphs kl_recursion
 #	  final_statistics estimator_performance
-	  max_function_evaluations = 5000	#s0,#s1,#s2,#s3,#s4,#s5
-#	  convergence_tolerance   = .0001	#s6,#s7,#s8,#s9
+	  max_function_evaluations = 500	#s0,#s1,#s2,#s3,#s4,#s5
+#	  convergence_tolerance   = .001	#s6,#s7,#s8,#s9
 	output silent
 
 
