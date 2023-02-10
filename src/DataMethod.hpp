@@ -120,8 +120,8 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_ESTIMATE_ORDER };
 
 /// Graph recursion options for ACV
-enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, SINGLE_GRAPH_RECURSION,
-       MULTI_GRAPH_RECURSION };
+enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, PARTIAL_GRAPH_RECURSION,
+       FULL_GRAPH_RECURSION };
 
 // define special values for outputLevel within
 // Iterator/Model/Interface/Approximation
@@ -1035,6 +1035,9 @@ public:
   bool truthPilotConstraint;
   /// option specified for \c search_model_graphs in generalized ACV methods
   short dagRecursionType;
+  /// option specified for \c depth_limit in generalized ACV methods with
+  /// partial graph recursion
+  unsigned short dagDepthLimit;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC
   short allocationTarget;
   /// the \c allocation_target selection in \ref MethodMultilevelMC

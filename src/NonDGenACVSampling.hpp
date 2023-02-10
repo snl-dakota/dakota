@@ -92,15 +92,18 @@ private:
   //
 
   void generate_dags(UShortArraySet& model_graphs);
+  void generate_trees(unsigned short depth, UShortArraySet& model_graphs);
+  void generate_sub_trees(unsigned short root, const UShortArray& nodes,
+			  unsigned short depth, UShortArray& dag,
+			  UShortArraySet& model_graphs);
   void generate_reverse_dag(const UShortArray& dag);
-  void root_list_from_reverse_dag(UShortList& root_list);
 
   void precompute_ratios();
   void compute_ratios(const RealMatrix& var_L, const RealVector& cost,
 		      DAGSolutionData& solution);
 
-  void compute_parameterized_G_g(const RealVector& N_vec,
-				 const UShortArray& dag);
+  void compute_parameterized_G_g(const RealVector& N_vec);
+  void unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2);
 
   /*
   void invert_C_G_matrix(const RealSymMatrix& C, const RealSymMatrix& G,
@@ -153,8 +156,11 @@ private:
   /// the "g" vector in Bomarito et al.
   RealVector gVec;
 
-  /// type of tunable recursion for defining set of DAGs: KL, SR, or MR
+  /// type of tunable recursion for defining set of DAGs: KL, partial, or full
   short dagRecursionType;
+  /// depth throttle for partial recursion in generate_dags()
+  unsigned short dagDepthLimit;
+
   /// the set of admissible DAGs identifying the control variate
   /// targets for each model in the ensemble
   UShortArraySet modelDAGs;
@@ -162,6 +168,9 @@ private:
   UShortArraySet::const_iterator activeDAGIter;
   /// reverse of active DAG: for each model, the set of models that point to it
   UShortSetArray reverseActiveDAG;
+  /// an ordered set of root nodes that ensures targets are defined when
+  /// unrolling dependent sources; allows unrolling of z^1,z^2 sample sets
+  UShortList orderedRootList;
 
   /// the best performing model graph among the set from generate_dags()
   UShortArraySet::const_iterator bestDAGIter;
@@ -360,7 +369,7 @@ precompute_acv_control(const RealVector& avg_eval_ratios,
   // we mirror the averaged sample allocations and compute G,g once
   RealVector N_vec; //, g;  RealSymMatrix G;
   r_and_N_to_N_vec(avg_eval_ratios, average(N_shared), N_vec);
-  compute_parameterized_G_g(N_vec, *activeDAGIter);
+  compute_parameterized_G_g(N_vec);
 }
 
 
@@ -389,10 +398,10 @@ compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
   else { // compute variances/covariances for higher-order moment estimators
     // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
     // > cov_LH is sized for all qoi but only 1 row is used
-    RealSymMatrix cov_LL; RealMatrix cov_LH;
+    RealSymMatrix cov_LL_mq; RealMatrix cov_LH_m;
     compute_acv_control_covariances(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
-				    N_shared_q, qoi, cov_LL, cov_LH);
-    compute_genacv_control(cov_LL, GMat, cov_LH, gVec, qoi, beta);
+				    N_shared_q, qoi, cov_LL_mq, cov_LH_m);
+    compute_genacv_control(cov_LL_mq, GMat, cov_LH_m, gVec, qoi, beta);
   }
 }
 

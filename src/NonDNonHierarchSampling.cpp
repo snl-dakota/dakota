@@ -264,13 +264,18 @@ bool NonDNonHierarchSampling::
 approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
 {
   UShortSet::const_iterator cit;
-  if (numSamples) {
-    Cout << "\nApprox sample increment = " << numSamples
-	 << " for root node index " << root << " and its leaf nodes { ";
+  if (numSamples) Cout << "\nApprox sample increment = " << numSamples;
+  else            Cout << "\nNo approx sample increment";
+  Cout << " for node index " << root;
+  if (!reverse_dag.empty()) {
+    Cout << " and its leaf nodes { ";
     for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
       Cout << *cit << ' ';
-    Cout << "}." << std::endl;
+    Cout << '}';
+  }
+  Cout << '.' << std::endl;
 
+  if (numSamples) {
     // Evaluate shared samples across a dependency: each z1[leaf] = z2[root]
     activeSet.request_values(0);
     size_t start_qoi = root * numFunctions;
@@ -283,14 +288,8 @@ approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
     ensemble_sample_increment(iter, root); // NON-BLOCK
     return true;
   }
-  else {
-    Cout << "\nNo approx sample increment for root node index " << root
-	 << " and its leaf nodes { ";
-    for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
-      Cout << *cit << ' ';
-    Cout << "}." << std::endl;
+  else
     return false;
-  }
 }
 
 
