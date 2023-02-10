@@ -38,8 +38,8 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit"))
 {
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
-  //UShortArraySet model_dags;
-  generate_dags(modelDAGs);
+  if (dagRecursionType == FULL_GRAPH_RECURSION) dagDepthLimit = numApprox;
+  generate_dags();
   bestDAGIter = modelDAGs.end();
 }
 
@@ -48,7 +48,7 @@ NonDGenACVSampling::~NonDGenACVSampling()
 { }
 
 
-void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
+void NonDGenACVSampling::generate_dags()
 {
   // zero root directed acyclic graphs
   switch (dagRecursionType) {
@@ -67,43 +67,33 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
 	for (i=0; i<M_minus_K; ++i)       dag[i] = numApprox - L;
 	// JCP ordering: for (i=K; i<numApprox; ++i) dag[i] = L;
 
-	model_graphs.insert(dag);
+	modelDAGs.insert(dag);
       }
     }
     break;
   }
-  case PARTIAL_GRAPH_RECURSION:
-    generate_trees(dagDepthLimit, model_graphs);  break;
-  case FULL_GRAPH_RECURSION:
-    dagDepthLimit = numApprox;
-    generate_trees(dagDepthLimit, model_graphs);  break;
+  default: {
+    // root node (truth index = numApprox) and set of dependent nodes
+    // (approximation model indices 0,numApprox-1) are fixed
+    unsigned short i, root = numApprox;
+    UShortArray nodes(numApprox), dag(numApprox, USHRT_MAX);
+    for (i=0; i<numApprox; ++i) nodes[i] = i;
+    // recur:
+    generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
+    break;
+  }
   }
 
-  Cout << "Model DAGs of size " << model_graphs.size();
-  if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << model_graphs;
+  Cout << "Searching array of model DAGs of size " << modelDAGs.size();
+  if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << modelDAGs;
   Cout << std::endl;
-}
-
-
-void NonDGenACVSampling::
-generate_trees(unsigned short depth, UShortArraySet& model_graphs)
-{
-  // root node is not enumerated (truth model = numApprox), so set of dependent
-  // tree nodes is fixed (approximation models are numbered 0,numApprox-1)
-  unsigned short i, root = numApprox;
-  UShortArray dag(numApprox, USHRT_MAX), nodes(numApprox);
-  for (unsigned short i=0; i<numApprox; ++i)
-    nodes[i] = i;
-
-  // recur:
-  generate_sub_trees(root, nodes, depth, dag, model_graphs);
 }
 
 
 void NonDGenACVSampling::
 generate_sub_trees(unsigned short root, const UShortArray& nodes,
 		   unsigned short depth, UShortArray& dag,
-		   UShortArraySet& model_graphs)
+		   UShortArraySet& model_dags)
 {
   // Modeled after Python DAG generator on stack overflow
   // ("How to generate all trees having n-nodes and m-level depth")
@@ -113,14 +103,14 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
 
   size_t i, num_nodes = nodes.size();
   if (nodes.empty()) {
-    // optimize out some duplicates for sub_nodes with empty sub_nodes_per_root
-    //model_graphs.insert(dag); // insert completed DAG
+    // suppress some duplicates for sub_nodes with empty sub_nodes_per_root
+    //model_dags.insert(dag);
     return;
   }
   else if (depth <= 1) {
     for (i=0; i<num_nodes; ++i) dag[nodes[i]] = root;
     //Cout << "Recursion hit bottom.  Inserting:\n" << dag;
-    model_graphs.insert(dag); // insert completed DAG
+    model_dags.insert(dag); // insert completed DAG
     return;
   }
 
@@ -143,9 +133,12 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
       if (tp1_i[j]) { sub_roots.push_back(node_j);  dag[node_j] = root; }
       else            sub_nodes.push_back(node_j); // "nexts"
     }
-    num_sub_nodes = sub_nodes.size();
-    if (num_sub_nodes) {
-      num_sub_roots = sub_roots.size();
+    if (sub_nodes.empty()) { // optimize out unnecessary recursion
+      //Cout << "Recursion out of nodes.  Inserting:\n" << dag;
+      model_dags.insert(dag); // insert completed DAG
+    }
+    else {
+      num_sub_roots = sub_roots.size();  num_sub_nodes = sub_nodes.size();
       sub_nodes_per_root.resize(num_sub_roots);
       // 2nd TP defines assignments of sub_nodes per sub_root (differs from 1st
       // TP above as there are multiple roots available, which will be recurred)
@@ -163,12 +156,8 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
 	}
 	for (k=0; k<num_sub_roots; ++k)
 	  generate_sub_trees(sub_roots[k], sub_nodes_per_root[k], dm1, dag,
-			     model_graphs);
+			     model_dags);
       }
-    }
-    else { // this optimizes out unnecessary recursion for empty sub_nodes
-      //Cout << "Recursion out of nodes.  Inserting:\n" << dag;
-      model_graphs.insert(dag); // insert completed DAG
     }
   }
 }

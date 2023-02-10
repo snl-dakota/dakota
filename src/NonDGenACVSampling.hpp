@@ -91,11 +91,10 @@ private:
   //- Heading: Helper functions
   //
 
-  void generate_dags(UShortArraySet& model_graphs);
-  void generate_trees(unsigned short depth, UShortArraySet& model_graphs);
+  void generate_dags();
   void generate_sub_trees(unsigned short root, const UShortArray& nodes,
 			  unsigned short depth, UShortArray& dag,
-			  UShortArraySet& model_graphs);
+			  UShortArraySet& model_dags);
   void generate_reverse_dag(const UShortArray& dag);
 
   void precompute_ratios();
