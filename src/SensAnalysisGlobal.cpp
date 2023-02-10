@@ -884,26 +884,13 @@ compute_std_regress_coeffs(const RealMatrix&     vars_samples,
   RealMatrix valid_data(num_vars_and_resp, num_valid_samples);
   valid_sample_matrix(vars_samples, resp_samples, is_valid_sample, valid_data);
 
-  stdRegressCODs.size(numFns);
-  stdRegressCoeffs.shape(numVars, numFns);
-
+  // Copy and reformat variables and responses to work with SRC utility
   RealMatrix vars_view(Teuchos::View, valid_data, numVars, valid_data.numCols());
   RealMatrix vars_copy_trans(vars_view, Teuchos::TRANS);
+  RealMatrix resp_view(Teuchos::View, valid_data, numFns, valid_data.numCols(), numVars);
+  RealMatrix resp_copy_trans(resp_view, Teuchos::TRANS);
 
-  {
-    //valid_data.print(Cout);
-    RealMatrix vars_view(Teuchos::View, valid_data, numVars, valid_data.numCols());
-    RealMatrix vars_copy_trans(vars_view, Teuchos::TRANS);
-    //vars_copy_trans.print(Cout);
-    //RealMatrix resp_view(Teuchos::View, valid_data, 1, valid_data.numCols(), numVars+1);
-    RealMatrix resp_view(Teuchos::View, valid_data, numFns, valid_data.numCols(), numVars);
-    RealMatrix resp_copy_trans(resp_view, Teuchos::TRANS);
-    //resp_copy_trans.print(Cout);
-    //compute_regression_coeffs(vars_copy_trans, resp_copy_trans, stdRegressCoeffs, stdRegressCODs);
-    compute_std_regression_coeffs(vars_copy_trans, resp_copy_trans, stdRegressCoeffs, stdRegressCODs);
-    //stdRegressCODs.print(Cout);
-    //stdRegressCoeffs.print(Cout);
-  }
+  compute_std_regression_coeffs(vars_copy_trans, resp_copy_trans, stdRegressCoeffs, stdRegressCODs);
 }
 
 
