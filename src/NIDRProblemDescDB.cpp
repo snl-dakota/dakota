@@ -6814,7 +6814,7 @@ static unsigned short
 	MP_(adaptedBasisAdvancements),
       //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
-	MP_(dagRecursionLimit),
+	MP_(dagDepthLimit),
         MP_(expansionOrder),
         MP_(kickOrder),
         MP_(maxCVOrderCandidates),

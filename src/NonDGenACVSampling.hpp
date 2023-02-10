@@ -94,7 +94,8 @@ private:
   void generate_dags(UShortArraySet& model_graphs);
   void generate_trees(unsigned short depth, UShortArraySet& model_graphs);
   void generate_sub_trees(unsigned short root, const UShortArray& nodes,
-			  unsigned short depth, UShortArraySet& model_graphs);
+			  unsigned short depth, UShortArray& dag,
+			  UShortArraySet& model_graphs);
   void generate_reverse_dag(const UShortArray& dag);
 
   void precompute_ratios();
@@ -158,7 +159,7 @@ private:
   /// type of tunable recursion for defining set of DAGs: KL, partial, or full
   short dagRecursionType;
   /// depth throttle for partial recursion in generate_dags()
-  unsigned short dagRecursionLimit;
+  unsigned short dagDepthLimit;
 
   /// the set of admissible DAGs identifying the control variate
   /// targets for each model in the ensemble

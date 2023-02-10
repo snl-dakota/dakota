@@ -2437,7 +2437,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"nond.export_corrected_variance_format", P_MET exportCorrVarFormat},
       {"nond.export_discrep_format", P_MET exportDiscrepFormat},
       {"nond.export_samples_format", P_MET exportSamplesFormat},
-      {"nond.graph_recursion_limit", P_MET dagRecursionLimit},
+      {"nond.graph_depth_limit", P_MET dagDepthLimit},
       {"nond.integration_refinement", P_MET integrationRefine},
       {"nond.numerical_solve_mode", P_MET numericalSolveMode},
       {"nond.opt_subproblem_solver", P_MET optSubProbSolver},

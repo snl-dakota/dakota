@@ -3113,7 +3113,7 @@
 	    <oneOf label="DAG Ensemble Generation Option">
 	      <keyword  id="kl_recursion" name="kl_recursion" code="{N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}" label="kl_recursion" />
 	      <keyword  id="partial_recursion" name="partial_recursion" code="{N_mdm(type,dagRecursionType_PARTIAL_GRAPH_RECURSION)}" label="partial_recursion" >
-		<keyword  id="recursion_limit" name="recursion_limit" code="{N_mdm(ushint,dagRecursionLimit)}" label="recursion_limit" >
+		<keyword  id="depth_limit" name="depth_limit" code="{N_mdm(ushint,dagDepthLimit)}" label="depth_limit" >
 		  <param type="INTEGER" />
 		</keyword>
 	      </keyword>

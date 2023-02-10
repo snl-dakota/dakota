@@ -140,7 +140,7 @@ DataMethodRep::DataMethodRep():
   quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
   expansionSamples(SZ_MAX), truthPilotConstraint(false),
-  dagRecursionType(NO_GRAPH_RECURSION), dagRecursionLimit(2),
+  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(2),
   ensembleSampSolnMode(ONLINE_PILOT), allocationTarget(TARGET_MEAN),
   useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
   convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
@@ -317,7 +317,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode
     << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
-    << dagRecursionType << dagRecursionLimit << multilevAllocControl
+    << dagRecursionType << dagDepthLimit << multilevAllocControl
     << multilevEstimatorRate << multilevDiscrepEmulation << finalStatsType
     << finalMomentsType << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
@@ -485,7 +485,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> optSubProbSolver >> numericalSolveMode
     >> pilotSamples >> ensembleSampSolnMode >> truthPilotConstraint
-    >> dagRecursionType >> dagRecursionLimit >> multilevAllocControl
+    >> dagRecursionType >> dagDepthLimit >> multilevAllocControl
     >> multilevEstimatorRate >> multilevDiscrepEmulation >> finalStatsType
     >> finalMomentsType >> distributionType >> responseLevelTarget
     >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
@@ -653,7 +653,7 @@ void DataMethodRep::write(std::ostream& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode
     << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
-    << dagRecursionType << dagRecursionLimit << multilevAllocControl
+    << dagRecursionType << dagDepthLimit << multilevAllocControl
     << multilevEstimatorRate << multilevDiscrepEmulation << finalStatsType
     << finalMomentsType << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels

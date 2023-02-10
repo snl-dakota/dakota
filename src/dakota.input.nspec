@@ -2986,7 +2986,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       kl_recursion {N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}
       |
       ( partial_recursion {N_mdm(type,dagRecursionType_PARTIAL_GRAPH_RECURSION)}
-        recursion_limit INTEGER {N_mdm(ushint,dagRecursionLimit)}
+        depth_limit INTEGER {N_mdm(ushint,dagDepthLimit)}
        )
       |
       full_recursion {N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}

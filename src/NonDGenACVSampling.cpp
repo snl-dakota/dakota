@@ -35,13 +35,12 @@ NonDGenACVSampling::
 NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDACVSampling(problem_db, model),
   dagRecursionType(problem_db.get_short("method.nond.search_model_graphs")),
-  dagRecursionLimit(problem_db.get_ushort("method.nond.graph_recursion_limit"))
+  dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit"))
 {
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
   //UShortArraySet model_dags;
   generate_dags(modelDAGs);
   bestDAGIter = modelDAGs.end();
-  //exit(0);
 }
 
 
@@ -74,13 +73,15 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
     break;
   }
   case PARTIAL_GRAPH_RECURSION:
-    generate_trees(dagRecursionLimit, model_graphs);  break;
+    generate_trees(dagDepthLimit, model_graphs);  break;
   case FULL_GRAPH_RECURSION:
-    generate_trees(numApprox, model_graphs);          break;
+    dagDepthLimit = numApprox;
+    generate_trees(dagDepthLimit, model_graphs);  break;
   }
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Model DAGs:\n" << model_graphs << std::endl;
+  Cout << "Model DAGs of size " << model_graphs.size();
+  if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << model_graphs;
+  Cout << std::endl;
 }
 
 
@@ -90,70 +91,84 @@ generate_trees(unsigned short depth, UShortArraySet& model_graphs)
   // root node is not enumerated (truth model = numApprox), so set of dependent
   // tree nodes is fixed (approximation models are numbered 0,numApprox-1)
   unsigned short i, root = numApprox;
-  UShortArray nodes(numApprox);
-  for (unsigned short i=0; i<numApprox; ++i) nodes[i] = i;
+  UShortArray dag(numApprox, USHRT_MAX), nodes(numApprox);
+  for (unsigned short i=0; i<numApprox; ++i)
+    nodes[i] = i;
 
   // recur:
-  generate_sub_trees(root, nodes, depth, model_graphs);
+  generate_sub_trees(root, nodes, depth, dag, model_graphs);
 }
 
 
 void NonDGenACVSampling::
 generate_sub_trees(unsigned short root, const UShortArray& nodes,
-		   unsigned short depth, UShortArraySet& model_graphs)
+		   unsigned short depth, UShortArray& dag,
+		   UShortArraySet& model_graphs)
 {
   // Modeled after Python DAG generator on stack overflow
   // ("How to generate all trees having n-nodes and m-level depth")
 
-  size_t num_nodes = nodes.size();
-  UShortArray dag;
-  if (nodes.empty())
-    model_graphs.insert(dag); // one empty DAG
+  //Cout << "\nRecurring into generate_sub_trees(): depth = " << depth
+  //     << " root = " << root << " nodes =\n" << nodes << std::endl;
+
+  size_t i, num_nodes = nodes.size();
+  if (nodes.empty()) {
+    // optimize out some duplicates for sub_nodes with empty sub_nodes_per_root
+    //model_graphs.insert(dag); // insert completed DAG
+    return;
+  }
   else if (depth <= 1) {
-    dag.assign(num_nodes, root); // flatten: all nodes point to root
-    model_graphs.insert(dag);
-  } 
-  else { // recursion required
-    UShort2DArray tp1, tp2, sub_nodes_per_root;
-    UShortArray   tp1_orders, tp2_orders, sub_roots, sub_nodes;
-    // 1st TP defines root vs. non-root designation at this recursion level:
-    tp1_orders.assign(num_nodes, 1);
-    Pecos::SharedPolyApproxData::
-      tensor_product_multi_index(tp1_orders, tp1, true);
-    size_t i, j, k, num_tp1 = tp1.size(), num_tp2, num_sub_roots, num_sub_nodes;
-    unsigned short dm1 = depth - 1;
-    for (i=1; i<num_tp1; ++i) { // skip 1st entry ({0} = no sub-root is invalid)
-      const UShortArray& tp1_i = tp1[i];
-      Cout << "tp1[" << i << "]:\n" << tp1_i;
-      // segregate "on" (1) into roots, "off" (0) into nexts
-      sub_roots.clear(); sub_nodes.clear();
-      for (j=0; j<num_nodes; ++j)
-	if (tp1_i[j]) sub_roots.push_back(nodes[j]);
-	else          sub_nodes.push_back(nodes[j]); // "nexts"
-      num_sub_roots = sub_roots.size();  num_sub_nodes = sub_nodes.size();
+    for (i=0; i<num_nodes; ++i) dag[nodes[i]] = root;
+    //Cout << "Recursion hit bottom.  Inserting:\n" << dag;
+    model_graphs.insert(dag); // insert completed DAG
+    return;
+  }
+
+  // recursion required
+  UShort2DArray tp1, tp2, sub_nodes_per_root;
+  UShortArray   tp1_orders, tp2_orders, sub_roots, sub_nodes;
+  // 1st TP defines root vs. non-root designation at this recursion level:
+  tp1_orders.assign(num_nodes, 1);
+  Pecos::SharedPolyApproxData::tensor_product_multi_index(tp1_orders, tp1,true);
+  size_t j, k, num_tp1 = tp1.size(), num_tp2, num_sub_roots, num_sub_nodes;
+  unsigned short node_j, dm1 = depth - 1;
+  for (i=1; i<num_tp1; ++i) { // skip 1st entry ({0} = no sub-root is invalid)
+    //if (depth == dagDepthLimit) dag.assign(numApprox, USHRT_MAX); // reset
+    const UShortArray& tp1_i = tp1[i];
+    //Cout << "Depth " << depth << " tp1[" << i << "]:\n" << tp1_i;
+    // segregate "on" (1) into roots, "off" (0) into nexts
+    sub_roots.clear(); sub_nodes.clear();
+    for (j=0; j<num_nodes; ++j) {
+      node_j = nodes[j];
+      if (tp1_i[j]) { sub_roots.push_back(node_j);  dag[node_j] = root; }
+      else            sub_nodes.push_back(node_j); // "nexts"
+    }
+    num_sub_nodes = sub_nodes.size();
+    if (num_sub_nodes) {
+      num_sub_roots = sub_roots.size();
       sub_nodes_per_root.resize(num_sub_roots);
-      // 2nd TP defines assignments of sub_nodes (differs from 1st TP above
-      // in that there are multiple roots available, which will be recurred)
+      // 2nd TP defines assignments of sub_nodes per sub_root (differs from 1st
+      // TP above as there are multiple roots available, which will be recurred)
       tp2_orders.assign(num_sub_nodes, num_sub_roots);
       Pecos::SharedPolyApproxData::
 	tensor_product_multi_index(tp2_orders, tp2, false);
       num_tp2 = tp2.size();
-      for (j=0; j<num_tp2; ++j) {
-	Cout << "  tp2[" << j << "]:\n" << tp2[j];
+      for (j=0; j<num_tp2; ++j) { // 1st entry (all 0's) is valid for this TP
+	//Cout << "  Depth " << depth << " tp2[" << j << "]:\n" << tp2[j];
 	const UShortArray& tp2_j = tp2[j];
 	for (k=0; k<num_sub_roots; ++k) sub_nodes_per_root[k].clear();
 	for (k=0; k<num_sub_nodes; ++k) {
 	  unsigned short tp2_jk = tp2_j[k];
 	  sub_nodes_per_root[tp2_jk].push_back(sub_nodes[k]);
 	}
-	for (k=0; k<num_sub_roots; ++k) {
-	  Cout << "  sub_roots[" << k << "] = " << sub_roots[k]
-	       << " sub_nodes_per_root[" << k << "]:\n" << sub_nodes_per_root[k]
-	       << std::endl;
-	  generate_sub_trees(sub_roots[k], sub_nodes_per_root[k], dm1,
+	for (k=0; k<num_sub_roots; ++k)
+	  generate_sub_trees(sub_roots[k], sub_nodes_per_root[k], dm1, dag,
 			     model_graphs);
-	}
       }
+    }
+    else { // this optimizes out unnecessary recursion for empty sub_nodes
+      //Cout << "Recursion out of nodes.  Inserting:\n" << dag;
+      model_graphs.insert(dag); // insert completed DAG
     }
   }
 }
@@ -673,8 +688,9 @@ enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
       source = *d_cit;  Real& r_src = avg_eval_ratios[source];
       if (r_src <= r_tgt) {
 	r_src = r_tgt * (1. + RATIO_NUDGE);
-	Cout << "Enforcing source = " << source << " target = " << target
-	     << ": r_src = " << r_src << " r_tgt = "<< r_tgt << std::endl;
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "Enforcing source = " << source << " target = " << target
+	       << ": r_src = " << r_src << " r_tgt = "<< r_tgt << std::endl;
       }
     }
   }

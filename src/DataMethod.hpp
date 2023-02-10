@@ -1035,9 +1035,9 @@ public:
   bool truthPilotConstraint;
   /// option specified for \c search_model_graphs in generalized ACV methods
   short dagRecursionType;
-  /// option specified for \c recursion_limit in generalized ACV methods with
+  /// option specified for \c depth_limit in generalized ACV methods with
   /// partial graph recursion
-  unsigned short dagRecursionLimit;
+  unsigned short dagDepthLimit;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC
   short allocationTarget;
   /// the \c allocation_target selection in \ref MethodMultilevelMC
