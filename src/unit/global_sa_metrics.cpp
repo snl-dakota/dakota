@@ -77,13 +77,14 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
   }
 
   /////////////////////  What we want to test --> Reg. Coeffs. (not standardized)
-  RealVector rcoeffs;
-  Real r2 = compute_regression_coeffs(samples, responses, rcoeffs);
+  RealMatrix rcoeffs;
+  RealVector cods;
+  compute_regression_coeffs(samples, responses, rcoeffs, cods);
   MatrixMap test_rcs(rcoeffs.values(), NVARS, 1);
   BOOST_CHECK(dakota::util::matrix_equals(fn_coeffs, test_rcs, 1.0e-10));
   // Coefficient of determination, R^2
   // ... should be 1.0 because we fit the surrogate using exact polynomial objective values
-  BOOST_CHECK_CLOSE(r2, 1.0, 1.e-13 /* NB this is a percent-based tol */);
+  BOOST_CHECK_CLOSE(cods(0), 1.0, 1.e-13 /* NB this is a percent-based tol */);
   //double polynomial_intercept = pr.get_polynomial_intercept(); // not used or needed? - RWH
   ///////////////////////////  What we want to test ///////////////////////////
 
@@ -112,12 +113,12 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
   gold_srcs << 0.996027, 0.122718, 0.0131245, 0.0010858;
 
   /////////////////////  What we want to test --> Reg. Coeffs. (not standardized)
-  RealVector std_rcoeffs;
-  r2 = compute_std_regression_coeffs(samples, responses, std_rcoeffs);
+  RealMatrix std_rcoeffs;
+  compute_std_regression_coeffs(samples, responses, std_rcoeffs, cods);
   MatrixMap test_srcs(std_rcoeffs.values(), NVARS, 1);
   BOOST_CHECK(dakota::util::matrix_equals(gold_srcs, test_srcs, 1.0e-6));
   // Coefficient of determination, R^2 is the same value as the one above
-  BOOST_CHECK_CLOSE(r2, 1.0, 1.e-13 /* NB this is a percent-based tol */);
+  BOOST_CHECK_CLOSE(cods(0), 1.0, 1.e-13 /* NB this is a percent-based tol */);
   ///////////////////////////  What we want to test ///////////////////////////
 }
 
@@ -130,11 +131,12 @@ BOOST_AUTO_TEST_CASE(test_reg_coeffs_edge_cases)
   RealMatrix responses;
 
   /////////////////////  What we want to test --> No Responses
-  RealVector rcoeffs;
-  Real r2 = compute_regression_coeffs(samples, responses, rcoeffs);
-  BOOST_CHECK(0.0 == r2);
-  r2 = compute_std_regression_coeffs(samples, responses, rcoeffs);
-  BOOST_CHECK(0.0 == r2);
+  RealMatrix rcoeffs;
+  RealVector cods;
+  compute_regression_coeffs(samples, responses, rcoeffs, cods);
+  BOOST_CHECK(0 == cods.length());
+  compute_std_regression_coeffs(samples, responses, rcoeffs, cods);
+  BOOST_CHECK(0 == cods.length());
   ///////////////////////////  What we want to test ///////////////////////////
 
 
@@ -151,10 +153,10 @@ BOOST_AUTO_TEST_CASE(test_reg_coeffs_edge_cases)
   }
 
   /////////////////////  What we want to test --> Response stddev = 0
-  r2 = compute_regression_coeffs(samples, responses, rcoeffs);
-  BOOST_CHECK(std::numeric_limits<Real>::infinity() == r2);
-  r2 = compute_std_regression_coeffs(samples, responses, rcoeffs);
-  BOOST_CHECK(0.0 == r2);
+  compute_regression_coeffs(samples, responses, rcoeffs, cods);
+  BOOST_CHECK(std::numeric_limits<Real>::infinity() == cods(0));
+  compute_std_regression_coeffs(samples, responses, rcoeffs, cods);
+  BOOST_CHECK(std::numeric_limits<Real>::infinity() == cods(0));
   ///////////////////////////  What we want to test ///////////////////////////
 
 }
