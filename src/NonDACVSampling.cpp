@@ -180,25 +180,25 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   // -----------------------------------
   // Perform "online" sample increments:
   // -----------------------------------
-  // at least 2 samples reqd for variance (+ resetting allSamples from pilot)
-  numSamples = std::max(numSamples, (size_t)2);
-  shared_increment(mlmfIter); // spans ALL models, blocking
-  accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-		      sum_LH, sum_HH, N_H_actual);//, N_LL);
-  N_H_alloc += numSamples;
-  increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,equivHFEvals);
-
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  if (finalStatsType == QOI_STATISTICS)
+  if (finalStatsType == QOI_STATISTICS) {
+    // perform the shared increment for the online sample profile
+    shared_increment(mlmfIter); // spans ALL models, blocking
+    accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
+			sum_LH, sum_HH, N_H_actual);//, N_LL);
+    N_H_alloc += numSamples;
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,
+			      equivHFEvals);
+    // perform LF increments for the online sample profile
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
 		      N_H_alloc, acvSolnData.avgEvalRatios,
 		      acvSolnData.avgHFTarget);
-  else
-    // N_H is converged from offline pilot --> do not compute deltaNActualHF
-    update_projected_lf_samples(acvSolnData.avgHFTarget,
-				acvSolnData.avgEvalRatios, N_H_actual,
-				N_H_alloc, deltaEquivHF);
+  }
+  else // project online profile including both shared samples and LF increment
+    update_projected_samples(acvSolnData.avgHFTarget, acvSolnData.avgEvalRatios,
+			     N_H_actual, N_H_alloc, deltaNActualHF,
+			     deltaEquivHF);
 }
 
 
@@ -532,6 +532,10 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
       // Single solve initiated from lowest estvar
       nonhierarch_numerical_solution(cost, approxSequence, soln, numSamples);
     }
+    // for offline mode, avg_N_H is zero and at least 2 samples are required
+    // for variance (as well as replacing allSamples from offline pilot)
+    if (pilotMgmtMode == OFFLINE_PILOT)
+      numSamples = std::max(numSamples, (size_t)2);
   }
   else { // update approx_sequence after shared sample increment
     //covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);

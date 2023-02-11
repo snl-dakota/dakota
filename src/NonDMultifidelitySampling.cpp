@@ -180,22 +180,6 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
-  RealVector sum_HH;     //Sizet2DArray N_L_baseline, N_LH;
-  initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
-  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-
-  // at least 2 samples reqd for variance (initial N_H_actual = 0)
-  numSamples = std::max(one_sided_delta(N_H_actual, hf_targets, 1),(size_t)2);
-  shared_increment(mlmfIter); // spans ALL models, blocking
-  accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
-  N_H_alloc += numSamples;
-  increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
-			    equivHFEvals);
-
   // Don't replace pilot-based varH (retain "oracle" rho2LH, varH) since this
   // introduces noise in the final MC/MFMC estimator variances.  It does
   // however result in mixing offline varH with online N_H for estVarIter0.
@@ -203,21 +187,44 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // With changes to print_results(), estVarIter0 no longer used for this mode.
   //compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
   //numHIter0 = N_H_actual;
-  // Exclude pilot from R^2 benefit, but include any difference between N_H
-  // and hf_targets:
-  mfmc_estimator_variance(rho2LH, varH, N_H_actual, hf_targets, approxSequence,
-			  eval_ratios, estVarRatios, mfmcSolnData.avgEstVar);
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  if (finalStatsType == QOI_STATISTICS)
-    // N_H is converged --> finalize with LF increments and post-processing
+  if (finalStatsType == QOI_STATISTICS) {
+    IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
+    RealVector sum_HH;     //Sizet2DArray N_L_baseline, N_LH;
+    initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
+    // perform the shared increment for the online sample profile;
+    // at least 2 samples reqd for variance (initial N_H_actual = 0)
+    numSamples = std::max(one_sided_delta(N_H_actual, hf_targets, 1),(size_t)2);
+    shared_increment(mlmfIter); // spans ALL models, blocking
+    accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
+		       N_H_actual);
+    N_H_alloc += numSamples;
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
+			      equivHFEvals);
+    // compute the estimator performance metrics
+    mfmc_estimator_variance(rho2LH, varH, N_H_actual, hf_targets,approxSequence,
+			    eval_ratios, estVarRatios, mfmcSolnData.avgEstVar);
+    // finalize with LF increments and post-processing
     approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_H_actual,
 		      N_H_alloc, approxSequence, eval_ratios, hf_targets);
-  else // for consistency with pilot projection
-    // N_H is converged from offline pilot --> do not compute deltaNActualHF
-    update_projected_lf_samples(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
-				/*deltaNActualLF,*/ deltaEquivHF);
+  }
+  else {
+    // project online profile including both shared samples and LF increment
+    update_projected_samples(hf_targets, eval_ratios, N_H_actual, N_H_alloc,
+			     deltaNActualHF, /*deltaNActualLF,*/ deltaEquivHF);
+    // include deltaNActualHF in estimator performance
+    SizetArray N_H_actual_proj = N_H_actual;
+    increment_samples(N_H_actual_proj, deltaNActualHF);
+    mfmc_estimator_variance(rho2LH, varH, N_H_actual_proj, hf_targets,
+			    approxSequence, eval_ratios, estVarRatios,
+			    mfmcSolnData.avgEstVar);
+  }
 }
 
 
