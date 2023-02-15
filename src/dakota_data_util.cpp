@@ -425,7 +425,7 @@ void compute_std_regression_coeffs( const RealMatrix & samples, const RealMatrix
   for (int j=0; j<copy_responses.cols(); ++j)
   {
     // Compute response stddev
-    tmp = copy_responses.col(0).array() - copy_responses.col(0).mean();
+    tmp = copy_responses.col(j).array() - copy_responses.col(j).mean();
     resp_stddev = std::sqrt(tmp.dot(tmp)/(copy_responses.rows()-1));
 
     // Do we need to do anything special here or just return inf/nan's ? - RWH
@@ -437,7 +437,7 @@ void compute_std_regression_coeffs( const RealMatrix & samples, const RealMatrix
     //}
 
     // Scale RCs by ratio of std devs, assumes linear regression model
-    VectorMap polynomial_coeffs(reg_coeffs.values(), num_vars);
+    VectorMap polynomial_coeffs(reg_coeffs.values()+j*num_vars, num_vars);
     VectorXd std_polynomial_coeffs = (polynomial_coeffs.array()*stddevs.array())/resp_stddev;
 
     std::copy(std_polynomial_coeffs.data(), std_polynomial_coeffs.data()+num_vars, std_reg_coeffs[j]);
