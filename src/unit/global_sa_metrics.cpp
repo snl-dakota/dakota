@@ -108,8 +108,6 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
      print(resp.std(axis=0, ddof=1))
 
    */
-
-  // Will we always get the same random values for the samples matrix above? - RWH
   gold_srcs << 0.996027, 0.122718, 0.0131245, 0.0010858;
 
   /////////////////////  What we want to test --> Reg. Coeffs. (not standardized)
@@ -159,6 +157,50 @@ BOOST_AUTO_TEST_CASE(test_reg_coeffs_edge_cases)
   BOOST_CHECK(std::numeric_limits<Real>::infinity() == cods(0));
   ///////////////////////////  What we want to test ///////////////////////////
 
+}
+
+//----------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs_multi_resp)
+{
+  MatrixXd samplesXd = create_samples();
+  const int NVARS = samplesXd.cols();
+  const int NSAMP = samplesXd.rows();
+
+  RealMatrix samples;
+  copy_data(samplesXd, samples);
+
+  MatrixXd fn_coeffs(NVARS, 1);
+  fn_coeffs << 10.0, 1.0, 0.1, 0.01;
+
+  RealMatrix responses(NSAMP, 3);
+  for( int i=0; i<NSAMP; ++i ) {
+    responses(i,0) = 2.5;
+    responses(i,1) = 0.0;
+    responses(i,2) = 0.0;
+    for( int v=0; v<NVARS; ++v ) {
+      responses(i,1) += 2.5*fn_coeffs(v  ,0)*samples(i,v);
+      responses(i,2) +=     fn_coeffs(v  ,0)*samples(i,v);
+    }
+  }
+
+  Real bad = 1.0/0.0;
+  MatrixXd gold_srcs(NVARS, 3);
+  gold_srcs <<  bad, 0.996027,  0.996027,  
+                bad, 0.122718,  0.122718,  
+               -bad, 0.0131245, 0.0131245, 
+                bad, 0.0010858, 0.0010858;
+
+  /////////////////////  What we want to test - multiple responses
+  RealMatrix std_rcoeffs;
+  RealVector cods;
+  compute_std_regression_coeffs(samples, responses, std_rcoeffs, cods);
+  MatrixMap test_srcs(std_rcoeffs.values(), NVARS, 3);
+  BOOST_CHECK(dakota::util::matrix_equals(gold_srcs, test_srcs, 1.0e-6));
+  BOOST_CHECK(std::numeric_limits<Real>::infinity() == cods(0));
+  BOOST_CHECK_CLOSE(cods(1), 1.0, 1.e-13 /* NB this is a percent-based tol */);
+  BOOST_CHECK_CLOSE(cods(2), 1.0, 1.e-13 /* NB this is a percent-based tol */);
+  ///////////////////////////  What we want to test ///////////////////////////
 }
 
 //----------------------------------------------------------------

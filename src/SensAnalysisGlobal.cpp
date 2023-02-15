@@ -904,7 +904,7 @@ print_std_regress_coeffs(std::ostream& s, StringMultiArrayConstView cv_labels,
 
   if( has_nan_or_inf(stdRegressCoeffs) )
     s << "\nAt least one standardized regression coefficient is nan or inf. This " <<
-      "commonly occurs a response is\ncompletely insensitive to " <<
+      "commonly occurs when a response is\ncompletely insensitive to " <<
       "variables (response variance equal to 0), there are\nfewer samples " <<
       "than variables, or some samples are approximately collinear." << 
       std::endl;
