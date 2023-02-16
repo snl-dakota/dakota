@@ -266,18 +266,6 @@ void center_matrix_cols( RealMatrix & mat );
 /// Test if incoming matrix is symmetric
 bool is_matrix_symmetric( const RealMatrix & matrix );
 
-/// Compute (non-standardized) linear regression coefficients and return R^2
-void compute_regression_coeffs( const RealMatrix & samples,
-                                const RealMatrix & resps,
-                                RealMatrix & coeffs,
-                                RealVector & cods );
-
-/// Compute standardized linear regression coefficients
-void compute_std_regression_coeffs( const RealMatrix & samples,
-                                    const RealMatrix & resps,
-                                    RealMatrix & coeffs,
-                                    RealVector & cods );
-
 /// Applies a RealMatrix to a vector (or subset of vector) v1
 /** Optionally works with a subset of the passed vectors; applies the
     matrix M to the first M.numCols() entries in v1, and populates the

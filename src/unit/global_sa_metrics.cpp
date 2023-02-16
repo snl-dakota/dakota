@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 
-#include "dakota_data_util.hpp"
+#include "dakota_stat_util.hpp"
 #include "SurrogatesPolynomialRegression.hpp"
 #include "util_common.hpp"
 #include "util_metrics.hpp"

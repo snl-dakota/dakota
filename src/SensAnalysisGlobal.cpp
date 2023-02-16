@@ -17,6 +17,7 @@
 #include "SensAnalysisGlobal.hpp"
 #include "ResultsManager.hpp"
 #include "dakota_linear_algebra.hpp"
+#include "dakota_stat_util.hpp"
 #include <algorithm>
 #include <boost/iterator/counting_iterator.hpp>
 
