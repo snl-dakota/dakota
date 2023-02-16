@@ -3107,10 +3107,21 @@
 	    <keyword  id="acv_multifidelity" name="acv_multifidelity" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}" label="acv_multifidelity" >
 	      <alias name="acv_mf"/>
 	    </keyword>
-	    <keyword  id="acv_kl" name="acv_kl" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}" label="acv_kl" >
-	      <alias name="acv_adaptive"/>
+	    <keyword  id="acv_recursive_diff" name="acv_recursive_diff" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_RD)}" label="acv_recursive_diff" >
+	      <alias name="acv_rd"/>
 	    </keyword>
 	  </oneOf>
+	  <keyword  id="search_model_graphs" name="search_model_graphs" code="{0}" label="search_model_graph" minOccurs="0" default="NO_GRAPH_RECURSION" >
+	    <oneOf label="DAG Ensemble Generation Option">
+	      <keyword  id="kl_recursion" name="kl_recursion" code="{N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}" label="kl_recursion" />
+	      <keyword  id="partial_recursion" name="partial_recursion" code="{N_mdm(type,dagRecursionType_PARTIAL_GRAPH_RECURSION)}" label="partial_recursion" >
+		<keyword  id="depth_limit" name="depth_limit" code="{N_mdm(ushint,dagDepthLimit)}" label="depth_limit" >
+		  <param type="INTEGER" />
+		</keyword>
+	      </keyword>
+	      <keyword  id="full_recursion" name="full_recursion" code="{N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}" label="full_recursion" />
+	    </oneOf>
+	  </keyword>
 	  &mc_pilot_samples;
 	  &mc_solution_mode;
 	  <!--

@@ -99,7 +99,7 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_BOX_BEHNKEN,     SUBMETHOD_CENTRAL_COMPOSITE,
        SUBMETHOD_GRID,            SUBMETHOD_OA_LHS,     SUBMETHOD_OAS,
        // MFMC and ACV numerical solutions:
-       SUBMETHOD_MFMC, SUBMETHOD_ACV_IS, SUBMETHOD_ACV_MF, SUBMETHOD_ACV_KL,
+       SUBMETHOD_MFMC, SUBMETHOD_ACV_IS, SUBMETHOD_ACV_MF, SUBMETHOD_ACV_RD,
        // Bayesian inference algorithms:
        SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_MUQ, SUBMETHOD_QUESO,
        SUBMETHOD_WASABI,
@@ -118,6 +118,10 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        // verification approaches:
        SUBMETHOD_CONVERGE_ORDER,  SUBMETHOD_CONVERGE_QOI,
        SUBMETHOD_ESTIMATE_ORDER };
+
+/// Graph recursion options for ACV
+enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, PARTIAL_GRAPH_RECURSION,
+       FULL_GRAPH_RECURSION };
 
 // define special values for outputLevel within
 // Iterator/Model/Interface/Approximation
@@ -1032,9 +1036,14 @@ public:
   short ensembleSampSolnMode;
   /// the \c truth_fixed_by_pilot flag for ACV methods
   bool truthPilotConstraint;
+  /// option specified for \c search_model_graphs in generalized ACV methods
+  short dagRecursionType;
+  /// option specified for \c depth_limit in generalized ACV methods with
+  /// partial graph recursion
+  unsigned short dagDepthLimit;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC
   short allocationTarget;
-  /// the \c useTargetVarianceOptimizationFlag selection in \ref MethodMultilevelMC
+  /// the \c allocation_target selection in \ref MethodMultilevelMC
   bool useTargetVarianceOptimizationFlag;
   /// the |c qoi_aggregation_norm selection in \ref MethodMultilevelMC
   short qoiAggregation;
