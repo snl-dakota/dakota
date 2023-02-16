@@ -3000,6 +3000,8 @@
             <keyword  id="one_sidedupper" name="one_sided_upper" code="{N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)}" label="one_sided_upper"  minOccurs="0" />
             <keyword  id="two_sided" name="two_sided" code="{N_mdm(type,wilksSidedInterval_TWO_SIDED)}" label="two_sided"  minOccurs="0" />
 	  </keyword>
+	  <keyword  id="std_regression_coeffs" name="std_regression_coeffs" code="{N_mdm(true,stdRegressionCoeffs)}" label="std_regression_coeffs"  minOccurs="0" >
+	  </keyword>
 	  &default_final_moments;
 	  &level_mappings;
 	  &rng_options;

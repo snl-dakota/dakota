@@ -6931,6 +6931,7 @@ static bool
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
 	MP_(standardizedSpace),
+	MP_(stdRegressionCoeffs),
 	MP_(useTargetVarianceOptimizationFlag),
 	MP_(tensorGridFlag),
 	MP_(surrBasedGlobalReplacePts),
