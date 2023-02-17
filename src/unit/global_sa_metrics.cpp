@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs_multi_resp)
     }
   }
 
-  Real bad = 1.0/0.0;
+  Real bad = std::numeric_limits<Real>::infinity();
   MatrixXd gold_srcs(NVARS, 3);
   gold_srcs <<  bad, 0.996027,  0.996027,  
                 bad, 0.122718,  0.122718,  
