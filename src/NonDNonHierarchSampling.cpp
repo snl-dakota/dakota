@@ -621,11 +621,22 @@ nonhierarch_numerical_solution(const RealVector& cost,
   Real&      avg_estvar_ratio = soln.avgEstVarRatio;
   Real&         equiv_hf_cost = soln.equivHFAlloc;
 
+  // For offline mode, online allocations must be lower bounded for numerics:
+  // > for QOI_STATISTICS, unbiased moments / CV beta require min of 2 samples
+  // > for ESTIMATOR_PERF, a lower bnd of 1 sample is allowable (MC reference)
+  //   >> 1 line of thinking: an offline oracle should by as optimal as possible
+  //      and we will use for apples-to-apples estimator performance comparisons
+  //   >> another line of thinking: be consistent at 2 samples for possible
+  //      switch from estimator_perf (selection) to qoi_statistics (execution);
+  //      moreover, don't select an estimator based on inconsistent formulation
+  // Nonzero lower bound ensures replacement of allSamples after offline pilot.
+  Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
+
   // Note: ACV paper suggests additional linear constraints for r_i ordering
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
     x0   = avg_eval_ratios;
-    x_lb = 1.;
+    x_lb = 1.; // r_i
     // set linear inequality constraint for fixed N:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   \Sum_i w_i   r_i <= equivHF * w / N - w
@@ -643,8 +654,8 @@ nonhierarch_numerical_solution(const RealVector& cost,
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
     x_lb = 1.; // r_i
-    if (pilotMgmtMode != OFFLINE_PILOT)
-      x_lb[numApprox] = avg_N_H;//std::floor(avg_N_H + .5); // pilot <= N*
+    x_lb[numApprox] = (pilotMgmtMode == OFFLINE_PILOT) ?
+      offline_N_lwr : avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
 
     nln_ineq_lb[0] = -DBL_MAX; // no low bnd
     nln_ineq_ub[0] = budget;
@@ -653,7 +664,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
     copy_data_partial(avg_eval_ratios, x0, 0);  x0[numApprox] = 1.;
     if (mlmfIter) x0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
     else          x0.scale(avg_hf_target);
-    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? 1. : avg_N_H;
+    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
 
     // linear inequality constraint on budget:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
@@ -669,7 +680,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
     copy_data_partial(avg_eval_ratios, x0, 0);  x0[numApprox] = 1.;
     if (mlmfIter) x0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
     else          x0.scale(avg_hf_target);
-    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? 1. : avg_N_H;
+    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
 
     // nonlinear constraint on estvar
     nln_ineq_lb = -DBL_MAX;  // no lower bnd

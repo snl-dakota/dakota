@@ -442,6 +442,15 @@ update_projected_samples(const RealVector& hf_targets,
   size_t alloc_incr = one_sided_delta(N_H_alloc, average(hf_targets)),
     actual_incr = (backfillFailures) ?
       one_sided_delta(N_H_actual, hf_targets, 1) : alloc_incr;
+  // For analytic solns, mirror the CDV lower bound for numerical solutions --
+  // see rationale in NonDNonHierarchSampling::nonhierarch_numerical_solution()
+  if ( pilotMgmtMode == OFFLINE_PILOT &&
+       ( optSubProblemForm == ANALYTIC_SOLUTION ||
+	 optSubProblemForm == REORDERED_ANALYTIC_SOLUTION ) ) {
+    size_t offline_N_lwr = 2; //(finalStatsType == QOI_STATISTICS) ? 2 : 1;
+    alloc_incr  = std::max(alloc_incr,  offline_N_lwr);
+    actual_incr = std::max(actual_incr, offline_N_lwr);
+  }
   delta_N_H_actual += actual_incr;  N_H_alloc += alloc_incr;
   increment_equivalent_cost(actual_incr, sequenceCost, numApprox,
 			    delta_equiv_hf);

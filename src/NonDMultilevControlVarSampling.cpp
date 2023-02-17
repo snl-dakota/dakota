@@ -1302,10 +1302,15 @@ update_projected_samples(const RealVector& hf_targets,
   for (lev=0; lev<num_hf_lev; ++lev) {
     hf_target_l      = hf_targets[lev];
     hf_alloc_incr    = one_sided_delta(N_alloc_hf[lev], hf_target_l);
-    N_alloc_hf[lev] += hf_alloc_incr;
     // Note: not duplicate as evaluate_pilot() does not compute delta_N_hf
     hf_actual_incr   = (backfillFailures) ?
       one_sided_delta(N_actual_hf[lev], hf_target_l, 1) : hf_alloc_incr;
+    if (pilotMgmtMode == OFFLINE_PILOT) {
+      size_t offline_N_lwr = (finalStatsType == QOI_STATISTICS) ? 2 : 1;
+      hf_alloc_incr  = std::max(hf_alloc_incr,  offline_N_lwr);
+      hf_actual_incr = std::max(hf_actual_incr, offline_N_lwr);
+    }
+    N_alloc_hf[lev]        += hf_alloc_incr;
     //increment_samples(N_actual_hf[lev], hf_actual_incr);
     delta_N_actual_hf[lev] += hf_actual_incr;
     if (lev<num_cv_lev) {
