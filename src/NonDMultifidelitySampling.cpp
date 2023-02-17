@@ -172,14 +172,20 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   //increment_equivalent_cost(...); // excluded
   compute_LH_correlation(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 			 sum_HH_pilot, N_shared_pilot, var_L, varH, rho2LH);
+
+  // -----------------------------------
+  // Compute "online" sample increments:
+  // -----------------------------------
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
+
   // compute r* from rho2 and cost and update the HF targets
   mfmc_eval_ratios(var_L, rho2LH, sequenceCost, approxSequence, eval_ratios,
 		   hf_targets);
   ++mlmfIter;
 
-  // -----------------------------------
-  // Compute "online" sample increments:
-  // -----------------------------------
   // Don't replace pilot-based varH (retain "oracle" rho2LH, varH) since this
   // introduces noise in the final MC/MFMC estimator variances.  It does
   // however result in mixing offline varH with online N_H for estVarIter0.
@@ -187,10 +193,6 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // With changes to print_results(), estVarIter0 no longer used for this mode.
   //compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
   //numHIter0 = N_H_actual;
-  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
