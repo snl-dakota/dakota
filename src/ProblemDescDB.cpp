@@ -2686,6 +2686,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"sbl.truth_surrogate_bypass", P_MET surrBasedLocalLayerBypass},
       {"scaling", P_MET methodScaling},
       {"speculative", P_MET speculativeFlag},
+      {"std_regression_coeffs", P_MET stdRegressionCoeffs},
       {"variance_based_decomp", P_MET vbdFlag},
       {"wilks", P_MET wilksFlag}
     },

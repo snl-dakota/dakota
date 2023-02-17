@@ -14,6 +14,7 @@
 #include "dakota_global_defs.hpp"  // for Cerr
 #include "dakota_data_types.hpp"
 #include "pecos_data_types.hpp"
+#include "UtilDataScaler.hpp"
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/functional/hash/hash.hpp>
@@ -22,6 +23,8 @@
 #include <algorithm>
 #include "Teuchos_SerialDenseHelpers.hpp"
 
+using dakota::VectorXd;
+using dakota::MatrixXd;
 
 // --------------
 // hash functions
@@ -238,11 +241,30 @@ inline bool is_equal_partial(const StringMultiArray& ma1,
 
 /// Computes means of columns of matrix
 void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
+
 /// Computes standard deviations of columns of matrix
 void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
-      			  RealVector& std_devs);
+                        RealVector& std_devs);
+
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
+
+/// Sort incoming vector with result and corresponding indices returned in passed arguments
+void sort_vector( const RealVector & vec, RealVector & sort_vec,
+                  IntVector & indices );
+
+/// Sort incoming matrix columns with result and corresponding indices returned in passed arguments
+void sort_matrix_columns( const RealMatrix & mat, RealMatrix & sort_mat,
+                          IntMatrix & indices );
+
+/// center the incoming matrix rows by their means, in-place
+void center_matrix_rows( RealMatrix & mat );
+
+/// center the incoming matrix columns by their means, in-place
+void center_matrix_cols( RealMatrix & mat );
+
+/// Test if incoming matrix is symmetric
+bool is_matrix_symmetric( const RealMatrix & matrix );
 
 /// Applies a RealMatrix to a vector (or subset of vector) v1
 /** Optionally works with a subset of the passed vectors; applies the
@@ -476,6 +498,14 @@ void assign_value(vecType& target, valueType val, size_t start, size_t len)
 //  }
 //}
 
+/// Copy data from Eigen::MatrixXd to RealMatrix
+void copy_data(const MatrixXd & src_mat, RealMatrix & dst_mat);
+
+/// Copy data from RealMatrix to Eigen::MatrixXd
+void copy_data(const RealMatrix & src_mat, MatrixXd & dst_mat);
+
+/// Create a view of data in RealMatrix as an Eigen::MatrixXd
+void view_data(const RealMatrix & src_mat, Eigen::Map<MatrixXd> & dst_mat);
 
 /// copy Array<Teuchos::SerialDenseVector<OT,ST> > to
 /// Teuchos::SerialDenseMatrix<OT,ST> - used by read_data_tabular - RWH
