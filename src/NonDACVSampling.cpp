@@ -532,10 +532,6 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
       // Single solve initiated from lowest estvar
       nonhierarch_numerical_solution(cost, approxSequence, soln, numSamples);
     }
-    // for offline mode, avg_N_H is zero and at least 2 samples are required
-    // for variance (as well as replacing allSamples from offline pilot)
-    if (pilotMgmtMode == OFFLINE_PILOT)
-      numSamples = std::max(numSamples, (size_t)2);
   }
   else { // update approx_sequence after shared sample increment
     //covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
