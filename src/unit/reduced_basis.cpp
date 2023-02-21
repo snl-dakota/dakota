@@ -14,7 +14,7 @@
 #include "dakota_data_util.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_linear_algebra.hpp"
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 
 #include <string>
 

@@ -27,6 +27,7 @@ set(util_headers
   util_data_types.hpp
   util_eigen_plugins.hpp
   util_math_tools.hpp
+  util_windows.hpp
   )
 
 add_library(dakota_util ${util_sources} ${util_headers})
