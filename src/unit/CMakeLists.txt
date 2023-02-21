@@ -151,10 +151,12 @@ dakota_add_unit_test(NAME dakota_restart
   LINK_DAKOTA_LIBS
   LINK_LIBS Boost::boost)
 
-dakota_add_unit_test(NAME dakota_global_sa_metrics
-  SOURCES global_sa_metrics.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+if (DAKOTA_MODULE_SURROGATES)
+  dakota_add_unit_test(NAME dakota_global_sa_metrics
+    SOURCES global_sa_metrics.cpp
+    LINK_DAKOTA_LIBS
+    LINK_LIBS Boost::boost)
+endif (DAKOTA_MODULE_SURROGATES)
 
 # Copy needed unit test auxiliary data files
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"

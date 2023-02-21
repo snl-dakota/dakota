@@ -91,11 +91,17 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 			 probDescDB.get_ushort("method.export_approx_format"));
 
   if (approx_type == "global_exp_gauss_proc") {
+#ifdef HAVE_DAKOTA_SURROGATES
     const String& advanced_options_file
       = problem_db.get_string("method.advanced_options_file");
     if (!advanced_options_file.empty())
       set_model_gp_options(fHatModel, advanced_options_file);
+#else
+    Cerr << "\nError: efficient_global does not support global_exp_gauss_proc "
+         << "when Dakota is built without DAKOTA_MODULE_SURROGATES enabled." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
+#endif
 }
 
 

@@ -60,6 +60,14 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
+#ifndef HAVE_DAKOTA_SURROGATES
+  if ( stdRegressionCoeffs ) {
+    Cerr << "Warning: Standardized Regression Coefficients are not available"
+         << " for Dakota builds without the surrogates module enabled."
+         << " Disabling requested output.\n";
+  }
+#endif
+
   if ( wilksFlag ) {
     // Only works with sample_type of random
     // BMA: consider relaxing, despite no theory
