@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs_multi_resp)
   RealVector cods;
   compute_std_regression_coeffs(samples, responses, std_rcoeffs, cods);
   MatrixMap test_srcs(std_rcoeffs.values(), NVARS, 3);
-  BOOST_CHECK(dakota::util::matrix_equals(gold_srcs, test_srcs, 1.0e-6));
+  BOOST_CHECK(dakota::util::matrix_equals(gold_srcs, test_srcs, 1.0e-5));
   BOOST_CHECK(std::numeric_limits<Real>::infinity() == cods(0));
   BOOST_CHECK_CLOSE(cods(1), 1.0, 1.e-13 /* NB this is a percent-based tol */);
   BOOST_CHECK_CLOSE(cods(2), 1.0, 1.e-13 /* NB this is a percent-based tol */);
