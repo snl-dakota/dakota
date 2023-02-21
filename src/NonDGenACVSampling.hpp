@@ -159,6 +159,8 @@ private:
   short dagRecursionType;
   /// depth throttle for partial recursion in generate_dags()
   unsigned short dagDepthLimit;
+  /// option to enumerate combinations of approximation models
+  short modelSelectType;
 
   /// the set of admissible DAGs identifying the control variate
   /// targets for each model in the ensemble

@@ -35,7 +35,8 @@ NonDGenACVSampling::
 NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDACVSampling(problem_db, model),
   dagRecursionType(problem_db.get_short("method.nond.search_model_graphs")),
-  dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit"))
+  dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit")),
+  modelSelectType(NO_MODEL_SELECTION) //(ALL_MODEL_COMBINATIONS)
 {
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
   if (dagRecursionType == FULL_GRAPH_RECURSION) dagDepthLimit = numApprox;
@@ -80,13 +81,65 @@ void NonDGenACVSampling::generate_dags()
     break;
   }
   default: {
-    // root node (truth index = numApprox) and set of dependent nodes
-    // (approximation model indices 0,numApprox-1) are fixed
-    unsigned short i, root = numApprox;
-    UShortArray nodes(numApprox), dag(numApprox, USHRT_MAX);
-    for (i=0; i<numApprox; ++i) nodes[i] = i;
-    // recur:
-    generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
+    UShortArray nodes, dag;  unsigned short root = numApprox;  size_t i;
+    switch (modelSelectType) {
+    case ALL_MODEL_COMBINATIONS: {
+      // tensor product of order 1 to enumerate approximation inclusion
+      UShort2DArray tp;  UShortArray tp_orders(numApprox, 1);
+      Pecos::SharedPolyApproxData::
+	tensor_product_multi_index(tp_orders, tp, true);
+      size_t j, num_tp = tp.size();
+
+      // Two discrete enumeration options here:
+      // > map<UShortArray,UShortArraySet> to associate pruned DAGs to nodes
+      // > keep DAG size at numApprox and use USHRT_MAX for omitted approx
+
+      /* Compacted version requires map from nodes --> DAG set
+      unsigned short dag_size;
+      for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
+	const UShortArray& tp_i = tp[i];
+	nodes.clear();
+	for (j=0, dag_size=0; j<numApprox; ++j)
+	  if (tp_i[j]) { nodes.push_back(j); ++dag_size; }
+	dag.assign(dag_size, USHRT_MAX);
+	// recur for dag with a subset of approximations:
+	Cout << "\ngenerate_dags(): depth = " << dagDepthLimit
+	     << " root = " << root << " nodes =\n" << nodes << std::endl;
+	generate_sub_trees(root, nodes, dagDepthLimit, dag, dag_set);
+	modelDAGS[nodes] = dag_set;
+      }
+      */
+
+      // 
+      for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
+	const UShortArray& tp_i = tp[i];
+	for (j=0; j<numApprox; ++j)
+	  nodes[j] = (tp_i[j]) ? j : USHRT_MAX;
+	// recur for dag with a subset of approximations:
+	Cout << "\ngenerate_dags(): depth = " << dagDepthLimit
+	     << " root = " << root << " nodes =\n" << nodes << std::endl;
+	dag.assign(numApprox, USHRT_MAX);
+	generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
+      }
+
+      exit(0);
+
+      break;
+    }
+
+    // Rather then enumerating all of the discrete model combinations, this
+    // employs one intgrated continuous solve, which approaches the best
+    // discrete solution as some sample increments --> 0.  This approach will
+    // likely encounter more issues with numerical conditioning
+    case NO_MODEL_SELECTION:
+      // root node (truth index = numApprox) and set of dependent nodes
+      // (approximation model indices 0,numApprox-1) are fixed
+      nodes.resize(numApprox);  for (i=0; i<numApprox; ++i) nodes[i] = i;
+      dag.assign(numApprox, USHRT_MAX);
+      // recur for DAG including all approximations:
+      generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
+      break;
+    }
     break;
   }
   }

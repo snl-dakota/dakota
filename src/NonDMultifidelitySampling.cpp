@@ -161,10 +161,9 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   SizetArray N_shared_pilot(numFunctions, 0);
   //Sizet2DArray N_L_pilot, N_LH_pilot;
   //initialize_counts(N_L_pilot, N_H_pilot, N_LH_pilot);
-  // ---------------------------------------------------------------------
-  // Compute final rho2LH, varH, {eval,estvar} ratios from (oracle) pilot
-  // treated as "offline" cost
-  // ---------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Compute final var{L,H},rho2LH from (oracle) pilot treated as offline cost
+  // -------------------------------------------------------------------------
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		     sum_HH_pilot, N_shared_pilot);
@@ -173,9 +172,9 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   compute_LH_correlation(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 			 sum_HH_pilot, N_shared_pilot, var_L, varH, rho2LH);
 
-  // -----------------------------------
-  // Compute "online" sample increments:
-  // -----------------------------------
+  // ---------------------------------
+  // Compute online sample increments:
+  // ---------------------------------
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
@@ -638,6 +637,16 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
   // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
   // > Reorder differences since eval ratios/correlations ordered from LF to HF
   //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
+
+  // ***************************************************************************
+  // Important note: this implementation is being phased out since the estimator
+  // variance should not take credit for optimal eval_ratios(qoi,approx) that
+  // are not realized in practice due to integration of numSamples across QoI.
+  // As for the numerical optimizer cases, avg_eval_ratios is consistent with
+  // the downstream utilization of eval_ratios under the assumption of a scalar
+  // allocation (neglecting backfill for actual counts).
+  // ***************************************************************************
+
   Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i, ip1;
   switch (optSubProblemForm) {
 
@@ -674,8 +683,7 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
     break;
   }
 
-  // Note: log_average_estvar() now calls this fn for MFMC numerical solution.
-  // ANALYTIC_SOLUTION corresponds to the ordered case of this implementation.
+  // Note: ANALYTIC_SOLUTION above corresponds to the ordered case below
   default: {
     bool ordered = approx_sequence.empty();
     for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -767,8 +775,12 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
     break;
   }
 
-  // Note: log_average_estvar() now calls this fn for MFMC numerical solution.
-  // ANALYTIC_SOLUTION corresponds to the ordered case of this implementation.
+  // Call stack for MFMC numerical solution:
+  // > NonDNonHierarchSampling::log_average_estvar()
+  // > NonDNonHierarchSampling::average_estimator_variance()
+  // > NonDMultifidelitySampling::estimator_variance_ratios() [virtual]
+  // > This function (vector of avg_eval_ratios from opt design variables)
+  // Note: ANALYTIC_SOLUTION above corresponds to ordered case below
   default: {
     bool ordered = approx_sequence.empty();
     for (qoi=0; qoi<numFunctions; ++qoi) {

@@ -119,9 +119,11 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_CONVERGE_ORDER,  SUBMETHOD_CONVERGE_QOI,
        SUBMETHOD_ESTIMATE_ORDER };
 
-/// Graph recursion options for ACV
+/// Graph recursion options for generalized ACV
 enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, PARTIAL_GRAPH_RECURSION,
        FULL_GRAPH_RECURSION };
+/// Model selection options for generalized ACV
+enum { NO_MODEL_SELECTION=0, ALL_MODEL_COMBINATIONS };
 
 // define special values for outputLevel within
 // Iterator/Model/Interface/Approximation
