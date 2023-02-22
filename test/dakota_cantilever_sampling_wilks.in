@@ -18,6 +18,7 @@ method
 #      two_sided                                                #s2,#s3
 #      one_sided_lower                                          #s4
 #      order 3                                                  #s1,#s2
+#      std_regression_coeffs                                    #s1
     seed = 31415
 
 model

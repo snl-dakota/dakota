@@ -17,6 +17,7 @@
 #include <boost/test/included/unit_test.hpp>
 
 using namespace Dakota;
+using dakota::MatrixXd;
 
 namespace {
 
@@ -308,6 +309,70 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix_transpose)
     else
       BOOST_CHECK_CLOSE( (Real)i, v4[i], 1.e-12 );
   }
+}
+
+//----------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(test_data_conversion_rm2eigM)
+{
+  const int NROWS = 5;
+  const int NCOLS = 3;
+  RealMatrix rm(NROWS, NCOLS);
+  rm.random();
+
+  MatrixXd test_mat;
+
+  /////////////////  What we want to test
+  copy_data(rm, test_mat);
+  /////////////////  What we want to test
+
+  // Verify correct dimensions
+  BOOST_CHECK( NROWS == test_mat.rows() );
+  BOOST_CHECK( NCOLS == test_mat.cols() );
+
+  // Verify contents
+  for( size_t i=0; i<NROWS; ++i )
+    for( int j=0; j<NCOLS; ++j )
+    BOOST_CHECK_CLOSE( test_mat(i,j), rm(i,j), 1.e-12 );
+
+
+  // Store the original norm to see if we change it via a view
+  const Real orig_norm = rm.normOne();
+
+  Eigen::Map<MatrixXd> view_mat(NULL, 0, 0);
+
+  /////////////////  What we want to test
+  view_data(rm, view_mat);
+  view_mat *= 3.14;
+  /////////////////  What we want to test
+
+  // Verify correct behavior of view
+  const Real new_norm = rm.normOne();
+  BOOST_CHECK_CLOSE( 3.14*orig_norm, new_norm, 1.e-10 );
+}
+
+//----------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(test_data_conversion_eigM2rm)
+{
+  const int NROWS = 5;
+  const int NCOLS = 3;
+  MatrixXd em = MatrixXd::Random(NROWS, NCOLS);
+
+  RealMatrix test_mat;
+
+  /////////////////  What we want to test
+  copy_data(em, test_mat);
+  /////////////////  What we want to test
+
+  // Verify correct dimensions
+  BOOST_CHECK( NROWS == test_mat.numRows() );
+  BOOST_CHECK( NCOLS == test_mat.numCols() );
+
+  // Verify contents
+  for( size_t i=0; i<NROWS; ++i )
+    for( int j=0; j<NCOLS; ++j )
+    BOOST_CHECK_CLOSE( test_mat(i,j), em(i,j), 1.e-12 );
 }
 
 //----------------------------------------------------------------

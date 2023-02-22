@@ -374,37 +374,30 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 		  N_actual_online, N_alloc_pilot, N_alloc_online, delta_N_l,
 		  var_Y, var_qoi, eps_sq_div_2, false, false);
 
-  // ----------------------------------------------------------
-  // Evaluate online sample profile computed from offline pilot
-  // ----------------------------------------------------------
-  reset_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1);
-  Real ref_cost = sequenceCost[numSteps-1];
-
-  for (step=0; step<numSteps; ++step) {
-
-    configure_indices(step, form, lev, sequenceType);
-
-    // define online samples from delta increment; min of 2 reqd for online var
-    //numSamples = std::max(delta_N_l[step], (size_t)2);
-    numSamples = delta_N_l[step];
-    if (numSamples < 2) { // min required for variation
-      Cerr << "Warning: online sample increment of " << numSamples
-	   << " repaired to minimum of 2." << std::endl;
-      numSamples = 2;
-    }
-    evaluate_ml_sample_increment(step);
-    accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
-			N_actual_online[step]);
-    N_alloc_online[step] += numSamples;
-    increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, step),
-				 ref_cost, equivHFEvals);
-  }
-
-  // ---------------------
-  // Final post-processing
-  // ---------------------
-  // Only QOI_STATISTICS requires estimation of moments
+  // Only QOI_STATISTICS requires iteration and final estimation of moments
   if (finalStatsType == QOI_STATISTICS) {
+    // ----------------------------------------------------------
+    // Evaluate online sample profile computed from offline pilot
+    // ----------------------------------------------------------
+    reset_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1);
+    Real ref_cost = sequenceCost[numSteps-1];
+
+    for (step=0; step<numSteps; ++step) {
+      configure_indices(step, form, lev, sequenceType);
+
+      // define online samples from delta_N_l; min of 2 reqd for online variance
+      numSamples = std::max(delta_N_l[step], (size_t)2);
+      evaluate_ml_sample_increment(step);
+      accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
+			  N_actual_online[step]);
+      N_alloc_online[step] += numSamples;
+      increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, step),
+				   ref_cost, equivHFEvals);
+    }
+
+    // ---------------------
+    // Final post-processing
+    // ---------------------
     // roll up moment contributions
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_online);
 
@@ -415,8 +408,17 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 
     // populate finalStatErrors
     compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_online);
+    // update estVar
+    compute_ml_estimator_variance(var_Y, N_actual_online, estVar);
   }
-  compute_ml_estimator_variance(var_Y, N_actual_online, estVar);
+  else { // estimator performance only requires offline pilot
+    update_projected_samples(delta_N_l, N_alloc_online, sequenceCost,
+			     deltaEquivHF);
+    Sizet2DArray N_actual_online_proj = N_actual_online;
+    increment_samples(N_actual_online_proj, delta_N_l);
+    compute_ml_estimator_variance(var_Y, N_actual_online_proj, estVar);
+  }
+
   avgEstVar = average(estVar);
   // post final N_online back to NLevActual (needed for final eval summary)
   inflate_sequence_samples(N_actual_online,multilev, secondaryIndex,NLevActual);
@@ -527,7 +529,8 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
 			  N_actual_pilot[step]);
       if (backfillFailures && mlmfIter)
-	increment_alloc_samples(N_alloc_pilot[step], NTargetQoI[step]);
+	N_alloc_pilot[step] +=
+	  allocation_increment(N_alloc_pilot[step], NTargetQoI[step]);
       else N_alloc_pilot[step] += numSamples;
       variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
 		    sum_Ql.at(2)[step], sum_QlQlm1.at(pr11)[step],
@@ -1331,20 +1334,20 @@ compute_cov(const RealVector& samples_X, const RealVector& samples_Y){
 }
 
 
-void NonDMultilevelSampling::
-increment_alloc_samples(size_t& N_l_alloc, const Real* N_l_target)
+size_t NonDMultilevelSampling::
+allocation_increment(size_t N_l_alloc, const Real* N_l_target)
 {
   switch (qoiAggregation) {
   case QOI_AGGREGATION_SUM:
-    N_l_alloc += one_sided_delta(N_l_alloc, N_l_target[0]);
+    return one_sided_delta(N_l_alloc, N_l_target[0]);
     break;
   case QOI_AGGREGATION_MAX:
-    N_l_alloc += one_sided_delta(N_l_alloc, find_max(N_l_target, numFunctions));
+    return one_sided_delta(N_l_alloc, find_max(N_l_target, numFunctions));
     break;
   default:
     Cerr << "Error: QoI aggregation mode " << qoiAggregation << " not supported"
-	 << "in NonDMultilevelSampling::increment_alloc_samples()."<< std::endl;
-    abort_handler(METHOD_ERROR);  break;
+	 << "in NonDMultilevelSampling::allocation_increment()."<< std::endl;
+    abort_handler(METHOD_ERROR);  return 0;  break;
   }
 }
 

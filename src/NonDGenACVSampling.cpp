@@ -21,6 +21,7 @@
 #include "NonDGenACVSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
+#include "SharedPolyApproxData.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDGenACVSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -32,11 +33,13 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDGenACVSampling::
 NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
-  NonDACVSampling(problem_db, model), dagRecursionType(KL_GRAPH_RECURSION)
+  NonDACVSampling(problem_db, model),
+  dagRecursionType(problem_db.get_short("method.nond.search_model_graphs")),
+  dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit"))
 {
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
-  //UShortArraySet model_dags;
-  generate_dags(modelDAGs);
+  if (dagRecursionType == FULL_GRAPH_RECURSION) dagDepthLimit = numApprox;
+  generate_dags();
   bestDAGIter = modelDAGs.end();
 }
 
@@ -45,8 +48,15 @@ NonDGenACVSampling::~NonDGenACVSampling()
 { }
 
 
-void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
+void NonDGenACVSampling::generate_dags()
 {
+  // For consistency testing:
+  // UShortArray std_dag(numApprox);
+  // //for (size_t i=0; i<numApprox; ++i)  std_dag[i] = i+1; // MFMC
+  // std_dag.assign(numApprox, 0); // ACV
+  // modelDAGs.insert(std_dag);
+  // return;
+
   // zero root directed acyclic graphs
   switch (dagRecursionType) {
   case KL_GRAPH_RECURSION: {
@@ -64,41 +74,109 @@ void NonDGenACVSampling::generate_dags(UShortArraySet& model_graphs)
 	for (i=0; i<M_minus_K; ++i)       dag[i] = numApprox - L;
 	// JCP ordering: for (i=K; i<numApprox; ++i) dag[i] = L;
 
-	model_graphs.insert(dag);
+	modelDAGs.insert(dag);
       }
     }
     break;
   }
-  case SINGLE_GRAPH_RECURSION: {
-    size_t i, K, L;  UShortArray dag(numApprox);
-    for (K=0; K<=numApprox; ++K) {
-      for (L=0; L<=numApprox; ++L) { // unordered single recursion ???
-	for (i=0; i<K;         ++i)  dag[i] = 0;
-	for (i=K; i<numApprox; ++i)  dag[i] = L;
-	if (contains(dag, 0)) // enforce constraints (contains 0, acyclic)
-	  model_graphs.insert(dag);
-      }
-    }
-    break;
-  }
-  case MULTI_GRAPH_RECURSION: {
+  default: {
+    // root node (truth index = numApprox) and set of dependent nodes
+    // (approximation model indices 0,numApprox-1) are fixed
+    unsigned short i, root = numApprox;
+    UShortArray nodes(numApprox), dag(numApprox, USHRT_MAX);
+    for (i=0; i<numApprox; ++i) nodes[i] = i;
+    // recur:
+    generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
     break;
   }
   }
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Model DAGs:\n" << model_graphs << std::endl;
+  Cout << "Searching array of model DAGs of size " << modelDAGs.size();
+  if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << modelDAGs;
+  Cout << std::endl;
+}
+
+
+void NonDGenACVSampling::
+generate_sub_trees(unsigned short root, const UShortArray& nodes,
+		   unsigned short depth, UShortArray& dag,
+		   UShortArraySet& model_dags)
+{
+  // Modeled after Python DAG generator on stack overflow
+  // ("How to generate all trees having n-nodes and m-level depth")
+
+  //Cout << "\nRecurring into generate_sub_trees(): depth = " << depth
+  //     << " root = " << root << " nodes =\n" << nodes << std::endl;
+
+  size_t i, num_nodes = nodes.size();
+  if (nodes.empty()) {
+    // suppress some duplicates for sub_nodes with empty sub_nodes_per_root
+    //model_dags.insert(dag);
+    return;
+  }
+  else if (depth <= 1) {
+    for (i=0; i<num_nodes; ++i) dag[nodes[i]] = root;
+    //Cout << "Recursion hit bottom.  Inserting:\n" << dag;
+    model_dags.insert(dag); // insert completed DAG
+    return;
+  }
+
+  // recursion required
+  UShort2DArray tp1, tp2, sub_nodes_per_root;
+  UShortArray   tp1_orders, tp2_orders, sub_roots, sub_nodes;
+  // 1st TP defines root vs. non-root designation at this recursion level:
+  tp1_orders.assign(num_nodes, 1);
+  Pecos::SharedPolyApproxData::tensor_product_multi_index(tp1_orders, tp1,true);
+  size_t j, k, num_tp1 = tp1.size(), num_tp2, num_sub_roots, num_sub_nodes;
+  unsigned short node_j, dm1 = depth - 1;
+  for (i=1; i<num_tp1; ++i) { // skip 1st entry ({0} = no sub-root is invalid)
+    //if (depth == dagDepthLimit) dag.assign(numApprox, USHRT_MAX); // reset
+    const UShortArray& tp1_i = tp1[i];
+    //Cout << "Depth " << depth << " tp1[" << i << "]:\n" << tp1_i;
+    // segregate "on" (1) into roots, "off" (0) into nexts
+    sub_roots.clear(); sub_nodes.clear();
+    for (j=0; j<num_nodes; ++j) {
+      node_j = nodes[j];
+      if (tp1_i[j]) { sub_roots.push_back(node_j);  dag[node_j] = root; }
+      else            sub_nodes.push_back(node_j); // "nexts"
+    }
+    if (sub_nodes.empty()) { // optimize out unnecessary recursion
+      //Cout << "Recursion out of nodes.  Inserting:\n" << dag;
+      model_dags.insert(dag); // insert completed DAG
+    }
+    else {
+      num_sub_roots = sub_roots.size();  num_sub_nodes = sub_nodes.size();
+      sub_nodes_per_root.resize(num_sub_roots);
+      // 2nd TP defines assignments of sub_nodes per sub_root (differs from 1st
+      // TP above as there are multiple roots available, which will be recurred)
+      tp2_orders.assign(num_sub_nodes, num_sub_roots);
+      Pecos::SharedPolyApproxData::
+	tensor_product_multi_index(tp2_orders, tp2, false);
+      num_tp2 = tp2.size();
+      for (j=0; j<num_tp2; ++j) { // 1st entry (all 0's) is valid for this TP
+	//Cout << "  Depth " << depth << " tp2[" << j << "]:\n" << tp2[j];
+	const UShortArray& tp2_j = tp2[j];
+	for (k=0; k<num_sub_roots; ++k) sub_nodes_per_root[k].clear();
+	for (k=0; k<num_sub_nodes; ++k) {
+	  unsigned short tp2_jk = tp2_j[k];
+	  sub_nodes_per_root[tp2_jk].push_back(sub_nodes[k]);
+	}
+	for (k=0; k<num_sub_roots; ++k)
+	  generate_sub_trees(sub_roots[k], sub_nodes_per_root[k], dm1, dag,
+			     model_dags);
+      }
+    }
+  }
 }
 
 
 void NonDGenACVSampling::generate_reverse_dag(const UShortArray& dag)
 {
+  // define an array of source nodes that point to a given target
   reverseActiveDAG.clear();
   reverseActiveDAG.resize(numApprox+1);
-
   size_t i;  unsigned short dag_curr, dag_next;
-  for (i=0; i<numApprox; ++i) {
-    // walk+store path to root
+  for (i=0; i<numApprox; ++i) { // walk+store path to root
     dag_curr = i;  dag_next = dag[dag_curr];
     reverseActiveDAG[dag_next].insert(dag_curr);
     while (dag_next != numApprox) {
@@ -107,25 +185,19 @@ void NonDGenACVSampling::generate_reverse_dag(const UShortArray& dag)
     }
   }
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Reverse active DAG:\n" << reverseActiveDAG << std::endl;
-}
-
-
-void NonDGenACVSampling::root_list_from_reverse_dag(UShortList& root_list)
-{
   // create an ordered list of roots that enable ordered sample increments
   // by ensuring that root sample levels are defined
-  root_list.clear(); root_list.push_back(numApprox);
-  UShortList::iterator it = root_list.begin(); 
-  while (it != root_list.end()) {
+  orderedRootList.clear();  orderedRootList.push_back(numApprox);
+  UShortList::iterator it = orderedRootList.begin();
+  while (it != orderedRootList.end()) {
     const UShortSet& reverse_dag = reverseActiveDAG[*it];
-    root_list.insert(root_list.end(), reverse_dag.begin(), reverse_dag.end());
+    orderedRootList.insert(orderedRootList.end(),
+			   reverse_dag.begin(), reverse_dag.end());
     ++it;
   }
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Ordered root list in root_list_from_reverse_dag():\n" << root_list
-	 << std::endl;
+    Cout << "In generate_reverse_dag(), reverse DAG:\n" << reverseActiveDAG
+	 << "Ordered root list:\n" << orderedRootList << std::endl;
 }
 
 
@@ -188,7 +260,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 	 activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
       // sample set definitions are enabled by reversing the DAG direction:
       const UShortArray& active_dag = *activeDAGIter;
-      if (outputLevel >= NORMAL_OUTPUT)
+      if (outputLevel >= QUIET_OUTPUT)
 	Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
       generate_reverse_dag(active_dag);
       // compute the LF/HF evaluation ratios from shared samples and compute
@@ -249,7 +321,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
     // sample set definitions are enabled by reversing the DAG direction:
     const UShortArray& active_dag = *activeDAGIter;
-    if (outputLevel >= NORMAL_OUTPUT)
+    if (outputLevel >= QUIET_OUTPUT)
       Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
     generate_reverse_dag(active_dag);
     // compute the LF/HF evaluation ratios from shared samples and compute
@@ -261,29 +333,29 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
     //reset_acv(); // reset state for next ACV execution
   }
   restore_best();
+  ++mlmfIter;
 
   // -----------------------------------
   // Perform "online" sample increments:
   // -----------------------------------
-  // at least 2 samples reqd for variance (+ resetting allSamples from pilot)
-  numSamples = std::max(numSamples, (size_t)2);  ++mlmfIter;
-  shared_increment(mlmfIter); // spans ALL models, blocking
-  accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-		      sum_LH, sum_HH, N_H_actual);//, N_LL);
-  N_H_alloc += numSamples;
-  increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,equivHFEvals);
-  // allow pilot to vary for C vs c
-
-  // Only QOI_STATISTICS requires application of oversample ratios and
+  // Only QOI_STATISTICS requires online shared/approx profile evaluation for
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   DAGSolutionData& soln = dagSolns[*activeDAGIter];
-  if (finalStatsType == QOI_STATISTICS)
+  if (finalStatsType == QOI_STATISTICS) {
+    // perform the shared increment for the online sample profile
+    shared_increment(mlmfIter); // spans ALL models, blocking
+    accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
+			sum_LH, sum_HH, N_H_actual);//, N_LL);
+    N_H_alloc += numSamples;
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,
+			      equivHFEvals);
+    // perform LF increments for the online sample profile
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
 		      N_H_alloc, soln.avgEvalRatios, soln.avgHFTarget);
-  else
-    // N_H is converged from offline pilot --> do not compute deltaNActualHF
-    update_projected_lf_samples(soln.avgHFTarget, soln.avgEvalRatios,
-				N_H_actual, N_H_alloc, deltaEquivHF);
+  }
+  else // project online profile including both shared samples and LF increment
+    update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, N_H_actual,
+			     N_H_alloc, deltaNActualHF, deltaEquivHF);
 }
 
 
@@ -314,7 +386,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
        activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
     // sample set definitions are enabled by reversing the DAG direction:
     const UShortArray& active_dag = *activeDAGIter;
-    if (outputLevel >= NORMAL_OUTPUT)
+    if (outputLevel >= QUIET_OUTPUT)
       Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
     generate_reverse_dag(active_dag);
     // compute the LF/HF evaluation ratios from shared samples and compute
@@ -352,37 +424,41 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
 
   switch (mlmfSubMethod) {
   case SUBMETHOD_ACV_MF:
-    // Could use reverse_dag_set here as well, but reordering based on
-    // avg_eval_ratios is sufficient for overlapping pyramid sample sets
+    // Here, use of DAG reverse dependencies to define sample sets is overkill:
+    // > must track all recursive dependencies to preserve the pyramid sample
+    //   reuse --> all branches from a root node share a sample increment, not
+    //   just direct connections captured in reverseActiveDAG[root],
+    //   complicating the active model set definition for numSamples.
+    // > Base class approach of reordering based on avg_eval_ratios is simpler
+    //   and only requires virtual implementation of precompute_acv_control()
+    //   and compute_acv_control_mq() downstream.
     NonDACVSampling::
       approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
 			N_H_alloc, avg_eval_ratios, avg_hf_target);
     break;
-  default: { // IS / RD sample management require DAG tracking
+  default: {
+    // IS/RD sample management utilizes DAG tracking: in this case, sample set
+    // dependencies are sufficiently captured by reverseActiveDAG[root]
     IntRealMatrixMap  sum_L_refined = sum_L_baselineH;//baselineL;
     Sizet2DArray  N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
     Sizet2DArray N_L_actual_refined = N_L_actual_shared;
     SizetArray    N_L_alloc_refined;  inflate(N_H_alloc, N_L_alloc_refined);
 
-    // create an ordered list of roots that enable ordered sample increments
-    // by ensuring that root sample levels are defined
-    UShortList root_list;  root_list_from_reverse_dag(root_list);
-
     // Process shared sample increments based on the ordered list of roots, but
     // skip initial root = numApprox as it is out of bounds for r* and LF counts
     UShortList::iterator it;  unsigned short root;
-    for (it=++root_list.begin(); it!=root_list.end(); ++it) {
-      root = *it;  const UShortSet& reverse_dag_set = reverseActiveDAG[root];
+    for (it=++orderedRootList.begin(); it!=orderedRootList.end(); ++it) {
+      root = *it;  const UShortSet& reverse_dag = reverseActiveDAG[root];
       // *** TO DO NON_BLOCKING: PERFORM PASS 2 ACCUMULATE AFTER PASS 1 LAUNCH
       if (genacv_approx_increment(avg_eval_ratios, N_L_actual_refined,
 				  N_L_alloc_refined, avg_hf_target, mlmfIter,
-				  root, reverse_dag_set)) {
+				  root, reverse_dag)) {
 	// ACV_IS/RD samples on [approx-1,approx) --> sum_L_refined
 	// ACV_MF    samples on [0, approx)       --> sum_L_refined
 	accumulate_acv_sums(sum_L_refined, N_L_actual_refined, root,
-			    reverse_dag_set);
+			    reverse_dag);
 	increment_equivalent_cost(numSamples, sequenceCost, root,
-				  reverse_dag_set, equivHFEvals);
+				  reverse_dag, equivHFEvals);
       }
     }
 
@@ -407,7 +483,7 @@ genacv_approx_increment(const RealVector& avg_eval_ratios,
 			const Sizet2DArray& N_L_actual_refined,
 			SizetArray& N_L_alloc_refined, Real hf_target,
 			size_t iter, unsigned short root,
-			const UShortSet& reverse_dag_set)
+			const UShortSet& reverse_dag)
 {
   // Update LF samples based on evaluation ratio
   //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
@@ -426,7 +502,7 @@ genacv_approx_increment(const RealVector& avg_eval_ratios,
 	   << root << " computed from delta between LF target = " << lf_target
 	   << " and current average count = " << lf_curr << std::endl;
     size_t N_alloc = one_sided_delta(N_L_alloc_refined[root], lf_target);
-    increment_sample_range(N_L_alloc_refined, N_alloc, root, reverse_dag_set);
+    increment_sample_range(N_L_alloc_refined, N_alloc, root, reverse_dag);
   }
   else {
     size_t lf_curr = N_L_alloc_refined[root];
@@ -435,12 +511,12 @@ genacv_approx_increment(const RealVector& avg_eval_ratios,
       Cout << "Approx samples = " << numSamples << " for root node index "
 	   << root << " computed from delta between LF target = " << lf_target
 	   << " and current allocation = " << lf_curr << std::endl;
-    increment_sample_range(N_L_alloc_refined, numSamples,root,reverse_dag_set);
+    increment_sample_range(N_L_alloc_refined, numSamples, root, reverse_dag);
   }
 
   // the approximation sequence can be managed within one set of jobs using
   // a composite ASV with NonHierarchSurrModel
-  return approx_increment(iter, root, reverse_dag_set);
+  return approx_increment(iter, root, reverse_dag);
 }
 
 
@@ -481,9 +557,6 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
 
-    // By using an ordered root list, we can repair sequentially, top down.
-    UShortList root_list;  root_list_from_reverse_dag(root_list);
-
     // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H)
     // Can happen if shared pilot rolls up to exceed budget spec.
     Real budget             = (Real)maxFunctionEvals;
@@ -494,7 +567,7 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
       avg_eval_ratios = 1.;               avg_hf_target = avg_N_H;
       avg_estvar = average(estVarIter0);  avg_estvar_ratio = 1.;
       // For r_i = 1, C_G,c_g = 0 --> enforce constr for downstream CV numerics
-      enforce_linear_ineq_constraints(avg_eval_ratios, root_list);// prevent NaN
+      enforce_linear_ineq_constraints(avg_eval_ratios, orderedRootList);
       numSamples = 0;  return;
     }
 
@@ -508,14 +581,15 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     average(eval_ratios, 0, avg_eval_ratios);
 
     if (budget_constrained) { // scale according to cost
-      // scale_to_target(..., root_list) incorporates linear ineq enforcement:
-      scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target, root_list);
+      // scale_to_target(..., orderedRootList) incorporates lin ineq enforcement
+      scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target,
+		      orderedRootList);
       RealVector cd_vars;
       r_and_N_to_design_vars(avg_eval_ratios, avg_hf_target, cd_vars);
       avg_estvar = average_estimator_variance(cd_vars); // ACV or GenACV
     }
     else { // scale according to accuracy (convergenceTol * estVarIter0)
-      enforce_linear_ineq_constraints(avg_eval_ratios, root_list);// prevent NaN
+      enforce_linear_ineq_constraints(avg_eval_ratios, orderedRootList);
       avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
     }
     if (outputLevel >= NORMAL_OUTPUT)
@@ -601,17 +675,18 @@ enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
   // Enforce DAG dependencies (ACV: all point to numApprox)
   // > N for each source model > N for model it targets
   // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
-  UShortList::const_iterator rl_cit;  UShortSet::const_iterator rd_cit;
+  UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
   unsigned short source, target;  Real r_tgt;
-  for (rl_cit=root_list.begin(); rl_cit!=root_list.end(); ++rl_cit) {
-    target = *rl_cit;  const UShortSet& reverse_dag = reverseActiveDAG[target];
+  for (r_cit=root_list.begin(); r_cit!=root_list.end(); ++r_cit) {
+    target = *r_cit;  const UShortSet& reverse_dag = reverseActiveDAG[target];
     r_tgt = (target == numApprox) ? 1. : avg_eval_ratios[target];
-    for (rd_cit=reverse_dag.begin(); rd_cit!=reverse_dag.end(); ++rd_cit) {
-      source = *rd_cit;  Real& r_src = avg_eval_ratios[source];
+    for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
+      source = *d_cit;  Real& r_src = avg_eval_ratios[source];
       if (r_src <= r_tgt) {
 	r_src = r_tgt * (1. + RATIO_NUDGE);
-	Cout << "Enforcing source = " << source << " target = " << target
-	     << ": r_src = " << r_src << " r_tgt = "<< r_tgt << std::endl;
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "Enforcing source = " << source << " target = " << target
+	       << ": r_src = " << r_src << " r_tgt = "<< r_tgt << std::endl;
       }
     }
   }
@@ -646,15 +721,15 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
     // Enforce DAG dependencies (ACV: all point to numApprox)
     // > N for each source model > N for model it targets
     // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
-    UShortList::const_iterator rl_cit;  UShortSet::const_iterator rd_cit;
+    UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
     unsigned short source, target;
     Real r_tgt, cost_r_src, budget_decr, inner_prod_decr;
-    for (rl_cit=root_list.begin(); rl_cit!=root_list.end(); ++rl_cit) {
-      target = *rl_cit; const UShortSet& reverse_dag = reverseActiveDAG[target];
+    for (r_cit=root_list.begin(); r_cit!=root_list.end(); ++r_cit) {
+      target = *r_cit; const UShortSet& reverse_dag = reverseActiveDAG[target];
       r_tgt = (target == numApprox) ? 1. : avg_eval_ratios[target];
       budget_decr = inner_prod_decr = 0.;
-      for (rd_cit=reverse_dag.begin(); rd_cit!=reverse_dag.end(); ++rd_cit) {
-	source = *rd_cit; Real& r_src = avg_eval_ratios[source];
+      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
+	source = *d_cit; Real& r_src = avg_eval_ratios[source];
 	r_src *= factor;
 	if (r_src <= 1.) {
 	  r_src = r_tgt * (1. + RATIO_NUDGE);
@@ -711,7 +786,7 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     }
     for (size_t i=0; i<numApprox; ++i)
       N_vec[i] *= N_H; // N_i = r_i * N
-    compute_parameterized_G_g(N_vec, *activeDAGIter);
+    compute_parameterized_G_g(N_vec);
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT: { // convert r_and_N to N_vec:
@@ -719,11 +794,11 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     N_H = N_vec[numApprox];
     for (size_t i=0; i<numApprox; ++i)
       N_vec[i] *= N_H; // N_i = r_i * N
-    compute_parameterized_G_g(N_vec, *activeDAGIter);
+    compute_parameterized_G_g(N_vec);
     break;
   }
   case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
-    compute_parameterized_G_g(cd_vars, *activeDAGIter);
+    compute_parameterized_G_g(cd_vars);
     N_H = cd_vars[numApprox];
     break;
   }
@@ -760,8 +835,7 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 }
 
 
-void NonDGenACVSampling::
-compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
+void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
 {
   // Invert N_vec ordering
   // > Dakota r_i ordering is low-to-high --> reversed from Peherstorfer
@@ -780,11 +854,79 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
   if (gVec.empty()) gVec.sizeUninitialized(numApprox);
 
   // define sample recursion sets backwards (from z_H down to lowest fid)
-  RealVector z1, z2;  Real bi, bj, z1_i, z1_j, z2_i, z_H = N_vec[numApprox];
-  if (mlmfSubMethod == SUBMETHOD_ACV_IS || mlmfSubMethod == SUBMETHOD_ACV_RD) {
-    z1.size(numApprox);  z2.size(numApprox+1);  z2[numApprox] = z_H;
-    
-    // General approach should work for any recursion:
+  Real bi, bj, z1_i, z2_i;
+  const UShortArray& active_dag = *activeDAGIter;
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_IS: { // Bomarito Eqs. 21-22
+    RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
+    Real z_i, z_j, zi_zj, z1_j;
+    for (i=0; i<numApprox; ++i) {
+      bi = active_dag[i];  z_i = N_vec[i];  z1_i = z1[i];  z2_i = z2[i];
+      gVec[i] = (bi == numApprox) ? 1./z1_i - 1./z_i : 0.;
+      for (j=0; j<=i; ++j) {
+	bj = active_dag[j];  z_j = N_vec[j];  z1_j = z1[j];  //z2_j = z2[j];
+	GMat(i,j) = 0.;  zi_zj = z_i * z_j;
+	if (bi == bj)  GMat(i,j) += 1./z1_i - 1./z_i - 1./z_j + z1_i/zi_zj;
+	if (bi ==  j)  GMat(i,j) += z1_i/zi_zj - 1./z_j; // false for dag = M
+	if (i  == bj)  GMat(i,j) += z1_j/zi_zj - 1./z_i; // false for dag = M
+	if (i  ==  j)  GMat(i,j) += z2_i/zi_zj;
+      }
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_MF: { // Bomarito Eqs. 16-17
+    Real z1_j, z2_j, z_H = N_vec[numApprox];
+    for (i=0; i<numApprox; ++i) {
+      bi = active_dag[i];
+      z1_i = /*z2_bi = z_bi =*/ N_vec[bi];  z2_i = /*z_i =*/ N_vec[i];
+      gVec[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i) / z_H;
+      for (j=0; j<=i; ++j) {
+	bj = active_dag[j];
+	z1_j = /*z2_bj = z_bj =*/ N_vec[bj];  z2_j = /*z_j =*/ N_vec[j];
+	GMat(i,j)
+	  = (std::min(z1_i, z1_j)/z1_j - std::min(z1_i, z2_j)/z2_j)/z1_i
+	  + (std::min(z2_i, z2_j)/z2_j - std::min(z2_i, z1_j)/z1_j)/z2_i;
+      }
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_RD: { // Bomarito Eqs. 19-20
+    RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
+    for (i=0; i<numApprox; ++i) {
+      bi = active_dag[i];  z1_i = z1[i];  z2_i = z2[i];
+      gVec[i] = (bi == numApprox) ? 1./z1_i : 0.;
+      for (j=0; j<=i; ++j) {
+	bj = active_dag[j];  //z1_j = z1[j];  z2_j = z2[j];
+	GMat(i,j) = 0.;
+	if (bi == bj)  GMat(i,j) += 1./z1_i;
+	if (bi ==  j)  GMat(i,j) -= 1./z1_i;  // always false for dag = M
+	if ( i == bj)  GMat(i,j) -= 1./z1[j]; // always false for dag = M
+	if ( i ==  j)  GMat(i,j) += 1./z2_i;
+      }
+    }
+    break;
+  }
+  default:
+    Cerr << "Error: bad sub-method name (" << mlmfSubMethod << ") in NonDGen"
+	 << "ACVSampling::compute_parameterized_G_g()" << std::endl;
+    abort_handler(METHOD_ERROR); break;
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "For dag:\n"  << active_dag  << "G matrix:\n" << GMat
+	 << "g vector:\n" << gVec << std::endl;
+}
+
+
+void NonDGenACVSampling::
+unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
+{
+  //Real z_H = N_vec[numApprox];
+  z1.size(numApprox);  z2.size(numApprox+1);  z2[numApprox] = N_vec[numApprox];
+
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_IS: case SUBMETHOD_ACV_RD: {
+    /* Initial approach generated from scratch:
     unsigned short dag_curr, dag_next;
     UShortList path;  UShortList::reverse_iterator rit;
     for (i=0; i<numApprox; ++i) {
@@ -800,84 +942,39 @@ compute_parameterized_G_g(const RealVector& N_vec, const UShortArray& dag)
       for (; rit != path.rend(); ++rit) {
 	dag_curr = *rit;
 	z1[dag_curr] = z2[dag_next];
-	z2[dag_curr] = N_vec[dag_curr] - z1[dag_curr];
+	z2[dag_curr] = N_vec[dag_curr] - z1[dag_curr]; // IS/RD
 	dag_next = dag_curr;
       }
     }
+    */
 
-    // Approach leveraging reverseActiveDAG:
-    //for (int d_index=numApprox; d_index>=0; --d_index) {
-    //  const UShortSet& reverse_dag_set = reverseActiveDAG[d_index];
-    //  ...
-    //}
-
-    // Single sweep is sufficient for ordered single recursion (ACV-KL)
-    //for (int target=numApprox; target>=0; --target)
-    //  for (i=0; i<numApprox; ++i)
-    //	  if (dag[i] == target)
-    //      { z1[i] = z2[target];  z2[i] = N_vec[i] - z1[i]; }
-
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "GenACV-IS/RD unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
-	   << "and z2:\n" << z2 << std::endl;
-  }
-
-  switch (mlmfSubMethod) {
-  case SUBMETHOD_ACV_IS: { // Bomarito Eqs. 21-22
-    Real z_i, z_j, zi_zj;//, z2_j;
-    for (i=0; i<numApprox; ++i) {
-      bi = dag[i];  z_i = N_vec[i];  z1_i = z1[i];  z2_i = z2[i];
-      gVec[i] = (bi == numApprox) ? 1./z1_i - 1./z_i : 0.;
-      for (j=0; j<=i; ++j) {
-	bj = dag[j];  z_j = N_vec[j];  z1_j = z1[j];  //z2_j = z2[j];
-	GMat(i,j) = 0.;  zi_zj = z_i * z_j;
-	if (bi == bj)  GMat(i,j) += 1./z1_i - 1./z_i - 1./z_j + z1_i/zi_zj;
-	if (bi ==  j)  GMat(i,j) += z1_i/zi_zj - 1./z_j; // false for dag = M
-	if (i  == bj)  GMat(i,j) += z1_j/zi_zj - 1./z_i; // false for dag = M
-	if (i  ==  j)  GMat(i,j) += z2_i/zi_zj;
+    // Preferred: leverage reverseActiveDAG and orderedRootList:
+    UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
+    unsigned short source, target;  Real z2t;
+    for (r_cit=orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
+      target = *r_cit;  z2t = z2[target];
+      const UShortSet& reverse_dag = reverseActiveDAG[target];
+      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
+	source = *d_cit;  Real& z1s = z1[source];
+	z1s = z2t;  z2[source] = N_vec[source] - z1s; // IS/RD (not MF pyramid)
       }
     }
     break;
   }
-  case SUBMETHOD_ACV_MF: { // Bomarito Eqs. 16-17
-    Real z2_j;
-    for (i=0; i<numApprox; ++i) {
-      bi = dag[i];
-      z1_i = /*z2_bi = z_bi =*/ N_vec[bi];  z2_i = /*z_i =*/ N_vec[i];
-      gVec[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i) / z_H;
-      for (j=0; j<=i; ++j) {
-	bj = dag[j];
-	z1_j = /*z2_bj = z_bj =*/ N_vec[bj];  z2_j = /*z_j =*/ N_vec[j];
-	GMat(i,j)
-	  = (std::min(z1_i, z1_j)/z1_j - std::min(z1_i, z2_j)/z2_j)/z1_i
-	  + (std::min(z2_i, z2_j)/z2_j - std::min(z2_i, z1_j)/z1_j)/z2_i;
-      }
-    }
+  case SUBMETHOD_ACV_MF: { // not used (special unroll logic not required)
+    const UShortArray& active_dag = *activeDAGIter;  unsigned short i, bi;
+    for (i=0; i<numApprox; ++i)
+      { bi = active_dag[i];  z1[i] = N_vec[bi];  z2[i] = N_vec[i]; }
     break;
   }
-  case SUBMETHOD_ACV_RD: // Bomarito Eqs. 19-20
-    for (i=0; i<numApprox; ++i) {
-      bi = dag[i];  z1_i = z1[i];  z2_i = z2[i];
-      gVec[i] = (bi == numApprox) ? 1./z1_i : 0.;
-      for (j=0; j<=i; ++j) {
-	bj = dag[j];  //z1_j = z1[j];  z2_j = z2[j];
-	GMat(i,j) = 0.;
-	if (bi == bj)  GMat(i,j) += 1./z1_i;
-	if (bi ==  j)  GMat(i,j) -= 1./z1_i;  // always false for dag = M
-	if ( i == bj)  GMat(i,j) -= 1./z1[j]; // always false for dag = M
-	if ( i ==  j)  GMat(i,j) += 1./z2_i;
-      }
-    }
-    break;
   default:
-    Cerr << "Error: bad sub-method name (" << mlmfSubMethod << ") in NonDGen"
-	 << "ACVSampling::compute_parameterized_G_g()" << std::endl;
-    abort_handler(METHOD_ERROR); break;
+    Cerr << "Error: unsupported mlmfSubMethod in unroll_z1_z2()" << std::endl;
+    abort_handler(METHOD_ERROR);  break;
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "For dag:\n"  << dag  << "G matrix:\n" << GMat
-	 << "g vector:\n" << gVec << std::endl;
+    Cout << "GenACV-IS/RD unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
+	 << "and z2:\n" << z2 << std::endl;
 }
 
 
@@ -892,7 +989,7 @@ void NonDGenACVSampling::update_best(DAGSolutionData& soln)
     DAGSolutionData& best_soln = dagSolns[*bestDAGIter];
     bool budget_constr = (maxFunctionEvals != SZ_MAX);
     Real avg_est_var = soln.avgEstVar;
-    if (!valid_variance(avg_est_var)) // *** TO DO: insufficient due to averaging --> use something like a badNumericsFlag to prevent adoption of bogus solve
+    if (!valid_variance(avg_est_var)) // *** TO DO: problems could be hidden due to averaging --> consider a finer-grained badNumericsFlag triggered per QoI
       update = false;
     else if (budget_constr)
       update = (avg_est_var       < best_soln.avgEstVar);
@@ -915,20 +1012,21 @@ void NonDGenACVSampling::restore_best()
     return;
   }
 
+  const UShortArray& best_dag = *bestDAGIter;
+  //if (outputLevel > SILENT_OUTPUT)
+    Cout << "\nBest solution from DAG:\n" << best_dag << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT) {
+    DAGSolutionData& soln = dagSolns[best_dag];
+    Cout << "\nwith avg_eval_ratios =\n" << soln.avgEvalRatios
+	 << "and avg_hf_target = "       << soln.avgHFTarget << std::endl;
+  }
+
   // restore best state for compute/archive/print final results
   if (activeDAGIter != bestDAGIter) { // best is not most recent
     activeDAGIter = bestDAGIter;
-    if (finalStatsType == QOI_STATISTICS && pilotMgmtMode != PILOT_PROJECTION &&
-	mlmfSubMethod  != SUBMETHOD_ACV_MF) // approx_increments() for IS/RD
-      generate_reverse_dag(*activeDAGIter);
-  }
-  const UShortArray& active_dag = *activeDAGIter;
-  //if (outputLevel > SILENT_OUTPUT)
-    Cout << "\nBest solution from DAG:\n" << active_dag << std::endl;
-  if (outputLevel >= DEBUG_OUTPUT) {
-    DAGSolutionData& soln = dagSolns[active_dag];
-    Cout << "\nwith avg_eval_ratios =\n" << soln.avgEvalRatios
-	 << "and avg_hf_target = "       << soln.avgHFTarget << std::endl;
+    if (pilotMgmtMode != PILOT_PROJECTION && finalStatsType == QOI_STATISTICS)
+      //&& mlmfSubMethod != SUBMETHOD_ACV_MF) // approx_increments() for IS/RD
+      generate_reverse_dag(best_dag);
   }
 }
 

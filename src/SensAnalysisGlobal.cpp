@@ -17,6 +17,7 @@
 #include "SensAnalysisGlobal.hpp"
 #include "ResultsManager.hpp"
 #include "dakota_linear_algebra.hpp"
+#include "dakota_stat_util.hpp"
 #include <algorithm>
 #include <boost/iterator/counting_iterator.hpp>
 
@@ -129,21 +130,6 @@ void SensAnalysisGlobal::values_to_ranks(RealMatrix& valid_data)
       vi_it = tied_range.second;
       rank += num_ties;
     }
-  }
-}
-
-
-void SensAnalysisGlobal::center_rows(RealMatrix& data_matrix)
-{
-  int num_row = data_matrix.numRows(), num_col = data_matrix.numCols();
-  for (int i=0; i<num_row; i++) {
-    // normalize each row (input/output factor) by its mean across observations
-    Real row_mean = 0.0;
-    for (int j=0; j<num_col; j++)
-      row_mean += data_matrix(i,j);
-    row_mean /= (Real)num_col;
-    for (int j=0; j<num_col; j++)
-      data_matrix(i,j) -= row_mean;
   }
 }
 
@@ -286,7 +272,7 @@ simple_corr(RealMatrix& total_data, const int& num_in, RealMatrix& corr_matrix)
 {
   int num_corr = total_data.numRows(), num_obs = total_data.numCols();
 
-  center_rows(total_data);
+  center_matrix_rows(total_data);
 
   for (int i=0; i<num_corr; i++) {
     // calculate sum of squares for each factor (row)
@@ -369,7 +355,7 @@ partial_corr(RealMatrix& total_data, const int num_in,
     return;
   }
 
-  center_rows(total_data);
+  center_matrix_rows(total_data);
 
   // matrix of X = [Vi | R ]; the response cols don't change per variable
   RealMatrix correl_factors_X(num_obs, 1 + num_out);
@@ -869,6 +855,92 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
   s << std::setprecision(write_precision)  // return to previous precision
     << std::endl;
 }
+
+
+void SensAnalysisGlobal::
+compute_std_regress_coeffs(const RealMatrix&     vars_samples,
+                           const IntResponseMap& resp_samples)
+{
+  int num_obs = vars_samples.numCols();
+  if (!num_obs) {
+    Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
+         << "compute_std_regress_coeffs()." << std::endl;
+    abort_handler(-1);
+  }
+  if (resp_samples.size() != num_obs) {
+    Cerr << "Error: Mismatch in array lengths in SensAnalysisGlobal::"
+         << "compute_std_regress_coeffs()." << std::endl;
+    abort_handler(-1);
+  }
+
+  numVars = vars_samples.numRows();
+  numFns  = resp_samples.begin()->second.num_functions();
+
+  // determine which samples have valid responses
+  BoolDeque is_valid_sample(num_obs);
+  int num_valid_samples = find_valid_samples(resp_samples, is_valid_sample);
+
+  // create a matrix containing only the valid sample data
+  int num_vars_and_resp = numVars + numFns;
+  RealMatrix valid_data(num_vars_and_resp, num_valid_samples);
+  valid_sample_matrix(vars_samples, resp_samples, is_valid_sample, valid_data);
+
+  // Copy and reformat variables and responses to work with SRC utility
+  RealMatrix vars_view(Teuchos::View, valid_data, numVars, valid_data.numCols());
+  RealMatrix vars_copy_trans(vars_view, Teuchos::TRANS);
+  RealMatrix resp_view(Teuchos::View, valid_data, numFns, valid_data.numCols(), numVars);
+  RealMatrix resp_copy_trans(resp_view, Teuchos::TRANS);
+
+  compute_std_regression_coeffs(vars_copy_trans, resp_copy_trans, stdRegressCoeffs, stdRegressCODs);
+}
+
+
+void SensAnalysisGlobal::
+print_std_regress_coeffs(std::ostream& s, StringMultiArrayConstView cv_labels,
+		   const StringArray& resp_labels) const
+{
+  // output standardized regression coefficients and coefficients of determination (R^2)
+
+  s << "\nStandardized Regression Coefficients and Coefficients of Determination (R^2):\n";
+
+  if( has_nan_or_inf(stdRegressCoeffs) )
+    s << "\nAt least one standardized regression coefficient is nan or inf. This " <<
+      "commonly occurs when a response is\ncompletely insensitive to " <<
+      "variables (response variance equal to 0), there are\nfewer samples " <<
+      "than variables, or some samples are approximately collinear." << 
+      std::endl;
+
+  s << std::scientific << std::setprecision(5);
+
+  if (resp_labels.size() != numFns) { 
+    Cerr << "Error: Number of response labels (" << resp_labels.size()
+      << ") passed to print_std_regress_coeffs not equal to number of output "
+      << "functions (" << numFns << ") in compute_std_regression_coeffs()."
+      << std::endl;
+    abort_handler(-1);
+  }
+
+  size_t i, j, num_cv = cv_labels.size();
+  s << "\nSRCs :\n"
+    << "             ";
+  for (j=0; j<numFns; ++j)
+    s << std::setw(12) << resp_labels[j] << ' ';
+  s << '\n';
+  for (i=0; i<numVars; ++i) {
+    s << std::setw(12) << cv_labels[i] << ' ';
+    for (j=0; j<numFns; ++j)
+      s << std::setw(12) << stdRegressCoeffs(i,j) << ' ';
+    s << '\n';
+  }
+  s << std::setw(12) << "R^2" << ' ';
+  for (j=0; j<numFns; ++j)
+    s << std::setw(12) << stdRegressCODs(j) << ' ';
+  s << '\n';
+
+  s << std::setprecision(write_precision)  // return to previous precision
+    << std::endl;
+}
+
 
 } // namespace Dakota
 

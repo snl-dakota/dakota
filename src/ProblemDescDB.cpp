@@ -2437,6 +2437,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"nond.export_corrected_variance_format", P_MET exportCorrVarFormat},
       {"nond.export_discrep_format", P_MET exportDiscrepFormat},
       {"nond.export_samples_format", P_MET exportSamplesFormat},
+      {"nond.graph_depth_limit", P_MET dagDepthLimit},
       {"nond.integration_refinement", P_MET integrationRefine},
       {"nond.numerical_solve_mode", P_MET numericalSolveMode},
       {"nond.opt_subproblem_solver", P_MET optSubProbSolver},
@@ -2685,6 +2686,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"sbl.truth_surrogate_bypass", P_MET surrBasedLocalLayerBypass},
       {"scaling", P_MET methodScaling},
       {"speculative", P_MET speculativeFlag},
+      {"std_regression_coeffs", P_MET stdRegressionCoeffs},
       {"variance_based_decomp", P_MET vbdFlag},
       {"wilks", P_MET wilksFlag}
     },
