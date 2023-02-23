@@ -348,7 +348,7 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_rm2eigM)
 
   // Verify correct behavior of view
   const Real new_norm = rm.normOne();
-  BOOST_CHECK( 3.14*orig_norm == new_norm );
+  BOOST_CHECK_CLOSE( 3.14*orig_norm, new_norm, 1.e-10 );
 }
 
 //----------------------------------------------------------------
