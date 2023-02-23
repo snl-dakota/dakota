@@ -438,24 +438,19 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
 
     // Run a competition among analytic approaches for best initial guess:
     // > Option 1 is analytic MFMC: differs from ACV due to recursive pairing
-    RealMatrix eval_ratios1, eval_ratios2;
+    DAGSolutionData soln1, soln2;
     if (ordered_approx_sequence(rho2LH)) // for all QoI across all Approx
-      mfmc_analytic_solution(rho2LH, cost, eval_ratios1);
+      mfmc_analytic_solution(rho2LH, cost, soln1);
     else // compute reordered MFMC for averaged rho; monotonic r not reqd
-      mfmc_reordered_analytic_solution(rho2LH, cost, approxSequence,
-				       eval_ratios1, false);
-    //Cout << "MFMC eval_ratios:\n" << eval_ratios1 << std::endl;
+      mfmc_reordered_analytic_solution(rho2LH,cost,approxSequence,soln1,false);
+    //Cout << "MFMC eval_ratios:\n" << soln1.avgEvalRatios << std::endl;
 
     // > Option 2 is ensemble of independent two-model CVMCs, rescaled to an
     //   aggregate budget.  This is more ACV-like in the sense that it is not
     //   recursive, but it neglects the covariance C among approximations.
     //   It is also insensitive to model sequencing.
-    cvmc_ensemble_solutions(rho2LH, cost, eval_ratios2);
-    //Cout << "CVMC eval_ratios:\n" << eval_ratios2 << std::endl;
-
-    DAGSolutionData soln1, soln2;
-    average(eval_ratios1, 0, soln1.avgEvalRatios);
-    average(eval_ratios2, 0, soln2.avgEvalRatios);
+    cvmc_ensemble_solutions(rho2LH, cost, soln2);
+    //Cout << "CVMC eval_ratios:\n" << soln2.avgEvalRatios << std::endl;
 
     // any rho2_LH re-ordering from MFMC initial guess can be ignored (later
     // gets replaced with r_i ordering for approx_increments() sampling)

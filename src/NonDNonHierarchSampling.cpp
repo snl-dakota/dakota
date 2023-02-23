@@ -346,10 +346,11 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
 
 void NonDNonHierarchSampling::
 mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
-		       RealMatrix& eval_ratios, bool monotonic_r)
+		       DAGSolutionData& soln, bool monotonic_r)
 {
-  if (eval_ratios.empty())
-    eval_ratios.shapeUninitialized(numFunctions, numApprox);
+  RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
+  else                         avg_eval_ratios = 0.;
 
   size_t qoi, approx, num_am1 = numApprox - 1;
   Real cost_L, cost_H = cost[numApprox]; // HF cost
@@ -358,19 +359,19 @@ mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
   for (qoi=0; qoi<numFunctions; ++qoi)
     factor[qoi] = cost_H / (1. - rho2_LH(qoi, num_am1));
   for (approx=0; approx<numApprox; ++approx) {
-    Real*   eval_ratios_a = eval_ratios[approx];
-    const Real* rho2_LH_a =     rho2_LH[approx];
-    cost_L                =        cost[approx];
+    const Real* rho2_LH_a = rho2_LH[approx];  cost_L = cost[approx];
+    Real&  avg_eval_ratio = avg_eval_ratios[approx];
     // NOTE: indexing is reversed from Peherstorfer (HF = 1, MF = 2, LF = 3)
     // > becomes Approx LF = 0 and MF = 1, Truth HF = 2
     // > i+1 becomes i-1 and most correlated approx is rho2_LH(qoi, num_am1)
     if (approx)
       for (qoi=0; qoi<numFunctions; ++qoi)
-	eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L *
+	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L *
 	  (rho2_LH_a[qoi] - rho2_LH(qoi, approx-1)));
     else // rho2_LH for approx-1 (non-existent model) is zero
       for (qoi=0; qoi<numFunctions; ++qoi)
-	eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L * rho2_LH_a[qoi]);
+	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L * rho2_LH_a[qoi]);
+    avg_eval_ratio /= numFunctions;
   }
 
   // Note: one_sided_delta(N_H, hf_targets, 1) enforces monotonicity a bit
@@ -378,12 +379,10 @@ mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
   // per QoI --> to recover the same behavior, we must use avg_eval_ratios.
   // For now, monotonic_r defaults false since it should be redundant.
   if (monotonic_r) {
-    RealVector avg_eval_ratios;  average(eval_ratios, 0, avg_eval_ratios);
     Real r_i, prev_ri = 1.;
     for (int i=numApprox-1; i>=0; --i) {
       r_i = std::max(avg_eval_ratios[i], prev_ri);
-      inflate(r_i, numFunctions, eval_ratios[i]);
-      prev_ri = r_i;
+      prev_ri = avg_eval_ratios[i] = r_i;
     }
   }
 }
@@ -393,10 +392,10 @@ void NonDNonHierarchSampling::
 mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 				 const RealVector& cost,
 				 SizetArray& approx_sequence,
-				 RealMatrix& eval_ratios, bool monotonic_r)
+				 DAGSolutionData& soln, bool monotonic_r)
 {
-  if (eval_ratios.empty())
-    eval_ratios.shapeUninitialized(numFunctions, numApprox);
+  RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
 
   size_t qoi, approx, num_am1 = numApprox - 1;
   Real cost_L, cost_H = cost[numApprox]; // HF cost
@@ -416,7 +415,7 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
   size_t most_corr = (ordered) ? num_am1 : approx_sequence[num_am1];
   Real rho2, prev_rho2, rho2_diff, r_i, prev_ri,
     factor = cost_H / (1. - avg_rho2_LH[most_corr]);// most correlated
-  // Compute averaged eval_ratios using averaged rho2 for approx_sequence
+  // Compute averaged eval ratios using averaged rho2 for approx_sequence
   RealVector r_unconstrained;
   if (monotonic_r) r_unconstrained.sizeUninitialized(numApprox);
   for (int i=0; i<numApprox; ++i) {
@@ -428,7 +427,7 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
     if (i) rho2_diff -= prev_rho2;
     r_i = std::sqrt(factor / cost_L * rho2_diff);
     if (monotonic_r) r_unconstrained[approx] = r_i;
-    else             inflate(r_i, numFunctions, eval_ratios[approx]);
+    else             avg_eval_ratios[approx] = r_i;
     prev_rho2 = rho2;
   }
 
@@ -441,8 +440,7 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
     for (int i=numApprox-1; i>=0; --i) {
       approx = (ordered) ? i : approx_sequence[i];
       r_i = std::max(r_unconstrained[approx], prev_ri);
-      inflate(r_i, numFunctions, eval_ratios[approx]);
-      prev_ri = r_i;
+      prev_ri = avg_eval_ratios[approx] = r_i;
     }
   }
 }
@@ -450,23 +448,26 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 
 void NonDNonHierarchSampling::
 cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
-			RealMatrix& eval_ratios)
+			DAGSolutionData& soln)
 {
-  if (eval_ratios.empty())
-    eval_ratios.shapeUninitialized(numFunctions, numApprox);
+  RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
+  else                         avg_eval_ratios = 0.;
 
   // Compute an ensemble of two-model CVMC solutions:
   size_t qoi, approx;  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
   for (approx=0; approx<numApprox; ++approx) {
     cost_ratio = cost_H / cost[approx];
-    const Real* rho2_LH_a =     rho2_LH[approx];
-    Real*   eval_ratios_a = eval_ratios[approx];
+    const Real* rho2_LH_a = rho2_LH[approx];
+    Real&  avg_eval_ratio = avg_eval_ratios[approx];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       rho_sq = rho2_LH_a[qoi];
-      eval_ratios_a[qoi] = (rho_sq < 1.) ? // prevent div by 0, sqrt(negative)
-	std::sqrt(cost_ratio * rho_sq / (1. - rho_sq)) :
-	std::sqrt(cost_ratio / Pecos::SMALL_NUMBER); // should not happen
+      if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
+	avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      else // should not happen
+	avg_eval_ratio += std::sqrt(cost_ratio / Pecos::SMALL_NUMBER);
     }
+    avg_eval_ratio /= numFunctions;
   }
 }
 
@@ -475,10 +476,11 @@ void NonDNonHierarchSampling::
 cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
 			const RealMatrix& cov_LH, const RealVector& var_H,
 			const RealVector& cost,   const UShortArray& dag,
-			RealMatrix& eval_ratios)
+			DAGSolutionData& soln)
 {
-  if (eval_ratios.empty())
-    eval_ratios.shapeUninitialized(numFunctions, numApprox);
+  RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
+  else                         avg_eval_ratios = 0.;
 
   // Compute an ensemble of two-model CVMC solutions:
   size_t qoi, source, target;
@@ -489,7 +491,7 @@ cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
     cost_ratio = cost[target] / cost[source];
     //Cout << "CVMC source " << source << " target " << target
     //     << " cost ratio = " << cost_ratio << ":\n";
-    Real* eval_ratios_a = eval_ratios[source];
+    Real& avg_eval_ratio = avg_eval_ratios[source];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       const RealSymMatrix& cov_LL_q = cov_LL[qoi];
       var_L_qs = cov_LL_q(source,source);
@@ -508,10 +510,12 @@ cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
 	//     << var_L_qs << " var_L " << var_L_qt << " rho^2 = " << rho_sq
 	//     << std::endl;
       }
-      eval_ratios_a[qoi] = (rho_sq < 1.) ? // prevent div by 0, sqrt(negative)
-	std::sqrt(cost_ratio * rho_sq / (1. - rho_sq)) :
-	std::sqrt(cost_ratio / Pecos::SMALL_NUMBER); // should not happen
+      if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
+	avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      else // should not happen
+	avg_eval_ratio += std::sqrt(cost_ratio / Pecos::SMALL_NUMBER);
     }
+    avg_eval_ratio /= numFunctions;
   }
 }
 

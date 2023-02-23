@@ -599,11 +599,8 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
   // Set initial guess based either on related analytic solutions (iter == 0)
   // or warm started from previous solution (iter >= 1)
 
-  RealVector& avg_eval_ratios  = soln.avgEvalRatios;
-  Real&       avg_hf_target    = soln.avgHFTarget;
-  Real&       avg_estvar       = soln.avgEstVar;
-  Real&       avg_estvar_ratio = soln.avgEstVarRatio;
-  bool      budget_constrained = (maxFunctionEvals != SZ_MAX);
+  RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  bool     budget_constrained = (maxFunctionEvals != SZ_MAX);
   if (mlmfIter == 0) {
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
@@ -612,13 +609,14 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
 
     // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H)
     // Can happen if shared pilot rolls up to exceed budget spec.
-    Real budget             = (Real)maxFunctionEvals;
-    bool budget_exhausted   = (equivHFEvals >= budget);
+    Real budget           = (Real)maxFunctionEvals;
+    bool budget_exhausted = (equivHFEvals >= budget);
+    Real&   avg_hf_target = soln.avgHFTarget;
     //if (budget_exhausted) budget = equivHFEvals;
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
-      avg_eval_ratios = 1.;               avg_hf_target = avg_N_H;
-      avg_estvar = average(estVarIter0);  avg_estvar_ratio = 1.;
+      avg_eval_ratios = 1.;  avg_hf_target = avg_N_H;
+      soln.avgEstVar = average(estVarIter0);  soln.avgEstVarRatio = 1.;
       // For r_i = 1, C_G,c_g = 0 --> enforce constr for downstream CV numerics
       enforce_linear_ineq_constraints(avg_eval_ratios, orderedRootList);
       numSamples = 0;  return;
@@ -627,11 +625,8 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     // For general DAG, set initial guess based on pairwise CVMC analytic solns
     // (analytic MFMC soln expected to be less relevant).  Differs from derived
     // ACV approach through use of paired DAG dependencies.
-    RealMatrix eval_ratios;
-    cvmc_ensemble_solutions(covLL, covLH, varH, cost, *activeDAGIter,
-			    eval_ratios);
-    //Cout << "CVMC eval_ratios:\n" << eval_ratios << std::endl;
-    average(eval_ratios, 0, avg_eval_ratios);
+    cvmc_ensemble_solutions(covLL, covLH, varH, cost, *activeDAGIter, soln);
+    //Cout << "CVMC eval_ratios:\n" << avg_eval_ratios << std::endl;
 
     if (budget_constrained) { // scale according to cost
       // scale_to_target(..., orderedRootList) incorporates lin ineq enforcement
@@ -639,7 +634,7 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
 		      orderedRootList);
       RealVector cd_vars;
       r_and_N_to_design_vars(avg_eval_ratios, avg_hf_target, cd_vars);
-      avg_estvar = average_estimator_variance(cd_vars); // ACV or GenACV
+      soln.avgEstVar = average_estimator_variance(cd_vars); // ACV or GenACV
     }
     else { // scale according to accuracy (convergenceTol * estVarIter0)
       enforce_linear_ineq_constraints(avg_eval_ratios, orderedRootList);
@@ -649,7 +644,6 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
       Cout << "GenACV initial guess from ensemble CVMC:\n"
 	   << "  average eval ratios:\n" << avg_eval_ratios
 	   << "  average HF target = " << avg_hf_target << std::endl;
-         //<< "  average estvar = " << avg_estvar << std::endl; // budget only
 
     // Single solve initiated from lowest estvar
     nonhierarch_numerical_solution(cost, approxSequence, soln, numSamples);
@@ -669,9 +663,9 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
       Cout << "Approx " << approx+1 << ": average evaluation ratio = "
 	   << avg_eval_ratios[approx] << '\n';
     if (budget_constrained)
-      Cout << "Average estimator variance = " << avg_estvar
+      Cout << "Average estimator variance = " << soln.avgEstVar
 	   << "\nAverage GenACV variance / average MC variance = "
-	   << avg_estvar_ratio << std::endl;
+	   << soln.avgEstVarRatio << std::endl;
     else
       Cout << "Estimator cost allocation = " << soln.equivHFAlloc << std::endl;
   }
