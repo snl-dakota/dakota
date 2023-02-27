@@ -123,11 +123,49 @@ To see the full list of default perspectives shipped with the Dakota GUI, go to 
 Launch Configurations
 =====================
 
-A "launch configuration" is a template for running an external process (namely, the Dakota executable) through the Dakota GUI.  This is the primary means
-of running Dakota studies in the GUI.  There are two main types of launch configurations in the Eclipse world – "run configurations" and "debug configurations."
-Debug configurations are not implemented currently in the Dakota GUI, so this user manual will focus primarily on run configurations.
+A "launch configuration" is a template for running an external process. For example, run configurations are the primary means of running Dakota studies in the GUI.
+There are two main types of launch configurations in the Eclipse world – "run configurations" and "debug configurations." Debug configurations are not implemented
+currently in the Dakota GUI, so this user manual will focus primarily on run configurations.
 
-For more information on how to set up run configurations, :ref:`refer the manual section on run configurations <gui-run-configurations-eclipse-run-configs>`.
+The Run Configurations Dialog
+-----------------------------
+
+The Run Configurations dialog provides information about past run configurations, and also gives you the controls to make new run configurations.
+To access the Run Configurations dialog, select Run > Run Configurations from the top menu.
+
+.. image:: img/Run_Configurations_1.png
+   :alt: Run menu
+
+...or select the small down arrow next to the Run icon and select Run Configurations.
+
+.. image:: img/Run_Configurations_2.png
+   :alt: Other Run menu
+
+(If these options are not available, turn them on by going to Window > Perspective > Customize Perspective.  Then, select the
+Action Set Availability tab and make sure "Launch" is checked underneath the "Available action sets" column.)
+
+.. image:: img/Run_Configurations_3.png
+   :alt: The Run Configurations menu
+
+Here, you can specify a configuration for running Dakota.  Creating a run configuration only needs to be done once (at minimum) to run a
+Dakota input file.  After creating the run configuration, you can run Dakota again using the same configuration by pushing one button.
+Also, you can make as many run configurations as you want.
+
+To begin, double-click on the Dakota line in the list on the left.
+
+.. image:: img/Run_Configurations_4.png
+   :alt: Dakota run configuration options - Main Tab
+   
+Run Configuration History
+-------------------------
+
+After executing a run configuration, you can easily access it again by clicking the down arrow near the Run icon:
+
+.. image:: img/Run_Configurations_6.png 
+   :alt: Run history shortcuts
+
+This menu keeps a history of recent previous run configurations.  Simply select the one you want to run – there is no need to open the Run
+Configurations dialog again unless you want to reconfigure your run configuration.
 
 .. _gui-eclipse-file_import:
 

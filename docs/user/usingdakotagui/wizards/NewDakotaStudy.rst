@@ -12,9 +12,10 @@ with Dakota input file syntax, but would like to have a new Dakota study up and 
 That being said, this wizard is usually not the first step for a new Dakota study.  There are two prerequisites to using this wizard.  You will need:
 
 - A parameterized simulation model that can be recognized as having variables and responses.  We recommend either
-  using a :ref:`BMF file <bmf-main>` or a :ref:`Next-Gen Workflow file that wraps an external simulation model. <gui-nestedworkflowtutorial-main>`
+  using a :ref:`simple text file containing input parameter values <gui-simulation-models-ini-json-yaml>`
+  or a :ref:`Next-Gen Workflow file that wraps an external simulation model. <gui-nestedworkflowtutorial-main>`
 - An interface for Dakota to communicate with the simulation model.  We recommend either using
-  :ref:`a Python driver script <wizards-scriptdriver-main>` or a :ref:`Next-Gen Workflow file that wraps an external simulation model. <gui-nestedworkflowtutorial-main>`
+  a :ref:`Next-Gen Workflow file that wraps an external simulation model. <gui-nestedworkflowtutorial-main>`
   
 You can open this wizard via "File > New > Dakota Study".
 
@@ -145,8 +146,7 @@ Page 6 (Interface Settings)
 
 The final page of the wizard is concerned with configuring Dakota's interface block.
 
-- **Analysis Driver Selection** Use this file selector to select an analysis driver for Dakota.  If you used
-  the :ref:`Script-Based Dakota Driver wizard <wizards-scriptdriver-main>`, select the generated .im file.  If
+- **Analysis Driver Selection** Use this file selector to select an analysis driver for Dakota.  If
   you :ref:`created a nested workflow <gui-nestedworkflowtutorial-main>`, select the .iwf file.  After selecting, hit the
   Preview button to see that the Dakota Study wizard has automatically figured out the correct settings for the interface block based on
   our analysis driver type.

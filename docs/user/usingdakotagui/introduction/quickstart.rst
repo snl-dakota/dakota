@@ -21,11 +21,11 @@ GUI Quickstart
 - I don't have a Dakota study, but I have a simulation model / black-box model / analysis driver. How do I create a new Dakota study for it?
 
  - :ref:`Step 1. Read the strategy overview.<couplingtosimulations-main>`
- - :ref:`Step 2. Create inputs and outputs for your simulation model in the GUI.<bmf-main>`
+ - :ref:`Step 2. Create inputs and outputs for your simulation model in the GUI.<gui-simulation-models-ini-json-yaml>`
  - :ref:`Step 3. Create a new Next-Gen Workflow using the Workflow-Based Dakota Driver wizard.<wizards-newworkflowdriver-main>`
  - :ref:`Step 4. Design a workflow that will execute your simulation model.<gui-nestedworkflowtutorial-main>`
  - :ref:`Step 5. Create a new Dakota study using the Dakota Study Wizard, providing your workflow as the analysis driver.<wizards-newdakotastudy>`
- - :ref:`Step 6. Create an outer wrapper workflow that will run Dakota.<wizards-newwrapperworkflow-main>` 
+ - :ref:`Step 6. Choose the "Run As > Dakota (Workflow)" option to run your Dakota study.<gui-run-configurations-workflow>` 
  
 - I already have a driver script for my Dakota study.  How do I get Dakota GUI to acknowledge it?
 
