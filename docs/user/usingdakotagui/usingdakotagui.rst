@@ -65,8 +65,8 @@ Running Dakota
    running/DakotaConsole
    running/DakotaRunConfiguration
    running/DakotaRunWorkflow
-   running/JobSubmissionClassic
    running/JobSubmissionWorkflow
+   running/JobSubmissionClassic
    
 ==================
 Output from Dakota
