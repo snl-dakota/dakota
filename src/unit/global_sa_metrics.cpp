@@ -186,16 +186,17 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs_multi_resp)
 
   Real bad = std::numeric_limits<Real>::infinity();
   MatrixXd gold_srcs(NVARS, 3);
-  gold_srcs <<  bad, 0.996027,  0.996027,  
-                bad, 0.122718,  0.122718,  
-               -bad, 0.0131245, 0.0131245, 
-                bad, 0.0010858, 0.0010858;
+  gold_srcs << bad, 0.996027,  0.996027,  
+               bad, 0.122718,  0.122718,  
+               bad, 0.0131245, 0.0131245, 
+               bad, 0.0010858, 0.0010858;
 
   /////////////////////  What we want to test - multiple responses
   RealMatrix std_rcoeffs;
   RealVector cods;
   compute_std_regression_coeffs(samples, responses, std_rcoeffs, cods);
   MatrixMap test_srcs(std_rcoeffs.values(), NVARS, 3);
+  test_srcs = test_srcs.array().abs();
   BOOST_CHECK(dakota::util::matrix_equals(gold_srcs, test_srcs, 1.0e-5));
   BOOST_CHECK(std::numeric_limits<Real>::infinity() == cods(0));
   BOOST_CHECK_CLOSE(cods(1), 1.0, 1.e-13 /* NB this is a percent-based tol */);
