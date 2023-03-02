@@ -62,11 +62,21 @@ Running Dakota
 .. toctree::
    :maxdepth: 1
    
-   running/DakotaConsole
    running/DakotaRunConfiguration
    running/DakotaRunWorkflow
-   running/JobSubmissionWorkflow
-   running/JobSubmissionClassic
+   running/DakotaConsole
+   
+=======================
+Running Dakota Remotely
+=======================
+
+.. toctree::
+   :maxdepth: 1
+   
+   runningremote/JobSubmissionOverview
+   runningremote/JobSubmissionDosAndDonts
+   runningremote/JobSubmissionWorkflow
+   runningremote/JobSubmissionClassic
    
 ==================
 Output from Dakota

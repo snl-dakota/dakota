@@ -30,6 +30,7 @@ Dakota
    
    nodes/dakota
    nodes/dakotaParametersMap
+   nodes/dakotaQueueSubmit
    nodes/dakotaResultsFile
    nodes/dakotaWorkflowDriver
    nodes/dprepro
@@ -109,3 +110,12 @@ HDF
 
    nodes/hdfExtractColumn
    nodes/hdfExtractRow
+   
+=================
+Remote Operations
+=================
+
+.. toctree::
+   :maxdepth: 1
+
+   nodes/remoteNestedWorkflow
