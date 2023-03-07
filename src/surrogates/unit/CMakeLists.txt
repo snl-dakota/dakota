@@ -19,11 +19,11 @@ dakota_add_unit_test(NAME surrogates_gaussian_process
   # To force linking against fortran runtime needed to teuchosnumerics
   # dependence on BLAS/LAPACK (TODO: root cause the link chain)
     empty.f90
-  LINK_LIBS dakota_surrogates Boost::boost Boost::filesystem)
+  LINK_LIBS dakota_surrogates Boost::boost Boost::system Boost::filesystem)
 
 dakota_add_unit_test(NAME surrogates_polynomial_regression
   SOURCES PolynomialRegressionTest.cpp
-  LINK_LIBS dakota_surrogates Boost::filesystem)
+  LINK_LIBS dakota_surrogates Boost::system Boost::filesystem)
 
 dakota_add_unit_test(NAME surrogates_tools
   SOURCES SurrogatesToolsTest.cpp
