@@ -398,7 +398,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     ExperimentData.cpp UsageTracker.cpp ExperimentDataUtils.cpp
     ReducedBasis.cpp spectral_diffusion.cpp nested_sampling.cpp
     predator_prey.cpp bayes_calibration_utils.cpp EvaluationStore.cpp
-    DakotaTPLDataTransfer.cpp RestartVersion.cpp
+    DakotaTPLDataTransfer.cpp RestartVersion.cpp tolerance_intervals.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
