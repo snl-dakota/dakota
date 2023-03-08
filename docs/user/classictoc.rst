@@ -131,7 +131,6 @@ set of manuals, this set of links may help you find what you're looking for...
 **Dakota GUI Manual**
 
 - :ref:`GUI Quickstart Guide <dakota-gui-quickstart>`
-- :ref:`Basic Model Format (BMF) <bmf-main>`
 - :ref:`Chartreuse <chartreuse-main>`
 - :ref:`Chartreuse Sandbox View <chartreuse-sandbox-main>`
 - :ref:`Chartreuse in Next-Gen Workflow <chartreuse-ngw-main>`
