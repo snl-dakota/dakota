@@ -83,5 +83,5 @@ To summarize, the basic approach for a queued remote machine is as follows:
    be executed once in the job queue.
 
 For data collection, you should augment the second workflow to send data back to the first. Refer to the
-main :ref:`remoteNestedWorkflow <gui-job-submission-workflow-remoteNestedWorkflow-receivefiles>` / :ref:`dakotaQueueSubmit <gui-job-submission-workflow-dakotaQueueSubmit>`
+main :ref:`remoteNestedWorkflow <gui-job-submission-workflow-remoteNestedWorkflow-receivefiles>` / :ref:`dakotaQueueSubmit <gui-job-submission-workflow-dakotaQueueSubmit-receivingfiles>`
 sections below for documentation on how to do this.

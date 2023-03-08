@@ -88,17 +88,41 @@ TODO
 Job Diagnostic Information
 ==========================
 
--------------
-Machines View
--------------
-
 ---------------
 Job Status View
 ---------------
 
+-------------
+Machines View
+-------------
+
+.. figure:: img/JobSubmissionDiagnostics_MachineView.png
+   :name: jobdiagnostics:figure01
+   :alt: Machines view
+   :align: center
+
+   The Machines view
+   
+If you would like to peek at the load on each remote machine on your network, you may do so using the Machines view (go to "Window >
+Show View > Distributed File Management > Machines" to dock it in your workspace if it is not already available).
+
+The Machines view will give you an estimated wait time to use the machine, as well as the amount of the machine's resources currently
+being utilized by other jobs (represented by the green-to-red bar).
+
+.. note::
+
+   Depending on your distribution of Dakota GUI, there may be no machine definitions preconfigured for you. You can create your own
+   machine definitions in "Window > Preferences > Machines."
+
 ----------------------
 Remote File Inspection
 ----------------------
+
+Dakota GUI gives you terminal access to each remote machine that it knows about. Terminal access can be a useful, ad-hoc way to quickly
+inspect files on a remote machine without sending them back to your local machine.
+
+To start a terminal on a remote machine, simply right-click the machine in question in the Machines view (described in the previous
+section), and click "Open Terminal."
 
 ========
 Examples
