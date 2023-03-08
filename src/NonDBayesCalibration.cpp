@@ -347,7 +347,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
-	  probDescDB.get_bool("method.import_build_active_only"), exp_expansion_file);
+	  probDescDB.get_bool("method.import_build_active_only"),
+	  exp_export_file);
       }
       mcmcDerivOrder = 7; // Hessian computations implemented for PCE
     }
