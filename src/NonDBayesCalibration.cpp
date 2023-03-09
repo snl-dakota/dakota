@@ -307,7 +307,7 @@ void NonDBayesCalibration::construct_mcmc_model()
     else if (emulatorType == PCE_EMULATOR) {
       const String& exp_import_file
 	= probDescDB.get_string("method.nond.import_expansion_file");
-      const String & exp_export_file
+      const String& exp_export_file
         = probDescDB.get_string("method.nond.export_expansion_file");
       unsigned short ssg_level
 	= probDescDB.get_ushort("method.nond.sparse_grid_level");
