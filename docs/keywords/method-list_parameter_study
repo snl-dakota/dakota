@@ -26,7 +26,7 @@ If Dakota was built with HDF5 support and run with the
 writes the following results to HDF5:
 
 
-- :ref:`hdf5_results-pstudies<hdf5_results-pstudies>`
+- :ref:`hdf5_results-pstudies`
 
 
 *Usage Tips*
@@ -35,7 +35,9 @@ writes the following results to HDF5:
 - This parameter study simply   performs simulations for the first parameter set (the first ``n``   entries in the list), followed by the next parameter set (the next   ``n`` entries), and so on, until the list of points has been   exhausted.
 - Since the initial values from the variables specification   will not be used, they need not be specified.
 - When the points are specified in the Dakota input file using the    ``list_of_points`` keyword, discrete set values must be referred to using 0-based   indexes, and not the values themselves. However, when using ``import_points_file``,   refer to discrete set values directly, not by index.
-- For both ``list_of_points`` and ``import_points_file``, Dakota expects the values   for each evaluation to be ordered by type. The type ordering matches that of the   :ref:`variables<variables>` section of this Reference Manual and of the listing in the Parameters    file format section of the Dakota User's Manual :cite:p:`UsersMan`. When multiple   variables are present for a single type, the ordering within that type must match   the order specified by the user in the variables section of her input file.
+- For both ``list_of_points`` and ``import_points_file``, Dakota expects the values for each evaluation to be ordered by type. The type ordering matches that of the :ref:`variables<variables>` section
+  and of the listing in the :ref:`Parameters file format section <variables:parameters>`. When multiple variables are present for a single type, the ordering within that type must match
+  the order specified by the user in the variables section of her input file.
 Topics::
 parameter_studies
 Examples::

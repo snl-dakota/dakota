@@ -187,8 +187,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   switch (responseMode) {
   case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
     if (corrType)
-      deltaCorr.initialize(*this, surrogateFnIndices, corrType,
-	problem_db.get_short("model.surrogate.correction_order"));
+      deltaCorr.initialize(*this, surrogateFnIndices, corrType, corrOrder);
     break;
   }
 
@@ -374,7 +373,7 @@ void DataFitSurrModel::check_submodel_compatibility(const Model& sub_model)
   }
 
   // Check for compatible array sizing between sub_model and currentResponse.
-  // HierarchSurrModel creates aggregations and DataFitSurrModel consumes them.
+  // EnsembleSurrModel creates aggregations and DataFitSurrModel consumes them.
   // For now, allow either a factor of 2 or 1 from aggregation or not.  In the
   // future, aggregations may span a broader model hierarchy (e.g., factor =
   // orderedModels.size()).  In general, the fn count check needs to be
@@ -408,7 +407,7 @@ bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
 }
 
 
-/** Inactive variables must be propagated when a HierarchSurrModel
+/** Inactive variables must be propagated when a EnsembleSurrModel
     is employed by a sub-iterator (e.g., OUU with MLMC or MLPCE).
     In current use cases, this can occur once per sub-iterator
     execution within Model::initialize_mapping(). */
@@ -1246,7 +1245,7 @@ void DataFitSurrModel::build_global()
   }
 
   //deltaCorr.compute(...need data...);
-  // could add deltaCorr.compute() here and in HierarchSurrModel::
+  // could add deltaCorr.compute() here and in EnsembleSurrModel::
   // build_approximation if global approximations had easy access
   // to the truth/approx responses.  Instead, it is called from
   // SurrBasedLocalMinimizer using data from the trust region center.
@@ -1569,17 +1568,17 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  ShortArray actual_asv, approx_asv; bool actual_eval, approx_eval, mixed_eval;
+  ShortArray approx_asv, actual_asv; bool actual_eval, approx_eval, mixed_eval;
   Response actual_response, approx_response; // empty handles
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    asv_split_eval(set.request_vector(), actual_asv, approx_asv);
-    actual_eval = !actual_asv.empty(); approx_eval = !approx_asv.empty();
-    mixed_eval = (actual_eval && approx_eval); break;
+    asv_split(set.request_vector(), approx_asv, actual_asv);
+    approx_eval = !approx_asv.empty(); actual_eval = !actual_asv.empty();
+    mixed_eval = (approx_eval && actual_eval); break;
   case BYPASS_SURROGATE:
-    actual_eval = true; approx_eval = false;   break;
-  case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
-    actual_eval = approx_eval = true;          break;
+    approx_eval = false; actual_eval = true;   break;
+  case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
+    approx_eval = actual_eval = true;          break;
   }
 
   if (hierarchicalTagging) {
@@ -1614,7 +1613,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       // TODO: Add to surrogate build data
       //      add_tabular_data(....)
       break;
-    case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
+    case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
       actualModel.evaluate(set);
       break;
     }
@@ -1659,7 +1658,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       }
       break;
     }
-    case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
+    case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
       approx_response = currentResponse.copy(); // TO DO
       approxInterface.map(currentVariables, set, approx_response);
       if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
@@ -1705,8 +1704,8 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 		      currentResponse, quiet_flag);
     break;
   }
-  case AGGREGATED_MODELS:
-    aggregate_response(actualModel.current_response(), approx_response,
+  case AGGREGATED_MODEL_PAIR:
+    aggregate_response(approx_response, actualModel.current_response(),
 		       currentResponse);
     break;
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
@@ -1729,15 +1728,15 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  ShortArray actual_asv, approx_asv; bool actual_eval, approx_eval;
+  ShortArray approx_asv, actual_asv; bool approx_eval, actual_eval;
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    asv_split_eval(set.request_vector(), actual_asv, approx_asv);
-    actual_eval = !actual_asv.empty(); approx_eval = !approx_asv.empty(); break;
+    asv_split(set.request_vector(), approx_asv, actual_asv);
+    approx_eval = !approx_asv.empty(); actual_eval = !actual_asv.empty(); break;
   case BYPASS_SURROGATE:
-    actual_eval = true; approx_eval = false;                              break;
-  case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
-    actual_eval = approx_eval = true;                                     break;
+    approx_eval = false; actual_eval = true;                              break;
+  case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
+    approx_eval = actual_eval = true;                                     break;
   }
 
   if (hierarchicalTagging) {
@@ -1758,7 +1757,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       actual_set.request_vector(actual_asv);
       actualModel.evaluate_nowait(actual_set); break;
     }
-    case BYPASS_SURROGATE: case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
+    case BYPASS_SURROGATE: case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
       actualModel.evaluate_nowait(set);        break;
     }
     // store mapping from actualModel eval id to DataFitSurrModel id
@@ -1780,7 +1779,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 
     if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
       evaluationsDB.interface_allocate(modelId, approxInterface.interface_id(),
-        "approximation", currentVariables, currentResponse,
+	"approximation", currentVariables, currentResponse,
 	default_interface_active_set(), approxInterface.analysis_components());
 
     // compute the approximate response
@@ -1796,7 +1795,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 	  approx_set, currentVariables);
       break;
     }
-    case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
+    case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
       approxInterface.map(currentVariables,        set, currentResponse, true);
       if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
         evaluationsDB.store_interface_variables(modelId,
@@ -1883,11 +1882,11 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
     }
     break;
   }
-  case AGGREGATED_MODELS:
+  case AGGREGATED_MODEL_PAIR:
     for (; act_it != actual_resp_map_rekey.end() && 
 	   app_it != approx_resp_map_rekey.end(); ++act_it, ++app_it) {
       check_key(act_it->first, app_it->first);
-      aggregate_response(act_it->second, app_it->second,
+      aggregate_response(app_it->second, act_it->second,
 			 surrResponseMap[act_it->first]);
     }
     break;
@@ -1986,7 +1985,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     // process approx/actual results or cache them for next pass
     if (act_eval_id < app_eval_id) { // only actual available
       switch (responseMode) {
-      case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
+      case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
 	Cerr << "Error: approx eval missing in DataFitSurrModel::"
 	     << "derived_synchronize_nowait()" << std::endl;
 	abort_handler(MODEL_ERROR); break;
@@ -2000,7 +1999,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     }
     else if (app_eval_id < act_eval_id) { // only approx available
       switch (responseMode) {
-      case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
+      case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
 	// cache approx response since actual contribution not yet available
 	cachedApproxRespMap[app_eval_id] = app_it->second; break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
@@ -2019,8 +2018,8 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
       case MODEL_DISCREPANCY:
 	deltaCorr.compute(act_it->second, app_it->second,
 			  surrResponseMap[act_eval_id], quiet_flag); break;
-      case AGGREGATED_MODELS:
-	aggregate_response(act_it->second, app_it->second,
+      case AGGREGATED_MODEL_PAIR:
+	aggregate_response(app_it->second, act_it->second,
 			   surrResponseMap[act_eval_id]);            break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
 	response_combine(act_it->second, app_it->second,
@@ -2053,7 +2052,7 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
   if (responseMode == AUTO_CORRECTED_SURROGATE && corrType) {
     // Interface::rawResponseMap can be corrected directly in the case of an
     // ApproximationInterface since data_pairs is not used (not true for
-    // HierarchSurrModel::derived_synchronize()/derived_synchronize_nowait()).
+    // EnsembleSurrModel::derived_synchronize()/derived_synchronize_nowait()).
     // The response map from ApproximationInterface's quasi-asynch mode is
     // complete and in order.
 
@@ -2126,8 +2125,8 @@ asv_inflate_build(const ShortArray& orig_asv, ShortArray& actual_asv)
 
 
 void DataFitSurrModel::
-asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
-	       ShortArray& approx_asv)
+asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
+	  ShortArray& actual_asv)
 {
   if (actualModel.is_null() || surrogateFnIndices.size() == numFns)
     { approx_asv = orig_asv; return; } // don't inflate approx_asv
@@ -2137,7 +2136,7 @@ asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
   // occurring in actualModel
   size_t num_orig = orig_asv.size(), num_actual = actualModel.response_size();
   if (num_orig != numFns || num_actual < num_orig || num_actual % num_orig) {
-    Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_split_eval()."
+    Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_split()."
 	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
@@ -2344,7 +2343,7 @@ void DataFitSurrModel::declare_sources()
     evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
         actualModel.model_type());
     break;
-  case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
+  case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
     evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
         actualModel.model_type());
     evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
@@ -2354,7 +2353,8 @@ void DataFitSurrModel::declare_sources()
 }
 
 
-ActiveSet DataFitSurrModel::default_interface_active_set() {
+ActiveSet DataFitSurrModel::default_interface_active_set()
+{
   // The ApproximationInterface may provide just a subset
   // of the responses, with the balance coming from the
   // actualModel.
@@ -2367,8 +2367,8 @@ ActiveSet DataFitSurrModel::default_interface_active_set() {
   const bool has_hessians = hessianType != "none" &&  has_deriv_vars &&
     (hessianType == "analytic" || supportsEstimDerivs);
   // Most frequent case: build surrogates for all responses
-  if (responseMode == MODEL_DISCREPANCY || responseMode == AGGREGATED_MODELS ||
-      actualModel.is_null() || surrogateFnIndices.size() == numFns) {
+  if (responseMode == MODEL_DISCREPANCY || responseMode == AGGREGATED_MODEL_PAIR
+      || actualModel.is_null() || surrogateFnIndices.size() == numFns) {
     std::fill(asv.begin(), asv.end(), 1);
     if(has_gradients)
       for(auto &a : asv)

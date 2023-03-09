@@ -15,6 +15,7 @@ Introduction
    
    introduction/launching
    introduction/quickstart
+   introduction/simulationmodels
 
 ==============
 Example Search
@@ -29,18 +30,22 @@ Example Search
 Wizards
 =======
 
+.. _gui-wizards-main:
+
 .. toctree::
    :maxdepth: 1
    
    wizards/NewDakotaProject
-   wizards/NewDakotaStudy
-   wizards/NewScriptDriver
+   wizards/NewParameterResponseFile
    wizards/NewWorkflowDriver
+   wizards/NewDakotaStudy  
    wizards/NewDakotaWrapperWorkflow
 
 ==========================
 Editing Dakota Input Files
 ==========================
+
+.. _gui-inputfiles-main:
    
 .. toctree::
    :maxdepth: 1
@@ -49,15 +54,6 @@ Editing Dakota Input Files
    inputfiles/DakotaTextEditor
    inputfiles/DakotaTreeView
    inputfiles/MlmfEditor
-   
-=================
-Simulation Models
-=================
-
-.. toctree::
-   :maxdepth: 1
-   
-   simulationmodels
    
 ==============
 Running Dakota
@@ -68,6 +64,19 @@ Running Dakota
    
    running/DakotaRunConfiguration
    running/DakotaRunWorkflow
+   running/DakotaConsole
+   
+=======================
+Running Dakota Remotely
+=======================
+
+.. toctree::
+   :maxdepth: 1
+   
+   runningremote/JobSubmissionOverview
+   runningremote/JobSubmissionDosAndDonts
+   runningremote/JobSubmissionWorkflow
+   runningremote/JobSubmissionClassic
    
 ==================
 Output from Dakota
@@ -85,7 +94,6 @@ GUI Tools
 .. toctree::
    :maxdepth: 1
    
-   bmf/BMF
    chartreuse/Chartreuse
    ngw/NextGenWorkflow
    qoi/QOI

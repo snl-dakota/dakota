@@ -26,8 +26,8 @@ If Dakota was built with HDF5 support and run with the
 writes the following results to HDF5:
 
 
-- :ref:`hdf5_results-pstudies<hdf5_results-pstudies>`
-- :ref:`hdf5_results-correlations<hdf5_results-correlations>`
+- :ref:`hdf5_results-pstudies`
+- :ref:`hdf5_results-correlations`
 
 *Usage Tips*
 

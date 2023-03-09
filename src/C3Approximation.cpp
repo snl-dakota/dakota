@@ -648,7 +648,7 @@ void C3Approximation::clear_inactive_coefficients()
 void C3Approximation::link_multilevel_surrogate_data()
 {
   // Manage {surr,modSurr}Data instances:
-  // > SurrogateModel::aggregate_response() uses order of HF,LF
+  // > SurrogateModel::aggregate_response() uses order of low to high fidelity
   // > ApproximationInterface::{mixed,shallow}_add() assigns aggregate response
   //   data to each approxData instance in turn.
 
@@ -717,7 +717,7 @@ generate_synthetic_data(Pecos::SurrogateData& surr_data,
   // Modeled after Pecos::PolynomialApproximation::generate_synthetic_data()
 
   Pecos::ActiveKey hf_key, lf0_key, lf_hat_key; // LF-hat in surplus case
-  active_key.extract_keys(hf_key, lf_hat_key);
+  active_key.extract_keys(lf_hat_key, hf_key);
   lf0_key = surr_data.filtered_key(Pecos::SINGLETON_FILTER, 0); // *** Note: ActiveKey first sorts on group id
 
   // initialize surr_data[lf_hat_key]

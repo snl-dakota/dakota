@@ -28,3 +28,4 @@ Further Reading
 ===============
    
 - Refer to the official `NGW project on Gitlab. <https://gitlab.com/iwf/ngw>`__
+- Refer to the official `NGW documentation. <https://dart.sandia.gov/ngw/>`__

@@ -22,6 +22,7 @@
 #include "dakota_data_types.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
+#include "RestartVersion.hpp"
 #ifdef HAVE_PDB_H
 #include <pdb.h>
 #endif
@@ -226,6 +227,9 @@ void print_restart(StringArray pos_args, String print_dest)
 
   try {
 
+    RestartVersion rst_ver =
+      RestartVersion::check_restart_version(read_restart_filename);
+
     std::ifstream restart_input_fs(read_restart_filename.c_str(),
 				   std::ios::binary);
     if (!restart_input_fs.good()) {
@@ -234,6 +238,10 @@ void print_restart(StringArray pos_args, String print_dest)
       exit(-1);
     }
     boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+    // re-read the full, correct version info from the new stream
+    if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+      restart_input_archive & rst_ver;
 
     cout << "Reading restart file '" << read_restart_filename << "'."
 	 << std::endl;
@@ -310,12 +318,19 @@ void print_restart_pdb(StringArray pos_args, String print_dest)
     exit(-1);
   }
 
+  RestartVersion rst_ver =
+    RestartVersion::check_restart_version(pos_args[0]);
+
   std::ifstream restart_input_fs(pos_args[0].c_str(), std::ios::binary);
   if (!restart_input_fs.good()) {
     Cerr << "Error: failed to open restart file " << pos_args[0] << endl;
     exit(-1);
   }
   boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+  // re-read the full, correct version info from the new stream
+  if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+    restart_input_archive & rst_ver;
 
   size_t i, j, num_evals = 0;
   PRPCache read_pairs;
@@ -466,6 +481,9 @@ void print_restart_tabular(StringArray pos_args, String print_dest,
 
   try {
 
+    RestartVersion rst_ver =
+      RestartVersion::check_restart_version(read_restart_filename);
+
     std::ifstream restart_input_fs(read_restart_filename.c_str(),
 				   std::ios::binary);
     if (!restart_input_fs.good()) {
@@ -474,6 +492,10 @@ void print_restart_tabular(StringArray pos_args, String print_dest,
       exit(-1);
     }
     boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+    // re-read the full, correct version info from the new stream
+    if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+      restart_input_archive & rst_ver;
 
     cout << "Reading restart file '" << read_restart_filename << "'."
 	 << std::endl;
@@ -696,6 +718,9 @@ void repair_restart(StringArray pos_args, String identifier_type)
 
   try {
 
+    RestartVersion rst_ver =
+      RestartVersion::check_restart_version(read_restart_filename);
+
     std::ifstream restart_input_fs(read_restart_filename.c_str(),
 				   std::ios::binary);
     if (!restart_input_fs.good()) {
@@ -704,6 +729,10 @@ void repair_restart(StringArray pos_args, String identifier_type)
       abort_handler(IO_ERROR);
     }
     boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+    // re-read the full, correct version info from the new stream
+    if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+      restart_input_archive & rst_ver;
 
     std::ofstream restart_output_fs(write_restart_filename.c_str(),
 				    std::ios::binary);
@@ -806,6 +835,9 @@ void concatenate_restart(StringArray pos_args)
 
     for(const String& rst_file : pos_args) {
 
+      RestartVersion rst_ver =
+	RestartVersion::check_restart_version(rst_file);
+
       std::ifstream restart_input_fs(rst_file.c_str(), std::ios::binary);
       if (!restart_input_fs.good()) {
 	Cerr << "\nError: could not open restart file '"
@@ -813,6 +845,10 @@ void concatenate_restart(StringArray pos_args)
 	exit(-1);
       }
       boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+      // re-read the full, correct version info from the new stream
+      if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+	restart_input_archive & rst_ver;
 
       int cntr = 0;
       restart_input_fs.peek();  // peek to force EOF if no records in restart file

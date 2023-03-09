@@ -5,7 +5,7 @@ Simulation Failure Capturing
 
 Dakota provides the capability to manage failures in simulation codes
 within its system call, fork, and direct simulation interfaces (see
-Section `[interfaces:sim] <#interfaces:sim>`__ for simulation interface
+:ref:`Simulation Interfaces<interfaces:sim>` for simulation interface
 descriptions). Failure capturing consists of three operations: failure
 detection, failure communication, and failure mitigation.
 
@@ -36,9 +36,9 @@ if the ``grep`` command finds the string ``ERROR`` anywhere in the
 “bit bucket” and the ``grep`` command
 output is discarded by redirecting it to this destination. The
 ``$status`` shell variable contains the exit status of the last command
-executed :cite:p:`And86`, which is the exit status of ``grep``
+executed :cite:p:`And86`, which is the exit status of ``grep``
 in this case (0 if successful in finding the error string, nonzero
-otherwise). For Bourne shells :cite:p:`Bli96`, the ``$?``
+otherwise). For Bourne shells :cite:p:`Bli96`, the ``$?``
 shell variable serves the same purpose as ``$status`` for C shells. In a
 related approach, if the return code from a simulation can be used
 directly for failure detection purposes, then ``$status`` or ``$?``
@@ -72,7 +72,7 @@ is case insensitive, so “``FAIL``”, “``Fail``”, etc., are equally valid.
 In the direct simulation interface case, a detected simulation failure
 is communicated to Dakota through the return code provided by the user’s
 ``analysis_driver``, ``input_filter``, or ``output_filter``. As shown in
-Section `[advint:direct:extension] <#advint:direct:extension>`__, the
+:ref:`Extension<advint:direct:extension>`, the
 prototype for simulations linked within the direct interface includes an
 integer return code. This code has the following meanings: zero (false)
 indicates that all is normal and nonzero (true) indicates an exception
@@ -85,26 +85,24 @@ Failure mitigation
 
 Once the analysis failure has been communicated, Dakota will attempt to
 recover from the failure using one of the following four mechanisms, as
-governed by the interface specification in the user’s input file (see
-the Interface Commands chapter in the Dakota Reference
-Manual :cite:p:`RefMan` for additional information).
+governed by the :dakkw:`interface` specification in the user’s input file.
 
 .. _`failure:mitigation:abort`:
 
 Abort (default)
 ~~~~~~~~~~~~~~~
 
-If the ``abort`` option is active (the default), then Dakota will
+If the :dakkw:`interface-failure_capture-abort` option is active (the default), then Dakota will
 terminate upon detecting a failure. Note that if the problem causing the
 failure can be corrected, Dakota’s restart capability (see
-Chapter `[restart] <#restart>`__) can be used to continue the study.
+:ref:`The Dakota Restart Utility<dakota_restart_utility>`) can be used to continue the study.
 
 .. _`failure:mitigation:retry`:
 
 Retry
 ~~~~~
 
-If the ``retry`` option is specified, then Dakota will re-invoke the
+If the :dakkw:`interface-failure_capture-retry` option is specified, then Dakota will re-invoke the
 failed simulation up to the specified number of retries. If the
 simulation continues to fail on each of these retries, Dakota will
 terminate. The retry option is appropriate for those cases in which
@@ -117,7 +115,7 @@ or networking problems.
 Recover
 ~~~~~~~
 
-If the ``recover`` option is specified, then Dakota will not attempt the
+If the :dakkw:`interface-failure_capture-recover` option is specified, then Dakota will not attempt the
 failed simulation again. Rather, it will return a “dummy” set of
 function values as the results of the function evaluation. The dummy
 function values to be returned are specified by the user. Any gradient
@@ -133,7 +131,7 @@ region.
 Continuation
 ~~~~~~~~~~~~
 
-If the ``continuation`` option is specified, then Dakota will attempt to
+If the :dakkw:`interface-failure_capture-continuation` option is specified, then Dakota will attempt to
 step towards the failing “target” simulation from a nearby “source”
 simulation through the use of a continuation algorithm. This option is
 appropriate for those cases in which a failed simulation may be caused
@@ -156,7 +154,7 @@ to aborting the Dakota process.
 While Dakota manages the interval halving and function evaluation
 invocations, the user is responsible for managing the initial guess for
 the simulation program. For example, in a GOMA input
-file :cite:p:`Sch95`, the user specifies the files to be used
+file :cite:p:`Sch95`, the user specifies the files to be used
 for reading initial guess data and writing solution data. When using the
 last successful evaluation in the continuation algorithm, the
 translation of initial guess data can be accomplished by simply copying
@@ -183,20 +181,20 @@ In IEEE arithmetic, “NaN” indicates “not a number” and
 :math:`\pm`\ “Inf” or :math:`\pm`\ “Infinity" indicates positive or
 negative infinity. These special values may be returned directly in
 function evaluation results from a simulation interface or they may be
-specified in a user’s input file within the ``recover`` specification
-described in Section `1.3.3 <#failure:mitigation:recover>`__. There is a
+specified in a user’s input file within the :dakkw:`interface-failure_capture-recover` specification
+described in :ref:`Recover<failure:mitigation:recover>`. There is a
 key difference between these two cases. In the former case of direct
 simulation return, failure mitigation can be managed on a per response
-function basis. When using ``recover``, however, the failure applies to
+function basis. When using :dakkw:`interface-failure_capture-recover`, however, the failure applies to
 the complete set of simulation results.
 
 In both of these cases, the handling of NaN or Inf is managed using
 iterator-specific approaches. Currently, nondeterministic sampling
-methods (see Section `[uq:sampling] <#uq:sampling>`__), polynomial chaos
+methods (see :ref:`Sampling Methods<uq:sampling>`), polynomial chaos
 expansions using either regression approaches or spectral projection
-with random sampling (see Section `[uq:expansion] <#uq:expansion>`__),
+with random sampling (see :ref:`Stochastic Expansion Methods<uq:expansion>`),
 and the NL2SOL method for nonlinear least squares (see
-§\ `[nls:solution:nl2sol] <#nls:solution:nl2sol>`__) are the only
+:ref:`NL2SOL<nls:solution:nl2sol>`) are the only
 methods with special numerical exception handling: the sampling methods
 simply omit any samples that are not finite from the statistics
 generation, the polynomial chaos methods omit any samples that are not
@@ -205,3 +203,4 @@ Infinity in a residual vector (i.e., values in a results file for a
 function evaluation) computed for a trial step as an indication that the
 trial step was too long and violates an unstated constraint; NL2SOL
 responds by trying a shorter step.
+

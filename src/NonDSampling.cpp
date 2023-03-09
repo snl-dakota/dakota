@@ -43,6 +43,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   samplesRef(samplesSpec), numSamples(samplesSpec),
   rngName(probDescDB.get_string("method.random_number_generator")),
   sampleType(probDescDB.get_ushort("method.sample_type")), samplesIncrement(0),
+  stdRegressionCoeffs(probDescDB.get_bool("method.std_regression_coeffs")),
   statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
@@ -117,7 +118,7 @@ NonDSampling(unsigned short method_name, Model& model,
 	     const String& rng, bool vary_pattern, short sampling_vars_mode):
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
-  sampleType(sample_type), wilksFlag(false), samplesIncrement(0),
+  sampleType(sample_type), wilksFlag(false), samplesIncrement(0), stdRegressionCoeffs(false),
   statsFlag(false), allDataFlag(true), samplingVarsMode(sampling_vars_mode),
   sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern),
   backfillDuplicates(false), numLHSRuns(0)
@@ -152,7 +153,7 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
   numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
-  samplesIncrement(0), statsFlag(false), allDataFlag(true),
+  samplesIncrement(0), stdRegressionCoeffs(false), statsFlag(false), allDataFlag(true),
   samplingVarsMode(ACTIVE_UNIFORM), sampleRanksMode(IGNORE_RANKS),
   varyPattern(true), backfillDuplicates(false), numLHSRuns(0)
 {
@@ -178,7 +179,7 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
   numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
-  samplesIncrement(0), statsFlag(false), allDataFlag(true),
+  samplesIncrement(0), stdRegressionCoeffs(false), statsFlag(false), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS), varyPattern(true),
   backfillDuplicates(false), numLHSRuns(0)
 {
@@ -200,7 +201,7 @@ NonDSampling::
 NonDSampling(Model& model, const RealMatrix& sample_matrix):
   NonD(LIST_SAMPLING, model), seedSpec(0), randomSeed(0),
   samplesSpec(sample_matrix.numCols()), sampleType(SUBMETHOD_DEFAULT),
-  wilksFlag(false), samplesIncrement(0), statsFlag(true), allDataFlag(true),
+  wilksFlag(false), samplesIncrement(0), stdRegressionCoeffs(false), statsFlag(true), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS),
   varyPattern(false), backfillDuplicates(false), numLHSRuns(0)
 {
@@ -1001,6 +1002,8 @@ compute_statistics(const RealMatrix&     vars_samples,
 //    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
 //				      div_labels, dsv_labels, drv_labels,
 //				      iteratedModel.response_labels());
+    if (stdRegressionCoeffs)
+      nonDSampCorr.compute_std_regress_coeffs(vars_samples, resp_samples);
   }
 
   // push results into finalStatistics
@@ -1819,6 +1822,8 @@ void NonDSampling::print_statistics(std::ostream& s) const
         adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
     nonDSampCorr.print_correlations(s, cv_labels, div_labels, dsv_labels,
 				    drv_labels,iteratedModel.response_labels());
+    if (stdRegressionCoeffs)
+      nonDSampCorr.print_std_regress_coeffs(s, cv_labels, iteratedModel.response_labels());
   }
 }
 

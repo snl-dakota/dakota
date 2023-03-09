@@ -58,9 +58,7 @@ importance sampling ( ``import``), adaptive importance sampling (
 ``mm_adapt_import``), along with the specification of number of samples
 ( ``samples``) and random seed ( ``seed``). Additional details
 on these methods are available in :cite:p:`Eld04`
-and :cite:p:`Eld06a` and in the Uncertainty
-Quantification Capabilities chapter of the Users Manual
-:cite:p:`UsersMan`.
+and :cite:p:`Eld06a` and in the main :ref:`Uncertainty Quantification Capabilities section <uq>`.
 Topics::
 uncertainty_quantification, reliability_methods
 Examples::

@@ -10,13 +10,14 @@
 #include "SurrogatesGaussianProcess.hpp"
 #include "SurrogatesPolynomialRegression.hpp"
 
-#include <Teuchos_UnitTestHarness.hpp>
+#define BOOST_TEST_MODULE surrogates_EvalMetricsCrossValTest
+#include <boost/test/included/unit_test.hpp>
 
 using namespace dakota;
 using namespace dakota::util;
 using namespace dakota::surrogates;
 
-TEUCHOS_UNIT_TEST(surrogates, eval_metrics_and_cross_validation) {
+BOOST_AUTO_TEST_CASE(test_surrogates_eval_metrics_and_cross_validation) {
   /* num_samples x num_features */
   MatrixXd xs_u(7, 1);
   /* num_samples x num_qoi */
@@ -70,12 +71,12 @@ TEUCHOS_UNIT_TEST(surrogates, eval_metrics_and_cross_validation) {
 
   VectorXd gp_mvals = gp.evaluate_metrics(metrics_names, eval_pts, truth_pred);
   metrics_diff = (gp_mvals - gp_gold_mvals).norm();
-  TEST_ASSERT(metrics_diff < metrics_difftol);
+  BOOST_CHECK(metrics_diff < metrics_difftol);
 
   VectorXd poly_mvals =
       poly.evaluate_metrics(metrics_names, eval_pts, truth_pred);
   metrics_diff = (poly_mvals - poly_gold_mvals).norm();
-  TEST_ASSERT(metrics_diff < metrics_difftol);
+  BOOST_CHECK(metrics_diff < metrics_difftol);
 
   std::cout << "\n\nGP metrics:\n";
   for (int m = 0; m < metrics_names.size(); m++) {
@@ -89,7 +90,7 @@ TEUCHOS_UNIT_TEST(surrogates, eval_metrics_and_cross_validation) {
   std::cout << "\n";
 }
 
-TEUCHOS_UNIT_TEST(surrogates, cross_validate) {
+BOOST_AUTO_TEST_CASE(test_surrogates_cross_validate) {
   /* Cross-validation with the polynomial */
   const double cv_norm_difftol = 1.0e-5;
   double cv_diff;
@@ -124,7 +125,7 @@ TEUCHOS_UNIT_TEST(surrogates, cross_validate) {
             << cross_val_metrics.transpose() << "\n";
 
   cv_diff = (cross_val_metrics - gold_poly_cv_metrics).norm();
-  TEST_ASSERT(cv_diff < cv_norm_difftol);
+  BOOST_CHECK(cv_diff < cv_norm_difftol);
 
   /* Cross-validation with the GP */
   VectorXd gold_gp_cv_metrics(2);
@@ -153,5 +154,5 @@ TEUCHOS_UNIT_TEST(surrogates, cross_validate) {
             << cross_val_metrics.transpose() << "\n\n";
 
   cv_diff = (cross_val_metrics - gold_gp_cv_metrics).norm();
-  TEST_ASSERT(cv_diff < cv_norm_difftol);
+  BOOST_CHECK(cv_diff < cv_norm_difftol);
 }

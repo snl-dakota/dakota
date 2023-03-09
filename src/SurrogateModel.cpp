@@ -32,6 +32,7 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   surrogateFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
   corrType(problem_db.get_short("model.surrogate.correction_type")),
+  corrOrder(problem_db.get_short("model.surrogate.correction_order")),
   surrModelEvalCntr(0), approxBuilds(0)
 {
   // assign default responseMode based on correction specification;
@@ -62,7 +63,7 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   // Allow DFSModel to employ sizing differences (e.g., consuming aggregations)
   Model(LightWtBaseConstructor(), surr_view, svd, share_svd, srd, share_srd,
 	surr_set, output_level, problem_db, parallel_lib),
-  corrType(corr_type), surrModelEvalCntr(0), approxBuilds(0)
+  corrType(corr_type), corrOrder(0), surrModelEvalCntr(0), approxBuilds(0)
 {
   modelType = "surrogate";
 
@@ -280,7 +281,7 @@ void SurrogateModel::init_model_labels(Model& sub_model)
 
   if (sub_model.response_labels().empty()) // should not happen
     switch (responseMode) {
-    case AGGREGATED_MODELS: {
+    case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR: {
       StringArray qoi_labels;
       copy_data_partial(currentResponse.function_labels(),
 			0, sub_model.qoi(), qoi_labels);
@@ -512,7 +513,7 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
   if (!approxBuilds &&
       currentResponse.function_labels().empty()) // should not happen
     switch (responseMode) {
-    case AGGREGATED_MODELS: {
+    case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR: {
       const StringArray& model_labels = sub_model.response_labels();
       size_t i, start = 0, num_fns = currentResponse.num_functions(),
 	qoi = sub_model.qoi(), num_repl = num_fns / qoi;
@@ -707,7 +708,12 @@ update_complement_variables_from_model(const Model& sub_model)
     the sub-model variables view, the approximation type, and whether
     the active approximation bounds or inactive variable values have
     changed since the last approximation build. */
-bool SurrogateModel::force_rebuild()
+bool SurrogateModel::
+check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
+	      const StringMultiArray& ref_idsv, const RealVector& ref_idrv,
+	      const RealVector& ref_c_l_bnds,   const RealVector& ref_c_u_bnds,
+	      const IntVector&  ref_di_l_bnds,  const IntVector&  ref_di_u_bnds,
+	      const RealVector& ref_dr_l_bnds,  const RealVector& ref_dr_u_bnds)
 {
   // force rebuild for change in inactive vars based on sub-model view.  It
   // is assumed that any recastings within Model recursions do not affect the
@@ -716,37 +722,37 @@ bool SurrogateModel::force_rebuild()
 
   // for global surrogates, force rebuild for change in active bounds
 
-  Model& actual_model = truth_model();
+  Model& actual_model = active_truth_model();
 
   // Don't force rebuild for active subspace model:
-  // JAM TODO: There is probably a more elegant way to accomodate subspace models
+  // JAM TODO: there's probably a more elegant way to accomodate subspace models
   if (actual_model.model_type() == "active_subspace")
     return false;
 
   short approx_active_view = currentVariables.view().first;
   if (actual_model.is_null()) {
     // compare reference vars against current inactive top-level data
-    if ( referenceICVars  != currentVariables.inactive_continuous_variables() ||
-	 referenceIDIVars !=
+    if ( ref_icv  != currentVariables.inactive_continuous_variables() ||
+	 ref_idiv !=
 	 currentVariables.inactive_discrete_int_variables()                   ||
-	 referenceIDSVars !=
+	 ref_idsv !=
 	 currentVariables.inactive_discrete_string_variables()                ||
-	 referenceIDRVars !=
+	 ref_idrv !=
 	 currentVariables.inactive_discrete_real_variables() )
       return true;
 
     if ( strbegins(surrogateType, "global_") &&
 	 // compare reference bounds against current active top-level data
-	 ( referenceCLBnds != userDefinedConstraints.continuous_lower_bounds()||
-	   referenceCUBnds != userDefinedConstraints.continuous_upper_bounds()||
-	   referenceDILBnds !=
+	 ( ref_c_l_bnds != userDefinedConstraints.continuous_lower_bounds()||
+	   ref_c_u_bnds != userDefinedConstraints.continuous_upper_bounds()||
+	   ref_di_l_bnds !=
 	   userDefinedConstraints.discrete_int_lower_bounds()                 ||
-	   referenceDIUBnds !=
+	   ref_di_u_bnds !=
 	   userDefinedConstraints.discrete_int_upper_bounds()                 ||
 	   // no discrete string bounds
-	   referenceDRLBnds !=
+	   ref_dr_l_bnds !=
 	   userDefinedConstraints.discrete_real_lower_bounds()                ||
-	   referenceDRUBnds !=
+	   ref_dr_u_bnds !=
 	   userDefinedConstraints.discrete_real_upper_bounds() ) )
 	return true;
   }
@@ -758,29 +764,24 @@ bool SurrogateModel::force_rebuild()
     if ( approx_active_view == sub_model_active_view  &&
 	 approx_active_view >= RELAXED_DESIGN &&
 	 // compare inactive top-level data against inactive sub-model data
-	 ( referenceICVars != currentVariables.inactive_continuous_variables()||
-	   referenceIDIVars !=
-	   currentVariables.inactive_discrete_int_variables()                 ||
-	   referenceIDSVars !=
-	   currentVariables.inactive_discrete_string_variables()              ||
-	   referenceIDRVars !=
-	   currentVariables.inactive_discrete_real_variables() ) )
+	 ( ref_icv  != currentVariables.inactive_continuous_variables()      ||
+	   ref_idiv != currentVariables.inactive_discrete_int_variables()    ||
+	   ref_idsv != currentVariables.inactive_discrete_string_variables() ||
+	   ref_idrv != currentVariables.inactive_discrete_real_variables() ) )
       return true;
     else if ( ( approx_active_view == RELAXED_ALL ||
 		approx_active_view == MIXED_ALL ) &&
 	      sub_model_active_view >= RELAXED_DESIGN ) {
-      // coerce top level data to sub-model view, but don't update sub-model
-      if (truthModelVars.is_null())
-	truthModelVars = actual_vars.copy();
-      truthModelVars.active_to_all_variables(currentVariables);
-      // perform check on inactive data at sub-model level
-      if ( referenceICVars  != truthModelVars.inactive_continuous_variables() ||
-	   referenceIDIVars !=
-	   truthModelVars.inactive_discrete_int_variables() ||
-	   referenceIDSVars !=
-	   truthModelVars.inactive_discrete_string_variables() ||
-	   referenceIDRVars !=
-	   truthModelVars.inactive_discrete_real_variables() )
+      const SharedVariablesData& sm_svd = actual_vars.shared_data();
+      if (!is_equal_partial(ref_icv, currentVariables.continuous_variables(),
+			    sm_svd.icv_start())  ||
+	  !is_equal_partial(ref_idiv, currentVariables.discrete_int_variables(),
+			    sm_svd.idiv_start()) ||
+	  !is_equal_partial(ref_idsv,
+			    currentVariables.discrete_string_variables(),
+			    sm_svd.idsv_start()) ||
+	  !is_equal_partial(ref_idrv,currentVariables.discrete_real_variables(),
+			    sm_svd.idrv_start()))
 	return true;
     }
     // TO DO: extend for aleatory/epistemic uncertain views
@@ -788,10 +789,10 @@ bool SurrogateModel::force_rebuild()
     Model sub_model = actual_model.subordinate_model();
     while (sub_model.model_type() == "recast")
       sub_model = sub_model.subordinate_model();
-    if ( referenceICVars  != sub_model.inactive_continuous_variables()      ||
-         referenceIDIVars != sub_model.inactive_discrete_int_variables()    ||
-         referenceIDSVars != sub_model.inactive_discrete_string_variables() ||
-         referenceIDRVars != sub_model.inactive_discrete_real_variables() )
+    if ( ref_icv  != sub_model.inactive_continuous_variables()      ||
+         ref_idiv != sub_model.inactive_discrete_int_variables()    ||
+         ref_idsv != sub_model.inactive_discrete_string_variables() ||
+         ref_idrv != sub_model.inactive_discrete_real_variables() )
       return true;
     */
 
@@ -819,64 +820,68 @@ bool SurrogateModel::force_rebuild()
 	while (sub_model.model_type() == "recast")
 	  sub_model = sub_model.subordinate_model();
 
-	if (referenceCLBnds  != sub_model.continuous_lower_bounds()    ||
-	    referenceCUBnds  != sub_model.continuous_upper_bounds()    ||
-	    referenceDILBnds != sub_model.discrete_int_lower_bounds()  ||
-	    referenceDIUBnds != sub_model.discrete_int_upper_bounds()  ||
+	if (ref_c_l_bnds  != sub_model.continuous_lower_bounds()    ||
+	    ref_c_u_bnds  != sub_model.continuous_upper_bounds()    ||
+	    ref_di_l_bnds != sub_model.discrete_int_lower_bounds()  ||
+	    ref_di_u_bnds != sub_model.discrete_int_upper_bounds()  ||
 	    // no discrete string bounds
-	    referenceDRLBnds != sub_model.discrete_real_lower_bounds() ||
-	    referenceDRUBnds != sub_model.discrete_real_upper_bounds())
+	    ref_dr_l_bnds != sub_model.discrete_real_lower_bounds() ||
+	    ref_dr_u_bnds != sub_model.discrete_real_upper_bounds())
 	  return true;
       }
       else if ( approx_active_view == sub_model_active_view && 
 		// compare active top-level data against active sub-model data
-		( referenceCLBnds !=
+		( ref_c_l_bnds !=
 		  userDefinedConstraints.continuous_lower_bounds()    ||
-		  referenceCUBnds !=
+		  ref_c_u_bnds !=
 		  userDefinedConstraints.continuous_upper_bounds()    ||
-		  referenceDILBnds !=
+		  ref_di_l_bnds !=
 		  userDefinedConstraints.discrete_int_lower_bounds()  ||
-		  referenceDIUBnds !=
+		  ref_di_u_bnds !=
 		  userDefinedConstraints.discrete_int_upper_bounds()  ||
 		  // no discrete string bounds
-		  referenceDRLBnds !=
+		  ref_dr_l_bnds !=
 		  userDefinedConstraints.discrete_real_lower_bounds() ||
-		  referenceDRUBnds !=
+		  ref_dr_u_bnds !=
 		  userDefinedConstraints.discrete_real_upper_bounds() ) )
 	return true;
       else if ( approx_active_view >= RELAXED_DESIGN &&
 		( sub_model_active_view == RELAXED_ALL ||
 		  sub_model_active_view == MIXED_ALL ) && 
 		// compare top-level data in All view w/ active sub-model data
-		( referenceCLBnds !=
+		( ref_c_l_bnds !=
 		  userDefinedConstraints.all_continuous_lower_bounds()     ||
-		  referenceCUBnds != 
+		  ref_c_u_bnds != 
 		  userDefinedConstraints.all_continuous_upper_bounds()     ||
-		  referenceDILBnds !=
+		  ref_di_l_bnds !=
 		  userDefinedConstraints.all_discrete_int_lower_bounds()   ||
-		  referenceDIUBnds !=
+		  ref_di_u_bnds !=
 		  userDefinedConstraints.all_discrete_int_upper_bounds()   ||
 		  // no discrete string bounds
-		  referenceDRLBnds !=
+		  ref_dr_l_bnds !=
 		  userDefinedConstraints.all_discrete_real_lower_bounds()  ||
-		  referenceDRUBnds !=
+		  ref_dr_u_bnds !=
 		  userDefinedConstraints.all_discrete_real_upper_bounds() ) )
 	return true;
       else if ( ( approx_active_view  == RELAXED_ALL ||
 		  approx_active_view  == MIXED_ALL ) &&
 		sub_model_active_view >= RELAXED_DESIGN ) {
-	// coerce top level data to sub-model view, but don't update sub-model
-	if (truthModelCons.is_null())
-	  truthModelCons = actual_model.user_defined_constraints().copy();
-	truthModelCons.active_to_all_bounds(userDefinedConstraints);
-	// perform check on active data at sub-model level
-	if ( referenceCLBnds  != truthModelCons.continuous_lower_bounds()    ||
-	     referenceCUBnds  != truthModelCons.continuous_upper_bounds()    ||
-	     referenceDILBnds != truthModelCons.discrete_int_lower_bounds()  ||
-	     referenceDIUBnds != truthModelCons.discrete_int_upper_bounds()  ||
+	const SharedVariablesData& sm_svd = actual_vars.shared_data();
+	size_t cv_s = sm_svd.cv_start(), div_s = sm_svd.div_start(),
+	      drv_s = sm_svd.drv_start();
+	if (!is_equal_partial(ref_c_l_bnds,
+	     userDefinedConstraints.continuous_lower_bounds(),     cv_s) ||
+	    !is_equal_partial(ref_c_u_bnds,
+	     userDefinedConstraints.continuous_upper_bounds(),     cv_s) ||
+	    !is_equal_partial(ref_di_l_bnds,
+	     userDefinedConstraints.discrete_int_lower_bounds(),  div_s) ||
+	    !is_equal_partial(ref_di_u_bnds,
+	     userDefinedConstraints.discrete_int_upper_bounds(),  div_s) ||
 	     // no discrete string bounds
-	     referenceDRLBnds != truthModelCons.discrete_real_lower_bounds() ||
-	     referenceDRUBnds != truthModelCons.discrete_real_upper_bounds() )
+	    !is_equal_partial(ref_dr_l_bnds,
+	     userDefinedConstraints.discrete_real_lower_bounds(), drv_s) ||
+	    !is_equal_partial(ref_dr_u_bnds,
+	     userDefinedConstraints.discrete_real_upper_bounds(), drv_s) )
 	  return true;
       }
 
@@ -975,83 +980,6 @@ bool SurrogateModel::force_rebuild()
 
 
 void SurrogateModel::
-asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
-	  ShortArray& approx_asv, bool build_flag)
-{
-  size_t i, num_qoi = qoi();
-  switch (responseMode) {
-  case AGGREGATED_MODELS: {
-    // split actual & approx asv (can ignore build_flag)
-    if (orig_asv.size() != 2*num_qoi) {
-      Cerr << "Error: ASV not aggregated for AGGREGATED_MODELS mode in "
-	   << "SurrogateModel::asv_split()." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-    approx_asv.resize(num_qoi); actual_asv.resize(num_qoi);
-    // aggregated response uses {HF,LF} order:
-    for (i=0; i<num_qoi; ++i)
-      actual_asv[i] = orig_asv[i];
-    for (i=0; i<num_qoi; ++i)
-      approx_asv[i] = orig_asv[i+num_qoi];
-    break;
-  }
-  default: // non-aggregated modes have consistent ASV request vector lengths
-    if (surrogateFnIndices.size() == num_qoi) {
-      if (build_flag) actual_asv = orig_asv;
-      else            approx_asv = orig_asv;
-    }
-    // else response set is mixed:
-    else if (build_flag) { // construct mode: define actual_asv
-      actual_asv.assign(num_qoi, 0);
-      for (StSIter it=surrogateFnIndices.begin();
-	   it!=surrogateFnIndices.end(); ++it)
-	actual_asv[*it] = orig_asv[*it];
-    }
-    else { // eval mode: define actual_asv & approx_asv contributions
-      for (i=0; i<num_qoi; ++i) {
-	short orig_asv_val = orig_asv[i];
-	if (orig_asv_val) {
-	  if (surrogateFnIndices.count(i)) {
-	    if (approx_asv.empty()) // keep empty if no active requests
-	      approx_asv.assign(num_qoi, 0);
-	    approx_asv[i] = orig_asv_val;
-	  }
-	  else {
-	    if (actual_asv.empty()) // keep empty if no active requests
-	      actual_asv.assign(num_qoi, 0);
-	    actual_asv[i] = orig_asv_val;
-	  }
-	}
-      }
-    }
-    break;
-  }
-}
-
-
-void SurrogateModel::
-asv_split(const ShortArray& aggregate_asv, Short2DArray& indiv_asv)
-{
-  // This API only used for AGGREGATED_MODELS mode
-
-  size_t i, j, num_qoi = qoi();
-  if (aggregate_asv.size() % num_qoi) {
-    Cerr << "Error: size remainder for aggregated ASV in SurrogateModel::"
-	 << "asv_split()." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-  size_t num_indiv = aggregate_asv.size() / num_qoi, cntr = 0;
-  indiv_asv.resize(num_indiv);
-  for (i=0; i<num_indiv; ++i) {
-    ShortArray& asv_i = indiv_asv[i];
-    asv_i.resize(num_qoi);
-    for (j=0; j<num_qoi; ++j, ++cntr)
-      asv_i[j] = aggregate_asv[cntr];
-  }
-}
-
-
-void SurrogateModel::
 asv_combine(const ShortArray& actual_asv, const ShortArray& approx_asv,
 	    ShortArray& combined_asv)
 {
@@ -1125,44 +1053,44 @@ response_combine(const Response& actual_response,
 
 
 void SurrogateModel::
-aggregate_response(const Response& hf_resp, const Response& lf_resp,
+aggregate_response(const Response& resp1, const Response& resp2,
 		   Response& agg_resp)
 {
   if (agg_resp.is_null())
     agg_resp = currentResponse.copy(); // resized to 2x in resize_response()
 
-  const ShortArray& lf_asv =  lf_resp.active_set_request_vector();
-  const ShortArray& hf_asv =  hf_resp.active_set_request_vector();
+  const ShortArray& asv1 =  resp1.active_set_request_vector();
+  const ShortArray& asv2 =  resp2.active_set_request_vector();
   ShortArray&      agg_asv = agg_resp.active_set_request_vector();
-  size_t i, offset_i, num_lf_fns = lf_asv.size(), num_hf_fns = hf_asv.size();
+  size_t i, offset_i, num_fns2 = asv2.size(), num_fns1 = asv1.size();
   short asv_i;
 
   // Order with HF first since it corresponds to the active model key
-  for (i=0; i<num_hf_fns; ++i) {
-    agg_asv[i] = asv_i = hf_asv[i];
-    if (asv_i & 1) agg_resp.function_value(hf_resp.function_value(i), i);
+  for (i=0; i<num_fns1; ++i) {
+    agg_asv[i] = asv_i = asv1[i];
+    if (asv_i & 1) agg_resp.function_value(resp1.function_value(i), i);
     if (asv_i & 2)
-      agg_resp.function_gradient(hf_resp.function_gradient_view(i), i);
+      agg_resp.function_gradient(resp1.function_gradient_view(i), i);
     if (asv_i & 4)
-      agg_resp.function_hessian(hf_resp.function_hessian(i), i);
+      agg_resp.function_hessian(resp1.function_hessian(i), i);
   }
 
   // Order with LF second since it corresponds to a previous/decremented key
-  for (i=0; i<num_lf_fns; ++i) {
-    offset_i = i + num_hf_fns;
-    agg_asv[offset_i] = asv_i = lf_asv[i];
-    if (asv_i & 1) agg_resp.function_value(lf_resp.function_value(i), offset_i);
+  for (i=0; i<num_fns2; ++i) {
+    offset_i = i + num_fns1;
+    agg_asv[offset_i] = asv_i = asv2[i];
+    if (asv_i & 1) agg_resp.function_value(resp2.function_value(i), offset_i);
     if (asv_i & 2)
-      agg_resp.function_gradient(lf_resp.function_gradient_view(i), offset_i);
+      agg_resp.function_gradient(resp2.function_gradient_view(i), offset_i);
     if (asv_i & 4)
-      agg_resp.function_hessian(lf_resp.function_hessian(i), offset_i);
+      agg_resp.function_hessian(resp2.function_hessian(i), offset_i);
   }
 
-  const RealArray& hf_md = hf_resp.metadata();
-  agg_resp.metadata(hf_md, 0);
-  agg_resp.metadata(lf_resp.metadata(), hf_md.size());
+  const RealArray& md1 = resp1.metadata();
+  agg_resp.metadata(md1, 0);
+  agg_resp.metadata(resp2.metadata(), md1.size());
   //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "HF Metadata:\n" << hf_md << "LF Metadata:\n"<<lf_resp.metadata();
+  //  Cout << "Metadata 1:\n" << md1 << "Metadata 2:\n" << resp2.metadata();
 }
 
 

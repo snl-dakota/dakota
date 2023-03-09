@@ -327,7 +327,7 @@ void NonDBayesCalibration::construct_mcmc_model()
 	// TO DO: expand this override to non-imported cases.
 	ShortShortPair approx_view(MIXED_ALL, EMPTY_VIEW);
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
-	  exp_import_file, u_space_type, approx_view);
+	  exp_import_file, u_space_type, approx_view);//no export since imported
       }
       else if (ssg_level != USHRT_MAX) { // PCE sparse grid
 	short exp_coeff_approach = (refine_cntl) ?

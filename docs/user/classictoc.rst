@@ -87,7 +87,7 @@ set of manuals, this set of links may help you find what you're looking for...
 - :ref:`Chapter 6: Surrogate Models <Chap:SurMod>`
 - :ref:`Chapter 7: Surrogate-Based Local Minimization <sblm>`
 - :ref:`Chapter 8: Efficient Global Optimization <uq:ego>`
-- :ref:`Chapter 9: Dimension Reduction Strategies <Chap:DimRed>`
+- :ref:`Chapter 9: Dimension Reduction Strategies <Theory:DimensionReduction>`
 - :ref:`Chapter 10: Optimization Under Uncertainty (OUU) <ouu>`
 
 **Reference Manual**
@@ -131,7 +131,6 @@ set of manuals, this set of links may help you find what you're looking for...
 **Dakota GUI Manual**
 
 - :ref:`GUI Quickstart Guide <dakota-gui-quickstart>`
-- :ref:`Basic Model Format (BMF) <bmf-main>`
 - :ref:`Chartreuse <chartreuse-main>`
 - :ref:`Chartreuse Sandbox View <chartreuse-sandbox-main>`
 - :ref:`Chartreuse in Next-Gen Workflow <chartreuse-ngw-main>`

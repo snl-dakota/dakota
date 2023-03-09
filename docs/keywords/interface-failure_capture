@@ -19,8 +19,7 @@ Once Dakota detects analysis failure, the failure can be mitigated in four ways:
 - :ref:`interface-failure_capture-recover<interface-failure_capture-recover>`
 - :ref:`interface-failure_capture-continuation<interface-failure_capture-continuation>`
 
-Refer to the Simulation Code Failure Capturing chapter of the Users
-Manual :cite:p:`UsersMan` for additional information.
+Refer to :ref:`failure` for additional information.
 Topics::
 
 **Default Behavior:** If no failure capturing specification is

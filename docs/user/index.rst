@@ -17,5 +17,6 @@ The Dakota project delivers both state-of-the-art research and robust, usable so
    usingdakota/usingdakota
    usingdakotagui/usingdakotagui
    externaltools/externaltools
+   compiling/compiling
    developingdakota/developingdakota
    misc/misc

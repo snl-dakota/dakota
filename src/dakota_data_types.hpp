@@ -124,6 +124,7 @@ typedef std::vector<RealMulti3DArray>  BoostMA3DArray;
 
 typedef std::list<bool>                BoolList;
 typedef std::list<int>                 IntList;
+typedef std::list<unsigned short>      UShortList;
 typedef std::list<size_t>              SizetList;
 typedef std::list<Real>                RealList;
 typedef std::list<RealVector>          RealVectorList;
@@ -151,6 +152,7 @@ typedef std::set<int>                  IntSet;
 typedef std::set<String>               StringSet;
 typedef std::set<unsigned short>       UShortSet;
 typedef std::set<size_t>               SizetSet;
+typedef std::set<UShortArray>          UShortArraySet;
 typedef std::set<RealRealPair>         RealRealPairSet;
 typedef std::vector<RealSet>           RealSetArray;
 typedef std::vector<IntSet>            IntSetArray;

@@ -14,46 +14,46 @@ post-processing) is written in Python.
 The following sections describe the components of
 ``dakota.interfacing``. These components include:
 
--  The ``Parameters`` class. Makes available the variable information
+-  The :class:`Parameters` class. Makes available the variable information
    for a single evaluation
--  The ``Results`` class. Collects results for a single evaluation and
+-  The :class:`Results` class. Collects results for a single evaluation and
    writes them to file
--  The ``BatchParameters`` and ``BatchResults`` classes. Containers for
-   multiple ``Parameters`` and ``Results`` objects; used when
+-  The :class:`BatchParameters` and :class:`BatchResults` classes. Containers for
+   multiple :class:`Parameters` and :class:`Results` objects; used when
    evaluations are performed by Dakota in :ref:`batch mode <interfaces:batch>`.
--  The ``read_parameters_file`` function. Constructs ``Parameters``,
-   ``Results``, ``BatchParameters``, and ``BatchResults`` objects from a
+-  The :func:`read_parameters_file` function. Constructs :class:`Parameters`,
+   :class:`Results`, :class:`BatchParameters`, and :class:`BatchResults` objects from a
    Dakota parameters file.
 
 API
 ~~~
 
-.. method:: dakota.interfacing.read_parameters_file(parameters_file=None, \
+.. function:: read_parameters_file(parameters_file=None, \
     results_file=None, ignore_asv=False, batch=False, infer_types=True, \
     types=None)
            
-    Creates ``Parameters``, ``Results``, ``BatchParameters``, and ``BatchResults`` objects from a Dakota parameters file.
+    Creates :class:`Parameters`, :class:`Results`, :class:`BatchParameters`, and :class:`BatchResults` objects from a Dakota parameters file.
            
     :param parameters_file: The names of the parameter file that is to be read.
                             The name can be an absolute or relative filepath, or just a filename.
                             If a parameters file is not provided, it will be obtained from the command line arguments.
-                            (The parameters filename is assumed to be the second-to-last argument.)
+                            (The parameters filename is assumed to be the first argument.)
                             Note that if the working directory has changed since script invocation,
                             filenames provided as command line arguments by Dakota’s ``fork`` or ``system``
                             interfaces may be incorrect.           
     :param results_file: The name of the results file that ultimately is to be
                          written. The name can be an absolute or relative filepaths, or just a filename.
                          If a results file is not provided, it will be obtained from the command line arguments.
-                         (The results filename is assumed to be the last command line argument.) Note that
+                         (The results filename is assumed to be the second command line argument.) Note that
                          if the working directory has changed since script invocation, filenames provided
                          as command line arguments by Dakota’s ``fork`` or ``system`` interfaces may be incorrect.
-                         If *results_file* is set to the constant ``dakota.interfacing.UNNAMED``, the ``Results``
-                         or ``BatchResults`` object is constructed without a results file name. In this case, an
-                         output stream must be provided when ``Results.write()`` or ``BatchResults.write()`` is
+                         If *results_file* is set to the constant ``dakota.interfacing.UNNAMED``, the :class:`Results`
+                         or :class:`BatchResults` object is constructed without a results file name. In this case, an
+                         output stream must be provided when :meth:`Results.write` or :meth:`BatchResults.write` is
                          called. Unnamed results files are most helpful when no results file will be written,
                          as with a script intended purely for pre-processing.
-    :param ignore_asv: By default, the returned ``Results`` or ``BatchResults`` object enforces
-                       the active set vector (see the ``Results`` class section). This behavior
+    :param ignore_asv: By default, the returned :class:`Results` or :class:`BatchResults` object enforces
+                       the active set vector (see the :class:`Results` class section). This behavior
                        can be overridden, allowing any property (function, gradient, Hessian)
                        of a response to be set, by setting this field to ``True``. This option can be useful when
                        setting up or debugging a driver.
@@ -67,7 +67,8 @@ API
                  they remain as type ``str``. If ``infer_types`` is ``True``, an attempt is made to "guess" more
                  convenient types. Conversion first to ``int`` and then to ``float`` are tried. If both fail, the value remains a ``str``.
                  
-    :return: For single, non-batch evaluation, it returns a tuple that contains ``(Parameters, Results)``. For batch evaluations, it instead returns a tuple containing ``(BatchParameters, BatchResults)``.
+    :return: For single, non-batch evaluation, it returns a tuple that contains (:class:`Parameters`, :class:`Results`). For batch
+             evaluations, it instead returns a tuple containing (:class:`BatchParameters`, :class:`BatchResults`).
 
 .. note::
    
@@ -86,14 +87,14 @@ API
 
 .. class:: Parameters
 
-    ``Parameters`` objects make the variables, analysis components,
+    :class:`Parameters` objects make the variables, analysis components,
     evaluation ID, and evaluation number read from a Dakota parameters file
     available through a combination of key-value access and object
-    attributes. Although ``Parameters`` objects may be constructed directly,
-    it is advisable to use the ``read_parameters_file`` function instead.
+    attributes. Although :class:`Parameters` objects may be constructed directly,
+    it is advisable to use the :func:`read_parameters_file` function instead.
 
     Variable values can be accessed by Dakota descriptor or by index using
-    [] on the object itself. Variables types (integer, real, string) are
+    ``[]`` on the object itself. Variables types (integer, real, string) are
     inferred by first attempting to convert to ``int`` and then, if this
     fails, to ``float``.
 
@@ -101,8 +102,8 @@ API
     ``[]`` on the object itself. Variables types are inferred or set as
     described in the previous section.
 
-    Analysis components are accessible by index only using the ``an_comps``
-    attribute. Iterating over a ``Parameters`` object yields the variable
+    Analysis components are accessible by index only using the :attr:`an_comps`
+    attribute. Iterating over a :class:`Parameters` object yields the variable
     descriptors.
 
    .. attribute:: an_comps
@@ -143,27 +144,27 @@ API
 
    .. method:: items()
    
-      Return an iterator that yields tuples of the descriptor and value for each parameter. (``Results`` objects also have ``items()``.)
+      Return an iterator that yields tuples of the descriptor and value for each parameter. (:class:`Results` objects also have ``items()``.)
       
    .. method:: values()
    
-      Return an iterator that yields the value for each parameter. (``Results`` objects have the corresponding method ``responses()``.)
+      Return an iterator that yields the value for each parameter. (:class:`Results` objects have the corresponding method ``responses()``.)
 
 .. class:: Results
 
-    ``Results`` objects do the following:
+    :class:`Results` objects do the following:
 
     -  communicate response requests from Dakota (active set vector and
        derivative variables)
     -  collect response data (function values, gradients, and Hessians)
     -  write Dakota results files
 
-    ``Results`` objects are collections of ``Response`` objects, which are
-    documented in the following section. Each ``Response`` can be accessed
-    by name (Dakota descriptor) or by index using ``[]`` on the ``Results``
-    object itself. Iterating over a ``Results`` object yields the response
-    descriptors. Although ``Results`` objects may be constructed directly,
-    it is advisable to use the ``read_parameters_file`` function instead.
+    :class:`Results` objects are collections of :class:`Response` objects, which are
+    documented in the following section. Each :class:`Response` can be accessed
+    by name (Dakota descriptor) or by index using ``[]`` on the :class:`Results`
+    object itself. Iterating over a :class:`Results` object yields the response
+    descriptors. Although :class:`Results` objects may be constructed directly,
+    it is advisable to use the :func:`read_parameters_file` function instead.
 
    .. attribute:: eval_id
    
@@ -195,11 +196,11 @@ API
 
    .. method:: items()
    
-      Return an iterator that yields tuples of the descriptor and ``Response`` object for each response. (``Parameters`` objects also have ``items()``.)
+      Return an iterator that yields tuples of the descriptor and :class:`Response` object for each response. (:class:`Parameters` objects also have ``items()``.)
       
    .. method:: responses()
    
-      Return an iterator that yields the ``Response`` object for each response. (``Parameters`` objects have the corresponding method ``values()``.)
+      Return an iterator that yields the :class:`Response` object for each response. (:class:`Parameters` objects have the corresponding method ``values()``.)
       
    .. method:: fail()
    
@@ -214,18 +215,18 @@ API
 
 .. note::
       
-   Calling ``write()`` on a ``Results`` object that was generated by reading a batch parameters file will raise a ``BatchWriteError``.
-   Instead, ``write()`` should be called on the containing ``BatchResults`` object.
+   Calling ``write()`` on a :class:`Results` object that was generated by reading a batch parameters file will raise a ``BatchWriteError``.
+   Instead, ``write()`` should be called on the containing :class:`BatchResults` object.
 
 .. class:: Response
 
-    ``Response`` objects store response information. They typically are instantiated and accessed through a Results object by index or response
-    descriptor using [].
+    :class:`Response` objects store response information. They typically are instantiated and accessed through a Results object by index or response
+    descriptor using ``[]``.
 
    .. attribute:: asv
       
-      A ``collections.namedtuple`` with three members, *function*, *gradient*, and *hessian*. Each is a boolean indicating whether
-      Dakota requested the associated information for the response.
+      A `named tuple <https://docs.python.org/3/library/collections.html#collections.namedtuple>`_ with three members, *function*, *gradient*, 
+      and *hessian*. Each is a boolean indicating whether Dakota requested the associated information for the response.
       
    .. attribute:: namedtuples
    
@@ -249,9 +250,9 @@ API
 
 .. class:: BatchParameters
 
-    ``BatchParameters`` objects are collections of ``Parameters`` objects. The individual ``Parameters`` objects can be accessed by index ([]) or
-    by iterating the ``BatchParameters`` object. Although ``BatchParameters`` objects may be constructed directly, it is advisable
-    to use the ``read_parameters_file`` function instead.
+    :class:`BatchParameters` objects are collections of :class:`Parameters` objects. The individual :class:`Parameters` objects can be accessed by index ([]) or
+    by iterating the :class:`BatchParameters` object. Although :class:`BatchParameters` objects may be constructed directly, it is advisable
+    to use the :func:`read_parameters_file` function instead.
 
    .. attribute:: batch_id
    
@@ -259,9 +260,9 @@ API
 
 .. class:: BatchResults
 
-    ``BatchResults`` objects are collections of ``Results`` objects. The individual ``Results`` objects can be accessed by index ([]) or by
-    iterating the ``BatchResults`` object. Although ``BatchResults`` objects may be constructed directly, it is advisable to use the
-    ``read_parameters_file`` function instead.
+    :class:`BatchResults` objects are collections of :class:`Results` objects. The individual :class:`Results` objects can be accessed by index ([]) or by
+    iterating the :class:`BatchResults` object. Although :class:`BatchResults` objects may be constructed directly, it is advisable to use the
+    :func:`read_parameters_file` function instead.
 
    .. attribute:: batch_id
    
@@ -285,17 +286,18 @@ called :ref:`dprepro <interfaces:dprepro-and-pyprepro>`. Templates may be
 processed within Python analysis drivers without externally invoking
 ``dprepro`` by calling the ``dprepro`` function:
 
-.. code-block::
-
-   dakota.interfacing.dprepro(template, parameters=None, results=None, include=None, output=None, fmt='%0.10g', 
-   code='%', code block='f% %g', inline='f g', warn=True)
+.. function:: dprepro(template, parameters=None, results=None, include=None, output=None, fmt='%0.10g', \
+   code='%', code block='{% %}', inline='{ }', warn=True)
 
 If *template* is a string, it is assumed to contain a template. If it is
 a file-like object (that has a ``.read()`` method), the template will be
 read from it. (Templates that are already in string form can be passed
-in by first wrapping them in a ``StringIO`` object.)
+in by first wrapping them in a `StringIO <https://docs.python.org/3/library/io.html?highlight=stringio#io.StringIO>`_
+object.)
 
-``Parameters`` and ``Results`` objects can be made available to the
+:class:`Parameters` and :class:`Results`
+
+:class:`Parameters` and :class:`Results` objects can be made available to the
 template using The *parameters* and *results* keyword arguments, and
 additional variable definitions can be provided in a ``dict`` via the
 *include* argument.
@@ -351,7 +353,7 @@ its gradient and Hessian.)
    results["f"].function = f
    results.write()
 
-The ``Results`` object exposes the active set vector read from the
+The :class:`Results` object exposes the active set vector read from the
 parameters file. When analytic gradients or Hessians are available for
 a response, the ASV should be queried to determine what Dakota has
 requested for an evaluation. If an attempt is made to add unrequested
@@ -395,7 +397,7 @@ Instead of receiving parameters from the Dakota parameters file and
 writing results to the results file as in Figure~\ref{diexample:asv},
 the decorated Python driver works with the Python dictionary passed from
 the direct Python interface.  An example of the decorator syntax and use
-of the ``dakota.interfacing`` ``Parameters`` and ``Results``
+of the ``dakota.interfacing`` :class:`Parameters` and :class:`Results`
 objects that get created automatically from the direct interface
 Python dictionary is shown in :numref:`linkeddiexample:decorator`.  The
 complete driver including details of the packing functions can be found in
@@ -403,7 +405,7 @@ the ``dakota/share/dakota/examples/official/drivers/Python/linked_di`` folder.
 
 .. code-block:: python
    :caption: Decorated direct Python callback function using
-             ``Parameters`` and ``Results`` objects
+             :class:`Parameters` and :class:`Results` objects
              constructed by the ``dakota.interfacing`` decorator
    :name: linkeddiexample:decorator
 
@@ -427,7 +429,7 @@ DakotaParams and DakotaResults
 
 If the ``dakota`` :ref:`Python package <interfaces:dakota.interfacing>` is available for
 import (e.g. has been added to the ``PYTHONPATH``), then ``dprepro``
-generates ``Parameters`` and ``Results`` objects from the Dakota
+generates :class:`Parameters` and :class:`Results` objects from the Dakota
 parameters file. These are available for use in templates under the
 names ``DakotaParams`` and ``DakotaResults``.
 

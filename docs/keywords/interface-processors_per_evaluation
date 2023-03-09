@@ -6,8 +6,7 @@ of the automatic parallel configuration for the number of processors in each
 evaluation server. That is, if the automatic configuration is
 undesirable for some reason, the user can enforce a desired server size
 at the evaluation parallelism level. Refer to ParallelLibrary
-and the Parallel Computing chapter of the Users Manual
-:cite:p:`UsersMan` for additional information.
+and the :ref:`Parallel Computing section <parallel>` for additional information.
 Topics::
 concurrency_and_parallelism
 Examples::

@@ -26,7 +26,6 @@
 #include "NonDMultilevelPolynomialChaos.hpp"
 #include "NonDStochCollocation.hpp"
 #include "NonDMultilevelStochCollocation.hpp"
-//#include "NonDMultilevelStochCollocation.hpp"
 #include "NonDSurrogateExpansion.hpp"
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
@@ -34,9 +33,8 @@
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevelSampling.hpp"
-#include "NonDControlVariateSampling.hpp"
 #include "NonDMultilevControlVarSampling.hpp"
-#include "NonDACVSampling.hpp"
+#include "NonDGenACVSampling.hpp"
 #include "NonDMultifidelitySampling.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
@@ -515,23 +513,34 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #endif
 //#ifdef HAVE_MUQ
 //  case MUQ_SAMPLING:
-//    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model); break;
+//    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model);break;
 //#endif
   case RANDOM_SAMPLING:
     return std::make_shared<NonDLHSSampling>(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
     return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
   case MULTIFIDELITY_SAMPLING:
-    if (model.surrogate_type() == "hierarchical")
-      return std::make_shared<NonDControlVariateSampling>(problem_db, model);
-    else // non-hierarchical sampling supports #models > 2
-      return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
+    // Hierarch and NonHierarch SurrModels can both have an open-ended number
+    // of model forms.  Former treats them pairwise and latter as a full group.
+    // > Would be nice to separate ordered/unordered from pairwise/full since
+    //   the former is not a hard constraint (unordered still uses a list) while
+    //   the latter is more critical (implementation uses active model key with
+    //   full batch + ASV blocks versus active key that changes pairs).
+    // > But the Model needs to be instantiated from its spec without knowledge
+    //   of Iterator context --> Iterators like MFMC must adapt to limitations
+    //   of HierarchSurrModel even though it *is* hierarchical/recursive.
+    //   --> collapse the two SurrModel classes to avoid the need for method
+    //       adaptations due to Model specification.
+    return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
     break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
     return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
     break;
   case APPROXIMATE_CONTROL_VARIATE:
-    return std::make_shared<NonDACVSampling>(problem_db, model);
+    if (probDescDB.get_short("method.nond.search_model_graphs"))
+      return std::make_shared<NonDGenACVSampling>(problem_db, model);
+    else
+      return std::make_shared<NonDACVSampling>(problem_db, model);
     break;
   case DATA_FIT_SURROGATE_BASED_LOCAL:
     return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
@@ -540,10 +549,12 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
     break;
   case SURROGATE_BASED_LOCAL:
-    if (model.surrogate_type() == "hierarchical")
-      return std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
+    if (model.surrogate_type() == "ensemble")
+      return
+	std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
     else
-      return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
+      return
+	std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
     break;
   case SURROGATE_BASED_GLOBAL:
     return std::make_shared<SurrBasedGlobalMinimizer>(problem_db, model); break;
@@ -940,7 +951,7 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_OAS,               "oas")
   (SUBMETHOD_ACV_IS,            "acv_is")
   (SUBMETHOD_ACV_MF,            "acv_mf")
-  (SUBMETHOD_ACV_KL,            "acv_kl")
+  (SUBMETHOD_ACV_RD,            "acv_rd")
   (SUBMETHOD_DREAM,             "dream")
   (SUBMETHOD_WASABI,            "wasabi")
   (SUBMETHOD_GPMSA,             "gpmsa")

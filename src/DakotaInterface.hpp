@@ -240,9 +240,11 @@ public:
 
   /// retrieve the analysis drivers specification for application interfaces
   virtual const StringArray& analysis_drivers() const;
-
   /// retrieve the analysis components, if available
-  virtual const String2DArray & analysis_components() const;
+  virtual const String2DArray& analysis_components() const;
+
+  /// set discrepancy emulation mode used for approximating response differences
+  virtual void discrepancy_emulation_mode(short mode);
 
   /// return flag indicating usage of the global evaluation cache
   virtual bool evaluation_cache() const;

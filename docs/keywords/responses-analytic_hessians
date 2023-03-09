@@ -4,7 +4,7 @@ Description::
 The ``analytic_hessians`` specification means that Hessian information
 is available directly from the simulation. The simulation must return
 the Hessian data in the Dakota format (enclosed in double brackets;
-see Dakota File Data Formats in Users Manual :cite:p:`UsersMan`) for the
+see :ref:`responses:results`) for the
 case of file transfer of data. The ``analytic_hessians`` keyword is a
 complete specification for this case.
 Topics::

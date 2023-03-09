@@ -8,5 +8,6 @@ Developing Dakota
    gitforversioncontrol
    writingcode
    testingcode
+   documenting
    writingdocs
    tpls

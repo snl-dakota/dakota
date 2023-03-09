@@ -6,8 +6,8 @@ override of the automatic parallel configuration for the number of
 evaluation servers. That is, if the automatic configuration is
 undesirable for some reason, the user can enforce a desired number of
 partitions at the evaluation parallelism level. Refer to
-ParallelLibrary and the Parallel Computing chapter of the Users Manual
-:cite:p:`UsersMan` for additional information.
+ParallelLibrary and the :ref:`Parallel Computing section <parallel>`
+for additional information.
 Topics::
 concurrency_and_parallelism
 Examples::

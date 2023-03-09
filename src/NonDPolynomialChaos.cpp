@@ -375,6 +375,60 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
 }
 
 
+/** This constructor is used for helper iterator instantiation on the fly
+    that import the PCE coefficients rather than compute them. */
+NonDPolynomialChaos::
+NonDPolynomialChaos(Model& model, const String& exp_import_file,
+		    short u_space_type):
+  NonDExpansion(POLYNOMIAL_CHAOS, model, -1, RealVector(), 0,
+		Pecos::NO_REFINEMENT, Pecos::NO_CONTROL, DEFAULT_COVARIANCE,
+		0., Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
+		false, false),
+  //expOrderSpec(problem_db.get_ushort("method.nond.expansion_order")),
+  //normalizedCoeffOutput(problem_db.get_bool("method.nond.normalized")),
+  uSpaceType(u_space_type), expansionImportFile(exp_import_file)
+  //expansionExportFile(
+  //  problem_db.get_string("method.nond.export_expansion_file"))
+{
+  if (expansionImportFile.empty()) {
+    Cerr << "Error: coefficient import ctor requires a file name." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // ----------------
+  // Resolve settings
+  // ----------------
+  short data_order;
+  resolve_inputs(uSpaceType, data_order);
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  Model g_u_model;
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+		       (iteratedModel, uSpaceType)); // retain dist bounds
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  UShortArray exp_orders; // not necessary to pre-define this
+  //configure_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
+  Iterator u_space_sampler;
+  String pt_reuse, approx_type("global_orthogonal_polynomial"), rng("mt19937");
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
+  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+     g_u_model, pce_set, approx_type, exp_orders, corr_type, corr_order,
+     data_order, outputLevel, pt_reuse));
+  initialize_u_space_model();
+
+  // no expansionSampler, no numSamplesOnExpansion
+}
+
+
 /** This constructor is called by derived class constructors that
     customize the object construction. */
 NonDPolynomialChaos::

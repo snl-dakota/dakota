@@ -4,8 +4,8 @@ Description::
 The ``analytic_gradients`` specification means that gradient
 information is available directly from the simulation (finite
 differencing is not required). The simulation must return the gradient
-data in the Dakota format (enclosed in single brackets; see Dakota
-File Data Formats in the Users Manual :cite:p:`UsersMan`)
+data in the Dakota format (enclosed in single brackets;
+see :ref:`responses:results`).
 for the case of file transfer of data. The ``analytic_gradients`` keyword
 is a complete specification for this case.
 Topics::

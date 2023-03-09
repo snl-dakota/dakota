@@ -252,15 +252,23 @@ protected:
   /// remove keys in subModel
   void clear_model_keys();
 
-  /// return surrogate model, if present, within subModel
+  /// return the i-th surrogate model within subModel
   Model& surrogate_model(size_t i = _NPOS);
-  /// return surrogate model, if present, within subModel
+  /// return the i-th surrogate model within subModel
   const Model& surrogate_model(size_t i = _NPOS) const;
+  /// return the i-th active surrogate model within subModel
+  Model& active_surrogate_model(size_t i = _NPOS);
+  /// return the i-th active surrogate model within subModel
+  const Model& active_surrogate_model(size_t i = _NPOS) const;
 
-  /// return truth model, if present, within subModel
+  /// return the truth model within subModel
   Model& truth_model();
-  /// return truth model, if present, within subModel
+  /// return the truth model within subModel
   const Model& truth_model() const;
+  /// return the active truth model within subModel
+  Model& active_truth_model();
+  /// return the active truth model within subModel
+  const Model& active_truth_model() const;
 
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -294,16 +302,18 @@ protected:
   /// update the subModel's surrogate response mode
   /// (SurrogateModel::responseMode)
   void surrogate_response_mode(short mode);
+  /// update the subModel's discrepancy emulation mode
+  void discrepancy_emulation_mode(short mode);
 
   // link SurrogateData instances within the subModel
   //void link_multilevel_approximation_data();
 
   /// retrieve subModel's correction type
-  short correction_type();
+  short correction_type() const;
   /// update subModel's correction type
   void correction_type(short corr_type);
   /// retrieve subModel's correction order
-  short correction_order();
+  short correction_order() const;
 
   /// retrieve error estimates corresponding to the subModel
   const RealVector& error_estimates();
@@ -772,12 +782,28 @@ inline const Model& RecastModel::surrogate_model(size_t i) const
 { return subModel.surrogate_model(i); }
 
 
+inline Model& RecastModel::active_surrogate_model(size_t i)
+{ return subModel.active_surrogate_model(i); }
+
+
+inline const Model& RecastModel::active_surrogate_model(size_t i) const
+{ return subModel.active_surrogate_model(i); }
+
+
 inline Model& RecastModel::truth_model()
 { return subModel.truth_model(); }
 
 
 inline const Model& RecastModel::truth_model() const
 { return subModel.truth_model(); }
+
+
+inline Model& RecastModel::active_truth_model()
+{ return subModel.active_truth_model(); }
+
+
+inline const Model& RecastModel::active_truth_model() const
+{ return subModel.active_truth_model(); }
 
 
 inline void RecastModel::
@@ -873,11 +899,15 @@ inline void RecastModel::surrogate_response_mode(short mode)
 { /* if (mode == BYPASS_SURROGATE) */ subModel.surrogate_response_mode(mode); }
 
 
+inline void RecastModel::discrepancy_emulation_mode(short mode)
+{ subModel.discrepancy_emulation_mode(mode); }
+
+
 //inline void RecastModel::link_multilevel_approximation_data()
 //{ subModel.link_multilevel_approximation_data(); }
 
 
-inline short RecastModel::correction_type()
+inline short RecastModel::correction_type() const
 { return subModel.correction_type(); }
 
 
@@ -885,7 +915,7 @@ inline void RecastModel::correction_type(short corr_type)
 { subModel.correction_type(corr_type); }
 
 
-inline short RecastModel::correction_order()
+inline short RecastModel::correction_order() const
 { return subModel.correction_order(); }
 
 

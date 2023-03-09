@@ -37,8 +37,7 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
   sequenceIndex(0)
 {
-  assign_discrepancy_mode();
-  assign_hierarchical_response_mode();
+  assign_modes();
 
   // ----------------
   // Resolve settings
@@ -130,8 +129,7 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
 		       rule_nest, rule_growth, piecewise_basis, use_derivs),
   sequenceIndex(0)
 {
-  assign_discrepancy_mode();
-  assign_hierarchical_response_mode();
+  assign_modes();
 
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: quadOrderSeqSpec = num_int_seq; break;
@@ -191,7 +189,6 @@ NonDMultilevelStochCollocation::~NonDMultilevelStochCollocation()
 { }
 
 
-/*
 void NonDMultilevelStochCollocation::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
@@ -202,11 +199,14 @@ void NonDMultilevelStochCollocation::initialize_u_space_model()
   // initializes ExpansionConfigOptions, among other things
   NonDStochCollocation::initialize_u_space_model();
 
+  // emulation mode needed for ApproximationInterface::qoi_set_to_key_index()
+  uSpaceModel.discrepancy_emulation_mode(multilevDiscrepEmulation);
+
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
   // PecosApproximation
   //uSpaceModel.link_multilevel_approximation_data();
 }
-*/
+
 
 
 bool NonDMultilevelStochCollocation::resize()

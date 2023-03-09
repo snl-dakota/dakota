@@ -19,6 +19,8 @@ First Steps
 
    dakota -i rosen multidim.in -o rosen multidim.out > rosen multidim.stdout
 
+.. _helloworld-results:
+
 ==================
 What should happen
 ==================

@@ -45,7 +45,7 @@ method,
 model,
 	id_model = 'HIERARCH'
 	variables_pointer = 'ALL_VARS'
-	surrogate hierarchical
+	surrogate ensemble
 	  ordered_model_fidelities = 'LF' 'HF'
 
 model,
@@ -73,7 +73,7 @@ variables,
 
 variables,
 	id_variables = 'CONFIG_VARS'
-# MSE: for hierarchical model self-consistency, would prefer to leave state
+# MSE: for ensemble model self-consistency, would prefer to leave state
 #      as inactive and have zero active vars
 	active state
 	continuous_state = 1                                   

@@ -80,7 +80,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void initialize_u_space_model();
+  void initialize_u_space_model();
   void core_run();
 
   void assign_specification_sequence();

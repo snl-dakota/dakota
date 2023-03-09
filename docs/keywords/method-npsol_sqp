@@ -39,9 +39,8 @@ each major iteration.
 NPSOL is not a parallel algorithm and cannot directly take advantage
 of concurrent evaluations. However, if ``numerical_gradients`` with
 ``method_source`` ``dakota`` is specified, then the finite difference
-function evaluations can be performed concurrently (using any of the
-parallel modes described in the Users Manual
-:cite:p:`UsersMan`).
+function evaluations can be performed concurrently (using any of
+:ref:`the parallel modes <parallel>`).
 
 An important related
 observation is the fact that NPSOL uses two different line searches
@@ -83,10 +82,10 @@ If Dakota was built with HDF5 support and run with the
 writes the following results to HDF5:
 
 
-- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
-- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
-- :ref:`hdf5_results-best_constraints<hdf5_results-best_constraints>`
-- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-best_params`
+- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_constraints`
+- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
 Topics::
 package_npsol, sequential_quadratic_programming, local_optimization_methods
 Examples::

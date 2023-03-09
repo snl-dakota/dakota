@@ -26,9 +26,8 @@ Note: see :ref:`interface-analysis_drivers-direct<interface-analysis_drivers-dir
 ``processors_per_analysis`` specification supported for direct
 interfaces.
 
-The ParallelLibrary class and the Parallel Computing chapter of the
-Users Manual :cite:p:`UsersMan` provide additional details on parallel
-configurations.
+The ParallelLibrary class and the :ref:`Parallel Computing section <parallel>`
+provide additional details on parallel configurations.
 Topics::
 block
 Examples::

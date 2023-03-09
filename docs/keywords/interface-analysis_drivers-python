@@ -1,10 +1,8 @@
 Blurb::
 Run Python through a Pybind11-based direct interface - requires a special Dakota build
 Description::
-Dakota supports a library-linked interface to Python, but it must be
-explicitly enabled when compiling Dakota from source. Consult the
-Users Manual :cite:p:`UsersMan` for discussion, examples, and documentation
-of the dictionary-based API.  Contact the
+Dakota supports :ref:`a library-linked interface to Python <advint:existingdirect>`, but it must be
+explicitly enabled when compiling Dakota from source.  Contact the
 Dakota users mailing list for assistance building and using Dakota
 with these interfaces.
 

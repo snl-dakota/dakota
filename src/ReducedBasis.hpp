@@ -18,6 +18,7 @@
 #ifndef REDUCED_BASIS_H 
 #define REDUCED_BASIS_H 
 
+#include "dakota_data_util.hpp"
 #include "ExperimentDataUtils.hpp"
 
 namespace Dakota {
@@ -68,7 +69,7 @@ class ReducedBasis
 
     const RealVector & get_column_means()
       { if (!col_means_computed) {
-          compute_column_means(matrix, column_means);
+          compute_col_means(matrix, column_means);
           col_means_computed = true;
         }
         return column_means; 

@@ -243,7 +243,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
     mf_greedy = (mf && multilevAllocControl == GREEDY_REFINEMENT);
 
   // define tie breaker for hierarchy of model forms versus resolution levels
-  if (iteratedModel.surrogate_type() == "hierarchical")
+  if (iteratedModel.surrogate_type() == "ensemble")
     iteratedModel.multifidelity_precedence(mf);//reassign default keys if needed
 
   // Check for suitable distribution types.
@@ -1274,76 +1274,63 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
   if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
        (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0) ||
        !multilevDiscrepEmulation) {
-    bypass_surrogate_mode();              // one model evaluation
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // truth only
     uSpaceModel.active_model_key(hf_key); // one data set
+    uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
   }
   else { // 3 data sets: HF, either LF or LF-hat, and discrep
-    switch (multilevDiscrepEmulation) {
-    case DISTINCT_EMULATION:
-      aggregated_models_mode(); // two model evaluations
-      break;
-    case RECURSIVE_EMULATION:
-      bypass_surrogate_mode(); // still only one model evaluation
-      // child key is emulator of the LF model (LF-hat) --> dummy form,lev
-      //child_key[1] = USHRT_MAX; child_key[2] = SZ_MAX;
-      break;
-    }
+    assign_surrogate_response_mode();
     Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
     // using same child key for either LF or LF-hat
     lf_key.decrement_key(seq_type); // seq_index defaults to 0
     // For ML/MF PCE/SC/FT, we both aggregate raw levels and apply a reduction
-    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_WITH_REDUCTION);
+    discrep_key.aggregate_keys(lf_key, hf_key, Pecos::RAW_WITH_REDUCTION);
     uSpaceModel.active_model_key(discrep_key);
+    uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
   }
 }
 
 
-void NonDExpansion::assign_discrepancy_mode()
+void NonDExpansion::assign_modes()
 {
-  // assign alternate defaults for correction and discrepancy emulation types
-  switch (iteratedModel.correction_type()) {
-  //case ADDITIVE_CORRECTION:
-  //case MULTIPLICATIVE_CORRECTION:
-  case NO_CORRECTION: // assign method-specific default
-    iteratedModel.correction_type(ADDITIVE_CORRECTION); break;
+  if (iteratedModel.surrogate_type() != "ensemble") {
+    Cerr << "Error: multilevel/multifidelity expansions require an ensemble "
+	 << "model." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
 
-  switch (multilevDiscrepEmulation) {
-  // HIERARCHICAL_INTERPOLANT approaches are already recursive ...
-  //case DISTINCT_EMULATION:
-  //  consider disallowing for basis type Pecos::HIERARCHICAL_INTERPOLANT
-  //case RECURSIVE_EMULATION:
-  //  consider disallowing for basis type Pecos::NODAL_INTERPOLANT
-  case DEFAULT_EMULATION: // assign method-specific default
+  // assign method-specific defaults for correction and discrepancy emulation
+  if (iteratedModel.correction_type() == NO_CORRECTION)
+    iteratedModel.correction_type(ADDITIVE_CORRECTION);
+  if (multilevDiscrepEmulation == DEFAULT_EMULATION)
     multilevDiscrepEmulation =
       //(expBasisType==Pecos::HIERARCHICAL_INTERPOLANT) ? RECURSIVE_EMULATION :
       DISTINCT_EMULATION;
-    break;
-  }
+
+  assign_surrogate_response_mode();
 }
 
 
-void NonDExpansion::assign_hierarchical_response_mode()
+void NonDExpansion::assign_surrogate_response_mode()
 {
   // override default SurrogateModel::responseMode for purposes of setting
   // comms for the ordered Models within HierarchSurrModel::set_communicators(),
   // which precedes mode updates in {multifidelity,multilevel}_expansion().
 
-  if (iteratedModel.surrogate_type() != "hierarchical") {
-    Cerr << "Error: multilevel/multifidelity expansions require a "
-	 << "hierarchical model." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
   // ML-MF {PCE,SC,FT} are based on model discrepancies, but multi-index cases
   // may evolve towards BYPASS_SURROGATE as sparse grids in model space will
   // manage QoI differences.
-  // > AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
+  // > AGGREGATED_MODEL_PAIR avoids decimation of data and can simplify methods,
   //   but requires additional discrepancy keys for high-low QoI combinations
-  else
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
+  switch (multilevDiscrepEmulation) {
+  case RECURSIVE_EMULATION:
+    // consider disallowing for basis type Pecos::NODAL_INTERPOLANT
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);       break;
+  case DISTINCT_EMULATION: case DEFAULT_EMULATION:
+    // consider disallowing for basis type Pecos::HIERARCHICAL_INTERPOLANT
+    // (HIERARCHICAL_INTERPOLANT approaches are already recursive...)
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);  break;
+  }
 }
 
 

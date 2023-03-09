@@ -6,7 +6,7 @@ Run Dakota Using Next-Gen Workflow
 
 You can execute Dakota via the "dakota" node in :ref:`Next-Gen Workflow. <ngw-main>`
 
-.. image:: img/Run_Using_Workflow_4.png
+.. image:: img/Run_Using_Workflow_4.png 
    :alt: A two-node workflow that executes Dakota
 
 This is effectively equivalent to running ``dakota -i CenteredParameterStudy.in`` on the command-line.
@@ -19,7 +19,7 @@ The Dakota node can flexibly receive additional input ports. For example, it is 
    :alt: Pre-processing example
    
 In this example, Dakota is expected to recognize two pre-processor parameters - ``{DRIVER_LF}`` and ``{DRIVER_HF}``, as represented by the two nodes
-being passed into the ports named after these pre-processor variables. Learn more about :ref:`uses for Dakota's pre-processor input ports <ngw-multipleanalysisdrivers>`
+being passed into the ports named after these pre-processor variables. Learn more about :ref:`uses for Dakota's pre-processor input ports <ngw-analysisdrivers-multiple>`
 and about :ref:`DPREPRO <interfaces:dprepro-and-pyprepro>`, Dakota's primary pre-processing library.
 
 The complete specification for the Dakota node is available in NGW's documentation system. To learn more about its specific fields, input ports, and output ports,

@@ -194,7 +194,7 @@ private:
 			   SizetArray& num_Q);
 
   /// increment the allocated samples counter
-  void increment_alloc_samples(size_t& N_l_alloc, const Real* N_l_target);
+  size_t allocation_increment(size_t N_l_alloc, const Real* N_l_target);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
   Real compute_ml_equivalent_cost(const SizetArray& raw_N_l,
@@ -958,17 +958,23 @@ update_projected_samples(const SizetArray& delta_N_l, //Sizet2DArray& N_actual,
 			 SizetArray& N_alloc, const RealVector& cost,
 			 Real& delta_equiv_hf)
 {
-  size_t incr, lev, num_lev = cost.length();
+  size_t actual_incr, alloc_incr, offline_N_lwr = 0,
+    lev, num_lev = cost.length();
+  if (pilotMgmtMode == OFFLINE_PILOT)
+    offline_N_lwr = (finalStatsType == QOI_STATISTICS) ? 2 : 1;
   Real ref_cost = cost[num_lev-1];
+
   for (lev=0; lev<num_lev; ++lev) {
-    incr = delta_N_l[lev];
-    //increment_samples(N_actual[lev], incr);
-    increment_ml_equivalent_cost(incr, level_cost(cost, lev), ref_cost,
+    actual_incr = std::max(delta_N_l[lev], offline_N_lwr);
+    //increment_samples(N_actual[lev], actual_incr);
+    increment_ml_equivalent_cost(actual_incr, level_cost(cost, lev), ref_cost,
 				 delta_equiv_hf);
-    if (backfillFailures)
-      increment_alloc_samples(N_alloc[lev], NTargetQoI[lev]);
+    if (backfillFailures) {
+      alloc_incr = allocation_increment(N_alloc[lev], NTargetQoI[lev]);
+      N_alloc[lev] += std::max(alloc_incr, offline_N_lwr);
+    }
     else
-      N_alloc[lev] += incr;
+      N_alloc[lev] += actual_incr;
   }
 }
 

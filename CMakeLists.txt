@@ -23,6 +23,19 @@ project("Dakota" NONE)
 
 message(STATUS "Configuring Dakota with CMake ${CMAKE_VERSION}")
 
+# Avoid downstream errors from packages that DNE; likely missing submodules
+if(NOT IS_DIRECTORY "${Dakota_SOURCE_DIR}/packages/pecos")
+  message(FATAL_ERROR "Required source sub-directory "
+    "${Dakota_SOURCE_DIR}/packages/pecos does not exist; "
+    "if using a Git repository, are the submodules checked out?"
+    )
+elseif(NOT IS_DIRECTORY "${Dakota_SOURCE_DIR}/packages/external/nidr")
+  message(FATAL_ERROR "Required source sub-directory "
+    "${Dakota_SOURCE_DIR}/packages/external/nidr does not exist; "
+    "if using a Git repository, are the submodules checked out?"
+    )
+endif()
+
 # Dakota requires C++11
 include(DakotaCxxOptions)
 dakota_cxx_standard()

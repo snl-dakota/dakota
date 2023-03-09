@@ -54,6 +54,7 @@ protected:
   //- Heading: New virtual functions
   //
 
+  virtual Real estimator_accuracy_metric() = 0;
   virtual void print_variance_reduction(std::ostream& s);
 
   //
@@ -75,17 +76,16 @@ protected:
   //- Heading: Member functions
   //
 
-  /// synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
-  void aggregated_models_mode();
-  /// synchronize iteratedModel and activeSet on BYPASS_SURROGATE mode
-  void bypass_surrogate_mode();
-  // synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
-  //void uncorrected_surrogate_mode()
+  /// return cost metric for entry into finalStatistics
+  Real estimator_cost_metric();
 
   /// advance any sequence specifications
   void assign_specification_sequence(size_t index);
   /// extract current random seed from randomSeedSeqSpec
   int seed_sequence(size_t index);
+
+  /// synchronize activeSet with iteratedModel's response size
+  void resize_active_set();
 
   /// increment samples array with a shared scalar
   void increment_samples(SizetArray& N_l, size_t incr);
@@ -197,9 +197,6 @@ protected:
   /// against successful sample completions rather than sample allocations
   bool backfillFailures;
 
-  /// final estimator variance for targeted moment (usually mean), averaged
-  /// across QoI
-  Real avgEstVar;
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
@@ -251,33 +248,19 @@ inline void NonDEnsembleSampling::print_variance_reduction(std::ostream& s)
 { } // default is no-op
 
 
-inline void NonDEnsembleSampling::aggregated_models_mode()
+inline Real NonDEnsembleSampling::estimator_cost_metric()
+{ return equivHFEvals + deltaEquivHF; }
+
+
+inline void NonDEnsembleSampling::resize_active_set()
 {
-  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set HF,LF
+  size_t m_resp_len = iteratedModel.response_size();
+  if (activeSet.request_vector().size() != m_resp_len) {
     // synch activeSet with iteratedModel.response_size()
     activeSet.reshape(iteratedModel.response_size());
     activeSet.request_values(1);
   }
 }
-
-
-inline void NonDEnsembleSampling::bypass_surrogate_mode()
-{
-  if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // HF
-    activeSet.reshape(numFunctions);// synch with model.response_size()
-  }
-}
-
-
-//inline void NonDEnsembleSampling::uncorrected_surrogate_mode()
-//{
-//  if (iteratedModel.surrogate_response_mode() != UNCORRECTED_SURROGATE) {
-//    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-//    activeSet.reshape(numFunctions);// synch with model.response_size()
-//  }
-//}
 
 
 /** extract an active seed from a seed sequence */
@@ -420,7 +403,7 @@ project_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
 }
 
 
-/** For single-level moment calculations with a scalar Nlq. */
+/** For single-level moment calculations without a sample count. */
 inline void NonDEnsembleSampling::
 uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 		       Real& cm1, Real& cm2, Real& cm3, Real& cm4)
@@ -433,7 +416,7 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
   // > For sampling a portion of the population, central moments {2,3,4} are 
   //   biased estimators since the mean is approximated.  The conversion to
   //   unbiased requires a correction based on the number of samples, as
-  //   implemented in the subsequent function.
+  //   implemented in the function following this one.
 
   cm1 = rm1;             // mean
   cm2 = rm2 - cm1 * cm1; // variance 

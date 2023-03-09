@@ -120,14 +120,28 @@ public:
   /// return number of unique response functions (managing any aggregations)
   virtual size_t qoi() const;
 
-  /// return the active approximation sub-model in surrogate models
+  /// return the i-th approximation sub-model in surrogate models
   virtual Model& surrogate_model(size_t i = _NPOS);
-  /// return the active approximation sub-model in surrogate models
+  /// return the i-th approximation sub-model in surrogate models
   virtual const Model& surrogate_model(size_t i = _NPOS) const;
-  /// return the active truth sub-model in surrogate models
+  /// return the truth sub-model in surrogate models
   virtual Model& truth_model();
-  /// return the active truth sub-model in surrogate models
+  /// return the truth sub-model in surrogate models
   virtual const Model& truth_model() const;
+
+  /// return the model form of the i-th active surrogate model
+  virtual unsigned short active_surrogate_model_form(size_t i) const;
+  /// return the model form of the active truth model
+  virtual unsigned short active_truth_model_form() const;
+
+  /// return the i-th active approximation sub-model in surrogate models
+  virtual Model& active_surrogate_model(size_t i = _NPOS);
+  /// return the i-th active approximation sub-model in surrogate models
+  virtual const Model& active_surrogate_model(size_t i = _NPOS) const;
+  /// return the active truth sub-model in surrogate models
+  virtual Model& active_truth_model();
+  /// return the active truth sub-model in surrogate models
+  virtual const Model& active_truth_model() const;
 
   /// identify if hierarchy is across model forms
   virtual bool multifidelity() const;
@@ -388,6 +402,13 @@ public:
   /// forming currentResponse
   virtual short surrogate_response_mode() const;
 
+  /// set discrepancy emulation mode used in SurrogateModels for
+  /// approximating response differences
+  virtual void discrepancy_emulation_mode(short mode);
+  // return discrepancy emulation mode used in SurrogateModels for
+  // approximating response differences
+  //virtual short discrepancy_emulation_mode() const;
+
   // link together more than one SurrogateData instance (DataFitSurrModel)
   //virtual void link_multilevel_approximation_data();
 
@@ -404,17 +425,21 @@ public:
   virtual void correction_type(short corr_type);
   /// return the correction type from the DiscrepancyCorrection object
   /// used by SurrogateModels
-  virtual short correction_type();
+  virtual short correction_type() const;
   /// return the correction order from the DiscrepancyCorrection object
   /// used by SurrogateModels
-  virtual short correction_order();
+  virtual short correction_order() const;
+  /// return correctionMode
+  virtual unsigned short correction_mode() const;
+  /// set correctionMode
+  virtual void correction_mode(unsigned short corr_mode);
 
   /// apply a DiscrepancyCorrection to correct an approximation within
-  /// a HierarchSurrModel
+  /// an EnsembleSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
 			    const Pecos::ActiveKey& paired_key);
   /// apply a sequence of DiscrepancyCorrections to recursively correct an 
-  /// approximation within a HierarchSurrModel
+  /// approximation within an EnsembleSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
 
   /// update componentParallelMode for supporting parallelism in model

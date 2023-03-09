@@ -3,8 +3,7 @@ Augmented Lagrangian approximate subproblem formulation
 Description::
 For SBL problems with nonlinear constraints, a number of algorithm
 formulations exist as described in :cite:p:`Eld06b`
-and as summarized in the Advanced Examples section of
-the Models chapter of the Users Manual :cite:p:`UsersMan`.
+and as summarized in :ref:`adv_meth:sbm:sblm`.
 First, the "primary" functions (that is, the objective
 functions or calibration terms) in the approximate subproblem can be
 selected to be surrogates of the original primary functions (

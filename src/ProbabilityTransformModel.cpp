@@ -727,8 +727,8 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
   if (u_asv.size() != num_fns) {
     Cerr << "Error: inconsistent response function definition in Probability"
 	 << "TransformModel::resp_x_to_u_mapping().\n       x-space response "
-	 << "size = " << num_fns << ", u-space response size =\n"
-	 << u_asv.size() << std::endl;
+	 << "size = " << num_fns << ", u-space response size = " << u_asv.size()
+	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
   if (!x_dist.correlation() && u_dvv != x_dvv) {

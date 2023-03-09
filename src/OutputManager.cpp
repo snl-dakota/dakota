@@ -95,37 +95,45 @@ void OutputManager::initial_redirects(const ProgramOptions& prog_opts)
   // will still be true.  This behavior is okay because the redirector
   // will see the same filename and not reopen the file.
 
-  std::string input_specified_output, input_specified_error;
-  if (!prog_opts.input_file().empty())
-    check_inputfile_redirs(prog_opts.input_file(), input_specified_output,
-			   input_specified_error);
-  else if (!prog_opts.input_string().empty())
-    check_inputstring_redirs(prog_opts.input_string(), input_specified_output,
-			     input_specified_error);
-
-  std::string output_file;
-  if (prog_opts.user_stdout_redirect())
-    output_file = prog_opts.output_file();
-  else if (!input_specified_output.empty())
-    output_file = input_specified_output;
-
   //  if output file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && !output_file.empty()) {
+  if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
     if (outputLevel >= DEBUG_OUTPUT)
-      std::cout << "\nRedirecting Dakota standard output on rank 0 to "
-		<< output_file << std::endl;
-    coutRedirector.push_back(output_file);
+      std::cout << "\nRedirecting Cout on rank 0 to " << prog_opts.output_file()
+                << std::endl;
+    coutRedirector.push_back(prog_opts.output_file());
   }
 
-  std::string error_file;
-  if (prog_opts.user_stderr_redirect())
-    error_file = prog_opts.error_file();
-  else if (!input_specified_error.empty())
-    error_file = input_specified_error;
-
   //  if error file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && !error_file.empty())
-    cerrRedirector.push_back(error_file);
+  if (worldRank == 0 && prog_opts.user_stderr_redirect())
+    cerrRedirector.push_back(prog_opts.error_file());
+}
+
+
+void OutputManager::check_input_redirs(const ProgramOptions& prog_opts,
+				       const std::string& input_file,
+				       const std::string& input_string)
+{
+  std::string input_specified_output, input_specified_error;
+  if (!input_file.empty())
+    check_inputfile_redirs(input_file, input_specified_output,
+			   input_specified_error);
+  else if (!input_string.empty())
+    check_inputstring_redirs(input_string, input_specified_output,
+			     input_specified_error);
+
+  //  if output file specified, redirect immediately, possibly rebind later
+  if (!prog_opts.user_stdout_redirect() && !input_specified_output.empty() &&
+      worldRank == 0) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      std::cout << "\nRedirecting Dakota standard output on rank 0 to "
+		<< input_specified_output << std::endl;
+    coutRedirector.push_back(input_specified_output);
+  }
+
+  // if error file specified, redirect immediately, possibly rebind later
+  if (!prog_opts.user_stderr_redirect() && !input_specified_error.empty() &&
+      worldRank == 0)
+    cerrRedirector.push_back(input_specified_error);
 }
 
 
@@ -135,7 +143,7 @@ void OutputManager::check_inputfile_redirs(const std::string& input_filename,
 {
   // TODO: Check file operation exceptions
   std::ifstream infile(input_filename);
-  OutputManager::check_input_redirs(infile, output_filename, error_filename);
+  OutputManager::check_input_redirs_impl(infile, output_filename, error_filename);
 }
 
 
@@ -144,14 +152,14 @@ void OutputManager::check_inputstring_redirs(const std::string& input_string,
 					     std::string& error_filename)
 {
   std::istringstream infile(input_string);
-  OutputManager::check_input_redirs(infile, output_filename, error_filename);
+  OutputManager::check_input_redirs_impl(infile, output_filename, error_filename);
 }
 
 
 /** This has a stream API to permit multiline matching. */
-void OutputManager::check_input_redirs(std::istream& input_stream,
-				       std::string& output_filename,
-				       std::string& error_filename)
+void OutputManager::check_input_redirs_impl(std::istream& input_stream,
+					    std::string& output_filename,
+					    std::string& error_filename)
 {
   // RATIONALE: This doesn't allow abbreviations due to similar
   // keywords output_filter and error_factors. The regexs for
@@ -712,6 +720,10 @@ void OutputManager::read_write_restart(bool restart_requested,
     // catch errors with opening files and reading headers
     try {
 
+      // warn on old restart file
+      RestartVersion rst_ver =
+	RestartVersion::check_restart_version(read_restart_filename);
+
       std::ifstream restart_input_fs(read_restart_filename.c_str(),
 				     std::ios::binary);
       if (!restart_input_fs.good()) {
@@ -725,6 +737,10 @@ void OutputManager::read_write_restart(bool restart_requested,
 	   << "  Any unexpected errors may indicate a corrupt restart file; "
 	   << "using -stop_restart\n  to truncate the read may help."
 	   << std::endl;
+
+      // re-read the full, correct version info from the new stream
+      if (RestartVersion::restartFirstVersionNumber <= rst_ver.restartVersion)
+	restart_input_archive & rst_ver;
 
       // The -stop_restart input for restricting the number of
       // evaluations read in from the restart file is very useful when
@@ -997,7 +1013,8 @@ RestartWriter::RestartWriter()
 {  /* empty ctor */  }
 
 
-RestartWriter::RestartWriter(const String& write_restart_filename):
+RestartWriter::RestartWriter(const String& write_restart_filename,
+			     bool write_version):
   restartOutputFilename(write_restart_filename),
   restartOutputFS(restartOutputFilename.c_str(), std::ios::binary)
 {
@@ -1008,12 +1025,39 @@ RestartWriter::RestartWriter(const String& write_restart_filename):
   }
 
   restartOutputArchive.reset(new boost::archive::binary_oarchive(restartOutputFS));
+
+  if (write_version) {
+    RestartVersion rst_version(DakotaBuildInfo::get_release_num(),
+			       DakotaBuildInfo::get_rev_number());
+    restartOutputArchive->operator&(rst_version);
+  }
+}
+
+
+RestartWriter::RestartWriter(const String& write_restart_filename,
+			     const RestartVersion& rst_version):
+  restartOutputFilename(write_restart_filename),
+  restartOutputFS(restartOutputFilename.c_str(), std::ios::binary)
+{
+  if (!restartOutputFS.good()) {
+    Cerr << "\nError: could not open restart file '"
+	 << write_restart_filename << "' for writing."<< std::endl;
+    abort_handler(IO_ERROR);
+  }
+
+  restartOutputArchive.reset(new boost::archive::binary_oarchive(restartOutputFS));
+
+  restartOutputArchive->operator&(rst_version);
 }
 
 
 RestartWriter::RestartWriter(std::ostream& write_restart_ostream):
   restartOutputArchive(new boost::archive::binary_oarchive(write_restart_ostream))
-{  /* empty ctor */  }
+{
+  RestartVersion rst_version(DakotaBuildInfo::get_release_num(),
+			     DakotaBuildInfo::get_rev_number());
+  restartOutputArchive->operator&(rst_version);
+}
 
 
 const String& RestartWriter::filename()

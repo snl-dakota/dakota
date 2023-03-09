@@ -81,6 +81,16 @@ public:
 			  StringMultiArrayConstView drv_labels,
 			  const StringArray& resp_labels) const;
 
+  /// computes standardized regression coefficients and corresponding
+  /// R^2 values for input and output data
+  void compute_std_regress_coeffs(const RealMatrix&     vars_samples,
+                                  const IntResponseMap& resp_samples);
+
+  /// prints the SRCs and R^2 values computed in compute_correlations()
+  void print_std_regress_coeffs(std::ostream& s,
+                          StringMultiArrayConstView cv_labels,
+			  const StringArray& resp_labels) const;
+
 private:
 
   //
@@ -111,9 +121,6 @@ private:
   /// sort algorithm to compute ranks for rank correlations
   static bool rank_sort(const int& x, const int& y);
 
-  /// center the passed matrix by its mean, in-place
-  void center_rows(RealMatrix& data_matrix);
-
   /// if result was NaN/Inf, preserve it, otherwise truncate to [-1.0, 1.0]
   void correl_adjust(Real& corr_value);
 
@@ -139,6 +146,11 @@ private:
   RealMatrix partialCorr;
   /// matrix to hold partial rank correlations
   RealMatrix partialRankCorr;
+
+  /// matrix to hold standardized regression coefficients
+  RealMatrix stdRegressCoeffs;
+  /// vector to hold coefficients of determination, eg R^2 values
+  RealVector stdRegressCODs;
 
   /// array to hold temporary data before sort
   static RealArray rawData;

@@ -1345,7 +1345,7 @@ void RecastModel::resize_response_mapping()
   nonlinearRespMapping.resize(num_sm_fns);
 
   // the number of mappings to replicate corresponds to the number
-  // of data sets being aggregated in, e.g., AGGREGATED_MODELS mode
+  // of data sets being aggregated in, e.g., AGGREGATED_MODEL{S,_PAIR} modes
 
   if (num_sm_primary > num_curr_primary) { // inflate existing mappings
     num_replicates = num_sm_primary / num_curr_primary;

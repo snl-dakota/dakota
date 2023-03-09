@@ -12,7 +12,8 @@
 #include "util_common.hpp"
 #include "util_data_types.hpp"
 
-#include <Teuchos_UnitTestHarness.hpp>
+#define BOOST_TEST_MODULE surrogates_GaussianProcessTest
+#include <boost/test/included/unit_test.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -230,7 +231,7 @@ void get_2D_gp_golds_matern(VectorXd& gold_mean, VectorXd& gold_std_dev,
   }
 }
 
-TEUCHOS_UNIT_TEST(surrogates, 1D_gp_constructor_types) {
+BOOST_AUTO_TEST_CASE(test_surrogates_1D_gp_constructor_types) {
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds;
@@ -291,13 +292,13 @@ TEUCHOS_UNIT_TEST(surrogates, 1D_gp_constructor_types) {
       std::cout << cov << "\n";
     }
 
-    TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
-    TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
-    TEST_ASSERT(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
+    BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
+    BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+    BOOST_CHECK(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
   }
 }
 
-TEUCHOS_UNIT_TEST(surrogates, 1D_gp_with_trend_values_and_derivs) {
+BOOST_AUTO_TEST_CASE(test_surrogates_1D_gp_with_trend_values_and_derivs) {
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds;
@@ -349,7 +350,7 @@ TEUCHOS_UNIT_TEST(surrogates, 1D_gp_with_trend_values_and_derivs) {
     std::cout << cov << "\n";
   }
 
-  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
+  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
 
   /* compute derivatives of GP with trend and check */
   const int eval_point_index = 0;
@@ -381,11 +382,11 @@ TEUCHOS_UNIT_TEST(surrogates, 1D_gp_with_trend_values_and_derivs) {
   grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
   hessian_drop = log10(hessian_fd_error(0, 0) / hessian_fd_error.minCoeff());
 
-  TEST_ASSERT(grad_drop > 6.0)
-  TEST_ASSERT(hessian_drop > 3.0)
+  BOOST_CHECK(grad_drop > 6.0);
+  BOOST_CHECK(hessian_drop > 3.0);
 }
 
-TEUCHOS_UNIT_TEST(surrogates, 2D_gp_no_trend) {
+BOOST_AUTO_TEST_CASE(test_surrogates_2D_gp_no_trend) {
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds, eval_pts;
@@ -425,12 +426,12 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_no_trend) {
     std::cout << cov << "\n";
   }
 
-  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
-  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
-  TEST_ASSERT(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
+  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
+  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+  BOOST_CHECK(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
 }
 
-TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
+BOOST_AUTO_TEST_CASE(test_surrogates_2D_gp_with_trend_values_derivs_and_save_load) {
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds, eval_pts;
@@ -494,9 +495,9 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
     std::cout << cov << "\n";
   }
 
-  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
-  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
-  TEST_ASSERT(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
+  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
+  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+  BOOST_CHECK(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
 
   /* compute derivatives of GP with trend and check */
   const int eval_point_index = 1;
@@ -513,8 +514,8 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
     std::cout << hessian << "\n\n";
   }
 
-  TEST_ASSERT(relative_allclose(grad, gold_grad, rel_float_tol));
-  TEST_ASSERT(relative_allclose(hessian, gold_hessian, rel_float_tol));
+  BOOST_CHECK(relative_allclose(grad, gold_grad, rel_float_tol));
+  BOOST_CHECK(relative_allclose(hessian, gold_hessian, rel_float_tol));
 
   MatrixXd grad_fd_error, hessian_fd_error;
   fd_check_gradient(gp, eval_point, grad_fd_error);
@@ -538,14 +539,14 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
     hessian_drop(i) =
         log10(hessian_fd_error.col(i)(0) / hessian_fd_error.col(i).minCoeff());
 
-    TEST_ASSERT(grad_drop(i) > 6.0);
-    TEST_ASSERT(hessian_drop(i) > 3.0);
+    BOOST_CHECK(grad_drop(i) > 6.0);
+    BOOST_CHECK(hessian_drop(i) > 3.0);
 
     if (i == 1) {
       i += 1;
       hessian_drop(i) = log10(hessian_fd_error.col(i)(0) /
                               hessian_fd_error.col(i).minCoeff());
-      TEST_ASSERT(hessian_drop(i) > 3.0);
+      BOOST_CHECK(hessian_drop(i) > 3.0);
     }
   }
 
@@ -572,20 +573,20 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
 
     // Verify saved vs. loaded to tight tolerance
     const double tight_tol = 1.0e-16;
-    TEST_ASSERT(matrix_equals(mean_save, mean_load, tight_tol));
-    TEST_ASSERT(matrix_equals(grad_save, grad_load, tight_tol));
-    TEST_ASSERT(matrix_equals(hess_save, hess_load, tight_tol));
+    BOOST_CHECK(matrix_equals(mean_save, mean_load, tight_tol));
+    BOOST_CHECK(matrix_equals(grad_save, grad_load, tight_tol));
+    BOOST_CHECK(matrix_equals(hess_save, hess_load, tight_tol));
 
     // Verify vs. original unit test
     get_gp_test_arrays(gp, eval_pts, mean_load, std_dev_load, cov_load);
-    TEST_ASSERT(relative_allclose(mean_load, gold_mean, rel_float_tol));
-    TEST_ASSERT(
+    BOOST_CHECK(relative_allclose(mean_load, gold_mean, rel_float_tol));
+    BOOST_CHECK(
         relative_allclose(std_dev_load, gold_std_dev, 100 * rel_float_tol));
-    TEST_ASSERT(relative_allclose(cov_load, gold_cov, 100 * rel_float_tol));
+    BOOST_CHECK(relative_allclose(cov_load, gold_cov, 100 * rel_float_tol));
   }
 }
 
-TEUCHOS_UNIT_TEST(surrogates, matern_32_gp) {
+BOOST_AUTO_TEST_CASE(test_surrogates_matern_32_gp) {
   bool print_output = false;
 
   const std::string kernel_type = "Matern 3/2";
@@ -632,8 +633,8 @@ TEUCHOS_UNIT_TEST(surrogates, matern_32_gp) {
     std::cout << std_dev << "\n";
   }
 
-  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
-  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, rel_float_tol));
+  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
+  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, rel_float_tol));
 
   /* compute gradient of GP and check */
   /* The Matern 3/2 GP produces C^1-smooth functions and therefore
@@ -657,7 +658,7 @@ TEUCHOS_UNIT_TEST(surrogates, matern_32_gp) {
 
   double grad_drop;
   grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
-  TEST_ASSERT(grad_drop > 6.0)
+  BOOST_CHECK(grad_drop > 6.0);
 
   /* 2D GP tests */
 
@@ -693,8 +694,8 @@ TEUCHOS_UNIT_TEST(surrogates, matern_32_gp) {
     std::cout << std_dev << "\n";
   }
 
-  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
-  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
+  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
 
   /* compute derivatives of GP and check */
   const int eval_point_index_2D = 1;
@@ -712,11 +713,11 @@ TEUCHOS_UNIT_TEST(surrogates, matern_32_gp) {
   for (int i = 0; i < 2; i++) {
     grad_drop_2D(i) =
         log10(grad_fd_error.col(i)(0) / grad_fd_error.col(i).minCoeff());
-    TEST_ASSERT(grad_drop_2D(i) > 6.0);
+    BOOST_CHECK(grad_drop_2D(i) > 6.0);
   }
 }
 
-TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
+BOOST_AUTO_TEST_CASE(test_surrogates_matern_52_gp) {
   bool print_output = false;
 
   const std::string kernel_type = "Matern 5/2";
@@ -763,8 +764,8 @@ TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
     std::cout << std_dev << "\n";
   }
 
-  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
-  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, rel_float_tol));
+  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
+  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, rel_float_tol));
 
   /* compute derivatives of GP with trend and check */
   const int eval_point_index = 0;
@@ -796,8 +797,8 @@ TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
   grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
   hessian_drop = log10(hessian_fd_error(0, 0) / hessian_fd_error.minCoeff());
 
-  TEST_ASSERT(grad_drop > 6.0)
-  TEST_ASSERT(hessian_drop > 3.0)
+  BOOST_CHECK(grad_drop > 6.0);
+  BOOST_CHECK(hessian_drop > 3.0);
 
   /* 2D GP tests */
 
@@ -833,8 +834,8 @@ TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
     std::cout << std_dev << "\n";
   }
 
-  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
-  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
+  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
 
   /* compute derivatives of GP and check */
   const int eval_point_index_2D = 1;
@@ -860,19 +861,19 @@ TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
     hessian_drop_2D(i) =
         log10(hessian_fd_error.col(i)(0) / hessian_fd_error.col(i).minCoeff());
 
-    TEST_ASSERT(grad_drop_2D(i) > 6.0);
-    TEST_ASSERT(hessian_drop_2D(i) > 3.0);
+    BOOST_CHECK(grad_drop_2D(i) > 6.0);
+    BOOST_CHECK(hessian_drop_2D(i) > 3.0);
 
     if (i == 1) {
       i += 1;
       hessian_drop_2D(i) = log10(hessian_fd_error.col(i)(0) /
                                  hessian_fd_error.col(i).minCoeff());
-      TEST_ASSERT(hessian_drop_2D(i) > 3.0);
+      BOOST_CHECK(hessian_drop_2D(i) > 3.0);
     }
   }
 }
 
-TEUCHOS_UNIT_TEST(surrogates, gp_read_from_parameterlist) {
+BOOST_AUTO_TEST_CASE(test_surrogates_gp_read_from_parameterlist) {
   std::string test_parameterlist_file =
       "gp_test_data/GP_test_parameterlist.yaml";
   //"gp_test_data/GP_test_parameterlist.xml";
@@ -883,24 +884,24 @@ TEUCHOS_UNIT_TEST(surrogates, gp_read_from_parameterlist) {
 
   const double rel_float_tol = 1.0e-12;
 
-  TEST_EQUALITY(plist.get<std::string>("scaler name"), "standardization");
-  TEST_EQUALITY(plist.get<int>("num restarts"), 10);
-  TEST_EQUALITY(plist.get<int>("gp seed"), 42);
+  BOOST_CHECK(plist.get<std::string>("scaler name") == "standardization");
+  BOOST_CHECK(plist.get<int>("num restarts") == 10);
+  BOOST_CHECK(plist.get<int>("gp seed") == 42);
 
   const ParameterList plist_nugget = plist.get<ParameterList>("Nugget");
-  TEST_FLOATING_EQUALITY(plist_nugget.get<double>("fixed nugget"), 1.0e-14,
-                         rel_float_tol);
-  TEST_EQUALITY(plist_nugget.get<bool>("estimate nugget"), false);
+  BOOST_CHECK_CLOSE(plist_nugget.get<double>("fixed nugget"), 1.0e-14,
+                         100.0*rel_float_tol);
+  BOOST_CHECK(plist_nugget.get<bool>("estimate nugget") == false);
 
   const ParameterList plist_trend = plist.get<ParameterList>("Trend");
-  TEST_EQUALITY(plist_trend.get<bool>("estimate trend"), false);
+  BOOST_CHECK(plist_trend.get<bool>("estimate trend") == false);
 
   const ParameterList plist_options = plist_trend.get<ParameterList>("Options");
-  TEST_EQUALITY(plist_options.get<int>("max degree"), 2);
-  TEST_FLOATING_EQUALITY(plist_options.get<double>("p-norm"), 1.0,
-                         rel_float_tol);
-  TEST_EQUALITY(plist_options.get<std::string>("scaler type"), "none");
-  TEST_EQUALITY(plist_options.get<std::string>("regression solver type"),
+  BOOST_CHECK(plist_options.get<int>("max degree") == 2);
+  BOOST_CHECK_CLOSE(plist_options.get<double>("p-norm"), 1.0,
+                         100.0*rel_float_tol);
+  BOOST_CHECK(plist_options.get<std::string>("scaler type") == "none");
+  BOOST_CHECK(plist_options.get<std::string>("regression solver type") ==
                 "SVD");
 }
 

@@ -8,14 +8,13 @@ The ``fork`` interface is recommended over ``system`` for most analysis
 drivers that are external to Dakota, i.e., any driver not linked in
 via the ``direct`` interface.
 
-As explained in the Users Manual, the parameters and results file
-names are passed on the command line to the analysis driver(s).  If
+The parameters and results file names are passed on the command line
+to the analysis driver(s).  If
 input/output filters are specified, they will be run before/after the
 analysis drivers.  The ``verbatim`` keyword is used to modify the
 default driver/filter commands.
 
-For additional information on invocation syntax, see the Interfaces
-chapter of the Users Manual :cite:p:`UsersMan`.
+For additional information on invocation syntax, refer to :ref:`interfaces:sim`.
 Topics::
 
 Examples::

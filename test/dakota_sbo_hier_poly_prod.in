@@ -34,7 +34,7 @@ method,
 
 model,
 	id_model = 'SURROGATE'
-	surrogate hierarchical
+	surrogate ensemble
 	  ordered_model_fidelities = 'LOFI' 'HIFI'
 	  correction additive       second_order	#s0,#s3,#s6,#s9
 #	  correction multiplicative second_order	#s1,#s4,#s7,#s10

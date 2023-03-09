@@ -2715,6 +2715,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ one_sided_upper {N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)} ]
       [ two_sided {N_mdm(type,wilksSidedInterval_TWO_SIDED)} ]
      ]
+    [ std_regression_coeffs {N_mdm(true,stdRegressionCoeffs)} ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
       |
@@ -2981,7 +2982,16 @@ KEYWORD method {N_mdm3(start,0,stop)}
     |
     acv_multifidelity ALIAS acv_mf {N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}
     |
-    acv_kl ALIAS acv_adaptive {N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}
+    acv_recursive_diff ALIAS acv_rd {N_mdm(utype,subMethod_SUBMETHOD_ACV_RD)}
+    [ search_model_graphs {0}
+      kl_recursion {N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}
+      |
+      ( partial_recursion {N_mdm(type,dagRecursionType_PARTIAL_GRAPH_RECURSION)}
+        depth_limit INTEGER {N_mdm(ushint,dagDepthLimit)}
+       )
+      |
+      full_recursion {N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}
+     ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
       online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
@@ -6519,25 +6529,25 @@ KEYWORD model {N_mom3(start,0,stop)}
       truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
      )
     |
-    ( hierarchical {N_mom(lit,surrogateType_hierarchical)}
-      ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST {N_mom(strL,ensembleModelPointers)}
-      [ correction {0}
-        zeroth_order {N_mom(order,approxCorrectionOrder_0)}
-        |
-        first_order {N_mom(order,approxCorrectionOrder_1)}
-        |
-        second_order {N_mom(order,approxCorrectionOrder_2)}
-        additive {N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}
-        |
-        multiplicative {N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}
-        |
-        combined {N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}
-       ]
-     )
-    |
-    ( non_hierarchical ALIAS model_ensemble {N_mom(lit,surrogateType_non_hierarchical)}
-      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
-      [ unordered_model_fidelities ALIAS approximation_models STRINGLIST {N_mom(strL,ensembleModelPointers)} ]
+    ( ensemble {N_mom(lit,surrogateType_ensemble)}
+      ( ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST {N_mom(strL,ensembleModelPointers)}
+        [ correction {0}
+          zeroth_order {N_mom(order,approxCorrectionOrder_0)}
+          |
+          first_order {N_mom(order,approxCorrectionOrder_1)}
+          |
+          second_order {N_mom(order,approxCorrectionOrder_2)}
+          additive {N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}
+          |
+          multiplicative {N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}
+          |
+          combined {N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}
+         ]
+       )
+      |
+      ( truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,truthModelPointer)}
+        [ approximation_models ALIAS unordered_model_fidelities STRINGLIST {N_mom(strL,ensembleModelPointers)} ]
+       )
      )
    )
   |

@@ -325,6 +325,9 @@ protected:
   Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
   size_t numLHSRuns; ///< counter for number of sample set generations
 
+  bool stdRegressionCoeffs; ///< flags computation/output of standardized
+                            ///< regression coefficients
+
   bool statsFlag;   ///< flags computation/output of statistics
   bool allDataFlag; ///< flags update of allResponses
                     ///< (allVariables or allSamples already defined)

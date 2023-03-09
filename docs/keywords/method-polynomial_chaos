@@ -176,9 +176,7 @@ restricting the exponential growth of nested rules.
 *Additional Resources*
 
 Dakota provides access to PCE methods through the NonDPolynomialChaos
-class. Refer to the Uncertainty Quantification Capabilities chapter of
-the Users Manual :cite:p:`UsersMan` and the Stochastic Expansion Methods
-chapter of the Theory Manual :cite:p:`TheoMan` for additional information
+class. Refer to :ref:`uq` and :ref:`theory:uq:expansion` for additional information
 on the PCE algorithm.
 
 *Expected HDF5 Output*
@@ -188,10 +186,10 @@ If Dakota was built with HDF5 support and run with the
 writes the following results to HDF5:
 
 
-- :ref:`hdf5_results-se_moments<hdf5_results-se_moments>`
-- :ref:`hdf5_results-pdf<hdf5_results-pdf>`
-- :ref:`hdf5_results-level_mappings<hdf5_results-level_mappings>`
-- :ref:`hdf5_results-vbd<hdf5_results-vbd>`
+- :ref:`hdf5_results-se_moments`
+- :ref:`hdf5_results-pdf`
+- :ref:`hdf5_results-level_mappings`
+- :ref:`hdf5_results-vbd`
 Topics::
 
 Examples::

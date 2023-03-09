@@ -16,7 +16,6 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
-#include "dakota_preproc_util.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
@@ -142,42 +141,20 @@ parse_inputs(ProgramOptions& prog_opts,
 	abort_handler(PARSE_ERROR);
       }
 
-      // Read the input from stdin if the user provided "-" as the filename
-      if(prog_opts.input_file() == "-") {
-        Cout << "Reading Dakota input from standard input" << std::endl;
-        String stdin_string;
-        char in = std::cin.get();
-        while(std::cin.good()) {
-          stdin_string.push_back(in);
-          in = std::cin.get();
-        }
-        prog_opts.input_string(stdin_string);
-      }
-
       if (prog_opts.preproc_input()) {
 
-	if (prog_opts.echo_input())
+	if (prog_opts.echo_input()) {
 	  echo_input_file(prog_opts.input_file(), prog_opts.input_string(),
 			  " template");
-
-	std::string tmpl_file = prog_opts.input_file();
-	if (!prog_opts.input_string().empty())
-	  // must generate to file on disk for pyprepro
-	  tmpl_file = string_to_tmpfile(prog_opts.input_string());
-
-	// run the pre-processor on the file
-	std::string preproc_file = pyprepro_input(tmpl_file,
-						  prog_opts.preproc_cmd());
-
-	if (prog_opts.echo_input())
-	  echo_input_file(preproc_file, "");
+	  echo_input_file(prog_opts.preprocessed_file(), "");
+	}
 
 	// Parse the input file using one of the derived parser-specific classes
-	derived_parse_inputs(preproc_file, "", prog_opts.parser_options());
+	derived_parse_inputs(prog_opts.preprocessed_file(), "",
+			     prog_opts.parser_options());
 
-	boost::filesystem::remove(preproc_file);
-	if (!prog_opts.input_string().empty())
-	  boost::filesystem::remove(tmpl_file);
+	// Remove file created by preprocessing input
+	boost::filesystem::remove(prog_opts.preprocessed_file());
       }
       else {
 
@@ -2379,6 +2356,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"nond.regression_type", P_MET regressionType},
       {"nond.response_level_target", P_MET responseLevelTarget},
       {"nond.response_level_target_reduce", P_MET responseLevelTargetReduce},
+      {"nond.search_model_graphs", P_MET dagRecursionType},
       {"optpp.merit_function", P_MET meritFn},
       {"output", P_MET methodOutput},
       {"sbl.acceptance_logic", P_MET surrBasedLocalAcceptLogic},
@@ -2459,6 +2437,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"nond.export_corrected_variance_format", P_MET exportCorrVarFormat},
       {"nond.export_discrep_format", P_MET exportDiscrepFormat},
       {"nond.export_samples_format", P_MET exportSamplesFormat},
+      {"nond.graph_depth_limit", P_MET dagDepthLimit},
       {"nond.integration_refinement", P_MET integrationRefine},
       {"nond.numerical_solve_mode", P_MET numericalSolveMode},
       {"nond.opt_subproblem_solver", P_MET optSubProbSolver},
@@ -2707,6 +2686,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"sbl.truth_surrogate_bypass", P_MET surrBasedLocalLayerBypass},
       {"scaling", P_MET methodScaling},
       {"speculative", P_MET speculativeFlag},
+      {"std_regression_coeffs", P_MET stdRegressionCoeffs},
       {"variance_based_decomp", P_MET vbdFlag},
       {"wilks", P_MET wilksFlag}
     },

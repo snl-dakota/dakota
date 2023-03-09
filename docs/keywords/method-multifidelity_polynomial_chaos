@@ -102,9 +102,9 @@ If Dakota was built with HDF5 support and run with the
 writes the following results to HDF5:
 
 
-- :ref:`hdf5_results-se_moments<hdf5_results-se_moments>` (expansion moments only)
-- :ref:`hdf5_results-pdf<hdf5_results-pdf>`
-- :ref:`hdf5_results-level_mappings<hdf5_results-level_mappings>`
+- :ref:`hdf5_results-se_moments` (expansion moments only)
+- :ref:`hdf5_results-pdf`
+- :ref:`hdf5_results-level_mappings`
 
 In addition, the execution group has the attribute ``equiv_hf_evals``, which
 records the equivalent number of high-fidelity evaluations.

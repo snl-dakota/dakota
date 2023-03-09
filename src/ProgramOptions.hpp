@@ -65,6 +65,8 @@ public:
   bool preproc_input() const;
   /// pre-processing command, possibly specifying another tool
   const String& preproc_cmd() const;
+  /// pre-processed input filename
+  const String& preprocessed_file() const;
 
   /// (deprecated) NIDR parser options
   const String& parser_options() const;
@@ -142,6 +144,8 @@ public:
   void echo_input(bool echo_flag);
   /// set whether to pre-process input file
   void preproc_input(bool pp_flag);
+  /// set name of preprocessed input file
+  void preprocessed_file(const String& prepro_file);
   /// set alternate pre-processing command
   void preproc_cmd(const String& pp_cmd);
   /// set behavior for abort_handler
@@ -231,6 +235,7 @@ private:
 
   bool preprocInput;      ///< whether to pre-process input with pyprepro/etc.
   String preprocCmd;      ///< pre-processing command (default pyprepro.py)
+  String preprocFilename; ///< pre-processed input file
 
   String parserOptions;   ///< Deprecated option for NIDR parser options
   String exitMode;        ///< Abort or throw on error

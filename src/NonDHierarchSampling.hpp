@@ -59,16 +59,11 @@ protected:
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
+  Real estimator_accuracy_metric();
+
   //
   //- Heading: Member functions
   //
-
-  // synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
-  //void aggregated_models_mode();
-  // synchronize iteratedModel and activeSet on BYPASS_SURROGATE mode
-  //void bypass_surrogate_mode();
-  /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
-  void uncorrected_surrogate_mode();
 
   /// average costs once accumulations are complete
   void average_online_cost(const RealVector& accum_cost,
@@ -84,6 +79,10 @@ protected:
   //- Heading: Data
   //
 
+  /// final estimator variance for targeted moment (usually mean), averaged
+  /// across QoI
+  Real avgEstVar;
+
 private:
 
   //
@@ -93,13 +92,8 @@ private:
 };
 
 
-inline void NonDHierarchSampling::uncorrected_surrogate_mode()
-{
-  if (iteratedModel.surrogate_response_mode() != UNCORRECTED_SURROGATE) {
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-    activeSet.reshape(numFunctions);// synch with model.response_size()
-  }
-}
+inline Real NonDHierarchSampling::estimator_accuracy_metric()
+{ return avgEstVar; }
 
 
 inline void NonDHierarchSampling::

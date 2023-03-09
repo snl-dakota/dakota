@@ -21,6 +21,7 @@
 #include "dakota_global_defs.hpp"
 #include "dakota_tabular_io.hpp"
 #include "DakotaGraphics.hpp"
+#include "RestartVersion.hpp"
 #include <memory>
 
 
@@ -126,7 +127,12 @@ public:
   RestartWriter();
 
   /// typical ctor taking a filename; this class encapsulates the output stream
-  RestartWriter(const String& write_restart_filename);
+  RestartWriter(const String& write_restart_filename,
+		bool write_version = true);
+
+  /// alternate ctor taking non-default version info, helpful for testing
+  RestartWriter(const String& write_restart_filename,
+		const RestartVersion& rst_version);
 
   /// alternate ctor taking a stream, helpful for testing; assumes
   /// client manages the output stream
@@ -135,7 +141,11 @@ public:
   /// output filename for this writer
   const String& filename();
 
-  // TODO: operator &
+  /// serialize the passed data_out to the restart file
+  template<typename T>
+  void operator&(const T& data_out)
+  { restartOutputArchive->operator&(data_out); }
+
   /// add the passed pair to the restart file
   void append_prp(const ParamResponsePair& prp_in);
 
@@ -316,6 +326,12 @@ public:
   /// Archive the input file to the results database
   void archive_input(const ProgramOptions &prog_opts) const;
 
+  /// Checked the passed input file or string for output/error_file
+  /// and redirect accordingly. Command line options take precedence
+  /// over input file options.
+  void check_input_redirs(const ProgramOptions& prog_opts,
+			  const std::string& input_file,
+			  const std::string& input_string);
 
   /// check the specified input file contents for output/error redirection
   static void check_inputfile_redirs(const std::string& input_string,
@@ -328,9 +344,9 @@ public:
 				       std::string& error_filename);
 
   /// check the passed input file stream for output/error redirection
-  static void check_input_redirs(std::istream& input_stream,
-				 std::string& output_filename,
-				 std::string& error_filename);
+  static void check_input_redirs_impl(std::istream& input_stream,
+				      std::string& output_filename,
+				      std::string& error_filename);
 
   // -----
   // Data to later be made private

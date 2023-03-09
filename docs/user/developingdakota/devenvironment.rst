@@ -4,42 +4,36 @@
 Setup Your Development Environment
 """"""""""""""""""""""""""""""""""
 
-Dakota testing baselines are currently based on the recommended Dakota RHEL 7 configuration (see below).
+RHEL 7 is the recommended Dakota development environment, as Dakota
+tests are baselined (primarily) to stock RHEL7 packages. SNL
+developers should see team documentation for access to RHEL 7
+resources.  For others who wish to develop on machines without RHEL 7
+installed, it's possible to develop using a native toolchain and then
+use the Docker-based build/test process before pushing to the devel
+branch (see below).
 
-For developers who wish to develop on machines without RHEL7 installed, use the Docker-based build/test process before pushing to the devel branch (also below).
+See :ref:`devenv` for pointers on setting up a development environment
+on various platforms, and overall information on :ref:`compiling-main`.
 
-Thanks to Bill Goldman for the initial inspiration for this environment and Jon Wilson for tightening up the implementation.
+A typical developer CMake configuration of Dakota, e.g., on RHEL 7
+includes the use of the ``DevDistro`` convenience option which enables
+developer compiler options, documentation, and specification
+maintenance and some typical features::
 
-===========================
-Developing on Linux (RHEL7)
-===========================
+   cmake \
+   -D DevDistro:BOOL=ON -D DAKOTA_HAVE_HDF5:BOOL=TRUE \
+   -D HAVE_QUESO:BOOL=ON -D DAKOTA_HAVE_GSL:BOOL=ON" \
+   -D DAKOTA_PYTHON:BOOL=TRUE -D DAKOTA_PYTHON_DIRECT_INTERFACE:BOOL=TRUE -D DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY:BOOL=TRUE -D DAKOTA_PYTHON_SURROGATES:BOOL=TRUE -DDAKOTA_PYTHON_WRAPPER:BOOL=TRUE \
+   ../source
 
-On RHEL7 (most recently 7.8), we satisfied Dakota's dependencies with the following.  These are all from the standard package or EPEL (yum install epel-release) repositories and installed with yum install.
+Typically on stock RHEL 7, the following are also necessary::
 
-Core development tools: GCC 4.8.5, Java 1.8, Python 2.7.5, Perl 5.16.3
+   cmake3 \
+   <options from above>
+   -D JAVA_HOME:PATH=/usr/lib/jvm/java-11 \
+   -D Boost_NO_BOOST_CMAKE:BOOL=TRUE -D Boost_NO_SYSTEM_PATHS:BOOL=TRUE -D BOOST_INCLUDEDIR:PATH=/usr/include/boost169 -DBOOST_LIBRARYDIR:PATH=/usr/lib64/boost169
+   ../source
 
-.. code-block::
-
-   yum install cmake3 gcc gcc-c++ gcc-gfortran java-1.8.0-openjdk-devel git cmake python perl
-
-
-Libraries/runtimes: OpenMPI 1.10.3, GSL 1.15. (As of Dakota 6.13, Boost 1.69 from the EPEL repo.)
-
-.. code-block::
-
-   yum install blas blas-devel lapack lapack-devel boost169 boost169-devel openmpi openmpi-devel gsl gsl-devel
-
-
-If building documentation...
-
-.. code-block::
- 
-   yum install doxygen texlive-collection-latexrecommended
-
-
-(Not currently building with X Windows features)
-
-When configuring use cmake3 and specify Boost include/library directories to point to, e.g., /usr/include/boost169.
 
 ======================
 Developing with Docker

@@ -14,9 +14,9 @@ If Dakota was built with HDF5 support and run with the
 writes the following results to HDF5:
 
 
-- :ref:`hdf5_results-best_params<hdf5_results-best_params>`
-- :ref:`hdf5_results-best_obj_fncs<hdf5_results-best_obj_fncs>` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
-- :ref:`hdf5_results-calibration<hdf5_results-calibration>` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-best_params`
+- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
 Topics::
 
 Examples::

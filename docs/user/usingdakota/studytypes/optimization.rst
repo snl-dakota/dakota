@@ -683,8 +683,7 @@ find points which maximize the EIF. Rather, we use the DIRECT algorithm.
 Second, we allow for multiobjective optimization and nonlinear least
 squares including general nonlinear constraints. Constraints are handled
 through an augmented Lagrangian merit function approach (see
-:ref:`Surrogate-Based Local Minimization <sblm>` in the theory section of
-the manual. :cite:p:`TheoMan`).
+:ref:`Surrogate-Based Local Minimization <sblm>`).
 
 .. _`opt:methods:gradientfree:global:example`:
 
@@ -735,7 +734,7 @@ optimization process will be terminated after either 100 iterations
 (generations of the EA) or 2,000 function evaluations. The EA software
 available in Dakota provides the user with much flexibility in choosing
 the settings used in the optimization process.
-See :cite:p:`RefMan` and :cite:p:`Har06` for details
+See :dakkw:`method-coliny_ea` and :cite:p:`Har06` for details
 on these settings.
 
 The EA optimization results printed at the end of this file show that
@@ -826,8 +825,7 @@ which has to be less than or equal to ``batch_size - 1``.
 
 For further elaboration of the difference between batch-sequential
 parallel and asynchronous parallel, see the detailed discussion of
-:ref:`Efficient Global Optimization <uq:ego>` in the theory section of
-the manual :cite:p:`TheoMan`.
+:ref:`Efficient Global Optimization <uq:ego>`.
 
 
 .. _`opt:additional`:

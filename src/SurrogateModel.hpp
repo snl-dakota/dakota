@@ -85,8 +85,9 @@ protected:
   void active_model_key(const Pecos::ActiveKey& key);
   const Pecos::ActiveKey& active_model_key() const;
 
-  /// return responseMode
   short surrogate_response_mode() const;
+  short correction_type() const;
+  short correction_order() const;
 
   /// return the current evaluation id for this Model
   int derived_evaluation_id() const;
@@ -131,12 +132,6 @@ protected:
   /// check sub_model for consistency in response QoI counts
   bool check_response_qoi(const Model& sub_model);
 
-  /// distributes the incoming orig_asv among actual_asv and approx_asv
-  void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
-		 ShortArray& approx_asv, bool build_flag);
-  /// distributes the incoming orig_asv among actual_asv and approx_asv
-  void asv_split(const ShortArray& orig_asv, Short2DArray& indiv_asv);
-
   /// initialize model with linear/nonlinear constraint data that could change
   /// once per set of evaluations (e.g., an outer iterator execution)
   void init_model_constraints(Model& model);
@@ -167,7 +162,11 @@ protected:
 
   /// evaluate whether a rebuild of the approximation should be
   /// forced based on changes in the inactive data
-  bool force_rebuild();
+  bool check_rebuild(const RealVector& ref_icv, const IntVector& ref_idiv,
+    const StringMultiArray& ref_idsv, const RealVector& ref_idrv,
+    const RealVector& ref_c_l_bnds,   const RealVector& ref_c_u_bnds,
+    const IntVector&  ref_di_l_bnds,  const IntVector&  ref_di_u_bnds,
+    const RealVector& ref_dr_l_bnds,  const RealVector& ref_dr_u_bnds);
 
   /// reconstitutes a combined_asv from actual_asv and approx_asv
   void asv_combine(const ShortArray& actual_asv, const ShortArray& approx_asv,
@@ -177,8 +176,8 @@ protected:
                         const Response& approx_response,
                         Response& combined_response);
 
-  /// aggregate {HF,LF} response data to create a new response with 2x size
-  void aggregate_response(const Response& hf_resp, const Response& lf_resp,
+  /// aggregate 2 sets of response data to create a new response with 2x size
+  void aggregate_response(const Response& resp1, const Response& resp2,
 			  Response& agg_resp);
   // aggregate response array to create a new response with accumulated size
   //void aggregate_response(const ResponseArray& resp_array,Response& agg_resp);
@@ -206,6 +205,12 @@ protected:
 
   /// type of correction: additive, multiplicative, or combined
   short corrType;
+  /// order of correction: 0 (value), 1 (gradient), or 2 (Hessian)
+  short corrOrder;
+  /// map of raw continuous variables used by apply_correction().
+  /// Model::varsList cannot be used for this purpose since it does
+  /// not contain lower level variables sets from finite differencing.
+  IntVariablesMap rawVarsMap;
 
   /// counter for calls to derived_evaluate()/derived_evaluate_nowait();
   /// used to key response maps from SurrogateModels
@@ -223,42 +228,6 @@ protected:
   /// (corresponding to ParallelConfiguration::miPLIters) used at runtime
   size_t miPLIndex;
 
-  /// stores a reference copy of active continuous lower bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  RealVector referenceCLBnds;
-  /// stores a reference copy of active continuous upper bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  RealVector referenceCUBnds;
-  /// stores a reference copy of active discrete int lower bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  IntVector referenceDILBnds;
-  /// stores a reference copy of active discrete int upper bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  IntVector referenceDIUBnds;
-  /// stores a reference copy of active discrete real lower bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  RealVector referenceDRLBnds;
-  /// stores a reference copy of active discrete real upper bounds when the
-  /// approximation is built; used to detect when a rebuild is required.
-  RealVector referenceDRUBnds;
-
-  /// stores a reference copy of the inactive continuous variables when the
-  /// approximation is built using a Distinct view; used to detect when a
-  /// rebuild is required.
-  RealVector referenceICVars;
-  /// stores a reference copy of the inactive discrete int variables when
-  /// the approximation is built using a Distinct view; used to detect when
-  /// a rebuild is required.
-  IntVector referenceIDIVars;
-  /// stores a reference copy of the inactive discrete string variables when
-  /// the approximation is built using a Distinct view; used to detect when
-  /// a rebuild is required.
-  StringMultiArray referenceIDSVars;
-  /// stores a reference copy of the inactive discrete real variables when
-  /// the approximation is built using a Distinct view; used to detect when
-  /// a rebuild is required.
-  RealVector referenceIDRVars;
-
 private:
 
   //
@@ -274,12 +243,6 @@ private:
   //- Heading: Data
   //
 
-  /// copy of the truth model variables object used to simplify conversion 
-  /// among differing variable views in force_rebuild()
-  Variables   truthModelVars;
-  /// copy of the truth model constraints object used to simplify conversion 
-  /// among differing variable views in force_rebuild()
-  Constraints truthModelCons;
 };
 
 
@@ -366,6 +329,14 @@ inline void SurrogateModel::check_key(int key1, int key2) const
     abort_handler(MODEL_ERROR);
   }
 }
+
+
+inline short SurrogateModel::correction_type() const
+{ return corrType; }
+
+
+inline short SurrogateModel::correction_order() const
+{ return corrOrder; }
 
 
 /*

@@ -622,7 +622,7 @@ If this input file is executed in Dakota, it will converge to the
 optimal design point at :math:`(x_{1},x_{2})=(1,1)` in approximately 800
 function evaluations. While this solution is correct, it is obtained at
 a much higher cost than a traditional gradient-based optimizer (e.g.,
-see the results obtained in :ref:`Section Tutorial Examples Optimization <tutorial:examples:optimization>`.
+see the results obtained in :ref:`examples-gettingstarted-optimization`.
 This demonstrates that the SBO method with global data fits is not
 really intended for use with smooth continuous optimization problems;
 direct gradient-based optimization can be more efficient for such

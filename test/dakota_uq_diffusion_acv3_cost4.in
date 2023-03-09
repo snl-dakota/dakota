@@ -32,32 +32,31 @@ method,
 	approximate_control_variate
 	  acv_mf sqp		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s22,#p0
 #	  acv_is sqp		#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
-#	  acv_mf nip		#s18,#s19,#s23,#s24,#s25,#p1,#p2
+#	  acv_mf nip		#s18,#s19,#s23,#s24,#s25,#s26,#p1,#p2
 #	  acv_is nip		#s20,#s21
 #	  truth_fixed_by_pilot	#s22,#s23
 #	  solution_mode pilot_projection	#s4,#s7,#s10,#s13,#s16
 #	  solution_mode offline_pilot		#s5,#s8,#s11,#s14,#s17
-#	multifidelity_sampling
 	  max_function_evaluations = 100	#s0,#s1,#s2,#s9,#s10,#s11,#p0
 #	  max_function_evaluations = 250	#s22
-#	  max_function_evaluations = 500	#s3,#s4,#s5,#s12,#s13,#s14,#s18,#s25,#s20,#s24,#p1,#p2
+#	  max_function_evaluations = 500	#s3,#s4,#s5,#s12,#s13,#s14,#s18,#s20,#s24,#s25,#p1,#p2
 #	  max_function_evaluations = 1000	#s23
 #	  max_function_evaluations = 2500	#s6,#s7,#s8,#s15,#s16,#s17,#s19,#s21
 	  pilot_samples =   5		#s0,#s3,#s6,#s9,#s12,#s15
 #	  pilot_samples =  10		#s22
-#	  pilot_samples =  25		#s1,#s4,#s7,#s10,#s13,#s16,#s18,#s20,#s24,#s25,#p0,#p1,#p2
+#	  pilot_samples =  25		#s1,#s4,#s7,#s10,#s13,#s16,#s18,#s20,#s24,#s25,#s26,#p0,#p1,#p2
 #	  pilot_samples =  50		#s23
 #	  pilot_samples = 100		#s2,#s5,#s8,#s11,#s14,#s17,#s19,#s21
 	  seed = 8674132
-#	  convergence_tolerance = .1
+#	  convergence_tolerance = .001	#s26
 	output silent
 
 model,
 	id_model = 'HIERARCH'
 	variables_pointer = 'HF_VARS'
-	surrogate model_ensemble #non_hierarchical
+	surrogate ensemble
 	  truth_model = 'HF'
-	  unordered_model_fidelities = 'LF' 'MF'	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#p0,#p1
+	  unordered_model_fidelities = 'LF' 'MF'	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s26,#p0,#p1
 #	  unordered_model_fidelities = 'MF' 'LF'	#s25
 
 model,
@@ -85,7 +84,7 @@ model,
 	  solution_level_control = 'mesh_size'
 # factor of 4 for each of 5 resolutions
 #	  solution_level_cost = 4096. # factor of 8 for each of 5 resolutions
-	  solution_level_cost = 256.  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s25,#p0,#p1
+	  solution_level_cost = 256.  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s25,#s26,#p0,#p1
 #	  solution_level_cost = 1 16 256.	#s24,#p2
 
 variables,
@@ -146,7 +145,7 @@ variables,
 	discrete_state_set
 	  integer = 1 # even poly degree for odd mesh pts including boundary
 	    initial_state = 64
-      	    set_values = 64		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s25,#p0,#p1
+      	    set_values = 64		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s25,#s26,#p0,#p1
 #	    set_values = 4 16 64	#s24,#p2
       	    descriptors = 'mesh_size'
     	  real = 4

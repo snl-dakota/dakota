@@ -14,26 +14,27 @@ method,
 #	  solution_mode offline_pilot		#s5,#s8
 	  max_function_evaluations = 100	#s0,#s1,#s2,#s9,#s11,#p0
 #	  max_function_evaluations = 250
-#	  max_function_evaluations = 500	#s3,#s4,#s5,#s10,#p1,#p2
+#	  max_function_evaluations = 500	#s3,#s4,#s5,#s10,#s12,#p1,#p2
 #	  max_function_evaluations = 1000
 #	  max_function_evaluations = 2500	#s6,#s7,#s8
 	  pilot_samples =   5			#s0,#s3,#s6,#s9,#s10,#s11,#p2
 #	  pilot_samples =  10
-#	  pilot_samples =  25			#s1,#s4,#s7,#p0
+#	  pilot_samples =  25			#s1,#s4,#s7,#s12,#s13,#p0
 #	  pilot_samples =  50
 #	  pilot_samples = 100			#s2,#s5,#s8,#p1
-	  seed = 8674132  			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s10,#p0,#p1,#p2
+	  seed = 8674132  			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s10,#s12,#s13,#p0,#p1,#p2
 # LF correlations out for order for 5 samples at this seed:
 #	  seed = 1237				#s9,#s11
-#	  convergence_tolerance = .1
+#	  numerical_solve override		#s12,#s13
+#	  convergence_tolerance = .001		#s13
 	output silent
 
 model,
 	id_model = 'NONHIER'
 	variables_pointer = 'HF_VARS'
-	surrogate model_ensemble #non_hierarchical
+	surrogate ensemble
 	  truth_model = 'HF'
-	  unordered_model_fidelities = 'LF1' 'LF2' 'LF3' 'LF4'	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1
+	  unordered_model_fidelities = 'LF1' 'LF2' 'LF3' 'LF4'	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s12,#s13,#p0,#p1
 #	  unordered_model_fidelities = 'LF2' 'LF1' 'LF4' 'LF3'	#s11
 
 model,
@@ -74,7 +75,7 @@ model,
 	interface_pointer = 'HF_INT'
 	simulation
 	  solution_level_control = 'mesh_size'
-	  solution_level_cost = 256.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#p0,#p1
+	  solution_level_cost = 256.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#p0,#p1
 #	  solution_level_cost = 1 4 16 64 256.	#s10,#p2
 
 variables,
@@ -185,7 +186,7 @@ variables,
 	discrete_state_set
 	  integer = 1 # even poly degree for odd mesh pts including boundary
 	    initial_state = 64
-      	    set_values = 64		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#p0,#p1
+      	    set_values = 64		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#p0,#p1
 #      	    set_values = 4 8 16 32 64	#s10,#p2
       	    descriptors = 'mesh_size'
     	  real = 4

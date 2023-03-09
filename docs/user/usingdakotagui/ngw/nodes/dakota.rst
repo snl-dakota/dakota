@@ -24,7 +24,7 @@ Properties
   .. note::
      
 	 This field cannot be used if there is more than one Dakota analysis driver.  In addition, this field assumes the presence of the classic SAW_DRIVER string within the Dakota input file.  Refer to the
-	 Notes on Dakota Interface Block - Classic Solution section below for more information.
+	 :ref:`Notes on Dakota Interface Block - Classic Solution <ngw-node-dakota-classic-solution>` section below for more information.
 
 - **useRestartFile**: Instructs Dakota to write and read from a restart file.  This node will automatically use the default restart file name, dakota.rst.
 - **automaticallyReadParameters**: If unchecked, the nested workflow is responsible for manually reading the Dakota parameters file. Refer to the
@@ -145,6 +145,8 @@ Notes on Dakota Interface Block - dprepro Solution
 - This dprepro-based approach allows you to connect multiple nested workflows to Dakota, simply by providing unique
   dprepro markup for each value of "analysis_drivers", and adding an equal number of input ports for
   the desired number of workflow-based analysis drivers.
+
+.. _ngw-node-dakota-classic-solution:
 
 --------------------------------------------------
 Notes on Dakota Interface Block - Classic Solution

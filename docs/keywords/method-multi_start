@@ -8,8 +8,7 @@ local optimization runs from different starting points for the design
 variables), but the concept and the code are more general.
 Multi-start iteration is implemented within the MetaIterator branch of
 the Iterator hierarchy within the ConcurrentMetaIterator class.
-Additional information on the multi-start algorithm is available in
-the Users Manual :cite:p:`UsersMan`.
+Additional information on the multi-start algorithm is available :ref:`here <adv_meth:multistart>`.
 
 The ``multi_start`` meta-iterator must specify a sub-iterator using
 either a ``method_pointer`` or a ``method_name`` plus optional
@@ -33,7 +32,7 @@ If Dakota was built with HDF5 support and run with the
 :ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
 writes the starting points for each sub-iterator it runs, as well
 as the best parameters and responses returned by each sub-iterator.
-See the :ref:`hdf5_results-ms_pareto<hdf5_results-ms_pareto>` documentation for details.
+See the :ref:`hdf5_results-ms_pareto` documentation for details.
 Topics::
 
 Examples::

@@ -28,6 +28,8 @@ ExecutableEnvironment::ExecutableEnvironment():
 ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
   Environment(BaseConstructor(), argc, argv)
 {
+  preprocess_inputs();
+
   // could we wait to do redirection and any output here?
   // might get entangled with CL usage...
   if (programOptions.version())

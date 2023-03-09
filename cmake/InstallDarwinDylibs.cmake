@@ -73,6 +73,24 @@ foreach(loader ${bin_lib_list})
   endif()
 endforeach()
 
+# Augment the set of dependencies discovered by scanning install tree locations
+# by also examining a few build tree files. Looking in the build tree can yield
+# more results because CMake hasn't removed any RPATH entries from these files.
+# These two searches combined still aren't totally exhaustive; the most complete
+# search probably would involve getting the runtime deps from all build-tree 
+# targets. But this is really a workaround for a temporary problem that we hope
+# to resolve in a better way soon.
+
+file(GET_RUNTIME_DEPENDENCIES
+  RESOLVED_DEPENDENCIES_VAR dakota_exe_deps
+  UNRESOLVED_DEPENDENCIES_VAR dakota_exe_deps_unresolved
+  EXECUTABLES "${CMAKE_CURRENT_BINARY_DIR}/src/dakota"
+  LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/src/libdakota_src_fortran.dylib" "${CMAKE_CURRENT_BINARY_DIR}/src/libdakota_src.dylib"
+  POST_EXCLUDE_REGEXES "/system" "/usr/lib" "/usr/XLL" "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+list(APPEND dakota_darwin_dylibs ${dakota_exe_deps})
+
 # Probe the CMakeCache.txt for location of the known Boost dynlib dependency.
 # This method is very fragile because the the FindBoost.cmake probe is frequently 
 # updated, and the relevant cache variable changes from version to version. That
