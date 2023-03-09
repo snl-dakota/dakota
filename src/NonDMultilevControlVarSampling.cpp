@@ -678,7 +678,7 @@ multilevel_control_variate_mc_offline_pilot()
       numSamples
 	= std::max(one_sided_delta(0., hf_targets_pilot[lev]), (size_t)2);
       N_alloc_hf[lev] += numSamples;
-      evaluate_ml_sample_increment(lev);
+      evaluate_ml_sample_increment("mlcv_", lev);
       if (lev < num_cv_lev) {
 	IntResponseMap hf_resp = allResponses; // shallow copy is sufficient
 	configure_indices(group, lf_form, lev, sequenceType);

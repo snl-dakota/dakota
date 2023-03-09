@@ -387,7 +387,7 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 
       // define online samples from delta_N_l; min of 2 reqd for online variance
       numSamples = std::max(delta_N_l[step], (size_t)2);
-      evaluate_ml_sample_increment(step);
+      evaluate_ml_sample_increment("ml_", step);
       accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
 			  N_actual_online[step]);
       N_alloc_online[step] += numSamples;
