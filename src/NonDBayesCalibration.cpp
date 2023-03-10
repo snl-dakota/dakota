@@ -263,8 +263,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 
   switch (emulatorType) {
 
-  case PCE_EMULATOR: case SC_EMULATOR:
-  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
+  case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR:
+  case  SC_EMULATOR: case  MF_SC_EMULATOR: {
     mcmcModelHasSurrogate = true;
     short u_space_type = probDescDB.get_short("method.nond.expansion_type");
     const RealVector& dim_pref

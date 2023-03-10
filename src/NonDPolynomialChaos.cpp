@@ -973,14 +973,16 @@ void NonDPolynomialChaos::compute_expansion()
       abort_handler(METHOD_ERROR);
     }
 
-    // import the PCE coefficients for all QoI and a shared multi-index.
-    // Annotation provides questionable value in this context & is off for now.
+    // Import the PCE coefficients for all QoI and a shared multi-index:
+    // > Annotation provides questionable value in this context & is off for now
+    // > see view management in ctor supporting exp_import_file; alternate views
+    //   are injected at the g_u_model level.
     RealVectorArray coeffs_array(numFunctions); UShort2DArray multi_index;
     String context("polynomial chaos expansion import file");
     unsigned short tabular_format = TABULAR_NONE;
     TabularIO::read_data_tabular(expansionImportFile, context, coeffs_array,
-				 multi_index, tabular_format, numContinuousVars,
-				 numFunctions);
+				 multi_index, tabular_format,
+				 uSpaceModel.truth_model().cv(), numFunctions);
 
     // post the shared data
     std::shared_ptr<SharedPecosApproxData> data_rep =
