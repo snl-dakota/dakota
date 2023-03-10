@@ -79,12 +79,7 @@ endmacro()
 # NOTE: If this search order doesn't suffice, can consider additional
 # CMake variables to prefer Dakota's over system Eigen
 macro(dakota_find_eigen3)
-  find_package(Eigen3 3.3
-    NO_DEFAULT_PATH
-    NO_CMAKE_PATH
-    NO_CMAKE_ENVIRONMENT_PATH
-    NO_CMAKE_SYSTEM_PATH
-    NO_SYSTEM_ENVIRONMENT_PATH )
+  find_package(Eigen3 3.3 QUIET)
   if(NOT Eigen3_FOUND)
     find_package(Eigen3 3.3 REQUIRED
       HINTS "${Dakota_SOURCE_DIR}/packages/external/eigen3/share/eigen3/cmake")
