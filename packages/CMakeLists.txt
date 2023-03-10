@@ -204,30 +204,12 @@ endif(HAVE_X_GRAPHICS)
 # BMA TODO: Merge option to top-level once cmake_transparency branch merged
 option(HAVE_MUQ "Enable MIT MUQ library for Bayesian calibration" OFF)
 if(HAVE_MUQ)
-  message(STATUS "Dakota configuring MUQ as external project")
-  # Managing MUQ as an external project until we can work with upstream
-  # to resolve in-tree build issues.
-  include(ExternalProject)
-  ExternalProject_Add(MUQ
-    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/muq2"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/external/muq2"
-    CMAKE_CACHE_ARGS
-    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/external/muq2
-    # MUQ TPLs
-    ##-DMUQ_BOOST_DIR:STRING=${Boost_INCLUDE_DIR}/..
-    # NOTE: By not setting MUQ_BOOST_DIR, MUQ should use the standard
-    # CMake probe to find Boost. That probe should respect
-    # Boost_INCLUDEDIR and Boost_LIBRARYDIR, so we forward it the
-    # settings found by Dakota's Boost probe.
-    # BMA TODO: Generalize this (not currently robust)
-    -DBOOST_INCLUDEDIR:PATH=${Boost_INCLUDE_DIRS}
-    -DBOOST_LIBRARYDIR:PATH=${Boost_LIBRARY_DIRS}
-    # BMA TODO: Flex this to allow external Eigen
-    -DMUQ_EIGEN3_DIR:STRING=${DAKOTA_EIGEN3_INCLUDE_DIR}
-    # BMA TODO: Generalize this (not currently robust)
-#    -DMUQ_HDF5_DIR:STRING=${HDF5_INCLUDE_DIRS}/..
-    # MUQ minimal opts
-    -DMUQ_ENABLEGROUP_DEFAULT:BOOL=OFF
-    -DMUQ_ENABLEGROUP_SAMPLING_ALGORITHM:BOOL=ON
-    )
+  # Might need to "muck" with this to avoid MUQ attempting writes to /usr/local
+  #message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+  #set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/external/muq2)
+  set(MUQ_EIGEN3_DIR ${DAKOTA_EIGEN3_INCLUDE_DIR})
+  set(MUQ_HDF5_DIR ${HDF5_INCLUDE_DIRS}/..)
+  set(MUQ_ENABLEGROUP_DEFAULT OFF CACHE BOOL "Disable MUQ default packages" FORCE)
+  set(MUQ_ENABLEGROUP_SAMPLING_ALGORITHM ON CACHE BOOL "Enable MUQ sampling package" FORCE)
+  add_subdirectory(external/muq2)
 endif()
