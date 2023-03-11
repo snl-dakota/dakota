@@ -57,16 +57,13 @@ Response(BaseConstructor, const Variables& vars,
   short asv_value = 1;
   if (grad_flag) {
     asv_value |= 2;
-    functionGradients.reshape(num_params, num_fns);
-    functionGradients = 0.;
+    functionGradients.shape(num_params, num_fns); // init to 0
   }
   if (hess_flag) {
     asv_value |= 4;
     functionHessians.resize(num_fns);
-    for (size_t i=0; i<num_fns; i++) {
-      functionHessians[i].reshape(num_params);
-      functionHessians[i] = 0.;
-    }
+    for (size_t i=0; i<num_fns; i++)
+      functionHessians[i].shape(num_params); // init to 0
   }
 
   // set up the response ActiveSet.  This object is copied by Iterator for its
@@ -1683,23 +1680,47 @@ void Response::active_set_derivative_vector(const SizetArray& asdv)
   if (responseRep)
     responseRep->active_set_derivative_vector(asdv);
   else {
-    // resize functionGradients/functionHessians if needed to accomodate
-    // a change in DVV size
-    size_t new_deriv_vars = asdv.size();
-    if (responseActiveSet.derivative_vector().size() != new_deriv_vars) {
-      size_t num_fns = responseActiveSet.request_vector().size();
-      //reshape(num_fns, new_deriv_vars, !functionGradients.empty(),
-      //	!functionHessians.empty());
-      if (!functionGradients.empty())
-	functionGradients.reshape(new_deriv_vars, num_fns);
-      if (!functionHessians.empty())
-	for (size_t i=0; i<num_fns; i++)
-	  functionHessians[i].reshape(new_deriv_vars);
-    }
+    // resize function{Gradients,Hessians} if needed to sync with new DVV
+    size_t num_deriv_vars = asdv.size();
+    if (responseActiveSet.derivative_vector().size() != num_deriv_vars)
+      reshape_active_derivs(num_deriv_vars);
     // assign the new derivative vector
     responseActiveSet.derivative_vector(asdv);
   }
 }
+
+
+void Response::active_set_derivative_vector(SizetMultiArrayConstView asdv)
+{
+  if (responseRep)
+    responseRep->active_set_derivative_vector(asdv);
+  else {
+    // resize function{Gradients,Hessians} if needed to sync with new DVV
+    size_t num_deriv_vars = asdv.size();
+    if (responseActiveSet.derivative_vector().size() != num_deriv_vars)
+      reshape_active_derivs(num_deriv_vars);
+    // assign the new derivative vector
+    responseActiveSet.derivative_vector(asdv);
+  }
+}
+
+
+void Response::reshape_active_derivs(size_t num_deriv_vars)
+{
+  if (responseRep)
+    responseRep->reshape_active_derivs(num_deriv_vars);
+  else {
+    // This differs from reshape_rep in that DVV can change more frequently;
+    // therefore, we are less aggressive about clearing arrays
+    size_t num_fns = responseActiveSet.request_vector().size();
+    if (!functionGradients.empty()) // gradients are active
+      functionGradients.reshape(num_deriv_vars, num_fns);
+    if (!functionHessians.empty())   // Hessians are active
+      for (size_t i=0; i<num_fns; i++)
+	functionHessians[i].reshape(num_deriv_vars);
+  }
+}
+
 
 void Response::set_scalar_covariance(RealVector& scalars)
 {
@@ -1711,6 +1732,7 @@ void Response::set_scalar_covariance(RealVector& scalars)
     abort_handler(-1);
   }
 }
+
 
 void Response::set_full_covariance(std::vector<RealMatrix> &matrices,
                                    std::vector<RealVector> &diagonals,

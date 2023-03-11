@@ -70,36 +70,35 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   secondaryRespMapping(secondary_resp_map), invVarsMapping(NULL),
   invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
 {
-  modelType = "recast"; 
-  supportsEstimDerivs = false; // subModel estimates derivatives by default
+  init_basic();
 
   // synchronize output level and grad/Hess settings with subModel
-  initialize_data_from_submodel();
+  initialize_data_from_submodel(); // *** TO DO
 
   // For this constructor, mappings are provided up front and special logic
   // can be applied when they are NULL.  Other constructors must alter logic
   // for deferred recasting details.
 
-  bool copy_values = true;
+  bool copy_values = true, new_vars_view = false;
   const Variables& submodel_vars = subModel.current_variables();
   if (variablesMapping) // reshape as dictated by variable type changes
-    copy_values = init_variables(vars_comps_totals, all_relax_di, all_relax_dr);
+    init_variables(vars_comps_totals, all_relax_di, all_relax_dr,
+		   copy_values, new_vars_view);
   else if (recast_vars_view == submodel_vars.view()) {
     // variables are not mapped: deep copy of vars to allow independence, but 
     // shallow copy of svd since types/labels/ids can be kept consistent
     currentVariables = submodel_vars.copy(); // shared svd
-    numDerivVars     = currentVariables.cv();
+    numDerivVars = currentVariables.cv();
   }
   else {
     const SharedVariablesData& submodel_svd = submodel_vars.shared_data();
     SharedVariablesData recast_svd(submodel_svd.copy(recast_vars_view));
     currentVariables = submodel_vars.copy(recast_svd);
-    numDerivVars     = currentVariables.cv();
+    numDerivVars = currentVariables.cv();  new_vars_view = true;
   }
 
-  init_constraints(secondaryRespMapIndices.size(), recast_secondary_offset,
-		   copy_values);
-
+  init_constraints(copy_values);
+  resize_constraints(secondaryRespMapIndices.size(), recast_secondary_offset); // *** TO DO: resize linear constr coeffs for active view change
   init_distribution(copy_values);
 
   if (nonlinearRespMapping.size() != 
@@ -107,31 +106,30 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     Cerr << "Error: size mismatch in response mapping configuration." << endl;
     abort_handler(-1);
   }
-  if (primaryRespMapping || secondaryRespMapping) {
+  if (primaryRespMapping || secondaryRespMapping)
     init_response(primaryRespMapIndices.size(), secondaryRespMapIndices.size(), 
 		  recast_resp_order);
-  }
   //else if (recast_resp_view != currentResponse.view()) {// when resp has views
   //}
   else {
     currentResponse = subModel.current_response().copy();
     numFns = currentResponse.num_functions();
   }
+  if (new_vars_view)
+    currentResponse.active_set_derivative_vector(
+      currentVariables.continuous_variable_ids()); // reset DVV for view change
 
   init_metadata();
-
-  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
 
-/** This alternate constructor defers initialization of the function
-    pointers until a separate call to init_maps(), and accepts the
-    minimum information needed to construct currentVariables,
-    currentResponse, and userDefinedConstraints.  The resulting model
-    is sufficiently complete for passing to an Iterator.  Parameter
-    vars_comps_totals indicates the number of each type of variable {4
-    types} x {3 domains} in the recast variable space. Note:
-    recast_secondary_offset is the start index for equality
+/** This alternate constructor defers initialization of the function pointers
+    until a separate call to init_maps(), and accepts the minimum information
+    needed to construct currentVariables, currentResponse, and
+    userDefinedConstraints.  The resulting model is sufficiently complete for
+    passing to an Iterator.  Parameter vars_comps_totals indicates the number
+    of each type of variable {4 types} x {3 domains} in the recast variable
+    space. Note: recast_secondary_offset is the start index for equality
     constraints, typically num nonlinear ineq constraints. */
 RecastModel::
 RecastModel(const Model& sub_model, //size_t num_deriv_vars,
@@ -147,21 +145,58 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   primaryRespMapping(NULL), secondaryRespMapping(NULL), invVarsMapping(NULL),
   invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
 {
-  modelType = "recast";
-  supportsEstimDerivs = false; // subModel estimates derivatives by default
+  init_basic();
 
   // synchronize output level and grad/Hess settings with subModel
-  initialize_data_from_submodel();
+  initialize_data_from_submodel(); // *** TO DO
+
+  // *** TO DO: recast_vars_view not pushed through yet (and should mirror fully featured ctor without fn ptrs)
 
   // initialize Variables, Response, and Constraints based on sizes
-  bool copy_values
-    = init_sizes(vars_comps_totals, all_relax_di, all_relax_dr,
-		 num_recast_primary_fns, num_recast_secondary_fns,
-		 recast_secondary_offset, recast_resp_order);
+  bool copy_values;
+  init_sizes(vars_comps_totals, all_relax_di, all_relax_dr,
+	     num_recast_primary_fns, num_recast_secondary_fns,
+	     recast_secondary_offset, recast_resp_order, copy_values);
   // initialize mvDist
   init_distribution(copy_values);
+}
 
-  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
+
+/** This alternate constructor only alters the active/inactive view */
+RecastModel::
+RecastModel(const Model& sub_model, const ShortShortPair& recast_vars_view):
+  Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
+	sub_model.parallel_library()),
+  subModel(sub_model), nonlinearVarsMapping(false), varsView(recast_vars_view),
+  recastModelEvalCntr(0), variablesMapping(NULL), setMapping(NULL),
+  primaryRespMapping(NULL), secondaryRespMapping(NULL), invVarsMapping(NULL),
+  invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
+{
+  init_basic();
+
+  // synchronize output level and grad/Hess settings with subModel
+  initialize_data_from_submodel(); // *** TO DO
+
+  // For this constructor, mappings are provided up front and special logic
+  // can be applied when they are NULL.  Other constructors must alter logic
+  // for deferred recasting details.
+
+  const Variables& submodel_vars = subModel.current_variables();
+  const SharedVariablesData& submodel_svd = submodel_vars.shared_data();
+  SharedVariablesData recast_svd(submodel_svd.copy(recast_vars_view));
+  currentVariables = submodel_vars.copy(recast_svd);
+  numDerivVars     = currentVariables.cv();
+
+  bool copy_values = true;
+  init_constraints(copy_values); // *** TO DO: resize linear constr coeffs
+  init_distribution(copy_values);
+
+  currentResponse = subModel.current_response().copy();
+  currentResponse.active_set_derivative_vector(
+    currentVariables.continuous_variable_ids()); // reset DVV for view change
+  numFns = currentResponse.num_functions();
+
+  init_metadata();
 }
 
 
@@ -171,12 +206,9 @@ RecastModel::RecastModel(ProblemDescDB& problem_db, const Model& sub_model):
   primaryRespMapping(NULL), secondaryRespMapping(NULL), invVarsMapping(NULL),
   invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
 {
-  modelType = "recast";
-  supportsEstimDerivs = false; // subModel estimates derivatives by default
-
+  init_basic();
   // synchronize output level and grad/Hess settings with subModel
-  initialize_data_from_submodel();
-  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
+  initialize_data_from_submodel(); // *** TO DO
 }
 
 
@@ -188,28 +220,34 @@ RecastModel::RecastModel(const Model& sub_model):
   invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
   invSecRespMapping(NULL)
 { 
+  init_basic();
+  // synchronize output level and grad/Hess settings with subModel
+  initialize_data_from_submodel(); // *** TO DO
+  numFns = sub_model.response_size(); // not defined in ctor chain
+}
+
+
+void RecastModel::init_basic()
+{
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
-
-  // synchronize output level and grad/Hess settings with subModel
-  initialize_data_from_submodel();
-  numFns = sub_model.response_size();
   modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
 
-bool RecastModel::
+void RecastModel::
 init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	   const BitArray& all_relax_dr, size_t num_recast_primary_fns,
 	   size_t num_recast_secondary_fns, size_t recast_secondary_offset,
-	   short recast_resp_order)
+	   short recast_resp_order, bool& copy_values)
 {
   // recasting of variables; only reshape if change in variable type counts
-  bool copy_values
-    = init_variables(vars_comps_totals, all_relax_di, all_relax_dr); 
+  bool new_vars_view;
+  init_variables(vars_comps_totals, all_relax_di, all_relax_dr,
+		 copy_values, new_vars_view); 
 
-  init_constraints(num_recast_secondary_fns, recast_secondary_offset,
-		   copy_values);
+  init_constraints(copy_values);
+  resize_constraints(num_recast_secondary_fns, recast_secondary_offset); // *** TO DO: resize linear constr coeffs for active view change
 
   // defer this to allow specialized handling in derived classes
   //init_distribution(copy_values);
@@ -217,10 +255,11 @@ init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
   // recasting of response and constraints
   init_response(num_recast_primary_fns, num_recast_secondary_fns, 
 		recast_resp_order);
+  if (new_vars_view)
+    currentResponse.active_set_derivative_vector(
+      currentVariables.continuous_variable_ids()); // reset DVV for view change
 
   init_metadata();
-
-  return copy_values;
 }
 
 
@@ -287,9 +326,10 @@ String RecastModel::recast_model_id(const String &root_id, const String &type) {
 }
 
 
-bool RecastModel::
+void RecastModel::
 init_variables(const SizetArray& vars_comps_totals,
-	       const BitArray& all_relax_di, const BitArray& all_relax_dr)
+	       const BitArray& all_relax_di, const BitArray& all_relax_dr,
+	       bool& copy_values, bool& new_vars_view)
 {
   const Variables&           sm_vars = subModel.current_variables();
   const SharedVariablesData& sm_svd  = sm_vars.shared_data();
@@ -299,7 +339,7 @@ init_variables(const SizetArray& vars_comps_totals,
   // case mapping not yet provided.
 
   // copy variables values only if no change in variables structure
-  bool copy_values = 
+  copy_values = 
     ( vars_comps_totals.empty() ||
       sm_svd.components_totals()         == vars_comps_totals ) &&
     ( all_relax_di.empty() ||
@@ -307,16 +347,18 @@ init_variables(const SizetArray& vars_comps_totals,
     ( all_relax_dr.empty() || 
       sm_svd.all_relaxed_discrete_real() == all_relax_dr );
 
+  new_vars_view = (varsView != sm_vars.view());
+
   // check change in character first as mapping may not yet be present...
   if (copy_values) {
     // variables are mapped but not resized: deep copies of both vars and
     // incoming svd, since types may change in transformed space
-    if (varsView == sm_vars.view())
-      currentVariables = sm_vars.copy(true); // new independent svd
-    else { // avoid building + then updating views
+    if (new_vars_view) { // avoid building + then updating views
       SharedVariablesData recast_svd(sm_svd.copy(varsView));
       currentVariables = sm_vars.copy(recast_svd);
     }
+    else
+      currentVariables = sm_vars.copy(true); // new independent svd
   }
   else {
     // variables are resized; use new SVD instance and default values
@@ -327,8 +369,6 @@ init_variables(const SizetArray& vars_comps_totals,
 
   // propagate number of active continuous vars to derivative vars
   numDerivVars = currentVariables.cv();
-
-  return copy_values;
 }
 
 
@@ -357,22 +397,25 @@ void RecastModel::init_distribution(bool copy_values)
 }
 
 
-void RecastModel::
-init_constraints(size_t num_recast_secondary_fns,
-		 size_t recast_secondary_offset, bool copy_values)
+void RecastModel::init_constraints(bool copy_values)
 {
-  const Constraints& sm_cons = subModel.user_defined_constraints();
-
   // share SVD with currentVariables, regardless of whether its SVD is new
   userDefinedConstraints = Constraints(currentVariables.shared_data());
   if (copy_values)
-    userDefinedConstraints.update(sm_cons);
+    userDefinedConstraints.update(subModel.user_defined_constraints());
+}
 
+
+void RecastModel::
+resize_constraints(size_t num_recast_secondary_fns,
+		   size_t recast_secondary_offset)
+{
   // the recast_secondary_offset cannot in general be inferred from the
   // contributing fns in secondaryRespMapIndices (recast constraints may be
   // defined, e.g., with no contributing fns), and must therefore be passed.
   size_t num_recast_nln_ineq = recast_secondary_offset,
     num_recast_nln_eq = num_recast_secondary_fns - num_recast_nln_ineq;
+  const Constraints& sm_cons = subModel.user_defined_constraints();
   if ( num_recast_nln_ineq != sm_cons.num_nonlinear_ineq_constraints() ||
        num_recast_nln_eq   != sm_cons.num_nonlinear_eq_constraints() )
     userDefinedConstraints.reshape(num_recast_nln_ineq, num_recast_nln_eq,
@@ -812,19 +855,19 @@ void RecastModel::initialize_data_from_submodel()
   ignoreBounds          = subModel.ignore_bounds();
   centralHess	        = subModel.central_hess();
   intervalType          = subModel.interval_type();
-  fdGradStepSize        = subModel.fd_gradient_step_size();
+  fdGradStepSize        = subModel.fd_gradient_step_size();        // vec not Ok
   fdGradStepType        = subModel.fd_gradient_step_type();
-  gradIdAnalytic        = subModel.gradient_id_analytic();
-  gradIdNumerical       = subModel.gradient_id_numerical();
+  gradIdAnalytic        = subModel.gradient_id_analytic(); // Ok for view change
+  gradIdNumerical       = subModel.gradient_id_numerical();// Ok for view change
 
   hessianType           = subModel.hessian_type();
   quasiHessType         = subModel.quasi_hessian_type();
-  fdHessByFnStepSize    = subModel.fd_hessian_by_fn_step_size();
-  fdHessByGradStepSize  = subModel.fd_hessian_by_grad_step_size();
+  fdHessByFnStepSize    = subModel.fd_hessian_by_fn_step_size();   // vec not Ok
+  fdHessByGradStepSize  = subModel.fd_hessian_by_grad_step_size(); // vec not Ok
   fdHessStepType        = subModel.fd_hessian_step_type();
-  hessIdAnalytic        = subModel.hessian_id_analytic();
-  hessIdNumerical       = subModel.hessian_id_numerical();
-  hessIdQuasi           = subModel.hessian_id_quasi();
+  hessIdAnalytic        = subModel.hessian_id_analytic();  // Ok for view change
+  hessIdNumerical       = subModel.hessian_id_numerical(); // Ok for view change
+  hessIdQuasi           = subModel.hessian_id_quasi();     // Ok for view change
 
   scalingOpts           = subModel.scaling_options();
 }

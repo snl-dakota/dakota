@@ -88,6 +88,9 @@ public:
 	      size_t num_recast_primary_fns,  size_t num_recast_secondary_fns,
 	      size_t recast_secondary_offset, short recast_resp_order);
 
+  /// alternate constructor; only changes the view (NEED A SUBCLASS FOR THIS?)
+  RecastModel(const Model& sub_model, const ShortShortPair& recast_vars_view);
+
   /// Problem DB-based ctor, e.g., for use in subspace model; assumes
   /// mappings to be initialized later; only initializes based on sub-model
   RecastModel(ProblemDescDB& problem_db, const Model& sub_model);
@@ -107,11 +110,12 @@ public:
 
   /// update recast sizes and size Variables and Response members
   /// after alternate construction
-  bool init_sizes(const SizetArray& vars_comps_totals,
+  void init_sizes(const SizetArray& vars_comps_totals,
 		  const BitArray& all_relax_di, const BitArray& all_relax_dr,
 		  size_t num_recast_primary_fns,
 		  size_t num_recast_secondary_fns,
-		  size_t recast_secondary_offset, short recast_resp_order);
+		  size_t recast_secondary_offset,
+		  short recast_resp_order, bool& copy_values);
 
   /// initialize recast indices and map callbacks after alternate
   /// construction
@@ -468,14 +472,19 @@ protected:
   /// Generate a model id for recast models
   static String recast_model_id(const String &root_id, const String &type);
 
+  // simple assignments shared among ctors
+  void init_basic();
   /// initialize currentVariables and related info from the passed
   /// size/type info
-  bool init_variables(const SizetArray& vars_comps_totals,
-		      const BitArray& all_relax_di, 
-		      const BitArray& all_relax_dr);
-  /// initialize userDefinedConstraints from the passed size info
-  void init_constraints(size_t num_recast_secondary_fns,
-			size_t recast_secondary_offset, bool copy_values);
+  void init_variables(const SizetArray& vars_comps_totals,
+		      const BitArray& all_relax_di,
+		      const BitArray& all_relax_dr,
+		      bool& copy_values, bool& new_vars_view);
+  /// initialize userDefinedConstraints, sharing SVD with currentVariables
+  void init_constraints(bool copy_values);
+  /// resize userDefinedConstraints from the passed size info
+  void resize_constraints(size_t num_recast_secondary_fns,
+			  size_t recast_secondary_offset);
   /// initialize mvDist from SharedVariablesData
   void init_distribution(bool copy_values);
   /// initialize currentResponse from the passed size info

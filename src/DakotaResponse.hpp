@@ -118,6 +118,9 @@ public:
   /// set the active set derivative vector and reshape
   /// functionGradients/functionHessians if needed
   void active_set_derivative_vector(const SizetArray& asdv);
+  /// set the active set derivative vector and reshape
+  /// functionGradients/functionHessians if needed
+  void active_set_derivative_vector(SizetMultiArrayConstView asdv);
 
   // NOTE: Responses are stored:
   // [primary_scalar, primary_field, nonlinear_inequality, nonlinear_equality]
@@ -458,6 +461,9 @@ private:
   /// resizes the representation's containers
   void reshape_rep(size_t num_fns, size_t num_params, bool grad_flag,
 		   bool hess_flag);
+
+  /// reshape function{Gradients,Hessians} if needed to sync with DVV
+  void reshape_active_derivs(size_t num_deriv_vars);
 
   void read_core(std::istream& s, const unsigned short formats,
 		 std::ostringstream& errors);
