@@ -95,11 +95,13 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
 NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
-	      short exp_coeffs_approach, const RealVector& dim_pref, int seed,
-	      short refine_type, short refine_control, short covar_control,
-	      Real colloc_ratio, short rule_nest, short rule_growth,
-	      bool piecewise_basis, bool use_derivs):
-  NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
+	      const ShortShortPair& approx_view, short exp_coeffs_approach,
+	      const RealVector& dim_pref, int seed, short refine_type,
+	      short refine_control, short covar_control, Real colloc_ratio,
+	      short rule_nest, short rule_growth, bool piecewise_basis,
+	      bool use_derivs):
+  NonD(method_name, model, approx_view),
+  expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
   statsMetricMode(Pecos::DEFAULT_EXPANSION_STATS), relativeMetric(true),
   dimPrefSpec(dim_pref), collocRatio(colloc_ratio), termsOrder(1.),

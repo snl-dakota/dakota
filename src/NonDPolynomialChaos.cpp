@@ -163,9 +163,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    short covar_control, short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs,
                     String exp_expansion_file ):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, dim_pref, 0,
-		refine_type, refine_control, covar_control, 0., rule_nest,
-		rule_growth, piecewise_basis, use_derivs), 
+  NonDExpansion(POLYNOMIAL_CHAOS, model, model.current_variables().view(),
+		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
+		covar_control, 0., rule_nest, rule_growth, piecewise_basis,
+		use_derivs), 
   // Note: non-zero seed would be needed for expansionSampler, if defined
   crossValidation(false), crossValidNoiseOnly(false),
   maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
@@ -245,8 +246,9 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short import_build_format,
 		    bool import_build_active_only,
                     String exp_expansion_file ):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, dim_pref, seed,
-		refine_type, refine_control, covar_control, colloc_ratio,
+  NonDExpansion(POLYNOMIAL_CHAOS, model, model.current_variables().view(),
+		exp_coeffs_approach, dim_pref, seed, refine_type,
+		refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs), 
   crossValidation(cv_flag), crossValidNoiseOnly(false),
@@ -314,12 +316,12 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, const String& exp_import_file,
 		    short u_space_type, const ShortShortPair& approx_view):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, -1, RealVector(), 0,
+  NonDExpansion(POLYNOMIAL_CHAOS, model, approx_view, -1, RealVector(), 0,
 		Pecos::NO_REFINEMENT, Pecos::NO_CONTROL, DEFAULT_COVARIANCE,
 		0., Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		false, false),
   //expOrderSpec(problem_db.get_ushort("method.nond.expansion_order")),
-  normalizedCoeffOutput(false), // TO DO
+  normalizedCoeffOutput(false), // TO DO: need to detect this in file
   uSpaceType(u_space_type), expansionImportFile(exp_import_file)
   //expansionExportFile(
   //  problem_db.get_string("method.nond.export_expansion_file"))
@@ -348,6 +350,7 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   //   initialize_distribution_types(): "inactive vars are not transformed"
   //   (u_types[i] = x_types[i])
   // > default param list value retains distribution bounds
+  // *** Latest: also use approx_view in DFSModel and force NonDBayes (in an active view via iteratedModel) to interact properly with a DFS in ALL view.  I think we need DFS and NonDPCE in all ALL view, where functions like mean(x) are used (as for OUU, IVP, etc.).
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
     iteratedModel, uSpaceType, approx_view));// change view for DFS::actualModel
 
@@ -361,12 +364,11 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   short corr_order = -1, corr_type = NO_CORRECTION;
   // DFSModel consumes QoI aggregations; supports up to Hessian eval for full
   // Newton MAP pre-solve
-  const ActiveSet& orig_set = iteratedModel.current_response().active_set();
+  const ActiveSet& approx_set = g_u_model.current_response().active_set();
   ShortArray pce_asv(iteratedModel.qoi(), 7); // for stand alone mode
-  ActiveSet  pce_set(pce_asv, orig_set.derivative_vector());
-  const ShortShortPair& orig_view = iteratedModel.current_variables().view();
+  ActiveSet  pce_set(pce_asv, approx_set.derivative_vector());
   uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
-    g_u_model, pce_set, orig_view, approx_type, exp_orders, corr_type,
+    g_u_model, pce_set, approx_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse));
   //uSpaceModel.active_view(pce_view, false); // too far downstream...
   initialize_u_space_model();
@@ -416,9 +418,10 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    short covar_control, short ml_alloc_control,
 		    short ml_discrep, short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, 0,
-		refine_type, refine_control, covar_control, 0., rule_nest,
-		rule_growth, piecewise_basis, use_derivs), 
+  NonDExpansion(method_name, model, model.current_variables().view(),
+		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
+		covar_control, 0., rule_nest, rule_growth, piecewise_basis,
+		use_derivs), 
   crossValidation(false), crossValidNoiseOnly(false),
   maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
   numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
@@ -441,10 +444,10 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    Real colloc_ratio, short ml_alloc_control, short ml_discrep,
 		    //short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs, bool cv_flag):
-  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, 0,
-		refine_type, refine_control, covar_control, colloc_ratio,
-		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
-		piecewise_basis, use_derivs),
+  NonDExpansion(method_name, model, model.current_variables().view(),
+		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
+		covar_control, colloc_ratio, Pecos::NO_NESTING_OVERRIDE,
+		Pecos::NO_GROWTH_OVERRIDE, piecewise_basis, use_derivs),
   crossValidation(cv_flag), crossValidNoiseOnly(false),
   maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
   numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)

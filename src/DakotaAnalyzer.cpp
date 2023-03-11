@@ -16,7 +16,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
-#include "DakotaModel.hpp"
+#include "RecastModel.hpp"
 #include "DakotaAnalyzer.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -32,7 +32,8 @@ namespace Dakota {
 extern PRPCache data_pairs;
 
 
-Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
+Analyzer::
+Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   writePrecision(problem_db.get_int("environment.output_precision"))
@@ -42,7 +43,7 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   update_from_model(iteratedModel); // variable/response counts & checks
 
   // assign context-specific defaults
-  if (convergenceTol   < 0.) convergenceTol = 1.e-4; // historical default
+  if (convergenceTol < 0.) convergenceTol = 1.e-4; // historical default
   //if (maxIterations    == SZ_MAX) maxIterations    = 100;
   //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = 1000;
 
@@ -63,11 +64,25 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-Analyzer::Analyzer(unsigned short method_name, Model& model):
+Analyzer::
+Analyzer(unsigned short method_name, Model& model):
   Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   writePrecision(0)
 {
+  update_from_model(iteratedModel); // variable/response counts & checks
+}
+
+
+Analyzer::
+Analyzer(unsigned short method_name, Model& model,
+	 const ShortShortPair& view_override):
+  Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
+  numObjFns(0), numLSqTerms(0), // default: no best data tracking
+  writePrecision(0)
+{
+  if (view_override != iteratedModel.current_variables().view())
+    recast_model_view(view_override);
   update_from_model(iteratedModel); // variable/response counts & checks
 }
 
@@ -91,6 +106,14 @@ bool Analyzer::resize()
 
   return parent_reinit_comms;
 }
+
+
+void Analyzer::recast_model_view(const ShortShortPair& view_override)
+{
+  iteratedModel.assign_rep(
+    std::make_shared<RecastModel>(iteratedModel, view_override));
+}
+
 
 void Analyzer::update_from_model(const Model& model)
 {

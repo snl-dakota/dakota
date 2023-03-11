@@ -1428,7 +1428,7 @@ protected:
   /// type of finite difference step to use for numerical gradient:
   /// relative - step length is relative to x
   /// absolute - step length is what is specified
-  /// bounds - step length is relative to range of x
+  /// bounds   - step length is relative to range of x
   String fdGradStepType;
   /// relative finite difference step size for numerical Hessians estimated 
   /// using first-order differences of gradients
@@ -1441,7 +1441,7 @@ protected:
   /// type of finite difference step to use for numerical Hessian:
   /// relative - step length is relative to x
   /// absolute - step length is what is specified
-  /// bounds - step length is relative to range of x
+  /// bounds   - step length is relative to range of x
   String fdHessStepType;
 
   /// option to ignore bounds when computing finite diffs

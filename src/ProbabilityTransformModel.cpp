@@ -49,8 +49,10 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   short recast_resp_order = 1; // recast resp order to be same as original resp
   if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
+  bool copy_values;
   init_sizes(recast_vars_comps_total, x_svd.all_relaxed_discrete_int(),
-	     x_svd.all_relaxed_discrete_real(), numFns, 0, 0,recast_resp_order);
+	     x_svd.all_relaxed_discrete_real(), numFns, 0, 0,
+	     recast_resp_order, copy_values);
   // initialize invariant portions of probability transform within mvDist
   // (requires currentVariables)
   initialize_transformation(u_space_type);

@@ -182,10 +182,10 @@ initialize_base_recast(
   // Invoke base class resizing routines
   // -----------------------------------
 
-  //bool copy_values =
-  RecastModel::
-    init_sizes(vars_comps_total, all_relax_di, all_relax_dr, num_primary,
-	       num_secondary, recast_secondary_offset, recast_resp_order);
+  bool copy_values;
+  RecastModel::init_sizes(vars_comps_total, all_relax_di, all_relax_dr,
+			  num_primary, num_secondary, recast_secondary_offset,
+			  recast_resp_order, copy_values);
 
   // suppress this initialization (see uncertain_vars_to_subspace())
   //RecastModel::init_distribution(copy_values);
