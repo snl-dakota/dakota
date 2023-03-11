@@ -319,7 +319,7 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
 		0., Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		false, false),
   //expOrderSpec(problem_db.get_ushort("method.nond.expansion_order")),
-  //normalizedCoeffOutput(problem_db.get_bool("method.nond.normalized")),
+  normalizedCoeffOutput(false), // TO DO
   uSpaceType(u_space_type), expansionImportFile(exp_import_file)
   //expansionExportFile(
   //  problem_db.get_string("method.nond.export_expansion_file"))
