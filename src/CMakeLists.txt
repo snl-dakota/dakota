@@ -40,6 +40,12 @@ list(APPEND DAKOTA_INCDIRS
   ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
   )
 
+if(DAKOTA_ROL_INTERFACE)
+  list(APPEND DAKOTA_INCDIRS
+  ${Dakota_SOURCE_DIR}/src/rol_interface})
+endif()
+
+
 add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 
