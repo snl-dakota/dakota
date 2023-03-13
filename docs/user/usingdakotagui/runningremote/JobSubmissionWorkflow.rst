@@ -72,16 +72,36 @@ For this example, we will be building the set of workflows / scripts shown below
 
 You will need access to at least one remote machine with a job queue to build this example.
 
-TODO
+**Step 1.** Construct the local workflow, which will consist of four file nodes to be uploaded to the remote
+machine, and one :ref:`remoteNestedWorkflow <ngw-node-remoteNestedWorkflow>`. Call the workflow something
+like LocalWorkflow.iwf.
 
-.. figure:: img/JobSubmission_NGW_Example2_1.png
+.. figure:: img/JobSubmission_NGW_Example2_3.png
    :name: jobsubexample2:figure02
    :alt: LocalWorkflow.iwf
    :align: center
 
    LocalWorkflow.iwf
    
-TODO
+The four files nodes will be:
+
+ - Your Dakota input file (``CPS.in`` in :numref:`jobsubexample2:figure02`)
+ - Your Dakota analysis driver (``WorkflowDriver.iwf`` in :numref:`jobsubexample2:figure02`).
+ - The cantilever simulation model (``cantilever`` in :numref:`jobsubexample2:figure02`).
+ - The templatized cantilever input file (``cantilever.template`` in :numref:`jobsubexample2:figure02`).
+
+**Step 2.** Create four input ports on the remoteNestedWorkflow node, and pass the fileReference output port of
+each file node into the respective input port.
+
+**Step 3.** Click on each connection line and, in the Settings view, set the "File Transfer Behavior"
+to "Copy file to target." Each connection line should turn green.
+
+*Optional Step.* You may wish to create an output port on remoteNestedWorkflow called "jobId" for capturing the
+ID of the submitted job. This is not strictly required, but it can be helpful for collecting job data from the
+remote machine at a later date.
+
+**Step 4.** Create your second workflow. This is the workflow that will run remotely on the login node of the
+high-performance computer. Call this workflow something like LoginNodeWorkflow.iwf.
 
 .. figure:: img/JobSubmission_NGW_Example2_2.png
    :name: jobsubexample2:figure03
@@ -89,6 +109,31 @@ TODO
    :align: center
 
    LoginNodeWorkflow.iwf
+   
+This workflow should be configured with a :ref:`dakotaWorkflowDriver <ngw-node-dakotaWorkflowDriver>` node that processes your driver
+(``WorkflowDriver.iwf`` from the first workflow). Additionally, you will need a :ref:`dakotaQueueSubmit <ngw-node-dakotaQueueSubmit>` node,
+configured as follows:
+
+- Your job submission account ID number should be provided in the "account" field. Talk to your system
+  administrator if you need a job submission account ID number.
+- Set the number of hours and minutes to provision for your job in the "job.hours" and "job.minutes" fields.
+- Set the required number of nodes and processors you need in the "num.nodes" and "num.processors" field.
+- Set the type of queue ("batch" is the default for Slurm).
+
+**Step 5.** Back in the first workflow (LocalWorkflow.iwf), click on the remoteNestedWorkflow to open
+its properties in the Settings view, and set the "fileName" field to "LoginNodeWorkflow.iwf".
+
+**Step 6.** Set all relevant information about the remote machine required to log into it
+(the name of the machine, your username, the remote path to upload files to, etc.) This step is intentionally
+ambiguous because the network setup at your location will be unique. Contact your system administrator if
+you need help with this step.
+
+**Step 7.** Run LocalWorkflow.iwf.
+
+If this workflow does not work automatically, it is most likely a problem at the shell-scripting level.
+You will need to manually diagnose the error by looking at any logs collected on the remote machine, and then
+:ref:`make appropriate modifications <gui-job-submission-workflow-dakotaQueueSubmit-scripts>` to the shell
+scripts used by the dakotaQueueSubmit node.
 
 .. _gui-job-submission-workflow-example3:
 
