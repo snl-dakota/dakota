@@ -40,10 +40,6 @@ list(APPEND DAKOTA_INCDIRS
   ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
   )
 
-if(DAKOTA_ROL_INTERFACE)
-  list(APPEND DAKOTA_INCDIRS
-  ${Dakota_SOURCE_DIR}/src/rol_interface})
-endif()
 
 
 add_definitions("-DHAVE_CONFIG_H")
@@ -778,7 +774,19 @@ endif()
 if(HAVE_ROL)
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
   add_definitions("-DHAVE_ROL")
-  set(iterator_src ${iterator_src} ROLOptimizer.cpp)
+  if(DAKOTA_ROL_INTERFACE)
+    message("\n\n=========[ Building Dakota/ROL Interface ]========\n\n")
+    add_definitions("-DDAKOTA_ROL_INTERFACE")
+    list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/src/rol_interface})
+    set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/src/rol_interface/DakotaROLConstraint.cpp
+                                     ${Dakota_SOURCE_DIR}/src/rol_interface/DakotaROLHessian.cpp
+                                     ${Dakota_SOURCE_DIR}/src/rol_interface/DakotaROLJacobian.cpp
+                                     ${Dakota_SOURCE_DIR}/src/rol_interface/DakotaROLModelInterface.cpp
+                                     ${Dakota_SOURCE_DIR}/src/rol_interface/DakotaROLObjective.cpp
+                                     ${Dakota_SOURCE_DIR}/src/rol_interface/DakotaROLOptimizer.cpp)
+  else()
+    set(iterator_src ${iterator_src} ROLOptimizer.cpp)
+  endif()
 endif(HAVE_ROL)
 
 if(HAVE_DEMO_TPL)
