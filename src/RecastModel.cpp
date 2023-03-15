@@ -470,11 +470,11 @@ init_response(size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
   if ( sub_model_resp.num_functions() != numFns       ||
        sub_model_vars.cv()            != numDerivVars ||
        grad_flag != sm_grad_flag || hess_flag != sm_hess_flag ) {
-    currentResponse = sub_model_resp.copy(true); // deep resp and deep srd
+    currentResponse = sub_model_resp.copy(true); // deep srd (for deep resp)
     currentResponse.reshape(numFns, numDerivVars, grad_flag, hess_flag);
   }
   else // shared srd for now (can be separated downstream if needed)
-    currentResponse = sub_model_resp.copy(); // deep resp, shallow srd
+    currentResponse = sub_model_resp.copy();  // shallow srd (for deep resp)
 }
 
 
