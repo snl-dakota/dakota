@@ -32,30 +32,28 @@ ProbabilityTransformModel::
 ProbabilityTransformModel(const Model& x_model, short u_space_type,
 			  const ShortShortPair& recast_vars_view,
 			  bool truncate_bnds, Real bnd) :
-  RecastModel(x_model, recast_vars_view), distParamDerivs(NO_DERIVS),
-  truncatedBounds(truncate_bnds), boundVal(bnd)
+  RecastModel(x_model),                     // minimal initialization
+  //RecastModel(x_model, recast_vars_view), // for recasts limited to view
+  distParamDerivs(NO_DERIVS), truncatedBounds(truncate_bnds), boundVal(bnd)
 {
   modelType = "probability_transform";
   modelId   = recast_model_id(root_model_id(), "PROBABILITY_TRANSFORM");
 
-  /* Rely on base class management of recast view
-
   // initialize current{Variables,Response}, userDefinedConstraints
-  const SharedVariablesData& x_svd  = x_model.current_variables().shared_data();
-  const Response&            x_resp = x_model.current_response();
-  SizetArray recast_vars_comps_total; // default: no change in cauv total
+  const Response& x_resp = x_model.current_response();
+  SizetArray recast_vars_comps_total;  // default: no change
+  BitArray all_relax_di, all_relax_dr; // default: no change
   short recast_resp_order = 1; // recast resp order to be same as original resp
   if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
   bool copy_values;
-  init_sizes(recast_vars_comps_total, x_svd.all_relaxed_discrete_int(),
-	     x_svd.all_relaxed_discrete_real(), numFns, 0, 0,
+  init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFns, 0, 0,
 	     recast_resp_order, copy_values);
+
   // initialize invariant portions of probability transform within mvDist
   // (requires currentVariables)
   initialize_transformation(u_space_type);
-  */
-  
+
   // we do not reorder the u-space variable types such that we preserve a
   // 1-to-1 mapping with consistent ordering
   const BitArray& active_vars = mvDist.active_variables();

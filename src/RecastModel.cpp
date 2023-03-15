@@ -436,7 +436,9 @@ init_constraints(bool copy_values, size_t num_recast_nln_ineq,
   }
   else { // copy_values is true for no variablesMapping
     userDefinedConstraints.update_variable_bounds(sm_cons); // assign values
-    if (svd.view().first == sm_view.first)
+    // active is used for build_active_views() and linear coeffs;
+    // inactive used only for build_inactive_views()
+    if (svd.view() == sm_view)
       userDefinedConstraints.update_linear_constraints(sm_cons);
     else
       userDefinedConstraints.reshape_update_linear(sm_svd,
