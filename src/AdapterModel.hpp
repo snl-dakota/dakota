@@ -151,7 +151,8 @@ protected:
 
   /// initialize currentVariables and related info from the passed
   /// size/type info
-  bool init_variables(const SizetArray& vars_comps_totals,
+  bool init_variables(const ShortShortPair& recast_vars_view,
+		      const SizetArray& vars_comps_totals,
 		      const BitArray& all_relax_di, 
 		      const BitArray& all_relax_dr);
   /// initialize currentResponse from the passed size info

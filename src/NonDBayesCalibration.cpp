@@ -218,10 +218,13 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   init_hyper_parameters();
 
   // expand initial point by numHyperparams for use in negLogPostModel
-  size_t i, num_orig_cv = iteratedModel.cv(),
+  const Variables& orig_vars = iteratedModel.current_variables();
+  size_t i, num_orig_cv = orig_vars.cv(), orig_cv_start = orig_vars.cv_start(),
     num_augment_cv = num_orig_cv + numHyperparams;
   mapSoln.sizeUninitialized(num_augment_cv);
-  copy_data_partial(mcmcModel.continuous_variables(), mapSoln, 0);
+  // allow mcmcModel to be in either distinct or all view
+  copy_data_partial(mcmcModel.all_continuous_variables(), (int)orig_cv_start,
+		    (int)num_orig_cv, mapSoln, 0);
   for (i=0; i<numHyperparams; ++i)
     mapSoln[num_orig_cv + i] = invGammaDists[i].mode();
 

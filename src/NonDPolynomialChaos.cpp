@@ -341,18 +341,18 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  // Alternate view for PCE approximation is injected in the model upstream of
-  // DataFitSurrModel, as it becomes DFS::actualModel.  DFS::currentVariables
-  // needs the original view of the incoming iteratedModel for consistency
-  // with original context (e.g. NonDBayes uses an active uncertain view).
+  // Alternate view for PCE is injected into iteratedModel upstream in the
+  // Analyzer ctor, since we want everything upstream in the consistent (ALL)
+  // view --> numContinuousVars, allVars, etc., resulting in use of functions
+  // like mean(x), etc.  This view is retained for g_u_model and uSpaceModel
+  // w/o inducing any additional mappings.
   // > Note: including alternate view w/i Recast also allows prob transform
   //   to operate on inactive state prior to emulation (see ProbTransformModel::
   //   initialize_distribution_types(): "inactive vars are not transformed"
   //   (u_types[i] = x_types[i])
   // > default param list value retains distribution bounds
-  // *** Latest: also use approx_view in DFSModel and force NonDBayes (in an active view via iteratedModel) to interact properly with a DFS in ALL view.  I think we need DFS and NonDPCE in all ALL view, where functions like mean(x) are used (as for OUU, IVP, etc.).
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType, approx_view));// change view for DFS::actualModel
+    iteratedModel, uSpaceType, approx_view));
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -983,9 +983,9 @@ void NonDPolynomialChaos::compute_expansion()
     RealVectorArray coeffs_array(numFunctions); UShort2DArray multi_index;
     String context("polynomial chaos expansion import file");
     unsigned short tabular_format = TABULAR_NONE;
-    TabularIO::read_data_tabular(expansionImportFile, context, coeffs_array,
-				 multi_index, tabular_format,
-				 uSpaceModel.truth_model().cv(), numFunctions);
+    TabularIO::read_data_tabular(expansionImportFile, context,
+				 coeffs_array, multi_index, tabular_format,
+				 numContinuousVars, numFunctions);
 
     // post the shared data
     std::shared_ptr<SharedPecosApproxData> data_rep =

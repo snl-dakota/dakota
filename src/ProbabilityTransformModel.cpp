@@ -32,8 +32,8 @@ ProbabilityTransformModel::
 ProbabilityTransformModel(const Model& x_model, short u_space_type,
 			  const ShortShortPair& recast_vars_view,
 			  bool truncate_bnds, Real bnd) :
-  RecastModel(x_model),                     // minimal initialization
-  //RecastModel(x_model, recast_vars_view), // for recasts limited to view
+  RecastModel(x_model),                   // minimal initialization
+//RecastModel(x_model, recast_vars_view), // No: for recasts limited to view
   distParamDerivs(NO_DERIVS), truncatedBounds(truncate_bnds), boundVal(bnd)
 {
   modelType = "probability_transform";
@@ -47,8 +47,12 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
   bool copy_values;
-  init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFns, 0, 0,
+  init_sizes(recast_vars_view,//x_model.current_variables().view(),
+	     recast_vars_comps_total, all_relax_di, all_relax_dr, numFns, 0, 0,
 	     recast_resp_order, copy_values);
+
+  // synchronize output level and grad/Hess settings with subModel
+  initialize_data_from_submodel();
 
   // initialize invariant portions of probability transform within mvDist
   // (requires currentVariables)

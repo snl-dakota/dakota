@@ -367,8 +367,8 @@ void Constraints::update_nonlinear_constraints(const Constraints& cons)
 
 void Constraints::update_linear_constraints(const Constraints& cons)
 {
-  constraintsRep->numLinearIneqCons  = cons.constraintsRep->numLinearIneqCons;
-  constraintsRep->numLinearEqCons    = cons.constraintsRep->numLinearEqCons;
+  constraintsRep->numLinearIneqCons = cons.constraintsRep->numLinearIneqCons;
+  constraintsRep->numLinearEqCons   = cons.constraintsRep->numLinearEqCons;
   copy_data(cons.constraintsRep->linearIneqConCoeffs,
 	    constraintsRep->linearIneqConCoeffs);
   copy_data(cons.constraintsRep->linearEqConCoeffs,
@@ -568,8 +568,8 @@ reshape_update_linear(const SharedVariablesData& prev_svd,
       curr_cntr, prev_cntr, col;
     RealMatrix prev_lin_ineq_coeffs = linearIneqConCoeffs,
 	       prev_lin_eq_coeffs   = linearEqConCoeffs;
-    linearIneqConCoeffs.shape(numLinearIneqCons, num_av);
-    linearEqConCoeffs.shape(numLinearEqCons,     num_av);
+    linearIneqConCoeffs.shape(numLinearIneqCons, num_av); // init to 0
+    linearEqConCoeffs.shape(numLinearEqCons,     num_av); // init to 0
     if ( ( prev_active_view == RELAXED_ALL || prev_active_view == MIXED_ALL ) &&
 	 active_view >= RELAXED_DESIGN) { // contract (ensure omission of zeros)
       curr_cntr = 0;  prev_cntr = curr_svd.cv_start();

@@ -110,7 +110,8 @@ public:
 
   /// update recast sizes and size Variables and Response members
   /// after alternate construction
-  void init_sizes(const SizetArray& vars_comps_totals,
+  void init_sizes(const ShortShortPair& recast_vars_view,
+		  const SizetArray& vars_comps_totals,
 		  const BitArray& all_relax_di, const BitArray& all_relax_dr,
 		  size_t num_recast_primary_fns,
 		  size_t num_recast_secondary_fns,
@@ -476,10 +477,10 @@ protected:
   void init_basic();
   /// initialize currentVariables and related info from the passed
   /// size/type info
-  void init_variables(const SizetArray& vars_comps_totals,
+  void init_variables(const ShortShortPair& recast_vars_view,
+		      const SizetArray& vars_comps_totals,
 		      const BitArray& all_relax_di,
-		      const BitArray& all_relax_dr,
-		      bool& copy_values, bool& new_vars_view);
+		      const BitArray& all_relax_dr, bool& copy_values);
   /// initialize userDefinedConstraints, sharing SVD with currentVariables
   void init_constraints(bool copy_values, size_t num_recast_nln_ineq,
 			size_t num_recast_nln_eq);
@@ -493,6 +494,9 @@ protected:
   /// or derivative information
   void reshape_response(size_t num_recast_primary_fns, 
 			size_t num_recast_secondary_fns);
+
+  /// code shared among constructors to initialize base class data from submodel
+  void initialize_data_from_submodel();
 
   /// update current variables/bounds/labels/constraints from subModel
   void update_from_model(Model& model);
@@ -566,18 +570,12 @@ protected:
   /// a BoolDeque for each individual variable, since response gradients and
   /// Hessians are managed per function, not per variable.
   bool nonlinearVarsMapping;
-  /// Active and inactive views of the variables and constraints, which
-  /// may differ from subModel views
-  ShortShortPair varsView;
 
 private:
 
   //
   //- Heading: Convenience member functions
   //
-
-  /// code shared among constructors to initialize base class data from submodel
-  void initialize_data_from_submodel();
 
   /// resize {primary,secondary}MapIndices and nonlinearRespMapping to
   /// synchronize with subModel sizes

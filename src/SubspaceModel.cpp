@@ -38,6 +38,9 @@ SubspaceModel(const Model& sub_model, unsigned int dimension,
 {
   outputLevel = output_level;
   componentParallelMode = CONFIG_PHASE;
+
+  // synchronize output level and grad/Hess settings with subModel
+  initialize_data_from_submodel(); // Note: currentVariables not defined
 }
 
 
@@ -183,8 +186,9 @@ initialize_base_recast(
   // -----------------------------------
 
   bool copy_values;
-  RecastModel::init_sizes(vars_comps_total, all_relax_di, all_relax_dr,
-			  num_primary, num_secondary, recast_secondary_offset,
+  RecastModel::init_sizes(subModel.current_variables().view(), vars_comps_total,
+			  all_relax_di, all_relax_dr, num_primary,
+			  num_secondary, recast_secondary_offset,
 			  recast_resp_order, copy_values);
 
   // suppress this initialization (see uncertain_vars_to_subspace())

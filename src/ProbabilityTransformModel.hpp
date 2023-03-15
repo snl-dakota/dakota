@@ -37,7 +37,7 @@ public:
 
   /// standard constructor
   ProbabilityTransformModel(const Model& sub_model, short u_space_type,
-                            const ShortShortPair& recast_vars_view,
+			    const ShortShortPair& recast_vars_view,
 			    bool truncate_bnds = false, Real bnd = 10.);
 
   /// destructor

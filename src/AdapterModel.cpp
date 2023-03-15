@@ -63,7 +63,8 @@ AdapterModel(const Variables& initial_vars, const Constraints& cons,
 
 /*
 bool AdapterModel::
-init_variables(const SizetArray& vars_comps_totals,
+init_variables(const ShortShortPair& recast_vars_view,
+	       const SizetArray& vars_comps_totals,
 	       const BitArray& all_relax_di, const BitArray& all_relax_dr)
 {
   const Variables& sub_model_vars = subModel.current_variables();
@@ -82,15 +83,22 @@ init_variables(const SizetArray& vars_comps_totals,
     ( all_relax_dr.empty() || 
       svd.all_relaxed_discrete_real() == all_relax_dr );
 
+  bool new_vars_view = (recast_vars_view != sm_vars.view());
+
   // check change in character first as mapping may not yet be present...
   if (vars_char_same) {
     // variables are mapped but not resized: deep copy of vars and
     // same svd, since types may change in transformed space
-    currentVariables = sub_model_vars.copy(true); // independent svd
+    if (new_vars_view) { // avoid building + then updating views
+      SharedVariablesData recast_svd(sm_svd.copy(recast_vars_view));
+      currentVariables = sm_vars.copy(recast_svd);
+    }
+    else
+      currentVariables = sub_model_vars.copy(true); // independent svd
   }
   else {
     // variables are resized; need new SVD regardless
-    SharedVariablesData recast_svd(sub_model_vars.view(), vars_comps_totals,
+    SharedVariablesData recast_svd(recast_vars_view, vars_comps_totals,
 				   all_relax_di, all_relax_dr);
     currentVariables = Variables(recast_svd);
   }
