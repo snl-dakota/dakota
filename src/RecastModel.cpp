@@ -911,7 +911,7 @@ recast_view(const RealVector& submodel_vec, RealVector& vec) const
   const Variables& sm_vars = subModel.current_variables();
   short sm_active_view = sm_vars.view().first, active_view = varsView.first;
   size_t sm_vec_len = submodel_vec.length();
-  if (active_view == sm_active_view || sm_vec_len == 1)
+  if (active_view == sm_active_view || sm_vec_len <= 1)
     vec = submodel_vec;
   else if ( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
 	    active_view >= RELAXED_DESIGN) // contract

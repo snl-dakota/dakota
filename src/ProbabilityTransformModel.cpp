@@ -32,19 +32,17 @@ ProbabilityTransformModel::
 ProbabilityTransformModel(const Model& x_model, short u_space_type,
 			  const ShortShortPair& recast_vars_view,
 			  bool truncate_bnds, Real bnd) :
-  RecastModel(x_model), distParamDerivs(NO_DERIVS),
+  RecastModel(x_model, recast_vars_view), distParamDerivs(NO_DERIVS),
   truncatedBounds(truncate_bnds), boundVal(bnd)
 {
   modelType = "probability_transform";
   modelId   = recast_model_id(root_model_id(), "PROBABILITY_TRANSFORM");
-  varsView  = recast_vars_view;
 
-  const SharedVariablesData& x_svd  = x_model.current_variables().shared_data();
-  const Response&            x_resp = x_model.current_response();
-  const Pecos::MultivariateDistribution& x_dist
-    = x_model.multivariate_distribution();
+  /* Rely on base class management of recast view
 
   // initialize current{Variables,Response}, userDefinedConstraints
+  const SharedVariablesData& x_svd  = x_model.current_variables().shared_data();
+  const Response&            x_resp = x_model.current_response();
   SizetArray recast_vars_comps_total; // default: no change in cauv total
   short recast_resp_order = 1; // recast resp order to be same as original resp
   if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
@@ -56,7 +54,8 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   // initialize invariant portions of probability transform within mvDist
   // (requires currentVariables)
   initialize_transformation(u_space_type);
-
+  */
+  
   // we do not reorder the u-space variable types such that we preserve a
   // 1-to-1 mapping with consistent ordering
   const BitArray& active_vars = mvDist.active_variables();
@@ -73,6 +72,8 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   BoolDequeArray nonlinear_resp_map(numFns, BoolDeque(1, false));
 
   // initialize Variables/Response/ActiveSet recastings (requires mvDist)
+  const Pecos::MultivariateDistribution& x_dist
+    = x_model.multivariate_distribution();
   init_maps(vars_map, nonlinear_variables_mapping(x_dist, mvDist),
 	    vars_u_to_x_mapping, set_u_to_x_mapping, primary_resp_map,
 	    secondary_resp_map, nonlinear_resp_map, resp_x_to_u_mapping, NULL);
