@@ -271,22 +271,31 @@ public:
 
   /// for use when a deep copy is needed (the representation is _not_ shared)
   Constraints copy() const;
-  /// for use when only data updates are desired between existing
+  /// copy nonlinear constraint data between existing Constraints objects
+  void update_nonlinear_constraints(const Constraints& cons);
+  /// copy linear constraint data between existing Constraints objects
+  void update_linear_constraints(const Constraints& cons);
+  /// copy variable lower/upper bound data between existing Constraints objects
+  void update_variable_bounds(const Constraints& cons);
+  /// copy bounds and linear/nonlinear constraint data between existing
   /// Constraints objects
   void update(const Constraints& cons);
 
   /// shape the lower/upper bound arrays based on sharedVarsData
-  void shape();
+  void shape_bounds();
   /// reshape the linear/nonlinear/bound constraint arrays arrays and
   /// the lower/upper bound arrays
   void reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
-	       size_t num_lin_ineq_cons, size_t num_lin_eq_cons,
 	       const SharedVariablesData& svd);
   /// reshape the lower/upper bound arrays based on sharedVarsData
-  void reshape();
-  /// reshape the linear/nonlinear constraint arrays
-  void reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
-	       size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
+  void reshape_bounds();
+  /// reshape the nonlinear constraint array sizes
+  void reshape_nonlinear(size_t num_nln_ineq_cons, size_t num_nln_eq_cons);
+  /// reshape the linear constraint array sizes
+  void reshape_linear(size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
+  /// reshape and repopulate the linear constraint arrays
+  void reshape_update_linear(const SharedVariablesData& prev_svd,
+			     const SharedVariablesData& curr_svd);
 
   /// sets the active view based on higher level context
   void active_view(short view2);
@@ -419,6 +428,9 @@ private:
   //
   //- Heading: Member functions
   //
+
+  /// ensure zeros in removed columns when contracting linear constraints coeffs
+  void check_zeros(const Real* ptr, int ptr_len) const;
 
   /// Used only by the constructor to initialize constraintsRep to the 
   /// appropriate derived type.
@@ -1144,6 +1156,16 @@ inline bool Constraints::is_null() const
 inline void Constraints::build_views()
 { build_active_views(); build_inactive_views(); } // called only from letters
 
+
+inline void Constraints::check_zeros(const Real* ptr, int ptr_len) const
+{
+  for (int i=0; i<ptr_len; ++i)
+    if (ptr[i] != 0.) {
+      Cerr << "Error: loss of information in constraint recasting."<< std::endl;
+      abort_handler(CONS_ERROR);
+    }
+}
+		  
 
 // Having overloaded operators call read/write means that the operators need 
 // not be a friend to private data because read/write functions are public.

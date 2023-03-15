@@ -315,9 +315,7 @@ void EffGlobalMinimizer::build_gp()
   // propagate to the approxSubproblemMinimizer.
   approxSubProbModel.primary_response_fn_sense(BoolDeque());
   approxSubProbModel.primary_response_fn_weights(RealVector(), false);//no recur
-  approxSubProbModel.reshape_constraints(0, 0,
-    approxSubProbModel.num_linear_ineq_constraints(),
-    approxSubProbModel.num_linear_eq_constraints());
+  approxSubProbModel.user_defined_constraints().reshape_nonlinear(0, 0);
 
   // Build initial GPs for all response functions
   if (batchAsynch)

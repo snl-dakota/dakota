@@ -481,10 +481,8 @@ protected:
 		      const BitArray& all_relax_dr,
 		      bool& copy_values, bool& new_vars_view);
   /// initialize userDefinedConstraints, sharing SVD with currentVariables
-  void init_constraints(bool copy_values);
-  /// resize userDefinedConstraints from the passed size info
-  void resize_constraints(size_t num_recast_secondary_fns,
-			  size_t recast_secondary_offset);
+  void init_constraints(bool copy_values, size_t num_recast_nln_ineq,
+			size_t num_recast_nln_eq);
   /// initialize mvDist from SharedVariablesData
   void init_distribution(bool copy_values);
   /// initialize currentResponse from the passed size info
@@ -531,6 +529,7 @@ protected:
   /// update just secondary response from subModel
   void update_secondary_response(const Model& model);
 
+  void recast_view(const RealVector& submodel_vec, RealVector& vec) const;
 
   //
   //- Heading: Data members

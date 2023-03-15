@@ -1010,8 +1010,8 @@ public:
   // CONSTRAINTS
 
   /// reshape the linear/nonlinear constraint arrays
-  void reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
-			   size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
+  //void reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+  //			     size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
 
   // LINEAR CONSTRAINTS
 
@@ -3302,18 +3302,20 @@ inline void Model::all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i)
 }
 
 
+/*
 inline void
 Model::reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 			   size_t num_lin_ineq_cons, size_t num_lin_eq_cons)
 {
   if (modelRep)
-    modelRep->
-      userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
-				     num_lin_ineq_cons, num_lin_eq_cons);
-  else
-    userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
-				   num_lin_ineq_cons, num_lin_eq_cons);
+    modelRep->reshape_constraints(num_nln_ineq_cons, num_nln_eq_cons,
+				  num_lin_ineq_cons, num_lin_eq_cons);
+  else {
+    userDefinedConstraints.reshape_nonlinear(num_nln_ineq_cons,num_nln_eq_cons);
+    userDefinedConstraints.reshape_linear(num_lin_ineq_cons, num_lin_eq_cons);
+  }
 }
+*/
 
 
 inline size_t Model::num_linear_ineq_constraints() const

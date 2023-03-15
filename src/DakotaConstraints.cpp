@@ -51,7 +51,7 @@ Constraints(BaseConstructor, const ProblemDescDB& problem_db,
   linearEqConTargets(
     problem_db.get_rv("variables.linear_equality_targets"))
 {
-  shape(); // size all*{Lower,Upper}Bnds arrays
+  shape_bounds(); // size all*{Lower,Upper}Bnds arrays
   build_views(); // construct active/inactive views of all arrays
   manage_linear_constraints(problem_db); // manage linear constraints
 }
@@ -68,7 +68,7 @@ Constraints(BaseConstructor, const SharedVariablesData& svd):
   sharedVarsData(svd), numNonlinearIneqCons(0), numNonlinearEqCons(0),
   numLinearIneqCons(0), numLinearEqCons(0)
 {
-  shape(); // size all*{Lower,Upper}Bnds arrays
+  shape_bounds(); // size all*{Lower,Upper}Bnds arrays
   build_views(); // construct active/inactive views of all arrays
   // no linear constraints for this lightweight ctor
 }
@@ -91,7 +91,7 @@ Constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd):
   constraintsRep(get_constraints(problem_db, svd))
 {
   if (!constraintsRep) // bad type or insufficient memory
-    abort_handler(-1);
+    abort_handler(CONS_ERROR);
 }
 
 
@@ -128,7 +128,7 @@ Constraints::Constraints(const SharedVariablesData& svd):
   constraintsRep(get_constraints(svd))
 {
   if (!constraintsRep)
-    abort_handler(-1);
+    abort_handler(CONS_ERROR);
 }
 
 
@@ -181,7 +181,7 @@ void Constraints::build_active_views()
   if (sharedVarsData.view().first == EMPTY_VIEW) {
     Cerr << "Error: active view cannot be EMPTY_VIEW in VarConstraints."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(CONS_ERROR);
   }
   sharedVarsData.initialize_active_start_counts();
   sharedVarsData.initialize_active_components();
@@ -224,7 +224,7 @@ void Constraints::build_inactive_views()
   if (sharedVarsData.view().second == MIXED_ALL ||
       sharedVarsData.view().second == RELAXED_ALL) {
     Cerr << "Error: inactive view cannot be ALL in VarConstraints."<< std::endl;
-    abort_handler(-1);
+    abort_handler(CONS_ERROR);
   }
   sharedVarsData.initialize_inactive_start_counts();
   sharedVarsData.initialize_inactive_components();
@@ -314,7 +314,7 @@ void Constraints::read(std::istream& s)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual read function.\n"
          << "No default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(CONS_ERROR);
   }
 }
 
@@ -326,7 +326,7 @@ void Constraints::write(std::ostream& s) const
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual write function.\n"
          << "No default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(CONS_ERROR);
   }
 }
 
@@ -351,45 +351,62 @@ Constraints Constraints::copy() const
 }
 
 
+void Constraints::update_nonlinear_constraints(const Constraints& cons)
+{
+  constraintsRep->numNonlinearIneqCons
+    = cons.constraintsRep->numNonlinearIneqCons;
+  constraintsRep->numNonlinearEqCons = cons.constraintsRep->numNonlinearEqCons;
+  copy_data(cons.constraintsRep->nonlinearIneqConLowerBnds,
+	    constraintsRep->nonlinearIneqConLowerBnds);
+  copy_data(cons.constraintsRep->nonlinearIneqConUpperBnds,
+	    constraintsRep->nonlinearIneqConUpperBnds);
+  copy_data(cons.constraintsRep->nonlinearEqConTargets,
+	    constraintsRep->nonlinearEqConTargets);
+}
+
+
+void Constraints::update_linear_constraints(const Constraints& cons)
+{
+  constraintsRep->numLinearIneqCons  = cons.constraintsRep->numLinearIneqCons;
+  constraintsRep->numLinearEqCons    = cons.constraintsRep->numLinearEqCons;
+  copy_data(cons.constraintsRep->linearIneqConCoeffs,
+	    constraintsRep->linearIneqConCoeffs);
+  copy_data(cons.constraintsRep->linearEqConCoeffs,
+	    constraintsRep->linearEqConCoeffs);
+  copy_data(cons.constraintsRep->linearIneqConLowerBnds,
+	    constraintsRep->linearIneqConLowerBnds);
+  copy_data(cons.constraintsRep->linearIneqConUpperBnds,
+	    constraintsRep->linearIneqConUpperBnds);
+  copy_data(cons.constraintsRep->linearEqConTargets,
+	    constraintsRep->linearEqConTargets);
+}
+
+
+void Constraints::update_variable_bounds(const Constraints& cons)
+{
+  copy_data(cons.constraintsRep->allContinuousLowerBnds,
+	    constraintsRep->allContinuousLowerBnds);
+  copy_data(cons.constraintsRep->allContinuousUpperBnds,
+	    constraintsRep->allContinuousUpperBnds);
+  copy_data(cons.constraintsRep->allDiscreteIntLowerBnds,
+	    constraintsRep->allDiscreteIntLowerBnds);
+  copy_data(cons.constraintsRep->allDiscreteIntUpperBnds,
+	    constraintsRep->allDiscreteIntUpperBnds);
+  copy_data(cons.constraintsRep->allDiscreteRealLowerBnds,
+	    constraintsRep->allDiscreteRealLowerBnds);
+  copy_data(cons.constraintsRep->allDiscreteRealUpperBnds,
+	    constraintsRep->allDiscreteRealUpperBnds);
+}
+
+
 /** Deep copies are used for history mechanisms that catalogue
     permanent copies (should not change as the representation within
     userDefinedConstraints changes). */
 void Constraints::update(const Constraints& cons)
 {
-  // nonlinear constraints
-  constraintsRep->numNonlinearIneqCons
-    = cons.constraintsRep->numNonlinearIneqCons;
-  constraintsRep->numNonlinearEqCons = cons.constraintsRep->numNonlinearEqCons;
-  constraintsRep->nonlinearIneqConLowerBnds
-    = cons.constraintsRep->nonlinearIneqConLowerBnds;
-  constraintsRep->nonlinearIneqConUpperBnds
-    = cons.constraintsRep->nonlinearIneqConUpperBnds;
-  constraintsRep->nonlinearEqConTargets
-    = cons.constraintsRep->nonlinearEqConTargets;
-  // linear constraints
-  constraintsRep->numLinearIneqCons  = cons.constraintsRep->numLinearIneqCons;
-  constraintsRep->numLinearEqCons    = cons.constraintsRep->numLinearEqCons;
-  constraintsRep->linearIneqConCoeffs
-    = cons.constraintsRep->linearIneqConCoeffs;
-  constraintsRep->linearEqConCoeffs  = cons.constraintsRep->linearEqConCoeffs;
-  constraintsRep->linearIneqConLowerBnds
-    = cons.constraintsRep->linearIneqConLowerBnds;
-  constraintsRep->linearIneqConUpperBnds
-    = cons.constraintsRep->linearIneqConUpperBnds;
-  constraintsRep->linearEqConTargets = cons.constraintsRep->linearEqConTargets;
-  // bounds
-  constraintsRep->allContinuousLowerBnds
-    = cons.constraintsRep->allContinuousLowerBnds;
-  constraintsRep->allContinuousUpperBnds
-    = cons.constraintsRep->allContinuousUpperBnds;
-  constraintsRep->allDiscreteIntLowerBnds
-    = cons.constraintsRep->allDiscreteIntLowerBnds;
-  constraintsRep->allDiscreteIntUpperBnds
-    = cons.constraintsRep->allDiscreteIntUpperBnds;
-  constraintsRep->allDiscreteRealLowerBnds
-    = cons.constraintsRep->allDiscreteRealLowerBnds;
-  constraintsRep->allDiscreteRealUpperBnds
-    = cons.constraintsRep->allDiscreteRealUpperBnds;
+  update_nonlinear_constraints(cons);
+  update_linear_constraints(cons);
+  update_variable_bounds(cons);
 
   // update active and inactive views
   constraintsRep->build_views();
@@ -397,10 +414,10 @@ void Constraints::update(const Constraints& cons)
 
 
 /** Resizes the derived bounds arrays. */
-void Constraints::shape()
+void Constraints::shape_bounds()
 {
   if (constraintsRep) // envelope
-    constraintsRep->shape();
+    constraintsRep->shape_bounds();
   else { // base class portion invoked by derived class redefinitions
 
     size_t num_acv, num_adiv, num_adsv, num_adrv;
@@ -418,6 +435,7 @@ void Constraints::shape()
 }
 
 
+/* *** TO DO: can this version be retired? ***
 void Constraints::
 reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 	size_t num_lin_ineq_cons, size_t num_lin_eq_cons,
@@ -426,25 +444,44 @@ reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
   if (constraintsRep) // envelope
     constraintsRep->reshape(num_nln_ineq_cons, num_nln_eq_cons,
 			    num_lin_ineq_cons, num_lin_eq_cons, svd);
-  else { // base class implementation for letter
+  else { // base class implementation
     sharedVarsData = svd;
-    reshape();
-    build_views();
-    reshape(num_nln_ineq_cons, num_nln_eq_cons, num_lin_ineq_cons,
-	    num_lin_eq_cons);
+    reshape_bounds(); // bounds
+    build_views();    // active views of bounds
+    reshape_nonlinear(num_nln_ineq_cons, num_nln_eq_cons);
+    reshape_linear(num_lin_ineq_cons, num_lin_eq_cons); // simple resize, no mapping
+  }
+}
+*/
+
+
+void Constraints::
+reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+	const SharedVariablesData& svd)
+{
+  if (constraintsRep) // envelope
+    constraintsRep->reshape(num_nln_ineq_cons, num_nln_eq_cons, svd);
+  else { // base class implementation
+    reshape_nonlinear(num_nln_ineq_cons, num_nln_eq_cons);
+    reshape_update_linear(sharedVarsData, svd);
+
+    sharedVarsData = svd;
+    reshape_bounds(); // bounds
+    build_views();    // active views of bounds
   }
 }
 
 
-void Constraints::reshape()
+void Constraints::reshape_bounds()
 {
   if (constraintsRep) // envelope
-    constraintsRep->reshape();
+    constraintsRep->reshape_bounds();
   else { // base class portion invoked by derived class redefinitions
 
     size_t num_acv, num_adiv, num_adsv, num_adrv;
     sharedVarsData.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
 
+    // not currently preserving data across all-variables resizes
     allContinuousLowerBnds.resize(num_acv);
     allContinuousUpperBnds.resize(num_acv);
     allDiscreteIntLowerBnds.resize(num_adiv);
@@ -460,43 +497,149 @@ void Constraints::reshape()
 /** Resizes the linear and nonlinear constraint arrays at the base
     class.  Does NOT currently resize the derived bounds arrays. */
 void Constraints::
-reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
-	size_t num_lin_ineq_cons, size_t num_lin_eq_cons)
+reshape_nonlinear(size_t num_nln_ineq_cons, size_t num_nln_eq_cons)
 {
   if (constraintsRep) // envelope
-    constraintsRep->reshape(num_nln_ineq_cons, num_nln_eq_cons,
-			    num_lin_ineq_cons, num_lin_eq_cons);
-  else { // base class implementation for letter
-
-    // Reshape attributes used by all letters
-    numNonlinearIneqCons = num_nln_ineq_cons;
-    nonlinearIneqConLowerBnds.resize(num_nln_ineq_cons);
-    nonlinearIneqConUpperBnds.resize(num_nln_ineq_cons);
-
-    numNonlinearEqCons = num_nln_eq_cons;
-    nonlinearEqConTargets.resize(num_nln_eq_cons);
-
-    size_t num_av = continuousLowerBnds.length() +
-      discreteIntLowerBnds.length() + discreteRealLowerBnds.length();
-
-    numLinearIneqCons = num_lin_ineq_cons;
-    linearIneqConLowerBnds.resize(num_lin_ineq_cons);
-    linearIneqConUpperBnds.resize(num_lin_ineq_cons);
-    linearIneqConCoeffs.reshape(num_lin_ineq_cons, num_av);
-
-    numLinearEqCons = num_lin_eq_cons;
-    linearEqConTargets.resize(num_lin_eq_cons);
-    linearEqConCoeffs.reshape(num_lin_eq_cons, num_av);
+    constraintsRep->reshape_nonlinear(num_nln_ineq_cons, num_nln_eq_cons);
+  else { // reshape nln con attributes used by all letters
+    if (numNonlinearIneqCons != num_nln_ineq_cons) {
+      numNonlinearIneqCons = num_nln_ineq_cons;
+      nonlinearIneqConLowerBnds.resize(num_nln_ineq_cons);
+      nonlinearIneqConUpperBnds.resize(num_nln_ineq_cons);
+    }
+    if (numNonlinearEqCons != num_nln_eq_cons) {
+      numNonlinearEqCons = num_nln_eq_cons;
+      nonlinearEqConTargets.resize(num_nln_eq_cons);
+    }
   }
 }
 
 
-/** Convenience function called from derived class constructors.  The
-    number of variables active for applying linear constraints is
-    currently defined to be the number of active continuous variables
-    plus the number of active discrete variables (the most general
-    case), even though very few optimizers can currently support mixed
-    variable linear constraints. */
+/** Resizes the linear and nonlinear constraint arrays at the base
+    class.  Does NOT currently resize the derived bounds arrays. */
+void Constraints::
+reshape_linear(size_t num_lin_ineq_cons, size_t num_lin_eq_cons)
+{
+  if (constraintsRep) // envelope
+    constraintsRep->reshape_linear(num_lin_ineq_cons, num_lin_eq_cons);
+  else { // reshape # of linear constraints while preserving # of active vars
+    if (numLinearIneqCons != num_lin_ineq_cons) {
+      size_t num_av = linearIneqConCoeffs.numCols();
+      if (num_av == 0)
+	num_av = continuousLowerBnds.length() + discreteIntLowerBnds.length()
+	       + discreteRealLowerBnds.length();
+      numLinearIneqCons = num_lin_ineq_cons;
+      linearIneqConLowerBnds.resize(num_lin_ineq_cons);
+      linearIneqConUpperBnds.resize(num_lin_ineq_cons);
+      linearIneqConCoeffs.reshape(num_lin_ineq_cons, num_av);
+    }
+    if (numLinearEqCons != num_lin_eq_cons) {
+      size_t num_av = linearEqConCoeffs.numCols();
+      if (num_av == 0)
+	num_av = continuousLowerBnds.length() + discreteIntLowerBnds.length()
+	       + discreteRealLowerBnds.length();
+      numLinearEqCons = num_lin_eq_cons;
+      linearEqConTargets.resize(num_lin_eq_cons);
+      linearEqConCoeffs.reshape(num_lin_eq_cons, num_av);
+    }
+  }
+}
+
+
+/** Resizes the linear coefficient arrays based on change in active
+    variables view. */
+void Constraints::
+reshape_update_linear(const SharedVariablesData& prev_svd,
+		      const SharedVariablesData& curr_svd)
+{
+  if (constraintsRep) // envelope
+    constraintsRep->reshape_update_linear(prev_svd, curr_svd);
+  else { // base class implementation for letter
+
+    short  active_view = curr_svd.view().first,
+      prev_active_view = prev_svd.view().first;
+    if ( active_view == prev_active_view ||
+	 ( numLinearIneqCons == 0 && numLinearEqCons == 0 ) )
+      return;
+
+    // Preserve previous linear constraint data 
+    size_t num_cv = curr_svd.cv(), num_div = curr_svd.div(),
+      num_drv = curr_svd.drv(), num_av = num_cv + num_div + num_drv,
+      curr_cntr, prev_cntr, col;
+    RealMatrix prev_lin_ineq_coeffs = linearIneqConCoeffs,
+	       prev_lin_eq_coeffs   = linearEqConCoeffs;
+    linearIneqConCoeffs.shape(numLinearIneqCons, num_av);
+    linearEqConCoeffs.shape(numLinearEqCons,     num_av);
+    if ( ( prev_active_view == RELAXED_ALL || prev_active_view == MIXED_ALL ) &&
+	 active_view >= RELAXED_DESIGN) { // contract (ensure omission of zeros)
+      curr_cntr = 0;  prev_cntr = curr_svd.cv_start();
+      for (col=0; col<prev_cntr; ++col) // ensure no loss of information
+	check_zeros(prev_lin_ineq_coeffs[col], numLinearIneqCons);
+      if (numLinearIneqCons)
+	for (col=0; col<num_cv; ++col, ++curr_cntr, ++prev_cntr)
+	  copy_data(prev_lin_ineq_coeffs[prev_cntr],
+		    linearIneqConCoeffs[curr_cntr], numLinearIneqCons);
+      if (numLinearEqCons)
+	for (col=0; col<num_cv; ++col, ++curr_cntr, ++prev_cntr)
+	  copy_data(prev_lin_eq_coeffs[prev_cntr], linearEqConCoeffs[curr_cntr],
+		    numLinearEqCons);
+      col = prev_cntr;  prev_cntr += curr_svd.div_start();
+      for (; col<prev_cntr; ++col) // ensure no loss of information
+	check_zeros(prev_lin_ineq_coeffs[col], numLinearIneqCons);
+      for (col=0; col<num_div; ++col, ++curr_cntr, ++prev_cntr) {
+	copy_data(prev_lin_ineq_coeffs[prev_cntr],
+		  linearIneqConCoeffs[curr_cntr], numLinearIneqCons);
+	copy_data(prev_lin_eq_coeffs[prev_cntr],  linearEqConCoeffs[curr_cntr],
+		  numLinearEqCons);
+      }
+      col = prev_cntr;  prev_cntr += curr_svd.drv_start();
+      for (; col<prev_cntr; ++col) // ensure no loss of information
+	check_zeros(prev_lin_ineq_coeffs[col], numLinearIneqCons);
+      for (col=0; col<num_drv; ++col, ++curr_cntr, ++prev_cntr) {
+	copy_data(prev_lin_ineq_coeffs[prev_cntr],
+		  linearIneqConCoeffs[curr_cntr], numLinearIneqCons);
+	copy_data(prev_lin_eq_coeffs[prev_cntr],  linearEqConCoeffs[curr_cntr],
+		  numLinearEqCons);
+      }
+    }
+    else if ( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
+	      prev_active_view >= RELAXED_DESIGN) { // inflate (pad with zeros)
+      prev_cntr = 0;  curr_cntr = prev_svd.cv_start();
+      for (col=0; col<num_cv; ++col, ++curr_cntr, ++prev_cntr) {
+	copy_data(prev_lin_ineq_coeffs[prev_cntr],
+		  linearIneqConCoeffs[curr_cntr], numLinearIneqCons);
+	copy_data(prev_lin_eq_coeffs[prev_cntr],  linearEqConCoeffs[curr_cntr],
+		  numLinearEqCons);
+      }
+      curr_cntr += prev_svd.div_start();
+      for (col=0; col<num_div; ++col, ++curr_cntr, ++prev_cntr) {
+	copy_data(prev_lin_ineq_coeffs[prev_cntr],
+		  linearIneqConCoeffs[curr_cntr], numLinearIneqCons);
+	copy_data(prev_lin_eq_coeffs[prev_cntr],  linearEqConCoeffs[curr_cntr],
+		  numLinearEqCons);
+      }
+      curr_cntr += prev_svd.drv_start();
+      for (col=0; col<num_drv; ++col, ++curr_cntr, ++prev_cntr) {
+	copy_data(prev_lin_ineq_coeffs[prev_cntr],
+		  linearIneqConCoeffs[curr_cntr], numLinearIneqCons);
+	copy_data(prev_lin_eq_coeffs[prev_cntr],  linearEqConCoeffs[curr_cntr],
+		  numLinearEqCons);
+      }
+    }
+    else {
+      Cerr << "Error: unsupported view combination in Constraints::"
+	   << "reshape_update_linear()" << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+  }
+}
+
+
+/** Convenience function called from derived class constructors.  The number of
+    variables active for applying linear constraints is currently defined to be
+    the number of active continuous variables plus the number of active discrete
+    {int,real} variables (most general case), even though very few optimizers
+    can currently support mixed variable linear constraints. */
 void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
 {
   const RealVector& linear_ineq_cons
@@ -506,22 +649,22 @@ void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
   size_t lin_ineq_len = linear_ineq_cons.length(),
          lin_eq_len   = linear_eq_cons.length();
   // get number of active variables to which linear constraints are applied.
-  size_t num_vars = continuousLowerBnds.length() +
-    discreteIntLowerBnds.length() + discreteRealLowerBnds.length();
+  size_t num_vars = sharedVarsData.cv() + sharedVarsData.div()
+                  + sharedVarsData.drv();
 
   if (lin_ineq_len || lin_eq_len) { // check sanity of inputs
     // check on num_vars is embedded so that, if there are no linear
     // constraints, the error is managed downstream within the iterators
     if (num_vars == 0) {
-      Cerr << "Error: no active variable bounds in Constraints::"
+      Cerr << "Error: no active variables in Constraints::"
 	   << "manage_linear_constraints()." << std::endl;
-      abort_handler(-1);
+      abort_handler(CONS_ERROR);
     }
     else if (lin_ineq_len%num_vars || lin_eq_len%num_vars) {
       Cerr << "Error: number of terms in linear constraint specification not "
 	   << "evenly\n       divisible by " << num_vars << " variables."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(CONS_ERROR);
     }
   }
 
@@ -530,8 +673,9 @@ void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
     copy_data(linear_ineq_cons, linearIneqConCoeffs, (int)numLinearIneqCons,
 	      (int)num_vars);
 
+    // linear ineq bounds already assigned in ctor initialization
     size_t i, len_lower_bnds = linearIneqConLowerBnds.length(),
-      len_upper_bnds = linearIneqConUpperBnds.length();
+              len_upper_bnds = linearIneqConUpperBnds.length();
     if (!len_lower_bnds) {
       linearIneqConLowerBnds.sizeUninitialized(numLinearIneqCons);
       linearIneqConLowerBnds
@@ -541,7 +685,7 @@ void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
       Cerr << "Error: length of linear inequality lower bounds specification "
            << "not equal to\n       number of linear inequality constraints."
            << std::endl;
-      abort_handler(-1);
+      abort_handler(CONS_ERROR);
     }
     if (!len_upper_bnds) {
       linearIneqConUpperBnds.sizeUninitialized(numLinearIneqCons);
@@ -551,7 +695,7 @@ void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
       Cerr << "Error: length of linear inequality upper bounds specification "
            << "not equal to\n       number of linear inequality constraints."
            << std::endl;
-      abort_handler(-1);
+      abort_handler(CONS_ERROR);
     }
     // Sanity check on bounds (prevents subtle specification error resulting
     // from specifying positive lower bounds and relying on the default upper
@@ -561,7 +705,7 @@ void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
 	Cerr << "Error: linear inequality lower bound values must be less than "
 	     << "or equal to\n       linear inequality upper bound values."
 	     << std::endl;
-	abort_handler(-1);
+	abort_handler(CONS_ERROR);
       }
     }
   }
@@ -570,6 +714,7 @@ void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
     copy_data(linear_eq_cons, linearEqConCoeffs, (int)numLinearEqCons,
 	      (int)num_vars);
 
+    // linear eq targets already assigned in ctor initialization
     size_t len_targets = linearEqConTargets.length();
     if (!len_targets) {
       linearEqConTargets.sizeUninitialized(numLinearEqCons);
@@ -579,7 +724,7 @@ void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
       Cerr << "Error: length of linear equality targets specification not "
            << "equal to\n       number of linear equality constraints."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(CONS_ERROR);
     }
   }
 }

@@ -262,11 +262,10 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   if (dfs_view != actualModel.current_variables().view())
     initialize_active_types(mvDist);
 
-  // update constraint counts in userDefinedConstraints.
+  // update constraint counts in userDefinedConstraints
   userDefinedConstraints.reshape(actualModel.num_nonlinear_ineq_constraints(),
 				 actualModel.num_nonlinear_eq_constraints(),
-				 actualModel.num_linear_ineq_constraints(),
-				 actualModel.num_linear_eq_constraints());
+				 currentVariables.shared_data());
 
   update_from_model(actualModel);
   check_submodel_compatibility(actualModel);
