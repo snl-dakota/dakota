@@ -100,8 +100,8 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     Cerr << "\nError: efficient_global does not support global_exp_gauss_proc "
          << "when Dakota is built without DAKOTA_MODULE_SURROGATES enabled." << std::endl;
     abort_handler(METHOD_ERROR);
-  }
 #endif
+  }
 }
 
 
