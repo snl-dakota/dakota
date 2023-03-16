@@ -53,11 +53,9 @@ protected:
 
 };
 
-#ifdef HAVE_DAKOTA_SURROGATES
 // free function for setting up experimental GPs with an
 // advanced options file
 void set_model_gp_options(Model& model, const String& options_file);
-#endif
 
 } // namespace Dakota
 #endif
