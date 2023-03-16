@@ -60,6 +60,9 @@ public:
 		      unsigned short import_build_format,
 		      bool import_build_active_only,
                       String exp_expansion_file = "");
+  /// alternate constructor for coefficient import
+  NonDPolynomialChaos(Model& model, const String& exp_import_file,
+		      short u_space_type);
 
   /// destructor
   ~NonDPolynomialChaos();

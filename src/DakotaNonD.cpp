@@ -1487,7 +1487,7 @@ void NonD::archive_allocate_pdf() // const
 
 void NonD::archive_pdf(size_t i, size_t inc_id) // const
 {
-  if (!resultsDB.active() || !pdfOutput ) return;
+  if (!resultsDB.active() || !pdfOutput || computedPDFOrdinates[i].length() == 0) return;
 
   size_t pdf_len = computedPDFOrdinates[i].length();
   RealMatrix pdf(3, pdf_len);

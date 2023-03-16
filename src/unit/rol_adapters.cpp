@@ -7,7 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 
 #include "ROL_OptimizationSolver.hpp"
 

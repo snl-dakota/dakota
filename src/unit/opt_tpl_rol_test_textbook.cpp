@@ -11,7 +11,7 @@
 #include <string>
 #include <map>
 
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 
 #define BOOST_TEST_MODULE dakota_opt_tpl_tol_textbook
 #include <boost/test/included/unit_test.hpp>

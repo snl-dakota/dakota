@@ -74,6 +74,11 @@ dakota_add_unit_test(NAME dakota_field_covariance_utils
   LINK_DAKOTA_LIBS
   LINK_LIBS Boost::boost)
 
+dakota_add_unit_test(NAME dakota_tolerance_intervals
+  SOURCES test_tolerance_intervals.cpp
+  LINK_DAKOTA_LIBS
+  LINK_LIBS Boost::boost)
+
 dakota_add_unit_test(NAME dakota_leja_sampling
   SOURCES leja_sampling.cpp
   LINK_DAKOTA_LIBS

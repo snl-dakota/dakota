@@ -75,9 +75,8 @@ Command-Line Resources
 GUI Resources
 -------------
    
-   - :ref:`Basic Model Format (.bmf) files<bmf-main>` allow you to formally define your simulation model's input parameters and output responses. These files are useful throughout Dakota GUI's tools for defining analysis drivers.
+   - The GUI recognizes :ref:`INI, JSON, and YAML files <gui-simulation-models-ini-json-yaml>` as simple, text-based structures for defining your simulation model's input parameters and output responses.
    - You can use the :ref:`Next-Gen Workflow tool<ngw-main>` in Dakota GUI to create a node-based workflow that will act as a Dakota analysis driver.
-   - You can use the :ref:`Script-Based Dakota Driver wizard<wizards-scriptdriver-main>` in Dakota GUI to auto-generate a Python script that will act as a Dakota analysis driver.
    - If your external simulation model receives a text-based input file, you can use :ref:`the Markup File tool in the GUI<gui-context-tools-markup>` to markup a text file with pre-processing syntax.
 
 ===============================================

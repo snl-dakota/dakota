@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 // To avoid min/max issues in Teuchos; consider leveraging a portable.hpp?
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 #define BOOST_TEST_MODULE dakota_bootstrap_utils
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/unit_test.hpp>

@@ -3590,15 +3590,21 @@ void NonDExpansion::archive_moments()
 	  
     if (exp_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
+
       for (int i = 0; i < numFunctions; ++i) {
         DimScaleMap scales;
         scales.emplace(0, StringScale("moments", 
                              {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
                              ScaleScope::SHARED));
-        // extract column or row of moment_stats
+        RealVector moments;
+        if(finalMomentsType == Pecos::CENTRAL_MOMENTS) {
+          moments = poly_approxs[i].expansion_moments();
+        } else {
+          Pecos::PolynomialApproximation::standardize_moments(poly_approxs[i].expansion_moments(), moments);
+        }
         resultsDB.insert(run_identifier(), {String("expansion_moments"),
             iteratedModel.response_labels()[i]},
-            Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&exp_matrix), i),
+            moments,
             scales);
       }
     }
@@ -3612,12 +3618,16 @@ void NonDExpansion::archive_moments()
             StringScale("moments",
             {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
             ScaleScope::SHARED));
-        // extract column or row of moment_stats
+        RealVector moments;
+        if(finalMomentsType == Pecos::CENTRAL_MOMENTS) {
+          moments = poly_approxs[i].numerical_integration_moments();
+        } else {
+          Pecos::PolynomialApproximation::standardize_moments(poly_approxs[i].numerical_integration_moments(), moments);
+        }
         resultsDB.insert(run_identifier(), {String("integration_moments"),
             iteratedModel.response_labels()[i]},
-            Teuchos::getCol<int,double>(Teuchos::View,
-					*const_cast<RealMatrix*>(&num_matrix),
-					i), scales);
+            moments,
+	    scales);
       }
     }
   }
@@ -3900,45 +3910,45 @@ void NonDExpansion::print_moments(std::ostream& s)
 		       (num_int_mom >  2 && num_int_moments[1] <= 0.) );
     if (curr_exception || finalMomentsType == Pecos::CENTRAL_MOMENTS) {
       if (i==0 || !prev_exception)
-	s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
-	  << std::setw(width+1)  << "3rdCentral" << std::setw(width+2)
-	  << "4thCentral\n";
+        s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
+          << std::setw(width+1)  << "3rdCentral" << std::setw(width+2)
+          << "4thCentral\n";
       if (exp_mom && num_int_mom) s << fn_labels[i];
       else                        s << std::setw(14) << fn_labels[i];
       if (exp_mom) {
-	if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
-	for (j=0; j<exp_mom; ++j)
-	  s << ' ' << std::setw(width) << exp_moments[j];
+        if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
+        for (j=0; j<exp_mom; ++j)
+          s << ' ' << std::setw(width) << exp_moments[j];
       }
       if (num_int_mom) {
-	if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
-	for (j=0; j<num_int_mom; ++j)
-	  s << ' ' << std::setw(width) << num_int_moments[j];
+        if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
+        for (j=0; j<num_int_mom; ++j)
+          s << ' ' << std::setw(width) << num_int_moments[j];
       }
       prev_exception = curr_exception;
       if (curr_exception && finalMomentsType == Pecos::STANDARD_MOMENTS)
-	exception = true;
+	      exception = true;
     }
     else {
       if (i==0 || prev_exception)
-	s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Std Dev"
-	  << std::setw(width+1)  << "Skewness" << std::setw(width+2)
-	  << "Kurtosis\n";
+        s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Std Dev"
+          << std::setw(width+1)  << "Skewness" << std::setw(width+2)
+          << "Kurtosis\n";
       if (exp_mom && num_int_mom) s << fn_labels[i];
       else                        s << std::setw(14) << fn_labels[i];
       if (exp_mom) {
-	Pecos::PolynomialApproximation::
-	  standardize_moments(exp_moments, std_exp_moments);
-	if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
-	for (j=0; j<exp_mom; ++j)
-	  s << ' ' << std::setw(width) << std_exp_moments[j];
+        Pecos::PolynomialApproximation::
+          standardize_moments(exp_moments, std_exp_moments);
+        if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
+        for (j=0; j<exp_mom; ++j)
+          s << ' ' << std::setw(width) << std_exp_moments[j];
       }
       if (num_int_mom) {
-	Pecos::PolynomialApproximation::
-	  standardize_moments(num_int_moments, std_num_int_moments);
-	if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
-	for (j=0; j<num_int_mom; ++j)
-	  s << ' ' << std::setw(width) << std_num_int_moments[j];
+        Pecos::PolynomialApproximation::
+          standardize_moments(num_int_moments, std_num_int_moments);
+        if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
+        for (j=0; j<num_int_mom; ++j)
+          s << ' ' << std::setw(width) << std_num_int_moments[j];
       }
       prev_exception = false;
     }

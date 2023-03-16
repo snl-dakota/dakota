@@ -789,6 +789,12 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY pce_expansion_import '
+             <keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE"   >
+	       <param type="INPUT_FILE" />
+             </keyword>
+	     ' >
+
     <!ENTITY mlpce_alloc_control '
       	     <keyword  id="allocation_control" name="allocation_control" code="{0}" label="allocation_control" help="" minOccurs="0" >
 	       <oneOf label="Multilevel Sample Allocation Control">
@@ -1211,7 +1217,8 @@
 		 &pce_cubature;
 		 &bayes_pce_expansion_order;
 		 &bayes_pce_orthog_least_interp;
-	       </oneOf>
+                 &pce_expansion_import;
+               </oneOf>
 	       &pce_options;
 	       &bayes_expansion_options;
 	     </keyword>
@@ -2870,9 +2877,7 @@
 	    &pce_cubature;
 	    &pce_expansion_order;
 	    &pce_orthog_least_interp;
-	    <keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE"   >
-	      <param type="INPUT_FILE" />
-	    </keyword>
+	    &pce_expansion_import;
 	  </oneOf>
 	  &pce_options;
 	  &expansion_options;
@@ -2891,9 +2896,7 @@
 	    <!-- &pce_cubature; -->
 	    &pce_expansion_order_sequence;
 	    &pce_orthog_least_interp_sequence;
-	    <!-- <keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE"   >
-	      <param type="INPUT_FILE" />
-	    </keyword> -->
+	    <!-- &pce_expansion_import -->
 	  </oneOf>
 	  &pce_options;
 	  &expansion_options;
@@ -2910,9 +2913,7 @@
 	  <oneOf label="Coefficient Computation Approach">
 	    &pce_expansion_order_sequence;
 	    &pce_orthog_least_interp_sequence;
-	    <!-- <keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE" >
-	      <param type="INPUT_FILE" />
-	    </keyword> -->
+	    <!-- &pce_expansion_import -->
 	  </oneOf>
 	  &pce_options;
 	  &expansion_options;
