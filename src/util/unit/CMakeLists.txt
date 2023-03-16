@@ -9,8 +9,6 @@
 
 include(DakotaUnitTest)
 
-#include_directories(${CMAKE_SOURCE_DIR}/src)
-
 # List of test files to copy into this directory
 #set(dakota_unit_test_copied_files)
 
