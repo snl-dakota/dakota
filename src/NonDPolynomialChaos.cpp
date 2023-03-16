@@ -344,8 +344,8 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   // Alternate view for PCE is injected into iteratedModel upstream in the
   // Analyzer ctor, since we want everything upstream in the consistent (ALL)
   // view --> numContinuousVars, allVars, etc., resulting in use of functions
-  // like mean(x), etc.  This view is retained for g_u_model and uSpaceModel
-  // w/o inducing any additional mappings.
+  // like mean(x), etc., when appropriate.  This view is retained for g_u_model
+  // and uSpaceModel w/o inducing any additional mappings.
   // > Note: including alternate view w/i Recast also allows prob transform
   //   to operate on inactive state prior to emulation (see ProbTransformModel::
   //   initialize_distribution_types(): "inactive vars are not transformed"

@@ -640,8 +640,23 @@ transform_variables(const Variables& recast_vars, Variables& sub_model_vars)
     assign_instance();
     variablesMapping(recast_vars, sub_model_vars);
   }
-  else
-    sub_model_vars.active_variables(recast_vars);
+  else {
+    short active_view =    recast_vars.view().first,
+       sm_active_view = sub_model_vars.view().first;
+    if (active_view == sm_active_view)
+      sub_model_vars.active_variables(recast_vars);
+    else if ( (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL) &&
+	      active_view >= RELAXED_DESIGN )
+      sub_model_vars.all_to_active_variables(recast_vars);
+    else if ( (active_view == RELAXED_ALL || active_view == MIXED_ALL) &&
+	      sm_active_view >= RELAXED_DESIGN )
+      sub_model_vars.active_to_all_variables(recast_vars);
+    else {
+      Cerr << "Error: unsupported view mapping in RecastModel::"
+	   << "transform_variables()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
 }
 
 
@@ -655,8 +670,23 @@ inverse_transform_variables(const Variables& sub_model_vars,
     assign_instance();
     invVarsMapping(sub_model_vars, recast_vars);
   }
-  else
-    recast_vars.active_variables(sub_model_vars);
+  else {
+    short active_view =    recast_vars.view().first,
+       sm_active_view = sub_model_vars.view().first;
+    if (active_view == sm_active_view)
+      recast_vars.active_variables(sub_model_vars);
+    else if ( (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL) &&
+	      active_view >= RELAXED_DESIGN )
+      recast_vars.active_to_all_variables(sub_model_vars);
+    else if ( (active_view == RELAXED_ALL || active_view == MIXED_ALL) &&
+	      sm_active_view >= RELAXED_DESIGN )
+      recast_vars.all_to_active_variables(sub_model_vars);
+    else {
+      Cerr << "Error: unsupported view mapping in RecastModel::"
+	   << "inverse_transform_variables()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
 }
 
 
@@ -715,7 +745,7 @@ transform_set(const Variables& recast_vars, const ActiveSet& recast_set,
     }
   }
   sub_model_set.request_vector(sub_model_asv);
-  sub_model_set.derivative_vector(recast_set.derivative_vector()); // copy
+  sub_model_set.derivative_vector(recast_set.derivative_vector()); // *** TO DO
 
   // a setMapping (provided in the RecastModel ctor or initialize()) augments
   // the standard mappings.  Current examples include NonD::set_u_to_x_mapping,
@@ -898,7 +928,7 @@ void RecastModel::initialize_data_from_submodel()
 
   scalingOpts           = subModel.scaling_options();
 
-  if (currentVariables.is_null()) {
+  if (currentVariables.is_null()) { // some ctor chains defer vars init
     fdGradStepSize       = subModel.fd_gradient_step_size();
     fdHessByFnStepSize   = subModel.fd_hessian_by_fn_step_size();
     fdHessByGradStepSize = subModel.fd_hessian_by_grad_step_size();

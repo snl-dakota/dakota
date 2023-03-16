@@ -535,7 +535,7 @@ void DataTransformModel::derived_evaluate(const ActiveSet& set)
     size_t num_exp = expData.num_experiments();
     for (size_t i=0; i<num_exp; ++i) {
       // augment the active variables with the configuration variables
-      subModel.inactive_variables(expData.configuration_variables()[i]);
+      subModel.inactive_variables(expData.configuration_variables()[i]); // *** TO DO: map views in RecastModel::transform_inactive_variables()
 
       if (subModel.asynch_flag()) {
         subModel.evaluate_nowait(sub_model_set);

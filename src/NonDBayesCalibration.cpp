@@ -232,11 +232,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // in a data transformation, making sure to allocate gradient/Hessian space
   if (calibrationData) {
     residualModel.assign_rep(std::make_shared<DataTransformModel>
-			     (mcmcModel, expData, numHyperparams,
+			     (mcmcModel, expData, numHyperparams,// *** TO DO: view is same as mcmcModel (ALL)
 			      obsErrorMultiplierMode, mcmcDerivOrder));
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
-    for (i=0; i<numHyperparams; ++i) {
+    for (i=0; i<numHyperparams; ++i) { // ***
       residualModel.continuous_lower_bound(0.0,     numContinuousVars + i);
       residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
     }
@@ -825,11 +825,13 @@ void NonDBayesCalibration::initialize_model()
       mcmcModel.build_approximation();
     break;
   }
-  if(posteriorStatsMutual)
+  if (posteriorStatsMutual)
     Cout << "Mutual Information estimation not yet implemented\n";
 }
 
-void NonDBayesCalibration::map_pre_solve(){
+
+void NonDBayesCalibration::map_pre_solve()
+{
   /// Runs a pre-solve for the MAP point. If running calibrate_to_hifi()
   /// or calibrate_with_adaptive_emulator(), propagates the solution to
   /// the mapSoln variable. Returns the optimal solution as a vector.
