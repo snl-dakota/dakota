@@ -102,7 +102,7 @@
 #endif
 
 #ifdef HAVE_ROL
-#if DAKOTA_ROL_INTERFACE
+#if HAVE_DAKOTA_ROL_INTERFACE
 #include "DakotaROLInterface.hpp"
 #else
 #include "ROLOptimizer.hpp"

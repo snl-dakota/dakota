@@ -3,7 +3,7 @@
 #define DAKOTA_ROL_INTERFACE_HPP
 
 // Boost Includes
-#include <boost/iostream/filter/line.hpp>
+#include <boost/iostreams/filter/line.hpp>
 
 // Dakota Includes
 #include "DakotaOptimizer.hpp"

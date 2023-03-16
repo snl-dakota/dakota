@@ -772,11 +772,13 @@ if(HAVE_MUQ)
 endif()
 
 if(HAVE_ROL)
+  message("\n\n=========[ Have ROL ]========\n\n")
+
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
   add_definitions("-DHAVE_ROL")
-  if(DAKOTA_ROL_INTERFACE)
+  if(HAVE_DAKOTA_ROL_INTERFACE)
     message("\n\n=========[ Building Dakota/ROL Interface ]========\n\n")
-    add_definitions("-DDAKOTA_ROL_INTERFACE")
+    add_definitions("-DHAVE_DAKOTA_ROL_INTERFACE")
     list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/src/rol_interface})
     set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/src/rol_interface/DakotaROLConstraint.cpp
                                      ${Dakota_SOURCE_DIR}/src/rol_interface/DakotaROLHessian.cpp
