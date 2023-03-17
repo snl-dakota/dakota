@@ -1061,10 +1061,12 @@ print_results(std::ostream& s, short results_state)
   NonDBayesCalibration::print_results(s, results_state);
 }
 
-double NonDQUESOBayesCalibration::dakotaLogLikelihood(
-  const QUESO::GslVector& paramValues, const QUESO::GslVector* paramDirection,
-  const void*         functionDataPtr, QUESO::GslVector*       gradVector,
-  QUESO::GslMatrix*     hessianMatrix, QUESO::GslVector*       hessianEffect)
+double NonDQUESOBayesCalibration::
+dakotaLogLikelihood(const QUESO::GslVector& paramValues,
+		    const QUESO::GslVector* paramDirection,
+		    const void* functionDataPtr, QUESO::GslVector* gradVector,
+		    QUESO::GslMatrix* hessianMatrix,
+		    QUESO::GslVector* hessianEffect)
 {
   // The GP/KRIGING/NO EMULATOR may use an unstandardized space (original)
   // and the PCE or SC cases always use standardized space.

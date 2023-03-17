@@ -40,13 +40,14 @@ DataTransformModel* DataTransformModel::dtModelInstance(NULL);
     this RecastModel */
 DataTransformModel::
 DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
+		   const ShortShortPair& recast_vars_view,
                    size_t num_hyper, unsigned short mult_mode, 
                    short recast_resp_deriv_order):
   // BMA TODO: should the BitArrays be empty or same as submodel?
   // recast_secondary_offset is the index to the equality constraints within 
   // the secondary responses
   RecastModel(sub_model, variables_expand(sub_model, num_hyper),
-	      BitArray(), BitArray(), sub_model.current_variables().view(),
+	      BitArray(), BitArray(), recast_vars_view,
 	      exp_data.num_total_exppoints(), sub_model.num_secondary_fns(),
 	      sub_model.num_nonlinear_ineq_constraints(),
               response_order(sub_model, recast_resp_deriv_order)), 
@@ -154,8 +155,8 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // bounds need updating too; above variable updates bypass mvDist
   // as sets on constraints object only instead of Model's
   // setters...
-  mvDist = subModel.multivariate_distribution(); // shared rep
-
+  //mvDist = subModel.multivariate_distribution(); // shared rep
+  init_distribution(true); // copy_values is false in RecastModel::init_sizes()
 
   // ---
   // Expand any submodel Response data to the expanded residual size
@@ -503,6 +504,20 @@ gen_primary_resp_map(const SharedResponseData& srd,
 }
 
 
+void DataTransformModel::
+transform_inactive_variables(const Variables& config_vars,
+			     Variables& sub_model_vars)
+{
+  // experimental configurations are always stored as inactive vars (refer
+  // to ExperimentData ctor).  Thus we alternate only on the subModel view.
+  short sm_active_view = sub_model_vars.view().first; 
+  if (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL)
+    sub_model_vars.inactive_into_all_variables(config_vars);
+  else //if (sm_active_view >= RELAXED_DESIGN)
+    sub_model_vars.inactive_variables(config_vars);
+}
+
+
 /** Blocking evaluation over all experiment configurations to compute
     a single set of expanded residuals.  If the subModel supports
     asynchronous evaluate_nowait(), do the configuration evals
@@ -533,9 +548,11 @@ void DataTransformModel::derived_evaluate(const ActiveSet& set)
     }
 
     size_t num_exp = expData.num_experiments();
+    const VariablesArray& config_vars = expData.configuration_variables();
+    Variables& sm_vars = subModel.current_variables();
     for (size_t i=0; i<num_exp; ++i) {
-      // augment the active variables with the configuration variables
-      subModel.inactive_variables(expData.configuration_variables()[i]); // *** TO DO: map views in RecastModel::transform_inactive_variables()
+      // update the subModel variables with the experiment configuration vars
+      transform_inactive_variables(config_vars[i], sm_vars);
 
       if (subModel.asynch_flag()) {
         subModel.evaluate_nowait(sub_model_set);
@@ -611,9 +628,11 @@ void DataTransformModel::derived_evaluate_nowait(const ActiveSet& set)
     }
 
     size_t num_exp = expData.num_experiments();
+    const VariablesArray& config_vars = expData.configuration_variables();
+    Variables& sm_vars = subModel.current_variables();
     for (size_t i=0; i<num_exp; ++i) {
-      // augment the active variables with the configuration variables
-      subModel.inactive_variables(expData.configuration_variables()[i]);
+      // update the subModel variables with the experiment configuration vars
+      transform_inactive_variables(config_vars[i], sm_vars);
 
       subModel.evaluate_nowait(sub_model_set);
 

@@ -915,6 +915,34 @@ void Variables::reshape()
 }
 
 
+void Variables::inactive_into_all_variables(const Variables& vars)
+{
+  // Set inactive variables only, leaving remainder of data unchanged
+  if (variablesRep)
+    variablesRep->inactive_into_all_variables(vars);
+  else {
+    size_t icv_start = vars.icv_start(),  idiv_start = vars.idiv_start(),
+          idsv_start = vars.idsv_start(), idrv_start = vars.idrv_start(),
+          num_icv    = vars.icv(),        num_idiv   = vars.idiv(),
+          num_idsv   = vars.idsv(),       num_idrv   = vars.idrv();
+    if ( icv_start + num_icv  > acv()  || idiv_start + num_idiv > adiv() ||
+	idsv_start + num_idsv > adsv() || idrv_start + num_idrv > adrv() ) {
+      Cerr << "Error: inconsistent counts in Variables::"
+	   << "inactive_into_all_variables()." << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    copy_data_partial(vars.inactive_continuous_variables(),
+		      allContinuousVars, icv_start);
+    copy_data_partial(vars.inactive_discrete_int_variables(),
+		      allDiscreteIntVars, idiv_start);
+    allDiscreteStringVars[boost::indices[idx_range(idsv_start, num_idsv)]]
+      = vars.inactive_discrete_string_variables();
+    copy_data_partial(vars.inactive_discrete_real_variables(),
+		      allDiscreteRealVars, idrv_start);
+  }
+}
+
+
 /// tolerance-based equality for Variables (used in lookup_by_nearby_val())
 bool nearby(const Variables& vars1, const Variables& vars2, Real tol)
 {

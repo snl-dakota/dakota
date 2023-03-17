@@ -424,8 +424,8 @@ void Minimizer::data_transform_model()
 	 << "experiment\nconfigurations, the returned constraint values must be"
 	 << " the same across\nconfigurations." << std::endl;
 
-  iteratedModel.
-    assign_rep(std::make_shared<DataTransformModel>(iteratedModel, expData));
+  iteratedModel.assign_rep(std::make_shared<DataTransformModel>(
+    iteratedModel, expData, iteratedModel.current_variables().view()));
   ++myModelLayers;
   dataTransformModel = iteratedModel;
 

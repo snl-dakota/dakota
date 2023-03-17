@@ -302,6 +302,8 @@ public:
   void inactive_variables(const Variables& vars);
   /// copy the active cv/div/dsv/drv variables from vars to inactive on this
   void active_to_inactive_variables(const Variables& vars);
+  /// insert the inactive cv/div/dsv/drv variables from vars into all arrays
+  void inactive_into_all_variables(const Variables& vars);
 
   /// return a mutable view of the active continuous variables
   RealVector& continuous_variables_view();

@@ -533,7 +533,7 @@ protected:
   /// update just secondary response from subModel
   void update_secondary_response(const Model& model);
 
-  void recast_view(const RealVector& submodel_vec, RealVector& vec) const;
+  void recast_vector(const RealVector& submodel_vec, RealVector& vec) const;
 
   //
   //- Heading: Data members
@@ -1164,6 +1164,15 @@ inline void RecastModel::set_evaluation_reference()
 
 inline void RecastModel::fine_grained_evaluation_counters()
 { subModel.fine_grained_evaluation_counters(); }
+
+
+inline void RecastModel::update_linear_constraints(const Model& model)
+{
+  if (model.num_linear_ineq_constraints() ||
+      model.num_linear_eq_constraints())
+    userDefinedConstraints.update_linear_constraints(
+      model.user_defined_constraints());
+}
 
 
 inline void RecastModel::

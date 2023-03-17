@@ -299,6 +299,9 @@ init_maps(const Sizet2DArray& vars_map_indices,
     Cerr << "Error: size mismatch in response mapping configuration." << endl;
     abort_handler(-1);
   }
+
+  // TO DO: revisit init_* now that more is known (and possibly defer more in
+  // ctors that lack these mappings)
 }
 
 
@@ -608,30 +611,6 @@ const IntResponseMap& RecastModel::derived_synchronize_nowait()
 
 
 void RecastModel::
-transform_response_map(const IntResponseMap& old_resp_map,
-		       IntResponseMap& new_resp_map)
-{
-  IntRespMCIter r_cit; IntASMIter s_it; IntVarsMIter v_it, sm_v_it;
-  for (r_cit=old_resp_map.begin(); r_cit!=old_resp_map.end(); ++r_cit) {
-    int native_id = r_cit->first;
-    s_it =  recastSetMap.find(native_id);
-    v_it = recastVarsMap.find(native_id);
-    if (variablesMapping) sm_v_it = subModelVarsMap.find(native_id);
-    else                  sm_v_it = v_it;
-
-    Response new_resp(currentResponse.copy()); // correct size, labels, etc.
-    new_resp.active_set(s_it->second);
-    transform_response(v_it->second, sm_v_it->second, r_cit->second, new_resp);
-    new_resp_map[native_id] = new_resp;
-
-    // cleanup
-    recastSetMap.erase(s_it);  recastVarsMap.erase(v_it);
-    if (variablesMapping) subModelVarsMap.erase(sm_v_it);
-  }
-}
-
-
-void RecastModel::
 transform_variables(const Variables& recast_vars, Variables& sub_model_vars)
 {
   // typical flow: mapping from recast variables ("iterator space")
@@ -745,7 +724,19 @@ transform_set(const Variables& recast_vars, const ActiveSet& recast_set,
     }
   }
   sub_model_set.request_vector(sub_model_asv);
-  sub_model_set.derivative_vector(recast_set.derivative_vector()); // *** TO DO
+
+  // For different views, we still want the same derivative component ids.
+  // For variablesMapping, we will assume 1-to-1 at this level.
+  //short active_view = recast_vars.view().first,
+  //   sm_active_view = subModel.current_variables().view().first;
+  //if (active_view == sm_active_view)
+  sub_model_set.derivative_vector(recast_set.derivative_vector());
+  //else if ( (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL) &&
+  // 	      active_view >= RELAXED_DESIGN ) {
+  //}
+  //else if ( (active_view == RELAXED_ALL || active_view == MIXED_ALL) &&
+  // 	      sm_active_view >= RELAXED_DESIGN ) {
+  //}
 
   // a setMapping (provided in the RecastModel ctor or initialize()) augments
   // the standard mappings.  Current examples include NonD::set_u_to_x_mapping,
@@ -902,6 +893,30 @@ inverse_transform_response(const Variables& sub_model_vars,
 }
 
 
+void RecastModel::
+transform_response_map(const IntResponseMap& old_resp_map,
+		       IntResponseMap& new_resp_map)
+{
+  IntRespMCIter r_cit; IntASMIter s_it; IntVarsMIter v_it, sm_v_it;
+  for (r_cit=old_resp_map.begin(); r_cit!=old_resp_map.end(); ++r_cit) {
+    int native_id = r_cit->first;
+    s_it =  recastSetMap.find(native_id);
+    v_it = recastVarsMap.find(native_id);
+    if (variablesMapping) sm_v_it = subModelVarsMap.find(native_id);
+    else                  sm_v_it = v_it;
+
+    Response new_resp(currentResponse.copy()); // correct size, labels, etc.
+    new_resp.active_set(s_it->second);
+    transform_response(v_it->second, sm_v_it->second, r_cit->second, new_resp);
+    new_resp_map[native_id] = new_resp;
+
+    // cleanup
+    recastSetMap.erase(s_it);  recastVarsMap.erase(v_it);
+    if (variablesMapping) subModelVarsMap.erase(sm_v_it);
+  }
+}
+
+
 void RecastModel::initialize_data_from_submodel()
 {
   // {grad,hess}Id{Analytic,Numerical,Quasi} for responses: Ok under view change
@@ -934,15 +949,15 @@ void RecastModel::initialize_data_from_submodel()
     fdHessByGradStepSize = subModel.fd_hessian_by_grad_step_size();
   }
   else {
-    recast_view(subModel.fd_gradient_step_size(),        fdGradStepSize);
-    recast_view(subModel.fd_hessian_by_fn_step_size(),   fdHessByFnStepSize);
-    recast_view(subModel.fd_hessian_by_grad_step_size(), fdHessByGradStepSize);
+    recast_vector(subModel.fd_gradient_step_size(),       fdGradStepSize);
+    recast_vector(subModel.fd_hessian_by_fn_step_size(),  fdHessByFnStepSize);
+    recast_vector(subModel.fd_hessian_by_grad_step_size(),fdHessByGradStepSize);
   }
 }
 
 
 void RecastModel::
-recast_view(const RealVector& submodel_vec, RealVector& vec) const
+recast_vector(const RealVector& submodel_vec, RealVector& vec) const
 {
   const Variables& sm_vars = subModel.current_variables();
   short active_view = currentVariables.view().first,
@@ -1340,25 +1355,6 @@ update_discrete_real_variables_active_complement_from_model(const Model& model)
     userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[offset_i],
 							 i);
     currentVariables.all_discrete_real_variable_label(adrv_labels[offset_i], i);
-  }
-}
-
-
-void RecastModel::update_linear_constraints(const Model& model)
-{
-  if (model.num_linear_ineq_constraints()) {
-    userDefinedConstraints.linear_ineq_constraint_coeffs(
-      model.linear_ineq_constraint_coeffs());
-    userDefinedConstraints.linear_ineq_constraint_lower_bounds(
-      model.linear_ineq_constraint_lower_bounds());
-    userDefinedConstraints.linear_ineq_constraint_upper_bounds(
-      model.linear_ineq_constraint_upper_bounds());
-  }
-  if (model.num_linear_eq_constraints()) {
-    userDefinedConstraints.linear_eq_constraint_coeffs(
-      model.linear_eq_constraint_coeffs());
-    userDefinedConstraints.linear_eq_constraint_targets(
-      model.linear_eq_constraint_targets());
   }
 }
 

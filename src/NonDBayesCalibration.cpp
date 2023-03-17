@@ -68,8 +68,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.opt_subproblem_solver")),
   chainSamples(probDescDB.get_int("method.nond.chain_samples")),
   randomSeed(probDescDB.get_int("method.random_seed")),
-  mcmcDerivOrder(1),
-  batchSize(1), 
+  mcmcDerivOrder(1), batchSize(1), 
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
   initHifiSamples (probDescDB.get_int("method.samples")),
   scalarDataFilename(probDescDB.get_string("responses.scalar_data_filename")),
@@ -219,7 +218,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   // expand initial point by numHyperparams for use in negLogPostModel
   const Variables& orig_vars = iteratedModel.current_variables();
-  size_t i, num_orig_cv = orig_vars.cv(), orig_cv_start = orig_vars.cv_start(),
+  size_t i, orig_cv_start = orig_vars.cv_start(), num_orig_cv = orig_vars.cv(),
     num_augment_cv = num_orig_cv + numHyperparams;
   mapSoln.sizeUninitialized(num_augment_cv);
   // allow mcmcModel to be in either distinct or all view
@@ -230,9 +229,10 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   // Now the underlying simulation model mcmcModel is setup; wrap it
   // in a data transformation, making sure to allocate gradient/Hessian space
+  const ShortShortPair& orig_view = orig_vars.view();
   if (calibrationData) {
     residualModel.assign_rep(std::make_shared<DataTransformModel>
-			     (mcmcModel, expData, numHyperparams,// *** TO DO: view is same as mcmcModel (ALL)
+			     (mcmcModel, expData, orig_view, numHyperparams,
 			      obsErrorMultiplierMode, mcmcDerivOrder));
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
@@ -241,8 +241,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
     }
   }
-  else
+  else if (orig_view == mcmcModel.current_variables().view())
     residualModel = mcmcModel;  // shallow copy
+  else // convert back from surrogate view to iteratedModel view for use in MCMC
+    residualModel.assign_rep(
+      std::make_shared<RecastModel>(mcmcModel, orig_view));
 
   // Order is important: data transform, then scale, then weights
   if (scaleFlag)   scale_model();
@@ -250,6 +253,12 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   init_map_optimizer();
   construct_map_model();
+
+  Cout << "\n  iteratedModel num cv = " << iteratedModel.cv() << " mvd active = " << iteratedModel.multivariate_distribution().active_variables().count()
+       << "\n  mcmcModel     num cv = " << mcmcModel.cv() << " mvd active = " << mcmcModel.multivariate_distribution().active_variables().count()
+       << "\n  residualModel num cv = " << residualModel.cv() << " mvd active = " << residualModel.multivariate_distribution().active_variables().count() << std::endl;
+  if (mapOptAlgOverride != SUBMETHOD_NONE)
+    Cout << "\n  negLogPostModel num cv = "<< negLogPostModel.cv()<<std::endl;
 
   int mcmc_concurrency = 1; // prior to concurrent chains
   maxEvalConcurrency *= mcmc_concurrency;
@@ -1074,6 +1083,7 @@ Real NonDBayesCalibration::assess_emulator_convergence()
     return std::sqrt(l2_norm_delta_coeffs);
 } // assess_emulator_convergence
 
+
 void NonDBayesCalibration::calibrate_to_hifi()
 {
   /* TODO:
@@ -1124,6 +1134,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     Cout << "Max high-fidelity model runs = " << max_hifi << "\n\n";
   }
 
+  const ShortShortPair& orig_view = iteratedModel.current_variables().view();
   while (!stop_metric) {
     
     eval_hi2lo_stop(stop_metric, prev_MI, MI_vec, 
@@ -1131,7 +1142,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     
     // TODO: Make function update_calibration_data() or something
     residualModel.assign_rep(std::make_shared<DataTransformModel>
-			     (mcmcModel, expData, numHyperparams,
+			     (mcmcModel, expData, orig_view, numHyperparams,
 			      obsErrorMultiplierMode, mcmcDerivOrder));
     construct_map_model();
     construct_map_optimizer(); 
@@ -2528,16 +2539,14 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 }
 
 
-/** Response mapping callback used within RecastModel for MAP
-    pre-solve. Computes 
+/** Response mapping callback used by RecastModel for MAP pre-solve. Computes 
 
       -log(post) = -log(like) - log(prior); where
       -log(like) = 1/2*Nr*log(2*pi) + 1/2*log(det(Cov)) + 1/2*r'(Cov^{-1})*r
                  = 1/2*Nr*log(2*pi) + 1/2*log(det(Cov)) + misfit
 
     (misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r) The passed
-    residual_resp has been differenced, interpolated, and
-    covariance-scaled */
+    residual_resp has been differenced, interpolated, and covariance-scaled */
 void NonDBayesCalibration::
 neg_log_post_resp_mapping(const Variables& residual_vars,
                           const Variables& nlpost_vars,
