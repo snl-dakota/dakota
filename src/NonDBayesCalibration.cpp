@@ -227,6 +227,13 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   for (i=0; i<numHyperparams; ++i)
     mapSoln[num_orig_cv + i] = invGammaDists[i].mode();
 
+  //Cout << "mcmcModel weights:\n" << mcmcModel.primary_response_fn_weights();
+  //
+  // HACK for right now (primary weights get lost somewhere in mcmcModel init)
+  // *** Can't assume unneeded for UQ (NonDBayesCal)
+  mcmcModel.primary_response_fn_weights(
+    iteratedModel.primary_response_fn_weights());
+
   // Now the underlying simulation model mcmcModel is setup; wrap it
   // in a data transformation, making sure to allocate gradient/Hessian space
   const ShortShortPair& orig_view = orig_vars.view();
@@ -236,7 +243,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 			      obsErrorMultiplierMode, mcmcDerivOrder));
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
-    for (i=0; i<numHyperparams; ++i) { // ***
+    for (i=0; i<numHyperparams; ++i) {
       residualModel.continuous_lower_bound(0.0,     numContinuousVars + i);
       residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
     }
@@ -254,11 +261,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   init_map_optimizer();
   construct_map_model();
 
-  Cout << "\n  iteratedModel num cv = " << iteratedModel.cv() << " mvd active = " << iteratedModel.multivariate_distribution().active_variables().count()
-       << "\n  mcmcModel     num cv = " << mcmcModel.cv() << " mvd active = " << mcmcModel.multivariate_distribution().active_variables().count()
-       << "\n  residualModel num cv = " << residualModel.cv() << " mvd active = " << residualModel.multivariate_distribution().active_variables().count() << std::endl;
-  if (mapOptAlgOverride != SUBMETHOD_NONE)
-    Cout << "\n  negLogPostModel num cv = "<< negLogPostModel.cv()<<std::endl;
+  //Cout << "\n  iteratedModel num cv = " << iteratedModel.cv() << " mvd active = " << iteratedModel.multivariate_distribution().active_variables().count()
+  //     << "\n  mcmcModel     num cv = " << mcmcModel.cv() << " mvd active = " << mcmcModel.multivariate_distribution().active_variables().count()
+  //     << "\n  residualModel num cv = " << residualModel.cv() << " mvd active = " << residualModel.multivariate_distribution().active_variables().count() << std::endl;
+  //if (mapOptAlgOverride != SUBMETHOD_NONE)
+  //  Cout << "\n  negLogPostModel num cv = "<< negLogPostModel.cv()<<std::endl;
 
   int mcmc_concurrency = 1; // prior to concurrent chains
   maxEvalConcurrency *= mcmc_concurrency;
@@ -2383,7 +2390,7 @@ void NonDBayesCalibration::prior_cholesky_factorization()
 
     Cerr << "prior_cholesky_factorization() not yet implemented for this case."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 
     corr_solver.setMatrix( Teuchos::rcp(&prior_cov_matrix, false) );
     corr_solver.factor(); // Cholesky factorization (LL^T) in place
@@ -2903,7 +2910,7 @@ calculate_kde()
   std::ofstream export_kde;
   size_t wpp4 = write_precision+4;
   StringArray var_labels;
-        copy_data(residualModel.continuous_variable_labels(),var_labels);
+  copy_data(residualModel.continuous_variable_labels(),var_labels);
   const StringArray& resp_labels = 
     		     mcmcModel.current_response().function_labels();
   TabularIO::open_file(export_kde, "kde_posterior.dat",
@@ -3805,7 +3812,7 @@ void NonDBayesCalibration::weight_model()
     if (lsq_weights[i] < 0) {
       Cerr << "\nError: Calibration term weights must be nonnegative. "
 	   << "Specified weights are:\n" << lsq_weights << '\n';
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
 
   // TODO: pass sqrt to WeightingModel

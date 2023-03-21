@@ -669,7 +669,7 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
     // (goal-oriented) adaptivity.
     exp_sampler_rep = std::make_shared<NonDLHSSampling>
       (uSpaceModel, sample_type, numSamplesOnExpansion,
-       first_seed(), rng, false, ALEATORY_UNCERTAIN);
+       first_seed(), rng, false, ALEATORY_UNCERTAIN);//ALL); *** HACK: ALEATORY_UNCERTAIN needed for aleatory stats but can we adopt the PCE view in cases of approx sample export (potentially resetting after numerical stats eval?)
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
     // needs to precede exp_sampler_rep->requested_levels()

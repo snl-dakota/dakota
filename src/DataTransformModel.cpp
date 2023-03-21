@@ -156,7 +156,10 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // as sets on constraints object only instead of Model's
   // setters...
   //mvDist = subModel.multivariate_distribution(); // shared rep
-  init_distribution(true); // copy_values is false in RecastModel::init_sizes()
+  init_distribution(true);
+  // copy_values is false in RecastModel::init_sizes(), which is correct in
+  // general since the variables config changes.  In the derived class, we can
+  // revisit this with special knowledge that subModel mvDist can be adapted.
 
   // ---
   // Expand any submodel Response data to the expanded residual size
