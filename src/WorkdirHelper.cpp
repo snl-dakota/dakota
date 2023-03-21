@@ -22,7 +22,7 @@
 
   #define NOMINMAX
   #include <io.h>
-  #include "dakota_windows.h"
+  #include "util_windows.hpp"
   #define DAK_PATH_ENV_NAME "Path"
   #define DAK_PATH_SEP ';'
   #define DAK_SLASH '\\'

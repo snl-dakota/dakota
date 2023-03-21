@@ -15,7 +15,7 @@
 /** \file dakota_dll_api.cpp
     \brief This file contains a DakotaRunner class, which launches DAKOTA. */
 
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 #include "dakota_system_defs.hpp"
 #include "ProgramOptions.hpp"
 #include "LibraryEnvironment.hpp"

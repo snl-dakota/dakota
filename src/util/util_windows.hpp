@@ -13,8 +13,8 @@
 //- Owner:        Brian Adams
 //- Version: $Id$
 
-#ifndef DAKOTA_WINDOWS_H
-#define DAKOTA_WINDOWS_H
+#ifndef DAKOTA_UTIL_WINDOWS_HPP
+#define DAKOTA_UTIL_WINDOWS_HPP
 
 // eventually use only _WIN32 here?
 #if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
@@ -27,4 +27,4 @@
 #include <windows.h>
 #endif
 
-#endif  // DAKOTA_WINDOWS_H
+#endif  // DAKOTA_UTIL_WINDOWS_HPP
