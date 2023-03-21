@@ -106,6 +106,8 @@ public:
   void archive_moments(size_t inc_id = 0);
   /// archive moment confidence intervals in results DB
   void archive_moment_confidence_intervals(size_t inc_id = 0);
+  /// archive standardized regression coefficients in results DB
+  void archive_std_regress_coeffs();
 
   /// archive extreme values (epistemic result) in results DB
   void archive_extreme_responses(size_t inc_id = 0);

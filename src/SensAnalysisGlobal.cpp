@@ -639,6 +639,23 @@ archive_correlations(const StrStrSizet& run_identifier,
   }
 }
 
+void SensAnalysisGlobal::
+archive_std_regress_coeffs(const StrStrSizet& run_identifier,  
+                           ResultsManager& iterator_results,
+                           const StringArray & resp_labels ) const
+{
+  if(!iterator_results.active())
+    return;
+
+  //TODO: add meaningful lables/scales; partition by responses, etc. - RWH
+  //MetaDataType md;
+  //md["Column Labels"] = make_metadatavalue(resp_labels);
+  DimScaleMap scales;
+  StringArray location;
+  location.push_back("standardized_regression_coefficients");
+  iterator_results.insert(run_identifier, location, stdRegressCoeffs, scales);
+}
+
 
 void SensAnalysisGlobal::
 print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
