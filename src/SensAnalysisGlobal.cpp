@@ -642,7 +642,8 @@ archive_correlations(const StrStrSizet& run_identifier,
 void SensAnalysisGlobal::
 archive_std_regress_coeffs(const StrStrSizet& run_identifier,  
                            ResultsManager& iterator_results,
-                           const StringArray & resp_labels ) const
+                           const StringArray & resp_labels,
+                           const size_t &inc_id) const
 {
   if(!iterator_results.active())
     return;
@@ -652,6 +653,7 @@ archive_std_regress_coeffs(const StrStrSizet& run_identifier,
   //md["Column Labels"] = make_metadatavalue(resp_labels);
   DimScaleMap scales;
   StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
   location.push_back("standardized_regression_coefficients");
   iterator_results.insert(run_identifier, location, stdRegressCoeffs, scales);
 }

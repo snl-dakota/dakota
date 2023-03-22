@@ -1818,10 +1818,8 @@ void NonDSampling::print_statistics(std::ostream& s) const
         adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
     nonDSampCorr.print_correlations(s, cv_labels, div_labels, dsv_labels,
 				    drv_labels,iteratedModel.response_labels());
-    if (stdRegressionCoeffs) {
+    if (stdRegressionCoeffs)
       nonDSampCorr.print_std_regress_coeffs(s, cv_labels, iteratedModel.response_labels());
-      nonDSampCorr.archive_std_regress_coeffs(run_identifier(), resultsDB, iteratedModel.response_labels());
-    }
   }
 }
 

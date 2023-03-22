@@ -73,7 +73,8 @@ public:
   /// save standardized regression coefficients to database
   void archive_std_regress_coeffs(const StrStrSizet& run_identifier,  
                                   ResultsManager& iterator_results,
-                                  const StringArray & resp_labels) const;
+                                  const StringArray & resp_labels,
+                                  const size_t &inc_id = 0) const;
 
   /// returns corrComputed to indicate whether compute_correlations()
   /// has been invoked
