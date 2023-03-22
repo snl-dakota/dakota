@@ -341,7 +341,16 @@ update_from_subordinate_model(size_t depth)
   update_transformation();
 
   // now pull additional updates from subModel (requires latest dist params)
-  RecastModel::update_from_model(subModel);
+  //RecastModel::update_from_model(subModel);
+  // here we override the logic in RecastModel::update_response_from_model()
+  // (which suppresses updates if {primary,secondary}RespMapping) since we want
+  // to include primary/secondary response updates for ProbabilityTransforms
+  // (the response transform is 1-to-1 and only involves derivative mappings)
+  bool update_active_complement = update_variables_from_model(subModel);
+  if (update_active_complement)
+    update_variables_active_complement_from_model(subModel);
+  update_primary_response(subModel);
+  update_secondary_response(subModel);
 }
 
 

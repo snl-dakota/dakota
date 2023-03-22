@@ -227,13 +227,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   for (i=0; i<numHyperparams; ++i)
     mapSoln[num_orig_cv + i] = invGammaDists[i].mode();
 
-  //Cout << "mcmcModel weights:\n" << mcmcModel.primary_response_fn_weights();
-  //
-  // HACK for right now (primary weights get lost somewhere in mcmcModel init)
-  // *** Can't assume unneeded for UQ (NonDBayesCal)
-  mcmcModel.primary_response_fn_weights(
-    iteratedModel.primary_response_fn_weights());
-
   // Now the underlying simulation model mcmcModel is setup; wrap it
   // in a data transformation, making sure to allocate gradient/Hessian space
   const ShortShortPair& orig_view = orig_vars.view();

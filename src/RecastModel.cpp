@@ -1366,20 +1366,8 @@ void RecastModel::update_response_from_model(const Model& model)
     // mappings, so primaryRespMapping could potentially be used to
     // update currentResponse from model primary fns
   }
-  else {
-    // primary response function weights
-    primaryRespFnWts = model.primary_response_fn_weights();
-    // primary response function sense (min or max)
-    primaryRespFnSense = model.primary_response_fn_sense();
-
-    // primary response function labels
-    const StringArray& sm_resp_labels = model.response_labels();
-    size_t i, num_primary = numFns 
-      - userDefinedConstraints.num_nonlinear_eq_constraints()
-      - userDefinedConstraints.num_nonlinear_ineq_constraints();
-    for (i=0; i<num_primary; i++)
-      currentResponse.shared_data().function_label(sm_resp_labels[i], i);
-  }
+  else
+    update_primary_response(model);
 
   if (secondaryRespMapping) {
     // response mappings are in opposite direction from variables
@@ -1388,6 +1376,23 @@ void RecastModel::update_response_from_model(const Model& model)
   }
   else
     update_secondary_response(model);
+}
+
+
+void RecastModel::update_primary_response(const Model& model)
+{
+  // primary response function weights
+  primaryRespFnWts = model.primary_response_fn_weights();
+  // primary response function sense (min or max)
+  primaryRespFnSense = model.primary_response_fn_sense();
+
+  // primary response function labels
+  const StringArray& sm_resp_labels = model.response_labels();
+  size_t i, num_primary = numFns 
+    - userDefinedConstraints.num_nonlinear_eq_constraints()
+    - userDefinedConstraints.num_nonlinear_ineq_constraints();
+  for (i=0; i<num_primary; i++)
+    currentResponse.shared_data().function_label(sm_resp_labels[i], i);
 }
 
 

@@ -530,7 +530,9 @@ protected:
   void update_linear_constraints(const Model& model);
   /// update labels and nonlinear constraint bounds/targets from subModel
   void update_response_from_model(const Model& model);
-  /// update just secondary response from subModel
+  /// update only the primary response data from subModel
+  void update_primary_response(const Model& model);
+  /// update only the secondary response data from subModel
   void update_secondary_response(const Model& model);
 
   void recast_vector(const RealVector& submodel_vec, RealVector& vec) const;
