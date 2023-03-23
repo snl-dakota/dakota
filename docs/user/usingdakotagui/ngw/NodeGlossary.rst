@@ -33,6 +33,7 @@ Dakota
    nodes/dakotaQueueSubmit
    nodes/dakotaResultsFile
    nodes/dakotaWorkflowDriver
+   nodes/dispatchAndCollect
    nodes/dprepro
    nodes/posPrePro
    nodes/pyprepro

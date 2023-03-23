@@ -15,6 +15,7 @@ between Dakota and your simulation model using a series of nodes that are visual
    NextGenWorkflowAnalysisDrivers
    NextGenWorkflowTutorial
    NodeGlossary
+   QueueSubmitScripts
 
 =======================
 Highlighted Node Topics
