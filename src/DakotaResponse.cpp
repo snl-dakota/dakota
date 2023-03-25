@@ -1722,6 +1722,89 @@ void Response::reshape_active_derivs(size_t num_deriv_vars)
 }
 
 
+void Response::
+function_gradient(const RealVector& fn_grad, const SizetArray& dvv, int i)
+{
+  if (responseRep)
+    responseRep->function_gradient(fn_grad, dvv, i);
+  else {
+    const SizetArray& curr_dvv = responseActiveSet.derivative_vector();
+    if (dvv == curr_dvv)
+      Teuchos::setCol(fn_grad, i, functionGradients);
+    else {
+      size_t num_dvv = dvv.size(), num_curr_dvv = curr_dvv.size(), index = 0,
+	dvv_val = (num_dvv) ? dvv[index] : SZ_MAX, curr_index = 0,
+	curr_dvv_val = (num_curr_dvv) ? curr_dvv[curr_index] : SZ_MAX;
+      while (index < num_dvv || curr_index < num_curr_dvv) {
+	if (dvv_val < curr_dvv_val)     // skip: available component not needed
+	  dvv_val = (++index < num_dvv) ? dvv[index] : SZ_MAX;
+	else if (curr_dvv_val < dvv_val) { // error: need unavailable component
+	  Cerr << "Error: required derivative component (" << curr_dvv_val
+	       << ") not present in assigned gradient vector." << std::endl;
+	  abort_handler(RESP_ERROR);
+	}
+	else {                               // match: need available component
+	  functionGradients(curr_index,i) = fn_grad[index];
+	  dvv_val      = (++index      < num_dvv)      ? dvv[index] : SZ_MAX;
+	  curr_dvv_val = (++curr_index < num_curr_dvv) ?
+	    curr_dvv[curr_index] : SZ_MAX;
+	}
+      }
+    }
+  }
+}
+
+
+void Response::
+function_hessian(const RealSymMatrix& fn_hessian,
+		 const SizetArray& dvv, size_t i)
+{
+  if (responseRep)
+    responseRep->function_hessian(fn_hessian, dvv, i);
+  else {
+    const SizetArray& curr_dvv = responseActiveSet.derivative_vector();
+    RealSymMatrix& curr_hess_i = functionHessians[i];
+    if (dvv == curr_dvv)
+      copy_data(fn_hessian, curr_hess_i); // avoid assuming vector view
+    else {
+      size_t num_dvv = dvv.size(), num_curr_dvv = curr_dvv.size(), index = 0,
+	dvv_val = (num_dvv) ? dvv[index] : SZ_MAX, curr_index = 0,
+	curr_dvv_val = (num_curr_dvv) ? curr_dvv[curr_index] : SZ_MAX;
+      SizetArray      indices;       indices.reserve(num_curr_dvv);
+      SizetArray curr_indices;  curr_indices.reserve(num_curr_dvv);
+      while (index < num_dvv || curr_index < num_curr_dvv) {
+	if (dvv_val < curr_dvv_val)     // skip: available component not needed
+	  dvv_val = (++index < num_dvv) ? dvv[index] : SZ_MAX;
+	else if (curr_dvv_val < dvv_val) { // error: need unavailable component
+	  Cerr << "Error: required derivative component (" << curr_dvv_val
+	       << ") not present in assigned Hessian matrix." << std::endl;
+	  abort_handler(RESP_ERROR);
+	}
+	else {                               // match: need available component
+	  curr_indices.push_back(curr_index);  indices.push_back(index);
+	  dvv_val      = (++index      < num_dvv)      ? dvv[index] : SZ_MAX;
+	  curr_dvv_val = (++curr_index < num_curr_dvv) ?
+	    curr_dvv[curr_index] : SZ_MAX;
+	}
+      }
+      // Note: curr_indices should always be {0,...,num_curr_dvv-1}
+      if (curr_indices.size() != num_curr_dvv) {
+	Cerr << "Error: mismatch in shared indices when matching DVV for "
+	     << "assigned Hessian matrix." << std::endl;
+	abort_handler(RESP_ERROR);
+      }
+      size_t r, c;
+      for (r=0; r<num_curr_dvv; ++r) {
+	curr_index = curr_indices[r]; index = indices[r];
+	for (c=0; c<=r; ++c)
+	  curr_hess_i(curr_index, curr_indices[c])
+	    = fn_hessian(index, indices[c]);
+      }
+    }
+  }
+}
+
+
 void Response::set_scalar_covariance(RealVector& scalars)
 {
   if (responseRep)

@@ -160,6 +160,9 @@ public:
   RealMatrix function_gradients_view() const;
   /// set a function gradient
   void function_gradient(const RealVector& fn_grad, int i);
+  /// set a function gradient, managing dissimilar DVV
+  void function_gradient(const RealVector& fn_grad,
+			 const SizetArray& dvv, int i);
   /// set all function gradients
   void function_gradients(const RealMatrix& fn_grads);
 
@@ -181,6 +184,9 @@ public:
   RealSymMatrixArray function_hessians_view() const;
   /// set a function Hessian
   void function_hessian(const RealSymMatrix& fn_hessian, size_t i);
+  /// set a function Hessian, managing dissimilar DVV
+  void function_hessian(const RealSymMatrix& fn_hessian,
+			const SizetArray& dvv, size_t i);
   /// set all function Hessians
   void function_hessians(const RealSymMatrixArray& fn_hessians);
 
