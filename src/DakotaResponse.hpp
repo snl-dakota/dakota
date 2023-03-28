@@ -159,10 +159,14 @@ public:
   /// return all function gradients as a view for updating in place
   RealMatrix function_gradients_view() const;
   /// set a function gradient
-  void function_gradient(const RealVector& fn_grad, int i);
+  void function_gradient(const RealVector& assign_grad, int fn_index);
   /// set a function gradient, managing dissimilar DVV
-  void function_gradient(const RealVector& fn_grad,
-			 const SizetArray& dvv, int i);
+  void function_gradient(const RealVector& assign_grad, int fn_index,
+			 const SizetArray& assign_indices,
+			 const SizetArray&   curr_indices);
+  /// set a function gradient, managing dissimilar DVV
+  void function_gradient(const RealVector& assign_grad, int fn_index,
+			 const SizetArray& assign_dvv);
   /// set all function gradients
   void function_gradients(const RealMatrix& fn_grads);
 
@@ -183,12 +187,21 @@ public:
   /// for updating in place
   RealSymMatrixArray function_hessians_view() const;
   /// set a function Hessian
-  void function_hessian(const RealSymMatrix& fn_hessian, size_t i);
+  void function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index);
+  /// set a function Hessian, using DVV index mappings
+  void function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index,
+			const SizetArray&    assign_indices,
+			const SizetArray&      curr_indices);
   /// set a function Hessian, managing dissimilar DVV
-  void function_hessian(const RealSymMatrix& fn_hessian,
-			const SizetArray& dvv, size_t i);
+  void function_hessian(const RealSymMatrix& assign_hessian,
+			size_t fn_index, const SizetArray& assign_dvv);
   /// set all function Hessians
   void function_hessians(const RealSymMatrixArray& fn_hessians);
+
+  /// define source and target indices for updating derivatives by matching
+  /// assign_dvv against the current DVV
+  void map_dvv_indices(const SizetArray& assign_dvv, SizetArray& assign_indices,
+		       SizetArray& curr_indices);
 
   // NOTE: Responses are stored:
   // [primary_scalar, primary_field, nonlinear_inequality, nonlinear_equality]

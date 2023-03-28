@@ -221,7 +221,7 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     // Evaluate functionSurfaces at vars and populate core_response.
     const ShortArray& core_asv = core_set.request_vector();
     const SizetArray& core_dvv = core_set.derivative_vector();
-    size_t   num_core_fns = core_asv.size(),
+    size_t   num_core_fns = core_asv.size(), fn_index,
       num_core_deriv_vars = core_dvv.size();
     if ( num_core_fns != functionSurfaces.size() ) {
       Cerr << "Error: mismatch in number of functions in ApproximationInterface"
@@ -254,41 +254,52 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     }
     // active subsets of actualModelVars are used in surrogate construction
     // and evaluation
-    const Variables&  surf_vars  = (am_vars) ? actualModelVars : vars;
-    SizetArray approx_dvv;
-    copy_data(actualModelVars.continuous_variable_ids(), approx_dvv);
+    const Variables& surf_vars = (am_vars) ? actualModelVars : vars;
+    // precompute DVV mappings once for all grads/hessians
+    bool deriv_flag = false;  StSIter it;
+    for (it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+      if (core_asv[*it] & 6)
+	{ deriv_flag = true; break; }
+    SizetArray assign_indices, curr_indices;
+    if (deriv_flag) {
+      SizetArray assign_dvv;
+      copy_data(actualModelVars.continuous_variable_ids(), assign_dvv);
+      core_response.map_dvv_indices(assign_dvv, assign_indices, curr_indices);
+    }
 
     //size_t num_core_vars = x.length(), 
     //bool approx_scale_len  = (approxScale.length())  ? true : false;
     //bool approx_offset_len = (approxOffset.length()) ? true : false;
-    for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-      size_t index = *it;
-      if (core_asv[index] & 1) {
-	Real fn_val = functionSurfaces[index].value(surf_vars);
-	//if (approx_scale_len)  fn_val *= approxScale[index];
-	//if (approx_offset_len) fn_val += approxOffset[index];
-	core_response.function_value(fn_val, index);
+    for (it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+      fn_index = *it;
+      if (core_asv[fn_index] & 1) {
+	Real approx_fn = functionSurfaces[fn_index].value(surf_vars);
+	//if (approx_scale_len)  fn_val *= approxScale[fn_index];
+	//if (approx_offset_len) fn_val += approxOffset[fn_index];
+	core_response.function_value(approx_fn, fn_index);
       }
-      if (core_asv[index] & 2) {
+      if (core_asv[fn_index] & 2) {
 	const RealVector& approx_grad
-	  = functionSurfaces[index].gradient(surf_vars);
+	  = functionSurfaces[fn_index].gradient(surf_vars);
 	//if (approx_scale_len)
 	//  for (size_t j=0; j<num_core_vars; j++)
-	//    approx_grad[j] *= approxScale[index];
+	//    approx_grad[j] *= approxScale[fn_index];
 
 	// Manage potential DVV mismatch (all vs. active)
-	core_response.function_gradient(approx_grad, approx_dvv, index);
+	core_response.function_gradient(approx_grad, fn_index,
+					assign_indices, curr_indices);
       }
-      if (core_asv[index] & 4) {
+      if (core_asv[fn_index] & 4) {
 	const RealSymMatrix& approx_hess
-	  = functionSurfaces[index].hessian(surf_vars);
+	  = functionSurfaces[fn_index].hessian(surf_vars);
 	//if (approx_scale_len)
 	//  for (size_t j=0; j<num_core_vars; j++)
 	//    for (size_t k=0; k<=j; k++)
-	//      approx_hess[j][k] *= approxScale[index];
+	//      approx_hess[j][k] *= approxScale[fn_index];
 
 	// Manage potential DVV mismatch (all vs. active)
-	core_response.function_hessian(approx_hess, approx_dvv, index);
+	core_response.function_hessian(approx_hess, fn_index,
+				       assign_indices, curr_indices);
       }
     }
   }
