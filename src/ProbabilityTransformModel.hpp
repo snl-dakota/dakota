@@ -48,7 +48,8 @@ public:
   //
 
   /// initialize transformed distribution types and instantiate mvDist
-  static void initialize_distribution_types(short u_space_type,
+  static void initialize_distribution_types(
+    short u_space_type, const Pecos::BitArray& active_rv,
     const Pecos::MultivariateDistribution& x_dist,
     Pecos::MultivariateDistribution& u_dist);
 
@@ -309,10 +310,10 @@ initialize_transformation(short u_space_type)
   // Follows init_sizes() since pulls view from currentVariables.
   // Precedes initialize_distribution_types() since inactive not transformed.
   initialize_active_types(mvDist);
-
-  const Pecos::MultivariateDistribution& x_dist
-    = subModel.multivariate_distribution();
-  initialize_distribution_types(u_space_type, x_dist, mvDist);
+  // now initialized based on Model view, can use u-space active subset
+  // (which may differ from x-space) for transformation
+  initialize_distribution_types(u_space_type, mvDist.active_variables(),
+				subModel.multivariate_distribution(), mvDist);
   initialize_nataf();
   initialize_dakota_variable_types();
   verify_correlation_support(u_space_type);

@@ -420,6 +420,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
     variables are in x-space. */
 void ProbabilityTransformModel::
 initialize_distribution_types(short u_space_type,
+			      const Pecos::BitArray& active_rv,
 			      const Pecos::MultivariateDistribution& x_dist,
 			      Pecos::MultivariateDistribution& u_dist)
 {
@@ -440,10 +441,9 @@ initialize_distribution_types(short u_space_type,
   Pecos::ShortArray u_types(num_rv, Pecos::NO_TYPE);
   bool err_flag = false;
 
-  // map for active subset from u_dist (set may differ from x_dist)
-  const Pecos::BitArray& active_rv = u_dist.active_variables();
+  bool no_mask = active_rv.empty();
   for (i=0; i<num_rv; ++i)
-    if (active_rv[i])
+    if (no_mask || active_rv[i])
       switch (u_space_type) {
       case STD_NORMAL_U:  case STD_UNIFORM_U:
 	switch (x_types[i]) {

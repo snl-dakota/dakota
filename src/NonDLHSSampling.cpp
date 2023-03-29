@@ -543,7 +543,8 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     = iteratedModel.multivariate_distribution();
   Pecos::MultivariateDistribution u_dist(Pecos::MARGINALS_CORRELATIONS);
   ProbabilityTransformModel::
-    initialize_distribution_types(EXTENDED_U, x_dist, u_dist);
+    initialize_distribution_types(EXTENDED_U, x_dist.active_variables(),
+				  x_dist, u_dist);
   u_dist.pull_distribution_parameters(x_dist);
   Pecos::ProbabilityTransformation nataf("nataf"); // for now
   nataf.x_distribution(x_dist);  nataf.u_distribution(u_dist);
