@@ -442,7 +442,9 @@ init_constraints(bool copy_values, size_t num_recast_nln_ineq,
   }
 
   // response-related (nonlinear cons)
-  if (primaryRespMapping || secondaryRespMapping)
+  if (primaryRespMapping || secondaryRespMapping ||
+      num_recast_nln_ineq != sm_cons.num_nonlinear_ineq_constraints() ||
+      num_recast_nln_eq   != sm_cons.num_nonlinear_eq_constraints())
     userDefinedConstraints.reshape_nonlinear(num_recast_nln_ineq,
 					     num_recast_nln_eq);
   else
