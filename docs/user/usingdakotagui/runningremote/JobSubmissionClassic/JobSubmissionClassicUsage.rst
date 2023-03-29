@@ -87,6 +87,8 @@ jobs that you submitted, showing the job submit time, the host machine, the job 
    :align: center
 
    The Job Status View
+   
+.. _gui-job-submission-classic-usage-remote:   
 
 ======================
 Accessing Remote Files

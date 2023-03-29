@@ -8,6 +8,24 @@ Job Submission Do's and Don'ts
 DO...
 -----
 
+Have a clear understanding of where your job is running
+-------------------------------------------------------
+
+Even if you plan on primarily working from the context of Dakota GUI, you should have a good idea of where your files are ending up on the remote machine.
+
+- Decide on a naming convention for your remote job folder (or hierarchy of remote job folders), which will be unique to you and to your job.
+- Get familiar with logging onto the remote machine through a terminal. This is an unfortunate but necessary fact of life when it comes to troubleshooting remote jobs that
+  are misbehaving. :ref:`The Dakota GUI provides built-in facilities for doing this. <gui-job-submission-classic-usage-remote>` You may also decide to use
+  `PuTTY <https://putty.org/>`__ (on Windows) or your OS's native terminal to establish remote connections.
+
+Clean up after previous job runs
+--------------------------------
+
+It is typical to re-run your job in the same working directory on the remote machine, especially if you are in the process of setting up a new local-to-remote job submission
+configuration and are working through the early stages of troubleshooting such a setup. Get in the habit of clearing out your remote run directory, either by manually deleting
+the files via a terminal connection to the remote machine, or by configuring such behavior using the GUI (for example, check the "Clear private working directory" on NGW's
+remoteNestedWorkflow).
+
 ---------
 DO NOT... 
 ---------
