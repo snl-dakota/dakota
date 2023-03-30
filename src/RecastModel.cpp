@@ -78,11 +78,11 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 
   const Variables&           submodel_vars = subModel.current_variables();
   const SharedVariablesData& submodel_svd  = submodel_vars.shared_data();
-  bool copy_values = true,
+  bool consistent_vars = true,
      new_vars_view = (recast_vars_view != submodel_vars.view());
   if (variablesMapping) // reshape as dictated by variable type changes
     init_variables(recast_vars_view, vars_comps_totals, all_relax_di,
-		   all_relax_dr, copy_values);
+		   all_relax_dr, consistent_vars);
   else if (new_vars_view) {
     SharedVariablesData recast_svd(submodel_svd.copy(recast_vars_view));
     currentVariables = submodel_vars.copy(recast_svd);
@@ -103,8 +103,8 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   // with no contributing fns), and must therefore be passed.
   size_t num_recast_nln_ineq = recast_secondary_offset,
     num_recast_nln_eq = secondaryRespMapIndices.size() - num_recast_nln_ineq;
-  init_constraints(copy_values, num_recast_nln_ineq, num_recast_nln_eq);
-  init_distribution(copy_values);
+  init_constraints(consistent_vars, num_recast_nln_ineq, num_recast_nln_eq);
+  init_distribution(consistent_vars);
 
   if (nonlinearRespMapping.size() != 
       primaryRespMapIndices.size() + secondaryRespMapIndices.size()) {
@@ -153,14 +153,14 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   init_basic();
 
   // initialize Variables, Response, and Constraints based on sizes
-  bool copy_values;
+  bool consistent_vars;
   init_sizes(recast_vars_view, vars_comps_totals, all_relax_di, all_relax_dr,
 	     num_recast_primary_fns, num_recast_secondary_fns,
-	     recast_secondary_offset, recast_resp_order, copy_values);
+	     recast_secondary_offset, recast_resp_order, consistent_vars);
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
   // initialize mvDist
-  init_distribution(copy_values);
+  init_distribution(consistent_vars);
 }
 
 
@@ -189,10 +189,10 @@ RecastModel(const Model& sub_model, const ShortShortPair& recast_vars_view):
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
 
-  bool copy_values = true;
-  init_constraints(copy_values, sub_model.num_nonlinear_ineq_constraints(),
+  bool consistent_vars = true;
+  init_constraints(consistent_vars, sub_model.num_nonlinear_ineq_constraints(),
 		   sub_model.num_nonlinear_eq_constraints());
-  init_distribution(copy_values);
+  init_distribution(consistent_vars);
 
   currentResponse = subModel.current_response().copy();
   currentResponse.active_set_derivative_vector(
@@ -241,18 +241,18 @@ init_sizes(const ShortShortPair& recast_vars_view,
 	   const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	   const BitArray& all_relax_dr, size_t num_recast_primary_fns,
 	   size_t num_recast_secondary_fns, size_t recast_secondary_offset,
-	   short recast_resp_order, bool& copy_values)
+	   short recast_resp_order, bool& consistent_vars)
 {
   // recasting of variables; only reshape if change in variable type counts
   init_variables(recast_vars_view, vars_comps_totals, all_relax_di,
-		 all_relax_dr, copy_values); 
+		 all_relax_dr, consistent_vars); 
 
   size_t num_recast_nln_ineq = recast_secondary_offset,
          num_recast_nln_eq   = num_recast_secondary_fns - num_recast_nln_ineq;
-  init_constraints(copy_values, num_recast_nln_ineq, num_recast_nln_eq);
+  init_constraints(consistent_vars, num_recast_nln_ineq, num_recast_nln_eq);
 
   // defer this to allow specialized handling in derived classes
-  //init_distribution(copy_values);
+  //init_distribution(consistent_vars);
 
   // recasting of response and constraints
   init_response(num_recast_primary_fns, num_recast_secondary_fns, 
@@ -332,7 +332,7 @@ void RecastModel::
 init_variables(const ShortShortPair& recast_vars_view,
 	       const SizetArray& vars_comps_totals,
 	       const BitArray& all_relax_di, const BitArray& all_relax_dr,
-	       bool& copy_values)
+	       bool& consistent_vars)
 {
   const Variables&           sm_vars = subModel.current_variables();
   const SharedVariablesData& sm_svd  = sm_vars.shared_data();
@@ -343,7 +343,7 @@ init_variables(const ShortShortPair& recast_vars_view,
   // copy variables values only if no change in variables structure
   // > Note: specific cases (e.g. a simple variable scaling) can violate this
   //   simple copy logic, but this is only for value initialization
-  copy_values = 
+  consistent_vars = 
     ( vars_comps_totals.empty() ||
       sm_svd.components_totals()         == vars_comps_totals ) &&
     ( all_relax_di.empty() ||
@@ -354,7 +354,7 @@ init_variables(const ShortShortPair& recast_vars_view,
   bool new_vars_view = (recast_vars_view != sm_vars.view());
 
   // check change in character first as mapping may not yet be present...
-  if (copy_values) {
+  if (consistent_vars) {
     // variables are mapped but not resized: deep copies of both vars and
     // incoming svd, since types may change in transformed space
     if (new_vars_view) { // avoid building + then updating views
@@ -376,10 +376,10 @@ init_variables(const ShortShortPair& recast_vars_view,
 }
 
 
-void RecastModel::init_distribution(bool copy_values)
+void RecastModel::init_distribution(bool consistent_vars)
 {
   // check change in character first as mapping may not yet be present...
-  if (copy_values) {
+  if (consistent_vars) {
     // variables are mapped but not resized: deep copies of both vars and
     // incoming svd, since types may change in transformed space
     const Variables& sm_vars = subModel.current_variables();
@@ -402,7 +402,7 @@ void RecastModel::init_distribution(bool copy_values)
 
 
 void RecastModel::
-init_constraints(bool copy_values, size_t num_recast_nln_ineq,
+init_constraints(bool consistent_vars, size_t num_recast_nln_ineq,
 		 size_t num_recast_nln_eq)
 {
   // share SVD with currentVariables, regardless of whether its SVD is new
@@ -424,14 +424,14 @@ init_constraints(bool copy_values, size_t num_recast_nln_ineq,
 
   // variable-related (bounds, linear cons)
   if (variablesMapping) {
-    if (copy_values) {
+    if (consistent_vars) {
       userDefinedConstraints.update_variable_bounds(sm_cons);
       userDefinedConstraints.update_linear_constraints(sm_cons);
     }
     else
       userDefinedConstraints.reshape_linear(0, 0); // remove linear cons
   }
-  else { // copy_values is true for no variablesMapping
+  else { // consistent_vars is true for no variablesMapping
     userDefinedConstraints.update_variable_bounds(sm_cons); // assign values
     userDefinedConstraints.update_linear_constraints(sm_cons);
     // active is used for build_active_views() and linear coeffs;

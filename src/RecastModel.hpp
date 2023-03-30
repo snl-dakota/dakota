@@ -116,7 +116,7 @@ public:
 		  size_t num_recast_primary_fns,
 		  size_t num_recast_secondary_fns,
 		  size_t recast_secondary_offset,
-		  short recast_resp_order, bool& copy_values);
+		  short recast_resp_order, bool& consistent_vars);
 
   /// initialize recast indices and map callbacks after alternate
   /// construction
@@ -480,12 +480,12 @@ protected:
   void init_variables(const ShortShortPair& recast_vars_view,
 		      const SizetArray& vars_comps_totals,
 		      const BitArray& all_relax_di,
-		      const BitArray& all_relax_dr, bool& copy_values);
+		      const BitArray& all_relax_dr, bool& consistent_vars);
   /// initialize userDefinedConstraints, sharing SVD with currentVariables
-  void init_constraints(bool copy_values, size_t num_recast_nln_ineq,
+  void init_constraints(bool consistent_vars, size_t num_recast_nln_ineq,
 			size_t num_recast_nln_eq);
   /// initialize mvDist from SharedVariablesData
-  void init_distribution(bool copy_values);
+  void init_distribution(bool consistent_vars);
   /// initialize currentResponse from the passed size info
   void init_response(size_t num_recast_primary_fns, 
 		     size_t num_recast_secondary_fns, 
