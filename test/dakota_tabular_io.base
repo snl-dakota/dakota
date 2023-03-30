@@ -2,269 +2,269 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)
 text_book:  Min = 1.8192029905e+00  Max = 1.7216252208e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln  1.48858e-02  1.00000e+00 
-   ModelForm -1.42850e-02 -3.81920e-02  1.00000e+00 
-      hpu_r1  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
-      hpu_r2 -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
+      hpu_r1 -1.42850e-02 -3.81920e-02  1.00000e+00 
+      hpu_r2  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
+   ModelForm -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
    text_book  7.08140e-02 -2.19513e-02  6.66472e-01  4.93437e-01  1.49840e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
                 text_book 
        TF1ln  1.11594e-01 
        TF2ln  4.22575e-02 
-   ModelForm  7.59734e-01 
-      hpu_r1  6.46176e-01 
-      hpu_r2  8.10122e-02 
+      hpu_r1  7.59734e-01 
+      hpu_r2  6.46176e-01 
+   ModelForm  8.10122e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln -5.00000e-02  1.00000e+00 
-   ModelForm -1.32097e-02 -6.72140e-02  1.00000e+00 
-      hpu_r1  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
-      hpu_r2 -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
+      hpu_r1 -1.32097e-02 -6.72140e-02  1.00000e+00 
+      hpu_r2  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
+   ModelForm -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
    text_book -3.07692e-02 -2.30769e-02  6.85350e-01  5.94514e-01  8.96834e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
                 text_book 
        TF1ln -3.52318e-02 
        TF2ln  8.68922e-02 
-   ModelForm  8.45057e-01 
-      hpu_r1  8.01605e-01 
-      hpu_r2  2.16517e-01 
+      hpu_r1  8.45057e-01 
+      hpu_r2  8.01605e-01 
+   ModelForm  2.16517e-01 
 Test Number 1 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)
 Test Number 2 succeeded
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 text_book:  Min = 1.8192029900e+00  Max = 1.7216252210e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln  1.48858e-02  1.00000e+00 
-   ModelForm -1.42850e-02 -3.81920e-02  1.00000e+00 
-      hpu_r1  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
-      hpu_r2 -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
+      hpu_r1 -1.42850e-02 -3.81920e-02  1.00000e+00 
+      hpu_r2  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
+   ModelForm -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
    text_book  7.08139e-02 -2.19513e-02  6.66472e-01  4.93437e-01  1.49840e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
                 text_book 
        TF1ln  1.11594e-01 
        TF2ln  4.22575e-02 
-   ModelForm  7.59734e-01 
-      hpu_r1  6.46176e-01 
-      hpu_r2  8.10122e-02 
+      hpu_r1  7.59734e-01 
+      hpu_r2  6.46176e-01 
+   ModelForm  8.10122e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln -5.00000e-02  1.00000e+00 
-   ModelForm -1.32097e-02 -6.72140e-02  1.00000e+00 
-      hpu_r1  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
-      hpu_r2 -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
+      hpu_r1 -1.32097e-02 -6.72140e-02  1.00000e+00 
+      hpu_r2  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
+   ModelForm -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
    text_book -2.65436e-02 -2.26967e-02  6.81207e-01  5.98712e-01  8.97007e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
                 text_book 
        TF1ln -2.55534e-02 
        TF2ln  8.76803e-02 
-   ModelForm  8.43012e-01 
-      hpu_r1  8.03060e-01 
-      hpu_r2  2.16018e-01 
+      hpu_r1  8.43012e-01 
+      hpu_r2  8.03060e-01 
+   ModelForm  2.16018e-01 
 Test Number 3 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)
 text_book:  Min = 1.8192029905e+00  Max = 1.7216252208e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln  1.48858e-02  1.00000e+00 
-   ModelForm -1.42850e-02 -3.81920e-02  1.00000e+00 
-      hpu_r1  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
-      hpu_r2 -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
+      hpu_r1 -1.42850e-02 -3.81920e-02  1.00000e+00 
+      hpu_r2  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
+   ModelForm -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
    text_book  7.08140e-02 -2.19513e-02  6.66472e-01  4.93437e-01  1.49840e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
                 text_book 
        TF1ln  1.11594e-01 
        TF2ln  4.22575e-02 
-   ModelForm  7.59734e-01 
-      hpu_r1  6.46176e-01 
-      hpu_r2  8.10122e-02 
+      hpu_r1  7.59734e-01 
+      hpu_r2  6.46176e-01 
+   ModelForm  8.10122e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln -5.00000e-02  1.00000e+00 
-   ModelForm -1.32097e-02 -6.72140e-02  1.00000e+00 
-      hpu_r1  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
-      hpu_r2 -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
+      hpu_r1 -1.32097e-02 -6.72140e-02  1.00000e+00 
+      hpu_r2  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
+   ModelForm -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
    text_book -3.07692e-02 -2.30769e-02  6.85350e-01  5.94514e-01  8.96834e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
                 text_book 
        TF1ln -3.52318e-02 
        TF2ln  8.68922e-02 
-   ModelForm  8.45057e-01 
-      hpu_r1  8.01605e-01 
-      hpu_r2  2.16517e-01 
+      hpu_r1  8.45057e-01 
+      hpu_r2  8.01605e-01 
+   ModelForm  2.16517e-01 
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 text_book:  Min = 1.8192026107e+00  Max = 1.7216252210e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln  1.48858e-02  1.00000e+00 
-   ModelForm -1.42850e-02 -3.81920e-02  1.00000e+00 
-      hpu_r1  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
-      hpu_r2 -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
+      hpu_r1 -1.42850e-02 -3.81920e-02  1.00000e+00 
+      hpu_r2  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
+   ModelForm -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
    text_book  7.08140e-02 -2.19513e-02  6.66472e-01  4.93437e-01  1.49840e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
                 text_book 
        TF1ln  1.11594e-01 
        TF2ln  4.22575e-02 
-   ModelForm  7.59734e-01 
-      hpu_r1  6.46176e-01 
-      hpu_r2  8.10122e-02 
+      hpu_r1  7.59734e-01 
+      hpu_r2  6.46176e-01 
+   ModelForm  8.10122e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln -5.00000e-02  1.00000e+00 
-   ModelForm -1.32097e-02 -6.72140e-02  1.00000e+00 
-      hpu_r1  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
-      hpu_r2 -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
+      hpu_r1 -1.32097e-02 -6.72140e-02  1.00000e+00 
+      hpu_r2  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
+   ModelForm -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
    text_book -2.23077e-02 -2.23077e-02  6.76802e-01  6.02680e-01  8.96834e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
                 text_book 
        TF1ln -1.58801e-02 
        TF2ln  8.83084e-02 
-   ModelForm  8.40498e-01 
-      hpu_r1  8.03988e-01 
-      hpu_r2  2.15154e-01 
+      hpu_r1  8.40498e-01 
+      hpu_r2  8.03988e-01 
+   ModelForm  2.15154e-01 
 Test Number 5 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)
 text_book:  Min = 1.8192029905e+00  Max = 1.7216252208e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln  1.48858e-02  1.00000e+00 
-   ModelForm -1.42850e-02 -3.81920e-02  1.00000e+00 
-      hpu_r1  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
-      hpu_r2 -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
+      hpu_r1 -1.42850e-02 -3.81920e-02  1.00000e+00 
+      hpu_r2  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
+   ModelForm -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
    text_book  7.08140e-02 -2.19513e-02  6.66472e-01  4.93437e-01  1.49840e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
                 text_book 
        TF1ln  1.11594e-01 
        TF2ln  4.22575e-02 
-   ModelForm  7.59734e-01 
-      hpu_r1  6.46176e-01 
-      hpu_r2  8.10122e-02 
+      hpu_r1  7.59734e-01 
+      hpu_r2  6.46176e-01 
+   ModelForm  8.10122e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln -5.00000e-02  1.00000e+00 
-   ModelForm -1.32097e-02 -6.72140e-02  1.00000e+00 
-      hpu_r1  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
-      hpu_r2 -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
+      hpu_r1 -1.32097e-02 -6.72140e-02  1.00000e+00 
+      hpu_r2  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
+   ModelForm -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
    text_book -3.07692e-02 -2.30769e-02  6.85350e-01  5.94514e-01  8.96834e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
                 text_book 
        TF1ln -3.52318e-02 
        TF2ln  8.68922e-02 
-   ModelForm  8.45057e-01 
-      hpu_r1  8.01605e-01 
-      hpu_r2  2.16517e-01 
+      hpu_r1  8.45057e-01 
+      hpu_r2  8.01605e-01 
+   ModelForm  2.16517e-01 
 Test Number 6 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)
 Test Number 7 succeeded
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 text_book:  Min = 1.8192029900e+00  Max = 1.7216252210e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln  1.48858e-02  1.00000e+00 
-   ModelForm -1.42850e-02 -3.81920e-02  1.00000e+00 
-      hpu_r1  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
-      hpu_r2 -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
+      hpu_r1 -1.42850e-02 -3.81920e-02  1.00000e+00 
+      hpu_r2  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
+   ModelForm -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
    text_book  7.08139e-02 -2.19513e-02  6.66472e-01  4.93437e-01  1.49840e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
                 text_book 
        TF1ln  1.11594e-01 
        TF2ln  4.22575e-02 
-   ModelForm  7.59734e-01 
-      hpu_r1  6.46176e-01 
-      hpu_r2  8.10122e-02 
+      hpu_r1  7.59734e-01 
+      hpu_r2  6.46176e-01 
+   ModelForm  8.10122e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln -5.00000e-02  1.00000e+00 
-   ModelForm -1.32097e-02 -6.72140e-02  1.00000e+00 
-      hpu_r1  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
-      hpu_r2 -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
+      hpu_r1 -1.32097e-02 -6.72140e-02  1.00000e+00 
+      hpu_r2  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
+   ModelForm -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
    text_book -2.65436e-02 -2.26967e-02  6.81207e-01  5.98712e-01  8.97007e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
                 text_book 
        TF1ln -2.55534e-02 
        TF2ln  8.76803e-02 
-   ModelForm  8.43012e-01 
-      hpu_r1  8.03060e-01 
-      hpu_r2  2.16018e-01 
+      hpu_r1  8.43012e-01 
+      hpu_r2  8.03060e-01 
+   ModelForm  2.16018e-01 
 Test Number 8 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)
 text_book:  Min = 1.8192029905e+00  Max = 1.7216252208e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln  1.48858e-02  1.00000e+00 
-   ModelForm -1.42850e-02 -3.81920e-02  1.00000e+00 
-      hpu_r1  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
-      hpu_r2 -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
+      hpu_r1 -1.42850e-02 -3.81920e-02  1.00000e+00 
+      hpu_r2  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
+   ModelForm -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
    text_book  7.08140e-02 -2.19513e-02  6.66472e-01  4.93437e-01  1.49840e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
                 text_book 
        TF1ln  1.11594e-01 
        TF2ln  4.22575e-02 
-   ModelForm  7.59734e-01 
-      hpu_r1  6.46176e-01 
-      hpu_r2  8.10122e-02 
+      hpu_r1  7.59734e-01 
+      hpu_r2  6.46176e-01 
+   ModelForm  8.10122e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln -5.00000e-02  1.00000e+00 
-   ModelForm -1.32097e-02 -6.72140e-02  1.00000e+00 
-      hpu_r1  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
-      hpu_r2 -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
+      hpu_r1 -1.32097e-02 -6.72140e-02  1.00000e+00 
+      hpu_r2  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
+   ModelForm -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
    text_book -3.07692e-02 -2.30769e-02  6.85350e-01  5.94514e-01  8.96834e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
                 text_book 
        TF1ln -3.52318e-02 
        TF2ln  8.68922e-02 
-   ModelForm  8.45057e-01 
-      hpu_r1  8.01605e-01 
-      hpu_r2  2.16517e-01 
+      hpu_r1  8.45057e-01 
+      hpu_r2  8.01605e-01 
+   ModelForm  2.16517e-01 
 Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 text_book:  Min = 1.8192026107e+00  Max = 1.7216252210e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln  1.48858e-02  1.00000e+00 
-   ModelForm -1.42850e-02 -3.81920e-02  1.00000e+00 
-      hpu_r1  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
-      hpu_r2 -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
+      hpu_r1 -1.42850e-02 -3.81920e-02  1.00000e+00 
+      hpu_r2  4.20108e-02 -4.46219e-02  1.95127e-02  1.00000e+00 
+   ModelForm -8.50314e-02 -4.61356e-03 -3.87150e-02  1.08597e-05  1.00000e+00 
    text_book  7.08140e-02 -2.19513e-02  6.66472e-01  4.93437e-01  1.49840e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
                 text_book 
        TF1ln  1.11594e-01 
        TF2ln  4.22575e-02 
-   ModelForm  7.59734e-01 
-      hpu_r1  6.46176e-01 
-      hpu_r2  8.10122e-02 
+      hpu_r1  7.59734e-01 
+      hpu_r2  6.46176e-01 
+   ModelForm  8.10122e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book 
+                    TF1ln        TF2ln       hpu_r1       hpu_r2    ModelForm    text_book 
        TF1ln  1.00000e+00 
        TF2ln -5.00000e-02  1.00000e+00 
-   ModelForm -1.32097e-02 -6.72140e-02  1.00000e+00 
-      hpu_r1  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
-      hpu_r2 -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
+      hpu_r1 -1.32097e-02 -6.72140e-02  1.00000e+00 
+      hpu_r2  8.55416e-03 -2.83843e-02  2.23881e-02  1.00000e+00 
+   ModelForm -1.00542e-01  7.23902e-03 -5.46407e-02  5.08213e-02  1.00000e+00 
    text_book -2.23077e-02 -2.23077e-02  6.76802e-01  6.02680e-01  8.96834e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
                 text_book 
        TF1ln -1.58801e-02 
        TF2ln  8.83084e-02 
-   ModelForm  8.40498e-01 
-      hpu_r1  8.03988e-01 
-      hpu_r2  2.15154e-01 
+      hpu_r1  8.40498e-01 
+      hpu_r2  8.03988e-01 
+   ModelForm  2.15154e-01 

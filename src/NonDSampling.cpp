@@ -1002,10 +1002,6 @@ compute_statistics(const RealMatrix&     vars_samples,
 
   if (!subIteratorFlag) {
     nonDSampCorr.compute_correlations(vars_samples, resp_samples);
-    // archive the correlations to the results DB
-//    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
-//				      div_labels, dsv_labels, drv_labels,
-//				      iteratedModel.response_labels());
     if (stdRegressionCoeffs)
       nonDSampCorr.compute_std_regress_coeffs(vars_samples, resp_samples);
   }
@@ -1806,28 +1802,9 @@ void NonDSampling::print_statistics(std::ostream& s) const
       print_wilks_stastics(s); //, "response function", iteratedModel.response_labels());
   }
   if (!subIteratorFlag) {
-    StringMultiArrayConstView
-      acv_labels  = iteratedModel.all_continuous_variable_labels(),
-      adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
-      adsv_labels = iteratedModel.all_discrete_string_variable_labels(),
-      adrv_labels = iteratedModel.all_discrete_real_variable_labels();
-    size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-      drv_start, num_drv;
-    mode_counts(iteratedModel.current_variables(), cv_start, num_cv,
-		div_start, num_div, dsv_start, num_dsv, drv_start, num_drv);
-    StringMultiArrayConstView
-      cv_labels  =
-        acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
-      div_labels =
-        adiv_labels[boost::indices[idx_range(div_start, div_start+num_div)]],
-      dsv_labels =
-        adsv_labels[boost::indices[idx_range(dsv_start, dsv_start+num_dsv)]],
-      drv_labels =
-        adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
-    nonDSampCorr.print_correlations(s, cv_labels, div_labels, dsv_labels,
-				    drv_labels,iteratedModel.response_labels());
-    if (stdRegressionCoeffs)
-      nonDSampCorr.print_std_regress_coeffs(s, cv_labels, iteratedModel.response_labels());
+    nonDSampCorr.print_correlations(s, iteratedModel.ordered_labels(), iteratedModel.response_labels());
+//    if (stdRegressionCoeffs)
+//      nonDSampCorr.print_std_regress_coeffs(s, cv_labels, iteratedModel.response_labels());
   }
 }
 
