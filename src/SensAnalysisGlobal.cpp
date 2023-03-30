@@ -861,6 +861,7 @@ void SensAnalysisGlobal::
 compute_std_regress_coeffs(const RealMatrix&     vars_samples,
                            const IntResponseMap& resp_samples)
 {
+#ifdef HAVE_DAKOTA_SURROGATES
   int num_obs = vars_samples.numCols();
   if (!num_obs) {
     Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
@@ -892,6 +893,7 @@ compute_std_regress_coeffs(const RealMatrix&     vars_samples,
   RealMatrix resp_copy_trans(resp_view, Teuchos::TRANS);
 
   compute_std_regression_coeffs(vars_copy_trans, resp_copy_trans, stdRegressCoeffs, stdRegressCODs);
+#endif
 }
 
 
@@ -899,6 +901,7 @@ void SensAnalysisGlobal::
 print_std_regress_coeffs(std::ostream& s, StringMultiArrayConstView cv_labels,
 		   const StringArray& resp_labels) const
 {
+#ifdef HAVE_DAKOTA_SURROGATES
   // output standardized regression coefficients and coefficients of determination (R^2)
 
   s << "\nStandardized Regression Coefficients and Coefficients of Determination (R^2):\n";
@@ -939,6 +942,7 @@ print_std_regress_coeffs(std::ostream& s, StringMultiArrayConstView cv_labels,
 
   s << std::setprecision(write_precision)  // return to previous precision
     << std::endl;
+#endif
 }
 
 
