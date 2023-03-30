@@ -63,10 +63,7 @@ public:
   /// save correlations to database
   void archive_correlations(const StrStrSizet& run_identifier,  
                             ResultsManager& iterator_results,
-                            StringMultiArrayConstView cv_labels,
-                            StringMultiArrayConstView div_labels,
-                            StringMultiArrayConstView dsv_labels,
-                            StringMultiArrayConstView drv_labels,
+                            const StringArray& var_labels,
                             const StringArray& resp_labels, 
                             const size_t &inc_id = 0) const;
 
@@ -75,10 +72,7 @@ public:
   bool correlations_computed() const;
 
   /// prints the correlations computed in compute_correlations()
-  void print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
-			  StringMultiArrayConstView div_labels,
-			  StringMultiArrayConstView dsv_labels,
-			  StringMultiArrayConstView drv_labels,
+  void print_correlations(std::ostream& s, const StringArray& var_labels,
 			  const StringArray& resp_labels) const;
 
   /// computes standardized regression coefficients and corresponding
@@ -134,6 +128,32 @@ private:
 
   /// Return true if there are any NaN or Inf entries in the matrix
   bool has_nan_or_inf(const RealMatrix &corr) const;
+
+  /// Check correlation matrices for nans or infs and print warning message
+  void check_correlations_for_nan_or_inf(std::ostream& s) const;
+
+  /// print simple (rank = false) or simple rank (rank = true) correlations
+  void print_simple_correlations(std::ostream& s, const StringArray& var_labels, const StringArray& resp_labels, bool rank) const;
+
+  /// print partial (rank = false) or partial rank (rank = true) correlations
+  void print_partial_correlations(std::ostream& s, const StringArray& var_labels, const StringArray& resp_labels, bool rank) const;
+
+  /// archive simple (rank = false) or simple rank (rank = true) correlations
+  void archive_simple_correlations(const StrStrSizet& run_identifier,  
+		     ResultsManager& iterator_results,
+		     const StringArray& var_labels,
+		     const StringArray& resp_labels,
+         const std::vector<const char *>& combined_desc,
+         const size_t &inc_id,
+         bool rank) const;
+
+/// archive partial (rank = false) or partial rank (rank = true) correlations
+void archive_partial_correlations(const StrStrSizet& run_identifier,  
+		     ResultsManager& iterator_results,
+		     const StringArray& var_labels,
+		     const StringArray& resp_labels,
+         const size_t &inc_id,
+         bool rank) const;
 
   //- Heading: Data
   //
