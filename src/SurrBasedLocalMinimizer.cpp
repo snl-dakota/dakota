@@ -517,10 +517,10 @@ update_approx_sub_problem(SurrBasedLevelData& tr_data)
   if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
     relax_constraints(tr_data);
   else if (approxSubProbCon != NO_CONSTRAINTS) {
-    // Approx subproblems with recast constraints (secondaryRespMapping in
-    // RecastModel) won't auto-propagate nonlinear constraint bounds in the
-    // general case --> client must perform with special knowledge of the
-    // nature of the nonlinear constraint mapping
+    // Approx subproblems with recast constraints (from secondaryRespMapping
+    // function in RecastModel) won't auto-propagate nonlinear constraint
+    // bounds for a general mapping --> recast client must propagate based
+    // on the specific nature of the mapping
     approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
       origNonlinIneqLowerBnds);
     approxSubProbModel.nonlinear_ineq_constraint_upper_bounds(

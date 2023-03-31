@@ -339,18 +339,16 @@ void SurrogateModel::init_model_labels(Model& sub_model)
 
 void SurrogateModel::init_model_inactive_variables(Model& sub_model)
 {
-  Variables&   sm_vars = sub_model.current_variables();
-  Constraints& sm_cons = sub_model.user_defined_constraints();
-
-  short active_view = currentVariables.view().first,
-     sm_active_view = sm_vars.view().first;
-  bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL);
-  if ( (active_view == sm_active_view) && !active_all) {
+  Variables&  sm_vars = sub_model.current_variables();
+  short inactive_view = currentVariables.view().second;
+  // matching non-empty:
+  if (inactive_view && inactive_view == sm_vars.view().second) {
     // update model with inactive currentVariables/userDefinedConstraints
     // data. For efficiency, we avoid doing this on every evaluation, instead
     // calling it from a pre-execution initialization context.
     sm_vars.inactive_variables(currentVariables);
-    sm_cons.inactive_bounds(userDefinedConstraints);
+    sub_model.user_defined_constraints().
+      inactive_bounds(userDefinedConstraints);
   }
 }
 
@@ -374,12 +372,14 @@ void SurrogateModel::init_model_inactive_labels(Model& sub_model)
   // ***************************************************************************
 
   Variables& sm_vars = sub_model.current_variables();
-  short active_view = currentVariables.view().first,
-     sm_active_view = sm_vars.view().first;
+  const ShortShortPair&   sm_view =          sm_vars.view();
+  const ShortShortPair& curr_view = currentVariables.view();
+  short active_view = curr_view.first,    inactive_view = curr_view.second,
+     sm_active_view =   sm_view.first, sm_inactive_view =   sm_view.second;
   bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
     sm_active_all = (sm_active_view == RELAXED_ALL ||
 		     sm_active_view == MIXED_ALL);
-  if (active_view == sm_active_view && !active_all) // models not in ALL view
+  if (inactive_view && inactive_view == sm_inactive_view) // matching non-empty
     // Can't use inactive label matching since that is what we are updating,
     // so rely only on counts for now.
     sm_vars.inactive_labels(currentVariables);

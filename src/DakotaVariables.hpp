@@ -1248,20 +1248,20 @@ inline void Variables::inactive_labels(const Variables& vars)
   if (variablesRep)
     variablesRep->inactive_labels(vars);
   else {
-    if (vars.icv()  != icv()  || vars.idiv() != idiv() ||
-	vars.idsv() != idsv() || vars.idrv() != idrv() ) {
-      Cerr << "Error: inconsistent counts in Variables::inactive_labels()."
-	   << std::endl;
-      abort_handler(VARS_ERROR);
-    }
-    inactive_continuous_variable_labels(
-      vars.inactive_continuous_variable_labels());
-    inactive_discrete_int_variable_labels(
-      vars.inactive_discrete_int_variable_labels());
-    inactive_discrete_string_variable_labels(
-      vars.inactive_discrete_string_variable_labels());
-    inactive_discrete_real_variable_labels(
-      vars.inactive_discrete_real_variable_labels());
+    // for inactive labels, relax requirement on perfect alignment and only
+    // update where consistent
+    if (vars.icv() == icv())
+      inactive_continuous_variable_labels(
+	vars.inactive_continuous_variable_labels());
+    if (vars.idiv() == idiv())
+      inactive_discrete_int_variable_labels(
+        vars.inactive_discrete_int_variable_labels());
+    if (vars.idsv() == idsv())
+      inactive_discrete_string_variable_labels(
+        vars.inactive_discrete_string_variable_labels());
+    if (vars.idrv() == idrv())
+      inactive_discrete_real_variable_labels(
+        vars.inactive_discrete_real_variable_labels());
   }
 }
 
