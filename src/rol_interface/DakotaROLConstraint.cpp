@@ -12,7 +12,7 @@ Constraint::Constraint( const Ptr<ModelInterface>&             model_interface,
 } // Constraint::Constraint
 
 
-void Constraint::update( const RealVector&     x,
+void Constraint::update( const Dakota::RealVector&     x,
                                ROL::UpdateType type,
                                int             iter ) {
   modelInterface->update(c,type,iter);
@@ -20,8 +20,8 @@ void Constraint::update( const RealVector&     x,
 } // Constraint::update  
 
 
-void Constraint::value(       RealVector& c,
-                        const RealVector& x,
+void Constraint::value(       Dakota::RealVector& c,
+                        const Dakota::RealVector& x,
                               Real&       tol ) {
   auto model = modelInterface->dakotaModel;
   c = constraintValues(model);
@@ -33,9 +33,9 @@ void Constraint::value(       RealVector& c,
 } // Constraint:::value
 
 
-void Constraint::applyJacobian(       RealVector& jv, 
-                                const RealVector& v,
-                                const RealVector& x, 
+void Constraint::applyJacobian(       Dakota::RealVector& jv, 
+                                const Dakota::RealVector& v,
+                                const Dakota::RealVector& x, 
                                       Real&       tol ) {
   auto model = modelInterface->dakotaModel;
   auto jvdata = jv.values();
@@ -46,9 +46,9 @@ void Constraint::applyJacobian(       RealVector& jv,
   blas.GEMV(Teuchos::NO_TRANS,nrows,ncols,one,jdata,nrows,vdata,1,zero,jvdata,1);
 } // Constraint::applyJacobian
 
-void Constraint::applyJacobian(       RealVector& jv, 
-                                const RealVector& v,
-                                const RealVector& x, 
+void Constraint::applyJacobian(       Dakota::RealVector& jv, 
+                                const Dakota::RealVector& v,
+                                const Dakota::RealVector& x, 
                                       Real&       tol ) {
   auto model = modelInterface->dakotaModel;
   auto jvdata = jv.values();
@@ -59,10 +59,10 @@ void Constraint::applyJacobian(       RealVector& jv,
   blas.GEMV(Teuchos::TRANS,nrows,ncols,one,jdata,nrows,vdata,1,zero,jvdata,1);
 } // Constraint::applyJacobian
 
-void Constraint::applyAdjointHessian(       RealVector& ahuv, 
-                                      const RealVector& u,
-                                      const RealVector& v,
-                                      const RealVector& x, 
+void Constraint::applyAdjointHessian(       Dakota::RealVector& ahuv, 
+                                      const Dakota::RealVector& u,
+                                      const Dakota::RealVector& v,
+                                      const Dakota::RealVector& x, 
                                             Real&       tol ) {
   auto model = modelInterface->dakotaModel;
   auto resp = model.current_response();
@@ -79,6 +79,42 @@ void Constraint::applyAdjointHessian(       RealVector& ahuv,
     auto hdata = resp.function_hessian(j).values();
     blas.SYMM(Teuchos::LEFT_SIDE,Teuchos::UPPER_TRI,nv,1,u[i],hdata,nv,vdata,nv,beta,ahuvdata,nv);
   } 
+} // Constraint::applyAdjointHessian
+
+
+
+void Constraint::update( const ROL::Vector<Real>& x,
+                               ROL::UpdateType    type,
+                               int                iter ) {
+  update(get_vector(x),type,iter);
+} // Constraint::update  
+
+
+void Constraint::value(       ROL::Vector<Real>& c,
+                        const ROL::Vector<Real>& x,
+                              Real&              tol ) {
+  value(get_vector(c), get_vector(x), tol);
+} // Constraint:::value
+
+
+void Constraint::applyJacobian(       ROL::Vector<Real>& jv, 
+                                const ROL::Vector<Real>& v,
+                                const ROL::Vector<Real>& x, 
+                                      Real&       tol ) {
+  applyJacobian(get_vector(jv), get_vector(v), get_vector(x),tol);
+} // Constraint::applyJacobian
+
+void Constraint::applyJacobian(       ROL::Vector<Real>& jv, 
+                                const ROL::Vector<Real>& v,
+                                const ROL::Vector<Real>& x, 
+                                      Real&       tol ) {
+} // Constraint::applyJacobian
+
+void Constraint::applyAdjointHessian(       ROL::Vector<Real>& ahuv, 
+                                      const ROL::Vector<Real>& u,
+                                      const ROL::Vector<Real>& v,
+                                      const ROL::Vector<Real>& x, 
+                                            Real&       tol ) {
 } // Constraint::applyAdjointHessian
 
 } // namespace rol_interface

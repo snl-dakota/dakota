@@ -27,9 +27,49 @@ ModelInterface::ModelInterface( Dakota::Model& model )
 
   useCenteredDifferences = (interval_type == "central");
 }
-                  
+                 
 
-ModelInterface::update( const RealVector& x,
+const Dakota::RealMatrix& 
+ModelInterface::get_jacobian_matrix( Constraint::Type type ) {
+  int num_rows = dakotaModel.cv();
+  int num_cols = 0;
+  Dakota::Real* const jac_data_ptr;
+  ROL::Ptr<Jacobian> jacobian;
+  switch(type) {
+    case Constraint::Type::LinearInequality: 
+      const Dakota::RealMatrix& J = dakotaModel.lin_ineq_coeffs();
+      jac_data_ptr = J.values();
+      num_cols = dakotaModel.num_linear_ineq_constraints();
+    break;
+    case Constraint::Type::LinearEquality: 
+      const Dakota::RealMatrix& J = dakotaModel.lin_eq_coeffs();
+      num_cols = dakotaModel.num_linear_eq_constraints();
+      jac_data_ptr = J.values();
+    break;
+    case Constraint::Type::NonlinearInequality: 
+      const Dakota::RealMatrix& gradient_matrix = model.current_response().function_gradients();
+      Dakota::Real* const data = gradient_matrix.values();
+      int grad_offset = 1; // The first response is for the Objective function gradient
+      num_cols = dakotaModel.num_nonlinear_eq_constraints();  
+      jac_data_ptr = data + num_rows*grad_offset;
+  
+    break;
+    case Constraint::Type::NonlinearEquality: 
+      const Dakota::RealMatrix& gradient_matrix = model.current_response().function_gradients();
+      Dakota::Real* const data = gradient_matrix.values();
+      // Nonlinear Equality constraints appear after any Nonlinear Inequality constraints
+      int grad_offset = 1 + dakotaModel.num_nonlinear_ineq_constraints(); 
+      num_cols = dakotaModel.num_nonlinear_eq_constraints();  
+      jac_data_ptr = data + num_rows*grad_offset;
+    break;
+    default:
+      throw std::runtime_error("Invalid Constraint::Type");
+  }
+  jacobian = ROL::makePtr<Jacobian>(jac_data_ptr,num_rows,num_cols);
+  return jacobian; 
+} 
+
+ModelInterface::update( const Dakota::RealVector& x,
                      UpdateType  type,
                      int         iter ) {
   

@@ -4,8 +4,18 @@
 
 namespace rol_interface {
 
-class Constraint : public ROL::Constraint<Real> {
+class ModelInterface;
+
+class Constraint : public ROL::Constraint<Dakota::Real> {
 public:
+
+  class enum Type : std::uint8_t {
+    LinearEquality = 0,
+    LinearInequality,
+    NonlinearEquality,
+    NonlinearInequalty,
+    Default
+  };
 
   Constraint() = delete;
   Constraint( const ROL::Ptr<ModelInterface>&        model_interface, 
@@ -13,73 +23,67 @@ public:
 
   virtual ~Constraint() = default;
 
-  void update( const RealVector&      x,
-                     ROL::UpdateType  type,
-                     int              iter = -1 ) override; 
+  void update( const ROL::Vector<Dakota::Real>& x,
+                     ROL::UpdateType            type,
+                     int                        iter = -1 ) override; 
 
-  void value(       RealVector& c,
-              const RealVector& x,
-                    Real&       tol ) override;  
+  virtual void update( const Dakota::RealVector& x,
+                             ROL::UpdateType     type,
+                             int                 iter = -1 ); 
 
-  void applyJacobian(       RealVector& jv,
-                      const RealVector& v,
-                      const RealVector& x,
-                            Real&       tol ) override;  
+  void value(       ROL::Vector<Dakota::Real>& c,
+              const ROL::Vector<Dakota::Real>& x,
+                    Dakota::Real&              tol ) override;  
 
-  void applyAdjointJacobian(       RealVector& ajv,
-                             const RealVector& v,
-                             const RealVector& x,
-                                   Real&       tol ) override;  
+  virtual void value(       Dakota::RealVector& c,
+                      const Dakota::RealVector& x,
+                            Dakota::Real&       tol );  
 
-  void applyAdjointHessian(        RealVector& ahuv,
-                             const RealVector& u,
-                             const RealVector& v,
-                             const RealVector& x,
-                                   Real&       tol ) override;  
+  void applyJacobian(       ROL::Vector<Dakota::Real>& jv,
+                      const ROL::Vector<Dakota::Real>& v,
+                      const ROL::Vector<Dakota::Real>& x,
+                            Dakota::Real&              tol ) override;  
+
+  virtual void applyJacobian(       Dakota::RealVector& jv,
+                              const Dakota::RealVector& v,
+                              const Dakota::RealVector& x,
+                                    Dakota::Real&       tol );  
+
+  void applyAdjointJacobian(       ROL::Vector<Dakota::Real>& ajv,
+                             const ROL::Vector<Dakota::Real>& v,
+                             const ROL::Vector<Dakota::Real>& x,
+                                   Dakota::Real&              tol ) override;  
+
+  virtual void applyAdjointJacobian(       Dakota::RealVector& ajv,
+                                     const Dakota::RealVector& v,
+                                     const Dakota::RealVector& x,
+                                           Dakota::Real&       tol );  
+
+  void applyAdjointHessian(        ROL::Vector<Dakota::Real>& ahuv,
+                             const ROL::Vector<Dakota::Real>& u,
+                             const ROL::Vector<Dakota::Real>& v,
+                             const ROL::Vector<Dakota::Real>& x,
+                                   Dakota::Real&              tol ) override;  
+
+  virtual void applyAdjointHessian(        Dakota::RealVector& ahuv,
+                                     const Dakota::RealVector& u,
+                                     const Dakota::RealVector& v,
+                                     const Dakota::RealVector& x,
+                                           Dakota::Real&       tol );  
+      
   
-  /// Utility function to create a Lagrange multiplier vector in the dual constraint space
-  inline ROL::Ptr<ROL::Vector<Real>> make_multiplier() const noexcept {
-    return isEquality ? make_vector(modelInterface->dakotaModel.num_nonlinear_eq_constraints())->dual().clone()
-                      : make_vector(modelInterface->dakotaModel.num_nonlinear_ineq_constraints())->dual().clone() 
-  }
-
-  /// Utility function to dynamically allocate a (nonlinear) inequality constraint
-  inline static ROL::Ptr<Constraint> make_inequality( const ROL::Ptr<ModelInterface>& model_interface ) {
-    return ROL::makePtr<Constraint>(model_interface, Dakota::CONSTRAINT_EQUALITY_TYPE::INEQUALTY);
-  }
-
-  /// Utility function to dynamically allocate a (nonlinear) equality constraint
-  inline static ROL::Ptr<Constraint> make_equality( const ROL::Ptr<ModelInterface>& model_interface ) {
-    return ROL::makePtr<Constraint>(model_interface,Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALTY);
-  }
-
 private:
 
-  inline static ModelVector
-  vector_getter( const Dakota::Model&                   model
-                       Dakota::CONSTRAINT_EQUALITY_TYPE type ) noexcept {
-    return ( type == Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
-                    &Dakota::Model::nonlinear_eq_constraints,
-                    &Dakota::Model::nonlinear_ineq_constraints );
-  }
-
-  inline static ModelMatrix
-  matrix_getter( const Dakota::Model&                   model
-                       Dakota::CONSTRAINT_EQUALITY_TYPE type ) noexcept {
-    return ( type == Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
-                    &Dakota::Model::nonlinear_eq_constraints,
-                    &Dakota::Model::nonlinear_ineq_constraints );
-  }
-
-  static constexpr Real zero(0), one(1);
+  static constexpr Dakota::Real zero = 0; 
+  static constexpr Dakota::Real one = 1;
 
 
-  Teuchos::BLAS<int,Real>  blas;
-  ModelVector              constraintValues;
-  ModelMatrix              constraintJacobian;
-  ROL::Ptr<ModelInterface> modelInterface;
-  size_t                   indexOffset;
-  bool                     isEquality;
+  Teuchos::BLAS<int,Dakota::Real>  blas;
+  ModelVector                      constraintValues;
+  ModelMatrix                      constraintJacobian;
+  ROL::Ptr<ModelInterface>         modelInterface;
+  size_t                           indexOffset;
+  bool                             isEquality;
 
 
 }; // class Constraint

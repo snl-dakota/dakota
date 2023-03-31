@@ -2,21 +2,26 @@
 #ifndef DAKOTA_ROL_OUTPUT_STREAM
 #define DAKOTA_ROL_OUTPUT_STREAM
 
+#include <boost/iostreams/filter/line.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+
 namespace rol_interface {
 
 // -----------------------------------------------------------------------------
 /** OutputStreamFilter wraps a pointer to a std::ostream and prepends "ROL: " to the 
-    beginning of each new line */
+    beginning of each new line 
+
+    NOTE: This is known to be compatible with Boost 1.69, but not 1.81
+*/
 
 class OutputStreamFilter {
 public:
-
-  OutputStreamFilter( std::ostream* os_ptr=Dakota::Cout ) {
+  OutputStreamFilter( std::ostream* os_ptr ) {
     filterStream.push(LineFilter());
     filterStream.push(os_ptr);
   }
 
-  ~OutputStream() {
+  ~OutputStreamFilter() {
     filterStream.flush();
   }
 

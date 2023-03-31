@@ -17,10 +17,10 @@ public:
   //
 
   /// Default constructor
-  ROLTraits() = default;
+  Traits() = default;
 
   /// Destructor
-  virtual ~ROLTraits()  = default;
+  virtual ~Traits()  = default;
 
   //
   //- Heading: Virtual member function redefinitions
@@ -47,15 +47,15 @@ public:
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return ROL format for nonlinear inequality constraints
-  DAKOTA::NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() {
+  Dakota::NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() {
     return Dakota::NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED;
   }
 
   inline static std::shared_ptr<Dakota::TraitsBase> create() {
-    return std::make_shared<ROLTraits>();
+    return std::make_shared<Traits>();
   }
 
-}; // class ROLTraits
+}; // class Traits
 
 } // namespace rol_interface
 

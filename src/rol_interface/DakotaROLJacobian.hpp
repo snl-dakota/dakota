@@ -20,49 +20,25 @@
 
 namespace rol_interface {
 
-class Jacobian : public ROL::LinearOperator<Real> {
+class Jacobian : public ROL::LinearOperator<Dakota::Real> {
 public:
 
   Jacobian() = delete;
-  Jacobian( const ROL::Ptr<ModelInterface>&        model_interface, 
-                  Dakota::CONSTRAINT_EQUALITY_TYPE type );
+  Jacobian( const Dakota::Real* const data, int num_rows, int num_cols );
 
   virtual ~Jacobian() = default;
 
-  void apply(       ROL::Vector<Real>& jv, 
-              const ROL::Vector<Real>& v, 
-                    Real&              tol ) const override;
+  void apply(       ROL::Vector<Dakota::Real>& jv, 
+              const ROL::Vector<Dakota::Real>& v, 
+                    Dakota::Real&              tol ) const override;
 
-  void applyAdjoint(       ROL::Vector<Real>& ajv, 
-                     const ROL::Vector<Real>& v, 
-                           Real&              tol ) const override;
-
-  inline static ROL::Ptr<Jacobian> make_inequality( const ROL::Ptr<ModelInterface>& model_interface ) {
-    return ROL::makePtr<Jacobian>(model_interface,Dakota::CONSTRAINT_EQUALITY_TYPE::INEQUALITY);  
-  } 
-
-  inline static ROL::Ptr<Jacobian> make_equality( const ROL::Ptr<ModelInterface>& model_interface ) { 
-    return ROL::makePtr<Jacobian>(model_interface,Dakota::CONSTRAINT_EQUALITY_TYPE::INEQUALITY);  
-  } 
-
+  void applyAdjoint(       ROL::Vector<Dakota::Real>& ajv, 
+                     const ROL::Vector<Dakota::Real>& v, 
+                           Dakota::Real&              tol ) const override;
 private:
-
-  inline static ModelMatrix 
-  matrix_getter( const Dakota::Model&                   model,
-                       Dakota::CONSTRAINT_EQUALITY_TYPE type ) noexcept {
-    return ( type == Dakota::CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
-                    &Dakota::Model::linear_eq_constraint_coeffs   :
-                    &Dakota::Model::linear_ineq_constraint_coeffs;
-  }
- 
-  static constexpr Real zero(0), one(1);
-
-  ROL::Ptr<ModelInterface> modelInterface;
-  JacGetter                getMatrix;
-  Teuchos::BLAS<int,Real>  blas;    
-  int                      nRows;      
-  int                      nCols;
-
+  Teuchos::BLAS<int,Dakota::Real>  blas;    
+  int nRows, nCols;
+  const Dakota::Real* const jacValues;
 }; // class Jacobian
 
 } // namespace rol_interface

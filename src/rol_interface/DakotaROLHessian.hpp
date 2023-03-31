@@ -22,7 +22,7 @@
 
 namespace rol_interface {
 
-class Hessian : public ROL::LinearOperator<Real> {
+class Hessian : public ROL::LinearOperator<Dakota::Real> {
 public:
   Hessian() = delete;
   Hessian( const ROL::Ptr<ModelInterface>& model_interface, 
@@ -30,26 +30,27 @@ public:
 
   virtual ~Hessian() = default;
 
-  void update( const ROL::Vector<Real>& x, 
+  void update( const ROL::Vector<Dakota::Real>& x, 
                      bool               flag = true, 
                      int                iter = -1 ) override;
 
-  void apply(       ROL::Vector<Real>& Hv, 
-              const ROL::Vector<Real>& v, 
-                    Real&              tol ) const override;
+  void apply(       ROL::Vector<Dakota::Real>& Hv, 
+              const ROL::Vector<Dakota::Real>& v, 
+                    Dakota::Real&              tol ) const override;
 
-  void applyInverse(       ROL::Vector<Real>& Hv, 
-                     const ROL::Vector<Real>& v, 
-                           Real&              tol ) const override;
+  void applyInverse(       ROL::Vector<Dakota::Real>& Hv, 
+                     const ROL::Vector<Dakota::Real>& v, 
+                           Dakota::Real&              tol ) const override;
 
   bool has_inverse() const { return hasInverse; }
 
 private:
 
-  static constexpr Real zero(0), one(1);
+  static constexpr Dakota::Real zero = 0;
+  static constexpr Dakota::Real one = 1;
 
-  Teuchos::LAPACK<int,Real>           lapack;         // For Hessian inversion
-  Teuchos::BLAS<int,Real>             blas;           // For Matrix-Vector multiplication
+  Teuchos::LAPACK<int,Dakota::Real>           lapack;         // For Hessian inversion
+  Teuchos::BLAS<int,Dakota::Real>             blas;           // For Matrix-Vector multiplication
   ROL::Ptr<ModelInterface>            modelInterface; // Unified interface to Dakota::Model
   std::unique_ptr<Dakota::RealMatrix> workMat;        // LU Storage for Hessian inversion
   std::unique_ptr<int[]>              iPiv;           // LU Pivots for Hessian inversion

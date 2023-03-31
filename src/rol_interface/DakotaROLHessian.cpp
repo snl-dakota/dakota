@@ -15,7 +15,7 @@ Hessian::Hessian( const ROL::Ptr<ModelInterface>& model_interface,
 } // Hessian::Hessian
 
 
-void Hessian::update( const ROL::Vector<Real>& x,
+void Hessian::update( const ROL::Vector<Dakota::Real>& x,
                             bool               flag,
                             int                iter ) {
   auto& model = modelInterface->dakotaModel;
@@ -27,9 +27,9 @@ void Hessian::update( const ROL::Vector<Real>& x,
   }
 }
 
-void Hessian::apply(       ROL::Vector<Real>& Hv,
-                     const ROL::Vector<Real>& v,
-                           Real&              tol ) const {
+void Hessian::apply(       ROL::Vector<Dakota::Real>& Hv,
+                     const ROL::Vector<Dakota::Real>& v,
+                           Dakota::Real&              tol ) const {
   assert(Av.dimension() == nRows);
   assert(v.dimension() == nRows);
 
@@ -41,9 +41,9 @@ void Hessian::apply(       ROL::Vector<Real>& Hv,
 
 } // Hessian::apply
 
-void Hessian::applyInverse(       ROL::Vector<Real>& Av,
-                            const ROL::Vector<Real>& v,
-                                  Real&              tol ) const {
+void Hessian::applyInverse(       ROL::Vector<Dakota::Real>& Av,
+                            const ROL::Vector<Dakota::Real>& v,
+                                  Dakota::Real&              tol ) const {
   assert(haveInvHessian);
   auto etrans = Teuchos::NO_TRANS;
   auto Av_r = get_vector(Av);      

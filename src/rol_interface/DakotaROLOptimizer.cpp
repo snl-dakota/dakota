@@ -32,7 +32,7 @@ void Optimizer::Initializer::initialize( Optimizer* opt ) {
   auto obj = makePtr<Objective>(cache);
 
   // Create unconstrained problem
-  opt->problem = makePtr<ROL::Problem<Real>>(obj,obj->make_opt_vector());
+  opt->problem = makePtr<ROL::Problem<Dakota::Real>>(obj,obj->make_opt_vector());
 
   auto& problem = opt->problem;
 
@@ -48,7 +48,7 @@ void Optimizer::Initializer::initialize( Optimizer* opt ) {
     auto& b_ref = get_vector(b);
     b_ref = model.linear_eq_constraint_targets();
     b->scale(-1.0);
-    auto econ = makePtr<ROL::LinearConstraint<Real>>(A,b);
+    auto econ = makePtr<ROL::LinearConstraint<Dakota::Real>>(A,b);
     problem->addLinearConstraint("Linear Equality Constraint",econ,emul);
   }   
 
@@ -56,7 +56,7 @@ void Optimizer::Initializer::initialize( Optimizer* opt ) {
     auto A = Jacobian::make_inequality(cache);
     auto z = make_vector(nli);
     z->zero();
-    auto icon = makePtr<ROL::LinearConstraint<Real>>(A,z);
+    auto icon = makePtr<ROL::LinearConstraint<Dakota::Real>>(A,z);
     auto ibnd = Bounds::make_linear_ineq_constraint(model);
     auto imul = l->dual().clone();
     problem->addLinearConstraint("Linear Inequality Constraint",icon,imul,ibnd);

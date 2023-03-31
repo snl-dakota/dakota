@@ -11,33 +11,52 @@ Objective::Objective( const ROL::Ptr<ModelInterface>& model_interface,
   }
 }
 
-void Objective::update( const RealVector&       x,
-                              ROL::UpdateType   type,
-                              int               iter ) {
+
+
+void Objective::update( const ROL::Vector<Real>&  x,
+                              ROL::UpdateType     type,
+                              int                 iter ) {
+  update( get_vector(x), type, iter );
+} // Objective::update
+
+ void Objective::update( const Dakota::RealVector&  x,
+                              ROL::UpdateType     type,
+                              int                 iter ) {
   modelInterface->update(x,type,iter);
 } // Objective::update
          
 
-Real Objective::value( const RealVector& x, Real& tol ) {
+
+Real Objective::value( const Dakota::RealVector& x, Real& tol ) {
   auto& model = modelInterface->dakotaModel;
   return model.curent_response().function_value(0);    
 } // Objective::value
 
 
-void Objective::gradient( RealVector& g, const RealVector& x, Real& tol ) {
+Real Objective::value( const ROL::Vector<Real>& x, Real& tol ) {
+  return value(get_vector(x),tol);
+}
+
+
+void Objective::gradient( Dakota::RealVector& g, const Dakota::RealVector& x, Real& tol ) {
   if( !model_interface->useDefaultDeriv1 ) {
     auto& model = modelInterface->dakotaModel;
     g = model.current_response().function_gradient(0); 
   else 
     ROL::Objective<Real>::gradient(g,x,tol);
-  
 } // Objective::gradient
 
+Real Objective::gradient(       ROL::Vector<Real>& g,
+                          const ROL::Vector<Real>& x, 
+                                Real&              tol ) {
+  return gradient(get_vector(g),get_vector(x),tol);
+}
 
-void Objective::hessVec(       RealVector& hv, 
-                         const RealVector& v,
-                         const RealVector& x,
-                               Real&        tol ) {
+
+void Objective::hessVec(       Dakota::RealVector& hv, 
+                         const Dakota::RealVector& v,
+                         const Dakota::RealVector& x,
+                               Real&               tol ) {
   if( !modelInterface->useDefaultDeriv2 ) {
     hessOp->apply(hv,v,tol);
   else 
@@ -45,10 +64,18 @@ void Objective::hessVec(       RealVector& hv,
 
 } // Objective::hessVec
 
-void Objective::invHessVec(       RealVector& hv, 
-                            const RealVector& v,
-                            const RealVector& x,
-                                  Real&        tol ) {
+void Objective::hessVec(       ROL::Vector<Real>& hv, 
+                         const ROL::Vector<Real>& v,
+                         const ROL::Vector<Real>& x,
+                               Real&              tol ) {
+  hessVec(get_vector(hv),get_vector(v),get_vector(x),tol);
+}
+
+
+void Objective::invHessVec(       Dakota::RealVector& hv, 
+                            const Dakota::RealVector& v,
+                            const Dakota::RealVector& x,
+                                  Real&               tol ) {
   
   if( !modelInterface->useDefaultDeriv2 ) {
     assert(hessOp->has_inverse());
@@ -56,6 +83,13 @@ void Objective::invHessVec(       RealVector& hv,
   else 
     ROL::Objective<Real>::invHessVec(ihv,v,x,tol);
 
+} // Objective::invHessVec
+
+void Objective::invHessVec(       ROL::Vector<Real>& hv, 
+                            const ROL::Vector<Real>& v,
+                            const ROL::Vector<Real>& x,
+                                  Real&              tol ) {
+  invHessVec(get_vector(hv),get_vector(v),get_vector(x),tol); 
 } // Objective::invHessVec
 
 } // namespace rol_interface

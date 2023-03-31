@@ -2,7 +2,6 @@
 #ifndef DAKOTA_ROL_MODEL_INTERFACE_HPP
 #define DAKOTA_ROL_MODEL_INTERFACE_HPP
 
-
 namespace rol_interface {
 
 class ModelInterface { 
@@ -18,9 +17,12 @@ public:
 
 private:
 
-  void update( const RealVector&     x,
-                     ROL::UpdateType type,
-                     int             iter = -1 );     
+  ROL::Ptr<Jacobian> get_jacobian_matrix( Constraint::Type );
+
+  void update( const Dakota::RealVector&  x,
+                     ROL::UpdateType      type,
+                     int                  iter = -1 );     
+  
 
  // Ptr<RealVector>   xCurrent, xModelInterface, xTemp;
   Dakota::ActiveSet evalSet;

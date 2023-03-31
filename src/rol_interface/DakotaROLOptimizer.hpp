@@ -35,7 +35,7 @@ public:
 
 private:
 
-  ROL::Ptr<ROL::Problem<Real>> problem;
+  ROL::Ptr<ROL::Problem<Dakota::Real>> problem;
   ROL::Ptr<Cache> modelCache;
   ROL::ParameterList parList;	
   // -----------------------------------------------------------------
