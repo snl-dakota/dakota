@@ -423,6 +423,17 @@ init_constraints(bool consistent_vars, size_t num_recast_nln_ineq,
   const Constraints&    sm_cons = subModel.user_defined_constraints();
 
   // variable-related (bounds, linear cons)
+  if (consistent_vars) {
+    userDefinedConstraints.update_variable_bounds(sm_cons);
+    userDefinedConstraints.update_linear_constraints(sm_cons);
+  }
+  //else if (variablesMapping)
+  //  userDefinedConstraints.reshape_linear(0, 0); // remove linear cons
+  if (svd.view() != sm_view)
+    userDefinedConstraints.reshape_update_linear(sm_svd,
+      currentVariables.shared_data());
+
+  /*
   if (variablesMapping) {
     if (consistent_vars) {
       userDefinedConstraints.update_variable_bounds(sm_cons);
@@ -440,6 +451,7 @@ init_constraints(bool consistent_vars, size_t num_recast_nln_ineq,
       userDefinedConstraints.reshape_update_linear(sm_svd,
 	currentVariables.shared_data());
   }
+  */
 
   // response-related (nonlinear cons)
   if (primaryRespMapping || secondaryRespMapping ||
