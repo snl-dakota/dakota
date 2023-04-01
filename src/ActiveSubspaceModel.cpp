@@ -1221,6 +1221,7 @@ build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
   // evaluate surrogate at test points:
   IntResponseMap test_y_surr;
   ActiveSet surr_set = current_response().active_set(); // copy
+  surr_set.derivative_vector(cv_surr_model.continuous_variable_ids());
   for (int ii = 0; ii < num_test_points; ii++) {
     cv_surr_model.continuous_variables(
       Teuchos::getCol(Teuchos::Copy, test_x, ii));
