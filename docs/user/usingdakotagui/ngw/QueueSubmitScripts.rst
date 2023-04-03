@@ -13,4 +13,3 @@ provided with each node.
 
    queueScripts/common
    queueScripts/dakotaQueueSubmit
-   queueScripts/dispatchAndCollect
