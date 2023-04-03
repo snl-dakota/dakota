@@ -825,6 +825,9 @@ public:
   StringMultiArrayConstView discrete_real_variable_labels()   const;
   /// set the active discrete variable labels in currentVariables
   void discrete_real_variable_labels(StringMultiArrayConstView d_v_labels);
+  /// Return labels of all active variables in "input spec" order
+  StringArray ordered_labels() const;
+
 
   /// return the inactive continuous variable labels in currentVariables
   StringMultiArrayConstView inactive_continuous_variable_labels() const;
@@ -846,6 +849,9 @@ public:
   /// set the inactive discrete variable labels in currentVariables
   void inactive_discrete_real_variable_labels(
     StringMultiArrayConstView i_d_v_labels);
+  /// Return labels of all inactive variables in "input spec" order
+  StringArray inactive_ordered_labels() const;
+
 
   /// return all continuous variable labels in currentVariables
   StringMultiArrayConstView all_continuous_variable_labels() const;
@@ -875,6 +881,9 @@ public:
     StringMultiArrayConstView a_d_v_labels);
   /// set a label within the all discrete labels in currentVariables
   void all_discrete_real_variable_label(const String& a_d_v_label, size_t i);
+  /// Return labels of all variables in "input spec" order
+  StringArray all_ordered_labels() const;
+
 
   /// return the response labels from currentResponse
   const StringArray& response_labels() const;
@@ -2678,6 +2687,34 @@ all_discrete_real_variable_label(const String& a_d_v_label, size_t i)
   else
     currentVariables.all_discrete_real_variable_label(a_d_v_label, i);
 }
+
+inline StringArray Model::
+ordered_labels() const
+{
+  if (modelRep)
+    return modelRep->currentVariables.ordered_labels(ACTIVE_VARS);
+  else
+    return currentVariables.ordered_labels(ACTIVE_VARS);
+}
+
+inline StringArray Model::
+inactive_ordered_labels() const
+{
+  if (modelRep)
+    return modelRep->currentVariables.ordered_labels(INACTIVE_VARS);
+  else
+    return currentVariables.ordered_labels(INACTIVE_VARS);
+}
+
+inline StringArray Model::
+all_ordered_labels() const
+{
+  if (modelRep)
+    return modelRep->currentVariables.ordered_labels(ALL_VARS);
+  else
+    return currentVariables.ordered_labels(ALL_VARS);
+}
+
 
 
 inline size_t Model::response_size() const

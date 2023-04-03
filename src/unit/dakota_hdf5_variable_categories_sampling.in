@@ -1,0 +1,42 @@
+environment
+  results_output
+    results_output_file 'variable_categories_sampling'
+    hdf5
+      interface_selection none
+      model_selection none
+
+method
+  id_method 'sampling'
+  sampling
+    seed 1337
+    samples 50000
+  output silent 
+
+variables
+  # The choice of variable categories and view is designed to check the
+  # the ordering of correlation matrix output (labels and numerical results).
+  # The response f should be highly correlated with x1, a bit correlated with x2,
+  # and not correlated at all with x3. The expected label order in the console
+  # output and hdf5 is "input spec" and therefore: x3, x1, x2, rather than 
+  # cv, div, dsv, drv, which would be x1, x2, x3.
+  active all
+  normal_uncertain 2
+    descriptors 'x1' 'x2'
+    means 0.0 0.0
+    std_deviations 1.0 1.0
+  discrete_design_range 1
+    descriptors 'x3'
+    lower_bounds 0
+    upper_bounds 100
+
+responses
+  id_responses 'sim_r'
+  response_functions 1
+   descriptors 'f' 
+   no_gradients no_hessians
+
+interface
+  fork
+   analysis_drivers 'hdf5_variable_categories_sampling_driver.py'
+  batch   
+  

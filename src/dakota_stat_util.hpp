@@ -20,6 +20,7 @@ namespace Dakota {
 /// clock microseconds-based random seed in [1, 1000000]
 int generate_system_seed();
 
+#ifdef HAVE_DAKOTA_SURROGATES
 /// Compute (non-standardized) linear regression coefficients and return R^2
 void compute_regression_coeffs( const RealMatrix & samples,
                                 const RealMatrix & resps,
@@ -31,6 +32,7 @@ void compute_std_regression_coeffs( const RealMatrix & samples,
                                     const RealMatrix & resps,
                                     RealMatrix & coeffs,
                                     RealVector & cods );
+#endif
 
 } // namespace Dakota
 

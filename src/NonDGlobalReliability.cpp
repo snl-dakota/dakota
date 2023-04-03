@@ -202,10 +202,16 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
     if (approx_type == "global_exp_gauss_proc") {
+#ifdef HAVE_DAKOTA_SURROGATES
       String advanced_options_file
           = problem_db.get_string("method.advanced_options_file");
       if (!advanced_options_file.empty())
         set_model_gp_options(g_hat_x_model, advanced_options_file);
+#else
+    Cerr << "\nError: global_reliability does not support global_exp_gauss_proc "
+         << "when Dakota is built without DAKOTA_MODULE_SURROGATES enabled." << std::endl;
+    abort_handler(METHOD_ERROR);
+#endif
     }
 
     // Recast g-hat(x) to G-hat(u); truncate dist bnds
@@ -260,10 +266,16 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
 
     if (approx_type == "global_exp_gauss_proc") {
+#ifdef HAVE_DAKOTA_SURROGATES
       String advanced_options_file
           = problem_db.get_string("method.advanced_options_file");
       if (!advanced_options_file.empty())
         set_model_gp_options(uSpaceModel, advanced_options_file);
+#else
+      Cerr << "\nError: global_reliability does not support global_exp_gauss_proc "
+           << "when Dakota is built without DAKOTA_MODULE_SURROGATES enabled." << std::endl;
+      abort_handler(METHOD_ERROR);
+#endif
     }
   }
 
