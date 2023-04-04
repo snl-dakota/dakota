@@ -46,17 +46,37 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 *UQ Methods*
 
+Tolerance Intervals - Ernesto should add detail.
+
 *MLMF Sampling*
 
+*Sensitivity Analsys*
 
+Standardized Regression Coefficients - Russell should add detail.
  
 **Miscellaneous Enhancements and Bugfixes**
 
 - Enh:
-- Bug fix:
+
+- Bug fix: Correlation matrices now receive the correct variable labels
+  in studies that include variables from more than one category (e.g. mixture
+  of design and aleatory uncertain).
+
+- Bug fix: Standard moments are now written correctly to HDF5 for stochastic
+  expansion methods
+
+- Bug fix: No datasets are written to HDF5 for PDFs for zero-variance responses.
+  This matches the console output. Previously, empty datasets were written.
+
+
 
 **Deprecated and Changed**
 
 **Compatibility**
+
+- Dakota's snapshot of Trilinos is now version 13.4.
+- Dakota now requires C++14 to build.
+- There are no further changes to TPLs or requirements for
+  this release.
 
 **Other Notes and Known Issues**

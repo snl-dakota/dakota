@@ -401,13 +401,8 @@ void ParamStudy::post_run(std::ostream& s)
       iteratedModel.discrete_set_string_values()); // to map string variable
                                                    // values back to indices
     if(resultsDB.active()) {
-      StringMultiArrayConstView
-        cv_labels  = iteratedModel.continuous_variable_labels(),
-        div_labels = iteratedModel.discrete_int_variable_labels(),
-        dsv_labels = iteratedModel.discrete_string_variable_labels(),
-        drv_labels = iteratedModel.discrete_real_variable_labels();
-      pStudyDACESensGlobal.archive_correlations(run_identifier(), resultsDB, cv_labels,
-                                        div_labels, dsv_labels, drv_labels,
+      pStudyDACESensGlobal.archive_correlations(run_identifier(), resultsDB,
+                                        iteratedModel.ordered_labels(),
                                         iteratedModel.response_labels());
     }
 

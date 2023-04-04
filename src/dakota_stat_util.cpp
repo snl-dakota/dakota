@@ -12,7 +12,9 @@
 #include <chrono>
 
 #include "dakota_stat_util.hpp"
+#ifdef HAVE_DAKOTA_SURROGATES
 #include "SurrogatesPolynomialRegression.hpp"
+#endif
 #include "util_metrics.hpp"
 
 using MatrixMap = Eigen::Map<Eigen::MatrixXd>;
@@ -35,6 +37,7 @@ int generate_system_seed()
   return seed;
 }
 
+#ifdef HAVE_DAKOTA_SURROGATES
 //----------------------------------------------------------------
 
 void compute_regression_coeffs( const RealMatrix & samples, const RealMatrix & resps,
@@ -144,5 +147,6 @@ void compute_std_regression_coeffs( const RealMatrix & samples, const RealMatrix
 
   return;
 }
+#endif
 
 } // namespace Dakota

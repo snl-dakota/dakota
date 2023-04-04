@@ -1079,30 +1079,9 @@ void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
                                       iteratedModel.response_labels(), inc_id);
   }
   // Archive correlations
-  if(!subIteratorFlag) {
-    // Regenerating the labels for every increment is not ideal.
-    StringMultiArrayConstView
-      acv_labels  = iteratedModel.all_continuous_variable_labels(),
-      adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
-      adsv_labels = iteratedModel.all_discrete_string_variable_labels(),
-      adrv_labels = iteratedModel.all_discrete_real_variable_labels();
-    size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-      drv_start, num_drv;
-    mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
-		num_div, dsv_start, num_dsv, drv_start, num_drv);
-    StringMultiArrayConstView
-      cv_labels  =
-        acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
-      div_labels =
-        adiv_labels[boost::indices[idx_range(div_start, div_start+num_div)]],
-      dsv_labels =
-        adsv_labels[boost::indices[idx_range(dsv_start, dsv_start+num_dsv)]],
-      drv_labels =
-        adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
-
-    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
-                                      div_labels, dsv_labels, drv_labels,
-                                      iteratedModel.response_labels(),inc_id);   
+  if(!subIteratorFlag) { 
+    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, iteratedModel.ordered_labels(),
+                                      iteratedModel.response_labels(),inc_id);
   }
   // Associate number of samples attribute with the increment for incremental samplee
   AttributeArray ns_attr({ResultAttribute<int>("samples", num_samples)}); 
