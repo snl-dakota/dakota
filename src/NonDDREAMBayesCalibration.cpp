@@ -203,12 +203,13 @@ void NonDDREAMBayesCalibration::calibrate()
   paramMins.size(total_num_params);
   paramMaxs.size(total_num_params);
   RealRealPairArray bnds
-    = mcmcModel.multivariate_distribution().distribution_bounds();
-  // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+    = mcmcModel.multivariate_distribution().distribution_bounds(); // all RV
+  // Use SVD to convert active CV index (calibration params) to all index (RVs)
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
   for (size_t i=0; i<numContinuousVars; ++i) {
-    //const RealRealPair& bnds_i = bnds[svd.cv_index_to_active_index(i)];
-    paramMins[i] = bnds[i].first;  paramMaxs[i] = bnds[i].second;
+    const RealRealPair& bnds_i = bnds[svd.cv_index_to_all_index(i)];
+    paramMins[i] = bnds_i.first;  paramMaxs[i] = bnds_i.second;
   }
   // If calibrating error multipliers, the parameter domain is expanded to
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance

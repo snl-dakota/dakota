@@ -839,8 +839,8 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
   //  recentered_pdf += repWeights[j] * Pecos::NormalRandomVariable::
   //    std_pdf(distance(repPointsU[j], sample_i) / n_std_devs);
 
-  RealRealPairArray u_bnds // all active RV
-    = uSpaceModel.multivariate_distribution().distribution_bounds();
+  RealRealPairArray u_bnds // active RV
+    = uSpaceModel.multivariate_distribution().active_distribution_bounds();
   const SharedVariablesData& svd
     = uSpaceModel.current_variables().shared_data();
   Real local_pdf = 0., rep_pdf, stdev = 1.;

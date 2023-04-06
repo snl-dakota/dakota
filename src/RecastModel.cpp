@@ -433,26 +433,6 @@ init_constraints(bool consistent_vars, size_t num_recast_nln_ineq,
     userDefinedConstraints.reshape_update_linear(sm_svd,
       currentVariables.shared_data());
 
-  /*
-  if (variablesMapping) {
-    if (consistent_vars) {
-      userDefinedConstraints.update_variable_bounds(sm_cons);
-      userDefinedConstraints.update_linear_constraints(sm_cons);
-    }
-    else
-      userDefinedConstraints.reshape_linear(0, 0); // remove linear cons
-  }
-  else { // consistent_vars is true for no variablesMapping
-    userDefinedConstraints.update_variable_bounds(sm_cons); // assign values
-    userDefinedConstraints.update_linear_constraints(sm_cons);
-    // active is used for build_active_views() and linear coeffs;
-    // inactive used only for build_inactive_views() --> test both
-    if (svd.view() != sm_view)
-      userDefinedConstraints.reshape_update_linear(sm_svd,
-	currentVariables.shared_data());
-  }
-  */
-
   // response-related (nonlinear cons)
   if (primaryRespMapping || secondaryRespMapping ||
       num_recast_nln_ineq != sm_cons.num_nonlinear_ineq_constraints() ||

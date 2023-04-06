@@ -650,6 +650,8 @@ void NonDQUESOBayesCalibration::specify_prior()
 
   QUESO::GslVector paramMins(paramSpace->zeroVector()),
                    paramMaxs(paramSpace->zeroVector());
+  // mcmcModel may use a different view, so map from all view in mcmcModel to
+  // active in iteratedModel
   RealRealPairArray bnds
     = mcmcModel.multivariate_distribution().distribution_bounds(); // all RV
   // Use SVD to convert active CV index (calibration params) to all index (RVs)
