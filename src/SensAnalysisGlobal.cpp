@@ -568,6 +568,35 @@ archive_partial_correlations(const StrStrSizet& run_identifier,
   }
 }
 
+void SensAnalysisGlobal::
+archive_std_regress_coeffs(const StrStrSizet& run_identifier,  
+                           ResultsManager& iterator_results,
+                           const StringArray& var_labels,
+                           const StringArray & resp_labels,
+                           const size_t &inc_id) const
+{
+  if(!iterator_results.active())
+    return;
+
+  DimScaleMap scales;
+  scales.emplace(0, StringScale("variables", var_labels));
+
+  StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
+  location.push_back("standardized_regression_coefficients");
+
+  location.push_back("");
+  for (size_t i=0; i<resp_labels.size(); ++i) {
+    location.back() = resp_labels[i];
+    iterator_results.insert(run_identifier, location,
+        Teuchos::getCol<int,Real>(Teuchos::View, *const_cast<RealMatrix*>(&stdRegressCoeffs), i), scales);
+    // Archive Coeff of Determination (R^2) as an attribute
+    AttributeArray ns_attr({ResultAttribute<Real>("coefficient_of_determination", stdRegressCODs[i])}); 
+    iterator_results.add_metadata_to_object(run_identifier, location, ns_attr);
+  }
+
+}
+
 
 void SensAnalysisGlobal::
 print_correlations(std::ostream& s, const StringArray& var_labels,

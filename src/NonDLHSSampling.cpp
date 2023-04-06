@@ -1073,6 +1073,11 @@ void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
         }
       }
     }
+    // Archive Standardized Regression Coefficients
+    if (stdRegressionCoeffs)
+      nonDSampCorr.archive_std_regress_coeffs(run_identifier(), resultsDB,
+                                      iteratedModel.ordered_labels(),
+                                      iteratedModel.response_labels(), inc_id);
   }
   // Archive correlations
   if(!subIteratorFlag) { 
