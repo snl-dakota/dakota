@@ -59,6 +59,7 @@ public:
   RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 	      const SizetArray& vars_comps_total, const BitArray& all_relax_di,
 	      const BitArray& all_relax_dr, bool nonlinear_vars_mapping,
+	      const ShortShortPair& recast_vars_view,
 	      void (*variables_map)      (const Variables& recast_vars,
 					  Variables& sub_model_vars),
 	      void (*set_map)            (const Variables& recast_vars,
@@ -82,9 +83,13 @@ public:
   /// requires subsequent init_maps() call.
   RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	      const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
-	      const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
-	      size_t num_recast_secondary_fns, size_t recast_secondary_offset,
-	      short recast_resp_order);
+	      const BitArray& all_relax_dr,
+	      const ShortShortPair& recast_vars_view,
+	      size_t num_recast_primary_fns,  size_t num_recast_secondary_fns,
+	      size_t recast_secondary_offset, short recast_resp_order);
+
+  /// alternate constructor; only changes the view (NEED A SUBCLASS FOR THIS?)
+  RecastModel(const Model& sub_model, const ShortShortPair& recast_vars_view);
 
   /// Problem DB-based ctor, e.g., for use in subspace model; assumes
   /// mappings to be initialized later; only initializes based on sub-model
@@ -105,11 +110,13 @@ public:
 
   /// update recast sizes and size Variables and Response members
   /// after alternate construction
-  void init_sizes(const SizetArray& vars_comps_totals,
+  void init_sizes(const ShortShortPair& recast_vars_view,
+		  const SizetArray& vars_comps_totals,
 		  const BitArray& all_relax_di, const BitArray& all_relax_dr,
 		  size_t num_recast_primary_fns,
 		  size_t num_recast_secondary_fns,
-		  size_t recast_secondary_offset, short recast_resp_order);
+		  size_t recast_secondary_offset,
+		  short recast_resp_order, bool& consistent_vars);
 
   /// initialize recast indices and map callbacks after alternate
   /// construction
@@ -407,8 +414,11 @@ protected:
   /// when RecastModel iteration is complete.
   void stop_servers();
 
-  /// update the Model's inactive view based on higher level (nested)
-  /// context and optionally recurse into subModel
+  /// update the Model's active view based on higher level context
+  /// and optionally recurse into subModel
+  void active_view(short view, bool recurse_flag = true);
+  /// update the Model's inactive view based on higher level context
+  /// and optionally recurse into subModel
   void inactive_view(short view, bool recurse_flag = true);
 
   /// return the subModel interface identifier
@@ -463,50 +473,69 @@ protected:
   /// Generate a model id for recast models
   static String recast_model_id(const String &root_id, const String &type);
 
+  // simple assignments shared among ctors
+  void init_basic();
   /// initialize currentVariables and related info from the passed
   /// size/type info
-  bool init_variables(const SizetArray& vars_comps_totals,
-		      const BitArray& all_relax_di, 
-		      const BitArray& all_relax_dr);
+  void init_variables(const ShortShortPair& recast_vars_view,
+		      const SizetArray& vars_comps_totals,
+		      const BitArray& all_relax_di,
+		      const BitArray& all_relax_dr, bool& consistent_vars);
+  /// initialize userDefinedConstraints, sharing SVD with currentVariables
+  void init_constraints(bool consistent_vars, size_t num_recast_nln_ineq,
+			size_t num_recast_nln_eq);
+  /// initialize mvDist from SharedVariablesData
+  void init_distribution(bool consistent_vars);
   /// initialize currentResponse from the passed size info
   void init_response(size_t num_recast_primary_fns, 
 		     size_t num_recast_secondary_fns, 
-		     short recast_resp_order, bool reshape_vars);
-
+		     short recast_resp_order);
   /// Reshape the RecastModel Response, assuming no change in variables
   /// or derivative information
   void reshape_response(size_t num_recast_primary_fns, 
 			size_t num_recast_secondary_fns);
 
-  /// initialize userDefinedConstraints from the passed size info
-  void init_constraints(size_t num_recast_secondary_fns,
-			size_t recast_secondary_offset, bool reshape_vars);
+  /// code shared among constructors to initialize base class data from submodel
+  void initialize_data_from_submodel();
 
   /// update current variables/bounds/labels/constraints from subModel
   void update_from_model(Model& model);
   /// update active variables/bounds/labels from subModel
   virtual bool update_variables_from_model(Model& model);
   /// update all variable values from passed sub-model
-  void update_variable_values(const Model& model);
+  void update_all_variables(const Model& model);
   /// update discrete variable values from passed sub-model
-  void update_discrete_variable_values(const Model& model);
-  /// update all variable bounds from passed sub-model
-  void update_variable_bounds(const Model& model);
-  /// update discrete variable bounds from passed sub-model
-  void update_discrete_variable_bounds(const Model& model);
-  /// update all variable labels from passed sub-model
-  void update_variable_labels(const Model& model);
-  /// update discrete variable labels from passed sub-model
-  void update_discrete_variable_labels(const Model& model);
+  void update_all_discrete_variables(const Model& model);
+
+  /// update complement of active variables/bounds/labels from subModel
+  void update_variables_active_complement_from_model(const Model& model);
+  /// update complement of active continuous variables/bounds/labels
+  /// from subModel
+  void update_continuous_variables_active_complement_from_model(
+    const Model& model);
+  /// update complement of active discrete int variables/bounds/labels
+  /// from subModel
+  void update_discrete_int_variables_active_complement_from_model(
+    const Model& model);
+  /// update complement of active discrete string variables/bounds/labels
+  /// from subModel
+  void update_discrete_string_variables_active_complement_from_model(
+    const Model& model);
+  /// update complement of active discrete real variables/bounds/labels
+  /// from subModel
+  void update_discrete_real_variables_active_complement_from_model(
+    const Model& model);
+
   /// update linear constraints from passed sub-model
   void update_linear_constraints(const Model& model);
-  /// update complement of active variables/bounds/labels from subModel
-  void update_variables_active_complement_from_model(Model& model);
   /// update labels and nonlinear constraint bounds/targets from subModel
-  void update_response_from_model(Model& model);
-  /// update just secondary response from subModel
+  void update_response_from_model(const Model& model);
+  /// update only the primary response data from subModel
+  void update_primary_response(const Model& model);
+  /// update only the secondary response data from subModel
   void update_secondary_response(const Model& model);
 
+  void recast_vector(const RealVector& submodel_vec, RealVector& vec) const;
 
   //
   //- Heading: Data members
@@ -550,9 +579,6 @@ private:
   //- Heading: Convenience member functions
   //
 
-  /// code shared among constructors to initialize base class data from submodel
-  void initialize_data_from_submodel();
-
   /// resize {primary,secondary}MapIndices and nonlinearRespMapping to
   /// synchronize with subModel sizes
   void resize_response_mapping();
@@ -561,10 +587,11 @@ private:
   //- Heading: Data members
   //
 
-  /// For each subModel variable, identifies the indices of the recast
-  /// variables used to define it (maps RecastModel variables to
-  /// subModel variables; data is packed with only the variable indices
-  /// employed rather than a sparsely filled N_sm x N_r matrix).
+  /// For each subModel variable (leading index), identifies the indices of the
+  /// recast variables used to define it (trailing index); used for forward
+  /// iterator-driven mapping of RecastModel variables to subModel variables.
+  /// Note: data is packed with only the variable indices employed, rather
+  /// than a sparsely populated N_sm x N_r matrix.
   Sizet2DArray varsMapIndices;
 
   /// For each recast primary function, identifies the indices of the
@@ -1101,10 +1128,17 @@ inline void RecastModel::stop_servers()
 { subModel.stop_servers(); }
 
 
+inline void RecastModel::active_view(short view, bool recurse_flag)
+{
+  Model::active_view(view);
+  if (recurse_flag)
+    subModel.active_view(view, recurse_flag);
+}
+
+
 inline void RecastModel::inactive_view(short view, bool recurse_flag)
 {
-  currentVariables.inactive_view(view);
-  userDefinedConstraints.inactive_view(view);
+  Model::inactive_view(view);
   if (recurse_flag)
     subModel.inactive_view(view, recurse_flag);
 }
@@ -1132,6 +1166,15 @@ inline void RecastModel::set_evaluation_reference()
 
 inline void RecastModel::fine_grained_evaluation_counters()
 { subModel.fine_grained_evaluation_counters(); }
+
+
+inline void RecastModel::update_linear_constraints(const Model& model)
+{
+  if (model.num_linear_ineq_constraints() ||
+      model.num_linear_eq_constraints())
+    userDefinedConstraints.update_linear_constraints(
+      model.user_defined_constraints());
+}
 
 
 inline void RecastModel::

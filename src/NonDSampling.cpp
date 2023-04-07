@@ -230,24 +230,28 @@ NonDSampling::~NonDSampling()
 
 void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf,
-		  RealMatrix& sample_matrix, size_t num_samples, bool x_to_u)
+		  RealMatrix& sample_matrix, //size_t num_samples,
+		  SizetMultiArrayConstView src_cv_ids,
+		  SizetMultiArrayConstView tgt_cv_ids, bool x_to_u)
 {
-  if (num_samples == 0)
-    num_samples = sample_matrix.numCols();
-  else if (sample_matrix.numCols() != num_samples)
-    sample_matrix.shapeUninitialized(numContinuousVars, num_samples);
+  // Since transform updates in place, we must not alter sample_matrix
+  //if (num_samples == 0)
+  //  num_samples = sample_matrix.numCols();
+  //else if (sample_matrix.numCols() != num_samples)
+  //  sample_matrix.shapeUninitialized(numContinuousVars, num_samples);
 
+  size_t num_samples = sample_matrix.numCols();
   if (x_to_u)
     for (size_t i=0; i<num_samples; ++i) {
       RealVector x_samp(Teuchos::Copy, sample_matrix[i], numContinuousVars);
       RealVector u_samp(Teuchos::View, sample_matrix[i], numContinuousVars);
-      nataf.trans_X_to_U(x_samp, u_samp);
+      nataf.trans_X_to_U(x_samp, src_cv_ids, u_samp, tgt_cv_ids);
     }
   else
     for (size_t i=0; i<num_samples; ++i) {
       RealVector u_samp(Teuchos::Copy, sample_matrix[i], numContinuousVars);
       RealVector x_samp(Teuchos::View, sample_matrix[i], numContinuousVars);
-      nataf.trans_U_to_X(u_samp, x_samp);
+      nataf.trans_U_to_X(u_samp, src_cv_ids, x_samp, tgt_cv_ids);
     }
 }
 

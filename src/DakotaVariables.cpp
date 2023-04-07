@@ -41,7 +41,7 @@ namespace Dakota {
     its representation pointer is set to NULL. */
 Variables::
 Variables(BaseConstructor, const ProblemDescDB& problem_db,
-	  const std::pair<short,short>& view):
+	  const ShortShortPair& view):
   sharedVarsData(problem_db, view)
 {
   shape(); // size all*Vars arrays
@@ -90,7 +90,7 @@ Variables::Variables(const ProblemDescDB& problem_db):
 std::shared_ptr<Variables>
 Variables::get_variables(const ProblemDescDB& problem_db)
 {
-  std::pair<short,short> view = get_view(problem_db);
+  ShortShortPair view = get_view(problem_db);
 
   // This get_variables version invokes the standard constructor.
   short active_view = view.first;
@@ -143,8 +143,7 @@ Variables::get_variables(const SharedVariablesData& svd) const
 }
 
 
-std::pair<short,short>
-Variables::get_view(const ProblemDescDB& problem_db) const
+ShortShortPair Variables::get_view(const ProblemDescDB& problem_db) const
 {
   // Manage variable views (all, design, uncertain, aleatory, epistemic,
   // or state) and continuous-discrete domain types (mixed or relaxed).
@@ -152,7 +151,7 @@ Variables::get_view(const ProblemDescDB& problem_db) const
   // latter utilize subclassing (they are not views).
 
   // Since this is used by the envelope, don't set variablesView
-  std::pair<short,short> view; // view.first = active, view.second = inactive
+  ShortShortPair view; // view.first = active, view.second = inactive
 
   // View logic has 3 levels, listed in order of precedence:
   // 1. Explicit view selection in variables specification
@@ -209,23 +208,51 @@ Variables::~Variables()
 { /* empty dtor */ }
 
 
+void Variables::active_view(short view1)
+{
+  if (variablesRep)
+    variablesRep->active_view(view1);
+  else {
+
+    sharedVarsData.active_view(view1);
+    build_active_views(); // unconditional: avoid Vars/Cons order dependence
+
+    if (view1 == RELAXED_ALL || view1 == MIXED_ALL) {
+      if (sharedVarsData.view().second)
+	sharedVarsData.inactive_view(EMPTY_VIEW);
+      build_inactive_views(); // unconditional: avoid Vars/Cons order dependence
+    }
+
+    // View assigment checks are performed here (rather than in the
+    // NestedModel ctor or within the Model recursion) so that all
+    // levels of recursion are adequately addressed.
+    check_view_compatibility();
+  }
+}
+
+
 void Variables::inactive_view(short view2)
 {
   if (variablesRep)
     variablesRep->inactive_view(view2);
   else {
     short view1 = sharedVarsData.view().first;
-    // If active view is {RELAXED,MIXED}_ALL, outer level active view is
-    // aggregated in inner loop all view and inactive view remains EMPTY_VIEW.
-    // Disallow assignment of an inactive ALL view.
-    if (view1 > MIXED_ALL && view2 > MIXED_ALL) {
-      sharedVarsData.inactive_view(view2);
-      // View assigment checks are performed here (rather than in the
-      // NestedModel ctor or within the Model recursion) so that all
-      // levels of recursion are adequately addressed.
-      check_view_compatibility();
-      build_inactive_views();
+    if (view2 == RELAXED_ALL || view2 == MIXED_ALL) {
+      Cerr << "Error: Variables inactive view may not be ALL." << std::endl;
+      abort_handler(VARS_ERROR);
     }
+    else if ( (view1 == RELAXED_ALL || view1 == MIXED_ALL) && view2) {
+      Cerr << "Warning: ignoring non-EMPTY inactive view for active ALL view "
+	   << "in Variables." << std::endl;
+      return; //abort_handler(VARS_ERROR);
+    }
+
+    sharedVarsData.inactive_view(view2);
+    build_inactive_views(); // unconditional: avoid Vars/Cons order dependence
+    // View assigment checks are performed here (rather than in the
+    // NestedModel ctor or within the Model recursion) so that all
+    // levels of recursion are adequately addressed.
+    check_view_compatibility();
   }
 }
 
@@ -313,7 +340,7 @@ short Variables::response_view(const ProblemDescDB& problem_db) const
 
 void Variables::check_view_compatibility()
 {
-  const std::pair<short,short>& view = sharedVarsData.view();
+  const ShortShortPair& view = sharedVarsData.view();
 
   short active_view = view.first, inactive_view = view.second;
 #ifdef DEBUG
@@ -387,21 +414,24 @@ void Variables::build_active_views()
 
   size_t num_cv  = sharedVarsData.cv(),    num_div = sharedVarsData.div(),
        /*num_dsv = sharedVarsData.dsv(),*/ num_drv = sharedVarsData.drv();
-  if (num_cv)
-    continuousVars = RealVector(Teuchos::View,
-      &allContinuousVars[sharedVarsData.cv_start()],    num_cv);
-  if (num_div)
-    discreteIntVars = IntVector(Teuchos::View,
-      &allDiscreteIntVars[sharedVarsData.div_start()],  num_div);
+  continuousVars = (num_cv) ?
+    RealVector(Teuchos::View, &allContinuousVars[sharedVarsData.cv_start()],
+	       num_cv) :
+    RealVector(); // return to default empty initialization
+  discreteIntVars = (num_div) ?
+    IntVector(Teuchos::View, &allDiscreteIntVars[sharedVarsData.div_start()],
+	      num_div) :
+    IntVector(); // return to default empty initialization
   // as for label arrays, generate StringMultiArrayViews on the fly
   //if (num_dsv) {
   //  size_t dsv_start = sharedVarsData.dsv_start();
   //  discreteStringVars = allDiscreteStringVars[boost::indices[
   //    idx_range(dsv_start, dsv_start+num_dsv)]];
   //}
-  if (num_drv)
-    discreteRealVars = RealVector(Teuchos::View,
-      &allDiscreteRealVars[sharedVarsData.drv_start()], num_drv);
+  discreteRealVars = (num_drv) ?
+    RealVector(Teuchos::View, &allDiscreteRealVars[sharedVarsData.drv_start()],
+	       num_drv) :
+    RealVector(); // return to default empty initialization
 }
 
 
@@ -421,21 +451,24 @@ void Variables::build_inactive_views()
 
   size_t num_icv  = sharedVarsData.icv(),    num_idiv = sharedVarsData.idiv(),
        /*num_idsv = sharedVarsData.idsv(),*/ num_idrv = sharedVarsData.idrv();
-  if (num_icv)
-    inactiveContinuousVars = RealVector(Teuchos::View,
-      &allContinuousVars[sharedVarsData.icv_start()],    num_icv);
-  if (num_idiv)
-    inactiveDiscreteIntVars = IntVector(Teuchos::View,
-      &allDiscreteIntVars[sharedVarsData.idiv_start()],  num_idiv);
+  inactiveContinuousVars = (num_icv) ?
+    RealVector(Teuchos::View, &allContinuousVars[sharedVarsData.icv_start()],
+	       num_icv) :
+    RealVector(); // return to default empty initialization
+  inactiveDiscreteIntVars = (num_idiv) ?
+    IntVector(Teuchos::View, &allDiscreteIntVars[sharedVarsData.idiv_start()],
+	      num_idiv) :
+    IntVector(); // return to default empty initialization
   // as for label arrays, generate StringMultiArrayViews on the fly
   //if (num_idsv) {
   //  size_t idsv_start = sharedVarsData.idsv_start();
   //  inactiveDiscreteStringVars = allDiscreteStringVars[boost::indices[
   //    idx_range(idsv_start, idsv_start+num_idsv)]];
   //}
-  if (num_idrv)
-    inactiveDiscreteRealVars = RealVector(Teuchos::View,
-      &allDiscreteRealVars[sharedVarsData.idrv_start()], num_idrv);
+  inactiveDiscreteRealVars = (num_idrv) ?
+    RealVector(Teuchos::View, &allDiscreteRealVars[sharedVarsData.idrv_start()],
+	       num_idrv) :
+    RealVector(); // return to default empty initialization
 }
 
 
@@ -540,7 +573,7 @@ void Variables::write_aprepro(std::ostream& s) const
 void Variables::read_annotated(std::istream& s)
 {
   // ASCII version for neutral file I/O.
-  std::pair<short,short> view;
+  ShortShortPair view;
   s >> view.first;
   // exception handling since EOF may not be captured properly; shouldn't get 
   // hit if loops wrapping this read whitespace before reading Variables...
@@ -607,7 +640,7 @@ void Variables::write_annotated(std::ostream& s) const
   if (variablesRep)
     variablesRep->write_annotated(s); // envelope fwd to letter
   else { // default implementation for letters
-    const std::pair<short,short>& view = sharedVarsData.view();
+    const ShortShortPair& view = sharedVarsData.view();
     const SizetArray& vc_totals = sharedVarsData.components_totals();
     const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
     const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
@@ -705,7 +738,7 @@ void Variables::read(MPIUnpackBuffer& s)
   bool buffer_has_letter;
   s >> buffer_has_letter;
   if (buffer_has_letter) {
-    std::pair<short,short> view;
+    ShortShortPair view;
     s >> view.first >> view.second;
     size_t i;
     SizetArray vars_comps_totals(NUM_VC_TOTALS);
@@ -754,7 +787,7 @@ void Variables::write(MPIPackBuffer& s) const
   bool have_letter = !is_null();
   s << have_letter;
   if (have_letter) {
-    const std::pair<short,short>& view = variablesRep->sharedVarsData.view();
+    const ShortShortPair& view = variablesRep->sharedVarsData.view();
     const SizetArray& vc_totals
       = variablesRep->sharedVarsData.components_totals();
     const BitArray& all_relax_di
@@ -804,23 +837,45 @@ Variables Variables::copy(bool deep_svd) const
   // current attributes into the new objects.
   Variables vars; // new envelope, variablesRep=NULL
 
-  // shallow copy of SharedVariablesData
   if (variablesRep) {
     // deep copy of Variables
     vars.variablesRep =  deep_svd ?
-      get_variables(variablesRep->sharedVarsData.copy()) : // deep SVD copy
+      get_variables(variablesRep->sharedVarsData.copy()) : //    deep SVD copy
       get_variables(variablesRep->sharedVarsData);         // shallow SVD copy
 
-    vars.variablesRep->allContinuousVars   = variablesRep->allContinuousVars;
-    vars.variablesRep->allDiscreteIntVars  = variablesRep->allDiscreteIntVars;
-    vars.variablesRep->allDiscreteStringVars
-      =  variablesRep->allDiscreteStringVars;
-    vars.variablesRep->allDiscreteRealVars = variablesRep->allDiscreteRealVars;
-
-    vars.variablesRep->build_views();
+    vars.variablesRep->copy_rep(variablesRep);
   }
 
   return vars;
+}
+
+
+/** This alternate copy() allows preservation of all*Vars array values while
+    adopting different views.  It avoids copying, building views, and then 
+    subsequently re-building the views after a view type update. */
+Variables Variables::copy(const SharedVariablesData& svd) const
+{
+  // the envelope class instantiates a new envelope and a new letter and copies
+  // current attributes into the new objects.
+  Variables vars; // new envelope, variablesRep=NULL
+
+  if (variablesRep) {
+    vars.variablesRep = get_variables(svd); // deep copy of Vars, shared svd
+    vars.variablesRep->copy_rep(variablesRep);
+  }
+
+  return vars;
+}
+
+
+void Variables::copy_rep(std::shared_ptr<Variables> source_vars_rep)
+{
+  allContinuousVars     = source_vars_rep->allContinuousVars;
+  allDiscreteIntVars    = source_vars_rep->allDiscreteIntVars;
+  allDiscreteStringVars = source_vars_rep->allDiscreteStringVars;
+  allDiscreteRealVars   = source_vars_rep->allDiscreteRealVars;
+
+  build_views();
 }
 
 
@@ -860,12 +915,41 @@ void Variables::reshape()
 }
 
 
+void Variables::inactive_into_all_variables(const Variables& vars)
+{
+  // Set inactive variables only, leaving remainder of data unchanged
+  if (variablesRep)
+    variablesRep->inactive_into_all_variables(vars);
+  else {
+    size_t icv_start = vars.icv_start(),  idiv_start = vars.idiv_start(),
+          idsv_start = vars.idsv_start(), idrv_start = vars.idrv_start(),
+          num_icv    = vars.icv(),        num_idiv   = vars.idiv(),
+          num_idsv   = vars.idsv(),       num_idrv   = vars.idrv();
+    if ( icv_start + num_icv  > acv()  || idiv_start + num_idiv > adiv() ||
+	idsv_start + num_idsv > adsv() || idrv_start + num_idrv > adrv() ) {
+      Cerr << "Error: inconsistent counts in Variables::"
+	   << "inactive_into_all_variables()." << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    copy_data_partial(vars.inactive_continuous_variables(),
+		      allContinuousVars, icv_start);
+    copy_data_partial(vars.inactive_discrete_int_variables(),
+		      allDiscreteIntVars, idiv_start);
+    allDiscreteStringVars[boost::indices[idx_range(idsv_start, num_idsv)]]
+      = vars.inactive_discrete_string_variables();
+    copy_data_partial(vars.inactive_discrete_real_variables(),
+		      allDiscreteRealVars, idrv_start);
+  }
+}
+
+
 /// tolerance-based equality for Variables (used in lookup_by_nearby_val())
 bool nearby(const Variables& vars1, const Variables& vars2, Real tol)
 {
   // this operator is a friend of Variables
 
-  std::shared_ptr<Variables> v1_rep = vars1.variablesRep, v2_rep = vars2.variablesRep;
+  std::shared_ptr<Variables> v1_rep = vars1.variablesRep,
+                             v2_rep = vars2.variablesRep;
 
   // Require different rep pointers
   if (v1_rep == v2_rep)
@@ -890,7 +974,8 @@ bool operator==(const Variables& vars1, const Variables& vars2)
 {
   // this function is a friend of Variables
 
-  std::shared_ptr<Variables> v1_rep = vars1.variablesRep, v2_rep = vars2.variablesRep;
+  std::shared_ptr<Variables> v1_rep = vars1.variablesRep,
+                             v2_rep = vars2.variablesRep;
 
   if (v1_rep == v2_rep)
     return true;

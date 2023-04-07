@@ -125,9 +125,11 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
   transformVars = true; // hardwired for now
 
   Model sub_model;
-  if (transformVars)
-    sub_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-			 (problem_db.get_model(), STD_NORMAL_U));
+  if (transformVars) {
+    const Model& db_model = problem_db.get_model();
+    sub_model.assign_rep(std::make_shared<ProbabilityTransformModel>(db_model,
+      STD_NORMAL_U, db_model.current_variables().view()));
+  }
   else
     sub_model = problem_db.get_model();
 
@@ -174,7 +176,7 @@ void ActiveSubspaceModel::compute_subspace()
          << " full-space samples." << std::endl;
 
   // evaluate samples with fullspaceSampler
-  Cout << "\nSubspace Model: Performing sampling to build reduced space"
+  Cout << "\nSubspace Model: Performing sampling to build reduced space."
        << std::endl;
   generate_fullspace_samples(initialSamples);
 
@@ -921,8 +923,9 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
     asm_model_tmp.assign_rep(std::make_shared<ActiveSubspaceModel>
 			     (subModel, ii, leftSingularVectors, QUIET_OUTPUT));
 
-    String sample_reuse = "", approx_type = "global_moving_least_squares";
-    ActiveSet surr_set = current_response().active_set(); // copy
+    String sample_reuse, approx_type = "global_moving_least_squares";
+    ActiveSet surr_set = currentResponse.active_set(); // copy
+    const ShortShortPair& surr_view = currentVariables.view();
 
     UShortArray approx_order(reducedRank, poly_degree);
     short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
@@ -930,8 +933,8 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
 
     Model cv_surr_model;
     cv_surr_model.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
-      asm_model_tmp, surr_set, approx_type, approx_order, corr_type, corr_order,
-      data_order, QUIET_OUTPUT,sample_reuse));
+      asm_model_tmp, surr_set, surr_view, approx_type, approx_order, corr_type,
+      corr_order, data_order, QUIET_OUTPUT,sample_reuse));
 
     Teuchos::BLAS<int, Real> teuchos_blas;
 
@@ -1113,15 +1116,16 @@ void ActiveSubspaceModel::build_surrogate()
     reducedRank, leftSingularVectors, QUIET_OUTPUT)); // partitioned to W1,W2
 
   String sample_reuse = "", approx_type = "global_moving_least_squares";
-  ActiveSet surr_set = current_response().active_set(); // copy
+  ActiveSet surr_set = currentResponse.active_set(); // copy
+  const ShortShortPair& surr_view = currentVariables.view();
   int poly_degree = 2; // quadratic bases
   UShortArray approx_order(reducedRank, poly_degree);
   short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
   Iterator dace_iterator;
 
   surrogateModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
-    asm_model, surr_set, approx_type, approx_order, corr_type, corr_order,
-    data_order, outputLevel, sample_reuse));
+    asm_model, surr_set, surr_view, approx_type, approx_order, corr_type,
+    corr_order, data_order, outputLevel, sample_reuse));
 
   const RealMatrix& all_vars_x = fullspaceSampler.all_samples();
   const IntResponseMap& all_responses = fullspaceSampler.all_responses();
@@ -1217,6 +1221,7 @@ build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
   // evaluate surrogate at test points:
   IntResponseMap test_y_surr;
   ActiveSet surr_set = current_response().active_set(); // copy
+  surr_set.derivative_vector(cv_surr_model.continuous_variable_ids());
   for (int ii = 0; ii < num_test_points; ii++) {
     cv_surr_model.continuous_variables(
       Teuchos::getCol(Teuchos::Copy, test_x, ii));
@@ -1275,7 +1280,7 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
   if (buildSurrogate) {
     ++recastModelEvalCntr;
 
-    surrogateModel.active_variables(currentVariables);
+    update_model_active_variables(surrogateModel);
     surrogateModel.evaluate(set);
 
     currentResponse.active_set(set);
@@ -1299,7 +1304,7 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
   if (buildSurrogate) {
     ++recastModelEvalCntr;
 
-    surrogateModel.active_variables(currentVariables);
+    update_model_active_variables(surrogateModel);
     surrogateModel.evaluate_nowait(set);
 
     // store map from surrogateModel eval id to ActiveSubspaceModel id

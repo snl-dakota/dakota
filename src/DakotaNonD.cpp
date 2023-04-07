@@ -74,8 +74,8 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
 
 
 NonD::NonD(unsigned short method_name, Model& model):
-  Analyzer(method_name, model), totalLevelRequests(0), cdfFlag(true),
-  pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
+  Analyzer(method_name, model), totalLevelRequests(0),
+  cdfFlag(true), pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -85,6 +85,15 @@ NonD::NonD(unsigned short method_name, Model& model):
   // probability of failure for each response function 
   //ShortArray asv(3*numFunctions, 1); 
   //finalStatistics = Response(numUncertainVars, asv);
+}
+
+
+NonD::NonD(unsigned short method_name, Model& model,
+	   const ShortShortPair& approx_view):
+  Analyzer(method_name, model, approx_view), totalLevelRequests(0),
+  cdfFlag(true), pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
+{
+  initialize_counts();
 }
 
 
@@ -109,7 +118,8 @@ void NonD::initialize_counts()
   //short active_view = vars.view().first;
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
   // convenience looping bounds
-  startCAUV = ac_totals[TOTAL_CDV];  numCAUV = ac_totals[TOTAL_CAUV];
+  startCAUV = ac_totals[TOTAL_CDV];
+  numCAUV   = ac_totals[TOTAL_CAUV];
   // stats type
   epistemicStats = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
 		    ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);

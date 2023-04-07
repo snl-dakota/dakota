@@ -142,6 +142,7 @@ typedef std::pair<int, int>            IntIntPair;
 typedef std::pair<size_t, int>         SizetIntPair;
 typedef std::pair<int, size_t>         IntSizetPair;
 typedef std::pair<size_t, size_t>      SizetSizetPair;
+typedef std::pair<short, short>        ShortShortPair;
 typedef std::pair<int, String>         IntStringPair;
 typedef std::pair<Real, Real>          RealRealPair;
 typedef std::pair<String, String>      StringStringPair;

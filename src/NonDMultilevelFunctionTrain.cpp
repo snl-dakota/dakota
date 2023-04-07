@@ -53,8 +53,9 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, u_space_type)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type, iteratedModel.current_variables().view()));
+    // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -85,9 +86,10 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
   ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
   ActiveSet mlft_set(asv, recast_set.derivative_vector());
+  const ShortShortPair& mlft_view = g_u_model.current_variables().view();
   uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
-    g_u_model, mlft_set, approx_type, start_orders, corr_type, corr_order,
-    data_order, outputLevel, pt_reuse, importBuildPointsFile,
+    g_u_model, mlft_set, mlft_view, approx_type, start_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
@@ -150,8 +152,9 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, uSpaceType)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType, iteratedModel.current_variables().view()));
+    // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -178,10 +181,11 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   const ActiveSet& recast_set = g_u_model.current_response().active_set();
   // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
   ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
-  ActiveSet pce_set(asv, recast_set.derivative_vector());
+  ActiveSet mlft_set(asv, recast_set.derivative_vector());
+  const ShortShortPair& mlft_view = g_u_model.current_variables().view();
   uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
-    g_u_model, pce_set, approx_type, start_orders, corr_type, corr_order,
-    data_order, outputLevel, pt_reuse, import_build_pts_file,
+    g_u_model, mlft_set, mlft_view, approx_type, start_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, import_build_pts_file,
     import_build_format, import_build_active_only));
   initialize_u_space_model();
 

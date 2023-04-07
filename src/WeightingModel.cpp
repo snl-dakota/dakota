@@ -23,11 +23,10 @@ WeightingModel::WeightingModel(Model& sub_model
 	      SizetArray(), // no change in vars size
 	      BitArray(),   // default discrete int relaxation
 	      BitArray(),   // default discrete real relaxation
-	      sub_model.num_primary_fns(),
-	      sub_model.num_secondary_fns(),
+	      sub_model.current_variables().view(),
+	      sub_model.num_primary_fns(), sub_model.num_secondary_fns(),
 	      sub_model.num_nonlinear_ineq_constraints(),
-	      response_order(sub_model)
-	      )
+	      response_order(sub_model) )
 {
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Info: Constructing WeightingModel" << std::endl;
@@ -100,12 +99,17 @@ primary_resp_weighter(const Variables& sub_model_vars,
   // weights are available in the sub-model, but not in *this
   const RealVector& lsq_weights = weightModelInstance->
     subModel.primary_response_fn_weights();
-  const RealVector& fn_vals = sub_model_response.function_values();
   RealVector wt_fn_vals = weighted_response.function_values_view();
   const ShortArray& asv = weighted_response.active_set_request_vector();
-
+  const RealVector& sm_fn_vals = sub_model_response.function_values();
   // only transform primary functions (same # on submodel or this)
   size_t num_pri_fns = weightModelInstance->num_primary_fns();
+  if (lsq_weights.length() != num_pri_fns) {
+    Cerr << "Error: mismatch in length of weighting vector (" << num_pri_fns
+	 << " expected and " << lsq_weights.length()<< " provided)."<<std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
   for (size_t i=0; i<num_pri_fns; ++i) {
 
     // For LSQ: \Sum_i w_i T^2_i => residual scaling as \Sum_i [sqrt(w_i) T_i]^2
@@ -113,7 +117,7 @@ primary_resp_weighter(const Variables& sub_model_vars,
 
     // functions
     if (asv[i] & 1)
-      wt_fn_vals[i] = wt_i * fn_vals[i];
+      wt_fn_vals[i] = wt_i * sm_fn_vals[i];
 
     // gradients
     if (asv[i] & 2) {

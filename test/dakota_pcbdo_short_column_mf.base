@@ -1,10 +1,25 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (UQ_I): 312 total (312 new, 0 duplicate)
-  response_fn_1: 312 val (312 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 312 val (312 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 312 total (312 new, 0 duplicate)
-  response_fn_1: 312 val (312 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 312 val (312 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 272 total (272 new, 0 duplicate)
+  response_fn_1: 272 val (272 n, 0 d), 80 grad (80 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 272 val (272 n, 0 d), 80 grad (80 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 272 total (272 new, 0 duplicate)
+  response_fn_1: 272 val (272 n, 0 d), 80 grad (80 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 272 val (272 n, 0 d), 80 grad (80 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1014103317e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0253525829e+02
+<<<<< Best constraint values   =
+                      2.5000001900e+00
+<<<<< Best evaluation ID not available
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 472 total (372 new, 100 duplicate)
+  response_fn_1: 472 val (372 n, 100 d), 180 grad (140 n, 40 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 472 val (372 n, 100 d), 180 grad (140 n, 40 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 472 total (372 new, 100 duplicate)
+  response_fn_1: 472 val (372 n, 100 d), 180 grad (140 n, 40 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 472 val (372 n, 100 d), 180 grad (140 n, 40 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       8.1014101625e+00 b
                       2.5000000000e+01 h
@@ -12,21 +27,6 @@ Test Number 0 succeeded
                       2.0253525406e+02
 <<<<< Best constraint values   =
                       2.5000000000e+00
-<<<<< Best evaluation ID not available
-Test Number 1 succeeded
-<<<<< Function evaluation summary (UQ_I): 292 total (292 new, 0 duplicate)
-  response_fn_1: 292 val (292 n, 0 d), 60 grad (60 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 292 val (292 n, 0 d), 60 grad (60 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 292 total (292 new, 0 duplicate)
-  response_fn_1: 292 val (292 n, 0 d), 60 grad (60 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 292 val (292 n, 0 d), 60 grad (60 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Best parameters          =
-                      5.0000000000e+00 b
-                      2.2358538129e+01 h
-<<<<< Best objective function  =
-                      1.1179269065e+02
-<<<<< Best constraint values   =
-                     -1.0441065717e+00
 <<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 244 total (204 new, 40 duplicate)
@@ -74,12 +74,12 @@ Test Number 4 succeeded
                       2.5000000000e+00
 <<<<< Best evaluation ID not available
 Test Number 5 succeeded
-<<<<< Function evaluation summary (UQ_I): 713 total (682 new, 31 duplicate)
-  response_fn_1: 713 val (682 n, 31 d), 186 grad (186 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 713 val (682 n, 31 d), 186 grad (186 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 713 total (682 new, 31 duplicate)
-  response_fn_1: 713 val (682 n, 31 d), 186 grad (186 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 713 val (682 n, 31 d), 186 grad (186 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 651 total (651 new, 0 duplicate)
+  response_fn_1: 651 val (651 n, 0 d), 155 grad (155 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 651 val (651 n, 0 d), 155 grad (155 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 651 total (651 new, 0 duplicate)
+  response_fn_1: 651 val (651 n, 0 d), 155 grad (155 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 651 val (651 n, 0 d), 155 grad (155 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       8.1145857712e+00 b
                       2.5000000000e+01 h

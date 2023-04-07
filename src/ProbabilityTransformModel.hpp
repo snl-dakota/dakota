@@ -10,7 +10,7 @@
 //- Class:       ProbabilityTransformModel
 //- Description: Specialization of RecastModel to transform a sub-model to
 //-              u-space.
-//- Owner:       Brian Adams
+//- Owner:       Michael Eldred
 //- Checked by:
 //- Version: $Id$
 
@@ -37,7 +37,8 @@ public:
 
   /// standard constructor
   ProbabilityTransformModel(const Model& sub_model, short u_space_type,
-                            bool truncate_bnds = false, Real bnd = 10.);
+			    const ShortShortPair& recast_vars_view,
+			    bool truncate_bnds = false, Real bnd = 10.);
 
   /// destructor
   ~ProbabilityTransformModel();
@@ -47,7 +48,8 @@ public:
   //
 
   /// initialize transformed distribution types and instantiate mvDist
-  static void initialize_distribution_types(short u_space_type,
+  static void initialize_distribution_types(
+    short u_space_type, const Pecos::BitArray& active_rv,
     const Pecos::MultivariateDistribution& x_dist,
     Pecos::MultivariateDistribution& u_dist);
 
@@ -89,6 +91,11 @@ protected:
   void assign_instance();
 
   void init_metadata() override { /* no-op to leave metadata intact */}
+
+  void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
+  void trans_U_to_X(const Variables&  u_vars,   Variables&  x_vars);
+  void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
+  void trans_X_to_U(const Variables&  x_vars,   Variables&  u_vars);
 
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 			 const RealVector& x_vars);
@@ -202,7 +209,8 @@ private:
   // from higher level iteration
   //ShortArray secondaryADRVarMapTargets;
 
-  /// static pointer to this class for use in static callbacks
+  /// static pointer to an active instance of this class for use in
+  /// static function callbacks
   static ProbabilityTransformModel* ptmInstance;
 };
 
@@ -299,9 +307,13 @@ initialize_transformation(short u_space_type)
   if (mvDist.is_null()) // already initialized: no current reason to update
     mvDist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
 
-  const Pecos::MultivariateDistribution& x_dist
-    = subModel.multivariate_distribution();
-  initialize_distribution_types(u_space_type, x_dist, mvDist);
+  // Follows init_sizes() since pulls view from currentVariables.
+  // Precedes initialize_distribution_types() since inactive not transformed.
+  initialize_active_types(mvDist);
+  // now initialized based on Model view, can use u-space active subset
+  // (which may differ from x-space) for transformation
+  initialize_distribution_types(u_space_type, mvDist.active_variables(),
+				subModel.multivariate_distribution(), mvDist);
   initialize_nataf();
   initialize_dakota_variable_types();
   verify_correlation_support(u_space_type);
@@ -330,7 +342,16 @@ update_from_subordinate_model(size_t depth)
   update_transformation();
 
   // now pull additional updates from subModel (requires latest dist params)
-  RecastModel::update_from_model(subModel);
+  //RecastModel::update_from_model(subModel);
+  // here we override the logic in RecastModel::update_response_from_model()
+  // (which suppresses updates if {primary,secondary}RespMapping) since we want
+  // to include primary/secondary response updates for ProbabilityTransforms
+  // (the response transform is 1-to-1 and only involves derivative mappings)
+  bool update_active_complement = update_variables_from_model(subModel);
+  if (update_active_complement)
+    update_variables_active_complement_from_model(subModel);
+  update_primary_response(subModel);
+  update_secondary_response(subModel);
 }
 
 
@@ -342,7 +363,7 @@ nonlinear_variables_mapping(const Pecos::MultivariateDistribution& x_dist,
   const ShortArray& x_types = x_dist.random_variable_types();
   const ShortArray& u_types = u_dist.random_variable_types();
   size_t i, num_types = std::min(x_types.size(), u_types.size());
-  const BitArray& active_v = x_dist.active_variables();
+  const BitArray& active_v = u_dist.active_variables();
   for (i=0; i<num_types; ++i)
     if (active_v[i]) {
       switch (u_types[i]) {
@@ -381,31 +402,162 @@ inline void ProbabilityTransformModel::assign_instance()
 
 /** Map the variables from iterator space (u) to simulation space (x). */
 inline void ProbabilityTransformModel::
-vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
+trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars)
 {
-  ptmInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(),
-					   x_vars.continuous_variables_view());
+  const Variables& x_vars = subModel.current_variables();
+  short u_active_view = currentVariables.shared_data().view().first,
+        x_active_view = x_vars.shared_data().view().first;
+
+  // Note: the cv ids for x and u should be identical following view alignment,
+  // but we pass both for generality
+  if (u_active_view == x_active_view)
+    natafTransform.trans_U_to_X(u_c_vars,
+      currentVariables.continuous_variable_ids(), x_c_vars,
+      x_vars.continuous_variable_ids());
+  else {
+    bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
+         x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
+    if (!u_all && x_all)
+      natafTransform.trans_U_to_X(u_c_vars,
+	currentVariables.all_continuous_variable_ids(), x_c_vars,
+	x_vars.continuous_variable_ids());
+    else if (!x_all && u_all)
+      natafTransform.trans_U_to_X(u_c_vars,
+	currentVariables.continuous_variable_ids(), x_c_vars,
+	x_vars.all_continuous_variable_ids());
+    else {
+      Cerr << "Error: unsupported variable view differences in "
+	   << "ProbabilityTransformModel::trans_U_to_X()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
+  // *** TO DO: active discrete {int,string,real}
+}
+
+
+/** Map the variables from iterator space (u) to simulation space (x). */
+inline void ProbabilityTransformModel::
+trans_U_to_X(const Variables& u_vars, Variables& x_vars)
+{
+  short u_active_view = u_vars.shared_data().view().first,
+        x_active_view = x_vars.shared_data().view().first;
+
+  // Note: the cv ids for x and u should be identical following view alignment,
+  // but we pass both for generality
+  if (u_active_view == x_active_view)
+    natafTransform.trans_U_to_X(
+      u_vars.continuous_variables(),      u_vars.continuous_variable_ids(),
+      x_vars.continuous_variables_view(), x_vars.continuous_variable_ids());
+  else {
+    bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
+         x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
+    if (!u_all && x_all)
+      natafTransform.trans_U_to_X(
+        u_vars.all_continuous_variables(), u_vars.all_continuous_variable_ids(),
+	x_vars.continuous_variables_view(), x_vars.continuous_variable_ids());
+    else if (!x_all && u_all) {
+      RealVector x_acv;
+      natafTransform.trans_U_to_X(
+	u_vars.continuous_variables(), u_vars.continuous_variable_ids(),
+	x_acv, x_vars.all_continuous_variable_ids());
+      x_vars.all_continuous_variables(x_acv);
+    }
+    else {
+      Cerr << "Error: unsupported variable view differences in "
+	   << "ProbabilityTransformModel::trans_U_to_X()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
   // *** TO DO: active discrete {int,string,real}
 }
 
 
 /** Map the variables from simulation space (x) to iterator space (u). */
 inline void ProbabilityTransformModel::
-vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
+trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars)
 {
-  ptmInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(),
-					   u_vars.continuous_variables_view());
+  const Variables& x_vars = subModel.current_variables();
+  short u_active_view = currentVariables.shared_data().view().first,
+        x_active_view = x_vars.shared_data().view().first;
+
+  if (u_active_view == x_active_view)
+    natafTransform.trans_X_to_U(x_c_vars, x_vars.continuous_variable_ids(),
+      u_c_vars, currentVariables.continuous_variable_ids());
+  else {
+    bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
+         x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
+    if (!u_all && x_all)
+      natafTransform.trans_X_to_U(x_c_vars, x_vars.continuous_variable_ids(),
+	u_c_vars, currentVariables.all_continuous_variable_ids());
+    else if (!x_all && u_all)
+      natafTransform.trans_X_to_U(x_c_vars,x_vars.all_continuous_variable_ids(),
+	u_c_vars, currentVariables.continuous_variable_ids());
+    else {
+      Cerr << "Error: unsupported variable view differences in "
+	   << "ProbabilityTransformModel::trans_X_to_U()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
   // *** TO DO: active discrete {int,string,real}
 }
+
+
+/** Map the variables from simulation space (x) to iterator space (u). */
+inline void ProbabilityTransformModel::
+trans_X_to_U(const Variables& x_vars, Variables& u_vars)
+{
+  short u_active_view = u_vars.shared_data().view().first,
+        x_active_view = x_vars.shared_data().view().first;
+
+  if (u_active_view == x_active_view)
+    natafTransform.trans_X_to_U(
+      x_vars.continuous_variables(),      x_vars.continuous_variable_ids(),
+      u_vars.continuous_variables_view(), u_vars.continuous_variable_ids());
+  else {
+    bool u_all = (u_active_view == RELAXED_ALL || u_active_view == MIXED_ALL),
+         x_all = (x_active_view == RELAXED_ALL || x_active_view == MIXED_ALL);
+    if (!u_all && x_all) {
+      RealVector u_acv;
+      natafTransform.trans_X_to_U(
+	x_vars.continuous_variables(), x_vars.continuous_variable_ids(),
+	u_acv,                         u_vars.all_continuous_variable_ids());
+      u_vars.all_continuous_variables(u_acv);
+    }
+    else if (!x_all && u_all)
+      natafTransform.trans_X_to_U(
+	x_vars.all_continuous_variables(), x_vars.all_continuous_variable_ids(),
+	u_vars.continuous_variables_view(), u_vars.continuous_variable_ids());
+    else {
+      Cerr << "Error: unsupported variable view differences in "
+	   << "ProbabilityTransformModel::trans_X_to_U()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
+  // *** TO DO: active discrete {int,string,real}
+}
+
+
+/** Map the variables from iterator space (u) to simulation space (x). */
+inline void ProbabilityTransformModel::
+vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
+{ ptmInstance->trans_U_to_X(u_vars, x_vars); }
+
+
+/** Map the variables from simulation space (x) to iterator space (u). */
+inline void ProbabilityTransformModel::
+vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
+{ ptmInstance->trans_X_to_U(x_vars, u_vars); }
 
 
 inline void ProbabilityTransformModel::
 trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
-  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-  natafTransform.trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars, x_dvv, cv_ids);
+  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+    u_cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
+  natafTransform.trans_grad_X_to_U(fn_grad_x, x_cv_ids, fn_grad_u, u_cv_ids,
+				   x_vars, x_dvv);
 }
 
 
@@ -413,9 +565,11 @@ inline void ProbabilityTransformModel::
 trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
-  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-  natafTransform.trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars, x_dvv, cv_ids);
+  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+    u_cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
+  natafTransform.trans_grad_U_to_X(fn_grad_u, u_cv_ids, fn_grad_x, x_cv_ids,
+				   x_vars, x_dvv);
 }
 
 
@@ -423,11 +577,12 @@ inline void ProbabilityTransformModel::
 trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
-  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-  natafTransform.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv, cv_ids,
-    currentVariables.all_continuous_variable_ids(), primaryACVarMapIndices,
-    secondaryACVarMapTargets);
+  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
+  natafTransform.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv,
+    x_cv_ids, currentVariables.continuous_variable_ids(), // u_cv_ids
+    subModel.all_continuous_variable_ids(),              // x_acv_ids
+    primaryACVarMapIndices, secondaryACVarMapTargets);
 }
 
 
@@ -435,10 +590,11 @@ inline void ProbabilityTransformModel::
 trans_hess_X_to_U(const RealSymMatrix& fn_hess_x, RealSymMatrix& fn_hess_u,
 		  const RealVector& x_vars, const RealVector& fn_grad_x)
 {
-  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
-  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-  natafTransform.trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x,
-				   x_dvv, cv_ids);
+  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+    u_cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
+  natafTransform.trans_hess_X_to_U(fn_hess_x, x_cv_ids, fn_hess_u, u_cv_ids,
+				   x_vars, fn_grad_x, x_dvv);
 }
 
 

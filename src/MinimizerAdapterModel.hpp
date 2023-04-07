@@ -127,7 +127,7 @@ inline MinimizerAdapterModel::~MinimizerAdapterModel()
 inline void MinimizerAdapterModel::
 initialize_variables(size_t num_cdv)//, num_div, num_drv, ...
 {
-  std::pair<short,short> view(MIXED_DESIGN, EMPTY_VIEW);
+  ShortShortPair view(MIXED_DESIGN, EMPTY_VIEW);
   SizetArray vc_totals;  vc_totals.assign(NUM_VC_TOTALS, 0);
   vc_totals[TOTAL_CDV] = num_cdv;
   //vc_totals[TOTAL_*DV] = num_*dv;

@@ -132,14 +132,14 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     //const Variables& curr_vars = iteratedModel.current_variables();
     ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
     gp_set.request_values(1);// no surr deriv evals, but GP may be grad-enhanced
-    fHatModel.assign_rep(std::make_shared<DataFitSurrModel>
-      (daceIterator, iteratedModel,
-       gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
-       outputLevel, sample_reuse, import_pts_file,
-       probDescDB.get_ushort("method.import_build_format"),
-       probDescDB.get_bool("method.import_build_active_only"),
-       probDescDB.get_string("method.export_approx_points_file"),
-       probDescDB.get_ushort("method.export_approx_format")));
+    const ShortShortPair& gp_view = iteratedModel.current_variables().view();
+    fHatModel.assign_rep(std::make_shared<DataFitSurrModel>(daceIterator,
+      iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
+      corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
+      probDescDB.get_ushort("method.import_build_format"),
+      probDescDB.get_bool("method.import_build_active_only"),
+      probDescDB.get_string("method.export_approx_points_file"),
+      probDescDB.get_ushort("method.export_approx_format")));
 
     if (approx_type == "global_exp_gauss_proc") {
 #ifdef HAVE_DAKOTA_SURROGATES
@@ -180,9 +180,10 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 1; // nongradient-based optimizers
+  const ShortShortPair& recast_view = iteratedModel.current_variables().view();
   intervalOptModel.assign_rep(std::make_shared<RecastModel>
-			      (fHatModel, recast_vars_comps_total, all_relax_di,
-			       all_relax_dr, 1, 0, 0, recast_resp_order));
+    (fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr,
+     recast_view, 1, 0, 0, recast_resp_order));
 
   // Instantiate the optimizer used on the GP.
   // TO DO: add support for discrete EGO

@@ -55,10 +55,10 @@ public:
   DataFitSurrModel(ProblemDescDB& problem_db);
   /// alternate constructor for instantiations on the fly
   DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
-		   const ActiveSet& set, const String& approx_type,
-		   const UShortArray& approx_order, short corr_type,
-		   short corr_order, short data_order, short output_level,
-		   const String& point_reuse,
+		   const ActiveSet& dfs_set, const ShortShortPair& dfs_view,
+		   const String& approx_type, const UShortArray& approx_order,
+		   short corr_type, short corr_order, short data_order,
+		   short output_level, const String& point_reuse,
 		   const String& import_build_points_file = String(),
 		   unsigned short import_build_format = TABULAR_ANNOTATED,
 		   bool import_build_active_only = false,
@@ -304,8 +304,11 @@ protected:
   /// when DataFitSurrModel iteration is complete.
   void stop_servers();
 
-  /// update the Model's inactive view based on higher level (nested)
-  /// context and optionally recurse into actualModel
+  /// update the Model's active view based on higher level context
+  /// and optionally recurse into actualModel
+  void active_view(short view, bool recurse_flag = true);
+  /// update the Model's inactive view based on higher level context
+  /// and optionally recurse into actualModel
   void inactive_view(short view, bool recurse_flag = true);
 
   /// return the approxInterface identifier
@@ -976,10 +979,17 @@ inline void DataFitSurrModel::stop_servers()
 }
 
 
+inline void DataFitSurrModel::active_view(short view, bool recurse_flag)
+{
+  Model::active_view(view);
+  if (recurse_flag && !actualModel.is_null())
+    actualModel.active_view(view, recurse_flag);
+}
+
+
 inline void DataFitSurrModel::inactive_view(short view, bool recurse_flag)
 {
-  currentVariables.inactive_view(view);
-  userDefinedConstraints.inactive_view(view);
+  Model::inactive_view(view);
   if (recurse_flag && !actualModel.is_null())
     actualModel.inactive_view(view, recurse_flag);
 }

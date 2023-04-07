@@ -1044,7 +1044,7 @@ derived_synchronize_combine(IntResponseMapArray& model_resp_maps,
       while (hf_cit != hf_resp_map.end() || lf_it != lf_resp_map.end()) {
 	// these have been rekeyed already to top-level surrModelEvalCntr:
 	int hf_eval_id = (hf_cit == hf_resp_map.end()) ? INT_MAX: hf_cit->first;
-	int lf_eval_id = (lf_it == lf_resp_map.end())  ? INT_MAX : lf_it->first;
+	int lf_eval_id = (lf_it  == lf_resp_map.end()) ? INT_MAX : lf_it->first;
 
 	if (hf_eval_id < lf_eval_id) { // only HF available
 	  response_combine(hf_cit->second, empty_resp,

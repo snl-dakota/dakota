@@ -37,7 +37,7 @@ public:
   //
   //- Heading: Constructors and destructor
   //
- 
+
   /// standard constructor
   NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
@@ -62,7 +62,7 @@ public:
                       String exp_expansion_file = "");
   /// alternate constructor for coefficient import
   NonDPolynomialChaos(Model& model, const String& exp_import_file,
-		      short u_space_type);
+		      short u_space_type, const ShortShortPair& approx_view);
 
   /// destructor
   ~NonDPolynomialChaos();

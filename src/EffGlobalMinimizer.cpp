@@ -184,9 +184,10 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   //const Variables& curr_vars = iteratedModel.current_variables();
   ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
   gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
+  const ShortShortPair& gp_view = iteratedModel.current_variables().view();
   fHatModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
-    iteratedModel, gp_set, approx_type, approx_order, corr_type, corr_order,
-    dataOrder, outputLevel, sample_reuse, import_build_points_file,
+    iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
+    corr_order, dataOrder, outputLevel, sample_reuse, import_build_points_file,
     import_build_format, import_build_active_only, export_approx_points_file,
     export_approx_format));
 
@@ -197,8 +198,8 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 1; // nongradient-based optimizers
   approxSubProbModel.assign_rep(std::make_shared<RecastModel>(fHatModel,
-    recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0,
-    recast_resp_order));
+    recast_vars_comps_total, all_relax_di, all_relax_dr,
+    iteratedModel.current_variables().view(), 1, 0, 0, recast_resp_order));
 
   // must use alternate NoDB ctor chain
   size_t max_iter = 10000, max_eval = 50000;
@@ -320,9 +321,7 @@ void EffGlobalMinimizer::build_gp()
   // propagate to the approxSubproblemMinimizer.
   approxSubProbModel.primary_response_fn_sense(BoolDeque());
   approxSubProbModel.primary_response_fn_weights(RealVector(), false);//no recur
-  approxSubProbModel.reshape_constraints(0, 0,
-    approxSubProbModel.num_linear_ineq_constraints(),
-    approxSubProbModel.num_linear_eq_constraints());
+  approxSubProbModel.user_defined_constraints().reshape_nonlinear(0, 0);
 
   // Build initial GPs for all response functions
   if (batchAsynch)

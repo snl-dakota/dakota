@@ -69,8 +69,9 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, u_space_type)); // retain dist bnds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type, iteratedModel.current_variables().view()));
+    // retain dist bnds
 
   // -------------------------
   // Construct u_space_sampler
@@ -100,9 +101,10 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   String approx_type = "global_function_train";
   ActiveSet ft_set = g_u_model.current_response().active_set(); // copy
   ft_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ShortShortPair& ft_view = g_u_model.current_variables().view();
   uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
-    g_u_model, ft_set, approx_type, start_orders, corr_type, corr_order,
-    data_order, outputLevel, pt_reuse, importBuildPointsFile,
+    g_u_model, ft_set, ft_view, approx_type, start_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),

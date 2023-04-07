@@ -543,7 +543,8 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     = iteratedModel.multivariate_distribution();
   Pecos::MultivariateDistribution u_dist(Pecos::MARGINALS_CORRELATIONS);
   ProbabilityTransformModel::
-    initialize_distribution_types(EXTENDED_U, x_dist, u_dist);
+    initialize_distribution_types(EXTENDED_U, x_dist.active_variables(),
+				  x_dist, u_dist);
   u_dist.pull_distribution_parameters(x_dist);
   Pecos::ProbabilityTransformation nataf("nataf"); // for now
   nataf.x_distribution(x_dist);  nataf.u_distribution(u_dist);
@@ -559,7 +560,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   Pecos::SharedOrthogPolyApproxData::coefficients_norms_flag(true, poly_basis);
 
   // transform from x to u space; should we make a copy?
-  transform_samples(nataf, initial_samples, 0, true); // x_to_u
+  transform_samples(nataf, initial_samples, true); // x_to_u
 
   bool leja = (oversampleRatio > 0.0);
   if (leja) {
@@ -577,7 +578,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     RealMatrix candidate_samples(num_vars, num_candidates);
     get_parameter_sets(iteratedModel, num_candidates, candidate_samples);
     // transform from x to u space; should we make a copy?
-    transform_samples(nataf, candidate_samples, 0, true); // x_to_u
+    transform_samples(nataf, candidate_samples, true); // x_to_u
 
     // BMA TODO: construct and preserve the LejaSampler if possible
     // BMA TODO: discuss with John what's needed...
@@ -616,7 +617,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     for (int cand_i = 0; cand_i < numCandidateDesigns; ++cand_i) {
 
       get_parameter_sets(iteratedModel, new_samples, curr_new_samples, false);
-      transform_samples(nataf, curr_new_samples, 0, true); // x_to_u
+      transform_samples(nataf, curr_new_samples, true); // x_to_u
 
       // build basis matrix from total sample set (selected_samples
       // includes intiial and new samples)
@@ -635,7 +636,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     curr_new_samples.assign(best_new_samples);
   }
   // transform whole samples matrix from u back to x space
-  transform_samples(nataf, selected_samples, 0, false); // u_to_x
+  transform_samples(nataf, selected_samples, false); // u_to_x
 }
 
 

@@ -69,7 +69,7 @@ protected:
 
   /// helper that consolidates sequence advancement, sample generation,
   /// sample export, and sample evaluation
-  void evaluate_ml_sample_increment(unsigned short step);
+  void evaluate_ml_sample_increment(String prepend, unsigned short step);
 
   /// increment the equivalent number of HF evaluations based on new
   /// model evaluations

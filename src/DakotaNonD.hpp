@@ -90,6 +90,9 @@ protected:
   NonD(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonD(unsigned short method_name, Model& model);
+  /// alternate constructor for sample generation and evaluation "on the fly"
+  NonD(unsigned short method_name, Model& model,
+       const ShortShortPair& approx_view);
   /// alternate constructor for sample generation "on the fly"
   NonD(unsigned short method_name, const RealVector& lower_bnds,
        const RealVector& upper_bnds);

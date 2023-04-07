@@ -58,14 +58,14 @@ private:
 
   /// standard constructor
   SharedVariablesDataRep(const ProblemDescDB& problem_db,
-			 const std::pair<short,short>& view);
+			 const ShortShortPair& view);
   /// medium weight constructor providing detailed variable counts
-  SharedVariablesDataRep(const std::pair<short,short>& view,
+  SharedVariablesDataRep(const ShortShortPair& view,
 			 const std::map<unsigned short, size_t>& vars_comps,
 			 const BitArray& all_relax_di,
 			 const BitArray& all_relax_dr);
   /// lightweight constructor providing variable count totals
-  SharedVariablesDataRep(const std::pair<short,short>& view,
+  SharedVariablesDataRep(const ShortShortPair& view,
 			 const SizetArray& vars_comps_totals,
 			 const BitArray& all_relax_di,
 			 const BitArray& all_relax_dr);
@@ -91,7 +91,19 @@ private:
   /// categorical, accounting for empty
   void set_relax(const BitArray& user_cat_spec, size_t ucs_index,
 		 size_t ard_cntr, BitArray& ard_container);
- 
+
+  /// accumulate all continuous variables from variablesCompsTotals,
+  /// allRelaxedDiscreteInt, allRelaxedDiscreteReal
+  size_t acv() const;
+  /// accumulate all discrete int variables from variablesCompsTotals,
+  /// allRelaxedDiscreteInt
+  size_t adiv() const;
+  /// accumulate all discrete string variables from variablesCompsTotals
+  size_t adsv() const;
+  /// accumulate all discrete real variables from variablesCompsTotals,
+  /// allRelaxedDiscreteReal
+  size_t adrv() const;
+
   /// compute all variables sums from variablesCompsTotals
   void all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
 		  size_t& num_adrv) const;
@@ -152,6 +164,10 @@ private:
   size_t drv_index_to_all_index(size_t drv_index,
 				bool ddv, bool dauv, bool deuv, bool dsv) const;
 
+  /// create a BitArray indicating the active subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray active_to_all_mask(bool cdv,  bool ddv,  bool cauv, bool dauv,
+			      bool ceuv, bool deuv, bool  csv, bool dsv) const;
   /// create a BitArray indicating the active continuous subset of all
   /// {continuous,discrete {int,string,real}} variables
   BitArray cv_to_all_mask(bool cdv, bool cauv, bool ceuv, bool csv) const;
@@ -189,8 +205,10 @@ private:
   /// retrieve the count within variablesComponents corresponding to key
   size_t vc_lookup(unsigned short key) const;
 
-  /// copy the data from svd_rep to the current representation
-  void copy_rep(SharedVariablesDataRep* svd_rep);
+  /// copy the core data from svd_rep to the current representation
+  void copy_rep_data(SharedVariablesDataRep* svd_rep);
+  /// copy the active/inactive view from svd_rep to the current representation
+  void copy_rep_view(SharedVariablesDataRep* svd_rep);
 
   /// serialize the core shared variables data
   template<class Archive>
@@ -233,7 +251,7 @@ private:
 
   /// the variables view pair containing active (first) and inactive (second)
   /// view enumerations
-  std::pair<short, short> variablesView;
+  ShortShortPair variablesView;
   /// start index of active continuous variables within allContinuousVars
   size_t cvStart;
   /// start index of active discrete integer variables within allDiscreteIntVars
@@ -346,6 +364,37 @@ all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
     num_adiv -= num_relax_int;
     num_adrv -= num_relax_real;
   }
+}
+
+
+inline size_t SharedVariablesDataRep::acv() const
+{
+  return variablesCompsTotals[TOTAL_CDV]  + variablesCompsTotals[TOTAL_CAUV]
+       + variablesCompsTotals[TOTAL_CEUV] + variablesCompsTotals[TOTAL_CSV]
+       + allRelaxedDiscreteInt.count() + allRelaxedDiscreteReal.count();
+}
+
+
+inline size_t SharedVariablesDataRep::adiv() const
+{
+  return variablesCompsTotals[TOTAL_DDIV]  + variablesCompsTotals[TOTAL_DAUIV]
+       + variablesCompsTotals[TOTAL_DEUIV] + variablesCompsTotals[TOTAL_DSIV]
+       - allRelaxedDiscreteInt.count();
+}
+
+
+inline size_t SharedVariablesDataRep::adsv() const
+{
+  return variablesCompsTotals[TOTAL_DDSV]  + variablesCompsTotals[TOTAL_DAUSV]
+       + variablesCompsTotals[TOTAL_DEUSV] + variablesCompsTotals[TOTAL_DSSV];
+}
+
+
+inline size_t SharedVariablesDataRep::adrv() const
+{
+  return variablesCompsTotals[TOTAL_DDRV]  + variablesCompsTotals[TOTAL_DAURV]
+       + variablesCompsTotals[TOTAL_DEURV] + variablesCompsTotals[TOTAL_DSRV]
+       - allRelaxedDiscreteReal.count();
 }
 
 
@@ -546,14 +595,14 @@ public:
   SharedVariablesData();
   /// standard constructor
   SharedVariablesData(const ProblemDescDB& problem_db,
-		      const std::pair<short,short>& view);
+		      const ShortShortPair& view);
   /// medium weight constructor providing detailed variable counts
-  SharedVariablesData(const std::pair<short,short>& view,
+  SharedVariablesData(const ShortShortPair& view,
 		      const std::map<unsigned short, size_t>& vars_comps,
 		      const BitArray& all_relax_di = BitArray(),
 		      const BitArray& all_relax_dr = BitArray());
   /// lightweight constructor providing variable count totals
-  SharedVariablesData(const std::pair<short,short>& view,
+  SharedVariablesData(const ShortShortPair& view,
 		      const SizetArray& vars_comps_totals,
 		      const BitArray& all_relax_di = BitArray(),
 		      const BitArray& all_relax_dr = BitArray());
@@ -569,8 +618,12 @@ public:
   //- Heading: member functions
   //
 
-  /// create a deep copy of the current object and return by value
+  /// create a deep copy of the current object, copy both core and view data,
+  /// and return by value
   SharedVariablesData copy() const;
+  /// create a deep copy of the current object, copy its core data,
+  /// update the view, and return by value
+  SharedVariablesData copy(const ShortShortPair& view) const;
 
   /// compute all variables sums from
   /// SharedVariablesDataRep::variablesCompsTotals and
@@ -694,6 +747,9 @@ public:
   /// variables to index within all discrete real variables
   size_t cdrv_index_to_adrv_index(size_t drv_index) const;
 
+  /// create a BitArray indicating the active subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray active_to_all_mask() const;
   /// create a BitArray indicating the active continuous subset of all
   /// {continuous,discrete {int,string,real}} variables
   BitArray cv_to_all_mask() const;
@@ -882,9 +938,13 @@ public:
   size_t vc_lookup(unsigned short key) const;
 
   /// retreive the Variables view
-  const std::pair<short,short>& view() const;
+  const ShortShortPair& view() const;
+  /// assign the Variables view
+  void view(const ShortShortPair& view_pr) const;
+  /// set the active Variables view
+  void active_view(short view1) const;
   /// set the inactive Variables view
-  void inactive_view(short view2);
+  void inactive_view(short view2) const;
 
   size_t cv()         const; ///< get number of active continuous vars
   size_t cv_start()   const; ///< get start index of active continuous vars
@@ -894,6 +954,7 @@ public:
   size_t dsv_start()  const; ///< get start index of active discrete string vars
   size_t drv()        const; ///< get number of active discrete real vars
   size_t drv_start()  const; ///< get start index of active discrete real vars
+
   size_t icv()        const; ///< get number of inactive continuous vars
   size_t icv_start()  const; ///< get start index of inactive continuous vars
   size_t idiv()       const; ///< get number of inactive discrete int vars
@@ -902,6 +963,11 @@ public:
   size_t idsv_start() const; ///< get start index of inactive discr string vars
   size_t idrv()       const; ///< get number of inactive discrete real vars
   size_t idrv_start() const; ///< get start index of inactive discrete real vars
+
+  size_t acv()        const; ///< get total number of continuous vars
+  size_t adiv()       const; ///< get total number of discrete int vars
+  size_t adsv()       const; ///< get total number of discrete string vars
+  size_t adrv()       const; ///< get total number of discrete real vars
 
   void cv(size_t ncv);         ///< set number of active continuous vars
   void cv_start(size_t cvs);   ///< set start index of active continuous vars
@@ -942,13 +1008,13 @@ inline SharedVariablesData::SharedVariablesData()
 
 inline SharedVariablesData::
 SharedVariablesData(const ProblemDescDB& problem_db,
-		    const std::pair<short,short>& view):
+		    const ShortShortPair& view):
   svdRep(new SharedVariablesDataRep(problem_db, view))
 { /* empty ctor */ }
 
 
 inline SharedVariablesData::
-SharedVariablesData(const std::pair<short,short>& view,
+SharedVariablesData(const ShortShortPair& view,
 		    const std::map<unsigned short, size_t>& vars_comps,
 		    const BitArray& all_relax_di, const BitArray& all_relax_dr):
   svdRep(new SharedVariablesDataRep(view, vars_comps, all_relax_di,
@@ -957,7 +1023,7 @@ SharedVariablesData(const std::pair<short,short>& view,
 
 
 inline SharedVariablesData::
-SharedVariablesData(const std::pair<short,short>& view,
+SharedVariablesData(const ShortShortPair& view,
 		    const SizetArray& vars_comps_totals,
 		    const BitArray& all_relax_di, const BitArray& all_relax_dr):
   svdRep(new SharedVariablesDataRep(view, vars_comps_totals, all_relax_di,
@@ -1184,6 +1250,14 @@ cdrv_index_to_all_index(size_t cdrv_index) const
 inline size_t SharedVariablesData::
 adrv_index_to_all_index(size_t adrv_index) const
 { return svdRep->drv_index_to_all_index(adrv_index, true, true, true, true); }
+
+
+inline BitArray SharedVariablesData::active_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->active_to_all_mask(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+}
 
 
 inline BitArray SharedVariablesData::cv_to_all_mask() const
@@ -1565,12 +1639,32 @@ inline size_t SharedVariablesData::vc_lookup(unsigned short key) const
 { return svdRep->vc_lookup(key); }
 
 
-inline const std::pair<short,short>& SharedVariablesData::view() const
+inline void SharedVariablesData::active_view(short view1) const
+{
+  if (svdRep->variablesView.first != view1) {
+    svdRep->variablesView.first = view1;
+    svdRep->initialize_active_components();
+    svdRep->initialize_active_start_counts();
+  }
+}
+
+
+inline void SharedVariablesData::inactive_view(short view2) const
+{
+  if (svdRep->variablesView.second != view2) {
+    svdRep->variablesView.second = view2;
+    svdRep->initialize_inactive_components();
+    svdRep->initialize_inactive_start_counts();
+  }
+}
+
+
+inline const ShortShortPair& SharedVariablesData::view() const
 { return svdRep->variablesView; }
 
 
-inline void SharedVariablesData::inactive_view(short view2)
-{ svdRep->variablesView.second = view2; }
+inline void SharedVariablesData::view(const ShortShortPair& view_pr) const
+{ active_view(view_pr.first); inactive_view(view_pr.second); }
 
 
 inline size_t SharedVariablesData::cv() const
@@ -1635,6 +1729,22 @@ inline size_t SharedVariablesData::idrv() const
 
 inline size_t SharedVariablesData::idrv_start() const
 { return svdRep->idrvStart; }
+
+
+inline size_t SharedVariablesData::acv() const
+{ return svdRep->acv(); }
+
+
+inline size_t SharedVariablesData::adiv() const
+{ return svdRep->adiv(); }
+
+
+inline size_t SharedVariablesData::adsv() const
+{ return svdRep->adsv(); }
+
+
+inline size_t SharedVariablesData::adrv() const
+{ return svdRep->adrv(); }
 
 
 inline void SharedVariablesData::cv(size_t ncv)
