@@ -193,8 +193,8 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     std::shared_ptr<DataTransformModel> dt_model_rep =
       std::static_pointer_cast<DataTransformModel>
       (dataTransformModel.model_rep());
-    dt_model_rep->print_best_responses(s, best_vars, 
-                                       bestResponseArray.front(), num_best, best_ind);
+    dt_model_rep->print_best_responses(s, best_vars, bestResponseArray.front(),
+				       num_best, best_ind);
   }
   else {
     // otherwise the residuals worked on are same size/type as the

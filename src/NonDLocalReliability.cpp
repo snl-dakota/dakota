@@ -200,7 +200,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // transform g_hat_x_model from x-space to u-space; truncate distrib bnds
     uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
-      g_hat_x_model, STD_NORMAL_U, orig_view, true));
+      g_hat_x_model, STD_NORMAL_U, true));
     break;
   }
   case SUBMETHOD_AMV_U:  case SUBMETHOD_AMV_PLUS_U:
@@ -210,7 +210,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     // Recast g(x) to G(u); truncate distribution bounds
     Model g_u_model;
     g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-      iteratedModel, STD_NORMAL_U, orig_view, true));
+      iteratedModel, STD_NORMAL_U, true));
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
@@ -234,7 +234,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   case SUBMETHOD_NO_APPROX: { // Recast( iteratedModel )
     // Recast g(x) to G(u); truncate distribution bounds
     uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
-      iteratedModel, STD_NORMAL_U, orig_view, true));
+      iteratedModel, STD_NORMAL_U, true));
     // detect PMA2 condition and augment mppModel data requirements
     bool pma2_flag = false;
     if (integrationOrder == 2)
@@ -351,7 +351,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     case SUBMETHOD_TANA_X: case SUBMETHOD_QMEA_X: {
       Model g_u_model;
       g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-	iteratedModel, STD_NORMAL_U, orig_view)); // original dist bnds
+	iteratedModel, STD_NORMAL_U)); // original dist bnds
       import_sampler_rep = std::make_shared<NonDAdaptImpSampling>(g_u_model,
 	sample_type, refine_samples, refine_seed, rng, vary_pattern,
 	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,

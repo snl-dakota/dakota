@@ -82,8 +82,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType, iteratedModel.current_variables().view()));
-    // retain dist bounds
+    iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -185,8 +184,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType, iteratedModel.current_variables().view()));
-    // retain dist bounds
+    iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -270,8 +268,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType, iteratedModel.current_variables().view()));
-    // retain dist bounds
+    iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -346,13 +343,8 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   // view --> numContinuousVars, allVars, etc., resulting in use of functions
   // like mean(x), etc., when appropriate.  This view is retained for g_u_model
   // and uSpaceModel w/o inducing any additional mappings.
-  // > Note: including alternate view w/i Recast also allows prob transform
-  //   to operate on inactive state prior to emulation (see ProbTransformModel::
-  //   initialize_distribution_types(): "inactive vars are not transformed"
-  //   (u_types[i] = x_types[i])
-  // > default param list value retains distribution bounds
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType, approx_view));
+    iteratedModel, uSpaceType)); // retain dist bounds
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -711,8 +703,7 @@ bool NonDPolynomialChaos::resize()
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType, iteratedModel.current_variables().view()));
-    // retain dist bounds
+    iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
