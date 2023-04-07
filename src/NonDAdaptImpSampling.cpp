@@ -623,7 +623,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
       = uSpaceModel.current_variables().shared_data();
     RealRealPair u_bnds;
     for (i=0, j=startCAUV; i<numCAUV; ++i, ++j) {
-      u_bnds = u_dist.distribution_bounds(svd.cv_index_to_active_index(j));
+      u_bnds = u_dist.distribution_bounds(svd.cv_index_to_all_index(j));
       n_l_bnds[i] = u_bnds.first;  n_u_bnds[i] = u_bnds.second;
     }
   }
@@ -852,7 +852,6 @@ recentered_density(const RealVector& sample_point,
     const RealVector& rep_pt_i = repPointsU[i];
     for (j=0; j<numCAUV; ++j) {
       const RealRealPair& bnds_j = cauv_u_bnds[j];
-      Cout << "j = " << j << " bnds_j: " << bnds_j.first << ", " << bnds_j.second << std::endl;
       rep_pdf *= Pecos::BoundedNormalRandomVariable::pdf(sample_point[j],
 	rep_pt_i[j], stdev, bnds_j.first, bnds_j.second);
     }
