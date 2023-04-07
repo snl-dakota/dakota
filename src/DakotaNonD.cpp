@@ -118,7 +118,8 @@ void NonD::initialize_counts()
   //short active_view = vars.view().first;
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
   // convenience looping bounds
-  startCAUV = ac_totals[TOTAL_CDV];  numCAUV = ac_totals[TOTAL_CAUV];
+  startCAUV = ac_totals[TOTAL_CDV];
+  numCAUV   = ac_totals[TOTAL_CAUV];
   // stats type
   epistemicStats = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
 		    ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
