@@ -80,7 +80,7 @@ ExperimentData(size_t num_experiments,
   size_and_fill(svd_copy, numExperiments, allConfigVars);
 
   for (size_t i=0; i<numExperiments; ++i) {
-    allConfigVars[i].inactive_from_active(config_vars[i]);
+    allConfigVars[i].active_to_inactive_variables(config_vars[i]);
     if (outputLevel >= DEBUG_OUTPUT) {
       Cout << "allConfigVars[" << i << "] = \n";
       allConfigVars[i].write(Cout, INACTIVE_VARS);
@@ -288,7 +288,7 @@ add_data(const SharedVariablesData& svd, const Variables& one_configvars,
   svd_copy.inactive_view(MIXED_STATE);
 
   allConfigVars.push_back(Variables(svd_copy));
-  allConfigVars.back().inactive_from_active(one_configvars);
+  allConfigVars.back().active_to_inactive_variables(one_configvars);
 
   SharedResponseData exp_srd = one_response.shared_data().copy();
   exp_srd.response_type(EXPERIMENT_RESPONSE);

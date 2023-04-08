@@ -785,10 +785,11 @@ nonhierarch_numerical_solution(const RealVector& cost,
 	UShortArray approx_order; // empty
 	ActiveSet dfs_set = adapt_model.current_response().active_set();// copy
 	dfs_set.request_values(1);
-	sub_prob_model = DataFitSurrModel(dace_iterator, adapt_model, dfs_set,
-					  approx_type, approx_order, corr_type,
-					  corr_order, data_order, SILENT_OUTPUT,
-					  point_reuse);
+	const ShortShortPair& dfs_view = adapt_model.current_variables().view();
+	sub_prob_model.assign_rep(std::make_shared<DataFitSurrModel>(
+	  dace_iterator, adapt_model, dfs_set, dfs_view, approx_type,
+	  approx_order, corr_type, corr_order, data_order, SILENT_OUTPUT,
+	  point_reuse));
       }
       else
 	sub_prob_model = adapt_model;
@@ -1072,12 +1073,12 @@ Real NonDNonHierarchSampling::nonlinear_cost(const RealVector& r_and_N)
     approx_inner_prod += sequenceCost[i] * r_and_N[i]; //       Sum(c_i r_i)
   approx_inner_prod /= sequenceCost[numApprox];        //       Sum(w_i r_i)
 
-  Real nln_con
+  Real nln_cost
     = r_and_N[numApprox] * (1. + approx_inner_prod); // N ( 1 + Sum(w_i r_i) )
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "nonlinear cost: design vars:\n" << r_and_N
-	 << "cost = " << nln_con << std::endl;
-  return nln_con;
+	 << "cost = " << nln_cost << std::endl;
+  return nln_cost;
 }
 
 

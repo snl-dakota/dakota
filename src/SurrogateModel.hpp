@@ -46,9 +46,11 @@ protected:
   SurrogateModel(ProblemDescDB& problem_db);
   /// alternate constructor
   SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+		 const ShortShortPair& surr_view,
 		 const SharedVariablesData& svd, bool share_svd,
 		 const SharedResponseData&  srd, bool share_srd,
-		 const ActiveSet& set, short corr_type, short output_level);
+		 const ActiveSet& surr_set, short corr_type,
+		 short output_level);
   /// destructor
   ~SurrogateModel();
 
@@ -60,6 +62,9 @@ protected:
 
   void activate_distribution_parameter_derivatives();
   void deactivate_distribution_parameter_derivatives();
+
+  void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
+  void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
 
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 			 const RealVector& x_vars);
@@ -140,8 +145,8 @@ protected:
   /// per set of evaluations (e.g., an outer iterator execution)
   void init_model_inactive_labels(Model& model);
 
-  /// update model with active variable values/bounds data
-  void update_model_active_variables(Model& model);
+  /// update incoming (sub-)model with active bounds from userDefinedConstraints
+  void update_model_active_constraints(Model& model);
   /// update model with random variable distribution data
   void update_model_distributions(Model& model);
 
@@ -256,6 +261,16 @@ inline void SurrogateModel::activate_distribution_parameter_derivatives()
 
 inline void SurrogateModel::deactivate_distribution_parameter_derivatives()
 { truth_model().deactivate_distribution_parameter_derivatives(); }
+
+
+inline void SurrogateModel::
+trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars)
+{ truth_model().trans_X_to_U(x_c_vars, u_c_vars); }
+
+
+inline void SurrogateModel::
+trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars)
+{ truth_model().trans_U_to_X(u_c_vars, x_c_vars); }
 
 
 inline void SurrogateModel::

@@ -60,7 +60,7 @@ Minimizer(ProblemDescDB& problem_db, Model& model,
   scaleFlag(probDescDB.get_bool("method.scaling"))
 {
   iteratedModel = model;
-  update_from_model(iteratedModel); // variable/response counts & checks
+  update_from_model(iteratedModel); // variable,response counts & checks
 
   // Re-assign Iterator defaults specialized to Minimizer branch
   // DataMethod defaults are assigned a special value of SZ_MAX, for
@@ -229,16 +229,16 @@ void Minimizer::update_from_model(const Model& model)
       ( methodName == OPTPP_CG || methodName == OPTPP_PDS ||
         methodName == COLINY_SOLIS_WETS ))) {
     Cerr << "\nError: linear equality constraints not currently supported by "
-   << method_enum_to_string(methodName) << ".\n       Please select a "
-   << "different method." << std::endl;
+	 << method_enum_to_string(methodName) << ".\n       Please select a "
+	 << "different method." << std::endl;
     err_flag = true;
   }
   if ( numLinearIneqConstraints && (!traits()->supports_linear_inequality() ||
       ( methodName == OPTPP_CG || methodName == OPTPP_PDS ||
         methodName == COLINY_SOLIS_WETS ))) {
     Cerr << "\nError: linear inequality constraints not currently supported by "
-   << method_enum_to_string(methodName) << ".\n       Please select a "
-   << "different method." << std::endl;
+	 << method_enum_to_string(methodName) << ".\n       Please select a "
+	 << "different method." << std::endl;
     err_flag = true;
   }
 
@@ -248,15 +248,16 @@ void Minimizer::update_from_model(const Model& model)
   if ( numNonlinearEqConstraints && (!traits()->supports_nonlinear_equality() ||
       ( methodName == OPTPP_CG || methodName == OPTPP_PDS))) {
     Cerr << "\nError: nonlinear equality constraints not currently supported by "
-   << method_enum_to_string(methodName) << ".\n       Please select a "
-   << "different method." << std::endl;
+	 << method_enum_to_string(methodName) << ".\n       Please select a "
+	 << "different method." << std::endl;
     err_flag = true;
   }
-  if ( numNonlinearIneqConstraints && (!traits()->supports_nonlinear_inequality() ||
+  if ( numNonlinearIneqConstraints &&
+       (!traits()->supports_nonlinear_inequality() ||
       ( methodName == OPTPP_CG || methodName == OPTPP_PDS))) {
     Cerr << "\nError: nonlinear inequality constraints not currently supported by "
-   << method_enum_to_string(methodName) << ".\n       Please select a "
-   << "different method." << std::endl;
+	 << method_enum_to_string(methodName) << ".\n       Please select a "
+	 << "different method." << std::endl;
     err_flag = true;
   }
 
@@ -423,8 +424,8 @@ void Minimizer::data_transform_model()
 	 << "experiment\nconfigurations, the returned constraint values must be"
 	 << " the same across\nconfigurations." << std::endl;
 
-  iteratedModel.
-    assign_rep(std::make_shared<DataTransformModel>(iteratedModel, expData));
+  iteratedModel.assign_rep(std::make_shared<DataTransformModel>(
+    iteratedModel, expData, iteratedModel.current_variables().view()));
   ++myModelLayers;
   dataTransformModel = iteratedModel;
 

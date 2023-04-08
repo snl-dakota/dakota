@@ -29,6 +29,7 @@ public class FeatureDelta implements Comparable<FeatureDelta> {
 	
 	public List<PluginDelta> plugins = new ArrayList<>();
 	public List<PluginDelta> childFeatures = new ArrayList<>(); // Child features are treated as plugin objects
+	public List<FragmentDelta> fragments = new ArrayList<>();
 	
 	public List<PluginDelta> recordNewPlugins = new ArrayList<>();
 	public List<PluginDelta> recordUpdatedPlugins = new ArrayList<>();
@@ -115,18 +116,22 @@ public class FeatureDelta implements Comparable<FeatureDelta> {
 						versionNumber = versionWithQualifier.replace("\"", "");
 					}
 					
-					PluginDelta originalPlugin;
+					PluginDelta originalPlugin = null;
+					FragmentDelta originalFragment = null;
 					if(isFragment) {
-						originalPlugin = new FragmentDelta(currentId, versionNumber, versionNumber);
-						((FragmentDelta)originalPlugin).os = fragmentOS;
-						((FragmentDelta)originalPlugin).ws = fragmentWS;
-						((FragmentDelta)originalPlugin).arch = fragmentArch;
+						originalFragment = new FragmentDelta(currentId, versionNumber, versionNumber);
+						originalFragment.os = fragmentOS;
+						originalFragment.ws = fragmentWS;
+						originalFragment.arch = fragmentArch;
+						originalFragment.useQualifier = useQualifier;
 					} else {
 						originalPlugin = new PluginDelta(currentId, versionNumber, versionNumber);
+						originalPlugin.useQualifier = useQualifier;
 					}
-					originalPlugin.useQualifier = useQualifier;
+					
 					if(inPluginSection) {
-						plugins.add(originalPlugin);
+						if(isFragment && originalFragment != null) fragments.add(originalFragment);
+						else if(originalPlugin != null) plugins.add(originalPlugin);
 					} else if(inChildFeatureSection) {
 						childFeatures.add(originalPlugin);
 					}
@@ -149,6 +154,17 @@ public class FeatureDelta implements Comparable<FeatureDelta> {
 		for(PluginDelta plugin : plugins) {
 			for(PluginDelta updatedPlugin : updatedPlugins) {
 				if(plugin.name.equals(updatedPlugin.name)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean doesHaveUpdatedFragments(Collection<PluginDelta> updatedPlugins) {
+		for(FragmentDelta fragment : fragments) {
+			for(PluginDelta updatedPlugin : updatedPlugins) {
+				if(updatedPlugin instanceof FragmentDelta && fragment.name.equals(((FragmentDelta)updatedPlugin).name)) {
 					return true;
 				}
 			}

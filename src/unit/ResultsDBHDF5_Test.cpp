@@ -10,7 +10,7 @@
 // #if 0 // comment to make this file active
 #ifdef DAKOTA_HAVE_HDF5
 
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 
 #define BOOST_TEST_MODULE dakota_ResultsDBHDF5_Test
 #include <boost/test/included/unit_test.hpp>

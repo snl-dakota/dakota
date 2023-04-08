@@ -244,6 +244,11 @@ public:
   /// deactivate derivative setting w.r.t. distribution parameters
   virtual void deactivate_distribution_parameter_derivatives();
 
+  /// transform u-space variable values to x-space
+  virtual void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
+  /// transform x-space variable values to u-space
+  virtual void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
+
   /// transform x-space gradient vector to u-space
   virtual void trans_grad_X_to_U(const RealVector& fn_grad_x,
 				 RealVector& fn_grad_u,
@@ -483,7 +488,9 @@ public:
   virtual void derived_auto_graphics(const Variables& vars,
 				     const Response& resp);
 
-  /// update the Model's inactive view based on higher level (nested) context
+  /// update the Model's active view based on a higher level context
+  virtual void active_view(short view, bool recurse_flag = true);
+  /// update the Model's inactive view based on a higher level context
   virtual void inactive_view(short view, bool recurse_flag = true);
 
   /// return the interface identifier
@@ -825,6 +832,9 @@ public:
   StringMultiArrayConstView discrete_real_variable_labels()   const;
   /// set the active discrete variable labels in currentVariables
   void discrete_real_variable_labels(StringMultiArrayConstView d_v_labels);
+  /// Return labels of all active variables in "input spec" order
+  StringArray ordered_labels() const;
+
 
   /// return the inactive continuous variable labels in currentVariables
   StringMultiArrayConstView inactive_continuous_variable_labels() const;
@@ -846,6 +856,9 @@ public:
   /// set the inactive discrete variable labels in currentVariables
   void inactive_discrete_real_variable_labels(
     StringMultiArrayConstView i_d_v_labels);
+  /// Return labels of all inactive variables in "input spec" order
+  StringArray inactive_ordered_labels() const;
+
 
   /// return all continuous variable labels in currentVariables
   StringMultiArrayConstView all_continuous_variable_labels() const;
@@ -875,6 +888,9 @@ public:
     StringMultiArrayConstView a_d_v_labels);
   /// set a label within the all discrete labels in currentVariables
   void all_discrete_real_variable_label(const String& a_d_v_label, size_t i);
+  /// Return labels of all variables in "input spec" order
+  StringArray all_ordered_labels() const;
+
 
   /// return the response labels from currentResponse
   const StringArray& response_labels() const;
@@ -1003,8 +1019,8 @@ public:
   // CONSTRAINTS
 
   /// reshape the linear/nonlinear constraint arrays
-  void reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
-			   size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
+  //void reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+  //			     size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
 
   // LINEAR CONSTRAINTS
 
@@ -1068,8 +1084,12 @@ public:
   /// return the current variables (currentVariables) in mutable form
   /// (special cases)
   Variables& current_variables();
-  /// return the user-defined constraints (userDefinedConstraints)
+  /// return the user-defined constraints (userDefinedConstraints) as const
+  /// reference (preferred)
   const Constraints& user_defined_constraints() const;
+  /// return the user-defined constraints (userDefinedConstraints) in
+  /// mutable form (special cases)
+  Constraints& user_defined_constraints();
   /// return the current response (currentResponse)
   const Response& current_response() const;
   /// return the problem description database (probDescDB)
@@ -1235,7 +1255,8 @@ protected:
 
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
-  Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
+  Model(LightWtBaseConstructor, const ShortShortPair& vars_view,
+	const SharedVariablesData& svd, bool share_svd,
 	const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
 	short output_level, ProblemDescDB& problem_db = dummy_db,
 	ParallelLibrary& parallel_lib = dummy_lib);
@@ -1277,6 +1298,9 @@ protected:
   //- Heading: Member functions
   //
 
+  /// update incoming (sub-)model with active values from currentVariables
+  void update_model_active_variables(Model& model);
+
   /// return responseMap
   IntResponseMap& response_map();
 
@@ -1288,6 +1312,8 @@ protected:
   /// initialize distribution types from problemDescDB
   void initialize_distribution(
     Pecos::MultivariateDistribution& mv_dist, bool active_only = false);
+  /// initialize distribution types from problemDescDB
+  void initialize_active_types(Pecos::MultivariateDistribution& mv_dist);
   /// initialize distribution parameters from problemDescDB
   void initialize_distribution_parameters(
     Pecos::MultivariateDistribution& mv_dist, bool active_only = false);
@@ -1411,7 +1437,7 @@ protected:
   /// type of finite difference step to use for numerical gradient:
   /// relative - step length is relative to x
   /// absolute - step length is what is specified
-  /// bounds - step length is relative to range of x
+  /// bounds   - step length is relative to range of x
   String fdGradStepType;
   /// relative finite difference step size for numerical Hessians estimated 
   /// using first-order differences of gradients
@@ -1424,7 +1450,7 @@ protected:
   /// type of finite difference step to use for numerical Hessian:
   /// relative - step length is relative to x
   /// absolute - step length is what is specified
-  /// bounds - step length is relative to range of x
+  /// bounds   - step length is relative to range of x
   String fdHessStepType;
 
   /// option to ignore bounds when computing finite diffs
@@ -2679,6 +2705,34 @@ all_discrete_real_variable_label(const String& a_d_v_label, size_t i)
     currentVariables.all_discrete_real_variable_label(a_d_v_label, i);
 }
 
+inline StringArray Model::
+ordered_labels() const
+{
+  if (modelRep)
+    return modelRep->currentVariables.ordered_labels(ACTIVE_VARS);
+  else
+    return currentVariables.ordered_labels(ACTIVE_VARS);
+}
+
+inline StringArray Model::
+inactive_ordered_labels() const
+{
+  if (modelRep)
+    return modelRep->currentVariables.ordered_labels(INACTIVE_VARS);
+  else
+    return currentVariables.ordered_labels(INACTIVE_VARS);
+}
+
+inline StringArray Model::
+all_ordered_labels() const
+{
+  if (modelRep)
+    return modelRep->currentVariables.ordered_labels(ALL_VARS);
+  else
+    return currentVariables.ordered_labels(ALL_VARS);
+}
+
+
 
 inline size_t Model::response_size() const
 {
@@ -3285,18 +3339,20 @@ inline void Model::all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i)
 }
 
 
+/*
 inline void
 Model::reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 			   size_t num_lin_ineq_cons, size_t num_lin_eq_cons)
 {
   if (modelRep)
-    modelRep->
-      userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
-				     num_lin_ineq_cons, num_lin_eq_cons);
-  else
-    userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
-				   num_lin_ineq_cons, num_lin_eq_cons);
+    modelRep->reshape_constraints(num_nln_ineq_cons, num_nln_eq_cons,
+				  num_lin_ineq_cons, num_lin_eq_cons);
+  else {
+    userDefinedConstraints.reshape_nonlinear(num_nln_ineq_cons,num_nln_eq_cons);
+    userDefinedConstraints.reshape_linear(num_lin_ineq_cons, num_lin_eq_cons);
+  }
 }
+*/
 
 
 inline size_t Model::num_linear_ineq_constraints() const
@@ -3502,6 +3558,13 @@ inline Variables& Model::current_variables()
 
 
 inline const Constraints& Model::user_defined_constraints() const
+{
+  return (modelRep) ? modelRep->userDefinedConstraints
+                    : userDefinedConstraints;
+}
+
+
+inline Constraints& Model::user_defined_constraints()
 {
   return (modelRep) ? modelRep->userDefinedConstraints
                     : userDefinedConstraints;

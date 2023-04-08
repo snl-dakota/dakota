@@ -66,6 +66,9 @@ protected:
   Analyzer(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for instantiations "on the fly" with a Model
   Analyzer(unsigned short method_name, Model& model);
+  /// alternate constructor for instantiations "on the fly" with a Model
+  Analyzer(unsigned short method_name, Model& model,
+	   const ShortShortPair& view_override);
   /// alternate constructor for instantiations "on the fly" without a Model
   Analyzer(unsigned short method_name);
   /// destructor
@@ -204,6 +207,9 @@ private:
   //
   //- Heading: Convenience functions
   //
+
+  /// layer a RecastModel on top of iteratedModel to enact a view override
+  void recast_model_view(const ShortShortPair& view_override);
 
   /// compares current evaluation to best evaluation and updates best
   void compute_best_metrics(const Response& response,

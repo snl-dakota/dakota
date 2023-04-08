@@ -13,7 +13,7 @@
 #include "SimulationResponse.hpp"
 
 #ifdef _WIN32
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 #endif
 
 #define BOOST_TEST_MODULE dakota_restart_test

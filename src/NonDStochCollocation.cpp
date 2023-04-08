@@ -45,8 +45,8 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, u_space_type)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -68,19 +68,19 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1, corr_type = NO_CORRECTION;
+  short corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
   const ActiveSet& recast_set = g_u_model.current_response().active_set();
   // DFSModel: consume any QoI aggregation; support surrogate grad evals at most
-  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
-  ActiveSet sc_set(asv, recast_set.derivative_vector());
+  ShortArray sc_asv(g_u_model.qoi(), 3); // for stand alone mode
+  ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
+  const ShortShortPair& sc_view = g_u_model.current_variables().view();
   String empty_str; // build data import not supported for structured grids
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
-    (u_space_sampler, g_u_model,
-     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
-     outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED, false,
-     probDescDB.get_string("method.export_approx_points_file"),
-     probDescDB.get_ushort("method.export_approx_format")));
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED,
+    false, probDescDB.get_string("method.export_approx_points_file"),
+    probDescDB.get_ushort("method.export_approx_format")));
   initialize_u_space_model();
 
   // -------------------------------
@@ -109,9 +109,10 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     short refine_control, short covar_control,
 		     short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, dim_pref, 0,
-		refine_type, refine_control, covar_control, 0., rule_nest,
-		rule_growth, piecewise_basis, use_derivs)
+  NonDExpansion(STOCH_COLLOCATION, model, model.current_variables().view(),
+		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
+		covar_control, 0., rule_nest, rule_growth, piecewise_basis,
+		use_derivs)
   // Note: non-zero seed would be needed for expansionSampler, if defined
 {
   // ----------------
@@ -124,8 +125,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, u_space_type)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -145,17 +146,17 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1, corr_type = NO_CORRECTION;
+  short corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
   const ActiveSet& recast_set = g_u_model.current_response().active_set();
   // DFSModel: consume any QoI aggregation.
   // TO DO: support surrogate Hessians in helper mode.
-  ShortArray asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
-  ActiveSet sc_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
-    (u_space_sampler, g_u_model,
-     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
-     outputLevel, pt_reuse));
+  ShortArray sc_asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
+  ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
+  const ShortShortPair& sc_view = g_u_model.current_variables().view();
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse));
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -182,9 +183,10 @@ NonDStochCollocation(unsigned short method_name, Model& model,
 		     short covar_control, short ml_alloc_control,
 		     short ml_discrep, short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, 0,
-		refine_type, refine_control, covar_control, 0., rule_nest,
-		rule_growth, piecewise_basis, use_derivs)
+  NonDExpansion(method_name, model, model.current_variables().view(),
+		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
+		covar_control, 0., rule_nest, rule_growth, piecewise_basis,
+		use_derivs)
 {
   multilevAllocControl     = ml_alloc_control;
   multilevDiscrepEmulation = ml_discrep;

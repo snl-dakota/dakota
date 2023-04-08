@@ -76,7 +76,7 @@ Running Dakota Remotely
    runningremote/JobSubmissionOverview
    runningremote/JobSubmissionDosAndDonts
    runningremote/JobSubmissionWorkflow
-   runningremote/JobSubmissionClassic
+   runningremote/JobSubmissionClassic/JobSubmissionClassicMain
    
 ==================
 Output from Dakota

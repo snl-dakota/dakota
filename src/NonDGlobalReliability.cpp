@@ -162,7 +162,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
 
   //int symbols = samples; // symbols needed for DDACE
   Iterator dace_iterator;
-  // instantiate the Nataf ProbabilityTransform and GP DataFit recursions
+  // instantiate the ProbabilityTransform and GP DataFit recursions
   if (mppSearchType == SUBMETHOD_EGRA_X) { // Recast( DataFit( iteratedModel ) )
 
     // The following uses on the fly derived ctor:
@@ -191,10 +191,10 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     //const Variables& curr_vars = iteratedModel.current_variables();
     ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
     gp_set.request_values(1);// no surr deriv evals, but GP may be grad-enhanced
-    g_hat_x_model.assign_rep(std::make_shared<DataFitSurrModel>
-      (dace_iterator, iteratedModel,
-       gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
-      outputLevel, sample_reuse, import_pts_file,
+    const ShortShortPair& gp_view = iteratedModel.current_variables().view();
+    g_hat_x_model.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+      iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
+      corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
        probDescDB.get_ushort("method.import_build_format"),
        probDescDB.get_bool("method.import_build_active_only"),
        probDescDB.get_string("method.export_approx_points_file"),
@@ -202,30 +202,35 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
     if (approx_type == "global_exp_gauss_proc") {
+#ifdef HAVE_DAKOTA_SURROGATES
       String advanced_options_file
           = problem_db.get_string("method.advanced_options_file");
       if (!advanced_options_file.empty())
         set_model_gp_options(g_hat_x_model, advanced_options_file);
+#else
+    Cerr << "\nError: global_reliability does not support global_exp_gauss_proc "
+         << "when Dakota is built without DAKOTA_MODULE_SURROGATES enabled." << std::endl;
+    abort_handler(METHOD_ERROR);
+#endif
     }
 
     // Recast g-hat(x) to G-hat(u); truncate dist bnds
-    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>
-			   (g_hat_x_model, STD_NORMAL_U, true, 5.));
+    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
+      g_hat_x_model, STD_NORMAL_U, true, 5.));
   }
   else { // DataFit( Recast( iteratedModel ) )
 
     // Recast g(x) to G(u); truncate dist bnds
     Model g_u_model;
-    g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-			 (iteratedModel, STD_NORMAL_U, true, 5.));
+    g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+      iteratedModel, STD_NORMAL_U, true, 5.));
 
     // For additional generality, could develop on the fly envelope ctor:
     //Iterator dace_iterator(g_u_model, dace_method, ...);
 
     // The following use on-the-fly derived ctors:
-    auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>
-      (g_u_model, sample_type,
-       samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
+    auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>(g_u_model,
+      sample_type, samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
     //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
     //lhs_sampler_rep = new DDACEDesignCompExp(g_u_model, samples, symbols,
     //                                         lhs_seed, dace_method);
@@ -249,10 +254,10 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     //const Variables& g_u_vars = g_u_model.current_variables();
     ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
     gp_set.request_values(1);// no surr deriv evals, but GP may be grad-enhanced
-    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
-      (dace_iterator, g_u_model,
-       gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
-       outputLevel, sample_reuse, import_pts_file,
+    const ShortShortPair& gp_view = g_u_model.current_variables().view();
+    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+       g_u_model, gp_set, gp_view, approx_type, approx_order, corr_type,
+       corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
        probDescDB.get_ushort("method.import_build_format"),
        probDescDB.get_bool("method.import_build_active_only"),
        probDescDB.get_string("method.export_approx_points_file"),
@@ -260,10 +265,16 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
 
     if (approx_type == "global_exp_gauss_proc") {
+#ifdef HAVE_DAKOTA_SURROGATES
       String advanced_options_file
           = problem_db.get_string("method.advanced_options_file");
       if (!advanced_options_file.empty())
         set_model_gp_options(uSpaceModel, advanced_options_file);
+#else
+      Cerr << "\nError: global_reliability does not support global_exp_gauss_proc "
+           << "when Dakota is built without DAKOTA_MODULE_SURROGATES enabled." << std::endl;
+      abort_handler(METHOD_ERROR);
+#endif
     }
   }
 
@@ -289,9 +300,10 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 1; // nongradient-based optimizers
+  const ShortShortPair& mpp_view = iteratedModel.current_variables().view();
   mppModel.assign_rep(std::make_shared<RecastModel>
 		      (uSpaceModel, recast_vars_comps_total, all_relax_di,
-		       all_relax_dr, 1, 0, 0, recast_resp_order));
+		       all_relax_dr, mpp_view, 1, 0, 0, recast_resp_order));
 
   // For formulations with one objective and one equality constraint,
   // use the following instead:
@@ -457,11 +469,9 @@ void NonDGlobalReliability::optimize_gaussian_process()
     //   DataFitSurrModel::update_actual_model()
     // Note: since u-space type is STD_NORMAL_U, u-space aleatory variables
     //   are all unbounded and global bounds are set to +/-5.
-    Pecos::ProbabilityTransformation& nataf
-      = uSpaceModel.probability_transformation();
     RealVector x_l_bnds, x_u_bnds;
-    nataf.trans_U_to_X(uSpaceModel.continuous_lower_bounds(), x_l_bnds);
-    nataf.trans_U_to_X(uSpaceModel.continuous_upper_bounds(), x_u_bnds);
+    uSpaceModel.trans_U_to_X(uSpaceModel.continuous_lower_bounds(), x_l_bnds);
+    uSpaceModel.trans_U_to_X(uSpaceModel.continuous_upper_bounds(), x_u_bnds);
     Model& g_hat_x_model = uSpaceModel.subordinate_model();
     g_hat_x_model.continuous_lower_bounds(x_l_bnds);
     g_hat_x_model.continuous_upper_bounds(x_u_bnds);
@@ -701,7 +711,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	
 	if (mppSearchType == SUBMETHOD_EGRA_X) {
 	  RealVector sams_u(num_vars);
-	  uSpaceModel.probability_transformation().trans_X_to_U(sams,sams_u);
+	  uSpaceModel.trans_X_to_U(sams,sams_u);
 	  
 	  samsOut << '\n';
 	  for (size_t j=0; j<num_vars; j++)
@@ -1033,8 +1043,7 @@ void NonDGlobalReliability::get_best_sample()
     true_vars_x_cv = Teuchos::getCol(Teuchos::View,
       const_cast<RealMatrix&>(true_vars_x), (int)i);
     if (mppSearchType == SUBMETHOD_EGRA_X)
-      uSpaceModel.probability_transformation().trans_X_to_U(true_vars_x_cv,
-							    true_c_vars_u[i]);
+      uSpaceModel.trans_X_to_U(true_vars_x_cv, true_c_vars_u[i]);
     else
       true_c_vars_u[i] = true_vars_x_cv; // view OK
   }

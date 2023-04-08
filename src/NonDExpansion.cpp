@@ -95,11 +95,13 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
 NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
-	      short exp_coeffs_approach, const RealVector& dim_pref, int seed,
-	      short refine_type, short refine_control, short covar_control,
-	      Real colloc_ratio, short rule_nest, short rule_growth,
-	      bool piecewise_basis, bool use_derivs):
-  NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
+	      const ShortShortPair& approx_view, short exp_coeffs_approach,
+	      const RealVector& dim_pref, int seed, short refine_type,
+	      short refine_control, short covar_control, Real colloc_ratio,
+	      short rule_nest, short rule_growth, bool piecewise_basis,
+	      bool use_derivs):
+  NonD(method_name, model, approx_view),
+  expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
   statsMetricMode(Pecos::DEFAULT_EXPANSION_STATS), relativeMetric(true),
   dimPrefSpec(dim_pref), collocRatio(colloc_ratio), termsOrder(1.),
@@ -667,7 +669,7 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
     // (goal-oriented) adaptivity.
     exp_sampler_rep = std::make_shared<NonDLHSSampling>
       (uSpaceModel, sample_type, numSamplesOnExpansion,
-       first_seed(), rng, false, ALEATORY_UNCERTAIN);
+       first_seed(), rng, false, ALEATORY_UNCERTAIN);//ALL); *** HACK: ALEATORY_UNCERTAIN needed for aleatory stats but can we adopt the PCE view in cases of approx sample export (potentially resetting after numerical stats eval?)
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
     // needs to precede exp_sampler_rep->requested_levels()
@@ -784,8 +786,7 @@ void NonDExpansion::initialize_expansion()
   // are invariant in std distribution cases despite updates from above).
   initialPtU.size(numContinuousVars);
   if (allVars)
-    uSpaceModel.probability_transformation().trans_X_to_U(
-      iteratedModel.continuous_variables(), initialPtU);
+    uSpaceModel.trans_X_to_U(iteratedModel.continuous_variables(), initialPtU);
   RealVector u_means = uSpaceModel.multivariate_distribution().means();
   //const SharedVariablesData& svd
   //  = iteratedModel.current_variables().shared_data();
@@ -798,8 +799,7 @@ void NonDExpansion::initialize_expansion()
       numUncertainQuant == 0) {
     std::shared_ptr<NonDSampling> exp_sampler_rep =
       std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
-    exp_sampler_rep->
-      transform_samples(uSpaceModel.probability_transformation());
+    exp_sampler_rep->transform_samples(iteratedModel, uSpaceModel);// src,target
   }
 }
 
@@ -807,11 +807,11 @@ void NonDExpansion::initialize_expansion()
 void NonDExpansion::compute_expansion()
 {
 #ifdef DERIV_DEBUG
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
   // numerical verification of analytic Jacobian/Hessian routines
   RealVector rdv_u;
-  nataf.trans_X_to_U(iteratedModel.continuous_variables(), rdv_u);
+  uSpaceModel.trans_X_to_U(iteratedModel.continuous_variables(), rdv_u);
+  Pecos::ProbabilityTransformation& nataf
+    = uSpaceModel.probability_transformation();
   nataf.verify_trans_jacobian_hessian(rdv_u);//(rdv_x);
   nataf.verify_design_jacobian(rdv_u);
 #endif // DERIV_DEBUG
@@ -3590,15 +3590,21 @@ void NonDExpansion::archive_moments()
 	  
     if (exp_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
+
       for (int i = 0; i < numFunctions; ++i) {
         DimScaleMap scales;
         scales.emplace(0, StringScale("moments", 
                              {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
                              ScaleScope::SHARED));
-        // extract column or row of moment_stats
+        RealVector moments;
+        if(finalMomentsType == Pecos::CENTRAL_MOMENTS) {
+          moments = poly_approxs[i].expansion_moments();
+        } else {
+          Pecos::PolynomialApproximation::standardize_moments(poly_approxs[i].expansion_moments(), moments);
+        }
         resultsDB.insert(run_identifier(), {String("expansion_moments"),
             iteratedModel.response_labels()[i]},
-            Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&exp_matrix), i),
+            moments,
             scales);
       }
     }
@@ -3612,12 +3618,16 @@ void NonDExpansion::archive_moments()
             StringScale("moments",
             {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
             ScaleScope::SHARED));
-        // extract column or row of moment_stats
+        RealVector moments;
+        if(finalMomentsType == Pecos::CENTRAL_MOMENTS) {
+          moments = poly_approxs[i].numerical_integration_moments();
+        } else {
+          Pecos::PolynomialApproximation::standardize_moments(poly_approxs[i].numerical_integration_moments(), moments);
+        }
         resultsDB.insert(run_identifier(), {String("integration_moments"),
             iteratedModel.response_labels()[i]},
-            Teuchos::getCol<int,double>(Teuchos::View,
-					*const_cast<RealMatrix*>(&num_matrix),
-					i), scales);
+            moments,
+	    scales);
       }
     }
   }
@@ -3813,10 +3823,10 @@ void NonDExpansion::update_final_statistics_gradients()
       = finalStatistics.active_set_derivative_vector();
     const std::vector<Pecos::RandomVariable>& x_ran_vars
       = iteratedModel.multivariate_distribution().random_variables();
-    Pecos::ProbabilityTransformation& nataf
-      = uSpaceModel.probability_transformation();
+    //Pecos::ProbabilityTransformation& nataf
+    //  = uSpaceModel.probability_transformation();
 
-    RealVector init_x;  nataf.trans_U_to_X(initialPtU, init_x);
+    RealVector init_x;  uSpaceModel.trans_U_to_X(initialPtU, init_x);
     RealMatrix final_stat_grads = finalStatistics.function_gradients_view();
     int num_final_stats = final_stat_grads.numCols();  Real z, x, factor;
     size_t num_final_grad_vars = final_dvv.size(), i, j, rv_index, deriv_j,
@@ -3839,8 +3849,6 @@ void NonDExpansion::update_final_statistics_gradients()
     // This approach is more general, but is overkill for this purpose
     // and incurs additional copying overhead.
     /*
-    Pecos::ProbabilityTransformation& nataf
-      = uSpaceModel.probability_transformation();
     RealVector initial_pt_x_pv, fn_grad_u, fn_grad_x;
     copy_data(initial_pt_x, initial_pt_x_pv);
     RealMatrix jacobian_ux;
@@ -3900,45 +3908,45 @@ void NonDExpansion::print_moments(std::ostream& s)
 		       (num_int_mom >  2 && num_int_moments[1] <= 0.) );
     if (curr_exception || finalMomentsType == Pecos::CENTRAL_MOMENTS) {
       if (i==0 || !prev_exception)
-	s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
-	  << std::setw(width+1)  << "3rdCentral" << std::setw(width+2)
-	  << "4thCentral\n";
+        s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
+          << std::setw(width+1)  << "3rdCentral" << std::setw(width+2)
+          << "4thCentral\n";
       if (exp_mom && num_int_mom) s << fn_labels[i];
       else                        s << std::setw(14) << fn_labels[i];
       if (exp_mom) {
-	if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
-	for (j=0; j<exp_mom; ++j)
-	  s << ' ' << std::setw(width) << exp_moments[j];
+        if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
+        for (j=0; j<exp_mom; ++j)
+          s << ' ' << std::setw(width) << exp_moments[j];
       }
       if (num_int_mom) {
-	if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
-	for (j=0; j<num_int_mom; ++j)
-	  s << ' ' << std::setw(width) << num_int_moments[j];
+        if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
+        for (j=0; j<num_int_mom; ++j)
+          s << ' ' << std::setw(width) << num_int_moments[j];
       }
       prev_exception = curr_exception;
       if (curr_exception && finalMomentsType == Pecos::STANDARD_MOMENTS)
-	exception = true;
+	      exception = true;
     }
     else {
       if (i==0 || prev_exception)
-	s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Std Dev"
-	  << std::setw(width+1)  << "Skewness" << std::setw(width+2)
-	  << "Kurtosis\n";
+        s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Std Dev"
+          << std::setw(width+1)  << "Skewness" << std::setw(width+2)
+          << "Kurtosis\n";
       if (exp_mom && num_int_mom) s << fn_labels[i];
       else                        s << std::setw(14) << fn_labels[i];
       if (exp_mom) {
-	Pecos::PolynomialApproximation::
-	  standardize_moments(exp_moments, std_exp_moments);
-	if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
-	for (j=0; j<exp_mom; ++j)
-	  s << ' ' << std::setw(width) << std_exp_moments[j];
+        Pecos::PolynomialApproximation::
+          standardize_moments(exp_moments, std_exp_moments);
+        if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
+        for (j=0; j<exp_mom; ++j)
+          s << ' ' << std::setw(width) << std_exp_moments[j];
       }
       if (num_int_mom) {
-	Pecos::PolynomialApproximation::
-	  standardize_moments(num_int_moments, std_num_int_moments);
-	if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
-	for (j=0; j<num_int_mom; ++j)
-	  s << ' ' << std::setw(width) << std_num_int_moments[j];
+        Pecos::PolynomialApproximation::
+          standardize_moments(num_int_moments, std_num_int_moments);
+        if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
+        for (j=0; j<num_int_mom; ++j)
+          s << ' ' << std::setw(width) << std_num_int_moments[j];
       }
       prev_exception = false;
     }

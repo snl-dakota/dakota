@@ -42,8 +42,7 @@ public:
   //
 
   /// standard constructor
-  RelaxedVariables(const ProblemDescDB& problem_db,
-		   const std::pair<short,short>& view);
+  RelaxedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view);
   /// lightweight constructor
   RelaxedVariables(const SharedVariablesData& svd);
   /// destructor

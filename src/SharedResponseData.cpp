@@ -319,11 +319,11 @@ void SharedResponseData::reshape(size_t num_fns)
 {
   if (num_functions() != num_fns) {
     // separate sharing if needed
-    //if (srdRep.use_count() > 1) { // shared rep: separate
-    std::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
-    srdRep.reset(new SharedResponseDataRep()); // create new srdRep
-    srdRep->copy_rep(old_rep.get());           // copy old data to new
-    //}
+    if (srdRep.use_count() > 1) { // separate srdRep from shared before reshape
+      std::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+      srdRep.reset(new SharedResponseDataRep()); // create new srdRep
+      srdRep->copy_rep(old_rep.get());           // copy old data to new
+    }
 
     // reshape function labels
     reshape_labels(srdRep->functionLabels, num_fns);
@@ -371,27 +371,37 @@ void SharedResponseData::field_lengths(const IntVector& field_lens)
   // no change in number of scalar functions
   // when the field lengths change, need a new rep
   if (field_lengths() != field_lens) {
-    std::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
-    srdRep.reset(new SharedResponseDataRep());  // create new srdRep
-    srdRep->copy_rep(old_rep.get());            // copy old data to new
-    
+    // separate sharing if needed
+    if (srdRep.use_count() > 1) { // separate rep from shared
+      std::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+      srdRep.reset(new SharedResponseDataRep());  // create new srdRep
+      srdRep->copy_rep(old_rep.get());            // copy old data to new
+    }
+
+    // cache previous data for use at bottom
+    bool same_field_groups
+      = (field_lens.length() == srdRep->priFieldLabels.size());
+    StringArray old_fn_labels;  size_t old_field_elements;
+    if (same_field_groups) {
+      old_fn_labels      = srdRep->functionLabels;
+      old_field_elements = srdRep->priFieldLengths.normOne();
+    }
+ 
     // update the field lengths
     srdRep->priFieldLengths = field_lens;
-
     // reshape function labels, using updated num_functions()
     srdRep->functionLabels.resize(num_functions());
-    if (field_lens.length() != srdRep->priFieldLabels.size()) {
+
+    if (same_field_groups)
+      // no change in number of field groups; use existing labels for build
+      // need to preserve scalar labels, but update field labels
+      srdRep->resize_field_labels(old_fn_labels, old_field_elements);
+    else {
       // can't use existing field labels (could happen in testing); use generic
       build_labels(srdRep->functionLabels, "f");
       // update the priFieldLabels
       copy_data_partial(srdRep->functionLabels, num_scalar_responses(),
 			num_field_response_groups(), srdRep->priFieldLabels);
-    }
-    else {
-      // no change in number of field groups; use existing labels for build
-      // need to preserve scalar labels, but update field labels
-      srdRep->resize_field_labels(old_rep->functionLabels,
-				  old_rep->priFieldLengths.normOne());
     }
   }
 }
