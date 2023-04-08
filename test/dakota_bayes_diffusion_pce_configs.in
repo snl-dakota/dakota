@@ -1,6 +1,7 @@
 #@ *: Label=Experimental
 #@ *: DakotaConfig=HAVE_QUESO
-#@ s*: TimeoutAbsolute=900
+#@ s*: TimeoutAbsolute=3600
+#@ s*: TimeoutDelay=3600
 #@ s*: ReqFiles=bayes_diffusion_pce_coeffs.dat,bayes_diffusion_pce_obs_configs.dat
 
 # This example tests emulator-based Bayesian inference where an imported PCE
@@ -30,8 +31,8 @@ variables,
 	  descriptors 'view1' 'view2'
 
 interface,
-        python
-          analysis_driver = 'dummy.py'
+        fork
+          analysis_driver = 'dummy.sh'
 
 responses,
 	calibration_terms = 5
