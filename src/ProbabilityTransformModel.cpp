@@ -28,9 +28,11 @@ namespace Dakota
 ProbabilityTransformModel* ProbabilityTransformModel::ptmInstance(NULL);
 
 
+/** Until there is a need, restrict view changes to a separate RecastModel
+    recursion so that we maintain 1-to-1 active random variables here. */
 ProbabilityTransformModel::
 ProbabilityTransformModel(const Model& x_model, short u_space_type,
-			  const ShortShortPair& recast_vars_view,
+			//const ShortShortPair& recast_vars_view,
 			  bool truncate_bnds, Real bnd) :
   RecastModel(x_model),                   // minimal initialization
 //RecastModel(x_model, recast_vars_view), // No: for recasts limited to view
@@ -47,7 +49,7 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
   bool copy_values;
-  init_sizes(recast_vars_view,//x_model.current_variables().view(),
+  init_sizes(x_model.current_variables().view(),//recast_vars_view,
 	     recast_vars_comps_total, all_relax_di, all_relax_dr, numFns, 0, 0,
 	     recast_resp_order, copy_values);
 

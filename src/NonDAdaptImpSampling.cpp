@@ -67,8 +67,7 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
 
   statsFlag = true;
   uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, STD_NORMAL_U, iteratedModel.current_variables().view(),
-    useModelBounds));
+    iteratedModel, STD_NORMAL_U, useModelBounds));
 
   // maxEvalConcurrency defined from initial LHS size (numSamples)
 }
@@ -96,7 +95,7 @@ NonDAdaptImpSampling(Model& model, unsigned short sample_type,
     // taken to ensure that natafTransform.{x,u}_types() inherited from above
     // are synchronized with those from the calling context.
     uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(model,
-      STD_NORMAL_U, model.current_variables().view(), useModelBounds, 5.));
+      STD_NORMAL_U, useModelBounds, 5.));
   else
     uSpaceModel = model;
 

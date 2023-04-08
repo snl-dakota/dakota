@@ -34,10 +34,9 @@ DataTransformModel* DataTransformModel::dtModelInstance(NULL);
 //   response mapping suffice Need test with data and constraints
 //  * Don't want to output message during recast retrieve... (or do we?)
 
-/** This constructor computes various indices and mappings, then
-    updates the properties of the RecastModel.  Hyper-parameters are
-    assumed to trail the active continuous variables when presented to
-    this RecastModel */
+/** This constructor computes various indices and mappings, then updates the
+    properties of the RecastModel.  Hyper-parameters are assumed to trail the
+    active continuous variables when presented to this RecastModel. */
 DataTransformModel::
 DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 		   const ShortShortPair& recast_vars_view,

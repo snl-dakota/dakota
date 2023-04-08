@@ -216,16 +216,14 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
 
     // Recast g-hat(x) to G-hat(u); truncate dist bnds
     uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
-      g_hat_x_model, STD_NORMAL_U, g_hat_x_model.current_variables().view(),
-      true, 5.));
+      g_hat_x_model, STD_NORMAL_U, true, 5.));
   }
   else { // DataFit( Recast( iteratedModel ) )
 
     // Recast g(x) to G(u); truncate dist bnds
     Model g_u_model;
     g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-      iteratedModel, STD_NORMAL_U, iteratedModel.current_variables().view(),
-      true, 5.));
+      iteratedModel, STD_NORMAL_U, true, 5.));
 
     // For additional generality, could develop on the fly envelope ctor:
     //Iterator dace_iterator(g_u_model, dace_method, ...);

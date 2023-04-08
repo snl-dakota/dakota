@@ -127,8 +127,8 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
   Model sub_model;
   if (transformVars) {
     const Model& db_model = problem_db.get_model();
-    sub_model.assign_rep(std::make_shared<ProbabilityTransformModel>(db_model,
-      STD_NORMAL_U, db_model.current_variables().view()));
+    sub_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+      db_model, STD_NORMAL_U)); // retain dist bounds
   }
   else
     sub_model = problem_db.get_model();

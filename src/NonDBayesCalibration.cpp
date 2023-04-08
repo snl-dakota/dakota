@@ -510,8 +510,7 @@ void NonDBayesCalibration::construct_mcmc_model()
     bool truncate_bnds = (emulatorType == KRIGING_EMULATOR);
     if (standardizedSpace)
       lhs_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-	inbound_model, ASKEY_U, inbound_model.current_variables().view(),
-	truncate_bnds)); //, 3.)
+	inbound_model, ASKEY_U, truncate_bnds)); //, 3.)
     else
       lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
@@ -541,7 +540,7 @@ void NonDBayesCalibration::construct_mcmc_model()
     // verify_correlation_support() on a variable-by-variable basis.
     if (standardizedSpace)
       mcmcModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
-	inbound_model, ASKEY_U, inbound_model.current_variables().view()));
+	inbound_model, ASKEY_U));
     else
       mcmcModel = inbound_model; // shared rep
 
