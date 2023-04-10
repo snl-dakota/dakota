@@ -878,7 +878,7 @@ public:
   /// Wilks sided interval type
   short wilksSidedInterval;
 
-  /// flag indicating the calculation/output of stadnardized regression coefficients
+  /// flag indicating the calculation/output of standardized regression coefficients
   bool stdRegressionCoeffs;
   
   /// flag to indicate bounds-based scaling of current response data set

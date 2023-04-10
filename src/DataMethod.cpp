@@ -131,6 +131,7 @@ DataMethodRep::DataMethodRep():
   percentVarianceExplained(0.95), wilksFlag(false), wilksOrder(1),
   wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED_UPPER),
   // NonD
+  stdRegressionCoeffs(false),
   respScalingFlag(false), vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE),
   rngName("mt19937"), refinementType(Pecos::NO_REFINEMENT),
   refinementControl(Pecos::NO_CONTROL),
@@ -299,7 +300,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << respScalingFlag << vbdOrder << covarianceControl << rngName
+  s << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl << rngName
     << refinementType << refinementControl << nestingOverride << growthOverride
     << expansionType << piecewiseBasis << expansionBasisType
     << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
@@ -467,7 +468,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> wilksConfidenceLevel >> wilksSidedInterval;
 
   // NonD
-  s >> respScalingFlag >> vbdOrder >> covarianceControl >> rngName
+  s >> stdRegressionCoeffs >> respScalingFlag >> vbdOrder >> covarianceControl >> rngName
     >> refinementType >> refinementControl >> nestingOverride >> growthOverride
     >> expansionType >> piecewiseBasis >> expansionBasisType
     >> quadratureOrderSeq >> sparseGridLevelSeq >> expansionOrderSeq
@@ -635,7 +636,7 @@ void DataMethodRep::write(std::ostream& s) const
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << respScalingFlag << vbdOrder << covarianceControl << rngName
+  s << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl << rngName
     << refinementType << refinementControl << nestingOverride << growthOverride
     << expansionType << piecewiseBasis << expansionBasisType
     << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
