@@ -56,7 +56,7 @@ public:
   /// standard constructor
   Constraints(const ProblemDescDB& prob_db, const SharedVariablesData& svd);
   // alternate constructor for minimal instantiations on the fly (reshape reqd)
-  //Constraints(const std::pair<short,short>& view);
+  //Constraints(const ShortShortPair& view);
   /// alternate constructor for instantiations on the fly
   Constraints(const SharedVariablesData& svd);
   /// copy constructor
@@ -80,6 +80,19 @@ public:
   //
   //- Heading: Member functions
   //
+
+  /// copy active {cv,div,drv} {lower,upper} bounds from incoming object
+  void active_bounds(const Constraints& cons);
+  /// copy all {cv,div,drv} {lower,upper} bounds from incoming object
+  void all_bounds(const Constraints& cons);
+  /// copy active {cv,div,drv} {lower,upper} bounds from incoming object
+  /// to all bounds of this instance
+  void active_to_all_bounds(const Constraints& cons);
+  /// copy all {cv,div,drv} {lower,upper} bounds from incoming object
+  /// to active bounds of this instance
+  void all_to_active_bounds(const Constraints& cons);
+  /// copy inactive {cv,div,drv} {lower,upper} bounds from incoming object
+  void inactive_bounds(const Constraints& cons);
 
   // ACTIVE VARIABLES
 
@@ -258,25 +271,41 @@ public:
 
   /// for use when a deep copy is needed (the representation is _not_ shared)
   Constraints copy() const;
-  /// for use when only data updates are desired between existing
+  /// copy nonlinear constraint data between existing Constraints objects
+  void update_nonlinear_constraints(const Constraints& cons);
+  /// copy linear constraint data between existing Constraints objects
+  void update_linear_constraints(const Constraints& cons);
+  /// copy variable lower/upper bound data between existing Constraints objects
+  void update_variable_bounds(const Constraints& cons);
+  /// copy bounds and linear/nonlinear constraint data between existing
   /// Constraints objects
   void update(const Constraints& cons);
 
   /// shape the lower/upper bound arrays based on sharedVarsData
-  void shape();
+  void shape_bounds();
   /// reshape the linear/nonlinear/bound constraint arrays arrays and
   /// the lower/upper bound arrays
   void reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
-	       size_t num_lin_ineq_cons, size_t num_lin_eq_cons,
 	       const SharedVariablesData& svd);
   /// reshape the lower/upper bound arrays based on sharedVarsData
-  void reshape();
-  /// reshape the linear/nonlinear constraint arrays
-  void reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
-	       size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
+  void reshape_bounds();
+  /// reshape the nonlinear constraint array sizes
+  void reshape_nonlinear(size_t num_nln_ineq_cons, size_t num_nln_eq_cons);
+  /// reshape the linear constraint array sizes
+  void reshape_linear(size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
+  /// reshape and repopulate the linear constraint arrays
+  void reshape_update_linear(const SharedVariablesData& prev_svd,
+			     const SharedVariablesData& curr_svd);
 
-  /// sets the inactive view based on higher level (nested) context
+  /// sets the active view based on higher level context
+  void active_view(short view2);
+  /// sets the inactive view based on higher level context
   void inactive_view(short view2);
+
+  /// return sharedVarsData
+  const SharedVariablesData& shared_data() const;
+  /// return sharedVarsData
+  SharedVariablesData& shared_data();
 
   /// function to check constraintsRep (does this envelope contain a letter)
   bool is_null() const;
@@ -399,6 +428,9 @@ private:
   //
   //- Heading: Member functions
   //
+
+  /// ensure zeros in removed columns when contracting linear constraints coeffs
+  void check_zeros(const Real* ptr, int ptr_len) const;
 
   /// Used only by the constructor to initialize constraintsRep to the 
   /// appropriate derived type.
@@ -828,6 +860,131 @@ inline void Constraints::all_discrete_real_upper_bound(Real adru_bnd, size_t i)
 }
 
 
+inline void Constraints::active_bounds(const Constraints& cons)
+{
+  if (constraintsRep)
+    constraintsRep->active_bounds(cons);
+  else {
+    const SharedVariablesData& source_svd = cons.shared_data();
+    if (source_svd.cv()  != sharedVarsData.cv()  ||
+	source_svd.div() != sharedVarsData.div() ||
+	source_svd.drv() != sharedVarsData.drv()) {
+      Cerr << "Error: inconsistent counts in Constraints::active_bounds()."
+	   << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+    continuous_lower_bounds(cons.continuous_lower_bounds());
+    continuous_upper_bounds(cons.continuous_upper_bounds());
+    discrete_int_lower_bounds(cons.discrete_int_lower_bounds());
+    discrete_int_upper_bounds(cons.discrete_int_upper_bounds());
+    // no bounds for discrete string vars
+    discrete_real_lower_bounds(cons.discrete_real_lower_bounds());
+    discrete_real_upper_bounds(cons.discrete_real_upper_bounds());
+  }
+}
+
+
+inline void Constraints::all_bounds(const Constraints& cons) 
+{
+  // Set all variables
+  if (constraintsRep)
+    constraintsRep->all_bounds(cons);
+  else {
+    const SharedVariablesData& source_svd = cons.shared_data();
+    if (source_svd.acv()  != sharedVarsData.acv()  ||
+	source_svd.adiv() != sharedVarsData.adiv() ||
+	source_svd.adrv() != sharedVarsData.adrv()) {
+      Cerr << "Error: inconsistent counts in Constraints::all_bounds()."
+	   << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+    all_continuous_lower_bounds(cons.all_continuous_lower_bounds());
+    all_continuous_upper_bounds(cons.all_continuous_upper_bounds());
+    all_discrete_int_lower_bounds(cons.all_discrete_int_lower_bounds());
+    all_discrete_int_upper_bounds(cons.all_discrete_int_upper_bounds());
+    // no bounds for discrete string vars
+    all_discrete_real_lower_bounds(cons.all_discrete_real_lower_bounds());
+    all_discrete_real_upper_bounds(cons.all_discrete_real_upper_bounds());
+  }
+}
+
+
+inline void Constraints::active_to_all_bounds(const Constraints& cons)
+{
+  if (constraintsRep)
+    constraintsRep->active_to_all_bounds(cons);
+  else {
+    const SharedVariablesData& source_svd = cons.shared_data();
+    if (source_svd.cv()  != sharedVarsData.acv()  ||
+	source_svd.div() != sharedVarsData.adiv() ||
+	source_svd.drv() != sharedVarsData.adrv()) {
+      Cerr << "Error: inconsistent counts in Constraints::"
+	   << "active_to_all_bounds()." << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+    all_continuous_lower_bounds(cons.continuous_lower_bounds());
+    all_continuous_upper_bounds(cons.continuous_upper_bounds());
+    all_discrete_int_lower_bounds(cons.discrete_int_lower_bounds());
+    all_discrete_int_upper_bounds(cons.discrete_int_upper_bounds());
+    // no bounds for discrete string vars
+    all_discrete_real_lower_bounds(cons.discrete_real_lower_bounds());
+    all_discrete_real_upper_bounds(cons.discrete_real_upper_bounds());
+  }
+}
+
+
+inline void Constraints::all_to_active_bounds(const Constraints& cons)
+{
+  if (constraintsRep)
+    constraintsRep->all_to_active_bounds(cons);
+  else {
+    const SharedVariablesData& source_svd = cons.shared_data();
+    if (source_svd.acv()  != sharedVarsData.cv()  ||
+	source_svd.adiv() != sharedVarsData.div() ||
+	source_svd.adrv() != sharedVarsData.drv()) {
+      Cerr << "Error: inconsistent counts in Constraints::"
+	   << "all_to_active_bounds()." << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+    continuous_lower_bounds(cons.all_continuous_lower_bounds());
+    continuous_upper_bounds(cons.all_continuous_upper_bounds());
+    discrete_int_lower_bounds(cons.all_discrete_int_lower_bounds());
+    discrete_int_upper_bounds(cons.all_discrete_int_upper_bounds());
+    // no bounds for discrete string vars
+    discrete_real_lower_bounds(cons.all_discrete_real_lower_bounds());
+    discrete_real_upper_bounds(cons.all_discrete_real_upper_bounds());
+  }
+}
+
+
+inline void Constraints::inactive_bounds(const Constraints& cons)
+{
+  if (constraintsRep)
+    constraintsRep->active_bounds(cons);
+  else {
+    const SharedVariablesData& source_svd = cons.shared_data();
+    if (source_svd.icv()  != sharedVarsData.icv()  ||
+	source_svd.idiv() != sharedVarsData.idiv() ||
+	source_svd.idrv() != sharedVarsData.idrv()) {
+      Cerr << "Error: inconsistent counts in Constraints::inactive_bounds()."
+	   << std::endl;
+      abort_handler(CONS_ERROR);
+    }
+    inactive_continuous_lower_bounds(cons.inactive_continuous_lower_bounds());
+    inactive_continuous_upper_bounds(cons.inactive_continuous_upper_bounds());
+    inactive_discrete_int_lower_bounds(
+      cons.inactive_discrete_int_lower_bounds());
+    inactive_discrete_int_upper_bounds(
+      cons.inactive_discrete_int_upper_bounds());
+    // no bounds for discrete string vars
+    inactive_discrete_real_lower_bounds(
+      cons.inactive_discrete_real_lower_bounds());
+    inactive_discrete_real_upper_bounds(
+      cons.inactive_discrete_real_upper_bounds());
+  }
+}
+
+
 // nonvirtual functions can access letter attributes directly (only need to fwd
 // member function call when the function could be redefined).
 inline size_t Constraints::num_linear_ineq_constraints() const
@@ -984,20 +1141,31 @@ nonlinear_eq_constraint_targets(const RealVector& nln_eq_targets)
 }
 
 
+inline const SharedVariablesData& Constraints::shared_data() const
+{ return (constraintsRep) ? constraintsRep->sharedVarsData : sharedVarsData; }
+
+
+inline SharedVariablesData& Constraints::shared_data()
+{ return (constraintsRep) ? constraintsRep->sharedVarsData : sharedVarsData; }
+
+
 inline bool Constraints::is_null() const
 { return (constraintsRep) ? false : true; }
 
 
 inline void Constraints::build_views()
-{
-  // called only from letters
-  const std::pair<short,short>& view = sharedVarsData.view();
-  if (view.first  != EMPTY_VIEW)
-    build_active_views();
-  if (view.second != EMPTY_VIEW)
-    build_inactive_views();
-}
+{ build_active_views(); build_inactive_views(); } // called only from letters
 
+
+inline void Constraints::check_zeros(const Real* ptr, int ptr_len) const
+{
+  for (int i=0; i<ptr_len; ++i)
+    if (ptr[i] != 0.) {
+      Cerr << "Error: loss of information in constraint recasting."<< std::endl;
+      abort_handler(CONS_ERROR);
+    }
+}
+		  
 
 // Having overloaded operators call read/write means that the operators need 
 // not be a friend to private data because read/write functions are public.

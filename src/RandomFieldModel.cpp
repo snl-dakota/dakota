@@ -346,9 +346,13 @@ void RandomFieldModel::initialize_recast()
   if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
 
-  RecastModel::
-    init_sizes(vars_comps_total, all_relax_di, all_relax_dr, num_primary, 
-	       num_secondary, recast_secondary_offset, recast_resp_order);
+  bool copy_values;
+  RecastModel::init_sizes(subModel.current_variables().view(), vars_comps_total,
+			  all_relax_di, all_relax_dr, num_primary,
+			  num_secondary, recast_secondary_offset,
+			  recast_resp_order, copy_values);
+
+  RecastModel::init_distribution(copy_values);
 
   RecastModel::
     init_maps(vars_map_indices, nonlinear_vars_mapping, vars_mapping, 

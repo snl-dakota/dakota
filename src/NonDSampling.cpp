@@ -60,6 +60,14 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
+#ifndef HAVE_DAKOTA_SURROGATES
+  if ( stdRegressionCoeffs ) {
+    Cerr << "Warning: Standardized Regression Coefficients are not available"
+         << " for Dakota builds without the surrogates module enabled."
+         << " Disabling requested output.\n";
+  }
+#endif
+
   if ( wilksFlag ) {
     // Only works with sample_type of random
     // BMA: consider relaxing, despite no theory
@@ -222,24 +230,28 @@ NonDSampling::~NonDSampling()
 
 void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf,
-		  RealMatrix& sample_matrix, size_t num_samples, bool x_to_u)
+		  RealMatrix& sample_matrix, //size_t num_samples,
+		  SizetMultiArrayConstView src_cv_ids,
+		  SizetMultiArrayConstView tgt_cv_ids, bool x_to_u)
 {
-  if (num_samples == 0)
-    num_samples = sample_matrix.numCols();
-  else if (sample_matrix.numCols() != num_samples)
-    sample_matrix.shapeUninitialized(numContinuousVars, num_samples);
+  // Since transform updates in place, we must not alter sample_matrix
+  //if (num_samples == 0)
+  //  num_samples = sample_matrix.numCols();
+  //else if (sample_matrix.numCols() != num_samples)
+  //  sample_matrix.shapeUninitialized(numContinuousVars, num_samples);
 
+  size_t num_samples = sample_matrix.numCols();
   if (x_to_u)
     for (size_t i=0; i<num_samples; ++i) {
       RealVector x_samp(Teuchos::Copy, sample_matrix[i], numContinuousVars);
       RealVector u_samp(Teuchos::View, sample_matrix[i], numContinuousVars);
-      nataf.trans_X_to_U(x_samp, u_samp);
+      nataf.trans_X_to_U(x_samp, src_cv_ids, u_samp, tgt_cv_ids);
     }
   else
     for (size_t i=0; i<num_samples; ++i) {
       RealVector u_samp(Teuchos::Copy, sample_matrix[i], numContinuousVars);
       RealVector x_samp(Teuchos::View, sample_matrix[i], numContinuousVars);
-      nataf.trans_U_to_X(u_samp, x_samp);
+      nataf.trans_U_to_X(u_samp, src_cv_ids, x_samp, tgt_cv_ids);
     }
 }
 
@@ -994,10 +1006,6 @@ compute_statistics(const RealMatrix&     vars_samples,
 
   if (!subIteratorFlag) {
     nonDSampCorr.compute_correlations(vars_samples, resp_samples);
-    // archive the correlations to the results DB
-//    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
-//				      div_labels, dsv_labels, drv_labels,
-//				      iteratedModel.response_labels());
     if (stdRegressionCoeffs)
       nonDSampCorr.compute_std_regress_coeffs(vars_samples, resp_samples);
   }
@@ -1798,28 +1806,9 @@ void NonDSampling::print_statistics(std::ostream& s) const
       print_wilks_stastics(s); //, "response function", iteratedModel.response_labels());
   }
   if (!subIteratorFlag) {
-    StringMultiArrayConstView
-      acv_labels  = iteratedModel.all_continuous_variable_labels(),
-      adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
-      adsv_labels = iteratedModel.all_discrete_string_variable_labels(),
-      adrv_labels = iteratedModel.all_discrete_real_variable_labels();
-    size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-      drv_start, num_drv;
-    mode_counts(iteratedModel.current_variables(), cv_start, num_cv,
-		div_start, num_div, dsv_start, num_dsv, drv_start, num_drv);
-    StringMultiArrayConstView
-      cv_labels  =
-        acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
-      div_labels =
-        adiv_labels[boost::indices[idx_range(div_start, div_start+num_div)]],
-      dsv_labels =
-        adsv_labels[boost::indices[idx_range(dsv_start, dsv_start+num_dsv)]],
-      drv_labels =
-        adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
-    nonDSampCorr.print_correlations(s, cv_labels, div_labels, dsv_labels,
-				    drv_labels,iteratedModel.response_labels());
-    if (stdRegressionCoeffs)
-      nonDSampCorr.print_std_regress_coeffs(s, cv_labels, iteratedModel.response_labels());
+    nonDSampCorr.print_correlations(s, iteratedModel.ordered_labels(), iteratedModel.response_labels());
+//    if (stdRegressionCoeffs)
+//      nonDSampCorr.print_std_regress_coeffs(s, cv_labels, iteratedModel.response_labels());
   }
 }
 

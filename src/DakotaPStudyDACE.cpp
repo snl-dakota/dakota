@@ -17,6 +17,7 @@
 #include "DakotaPStudyDACE.hpp"
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
+#include "dakota_data_util.hpp"
 #ifdef HAVE_FSUDACE
 #include "fsu.H"
 #endif
@@ -112,19 +113,13 @@ void PStudyDACE::print_results(std::ostream& s, short results_state)
 
   if (pStudyDACESensGlobal.correlations_computed()) {
     if (compactMode) { // FSU, DDACE, PSUADE ignore active discrete vars
-      StringMultiArray empty;
-      StringMultiArrayConstView empty_view
-	= empty[boost::indices[idx_range(0, 0)]];
-      pStudyDACESensGlobal.print_correlations(s,
-	iteratedModel.continuous_variable_labels(), empty_view, empty_view,
-        empty_view, iteratedModel.response_labels());
+      StringArray cv_labels;
+      copy_data(iteratedModel.continuous_variable_labels(), cv_labels);
+      pStudyDACESensGlobal.print_correlations(s, cv_labels, iteratedModel.response_labels());
     }
     else // ParamStudy includes active discrete vars
       pStudyDACESensGlobal.print_correlations(s,
-        iteratedModel.continuous_variable_labels(),
-        iteratedModel.discrete_int_variable_labels(),
-        iteratedModel.discrete_string_variable_labels(),
-        iteratedModel.discrete_real_variable_labels(),
+        iteratedModel.ordered_labels(),
         iteratedModel.response_labels());
   }
 }

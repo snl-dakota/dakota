@@ -64,8 +64,8 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
-  gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, sample_type,
-     samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM));
+  gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
+    sample_type, samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM));
   //distribution 1 which is the distribution that the initial set of samples
   //used to build the initial GP are drawn from this should "ALWAYS" be 
   //uniform in the input of the GP (even if the nominal distribution is not
@@ -74,13 +74,14 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
 
   ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
   gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
+  const ShortShortPair& gp_view = iteratedModel.current_variables().view();
   gpModel.assign_rep(std::make_shared<DataFitSurrModel>(gpBuild, iteratedModel,
-    gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
-    outputLevel, sample_reuse, import_pts_file,
+    gp_set, gp_view, approx_type, approx_order, corr_type, corr_order,
+    data_order, outputLevel, sample_reuse, import_pts_file,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
-							probDescDB.get_ushort("method.export_approx_format")));
+    probDescDB.get_ushort("method.export_approx_format")));
   vary_pattern = true; // allow seed to run among multiple approx sample sets
   // need to add to input spec
   numEmulEval = probDescDB.get_int("method.nond.samples_on_emulator");

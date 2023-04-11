@@ -174,6 +174,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   // large excursion can cause overflow; a medium excursion can cause poor 
   // performance since far-field info is introduced into the BFGS Hessian.
   short recast_resp_order = 3; // grad-based quasi-Newton opt on mppModel
+  const ShortShortPair& orig_view = iteratedModel.current_variables().view();
   switch (mppSearchType) {
   case SUBMETHOD_AMV_X:  case SUBMETHOD_AMV_PLUS_X:
   case SUBMETHOD_TANA_X: case SUBMETHOD_QMEA_X: {
@@ -193,14 +194,13 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     Model g_hat_x_model;  Iterator dace_iterator;
     ActiveSet dfs_set = iteratedModel.current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
-    g_hat_x_model.assign_rep(std::make_shared<DataFitSurrModel>
-			     (dace_iterator, iteratedModel, dfs_set,
-			      approx_type, approx_order, corr_type, corr_order,
-			      ai_data_order, outputLevel, sample_reuse));
+    g_hat_x_model.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+      iteratedModel, dfs_set, orig_view, approx_type, approx_order, corr_type,
+      corr_order, ai_data_order, outputLevel, sample_reuse));
 
     // transform g_hat_x_model from x-space to u-space; truncate distrib bnds
-    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>
-			   (g_hat_x_model, STD_NORMAL_U, true));
+    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
+      g_hat_x_model, STD_NORMAL_U, true));
     break;
   }
   case SUBMETHOD_AMV_U:  case SUBMETHOD_AMV_PLUS_U:
@@ -209,8 +209,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // Recast g(x) to G(u); truncate distribution bounds
     Model g_u_model;
-    g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-			 (iteratedModel, STD_NORMAL_U, true));
+    g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+      iteratedModel, STD_NORMAL_U, true));
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
@@ -226,16 +226,15 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     Iterator dace_iterator;
     ActiveSet dfs_set = g_u_model.current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
-    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
-			   (dace_iterator, g_u_model, dfs_set, approx_type,
-			    approx_order, corr_type, corr_order, ai_data_order,
-			    outputLevel, sample_reuse));
+    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+      g_u_model, dfs_set, orig_view, approx_type, approx_order, corr_type,
+      corr_order, ai_data_order, outputLevel, sample_reuse));
     break;
   }
   case SUBMETHOD_NO_APPROX: { // Recast( iteratedModel )
     // Recast g(x) to G(u); truncate distribution bounds
-    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>
-			   (iteratedModel, STD_NORMAL_U, true));
+    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
+      iteratedModel, STD_NORMAL_U, true));
     // detect PMA2 condition and augment mppModel data requirements
     bool pma2_flag = false;
     if (integrationOrder == 2)
@@ -261,7 +260,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
     mppModel.assign_rep(std::make_shared<RecastModel>
 			(uSpaceModel, recast_vars_comps_total, all_relax_di,
-			 all_relax_dr, 1, 1, 0, recast_resp_order));
+			 all_relax_dr, orig_view, 1, 1, 0, recast_resp_order));
     RealVector nln_eq_targets(1, false); nln_eq_targets = 0.;
     mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
 
@@ -351,27 +350,26 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     case SUBMETHOD_AMV_X:  case SUBMETHOD_AMV_PLUS_X:
     case SUBMETHOD_TANA_X: case SUBMETHOD_QMEA_X: {
       Model g_u_model;
-      g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-			   (iteratedModel, STD_NORMAL_U)); // original dist bnds
-      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>
-	(g_u_model, sample_type,
-	 refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
-	 cdfFlag, x_model_flag, use_model_bounds, track_extreme);
+      g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+	iteratedModel, STD_NORMAL_U)); // original dist bnds
+      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>(g_u_model,
+	sample_type, refine_samples, refine_seed, rng, vary_pattern,
+	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
+	track_extreme);
       break;
     }
     case SUBMETHOD_AMV_U:  case SUBMETHOD_AMV_PLUS_U:
     case SUBMETHOD_TANA_U: case SUBMETHOD_QMEA_U:
-      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>
-	(uSpaceModel.truth_model(),
-	 sample_type, refine_samples, refine_seed, rng, vary_pattern,
-	 integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
-	 track_extreme);
+      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>(
+	uSpaceModel.truth_model(), sample_type, refine_samples, refine_seed,
+	rng, vary_pattern, integrationRefinement, cdfFlag, x_model_flag,
+	use_model_bounds, track_extreme);
       break;
     case SUBMETHOD_NO_APPROX:
-      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>
-	(uSpaceModel, sample_type,
-	 refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
-	 cdfFlag, x_model_flag, use_model_bounds, track_extreme);
+      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>(uSpaceModel,
+	sample_type, refine_samples, refine_seed, rng, vary_pattern,
+	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
+	track_extreme);
       break;
     }
     importanceSampler.assign_rep(import_sampler_rep);
@@ -801,15 +799,13 @@ void NonDLocalReliability::mpp_search()
   NonDLocalReliability* prev_instance = nondLocRelInstance;
   nondLocRelInstance = this;
 
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
-
   // initialize initialPtUSpec on first reliability analysis; needs to precede
   // iteratedModel.continuous_variables() assignment in initial_taylor_series()
   // and needs to follow nataf.transform_correlations()
   if (numRelAnalyses == 0) {
     if (initialPtUserSpec)
-      nataf.trans_X_to_U(iteratedModel.continuous_variables(), initialPtUSpec);
+      uSpaceModel.trans_X_to_U(iteratedModel.continuous_variables(),
+			       initialPtUSpec);
     else {
       // don't use the mean uncertain variable defaults from the parser
       // since u ~= 0 can cause problems for some formulations
@@ -942,6 +938,8 @@ void NonDLocalReliability::mpp_search()
       // numerical verification of analytic Jacobian/Hessian routines
       if (mppSearchType == SUBMETHOD_NO_APPROX && levelCount == 0)
         mostProbPointU = ranVarMeansU;//mostProbPointX = ranVarMeansX;
+      Pecos::ProbabilityTransformation& nataf
+	= uSpaceModel.probability_transformation();
       //nataf.verify_trans_jacobian_hessian(mostProbPointU);
       //nataf.verify_trans_jacobian_hessian(mostProbPointX);
       nataf.verify_design_jacobian(mostProbPointU);
@@ -1197,12 +1195,10 @@ void NonDLocalReliability::initialize_class_data()
     prevFnGradULev0.shape(numContinuousVars, numFunctions);
   }
 
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
   // define ranVarMeansU for use in the transformed AMV option
   // (must follow transform_correlations())
   //if (mppSearchType == SUBMETHOD_AMV_U)
-  nataf.trans_X_to_U(ranVarMeansX, ranVarMeansU);
+  uSpaceModel.trans_X_to_U(ranVarMeansX, ranVarMeansU);
   // or ranVarMeansU = u_dist.means();
 
   /*
@@ -1213,7 +1209,7 @@ void NonDLocalReliability::initialize_class_data()
     uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);
   RealVector ep_median_u(numContinuousVars), // inits vals to 0
              ep_median_x(numContinuousVars, false);
-  nataf.trans_U_to_X(ep_median_u, ep_median_x);
+  uSpaceModel.trans_U_to_X(ep_median_u, ep_median_x);
   iteratedModel.continuous_variables(ep_median_x);
   activeSet.request_values(0); // initialize
   for (size_t i=0; i<numFunctions; i++)
@@ -1615,10 +1611,8 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     }
 
     SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
-    Pecos::ProbabilityTransformation& nataf
-      = uSpaceModel.probability_transformation();
     if (mode & 6)
-      nataf.trans_U_to_X(mostProbPointU, mostProbPointX);
+      uSpaceModel.trans_U_to_X(mostProbPointU, mostProbPointX);
     // retrieve previously evaluated gradient information, if possible
     if (mode & 2) { // avail in all RIA/PMA cases (exception: numerical grads)
       // query data_pairs to retrieve the fn gradient at the MPP

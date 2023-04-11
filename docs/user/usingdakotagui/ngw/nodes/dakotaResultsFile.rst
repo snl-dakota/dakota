@@ -21,6 +21,7 @@ Input Ports
 -----------
 
 - **inputMap**: the map data structure to convert.
+- You can optionally provide additional input ports to this node. The labels of the additional input ports will be used as response names, and the value passed in through each input port will become the associated response value.
 
 ------------
 Output Ports

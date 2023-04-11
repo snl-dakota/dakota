@@ -398,7 +398,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     ExperimentData.cpp UsageTracker.cpp ExperimentDataUtils.cpp
     ReducedBasis.cpp spectral_diffusion.cpp nested_sampling.cpp
     predator_prey.cpp bayes_calibration_utils.cpp EvaluationStore.cpp
-    DakotaTPLDataTransfer.cpp RestartVersion.cpp
+    DakotaTPLDataTransfer.cpp RestartVersion.cpp tolerance_intervals.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
@@ -871,11 +871,15 @@ add_library(dakota_src ${Dakota_src})
 # When using Boost imported targets, we only link libraries using them,
 # then rely on transitive library linking from CMake
 target_link_libraries(dakota_src dakota_src_fortran ${DAKOTA_BOOST_TARGETS})
+# Dakota should always depend on util (consider removing option in DakotaOptions.cmamke
+target_link_libraries(dakota_src dakota_util)
+list(APPEND EXPORT_TARGETS dakota_util)
+list(APPEND DAKOTA_LIBS dakota_util)
 if(DAKOTA_MODULE_SURROGATES)
   target_link_libraries(dakota_src dakota_surrogates)
   #list(APPEND DAKOTA_PKG_LIBS dakota_surrogates)
-  list(APPEND EXPORT_TARGETS dakota_surrogates dakota_util)
-  list(APPEND DAKOTA_LIBS dakota_surrogates dakota_util)
+  list(APPEND EXPORT_TARGETS dakota_surrogates)
+  list(APPEND DAKOTA_LIBS dakota_surrogates)
 endif()
 
 DakotaApplyMPISettings(dakota_src)

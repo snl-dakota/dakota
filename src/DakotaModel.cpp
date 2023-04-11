@@ -105,13 +105,13 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
   prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
 {
-  // weights have length group if given; expand if fields present
-  expand_for_fields_sdv(currentResponse.shared_data(),
-			probDescDB.get_rv("responses.primary_response_fn_weights"),
-			"primary response weights", false, primaryRespFnWts);
-
   initialize_distribution(mvDist);
   initialize_distribution_parameters(mvDist);
+
+  // weights have length group if given; expand if fields present
+  expand_for_fields_sdv(currentResponse.shared_data(),
+    probDescDB.get_rv("responses.primary_response_fn_weights"),
+    "primary response weights", false, primaryRespFnWts);
 
   if (modelId.empty())
     modelId = user_auto_id();
@@ -225,9 +225,10 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
 
 
 Model::
-Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
-      const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
-      short output_level, ProblemDescDB& problem_db,
+Model(LightWtBaseConstructor, const ShortShortPair& vars_view,
+      const SharedVariablesData& svd, bool share_svd,
+      const SharedResponseData&  srd, bool share_srd,
+      const ActiveSet& set, short output_level, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
   numDerivVars(set.derivative_vector().size()),
   numFns(set.request_vector().size()), evaluationsDB(evaluation_store_db),
@@ -245,13 +246,14 @@ Model(LightWtBaseConstructor, const SharedVariablesData& svd, bool share_svd,
   modelAutoGraphicsFlag(false), prevDSIView(EMPTY_VIEW),
   prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
 {
-  if (share_svd) {
+  bool same_view = (svd.view() == vars_view);
+  if (share_svd && same_view) {
     currentVariables       =   Variables(svd);
     userDefinedConstraints = Constraints(svd);
   }
-  else {
+  else { // create new svd to be shared by currentVariables/userDefinedConstr
     SharedVariablesData new_svd(svd.copy());
-    //SharedVariablesData new_svd(svd.view(), svd.components_totals()); // alt
+    if (!same_view) new_svd.view(vars_view);
     currentVariables       =   Variables(new_svd);
     userDefinedConstraints = Constraints(new_svd);
   }
@@ -691,6 +693,20 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mv_dist.multivar_dist_rep());
   mvd_rep->initialize_types(rv_types, active_vars);
+}
+
+
+/** Build random variable distribution types and active subset.  This
+    function is used when the Model variables are in x-space. */
+void Model::
+initialize_active_types(Pecos::MultivariateDistribution& mv_dist)
+{
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
+
+  mvd_rep->initialize_active_variables(
+    currentVariables.shared_data().active_to_all_mask());
 }
 
 
@@ -2954,6 +2970,50 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 }
 
 
+void Model::update_model_active_variables(Model& sub_model)
+{
+  // Run-time update of model variables managing dissimilar view cases
+
+  Variables& sm_vars = sub_model.current_variables();
+  short active_view = currentVariables.view().first,
+     sm_active_view = sm_vars.view().first;
+  // Note 1: inactive vals/bnds/labels and linear/nonlinear constr coeffs/bnds
+  //   updated in init_model()
+  // Note 2: bounds updating isn't strictly required for local/multipoint, but
+  //   is needed for global and could be relevant in cases where model
+  //   involves additional surrogates/nestings.
+  // Note 3: label updating eliminates the need to replicate variable
+  //   descriptors, e.g., in SBOUU input files.  It only needs to be performed
+  //   once (as opposed to the update of vars and bounds).  However, performing
+  //   this updating in the constructor does not propagate properly for multiple
+  //   surrogates/nestings since the sub-model construction (and therefore any
+  //   sub-sub-model constructions) must finish before calling any set functions
+  //   on it.  That is, after-the-fact updating in constructors only propagates
+  //   one level, whereas before-the-fact updating in compute/build functions
+  //   propagates multiple levels.
+  if (active_view == sm_active_view)
+    // update active sub_model vars/cons with active currentVariables data
+    sm_vars.active_variables(currentVariables);
+  else {
+    bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
+      sm_active_all = (sm_active_view == RELAXED_ALL ||
+		       sm_active_view == MIXED_ALL);
+    if (!active_all && sm_active_all)
+      // update active sub_model vars using "All" view of currentVariables
+      sm_vars.all_to_active_variables(currentVariables);
+    else if (!sm_active_all && active_all)
+      // update "All" view of sub_model vars using active currentVariables
+      sm_vars.active_to_all_variables(currentVariables);
+    // TO DO: extend for aleatory/epistemic uncertain views
+    else {
+      Cerr << "Error: unsupported variable view differences in Model::"
+	   << "update_model_active_variables()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
+}
+
+
 /** Splits asv_in total request into map_asv_out, fd_grad_asv_out,
     fd_hess_asv_out, and quasi_hess_asv_out as governed by the
     responses specification.  If the returned use_est_deriv is true,
@@ -5077,6 +5137,32 @@ void Model::deactivate_distribution_parameter_derivatives()
 
 
 void Model::
+trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars)
+{
+  if (modelRep)
+    modelRep->trans_X_to_U(x_c_vars, u_c_vars);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_X_to_U() "
+         << "function.\n       No default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars)
+{
+  if (modelRep)
+    modelRep->trans_U_to_X(u_c_vars, x_c_vars);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_U_to_X() "
+         << "function.\n       No default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
 trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 		  const RealVector& x_vars)
 {
@@ -5157,6 +5243,25 @@ ActiveSet Model::default_active_set()
 
     set.request_vector(asv);
     return set;
+  }
+}
+
+
+void Model::active_view(short view, bool recurse_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->active_view(view, recurse_flag);
+  else { // default does not support recursion (SimulationModel, NestedModel)
+    currentVariables.active_view(view);
+    userDefinedConstraints.active_view(view);
+
+    // TO DO: review other resizing needs in derived Model data
+    numDerivVars = currentVariables.cv(); // update
+    if (!quasiHessians.empty()) {
+      size_t i, num_qh = quasiHessians.size();
+      for (i=0; i<num_qh; ++i)
+	{ quasiHessians[i].reshape(numDerivVars);  quasiHessians[i] = 0.; }
+    }
   }
 }
 

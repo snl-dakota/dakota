@@ -47,7 +47,8 @@ public:
 
   /// standard constructor
   DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
-                     size_t num_hyper = 0,
+		     const ShortShortPair& recast_vars_view,
+		     size_t num_hyper = 0,
                      unsigned short mult_mode = CALIBRATE_NONE, 
                      short recast_resp_deriv_order = 1);
 
@@ -96,6 +97,9 @@ protected:
   /// update currentResponse based on replicate experiment data
   void update_expanded_response(const Model& model);
 
+  /// insert inactive configuration variables into subModel variables
+  void transform_inactive_variables(const Variables& config_vars,
+				    Variables& sub_model_vars);
 
   // ---
   // Construct time convenience functions

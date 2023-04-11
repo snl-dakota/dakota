@@ -64,18 +64,21 @@ public class BatchPluginVersionUpdater {
 	private static final boolean DRY_RUN = false;
 	private static final String START_DIR = "C:\\Users\\emridgw\\workspace\\svn\\dart";
 	private static final String[] PLUGIN_BLACKLIST = new String[]{
+		"com.strikewire.snl.apc.Common",
+		"com.strikewire.snl.apc.FileManager",
+		"com.strikewire.snl.apc.FileSystemDataModel",
+		"com.strikewire.utils",
 		"gov.sandia.aleph",
 		"gov.sandia.aleph.ui",
 		"gov.sandia.aleph.workflow.runtime",
 		"gov.sandia.aleph.workflow.ui",
 		"gov.sandia.apc.editor.calore",
 		"gov.sandia.apc.JobSubmission",
+		"gov.sandia.apc.JobSubmission.help",
 		"gov.sandia.apc.machines",
 		"gov.sandia.apc.terminal",
 		"gov.sandia.bb.commons.ui.saw",
-		"gov.sandia.chartreuse.impl.plotly.mac",
-		"gov.sandia.chartreuse.impl.plotly.linux",
-		"gov.sandia.chartreuse.impl.plotly.windows",
+		"gov.sandia.dakota.parser.ui.saw.bridge",
 		"gov.sandia.dart.apache.commons",
 		"gov.sandia.dart.application",
 		"gov.sandia.dart.aprepro",
@@ -83,12 +86,15 @@ public class BatchPluginVersionUpdater {
 		"gov.sandia.dart.chart.xyplot.ui",
 		"gov.sandia.dart.common.core",
 		"gov.sandia.dart.common.preferences",
+		"gov.sandia.dart.cubit.jni",
+		"gov.sandia.dart.cubit.jni.win64",
 		"gov.sandia.dart.dakota.tests",
 		"gov.sandia.dart.hdf.exodus.bridge",
 		"gov.sandia.dart.jna",
 		"gov.sandia.dart.launch",
 		"gov.sandia.dart.machine.definitions",
 		"gov.sandia.dart.metrics",
+		"gov.sandia.dart.packaging.jre",
 		"gov.sandia.dart.workflow.editor",
 		"gov.sandia.dart.workflow.help",
 		"gov.sandia.dart.workflow.phase3",
@@ -96,6 +102,9 @@ public class BatchPluginVersionUpdater {
 		"gov.sandia.modules",
 		"gov.sandia.modules.runtime",
 		"gov.sandia.packaging.jre",
+		"org.eclipse.graphiti",
+		"org.eclipse.graphiti.mm",
+		"org.eclipse.graphiti.ui",
 		"org.eclipse.nebula.visualization.xygraph"
 	};
 	private static final String[] FEATURE_BLACKLIST = new String[]{
@@ -444,9 +453,10 @@ public class BatchPluginVersionUpdater {
 		boolean containsDeprecatedPlugins = feature.doesFeatureHaveDeprecatedPlugins(DEPRECATED_PLUGINS);
 		containsDeprecatedPlugins = containsDeprecatedPlugins || feature.doesFeatureHaveDeprecatedFeatures(DEPRECATED_FEATURES);
 		boolean containsUpdatedPlugins = feature.doesHaveUpdatedPlugins(updatedPluginList);
+		boolean containsUpdatedFragments = feature.doesHaveUpdatedFragments(updatedPluginList);
 		containsUpdatedPlugins = containsUpdatedPlugins || feature.doesHaveUpdatedFeatures(updatedFeatureList);
 		
-		boolean featureChanged = newStuff || containsDeprecatedPlugins || containsUpdatedPlugins;
+		boolean featureChanged = newStuff || containsDeprecatedPlugins || containsUpdatedPlugins || containsUpdatedFragments;
 		
 		if(featureChanged) {
 			feature.newVersion = determineNewFeatureVersionNumber(

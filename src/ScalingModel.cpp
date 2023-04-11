@@ -47,7 +47,8 @@ ScalingModel(Model& sub_model):
   // BMA TODO: should the BitArrays be empty or same as submodel?
   // recast_secondary_offset is the index to the equality constraints within 
   // the secondary responses
-  RecastModel(sub_model, SizetArray(), BitArray(), BitArray(), 
+  RecastModel(sub_model, SizetArray(), BitArray(), BitArray(),
+	      sub_model.current_variables().view(),
 	      sub_model.num_primary_fns(), sub_model.num_secondary_fns(),
 	      sub_model.num_nonlinear_ineq_constraints(),
 	      response_order(sub_model))
@@ -255,9 +256,10 @@ bool ScalingModel::update_variables_from_model(Model& model)
     // number of variables, so pull up all updates, then override
     // select values/bounds.
 
-    update_variable_values(model);
-    update_variable_bounds(model);
-    update_variable_labels(model);
+    update_all_variables(model);
+    //update_variable_values(model);
+    //update_variable_bounds(model);
+    //update_variable_labels(model);
 
     // the mvDist is already copied (has it's own rep) if needed in ctor
     //mvDist = subModel.multivariate_distribution();

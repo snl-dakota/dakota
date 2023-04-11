@@ -858,6 +858,15 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
     ptr[i] = sdv[i];
 }
 
+/// copy ScalarType* to ScalarType*
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const ScalarType* ptr1, ScalarType* ptr2,
+	       const OrdinalType ptr_len)
+{
+  for (OrdinalType i=0; i<ptr_len; ++i)
+    ptr2[i] = ptr1[i];
+}
+
 
 /// copy SerialDenseVector<> to Array<SerialDenseVector<> > - used by ConcurrentMetaIterator constructor - RWH
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>

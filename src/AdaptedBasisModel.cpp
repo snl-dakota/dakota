@@ -8,7 +8,6 @@
     _______________________________________________________________________ */
 
 #include "AdaptedBasisModel.hpp"
-#include "ProbabilityTransformModel.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
 #include "MarginalsCorrDistribution.hpp"

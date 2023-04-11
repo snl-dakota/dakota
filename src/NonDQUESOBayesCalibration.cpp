@@ -113,16 +113,14 @@ NonDQUESOBayesCalibration::~NonDQUESOBayesCalibration()
 /** Perform the uncertainty quantification */
 void NonDQUESOBayesCalibration::calibrate()
 {
- 
   // generate the sample chain that defines the joint posterior distribution
   map_pre_solve();
   run_chain();
-
 }
 
+  
 void NonDQUESOBayesCalibration::map_pre_solve()
 {
-
   // doing a double check here to avoid a double copy if not optimizing 
   // for MAP (this check happens again in base class map_pre_solve()). 
   if (mapOptimizer.is_null()) return;
@@ -246,14 +244,18 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
   }
 }
 
-void NonDQUESOBayesCalibration::specify_likelihood(){
+
+void NonDQUESOBayesCalibration::specify_likelihood()
+{
   // Instantiate the likelihood function object that computes [ln(function)]
   likelihoodFunctionObj = std::make_shared
     <QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>>
     ("like_", *paramDomain, &dakotaLogLikelihood, (void *)nullptr, true);
 }
 
-void NonDQUESOBayesCalibration::init_bayesian_solver(){
+
+void NonDQUESOBayesCalibration::init_bayesian_solver()
+{
   // TNP TODO: Would we ever need to update the proposal covariance stuff? May
   // want to move that into the posterior call....
 
@@ -285,7 +287,6 @@ void NonDQUESOBayesCalibration::init_bayesian_solver(){
   set_ip_options();
   // Set options specific to MH algorithm
   set_mh_options();
-
 }
 
 void NonDQUESOBayesCalibration::specify_posterior(){
@@ -475,7 +476,7 @@ void NonDQUESOBayesCalibration::cache_chain()
       copy_gsl_partial(qv, 0, u_rv);
       Real* acc_chain_i = acceptanceChain[i];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
-      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+      mcmcModel.trans_U_to_X(u_rv, x_rv);
       for (int j=numContinuousVars; j<num_params; ++j)
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
 
@@ -639,7 +640,6 @@ void NonDQUESOBayesCalibration::filter_chain_by_conditioning()
     paramMins/paramMaxs, paramDomain, paramInitials, priorRV) */
 void NonDQUESOBayesCalibration::specify_prior()
 {
- 
   nonDQUESOInstance = this;
 
   // If calibrating error multipliers, the parameter domain is expanded to
@@ -650,13 +650,16 @@ void NonDQUESOBayesCalibration::specify_prior()
 
   QUESO::GslVector paramMins(paramSpace->zeroVector()),
                    paramMaxs(paramSpace->zeroVector());
+  // mcmcModel may use a different view, so map from all view in mcmcModel to
+  // active in iteratedModel
   RealRealPairArray bnds
-    = mcmcModel.multivariate_distribution().distribution_bounds();
-  // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+    = mcmcModel.multivariate_distribution().distribution_bounds(); // all RV
+  // Use SVD to convert active CV index (calibration params) to all index (RVs)
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
   for (size_t i=0; i<numContinuousVars; ++i) {
-    //const RealRealPair& bnds_i = bnds[svd.cv_index_to_active_index(i)];
-    paramMins[i] = bnds[i].first;  paramMaxs[i] = bnds[i].second;
+    const RealRealPair& bnds_i = bnds[svd.cv_index_to_all_index(i)];
+    paramMins[i] = bnds_i.first;  paramMaxs[i] = bnds_i.second;
   }
   for (size_t i=0; i<numHyperparams; ++i) {
     // inverse gamma is defined on [0,inf), but we may have to divide
@@ -684,8 +687,8 @@ void NonDQUESOBayesCalibration::specify_prior()
   // new approach supports arbitrary priors:
   priorRv = std::make_shared<QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix>> 
   ("prior_", *paramDomain, nonDQUESOInstance);
-
 }
+
 
 void NonDQUESOBayesCalibration::init_proposal_covariance()
 {
@@ -1060,10 +1063,12 @@ print_results(std::ostream& s, short results_state)
   NonDBayesCalibration::print_results(s, results_state);
 }
 
-double NonDQUESOBayesCalibration::dakotaLogLikelihood(
-  const QUESO::GslVector& paramValues, const QUESO::GslVector* paramDirection,
-  const void*         functionDataPtr, QUESO::GslVector*       gradVector,
-  QUESO::GslMatrix*     hessianMatrix, QUESO::GslVector*       hessianEffect)
+double NonDQUESOBayesCalibration::
+dakotaLogLikelihood(const QUESO::GslVector& paramValues,
+		    const QUESO::GslVector* paramDirection,
+		    const void* functionDataPtr, QUESO::GslVector* gradVector,
+		    QUESO::GslMatrix* hessianMatrix,
+		    QUESO::GslVector* hessianEffect)
 {
   // The GP/KRIGING/NO EMULATOR may use an unstandardized space (original)
   // and the PCE or SC cases always use standardized space.

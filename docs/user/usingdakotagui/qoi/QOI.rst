@@ -42,12 +42,9 @@ There are many different types of QOI extractors you can use, thanks to the "New
 Using the New QOI Dialog
 ========================
 
-Currently, the QOI dialog can be accessed in two places:
+Currently, the QOI dialog can only be accessed in :ref:`Next-Gen Workflow <ngw-main>`, via the Settings view for the :ref:`qoiExtractor node <ngw-node-qoiExtractor>`.
 
-- :ref:`The New Script-Based Dakota Driver wizard, on the post-processing page. <wizards-scriptdriver-main>`
-- :ref:`In Next-Gen Workflow, via the qoiExtractor node. <ngw-main>`
-
-In both cases, to open the "New QOI" dialog, simply click on "Add QOI Extractor" and provide a name for your new QOI extractor.  You will then be presented with the "New QOI" dialog.
+To open the "New QOI" dialog, simply click on "Add QOI Extractor" and provide a name for your new QOI extractor.  You will then be presented with the "New QOI" dialog.
 
 .. image:: img/QOI_1.png
    :alt: New QOI

@@ -15,6 +15,7 @@ between Dakota and your simulation model using a series of nodes that are visual
    NextGenWorkflowAnalysisDrivers
    NextGenWorkflowTutorial
    NodeGlossary
+   QueueSubmitScripts
 
 =======================
 Highlighted Node Topics
@@ -28,3 +29,4 @@ Further Reading
 ===============
    
 - Refer to the official `NGW project on Gitlab. <https://gitlab.com/iwf/ngw>`__
+- Refer to the official `NGW documentation. <https://dart.sandia.gov/ngw/>`__

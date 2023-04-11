@@ -35,9 +35,9 @@ response_fn_1:  Min = 1.7002253545390751e+01  Max = 1.2971856503919564e+03
 response_fn_2:  Min = -1.9985851339062890e+00  Max = 3.4841694732343226e-01
 response_fn_3:  Min = -2.9513426915703650e-01  Max = 1.5981192647091424e+01
 Simple Correlation Matrix among all inputs and outputs:
-             continuous-uniform design-range uncertain-range design-set-int response_fn_1 response_fn_2 response_fn_3 
-continuous-uniform  1.00000e+00 
-design-range -3.11316e-02  1.00000e+00 
+             design-range continuous-uniform uncertain-range design-set-int response_fn_1 response_fn_2 response_fn_3 
+design-range  1.00000e+00 
+continuous-uniform -3.11316e-02  1.00000e+00 
 uncertain-range -2.71324e-01 -9.21859e-02  1.00000e+00 
 design-set-int -1.83513e-01 -4.91040e-02 -1.59223e-01  1.00000e+00 
 response_fn_1 -1.70237e-01  1.72846e-01 -2.39786e-01  8.76200e-01  1.00000e+00 
@@ -45,14 +45,14 @@ response_fn_2 -9.25832e-01  3.92788e-01  2.67985e-01  8.78666e-02  1.72232e-01  
 response_fn_3  9.55061e-01 -1.86011e-01 -1.12286e-01 -1.98399e-01 -2.71326e-01 -9.45122e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-continuous-uniform -6.48590e-02 -9.96948e-01  9.74722e-01 
-design-range  4.35252e-01  9.83563e-01 -5.54466e-01 
+design-range -6.48590e-02 -9.96948e-01  9.74722e-01 
+continuous-uniform  4.35252e-01  9.83563e-01 -5.54466e-01 
 uncertain-range -1.96476e-01  5.38356e-01  5.32976e-01 
 design-set-int  8.90783e-01 -6.14587e-01 -5.00454e-03 
 Simple Rank Correlation Matrix among all inputs and outputs:
-             continuous-uniform design-range uncertain-range design-set-int response_fn_1 response_fn_2 response_fn_3 
-continuous-uniform  1.00000e+00 
-design-range  1.06972e-02  1.00000e+00 
+             design-range continuous-uniform uncertain-range design-set-int response_fn_1 response_fn_2 response_fn_3 
+design-range  1.00000e+00 
+continuous-uniform  1.06972e-02  1.00000e+00 
 uncertain-range -2.96364e-01 -1.53327e-01  1.00000e+00 
 design-set-int -1.65145e-01  8.63667e-02 -1.87164e-01  1.00000e+00 
 response_fn_1 -5.70520e-02  1.95804e-01  2.49602e-02  9.28442e-01  1.00000e+00 
@@ -60,8 +60,8 @@ response_fn_2 -9.27094e-01  2.72727e-01  4.24324e-01  6.47750e-02  5.59441e-02  
 response_fn_3  9.80581e-01 -1.46853e-01 -2.99523e-01 -2.15917e-01 -1.25874e-01 -9.58042e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-continuous-uniform  6.53083e-01 -9.89400e-01  9.93775e-01 
-design-range  5.84111e-01  9.33860e-01 -8.45524e-01 
+design-range  6.53083e-01 -9.89400e-01  9.93775e-01 
+continuous-uniform  5.84111e-01  9.33860e-01 -8.45524e-01 
 uncertain-range  7.89840e-01  8.32922e-01 -4.16269e-01 
 design-set-int  9.77015e-01 -4.93611e-01 -4.52533e-01 
 Test Number 2 succeeded
@@ -95,30 +95,30 @@ response_fn_1:  Min = 1.3444224036253229e-03  Max = 1.6200225354539074e+02
 response_fn_2:  Min = -1.9985851339062890e+00  Max = 3.4841694732343226e-01
 response_fn_3:  Min = -2.9513426915703650e-01  Max = 1.5981192647091424e+01
 Simple Correlation Matrix among all inputs and outputs:
-             continuous-uniform design-range uncertain-range response_fn_1 response_fn_2 response_fn_3 
-continuous-uniform  1.00000e+00 
-design-range -2.70665e-02  1.00000e+00 
+             design-range continuous-uniform uncertain-range response_fn_1 response_fn_2 response_fn_3 
+design-range  1.00000e+00 
+continuous-uniform -2.70665e-02  1.00000e+00 
 uncertain-range  8.17861e-02 -1.60026e-01  1.00000e+00 
 response_fn_1  6.06248e-01 -1.46582e-01  6.78854e-01  1.00000e+00 
 response_fn_2 -9.11544e-01  4.25216e-01 -1.62206e-01 -6.34307e-01  1.00000e+00 
 response_fn_3  9.65858e-01 -1.25526e-01  1.32791e-01  6.97441e-01 -9.23921e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-continuous-uniform  7.52915e-01 -9.95100e-01  9.70883e-01 
-design-range -6.32707e-02  9.75150e-01 -3.63211e-01 
+design-range  7.52915e-01 -9.95100e-01  9.70883e-01 
+continuous-uniform -6.32707e-02  9.75150e-01 -3.63211e-01 
 uncertain-range  7.88446e-01 -2.68366e-01  1.61843e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-             continuous-uniform design-range uncertain-range response_fn_1 response_fn_2 response_fn_3 
-continuous-uniform  1.00000e+00 
-design-range  1.07958e-02  1.00000e+00 
+             design-range continuous-uniform uncertain-range response_fn_1 response_fn_2 response_fn_3 
+design-range  1.00000e+00 
+continuous-uniform  1.07958e-02  1.00000e+00 
 uncertain-range  8.10325e-02 -1.68203e-01  1.00000e+00 
 response_fn_1  5.72179e-01 -2.51748e-01  7.26493e-01  1.00000e+00 
 response_fn_2 -9.06850e-01  3.70629e-01 -1.35994e-01 -6.29371e-01  1.00000e+00 
 response_fn_3  9.71625e-01 -1.81818e-01  1.28836e-01  5.80420e-01 -9.58042e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-continuous-uniform  7.68628e-01 -9.80629e-01  9.90215e-01 
-design-range -3.17113e-01  9.00377e-01 -8.06910e-01 
+design-range  7.68628e-01 -9.80629e-01  9.90215e-01 
+continuous-uniform -3.17113e-01  9.00377e-01 -8.06910e-01 
 uncertain-range  8.32368e-01  1.02090e-02  1.30019e-01 
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)

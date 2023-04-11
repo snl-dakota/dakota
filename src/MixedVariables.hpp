@@ -39,8 +39,7 @@ public:
   //
 
   /// standard constructor
-  MixedVariables(const ProblemDescDB& problem_db,
-		 const std::pair<short,short>& view);
+  MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view);
   /// lightweight constructor
   MixedVariables(const SharedVariablesData& svd);
   /// destructor

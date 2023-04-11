@@ -17,7 +17,7 @@
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 #include <process.h>
 #include <algorithm>
 #include <thread>

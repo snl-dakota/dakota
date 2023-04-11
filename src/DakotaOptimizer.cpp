@@ -32,7 +32,9 @@ namespace Dakota {
 Optimizer* Optimizer::optimizerInstance(NULL);
 
 
-Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+Optimizer::
+Optimizer(ProblemDescDB& problem_db, Model& model,
+	  std::shared_ptr<TraitsBase> traits):
   Minimizer(problem_db, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numObjectiveFns(numUserPrimaryFns), localObjectiveRecast(false)
@@ -147,7 +149,9 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
 }
 
 
-Optimizer::Optimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+Optimizer::
+Optimizer(unsigned short method_name, Model& model,
+	  std::shared_ptr<TraitsBase> traits):
   Minimizer(method_name, model, traits), numObjectiveFns(numUserPrimaryFns),
   localObjectiveRecast(false)
 {
@@ -167,7 +171,8 @@ Optimizer::Optimizer(unsigned short method_name, Model& model, std::shared_ptr<T
 Optimizer::
 Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 	  size_t num_dsv, size_t num_drv, size_t num_lin_ineq,
-	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits):
+	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq,
+	  std::shared_ptr<TraitsBase> traits):
   Minimizer(method_name, num_lin_ineq, num_lin_eq, num_nln_ineq, num_nln_eq, traits),
   numObjectiveFns(1), localObjectiveRecast(false)
 {
@@ -180,9 +185,9 @@ Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 
   // The following "best" initializations are done here instead of in
   // Minimizer for this lightweight case
-  std::pair<short,short> view(MIXED_DESIGN, EMPTY_VIEW);
+  ShortShortPair view(MIXED_DESIGN, EMPTY_VIEW);
   SizetArray vc_totals(NUM_VC_TOTALS, 0);
-  vc_totals[TOTAL_CDV] = num_cv;  vc_totals[TOTAL_DDIV] = num_div;
+  vc_totals[TOTAL_CDV]  = num_cv;  vc_totals[TOTAL_DDIV] = num_div;
   vc_totals[TOTAL_DDSV] = num_dsv; vc_totals[TOTAL_DDRV] = num_drv;
   BitArray all_relax_di, all_relax_dr; // empty: no relaxation of discrete
   SharedVariablesData svd(view, vc_totals, all_relax_di, all_relax_dr);
@@ -372,12 +377,11 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   if (require_hessians)                        recast_resp_order |= 4;
 
   iteratedModel.assign_rep(std::make_shared<RecastModel>
-    (iteratedModel, var_map_indices, recast_vars_comps_total,
-     all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
-     set_recast, primary_resp_map_indices,
-     secondary_resp_map_indices, recast_secondary_offset,
-     recast_resp_order, nonlinear_resp_map, pri_resp_recast,
-     sec_resp_recast));
+    (iteratedModel, var_map_indices, recast_vars_comps_total, all_relax_di,
+     all_relax_dr, nonlinear_vars_map, iteratedModel.current_variables().view(),
+     vars_recast, set_recast, primary_resp_map_indices,
+     secondary_resp_map_indices, recast_secondary_offset, recast_resp_order,
+     nonlinear_resp_map, pri_resp_recast, sec_resp_recast));
   ++myModelLayers;
 
 

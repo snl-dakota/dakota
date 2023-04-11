@@ -38,10 +38,11 @@ public:
   NonDExpansion(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
-		short exp_coeffs_approach, const RealVector& dim_pref, int seed,
-		short refine_type, short refine_control, short covar_control,
-		Real colloc_ratio, short rule_nest, short rule_growth,
-		bool piecewise_basis, bool use_derivs);
+		const ShortShortPair& approx_view, short exp_coeffs_approach,
+		const RealVector& dim_pref, int seed, short refine_type,
+		short refine_control, short covar_control, Real colloc_ratio,
+		short rule_nest, short rule_growth, bool piecewise_basis,
+		bool use_derivs);
   /// destructor
   ~NonDExpansion();
 
