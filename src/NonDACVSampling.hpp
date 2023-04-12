@@ -236,6 +236,9 @@ private:
   void compute_ratios(const RealMatrix& var_L, const RealVector& cost,
 		      DAGSolutionData& soln);
 
+  void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
+			       const RealVector& cost, DAGSolutionData& soln);
+
   void acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios);
   //Real acv_estimator_variance(const RealVector& avg_eval_ratios,
   //			        Real avg_hf_target);
@@ -389,6 +392,10 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
   // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
   // > if N* > N_pilot, use initial = r*,N*
   avg_hf_target = allocate_budget(avg_eval_ratios, cost); // r* --> N*
+  if (pilotMgmtMode == OFFLINE_PILOT) {
+    Real offline_N_lwr = 2.;
+    if (avg_N_H < offline_N_lwr) avg_N_H = offline_N_lwr;
+  }
   if (avg_N_H > avg_hf_target) {// replace N* with N_pilot, rescale r* to budget
     avg_hf_target = avg_N_H;
     scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_hf_target);

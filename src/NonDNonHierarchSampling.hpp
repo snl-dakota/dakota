@@ -245,14 +245,6 @@ protected:
 					DAGSolutionData& soln,
 					bool monotonic_r);
 
-  void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
-			       const RealVector& cost, DAGSolutionData& soln);
-  void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
-			       const RealMatrix& cov_LH,
-			       const RealVector& var_H, const RealVector& cost,
-			       const UShortArray& dag,
-			       DAGSolutionData& soln);
-
   void nonhierarch_numerical_solution(const RealVector& cost,
 				      const SizetArray& approx_sequence,
 				      DAGSolutionData& soln,
@@ -601,7 +593,8 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
 inline void NonDNonHierarchSampling::
 r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H, RealVector& N_vec)
 {
-  N_vec.sizeUninitialized(numApprox+1);
+  size_t vec_len = numApprox+1;
+  if (N_vec.length() != vec_len) N_vec.sizeUninitialized(vec_len);
   for (size_t i=0; i<numApprox; ++i)
     N_vec[i] = avg_eval_ratios[i] * N_H;
   N_vec[numApprox] = N_H;

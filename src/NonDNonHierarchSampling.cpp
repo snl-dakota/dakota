@@ -447,80 +447,6 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 
 
 void NonDNonHierarchSampling::
-cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
-			DAGSolutionData& soln)
-{
-  RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
-  else                         avg_eval_ratios = 0.;
-
-  // Compute an ensemble of two-model CVMC solutions:
-  size_t qoi, approx;  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
-  for (approx=0; approx<numApprox; ++approx) {
-    cost_ratio = cost_H / cost[approx];
-    const Real* rho2_LH_a = rho2_LH[approx];
-    Real&  avg_eval_ratio = avg_eval_ratios[approx];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      rho_sq = rho2_LH_a[qoi];
-      if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
-	avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
-      else // should not happen
-	avg_eval_ratio += std::sqrt(cost_ratio / Pecos::SMALL_NUMBER);
-    }
-    avg_eval_ratio /= numFunctions;
-  }
-}
-
-
-void NonDNonHierarchSampling::
-cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
-			const RealMatrix& cov_LH, const RealVector& var_H,
-			const RealVector& cost,   const UShortArray& dag,
-			DAGSolutionData& soln)
-{
-  RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
-  else                         avg_eval_ratios = 0.;
-
-  // Compute an ensemble of two-model CVMC solutions:
-  size_t qoi, source, target;
-  Real cost_ratio, rho_sq, cost_H = cost[numApprox], var_L_qs, var_L_qt,
-    cov_LH_qs, cov_LL_qst;
-  for (source=0; source<numApprox; ++source) {
-    target = dag[source];
-    cost_ratio = cost[target] / cost[source];
-    //Cout << "CVMC source " << source << " target " << target
-    //     << " cost ratio = " << cost_ratio << ":\n";
-    Real& avg_eval_ratio = avg_eval_ratios[source];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      const RealSymMatrix& cov_LL_q = cov_LL[qoi];
-      var_L_qs = cov_LL_q(source,source);
-      if (target == numApprox) {
-	cov_LH_qs = cov_LH(qoi,source);
-	rho_sq    = cov_LH_qs / var_L_qs * cov_LH_qs / var_H[qoi];
-	//Cout << "  QoI " << qoi << ": cov_LH " << cov_LH_qs << " var_L "
-	//     << var_L_qs << " var_H " << var_H[qoi] << " rho^2 = " << rho_sq
-	//     << std::endl;
-      }
-      else {
-	cov_LL_qst = cov_LL_q(source,target);
-	var_L_qt   = cov_LL_q(target,target);
-	rho_sq     = cov_LL_qst / var_L_qs * cov_LL_qst / var_L_qt;
-	//Cout << "  QoI " << qoi << ": cov_LL " << cov_LL_qst << " var_L "
-	//     << var_L_qs << " var_L " << var_L_qt << " rho^2 = " << rho_sq
-	//     << std::endl;
-      }
-      if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
-	avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
-      else // should not happen
-	avg_eval_ratio += std::sqrt(cost_ratio / Pecos::SMALL_NUMBER);
-    }
-    avg_eval_ratio /= numFunctions;
-  }
-}
-
-
-void NonDNonHierarchSampling::
 scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 			   Real avg_N_H)
 {
@@ -550,8 +476,8 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
       // > DAG-aware overload below preserves source-target ratio
       r_i = 1. + RATIO_NUDGE;  cost_r_i = r_i * cost[i];
       // update factor for next r_i: remove this r_i from budget/inner_prod
-      budget  -= avg_N_H * cost_r_i / cost_H;  approx_inner_prod -= cost_r_i;
-      factor   = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
+      budget -= avg_N_H * cost_r_i / cost_H;  approx_inner_prod -= cost_r_i;
+      factor  = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
     }
   }
   if (outputLevel >= DEBUG_OUTPUT) {
@@ -665,11 +591,16 @@ nonhierarch_numerical_solution(const RealVector& cost,
     nln_ineq_ub[0] = budget;
     break;
   case N_VECTOR_LINEAR_CONSTRAINT: {
-    copy_data_partial(avg_eval_ratios, x0, 0);  x0[numApprox] = 1.;
-    if (mlmfIter) x0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
-    else          x0.scale(avg_hf_target);
-    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
-
+    Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
+    r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
+    if (pilotMgmtMode == OFFLINE_PILOT) {
+      x_lb = offline_N_lwr;
+      for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
+	if (x0[i] < x_lb[i])
+	  x0[i]   = x_lb[i];
+    }
+    else x_lb = avg_N_H;
+    
     // linear inequality constraint on budget:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   N w + \Sum_i w_i N_i <= equivHF * w
@@ -681,10 +612,15 @@ nonhierarch_numerical_solution(const RealVector& cost,
     break;
   }
   case N_VECTOR_LINEAR_OBJECTIVE: {
-    copy_data_partial(avg_eval_ratios, x0, 0);  x0[numApprox] = 1.;
-    if (mlmfIter) x0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
-    else          x0.scale(avg_hf_target);
-    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
+    Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
+    r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
+    if (pilotMgmtMode == OFFLINE_PILOT) {
+      x_lb = offline_N_lwr;
+      for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
+	if (x0[i] < x_lb[i])
+	  x0[i]   = x_lb[i];
+    }
+    else x_lb = avg_N_H;
 
     // nonlinear constraint on estvar
     nln_ineq_lb = -DBL_MAX;  // no lower bnd

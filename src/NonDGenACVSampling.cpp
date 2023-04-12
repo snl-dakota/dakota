@@ -52,11 +52,11 @@ NonDGenACVSampling::~NonDGenACVSampling()
 void NonDGenACVSampling::generate_dags()
 {
   // For consistency testing:
-  // UShortArray std_dag(numApprox);
-  // //for (size_t i=0; i<numApprox; ++i)  std_dag[i] = i+1; // MFMC
-  // std_dag.assign(numApprox, 0); // ACV
-  // modelDAGs.insert(std_dag);
-  // return;
+  UShortArray std_dag(numApprox);
+  for (size_t i=0; i<numApprox; ++i)  std_dag[i] = i+1; // MFMC
+  // std_dag.assign(numApprox, numApprox); // ACV
+  modelDAGs.insert(std_dag);
+  return;
 
   // zero root directed acyclic graphs
   switch (dagRecursionType) {
@@ -626,12 +626,11 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     // (analytic MFMC soln expected to be less relevant).  Differs from derived
     // ACV approach through use of paired DAG dependencies.
     cvmc_ensemble_solutions(covLL, covLH, varH, cost, *activeDAGIter, soln);
-    //Cout << "CVMC eval_ratios:\n" << avg_eval_ratios << std::endl;
+    Cout << "Unscaled CVMC eval_ratios:\n" << avg_eval_ratios << std::endl;
 
     if (budget_constrained) { // scale according to cost
-      // scale_to_target(..., orderedRootList) incorporates lin ineq enforcement
       scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target,
-		      orderedRootList);
+		      orderedRootList); // incorporates lin ineq enforcement
       RealVector cd_vars;
       r_and_N_to_design_vars(avg_eval_ratios, avg_hf_target, cd_vars);
       soln.avgEstVar = average_estimator_variance(cd_vars); // ACV or GenACV
@@ -641,7 +640,7 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
       avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
     }
     if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "GenACV initial guess from ensemble CVMC:\n"
+      Cout << "GenACV scaled initial guess from ensemble CVMC:\n"
 	   << "  average eval ratios:\n" << avg_eval_ratios
 	   << "  average HF target = " << avg_hf_target << std::endl;
 
@@ -668,6 +667,66 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
 	   << soln.avgEstVarRatio << std::endl;
     else
       Cout << "Estimator cost allocation = " << soln.equivHFAlloc << std::endl;
+  }
+}
+
+
+void NonDGenACVSampling::
+cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
+			const RealMatrix& cov_LH, const RealVector& var_H,
+			const RealVector& cost,   const UShortArray& dag,
+			DAGSolutionData& soln)
+{
+  RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
+  else                         avg_eval_ratios = 0.;
+
+  // First pass: compute an ensemble of pairwise CVMC solutions.  Note that
+  // the computed eval ratios are no longer bound to the HF node.
+  size_t qoi, source, target;
+  Real cost_ratio, rho_sq, cost_H = cost[numApprox], var_L_qs, var_L_qt,
+    cov_LH_qs, cov_LL_qst;
+  for (source=0; source<numApprox; ++source) {
+    target = dag[source];
+    cost_ratio = cost[target] / cost[source];
+    //Cout << "CVMC source " << source << " target " << target
+    //     << " cost ratio = " << cost_ratio << ":\n";
+    Real& avg_eval_ratio = avg_eval_ratios[source];
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      const RealSymMatrix& cov_LL_q = cov_LL[qoi];
+      var_L_qs = cov_LL_q(source,source);
+      if (target == numApprox) {
+	cov_LH_qs = cov_LH(qoi,source);
+	rho_sq    = cov_LH_qs / var_L_qs * cov_LH_qs / var_H[qoi];
+	//Cout << "  QoI " << qoi << ": cov_LH " << cov_LH_qs << " var_L "
+	//     << var_L_qs << " var_H " << var_H[qoi] << " rho^2 = " << rho_sq
+	//     << std::endl;
+      }
+      else {
+	cov_LL_qst = cov_LL_q(source,target);
+	var_L_qt   = cov_LL_q(target,target);
+	rho_sq     = cov_LL_qst / var_L_qs * cov_LL_qst / var_L_qt;
+	//Cout << "  QoI " << qoi << ": cov_LL " << cov_LL_qst << " var_L "
+	//     << var_L_qs << " var_L " << var_L_qt << " rho^2 = " << rho_sq
+	//     << std::endl;
+      }
+      if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
+	avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      else // should not happen
+	avg_eval_ratio += std::sqrt(cost_ratio / Pecos::SMALL_NUMBER);
+    }
+    avg_eval_ratio /= numFunctions;
+  }
+
+  // Second pass: convert pairwise ratios to root-node ratios by rolling up
+  // the oversample factors across the ordered root list.  Skip the first
+  // target = numApprox for which r_tgt = 1.
+  UShortList::const_iterator r_cit; UShortSet::const_iterator d_cit; Real r_tgt;
+  for (r_cit=++orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
+    target = *r_cit;  const UShortSet& reverse_dag = reverseActiveDAG[target];
+    r_tgt = avg_eval_ratios[target];
+    for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit)
+      { source = *d_cit;  avg_eval_ratios[source] *= r_tgt; }
   }
 }
 
@@ -750,6 +809,11 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
   // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
   // > if N* > N_pilot, use initial = r*,N*
   avg_hf_target = allocate_budget(avg_eval_ratios, cost); // r* --> N*
+
+  if (pilotMgmtMode == OFFLINE_PILOT) {
+    Real offline_N_lwr = 2.;
+    if (avg_N_H < offline_N_lwr) avg_N_H = offline_N_lwr;
+  }
   if (avg_N_H > avg_hf_target) {// replace N* with N_pilot, rescale r* to budget
     avg_hf_target = avg_N_H;
 
@@ -798,7 +862,8 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
       for (approx=0; approx<numApprox; ++approx)
 	inner_prod += cost[approx] * avg_eval_ratios[approx];
       Cout << "Rescale to budget: average evaluation ratios\n"<< avg_eval_ratios
-	   << "budget = " << avg_N_H * inner_prod / cost_H << std::endl;
+	   << "avg_hf_target = " << avg_hf_target << " budget = "
+	   << avg_N_H * inner_prod / cost_H << std::endl;
     }
   }
   else

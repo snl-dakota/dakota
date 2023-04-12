@@ -1351,7 +1351,6 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
          // approx_sequence for consistency w/ linear constr in numerical soln
       mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
 				       soln, true);// monotonic r
-
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
 	   << avg_eval_ratios << std::endl;
@@ -1364,6 +1363,10 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
       // don't select an infeasible initial guess:
       // > if N* < N_pilot, scale back r* for use initial = scaled_r*,N_pilot
       // > if N* > N_pilot, use initial = r*,N*
+      if (pilotMgmtMode == OFFLINE_PILOT) {
+	Real offline_N_lwr = 2.;
+	if (avg_N_H < offline_N_lwr) avg_N_H = offline_N_lwr;
+      }
       if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
 	scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_N_H);
 	avg_hf_target = avg_N_H;

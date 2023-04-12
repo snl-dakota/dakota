@@ -101,6 +101,12 @@ private:
   void compute_ratios(const RealMatrix& var_L, const RealVector& cost,
 		      DAGSolutionData& solution);
 
+  void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
+			       const RealMatrix& cov_LH,
+			       const RealVector& var_H, const RealVector& cost,
+			       const UShortArray& dag,
+			       DAGSolutionData& soln);
+
   void compute_parameterized_G_g(const RealVector& N_vec);
   void unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2);
 

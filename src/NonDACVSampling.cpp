@@ -566,6 +566,32 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
 
 
 void NonDACVSampling::
+cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
+			DAGSolutionData& soln)
+{
+  RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
+  else                         avg_eval_ratios = 0.;
+
+  // Compute an ensemble of two-model CVMC solutions, all relative to HF:
+  size_t qoi, approx;  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
+  for (approx=0; approx<numApprox; ++approx) {
+    cost_ratio = cost_H / cost[approx];
+    const Real* rho2_LH_a = rho2_LH[approx];
+    Real&  avg_eval_ratio = avg_eval_ratios[approx];
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      rho_sq = rho2_LH_a[qoi];
+      if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
+	avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      else // should not happen
+	avg_eval_ratio += std::sqrt(cost_ratio / Pecos::SMALL_NUMBER);
+    }
+    avg_eval_ratio /= numFunctions;
+  }
+}
+
+
+void NonDACVSampling::
 augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				RealVector& lin_ineq_lb,
 				RealVector& lin_ineq_ub)
