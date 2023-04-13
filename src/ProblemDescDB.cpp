@@ -2171,6 +2171,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"coliny.max_boxsize_limit", P_MET maxBoxSize},
       {"coliny.variable_tolerance", P_MET threshDelta},
       {"confidence_level", P_MET wilksConfidenceLevel},
+      {"ti_coverage", P_MET tiCoverage},
+      {"ti_confidence_level", P_MET tiConfidenceLevel},
       {"constraint_penalty", P_MET constraintPenalty},
       {"constraint_tolerance", P_MET constraintTolerance},
       {"convergence_tolerance", P_MET convergenceTolerance},
@@ -2687,6 +2689,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"scaling", P_MET methodScaling},
       {"speculative", P_MET speculativeFlag},
       {"std_regression_coeffs", P_MET stdRegressionCoeffs},
+      {"tolerance_intervals", P_MET toleranceIntervalsFlag},
       {"variance_based_decomp", P_MET vbdFlag},
       {"wilks", P_MET wilksFlag}
     },

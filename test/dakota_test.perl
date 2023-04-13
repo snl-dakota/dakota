@@ -1341,7 +1341,7 @@ sub parse_test_output {
     #  print TEST_OUT;
     #}
     
-    if (/(Moment|Sample moment) statistics for each (response function|posterior variable):/) {
+    if (/(Moment|Sample moment|Double-sided tolerance interval equivalent normal) statistics for each (response function|posterior variable):/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line (Mean/StdDev/Skew/Kurt header)

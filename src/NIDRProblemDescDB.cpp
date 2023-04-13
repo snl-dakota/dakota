@@ -6786,6 +6786,8 @@ static Real
 	MP_(volBoxSize),
 	MP_(vns),
 	MP_(wilksConfidenceLevel),
+	MP_(tiCoverage),
+	MP_(tiConfidenceLevel),
 	MP_(xConvTol);
 
 static RealVector
@@ -6932,7 +6934,8 @@ static bool
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
 	MP_(standardizedSpace),
-	MP_(stdRegressionCoeffs),
+        MP_(stdRegressionCoeffs),
+        MP_(toleranceIntervalsFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
 	MP_(tensorGridFlag),

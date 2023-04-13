@@ -1,0 +1,47 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 59 total (59 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00 -3.0000000000e+00
+ response_fn_2  4.7188739007e-01  1.5802617284e-01 -5.1340596904e-01  9.2447608436e-01
+ response_fn_3  8.1482677252e-01  1.7229246977e-01 -5.8722668746e-02 -5.0064796208e-02
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  4.3070554513e-01  5.1306923501e-01  1.3377447200e-01  1.9310067150e-01
+ response_fn_3  7.6992711035e-01  8.5972643468e-01  1.4585137233e-01  2.1053342626e-01
+Simple Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E -1.57239e-02  1.00000e+00 
+           X  2.37426e-02  1.35097e-02  1.00000e+00 
+           Y  2.20007e-02  6.39525e-02  6.63957e-02  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -5.39810e-01  4.99035e-02  6.39920e-01  5.56679e-01         -nan  1.00000e+00 
+response_fn_3  1.61780e-02 -4.71056e-01  4.64965e-01  7.39982e-01         -nan  6.68557e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -9.92624e-01 -2.65683e-01 
+           E         -nan -1.62866e-02 -9.91869e-01 
+           X         -nan  9.93782e-01  9.87560e-01 
+           Y         -nan  9.91475e-01  9.95933e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E  4.24898e-02  1.00000e+00 
+           X -6.25365e-03 -5.21917e-02  1.00000e+00 
+           Y  6.44652e-02  3.76973e-02  2.29106e-02  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -5.11222e-01 -3.64115e-02  5.92987e-01  5.13735e-01         -nan  1.00000e+00 
+response_fn_3  4.08533e-02 -5.51607e-01  4.27586e-01  6.74459e-01         -nan  5.98364e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -8.57201e-01  8.87219e-02 
+           E         -nan -1.05948e-02 -9.09054e-01 
+           X         -nan  8.71206e-01  8.31657e-01 
+           Y         -nan  8.54452e-01  9.36773e-01 
+Double-sided tolerance interval equivalent normal statistics for each response function:
+                           Mean    Eq. Normal Std
+response_fn_1  6.2500000000e+00  0.0000000000e+00
+response_fn_2  4.7188739007e-01  1.8925623253e-02
+response_fn_3  8.1482677252e-01  2.0634191878e-02

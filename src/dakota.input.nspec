@@ -2716,6 +2716,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ two_sided {N_mdm(type,wilksSidedInterval_TWO_SIDED)} ]
      ]
     [ std_regression_coeffs {N_mdm(true,stdRegressionCoeffs)} ]
+    [ tolerance_intervals {N_mdm(true,toleranceIntervalsFlag)}
+      [ coverage REAL {N_mdm(Real01,tiCoverage)} ]
+      [ confidence_level REAL {N_mdm(Real01,tiConfidenceLevel)} ]
+     ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
       |

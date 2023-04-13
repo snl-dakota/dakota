@@ -141,6 +141,12 @@ public:
   /// prints the Wilks stastics
   void print_wilks_stastics(std::ostream& s) const;
 
+  /// prints the tolerance intervals stastics
+  void print_tolerance_intervals_statistics(std::ostream& s) const;
+
+  /// archive the tolerance intervals statistics in results DB
+  void archive_tolerance_intervals(size_t inc_id = 0, bool incIdIsZeroOrIsTheLastOne = true);
+
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
@@ -329,6 +335,17 @@ protected:
 
   bool stdRegressionCoeffs; ///< flags computation/output of standardized
                             ///< regression coefficients
+
+  bool toleranceIntervalsFlag; ///< flags of double sided tolerance interval
+                               ///<  equivalent normal
+  Real tiCoverage; ///< coverage to be used in the calculation of the double
+                   ///< sided tolerance interval equivaluent normal
+  Real tiConfidenceLevel; ///< confidence interval to be used in the
+                          ///< calculation of the double sided tolerance
+                          ///< interval equivalent normal
+  size_t     tiNumValidSamples;
+  RealVector tiDstienMus;
+  RealVector tiDstienSigmas;
 
   bool statsFlag;   ///< flags computation/output of statistics
   bool allDataFlag; ///< flags update of allResponses

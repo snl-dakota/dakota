@@ -3003,6 +3003,14 @@
 	  </keyword>
 	  <keyword  id="std_regression_coeffs" name="std_regression_coeffs" code="{N_mdm(true,stdRegressionCoeffs)}" label="std_regression_coeffs"  minOccurs="0" >
 	  </keyword>
+	  <keyword  id="tolerance_intervals" name="tolerance_intervals" code="{N_mdm(true,toleranceIntervalsFlag)}" label="Compute tolerance intervals"  minOccurs="0" >
+	    <keyword  id="ti_coverage" name="coverage" code="{N_mdm(Real01,tiCoverage)}" label="Coverage for tolerance intervals"  minOccurs="0" maxOccurs="1" default="0.95" >
+              <param type="REAL" />
+	    </keyword>
+	    <keyword  id="ti_confidence_level" name="confidence_level" code="{N_mdm(Real01,tiConfidenceLevel)}" label="Confidence level for tolerance intervals"  minOccurs="0" maxOccurs="1" default="0.90" >
+	      <param type="REAL" />
+	    </keyword>
+	  </keyword>
 	  &default_final_moments;
 	  &level_mappings;
 	  &rng_options;

@@ -1054,10 +1054,11 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 
 
 void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
-  if(epistemicStats) {
+  if (epistemicStats) {
     archive_extreme_responses(inc_id);
-  } else {
-  // Archive moments
+  }
+  else {
+    // Archive moments
     if(functionMomentsComputed) {
       archive_moments(inc_id);
       archive_moment_confidence_intervals(inc_id);
@@ -1074,17 +1075,25 @@ void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
         }
       }
     }
-    // Archive Standardized Regression Coefficients
-    if (stdRegressionCoeffs)
-      nonDSampCorr.archive_std_regress_coeffs(run_identifier(), resultsDB,
-                                      iteratedModel.ordered_labels(),
-                                      iteratedModel.response_labels(), inc_id);
   }
+
   // Archive correlations
-  if(!subIteratorFlag) { 
+  if (!subIteratorFlag) {
     nonDSampCorr.archive_correlations(run_identifier(), resultsDB, iteratedModel.ordered_labels(),
                                       iteratedModel.response_labels(),inc_id);
   }
+
+  // Archive Standardized Regression Coefficients
+  if (stdRegressionCoeffs) {
+    nonDSampCorr.archive_std_regress_coeffs(run_identifier(), resultsDB,
+                                            iteratedModel.ordered_labels(),
+                                            iteratedModel.response_labels(), inc_id);
+  }
+
+  if (toleranceIntervalsFlag) {
+    archive_tolerance_intervals(inc_id, (inc_id == 0) || (inc_id == refineSamples.length() + 1));
+  }
+
   // Associate number of samples attribute with the increment for incremental samplee
   AttributeArray ns_attr({ResultAttribute<int>("samples", num_samples)}); 
   if(inc_id) {
