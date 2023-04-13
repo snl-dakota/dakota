@@ -52,8 +52,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   // default solver to OPT++ NIP based on numerical experience
   optSubProblemSolver = sub_optimizer_select(
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
-  //SUBMETHOD_NPSOL_OPTPP); // default: use both if available
-    SUBMETHOD_OPTPP); // testing: use OPT++ NIP if available
+    SUBMETHOD_NPSOL_OPTPP); // default: compete SQP vs. NIP if both available
 
   // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -498,7 +497,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
 			       DAGSolutionData& soln, size_t& num_samples)
 {
   // --------------------------------------
-  // Formulate the optimization sub-problem
+  // Formulate the optimization sub-problem: initial pt, bnds, constraints
   // --------------------------------------
 
   // > MFMC analytic requires ordered rho2LH to avoid FPE (approxSequence defn)
@@ -640,7 +639,9 @@ nonhierarch_numerical_solution(const RealVector& cost,
     num_solvers = 2; break;
   }
 
-  // configure the variance minimizer(s)
+  // -----------------------------------
+  // Configure the variance minimizer(s)
+  // -----------------------------------
   if (varianceMinimizers.empty()) {
     varianceMinimizers.resize(num_solvers);
 
@@ -795,7 +796,8 @@ nonhierarch_numerical_solution(const RealVector& cost,
       case SUBMETHOD_NPSOL: case SUBMETHOD_OPTPP:
 	solvers[0] = optSubProblemSolver;  break;
       case SUBMETHOD_NPSOL_OPTPP:
-	solvers[0] = SUBMETHOD_NPSOL;  solvers[1] = SUBMETHOD_OPTPP;  break;
+	solvers[0] = SUBMETHOD_NPSOL;
+	solvers[1] = SUBMETHOD_OPTPP;  break;
       }
       for (i=0; i<num_solvers; ++i) {
 	switch (solvers[i]) {
@@ -840,7 +842,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
       }
     }
   }
-  else
+  else // currently unsequenced...
     for (i=0; i<num_solvers; ++i) {
       Iterator& min_i = varianceMinimizers[i];
       min_i.initial_point(x0);
@@ -853,41 +855,63 @@ nonhierarch_numerical_solution(const RealVector& cost,
 	min_i.nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
     }
 
-  // compute optimal r*,N* (or r* for fixed N) that maximizes variance reduction
-  Real merit_fn, merit_fn_star = DBL_MAX;  size_t best_min;
+  // ----------------------------------
+  // Solve the optimization sub-problem: compute optimal r*,N*
+  // ----------------------------------
+  Real constr, constr_viol, nln_upper_bnd, merit_fn, merit_fn_star = DBL_MAX,
+    r_p = 1.e+6, c_tol = .01, c_tol_p1 = 1. + c_tol;
+  size_t last_index = num_solvers - 1, best_min = last_index;
   for (i=0; i<num_solvers; ++i) {
-    // ----------------------------------
-    // Solve the optimization sub-problem
-    // ----------------------------------
     Iterator& min_i = varianceMinimizers[i];
-    min_i.run();
+    min_i.run(); // currently unsequenced...
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "nonhierarch_numerical_solution() results:\ncv_star =\n"
+	   << min_i.variables_results().continuous_variables()
+	   << "fn_vals_star =\n" << min_i.response_results().function_values();
 
-    // -------------------------------------
-    // Post-process the optimization results
-    // -------------------------------------
-    // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
-    // shared increment from N* or from targeting specified budget || accuracy.
-    //const RealVector& cv = min_i.variables_results().continuous_variables();
-    const RealVector& fn_vals = min_i.response_results().function_values();
-    //Cout << "Minimizer results:\ncv_star =\n" << cv_star
-    //     << "fn_vals_star =\n" << fn_vals_star;
-    merit_fn = 0.;//penalty_merit(fn_vals, ...); // TO DO
-
-    // track best
-    if (i == 0 || merit_fn < merit_fn_star)
-      { merit_fn_star = merit_fn;  best_min = i; }
+    if (sequenced_minimizers) { // coordinated optimization
+      if (i < last_index) // propagate final pt to next initial pt
+	varianceMinimizers[i+1].iterated_model().active_variables(
+	  min_i.variables_results());
+    }
+    else {                      //    competed optimization
+      // track best using penalty merit fn comprised of obj and nln constraint
+      // > Assume linear constraints are satisfied (for now)
+      // > keep accuracy in log space and normalize both cost and log-accuracy
+      const RealVector& fn_vals = min_i.response_results().function_values();
+      merit_fn = fn_vals[0];//penalty_merit() uses too many Minimizer attributes
+      if (num_nln_con) {
+	nln_upper_bnd = (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) ?
+	  std::log(convergenceTol*average(estVarIter0)) : budget;
+	constr = fn_vals[1] / nln_upper_bnd; // normalize
+	if (constr > c_tol_p1) {
+	  constr_viol = constr - c_tol_p1;
+	  merit_fn += r_p * constr_viol * constr_viol;
+	}
+      }
+      if (i == 0 || merit_fn < merit_fn_star)
+	{ merit_fn_star = merit_fn;  best_min = i; }
+    }
   }
-  Iterator& min_s = varianceMinimizers[best_min];
+
+  // -------------------------------------
+  // Post-process the optimization results
+  // -------------------------------------
+  const Iterator& min_s = varianceMinimizers[best_min];
+  if (outputLevel >= NORMAL_OUTPUT && num_solvers > 1 && !sequenced_minimizers)
+    Cout << "nonhierarch_numerical_solution() best solver = "
+	 << min_s.method_string() << std::endl;
   const RealVector& cv_star = min_s.variables_results().continuous_variables();
   const RealVector& fn_vals_star = min_s.response_results().function_values();
-
-  // Objective recovery from optimizer provides std::log(average(nh_estvar))
-  // = var_H / N_H (1 - R^2).  Notes:
+  // Estvar recovery from optimizer provides std::log(average(nh_estvar)) =
+  // var_H / N_H (1 - R^2).  Notes:
   // > a QoI-vector prior to averaging would require recomputation from r*,N*)
   // > this value corresponds to N* (_after_ num_samples applied)
   avg_estvar = (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) ?
     std::exp(fn_vals_star[1]) : std::exp(fn_vals_star(0));
 
+  // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
+  // shared increment from N* or from targeting specified budget || accuracy.
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
     copy_data(cv_star, avg_eval_ratios); // r*

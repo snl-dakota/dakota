@@ -51,13 +51,13 @@ NonDGenACVSampling::~NonDGenACVSampling()
 
 void NonDGenACVSampling::generate_dags()
 {
-  ////////////////// For MFMC,ACV consistency testing:
+  /* For verification of consistency with MFMC,ACV:
   UShortArray std_dag(numApprox);
   //for (size_t i=0; i<numApprox; ++i)  std_dag[i] = i+1; // MFMC
   std_dag.assign(numApprox, numApprox); // ACV
   modelDAGs.insert(std_dag);
   return;
-  //////////////////
+  */
 
   // zero root directed acyclic graphs
   switch (dagRecursionType) {
