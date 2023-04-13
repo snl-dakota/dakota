@@ -24,6 +24,7 @@
 #include "dakota_stat_util.hpp"
 #include "pecos_data_types.hpp"
 #include "NormalRandomVariable.hpp"
+#include "tolerance_intervals.hpp"
 #include <algorithm>
 
 #include <boost/math/special_functions/beta.hpp>
@@ -44,6 +45,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   rngName(probDescDB.get_string("method.random_number_generator")),
   sampleType(probDescDB.get_ushort("method.sample_type")), samplesIncrement(0),
   stdRegressionCoeffs(probDescDB.get_bool("method.std_regression_coeffs")),
+  toleranceIntervalsFlag(probDescDB.get_bool("method.tolerance_intervals")),
   statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
@@ -112,6 +114,13 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     samplesRef = numSamples;
   }
 
+  if (toleranceIntervalsFlag) {
+    tiCoverage = probDescDB.get_real("method.ti_coverage");
+    tiConfidenceLevel = probDescDB.get_real("method.ti_confidence_level");
+
+    tiNumValidSamples = 0;
+  }
+
   // update concurrency
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
@@ -127,6 +136,7 @@ NonDSampling(unsigned short method_name, Model& model,
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
   sampleType(sample_type), wilksFlag(false), samplesIncrement(0), stdRegressionCoeffs(false),
+  toleranceIntervalsFlag(false),
   statsFlag(false), allDataFlag(true), samplingVarsMode(sampling_vars_mode),
   sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern),
   backfillDuplicates(false), numLHSRuns(0)
@@ -161,7 +171,9 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
   numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
-  samplesIncrement(0), stdRegressionCoeffs(false), statsFlag(false), allDataFlag(true),
+  samplesIncrement(0), stdRegressionCoeffs(false),
+  toleranceIntervalsFlag(false),
+  statsFlag(false), allDataFlag(true),
   samplingVarsMode(ACTIVE_UNIFORM), sampleRanksMode(IGNORE_RANKS),
   varyPattern(true), backfillDuplicates(false), numLHSRuns(0)
 {
@@ -187,7 +199,9 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
   numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
-  samplesIncrement(0), stdRegressionCoeffs(false), statsFlag(false), allDataFlag(true),
+  samplesIncrement(0), stdRegressionCoeffs(false),
+  toleranceIntervalsFlag(false),
+  statsFlag(false), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS), varyPattern(true),
   backfillDuplicates(false), numLHSRuns(0)
 {
@@ -209,7 +223,9 @@ NonDSampling::
 NonDSampling(Model& model, const RealMatrix& sample_matrix):
   NonD(LIST_SAMPLING, model), seedSpec(0), randomSeed(0),
   samplesSpec(sample_matrix.numCols()), sampleType(SUBMETHOD_DEFAULT),
-  wilksFlag(false), samplesIncrement(0), stdRegressionCoeffs(false), statsFlag(true), allDataFlag(true),
+  wilksFlag(false), samplesIncrement(0), stdRegressionCoeffs(false),
+  toleranceIntervalsFlag(false),
+  statsFlag(true), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS),
   varyPattern(false), backfillDuplicates(false), numLHSRuns(0)
 {
@@ -994,8 +1010,9 @@ compute_statistics(const RealMatrix&     vars_samples,
 		     iteratedModel.response_labels());
   }
 
-  if (epistemicStats) // Epistemic/mixed
+  if (epistemicStats) { // Epistemic/mixed
     compute_intervals(resp_samples); // compute min/max response intervals
+  }
   else { // Aleatory
     // compute means and std deviations with confidence intervals
     compute_moments(resp_samples);
@@ -1006,8 +1023,20 @@ compute_statistics(const RealMatrix&     vars_samples,
 
   if (!subIteratorFlag) {
     nonDSampCorr.compute_correlations(vars_samples, resp_samples);
-    if (stdRegressionCoeffs)
-      nonDSampCorr.compute_std_regress_coeffs(vars_samples, resp_samples);
+  }
+
+  if (stdRegressionCoeffs) {
+    nonDSampCorr.compute_std_regress_coeffs(vars_samples, resp_samples);
+  }
+
+  if (toleranceIntervalsFlag) {
+    computeDSTIEN( resp_samples
+                 , tiCoverage
+                 , 1. - tiConfidenceLevel
+                 , tiNumValidSamples // Output
+                 , tiDstienMus       // Output
+                 , tiDstienSigmas    // Output
+                 );
   }
 
   // push results into finalStatistics
@@ -1794,21 +1823,41 @@ void NonDSampling::update_final_statistics()
 
 void NonDSampling::print_statistics(std::ostream& s) const
 {
-  if (epistemicStats) // output only min & max values in the epistemic case
+  if (epistemicStats) { // output only min & max values in the epistemic case
     print_intervals(s);
+  }
   else {
     print_moments(s);
     if (totalLevelRequests) {
       print_level_mappings(s);
       print_system_mappings(s);
     }
-    if( wilksFlag )
-      print_wilks_stastics(s); //, "response function", iteratedModel.response_labels());
   }
+
   if (!subIteratorFlag) {
     nonDSampCorr.print_correlations(s, iteratedModel.ordered_labels(), iteratedModel.response_labels());
-//    if (stdRegressionCoeffs)
-//      nonDSampCorr.print_std_regress_coeffs(s, cv_labels, iteratedModel.response_labels());
+  }
+
+  if (wilksFlag) {
+    if (epistemicStats) {
+      Cerr << "Warning: Wilks printing requested in conjunction with epstemic variables" << std::endl;
+    }
+
+    print_wilks_stastics(s);
+  }
+
+  if (stdRegressionCoeffs) {
+    if (epistemicStats) {
+      Cerr << "Warning: std regression coefficients printing requested in conjunction with epstemic variables" << std::endl;
+    }
+  }
+
+  if (toleranceIntervalsFlag) {
+    if (epistemicStats) {
+      Cerr << "Warning: tolerance intervals printing requested in conjunction with epstemic variables" << std::endl;
+    }
+
+    print_tolerance_intervals_statistics(s);
   }
 }
 
@@ -1951,6 +2000,72 @@ print_wilks_stastics(std::ostream& s) const
         << "        " << num_samples
         << '\n';
     }
+  }
+}
+
+void NonDSampling::
+print_tolerance_intervals_statistics(std::ostream& s) const
+{
+  size_t width = write_precision+7;
+
+  s << "-----------------------------------------------------------------------------"
+    << std::endl
+    << "Double-sided tolerance interval equivalent normal results"
+    << " with " << 100.0*tiConfidenceLevel << "% confidence level"
+    << ", "     << 100.0*tiCoverage        << "% coverage"
+    << ", "     << numSamples              << " samples"
+    << ", "     << tiNumValidSamples       << " valid samples"
+    << std::endl
+    << "Double-sided tolerance interval equivalent normal statistics for each response function:"
+    << std::endl
+    << std::setw(width+14) << "Mean" << std::setw(width+1) << "Eq. Normal Std"
+    << std::endl
+    << std::scientific << std::setprecision(write_precision);
+  for (size_t i = 0; i < numFunctions; ++i) {
+    s << iteratedModel.response_labels()[i]
+      << ' ' << std::setw(width) << tiDstienMus   [i]
+      << ' ' << std::setw(width) << tiDstienSigmas[i]
+      << std::endl;
+  }
+}
+
+void NonDSampling::
+archive_tolerance_intervals(size_t inc_id, bool incIdIsZeroOrIsTheLastOne)
+{
+  StringArray location;
+  if (inc_id != 0) {
+    location.push_back(String("increment:") + std::to_string(inc_id));
+  }
+  location.push_back("tolerance_intervals");
+  location.push_back("");
+
+  Teuchos::SerialDenseVector<int,double> tmpValues(2);
+  for(size_t i = 0; i < numFunctions; ++i) {
+    location.back() = iteratedModel.response_labels()[i];
+    DimScaleMap scales;
+    scales.emplace( 0
+                  , StringScale( "tolerance_intervals"
+                               , {"mean", "equivalent_normal_std"}
+                               , ScaleScope::SHARED
+                               )
+                  );
+    tmpValues[0] = tiDstienMus[i];
+    tmpValues[1] = tiDstienSigmas[i];
+    resultsDB.insert( run_identifier()
+                    , location
+                    , tmpValues
+                    , scales
+                    );
+  }
+
+  AttributeArray ns_attr({ResultAttribute<int>("valid_samples", tiNumValidSamples)});
+  if (incIdIsZeroOrIsTheLastOne) {
+    StringArray location({String("tolerance_intervals")});
+    resultsDB.add_metadata_to_object(run_identifier(), location, ns_attr);
+  }
+  else {
+    StringArray location({String("increment:") + std::to_string(inc_id), String("tolerance_intervals")});
+    resultsDB.add_metadata_to_object(run_identifier(), location, ns_attr);
   }
 }
 

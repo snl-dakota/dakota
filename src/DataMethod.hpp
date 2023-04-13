@@ -881,6 +881,13 @@ public:
   /// flag indicating the calculation/output of standardized regression coefficients
   bool stdRegressionCoeffs;
   
+  /// Flag to specify use of double sided tolerance interval equivalent normal
+  bool toleranceIntervalsFlag;
+  /// Coverage parameter for the calculation of double sided tolerance interval equivalent normal
+  Real tiCoverage;
+  /// Confidence level parameter for the calculation of double sided tolerance interval equivalent normal
+  Real tiConfidenceLevel;
+
   /// flag to indicate bounds-based scaling of current response data set
   /// prior to build in surrogate-based methods; important for ML/MF data fits
   /// of decaying discrepancy data using regression with absolute tolerances

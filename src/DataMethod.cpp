@@ -131,6 +131,7 @@ DataMethodRep::DataMethodRep():
   percentVarianceExplained(0.95), wilksFlag(false), wilksOrder(1),
   wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED_UPPER),
   // NonD
+  toleranceIntervalsFlag(false), tiCoverage(0.95), tiConfidenceLevel(0.90),
   stdRegressionCoeffs(false),
   respScalingFlag(false), vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE),
   rngName("mt19937"), refinementType(Pecos::NO_REFINEMENT),
@@ -300,7 +301,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl << rngName
+  s << toleranceIntervalsFlag << tiCoverage << tiConfidenceLevel
+    << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl << rngName
     << refinementType << refinementControl << nestingOverride << growthOverride
     << expansionType << piecewiseBasis << expansionBasisType
     << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
@@ -468,7 +470,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> wilksConfidenceLevel >> wilksSidedInterval;
 
   // NonD
-  s >> stdRegressionCoeffs >> respScalingFlag >> vbdOrder >> covarianceControl >> rngName
+  s >> toleranceIntervalsFlag >> tiCoverage >> tiConfidenceLevel
+    >> stdRegressionCoeffs >> respScalingFlag >> vbdOrder >> covarianceControl >> rngName
     >> refinementType >> refinementControl >> nestingOverride >> growthOverride
     >> expansionType >> piecewiseBasis >> expansionBasisType
     >> quadratureOrderSeq >> sparseGridLevelSeq >> expansionOrderSeq
@@ -636,7 +639,8 @@ void DataMethodRep::write(std::ostream& s) const
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl << rngName
+  s << toleranceIntervalsFlag << tiCoverage << tiConfidenceLevel
+    << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl << rngName
     << refinementType << refinementControl << nestingOverride << growthOverride
     << expansionType << piecewiseBasis << expansionBasisType
     << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
