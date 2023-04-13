@@ -51,7 +51,9 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
 {
   // default solver to OPT++ NIP based on numerical experience
   optSubProblemSolver = sub_optimizer_select(
-    probDescDB.get_ushort("method.nond.opt_subproblem_solver"),SUBMETHOD_OPTPP);
+    probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
+  //SUBMETHOD_NPSOL_OPTPP); // default: use both if available
+    SUBMETHOD_OPTPP); // testing: use OPT++ NIP if available
 
   // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -631,11 +633,20 @@ nonhierarch_numerical_solution(const RealVector& cost,
   // virtual augmentation of linear ineq (differs among MFMC, ACV, GenACV)
   augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 
-  // configure the variance minimizer
-  if (varianceMinimizer.is_null()) {
+  // lay groundwork for future global-local hybrids while supporting NPSOL+OPTPP
+  size_t num_solvers = 1;  bool sequenced_minimizers = false;
+  switch (optSubProblemSolver) {
+  case SUBMETHOD_NPSOL_OPTPP:
+    num_solvers = 2; break;
+  }
+
+  // configure the variance minimizer(s)
+  if (varianceMinimizers.empty()) {
+    varianceMinimizers.resize(num_solvers);
 
     bool use_adapter   = (optSubProblemSolver != SUBMETHOD_NPSOL &&
-			  optSubProblemSolver != SUBMETHOD_OPTPP);
+			  optSubProblemSolver != SUBMETHOD_OPTPP &&
+			  optSubProblemSolver != SUBMETHOD_NPSOL_OPTPP);
     bool construct_dfs = (optSubProblemSolver == SUBMETHOD_SBLO ||
 			  optSubProblemSolver == SUBMETHOD_SBGO);
     if (use_adapter) {
@@ -737,7 +748,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
 	  constr_relax = NO_RELAX;
 	unsigned short soft_conv_limit = 5;
 	Real tr_factor = .5;
-	varianceMinimizer.assign_rep(
+	varianceMinimizers[0].assign_rep(
 	  std::make_shared<DataFitSurrBasedLocalMinimizer>(sub_prob_model,
 	  merit_fn, accept_logic, constr_relax, tr_factor, max_iter, max_eval,
 	  conv_tol, soft_conv_limit, false));
@@ -750,7 +761,7 @@ nonhierarch_numerical_solution(const RealVector& cost,
 	int samples = 100, seed = 12347;      // TO DO: spec
 	String approx_type("global_kriging"); // TO DO: spec
 	bool use_derivs = false;
-	varianceMinimizer.assign_rep(std::make_shared<EffGlobalMinimizer>(
+	varianceMinimizers[0].assign_rep(std::make_shared<EffGlobalMinimizer>(
 	  sub_prob_model, approx_type, samples, seed, use_derivs, max_iter,
 	  max_eval, conv_tol));
 	break;
@@ -760,12 +771,13 @@ nonhierarch_numerical_solution(const RealVector& cost,
         break;
       }
       case SUBMETHOD_SBGO: { // for NonDGlobalInterval, was EAminlp + GP ...
-        varianceMinimizer.assign_rep(std::make_shared<SurrBasedGlobalMinimizer>(
-	  sub_prob_model, max_iter, max_eval, conv_tol));
+        varianceMinimizers[0].assign_rep(
+	  std::make_shared<SurrBasedGlobalMinimizer>(sub_prob_model, max_iter,
+	                                             max_eval, conv_tol));
         break;
       }
       case SUBMETHOD_EA: { // may need to be combined with local refinement
-        varianceMinimizer.assign_rep(std::make_shared<COLINOptimizer>(
+        varianceMinimizers[0].assign_rep(std::make_shared<COLINOptimizer>(
 	  sub_prob_model, max_iter, max_eval, conv_tol));
         break;
       }
@@ -778,77 +790,96 @@ nonhierarch_numerical_solution(const RealVector& cost,
       }
     }
     else { // existing call-back APIs do not require adapter or surrogate
+      ShortArray solvers(num_solvers);
       switch (optSubProblemSolver) {
-      case SUBMETHOD_NPSOL: {
-	Real fdss = 1.e-6; int deriv_level;// 0 neither, 1 obj, 2 constr, 3 both
-	switch (optSubProblemForm) {
-	case R_AND_N_NONLINEAR_CONSTRAINT: deriv_level = 2;  break;
-	case N_VECTOR_LINEAR_OBJECTIVE:    deriv_level = 1;  break;
-	default:                           deriv_level = 0;  break;
-	}
+      case SUBMETHOD_NPSOL: case SUBMETHOD_OPTPP:
+	solvers[0] = optSubProblemSolver;  break;
+      case SUBMETHOD_NPSOL_OPTPP:
+	solvers[0] = SUBMETHOD_NPSOL;  solvers[1] = SUBMETHOD_OPTPP;  break;
+      }
+      for (i=0; i<num_solvers; ++i) {
+	switch (solvers[i]) {
+	case SUBMETHOD_NPSOL: {
+	  Real fdss = 1.e-6; int deriv_level;// 0 none, 1 obj, 2 constr, 3 both
+	  switch (optSubProblemForm) {
+	  case R_AND_N_NONLINEAR_CONSTRAINT: deriv_level = 2;  break;
+	  case N_VECTOR_LINEAR_OBJECTIVE:    deriv_level = 1;  break;
+	  default:                           deriv_level = 0;  break;
+	  }
 #ifdef HAVE_NPSOL
-	varianceMinimizer.assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb,
-          x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-          lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, npsol_objective,
-	  npsol_constraint, deriv_level, conv_tol, max_iter, fdss));
+	  varianceMinimizers[i].assign_rep(std::make_shared<NPSOLOptimizer>(x0,
+	    x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,lin_eq_coeffs,
+            lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, npsol_objective,
+	    npsol_constraint, deriv_level, conv_tol, max_iter, fdss));
 #endif
-	break;
-      }
-      case SUBMETHOD_OPTPP: {
-	Real max_step = 100000.;
-#ifdef HAVE_OPTPP
-	switch (optSubProblemForm) {
-	case N_VECTOR_LINEAR_OBJECTIVE:
-	  varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
-	    x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-	    lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	    optpp_nlf1_objective, optpp_fdnlf1_constraint, max_iter, max_eval,
-	    conv_tol, conv_tol, max_step));
-	  break;
-	default:
-	  varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
-	    x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-	    lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	    optpp_fdnlf1_objective, optpp_nlf1_constraint, max_iter, max_eval,
-	    conv_tol, conv_tol, max_step));
 	  break;
 	}
+	case SUBMETHOD_OPTPP: {
+	  Real max_step = 100000.;
+#ifdef HAVE_OPTPP
+	  switch (optSubProblemForm) {
+	  case N_VECTOR_LINEAR_OBJECTIVE:
+	    varianceMinimizers[i].assign_rep(std::make_shared<SNLLOptimizer>(x0,
+	      x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
+	      lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	      optpp_nlf1_objective, optpp_fdnlf1_constraint, max_iter, max_eval,
+	      conv_tol, conv_tol, max_step));
+	    break;
+	  default:
+	    varianceMinimizers[i].assign_rep(std::make_shared<SNLLOptimizer>(x0,
+	      x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
+	      lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	      optpp_fdnlf1_objective, optpp_nlf1_constraint, max_iter, max_eval,
+	      conv_tol, conv_tol, max_step));
+	    break;
+	  }
 #endif
-	break;
-      }
+	  break;
+	}
+	}
       }
     }
   }
-  else {
-    varianceMinimizer.initial_point(x0);
-    //if (x_bounds_update)
-      varianceMinimizer.variable_bounds(x_lb, x_ub);
-    if (num_lin_con)
-      varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
-					   lin_ineq_ub, lin_eq_coeffs,
-					   lin_eq_tgt);
-    if (num_nln_con)
-      varianceMinimizer.nonlinear_constraints(nln_ineq_lb, nln_ineq_ub,
-					      nln_eq_tgt);
-  }
+  else
+    for (i=0; i<num_solvers; ++i) {
+      Iterator& min_i = varianceMinimizers[i];
+      min_i.initial_point(x0);
+      //if (x_bounds_update)
+        min_i.variable_bounds(x_lb, x_ub);
+      if (num_lin_con)
+	min_i.linear_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
+				 lin_eq_coeffs, lin_eq_tgt);
+      if (num_nln_con)
+	min_i.nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
+    }
 
-  // ----------------------------------
-  // Solve the optimization sub-problem
-  // ----------------------------------
   // compute optimal r*,N* (or r* for fixed N) that maximizes variance reduction
-  varianceMinimizer.run();
+  Real merit_fn, merit_fn_star = DBL_MAX;  size_t best_min;
+  for (i=0; i<num_solvers; ++i) {
+    // ----------------------------------
+    // Solve the optimization sub-problem
+    // ----------------------------------
+    Iterator& min_i = varianceMinimizers[i];
+    min_i.run();
 
-  // -------------------------------------
-  // Post-process the optimization results
-  // -------------------------------------
-  // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
-  // shared increment from N* or from targeting specified budget || accuracy.
-  const RealVector& cv_star
-    = varianceMinimizer.variables_results().continuous_variables();
-  const RealVector& fn_vals_star
-    = varianceMinimizer.response_results().function_values();
-  //Cout << "Minimizer results:\ncv_star =\n" << cv_star
-  //     << "fn_vals_star =\n" << fn_vals_star;
+    // -------------------------------------
+    // Post-process the optimization results
+    // -------------------------------------
+    // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
+    // shared increment from N* or from targeting specified budget || accuracy.
+    //const RealVector& cv = min_i.variables_results().continuous_variables();
+    const RealVector& fn_vals = min_i.response_results().function_values();
+    //Cout << "Minimizer results:\ncv_star =\n" << cv_star
+    //     << "fn_vals_star =\n" << fn_vals_star;
+    merit_fn = 0.;//penalty_merit(fn_vals, ...); // TO DO
+
+    // track best
+    if (i == 0 || merit_fn < merit_fn_star)
+      { merit_fn_star = merit_fn;  best_min = i; }
+  }
+  Iterator& min_s = varianceMinimizers[best_min];
+  const RealVector& cv_star = min_s.variables_results().continuous_variables();
+  const RealVector& fn_vals_star = min_s.response_results().function_values();
 
   // Objective recovery from optimizer provides std::log(average(nh_estvar))
   // = var_H / N_H (1 - R^2).  Notes:

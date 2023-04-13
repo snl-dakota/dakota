@@ -51,12 +51,13 @@ NonDGenACVSampling::~NonDGenACVSampling()
 
 void NonDGenACVSampling::generate_dags()
 {
-  // For consistency testing:
+  ////////////////// For MFMC,ACV consistency testing:
   UShortArray std_dag(numApprox);
-  for (size_t i=0; i<numApprox; ++i)  std_dag[i] = i+1; // MFMC
-  // std_dag.assign(numApprox, numApprox); // ACV
+  //for (size_t i=0; i<numApprox; ++i)  std_dag[i] = i+1; // MFMC
+  std_dag.assign(numApprox, numApprox); // ACV
   modelDAGs.insert(std_dag);
   return;
+  //////////////////
 
   // zero root directed acyclic graphs
   switch (dagRecursionType) {
@@ -622,11 +623,27 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
       numSamples = 0;  return;
     }
 
+    //////////////// GenACV initialization using ensemble CVMC:
     // For general DAG, set initial guess based on pairwise CVMC analytic solns
     // (analytic MFMC soln expected to be less relevant).  Differs from derived
     // ACV approach through use of paired DAG dependencies.
     cvmc_ensemble_solutions(covLL, covLH, varH, cost, *activeDAGIter, soln);
-    Cout << "Unscaled CVMC eval_ratios:\n" << avg_eval_ratios << std::endl;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Unscaled CVMC eval_ratios:\n" << avg_eval_ratios << std::endl;
+    //////////////// Emulate MFMC for consistency testing:
+    /*
+    covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
+    if (ordered_approx_sequence(rho2LH)) // can happen w/ NUMERICAL_OVERRIDE
+      mfmc_analytic_solution(rho2LH, cost, soln);
+    else
+      mfmc_reordered_analytic_solution(rho2LH, cost, approxSequence, soln,true);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
+	   << avg_eval_ratios << std::endl;
+    */
+    //////////////// Emulate ACV for consistency testing:
+    // TO DO
+    ////////////////
 
     if (budget_constrained) { // scale according to cost
       scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target,

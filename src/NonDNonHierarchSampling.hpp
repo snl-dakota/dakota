@@ -291,7 +291,7 @@ protected:
 
   /// the minimizer used to minimize the estimator variance over parameters
   /// of number of truth model samples and approximation eval_ratios
-  Iterator varianceMinimizer;
+  IteratorArray varianceMinimizers;
   /// variance minimization algorithm selection: SUBMETHOD_MFMC or
   /// SUBMETHOD_ACV_{IS,MF,KL}
   unsigned short mlmfSubMethod;

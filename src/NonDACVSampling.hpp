@@ -166,6 +166,11 @@ protected:
   Real update_hf_target(const RealVector& avg_eval_ratios,
 			const RealVector& var_H, const RealVector& estvar0);
 
+  void covariance_to_correlation_sq(const RealMatrix& cov_LH,
+				    const RealMatrix& var_L,
+				    const RealVector& var_H,
+				    RealMatrix& rho2_LH);
+
 private:
 
   //
@@ -202,10 +207,6 @@ private:
 			     const RealSymMatrixArray& sum_LL,
 			     const SizetArray& N_shared,
 			     RealSymMatrixArray& cov_LL);
-  void covariance_to_correlation_sq(const RealMatrix& cov_LH,
-				    const RealMatrix& var_L,
-				    const RealVector& var_H,
-				    RealMatrix& rho2_LH);
 
   void compute_L_variance(const RealMatrix& sum_L,
 			  const RealSymMatrixArray& sum_LL,
