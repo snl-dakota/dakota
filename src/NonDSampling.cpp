@@ -1850,6 +1850,8 @@ void NonDSampling::print_statistics(std::ostream& s) const
     if (epistemicStats) {
       Cerr << "Warning: std regression coefficients printing requested in conjunction with epstemic variables" << std::endl;
     }
+
+    nonDSampCorr.print_std_regress_coeffs(s, iteratedModel.ordered_labels(), iteratedModel.response_labels());
   }
 
   if (toleranceIntervalsFlag) {
