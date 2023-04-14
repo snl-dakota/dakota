@@ -4662,7 +4662,7 @@ int TestDriverInterface::ml_rosenbrock(){
    << "multiprocessor analyses." << std::endl;
     abort_handler(-1);
   }
-  if (numACV != 5 || numADIV != 3 || numADRV) { // allow ModelForm discrete int
+  if (numACV != 5 || numADIV != 2 || numADRV != 1) { // allow ModelForm discrete int
     Cerr << "Error: Bad number of variables in ml_rosenbrock direct fn."
    << std::endl;
     abort_handler(INTERFACE_ERROR);
@@ -4682,7 +4682,7 @@ int TestDriverInterface::ml_rosenbrock(){
   //Original is (1-x1)^2 but is the same as (x1-1)^2
   fnVals[0] = (100.*(x2 - x1*x1)*(x2 - x1*x1) + x1m1*x1m1); 
   Real factor = 1;
-  Real stoch_scaling = std::sqrt(xDIM[VAR_StochScaling]);
+  Real stoch_scaling = std::sqrt(xDRM[VAR_StochScaling]);
   //Add artificial nose using Ishigami inspired by paper above
   switch(xDIM[VAR_Level]){
     case 0:
@@ -4720,7 +4720,7 @@ int TestDriverInterface::ml_rosenbrock_con(){
    << "multiprocessor analyses." << std::endl;
     abort_handler(-1);
   }
-  if (numACV != 5 || numADIV > 1 || numADRV) { // allow ModelForm discrete int
+  if (numACV != 5 || numADIV != 2 || numADRV != 1) { // allow ModelForm discrete int
     Cerr << "Error: Bad number of variables in ml_rosenbrock_con direct fn."
    << std::endl;
     abort_handler(INTERFACE_ERROR);
