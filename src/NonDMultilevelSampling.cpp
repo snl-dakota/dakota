@@ -587,8 +587,29 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
          << "\t" << "\n";
   }
   */
-  
+  /*
   myfile.open("windse_sampleallocation.txt", std::ofstream::out | std::ofstream::app); 
+  if(num_steps==2){
+    myfile << N_l[0][0]             << "\t" << N_l[1][0] 
+         << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))
+         << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1))
+         << "\t" << noise_qoi[0]
+         << "\t" << "\n";
+  }else if(num_steps==3){
+    myfile << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]        
+         << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))<< "\t" << NTargetQoi(0, 2)    
+         << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1))<< "\t" << NTargetQoiFN(0, 2) 
+         << "\t" << noise_qoi[0]
+         << "\t" << "\n";
+  }else if(num_steps==4){
+    myfile << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]             << "\t" << N_l[3][0] 
+         << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))<< "\t" << NTargetQoi(0, 2)    << "\t" << (NTargetQoi(0, 3))
+         << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1))<< "\t" << NTargetQoiFN(0, 2) << "\t" << (NTargetQoiFN(0, 3))
+         << "\t" << noise_qoi[0]
+         << "\t" << "\n";
+  }
+  */
+  myfile.open("floris_sampleallocation.txt", std::ofstream::out | std::ofstream::app); 
   if(num_steps==2){
     myfile << N_l[0][0]             << "\t" << N_l[1][0] 
          << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))
