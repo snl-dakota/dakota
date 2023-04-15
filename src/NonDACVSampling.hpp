@@ -171,11 +171,26 @@ protected:
 				    const RealVector& var_H,
 				    RealMatrix& rho2_LH);
 
+  void cache_iter0();
+
+  void analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln);
+
+  void pick_mfmc_cvmc_solution(const DAGSolutionData& mf_soln, size_t mf_samp,
+			       const DAGSolutionData& cv_soln, size_t cv_samp,
+			       DAGSolutionData& soln, size_t& num_samp);
+
+  void print_computed_solution(std::ostream& s, const DAGSolutionData& soln);
+
 private:
 
   //
   //- Heading: Helper functions
   //
+
+  void analytic_initialization_from_ensemble_cvmc(Real avg_N_H,
+						  DAGSolutionData& soln);
+  void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
+			       const RealVector& cost, DAGSolutionData& soln);
 
   void initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL);
 
@@ -234,11 +249,7 @@ private:
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 		    const RealMatrix& c, size_t qoi, Real var_H_q);
 
-  void compute_ratios(const RealMatrix& var_L, const RealVector& cost,
-		      DAGSolutionData& soln);
-
-  void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
-			       const RealVector& cost, DAGSolutionData& soln);
+  void compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln);
 
   void acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios);
   //Real acv_estimator_variance(const RealVector& avg_eval_ratios,
@@ -259,8 +270,8 @@ private:
   //- Heading: Data
   //
 
-  /// option for performing multiple ACV optimizations and taking the best
-  bool multiStartACV;
+  // option for performing multiple ACV optimizations and taking the best
+  //bool multiStartACV;
 
   /// the "F" matrix from Gorodetsky JCP paper
   RealSymMatrix FMat;

@@ -245,10 +245,9 @@ protected:
 					DAGSolutionData& soln,
 					bool monotonic_r);
 
-  void nonhierarch_numerical_solution(const RealVector& cost,
-				      const SizetArray& approx_sequence,
-				      DAGSolutionData& soln,
-				      size_t& num_samples);
+  void ensemble_numerical_solution(const RealVector& cost,
+				   const SizetArray& approx_sequence,
+				   DAGSolutionData& soln, size_t& num_samples);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
@@ -284,6 +283,11 @@ protected:
   void inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios);
   /// promote scalar to column vector
   void inflate(Real r_i, size_t num_rows, Real* eval_ratios_col);
+
+  /// compute a penalty merit function after an optimization solve
+  Real nh_penalty_merit(const RealVector& c_vars, const RealVector& fn_vals);
+  /// compute a penalty merit function after a DAGSolutionData instance
+  Real nh_penalty_merit(const DAGSolutionData& soln);
 
   //
   //- Heading: Data
@@ -339,6 +343,11 @@ private:
   Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
 			const RealVector& estvar0);
 
+  /// post-process optimization final results to recover solution data
+  void recover_results(const RealVector& cv_star, const RealVector& fn_star,
+		       Real& avg_estvar, RealVector& avg_eval_ratios,
+		       Real& avg_hf_target, Real& equiv_hf_cost);
+
   /// flattens contours of average_estimator_variance() using std::log
   Real log_average_estvar(const RealVector& cd_vars);
 
@@ -350,6 +359,10 @@ private:
   void linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c);
   /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
   void nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c);
+
+  /// compute a penalty merit function from objective, constraint, and
+  /// constaint bound
+  Real nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd);
 
   /// static function used by NPSOL for the objective function
   static void npsol_objective(int& mode, int& n, double* x, double& f,

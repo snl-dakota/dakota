@@ -321,7 +321,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
       DAGSolutionData& soln = dagSolns[active_dag];
-      compute_ratios(var_L, sequenceCost, soln);
+      compute_ratios(var_L, soln);
       update_best(soln);// store state for restoration
       //reset_acv(); // reset state for next ACV execution
     }
@@ -382,7 +382,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
     DAGSolutionData& soln = dagSolns[active_dag];
-    compute_ratios(var_L, sequenceCost, soln);
+    compute_ratios(var_L, soln);
     update_best(soln); // store state for restoration
     //reset_acv(); // reset state for next ACV execution
   }
@@ -447,7 +447,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
     DAGSolutionData& soln = dagSolns[active_dag];
-    compute_ratios(var_L, sequenceCost, soln);
+    compute_ratios(var_L, soln);
     update_best(soln); // store state for restoration
     //reset_acv(); // reset state for next ACV execution
   }
@@ -459,7 +459,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, N_H_actual,
 			   N_H_alloc, deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
-  // NonDNonHierarchSampling::nonhierarch_numerical_solution() recovers N*
+  // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected avgEstVar{,Ratio}
 }
 
@@ -576,23 +576,13 @@ genacv_approx_increment(const RealVector& avg_eval_ratios,
 
 void NonDGenACVSampling::precompute_ratios()
 {
-  approxSequence.clear(); // rho2_LH re-ordering from MFMC is not relevant here
-
-  size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-
-  // estVarIter0 only uses HF pilot since sum_L_shared / N_shared minus
-  // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
-  // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
-  // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
-  compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
-  numHIter0 = N_H_actual;
+  cache_iter0();          // store {estVar,numH}Iter0
+  approxSequence.clear(); // rho2LH re-ordering from MFMC is not relevant here
 }
 
 
 void NonDGenACVSampling::
-compute_ratios(const RealMatrix& var_L, const RealVector& cost,
-	       DAGSolutionData& soln)
+compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
 {
   // --------------------------------------
   // Configure the optimization sub-problem
@@ -607,84 +597,72 @@ compute_ratios(const RealMatrix& var_L, const RealVector& cost,
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-
+    Real budget            = (Real)maxFunctionEvals;
+    bool budget_exhausted  = (equivHFEvals >= budget);
     // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H)
     // Can happen if shared pilot rolls up to exceed budget spec.
-    Real budget           = (Real)maxFunctionEvals;
-    bool budget_exhausted = (equivHFEvals >= budget);
-    Real&   avg_hf_target = soln.avgHFTarget;
     //if (budget_exhausted) budget = equivHFEvals;
+
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
-      avg_eval_ratios = 1.;  avg_hf_target = avg_N_H;
+      avg_eval_ratios = 1.;  soln.avgHFTarget = avg_N_H;
       soln.avgEstVar = average(estVarIter0);  soln.avgEstVarRatio = 1.;
       // For r_i = 1, C_G,c_g = 0 --> enforce constr for downstream CV numerics
       enforce_linear_ineq_constraints(avg_eval_ratios, orderedRootList);
       numSamples = 0;  return;
     }
 
-    //////////////// GenACV initialization using ensemble CVMC:
-    // For general DAG, set initial guess based on pairwise CVMC analytic solns
-    // (analytic MFMC soln expected to be less relevant).  Differs from derived
-    // ACV approach through use of paired DAG dependencies.
-    cvmc_ensemble_solutions(covLL, covLH, varH, cost, *activeDAGIter, soln);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Unscaled CVMC eval_ratios:\n" << avg_eval_ratios << std::endl;
-    //////////////// Emulate MFMC for consistency testing:
-    /*
+    // Run a competition among related analytic approaches (MFMC or pairwise
+    // CVMC) for best initial guess, where each initial gues may additionally
+    // employ multiple varianceMinimizers in ensemble_numerical_solution()
     covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
-    if (ordered_approx_sequence(rho2LH)) // can happen w/ NUMERICAL_OVERRIDE
-      mfmc_analytic_solution(rho2LH, cost, soln);
-    else
-      mfmc_reordered_analytic_solution(rho2LH, cost, approxSequence, soln,true);
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
-	   << avg_eval_ratios << std::endl;
-    */
-    //////////////// Emulate ACV for consistency testing:
-    // TO DO
-    ////////////////
-
-    if (budget_constrained) { // scale according to cost
-      scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target,
-		      orderedRootList); // incorporates lin ineq enforcement
-      RealVector cd_vars;
-      r_and_N_to_design_vars(avg_eval_ratios, avg_hf_target, cd_vars);
-      soln.avgEstVar = average_estimator_variance(cd_vars); // ACV or GenACV
-    }
-    else { // scale according to accuracy (convergenceTol * estVarIter0)
-      enforce_linear_ineq_constraints(avg_eval_ratios, orderedRootList);
-      avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
-    }
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "GenACV scaled initial guess from ensemble CVMC:\n"
-	   << "  average eval ratios:\n" << avg_eval_ratios
-	   << "  average HF target = " << avg_hf_target << std::endl;
-
-    // Single solve initiated from lowest estvar
-    nonhierarch_numerical_solution(cost, approxSequence, soln, numSamples);
+    DAGSolutionData mf_soln, cv_soln;  size_t mf_samp, cv_samp;
+    analytic_initialization_from_mfmc(avg_N_H, mf_soln);
+    analytic_initialization_from_ensemble_cvmc(*activeDAGIter,avg_N_H, cv_soln);
+    ensemble_numerical_solution(sequenceCost, approxSequence, mf_soln, mf_samp);
+    ensemble_numerical_solution(sequenceCost, approxSequence, cv_soln, cv_samp);
+    pick_mfmc_cvmc_solution(mf_soln, mf_samp, cv_soln, cv_samp,soln,numSamples);
   }
   else { // warm start from previous eval_ratios solution
     
     // no scaling needed from prev soln (as in NonDLocalReliability) since
-    // updated avg_N_H now includes allocation from previous solution and is
-    // active on constraint bound (excepting integer sample rounding)
+    // updated avg_N_H now includes allocation from previous solution and
+    // should be active on constraint bound (excepting sample count rounding)
 
     // warm start from previous solns for corresponding DAG
-    nonhierarch_numerical_solution(cost, approxSequence, soln, numSamples);
+    ensemble_numerical_solution(sequenceCost, approxSequence, soln, numSamples);
   }
 
-  if (outputLevel >= NORMAL_OUTPUT) {
-    for (size_t approx=0; approx<numApprox; ++approx)
-      Cout << "Approx " << approx+1 << ": average evaluation ratio = "
-	   << avg_eval_ratios[approx] << '\n';
-    if (budget_constrained)
-      Cout << "Average estimator variance = " << soln.avgEstVar
-	   << "\nAverage GenACV variance / average MC variance = "
-	   << soln.avgEstVarRatio << std::endl;
-    else
-      Cout << "Estimator cost allocation = " << soln.equivHFAlloc << std::endl;
+  if (outputLevel >= NORMAL_OUTPUT)
+    print_computed_solution(Cout, soln);
+}
+
+
+void NonDGenACVSampling::
+analytic_initialization_from_ensemble_cvmc(const UShortArray& dag, Real avg_N_H,
+					   DAGSolutionData& soln)
+{
+  // For general DAG, set initial guess based on pairwise CVMC analytic solns
+  // (analytic MFMC soln expected to be less relevant).  Differs from derived
+  // ACV approach through use of paired DAG dependencies.
+  cvmc_ensemble_solutions(covLL, covLH, varH, sequenceCost, dag, soln);
+
+  if (maxFunctionEvals == SZ_MAX) {
+    // scale according to accuracy (convergenceTol * estVarIter0)
+    enforce_linear_ineq_constraints(soln.avgEvalRatios, orderedRootList);
+    soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);
   }
+  else { // scale according to cost
+    scale_to_target(avg_N_H, sequenceCost, soln.avgEvalRatios, soln.avgHFTarget,
+		    orderedRootList); // incorporates lin ineq enforcement
+    RealVector cd_vars;
+    r_and_N_to_design_vars(soln.avgEvalRatios, soln.avgHFTarget, cd_vars);
+    soln.avgEstVar = average_estimator_variance(cd_vars); // ACV or GenACV
+  }
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "GenACV scaled initial guess from ensemble CVMC:\n"
+	 << "  average eval ratios:\n" << soln.avgEvalRatios
+	 << "  average HF target = " << soln.avgHFTarget << std::endl;
 }
 
 
@@ -1116,14 +1094,13 @@ void NonDGenACVSampling::update_best(DAGSolutionData& soln)
     update = true;
   else {
     DAGSolutionData& best_soln = dagSolns[*bestDAGIter];
-    bool budget_constr = (maxFunctionEvals != SZ_MAX);
     Real avg_est_var = soln.avgEstVar;
     if (!valid_variance(avg_est_var)) // *** TO DO: problems could be hidden due to averaging --> consider a finer-grained badNumericsFlag triggered per QoI
       update = false;
-    else if (budget_constr)
-      update = (avg_est_var       < best_soln.avgEstVar);
-    else
+    else if (maxFunctionEvals == SZ_MAX)
       update = (soln.equivHFAlloc < best_soln.equivHFAlloc);
+    else
+      update = (avg_est_var       < best_soln.avgEstVar);
   }
   if (update) {
     bestDAGIter = activeDAGIter;

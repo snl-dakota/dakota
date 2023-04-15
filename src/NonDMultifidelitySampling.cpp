@@ -427,7 +427,7 @@ update_projected_samples(const DAGSolutionData& soln,
     actual_incr = (backfillFailures) ?
       one_sided_delta(N_H_actual, soln.avgHFTarget, 1) : alloc_incr;
   // For analytic solns, mirror the CDV lower bound for numerical solutions --
-  // see rationale in NonDNonHierarchSampling::nonhierarch_numerical_solution()
+  // see rationale in NonDNonHierarchSampling::ensemble_numerical_solution()
   if ( pilotMgmtMode == OFFLINE_PILOT &&
        ( optSubProblemForm == ANALYTIC_SOLUTION ||
 	 optSubProblemForm == REORDERED_ANALYTIC_SOLUTION ) ) {
@@ -467,9 +467,9 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   // > approx must be ordered on increasing rho2_LH to enable r_i calculation
   //   (see mfmc_analytic_solution() and mfmc_reordered_analytic_solution())
   // > unlike ACV, we enforce that this ordering is retained within r_i through
-  //   linear constraint definitions in nonhierarch_numerical_solution()
+  //   linear constraint definitions in ensemble_numerical_solution()
   //   >> ACV can order approx sample increments based on decreasing r_i
-  //      _after_ an unordered nonhierarch_numerical_solution()
+  //      _after_ an unordered ensemble_numerical_solution()
 
   // Pyramid/nested sampling: at step i, we sample approximation range
   // [0,numApprox-1-i] using the delta relative to the previous step
@@ -677,7 +677,7 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
       approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
       r_ip1 = eval_ratios(0, approx_ip1);
       // Note: monotonicity in reordered r_i is enforced in mfmc_eval_ratios()
-      // and in linear constraints for nonhierarch_numerical_solution()
+      // and in linear constraints for ensemble_numerical_solution()
       R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx];
       r_i = r_ip1;  approx = approx_ip1;
     }
@@ -745,7 +745,7 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
       approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
       r_ip1 = avg_eval_ratios[approx_ip1];
       // Note: monotonicity in reordered r_i is enforced in mfmc_eval_ratios()
-      // and in linear constraints for nonhierarch_numerical_solution()
+      // and in linear constraints for ensemble_numerical_solution()
       R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx];
       r_i = r_ip1;  approx = approx_ip1;
     }
@@ -1383,7 +1383,7 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   matrix_to_diagonal_array(var_L, covLL);
 
   // Base class implementation of numerical solve (shared with ACV,GenACV):
-  nonhierarch_numerical_solution(cost, approx_sequence, soln, numSamples);
+  ensemble_numerical_solution(cost, approx_sequence, soln, numSamples);
 }
 
 

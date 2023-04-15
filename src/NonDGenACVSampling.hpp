@@ -98,9 +98,11 @@ private:
   void generate_reverse_dag(const UShortArray& dag);
 
   void precompute_ratios();
-  void compute_ratios(const RealMatrix& var_L, const RealVector& cost,
-		      DAGSolutionData& solution);
+  void compute_ratios(const RealMatrix& var_L, DAGSolutionData& solution);
 
+  void analytic_initialization_from_ensemble_cvmc(const UShortArray& dag,
+						  Real avg_N_H,
+						  DAGSolutionData& soln);
   void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
 			       const RealMatrix& cov_LH,
 			       const RealVector& var_H, const RealVector& cost,
