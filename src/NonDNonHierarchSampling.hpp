@@ -415,14 +415,14 @@ inline void NonDNonHierarchSampling::method_recourse()
 
   bool err_flag = false;
   switch (optSubProblemSolver) {
-  case SUBMETHOD_NPSOL:
+  case SUBMETHOD_NPSOL: case SUBMETHOD_NPSOL_OPTPP:
 #ifdef HAVE_OPTPP
     optSubProblemSolver = SUBMETHOD_OPTPP;
 #else
     err_flag = true;
 #endif
     break;
-  case SUBMETHOD_OPTPP:
+  case SUBMETHOD_OPTPP: // for completeness (OPT++ nesting is not an issue)
 #ifdef HAVE_NPSOL
     optSubProblemSolver = SUBMETHOD_NPSOL;
 #else

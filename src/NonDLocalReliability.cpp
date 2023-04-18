@@ -489,7 +489,8 @@ void NonDLocalReliability::check_sub_iterator_conflict()
     if (!sub_iterator.is_null() && 
 	( sub_iterator.method_name() ==  NPSOL_SQP ||
 	  sub_iterator.method_name() == NLSSOL_SQP ||
-	  sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
+	  sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
+	  sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
       sub_iterator.method_recourse();
     ModelList& sub_models = iteratedModel.subordinate_models();
     for (ModelLIter ml_iter = sub_models.begin();
@@ -498,7 +499,8 @@ void NonDLocalReliability::check_sub_iterator_conflict()
       if (!sub_iterator.is_null() && 
 	  ( sub_iterator.method_name() ==  NPSOL_SQP ||
 	    sub_iterator.method_name() == NLSSOL_SQP ||
-	    sub_iterator.uses_method() == SUBMETHOD_NPSOL ) )
+	    sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
+	    sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
 	sub_iterator.method_recourse();
     }
   }
