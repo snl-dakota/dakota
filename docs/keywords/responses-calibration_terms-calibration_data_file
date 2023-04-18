@@ -4,7 +4,7 @@ Description::
 Enables text file import of experimental observations for use in
 calibration, for scalar responses only, with optional scalar variance
 information.  For more complex data import cases see
-:ref:`responses-calibration_terms-calibration_data<responses-calibration_terms-calibration_data>`  Dakota will calibrate
+:dakkw:`responses-calibration_terms-calibration_data`  Dakota will calibrate
 model variables to best match these data.
 
 Key options include:
@@ -54,7 +54,7 @@ corresponding observation errors with standard deviation 0.5 and 0.2.
 *Usage Tips*
 
 
-- The ``calibration_data_file`` keyword is used when \em only scalar calibration terms are present.  If there are field calibration terms, instead use :ref:`responses-calibration_terms-calibration_data<responses-calibration_terms-calibration_data>`.  For mixed scalar and field calibration terms, one may use the :ref:`responses-calibration_terms-calibration_data-scalar_data_file<responses-calibration_terms-calibration_data-scalar_data_file>` specification, which uses the format described on this page.
+- The ``calibration_data_file`` keyword is used when \em only scalar calibration terms are present.  If there are field calibration terms, instead use :dakkw:`responses-calibration_terms-calibration_data`.  For mixed scalar and field calibration terms, one may use the :dakkw:`responses-calibration_terms-calibration_data-scalar_data_file` specification, which uses the format described on this page.
 - *Attention:* In versions of Dakota prior to 6.14, string-valued configuration variables were specified in data files with 0-based indices into the admissible values. As of Dakota 6.14, strings must be specified by value. For example a string-valued configuration variable for an experimental condition might appear in the file as ``low_pressure`` vs. ``high_pressure``.
 Topics::
 
@@ -75,7 +75,7 @@ are specified:
 And the data file ``circuit``.dat must contain only the :math:`y^{Data}`  observations which represent a single experimental observation.
 In this case, the data file should have :math:`N_{terms} = 2`  columns
 (for volts, amps) and 1 row, where :math:`N_{terms}`  is the value of
-:ref:`responses-calibration_terms<responses-calibration_terms>`.  The data file is shown here in
+:dakkw:`responses-calibration_terms`.  The data file is shown here in
 annotated format:
 
 
@@ -90,7 +90,7 @@ which must return :math:`N_{terms} = 2`  model responses. Then the
 residuals are computed as: 
 .. math::  R_{i} = y^{Model}_i - y^{Data}_{i}. 
 These residuals can be weighted using
-:ref:`responses-calibration_terms-weights<responses-calibration_terms-weights>`.
+:dakkw:`responses-calibration_terms-weights`.
 
 *Multiple experiments:* One might specify ``num_experiments`` :math:`N_E`  indicating that there are multiple experiments.  When multiple
 experiments are present, Dakota will expand the number of residuals
@@ -137,7 +137,7 @@ measurement error and the uncertainty in the measurement, that can be
 specified by sending the measurement error variance to Dakota.  In
 this case, the keyword ``experiment_variance_type`` is added, followed by a
 string of variance types of length one or of length :math:`N_{terms}`  , where
-:math:`N_{terms}`  is the value of :ref:`responses-calibration_terms<responses-calibration_terms>`.
+:math:`N_{terms}`  is the value of :dakkw:`responses-calibration_terms`.
 The ``experiment_variance_type`` for each response can be 'none' or 'scalar'.
 NOTE: you must specify the same ``experiment_variance_type`` for all scalar
 terms. That is, they will all be 'none' or all be 'scalar.'

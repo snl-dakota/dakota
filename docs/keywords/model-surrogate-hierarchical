@@ -61,7 +61,7 @@ since the omission of a correction technique would effectively
 eliminate the purpose of the high fidelity model (to use a low
 fidelity model without corrections, then a ``single`` model can be used
 rather than a ``hierarchical`` model). Refer to
-:ref:`model-surrogate-global<model-surrogate-global>` for additional information on available
+:dakkw:`model-surrogate-global` for additional information on available
 correction approaches.
 
 In multifidelity uncertainty quantification (UQ), response differences

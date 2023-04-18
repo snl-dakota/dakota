@@ -9,7 +9,7 @@ sources:
 - the least-squares procedure provides a surface fit that smooths out   noise in the data.
 
 Local surrogate-based optimization methods (
-:ref:`method-surrogate_based_local<method-surrogate_based_local>`) are often successful when using
+:dakkw:`method-surrogate_based_local`) are often successful when using
 polynomial models, particularly quadratic models. However, a
 polynomial surface fit may not be the best choice for modeling data
 trends globally over the entire parameter space, unless it is known a

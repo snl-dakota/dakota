@@ -6,7 +6,7 @@ which use a set of offsets from the current iterate to locate improved
 points in the design space.
 
 
-*See the page :ref:`topic-package_scolib<topic-package_scolib>` for important information regarding all SCOLIB methods*
+*See the page :ref:`topic-package_scolib` for important information regarding all SCOLIB methods*
 
 ``coliny_pattern_search`` supports concurrency up to the size of
 the search pattern
@@ -103,14 +103,14 @@ the the smallest step length used so far.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
 - :ref:`hdf5_results-best_params`
-- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_obj_fncs` (when :dakkw:`responses-objective_functions`) are specified)
 - :ref:`hdf5_results-best_constraints`
-- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-calibration` (when :dakkw:`responses-calibration_terms` are specified)
 Topics::
 package_scolib, package_coliny, global_optimization_methods
 Examples::

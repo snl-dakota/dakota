@@ -1,11 +1,11 @@
 Blurb::
 Singular radius
 Description::
-``singular_radius`` works in conjunction with :ref:`method-nl2sol-singular_conv_tol<method-nl2sol-singular_conv_tol>`
+``singular_radius`` works in conjunction with :dakkw:`method-nl2sol-singular_conv_tol`
 to test for underdetermined least-squares problems (stop when the relative
 reduction yet possible in the sum of squares appears less than
 ``singular_conv_tol`` for steps of scaled length at most
-:ref:`method-nl2sol-singular_radius<method-nl2sol-singular_radius>`).
+:dakkw:`method-nl2sol-singular_radius`).
 
 The internal default results in the internal use of steps of length 1. The
 default is selected with a value of -1.

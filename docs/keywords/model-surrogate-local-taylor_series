@@ -8,7 +8,7 @@ parameter space.
 The order of the
 Taylor series may be either first-order or second-order, which is
 automatically determined from the gradient and Hessian specifications
-in the responses specification (see :ref:`responses<responses>` for info on
+in the responses specification (see :dakkw:`responses` for info on
 how to specify gradients and Hessians)
 for the truth model
 

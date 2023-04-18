@@ -11,7 +11,7 @@ either a ``method_pointer_list`` or a ``method_name_list`` (with optional
 
 Method switching is managed through the separate convergence controls
 of each method. The number of solutions transferred between methods is
-specified by the particular method through its :ref:`method-final_solutions<method-final_solutions>`
+specified by the particular method through its :dakkw:`method-final_solutions`
 method control.
 
 For example, if one sets up a two-level study with a first method

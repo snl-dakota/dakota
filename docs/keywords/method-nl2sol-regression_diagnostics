@@ -9,7 +9,7 @@ omitting the i-th observation would cause alpha times the change in
 the solution that omitting the j-th observation would cause, then
 :math:`RD[i] = |alpha| RD[j]`. The finite-difference step-size
 tolerance affecting H is
-:ref:`responses-numerical_hessians-fd_step_size<responses-numerical_hessians-fd_step_size>`
+:dakkw:`responses-numerical_hessians-fd_step_size`
 (NL2SOL's ``delta0`` and ``dltfdc``).
 
 Topics::

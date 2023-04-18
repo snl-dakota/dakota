@@ -27,7 +27,7 @@ Topics::
 parameter_studies
 Examples::
 This example is taken from the Users Manual and is a good comparison to the examples on
-:ref:`method-centered_parameter_study<method-centered_parameter_study>` and :ref:`method-vector_parameter_study<method-vector_parameter_study>`.
+:dakkw:`method-centered_parameter_study` and :dakkw:`method-vector_parameter_study`.
 
 .. code-block::
 

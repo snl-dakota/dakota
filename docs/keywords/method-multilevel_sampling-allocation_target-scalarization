@@ -19,7 +19,7 @@ The following method block
                                                      0 0 1 3
 
 
-uses the standard_deviation as sample allocation target by computing its variance. In this example, we assume a problem with two responses where the first line in scalarization_response_mapping refers to the first response, the second line to the second response. In the first line we only use 1 times the mean as quantity of interest. For the second response, we use 1 time the mean plus 3 times the standard devitation of the second quantity of interested. This behavior mimics the keywords :ref:`model-nested-sub_method_pointer-primary_response_mapping<model-nested-sub_method_pointer-primary_response_mapping>` and :ref:`model-nested-sub_method_pointer-secondary_response_mapping<model-nested-sub_method_pointer-secondary_response_mapping>`.
+uses the standard_deviation as sample allocation target by computing its variance. In this example, we assume a problem with two responses where the first line in scalarization_response_mapping refers to the first response, the second line to the second response. In the first line we only use 1 times the mean as quantity of interest. For the second response, we use 1 time the mean plus 3 times the standard devitation of the second quantity of interested. This behavior mimics the keywords :dakkw:`model-nested-sub_method_pointer-primary_response_mapping` and :dakkw:`model-nested-sub_method_pointer-secondary_response_mapping`.
 Theory::
 
 Faq::

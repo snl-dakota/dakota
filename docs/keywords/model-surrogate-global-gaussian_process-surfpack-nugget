@@ -6,10 +6,10 @@ If the user wishes to specify a nugget, there are two approaches.
 
 
 
-- The user can specify the value of a nugget with :ref:`model-surrogate-global-gaussian_process-surfpack-nugget<model-surrogate-global-gaussian_process-surfpack-nugget>`.
+- The user can specify the value of a nugget with :dakkw:`model-surrogate-global-gaussian_process-surfpack-nugget`.
 
 
-- Have Surfpack find the optimal value of the nugget. This is specified by :ref:`model-surrogate-global-gaussian_process-surfpack-find_nugget<model-surrogate-global-gaussian_process-surfpack-find_nugget>`. There are two options for find_nugget.
+- Have Surfpack find the optimal value of the nugget. This is specified by :dakkw:`model-surrogate-global-gaussian_process-surfpack-find_nugget`. There are two options for find_nugget.
 
 
 

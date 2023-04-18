@@ -7,7 +7,7 @@ characteristic value to be used in scaling each constraint. They only
 have effect when the associated method specifies ``scaling``.
 
 This keyword is required for
-:ref:`variables-linear_equality_scale_types<variables-linear_equality_scale_types>` of 'value' and optional for 'auto'.
+:dakkw:`variables-linear_equality_scale_types` of 'value' and optional for 'auto'.
 
 If a single real value is specified it will apply to all linear
 equality constraints. Otherwise the number of values should be equal

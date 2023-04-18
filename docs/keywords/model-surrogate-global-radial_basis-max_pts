@@ -3,7 +3,7 @@ Maximum number of RBF CVT points
 Description::
 Maximum number of CVT points to use in generating each RBF
 center. basis computing centroid of each.  Defaults to 10 * (
-:ref:`model-surrogate-global-radial_basis-bases<model-surrogate-global-radial_basis-bases>`).  Reducing this will reduce
+:dakkw:`model-surrogate-global-radial_basis-bases`).  Reducing this will reduce
 model build time.
 Topics::
 surrogate_models

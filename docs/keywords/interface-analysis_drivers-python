@@ -6,12 +6,12 @@ explicitly enabled when compiling Dakota from source.  Contact the
 Dakota users mailing list for assistance building and using Dakota
 with these interfaces.
 
-The :ref:`interface-analysis_drivers<interface-analysis_drivers>` keyword specifies a
+The :dakkw:`interface-analysis_drivers` keyword specifies a
 Python module:function which implements the parameter to
 response mapping.  List data structures are the default,
 but NumPy is also supported, if enabled in the build.
 
-Batch evaluations ( :ref:`interface-batch<interface-batch>`) are supported through a
+Batch evaluations ( :dakkw:`interface-batch`) are supported through a
 list of dictionaries.
 Topics::
 Examples::

@@ -2,13 +2,13 @@ Blurb::
 UQ method leveraging a functional tensor train surrogate model.
 Description::
 Tensor train decompositions are approximations that exploit low rank structure
-in an input-output mapping.  Refer to the :ref:`model-surrogate-global-function_train<model-surrogate-global-function_train>`
+in an input-output mapping.  Refer to the :dakkw:`model-surrogate-global-function_train`
 surrogate model for additional details.
 
 *Usage Tips*
 
 This method is a self-contained method alternative to the
-:ref:`model-surrogate-global-function_train<model-surrogate-global-function_train>` surrogate model specification, similar
+:dakkw:`model-surrogate-global-function_train` surrogate model specification, similar
 to current method specifications for polynomial chaos and stochastic collocation.
 In particular, this ``function_train`` method specification directly couples with a
 simulation model (optionally identified with a ``model_pointer``) and an additional

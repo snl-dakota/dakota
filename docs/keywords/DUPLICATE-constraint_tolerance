@@ -18,7 +18,7 @@ Defaults vary depending on the method.
 
 - CONMIN optimizers: 1.0e-3
 - DOT constrained optimizers: 3.0e-3
-- :ref:`method-surrogate_based_local<method-surrogate_based_local>` : 1.0e-4
+- :dakkw:`method-surrogate_based_local` : 1.0e-4
 Topics::
 method_independent_controls
 Examples::

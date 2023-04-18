@@ -1,12 +1,12 @@
 Blurb::
 Method used to build the rotation matrix
 Description::
-The rotation matrix for the Adapted Basis method is built starting from a matrix which includes the linear PCE coefficients. The entries of the first row are the linear PCE coefficients. For all the other rows, each row has only one nonzero entry. Depending on the way used to construct all the rows, from the second to last one, there are two implemented methods, :ref:`model-adapted_basis-truth_model_pointer-rotation_method-unranked<model-adapted_basis-truth_model_pointer-rotation_method-unranked>` and :ref:`model-adapted_basis-truth_model_pointer-rotation_method-ranked<model-adapted_basis-truth_model_pointer-rotation_method-ranked>`. A followed Gram_schmidt process is applied on the resulting matrix to make it an isometry.
+The rotation matrix for the Adapted Basis method is built starting from a matrix which includes the linear PCE coefficients. The entries of the first row are the linear PCE coefficients. For all the other rows, each row has only one nonzero entry. Depending on the way used to construct all the rows, from the second to last one, there are two implemented methods, :dakkw:`model-adapted_basis-truth_model_pointer-rotation_method-unranked` and :dakkw:`model-adapted_basis-truth_model_pointer-rotation_method-ranked`. A followed Gram_schmidt process is applied on the resulting matrix to make it an isometry.
 
 *Default Behavior*
 
 The default is to use the
-:ref:`model-adapted_basis-truth_model_pointer-rotation_method-ranked<model-adapted_basis-truth_model_pointer-rotation_method-ranked>`.
+:dakkw:`model-adapted_basis-truth_model_pointer-rotation_method-ranked`.
 
 *Usage Tips*
 Topics::
@@ -25,7 +25,7 @@ The following method block
         rotation_method = unranked
 
 
-changes the default method to the :ref:`model-adapted_basis-truth_model_pointer-rotation_method-unranked<model-adapted_basis-truth_model_pointer-rotation_method-unranked>` method.
+changes the default method to the :dakkw:`model-adapted_basis-truth_model_pointer-rotation_method-unranked` method.
 Theory::
 
 Faq::

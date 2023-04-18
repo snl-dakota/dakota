@@ -5,7 +5,7 @@ Specify the labels (field names) for floating point-valued metadata
 responses to be returned from the interface.
 
 Dakota's emerging metadata responses are distinct from the response
-quantities of interest explored by a Dakota :ref:`method<method>`. Some, such as
+quantities of interest explored by a Dakota :dakkw:`method`. Some, such as
 simulation cost might be used by a method (such as
 method-multifidelity_sampling and related methods) to make algorithmic
 decisions. Other metadata might just be tabulated for user
@@ -13,7 +13,7 @@ convenience.
 
 *Usage Tips*
 
-In a :ref:`interface-analysis_drivers-fork-results_file<interface-analysis_drivers-fork-results_file>`, values and
+In a :dakkw:`interface-analysis_drivers-fork-results_file`, values and
 labels for metadata should follow any function values, gradients, or
 Hessians returned by the simulation.
 Topics::

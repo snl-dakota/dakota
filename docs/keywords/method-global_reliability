@@ -21,7 +21,7 @@ over the aleatory uncertain variables by default, but may be extended
 to also capture the effect of design, epistemic uncertain, and state
 variables. If this is desired, one must use the appropriate controls
 to specify the active variables in the variables specification
-block.  Refer to :ref:`topic-variable_support<topic-variable_support>` for additional information
+block.  Refer to :ref:`topic-variable_support` for additional information
 on supported variable types.
 Topics::
 uncertainty_quantification, reliability_methods

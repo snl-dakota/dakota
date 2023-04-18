@@ -9,8 +9,8 @@ optimization run.
 
 Also note that some initializers may not strictly respect the initial
 population size.  See the SOGA
-:ref:`method-soga-initialization_type-flat_file<method-soga-initialization_type-flat_file>` or MOGA
-:ref:`method-moga-initialization_type-flat_file<method-moga-initialization_type-flat_file>` initializer for an example.
+:dakkw:`method-soga-initialization_type-flat_file` or MOGA
+:dakkw:`method-moga-initialization_type-flat_file` initializer for an example.
 Topics::
 
 Examples::

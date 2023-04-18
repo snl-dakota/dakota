@@ -6,7 +6,7 @@ format and enables more detailed error reporting.
 
 When the ``labeled`` keyword is used, function values in results
 files must be accompanied by their corresponding descriptors. If the
-user did not supply response :ref:`responses-descriptors<responses-descriptors>` in her Dakota
+user did not supply response :dakkw:`responses-descriptors` in her Dakota
 input file, then Dakota auto-generated descriptors are expected.
 
 Distinct error messages are emitted for function values that are out-of-order,

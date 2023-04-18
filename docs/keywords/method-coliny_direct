@@ -18,7 +18,7 @@ design applications, for which it is able to quickly identify
 candidate solutions that can be further refined with fast local
 optimizers.
 
-*See the page :ref:`topic-package_scolib<topic-package_scolib>` for important information
+*See the page :ref:`topic-package_scolib` for important information
 regarding all SCOLIB methods*
 
 The DIRECT algorithm supports concurrency up to twice the number of
@@ -26,7 +26,7 @@ variables being optimized.
 
 DIRECT uses the ``solution_target``, ``constraint_penalty`` and
 ``show_misc_options`` specifications that are described in
-:ref:`topic-package_scolib<topic-package_scolib>`. Note, however, that DIRECT uses a fixed penalty
+:ref:`topic-package_scolib`. Note, however, that DIRECT uses a fixed penalty
 value for constraint violations (i.e. it is not dynamically adapted as
 is done in ``coliny_pattern_search``).
 
@@ -45,25 +45,25 @@ that is suitable for most applications.
 *Stopping Critieria*
 
 DIRECT can be terminated with:
- \li :ref:`method-coliny_direct-max_function_evaluations<method-coliny_direct-max_function_evaluations>`
- \li :ref:`method-coliny_direct-max_iterations<method-coliny_direct-max_iterations>`
- \li :ref:`method-coliny_direct-convergence_tolerance<method-coliny_direct-convergence_tolerance>`
- \li :ref:`method-coliny_direct-solution_target<method-coliny_direct-solution_target>`
- \li :ref:`method-coliny_direct-max_boxsize_limit<method-coliny_direct-max_boxsize_limit>`
- \li :ref:`method-coliny_direct-min_boxsize_limit<method-coliny_direct-min_boxsize_limit>` - most effective in practice
+ \li :dakkw:`method-coliny_direct-max_function_evaluations`
+ \li :dakkw:`method-coliny_direct-max_iterations`
+ \li :dakkw:`method-coliny_direct-convergence_tolerance`
+ \li :dakkw:`method-coliny_direct-solution_target`
+ \li :dakkw:`method-coliny_direct-max_boxsize_limit`
+ \li :dakkw:`method-coliny_direct-min_boxsize_limit` - most effective in practice
 
 
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
 - :ref:`hdf5_results-best_params`
-- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_obj_fncs` (when :dakkw:`responses-objective_functions`) are specified)
 - :ref:`hdf5_results-best_constraints`
-- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-calibration` (when :dakkw:`responses-calibration_terms` are specified)
 Topics::
 package_scolib, package_coliny, global_optimization_methods
 Examples::

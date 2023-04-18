@@ -4,8 +4,8 @@ Description::
 If there are multiple experiments, there can be different
 configuration variables (e.g. experimental settings, boundary
 conditions, etc.) per experiment.  See
-:ref:`responses-calibration_terms-calibration_data<responses-calibration_terms-calibration_data>` or
-:ref:`responses-calibration_terms-calibration_data_file<responses-calibration_terms-calibration_data_file>`.
+:dakkw:`responses-calibration_terms-calibration_data` or
+:dakkw:`responses-calibration_terms-calibration_data_file`.
 
 During calibration, configuration variables are state variables which
 will be passed to the simulation, and are not treated as calibration

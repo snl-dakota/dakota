@@ -2,11 +2,11 @@ Blurb::
 Pointer to specify a full-space model, from which to construct a lower
 dimensional surrogate
 Description::
-This must point to a model block, identified by :ref:`model-id_model<model-id_model>`.
+This must point to a model block, identified by :dakkw:`model-id_model`.
 That model will be run to generate gradient data, from which an
 active subspace model will be identified and built.
 
-See :ref:`topic-block_pointer<topic-block_pointer>` for details about pointers.
+See :ref:`topic-block_pointer` for details about pointers.
 Topics::
 block_pointer
 Examples::

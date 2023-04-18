@@ -8,7 +8,7 @@ the associated method specifies ``scaling``.
 
 The options are:
 
-- 'value' - characteristic value. If this is chosen, then :ref:`variables-linear_inequality_scales<variables-linear_inequality_scales>` must be specified; 'value' is assumed if scales are given without ``scale_types``
+- 'value' - characteristic value. If this is chosen, then :dakkw:`variables-linear_inequality_scales` must be specified; 'value' is assumed if scales are given without ``scale_types``
 - 'auto' - automatic scaling.
 
 If a single string is specified it will apply to all linear inequality

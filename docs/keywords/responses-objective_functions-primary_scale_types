@@ -8,15 +8,15 @@ method specifies ``scaling``.
 The options are:
 
 
-- <tt>'value'</tt> - characteristic value by which response     functions will be divided. If this is chosen, then     :ref:`responses-objective_functions-primary_scales<responses-objective_functions-primary_scales>` must also be     specified; 'value' is assumed if scales are given without     ``scale_types``
-- <tt>'log'</tt> - logarithmic scaling (can be used together with     :ref:`responses-objective_functions-primary_scales<responses-objective_functions-primary_scales>`, which can be     helpfully used to negate values prior to log transformation)
+- <tt>'value'</tt> - characteristic value by which response     functions will be divided. If this is chosen, then     :dakkw:`responses-objective_functions-primary_scales` must also be     specified; 'value' is assumed if scales are given without     ``scale_types``
+- <tt>'log'</tt> - logarithmic scaling (can be used together with     :dakkw:`responses-objective_functions-primary_scales`, which can be     helpfully used to negate values prior to log transformation)
 
 (Automatic scaling is disallowed due to lack of bounds or targets for
 primary responses.)
 
 If a single string is specified it will apply to all
 objective_functions. Otherwise the length of ``primary_scale_types``
-must have length equal to :ref:`responses-objective_functions<responses-objective_functions>`. Thus,
+must have length equal to :dakkw:`responses-objective_functions`. Thus,
 when scalar and/or field responses are specified, the number of
 ``primary_scale_types`` must equal the number of scalars plus the number
 of fields, *not* the total elements in the fields.
@@ -24,7 +24,7 @@ of fields, *not* the total elements in the fields.
 *Usage Tips:*
 
 When scaling is active, it is applied to objective functions prior to
-any :ref:`responses-objective_functions-weights<responses-objective_functions-weights>` and multi-objective sum
+any :dakkw:`responses-objective_functions-weights` and multi-objective sum
 formation.
 
 See the scaling information under specific methods, e.g.,

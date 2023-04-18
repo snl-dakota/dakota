@@ -12,34 +12,34 @@ between the model and the data:
    R_{i} = y^{Model}_i(\theta) - y^{Data}_{i}. 
 
 Note that the problem specification affects what must be returned to
-Dakota in the :ref:`interface-analysis_drivers-fork-results_file<interface-analysis_drivers-fork-results_file>` :
+Dakota in the :dakkw:`interface-analysis_drivers-fork-results_file` :
 
 
-- If calibration data *is not specified*, then each of the   calibration terms returned to Dakota through the :ref:`interface<interface>` is a   residual :math:`R_{i}`  to be driven toward zero.
+- If calibration data *is not specified*, then each of the   calibration terms returned to Dakota through the :dakkw:`interface` is a   residual :math:`R_{i}`  to be driven toward zero.
 - If calibration data *is specified*, then each of the   calibration terms returned to Dakota must be a response :math:`  y^{Model}_i(\theta)` , which Dakota will difference with the data   in the specified data file.
 
 *Constraints*
 
 (See general problem formulation at
-:ref:`responses-objective_functions<responses-objective_functions>`.) The keywords
-:ref:`responses-calibration_terms-nonlinear_inequality_constraints<responses-calibration_terms-nonlinear_inequality_constraints>` and
-:ref:`responses-calibration_terms-nonlinear_equality_constraints<responses-calibration_terms-nonlinear_equality_constraints>` specify the
+:dakkw:`responses-objective_functions`.) The keywords
+:dakkw:`responses-calibration_terms-nonlinear_inequality_constraints` and
+:dakkw:`responses-calibration_terms-nonlinear_equality_constraints` specify the
 number of nonlinear inequality constraints \em g, and nonlinear
 equality constraints \em h, respectively.  When interfacing to
 external applications, the responses must be returned to Dakota in
-this order in the :ref:`interface-analysis_drivers-fork-results_file<interface-analysis_drivers-fork-results_file>` :
+this order in the :dakkw:`interface-analysis_drivers-fork-results_file` :
 0. calibration terms nonlinear inequality
 constraints nonlinear equality constraints
 
 An optimization problem's linear constraints are provided to the
 solver at startup only and do not need to be included in the data
 returned on every function evaluation. Linear constraints are
-therefore specified in the :ref:`variables<variables>` block through the
-:ref:`variables-linear_inequality_constraint_matrix<variables-linear_inequality_constraint_matrix>` :math:`A_i`  and
-:ref:`variables-linear_equality_constraint_matrix<variables-linear_equality_constraint_matrix>` :math:`A_e` .
+therefore specified in the :dakkw:`variables` block through the
+:dakkw:`variables-linear_inequality_constraint_matrix` :math:`A_i`  and
+:dakkw:`variables-linear_equality_constraint_matrix` :math:`A_e` .
 
 Lower and upper bounds on the design variables \em x are also
-specified in the :ref:`variables<variables>` block.
+specified in the :dakkw:`variables` block.
 
 *Problem Transformations*
 
@@ -77,7 +77,7 @@ solved using any general-purpose optimization algorithm in Dakota.
 While Dakota can solve these problems with either least squares or
 optimization algorithms, the response data sets to be returned from
 the simulator are different when using
-:ref:`responses-objective_functions<responses-objective_functions>` versus :ref:`responses-calibration_terms<responses-calibration_terms>`.
+:dakkw:`responses-objective_functions` versus :dakkw:`responses-calibration_terms`.
 
 Least squares calibration involves a set of residual
 functions, whereas optimization involves a single objective function

@@ -4,8 +4,8 @@ Description::
 The ``counts`` list of real values gives the frequency or relative
 probability for each bin in a ``histogram_bin_uncertain``
 specification.  These are paired with the specified
-:ref:`variables-histogram_bin_uncertain-abscissas<variables-histogram_bin_uncertain-abscissas>`. See
-:ref:`variables-histogram_bin_uncertain<variables-histogram_bin_uncertain>` for details.
+:dakkw:`variables-histogram_bin_uncertain-abscissas`. See
+:dakkw:`variables-histogram_bin_uncertain` for details.
 Topics::
 
 Examples::

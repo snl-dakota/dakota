@@ -4,7 +4,7 @@ Description::
 DOT library :cite:p:`Van95` implementation of sequential linear
 programming for constrained optimizaiton.
 
-See :ref:`topic-package_dot<topic-package_dot>` for information common to all ``DOT`` methods.
+See :ref:`topic-package_dot` for information common to all ``DOT`` methods.
 
 *DOT requires a separate software license and therefore may not
 be available in all versions of Dakota.  CONMIN or OPT++ methods may
@@ -13,14 +13,14 @@ be suitable alternatives.*
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
 - :ref:`hdf5_results-best_params`
-- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_obj_fncs` (when :dakkw:`responses-objective_functions`) are specified)
 - :ref:`hdf5_results-best_constraints`
-- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-calibration` (when :dakkw:`responses-calibration_terms` are specified)
 Topics::
 
 Examples::

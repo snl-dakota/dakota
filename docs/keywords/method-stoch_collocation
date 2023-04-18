@@ -6,7 +6,7 @@ representation of random response functions in terms of
 finite-dimensional interpolation bases.
 
 The stochastic collocation (SC) method is very similar to
-:ref:`method-polynomial_chaos<method-polynomial_chaos>`, with the key difference that the orthogonal
+:dakkw:`method-polynomial_chaos`, with the key difference that the orthogonal
 polynomial basis functions are replaced with interpolation polynomial
 bases. The interpolation polynomials may be either local or global
 and either value-based or gradient-enhanced. In the local case,
@@ -31,9 +31,9 @@ functions for known coefficients.
 
 *Basis polynomial family (Group 2)*
 
-In addition to the :ref:`method-stoch_collocation-askey<method-stoch_collocation-askey>` and
-:ref:`method-stoch_collocation-wiener<method-stoch_collocation-wiener>` basis types also supported by
-:ref:`method-polynomial_chaos<method-polynomial_chaos>`, SC supports the option of ``piecewise`` local
+In addition to the :dakkw:`method-stoch_collocation-askey` and
+:dakkw:`method-stoch_collocation-wiener` basis types also supported by
+:dakkw:`method-polynomial_chaos`, SC supports the option of ``piecewise`` local
 basis functions. These are piecewise linear splines, or in the case of
 gradient-enhanced interpolation via the ``use_derivatives``
 specification, piecewise cubic Hermite splines. Both of these basis
@@ -52,7 +52,7 @@ global gradient-enhanced interpolants (Hermite interpolation
 polynomials) are also restricted to uniform or transformed uniform
 random variables (due to the need to compute collocation weights by
 integration of the basis polynomials) and share the variable support
-shown in :ref:`topic-variable_support<topic-variable_support>` for Piecewise SE. Due to numerical
+shown in :ref:`topic-variable_support` for Piecewise SE. Due to numerical
 instability in these high-order basis polynomials, they are deactivated
 by default but can be activated by developers using a compile-time switch.
 
@@ -69,7 +69,7 @@ two options are provided.
 
 
 Another distinguishing characteristic of stochastic collocation
-relative to :ref:`method-polynomial_chaos<method-polynomial_chaos>` is the ability to reformulate the
+relative to :dakkw:`method-polynomial_chaos` is the ability to reformulate the
 interpolation problem from a ``nodal`` interpolation approach into a
 ``hierarchical`` formulation in which each new level of interpolation
 defines a set of incremental refinements (known as hierarchical
@@ -171,7 +171,7 @@ generalized reliability results using importance sampling.
 When using multifidelity UQ, the high fidelity expansion generated
 from combining the low fidelity and discrepancy expansions retains the
 polynomial form of the low fidelity expansion (only the coefficients
-are updated).  Refer to :ref:`method-polynomial_chaos<method-polynomial_chaos>` for information
+are updated).  Refer to :dakkw:`method-polynomial_chaos` for information
 on the multifidelity interpretation of array inputs for
 ``quadrature_order`` and ``sparse_grid_level``.
 
@@ -196,7 +196,7 @@ on the SC algorithm.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 

@@ -28,7 +28,7 @@ iterations prior to termination of iteration.
 Notes on each library:
 
 - DOT: relative tolerance that must be satisfied for two consecutive iterations
-- NL2SOL: See :ref:`method-nl2sol<method-nl2sol>`
+- NL2SOL: See :dakkw:`method-nl2sol`
 - NLPQLP: used as Lagrangian gradient norm tolerance (ACC), not as a relative convergence tolerance
 - NPSOL: used as a line search tolerance, not as a relative convergence tolerance
 Topics::

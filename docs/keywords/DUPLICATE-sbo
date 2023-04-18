@@ -8,12 +8,12 @@ The main difference between ``ego`` and the
 ``sbo`` approach is the objective function being optimized.
 ``ego`` relies on an expected improvement function, while in
 ``sbo``, the optimization proceeds using an evolutionary
-algorithm ( :ref:`method-coliny_ea<method-coliny_ea>`) on the Gaussian process surrogate:
+algorithm ( :dakkw:`method-coliny_ea`) on the Gaussian process surrogate:
 it is a standard surrogate-based optimization. Also note that the
 ``sbo`` option can support optimization over discrete variables (the
 discrete variables are relaxed) while ``ego`` cannot.
 
-This is not the same as :ref:`method-surrogate_based_global<method-surrogate_based_global>`.
+This is not the same as :dakkw:`method-surrogate_based_global`.
 Topics::
 
 Examples::

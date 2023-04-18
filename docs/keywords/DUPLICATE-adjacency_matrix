@@ -19,7 +19,7 @@ variables if one or more of them have been specified to be
 ``categorical``.  It is always relevant for ``discrete_design_set``
 ``string`` variables.  If the user does not define an adjacency matrix,
 the default is method dependent.  Currently, the only method that
-makes use of the adjacency matrix is :ref:`method-mesh_adaptive_search<method-mesh_adaptive_search>`,
+makes use of the adjacency matrix is :dakkw:`method-mesh_adaptive_search`,
 which uses a tri-diagonal adjacency matrix by default.
 
 *Expected Output*
