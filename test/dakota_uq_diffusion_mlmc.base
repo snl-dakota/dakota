@@ -139,20 +139,20 @@ Sample moment statistics for each response function:
  response_fn_2  1.2894466528e-01  1.3546122586e-02  6.7533156454e-01 -5.0782922097e-01
  response_fn_3  2.5297645726e-02  6.5945128829e-03  7.8126537634e-01 -1.4129619100e-01
 Test Number 10 succeeded
-<<<<< Function evaluation summary: 3629 total (3629 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 2.4107666016e+01
+<<<<< Function evaluation summary: 12471 total (12471 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 2.6168945312e+01
 <<<<< Variance for mean estimator:
       Initial MC (   20 HF samples):  6.5592356880e-06
      Online   MC (   20 HF samples):  6.5592356880e-06
-     Online MFMC (sample profile):    1.2575830912e-07
-     Online MFMC ratio (1 - R^2):     1.9172707782e-02
- Equivalent   MC (   24 HF samples):  5.4416181838e-06
- Equivalent MFMC ratio:               2.3110461791e-02
+     Online MFMC (sample profile):    1.1438819216e-07
+     Online MFMC ratio (1 - R^2):     1.7439256280e-02
+ Equivalent   MC (   26 HF samples):  5.0129920099e-06
+ Equivalent MFMC ratio:               2.2818347194e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5408541347e-02  6.6580019582e-03  7.6456554443e-01 -1.7918795812e-01
- response_fn_2  1.2900930892e-01  1.3200919079e-02  9.1734338387e-01  1.9339551993e-01
- response_fn_3  2.5408541347e-02  6.6580019587e-03  7.6456554433e-01 -1.7918795882e-01
+ response_fn_1  2.5339668464e-02  6.5856030981e-03  7.4926512595e-01 -2.0532929023e-01
+ response_fn_2  1.2886379982e-01  1.3458442814e-02  8.7241553021e-01 -2.2939959377e-01
+ response_fn_3  2.5339668465e-02  6.5856030985e-03  7.4926512585e-01 -2.0532929097e-01
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 202941 total (202941 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 1.2556347656e+02
