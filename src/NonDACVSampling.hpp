@@ -171,7 +171,7 @@ protected:
 				    const RealVector& var_H,
 				    RealMatrix& rho2_LH);
 
-  void cache_iter0();
+  void cache_mc_reference();
 
   void analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln);
 

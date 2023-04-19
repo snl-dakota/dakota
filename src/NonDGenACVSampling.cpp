@@ -576,7 +576,7 @@ genacv_approx_increment(const RealVector& avg_eval_ratios,
 
 void NonDGenACVSampling::precompute_ratios()
 {
-  cache_iter0();          // store {estVar,numH}Iter0
+  cache_mc_reference();   // store {estVar,numH}Iter0
   approxSequence.clear(); // rho2LH re-ordering from MFMC is not relevant here
 }
 

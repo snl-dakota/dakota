@@ -398,8 +398,6 @@ acv_approx_increment(const RealVector& avg_eval_ratios,
 void NonDACVSampling::
 compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
 {
-  cache_iter0();
-
   // Solve the optimization sub-problem using an initial guess from either
   // related analytic solutions (iter == 0) or warm started from the previous
   // solutions (iter >= 1)
@@ -407,6 +405,8 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
   RealVector& avg_eval_ratios = soln.avgEvalRatios;
   bool budget_constrained = (maxFunctionEvals != SZ_MAX);
   if (mlmfIter == 0) {
+    cache_mc_reference();
+
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
@@ -476,7 +476,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
 }
 
 
-void NonDACVSampling::cache_iter0()
+void NonDACVSampling::cache_mc_reference()
 {
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
