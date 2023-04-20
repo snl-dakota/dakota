@@ -583,7 +583,7 @@ archive_std_regress_coeffs(const StrStrSizet& run_identifier,
 
   StringArray location;
   if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
-  location.push_back("standardized_regression_coefficients");
+  location.push_back("std_regression_coeffs");
 
   location.push_back("");
   for (size_t i=0; i<resp_labels.size(); ++i) {
