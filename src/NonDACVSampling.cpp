@@ -516,7 +516,7 @@ analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln)
 void NonDACVSampling::
 analytic_initialization_from_ensemble_cvmc(Real avg_N_H, DAGSolutionData& soln)
 {
-  // > Option 2 is ensemble of independent two-model CVMCs, rescaled to an
+  // > Option 2 is ensemble of independent pairwise CVMCs, rescaled to an
   //   aggregate budget.  This is more ACV-like in the sense that it is not
   //   recursive, but it neglects the covariance C among approximations.
   //   It is also insensitive to model sequencing.
@@ -540,7 +540,7 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
   if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
   else                         avg_eval_ratios = 0.;
 
-  // Compute an ensemble of two-model CVMC solutions, all relative to HF:
+  // Compute an ensemble of pairwise CVMC solutions, all relative to HF:
   size_t qoi, approx;  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
   for (approx=0; approx<numApprox; ++approx) {
     cost_ratio = cost_H / cost[approx];
@@ -569,7 +569,7 @@ pick_mfmc_cvmc_solution(const DAGSolutionData& mf_soln, size_t  mf_samp,
     soln = mf_soln;  num_samp = mf_samp;
   }
   else {
-    Cout << "ensemble of two-model CVMC.\n" << std::endl;
+    Cout << "ensemble of pairwise CVMC.\n" << std::endl;
     soln = cv_soln;  num_samp = cv_samp;
   }
 }

@@ -1047,11 +1047,14 @@ Real NonDNonHierarchSampling::
 nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd)
 {
   Real merit_fn = obj, constr = nln_con / nln_u_bnd, // normalize
-    r_p = 1.e+6, c_tol = .01, c_tol_p1 = 1. + c_tol;
+    r_p = 1.e+6, c_tol = .01, c_tol_p1 = 1. + c_tol, constr_viol = 0.;
   if (constr > c_tol_p1) {
-    Real constr_viol = constr - c_tol_p1;
+    constr_viol = constr - c_tol_p1;
     merit_fn += r_p * constr_viol * constr_viol;
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Penalty merit fn = " << merit_fn << " from obj = " << obj
+	 << " constraint viol = " << constr_viol << std::endl;
   return merit_fn;
 }
 

@@ -289,7 +289,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
-  Real avg_hf_target = 0.;
+  Real avg_hf_target = 0., avg_N_H;
   while (numSamples && mlmfIter <= maxIterations) {
 
     // --------------------------------------------------------------------
@@ -326,8 +326,12 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
       //reset_acv(); // reset state for next ACV execution
     }
     restore_best();
-    if (backfillFailures)
+    if (truthFixedByPilot) numSamples = 0;
+    else {
       avg_hf_target = dagSolns[*activeDAGIter].avgHFTarget;
+      avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+      numSamples = one_sided_delta(avg_N_H, avg_hf_target);
+    }
     ++mlmfIter;
   }
 
@@ -396,6 +400,11 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   DAGSolutionData& soln = dagSolns[*activeDAGIter];
   if (finalStatsType == QOI_STATISTICS) {
+    if (truthFixedByPilot) numSamples = 0;
+    else {
+      Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+      numSamples = one_sided_delta(avg_N_H, soln.avgHFTarget);
+    }
     // perform the shared increment for the online sample profile
     shared_increment(mlmfIter); // spans ALL models, blocking
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
@@ -624,7 +633,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     pick_mfmc_cvmc_solution(mf_soln, mf_samp, cv_soln, cv_samp,soln,numSamples);
   }
   else { // warm start from previous eval_ratios solution
-    
+
     // no scaling needed from prev soln (as in NonDLocalReliability) since
     // updated avg_N_H now includes allocation from previous solution and
     // should be active on constraint bound (excepting sample count rounding)
