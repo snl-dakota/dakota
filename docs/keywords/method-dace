@@ -24,16 +24,16 @@ array:  it does not generate discrete, fixed levels.
 In addition to the selection of the method, there are keywords
 that affect the method outputs:
 
-#. :ref:`method-dace-main_effects<method-dace-main_effects>`
-#. :ref:`method-dace-quality_metrics<method-dace-quality_metrics>`
-#. :ref:`method-dace-variance_based_decomp<method-dace-variance_based_decomp>`
+#. :dakkw:`method-dace-main_effects`
+#. :dakkw:`method-dace-quality_metrics`
+#. :dakkw:`method-dace-variance_based_decomp`
 
 And keywords that affect the sampling:
 
-#. :ref:`method-dace-fixed_seed<method-dace-fixed_seed>`
-#. :ref:`method-dace-symbols<method-dace-symbols>`
-#. :ref:`method-dace-samples<method-dace-samples>`
-#. :ref:`method-dace-seed<method-dace-seed>`
+#. :dakkw:`method-dace-fixed_seed`
+#. :dakkw:`method-dace-symbols`
+#. :dakkw:`method-dace-samples`
+#. :dakkw:`method-dace-seed`
 
 Topics::
 package_ddace, design_and_analysis_of_computer_experiments

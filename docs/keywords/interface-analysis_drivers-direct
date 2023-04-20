@@ -29,7 +29,7 @@ Topics::
 
 Examples::
 The rosenbrock function is available as an executable, which can be
-launched with :ref:`interface-analysis_drivers-fork<interface-analysis_drivers-fork>`, and is also
+launched with :dakkw:`interface-analysis_drivers-fork`, and is also
 compiled with Dakota. The internal version can be used with:
 
 

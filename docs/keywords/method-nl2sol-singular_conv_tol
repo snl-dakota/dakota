@@ -3,10 +3,10 @@ Singular convergence tolerance
 Description::
 ``singular_conv_tol``
 (NL2SOL's ``sctol``) is the singular convergence tolerance, which works
-in conjunction with :ref:`method-nl2sol-singular_radius<method-nl2sol-singular_radius>` to test for
+in conjunction with :dakkw:`method-nl2sol-singular_radius` to test for
 underdetermined least-squares problems (stop when the relative
 reduction yet possible in the sum of squares appears less then
-``singular_conv_tol`` for steps of scaled length at most :ref:`method-nl2sol-singular_radius<method-nl2sol-singular_radius>`).
+``singular_conv_tol`` for steps of scaled length at most :dakkw:`method-nl2sol-singular_radius`).
 
 The internal default is a function of machine epsilon
 (as limited by ``function_precision``). The default is selected with a value of -1.

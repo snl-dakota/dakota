@@ -1,7 +1,7 @@
 Blurb::
 Multifidelity uncertainty quantification using polynomial chaos expansions
 Description::
-As described in :ref:`method-polynomial_chaos<method-polynomial_chaos>`, the polynomial chaos
+As described in :dakkw:`method-polynomial_chaos`, the polynomial chaos
 expansion (PCE) is a general framework for the approximate representation
 of random response functions in terms of series expansions in standardized
 random variables:
@@ -25,7 +25,7 @@ high-fidelity (HF) models and an additive discrepancy approach, we have:
 where :math:`\delta_i`  is a coefficient for the discrepancy expansion.
 
 The same specification options are available as described in
-:ref:`method-polynomial_chaos<method-polynomial_chaos>` with one key difference: many of the
+:dakkw:`method-polynomial_chaos` with one key difference: many of the
 coefficient estimation inputs change from a scalar input for a single
 expansion to a <i>sequence</i> specification for a low-fidelity expansion
 followed by multiple discrepancy expansions.
@@ -58,14 +58,14 @@ quadrature order, sparse grid level, and expansion order.
 
 Multifidelity UQ using PCE requires that the model selected for
 iteration by the method specification is a multifidelity surrogate
-model (see :ref:`model-surrogate-hierarchical<model-surrogate-hierarchical>`), which defines an
-``ordered_model_sequence`` (see :ref:`model-surrogate-hierarchical<model-surrogate-hierarchical>`).
+model (see :dakkw:`model-surrogate-hierarchical`), which defines an
+``ordered_model_sequence`` (see :dakkw:`model-surrogate-hierarchical`).
 Two types of hierarchies are supported: (i) a hierarchy of model forms
 composed from more than one model within the ``ordered_model_sequence``,
 or (ii) a hierarchy of discretization levels comprised from a single
 model within the ``ordered_model_sequence`` which in turn specifies a
 ``solution_level_control`` (see
-:ref:`model-single-solution_level_control<model-single-solution_level_control>`).
+:dakkw:`model-single-solution_level_control`).
 
 In both cases, an expansion will first be formed for the low fidelity
 model or coarse discretization, using the first value within the
@@ -98,7 +98,7 @@ information on the Multifidelity PCE algorithm.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 

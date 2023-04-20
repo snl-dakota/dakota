@@ -7,12 +7,12 @@ subspace.
 *Default Behavior*
 
 The default is to use the
-:ref:`model-active_subspace-truncation_method-constantine<model-active_subspace-truncation_method-constantine>` diagnostic.
+:dakkw:`model-active_subspace-truncation_method-constantine` diagnostic.
 
 *Usage Tips*
 
 If the automated subspace identification methods do not yield desirable results,
-consider using the explicit :ref:`model-active_subspace-dimension<model-active_subspace-dimension>` truncation option.
+consider using the explicit :dakkw:`model-active_subspace-dimension` truncation option.
 Topics::
 
 Examples::

@@ -11,7 +11,7 @@ in one of three formats:
 The surrogate is evaluated at the points in the file, and the
 surrogate (approximate) responses are compared against the truth
 results from the file.  All metrics specified with
-:ref:`model-surrogate-global-metrics<model-surrogate-global-metrics>` will be computed for the challenge
+:dakkw:`model-surrogate-global-metrics` will be computed for the challenge
 data.
 Topics::
 

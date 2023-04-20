@@ -6,7 +6,7 @@ explicitly enabled when compiling Dakota from source.  Contact the
 Dakota users mailing list for assistance building and using Dakota
 with these interfaces.
 
-The :ref:`interface-analysis_drivers<interface-analysis_drivers>` specifies a Scilab file which
+The :dakkw:`interface-analysis_drivers` specifies a Scilab file which
 implements the parameter to response mapping.
 Topics::
 

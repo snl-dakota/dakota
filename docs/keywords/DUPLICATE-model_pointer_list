@@ -3,7 +3,7 @@ Associate models with method names
 Description::
 Using the optional keyword ``model_pointer_list``, models can be assigned to
 methods specified in the ``method_name_list``. Models are referred to by name
-(i.e. by their :ref:`model-id_model<model-id_model>` labels). The length of the
+(i.e. by their :dakkw:`model-id_model` labels). The length of the
 ``model_pointer_list`` must be either 1 or match the length
 of the ``method_name_list``. If the former, the same model will be
 used for all methods, and if the latter, methods and models will be paired in

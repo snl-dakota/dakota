@@ -15,16 +15,16 @@ The names of the parameters file and results file are provided
 as command line arguments to the analysis driver, just as in
 a conventional, non-batch evaluation. By default, all currently
 available evaluations will be performed in a single batch, but
-the batch size can be limited using the :ref:`interface-batch-size<interface-batch-size>`
+the batch size can be limited using the :dakkw:`interface-batch-size`
 keyword.
 
 Batch mode has a few important limitations.
 
 
 - Only one batch at a time may be executed. Asynchronous     execution of multiple concurrent batches is not supported.
-- No :ref:`interface-analysis_drivers-input_filter<interface-analysis_drivers-input_filter>` or     :ref:`interface-analysis_drivers-output_filter<interface-analysis_drivers-output_filter>` is permitted.
+- No :dakkw:`interface-analysis_drivers-input_filter` or     :dakkw:`interface-analysis_drivers-output_filter` is permitted.
 - Only one ``analysis_driver`` is allowed.
-- ``failure_capture`` modes are restricted to     :ref:`interface-failure_capture-abort<interface-failure_capture-abort>` and     :ref:`interface-failure_capture-recover<interface-failure_capture-recover>`.
+- ``failure_capture`` modes are restricted to     :dakkw:`interface-failure_capture-abort` and     :dakkw:`interface-failure_capture-recover`.
 
 Some of these restrictions may be lifted in future Dakota releases.
 
@@ -32,7 +32,7 @@ Some of these restrictions may be lifted in future Dakota releases.
 
 A batch parameters file written by Dakota is simply a
 concatenated set of parameters files for the set of evaluations, either
-in :ref:`interface-analysis_drivers-fork-aprepro<interface-analysis_drivers-fork-aprepro>` or default Dakota
+in :dakkw:`interface-analysis_drivers-fork-aprepro` or default Dakota
 format.
 
 The batch results file is also a concatenated set of results files
@@ -46,10 +46,10 @@ in the batch parameters file.
 
 *Tagging and Work Directories*
 
-When Dakota's :ref:`interface-analysis_drivers-fork-work_directory<interface-analysis_drivers-fork-work_directory>`
+When Dakota's :dakkw:`interface-analysis_drivers-fork-work_directory`
 feature is enabled, one directory is created per batch. If
-:ref:`interface-analysis_drivers-fork-file_tag<interface-analysis_drivers-fork-file_tag>` or
-:ref:`interface-analysis_drivers-fork-work_directory-directory_tag<interface-analysis_drivers-fork-work_directory-directory_tag>`
+:dakkw:`interface-analysis_drivers-fork-file_tag` or
+:dakkw:`interface-analysis_drivers-fork-work_directory-directory_tag`
 is used, parameters/results files and work directories are tagged
 with a batch Id, which is an integer that begins with 1 and increments
 for each new batch.

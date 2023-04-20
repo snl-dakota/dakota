@@ -8,7 +8,7 @@ In the inequality case, the lower :math:`a_l`  and upper :math:`a_u`  bounds pro
 
 Where :math:`A`  is the constrain matrix of variable coefficients.
 
-As with nonlinear inequality constraints (see :ref:`responses-objective_functions<responses-objective_functions>`), the
+As with nonlinear inequality constraints (see :dakkw:`responses-objective_functions`), the
 default linear inequality constraint bounds are selected so that one-sided inequalities of the form
 
 .. math:: Ax \leq 0.0
@@ -27,7 +27,7 @@ linear_constraints
 
 Examples::
 Examples of specifying linear inequality constraints to Dakota are
-provided on the :ref:`variables-linear_inequality_constraint_matrix<variables-linear_inequality_constraint_matrix>` page.
+provided on the :dakkw:`variables-linear_inequality_constraint_matrix` page.
 
 Theory::
 

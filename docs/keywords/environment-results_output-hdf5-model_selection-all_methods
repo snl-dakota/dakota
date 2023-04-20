@@ -33,7 +33,7 @@ The following links would be added to methods and models ``sources`` groups:
 - ``/methods/opt/sources/RECAST_surr_RECAST_1`` :math:`\rightarrow`  ``/models/recast/RECAST_surr_RECAST_1/``
 - ``/methods/training/sources/truth_m`` :math:`\rightarrow`  ``/models/simulation/truth_m/``
 
-Depending on :ref:`environment-results_output-hdf5-interface_selection<environment-results_output-hdf5-interface_selection>`, the following links may also
+Depending on :dakkw:`environment-results_output-hdf5-interface_selection`, the following links may also
 be added to model ``sources`` groups:
 
 

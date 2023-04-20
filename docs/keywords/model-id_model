@@ -4,8 +4,8 @@ Description::
 The model identifier string is supplied with
 ``id_model`` and is used to provide a unique identifier string for use
 within method specifications (refer to the keyword ``model_pointer`` in
-any of the methods in the :ref:`method<method>` block, for example:
-:ref:`method-list_parameter_study-model_pointer<method-list_parameter_study-model_pointer>`)
+any of the methods in the :dakkw:`method` block, for example:
+:dakkw:`method-list_parameter_study-model_pointer`)
 
 This is used to determine which model the method will run.
 Topics::

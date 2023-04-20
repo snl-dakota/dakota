@@ -1,7 +1,7 @@
 Blurb::
 Option for the ``active`` keyword
 Description::
-See the :ref:`variables-active<variables-active>` keyword
+See the :dakkw:`variables-active` keyword
 Topics::
 
 Examples::

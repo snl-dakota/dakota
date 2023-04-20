@@ -4,7 +4,7 @@ Description::
 If set, ``display_all_evaluations`` will instruct the mesh adaptive
 direct search method to print out its own record of all evaluations.
 The information reported may be controlled using
-:ref:`method-mesh_adaptive_search-display_format<method-mesh_adaptive_search-display_format>`.
+:dakkw:`method-mesh_adaptive_search-display_format`.
 
 *Default Behavior*
 

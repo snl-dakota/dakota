@@ -5,7 +5,7 @@ Description::
 Dakota should read in experimental data for calibration.  This block
 is primarily to support the reading of field calibration data.  For
 simpler, scalar-only response cases, see
-:ref:`responses-calibration_terms-calibration_data_file<responses-calibration_terms-calibration_data_file>`.  The user will
+:dakkw:`responses-calibration_terms-calibration_data_file`.  The user will
 typically specify the number of experiments, ``num_experiments``.  If
 this is not specified, it is assumed there is only one experiment.
 
@@ -16,13 +16,13 @@ experiment number.
 
 
 
-1. *Values:* The scalar or field-valued response function values, e.g., temperature values, voltage levels.  These are read from files named ``DESC``.NUM.dat (one per response descriptor, per experiment), e.g, ``NUM.datvolts``.1.dat, ``1.dat,volts``.2.dat.  Scalar files will contain a single value, while field files will each contain a column of field reponse values. Without :ref:`responses-calibration_terms-calibration_data-interpolate<responses-calibration_terms-calibration_data-interpolate>` enabled, the lengths of these files must match those specified using the responses-calibration_terms-field_calibration_terms-lengths keyword.
+1. *Values:* The scalar or field-valued response function values, e.g., temperature values, voltage levels.  These are read from files named ``DESC``.NUM.dat (one per response descriptor, per experiment), e.g, ``NUM.datvolts``.1.dat, ``1.dat,volts``.2.dat.  Scalar files will contain a single value, while field files will each contain a column of field reponse values. Without :dakkw:`responses-calibration_terms-calibration_data-interpolate` enabled, the lengths of these files must match those specified using the responses-calibration_terms-field_calibration_terms-lengths keyword.
 
 
-2. *Coordinates:* Field coordinates specify independent variables (e.g., spatial or temporal coordinates) upon which the field depends.  For example, the voltage might be a function of time, so time is the field coordinate.  These are read from files named ``DESC``.NUM.coords, each containing :ref:`responses-calibration_terms-field_calibration_terms-num_coordinates_per_field<responses-calibration_terms-field_calibration_terms-num_coordinates_per_field>` columns. The number of rows must be the same as in the values files described in the previous bullet.
+2. *Coordinates:* Field coordinates specify independent variables (e.g., spatial or temporal coordinates) upon which the field depends.  For example, the voltage might be a function of time, so time is the field coordinate.  These are read from files named ``DESC``.NUM.coords, each containing :dakkw:`responses-calibration_terms-field_calibration_terms-num_coordinates_per_field` columns. The number of rows must be the same as in the values files described in the previous bullet.
 
 
-3. *Variances:* If :ref:`responses-calibration_terms-calibration_data-experiment_variance_type<responses-calibration_terms-calibration_data-experiment_variance_type>` is specified, variance values are read from files ``DESC``.NUM.sigma. Note that a single ``NUM.sigma.experiment_variance_type`` may be specified, or a unique ``experiment_variance_type`` per response descriptor (per scalar or field). If the ``experiment_variance_type`` is:
+3. *Variances:* If :dakkw:`responses-calibration_terms-calibration_data-experiment_variance_type` is specified, variance values are read from files ``DESC``.NUM.sigma. Note that a single ``NUM.sigma.experiment_variance_type`` may be specified, or a unique ``experiment_variance_type`` per response descriptor (per scalar or field). If the ``experiment_variance_type`` is:
 
 
   - 'scalar': a single variance value will be read from the file.
@@ -47,7 +47,7 @@ experimental data, it may be entered as described above, i.e., one
 file named DESC.NUM.dat per scalar response.  However, an alternative
 is to provde the data for all scalar responses in aggregate in the
 simpler
-:ref:`responses-calibration_terms-calibration_data-scalar_data_file<responses-calibration_terms-calibration_data-scalar_data_file>` format,
+:dakkw:`responses-calibration_terms-calibration_data-scalar_data_file` format,
 with the number of rows of that file equal to the number of
 experiments.  The scalar data file may be used in combination with the
 the separate field files described above.

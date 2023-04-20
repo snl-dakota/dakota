@@ -12,7 +12,7 @@ starting point for each level within either an individual or
 integrated refinement approach.
 
 A corresponding scalar specification is documented at, e.g.,
-:ref:`method-polynomial_chaos-expansion_order-collocation_points<method-polynomial_chaos-expansion_order-collocation_points>`
+:dakkw:`method-polynomial_chaos-expansion_order-collocation_points`
 Topics::
 
 Examples::

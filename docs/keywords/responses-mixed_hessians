@@ -22,7 +22,7 @@ only once within the union of the ``id_analytic_hessians``,
 The
 ``fd_hessian_step_size`` and ``bfgs``, ``damped`` ``bfgs``, or ``sr1``
 secant update selections are as described previously in
-:ref:`responses<responses>` and pertain to those functions
+:dakkw:`responses` and pertain to those functions
 listed by the ``id_numerical_hessians`` and ``id_quasi_hessians``
 lists.
 Topics::

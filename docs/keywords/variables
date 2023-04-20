@@ -122,7 +122,7 @@ design variables - by default.
 
 The default behavior should be described on each method page, or on
 topics pages that relate to classes of methods.  In addition, the
-default behavior can be modified using the :ref:`variables-active<variables-active>`
+default behavior can be modified using the :dakkw:`variables-active`
 keyword.
 
 At least one type of variables that are active for the method in use
@@ -159,7 +159,7 @@ and unspecified normal.
 When an intial point is needed and not explcitly specified in user
 input, it is assigned as described in the ``initial_point`` or
 ``initial_state`` specification, e.g.,
-:ref:`variables-normal_uncertain-initial_point<variables-normal_uncertain-initial_point>`. For example, uncertain
+:dakkw:`variables-normal_uncertain-initial_point`. For example, uncertain
 variables are initialized to their means, where mean values for
 bounded normal and bounded lognormal may be further adjusted to
 satisfy any user-specified distribution bounds, mean values for

@@ -29,7 +29,7 @@ multiple minima.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the starting points for each sub-iterator it runs, as well
 as the best parameters and responses returned by each sub-iterator.
 See the :ref:`hdf5_results-ms_pareto` documentation for details.

@@ -1,8 +1,8 @@
 Blurb::
 List of Dakota methods to sequentially or collaboratively run
 Description::
-``method_name_list`` specifies a list of Dakota methods (e.g. :ref:`method-soga<method-soga>`,
-:ref:`method-conmin_frcg<method-conmin_frcg>`) that will be run by a ``hybrid`` ``sequential`` or
+``method_name_list`` specifies a list of Dakota methods (e.g. :dakkw:`method-soga`,
+:dakkw:`method-conmin_frcg`) that will be run by a ``hybrid`` ``sequential`` or
 ``hybrid`` ``collaborative`` method. The methods are executed with default
 options. The optional ``model_pointer_list`` may be used to associate a model
 with each method.

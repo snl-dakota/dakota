@@ -3,7 +3,7 @@ Aleatory uncertain variable - continuous histogram
 
 Description::
 Histogram uncertain variables are typically used to model a set of
-empirical data.  The bin histogram (contrast: :ref:`variables-histogram_point_uncertain<variables-histogram_point_uncertain>`) is a continuous aleatory
+empirical data.  The bin histogram (contrast: :dakkw:`variables-histogram_point_uncertain`) is a continuous aleatory
 distribution characterized by bins of non-zero width where the
 uncertain variable may lie, together with the relative frequencies of
 each bin.  Hence it can be used to specify a marginal probability
@@ -11,14 +11,14 @@ density function arising from data.
 
 The ``histogram_bin_uncertain`` keyword specifies the number of
 variables to be characterized as continuous histograms.  The required
-sub-keywords are: :ref:`variables-histogram_bin_uncertain-abscissas<variables-histogram_bin_uncertain-abscissas>`
+sub-keywords are: :dakkw:`variables-histogram_bin_uncertain-abscissas`
 (ranges of values the variable can take on) and either
-:ref:`variables-histogram_bin_uncertain-ordinates<variables-histogram_bin_uncertain-ordinates>` or
-:ref:`variables-histogram_bin_uncertain-counts<variables-histogram_bin_uncertain-counts>` (characterizing each
+:dakkw:`variables-histogram_bin_uncertain-ordinates` or
+:dakkw:`variables-histogram_bin_uncertain-counts` (characterizing each
 variable's frequency information).  When using histogram bin
 variables, each variable must be defined by at least one bin (with two
 bounding value pairs).  When more than one histogram bin variable is
-active, :ref:`variables-histogram_bin_uncertain-pairs_per_variable<variables-histogram_bin_uncertain-pairs_per_variable>` can
+active, :dakkw:`variables-histogram_bin_uncertain-pairs_per_variable` can
 be used to specify unequal apportionment of provided bin pairs among
 the variables.
 

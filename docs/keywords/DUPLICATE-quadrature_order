@@ -36,8 +36,8 @@ multiple grid resolutions can be employed; for this reason, the
 ``quadrature_order`` specification supports an array input.
 
 A corresponding sequence specification is documented at, e.g.,
-:ref:`method-multifidelity_polynomial_chaos-quadrature_order_sequence<method-multifidelity_polynomial_chaos-quadrature_order_sequence>` and
-:ref:`method-multifidelity_stoch_collocation-quadrature_order_sequence<method-multifidelity_stoch_collocation-quadrature_order_sequence>`
+:dakkw:`method-multifidelity_polynomial_chaos-quadrature_order_sequence` and
+:dakkw:`method-multifidelity_stoch_collocation-quadrature_order_sequence`
 Topics::
 
 Examples::

@@ -2,7 +2,7 @@ Blurb::
 Active (variable) subspace model
 Description::
 A model that transforms the original model (given by
-:ref:`model-active_subspace-truth_model_pointer<model-active_subspace-truth_model_pointer>`) to one with a reduced set of variables.  This
+:dakkw:`model-active_subspace-truth_model_pointer`) to one with a reduced set of variables.  This
 reduced model is identified by iteratively sampling the gradient of
 the original model and performing a singular value decomposition of
 the gradient matrix.
@@ -15,11 +15,11 @@ identify an active subspace using one of the truncation methods.
 *Usage Tips*
 
 If the desired subspace size is not identified, consider using the explicit
-:ref:`model-active_subspace-dimension<model-active_subspace-dimension>` truncation option or one of the other truncation methods.
+:dakkw:`model-active_subspace-dimension` truncation option or one of the other truncation methods.
 Topics::
 
 Examples::
-Perform an initial 100 gradient samples and use the :ref:`model-active_subspace-truncation_method-bing_li<model-active_subspace-truncation_method-bing_li>`
+Perform an initial 100 gradient samples and use the :dakkw:`model-active_subspace-truncation_method-bing_li`
 truncation method to identify an active subspace. The truncation method uses 150 bootstrap samples
 to compute the Bing Li truncation metric.
 
@@ -53,8 +53,8 @@ where :math:`\hat{\mathbf{W}}`  has eigenvectors as columns,
     :math:`\hat{\mathbf{\Lambda}} = \text{diag}(\hat{\lambda}_1,\:\ldots\:,\hat{\lambda}_N)` 
     contains eigenvalues, and :math:`N`  is the total number of parameters.
 
-3. Using a :ref:`model-active_subspace-truncation_method<model-active_subspace-truncation_method>` or specifying a
-    :ref:`model-active_subspace-dimension<model-active_subspace-dimension>` to estimate the active subspace size,
+3. Using a :dakkw:`model-active_subspace-truncation_method` or specifying a
+    :dakkw:`model-active_subspace-dimension` to estimate the active subspace size,
     split the eigenvectors into active and inactive directions,
     
 .. math:: \hat{\mathbf{W}} = \left[\hat{\mathbf{W}}_1\quad\hat{\mathbf{W}}_2\right].

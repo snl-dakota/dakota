@@ -39,7 +39,7 @@ This set of discrepancy
 models may be specified to be either Gaussian process or polynomial regression
 models of constant, linear, or quadratic order, and each model is fit to the
 calculated discrepancy values. See the
-:ref:`method-bayes_calibration-model_discrepancy-discrepancy_type<method-bayes_calibration-model_discrepancy-discrepancy_type>`
+:dakkw:`method-bayes_calibration-model_discrepancy-discrepancy_type`
 command for more details regarding these options.
 For field responses, the model discrepancy is
 a function of the configuration variables as well as the independent field
@@ -76,9 +76,9 @@ Manuals.
 *Usage Tips*
 
 For field responses, the keyword
-:ref:`responses-calibration_terms-field_calibration_terms-read_field_coordinates<responses-calibration_terms-field_calibration_terms-read_field_coordinates>`
+:dakkw:`responses-calibration_terms-field_calibration_terms-read_field_coordinates`
 <i>must</i> be specified when computing the model discrepancy. See
-:ref:`responses-calibration_terms-field_calibration_terms<responses-calibration_terms-field_calibration_terms>` for more information
+:dakkw:`responses-calibration_terms-field_calibration_terms` for more information
 regarding options for calibration with field responses.
 
 *Expected Output*

@@ -14,7 +14,7 @@ space, e.g., /tmp/dakota_work_c93vb71z/. The optional ``link_files``
 and ``copy_files`` keywords specify files or directories which should
 appear in each working directory.
 
-When using work_directory, the :ref:`interface-analysis_drivers<interface-analysis_drivers>` may be
+When using work_directory, the :dakkw:`interface-analysis_drivers` may be
 given by an absolute path, located in (or relative to) the startup
 directory alongside the Dakota input file, in the list of template
 files linked or copied, or on the $PATH (Path% on Windows).

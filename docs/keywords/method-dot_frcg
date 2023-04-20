@@ -4,32 +4,34 @@ Description::
 DOT library :cite:p:`Van95` implementation of Fletcher-Reeves conjugate
 gradient method for unconstrained optimizaiton.
 
-See :ref:`topic-package_dot<topic-package_dot>` for information common to all ``DOT`` methods.
+See :ref:`topic-package_dot` for information common to all ``DOT`` methods.
 
 *DOT requires a separate software license and therefore may not
 be available in all versions of Dakota.  CONMIN or OPT++ methods may
 be suitable alternatives.*
 
-*Caution regarding ``dot_frcg``.* In DOT
-Version 4.20, we have noticed inconsistent behavior of this algorithm
-across different versions of Linux. Our best assessment is that it is
-due to different treatments of uninitialized variables. As we do not
-know the intention of the code authors and maintaining DOT source code
-is outside of the Dakota project scope, we have not made nor are we
-recommending any code changes to address this. However, all users who
-use ``dot_frcg`` in DOT Version 4.20 should be aware that
-results may not be reliable.
-
+.. warning::
+    In DOT
+    Version 4.20, we have noticed inconsistent behavior of this algorithm
+    across different versions of Linux. Our best assessment is that it is
+    due to different treatments of uninitialized variables. As we do not
+    know the intention of the code authors and maintaining DOT source code
+    is outside of the Dakota project scope, we have not made nor are we
+    recommending any code changes to address this. However, all users who
+    use ``dot_frcg`` in DOT Version 4.20 should be aware that
+    results may not be reliable.
+    
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
 - :ref:`hdf5_results-best_params`
-- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
-- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-best_obj_fncs` (when :dakkw:`responses-objective_functions`) are specified)
+- :ref:`hdf5_results-calibration` (when :dakkw:`responses-calibration_terms` are specified)
+
 Topics::
 
 Examples::

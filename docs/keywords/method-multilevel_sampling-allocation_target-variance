@@ -60,7 +60,7 @@ This formulation has a closed form solution (similarly to the expected value cas
 .. math::  N_{\ell} = \frac{2}{\varepsilon^2} \left[ \, \sum_{k=0}^L \left( \hat{V}_{2, k} \mathcal{C}_k \right)^{1/2} \right]
                \sqrt{\frac{ \hat{V}_{2, \ell} }{\mathcal{C}_{\ell}}}. 
 
-If the option :ref:`method-multilevel_sampling-allocation_target-variance-optimization<method-multilevel_sampling-allocation_target-variance-optimization>` is specified the previous optimization problem is solved numerically via
+If the option :dakkw:`method-multilevel_sampling-allocation_target-variance-optimization` is specified the previous optimization problem is solved numerically via
 either OPTPP (default choice) or NPSOL (if available).
 
 Faq::

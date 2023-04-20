@@ -7,17 +7,17 @@ variable.
 
 *Default Behavior*
 
-Range variables, including :ref:`variables-continuous_design<variables-continuous_design>`,
-:ref:`variables-continuous_state<variables-continuous_state>`, :ref:`variables-discrete_design_range<variables-discrete_design_range>`, and
-:ref:`variables-discrete_state_range<variables-discrete_state_range>` are initialized to:
+Range variables, including :dakkw:`variables-continuous_design`,
+:dakkw:`variables-continuous_state`, :dakkw:`variables-discrete_design_range`, and
+:dakkw:`variables-discrete_state_range` are initialized to:
 
 
 - Mean/midpoint (or next smaller integer value) when doubly-bounded
 - 0 when unbounded
 - 0 when semi-bounded and zero is in the half interval, otherwise to     the specified lower or upper bound
 
-Set variables, including :ref:`variables-discrete_design_set<variables-discrete_design_set>` and
-:ref:`variables-discrete_state_set<variables-discrete_state_set>` default to the middle (or next smaller)
+Set variables, including :dakkw:`variables-discrete_design_set` and
+:dakkw:`variables-discrete_state_set` default to the middle (or next smaller)
 value of the ordered set of admissible values.
 
 Uncertain variables default initialize to their mean (or nearest

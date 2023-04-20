@@ -7,7 +7,7 @@ The trend function is selected using the ``trend``
 keyword, with options ``constant``, ``linear``, or ``reduced_quadratic``.
 The ``reduced_quadratic`` trend function includes the main
 effects, but not mixed/interaction terms.
-The Surfpack GP (See :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>`)
+The Surfpack GP (See :dakkw:`model-surrogate-global-gaussian_process-surfpack`)
 has the additional option of (a full)
 ``quadratic``.
 Topics::

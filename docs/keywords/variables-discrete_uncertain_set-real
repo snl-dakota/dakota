@@ -14,10 +14,10 @@ set (for example, a parameter may have two allowable real values,
 
 Other epistemic types include:
 
-- :ref:`variables-continuous_interval_uncertain<variables-continuous_interval_uncertain>`
-- :ref:`variables-discrete_interval_uncertain<variables-discrete_interval_uncertain>`
-- discrete_uncertain_set :ref:`variables-discrete_uncertain_set-integer<variables-discrete_uncertain_set-integer>`
-- discrete_uncertain_set :ref:`variables-discrete_uncertain_set-string<variables-discrete_uncertain_set-string>`
+- :dakkw:`variables-continuous_interval_uncertain`
+- :dakkw:`variables-discrete_interval_uncertain`
+- discrete_uncertain_set :dakkw:`variables-discrete_uncertain_set-integer`
+- discrete_uncertain_set :dakkw:`variables-discrete_uncertain_set-string`
 Topics::
 discrete_variables, epistemic_uncertain_variables
 Examples::
@@ -37,7 +37,7 @@ Theory::
 The ``discrete_uncertain_set-integer``
 variable is NOT a discrete random variable.
 It can be contrasted to a the histogram-defined random variables:
-:ref:`variables-histogram_bin_uncertain<variables-histogram_bin_uncertain>` and :ref:`variables-histogram_point_uncertain<variables-histogram_point_uncertain>`.
+:dakkw:`variables-histogram_bin_uncertain` and :dakkw:`variables-histogram_point_uncertain`.
 It is used in epistemic uncertainty analysis, where one is trying to model
 uncertainty due to lack of knowledge.
 

@@ -4,7 +4,7 @@ Description::
 ``method_pointer_list`` specifies by name the methods that are to be executed by
 a ``hybrid`` ``sequential`` or ``hybrid`` ``collaborative`` method. Its argument is
 a list of strings that refer to method blocks by name (i.e. to their
-:ref:`method-id_method<method-id_method>` labels).
+:dakkw:`method-id_method` labels).
 Topics::
 block_pointer
 Examples::

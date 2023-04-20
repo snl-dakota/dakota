@@ -2,7 +2,7 @@ Blurb::
 Use an evolutionary algorithm
 Description::
 In this approach, the evolutionary algorithm from Coliny,
-:ref:`method-coliny_ea<method-coliny_ea>`, is used to perform the interval optimization with no
+:dakkw:`method-coliny_ea`, is used to perform the interval optimization with no
 surrogate model involved. Again, this option of ``ea`` can support
 interval optimization over discrete variables.
 Topics::

@@ -1,7 +1,7 @@
 Blurb::
 Allocation statistics/target for the MLMC sample allocation.
 Description::
-Computes the variance of the estimator for a given statistics/target and fits sample allocation by solving the corresponding optimization problem. The ``allocation_target`` specification supports options of ``mean`` (default), ``variance`` an analytic approximation is available. Additionally, a numerical optimization can be used in that case, see ``variance`` option :ref:`method-multilevel_sampling-allocation_target-variance-optimization<method-multilevel_sampling-allocation_target-variance-optimization>`.
+Computes the variance of the estimator for a given statistics/target and fits sample allocation by solving the corresponding optimization problem. The ``allocation_target`` specification supports options of ``mean`` (default), ``variance`` an analytic approximation is available. Additionally, a numerical optimization can be used in that case, see ``variance`` option :dakkw:`method-multilevel_sampling-allocation_target-variance-optimization`.
 
 *Default Behavior*
 "mean"

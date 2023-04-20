@@ -22,7 +22,7 @@ each parameter set that is generated.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
@@ -37,7 +37,7 @@ Topics::
 parameter_studies
 Examples::
 This example is taken from the Users Manual and is a good comparison to the examples on
-:ref:`method-centered_parameter_study<method-centered_parameter_study>` and :ref:`method-vector_parameter_study<method-vector_parameter_study>`.
+:dakkw:`method-centered_parameter_study` and :dakkw:`method-vector_parameter_study`.
 
 .. code-block::
 

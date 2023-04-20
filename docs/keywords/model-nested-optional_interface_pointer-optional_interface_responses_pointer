@@ -2,7 +2,7 @@ Blurb::
 Pointer to responses block that defines non-nested responses
 Description::
 ``optional_interface_responses_pointer`` points to the reponses block (specifically,
-its :ref:`responses-id_responses<responses-id_responses>` label) that defines the non-nested response to return
+its :dakkw:`responses-id_responses` label) that defines the non-nested response to return
 to the nested model. The ``primary_response_mapping`` keywords control how these
 non-nested respones are combined with responses from the nested sub-iterator. See the
 entry for ``optional_interface_pointer`` for a full description. If

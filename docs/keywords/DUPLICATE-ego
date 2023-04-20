@@ -7,7 +7,7 @@ model is used, but the Dakota implementation may be selected
 instead. If ``use_derivatives`` is specified the GP model will be built
 using available derivative data (Surfpack GP only).
 
-See :ref:`method-efficient_global<method-efficient_global>` for more information.
+See :dakkw:`method-efficient_global` for more information.
 Topics::
 
 Examples::

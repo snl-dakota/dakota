@@ -2,10 +2,10 @@ Blurb::
 A model with one of each block: variable, interface, and response
 Description::
 The single model is the simplest model type. It uses a single
-:ref:`interface<interface>` instance to map :ref:`variables<variables>`
-into :ref:`responses<responses>`. There is no recursion in this case.
+:dakkw:`interface` instance to map :dakkw:`variables`
+into :dakkw:`responses`. There is no recursion in this case.
 
-The optional :ref:`model-single-interface_pointer<model-single-interface_pointer>` specification identifies the interface block
+The optional :dakkw:`model-single-interface_pointer` specification identifies the interface block
 by cross-referencing with the ``id_interface`` string input from a particular interface keyword specification.
 This is only necessary when the input file has multiple interface blocks, and you
 wish to explicitly point to the desired block.

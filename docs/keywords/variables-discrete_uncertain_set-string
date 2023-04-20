@@ -13,10 +13,10 @@ defined as 'coarse', 'medium', and 'fine')
 
 Other epistemic types include:
 
-- :ref:`variables-continuous_interval_uncertain<variables-continuous_interval_uncertain>`
-- :ref:`variables-discrete_interval_uncertain<variables-discrete_interval_uncertain>`
-- discrete_uncertain_set :ref:`variables-discrete_uncertain_set-integer<variables-discrete_uncertain_set-integer>`
-- discrete_uncertain_set :ref:`variables-discrete_uncertain_set-real<variables-discrete_uncertain_set-real>`
+- :dakkw:`variables-continuous_interval_uncertain`
+- :dakkw:`variables-discrete_interval_uncertain`
+- discrete_uncertain_set :dakkw:`variables-discrete_uncertain_set-integer`
+- discrete_uncertain_set :dakkw:`variables-discrete_uncertain_set-real`
 Topics::
 discrete_variables, epistemic_uncertain_variables
 Examples::

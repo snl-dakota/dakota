@@ -8,7 +8,7 @@ those points specified with
 ``num_predictions``, ``prediction_configs``, or ``import_prediction_configs``.
 
 Corresponding variance information is also output to file, see
-:ref:`method-bayes_calibration-model_discrepancy-export_corrected_variance_file<method-bayes_calibration-model_discrepancy-export_corrected_variance_file>`
+:dakkw:`method-bayes_calibration-model_discrepancy-export_corrected_variance_file`
 
 *Default Behavior*
 

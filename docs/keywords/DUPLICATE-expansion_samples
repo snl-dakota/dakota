@@ -6,8 +6,8 @@ numerical integration specification and it is necessary to provide an
 ``expansion_order`` to specify $p$ for a total-order expansion.
 
 A corresponding sequence specification is documented at, e.g.,
-:ref:`method-multifidelity_polynomial_chaos-expansion_order_sequence-expansion_samples_sequence<method-multifidelity_polynomial_chaos-expansion_order_sequence-expansion_samples_sequence>` and
-:ref:`method-multilevel_polynomial_chaos-expansion_order_sequence-expansion_samples_sequence<method-multilevel_polynomial_chaos-expansion_order_sequence-expansion_samples_sequence>`
+:dakkw:`method-multifidelity_polynomial_chaos-expansion_order_sequence-expansion_samples_sequence` and
+:dakkw:`method-multilevel_polynomial_chaos-expansion_order_sequence-expansion_samples_sequence`
 Topics::
 
 Examples::

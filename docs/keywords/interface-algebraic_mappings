@@ -14,7 +14,7 @@ Dakota then extracts the input and output identifier strings from
 to process the directed acyclic graphc (DAG) specification in
 ``stub``.nl. The variable and objective function names declared within
 AMPL should be a subset of the variable and response descriptors
-specified in the :ref:`variables<variables>` and :ref:`responses<responses>` blocks. Ordering is
+specified in the :dakkw:`variables` and :dakkw:`responses` blocks. Ordering is
 not important, as Dakota will reorder data as needed.
 Topics::
 

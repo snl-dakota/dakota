@@ -10,7 +10,7 @@ should be minimized or maximized.  The argument options are:
 If a single string is specified it will apply to each objective
 function.  Otherwise, the number of strings should either be equal to
 the number of objective functions (
-:ref:`responses-objective_functions<responses-objective_functions>`). Thus, when scalar and/or field
+:dakkw:`responses-objective_functions`). Thus, when scalar and/or field
 responses are specified, the number of ``sense`` strings must equal the
 number of scalars plus the number of fields, *not* the total elements
 in the fields.
