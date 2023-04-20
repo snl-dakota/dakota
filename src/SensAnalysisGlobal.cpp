@@ -583,7 +583,7 @@ archive_std_regress_coeffs(const StrStrSizet& run_identifier,
 
   StringArray location;
   if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
-  location.push_back("standardized_regression_coefficients");
+  location.push_back("std_regression_coeffs");
 
   location.push_back("");
   for (size_t i=0; i<resp_labels.size(); ++i) {
@@ -765,13 +765,11 @@ compute_std_regress_coeffs(const RealMatrix&     vars_samples,
 
 
 void SensAnalysisGlobal::
-print_std_regress_coeffs(std::ostream& s, StringMultiArrayConstView cv_labels,
+print_std_regress_coeffs(std::ostream& s, StringArray var_labels,
 		   const StringArray& resp_labels) const
 {
 #ifdef HAVE_DAKOTA_SURROGATES
   // output standardized regression coefficients and coefficients of determination (R^2)
-
-  s << "\nStandardized Regression Coefficients and Coefficients of Determination (R^2):\n";
 
   if( has_nan_or_inf(stdRegressCoeffs) )
     s << "\nAt least one standardized regression coefficient is nan or inf. This " <<
@@ -790,14 +788,14 @@ print_std_regress_coeffs(std::ostream& s, StringMultiArrayConstView cv_labels,
     abort_handler(-1);
   }
 
-  size_t i, j, num_cv = cv_labels.size();
-  s << "\nSRCs :\n"
+  size_t i, j;
+  s << "\nStandardized Regression Coefficients and Coefficients of Determination (R^2):\n"
     << "             ";
   for (j=0; j<numFns; ++j)
     s << std::setw(12) << resp_labels[j] << ' ';
   s << '\n';
   for (i=0; i<numVars; ++i) {
-    s << std::setw(12) << cv_labels[i] << ' ';
+    s << std::setw(12) << var_labels[i] << ' ';
     for (j=0; j<numFns; ++j)
       s << std::setw(12) << stdRegressCoeffs(i,j) << ' ';
     s << '\n';

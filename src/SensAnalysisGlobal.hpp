@@ -89,8 +89,8 @@ public:
 
   /// prints the SRCs and R^2 values computed in compute_correlations()
   void print_std_regress_coeffs(std::ostream& s,
-                          StringMultiArrayConstView cv_labels,
-			  const StringArray& resp_labels) const;
+                                StringArray var_labels,
+			        const StringArray& resp_labels) const;
 
 private:
 
