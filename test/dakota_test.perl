@@ -451,7 +451,7 @@ sub process_command_line {
 
   # Was Cmake used to substitute the source directory name? Can't just use
   # the literal as it will be replaced.  Allow user override by long opt.
-  my $cmake_source_dir = "/home/jasteph/rhel7/source/test";
+  my $cmake_source_dir = "@CMAKE_CURRENT_SOURCE_DIR@";
   if ($cmake_source_dir !~ /^@/ &&
       $cmake_source_dir !~ /CMAKE_CURRENT_SOURCE_DIR@$/) {
     $baseline_indir = ${cmake_source_dir};
