@@ -316,7 +316,7 @@ class SRCs(unittest.TestCase):
                     # confirm variable labels
                     for h_label, c_label in zip(src_group[resp_label].dims[0][0][()], self._console_srcs[inc_idx][resp_label]["variables"]):
                         h_test_label = h_label.decode('utf-8') if isinstance(h_label, bytes) else h_label
-                        self.assertEqual(h_label, c_label)               
+                        self.assertEqual(h_test_label, c_label)               
                     # confirm presence of attribute
                     src_group[resp_label].attrs["coefficient_of_determination"]
 
