@@ -361,6 +361,41 @@ def extract_best_residual_norms():
             norms.append(float(norm))
     return norms
 
+def extract_std_regression_coeffs_results():
+    """Extract SRCs summary from sampling study, including
+    coeffecients of determination"""
+    # result data structure: Outer list over occurences in the output
+    # each list elemnent is a dictionary, where the keys are response descriptors
+    # and the values are another dict that contains a coeffs list and cod scalar.
+    # [
+    #   {
+    #     "response_fn_1": {
+    #                      variables: [ ],
+    #                      coeffs: [ ],
+    #                      cod: R
+    #   }
+    # ]
+    result = []
+    lines_iter = iter(__OUTPUT)
+    for line in lines_iter:
+        if line == "Standardized Regression Coefficients and Coefficients of Determination (R^2):":
+            variable_labels = []
+            resp_labels = next(lines_iter).split()
+            result.append({k: {"variables":[], "coeffs": []} for k in resp_labels})
+            data_line = next(lines_iter).strip()
+            while data_line:
+                label, *data = data_line.split()
+                if label == "R^2":
+                    for r, d in zip(resp_labels, data):
+                        result[-1][r]["cod"] = float(d)
+                    break
+                else:
+                    for r, d in zip(resp_labels, data):
+                        result[-1][r]["variables"].append(label)
+                        result[-1][r]["coeffs"].append(float(d))
+                    data_line = next(lines_iter).strip()
+    return result
+
 def extract_multi_start_results():
     """Extract results summary from a multi_start study, including
     initial points, best points, and best responses"""

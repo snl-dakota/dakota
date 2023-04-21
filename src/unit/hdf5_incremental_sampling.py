@@ -291,6 +291,56 @@ class Correlations(unittest.TestCase):
     def test_partial_rank_correlations(self):
         self.partial_correlation_helper("spearman")
 
+
+class SRCs(unittest.TestCase):
+    def setUp(self):
+        try:
+            self._console_srcs
+        except AttributeError:
+            self._console_srcs = hce.extract_std_regression_coeffs_results()
+    
+    def test_hdf5_structure(self):
+        print(hce.extract_std_regression_coeffs_results())
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            for inc_name, inc_group in h["/methods/sampling/results/execution:1/"].items():
+                inc_id = int(inc_name.split(":")[1])
+                inc_idx = inc_id - 1
+                src_group = inc_group["std_regression_coeffs"]
+                # Check number of responses
+                self.assertEqual(len(self._console_srcs[inc_idx]), len(src_group.keys()))
+                # confirm presence of labels in hdf5
+                for resp_label in self._console_srcs[inc_idx]:
+                    self.assertTrue(resp_label in src_group.keys())
+                    # check number of variables and lengths of coeffs
+                    self.assertEqual(len(src_group[resp_label].dims[0][0][()]), len(self._console_srcs[inc_idx][resp_label]["variables"]))
+                    self.assertEqual(len(src_group[resp_label].dims[0][0][()]), src_group[resp_label].shape[0])
+                    # confirm variable labels
+                    for h_label, c_label in zip(src_group[resp_label].dims[0][0][()], self._console_srcs[inc_idx][resp_label]["variables"]):
+                        self.assertEqual(h_label, c_label)               
+                    # confirm presence of attribute
+                    src_group[resp_label].attrs["coefficient_of_determination"]
+
+    def test_coeffs(self):
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            for inc_name, inc_group in h["/methods/sampling/results/execution:1/"].items():
+                inc_id = int(inc_name.split(":")[1])
+                inc_idx = inc_id - 1
+                src_group = inc_group["std_regression_coeffs"]
+                for resp_label in self._console_srcs[inc_idx]:
+                    for h_coeff, c_coeff in zip(src_group[resp_label], self._console_srcs[inc_idx][resp_label]["coeffs"]):
+                        self.assertAlmostEqual(h_coeff, c_coeff, places=5)
+
+    def test_cod(self): 
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            for inc_name, inc_group in h["/methods/sampling/results/execution:1/"].items():
+                inc_id = int(inc_name.split(":")[1])
+                inc_idx = inc_id - 1
+                src_group = inc_group["std_regression_coeffs"]
+                for resp_label in self._console_srcs[inc_idx]:
+                    self.assertAlmostEqual(src_group[resp_label].attrs["coefficient_of_determination"],
+                                           self._console_srcs[inc_idx][resp_label]["cod"], places=5)
+
+
 class EvaluationsStructure(unittest.TestCase):
 
     def test_interface_presence(self):
