@@ -300,7 +300,6 @@ class SRCs(unittest.TestCase):
             self._console_srcs = hce.extract_std_regression_coeffs_results()
     
     def test_hdf5_structure(self):
-        print(hce.extract_std_regression_coeffs_results())
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             for inc_name, inc_group in h["/methods/sampling/results/execution:1/"].items():
                 inc_id = int(inc_name.split(":")[1])
@@ -316,6 +315,7 @@ class SRCs(unittest.TestCase):
                     self.assertEqual(len(src_group[resp_label].dims[0][0][()]), src_group[resp_label].shape[0])
                     # confirm variable labels
                     for h_label, c_label in zip(src_group[resp_label].dims[0][0][()], self._console_srcs[inc_idx][resp_label]["variables"]):
+                        h_test_label = h_label.decode('utf-8') if isinstance(h_label, bytes) else h_label
                         self.assertEqual(h_label, c_label)               
                     # confirm presence of attribute
                     src_group[resp_label].attrs["coefficient_of_determination"]
