@@ -269,7 +269,7 @@ approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
   UShortSet::const_iterator cit;
   if (numSamples) Cout << "\nApprox sample increment = " << numSamples;
   else            Cout << "\nNo approx sample increment";
-  Cout << " for node index " << root;
+  Cout << " for root node " << root;
   if (!reverse_dag.empty()) {
     Cout << " and its leaf nodes { ";
     for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
@@ -965,12 +965,13 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
     //avg_hf_target = std::min(budget_target, ctol_target); // enforce both
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
-    // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
+    // R_AND_N:  r*   is leading part of cv_star and N* is trailing entry
     copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r*
     avg_hf_target = cv_star[numApprox];                             // N*
     break;
   case N_VECTOR_LINEAR_OBJECTIVE: case N_VECTOR_LINEAR_CONSTRAINT:
-    // N_VECTOR: N*_i is leading part of r_and_N and N* is trailing part
+    // N_VECTOR: N*_i is leading part of cv_star and N* is trailing entry.
+    // Note that r_i is always relative to HF N, not its DAG pairing.
     copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // N*_i
     avg_hf_target = cv_star[numApprox];                             // N*
     avg_eval_ratios.scale(1. / avg_hf_target);        // r*_i = N*_i / N*

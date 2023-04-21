@@ -132,8 +132,7 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS)
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, acvSolnData.avgEvalRatios,
-		      acvSolnData.avgHFTarget);
+		      N_H_alloc, acvSolnData);
   else
     // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
     update_projected_lf_samples(acvSolnData.avgHFTarget,
@@ -192,8 +191,7 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
 			      equivHFEvals);
     // perform LF increments for the online sample profile
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, acvSolnData.avgEvalRatios,
-		      acvSolnData.avgHFTarget);
+		      N_H_alloc, acvSolnData);
   }
   else // project online profile including both shared samples and LF increment
     update_projected_samples(acvSolnData.avgHFTarget, acvSolnData.avgEvalRatios,
@@ -301,7 +299,7 @@ void NonDACVSampling::
 approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
 		  IntRealSymMatrixArrayMap& sum_LL,  IntRealMatrixMap& sum_LH,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
-		  const RealVector& avg_eval_ratios, Real avg_hf_target)
+		  const DAGSolutionData& soln)
 {
   // ---------------------------------------------------------------
   // Compute N_L increments based on eval ratio applied to final N_H
@@ -314,6 +312,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // with default approx indexing for well-ordered models
   // > approx 0 is lowest fidelity --> lowest corr,cost --> highest r_i
   SizetArray approx_sequence;  bool descending = true;
+  const RealVector& avg_eval_ratios = soln.avgEvalRatios;
   ordered_approx_sequence(avg_eval_ratios, approx_sequence, descending);
 
   IntRealMatrixMap sum_L_refined = sum_L_baselineH;//baselineL;
@@ -325,9 +324,8 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
     // pairwise (IS and RD) or pyramid (MF):
     start = (mlmfSubMethod == SUBMETHOD_ACV_MF) ? 0 : end - 1;
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
-    if (acv_approx_increment(avg_eval_ratios, N_L_actual_refined,
-			     N_L_alloc_refined, avg_hf_target, mlmfIter,
-			     approx_sequence, start, end)) {
+    if (acv_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
+			     mlmfIter, approx_sequence, start, end)) {
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined
       // ACV_MF samples on [0, approx)       --> sum_L_refined
       accumulate_acv_sums(sum_L_refined, N_L_actual_refined, approx_sequence,
@@ -351,9 +349,9 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
 
 
 bool NonDACVSampling::
-acv_approx_increment(const RealVector& avg_eval_ratios,
+acv_approx_increment(const DAGSolutionData& soln,
 		     const Sizet2DArray& N_L_actual_refined,
-		     SizetArray& N_L_alloc_refined, Real hf_target,
+		     SizetArray& N_L_alloc_refined,
 		     size_t iter, const SizetArray& approx_sequence,
 		     size_t start, size_t end)
 {
@@ -367,7 +365,7 @@ acv_approx_increment(const RealVector& avg_eval_ratios,
 
   bool   ordered = approx_sequence.empty();
   size_t  approx = (ordered) ? end-1 : approx_sequence[end-1];
-  Real lf_target = avg_eval_ratios[approx] * hf_target;
+  Real lf_target = soln.avgEvalRatios[approx] * soln.avgHFTarget;
   if (backfillFailures) {
     Real lf_curr = average(N_L_actual_refined[approx]);
     numSamples = one_sided_delta(lf_curr, lf_target); // average
@@ -1114,29 +1112,6 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& N_L_refined,
 }
 
 
-/** This version used by ACV following approx_increment() */
-void NonDACVSampling::
-accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& N_L_refined,
-		    unsigned short root, const UShortSet& reverse_dag)
-{
-  // uses one set of allResponses with QoI aggregation across all Models,
-  // led by the approx Model responses of interest
-
-  size_t qoi;  IntRespMCIter r_it;  UShortSet::const_iterator d_cit;
-  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
-    const Response&   resp    = r_it->second;
-    const RealVector& fn_vals = resp.function_values();
-    //const ShortArray& asv   = resp.active_set_request_vector();
-
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, qoi, root);
-      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit)
-	accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, qoi, *d_cit);
-    }
-  }
-}
-
-
 void NonDACVSampling::
 compute_LH_covariance(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 		      const RealMatrix& sum_LH, const SizetArray& N_shared,
@@ -1200,7 +1175,7 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 {
   if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
 
-  precompute_acv_control(avg_eval_ratios, N_shared); // virtual ACV|GenACV
+  precompute_acv_control(avg_eval_ratios, N_shared);
 
   size_t approx, qoi, N_shared_q;  Real sum_H_mq;
   RealVector beta(numApprox);
@@ -1214,8 +1189,8 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
       Cout << "Moment " << mom << " estimator:\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
       sum_H_mq = sum_H_m[qoi];  N_shared_q = N_shared[qoi];
-      compute_acv_control_mq(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
-			     N_shared_q, mom, qoi, beta); // virtual ACV|GenACV
+      compute_acv_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
+			  N_shared_q, mom, qoi, beta);
       // *** TO DO: support shared_approx_increment() --> baselineL
 
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);

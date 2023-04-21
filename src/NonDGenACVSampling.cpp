@@ -51,13 +51,13 @@ NonDGenACVSampling::~NonDGenACVSampling()
 
 void NonDGenACVSampling::generate_dags()
 {
-  /* For verification of consistency with MFMC,ACV:
+  // For verification of consistency with MFMC,ACV:
   UShortArray std_dag(numApprox);
   //for (size_t i=0; i<numApprox; ++i)  std_dag[i] = i+1; // MFMC
   std_dag.assign(numApprox, numApprox); // ACV
   modelDAGs.insert(std_dag);
   return;
-  */
+  //
 
   // zero root directed acyclic graphs
   switch (dagRecursionType) {
@@ -241,17 +241,27 @@ void NonDGenACVSampling::generate_reverse_dag(const UShortArray& dag)
 
   // create an ordered list of roots that enable ordered sample increments
   // by ensuring that root sample levels are defined
-  orderedRootList.clear();  orderedRootList.push_back(numApprox);
-  UShortList::iterator it = orderedRootList.begin();
-  while (it != orderedRootList.end()) {
-    const UShortSet& reverse_dag = reverseActiveDAG[*it];
-    orderedRootList.insert(orderedRootList.end(),
-			   reverse_dag.begin(), reverse_dag.end());
-    ++it;
-  }
-  if (outputLevel >= DEBUG_OUTPUT)
+  unroll_reverse_dag_from_root(numApprox, orderedRootList);
+
+  //if (outputLevel >= DEBUG_OUTPUT)
     Cout << "In generate_reverse_dag(), reverse DAG:\n" << reverseActiveDAG
 	 << "Ordered root list:\n" << orderedRootList << std::endl;
+}
+
+
+void NonDGenACVSampling::
+unroll_reverse_dag_from_root(unsigned short root, UShortList& ordered_list)
+{
+  // create an ordered list of roots that enable ordered sample increments
+  // by ensuring that root sample levels are defined
+  ordered_list.clear();  ordered_list.push_back(root);
+  UShortList::iterator it = ordered_list.begin();
+  while (it != ordered_list.end()) {
+    const UShortSet& rev_dag = reverseActiveDAG[*it];
+    // append all dependent nodes (use order of decreasing fidelity)
+    ordered_list.insert(ordered_list.end(), rev_dag.rbegin(), rev_dag.rend());
+    ++it;
+  }
 }
 
 
@@ -340,7 +350,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   DAGSolutionData& soln = dagSolns[*activeDAGIter];
   if (finalStatsType == QOI_STATISTICS)
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, soln.avgEvalRatios, soln.avgHFTarget);
+		      N_H_alloc, soln);
   else
     // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
     update_projected_lf_samples(soln.avgHFTarget, soln.avgEvalRatios,
@@ -414,7 +424,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
 			      equivHFEvals);
     // perform LF increments for the online sample profile
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, soln.avgEvalRatios, soln.avgHFTarget);
+		      N_H_alloc, soln);
   }
   else // project online profile including both shared samples and LF increment
     update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, N_H_actual,
@@ -477,7 +487,7 @@ void NonDGenACVSampling::
 approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
 		  IntRealSymMatrixArrayMap& sum_LL,  IntRealMatrixMap& sum_LH,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
-		  const RealVector& avg_eval_ratios, Real avg_hf_target)
+		  const DAGSolutionData& soln)
 {
   // ---------------------------------------------------------------
   // Compute N_L increments based on eval ratio applied to final N_H
@@ -485,68 +495,57 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // Note: for consistency with MFMC/ACV, r* is always defined relative to N_H,
   // even though an oversample may target a different model based on active DAG
 
-  switch (mlmfSubMethod) {
-  case SUBMETHOD_ACV_MF:
-    // Here, use of DAG reverse dependencies to define sample sets is overkill:
-    // > must track all recursive dependencies to preserve the pyramid sample
-    //   reuse --> all branches from a root node share a sample increment, not
-    //   just direct connections captured in reverseActiveDAG[root],
-    //   complicating the active model set definition for numSamples.
-    // > Base class approach of reordering based on avg_eval_ratios is simpler
-    //   and only requires virtual implementation of precompute_acv_control()
-    //   and compute_acv_control_mq() downstream.
-    NonDACVSampling::
-      approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-			N_H_alloc, avg_eval_ratios, avg_hf_target);
-    break;
-  default: {
-    // IS/RD sample management utilizes DAG tracking: in this case, sample set
-    // dependencies are sufficiently captured by reverseActiveDAG[root]
-    IntRealMatrixMap  sum_L_refined = sum_L_baselineH;//baselineL;
-    Sizet2DArray  N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
-    Sizet2DArray N_L_actual_refined = N_L_actual_shared;
-    SizetArray    N_L_alloc_refined;  inflate(N_H_alloc, N_L_alloc_refined);
+  IntRealMatrixMap sum_L_shared  = sum_L_baselineH,//baselineL;
+                   sum_L_refined = sum_L_baselineH;//baselineL;
+  Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
+  Sizet2DArray N_L_actual_refined = N_L_actual_shared;
+  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc,  N_L_alloc_refined);
 
-    // Process shared sample increments based on the ordered list of roots, but
-    // skip initial root = numApprox as it is out of bounds for r* and LF counts
-    UShortList::iterator it;  unsigned short root;
-    for (it=++orderedRootList.begin(); it!=orderedRootList.end(); ++it) {
-      root = *it;  const UShortSet& reverse_dag = reverseActiveDAG[root];
-      // *** TO DO NON_BLOCKING: PERFORM PASS 2 ACCUMULATE AFTER PASS 1 LAUNCH
-      if (genacv_approx_increment(avg_eval_ratios, N_L_actual_refined,
-				  N_L_alloc_refined, avg_hf_target, mlmfIter,
-				  root, reverse_dag)) {
-	// ACV_IS/RD samples on [approx-1,approx) --> sum_L_refined
-	// ACV_MF    samples on [0, approx)       --> sum_L_refined
-	accumulate_acv_sums(sum_L_refined, N_L_actual_refined, root,
-			    reverse_dag);
-	increment_equivalent_cost(numSamples, sequenceCost, root,
-				  reverse_dag, equivHFEvals);
-      }
+  // Process shared sample increments based on the ordered list of roots,
+  // skipping the HF root = numApprox (this shared set already processed)
+  UShortList::iterator it;//, itp1, ite = orderedRootList.end();
+  unsigned short root;  UShortSet mf_reverse_dag;
+  for (it=++orderedRootList.begin(); it!=orderedRootList.end(); ++it) {
+    root = *it;
+    // ACV-MF: need full set of subordinate notes for pyramid sampling
+    // ACV-IS: only need nodes with edges connected to root (reverse DAG)
+    if (mlmfSubMethod == SUBMETHOD_ACV_MF) {
+      UShortList partial_list;
+      unroll_reverse_dag_from_root(root, partial_list);
+      mf_reverse_dag.clear();
+      mf_reverse_dag.insert(++partial_list.begin(), partial_list.end());
     }
+    const UShortSet& samp_reverse_dag = (mlmfSubMethod == SUBMETHOD_ACV_MF) ?
+      mf_reverse_dag : reverseActiveDAG[root];
+    // *** TO DO NON_BLOCKING: PERFORM PASS 2 ACCUMULATE AFTER PASS 1 LAUNCH
+    if (genacv_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
+				mlmfIter, root, samp_reverse_dag)) {
+      accumulate_genacv_sums(sum_L_shared, sum_L_refined, N_L_actual_shared,
+			     N_L_actual_refined, root, samp_reverse_dag);
+      increment_equivalent_cost(numSamples, sequenceCost, root,
+				samp_reverse_dag, equivHFEvals);
+    }
+  }
 
-    // -----------------------------------------------------------
-    // Compute/apply control variate parameter to estimate moments
-    // -----------------------------------------------------------
-    RealMatrix H_raw_mom(numFunctions, 4);
-    acv_raw_moments(sum_L_baselineH, sum_L_refined, sum_H, sum_LL, sum_LH,
-		    avg_eval_ratios, N_H_actual, N_L_actual_refined, H_raw_mom);
-    // Convert uncentered raw moment estimates to final moments (central or std)
-    convert_moments(H_raw_mom, momentStats);
-    // post final sample counts into format for final results reporting
-    finalize_counts(N_L_actual_refined, N_L_alloc_refined);
-    break;
-  }
-  }
+  // -----------------------------------------------------------
+  // Compute/apply control variate parameter to estimate moments
+  // -----------------------------------------------------------
+  RealMatrix H_raw_mom(numFunctions, 4);
+  genacv_raw_moments(sum_L_baselineH, sum_L_shared, sum_L_refined, sum_H,
+		     sum_LL, sum_LH, soln.avgEvalRatios, N_L_actual_shared,
+		     N_L_actual_refined, N_H_actual, H_raw_mom);
+  // Convert uncentered raw moment estimates to final moments (central or std)
+  convert_moments(H_raw_mom, momentStats);
+  // post final sample counts into format for final results reporting
+  finalize_counts(N_L_actual_refined, N_L_alloc_refined);
 }
 
 
 bool NonDGenACVSampling::
-genacv_approx_increment(const RealVector& avg_eval_ratios,
+genacv_approx_increment(const DAGSolutionData& soln,
 			const Sizet2DArray& N_L_actual_refined,
-			SizetArray& N_L_alloc_refined, Real hf_target,
-			size_t iter, unsigned short root,
-			const UShortSet& reverse_dag)
+			SizetArray& N_L_alloc_refined, size_t iter,
+			unsigned short root, const UShortSet& reverse_dag)
 {
   // Update LF samples based on evaluation ratio
   //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
@@ -556,7 +555,7 @@ genacv_approx_increment(const RealVector& avg_eval_ratios,
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
 
-  Real lf_target = avg_eval_ratios[root] * hf_target;
+  Real lf_target = soln.avgEvalRatios[root] * soln.avgHFTarget;
   if (backfillFailures) {
     Real lf_curr = average(N_L_actual_refined[root]);
     numSamples = one_sided_delta(lf_curr, lf_target); // average
@@ -686,7 +685,7 @@ cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
   else                         avg_eval_ratios = 0.;
 
   // First pass: compute an ensemble of pairwise CVMC solutions.  Note that
-  // the computed eval ratios are no longer bound to the HF node.
+  // computed eval ratios are DAG-based and no longer bound to the HF node.
   size_t qoi, source, target;
   Real cost_ratio, rho_sq, cost_H = cost[numApprox], var_L_qs, var_L_qt,
     cov_LH_qs, cov_LL_qst;
@@ -948,6 +947,86 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     }
     estvar_ratios[qoi] = (1. - R_sq);
   }
+}
+
+
+void NonDGenACVSampling::
+accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
+		       IntRealMatrixMap& sum_L_refined,
+		       Sizet2DArray& N_L_shared, Sizet2DArray& N_L_refined,
+		       unsigned short root, const UShortSet& reverse_dag)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // led by the approx Model responses of interest
+
+  size_t qoi;          unsigned short source;
+  IntRespMCIter r_it;  UShortSet::const_iterator d_cit;
+  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    const Response&   resp    = r_it->second;
+    const RealVector& fn_vals = resp.function_values();
+    //const ShortArray& asv   = resp.active_set_request_vector();
+
+    // the  "shared" accumulations define the z_i^1 sample sets
+    // the "refined" accumulations define the z_i^2 sample sets
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      // refined only at root node:
+      accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, qoi, root);
+      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
+	// refined + shared at dependent nodes:
+	unsigned short source = *d_cit;
+	accumulate_acv_sums(sum_L_shared,  N_L_shared,  fn_vals, qoi, source);
+	accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, qoi, source);
+      }
+    }
+  }
+}
+
+
+void NonDGenACVSampling::
+genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
+		   IntRealMatrixMap& sum_L_shared,
+		   IntRealMatrixMap& sum_L_refined,  IntRealVectorMap& sum_H,
+		   IntRealSymMatrixArrayMap& sum_LL, IntRealMatrixMap& sum_LH,
+		   const RealVector& avg_eval_ratios,
+		   const Sizet2DArray& N_L_shared,
+		   const Sizet2DArray& N_L_refined,  const SizetArray& N_H,
+		   RealMatrix& H_raw_mom)
+{
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+
+  precompute_genacv_control(avg_eval_ratios, N_H);
+
+  size_t approx, qoi, N_H_q;  Real sum_H_mq;
+  RealVector beta(numApprox);
+  for (int mom=1; mom<=4; ++mom) {
+    RealMatrix&     sum_L_base_m = sum_L_baseline[mom];
+    RealMatrix&       sum_L_sh_m =   sum_L_shared[mom];
+    RealMatrix&      sum_L_ref_m =  sum_L_refined[mom];
+    RealVector&          sum_H_m =          sum_H[mom];
+    RealSymMatrixArray& sum_LL_m =         sum_LL[mom];
+    RealMatrix&         sum_LH_m =         sum_LH[mom];
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Moment " << mom << " estimator:\n";
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      sum_H_mq = sum_H_m[qoi];  N_H_q = N_H[qoi];
+      compute_genacv_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
+			     N_H_q, mom, qoi, beta);
+      // *** TO DO: support shared_approx_increment() --> baselineL
+
+      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
+      for (approx=0; approx<numApprox; ++approx) {
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
+	       << "variate beta = " << std::setw(9) << beta[approx] << '\n';
+	// For ACV, shared counts are fixed at N_H for all approx
+	apply_control(sum_L_sh_m(qoi,approx),  N_L_shared[approx][qoi],
+		      sum_L_ref_m(qoi,approx), N_L_refined[approx][qoi],
+		      beta[approx], H_raw_mq);
+      }
+    }
+  }
+  if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
 }
 
 
