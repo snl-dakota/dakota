@@ -863,7 +863,7 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
   //Cout <<  "apply_control: sum_L_shared = "  << sum_L_shared
   //     << " sum_L_refined = " << sum_L_refined
   //     << " num_L_shared = "  << num_L_shared
-  //     << " num_L_refined = " << num_L_refined << std::endl; 
+  //     << " num_L_refined = " << num_L_refined << std::endl;
 }
 
 
