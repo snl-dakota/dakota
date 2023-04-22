@@ -860,10 +860,10 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
   H_raw_mom -= beta * (sum_L_shared  / num_L_shared - // mu from shared samples
 		       sum_L_refined / num_L_refined);// refined mu w/ increment
 
-  Cout <<  "apply_control: sum_L_shared = "  << sum_L_shared
-       << " sum_L_refined = " << sum_L_refined
-       << " num_L_shared = "  << num_L_shared
-       << " num_L_refined = " << num_L_refined << std::endl; 
+  //Cout <<  "apply_control: sum_L_shared = "  << sum_L_shared
+  //     << " sum_L_refined = " << sum_L_refined
+  //     << " num_L_shared = "  << num_L_shared
+  //     << " num_L_refined = " << num_L_refined << std::endl; 
 }
 
 

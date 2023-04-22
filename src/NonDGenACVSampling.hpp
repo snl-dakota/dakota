@@ -80,6 +80,9 @@ private:
   void generate_reverse_dag(const UShortArray& dag);
   void unroll_reverse_dag_from_root(unsigned short root,
 				    UShortList& ordered_list);
+  void unroll_reverse_dag_from_root(unsigned short root,
+				    const RealVector& avg_eval_ratios,
+				    UShortList& root_list);
 
   void generalized_acv_online_pilot();
   void generalized_acv_offline_pilot();
@@ -113,12 +116,14 @@ private:
 			      RealVector& beta);
 
   void analytic_initialization_from_ensemble_cvmc(const UShortArray& dag,
+						  const UShortList& root_list,
 						  Real avg_N_H,
 						  DAGSolutionData& soln);
   void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
 			       const RealMatrix& cov_LH,
 			       const RealVector& var_H, const RealVector& cost,
 			       const UShortArray& dag,
+			       const UShortList& root_list,
 			       DAGSolutionData& soln);
 
   void compute_parameterized_G_g(const RealVector& N_vec);
@@ -149,6 +154,10 @@ private:
 			      Sizet2DArray& N_L_shared,
 			      Sizet2DArray& N_L_refined, unsigned short root,
 			      const UShortSet& reverse_dag);
+  void accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
+			      Sizet2DArray& N_L_shared,
+			      const SizetArray& approx_sequence,
+			      size_t start, size_t end);
 
   bool genacv_approx_increment(const DAGSolutionData& soln,
 			       const Sizet2DArray& N_L_actual_refined,
