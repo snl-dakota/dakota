@@ -63,27 +63,9 @@ protected:
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub);
 
-  void precompute_acv_control(const RealVector& avg_eval_ratios,
-			      const SizetArray& N_shared);
-  void compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
-			      RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
-			      size_t N_shared_q, size_t mom, size_t qoi,
-			      RealVector& beta);
-
-  void approx_increments(IntRealMatrixMap& sum_L_baselineH,
-			 IntRealVectorMap& sum_H,
-			 IntRealSymMatrixArrayMap& sum_LL,
-			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const RealVector& avg_eval_ratios,
-			 Real avg_hf_target);
-
   //
   //- Heading: member functions
   //
-
-  void generalized_acv_online_pilot();
-  void generalized_acv_offline_pilot();
-  void generalized_acv_pilot_projection();
 
 private:
 
@@ -96,10 +78,53 @@ private:
 			  unsigned short depth, UShortArray& dag,
 			  UShortArraySet& model_dags);
   void generate_reverse_dag(const UShortArray& dag);
+  void unroll_reverse_dag_from_root(unsigned short root,
+				    UShortList& ordered_list);
+  void unroll_reverse_dag_from_root(unsigned short root,
+				    const RealVector& avg_eval_ratios,
+				    UShortList& root_list);
+
+  void generalized_acv_online_pilot();
+  void generalized_acv_offline_pilot();
+  void generalized_acv_pilot_projection();
+
+  void approx_increments(IntRealMatrixMap& sum_L_baselineH,
+			 IntRealVectorMap& sum_H,
+			 IntRealSymMatrixArrayMap& sum_LL,
+			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
+			 size_t N_H_alloc, const DAGSolutionData& soln);
 
   void precompute_ratios();
-  void compute_ratios(const RealMatrix& var_L, const RealVector& cost,
-		      DAGSolutionData& solution);
+  void compute_ratios(const RealMatrix& var_L, DAGSolutionData& solution);
+
+  void genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
+			  IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  IntRealVectorMap& sum_H,
+			  IntRealSymMatrixArrayMap& sum_LL,
+			  IntRealMatrixMap& sum_LH,
+			  const RealVector& avg_eval_ratios,
+			  const Sizet2DArray& N_L_shared,
+			  const Sizet2DArray& N_L_refined,
+			  const SizetArray& N_H, RealMatrix& H_raw_mom);
+
+  void precompute_genacv_control(const RealVector& avg_eval_ratios,
+				 const SizetArray& N_shared);
+  void compute_genacv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
+			      RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
+			      size_t N_shared_q, size_t mom, size_t qoi,
+			      RealVector& beta);
+
+  void analytic_initialization_from_ensemble_cvmc(const UShortArray& dag,
+						  const UShortList& root_list,
+						  Real avg_N_H,
+						  DAGSolutionData& soln);
+  void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
+			       const RealMatrix& cov_LH,
+			       const RealVector& var_H, const RealVector& cost,
+			       const UShortArray& dag,
+			       const UShortList& root_list,
+			       DAGSolutionData& soln);
 
   void compute_parameterized_G_g(const RealVector& N_vec);
   void unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2);
@@ -124,15 +149,26 @@ private:
 		    const RealMatrix&    c, const RealVector& g,
 		    size_t qoi, Real var_H_q, Real N_H);
 
-  bool genacv_approx_increment(const RealVector& avg_eval_ratios,
+  void accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
+			      IntRealMatrixMap& sum_L_refined,
+			      Sizet2DArray& N_L_shared,
+			      Sizet2DArray& N_L_refined, unsigned short root,
+			      const UShortSet& reverse_dag);
+  void accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
+			      Sizet2DArray& N_L_shared,
+			      const SizetArray& approx_sequence,
+			      size_t start, size_t end);
+
+  bool genacv_approx_increment(const DAGSolutionData& soln,
 			       const Sizet2DArray& N_L_actual_refined,
-			       SizetArray& N_L_alloc_refined, Real hf_target,
+			       SizetArray& N_L_alloc_refined,
 			       size_t iter, unsigned short root,
 			       const UShortSet& reverse_dag_set);
 
-  void compute_genacv_control(const RealSymMatrix& cov_LL,
-			      const RealSymMatrix& G, const RealMatrix& cov_LH,
-			      const RealVector& g, size_t qoi,RealVector& beta);
+  void solve_for_genacv_control(const RealSymMatrix& cov_LL,
+				const RealSymMatrix& G,
+				const RealMatrix& cov_LH, const RealVector& g,
+				size_t qoi, RealVector& beta);
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target,
@@ -159,6 +195,8 @@ private:
   short dagRecursionType;
   /// depth throttle for partial recursion in generate_dags()
   unsigned short dagDepthLimit;
+  /// option to enumerate combinations of approximation models
+  short modelSelectType;
 
   /// the set of admissible DAGs identifying the control variate
   /// targets for each model in the ensemble
@@ -361,8 +399,8 @@ compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
 
 
 inline void NonDGenACVSampling::
-precompute_acv_control(const RealVector& avg_eval_ratios,
-		       const SizetArray& N_shared)
+precompute_genacv_control(const RealVector& avg_eval_ratios,
+			  const SizetArray& N_shared)
 {
   // Note: while G,g have a more explicit dependence on N_shared[qoi] than F,
   // we mirror the averaged sample allocations and compute G,g once
@@ -373,9 +411,9 @@ precompute_acv_control(const RealVector& avg_eval_ratios,
 
 
 inline void NonDGenACVSampling::
-compute_genacv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& G,
-		       const RealMatrix& cov_LH, const RealVector& g,
-		       size_t qoi, RealVector& beta)
+solve_for_genacv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& G,
+			 const RealMatrix& cov_LH, const RealVector& g,
+			 size_t qoi, RealVector& beta)
 {
   RealSymMatrix C_G;  RealVector c_g;
   compute_C_G_c_g(cov_LL, G, cov_LH, g, qoi, C_G, c_g);
@@ -387,20 +425,20 @@ compute_genacv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& G,
 
 
 inline void NonDGenACVSampling::
-compute_acv_control_mq(RealMatrix& sum_L_base_m, Real sum_H_mq,
+compute_genacv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 		       RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 		       size_t N_shared_q, size_t mom, size_t qoi,
 		       RealVector& beta)
 {
   if (mom == 1) // variances/covariances already computed for mean estimator
-    compute_genacv_control(covLL[qoi], GMat, covLH, gVec, qoi, beta);
+    solve_for_genacv_control(covLL[qoi], GMat, covLH, gVec, qoi, beta);
   else { // compute variances/covariances for higher-order moment estimators
     // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
     // > cov_LH is sized for all qoi but only 1 row is used
     RealSymMatrix cov_LL_mq; RealMatrix cov_LH_m;
     compute_acv_control_covariances(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
 				    N_shared_q, qoi, cov_LL_mq, cov_LH_m);
-    compute_genacv_control(cov_LL_mq, GMat, cov_LH_m, gVec, qoi, beta);
+    solve_for_genacv_control(cov_LL_mq, GMat, cov_LH_m, gVec, qoi, beta);
   }
 }
 

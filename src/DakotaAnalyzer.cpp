@@ -928,7 +928,7 @@ void Analyzer::compute_best_metrics(const Response& response,
   }
   else // no "best" metric currently defined for generic response fns
     return;
-  Real& constr_viol   = metrics.first; constr_viol= 0.0;
+  Real& constr_viol   = metrics.first; constr_viol = 0.0;
   size_t num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
          num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
   const RealVector& nln_ineq_lwr_bnds
@@ -937,7 +937,7 @@ void Analyzer::compute_best_metrics(const Response& response,
     = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
   const RealVector& nln_eq_targets
     = iteratedModel.nonlinear_eq_constraint_targets();
-  for (i=0; i<num_nln_ineq; i++) { // ineq constraint violation
+  for (i=0; i<num_nln_ineq; i++) { // ineq constraint violation (default tol=0)
     size_t index = i + constr_offset;
     Real ineq_con = fn_vals[index];
     if (ineq_con > nln_ineq_upr_bnds[i])
@@ -945,7 +945,7 @@ void Analyzer::compute_best_metrics(const Response& response,
     else if (ineq_con < nln_ineq_lwr_bnds[i])
       constr_viol += std::pow(nln_ineq_lwr_bnds[i] - ineq_con,2);
   }
-  for (i=0; i<num_nln_eq; i++) { // eq constraint violation
+  for (i=0; i<num_nln_eq; i++) { // eq constraint violation (default tol=0)
     size_t index = i + constr_offset + num_nln_ineq;
     Real eq_con = fn_vals[index];
     if (std::fabs(eq_con - nln_eq_targets[i]) > 0.)

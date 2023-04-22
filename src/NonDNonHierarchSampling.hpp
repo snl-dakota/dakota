@@ -238,26 +238,16 @@ protected:
 			  size_t N_shared, Real& cov_Q1Q2);
   
   void mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
-			      RealMatrix& eval_ratios,
-			      bool monotonic_r = false);
+			      DAGSolutionData& soln, bool monotonic_r = false);
   void mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 					const RealVector& cost,
 					SizetArray& approx_sequence,
-					RealMatrix& eval_ratios,
+					DAGSolutionData& soln,
 					bool monotonic_r);
 
-  void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
-			       const RealVector& cost, RealMatrix& eval_ratios);
-  void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
-			       const RealMatrix& cov_LH,
-			       const RealVector& var_H, const RealVector& cost,
-			       const UShortArray& dag,
-			       RealMatrix& eval_ratios);
-
-  void nonhierarch_numerical_solution(const RealVector& cost,
-				      const SizetArray& approx_sequence,
-				      DAGSolutionData& soln,
-				      size_t& num_samples);
+  void ensemble_numerical_solution(const RealVector& cost,
+				   const SizetArray& approx_sequence,
+				   DAGSolutionData& soln, size_t& num_samples);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
@@ -294,13 +284,18 @@ protected:
   /// promote scalar to column vector
   void inflate(Real r_i, size_t num_rows, Real* eval_ratios_col);
 
+  /// compute a penalty merit function after an optimization solve
+  Real nh_penalty_merit(const RealVector& c_vars, const RealVector& fn_vals);
+  /// compute a penalty merit function after a DAGSolutionData instance
+  Real nh_penalty_merit(const DAGSolutionData& soln);
+
   //
   //- Heading: Data
   //
 
   /// the minimizer used to minimize the estimator variance over parameters
   /// of number of truth model samples and approximation eval_ratios
-  Iterator varianceMinimizer;
+  IteratorArray varianceMinimizers;
   /// variance minimization algorithm selection: SUBMETHOD_MFMC or
   /// SUBMETHOD_ACV_{IS,MF,KL}
   unsigned short mlmfSubMethod;
@@ -348,6 +343,11 @@ private:
   Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
 			const RealVector& estvar0);
 
+  /// post-process optimization final results to recover solution data
+  void recover_results(const RealVector& cv_star, const RealVector& fn_star,
+		       Real& avg_estvar, RealVector& avg_eval_ratios,
+		       Real& avg_hf_target, Real& equiv_hf_cost);
+
   /// flattens contours of average_estimator_variance() using std::log
   Real log_average_estvar(const RealVector& cd_vars);
 
@@ -359,6 +359,10 @@ private:
   void linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c);
   /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
   void nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c);
+
+  /// compute a penalty merit function from objective, constraint, and
+  /// constaint bound
+  Real nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd);
 
   /// static function used by NPSOL for the objective function
   static void npsol_objective(int& mode, int& n, double* x, double& f,
@@ -411,14 +415,14 @@ inline void NonDNonHierarchSampling::method_recourse()
 
   bool err_flag = false;
   switch (optSubProblemSolver) {
-  case SUBMETHOD_NPSOL:
+  case SUBMETHOD_NPSOL: case SUBMETHOD_NPSOL_OPTPP:
 #ifdef HAVE_OPTPP
     optSubProblemSolver = SUBMETHOD_OPTPP;
 #else
     err_flag = true;
 #endif
     break;
-  case SUBMETHOD_OPTPP:
+  case SUBMETHOD_OPTPP: // for completeness (OPT++ nesting is not an issue)
 #ifdef HAVE_NPSOL
     optSubProblemSolver = SUBMETHOD_NPSOL;
 #else
@@ -602,7 +606,8 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
 inline void NonDNonHierarchSampling::
 r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H, RealVector& N_vec)
 {
-  N_vec.sizeUninitialized(numApprox+1);
+  size_t vec_len = numApprox+1;
+  if (N_vec.length() != vec_len) N_vec.sizeUninitialized(vec_len);
   for (size_t i=0; i<numApprox; ++i)
     N_vec[i] = avg_eval_ratios[i] * N_H;
   N_vec[numApprox] = N_H;
@@ -855,7 +860,7 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
   H_raw_mom -= beta * (sum_L_shared  / num_L_shared - // mu from shared samples
 		       sum_L_refined / num_L_refined);// refined mu w/ increment
 
-  //Cout <<  "sum_L_shared = "  << sum_L_shared
+  //Cout <<  "apply_control: sum_L_shared = "  << sum_L_shared
   //     << " sum_L_refined = " << sum_L_refined
   //     << " num_L_shared = "  << num_L_shared
   //     << " num_L_refined = " << num_L_refined << std::endl; 

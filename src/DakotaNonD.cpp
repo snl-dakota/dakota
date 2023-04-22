@@ -1254,20 +1254,37 @@ sub_optimizer_select(unsigned short requested_sub_method,
 	 << "\n       Please select alternate sub-method solver." << std::endl;
 #endif
     break;
+  case SUBMETHOD_NPSOL_OPTPP: // not currently a spec option
+#if defined(HAVE_OPTPP) && defined(HAVE_NPSOL)
+    assigned_sub_method = requested_sub_method;
+#else
+    Cerr << "\nError: this executable not configured with both OPT++ and NPSOL."
+	 << "\n       Please select alternate sub-method solver." << std::endl;
+#endif
+    break;
   case SUBMETHOD_DEFAULT:
     switch (default_sub_method) {
     case SUBMETHOD_NPSOL: // use SUBMETHOD_NPSOL if available
 #ifdef HAVE_NPSOL
-      assigned_sub_method = SUBMETHOD_NPSOL;
+      assigned_sub_method = default_sub_method;
 #elif HAVE_OPTPP
       assigned_sub_method = SUBMETHOD_OPTPP;
 #endif
       break;
     case SUBMETHOD_OPTPP: // use SUBMETHOD_OPTPP if available
 #ifdef HAVE_OPTPP
-      assigned_sub_method = SUBMETHOD_OPTPP;
+      assigned_sub_method = default_sub_method;
 #elif HAVE_NPSOL
       assigned_sub_method = SUBMETHOD_NPSOL;
+#endif
+      break;
+    case SUBMETHOD_NPSOL_OPTPP: // use both OPTPP and NPSOL if available
+#if defined(HAVE_OPTPP) && defined(HAVE_NPSOL)
+      assigned_sub_method = default_sub_method;
+#elif HAVE_NPSOL
+      assigned_sub_method = SUBMETHOD_NPSOL;
+#elif HAVE_OPTPP
+      assigned_sub_method = SUBMETHOD_OPTPP;
 #endif
       break;
     }
@@ -1281,8 +1298,8 @@ sub_optimizer_select(unsigned short requested_sub_method,
     // return value as an error
     break;
   default:
-    Cerr << "\nError: sub-method not recognized in NonD::"
-	 << "sub_optimizer_select()." << std::endl;
+    Cerr << "\nError: sub-method " << requested_sub_method
+	 << " not recognized in NonD::sub_optimizer_select()." << std::endl;
     break;
   }
   return assigned_sub_method;

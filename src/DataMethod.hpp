@@ -105,8 +105,8 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_CONMIN, SUBMETHOD_DOT, SUBMETHOD_NLPQL, SUBMETHOD_NPSOL,
-       SUBMETHOD_OPTPP, SUBMETHOD_EA, SUBMETHOD_DIRECT, SUBMETHOD_EGO,
-       SUBMETHOD_SBLO, SUBMETHOD_SBGO,
+       SUBMETHOD_OPTPP, SUBMETHOD_NPSOL_OPTPP, SUBMETHOD_EA, SUBMETHOD_DIRECT,
+       SUBMETHOD_EGO, SUBMETHOD_SBLO, SUBMETHOD_SBGO,
        // Local reliability sub-method selections: (MV is 0)
        SUBMETHOD_AMV_X,       SUBMETHOD_AMV_U,
        SUBMETHOD_AMV_PLUS_X,  SUBMETHOD_AMV_PLUS_U,
@@ -119,9 +119,11 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_CONVERGE_ORDER,  SUBMETHOD_CONVERGE_QOI,
        SUBMETHOD_ESTIMATE_ORDER };
 
-/// Graph recursion options for ACV
+/// Graph recursion options for generalized ACV
 enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, PARTIAL_GRAPH_RECURSION,
        FULL_GRAPH_RECURSION };
+/// Model selection options for generalized ACV
+enum { NO_MODEL_SELECTION=0, ALL_MODEL_COMBINATIONS };
 
 // define special values for outputLevel within
 // Iterator/Model/Interface/Approximation
