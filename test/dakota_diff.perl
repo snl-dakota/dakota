@@ -252,7 +252,7 @@ sub compare_output {
     my $conf_int_re = '^Confidence Intervals';
     my $surr_re = '^Surrogate quality metrics';
     my $pce_re = 'of Polynomial Chaos Expansion for';
-    my $uq_re = '^(Standardized Regression Coefficients and Coefficients of Determination \(R\^2\):|\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|95% confidence intervals) for each (response function|posterior variable):|\s+Coverage Level\s+.+)$';
+    my $uq_re = '^(Standardized Regression Coefficients and Coefficients of Determination \(R\^2\):|\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|Double-sided tolerance interval equivalent normal statistics|95% confidence intervals) for each (response function|posterior variable):|\s+Coverage Level\s+.+)$';
     my $opt_des_re = '^Optimal design:$';
 
     while ( ($base =~ /${best_equals_re}/) && ($test =~ /${best_equals_re}/) ||
