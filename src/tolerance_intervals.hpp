@@ -46,24 +46,20 @@ Real std_normal_coverage_inverse( const Real coverage );
  *
  *         More especifically, this routine expects the following input information:
  *           - m, the number of samples;
- *           - c, the required coverage level;
  *           - alpha, a value in the closed interval [0,1] such that (1-alpha) is the required
  *             confidence level.
  *         
  *         The input information must satisty the following conditions, otherwise the routine
  *         aborts/throws an exception:
  *           - m >= 2;
- *           - c \in [0,1];
  *           - alpha \in [0,1].
  *         
  *         If all input information is valid, then this routine returns the following value
  *         'mcf' for the multiplicative conversion factor:
- *           - mcf = std_normal_coverage_inverse(c) 
- *                 * sqrt(1. + 1./m)
+ *           - mcf = sqrt(1. + 1./m)
  *                 * sqrt( (m - 1.) / quant )
  *                 * sqrt( 1. + (m - 3. - quant) / (2.*(m+1.)*(m+1.)) ),
  *         where:
- *           - std_normal_coverage_inverse() is a routine explained above in this file;
  *           - quant is the alpha-quantile of a chi-square random variable with m-1 degrees
  *             of freedom.
  *
@@ -72,13 +68,11 @@ Real std_normal_coverage_inverse( const Real coverage );
  *              equations (4) and (5).
  *
  *  \param[in] number_of_samples = the value 'm' on the text above
- *  \param[in] coverage          = the required coverage level
  *  \param[in] alpha             = the value such that (1-alpha) is the required confidence level
  *
  *  return = value of the multiplicative conversion factor
  */
 Real computeDSTIEN_conversion_factor( const size_t number_of_samples
-                                    , const Real   coverage
                                     , const Real   alpha
                                     );
 
@@ -105,13 +99,25 @@ Real computeDSTIEN_conversion_factor( const size_t number_of_samples
  *
  *         If all input information is valid, then this routine selects the m <= n response
  *         samples that are valid (meaning, all r responses are finite values):
- *           - if m == 0, this routine returns all r averages and all r DSTIEN standard
- *             deviations equal to std::numeric_limits<Real>::quiet_NaN();
- *           - if m == 1, this routine returns the r averages equal to the only valid sample,
- *             and all r standard deviations equal to std::numeric_limits<Real>::quiet_NaN();
- *           - if m >= 2, this routine uses such m response samples to compute r averages
- *             and r standard deviations, using the multiplicative conversion factor
- *             computed by routine 'computeDSTIEN_conversion_factor()'.
+ *           - if m == 0, this routine returns:
+ *             - all r averages equal to std::numeric_limits<Real>::quiet_NaN(),
+ *             - the delta_mf equal to std::numeric_limits<Real>::quiet_NaN(),
+ *             - all r sample std deviations equal to std::numeric_limits<Real>::quiet_NaN(),
+ *             - all r DSTIEN std deviations equal to std::numeric_limits<Real>::quiet_NaN();
+ *           - if m == 1, this routine returns:
+ *             - the r averages equal to the only valid sample,
+ *             - the delta_mf equal to std::numeric_limits<Real>::quiet_NaN(),
+ *             - all r sample std deviations equal to std::numeric_limits<Real>::quiet_NaN(),
+ *             - all r DSTIEN std deviations equal to std::numeric_limits<Real>::quiet_NaN();
+ *           - if m >= 2, this routine uses such m response samples to compute:
+ *             - the r averages dstien_mus,
+ *             - delta_mf = computeDSTIEN_conversion_factor(m, alpha)
+ *                        * std_normal_coverage_inverse(c),
+ *               so that the tolerance intervals are given by
+ *               [dstien_mus - delta_mf*sample_sigmas, dstien_mus + delta_mf*sample_sigmas] 
+ *             - the r sample standard deviations sample_sigmas,
+ *             - the r DSTIEN standard deviations dstien_sigmas = 
+ *               computeDSTIEN_conversion_factor(m, alpha) * sample_sigmas.
  *
  *  \param[in] resp_samples = the set of n response samples, each sample with r components
  *  \param[in] coverage     = the required coverage level c above
@@ -120,6 +126,8 @@ Real computeDSTIEN_conversion_factor( const size_t number_of_samples
  *  \param[out] num_valid_samples = number of valid samples ('m' on the text above) used to
  *                                  compute 'ties_mus' and 'dstien_sigmas'
  *  \param[out] dstien_mus        = the r averages
+ *  \param[out] delta_mf          = the multiplicative factor explained above
+ *  \param[out] sample_sigmas     = the r sample standard deviations
  *  \param[out] dstien_sigmas     = the r DSTIEN standard deviations
  */
 void computeDSTIEN( const IntResponseMap & resp_samples
@@ -127,6 +135,8 @@ void computeDSTIEN( const IntResponseMap & resp_samples
                   , const Real             alpha
                   , size_t               & num_valid_samples
                   , RealVector           & dstien_mus
+                  , Real                 & delta_mf
+                  , RealVector           & sample_sigmas
                   , RealVector           & dstien_sigmas
                   );
 

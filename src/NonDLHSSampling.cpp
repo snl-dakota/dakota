@@ -1091,7 +1091,7 @@ void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
   }
 
   if (toleranceIntervalsFlag) {
-    archive_tolerance_intervals(inc_id, (inc_id == 0) || (inc_id == refineSamples.length() + 1));
+    archive_tolerance_intervals(inc_id);
   }
 
   // Associate number of samples attribute with the increment for incremental samplee
