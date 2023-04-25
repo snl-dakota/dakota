@@ -7,8 +7,8 @@ macro(dakota_cxx_standard)
   # Require C++11 at a minimum, but allow newer standards
   # Do this prior to other flag settings and enabling the C++ language
   if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
-    set(CMAKE_CXX_STANDARD 11 CACHE STRING
-      "Dakota strictly requires C++11 or better")
+    set(CMAKE_CXX_STANDARD 17 CACHE STRING
+      "Dakota strictly requires C++17 or better")
   endif()
   if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
     set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL
