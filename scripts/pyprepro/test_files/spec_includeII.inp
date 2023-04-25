@@ -1,0 +1,4 @@
+% PYPREPRO_CODE >>
+% val0 = 'fixed 0' # should not be used
+>> val0 = 'fixed 1'
+% val0 = 'fixed 2' # should not be used
