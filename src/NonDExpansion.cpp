@@ -3692,9 +3692,9 @@ void NonDExpansion::archive_sobol_indices() {
       if (covarianceControl == FULL_COVARIANCE)
         assert(respCovariance(i,i) >= 0.0 );
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
-			    Pecos::is_small(std::sqrt(respVariance[i])),approx_i.mean() ) ||
+			    Pecos::is_small(std::sqrt(respVariance[i]),approx_i.mean()) ) ||
 			  ( covarianceControl   == FULL_COVARIANCE &&
-			    Pecos::is_small(std::sqrt(respCovariance(i,i)),approx_i.mean())) )
+			    Pecos::is_small(std::sqrt(respCovariance(i,i)),approx_i.mean()) ) )
 	              ? false : true;
       if (well_posed) {
 	const RealVector& total_indices = approx_i.total_sobol_indices();
