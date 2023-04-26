@@ -17,6 +17,9 @@ macro(dakota_cxx_standard)
   set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL
     "Dakota strictly requires C++11 or better")
 
+  # clumsy setting of flag to prevent issues in boost::serialization for c++17.
+  set(CMAKE_CXX_FLAGS "-fno-new-ttp-matching ${CMAKE_CXX_FLAGS}" CACHE STRING "fix boost::serialization" FORCE)
+
 endmacro()
 
 
