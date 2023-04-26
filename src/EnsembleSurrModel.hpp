@@ -618,24 +618,38 @@ inline size_t EnsembleSurrModel::count_id_maps(const IntIntMapArray& id_maps)
 inline void EnsembleSurrModel::surrogate_response_mode(short mode)
 {
   if (responseMode == mode) return;
-  else responseMode = mode;
 
-  // Trap the combination of no user correction specification with either
-  // AUTO_CORRECTED_SURROGATE (NO_CORRECTION defeats the point for HSModel) or
-  // MODEL_DISCREPANCY (which formulation for computing discrepancy?) modes.
-  if ( !corrType && ( mode == AUTO_CORRECTED_SURROGATE ||
-		      mode == MODEL_DISCREPANCY ) ) {
-    Cerr << "Error: activation of mode ";
-    if (mode == AUTO_CORRECTED_SURROGATE) Cerr << "AUTO_CORRECTED_SURROGATE";
-    else                                  Cerr << "MODEL_DISCREPANCY";
-    Cerr << " requires specification of a correction type." << std::endl;
-    abort_handler(MODEL_ERROR);
+  // tests for outgoing mode:
+  bool resize_for_mode = false;
+  if (responseMode == AGGREGATED_MODELS ||
+      responseMode == AGGREGATED_MODEL_PAIR)
+    resize_for_mode = true;
+
+  // can now assign new mode
+  responseMode = mode;
+
+  // updates for incoming mode:
+  switch (mode) {
+  case AUTO_CORRECTED_SURROGATE: case MODEL_DISCREPANCY:
+    // Trap the omission of a correction specification
+    if (!corrType) {
+      Cerr << "Error: activation of mode ";
+      if (mode == AUTO_CORRECTED_SURROGATE) Cerr << "AUTO_CORRECTED_SURROGATE";
+      else                                  Cerr << "MODEL_DISCREPANCY";
+      Cerr << " requires specification of a correction type." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    break;
+  case BYPASS_SURROGATE:
+    // don't propagate to approx models since point of a surrogate bypass
+    // is to get a surrogate-free truth evaluation
+    truthModel.surrogate_response_mode(mode);  break;
+  case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR:
+    resize_for_mode = true;                    break;
   }
 
-  // don't pass to approx models since point of a surrogate bypass is to get
-  // a surrogate-free truth evaluation
-  if (mode == BYPASS_SURROGATE) // recurse in this case
-    truthModel.surrogate_response_mode(mode);
+  if (resize_for_mode)
+    { resize_response(); resize_maps(); }
 }
 
 

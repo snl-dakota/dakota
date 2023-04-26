@@ -106,7 +106,7 @@ private:
   //
 
   /// build the hierarchical approximation for a particular level by
-  /// computing center truth within the HierarchSurrModel
+  /// computing center truth within the EnsembleSurrModel
   void build_center_truth(size_t tr_index);
 
   /// Retrieve or evaluate SurrBasedLevelData::responseCenterTruthUncorrected
@@ -136,7 +136,7 @@ private:
   void correct_star_approx(size_t tr_index);
 
   /// activate model forms and, optionally, discretization levels within
-  /// the HierarchSurrModel associated with trustRegions[tr_index]
+  /// the EnsembleSurrModel associated with trustRegions[tr_index]
   void set_active_model(size_t tr_index);
 
   /// update trust region bounds, recurring top-down from tr_index_start
@@ -160,7 +160,7 @@ private:
   //
 
   /// number of ordered model fidelities within iteratedModel
-  /// (a HierarchSurrModel)
+  /// (an EnsembleSurrModel)
   size_t numFid;
 
   /// number of discretization levels per ordered model fidelity

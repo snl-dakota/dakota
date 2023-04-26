@@ -188,8 +188,8 @@ bool SurrogateModel::check_response_qoi(const Model& sub_model)
 {
   bool error_flag = false;
   // Check for compatible array sizing between sub_model and currentResponse.
-  // NonHierarchSurrModel creates aggregations (and a DataFitSurrModel will
-  // consume them). Aggregations may span truthModel, unorderedModels, or both.
+  // EnsembleSurrModel creates aggregations (and a DataFitSurrModel will
+  // consume them). Aggregations may span truthModel, approxModels, or both.
   // For now, allow any aggregation factor.
   size_t sm_qoi = sub_model.qoi();//, aggregation = numFns / sm_qoi;
   if ( numFns % sm_qoi ) {

@@ -27,7 +27,7 @@ namespace Dakota {
 class ProblemDescDB;
 class ParallelLibrary;
 
-/// Base class for surrogate models (DataFitSurrModel and HierarchSurrModel).
+/// Base class for surrogate models (DataFitSurrModel and EnsembleSurrModel).
 
 /** The SurrogateModel class provides common functions to derived
     classes for computing and applying corrections to approximations. */
@@ -101,7 +101,7 @@ protected:
 
   /// verify compatibility between SurrogateModel attributes and
   /// attributes of the submodel (DataFitSurrModel::actualModel or
-  /// HierarchSurrModel::highFidelityModel)
+  /// EnsembleSurrModel::truthModel)
   virtual void check_submodel_compatibility(const Model& sub_model) = 0;
   /// initialize model with data that could change once per set of evaluations
   /// (e.g., an outer iterator execution), including active variable labels,

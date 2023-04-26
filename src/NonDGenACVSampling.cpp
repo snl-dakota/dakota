@@ -36,7 +36,7 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDACVSampling(problem_db, model),
   dagRecursionType(problem_db.get_short("method.nond.search_model_graphs")),
   dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit")),
-  modelSelectType(NO_MODEL_SELECTION) //(ALL_MODEL_COMBINATIONS)
+  modelSelectType(NO_MODEL_SELECTION)//(ALL_MODEL_COMBINATIONS)
 {
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
   if (dagRecursionType == FULL_GRAPH_RECURSION) dagDepthLimit = numApprox;
@@ -82,14 +82,15 @@ void NonDGenACVSampling::generate_dags()
     break;
   }
   default: {
-    UShortArray nodes, dag;  unsigned short root = numApprox;  size_t i;
+    UShortArray nodes(numApprox), dag;
+    unsigned short root = numApprox;  size_t i;
     switch (modelSelectType) {
     case ALL_MODEL_COMBINATIONS: {
       // tensor product of order 1 to enumerate approximation inclusion
       UShort2DArray tp;  UShortArray tp_orders(numApprox, 1);
       Pecos::SharedPolyApproxData::
 	tensor_product_multi_index(tp_orders, tp, true);
-      size_t j, num_tp = tp.size();
+      //Cout << "tp mi:\n" << tp;
 
       // Two discrete enumeration options here:
       // > map<UShortArray,UShortArraySet> to associate pruned DAGs to nodes
@@ -111,7 +112,7 @@ void NonDGenACVSampling::generate_dags()
       }
       */
 
-      // 
+      size_t j, num_tp = tp.size();
       for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
 	const UShortArray& tp_i = tp[i];
 	for (j=0; j<numApprox; ++j)
@@ -123,8 +124,6 @@ void NonDGenACVSampling::generate_dags()
 	generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
       }
 
-      exit(0);
-
       break;
     }
 
@@ -135,7 +134,7 @@ void NonDGenACVSampling::generate_dags()
     case NO_MODEL_SELECTION:
       // root node (truth index = numApprox) and set of dependent nodes
       // (approximation model indices 0,numApprox-1) are fixed
-      nodes.resize(numApprox);  for (i=0; i<numApprox; ++i) nodes[i] = i;
+      for (i=0; i<numApprox; ++i) nodes[i] = i;
       dag.assign(numApprox, USHRT_MAX);
       // recur for DAG including all approximations:
       generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
@@ -146,8 +145,11 @@ void NonDGenACVSampling::generate_dags()
   }
 
   Cout << "Searching array of model DAGs of size " << modelDAGs.size();
-  if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << modelDAGs;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << ":\n" << modelDAGs;
   Cout << std::endl;
+
+  //exit(0);
 }
 
 
@@ -294,9 +296,6 @@ unroll_reverse_dag_from_root(unsigned short root,
 }
 
 
-/** The primary run function manages the general case: a hierarchy of model 
-    forms (from the ordered model fidelities within a HierarchSurrModel), 
-    each of which may contain multiple discretization levels. */
 void NonDGenACVSampling::core_run()
 {
   // Initialize for pilot sample
@@ -638,7 +637,7 @@ genacv_approx_increment(const DAGSolutionData& soln,
   }
 
   // the approximation sequence can be managed within one set of jobs using
-  // a composite ASV with NonHierarchSurrModel
+  // a composite ASV with EnsembleSurrModel
   return approx_increment(iter, root, reverse_dag);
 }
 

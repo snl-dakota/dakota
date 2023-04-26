@@ -72,7 +72,7 @@ void NonDMultilevControlVarSampling::pre_run()
 
 
 /** The primary run function manages the general case: a hierarchy of model 
-    forms (from the ordered model fidelities within a HierarchSurrModel), 
+    forms (from the ordered model fidelities within an EnsembleSurrModel), 
     each of which may contain multiple discretization levels. */
 void NonDMultilevControlVarSampling::core_run()
 {

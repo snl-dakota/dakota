@@ -172,7 +172,7 @@ synchronous_local_analysis(int analysis_id)
 
 /** No derived interface plug-ins, so perform construct-time checks.
     However, process init issues as warnings since some contexts (e.g.,
-    HierarchSurrModel) initialize more configurations than will be used. */
+    EnsembleSurrModel) initialize more configurations than will be used. */
 inline void ProcessHandleApplicInterface::
 init_communicators_checks(int max_eval_concurrency)
 {

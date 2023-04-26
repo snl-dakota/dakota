@@ -51,9 +51,6 @@ NonDMultifidelitySampling::~NonDMultifidelitySampling()
 { }
 
 
-/** The primary run function manages the general case: a hierarchy of model 
-    forms (from the ordered model fidelities within a HierarchSurrModel), 
-    each of which may contain multiple discretization levels. */
 void NonDMultifidelitySampling::core_run()
 {
   //sequence_models(); // enforce correlation condition (*** AFTER PILOT ***)
@@ -69,13 +66,6 @@ void NonDMultifidelitySampling::core_run()
   case PILOT_PROJECTION: // for algorithm assessment/selection
     multifidelity_mc_pilot_projection(); break;
   }
-
-  // Notes on ACV + ensemble model classes:
-  // > HierarchSurrModel is limiting (see MFMC) such that we may want to
-  //   subsume it with NonHierarchSurrModel --> consider generalizations
-  //   that can be deployed across the algorithm set:
-  //   >> enhanced parallel usage --> avoid sync points in ACV clients
-  //   >> enable sampling over shared + distinct model variable sets
 }
 
 
@@ -560,7 +550,7 @@ mfmc_approx_increment(const DAGSolutionData& soln,
 			   start, end);
   }
   // the approximation sequence can be managed within one set of jobs using
-  // a composite ASV with NonHierarchSurrModel
+  // a composite ASV with EnsembleSurrModel
   return approx_increment(iter, approx_sequence, start, end);
 }
 
