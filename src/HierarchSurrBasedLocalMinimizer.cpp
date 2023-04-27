@@ -36,8 +36,10 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
-  if (iteratedModel.surrogate_type() != "ensemble") {
-    Cerr << "Error: HierarchSurrBasedLocalMinimizer requires a hierarchical "
+  if (iteratedModel.surrogate_type() == "ensemble")
+    iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
+  else {
+    Cerr << "Error: HierarchSurrBasedLocalMinimizer requires an ensemble "
          << "surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }

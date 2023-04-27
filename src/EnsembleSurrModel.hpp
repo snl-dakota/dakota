@@ -257,7 +257,7 @@ protected:
   void asv_split(const ShortArray& orig_asv, Short2DArray& indiv_asv);
 
   /// initialize truth and surrogate model keys to default values
-  void assign_default_keys();
+  void assign_default_keys(short mode);
   /// size id_maps and cached_resp_maps arrays according to responseMode
   void resize_maps();
   /// resize currentResponse based on responseMode
@@ -577,7 +577,7 @@ multifidelity_precedence(bool mf_prec, bool update_default)
 {
   if (mfPrecedence != mf_prec) {
     mfPrecedence = mf_prec;
-    if (update_default) assign_default_keys();
+    if (update_default) assign_default_keys(responseMode);
   }
 }
 
@@ -619,13 +619,19 @@ inline void EnsembleSurrModel::surrogate_response_mode(short mode)
 {
   if (responseMode == mode) return;
 
+  // Note: resize_{response,maps} can require information from {truth,surr}
+  // model keys, so we defer resizing until active_model_key(), which
+  // generally occurs downstream from (sometimes immediately after) this
+  // function.  Iterator::initialize_graphics() --> EnsembleSurrModel::
+  // create_tabular_datastream() requires care due to this ordering.
+  //
   // tests for outgoing mode:
-  bool resize_for_mode = false;
-  if (responseMode == AGGREGATED_MODELS ||
-      responseMode == AGGREGATED_MODEL_PAIR)
-    resize_for_mode = true;
+  //bool resize_for_mode = false;
+  //if (responseMode == AGGREGATED_MODELS ||
+  //    responseMode == AGGREGATED_MODEL_PAIR)
+  //  resize_for_mode = true;
 
-  // can now assign new mode
+  // now assign new mode
   responseMode = mode;
 
   // updates for incoming mode:
@@ -644,12 +650,17 @@ inline void EnsembleSurrModel::surrogate_response_mode(short mode)
     // don't propagate to approx models since point of a surrogate bypass
     // is to get a surrogate-free truth evaluation
     truthModel.surrogate_response_mode(mode);  break;
-  case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR:
-    resize_for_mode = true;                    break;
+  //case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR:
+  //  resize_for_mode = true;                    break;
   }
 
-  if (resize_for_mode)
-    { resize_response(); resize_maps(); }
+  // if no keys yet, assign default ones for purposes of initialization;
+  // these will be replaced at run time
+  if (truthModelKey.empty()) assign_default_keys(mode);
+
+  // Defer: surrogate_response_mode() generally precedes activation of keys
+  //if (resize_for_mode)
+  //  { resize_response(); resize_maps(); }
 }
 
 
@@ -825,7 +836,8 @@ active_surrogate_model_form(size_t i) const
   if (i == _NPOS)
     return USHRT_MAX; // defer error/warning/mitigation to calling code
   else if (i >= surrModelKeys.size()) { // hard error
-    Cerr << "Error: model form (" << i << ") out of range in "
+    Cerr << "Error: model form index (" << i << ") out of range ("
+	 << surrModelKeys.size() << " active surrogate models) in "
 	 << "EnsembleSurrModel::active_surrogate_model_form()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
@@ -1071,9 +1083,9 @@ inline void EnsembleSurrModel::resize_from_subordinate_model(size_t depth)
     else if (depth)
       truth_model.resize_from_subordinate_model(depth - 1);
   }
-  // now resize this Models' response
+  // now resize this Model's response
   if (all_approx_resize || approx0_resize || truth_resize)
-    resize_response();
+    resize_response(); // resize_maps() ?
 }
 
 

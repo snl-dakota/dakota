@@ -51,19 +51,9 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
 
   problem_db.set_db_model_nodes(model_index); // restore
 
-  assign_default_keys();
+  // Defer until Iterator calls surrogate_response_mode():
+  //assign_default_keys(AGGREGATED_MODELS); // default keys for a default mode
 
-  // Correction is required for some responseModes.  Enforcement of a
-  // correction type for these modes occurs in surrogate_response_mode().
-  switch (responseMode) {
-  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
-    if (corrType) // initialize DiscrepancyCorrection using initial keys
-      deltaCorr[activeKey].initialize(active_surrogate_model(0),
-				      surrogateFnIndices, corrType, corrOrder);
-    break;
-  }
-  //truthResponseRef[truthModelKey] = currentResponse.copy();
-  
   // Ensemble surrogate models pass through numerical derivatives
   supportsEstimDerivs = false;
   // initialize ignoreBounds even though it's irrelevant for pass through
@@ -73,68 +63,106 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
 }
 
 
-void EnsembleSurrModel::assign_default_keys()
+void EnsembleSurrModel::assign_default_keys(short mode)
 {
   // default key data values, to be overridden at run time
 
   // For now, use design of all models are active and specific fn sets are
   // requested via ASV.
   unsigned short id = 0, num_approx = approxModels.size();
-  if (multifidelity()) { // first and last model form (no soln levels)
-    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
-				     truthModel.solution_level_cost_index());
-    //if (responseMode == AGGREGATED_MODELS) {
+  size_t truth_soln_lev = truthModel.solution_levels();
+  short reduction = Pecos::RAW_DATA; // most modes are raw data w/ no reduction
+  switch (mode) {
+  case AGGREGATED_MODELS:
+    //if (multilevel_multifidelity()) {
+      // enumerate all combinations?
+    //} else
+    if (multifidelity()) { // first and last model form (no soln levels)
+      truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
+				       truthModel.solution_level_cost_index());
       surrModelKeys.resize(num_approx);
       for (unsigned short i=0; i<num_approx; ++i)
 	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i,
 	  approxModels[i].solution_level_cost_index());
-    //}
-  }
-  else if (multilevel()) { // first and last solution level (last model)
-    size_t truth_soln_lev = truthModel.solution_levels(),
-      truth_index = truth_soln_lev - 1;
-    truthModelKey
-      = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, truth_index);
-    //if (responseMode == AGGREGATED_MODELS) {
+    }
+    else if (multilevel()) {
+      size_t truth_index = truth_soln_lev - 1;
+      truthModelKey
+	= Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, truth_index);
       surrModelKeys.resize(truth_index);
       for (size_t i=0; i<truth_index; ++i)
 	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, i);
-    //}
-  }
-  // raw data only (no data reduction)
-  activeKey.aggregate_keys(surrModelKeys, truthModelKey, Pecos::RAW_DATA);
+    }
+    break;
 
-  /* Old approach for paired models:
-  unsigned short id = 0, last_m = approxModels.size();
-  short r_type = Pecos::RAW_DATA;
-  if (multilevel_multifidelity()) { // first and last model form / soln levels
-    //size_t last_soln_lev = std::min(truthModel.solution_levels(),
-    // 				      approxModels[0].solution_levels());
-    //truthModelKey = Pecos::ActiveKey(id, r_type, last_m, last_soln_lev);
-    //surrModelKey  = Pecos::ActiveKey(id, r_type,      0, last_soln_lev);
+  case AGGREGATED_MODEL_PAIR: // first and last model form (no soln levels)
+    if (multilevel_multifidelity()) { // first and last model form / soln levels
+      // span both hierarchical dimensions by default
+      truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
+				       num_approx, truth_soln_lev - 1);
+      surrModelKeys.resize(1);
+      surrModelKeys[0] = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0, 0);
+    }
+    else if (multifidelity()) { // first and last model form (no soln levels)
+      truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
+				       truthModel.solution_level_cost_index());
+      surrModelKeys.resize(1);
+      // Note: for modeKeyBufferSize estimation, must maintain consistency with
+      // NonDExpansion::configure_{sequence,indices}() and key definition for
+      // NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX usage,
+      // since this suppresses allocation of a solution level array.
+      surrModelKeys[0]  = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0,
+        approxModels[0].solution_level_cost_index());
+      break;
+    }
+    else if (multilevel()) {
+      truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
+				       num_approx, truth_soln_lev - 1);
+      surrModelKeys.resize(1);
+      surrModelKeys[0] = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, 0);
+    }
+    break;
 
-    // span both hierarchical dimensions by default
-    size_t truth_soln_lev = truthModel.solution_levels();
-    truthModelKey = Pecos::ActiveKey(id, r_type, last_m, truth_soln_lev - 1);
-    surrModelKey  = Pecos::ActiveKey(id, r_type,      0, 0);
+  case NO_SURROGATE: case BYPASS_SURROGATE:
+    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
+				     num_approx, truth_soln_lev - 1);
+    surrModelKeys.clear();
+    break;
+
+  case UNCORRECTED_SURROGATE:
+    truthModelKey.clear();
+    surrModelKeys.resize(1);
+    surrModelKeys[0] = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0, 0);
+    break;
+
+  case AUTO_CORRECTED_SURROGATE: case MODEL_DISCREPANCY:
+    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
+				     num_approx, truth_soln_lev - 1);
+    surrModelKeys.resize(1);
+    surrModelKeys[0] = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0, 0);
+    // these modes use a reduction
+    reduction = (mode == AUTO_CORRECTED_SURROGATE) ?
+      Pecos::SINGLE_REDUCTION : Pecos::RAW_WITH_REDUCTION;
+    break;
   }
-  else if (multifidelity()) { // first and last model form (no soln levels)
-    // Note: for proper modeKeyBufferSize estimation, must maintain consistency
-    // with NonDExpansion::configure_{sequence,indices}() and key definition
-    // for NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX
-    // usage, since this suppresses allocation of a solution level array.
-    truthModelKey = Pecos::ActiveKey(id, r_type, last_m,
-      truthModel.solution_level_cost_index());
-    surrModelKey  = Pecos::ActiveKey(id, r_type,      0,
-      approxModels[0].solution_level_cost_index());
+  activeKey.aggregate_keys(surrModelKeys, truthModelKey, reduction);
+
+  // even though they may change downstream, ensure synchronization during
+  // initialization
+  resize_response();
+  resize_maps();
+
+  /* Defer and rely on deltaCorr initializations in active_model_key():
+  switch (mode) {
+  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
+    // Correction is required for some responseModes.  Enforcement of a
+    // correction type for these modes occurs in surrogate_response_mode().
+    if (corrType) // initialize DiscrepancyCorrection using initial keys
+      deltaCorr[activeKey].initialize(active_surrogate_model(0),
+				      surrogateFnIndices, corrType, corrOrder);
+    break;
   }
-  else if (multilevel()) { // first and last solution level (last model)
-    size_t truth_soln_lev = truthModel.solution_levels();
-    truthModelKey = Pecos::ActiveKey(id, r_type, last_m, truth_soln_lev - 1);
-    surrModelKey  = Pecos::ActiveKey(id, r_type, last_m, 0);
-  }
-  activeKey.aggregate_keys(surrModelKey, truthModelKey,
-			   Pecos::SINGLE_REDUCTION); // default: reduction only
+  //truthResponseRef[truthModelKey] = currentResponse.copy();
   */
 
   if (parallelLib.mpirun_flag()) {

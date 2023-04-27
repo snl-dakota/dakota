@@ -124,6 +124,8 @@ void NonDGenACVSampling::generate_dags()
 	generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
       }
 
+      //exit(0); // model selection not fully implemented at this time
+
       break;
     }
 
@@ -148,8 +150,6 @@ void NonDGenACVSampling::generate_dags()
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << ":\n" << modelDAGs;
   Cout << std::endl;
-
-  //exit(0);
 }
 
 
