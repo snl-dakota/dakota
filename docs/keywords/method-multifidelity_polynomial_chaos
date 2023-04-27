@@ -58,8 +58,8 @@ quadrature order, sparse grid level, and expansion order.
 
 Multifidelity UQ using PCE requires that the model selected for
 iteration by the method specification is a multifidelity surrogate
-model (see :dakkw:`model-surrogate-hierarchical`), which defines an
-``ordered_model_sequence`` (see :dakkw:`model-surrogate-hierarchical`).
+model (see :dakkw:`model-surrogate-ensemble`), which defines an
+``ordered_model_sequence`` (see :dakkw:`model-surrogate-ensemble`).
 Two types of hierarchies are supported: (i) a hierarchy of model forms
 composed from more than one model within the ``ordered_model_sequence``,
 or (ii) a hierarchy of discretization levels comprised from a single
