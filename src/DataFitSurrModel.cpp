@@ -60,6 +60,10 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   // artificial in this case (and reflecting the stencil degrades accuracy)
   ignoreBounds = true;
 
+  // assign default responseMode based on correction specification;
+  // NO_CORRECTION (0) is default
+  responseMode = (corrType) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
+
   // if no user points management spec, assign RECOMMENDED_POINTS as default
   if (pointsManagement == DEFAULT_POINTS)
     pointsManagement = (pointsTotal > 0) ? TOTAL_POINTS : RECOMMENDED_POINTS;
@@ -249,6 +253,10 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   }
 
   surrogateType = approx_type;
+
+  // assign default responseMode based on correction specification;
+  // NO_CORRECTION (0) is default
+  responseMode = (corrType) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
 
   bool import_pts = !importPointsFile.empty(),
        export_pts = !exportPointsFile.empty() || !exportVarianceFile.empty();

@@ -656,7 +656,8 @@ inline void EnsembleSurrModel::surrogate_response_mode(short mode)
 
   // if no keys yet, assign default ones for purposes of initialization;
   // these will be replaced at run time
-  if (truthModelKey.empty()) assign_default_keys(mode);
+  if (truthModelKey.empty() && surrModelKeys.empty())
+    assign_default_keys(mode);
 
   // Defer: surrogate_response_mode() generally precedes activation of keys
   //if (resize_for_mode)

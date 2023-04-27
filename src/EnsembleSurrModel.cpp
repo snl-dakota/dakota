@@ -51,8 +51,16 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
 
   problem_db.set_db_model_nodes(model_index); // restore
 
-  // Defer until Iterator calls surrogate_response_mode():
-  //assign_default_keys(AGGREGATED_MODELS); // default keys for a default mode
+  // Default keys are overridden once Iterator sets surrogate_response_mode()
+  // and calls active_model_key():
+  // > Call below could be deferred, relying on Iterator ctor initialization,
+  //   except for parallel executions that only instantiate the Model.  For
+  //   those cases, go ahead and default initialize.
+  // > This suppresses the default key assignment at the bottom of
+  //   surrogate_response_mode(), such that active_model_key() must follow.
+  // > Currently, evaluate() is disallowed with DEFAULT_SURROGATE_RESP_MODE,
+  //   so a responseMode update is enforced.
+  assign_default_keys(responseMode); // default keys for default mode
 
   // Ensemble surrogate models pass through numerical derivatives
   supportsEstimDerivs = false;
@@ -73,7 +81,7 @@ void EnsembleSurrModel::assign_default_keys(short mode)
   size_t truth_soln_lev = truthModel.solution_levels();
   short reduction = Pecos::RAW_DATA; // most modes are raw data w/ no reduction
   switch (mode) {
-  case AGGREGATED_MODELS:
+  case AGGREGATED_MODELS: case DEFAULT_SURROGATE_RESP_MODE:
     //if (multilevel_multifidelity()) {
       // enumerate all combinations?
     //} else
@@ -517,6 +525,12 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
   unsigned short m_index;
   switch (responseMode) {
 
+  case DEFAULT_SURROGATE_RESP_MODE:
+    Cerr << "Error: responseMode remains at default setting in "
+	 << "EnsembleSurrModel::derived_evaluate()" << std::endl;
+    abort_handler(MODEL_ERROR);
+    break;
+
   case AGGREGATED_MODELS: {
     // extract eval requirements from composite ASV
     Short2DArray indiv_asv;  asv_split(set.request_vector(), indiv_asv);
@@ -717,6 +731,12 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 
   unsigned short m_index;
   switch (responseMode) {
+  case DEFAULT_SURROGATE_RESP_MODE:
+    Cerr << "Error: responseMode remains at default setting in "
+	 << "EnsembleSurrModel::derived_evaluate_nowait()" << std::endl;
+    abort_handler(MODEL_ERROR);
+    break;
+
   case AGGREGATED_MODELS: {
     // extract eval requirements from composite ASV
     Short2DArray indiv_asv;  asv_split(set.request_vector(), indiv_asv);
@@ -758,7 +778,7 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   case BYPASS_SURROGATE: {
     if (set.request_vector().size() != qoi()) {
       Cerr << "Error: wrong ASV size for BYPASS_SURROGATE mode in "
-	   << "EnsembleSurrModel::derived_evaluate()" << std::endl;
+	   << "EnsembleSurrModel::derived_evaluate_nowait()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
     assign_truth_key();

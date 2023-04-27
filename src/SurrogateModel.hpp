@@ -195,9 +195,7 @@ protected:
   SizetSet surrogateFnIndices;
 
   /// an enumeration that controls the response calculation mode in
-  /// {DataFit,Hierarch}SurrModel approximate response computations
-  /** SurrBasedLocalMinimizer toggles this mode since compute_correction()
-      does not back out old corrections. */
+  /// {DataFit,Ensemble}SurrModel approximate response computations
   short responseMode;
 
   /// array of indices that identify the currently active model key

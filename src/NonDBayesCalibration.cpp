@@ -159,14 +159,22 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
        << "The \nfinal chain will have length " << num_filtered << ".\n";
 
   if (adaptExpDesign) {
-    // TODO: instead of pulling these models out, change modes on the
-    // iteratedModel
-    if (iteratedModel.model_type() != "surrogate") {
-      Cerr << "\nError: Adaptive Bayesian experiment design requires " 
-	   << "hierarchical surrogate\n       model.\n";
+    // update from the default responseMode:
+    if (iteratedModel.model_type()     == "surrogate" &&
+	iteratedModel.surrogate_type() == "ensemble") {
+      iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+      //if (!iteratedModel.correction_type())
+      //  iteratedModel.correction_type(ADDITIVE_CORRECTION);
+      // This choice caches RAW_WITH_REDUCTION (overkill for now)
+      //iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+    }
+    else {
+      Cerr << "\nError: Adaptive Bayesian experiment design requires an " 
+	   << "ensemble surrogate\n       model.\n";
       abort_handler(PARSE_ERROR);
     }
-    hifiModel = iteratedModel.truth_model();
+    // TODO: instead of pulling these models out, change modes on iteratedModel
+    hifiModel = iteratedModel.truth_model(); // not dependent on active key
 
     int num_exp = expData.num_experiments();
     int num_lhs_samples = std::max(initHifiSamples - num_exp, 0);
@@ -199,15 +207,16 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
-  // Errors if there are correlations and the user hasn't specified standardized_space,
-  // since this is currently unsupported.
-  // Note that gamma distribution should be supported but currently results in a seg fault.
-  if ( !standardizedSpace && iteratedModel.multivariate_distribution().correlation() ){
-    Cerr << "Error: correlation is only supported if user specifies standardized_space.\n"
-      << "    Only the following types of correlated random variables are supported:\n"
-      << "    unbounded normal, untruncated lognormal, uniform, exponential, gumbel, \n" 
-      << "    frechet, and weibull."
-	    << std::endl;
+  // Errors if there are correlations and the user hasn't specified
+  // standardized_space, since this is currently unsupported.  Note that gamma
+  // distribution should be supported but currently results in a seg fault.
+  if ( !standardizedSpace &&
+       iteratedModel.multivariate_distribution().correlation() ){
+    Cerr << "Error: correlation is only supported if user specifies "
+	 << "standardized_space.\n    Only the following types of correlated "
+	 << "random variables are supported:\n    unbounded normal, "
+	 << "untruncated lognormal, uniform, exponential, gumbel, \n    "
+	 << "frechet, and weibull." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
@@ -1088,7 +1097,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
   /* TODO:
      - Handling of hyperparameters
      - More efficient resizing/reconstruction
-     - Use hierarchical surrogate eval modes
+     - Use EnsembleSurrModel eval modes
   */
 
   // TODO? Make a struct?
