@@ -60,6 +60,7 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   //   surrogate_response_mode(), such that active_model_key() must follow.
   // > Currently, evaluate() is disallowed with DEFAULT_SURROGATE_RESP_MODE,
   //   so a responseMode update is enforced.
+  responseMode = AGGREGATED_MODELS;
   assign_default_keys(responseMode); // default keys for default mode
 
   // Ensemble surrogate models pass through numerical derivatives
@@ -81,9 +82,9 @@ void EnsembleSurrModel::assign_default_keys(short mode)
   size_t truth_soln_lev = truthModel.solution_levels();
   short reduction = Pecos::RAW_DATA; // most modes are raw data w/ no reduction
   switch (mode) {
-  case AGGREGATED_MODELS: case DEFAULT_SURROGATE_RESP_MODE:
+  case AGGREGATED_MODELS: //case DEFAULT_SURROGATE_RESP_MODE:
     //if (multilevel_multifidelity()) {
-      // enumerate all combinations?
+      // enumerate all combinations? (else resolutions not present in keys)
     //} else
     if (multifidelity()) { // first and last model form (no soln levels)
       truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
@@ -121,7 +122,6 @@ void EnsembleSurrModel::assign_default_keys(short mode)
       // since this suppresses allocation of a solution level array.
       surrModelKeys[0]  = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0,
         approxModels[0].solution_level_cost_index());
-      break;
     }
     else if (multilevel()) {
       truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
@@ -731,6 +731,7 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 
   unsigned short m_index;
   switch (responseMode) {
+
   case DEFAULT_SURROGATE_RESP_MODE:
     Cerr << "Error: responseMode remains at default setting in "
 	 << "EnsembleSurrModel::derived_evaluate_nowait()" << std::endl;
