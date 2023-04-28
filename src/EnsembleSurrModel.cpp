@@ -55,12 +55,12 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   // and calls active_model_key():
   // > Call below could be deferred, relying on Iterator ctor initialization,
   //   except for parallel executions that only instantiate the Model.  For
-  //   those cases, go ahead and default initialize.
+  //   this reason, go ahead and default initialize.
   // > This suppresses the default key assignment at the bottom of
   //   surrogate_response_mode(), such that active_model_key() must follow.
   // > Currently, evaluate() is disallowed with DEFAULT_SURROGATE_RESP_MODE,
   //   so a responseMode update is enforced.
-  responseMode = AGGREGATED_MODELS;
+  responseMode = AGGREGATED_MODELS;  // was previously same default as DFSModel
   assign_default_keys(responseMode); // default keys for default mode
 
   // Ensemble surrogate models pass through numerical derivatives
@@ -155,10 +155,9 @@ void EnsembleSurrModel::assign_default_keys(short mode)
   }
   activeKey.aggregate_keys(surrModelKeys, truthModelKey, reduction);
 
-  // even though they may change downstream, ensure synchronization during
-  // initialization
-  resize_response();
-  resize_maps();
+  // would prefer to synchronize for initialization, but defer since iterator
+  // server processors do not yet have access to the responseMode:
+  //resize_response();  resize_maps();
 
   /* Defer and rely on deltaCorr initializations in active_model_key():
   switch (mode) {
@@ -1553,12 +1552,14 @@ void EnsembleSurrModel::create_tabular_datastream()
     // Response
     // --------
     //mgr.append_tabular_header(currentResponse);
-    // Add HF/LF/Del prepends
+    // Append model form / resolution level tags
+    // > Due to initialization ordering (which must satisfy requirements for
+    //   consistent parallel initialization), labels may not be aggregated yet.
     const StringArray& curr_labels = currentResponse.function_labels();
     size_t q, num_qoi = qoi(), num_curr_labels = curr_labels.size(), cntr;
     StringArray labels;
-    if (num_curr_labels == num_qoi * num_m) labels = curr_labels; // copy
-    else                      inflate(curr_labels, num_m, labels);
+    if (num_curr_labels == num_m * num_qoi) labels = curr_labels; // copy
+    else                                    inflate(curr_labels, num_m, labels);
     if (solnCntlAVIndex == _NPOS)
       for (m=1, cntr=0; m<=num_m; ++m) {
 	String postpend = "_M" + std::to_string(m);
@@ -1630,9 +1631,21 @@ void EnsembleSurrModel::create_tabular_datastream()
     // Response
     // --------
     //mgr.append_tabular_header(currentResponse);
-    // Add Del_ pre-pend or model/resolution post-pends
-    StringArray labels = currentResponse.function_labels(); // copy
-    size_t q, num_qoi = qoi(), num_labels = labels.size();
+    // Add Del_ pre-pend or model form/resolution level post-pends
+    // > Mirror the label resizing for AGGREGATED_MODELS, though the case of
+    //   oversized (aggregated) response labels should not occur
+    const StringArray& curr_labels = currentResponse.function_labels();
+    size_t q, num_qoi = qoi(), num_curr_labels = curr_labels.size();
+    StringArray labels;
+    if (responseMode == AGGREGATED_MODEL_PAIR) {
+      if (num_curr_labels == 2 * num_qoi) labels = curr_labels;
+      else                                inflate(curr_labels, 2, labels);
+    }
+    else { // MODEL_DISCREPANCY, BYPASS_SURROGATE
+      labels = curr_labels;
+      if (labels.size() != num_qoi) labels.resize(num_qoi); // deflate
+    }
+    size_t num_labels = labels.size();
     if (responseMode == MODEL_DISCREPANCY)
       for (q=0; q<num_qoi; ++q)
 	labels[q].insert(0, "Del_");
@@ -2006,9 +2019,11 @@ void EnsembleSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       // recv model state from EnsembleSurrModel::component_parallel_mode()
       MPIUnpackBuffer recv_buffer(modeKeyBufferSize);
       parallelLib.bcast(recv_buffer, *pl_iter);
-      recv_buffer >> responseMode >> activeKey; // replace previous/initial key
       // extract {truth,surr}ModelKeys, assign same{Model,Interface}Instance:
-      active_model_key(activeKey);
+      short mode; Pecos::ActiveKey key;
+      recv_buffer >> mode >> key;
+      surrogate_response_mode(mode);
+      active_model_key(key); // replace previous/initial key
 
       unsigned short m_index = componentParallelMode - 1; // id to index
       // propagate resolution level to server (redundant since send_evaluation()

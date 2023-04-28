@@ -486,8 +486,7 @@ inline void EnsembleSurrModel::
 inflate(const StringArray& labels, size_t num_replicates,
 	StringArray& new_labels) const
 {
-  size_t i, num_labels = labels.size(),
-    num_new = num_labels * num_replicates;
+  size_t i, num_labels = labels.size(), num_new = num_labels * num_replicates;
   new_labels.resize(num_new);
   for (size_t i=0; i<num_new; ++i)
     new_labels[i] = labels[i % num_labels];
@@ -672,8 +671,9 @@ inline void EnsembleSurrModel::surrogate_response_mode(short mode)
 
   // if no keys yet, assign default ones for purposes of initialization;
   // these will be replaced at run time
-  if (truthModelKey.empty() && surrModelKeys.empty())
-    assign_default_keys(mode);
+  // > unnecessary if ctor call to assign_default_keys() is active
+  //if (truthModelKey.empty() && surrModelKeys.empty())
+  //  assign_default_keys(mode);
 
   // Defer: surrogate_response_mode() generally precedes activation of keys
   //if (resize_for_mode)
