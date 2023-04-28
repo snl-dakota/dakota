@@ -341,6 +341,46 @@ class SRCs(unittest.TestCase):
                                            self._console_srcs[inc_idx][resp_label]["cod"], places=5)
 
 
+class SRCs(unittest.TestCase):
+    def setUp(self):
+        try:
+            self._console_ti
+        except AttributeError:
+            self._console_ti = hce.extract_tolerance_interval_results()
+
+
+    def test_structure(self):
+        result_labels = ["sample_mean",
+                         "sample_stdev",
+                         "multiplicative_factor_f",
+                         "TI_lower_end",
+                         "TI_upper_end",
+                         "TI_equiv_normal_stdev"]
+
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            for i, console_result in enumerate(self._console_ti):
+                inc_id = str(i+1)
+                inc_label = f"increment:{inc_id}"
+                ti_group = h[f"/methods/sampling/results/execution:1/{inc_label}/tolerance_intervals"]
+                self.assertEqual(len(console_result), len(ti_group))
+                for response in console_result:
+                    self.assertTrue(response in ti_group)
+                    for c_label, h_label in zip(result_labels, ti_group[response].dims[0][0]):
+                        h_test_label = h_label.decode('utf-8') if isinstance(h_label, bytes) else h_label
+                        self.assertEqual(c_label, h_label)
+                    self.assertTrue("valid_samples" in ti_group.attrs)  
+
+    def test_results(self):
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            for i, console_result in enumerate(self._console_ti):
+                inc_id = str(i+1)
+                inc_label = f"increment:{inc_id}"
+                ti_group = h[f"/methods/sampling/results/execution:1/{inc_label}/tolerance_intervals"]
+                for label, results in console_result.items():
+                    for c_result, h_result in zip(results, ti_group[label]):
+                        self.assertAlmostEqual(c_result, h_result, places=6)
+
+
 class EvaluationsStructure(unittest.TestCase):
 
     def test_interface_presence(self):

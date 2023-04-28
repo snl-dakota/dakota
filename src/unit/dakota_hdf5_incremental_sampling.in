@@ -16,6 +16,7 @@ method
                        0.3  0.4 0.7
     response_levels 0.6 0.2
     std_regression_coeffs
+    tolerance_intervals
   output verbose
 
 variables

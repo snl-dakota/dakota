@@ -396,6 +396,25 @@ def extract_std_regression_coeffs_results():
                     data_line = next(lines_iter).strip()
     return result
 
+def extract_tolerance_interval_results():
+    """Extract tolerance interval results from sampling study"""
+    # result data structure: Outer list over occurences in the output. Each list element
+    # is a dictionary, where keys are response descriptors and the values are another
+    # dict that contains the results
+    result = []
+    lines_iter = iter(__OUTPUT)
+    for line in lines_iter:
+        if line == "Double-sided tolerance interval equivalent normal statistics for each response function:":
+            result_labels = next(lines_iter).split()
+            data_line = next(lines_iter).strip()
+            result.append({})
+            while not data_line.startswith("---"):
+                label, *data = data_line.split()
+                result[-1][label] = [float(d) for d in data]
+                data_line = next(lines_iter).strip()
+    return result
+
+
 def extract_multi_start_results():
     """Extract results summary from a multi_start study, including
     initial points, best points, and best responses"""
