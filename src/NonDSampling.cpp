@@ -1033,9 +1033,11 @@ compute_statistics(const RealMatrix&     vars_samples,
     computeDSTIEN( resp_samples
                  , tiCoverage
                  , 1. - tiConfidenceLevel
-                 , tiNumValidSamples // Output
-                 , tiDstienMus       // Output
-                 , tiDstienSigmas    // Output
+                 , tiNumValidSamples           // Output
+                 , tiDstienMus                 // Output
+                 , tiDeltaMultiplicativeFactor // Output
+                 , tiSampleSigmas              // Output
+                 , tiDstienSigmas              // Output
                  );
   }
 
@@ -2013,26 +2015,34 @@ print_tolerance_intervals_statistics(std::ostream& s) const
   s << "-----------------------------------------------------------------------------"
     << std::endl
     << "Double-sided tolerance interval equivalent normal results"
-    << " with " << 100.0*tiConfidenceLevel << "% confidence level"
-    << ", "     << 100.0*tiCoverage        << "% coverage"
-    << ", "     << numSamples              << " samples"
-    << ", "     << tiNumValidSamples       << " valid samples"
+    << " with coverage = "     << std::fixed << std::setprecision(2) << 100.0*tiCoverage        << "%"
+    << ", confidence level = " << std::fixed << std::setprecision(2) << 100.0*tiConfidenceLevel << "%"
+    << ", and "                << tiNumValidSamples << " valid samples"
     << std::endl
     << "Double-sided tolerance interval equivalent normal statistics for each response function:"
     << std::endl
-    << std::setw(width+14) << "Mean" << std::setw(width+1) << "Eq. Normal Std"
+    << std::setw(width+14) << "Sample Mean mu"
+    << std::setw(width+1)  << "Sample Stdev s"
+    << std::setw(width+1)  << "Stdev Mult. f"
+    << std::setw(width+1)  << "LowerEnd=mu-f*s"
+    << std::setw(width+1)  << "UpperEnd=mu+f*s"
+    << std::setw(width+1)  << "Eq. Norm. Stdev"
     << std::endl
     << std::scientific << std::setprecision(write_precision);
   for (size_t i = 0; i < numFunctions; ++i) {
     s << iteratedModel.response_labels()[i]
-      << ' ' << std::setw(width) << tiDstienMus   [i]
+      << ' ' << std::setw(width) << tiDstienMus[i]
+      << ' ' << std::setw(width) << tiSampleSigmas[i]
+      << ' ' << std::setw(width) << tiDeltaMultiplicativeFactor
+      << ' ' << std::setw(width) << tiDstienMus[i] - tiDeltaMultiplicativeFactor * tiSampleSigmas[i]
+      << ' ' << std::setw(width) << tiDstienMus[i] + tiDeltaMultiplicativeFactor * tiSampleSigmas[i]
       << ' ' << std::setw(width) << tiDstienSigmas[i]
       << std::endl;
   }
 }
 
 void NonDSampling::
-archive_tolerance_intervals(size_t inc_id, bool incIdIsZeroOrIsTheLastOne)
+archive_tolerance_intervals(size_t inc_id)
 {
   StringArray location;
   if (inc_id != 0) {
@@ -2041,18 +2051,29 @@ archive_tolerance_intervals(size_t inc_id, bool incIdIsZeroOrIsTheLastOne)
   location.push_back("tolerance_intervals");
   location.push_back("");
 
-  Teuchos::SerialDenseVector<int,double> tmpValues(2);
+  Teuchos::SerialDenseVector<int,double> tmpValues(6);
   for(size_t i = 0; i < numFunctions; ++i) {
     location.back() = iteratedModel.response_labels()[i];
     DimScaleMap scales;
     scales.emplace( 0
                   , StringScale( "tolerance_intervals"
-                               , {"mean", "equivalent_normal_std"}
+                               , { "sample_mean"
+                                 , "sample_stdev"
+                                 , "multiplicative_factor_f"
+                                 , "TI_lower_end"
+                                 , "TI_upper_end"
+                                 , "TI_equiv_normal_stdev"
+                                 }
                                , ScaleScope::SHARED
                                )
                   );
     tmpValues[0] = tiDstienMus[i];
-    tmpValues[1] = tiDstienSigmas[i];
+    tmpValues[1] = tiSampleSigmas[i];
+    tmpValues[2] = tiDeltaMultiplicativeFactor;
+    tmpValues[3] = tiDstienMus[i] - tiDeltaMultiplicativeFactor * tiSampleSigmas[i];
+    tmpValues[4] = tiDstienMus[i] + tiDeltaMultiplicativeFactor * tiSampleSigmas[i];
+    tmpValues[5] = tiDstienSigmas[i];
+
     resultsDB.insert( run_identifier()
                     , location
                     , tmpValues
@@ -2061,7 +2082,7 @@ archive_tolerance_intervals(size_t inc_id, bool incIdIsZeroOrIsTheLastOne)
   }
 
   AttributeArray ns_attr({ResultAttribute<int>("valid_samples", tiNumValidSamples)});
-  if (incIdIsZeroOrIsTheLastOne) {
+  if (inc_id == 0) {
     StringArray location({String("tolerance_intervals")});
     resultsDB.add_metadata_to_object(run_identifier(), location, ns_attr);
   }

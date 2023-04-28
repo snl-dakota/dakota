@@ -2,18 +2,19 @@
 # Dakota Input File: cantliever_sampling_tolerance_intervals.in
 
 environment
-  tabular_data
-    tabular_data_file = 'cantilever_sampling_wilks.dat'
   results_output
     hdf5
+        results_output_file = 'cantilever_sampling_tolerance_intervals_s0'        #s0
+#       results_output_file = 'cantilever_sampling_tolerance_intervals_s1'        #s1
 
 method
   sampling
-    samples 59
+    samples 5
+#    refinement_samples 4 3 3 #s1
     sample_type random
     tolerance_intervals
-      coverage 0.1
-      confidence_level 0.25
+#      coverage 0.96          #s1
+#      confidence_level 0.92  #s1
     seed = 31415
 
 model

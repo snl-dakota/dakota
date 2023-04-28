@@ -145,7 +145,7 @@ public:
   void print_tolerance_intervals_statistics(std::ostream& s) const;
 
   /// archive the tolerance intervals statistics in results DB
-  void archive_tolerance_intervals(size_t inc_id = 0, bool incIdIsZeroOrIsTheLastOne = true);
+  void archive_tolerance_intervals(size_t inc_id = 0);
 
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
@@ -345,6 +345,8 @@ protected:
                           ///< interval equivalent normal
   size_t     tiNumValidSamples;
   RealVector tiDstienMus;
+  Real       tiDeltaMultiplicativeFactor;
+  RealVector tiSampleSigmas;
   RealVector tiDstienSigmas;
 
   bool statsFlag;   ///< flags computation/output of statistics

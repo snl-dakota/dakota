@@ -1554,8 +1554,11 @@ void EnsembleSurrModel::create_tabular_datastream()
     // --------
     //mgr.append_tabular_header(currentResponse);
     // Add HF/LF/Del prepends
-    StringArray labels = currentResponse.function_labels(); // copy
-    size_t q, num_qoi = qoi(), num_labels = labels.size(), cntr;
+    const StringArray& curr_labels = currentResponse.function_labels();
+    size_t q, num_qoi = qoi(), num_curr_labels = curr_labels.size(), cntr;
+    StringArray labels;
+    if (num_curr_labels == num_qoi * num_m) labels = curr_labels; // copy
+    else                      inflate(curr_labels, num_m, labels);
     if (solnCntlAVIndex == _NPOS)
       for (m=1, cntr=0; m<=num_m; ++m) {
 	String postpend = "_M" + std::to_string(m);

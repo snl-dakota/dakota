@@ -388,6 +388,10 @@ private:
   /// stop the servers for the model instance identified by the passed id
   void stop_model(short model_id);
 
+  /// replicate a label array when resizing a response
+  void inflate(const StringArray& labels, size_t num_replicates,
+	       StringArray& new_labels) const;
+
   /// check whether incoming ASV has any active content
   bool test_asv(const ShortArray& asv);
 
@@ -475,6 +479,18 @@ inline size_t EnsembleSurrModel::qoi() const
   default:
     return response_size();   break;
   }
+}
+
+
+inline void EnsembleSurrModel::
+inflate(const StringArray& labels, size_t num_replicates,
+	StringArray& new_labels) const
+{
+  size_t i, num_labels = labels.size(),
+    num_new = num_labels * num_replicates;
+  new_labels.resize(num_new);
+  for (size_t i=0; i<num_new; ++i)
+    new_labels[i] = labels[i % num_labels];
 }
 
 
