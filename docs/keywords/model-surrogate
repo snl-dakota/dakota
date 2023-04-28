@@ -50,7 +50,7 @@ truth model, called the "training data".
     - Orthogonal polynomials (only supported in PCE/SC for now): :dakkw:`method-polynomial_chaos` and :dakkw:`method-stoch_collocation` Training data is generated using either a design of experiments method applied to the truth model ( specified by :dakkw:`model-surrogate-global-dace_method_pointer`), or from saved data (specified by :dakkw:`model-surrogate-global-reuse_points` ) in a restart database, or an import file.
 
 
-- Multifidelity/hierarchical: Multifidelity modeling involves the use of a low-fidelity physics-based model as a surrogate for the original high-fidelity model. The low-fidelity model typically involves a coarser mesh, looser convergence tolerances, reduced element order, or omitted physics. See :dakkw:`model-surrogate-hierarchical`.
+- Multifidelity/hierarchical: Multifidelity modeling involves the use of a low-fidelity physics-based model as a surrogate for the original high-fidelity model. The low-fidelity model typically involves a coarser mesh, looser convergence tolerances, reduced element order, or omitted physics. See :dakkw:`model-surrogate-ensemble`.
 
 The global and hierarchal surrogates have a correction feature
 in order to improve the local accuracy of the surrogate models.
@@ -59,7 +59,7 @@ function values and possibly true function derivatives at the center
 point of each trust region.
 
 Details can be found on global :dakkw:`model-surrogate-global-correction`
-or hierarchical :dakkw:`model-surrogate-hierarchical-correction`.
+or hierarchical :dakkw:`model-surrogate-ensemble-ordered_model_fidelities-correction`.
 Topics::
 
 Examples::

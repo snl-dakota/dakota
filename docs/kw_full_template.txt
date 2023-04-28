@@ -1,6 +1,10 @@
-TEMPLATE
 Blurb::
-(Keep it short, say 3-10 words.  Some keywords require “arguments” 
+TEMPLATE See guidelines for blub below.
+
+Description::
+
+For the blurb:
+Keep it short, say 3-10 words.  Some keywords require “arguments” 
 (real number, string, list of reals or strings, etc). For these, blurb should 
 begin with a noun and define the information that the user should provide to 
 Dakota.	 Example--method-sampling-samples: Number of samples for sampling-based
@@ -15,18 +19,19 @@ sensitivity analysis based on decomposition of response variance into
 contributions from variables.  “Anti” example--max_step: Max change in design 
 point (note lack of optimization context).  To the extent possible, avoid 
 using the keyword to define itself.  Note that there are some cases where this 
-doesn’t make sense.  “Anti” example--importance_sampling: Importance sampling.)
+doesn’t make sense.  “Anti” example--importance_sampling: Importance sampling.
 
-Description::
-(Insert brief description.  Treat this as an extended blurb.
+For the description:
+
+Insert brief description.  Treat this as an extended blurb.
 It should still be relatively short, say 2-3 sentences that
 expand on what was hinted at in the blurb.  Example--lhs: The
 lhs keyword invokes Latin Hypercube Sampling as the means of
 drawing samples of uncertain variables according to their probability
 distributions. This is a stratified, space-filling approach that
-selects variable values from a set of equi-probable bins.)
+selects variable values from a set of equi-probable bins.
 
-<b> Default Behavior </b>
+*Default Behavior*
 
 (For keywords with arguments, include the default value.
 For keywords without arguments, include whether it defaults to “on” or “off”.
@@ -40,7 +45,7 @@ and/or state variables are designated as active, the sampling algorithm will
 treat them as parameters with uniform probability distributions between their 
 upper and lower bounds.)
 
-<b> Expected Output </b>
+*Expected Output*
 
 (This should describe what information Dakota will provide as a 
 result of using this keyword and where to find it (e.g., screen, what file).
@@ -52,7 +57,7 @@ variable to the variance in the model response. Total effects represent the
 percent contribution of each individual variable in combination with all other 
 variables to the variance in the model response.)
 
-<b> Usage Tips </b>
+*Usage Tips*
 
 (Include any rules of thumb for when to use the keyword and how to 
 set it.  We don’t necessarily have this for all keywords at this point, so 
@@ -60,7 +65,7 @@ omit as needed.  Example--variance_based_decomp: To obtain sensitivity indices
 that are reasonably accurate, we recommend that N, the number of samples, be 
 at least one hundred and preferably several hundred or thousands.)
 
-<b> Additional Discussion </b>
+*Additional Discussion*
 
 (Optional.  Put it here or in the Theory block.  If not here, remove 
 header.)
@@ -76,5 +81,7 @@ If expected output needs explanation, show it and include explanation pointing
 out things to look for.)
 
 Theory::
+
 Faq::
+
 See_Also::
