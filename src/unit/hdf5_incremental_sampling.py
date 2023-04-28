@@ -341,7 +341,7 @@ class SRCs(unittest.TestCase):
                                            self._console_srcs[inc_idx][resp_label]["cod"], places=5)
 
 
-class SRCs(unittest.TestCase):
+class ToleranceIntervals(unittest.TestCase):
     def setUp(self):
         try:
             self._console_ti
@@ -367,7 +367,7 @@ class SRCs(unittest.TestCase):
                     self.assertTrue(response in ti_group)
                     for c_label, h_label in zip(result_labels, ti_group[response].dims[0][0]):
                         h_test_label = h_label.decode('utf-8') if isinstance(h_label, bytes) else h_label
-                        self.assertEqual(c_label, h_label)
+                        self.assertEqual(c_label, h_test_label)
                     self.assertTrue("valid_samples" in ti_group.attrs)  
 
     def test_results(self):
