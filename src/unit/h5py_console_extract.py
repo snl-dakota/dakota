@@ -73,6 +73,31 @@ def extract_moments():
                 moments_line = next(lines_iter).strip()
     return moments
 
+def extract_expansion_moments():
+    """Extract the moments from the global __OUTPUT
+
+    Returns: The moments structured as a list of dictionaries.
+        The items in the list are for executions, and the 
+        key, value pairs in the dictionary are the response
+        descriptors and an numpy array of the moments
+    """
+    global __OUTPUT
+    moments = []
+    lines_iter = iter(__OUTPUT)
+    for line in lines_iter:
+        if line.startswith("Moment statistics for each response function"):
+            next(lines_iter)
+            moments.append({})
+            moments_line = next(lines_iter).strip()
+            while(moments_line):
+                tokens = moments_line.split()
+                resp_desc = tokens[0]
+                moments_values = np.array([float(t) for t in tokens[1:]])
+                moments[-1][resp_desc] = moments_values
+                moments_line = next(lines_iter).strip()
+    return moments
+
+
 def extract_moment_confidence_intervals():
 
     """Extract the moment confidence intervals
@@ -360,6 +385,81 @@ def extract_best_residual_norms():
             norm = norm[:-1]
             norms.append(float(norm))
     return norms
+
+#Global sensitivity indices for each response function:
+#f Sobol' indices:
+#                                  Main             Total
+#                      4.9223343363e-01  4.9954104251e-01 x1
+#                      5.0045895749e-01  5.0776656637e-01 x2
+#                           Interaction
+#                      7.3076088833e-03 x1 x2 
+#c Sobol' indices:
+#                                  Main             Total
+#                      8.1012658228e-01  8.1012658228e-01 x1
+#                      1.8987341772e-01  1.8987341772e-01 x2
+#                           Interaction
+#                      1.2481976348e-32 x1 x2 
+#-----------------------------------------------------------------------------
+
+def extract_sobol_indices():
+    """Extract main, total, and interaction effects"""
+    # results:
+    # dictionary over responses. For each response:
+    # dictionary of total_effects, main_effects, and order_N_effects
+    # For each of these, a list of the effects and a list of variables
+    result = {}
+    lines_iter = iter(__OUTPUT)
+    lines = []
+    for line in lines_iter:
+        if line == "Global sensitivity indices for each response function:":
+            table_line = next(lines_iter)
+            while not table_line.startswith("----"):
+                lines.append(table_line)
+                table_line = next(lines_iter)
+    response_chunks = split_by_responses(lines)
+    result["main_effects"] = {}
+    result["total_effects"] = {}
+    for r, data in response_chunks.items():
+        
+        main_total, interactions = split_by_order(data)
+        result["main_effects"][r] = {"variables": [], "indices": []}
+        result["total_effects"][r] = {"variables": [], "indices": []}
+               
+        for row in main_total:
+            main, total, variable = row.split()
+            result["main_effects"][r]["variables"].append(variable)
+            result["total_effects"][r]["variables"].append(variable)
+            result["main_effects"][r]["indices"].append(float(main))
+            result["total_effects"][r]["indices"].append(float(total))
+        for row in interactions:
+            interaction, *variables = row.split()
+            order = len(variables)
+            key = f"order_{order}_interactions"
+            if key not in result:
+                result[key] = {}
+            if r not in result[key]:
+                result[key][r] = {"variables": [], "indices":[]}
+            result[key][r]["variables"].append(tuple(variables))
+            result[key][r]["indices"].append(float(interaction))
+    return result
+
+
+def split_by_responses(lines):
+    responses = {}
+    for line in lines:
+        if "Sobol'" in line:
+            response_label = line.split()[0]
+            responses[response_label] = []
+        else:
+            responses[response_label].append(line)
+    return responses
+
+def split_by_order(lines):
+    idx = lines.index("                           Interaction")
+    main_total = lines[1:idx]
+    interactions = lines[idx+1:]
+    return main_total, interactions 
+
 
 def extract_std_regression_coeffs_results():
     """Extract SRCs summary from sampling study, including
