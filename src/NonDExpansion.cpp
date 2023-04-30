@@ -3590,11 +3590,12 @@ void NonDExpansion::archive_moments()
 	  
     if (exp_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
-
+      std::vector<std::string> temp_moment_labels
+           {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower};
       for (int i = 0; i < numFunctions; ++i) {
         DimScaleMap scales;
         scales.emplace(0, StringScale("moments", 
-                             {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
+                             temp_moment_labels,
                              ScaleScope::SHARED));
         RealVector moments;
         if(finalMomentsType == Pecos::CENTRAL_MOMENTS) {
@@ -3611,13 +3612,13 @@ void NonDExpansion::archive_moments()
     if (num_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_num,
           num_matrix, md_moments);
-      
+      std::vector<std::string> temp_moment_labels
+          {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower};
       for (int i = 0; i < numFunctions; ++i) {
         DimScaleMap scales;
-        scales.emplace(0,
-            StringScale("moments",
-            {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
-            ScaleScope::SHARED));
+        scales.emplace(0, StringScale("moments", 
+                             temp_moment_labels,
+                             ScaleScope::SHARED));
         RealVector moments;
         if(finalMomentsType == Pecos::CENTRAL_MOMENTS) {
           moments = poly_approxs[i].numerical_integration_moments();
