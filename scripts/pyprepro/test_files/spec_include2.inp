@@ -1,0 +1,7 @@
+// DPREPRO_CODE +
+% DPREPRO_INLINE=<M M>
+# DPREPRO_CODE_BLOCK = !!! !!!
+@ 2, set val0 = <M val0 = 2 M> and val1 = <M val1 = 3 M>
+Change immutable: val1 = <M val1 = Mutable(4) M>
+!!! levels[2] = 102  !!!
+Levels: <M levels M>

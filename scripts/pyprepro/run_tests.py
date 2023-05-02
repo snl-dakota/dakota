@@ -12,6 +12,7 @@ import shlex
 import shutil
 import random
 from textwrap import dedent
+from itertools import product
 
 # Find the best implementation available on this platform
 try:
@@ -792,7 +793,8 @@ class preparser_edge_cases(unittest.TestCase):
 {% A= 1 %}
 { A }
 {% A += 4 %}"""
-        self.assertTrue(compare_lines(pyprepro._preparser(IN),GOLD))
+        syntax = {'code':'%','inline':'{ }','code_block': '{% %}'}
+        self.assertTrue(compare_lines(pyprepro._preparser(IN,syntax),GOLD))
 
 
         # This tests the regression
@@ -809,8 +811,7 @@ class preparser_edge_cases(unittest.TestCase):
 { A }
 {% A += 4
 %}"""
-        self.assertTrue(compare_lines(pyprepro._preparser(IN),GOLD))
-
+        self.assertTrue(compare_lines(pyprepro._preparser(IN,syntax),GOLD))
         
     def test_pathological_quotes(self):
         """
@@ -1193,6 +1194,107 @@ Error occurred
         # Via module
         self.assertRaises(SyntaxError,pyprepro.pyprepro,input) # Should fail
 
+class inline_spec(unittest.TestCase):
+    def test_inline_spec(self):
+        
+        input0 = dedent("""\
+        HEADER
+        Specify < num = 3 >
+        * numsq = num**2
+        <T for i in range(4): T>
+        i: <i>, <numsq>
+        * end
+        This should do {nothing} {{at all}}
+        % and this should show
+        """)
+        
+        gold = dedent("""
+        Specify 3
+        i: 0, 9
+        i: 1, 9
+        i: 2, 9
+        i: 3, 9
+        This should do {nothing} {{at all}}
+        % and this should show
+        """)
+        
+        # This is actually 75 tests of every possible combination
+        comments =  '// ', '# ','% ', '$ ',''
+        leadings = '','D','PY'
+        spaceeqs = ' ',' = ','=','= ',' ='
+        
+        for comment,leading,spaceeq in product(comments,leadings,spaceeqs):
+            fmt = dict(comment=comment,leading=leading,spaceeq=spaceeq)
+            HEADER = dedent("""\
+                {comment}{leading}PREPRO_CODE{spaceeq}*
+                {comment}{leading}PREPRO_INLINE{spaceeq}< >
+                {comment}{leading}PREPRO_CODE_BLOCK{spaceeq}<T T>""".format(**fmt))
+            
+            input = input0.replace('HEADER',HEADER)
+            # Nothing specified
+            self.assert_(compare_lines(pyprepro.pyprepro(input),gold))
+            
+            # Commands specified
+            self.assert_(compare_lines(pyprepro.pyprepro(input, # Doesn't matter the settings
+                                       inline='hasfd asfd',code='ran dom',code_block='bl ock'),gold))
+            
+            # Same thing set    
+            self.assert_(compare_lines(pyprepro.pyprepro(input, # Doesn't matter the settings
+                                       inline='< >',code='*',code_block='<T T>'),gold))
+        
+        # Test from a test file
+        gold2 = dedent("""
+        New val: 2 # 2
+        New val: 3 # 3
+        New Val 9 # 9""")
+
+        pyprepro._pyprepro_cli(shsplit('test_files/spec_regular.inp test_output/spec_reg.inp'))
+        self.assert_(compare_lines(gold2,read('test_output/spec_reg.inp')))
+
+        pyprepro._pyprepro_cli(shsplit('test_files/spec_regular.inp test_output/spec_reg.inp --code "!" --inline "<< >>" --code-block "{{% %}}"'))
+        self.assert_(compare_lines(gold2,read('test_output/spec_reg.inp')))      
+    
+    def test_inline_spec_nestedinclude(self):
+        """
+        This tests an include with its own inline spec going multiple levels
+        """
+        
+        gold = dedent("""\
+            @ 0, set val0 = 0 and val1 = 1
+            Levels: {0: 100}
+            ---
+            @ 1, set val0 = 1 and val1 = 1
+            Levels: {0: 100, 1: 101}
+            ---
+            @ 2, set val0 = 2 and val1 = 1
+            Change immutable: val1 = 4
+            Levels: {0: 100, 1: 101, 2: 102}
+            +++
+            @1 {0: 100, 1: 101, 2: 102}
+            +++
+            @0 {0: 100, 1: 101, 2: 102}""")
+        
+        pyprepro._pyprepro_cli(shsplit('test_files/spec_include0.inp test_output/spec_include.inp'))
+        self.assert_(compare_lines(gold,read('test_output/spec_include.inp')))    
+
+        # With a specified one. Make sure the syntax is changed
+        gold2 = dedent("""\
+            @ 0, set val0 = fixed 1 and val1 = 1
+            Levels: {0: 100}
+            ---
+            @ 1, set val0 = fixed 1 and val1 = 1
+            Levels: {0: 100, 1: 101}
+            ---
+            @ 2, set val0 = fixed 1 and val1 = 1
+            Change immutable: val1 = 4
+            Levels: {0: 100, 1: 101, 2: 102}
+            +++
+            @1 {0: 100, 1: 101, 2: 102}
+            +++
+            @0 {0: 100, 1: 101, 2: 102}""")
+        pyprepro._pyprepro_cli(shsplit('--include test_files/spec_includeII.inp test_files/spec_include0.inp test_output/spec_include2.inp'))
+        self.assert_(compare_lines(gold2,read('test_output/spec_include2.inp')))
+
 class Regressions(unittest.TestCase):
     def test_same_inline_open_close(self):
         """
@@ -1206,31 +1308,17 @@ class Regressions(unittest.TestCase):
         self.assertTrue(pyprepro.pyprepro("$ a $", inline="$ $", env={"a": 1}) == "1")
         self.assertTrue(pyprepro.pyprepro("$@$ a $@$", inline="$@$ $@$", env={"a": 1}) == "1")
         self.assertTrue(pyprepro.pyprepro("% a = 1\n@ a @", inline="@ @",) == "1")
-        
+
+        ## Inline
+        self.assertTrue(pyprepro.pyprepro(dedent(
+                    """
+                    # PYPREPRO_INLINE @ @
+                    % a = 1
+                    @ a @""")).strip() == '1')
+
         
         
 if __name__ == '__main__':
     unittest.main()
-    #breakpoint()
-# 
-#     # Run all tests
-#     failed = []
-#     for name,test in [(n,l) for n,l in locals().copy().items() if callable(l) and n.startswith('test_')]:
-#         try:
-#             test()        
-#             print('Passed: ' + name)
-#         except Exception as E:
-#             print('FAILED: ' + name)
-#             print(' Exception',E)
-#             failed.append(name)
-#     
-#     print('-'*40)
-#     if len(failed) == 0:
-#         print('SUCCESS')
-#     else:
-#         for name in failed:
-#             print('FAILED: ' + name)
-# #     sys.exit()
-
 
 

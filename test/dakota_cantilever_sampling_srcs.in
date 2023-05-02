@@ -4,8 +4,8 @@
 environment
    results_output                                              
       hdf5                                                     
-        results_output_file = 'cantilever_samling_srcs_s0'        #s0
-#       results_output_file = 'cantilever_samling_srcs_s1'        #s1
+        results_output_file = 'cantilever_sampling_srcs_s0'        #s0
+#       results_output_file = 'cantilever_sampling_srcs_s1'        #s1
 
 method
   sampling

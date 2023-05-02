@@ -1052,9 +1052,9 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 }
 
 
-/** This version used by ACV following approx_increment() */
+/** This version used by ACV, GenACV following approx_increment() */
 void NonDACVSampling::
-accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& N_L_refined,
+accumulate_acv_sums(IntRealMatrixMap& sum_L, Sizet2DArray& N_L_actual,
 		    const RealVector& fn_vals, size_t approx)
 {
   // uses one set of allResponses with QoI aggregation across all Models,
@@ -1068,16 +1068,16 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& N_L_refined,
 
     // Low accumulations:
     if (isfinite(lf_fn)) {
-      ++N_L_refined[approx][qoi];
-      IntRMMIter lr_it = sum_L_refined.begin();
-      int  lr_ord  = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
+      ++N_L_actual[approx][qoi];
+      IntRMMIter lr_it = sum_L.begin();
+      int  lr_ord  = (lr_it == sum_L.end()) ? 0 : lr_it->first;
       Real lf_prod = lf_fn;  int active_ord = 1;
       while (lr_ord) {
 
 	// Low refined
 	if (lr_ord == active_ord) { // support general key sequence
 	  lr_it->second(qoi,approx) += lf_prod;  ++lr_it;
-	  lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
+	  lr_ord = (lr_it == sum_L.end()) ? 0 : lr_it->first;
 	}
 
 	lf_prod *= lf_fn;  ++active_ord;

@@ -1,0 +1,12 @@
+$ PYPREPRO_CODE >>
+// DPREPRO_INLINE [[ ]]
+# PYPREPRO_CODE_BLOCK=((5 6))
+>> val = Immutable(2)
+New val: [[ val = 4 ]] # 2
+((5 
+val = Mutable(val)
+val = 3 
+6))
+New val: [[ val ]] # 3
+New Val [[ val = 9 ]] # 9
+

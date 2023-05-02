@@ -3590,11 +3590,10 @@ void NonDExpansion::archive_moments()
 	  
     if (exp_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
-
       for (int i = 0; i < numFunctions; ++i) {
         DimScaleMap scales;
-        scales.emplace(0, StringScale("moments", 
-                             {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
+        scales.emplace(0, StringScale("moments",	
+			     {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
                              ScaleScope::SHARED));
         RealVector moments;
         if(finalMomentsType == Pecos::CENTRAL_MOMENTS) {
@@ -3611,13 +3610,11 @@ void NonDExpansion::archive_moments()
     if (num_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_num,
           num_matrix, md_moments);
-      
       for (int i = 0; i < numFunctions; ++i) {
         DimScaleMap scales;
-        scales.emplace(0,
-            StringScale("moments",
-            {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
-            ScaleScope::SHARED));
+        scales.emplace(0, StringScale("moments",
+			     {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
+                             ScaleScope::SHARED));
         RealVector moments;
         if(finalMomentsType == Pecos::CENTRAL_MOMENTS) {
           moments = poly_approxs[i].numerical_integration_moments();
@@ -3692,9 +3689,9 @@ void NonDExpansion::archive_sobol_indices() {
       if (covarianceControl == FULL_COVARIANCE)
         assert(respCovariance(i,i) >= 0.0 );
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
-			    Pecos::is_small(std::sqrt(respVariance[i])),approx_i.mean() ) ||
+			    Pecos::is_small(std::sqrt(respVariance[i]),approx_i.mean()) ) ||
 			  ( covarianceControl   == FULL_COVARIANCE &&
-			    Pecos::is_small(std::sqrt(respCovariance(i,i)),approx_i.mean())) )
+			    Pecos::is_small(std::sqrt(respCovariance(i,i)),approx_i.mean()) ) )
 	              ? false : true;
       if (well_posed) {
 	const RealVector& total_indices = approx_i.total_sobol_indices();

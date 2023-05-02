@@ -104,8 +104,7 @@ protected:
 			   Sizet2DArray& N_L_refined,
 			   const SizetArray& approx_sequence,
 			   size_t approx_start, size_t approx_end);
-  void accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
-			   Sizet2DArray& N_L_refined,
+  void accumulate_acv_sums(IntRealMatrixMap& sum_L, Sizet2DArray& N_L_actual,
 			   const RealVector& fn_vals, size_t approx);
 
   bool acv_approx_increment(const DAGSolutionData& soln,

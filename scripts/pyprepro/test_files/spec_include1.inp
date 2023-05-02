@@ -1,0 +1,11 @@
+% PYPREPRO_CODE #
+$ PYPREPRO_INLINE {{ }}
+# DPREPRO_CODE_BLOCK = $$ $$
+@ 1, set val0 = {{ val0 = 1 }} and val1 = {{ val1 = 2 }}
+$$ levels[1] = 101  $$
+Levels: {{levels}}
+---
+# include('spec_include2.inp')
+
++++
+@1 {{levels}}

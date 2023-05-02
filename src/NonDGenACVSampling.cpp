@@ -545,7 +545,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
       if (acv_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
 			       mlmfIter, approx_sequence, start, end)) {
 	increment_equivalent_cost(numSamples, sequenceCost, approx_sequence,
-				  0, end, equivHFEvals);
+				  start, end, equivHFEvals);
 	accumulate_acv_sums(sum_L_refined, N_L_actual_refined,
 			    approx_sequence, start, end);
 	accumulate_genacv_sums(sum_L_shared, N_L_actual_shared,
@@ -1056,26 +1056,41 @@ accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared, Sizet2DArray& N_L_shared,
 {
   // Based on active DAG for [start,end), precompute the set of models for
   // which to update {sum,N}_L_shared with this sample increment
-  // > the  "shared" accumulations define the z_i^1 sample sets
-  // > the "refined" accumulations define the z_i^2 sample sets
-  UShortSet z1_sets;  size_t s, approx;  unsigned short node;
-  bool ordered = approx_sequence.empty();
+  // > the  "shared" accumulations define the z^1_s sample sets (here)
+  // > the "refined" accumulations define the z^2_s sample sets (other fns)
+  UShortSet accum_z1_sets;  size_t s;  unsigned short source, target;
   const UShortArray& active_dag = *activeDAGIter;
-  for (s=sequence_start; s<sequence_end; ++s) {
-    approx = (ordered) ? s : approx_sequence[s];
-    node = active_dag[approx];
-    if (node >= sequence_start && node < sequence_end) // *** TO DO: verify one step is sufficient given r_i ordering
-      z1_sets.insert(node);
+  if (approx_sequence.empty())
+    for (s=sequence_start; s<sequence_end; ++s) {
+      source = s; target = active_dag[s];
+      // if the CV target for model s is part of the models being sampled,
+      // then we will increment its z^1 "shared" accumulators
+      if (target >= sequence_start && target < sequence_end)
+	accum_z1_sets.insert(source);
+    }
+  else {
+    UShortSet approx_set;
+    for (s=sequence_start; s<sequence_end; ++s)
+      approx_set.insert(approx_sequence[s]);
+    for (s=sequence_start; s<sequence_end; ++s) {
+      source = approx_sequence[s]; target = active_dag[source];
+      if (approx_set.find(target) != approx_set.end())
+	accum_z1_sets.insert(source);
+    }
   }
+  //Cout << "For sequence end = " << sequence_end
+  //     << " accum_z1_sets =\n" << accum_z1_sets << std::endl;
 
   // uses one set of allResponses with QoI aggregation across all Models,
   // led by the approx Model responses of interest
-  IntRespMCIter r_it;  UShortSet::iterator d_it;
+  IntRespMCIter r_it;  UShortSet::iterator z1_it;
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const RealVector& fn_vals = r_it->second.function_values();
-    // shared at dependent nodes:
-    for (d_it=z1_sets.begin(); d_it!=z1_sets.end(); ++d_it)
-      accumulate_acv_sums(sum_L_shared, N_L_shared, fn_vals, *d_it); // *** TO DO: these accumulations are redundant -- > could rework to accumulate once and then deploy to multiple roll-ups
+    // shared z^1 at dependent nodes:
+    for (z1_it=accum_z1_sets.begin(); z1_it!=accum_z1_sets.end(); ++z1_it)
+      accumulate_acv_sums(sum_L_shared, N_L_shared, fn_vals, *z1_it);
+    // *** TO DO: these accumulations are redundant --> prefer to accumulate
+    // ***        once and then add contribution to multiple roll-ups
   }
 }
 
