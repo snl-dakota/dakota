@@ -1,7 +1,7 @@
 # Configure the Dakota version, stable build indicator, and release date 
 
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 17)
+set(Dakota_VERSION_MINOR 18)
 set(Dakota_VERSION_PATCH 0)
 
 # Toggle this to append to the version number for stable
