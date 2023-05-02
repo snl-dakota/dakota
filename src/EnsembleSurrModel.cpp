@@ -62,6 +62,17 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   //   so a responseMode update is enforced.
   responseMode = AGGREGATED_MODELS;  // was previously same default as DFSModel
   assign_default_keys(responseMode); // default keys for default mode
+  if (parallelLib.mpirun_flag()) // conservative size (aggregated) for now
+    modeKeyBufferSize = server_buffer_size(responseMode, activeKey);
+
+  // deltaCorr is re-initialized within active_model_key(), but here we define
+  // a default correction instance for use by methods that don't update active
+  // keys (e.g., NonDBayesCalibration).  Since AGGREGATED_MODELS is set above
+  // as a conservative choice, we suppress the mode switch:
+  //switch (mode) {
+  //case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
+  initialize_correction(); //break;
+  //}
 
   // Ensemble surrogate models pass through numerical derivatives
   supportsEstimDerivs = false;
@@ -158,25 +169,6 @@ void EnsembleSurrModel::assign_default_keys(short mode)
   // would prefer to synchronize for initialization, but defer since iterator
   // server processors do not yet have access to the responseMode:
   //resize_response();  resize_maps();
-
-  /* Defer and rely on deltaCorr initializations in active_model_key():
-  switch (mode) {
-  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
-    // Correction is required for some responseModes.  Enforcement of a
-    // correction type for these modes occurs in surrogate_response_mode().
-    if (corrType) // initialize DiscrepancyCorrection using initial keys
-      deltaCorr[activeKey].initialize(active_surrogate_model(0),
-				      surrogateFnIndices, corrType, corrOrder);
-    break;
-  }
-  //truthResponseRef[truthModelKey] = currentResponse.copy();
-  */
-
-  if (parallelLib.mpirun_flag()) {
-    MPIPackBuffer send_buff;  short mode(0);
-    send_buff << mode << activeKey; // serve_run() recvs single | aggregate key
-    modeKeyBufferSize = send_buff.size();
-  }
 
   check_model_interface_instance();
 }
@@ -1431,12 +1423,8 @@ void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
   switch (responseMode) {
   case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE: {
     unsigned short lf_form = surrModelKeys[0].retrieve_model_form();
-    if (lf_form != USHRT_MAX) {// LF form def'd
-      DiscrepancyCorrection& delta_corr = deltaCorr[key]; // per data group
-      if (!delta_corr.initialized())
-	delta_corr.initialize(active_surrogate_model(0), surrogateFnIndices,
-			      corrType, corrOrder);
-    }
+    if (lf_form != USHRT_MAX) // LF form def'd
+      initialize_correction();
     break;
   }
   }

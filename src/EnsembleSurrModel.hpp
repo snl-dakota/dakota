@@ -385,6 +385,11 @@ private:
   /// identified by current {low,high}FidelityKey
   void check_model_interface_instance();
 
+  /// compute modeKeyBufferSize
+  int server_buffer_size(short mode, const Pecos::ActiveKey& key);
+  /// initialize deltaCorr[activeKey]
+  void initialize_correction();
+
   /// stop the servers for the model instance identified by the passed id
   void stop_model(short model_id);
 
@@ -630,7 +635,8 @@ inline size_t EnsembleSurrModel::count_id_maps(const IntIntMapArray& id_maps)
 }
 
 
-inline void EnsembleSurrModel::surrogate_response_mode(short mode)
+inline void EnsembleSurrModel::
+surrogate_response_mode(short mode)//, bool update_keys)
 {
   if (responseMode == mode) return;
 
@@ -672,12 +678,36 @@ inline void EnsembleSurrModel::surrogate_response_mode(short mode)
   // if no keys yet, assign default ones for purposes of initialization;
   // these will be replaced at run time
   // > unnecessary if ctor call to assign_default_keys() is active
-  //if (truthModelKey.empty() && surrModelKeys.empty())
-  //  assign_default_keys(mode);
+  //if (update_keys)
+  if (truthModelKey.empty() && surrModelKeys.empty())
+    assign_default_keys(mode);
 
   // Defer: surrogate_response_mode() generally precedes activation of keys
   //if (resize_for_mode)
   //  { resize_response(); resize_maps(); }
+}
+
+
+inline int EnsembleSurrModel::
+server_buffer_size(short mode, const Pecos::ActiveKey& key)
+{
+  MPIPackBuffer send_buff;
+  send_buff << mode << key; // serve_run() recvs single | aggregate key
+  return send_buff.size();
+}
+
+
+inline void EnsembleSurrModel::initialize_correction()
+{
+  // Correction is required for some responseModes.  Enforcement of a
+  // correction type for these modes occurs in surrogate_response_mode().
+  if (corrType) { // initialize DiscrepancyCorrection using active key
+    DiscrepancyCorrection& delta_corr = deltaCorr[activeKey]; // per data group
+    if (!delta_corr.initialized())
+      delta_corr.initialize(active_surrogate_model(0), surrogateFnIndices,
+			    corrType, corrOrder);
+  }
+  //truthResponseRef[truthModelKey] = currentResponse.copy();
 }
 
 
