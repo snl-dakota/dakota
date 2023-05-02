@@ -9,7 +9,7 @@
    Remove :orphan: above if promoting this page.
 
 """"""""""""""""""""""""""""""""""""""
-Version 6.18 (2023/05/15; pre-release)
+Version 6.18 (2023/05/15)
 """"""""""""""""""""""""""""""""""""""
 
 **Highlight: Feature A**
@@ -40,6 +40,10 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 *Interfaces, Input/Output*
 
+- dprepro/pyprepro command delimiters can be specified 
+  :ref:`within templates<interfaces:changing-delimiters>`
+  instead of only as command line arguments.
+
 *Models*
 
 *Optimization Methods*
@@ -56,27 +60,29 @@ Standardized Regression Coefficients - Russell should add detail.
  
 **Miscellaneous Enhancements and Bugfixes**
 
-- Enh:
+- Enh: The text of links to Dakota keywords in the Keyword documentation was
+  updated to be prettier.
 
 - Bug fix: Correlation matrices now receive the correct variable labels
   in studies that include variables from more than one category (e.g. mixture
   of design and aleatory uncertain).
 
 - Bug fix: Standard moments are now written correctly to HDF5 for stochastic
-  expansion methods
+  expansion methods. Previously central moments were always written, regardless
+  of user selection.
+
+- Bug fix: Moments for stochastic expansions were written to HDF5 with erroneous
+  dimension scale labels for many platforms. This issue has been fixed.
 
 - Bug fix: No datasets are written to HDF5 for PDFs for zero-variance responses.
   This matches the console output. Previously, empty datasets were written.
-
 
 
 **Deprecated and Changed**
 
 **Compatibility**
 
-- Dakota's snapshot of Trilinos is now version 13.4.
-- Dakota now requires C++14 to build.
-- There are no further changes to TPLs or requirements for
+- There are no changes to TPLs or requirements for
   this release.
 
 **Other Notes and Known Issues**
