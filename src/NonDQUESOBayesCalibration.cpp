@@ -505,7 +505,7 @@ void NonDQUESOBayesCalibration::cache_chain()
     // model, but it's type may be a ProbabilityTransform wrapper if
     // standardizedSpace is active.  mcmcModelHasSurrogate controls
     // model re-evals.  This is not sufficiently general, e.g., if the
-    // mcmcModel is a HierarchSurrModel, could perform costly re-eval.
+    // mcmcModel is an EnsembleSurrModel, could perform costly re-eval.
 
     // TODO: Consider doing lookup first, then surrogate re-eval, or
     // querying a more complete eval database when available...

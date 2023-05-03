@@ -104,7 +104,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     }
   }
 
-  // Want to define this at construct time for use in HierarchSurrModel::
+  // Want to define this at construct time for use in EnsembleSurrModel::
   // create_tabular_datastream().  Note that MLCV will have two overlapping
   // assignments, one from the CV ctor (first) that is then overwritten by
   // this ctor (second).  Alternatively we could protect this call with
@@ -113,9 +113,6 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
 }
 
 
-/** The primary run function manages the general case: a hierarchy of model 
-    forms (from the ordered model fidelities within a HierarchSurrModel), 
-    each of which may contain multiple discretization levels. */
 void NonDMultilevelSampling::core_run()
 {
   if (allocationTarget == TARGET_SCALARIZATION && scalarizationCoeffs.empty()) {

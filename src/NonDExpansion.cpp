@@ -1316,7 +1316,7 @@ void NonDExpansion::assign_modes()
 void NonDExpansion::assign_surrogate_response_mode()
 {
   // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // comms for the ordered Models within EnsembleSurrModel::set_communicators(),
   // which precedes mode updates in {multifidelity,multilevel}_expansion().
 
   // ML-MF {PCE,SC,FT} are based on model discrepancies, but multi-index cases

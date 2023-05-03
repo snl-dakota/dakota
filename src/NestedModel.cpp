@@ -1508,7 +1508,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
   nestedResponseMap.clear();
 
   // TO DO: optInt/subIter scheduling is currently sequential, but could be
-  // overlapped as in HierarchSurrModel, given IteratorScheduler nowait support
+  // overlapped as in EnsembleSurrModel, given IteratorScheduler nowait support
 
   IntIntMIter id_it; IntRespMCIter r_cit;
   if (!optInterfacePointer.empty()) {

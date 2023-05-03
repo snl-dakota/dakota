@@ -257,7 +257,7 @@ protected:
   void asv_split(const ShortArray& orig_asv, Short2DArray& indiv_asv);
 
   /// initialize truth and surrogate model keys to default values
-  void assign_default_keys();
+  void assign_default_keys(short mode);
   /// size id_maps and cached_resp_maps arrays according to responseMode
   void resize_maps();
   /// resize currentResponse based on responseMode
@@ -385,6 +385,11 @@ private:
   /// identified by current {low,high}FidelityKey
   void check_model_interface_instance();
 
+  /// compute modeKeyBufferSize
+  int server_buffer_size(short mode, const Pecos::ActiveKey& key);
+  /// initialize deltaCorr[activeKey]
+  void initialize_correction();
+
   /// stop the servers for the model instance identified by the passed id
   void stop_model(short model_id);
 
@@ -486,8 +491,7 @@ inline void EnsembleSurrModel::
 inflate(const StringArray& labels, size_t num_replicates,
 	StringArray& new_labels) const
 {
-  size_t i, num_labels = labels.size(),
-    num_new = num_labels * num_replicates;
+  size_t i, num_labels = labels.size(), num_new = num_labels * num_replicates;
   new_labels.resize(num_new);
   for (size_t i=0; i<num_new; ++i)
     new_labels[i] = labels[i % num_labels];
@@ -593,7 +597,7 @@ multifidelity_precedence(bool mf_prec, bool update_default)
 {
   if (mfPrecedence != mf_prec) {
     mfPrecedence = mf_prec;
-    if (update_default) assign_default_keys();
+    if (update_default) assign_default_keys(responseMode);
   }
 }
 
@@ -631,27 +635,79 @@ inline size_t EnsembleSurrModel::count_id_maps(const IntIntMapArray& id_maps)
 }
 
 
-inline void EnsembleSurrModel::surrogate_response_mode(short mode)
+inline void EnsembleSurrModel::
+surrogate_response_mode(short mode)//, bool update_keys)
 {
   if (responseMode == mode) return;
-  else responseMode = mode;
 
-  // Trap the combination of no user correction specification with either
-  // AUTO_CORRECTED_SURROGATE (NO_CORRECTION defeats the point for HSModel) or
-  // MODEL_DISCREPANCY (which formulation for computing discrepancy?) modes.
-  if ( !corrType && ( mode == AUTO_CORRECTED_SURROGATE ||
-		      mode == MODEL_DISCREPANCY ) ) {
-    Cerr << "Error: activation of mode ";
-    if (mode == AUTO_CORRECTED_SURROGATE) Cerr << "AUTO_CORRECTED_SURROGATE";
-    else                                  Cerr << "MODEL_DISCREPANCY";
-    Cerr << " requires specification of a correction type." << std::endl;
-    abort_handler(MODEL_ERROR);
+  // Note: resize_{response,maps} can require information from {truth,surr}
+  // model keys, so we defer resizing until active_model_key(), which
+  // generally occurs downstream from (sometimes immediately after) this
+  // function.  Iterator::initialize_graphics() --> EnsembleSurrModel::
+  // create_tabular_datastream() requires care due to this ordering.
+  //
+  // tests for outgoing mode:
+  //bool resize_for_mode = false;
+  //if (responseMode == AGGREGATED_MODELS ||
+  //    responseMode == AGGREGATED_MODEL_PAIR)
+  //  resize_for_mode = true;
+
+  // now assign new mode
+  responseMode = mode;
+
+  // updates for incoming mode:
+  switch (mode) {
+  case AUTO_CORRECTED_SURROGATE: case MODEL_DISCREPANCY:
+    // Trap the omission of a correction specification
+    if (!corrType) {
+      Cerr << "Error: activation of mode ";
+      if (mode == AUTO_CORRECTED_SURROGATE) Cerr << "AUTO_CORRECTED_SURROGATE";
+      else                                  Cerr << "MODEL_DISCREPANCY";
+      Cerr << " requires specification of a correction type." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    break;
+  case BYPASS_SURROGATE:
+    // don't propagate to approx models since point of a surrogate bypass
+    // is to get a surrogate-free truth evaluation
+    truthModel.surrogate_response_mode(mode);  break;
+  //case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR:
+  //  resize_for_mode = true;                    break;
   }
 
-  // don't pass to approx models since point of a surrogate bypass is to get
-  // a surrogate-free truth evaluation
-  if (mode == BYPASS_SURROGATE) // recurse in this case
-    truthModel.surrogate_response_mode(mode);
+  // if no keys yet, assign default ones for purposes of initialization;
+  // these will be replaced at run time
+  // > unnecessary if ctor call to assign_default_keys() is active
+  //if (update_keys)
+  if (truthModelKey.empty() && surrModelKeys.empty())
+    assign_default_keys(mode);
+
+  // Defer: surrogate_response_mode() generally precedes activation of keys
+  //if (resize_for_mode)
+  //  { resize_response(); resize_maps(); }
+}
+
+
+inline int EnsembleSurrModel::
+server_buffer_size(short mode, const Pecos::ActiveKey& key)
+{
+  MPIPackBuffer send_buff;
+  send_buff << mode << key; // serve_run() recvs single | aggregate key
+  return send_buff.size();
+}
+
+
+inline void EnsembleSurrModel::initialize_correction()
+{
+  // Correction is required for some responseModes.  Enforcement of a
+  // correction type for these modes occurs in surrogate_response_mode().
+  if (corrType) { // initialize DiscrepancyCorrection using active key
+    DiscrepancyCorrection& delta_corr = deltaCorr[activeKey]; // per data group
+    if (!delta_corr.initialized())
+      delta_corr.initialize(active_surrogate_model(0), surrogateFnIndices,
+			    corrType, corrOrder);
+  }
+  //truthResponseRef[truthModelKey] = currentResponse.copy();
 }
 
 
@@ -827,7 +883,8 @@ active_surrogate_model_form(size_t i) const
   if (i == _NPOS)
     return USHRT_MAX; // defer error/warning/mitigation to calling code
   else if (i >= surrModelKeys.size()) { // hard error
-    Cerr << "Error: model form (" << i << ") out of range in "
+    Cerr << "Error: model form index (" << i << ") out of range ("
+	 << surrModelKeys.size() << " active surrogate models) in "
 	 << "EnsembleSurrModel::active_surrogate_model_form()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
@@ -1073,9 +1130,9 @@ inline void EnsembleSurrModel::resize_from_subordinate_model(size_t depth)
     else if (depth)
       truth_model.resize_from_subordinate_model(depth - 1);
   }
-  // now resize this Models' response
+  // now resize this Model's response
   if (all_approx_resize || approx0_resize || truth_resize)
-    resize_response();
+    resize_response(); // resize_maps() ?
 }
 
 

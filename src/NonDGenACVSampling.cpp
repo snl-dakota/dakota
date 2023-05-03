@@ -36,12 +36,12 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDACVSampling(problem_db, model),
   dagRecursionType(problem_db.get_short("method.nond.search_model_graphs")),
   dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit")),
-  modelSelectType(NO_MODEL_SELECTION) //(ALL_MODEL_COMBINATIONS)
+  modelSelectType(NO_MODEL_SELECTION)//(ALL_MODEL_COMBINATIONS)
 {
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
   if (dagRecursionType == FULL_GRAPH_RECURSION) dagDepthLimit = numApprox;
   generate_dags();
-  bestDAGIter = modelDAGs.end();
+  bestModelSetIter = modelDAGs.end();
 }
 
 
@@ -51,67 +51,100 @@ NonDGenACVSampling::~NonDGenACVSampling()
 
 void NonDGenACVSampling::generate_dags()
 {
+  UShortArray nodes(numApprox), dag;  size_t i;
+  for (i=0; i<numApprox; ++i) nodes[i] = i;
+  unsigned short root = numApprox;
+
   /* For verification of consistency with MFMC,ACV:
-  UShortArray std_dag(numApprox);
-  //for (size_t i=0; i<numApprox; ++i)  std_dag[i] = i+1; // MFMC
-  std_dag.assign(numApprox, numApprox); // ACV
-  modelDAGs.insert(std_dag);
+  //dag.resize(numApprox); for (i=0; i<numApprox; ++i) dag[i] = i+1; // MFMC
+  dag.assign(numApprox, numApprox); // ACV
+  modelDAGs[nodes].insert(dag);
   return;
   */
 
   // zero root directed acyclic graphs
   switch (dagRecursionType) {
   case KL_GRAPH_RECURSION: {
-    size_t i, K, L, M_minus_K;  UShortArray dag(numApprox);
+    // ***
+    // *** TO DO: add model set enumeration for ACV-KL as well...
+    // ***
+
+    size_t K, L, M_minus_K;
     // Dakota low-to-high ordering (enumerate valid KL values and convert)
+    UShortArraySet& dag_set = modelDAGs[nodes];
+    dag_set.clear();  dag.resize(numApprox);
     for (K=0; K<=numApprox; ++K) {
       M_minus_K = numApprox - K;
 
       // K highest fidelity approximations target root (numApprox):
-      for (i=M_minus_K; i<numApprox; ++i) dag[i] = numApprox;
+      for (i=M_minus_K; i<numApprox; ++i) dag[i] = root;
       // JCP ordering: for (i=0; i<K; ++i) dag[i] = 0; // root = 0
 
       for (L=0; L<=K; ++L) { // ordered single recursion
-	// M-K lowest fidelity approximations target numApprox - L:
-	for (i=0; i<M_minus_K; ++i)       dag[i] = numApprox - L;
+	// M-K lowest fidelity approximations target root - L:
+	for (i=0; i<M_minus_K; ++i)       dag[i] = root - L;
 	// JCP ordering: for (i=K; i<numApprox; ++i) dag[i] = L;
 
-	modelDAGs.insert(dag);
+	dag_set.insert(dag);
       }
     }
     break;
   }
-  default: {
-    UShortArray nodes, dag;  unsigned short root = numApprox;  size_t i;
+  default:
     switch (modelSelectType) {
     case ALL_MODEL_COMBINATIONS: {
       // tensor product of order 1 to enumerate approximation inclusion
       UShort2DArray tp;  UShortArray tp_orders(numApprox, 1);
       Pecos::SharedPolyApproxData::
 	tensor_product_multi_index(tp_orders, tp, true);
-      size_t j, num_tp = tp.size();
+      //Cout << "tp mi:\n" << tp;
+      size_t j, num_tp = tp.size();  unsigned short dag_size;
 
-      // Two discrete enumeration options here:
-      // > map<UShortArray,UShortArraySet> to associate pruned DAGs to nodes
-      // > keep DAG size at numApprox and use USHRT_MAX for omitted approx
+      // Two enumeration options here:
+      // > map<UShortArray,UShortArraySet> to associate pruned node sets to DAGs
+      // > keep node set size at numApprox and use USHRT_MAX for omitted models
 
-      /* Compacted version requires map from nodes --> DAG set
-      unsigned short dag_size;
+      // Option 1:
+      // Pre-compute generate_sub_trees() for each dag_size (0:numApprox)
+      std::vector<UShortArraySet> nominal_dags(numApprox+1); // include size 0
+      for (j=0; j<numApprox; ++j) nodes[j] = j;
+      for (dag_size=numApprox; dag_size>=1; --dag_size) {
+	nodes.resize(dag_size); // discard trailing node
+	dag.assign(dag_size, USHRT_MAX);
+	generate_sub_trees(dag_size, nodes, std::min(dag_size, dagDepthLimit),
+			   dag, nominal_dags[dag_size]);
+      }
+      // Now map each set of active model nodes through the nominal dags
+      UShortArray mapped_dag;
+      UShortArraySet::const_iterator cit;  unsigned short nom_dag_j;
       for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
 	const UShortArray& tp_i = tp[i];
 	nodes.clear();
-	for (j=0, dag_size=0; j<numApprox; ++j)
-	  if (tp_i[j]) { nodes.push_back(j); ++dag_size; }
-	dag.assign(dag_size, USHRT_MAX);
-	// recur for dag with a subset of approximations:
-	Cout << "\ngenerate_dags(): depth = " << dagDepthLimit
-	     << " root = " << root << " nodes =\n" << nodes << std::endl;
-	generate_sub_trees(root, nodes, dagDepthLimit, dag, dag_set);
-	modelDAGS[nodes] = dag_set;
+	for (j=0; j<numApprox; ++j)
+	  if (tp_i[j]) nodes.push_back(j);
+	dag_size = nodes.size();
+	mapped_dag.resize(dag_size);
+	const UShortArraySet& nominal_set = nominal_dags[dag_size];
+	UShortArraySet& mapped_set = modelDAGs[nodes];	mapped_set.clear();
+	for (cit=nominal_set.begin(); cit!=nominal_set.end(); ++cit) {
+	  const UShortArray& nominal_dag = *cit;
+	  for (j=0; j<dag_size; ++j) {
+	    nom_dag_j = nominal_dag[j];
+	    mapped_dag[j] = (nom_dag_j < dag_size) ? nodes[nom_dag_j] : root;
+	  }
+	  //Cout << "nominal_dag =\n" << nominal_dag
+	  //     << "mapped_dag  =\n" << mapped_dag << std::endl;
+	  mapped_set.insert(mapped_dag);
+	}	  
+	Cout << "For model set:\n" << nodes
+	     << "searching array of DAGs of size " << mapped_set.size();
+	if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << mapped_set;//<< '\n';
+	else                             Cout << ".\n";
       }
-      */
+      Cout << std::endl;
 
-      // 
+      /* Option 2:
+      nodes.resize(numApprox);
       for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
 	const UShortArray& tp_i = tp[i];
 	for (j=0; j<numApprox; ++j)
@@ -122,8 +155,9 @@ void NonDGenACVSampling::generate_dags()
 	dag.assign(numApprox, USHRT_MAX);
 	generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
       }
+      */
 
-      exit(0);
+      //exit(0); // not yet supported downstream
 
       break;
     }
@@ -135,29 +169,30 @@ void NonDGenACVSampling::generate_dags()
     case NO_MODEL_SELECTION:
       // root node (truth index = numApprox) and set of dependent nodes
       // (approximation model indices 0,numApprox-1) are fixed
-      nodes.resize(numApprox);  for (i=0; i<numApprox; ++i) nodes[i] = i;
+      for (i=0; i<numApprox; ++i) nodes[i] = i;
       dag.assign(numApprox, USHRT_MAX);
       // recur for DAG including all approximations:
-      generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
+      UShortArraySet& dag_set = modelDAGs[nodes];
+      generate_sub_trees(root, nodes, dagDepthLimit, dag, dag_set);
+      Cout << "Searching array of model DAGs of size " << dag_set.size();
+      if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;
+      else                             Cout << ".\n";
+      Cout << std::endl;
       break;
     }
     break;
   }
-  }
-
-  Cout << "Searching array of model DAGs of size " << modelDAGs.size();
-  if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << modelDAGs;
-  Cout << std::endl;
 }
 
 
 void NonDGenACVSampling::
 generate_sub_trees(unsigned short root, const UShortArray& nodes,
 		   unsigned short depth, UShortArray& dag,
-		   UShortArraySet& model_dags)
+		   UShortArraySet& dag_set)
 {
-  // Modeled after Python DAG generator on stack overflow
-  // ("How to generate all trees having n-nodes and m-level depth")
+  // Modeled after Python DAG generator on stack overflow:
+  // https://stackoverflow.com/questions/52061669/how-to-generate-all-
+  //   trees-having-n-nodes-and-m-level-depth-the-branching-factor
 
   //Cout << "\nRecurring into generate_sub_trees(): depth = " << depth
   //     << " root = " << root << " nodes =\n" << nodes << std::endl;
@@ -165,13 +200,13 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
   size_t i, num_nodes = nodes.size();
   if (nodes.empty()) {
     // suppress some duplicates for sub_nodes with empty sub_nodes_per_root
-    //model_dags.insert(dag);
+    //dag_set.insert(dag);
     return;
   }
   else if (depth <= 1) {
     for (i=0; i<num_nodes; ++i) dag[nodes[i]] = root;
     //Cout << "Recursion hit bottom.  Inserting:\n" << dag;
-    model_dags.insert(dag); // insert completed DAG
+    dag_set.insert(dag); // insert completed DAG
     return;
   }
 
@@ -196,7 +231,7 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
     }
     if (sub_nodes.empty()) { // optimize out unnecessary recursion
       //Cout << "Recursion out of nodes.  Inserting:\n" << dag;
-      model_dags.insert(dag); // insert completed DAG
+      dag_set.insert(dag); // insert completed DAG
     }
     else {
       num_sub_roots = sub_roots.size();  num_sub_nodes = sub_nodes.size();
@@ -217,7 +252,7 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
 	}
 	for (k=0; k<num_sub_roots; ++k)
 	  generate_sub_trees(sub_roots[k], sub_nodes_per_root[k], dm1, dag,
-			     model_dags);
+			     dag_set);
       }
     }
   }
@@ -227,13 +262,14 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
 void NonDGenACVSampling::generate_reverse_dag(const UShortArray& dag)
 {
   // define an array of source nodes that point to a given target
+  size_t i, dag_size = dag.size();
   reverseActiveDAG.clear();
-  reverseActiveDAG.resize(numApprox+1);
-  size_t i;  unsigned short dag_curr, dag_next;
-  for (i=0; i<numApprox; ++i) { // walk+store path to root
+  reverseActiveDAG.resize(dag_size + 1);
+  unsigned short dag_curr, dag_next;
+  for (i=0; i<dag_size; ++i) { // walk+store path to root
     dag_curr = i;  dag_next = dag[dag_curr];
     reverseActiveDAG[dag_next].insert(dag_curr);
-    while (dag_next != numApprox) {
+    while (dag_next != dag_size) {
       dag_curr = dag_next;  dag_next = dag[dag_curr];
       reverseActiveDAG[dag_next].insert(dag_curr);
     }
@@ -278,7 +314,7 @@ unroll_reverse_dag_from_root(unsigned short root,
   unsigned short node;  Real r_i;
   for (; l_it != default_root_list.end(); ++l_it) {
     node = *l_it;
-    r_i = (node == numApprox) ? 1. : avg_eval_ratios[node];
+    r_i = (node == root) ? 1. : avg_eval_ratios[node];
     root_ratios[r_i] = node;
   }
   // this ordered root_list intermingles dependency paths for purposes of
@@ -294,9 +330,6 @@ unroll_reverse_dag_from_root(unsigned short root,
 }
 
 
-/** The primary run function manages the general case: a hierarchy of model 
-    forms (from the ordered model fidelities within a HierarchSurrModel), 
-    each of which may contain multiple discretization levels. */
 void NonDGenACVSampling::core_run()
 {
   // Initialize for pilot sample
@@ -327,6 +360,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
+  std::pair<UShortArray, UShortArray> soln_key;
 
   Real avg_hf_target = 0., avg_N_H;
   while (numSamples && mlmfIter <= maxIterations) {
@@ -349,25 +383,34 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
 
     if (mlmfIter == 0) precompute_ratios(); // metrics not dependent on DAG
-    for (activeDAGIter  = modelDAGs.begin();
-	 activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
-      // sample set definitions are enabled by reversing the DAG direction:
-      const UShortArray& active_dag = *activeDAGIter;
-      if (outputLevel >= QUIET_OUTPUT)
-	Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
-      generate_reverse_dag(active_dag);
-      // compute the LF/HF evaluation ratios from shared samples and compute
-      // ratio of MC and ACV mean sq errors (which incorporates anticipated
-      // variance reduction from application of avg_eval_ratios).
-      DAGSolutionData& soln = dagSolns[active_dag];
-      compute_ratios(var_L, soln);
-      update_best(soln);// store state for restoration
-      //reset_acv(); // reset state for next ACV execution
+    for (activeModelSetIter  = modelDAGs.begin();
+	 activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
+      //  TO DO: create views of covLL,covLH or reuse existing indexing?
+      soln_key.first = activeModelSetIter->first;
+      const UShortArraySet& dag_set = activeModelSetIter->second;
+      for (activeDAGIter  = dag_set.begin();
+	   activeDAGIter != dag_set.end(); ++activeDAGIter) {
+	// sample set definitions are enabled by reversing the DAG direction:
+	const UShortArray& active_dag = *activeDAGIter;
+	if (outputLevel >= QUIET_OUTPUT)
+	  Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
+	generate_reverse_dag(active_dag);
+	// compute the LF/HF evaluation ratios from shared samples and compute
+	// ratio of MC and ACV mean sq errors (which incorporates anticipated
+	// variance reduction from application of avg_eval_ratios).
+	soln_key.second = active_dag;
+	DAGSolutionData& soln = dagSolns[soln_key];
+	compute_ratios(var_L, soln);
+	update_best(soln);// store state for restoration
+	//reset_acv(); // reset state for next ACV execution
+      }
     }
     restore_best();
+    soln_key.first  = activeModelSetIter->first;
+    soln_key.second = *activeDAGIter;
     if (truthFixedByPilot) numSamples = 0;
     else {
-      avg_hf_target = dagSolns[*activeDAGIter].avgHFTarget;
+      avg_hf_target = dagSolns[soln_key].avgHFTarget;
       avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
       numSamples = one_sided_delta(avg_N_H, avg_hf_target);
     }
@@ -376,7 +419,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  DAGSolutionData& soln = dagSolns[*activeDAGIter];
+  DAGSolutionData& soln = dagSolns[soln_key];
   if (finalStatsType == QOI_STATISTICS)
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
 		      N_H_alloc, soln);
@@ -412,22 +455,29 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
+  std::pair<UShortArray, UShortArray> soln_key;
 
   precompute_ratios(); // compute metrics not dependent on active DAG
-  for (activeDAGIter  = modelDAGs.begin();
-       activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
-    // sample set definitions are enabled by reversing the DAG direction:
-    const UShortArray& active_dag = *activeDAGIter;
-    if (outputLevel >= QUIET_OUTPUT)
-      Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
-    generate_reverse_dag(active_dag);
-    // compute the LF/HF evaluation ratios from shared samples and compute
-    // ratio of MC and ACV mean sq errors (which incorporates anticipated
-    // variance reduction from application of avg_eval_ratios).
-    DAGSolutionData& soln = dagSolns[active_dag];
-    compute_ratios(var_L, soln);
-    update_best(soln); // store state for restoration
-    //reset_acv(); // reset state for next ACV execution
+  for (activeModelSetIter  = modelDAGs.begin();
+       activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
+    soln_key.first = activeModelSetIter->first;
+    const UShortArraySet& dag_set = activeModelSetIter->second;
+    for (activeDAGIter  = dag_set.begin();
+	 activeDAGIter != dag_set.end(); ++activeDAGIter) {
+      // sample set definitions are enabled by reversing the DAG direction:
+      const UShortArray& active_dag = *activeDAGIter;
+      if (outputLevel >= QUIET_OUTPUT)
+	Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
+      generate_reverse_dag(active_dag);
+      // compute the LF/HF evaluation ratios from shared samples and compute
+      // ratio of MC and ACV mean sq errors (which incorporates anticipated
+      // variance reduction from application of avg_eval_ratios).
+      soln_key.second = active_dag;
+      DAGSolutionData& soln = dagSolns[soln_key];
+      compute_ratios(var_L, soln);
+      update_best(soln); // store state for restoration
+      //reset_acv(); // reset state for next ACV execution
+    }
   }
   restore_best();
   ++mlmfIter;
@@ -437,7 +487,9 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   // -----------------------------------
   // Only QOI_STATISTICS requires online shared/approx profile evaluation for
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  DAGSolutionData& soln = dagSolns[*activeDAGIter];
+  soln_key.first  = activeModelSetIter->first;
+  soln_key.second = *activeDAGIter;
+  DAGSolutionData& soln = dagSolns[soln_key];
   if (finalStatsType == QOI_STATISTICS) {
     if (truthFixedByPilot) numSamples = 0;
     else {
@@ -479,31 +531,41 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   compute_LH_statistics(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
 			N_H_actual, var_L, varH, covLL, covLH);
   N_H_alloc = numSamples;
+  std::pair<UShortArray, UShortArray> soln_key;
 
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
   precompute_ratios(); // compute metrics not dependent on active DAG
-  for (activeDAGIter  = modelDAGs.begin();
-       activeDAGIter != modelDAGs.end(); ++activeDAGIter) {
-    // sample set definitions are enabled by reversing the DAG direction:
-    const UShortArray& active_dag = *activeDAGIter;
-    if (outputLevel >= QUIET_OUTPUT)
-      Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
-    generate_reverse_dag(active_dag);
-    // compute the LF/HF evaluation ratios from shared samples and compute
-    // ratio of MC and ACV mean sq errors (which incorporates anticipated
-    // variance reduction from application of avg_eval_ratios).
-    DAGSolutionData& soln = dagSolns[active_dag];
-    compute_ratios(var_L, soln);
-    update_best(soln); // store state for restoration
-    //reset_acv(); // reset state for next ACV execution
+  for (activeModelSetIter  = modelDAGs.begin();
+       activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
+    //  TO DO: create views of covLL,covLH or reuse existing indexing?
+    soln_key.first = activeModelSetIter->first;
+    const UShortArraySet& dag_set = activeModelSetIter->second;
+    for (activeDAGIter  = dag_set.begin();
+	 activeDAGIter != dag_set.end(); ++activeDAGIter) {
+      // sample set definitions are enabled by reversing the DAG direction:
+      const UShortArray& active_dag = *activeDAGIter;
+      if (outputLevel >= QUIET_OUTPUT)
+	Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
+      generate_reverse_dag(active_dag);
+      // compute the LF/HF evaluation ratios from shared samples and compute
+      // ratio of MC and ACV mean sq errors (which incorporates anticipated
+      // variance reduction from application of avg_eval_ratios).
+      soln_key.second = active_dag;
+      DAGSolutionData& soln = dagSolns[soln_key];
+      compute_ratios(var_L, soln);
+      update_best(soln); // store state for restoration
+      //reset_acv(); // reset state for next ACV execution
+    }
   }
   restore_best();
   ++mlmfIter;
 
   // No LF increments or final moments for pilot projection
-  DAGSolutionData& soln = dagSolns[*activeDAGIter];
+  soln_key.first  = activeModelSetIter->first;
+  soln_key.second = *activeDAGIter;
+  DAGSolutionData& soln = dagSolns[soln_key];
   update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, N_H_actual,
 			   N_H_alloc, deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
@@ -638,7 +700,7 @@ genacv_approx_increment(const DAGSolutionData& soln,
   }
 
   // the approximation sequence can be managed within one set of jobs using
-  // a composite ASV with NonHierarchSurrModel
+  // a composite ASV with EnsembleSurrModel
   return approx_increment(iter, root, reverse_dag);
 }
 
@@ -1291,50 +1353,65 @@ void NonDGenACVSampling::update_best(DAGSolutionData& soln)
   // Update tracking of best result
 
   bool update = false;
-  if (bestDAGIter == modelDAGs.end())
+  if (bestModelSetIter == modelDAGs.end())
     update = true;
   else {
-    DAGSolutionData& best_soln = dagSolns[*bestDAGIter];
     Real avg_est_var = soln.avgEstVar;
     if (!valid_variance(avg_est_var)) // *** TO DO: problems could be hidden due to averaging --> consider a finer-grained badNumericsFlag triggered per QoI
       update = false;
-    else if (maxFunctionEvals == SZ_MAX)
-      update = (soln.equivHFAlloc < best_soln.equivHFAlloc);
-    else
-      update = (avg_est_var       < best_soln.avgEstVar);
+    else {
+      std::pair<UShortArray, UShortArray>
+	soln_key(bestModelSetIter->first, *bestDAGIter);
+      DAGSolutionData& best_soln = dagSolns[soln_key];
+      // *** TO DO: use a merit fn from nh_penalty_merit()
+      if (maxFunctionEvals == SZ_MAX)
+	update = (soln.equivHFAlloc < best_soln.equivHFAlloc);
+      else
+	update = (avg_est_var       < best_soln.avgEstVar);
+      //merit_fn = nh_penalty_merit(soln);
+      //update = (merit_fn < meritFnStar);
+    }
   }
   if (update) {
-    bestDAGIter = activeDAGIter;
+    bestModelSetIter = activeModelSetIter;
+    bestDAGIter      = activeDAGIter;
+    //meritFnStar    = merit_fn;
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Updating best DAG to:\n" << *bestDAGIter << std::endl;
+      Cout << "Updating best DAG to:\n" << *bestDAGIter << " for model set:\n"
+	   << activeModelSetIter->first << std::endl;
   }
 }
 
 
 void NonDGenACVSampling::restore_best()
 {
-  if (bestDAGIter == modelDAGs.end()) {
+  if (bestModelSetIter == modelDAGs.end()) {
     Cout << "Warning: best DAG has not been updated in restore_best().\n"
 	 << "         Last active DAG will be used." << std::endl;
     return;
   }
 
-  const UShortArray& best_dag = *bestDAGIter;
-  Cout << "\nBest solution from DAG:\n" << best_dag << std::endl;
-  DAGSolutionData& soln = dagSolns[best_dag];
+  const UShortArray& best_models = bestModelSetIter->first;
+  const UShortArray& best_dag    = *bestDAGIter;
+  Cout << "\nBest solution from DAG:\n" << best_dag << " for model set:\n"
+       << best_models << std::endl;
+  std::pair<UShortArray, UShortArray> soln_key(best_models, best_dag);
+  DAGSolutionData& best_soln = dagSolns[soln_key];
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nwith avg_eval_ratios =\n" << soln.avgEvalRatios
-	 << "and avg_hf_target = "       << soln.avgHFTarget << std::endl;
+    Cout << "\nwith avg_eval_ratios =\n" << best_soln.avgEvalRatios
+	 << "and avg_hf_target = "       << best_soln.avgHFTarget << std::endl;
 
   // restore best state for compute/archive/print final results
-  if (activeDAGIter != bestDAGIter) { // best is not most recent
-    activeDAGIter = bestDAGIter;
+  if (activeModelSetIter != bestModelSetIter ||
+      activeDAGIter      != bestDAGIter) { // best is not most recent
+    activeModelSetIter = bestModelSetIter;
+    activeDAGIter      = bestDAGIter;
     if (pilotMgmtMode != PILOT_PROJECTION && finalStatsType == QOI_STATISTICS) {
       //&& mlmfSubMethod != SUBMETHOD_ACV_MF) // approx_increments() for IS/RD
       generate_reverse_dag(best_dag);
       // now we can re-order roots based on final eval ratios solution for
       // evaluation of approx increments
-      unroll_reverse_dag_from_root(numApprox, soln.avgEvalRatios,
+      unroll_reverse_dag_from_root(numApprox, best_soln.avgEvalRatios,
 				   orderedRootList);
     }
   }
