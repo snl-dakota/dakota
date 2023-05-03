@@ -50,10 +50,12 @@ ModelInterface::ModelInterface( Optimizer* opt )
 
   auto& problem = opt->problem;
 
+  using Bounds = ROL::Bounds<Dakota::Real>;
+
   if( has_bound_constraint ) {
     auto l = Vector::make_from(dakotaModel.continuous_lower_bounds());
     auto u = Vector::make_from(dakotaModel.continuous_upper_bounds());
-    auto bnd = ROL::makePtr<ROL::Bounds>(l,u);
+    auto bnd = ROL::makePtr<Bounds>(l,u);
     problem->addBoundConstraint(bnd);
   }
 
@@ -66,7 +68,7 @@ ModelInterface::ModelInterface( Optimizer* opt )
     auto icon = makePtr<LinearInequalityConstraint>(this);
     auto l = Vector::make_from(dakotaModel.linear_ineq_constraint_lower_bounds());
     auto u = Vector::make_from(dakotaModel.linear_ineq_constraint_upper_bounds());
-    auto ibnd = ROL::makePtr<ROL::Bounds>(l,u);
+    auto ibnd = ROL::makePtr<Bounds>(l,u);
     problem->addLinearConstraint(icon->get_name(),icon,icon->make_lagrange_multiplier(),ibnd);
   }
 
@@ -79,13 +81,13 @@ ModelInterface::ModelInterface( Optimizer* opt )
     auto icon = makePtr<NonlinearInequalityConstraint>(this);
     auto l = Vector::make_from(dakotaModel.nonlinear_ineq_constraint_lower_bounds());
     auto u = Vector::make_from(dakotaModel.nonlinear_ineq_constraint_upper_bounds());
-    auto ibnd = ROL::makePtr<ROL::Bounds>(l,u);
+    auto ibnd = ROL::makePtr<Bounds>(l,u);
     problem->addConstraint(icon->get_name(),icon,icon->make_lagrange_multiplier(),ibnd);
   }
 
   // Set initial value of ROL::Problem optimization vector from Dakota::Model
   auto& x_opt = get_vector(problem->getPrimalOptimizationVector());
-  x_opt = model.continuous_variables();
+  x_opt = dakotaModel.continuous_variables();
 
   set_default_parameters(opt);
 
@@ -98,9 +100,9 @@ void ModelInterface::set_default_parameters( Optimizer* opt ) {
   // If the user has specified "no_hessians", tell ROL to use its own
   // Hessian approximation.
   auto& secant = general.sublist("Secant");
-  if (model.hessian_type() == "none") {
+  if (dakotaModel.hessian_type() == "none") {
     secant.set("Type", "Limited-Memory BFGS");
-    sectant.set("Use as Hessian", true);
+    secant.set("Use as Hessian", true);
   }
 
   auto& auglag = params.sublist("Step").sublist("Augmented Lagrangian");

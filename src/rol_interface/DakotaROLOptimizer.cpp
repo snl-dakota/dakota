@@ -29,7 +29,7 @@ Optimizer::Optimizer( const Dakota::String& method_string,
 void Optimizer::core_run() {
 
   { // Prepend output in this section with "ROL: "
-    auto rol_cout = OutputStreamFilter(&Cout); 
+    auto rol_cout = OutputStreamFilter(Cout); 
     auto opt_solver = ROL::Solver<Dakota::Real>( problem, parList );
     opt_solver.solve(rol_cout.stream());
   } 

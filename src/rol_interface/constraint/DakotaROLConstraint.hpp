@@ -27,10 +27,10 @@ public:
   // This Constraint type enum convention allows bit masking to extract properties
 
   enum class Type : std::uint8_t {
-    LinearEquality     = 0u,
-    LinearInequality   = 1u,
-    NonlinearEquality  = 2u,
-    NonlinearInequalty = 3u,
+    LinearEquality      = 0u,
+    LinearInequality    = 1u,
+    NonlinearEquality   = 2u,
+    NonlinearInequality = 3u,
     Default
   };
 

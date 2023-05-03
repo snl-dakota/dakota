@@ -41,8 +41,8 @@ Dakota::Real Objective::value( const Dakota::RealVector& x,
 } // Objective::value
 
 
-Real Objective::value( const ROL::Vector<Dakota::Real>& x, 
-                             Dakota::Real&              tol ) {
+Dakota::Real Objective::value( const ROL::Vector<Dakota::Real>& x, 
+                                     Dakota::Real&              tol ) {
   return value(get_vector(x),tol);
 }
 
@@ -50,13 +50,15 @@ Real Objective::value( const ROL::Vector<Dakota::Real>& x,
 void Objective::gradient(       Dakota::RealVector& g, 
                           const Dakota::RealVector& x, 
                                 Dakota::Real&       tol ) {
-    g = model.current_response().function_gradient(0); 
+   const Dakota::RealVector& grads = modelInterfac.current_response().get_gradients();
+   auto g_ptr = grads.values();
+   for( int i=0; i<numOpt; ++i ) g[i] = (*g_ptr)[i]; 
 } // Objective::gradient
 
 void Objective::gradient(       ROL::Vector<Dakota::Real>& g,
                           const ROL::Vector<Dakota::Real>& x, 
                                 Dakota::Real&              tol ) {
-  if( model_interface->has_first_derivatives()) 
+  if( modelInterface->has_first_derivatives()) 
     gradient(get_vector(g),get_vector(x),tol);
   else 
     ROL::Objective<Dakota::Real>::gradient(g,x,tol);
@@ -67,7 +69,7 @@ void Objective::hessVec(       ROL::Vector<Dakota::Real>& hv,
                          const ROL::Vector<Dakota::Real>& v,
                          const ROL::Vector<Dakota::Real>& x,
                                Dakota::Real&              tol ) {
-  if( modelInterface->has_second_derivatives() ) {
+  if( modelInterface->has_second_derivatives() ) 
     hessOp->apply(hv,v,tol);
   else 
     ROL::Objective<Dakota::Real>::hessVec(hv,v,x,tol);
@@ -82,6 +84,7 @@ void Objective::invHessVec(       Dakota::RealVector& hv,
   if( modelInterface->has_second_derivatives() ) {
     assert(hessOp->has_inverse());
     hessOp->apply(ihv,v,tol);
+  }
   else 
     ROL::Objective<Dakota::Real>::invHessVec(ihv,v,x,tol);
 

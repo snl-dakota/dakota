@@ -7,8 +7,8 @@ namespace rol_interface {
 class LinearInequalityConstraint : public Constraint {
 public:
 
-  LinearInequalityConstraint( const ROL::Ptr<ModelInterface>& model_interface, 
-                                    std::string               con_name = "Linear Inequality" );
+  LinearInequalityConstraint( ModelInterface* model_interface, 
+                             std::string      con_name = "Linear Inequality" );
 
   virtual ~LinearInequalityConstraint() = default;
 
