@@ -2,9 +2,13 @@
 
 namespace rol_interface {
 
-ModelInterface::ModelInterface( Dakota::Model& model ) 
-  : dakotaModel(model),
-    evalSet(model.current_response().active_set()) { 
+// ModelInterface::ModelInterface( Dakota::Model& model ) 
+ModelInterface::ModelInterface( Optimizer* opt ) 
+  : optPtr(opt),
+    dakotaModel(opt->iteratedModel),
+    evalSet(dakotaModel.current_response().active_set()) { 
+
+  using ROL::makePtr;
 
   auto grad_type     = dakotaModel.gradient_type();
   auto hess_type     = dakotaModel.hessian_type();
@@ -13,66 +17,208 @@ ModelInterface::ModelInterface( Dakota::Model& model )
 
   // initialize ActiveSet request values
   if( grad_type == "numerical" && method_src == "vendor" ) 
-    evalSet.request_values(asVal);
+    evalSet.request(asVal);
   else if( dakotaModel.hessian_type() == "none" ) 
-    evalSet.request_values(asValGrad);
+    evalSet.request(asValGrad);
   else
-    evalSet.request_values(asValGradHess);
+    evalSet.request(asValGradHess);
   
   if( grad_type == "analytic" || grad_type == "mixed" ||
     ( grad_type == "numerical" && method_src == "dakota" ) ){
     useDefaultDeriv1 = true;
-    useDefaultDeriv2 = ( hess_type != "none" ) 
+    useDefaultDeriv2 = ( hess_type != "none" );
   } 
 
   useCenteredDifferences = (interval_type == "central");
-}
-                 
 
-const Dakota::RealMatrix& 
-ModelInterface::get_jacobian_matrix( Constraint::Type type ) {
-  int num_rows = dakotaModel.cv();
-  int num_cols = 0;
-  Dakota::Real* const jac_data_ptr;
-  ROL::Ptr<Jacobian> jacobian;
-  switch(type) {
-    case Constraint::Type::LinearInequality: 
-      const Dakota::RealMatrix& J = dakotaModel.lin_ineq_coeffs();
-      jac_data_ptr = J.values();
-      num_cols = dakotaModel.num_linear_ineq_constraints();
-    break;
-    case Constraint::Type::LinearEquality: 
-      const Dakota::RealMatrix& J = dakotaModel.lin_eq_coeffs();
-      num_cols = dakotaModel.num_linear_eq_constraints();
-      jac_data_ptr = J.values();
-    break;
-    case Constraint::Type::NonlinearInequality: 
-      const Dakota::RealMatrix& gradient_matrix = model.current_response().function_gradients();
-      Dakota::Real* const data = gradient_matrix.values();
-      int grad_offset = 1; // The first response is for the Objective function gradient
-      num_cols = dakotaModel.num_nonlinear_eq_constraints();  
-      jac_data_ptr = data + num_rows*grad_offset;
-  
-    break;
-    case Constraint::Type::NonlinearEquality: 
-      const Dakota::RealMatrix& gradient_matrix = model.current_response().function_gradients();
-      Dakota::Real* const data = gradient_matrix.values();
-      // Nonlinear Equality constraints appear after any Nonlinear Inequality constraints
-      int grad_offset = 1 + dakotaModel.num_nonlinear_ineq_constraints(); 
-      num_cols = dakotaModel.num_nonlinear_eq_constraints();  
-      jac_data_ptr = data + num_rows*grad_offset;
-    break;
-    default:
-      throw std::runtime_error("Invalid Constraint::Type");
+  // Initialize the Optimizer
+  auto nx = opt->numContinuousVars;
+  auto nli = opt->numLinearIneqConstraints;
+  auto nle = opt->numLinearEqConstraints;
+  auto nni = opt->numNonlinearIneqConstraints;
+  auto nne = opt->numNonlinearEqConstraints;
+  bool has_bound_constraint = opt->boundConstraintFlag;
+  bool has_linear_equality = nle > 0;
+  bool has_linear_inequality = nli > 0;
+  bool has_nonlinear_equality = nne > 0;
+  bool has_nonlinear_inequality = nni > 0;
+
+  auto obj = makePtr<Objective>(modelInterface);
+
+  // Create unconstrained problem
+  opt->problem = makePtr<ROL::Problem<Dakota::Real>>(obj,obj->make_opt_vector());
+
+  auto& problem = opt->problem;
+
+  if( has_bound_constraint ) {
+    auto bnd = Bounds::make_continuous_variable(model);
+    problem->addBoundConstraint(bnd);
   }
-  jacobian = ROL::makePtr<Jacobian>(jac_data_ptr,num_rows,num_cols);
-  return jacobian; 
-} 
+
+  if( has_linear_equality ) {
+    auto econ = makePtr<LinearEqualityConstraint>(this);
+    problem->addLinearConstraint(econ->get_name(),econ,econ->make_lagrange_multiplier());
+  }
+
+  if( has_linear_inequality ) {
+    auto icon = makePtr<LinearInequalityConstraint>(this);
+    auto l = Vector::create_from(dakotaModel.linear_ineq_constraint_lower_bounds());
+    auto u = Vector::create_from(dakotaModel.linear_ineq_constraint_upper_bounds());
+    auto ibnd = ROL::makePtr<ROL::Bounds>(l,u);
+    problem->addLinearConstraint(icon->get_name(),icon,icon->make_lagrange_multiplier(),ibnd);
+  }
+
+  if( has_nonlinear_equality ) {
+    auto econ = makePtr<NonlinearEqualityConstraint>(this);
+    problem->addConstraint(econ->get_name(),econ,econ->make_lagrange_multiplier());
+  }
+
+  if( has_nonlinear_inequality ) {
+    auto icon = makePtr<NonlinearInequalityConstraint>(this);
+    auto l = Vector::create_from(dakotaModel.nonlinear_ineq_constraint_lower_bounds());
+    auto u = Vector::create_from(dakotaModel.nonlinear_ineq_constraint_upper_bounds());
+    auto ibnd = ROL::makePtr<ROL::Bounds>(l,u);
+    problem->addConstraint(icon->get_name(),icon,icon->make_lagrange_multiplier(),ibnd);
+  }
+
+  // Set initial value of ROL::Problem optimization vector from Dakota::Model
+  auto& x_opt = get_vector(problem->getPrimalOptimizationVector());
+  x_opt = model.continuous_variables();
+
+  set_default_parameters(opt);
+
+}
+
+void ModelInterface::set_default_parameters( Optimizer* opt ) { 
+  auto& param   = opt->parList;
+  auto& general = param.sublist("General");
+
+  // If the user has specified "no_hessians", tell ROL to use its own
+  // Hessian approximation.
+  auto& secant = general.sublist("Secant");
+  if (model.hessian_type() == "none") {
+    secant.set("Type", "Limited-Memory BFGS");
+    sectant.set("Use as Hessian", true);
+  }
+
+  auto& auglag = params.sublist("Step").sublist("Augmented Lagrangian");
+
+  // Turns off adaptively choosing initial penalty parameters
+  // New ROL capabaility that results in slower convergence overall
+  auglag.set("Use Default Initial Penalty Parameter",false);
+
+  // Turns off automatic constraint and objective scaling
+  // New ROL capabaility that results in slower convergence overall
+  auglag.set("Use Default Problem Scaling",false);
+
+  // QUESTION: Is there a reason this is only for problem TYPE_EB?
+  // Set the verbosity level.
+  if (outputLevel >= VERBOSE_OUTPUT)
+    auglag.set("Print Intermediate Optimization History",true);
+  }
+
+  // PRECEDENCE 2: Dakota input file settings
+
+  // Set the verbosity level.
+  bool has_verbose_output = Dakota::Iterator::outputLevel >= Dakota::VERBOSE_OUTPUT;
+  bool has_normal_output  = Dakota::Iterator::outputLevel >= Dakota::NORMAL_OUTPUT;
+
+  general.set("Print Verbosity", has_verbose_output );
+
+  auto& prob_desc_db = opt->probDescDB;
+
+  auto& status = param.sublist("Status Test");
+  status.set("Gradient Tolerance",   prob_desc_db.get_real("method.gradient_tolerance")  );
+  status.set("Constraint Tolerance", prob_desc_db.get_real("method.constraint_tolerance"));
+  status.set("Step Tolerance",       prob_desc_db.get_real("method.variable_tolerance")  );
+  // ROL enforces an int; cast is Ok since SZ_MAX default removed at Minimizer
+  status.set("Iteration Limit", static_cast<int>(maxIterations));
+
+  // PRECEDENCE 3: power-user advanced options
+
+  // Check for ROL XML input file.
+  String adv_opts_file = prob_desc_db.get_string("method.advanced_options_file");
+  if (!adv_opts_file.empty()) {
+    if (boost::filesystem::exists(adv_opts_file)) {
+      if( has_normal_output ) {
+               Cout << "Any ROL options in file '" << adv_opts_file
+                 << "' will override Dakota options." << std::endl;
+    }
+    else {
+      Cerr << "\nError: ROL options_file '" << adv_opts_file
+           << "' specified, but file not found.\n";
+      abort_handler(METHOD_ERROR);
+    }
+    // Set ROL solver parameters based on the XML input.  Overrides
+    // anything previously set.
+    bool success;
+    try {
+      ROL::Ptr<ROL::ParameterList> osp_ptr(&optSolverParams);
+      ROL::updateParametersFromXmlFile(adv_opts_file, osp_ptr);
+      if( has_verbose_output ) {
+        Cout << "ROL OptimizationSolver parameters:\n";
+           optSolverParams.print(Cout, 2, true, true);
+      }
+    }
+    TEUCHOS_STANDARD_CATCH_STATEMENTS(has_verbose_output, Cerr, success);
+  }
+
+} // ModelInterface::set_default_parameters
+
+
+void ModelInterface::set_value( NonlinearInequalityConstraint* con ) {
+  const auto& resp = dakotaModel.current_response();
+  int num_opt = dakotaModel.cv();
+  const Dakota::RealVector& f = resp.function_values();
+  auto fvalues = f.values() + 1;
+  con->set_value(fvalues);  
+}
+
+void ModelInterface::set_value( NonlinearEqualityConstraint* con ) {
+  const auto& resp = dakotaModel.current_response();
+  int num_opt = dakotaModel.cv();
+  int num_ineq_con = dakotaModel.num_nonlinear_ineq_constraints();
+  const Dakota::RealVector& f = resp.function_values();
+  auto fvalues = f.values() + 1 + num_ineq_con;
+  con->set_value(fvalues);  
+}
+
+void ModelInterface::set_jacobian( LinearInequalityConstraint* con ) {
+  const Dakota::RealMatrix& J = dakotaModel.linear_ineq_constraint_coeffs();
+  con->set_jacobian(J.values());  
+}
+
+void ModelInterface::set_jacobian( LinearEqualityConstraint* con ) {
+  const Dakota::RealMatrix& J = dakotaModel.linear_eq_constraint_coeffs();
+  con->set_jacobian(J.values());  
+}
+
+void ModelInterface::set_jacobian( NonlinearInequalityConstraint* con ) {
+  const auto& resp = dakotaModel.current_response();
+  int num_opt = dakotaModel.cv();
+  const Dakota::RealMatrix& J = resp.function_gradients();
+  // The inequality constraint jacobian data begins after the objective gradient data
+  auto jvalues = J.values() + num_opt;
+  con->set_jacobian(jvalues);  
+}
+
+void ModelInterface::set_jacobian( NonlinearEqualityConstraint* con ) {
+  const auto& resp = dakotaModel->current_response();
+  int num_opt = dakotaModel.cv();
+  int num_ineq_con = dakotaModel.num_nonlinear_ineq_constraints();
+  const Dakota::RealMatrix& J = resp.function_gradients();
+  // The equality constraint jacobian data begins after the objective gradient data and 
+  // the inequality constraint jacobian data (if it exists)
+  auto jvalues = J.values() + num_opt*(1+num_ineq_con);
+  con->set_jacobian(jvalues);  
+}
+
+
 
 ModelInterface::update( const Dakota::RealVector& x,
-                     UpdateType  type,
-                     int         iter ) {
-  
+                              UpdateType          type,
+                              int                 iter ) {
+           
 //  switch(type) { 
 //    case UpdateType::Initial:
 //      break;
@@ -95,5 +241,33 @@ ModelInterface::update( const Dakota::RealVector& x,
   dakotaModel.evaluate(evalSet);
 } // ModelInterface::update
 
+void ModelInterface::set_dimensions( LinearInequalityConstraint* con ) {
+  con->set_dimensions(dakotaModel.cv(), dakotaModel.num_linear_ineq_constraints());
+}
+
+void ModelInterface::set_dimensions( LinearEqualityConstraint* con ) {
+  con->set_dimensions(dakotaModel.cv(), dakotaModel.num_linear_eq_constraints());
+}
+
+void ModelInterface::set_dimensions( NonlinearInequalityConstraint* con ) {
+  con->set_dimensions(dakotaModel.cv(), dakotaModel.num_nonlinear_ineq_constraints());
+}
+
+void ModelInterface::set_dimensions( NonlinearEqualityConstraint* con ) {
+  con->set_dimensions(dakotaModel.cv(), dakotaModel.num_nonlinear_eq_constraints());
+}
+
+
+const Dakota::RealVector& ModelInterface::get_values() const noexcept {
+  return dakotaModel.current_response().function_values();
+}
+
+const Dakota::RealMatrix& ModelInterface::get_gradients() const noexcept {
+  return dakotaModel.current_response().function_gradients();
+}
+
+const Dakota::RealSymMatrixArray& ModelInterface::get_hessians() const noexcept {
+  return dakotaModel.current_response().function_hessians();
+}
 
 } // namespace rol_interface

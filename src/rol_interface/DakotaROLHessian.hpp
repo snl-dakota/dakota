@@ -25,14 +25,10 @@ namespace rol_interface {
 class Hessian : public ROL::LinearOperator<Dakota::Real> {
 public:
   Hessian() = delete;
-  Hessian( const ROL::Ptr<ModelInterface>& model_interface, 
-                 bool                      has_inverse = false );
+  Hessian( ModelInterface* model_interface,           
+           bool            has_inverse = false );
 
   virtual ~Hessian() = default;
-
-  void update( const ROL::Vector<Dakota::Real>& x, 
-                     bool               flag = true, 
-                     int                iter = -1 ) override;
 
   void apply(       ROL::Vector<Dakota::Real>& Hv, 
               const ROL::Vector<Dakota::Real>& v, 
@@ -46,12 +42,7 @@ public:
 
 private:
 
-  static constexpr Dakota::Real zero = 0;
-  static constexpr Dakota::Real one = 1;
-
-  Teuchos::LAPACK<int,Dakota::Real>           lapack;         // For Hessian inversion
-  Teuchos::BLAS<int,Dakota::Real>             blas;           // For Matrix-Vector multiplication
-  ROL::Ptr<ModelInterface>            modelInterface; // Unified interface to Dakota::Model
+  ModelInterface*                     modelInterface;
   std::unique_ptr<Dakota::RealMatrix> workMat;        // LU Storage for Hessian inversion
   std::unique_ptr<int[]>              iPiv;           // LU Pivots for Hessian inversion
   int                                 nRows;      

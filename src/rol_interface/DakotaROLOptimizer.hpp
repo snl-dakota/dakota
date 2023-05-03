@@ -14,11 +14,11 @@ public:
 
   /// Standard constructor
   Optimizer( Dakota::ProblemDescDB& problem_db, 
-                Dakota::Model&         model );
+             Dakota::Model&         model );
 
   /// Alternate constructor for Iterator instantiations by name
   Optimizer( const Dakota::String& method_name, 
-                      Dakota::Model&  model );
+                   Dakota::Model&  model );
   
   /// Destructor
   virtual ~Optimizer() = default;
@@ -31,24 +31,24 @@ public:
     return std::make_shared<Optimizer>(problem_db, model);
   }
 
-  friend class Initializer;
+  friend class ModelInterface;
 
 private:
 
   ROL::Ptr<ROL::Problem<Dakota::Real>> problem;
-  ROL::Ptr<Cache> modelCache;
+  ROL::Ptr<ModelInterface> modelInterface;
   ROL::ParameterList parList;	
   // -----------------------------------------------------------------
   /** Initializer is a helper class used to initialize Optimizer. */
 
-  class Initializer {
-
-    static void initialize( Optimizer* opt );
-    static void set_default_parameters( Optimizer* opt );
-
-    friend class Optimizer;
-
-  }; // class ROLInitializer
+//  class Initializer {
+//
+//    static void initialize( Optimizer* opt );
+//    static void set_default_parameters( Optimizer* opt );
+//
+//    friend class Optimizer;
+//
+//  }; // class ROLInitializer
 
 
 

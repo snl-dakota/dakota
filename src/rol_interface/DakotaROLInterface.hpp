@@ -21,12 +21,13 @@ class Objective;
 class Constraint;
 class Jacobian;
 class Hessian;
+class Optimizer;
 
-template<typename T>
-using ModelFunction = std::function<const T&(const Dakota::Model&)>;
-
-using ModelVector = ModelFunction<Dakota::RealVector>;
-using ModelMatrix = ModelFunction<Dakota::RealMatrix>;
+//  template<typename T>
+//  using ModelFunction = std::function<const T&(const Dakota::Model&)>;
+//  
+//  using ModelVector = ModelFunction<Dakota::RealVector>;
+//  using ModelMatrix = ModelFunction<Dakota::RealMatrix>;
 
 } // namespace rol_interface
 
@@ -35,19 +36,22 @@ using ModelMatrix = ModelFunction<Dakota::RealMatrix>;
 #include "DakotaROLOutputStreamFilter.hpp"
 #include "DakotaROLTraits.hpp"
 #include "DakotaROLVector.hpp"
+#include "DakotaROLConstraint.hpp"
 #include "DakotaROLModelInterface.hpp"
 #include "DakotaROLObjective.hpp"
 #include "DakotaROLBounds.hpp"
-#include "DakotaROLConstraint.hpp"
-#include "DakotaROLJacobian.hpp"
 #include "DakotaROLHessian.hpp"
 #include "DakotaROLOptimizer.hpp"
 
-
+#include "constraint/DakotaROLJacobian.hpp"
+#include "constraint/DakotaROLLinearEqualityConstraint.hpp"
+#include "constraint/DakotaROLLinearInequalityConstraint.hpp"
+#include "constraint/DakotaROLNonlinearEqualityConstraint.hpp"
+#include "constraint/DakotaROLNonlinearInequalityConstraint.hpp"
 
 
 namespace Dakota {
-  using ROLOptimizer = rol_interface::Optimzer;
+  using ROLOptimizer = rol_interface::Optimizer;
 } // namespace Dakota
 
 

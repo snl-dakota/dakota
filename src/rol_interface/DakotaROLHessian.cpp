@@ -2,23 +2,20 @@
 
 namespace rol_interface {
 
-Hessian::Hessian( const ROL::Ptr<ModelInterface>& model_interface,
-                        bool                      has_inverse ) 
-  : modelInterface(model_interface), hasInverse(has_inverse) {
-
-  auto& model = modelInterface->dakotaModel;
-  nRows = model.cv();
-    f( hasInverse ) {
-    workMat = std::make_unique<Dakota::RealMatrix>(nCols,nCols);
+Hessian::Hessian( ModelInterface* model_interface,
+                  int             num_rows,
+                  bool            has_inverse ) 
+  : nRows(num_rows), hasInverse(has_inverse) {
+    if( hasInverse ) {
+    workMat = std::make_unique<Dakota::RealMatrix>(nRows,nRows);
     iPiv = std::make_unique<int[]>(nCols);
   }
 } // Hessian::Hessian
 
 
 void Hessian::update( const ROL::Vector<Dakota::Real>& x,
-                            bool               flag,
-                            int                iter ) {
-  auto& model = modelInterface->dakotaModel;
+                            bool                       flag,
+                            int                        iter ) {
   (*workMat) = model.current_response().function_hessian(0);
   if(hasInverse) {
     int info = 0;
@@ -30,24 +27,21 @@ void Hessian::update( const ROL::Vector<Dakota::Real>& x,
 void Hessian::apply(       ROL::Vector<Dakota::Real>& Hv,
                      const ROL::Vector<Dakota::Real>& v,
                            Dakota::Real&              tol ) const {
-  assert(Av.dimension() == nRows);
-  assert(v.dimension() == nRows);
-
-  auto& model = modelInterface->dakotaModel;
-  auto& Hv_ptr  = get_vector(Hv);      
-  auto v_ptr   = get_vector(v); 
-  auto hdata = modelInterface->dakotaModel.current_response().function_hessian(0).values(); 
-  blas.SYMM(Teuchos::LEFT_SIDE,Teuchos::UPPER_TRI,nRows,1,one,hdata,nRows,v.values(),nRows,zero,Mv.values(),nRows);
+  auto hv_values = get_vector_values(Hv);
+  auto v_values = get_vector_values(v);
+  auto hdata = modelInterface->function_hessians().values(); 
+  blas.SYMM(Teuchos::LEFT_SIDE,Teuchos::UPPER_TRI,nRows,1,1,hdata,nRows,v_values,nRows,0,hv_values,nRows);
 
 } // Hessian::apply
 
-void Hessian::applyInverse(       ROL::Vector<Dakota::Real>& Av,
+void Hessian::applyInverse(       ROL::Vector<Dakota::Real>& Hv,
                             const ROL::Vector<Dakota::Real>& v,
                                   Dakota::Real&              tol ) const {
-  assert(haveInvHessian);
+  assert(hasInverse);
   auto etrans = Teuchos::NO_TRANS;
-  auto Av_r = get_vector(Av);      
-  auto v_r  = get_vector(v);      
+  auto hv_values = get_vector_values(Hv);
+  auto v_values = get_vector_values(v);
+
   Av_r = v_r;
   int info = 0;
   lapack_.GETRS(Teuchos::NO_TRANS,nRows,1,workMat->values(),nRows,iPiv.get(),Av_r.values(),nRows,&info);

@@ -72,5 +72,13 @@ Model::continuous\_upper\_bounds()
 If Dakota evalutes a gradient, it is accessed by Respose::gradient\_values(). If they are computed, then the partitioning above holds for the objective gradient and nonlinear constraint Jacobians
  
 
+Some irregularities in data access and naming
+---------------------------------------------
+
+DakotaModel provides access to the linear constraint Jacobians in via the methods
+
+    DakotaModel::linear_eq_constraint_coeffs()
+    DakotaModel::linear_ineq_constraint_coeffs()
+  
 
   

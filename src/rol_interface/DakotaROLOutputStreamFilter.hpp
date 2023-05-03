@@ -16,19 +16,23 @@ namespace rol_interface {
 
 class OutputStreamFilter {
 public:
-  OutputStreamFilter( std::ostream* os_ptr ) {
+  OutputStreamFilter( std::ostream& os ) {
     filterStream.push(LineFilter());
-    filterStream.push(os_ptr);
+    filterStream.push(os);
   }
 
   ~OutputStreamFilter() {
     filterStream.flush();
   }
+    
+  boost::iostreams::filtering_ostream& stream() {
+    return filterStream;
+  }
 
 private:
 
   class LineFilter : public boost::iostreams::line_filter  {
-    std::string do_filter( const std::string& line ) {
+    std::string do_filter( const std::string& line ) override {
       return "ROL: " + line;
     }
   };

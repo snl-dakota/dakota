@@ -42,11 +42,20 @@ public:
   Vector( const ROL::Ptr<Dakota::RealVector>& vec ) : 
     vec_(vec) { }
 
+  Vector( const Dakota::RealVector& vec ) :
+    vec_ (ROL::makePtr<Dakota::RealVector>(vec.size()) ) {
+      for( int i=0; i<dimension(); ++i ) (*vec_) = vec[i];
+    }
+
   Vector( int length, bool zeroOut=true ) : 
     vec_( ROL::makePtr<Dakota::RealVector>(length,zeroOut) ) {} 
 
   Dakota::Real dot( const ROL::Vector<Dakota::Real>& x ) const override { 
     return vec_->dot(get_vector(x));
+  }
+
+  Dakota::Real norm() const override {
+    return std::sqrt(vec_->dot(*vec_));
   }
 
   void set( const ROL::Vector<Dakota::Real>& x ) override { 
@@ -57,13 +66,20 @@ public:
     *vec_ = x;
   }
 
-
   void plus( const ROL::Vector<Dakota::Real>& x ) override { 
     *vec_ += get_vector(x);
   }
 
   void scale( const Dakota::Real alpha ) override {
     vec_->scale(alpha);
+  }
+
+  void setScalar( const Dakota::Real alpha ) override {
+    vec_->putScalar(alpha);
+  }
+
+  void zero() override {
+    vec_->putScalar(0);
   }
 
   int dimension() const override { 
@@ -148,6 +164,9 @@ public:
     return (*vec_)[i]; 
   }
 
+  inline static ROL::Ptr<Vector> make_from( const Dakota::RealVector& v ) {
+    return ROL::makePtr<Vector>(v);
+  }
 }; // class Vector
 
 
