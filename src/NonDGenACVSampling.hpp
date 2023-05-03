@@ -48,7 +48,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
+  void pre_run();
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
@@ -217,6 +217,10 @@ private:
   std::map<UShortArray, UShortArraySet>::const_iterator bestModelSetIter;
   /// the best performing model graph among the set from generate_dags()
   UShortArraySet::const_iterator bestDAGIter;
+  /// the merit function value for the best solution, incorporating both
+  /// estimator variance and budget (objective and constraint in some order)
+  Real meritFnStar;
+
   /// book-keeping of previous numerical optimization solutions for each DAG;
   /// used for warm starting
   std::map<std::pair<UShortArray, UShortArray>, DAGSolutionData> dagSolns;

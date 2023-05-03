@@ -36,12 +36,11 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDACVSampling(problem_db, model),
   dagRecursionType(problem_db.get_short("method.nond.search_model_graphs")),
   dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit")),
-  modelSelectType(NO_MODEL_SELECTION)//(ALL_MODEL_COMBINATIONS)
+  modelSelectType(NO_MODEL_SELECTION),//(ALL_MODEL_COMBINATIONS)
+  meritFnStar(DBL_MAX)
 {
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
   if (dagRecursionType == FULL_GRAPH_RECURSION) dagDepthLimit = numApprox;
-  generate_dags();
-  bestModelSetIter = modelDAGs.end();
 }
 
 
@@ -71,8 +70,8 @@ void NonDGenACVSampling::generate_dags()
 
     size_t K, L, M_minus_K;
     // Dakota low-to-high ordering (enumerate valid KL values and convert)
-    UShortArraySet& dag_set = modelDAGs[nodes];
-    dag_set.clear();  dag.resize(numApprox);
+    UShortArraySet& dag_set = modelDAGs[nodes];  dag_set.clear();
+    dag.resize(numApprox);
     for (K=0; K<=numApprox; ++K) {
       M_minus_K = numApprox - K;
 
@@ -172,7 +171,7 @@ void NonDGenACVSampling::generate_dags()
       for (i=0; i<numApprox; ++i) nodes[i] = i;
       dag.assign(numApprox, USHRT_MAX);
       // recur for DAG including all approximations:
-      UShortArraySet& dag_set = modelDAGs[nodes];
+      UShortArraySet& dag_set = modelDAGs[nodes];  dag_set.clear();
       generate_sub_trees(root, nodes, dagDepthLimit, dag, dag_set);
       Cout << "Searching array of model DAGs of size " << dag_set.size();
       if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;
@@ -327,6 +326,21 @@ unroll_reverse_dag_from_root(unsigned short root,
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "In unroll_reverse_dag_from_root(), root list:\n"
 	 << root_list << std::endl;
+}
+
+
+void NonDGenACVSampling::pre_run()
+{
+  NonDNonHierarchSampling::pre_run();
+
+  // For hyper-parameter/design/state changes, can reuse modelDAGs.  Other
+  // changes ({dagRecursion,modelSelect}Type) would induce need to regenerate.
+  if (modelDAGs.empty())
+    generate_dags();
+
+  meritFnStar = DBL_MAX;
+  bestModelSetIter = modelDAGs.end();
+  dagSolns.clear();
 }
 
 
@@ -1352,30 +1366,17 @@ void NonDGenACVSampling::update_best(DAGSolutionData& soln)
 {
   // Update tracking of best result
 
-  bool update = false;
-  if (bestModelSetIter == modelDAGs.end())
-    update = true;
+  bool update = false;  Real merit_fn, avg_est_var = soln.avgEstVar;
+  if (!valid_variance(avg_est_var)) // *** TO DO: problems could be hidden due to averaging --> consider a finer-grained badNumericsFlag triggered per QoI
+    update = false;
   else {
-    Real avg_est_var = soln.avgEstVar;
-    if (!valid_variance(avg_est_var)) // *** TO DO: problems could be hidden due to averaging --> consider a finer-grained badNumericsFlag triggered per QoI
-      update = false;
-    else {
-      std::pair<UShortArray, UShortArray>
-	soln_key(bestModelSetIter->first, *bestDAGIter);
-      DAGSolutionData& best_soln = dagSolns[soln_key];
-      // *** TO DO: use a merit fn from nh_penalty_merit()
-      if (maxFunctionEvals == SZ_MAX)
-	update = (soln.equivHFAlloc < best_soln.equivHFAlloc);
-      else
-	update = (avg_est_var       < best_soln.avgEstVar);
-      //merit_fn = nh_penalty_merit(soln);
-      //update = (merit_fn < meritFnStar);
-    }
+    merit_fn = nh_penalty_merit(soln);
+    update = (merit_fn < meritFnStar);
   }
   if (update) {
     bestModelSetIter = activeModelSetIter;
     bestDAGIter      = activeDAGIter;
-    //meritFnStar    = merit_fn;
+    meritFnStar      = merit_fn;
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Updating best DAG to:\n" << *bestDAGIter << " for model set:\n"
 	   << activeModelSetIter->first << std::endl;
