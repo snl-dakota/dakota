@@ -21,7 +21,7 @@ set of manuals, this set of links may help you find what you're looking for...
 
   - :ref:`Get Help <help-main>`
   - :ref:`FAQs <faq-main>`
-  - :ref:`Mail Lists <help-mailing>`
+  - :ref:`Discussion forum <help-discussions>`
   - :ref:`Training <help-training>`
   
 - About

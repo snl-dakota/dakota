@@ -15,6 +15,8 @@ encourage general usage questions about how to use Dakota, including
 how to install, choose algorithms, or interface to an application
 code, but all Dakota topics are welcome.
 
+.. _help-discussions:
+
 Dakota Github Discussions
 -------------------------
 
