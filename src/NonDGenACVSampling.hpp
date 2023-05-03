@@ -198,11 +198,15 @@ private:
   /// option to enumerate combinations of approximation models
   short modelSelectType;
 
-  /// the set of admissible DAGs identifying the control variate
-  /// targets for each model in the ensemble
-  UShortArraySet modelDAGs;
-  /// the active instance from within the set computed by generate_dags()
+  /// mapping from a key of active model nodes to the set of admissible DAGs
+  /// that define the control variate targets for each model in the ensemble
+  std::map<UShortArray, UShortArraySet> modelDAGs;
+  /// the active instance from enumeration of UShortArray keys in modelDAGs
+  std::map<UShortArray, UShortArraySet>::const_iterator activeModelSetIter;
+  /// the active instance from enumeration of UShortArraySets for each key
+  /// in modelDAGs
   UShortArraySet::const_iterator activeDAGIter;
+
   /// reverse of active DAG: for each model, the set of models that point to it
   UShortSetArray reverseActiveDAG;
   /// an ordered set of root nodes that ensures targets are defined when
@@ -210,23 +214,37 @@ private:
   UShortList orderedRootList;
 
   /// the best performing model graph among the set from generate_dags()
+  std::map<UShortArray, UShortArraySet>::const_iterator bestModelSetIter;
+  /// the best performing model graph among the set from generate_dags()
   UShortArraySet::const_iterator bestDAGIter;
   /// book-keeping of previous numerical optimization solutions for each DAG;
   /// used for warm starting
-  std::map<UShortArray, DAGSolutionData> dagSolns;
+  std::map<std::pair<UShortArray, UShortArray>, DAGSolutionData> dagSolns;
 };
 
 
 inline Real NonDGenACVSampling::estimator_accuracy_metric()
-{ return dagSolns[*activeDAGIter].avgEstVar; }
+{
+  std::pair<UShortArray, UShortArray>
+    key(activeModelSetIter->first, *activeDAGIter);
+  return dagSolns[key].avgEstVar;
+}
 
 
 //inline Real NonDGenACVSampling::estimator_cost_metric()
-//{ return dagSolns[*activeDAGIter].equivHFAlloc; }
+//{
+//  std::pair<UShortArray, UShortArray>
+//    key(activeModelSetIter->first, *activeDAGIter);
+//  return dagSolns[key].equivHFAlloc;
+//}
 
 
 inline void NonDGenACVSampling::print_variance_reduction(std::ostream& s)
-{ print_estimator_performance(s, dagSolns[*activeDAGIter]); }
+{
+  std::pair<UShortArray, UShortArray>
+    key(activeModelSetIter->first, *activeDAGIter);
+  print_estimator_performance(s, dagSolns[key]);
+}
 
 
 /*
