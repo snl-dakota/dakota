@@ -107,8 +107,7 @@ void NonDGenACVSampling::generate_dags()
       // Option 1:
       // Pre-compute generate_sub_trees() for each dag_size (0:numApprox)
       std::vector<UShortArraySet> nominal_dags(numApprox+1); // include size 0
-      for (j=0; j<numApprox; ++j)
-	nodes[j] = j;
+      for (j=0; j<numApprox; ++j) nodes[j] = j;
       for (dag_size=numApprox; dag_size>=1; --dag_size) {
 	nodes.resize(dag_size); // discard trailing node
 	dag.assign(dag_size, USHRT_MAX);
@@ -158,7 +157,7 @@ void NonDGenACVSampling::generate_dags()
       }
       */
 
-      exit(0); // not yet supported downstream
+      //exit(0); // not yet supported downstream
 
       break;
     }
@@ -265,12 +264,12 @@ void NonDGenACVSampling::generate_reverse_dag(const UShortArray& dag)
   // define an array of source nodes that point to a given target
   size_t i, dag_size = dag.size();
   reverseActiveDAG.clear();
-  reverseActiveDAG.resize(dag_size+1);
+  reverseActiveDAG.resize(dag_size + 1);
   unsigned short dag_curr, dag_next;
   for (i=0; i<dag_size; ++i) { // walk+store path to root
     dag_curr = i;  dag_next = dag[dag_curr];
     reverseActiveDAG[dag_next].insert(dag_curr);
-    while (dag_next != numApprox) {
+    while (dag_next != dag_size) {
       dag_curr = dag_next;  dag_next = dag[dag_curr];
       reverseActiveDAG[dag_next].insert(dag_curr);
     }
@@ -315,7 +314,7 @@ unroll_reverse_dag_from_root(unsigned short root,
   unsigned short node;  Real r_i;
   for (; l_it != default_root_list.end(); ++l_it) {
     node = *l_it;
-    r_i = (node == numApprox) ? 1. : avg_eval_ratios[node];
+    r_i = (node == root) ? 1. : avg_eval_ratios[node];
     root_ratios[r_i] = node;
   }
   // this ordered root_list intermingles dependency paths for purposes of
