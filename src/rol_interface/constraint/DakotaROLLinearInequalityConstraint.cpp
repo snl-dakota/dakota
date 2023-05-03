@@ -2,7 +2,7 @@
 
 namespace rol_interface { 
 
-LinearInequalityConstraint( ModelInterface* model_interface, std::string con_name ) 
+LinearInequalityConstraint::LinearInequalityConstraint( ModelInterface* model_interface, std::string con_name ) 
   : Constraint(model_interface, Constraint::Type::LinearInequality, con_name) {
   model_interface->set_dimensions(this);
 } // LinearInequalityConstraint()

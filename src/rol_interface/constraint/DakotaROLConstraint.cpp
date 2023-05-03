@@ -18,13 +18,8 @@ void Constraint::set_jacobian( const Dakota::Real* const jacobian ) {
   jacobianData = jacobian;
 }
 
-void Constraint::set_hessian( const Dakota::Real* const hessian ) {
-  hessianData = hessian;
-}
-
 void Constraint::set_dimensions( int num_opt, int num_con ) { 
-LinearInequalityConstraint.cpp  DakotaROLNonLinearInequalityConstraint.hpp
-DakotaROLLinearConstraint.cpp  DakotaROL  numOpt = num_opt;
+  numOpt = num_opt;
   numCon = num_con;
 }
 
@@ -33,7 +28,6 @@ void Constraint::update( const Dakota::RealVector& x,
                                int                 iter ) {
   modelInterface->update(x,type,iter);
   update_from_model(modelInterface);
-
 
 } // Constraint::update  
 
@@ -76,7 +70,7 @@ void Constraint::applyJacobian(       Dakota::RealVector& jv,
   auto& blas = modelInterface->get_blas();
   auto jvdata = jv.values();
   auto vdata = v.values();
-  blas.GEMV(Teuchos::NO_TRANS,numCon,numOpt,1,jacobianData,nrows,vdata,1,0,jvdata,1);
+  blas.GEMV(Teuchos::NO_TRANS,numCon,numOpt,1,jacobianData,numCon,vdata,1,0,jvdata,1);
 } // Constraint::applyJacobian
 
 
@@ -100,7 +94,7 @@ void Constraint::applyAdjointJacobian(       Dakota::RealVector& ajv,
   auto& blas = modelInterface->get_blas();
   auto ajvdata = ajv.values();
   auto vdata = v.values();
-  blas.GEMV(Teuchos::TRANS,numCon,numOpt,1,jacobianData,nrows,vdata,1,0,ajvdata,1);
+  blas.GEMV(Teuchos::TRANS,numCon,numOpt,1,jacobianData,numCon,vdata,1,0,ajvdata,1);
 } // Constraint::applyJacobian
 
 
@@ -127,13 +121,13 @@ void Constraint::applyAdjointHessian(       Dakota::RealVector& ahuv,
   auto ahuvdata = ahuv.values();
   auto vdata = v.values();
 
-  const Dakota::RealSymMatrixArray& hess modelInterface->get_hessians();
+  const Dakota::RealSymMatrixArray& hess = modelInterface->get_hessians();
 
   // Repeatedly perform ahuv <- beta*ahuv + u[i]*H[i]*v for i=0,...,numCon-1
   for( int i=0; i<numCon; ++i ) {
     Dakota::Real beta = i>0;
     auto hdata = hess[i].values();
-    blas.SYMM(Teuchos::LEFT_SIDE,Teuchos::UPPPER_TRI,numOpt,1,u[i],hdata,vdata,numOpt,beta,ahuvdata,numOpt);
+    blas.SYMM(Teuchos::LEFT_SIDE,Teuchos::UPPER_TRI,numOpt,1,u[i],hdata,vdata,numOpt,beta,ahuvdata,numOpt);
   } 
 
 } // Constraint::applyAdjointHessian

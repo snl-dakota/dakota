@@ -1,18 +1,18 @@
-#include "DakotaROLInterface.cpp"
+#include "DakotaROLInterface.hpp"
 
 namespace rol_interface {
 
-LinearConstraint::value(       Dakota::RealVector& c,
-                         const Dakota::RealVector& x,
-                               Dakota::Real&       tol ) {
+void LinearConstraint::value(       Dakota::RealVector& c,
+                              const Dakota::RealVector& x,
+                                    Dakota::Real&       tol ) {
   applyJacobian(c,x,x,tol);  
 }
 
-void LinearConstraint::applyAdjointHessian(        ROL::Vector<Real>& ahuv,
-                                             const ROL::Vector<Real>& u,
-                                             const ROL::Vector<Real>& v,
-                                             const ROL::Vector<Real>& x,
-                                                   ROL::Real&         tol ) {
+void LinearConstraint::applyAdjointHessian(        ROL::Vector<Dakota::Real>& ahuv,
+                                             const ROL::Vector<Dakota::Real>& u,
+                                             const ROL::Vector<Dakota::Real>& v,
+                                             const ROL::Vector<Dakota::Real>& x,
+                                                   Dakota::Real&              tol ) {
   ahuv.zero();
 }
 

@@ -46,17 +46,16 @@ public:
   }
 
   struct TypeError : public std::runtime_error {
-    using std::runtime_error::std::runtime_error;
   };
 
   Constraint() = delete;
   Constraint( ModelInterface* model_interface, Type con_type, std::string con_name="Constraint");
+  virtual ~Constraint() = default;
+
 
   inline Type get_type() const { return conType; }
 
   virtual std::string get_name() const { return conName; }
-
-  virtual ~Constraint() = default;
 
   void update( const ROL::Vector<Dakota::Real>& x,
                      ROL::UpdateType            type,
@@ -130,7 +129,7 @@ private:
   std::string conName;
 
 }; // class Constraint
-/ 
+ 
 } // namespace rol_interface
 
 

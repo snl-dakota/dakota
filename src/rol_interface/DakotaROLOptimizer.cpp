@@ -5,7 +5,7 @@ namespace rol_interface {
 // Standard constructor for Optimizer.  Sets up ROL solver based on
 // information from the problem database.
 Optimizer::Optimizer( Dakota::ProblemDescDB& problem_db, 
-                            Dakota::Model&         model) :
+                            Dakota::Model&   model) :
   Dakota::Optimizer( problem_db, 
                      model, 
                      Traits::create() ),
@@ -15,8 +15,8 @@ Optimizer::Optimizer( Dakota::ProblemDescDB& problem_db,
 
 // Alternate constructor for Iterator instantiations by name.  Sets up
 // ROL solver based on information passed as arguments.
-Optimizer::Optimizer( const String& method_string, 
-                                  Model&  model):
+Optimizer::Optimizer( const Dakota::String& method_string, 
+                            Model&          model):
   Dakota::Optimizer( Dakota::method_string_to_enum(method_string), 
                      model, 
                      Traits::create() ),
@@ -29,7 +29,7 @@ Optimizer::Optimizer( const String& method_string,
 void Optimizer::core_run() {
 
   { // Prepend output in this section with "ROL: "
-    auto rol_cout = OutputStreamFilter(); 
+    auto rol_cout = OutputStreamFilter(&Cout); 
     auto opt_solver = ROL::Solver<Dakota::Real>( problem, parList );
     opt_solver.solve(rol_cout.stream());
   } 

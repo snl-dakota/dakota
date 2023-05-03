@@ -13,16 +13,16 @@ Hessian::Hessian( ModelInterface* model_interface,
 } // Hessian::Hessian
 
 
-void Hessian::update( const ROL::Vector<Dakota::Real>& x,
-                            bool                       flag,
-                            int                        iter ) {
-  (*workMat) = model.current_response().function_hessian(0);
-  if(hasInverse) {
-    int info = 0;
-    int n = x.dimension();
-    lapack.GETRF(n,n,workMat->values(),n,iPiv.get(),&info);
-  }
-}
+//void Hessian::update( const ROL::Vector<Dakota::Real>& x,
+//                            bool                       flag,
+//                            int                        iter ) {
+//  (*workMat) = model.current_response().function_hessian(0);
+//  if(hasInverse) {
+//    int info = 0;
+//    int n = x.dimension();
+//    lapack.GETRF(n,n,workMat->values(),n,iPiv.get(),&info);
+//  }
+//}
 
 void Hessian::apply(       ROL::Vector<Dakota::Real>& Hv,
                      const ROL::Vector<Dakota::Real>& v,

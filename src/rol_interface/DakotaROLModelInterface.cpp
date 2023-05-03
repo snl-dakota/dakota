@@ -51,7 +51,9 @@ ModelInterface::ModelInterface( Optimizer* opt )
   auto& problem = opt->problem;
 
   if( has_bound_constraint ) {
-    auto bnd = Bounds::make_continuous_variable(model);
+    auto l = Vector::make_from(dakotaModel.continuous_lower_bounds());
+    auto u = Vector::make_from(dakotaModel.continuous_upper_bounds());
+    auto bnd = ROL::makePtr<ROL::Bounds>(l,u);
     problem->addBoundConstraint(bnd);
   }
 
@@ -62,8 +64,8 @@ ModelInterface::ModelInterface( Optimizer* opt )
 
   if( has_linear_inequality ) {
     auto icon = makePtr<LinearInequalityConstraint>(this);
-    auto l = Vector::create_from(dakotaModel.linear_ineq_constraint_lower_bounds());
-    auto u = Vector::create_from(dakotaModel.linear_ineq_constraint_upper_bounds());
+    auto l = Vector::make_from(dakotaModel.linear_ineq_constraint_lower_bounds());
+    auto u = Vector::make_from(dakotaModel.linear_ineq_constraint_upper_bounds());
     auto ibnd = ROL::makePtr<ROL::Bounds>(l,u);
     problem->addLinearConstraint(icon->get_name(),icon,icon->make_lagrange_multiplier(),ibnd);
   }
@@ -75,8 +77,8 @@ ModelInterface::ModelInterface( Optimizer* opt )
 
   if( has_nonlinear_inequality ) {
     auto icon = makePtr<NonlinearInequalityConstraint>(this);
-    auto l = Vector::create_from(dakotaModel.nonlinear_ineq_constraint_lower_bounds());
-    auto u = Vector::create_from(dakotaModel.nonlinear_ineq_constraint_upper_bounds());
+    auto l = Vector::make_from(dakotaModel.nonlinear_ineq_constraint_lower_bounds());
+    auto u = Vector::make_from(dakotaModel.nonlinear_ineq_constraint_upper_bounds());
     auto ibnd = ROL::makePtr<ROL::Bounds>(l,u);
     problem->addConstraint(icon->get_name(),icon,icon->make_lagrange_multiplier(),ibnd);
   }
@@ -240,6 +242,10 @@ ModelInterface::update( const Dakota::RealVector& x,
   dakotaModel.continuous_variables(x);
   dakotaModel.evaluate(evalSet);
 } // ModelInterface::update
+
+void ModelInterface::set_dimension( Objective* obj ) {
+  obj->set_dimension(dakotaModel.cv());
+} 
 
 void ModelInterface::set_dimensions( LinearInequalityConstraint* con ) {
   con->set_dimensions(dakotaModel.cv(), dakotaModel.num_linear_ineq_constraints());

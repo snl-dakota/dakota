@@ -9,6 +9,7 @@ public:
   
   NonlinearEqualityConstraint( ModelInterface* model_interface,
                                std::string     con_name = "Nonlinear Equality" );
+
   virtual ~NonlinearEqualityConstraint() = default;
 
 protected:

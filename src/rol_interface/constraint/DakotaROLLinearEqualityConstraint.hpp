@@ -9,7 +9,8 @@ public:
 
   LinearEqualityConstraint( const ROL::Ptr<ModelInterface>& model_interface,
                                   std::string               con_name = "Linear Equality" );
-  virtual ~LinearEqualityConstraint = default;
+
+  virtual ~LinearEqualityConstraint() = default;
 
   void value(       Dakota::RealVector& c,
               const Dakota::RealVector& x,

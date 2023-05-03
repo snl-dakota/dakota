@@ -6,12 +6,16 @@ namespace rol_interface {
 Objective::Objective( ModelInterface* model_interface, 
                       bool            has_inverse ) 
   : modelInterface(model_interface) {
+  modelInterface->set_dimension(this);
   if( model_interface->has_second_derivatives() ) {
     hessOp = std::make_unique<Hessian>(modelInterface,numOpt,has_inverse);
   }
 }
 
 
+void Objective::set_dimension( int num_opt ) {
+  numOpt = numOpt;
+}
 
 void Objective::update( const ROL::Vector<Dakota::Real>& x,
                               ROL::UpdateType            type,

@@ -21,6 +21,8 @@ public:
                      ROL::UpdateType      type,
                      int                  iter = -1 );     
 
+  void set_dimension( Objective* obj );  
+
   // ModelInterface is a Visitor type object for Constraint classes
   void set_dimensions( LinearInequalityConstraint*    con );  
   void set_dimensions( LinearEqualityConstraint*      con );  
@@ -50,10 +52,10 @@ public:
   inline Teuchos::BLAS<int,Dakota::Real>& get_blas() { return blasLib; }
 
   /// provide access to LAPACK for use by objective and constraints
-  inline Teuchos::LAPACK<int,Dakota::Real>& get_lapack() { return LipackLib; }
+  inline Teuchos::LAPACK<int,Dakota::Real>& get_lapack() { return lapackLib; }
 
-  inline bool have_first_derivatives() const { return !useDefaultDeriv1; }
-  inline bool have_second_derivatives() const { return !useDefaultDeriv2; }
+  inline bool has_first_derivatives() const { return !useDefaultDeriv1; }
+  inline bool has_second_derivatives() const { return !useDefaultDeriv2; }
 
 private:
 
@@ -74,5 +76,5 @@ private:
 
 
 } // namespace rol_interface
-v
+
 #endif // DAKOTA_ROL_MODEL_INTERFACE_HPP

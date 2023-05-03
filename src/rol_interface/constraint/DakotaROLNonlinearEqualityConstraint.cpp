@@ -11,7 +11,7 @@ NonlinearEqualityConstraint::NonlinearEqualityConstraint( ModelInterface* model_
 } // NonlinearEqualityConstraint::NonlinearEqualityConstraint
 
 
-void NonlinerEqualityConstraint::update_from_model( ModelInterface* model_interface ) {
+void NonlinearEqualityConstraint::update_from_model( ModelInterface* model_interface ) {
   model_interface->set_jacobian(this);
 }
 

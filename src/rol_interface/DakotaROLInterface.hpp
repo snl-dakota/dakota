@@ -15,19 +15,18 @@
 namespace rol_interface {
 
 // Forward declaration
-class Vector;
 class ModelInterface;
+class Vector;
 class Objective;
 class Constraint;
-class Jacobian;
+class LinearConstraint;
+class LinearEqualityConstraint;
+class LinearInequalityConstraint;
+class NonlinearEqualityConstraint;
+class NonlinearInequalityConstraint;
 class Hessian;
 class Optimizer;
 
-//  template<typename T>
-//  using ModelFunction = std::function<const T&(const Dakota::Model&)>;
-//  
-//  using ModelVector = ModelFunction<Dakota::RealVector>;
-//  using ModelMatrix = ModelFunction<Dakota::RealMatrix>;
 
 } // namespace rol_interface
 
@@ -36,14 +35,14 @@ class Optimizer;
 #include "DakotaROLOutputStreamFilter.hpp"
 #include "DakotaROLTraits.hpp"
 #include "DakotaROLVector.hpp"
-#include "DakotaROLConstraint.hpp"
 #include "DakotaROLModelInterface.hpp"
+#include "DakotaROLConstraint.hpp"
 #include "DakotaROLObjective.hpp"
-#include "DakotaROLBounds.hpp"
 #include "DakotaROLHessian.hpp"
 #include "DakotaROLOptimizer.hpp"
 
-#include "constraint/DakotaROLJacobian.hpp"
+#include "constraint/DakotaROLConstraint.hpp"
+#include "constraint/DakotaROLLinearConstraint.hpp"
 #include "constraint/DakotaROLLinearEqualityConstraint.hpp"
 #include "constraint/DakotaROLLinearInequalityConstraint.hpp"
 #include "constraint/DakotaROLNonlinearEqualityConstraint.hpp"

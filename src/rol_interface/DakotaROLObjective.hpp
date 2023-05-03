@@ -13,6 +13,8 @@ public:
     
   virtual ~Objective() = default;
 
+  void set_dimension( int num_opt );
+
   void update( const ROL::Vector<Dakota::Real>& x, 
                      ROL::UpdateType            type,
                      int                        iter = -1 ) override;
@@ -47,7 +49,7 @@ public:
 
 
   inline auto make_opt_vector() noexcept {
-    return make_vector(modelInterface->dakotaModel.cv());
+    return make_vector(numOpt);
   }
 
 private:

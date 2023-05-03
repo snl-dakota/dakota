@@ -26,6 +26,7 @@ class Hessian : public ROL::LinearOperator<Dakota::Real> {
 public:
   Hessian() = delete;
   Hessian( ModelInterface* model_interface,           
+           int             num_rows,
            bool            has_inverse = false );
 
   virtual ~Hessian() = default;
@@ -37,6 +38,11 @@ public:
   void applyInverse(       ROL::Vector<Dakota::Real>& Hv, 
                      const ROL::Vector<Dakota::Real>& v, 
                            Dakota::Real&              tol ) const override;
+
+//  void update( const ROL::Vector<Dakota:::Real>& x,
+//                     bool                        flag = true,
+//                     int                         iter = -1) override;
+//
 
   bool has_inverse() const { return hasInverse; }
 

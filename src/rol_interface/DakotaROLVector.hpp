@@ -43,7 +43,7 @@ public:
     vec_(vec) { }
 
   Vector( const Dakota::RealVector& vec ) :
-    vec_ (ROL::makePtr<Dakota::RealVector>(vec.size()) ) {
+    vec_ (ROL::makePtr<Dakota::RealVector>(vec.length()) ) {
       for( int i=0; i<dimension(); ++i ) (*vec_) = vec[i];
     }
 
@@ -106,12 +106,6 @@ public:
       r.reduce((*vec_)(i),result);
     }
     return result;
-  }
-
-  void setScalar( const Dakota::Real C ) override {
-    for( int i=0; i<vec_->length(); ++i ) {
-      (*vec_)(i) = C;
-    }    
   }
 
   void randomize( const Dakota::Real l=0.0, 
