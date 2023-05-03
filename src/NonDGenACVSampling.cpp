@@ -36,7 +36,7 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDACVSampling(problem_db, model),
   dagRecursionType(problem_db.get_short("method.nond.search_model_graphs")),
   dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit")),
-  modelSelectType(NO_MODEL_SELECTION)//(ALL_MODEL_COMBINATIONS)
+  modelSelectType(ALL_MODEL_COMBINATIONS)//(NO_MODEL_SELECTION)
 {
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
   if (dagRecursionType == FULL_GRAPH_RECURSION) dagDepthLimit = numApprox;
@@ -83,7 +83,7 @@ void NonDGenACVSampling::generate_dags()
   }
   default: {
     UShortArray nodes(numApprox), dag;
-    unsigned short root = numApprox;  size_t i;
+    unsigned short root = numApprox;
     switch (modelSelectType) {
     case ALL_MODEL_COMBINATIONS: {
       // tensor product of order 1 to enumerate approximation inclusion
@@ -91,28 +91,52 @@ void NonDGenACVSampling::generate_dags()
       Pecos::SharedPolyApproxData::
 	tensor_product_multi_index(tp_orders, tp, true);
       //Cout << "tp mi:\n" << tp;
+      size_t i, j, num_tp = tp.size();  unsigned short dag_size;
 
-      // Two discrete enumeration options here:
+      // Two enumeration options here:
       // > map<UShortArray,UShortArraySet> to associate pruned DAGs to nodes
       // > keep DAG size at numApprox and use USHRT_MAX for omitted approx
 
-      /* Compacted version requires map from nodes --> DAG set
-      unsigned short dag_size;
+      // Option 1:
+      // Pre-compute generate_sub_trees() for each dag_size (0:numApprox)
+      std::vector<UShortArraySet> nominal_dags(numApprox+1); // include size 0
+      for (j=0; j<numApprox; ++j)
+	nodes[j] = j;
+      for (dag_size=numApprox; dag_size>=1; --dag_size) {
+	nodes.resize(dag_size); // discard trailing node
+	dag.assign(dag_size, USHRT_MAX);
+	generate_sub_trees(dag_size, nodes, std::min(dag_size, dagDepthLimit),
+			   dag, nominal_dags[dag_size]);
+      }
+      // Now map each set of active model nodes through the nominal dags
+      std::map<UShortArray, UShortArraySet> super_dags;
+      UShortArray mapped_dag;  UShortArraySet mapped_set;
+      UShortArraySet::const_iterator cit;  unsigned short nom_dag_j;
       for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
 	const UShortArray& tp_i = tp[i];
 	nodes.clear();
-	for (j=0, dag_size=0; j<numApprox; ++j)
-	  if (tp_i[j]) { nodes.push_back(j); ++dag_size; }
-	dag.assign(dag_size, USHRT_MAX);
-	// recur for dag with a subset of approximations:
-	Cout << "\ngenerate_dags(): depth = " << dagDepthLimit
-	     << " root = " << root << " nodes =\n" << nodes << std::endl;
-	generate_sub_trees(root, nodes, dagDepthLimit, dag, dag_set);
-	modelDAGS[nodes] = dag_set;
+	for (j=0; j<numApprox; ++j)
+	  if (tp_i[j]) nodes.push_back(j);
+	dag_size = nodes.size();
+	const UShortArraySet& nominal_set = nominal_dags[dag_size];
+	mapped_set.clear();  mapped_dag.resize(dag_size);
+	for (cit=nominal_set.begin(); cit!=nominal_set.end(); ++cit) {
+	  const UShortArray& nominal_dag = *cit;
+	  for (j=0; j<dag_size; ++j) {
+	    nom_dag_j = nominal_dag[j];
+	    mapped_dag[j] = (nom_dag_j < dag_size) ? nodes[nom_dag_j] : root;
+	  }
+	  //Cout << "nominal_dag =\n" << nominal_dag
+	  //     << "mapped_dag  =\n" << mapped_dag << std::endl;
+	  mapped_set.insert(mapped_dag);
+	}	  
+	Cout << "\ngenerate_dags(): for nodes =\n" << nodes
+	     << "mapped_set =\n" << mapped_set << std::endl;
+	super_dags[nodes] = mapped_set;
       }
-      */
 
-      size_t j, num_tp = tp.size();
+      /* Option 2:
+      nodes.resize(numApprox);
       for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
 	const UShortArray& tp_i = tp[i];
 	for (j=0; j<numApprox; ++j)
@@ -123,8 +147,9 @@ void NonDGenACVSampling::generate_dags()
 	dag.assign(numApprox, USHRT_MAX);
 	generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
       }
+      */
 
-      //exit(0); // model selection not fully implemented at this time
+      exit(0); // not yet supported downstream
 
       break;
     }
@@ -136,7 +161,7 @@ void NonDGenACVSampling::generate_dags()
     case NO_MODEL_SELECTION:
       // root node (truth index = numApprox) and set of dependent nodes
       // (approximation model indices 0,numApprox-1) are fixed
-      for (i=0; i<numApprox; ++i) nodes[i] = i;
+      for (size_t i=0; i<numApprox; ++i) nodes[i] = i;
       dag.assign(numApprox, USHRT_MAX);
       // recur for DAG including all approximations:
       generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
@@ -158,8 +183,9 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
 		   unsigned short depth, UShortArray& dag,
 		   UShortArraySet& model_dags)
 {
-  // Modeled after Python DAG generator on stack overflow
-  // ("How to generate all trees having n-nodes and m-level depth")
+  // Modeled after Python DAG generator on stack overflow:
+  // https://stackoverflow.com/questions/52061669/how-to-generate-all-
+  //   trees-having-n-nodes-and-m-level-depth-the-branching-factor
 
   //Cout << "\nRecurring into generate_sub_trees(): depth = " << depth
   //     << " root = " << root << " nodes =\n" << nodes << std::endl;
