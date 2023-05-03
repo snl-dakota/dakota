@@ -42,9 +42,9 @@ void Hessian::applyInverse(       ROL::Vector<Dakota::Real>& Hv,
   auto hv_values = get_vector_values(Hv);
   auto v_values = get_vector_values(v);
 
-  Av_r = v_r;
+  Hv.set(v);
   int info = 0;
-  lapack_.GETRS(Teuchos::NO_TRANS,nRows,1,workMat->values(),nRows,iPiv.get(),Av_r.values(),nRows,&info);
+  lapack.GETRS(Teuchos::NO_TRANS,nRows,1,workMat->values(),nRows,iPiv.get(),Av_r.values(),nRows,&info);
 } // Hessian::applyInverse
 
 } // namespace rol_interface 

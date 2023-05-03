@@ -50,7 +50,7 @@ Dakota::Real Objective::value( const ROL::Vector<Dakota::Real>& x,
 void Objective::gradient(       Dakota::RealVector& g, 
                           const Dakota::RealVector& x, 
                                 Dakota::Real&       tol ) {
-   const Dakota::RealVector& grads = modelInterfac.current_response().get_gradients();
+   const Dakota::RealVector& grads = modelInterface->get_gradients();
    auto g_ptr = grads.values();
    for( int i=0; i<numOpt; ++i ) g[i] = (*g_ptr)[i]; 
 } // Objective::gradient
@@ -76,26 +76,26 @@ void Objective::hessVec(       ROL::Vector<Dakota::Real>& hv,
 }
 
 
-void Objective::invHessVec(       Dakota::RealVector& hv, 
-                            const Dakota::RealVector& v,
-                            const Dakota::RealVector& x,
-                                  Dakota::Real&       tol ) {
-  
-  if( modelInterface->has_second_derivatives() ) {
-    assert(hessOp->has_inverse());
-    hessOp->apply(ihv,v,tol);
-  }
-  else 
-    ROL::Objective<Dakota::Real>::invHessVec(ihv,v,x,tol);
-
-} // Objective::invHessVec
-
-void Objective::invHessVec(       ROL::Vector<Dakota::Real>& hv, 
-                            const ROL::Vector<Dakota::Real>& v,
-                            const ROL::Vector<Dakota::Real>& x,
-                                  Dakota::Real&              tol ) {
-  invHessVec(get_vector(hv),get_vector(v),get_vector(x),tol); 
-} // Objective::invHessVec
+//void Objective::invHessVec(       Dakota::RealVector& hv, 
+//                            const Dakota::RealVector& v,
+//                            const Dakota::RealVector& x,
+//                                  Dakota::Real&       tol ) {
+//  
+//  if( modelInterface->has_second_derivatives() ) {
+//    assert(hessOp->has_inverse());
+//    hessOp->apply(ihv,v,tol);
+//  }
+//  else 
+//    ROL::Objective<Dakota::Real>::invHessVec(ihv,v,x,tol);
+//
+//} // Objective::invHessVec
+//
+//void Objective::invHessVec(       ROL::Vector<Dakota::Real>& hv, 
+//                            const ROL::Vector<Dakota::Real>& v,
+//                            const ROL::Vector<Dakota::Real>& x,
+//                                  Dakota::Real&              tol ) {
+//  invHessVec(get_vector(hv),get_vector(v),get_vector(x),tol); 
+//} // Objective::invHessVec
 
 } // namespace rol_interface
 

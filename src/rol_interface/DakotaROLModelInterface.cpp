@@ -117,7 +117,7 @@ void ModelInterface::set_default_parameters( Optimizer* opt ) {
 
   // QUESTION: Is there a reason this is only for problem TYPE_EB?
   // Set the verbosity level.
-  if (outputLevel >= VERBOSE_OUTPUT)
+  if (outputLevel >= 2) {
     auglag.set("Print Intermediate Optimization History",true);
   }
 

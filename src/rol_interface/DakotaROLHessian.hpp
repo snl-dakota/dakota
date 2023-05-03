@@ -46,6 +46,9 @@ public:
 
   bool has_inverse() const { return hasInverse; }
 
+  static Teuchos::BLAS<Dakota::Real,int> blas;
+  static Teuchos::LAPACK<Dakota::Real,int> lapack;
+
 private:
 
   ModelInterface*                     modelInterface;

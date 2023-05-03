@@ -42,11 +42,11 @@ public:
                  const ROL::Vector<Dakota::Real>& x,
                        Dakota::Real&              tol ) override final;
 
-  void invHessVec(        ROL::Vector<Dakota::Real>& ihv,
-                    const ROL::Vector<Dakota::Real>& v,
-                    const ROL::Vector<Dakota::Real>& x,
-                          Dakota::Real&              tol ) override;
-
+//  void invHessVec(        ROL::Vector<Dakota::Real>& ihv,
+//                    const ROL::Vector<Dakota::Real>& v,
+//                    const ROL::Vector<Dakota::Real>& x,
+//                          Dakota::Real&              tol ) override;
+//
 
   inline auto make_opt_vector() noexcept {
     return make_vector(numOpt);
