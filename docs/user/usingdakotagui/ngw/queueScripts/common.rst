@@ -4,55 +4,6 @@
 Common Job Submission Scripts
 """""""""""""""""""""""""""""
 
-.. _gui-job-submission-workflow-common-scripts-status:
-
-status.sh
----------
-
-The "status.sh" script is responsible for checking whether the job has completed or not.
-
-.. code-block:: bash
-
-    #!/bin/bash
-
-    if [[ -z "$jobid" ]]; then
-      jobid=$(cat dart.id)
-    fi
-
-    checkFilename=slurm-$jobid.out
-    resultFilename="job.props"
-
-    function printResult(){
-        if [ $# -eq 0 ] ; then
-            return
-        fi
-
-        if [ -e $resultFilename ] ; then
-            rm $resultFilename
-        fi
-
-        line="job.results.status=$1"
-        echo "$line" > $resultFilename
-        echo $1
-    }
-
-    successString="Dakota Run Finished."
-    failedString="ERROR"
-
-    if [ -e $checkFilename ] ; then
-        if (grep -q "$successString" $checkFilename) then
-            printResult "Successful"
-        else
-            if (grep -q "$failedString" $checkFilename) then
-                printResult "Failed"
-            else
-                printResult "Undefined"
-            fi
-        fi
-    else
-        printResult "Undefined"
-    fi
-
 .. _gui-job-submission-workflow-common-scripts-checkjob:
 
 checkjob.sh
@@ -219,6 +170,57 @@ The "checkjob.sh" script is responsible for checking the status of the job in th
     fi
 
 .. _gui-job-submission-workflow-dakotaQueueSubmit-scripts-cancel:
+
+.. _gui-job-submission-workflow-common-scripts-status:
+
+status.sh
+---------
+
+The "status.sh" script is responsible for checking whether the job, once finished, has completed successfully or not. This is distinct from the role 
+of "checkjob.sh," which checks the status of the job while it is still in the job queue. The "status.sh" script can be thought of as more of a post-mortem
+script that inspects one or more output files for clues that everything completed correctly.
+
+.. code-block:: bash
+
+    #!/bin/bash
+
+    if [[ -z "$jobid" ]]; then
+      jobid=$(cat dart.id)
+    fi
+
+    checkFilename=slurm-$jobid.out
+    resultFilename="job.props"
+
+    function printResult(){
+        if [ $# -eq 0 ] ; then
+            return
+        fi
+
+        if [ -e $resultFilename ] ; then
+            rm $resultFilename
+        fi
+
+        line="job.results.status=$1"
+        echo "$line" > $resultFilename
+        echo $1
+    }
+
+    successString="DAKOTA execution time in seconds:"
+    failedString="ERROR"
+
+    if [ -e $checkFilename ] ; then
+        if (grep -q "$successString" $checkFilename) then
+            printResult "Successful"
+        else
+            if (grep -q "$failedString" $checkFilename) then
+                printResult "Failed"
+            else
+                printResult "Undefined"
+            fi
+        fi
+    else
+        printResult "Undefined"
+    fi
 
 cancel.sh
 ---------

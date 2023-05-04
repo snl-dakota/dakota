@@ -42,7 +42,7 @@ This script is NOT directly responsible for running Dakota (see the :ref:`"runDa
     fi
 
     exit ${exitcode}
-	
+    
 
 .. _gui-job-submission-workflow-dakotaQueueSubmit-scripts-runDakotaRemote:
 
@@ -80,7 +80,9 @@ The "runDakotaRemote.sh" script is responsible for actually loading and executin
     ###################################################
 
     export DAKOTA_PPN=${num.processors}/${num.nodes}                              # Number of CPUs per node to use if don't want all used
-    export DAKOTA_APPLIC_CONCURRENCY=${DakotaKey--evaluation_concurrency}         # Number of concurrent application analysis jobs. Infer from the number of requested CPUs above, i.e. take total available CPU and divide by CPU per job
+    export DAKOTA_APPLIC_CONCURRENCY=${DakotaKey--evaluation_concurrency}         # Number of concurrent application analysis jobs.
+                                                                                  #   Infer from the number of requested CPUs above, i.e.
+                                                                                  #   take total available CPU and divide by CPU per job
     export DAKOTA_APPLIC_PROCS=$((${num.processors}/DAKOTA_APPLIC_CONCURRENCY))   # DAKOTA_APPLIC_PROCS to number CPUs per job
 
     # !!! It is REQUIRED that DAKOTA_APPLIC_PROCS either divide evenly   !!!
@@ -124,4 +126,4 @@ The "runDakotaRemote.sh" script is responsible for actually loading and executin
 
     # Finally, launch the Dakota process
 
-    dakota -input ${input.file.base.name}.in 1>${input.file.name}.out 2>&1
+    dakota -preproc -input ${input.file.base.name}.in

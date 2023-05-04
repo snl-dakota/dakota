@@ -94,7 +94,7 @@ To create a new execution template:
    
       Templates in bold are the built-in or predefined execution templates. Those not in bold are your custom templates that are only available to you.    
 
-3. Performone of the following steps: 
+3. Perform one of the following steps: 
 
    a. Select the New button. 
    b. If you want to start from one of your existing templates, select an execution template in the Preferences panel and select the Duplicate button.

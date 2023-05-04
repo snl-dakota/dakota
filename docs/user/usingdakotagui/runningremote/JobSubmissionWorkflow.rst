@@ -4,33 +4,38 @@
 Job Submission (Using Next-Gen Workflow)
 """"""""""""""""""""""""""""""""""""""""
 
+''''''''
+Examples
+''''''''
+
 .. _gui-job-submission-workflow-example1:
 
-Example 1: NGW+Dakota on a Non-Queued Remote Machine
-----------------------------------------------------
+For an example that demonstrates submitting a job to a remote, non-queued machine, we recommend checking out
+the example available in the :ref:`examples repository <gui-examples-online>` at ``dakota-examples/official/gui/job_submission/non_queued_machine_examples/ngw_example``. Follow
+the setup steps listed in the associated README to configure each of the workflow files for your unique environment.
+
+As a reminder, submitting to a non-queued remote machine looks like this:
 
 .. figure:: img/JobSubmissionDiagram3.png
    :name: jobsubexample1:figure01
    :alt: Non-queued machine job submission example
+   :width: 600
    :align: center
 
    Non-queued machine job submission example
 
-We recommend checking out the example available in the :ref:`examples repository <gui-examples-online>` at ``dakota-examples/official\gui\job_submission\non_queued_machine_examples\ngw_example``. Follow
-the setup steps listed in the associated README to configure the workflows for your unique environment.
 
 .. _gui-job-submission-workflow-example2:
 
-Example 2: NGW+Dakota on a Queued Machine (Online Mode)
--------------------------------------------------------
+On the other hand, for submitting work to a remote queued machine, we recommend checking out the example
+available in the :ref:`examples repository <gui-examples-online>` at ``dakota-examples/official/gui/job_submission/queued_machine_examples/ngw_example``. Follow
+the setup steps listed in the associated README to configure each of the workflow files for your unique environment.
 
-.. note::
-
-   A Dakota workflow is said to be in **"Online Mode"** if Dakota is run once, and the driver waits for submitted jobs to complete.
+As a reminder, submitting to a queued remote machine looks like this:
 
 .. figure:: img/JobSubmissionDiagram4.png
-     :name: jobsubexample2:figure01
-     :alt: Queued job submission
+   :name: jobsubexample2:figure01
+   :width: 600
+   :alt: Queued job submission
+   :align: center
 
-We recommend checking out the example available in the :ref:`examples repository <gui-examples-online>` at ``dakota-examples/official\gui\job_submission\queued_machine_examples\ngw_example``. Follow
-the setup steps listed in the associated README to configure the workflows for your unique environment.
