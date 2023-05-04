@@ -12,12 +12,12 @@ Examples::
 
 .. code-block::
 
-method,
-	model_pointer = 'ENSEMBLE'
-	approximate_control_variate acv_mf
-	  pilot_samples = 25 seed = 8674132
-	  search_model_graphs full_recursion
-	  max_function_evaluations = 500
+    method,
+    	model_pointer = 'ENSEMBLE'
+    	approximate_control_variate acv_mf
+    	  pilot_samples = 25 seed = 8674132
+    	  search_model_graphs full_recursion
+    	  max_function_evaluations = 500
 
 Theory::
 Refer to :cite:p:`Bomarito2022` for additional details on generalized ACV recursion.

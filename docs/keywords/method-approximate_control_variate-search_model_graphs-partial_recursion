@@ -1,7 +1,9 @@
 Blurb::
 Perform a partial recursion of admissible DAGs
 
-Description:: A partial recursion includes admissible directed acyclic graphs
+Description::
+
+A partial recursion includes admissible directed acyclic graphs
 (DAGs) up to a specified depth, where the depth specification is required.  Refer to
 :dakkw:`method-approximate_control_variate-search_model_graphs-partial_recursion-depth_limit`
 for additional details.
@@ -14,6 +16,7 @@ Topics::
 Examples::
 
 Theory::
+
 Refer to :cite:p:`Bomarito2022` for additional details on generalized ACV recursion.
 
 Faq::
