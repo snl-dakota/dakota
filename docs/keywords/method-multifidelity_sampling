@@ -4,16 +4,18 @@ Description::
 An adaptive sampling method that utilizes multifidelity
 relationships in order to improve efficiency through variance reduction.
 
-Two variants are currently supported, with the former now deprecated
-and to be replaced by the latter:
-
-- In the case of a hierarchical surrogate model, the two-model approach of Ng and Willcox (2014) is supported and the two most extreme model fidelities or resolutions are employed as the truth model and approximation model.
-
-- In the case of a non-hierarchical surrogate model, the multi-model approach of Peherstorfer et al. (2016) is supported for which all model instances can be integrated into the scheme. Both methods can be used with either a model form sequence or a resolution level sequence.
+Multifidelity sampling is a recursive sampling scheme for which model
+ordering is important.  In the case of an ensemble surrogate model
+with more than two model instances (either in terms of model forms or
+resolutions), the multi-model approach of Peherstorfer et al. (2016)
+is supported for which all model instances can be integrated into the
+scheme.  In the special case of two model instances, this collapses to
+the approach of Ng and Willcox (2014).  The approach can be used with
+either a model form sequence or a resolution level sequence, but not both.
 
 *Control Variate Monte Carlo*
 
-In the case of two model fidelities (low fidelity denoted as LF and
+In the case of two model instances (low fidelity denoted as LF and
 high fidelity denoted as HF), we employ a control variate approach as
 described in Ng and Willcox (2014):
 
@@ -75,7 +77,7 @@ records the equivalent number of high-fidelity evaluations.
 *Usage Tips*
 
 The ``multifidelity_sampling`` method can be used in combination with
-either a hierarchical or non-hierarchical model specification for
+an ensemble model specification for
 either a model form sequence or a discretization level sequence.  For
 a model form sequence, each model must provide a scalar
 ``solution_level_cost``.  For a discretization level sequence, it is
@@ -83,15 +85,11 @@ necessary to identify the variable string descriptor that controls the
 resolution levels using ``solution_level_control`` as well as the
 associated array of relative costs using ``solution_level_cost``.
 
-The hierarchical two-model approach is a special case of the
-non-hierarchical multi-model approach.  The latter gives identical
-results to the former when restricted to one approximation model; as
-such, the hierarchical two-model approach is deprecated.
 Topics::
 
 Examples::
-We provide an example of a multifidelity Monte Carlo study using a
-non-hierarchical model specification employing multiple approximations.
+We provide an example of a multifidelity Monte Carlo study using an
+ensemble model specification employing multiple approximations.
 
 The following method block:
 
@@ -107,15 +105,15 @@ The following method block:
 specifies MFMC in combination with the model identified by the
 NONHIER pointer.
 
-This NONHIER model specification provides a one-dimensional sequence,
-here defined by a single truth model and a set of unordered approximation
-models, each with a single (or default) discretization level:
+This NONHIER model specification provides a truth model and a set of
+unordered approximation models, each with a single (or default)
+discretization level:
 
 .. code-block::
 
     model,
      id_model = 'NONHIER'
-     surrogate non_hierarchical
+     surrogate ensemble
        truth_model = 'HF'
        unordered_model_fidelities = 'LF1' 'LF2'
     

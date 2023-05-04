@@ -41,7 +41,7 @@ resolution control).  Note that the multilevel-multifidelity case can
 be "ragged" in the sense that not all models need to provide the same
 number of (or any) resolution controls.
 
-Second, an unordered/non-hierarchical ensemble of models may be
+Second, an unordered or "non-hierarchical" ensemble of models may be
 specified using ``truth_model_pointer`` in combination with
 ``approximation_models``, where the latter defines the set of
 unordered approximations to the high-fidelity reference model.  Note
@@ -49,7 +49,7 @@ that the distinction between ordered and unordered approximations is
 of little consequence within the ensemble surrogate model
 implementation; rather it becomes important when aligning with the
 requirements of multifidelity algorithms that either assume ordered
-hierarchies or support the flexibility to leverage general
+hierarchies or provide the flexibility to leverage general
 approximation ensembles.
 
 The ``correction`` specification identifies what type ( ``additive``,
