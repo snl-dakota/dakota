@@ -4,7 +4,7 @@ Output Standardized Regression Coefficients and R^2 for samples
 Description::
 Obtain standardized regression coefficients and coefficient of
 determination, R^2 from a linear regression model constructed from
-sampling results for each respoinse.  Requires the new surrogates module.
+sampling results for each response.  Requires the new surrogates module.
 
 
 *Default Behavior*
