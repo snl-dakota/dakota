@@ -12,28 +12,26 @@
 Version 6.18 (2023/05/15)
 """"""""""""""""""""""""""""""""""""""
 
+**Highlight: Ability to search over directed acyclic graphs to identify
+ the best model inter-relationships for multifidelity sampling.
+
+*Enabling / Accessing:* As part of the "approximate_control_variate"
+ (ACV) method for multifidelity sampling, the new
+ "search_model_graphs" option activates the generalized ACV capability
+ [Bomarito et al., 2022] that identifies the most performant set of
+ control variate pairings among the model ensemble.
+
+*Documentation:* [Need link to search_model_graphs keyword documentation.]
+
+
+
 **Highlight: Feature A**
 
 *Enabling / Accessing:* Where available and how to access
 
 *Documentation:* Where to learn more
 
-For example:
 
-The Dakota GUI has added many significant feature improvements over
-the last year.  The Dakota GUI now allows you to seamlessly browse
-Dakota's HDF5 database output files, as well as generate sophisticated
-graphical plots from HDF5 data with just a few clicks.  HDF5 browsing
-and plot generation can also be driven within Dakota GUI by Next-Gen
-Workflow, a powerful tool that allows you to construct node-based
-workflows for complex tasks.
-
-*Enabling / Accessing:* Dakota GUI ships with Dakota and is available
-for Windows, Mac, and RHEL7.
-
-*Documentation:* An enhanced version of the Dakota GUI manual now ships
-with the GUI, giving you easy access to a wealth of reference material
-for using the GUI.  The 6.11 GUI manual is also available here.
 
 
 **Improvements by Category**
@@ -46,18 +44,65 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 *Models*
 
+- Consolidation of ensemble models: Input specification and underlying
+  C++ model classes for hierarchical and non-hierarchical
+  multifidelity ensembles have been consolidated into a single
+  "ensemble" specification and C++ class.  This removes previous
+  iterator-model alignment constraints and allows the retirement of
+  the two-model control variate Monte Carlo (CVMC) implementation
+  (which previously required a hierarchical model), now subsumed by
+  multi-model multifidelity Monte Carlo (MFMC) (which previously
+  required a non-hierarchical model).
+
+- Model recasting for alternate variable views: Active variable views
+  are normally configured for the type of study or by explicit user
+  override, but can now be recast for special use cases where the
+  native variable view is insufficient.  These recastings occur behind
+  the scenes and can enable, for example, an all-view surrogate import
+  within an active-view inference.
+
 *Optimization Methods*
 
 *UQ Methods*
 
-Tolerance Intervals - Ernesto should add detail.
+- Within Bayesian inference, one can now import a PCE emulator (defined
+  by coefficients and multi-index), allowing for greater re-use of
+  offline emulator construction.  In particular, an emulator that is
+  complex or expensive to build (e.g., adaptively-refined, cross-validated,
+  multi-fidelity) can be constructed once and then reused for multiple
+  inference studies while varying priors, observational datasets, etc.
+
+- These imported emulators can now span both calibration and configuration
+  variables through the use of variable view recasting (see Models above).
+
+- Tolerance Intervals - Ernesto should add detail.
 
 *MLMF Sampling*
 
-*Sensitivity Analsys*
+- See Generalized ACV highlight at top.
+
+- Numerical solves now utilize multiple solves by default, including
+  both SQP and NIP solutions from two analytic initial guesses (MFMC
+  and ensemble of two-model CVMC).  The best of these solutions
+  (highest accuracy or lowest cost, depending on formulation) is
+  carried forward.
+
+- The default analytic solve option for MFMC has been modified in the
+  multiple-QoI case to be more consistent with the numerical solve
+  option.  In particular, the constraint of performing an integrated
+  sample increment across the QoI vector is now better reflected in
+  the averaged performance metrics.
+
+- Teuchos matrix linear algebra for numerical solves in ACV and
+  Generalized ACV has been refined through activation of
+  factorWithEquilibration() and solveToRefinedSolution() options,
+  improving numerical performance for larger model ensembles.
+
+*Sensitivity Analysis*
 
 Standardized Regression Coefficients - Russell should add detail.
  
+
 **Miscellaneous Enhancements and Bugfixes**
 
 - Enh: The text of links to Dakota keywords in the Keyword documentation was
@@ -76,7 +121,6 @@ Standardized Regression Coefficients - Russell should add detail.
 
 - Bug fix: No datasets are written to HDF5 for PDFs for zero-variance responses.
   This matches the console output. Previously, empty datasets were written.
-
 
 **Deprecated and Changed**
 
