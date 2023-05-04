@@ -56,6 +56,7 @@ Dakota GUI
 .. toctree::
    :maxdepth: 1
    
+   releasenotes-gui/618
    releasenotes-gui/617
    releasenotes-gui/616
    releasenotes-gui/615
