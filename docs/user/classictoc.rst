@@ -126,7 +126,6 @@ set of manuals, this set of links may help you find what you're looking for...
   
 - :ref:`Services <developer-services-main>`
 - :ref:`Development Practices and Guidance <developer-devpractices-main>`
-- :ref:`Additional Resources <developer-additional-resources>`
 
 **Dakota GUI Manual**
 
