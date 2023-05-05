@@ -32,10 +32,10 @@ You can read more about this new wizard :ref:`here <wizards-newparamresponsefile
 
 **Better Shortcuts Throughout**
 
-- Users now have the ability to make NGW-enabled run configurations for Dakota. This alleviates the need to wrap Dakota in an outer workflow if the Dakota study's analysis driver is itself an NGW workflow.
-  Additionally, this run configuration allows users to specify default values for pre-processing fields as part of the run configuration. You can read more about this new
-  option :ref:`here <gui-run-configurations-workflow>`.
-- The "New Wrapper Workflow" wizard will now create additional NGW parameter nodes for each piece of pre-processing that appears in the Dakota input file you submit to the wizard. This wizard provides the same level of
+- Users now have the ability to make NGW-enabled run configurations for Dakota, via the "Dakota (Workflow)" run configuration option. This alleviates the need to wrap Dakota in an outer workflow if the
+  Dakota study's analysis driver is itself an NGW workflow. Additionally, this run configuration allows users to specify default values for pre-processing fields as part of the run
+  configuration. You can read more about this new option :ref:`here <gui-run-configurations-workflow>`.
+- The New Wrapper Workflow wizard will now create additional NGW parameter nodes for each piece of pre-processing that appears in the Dakota input file you submit to the wizard. This wizard provides the same level of
   pre-processing flexibility as the "Dakota (Workflow)" run configuration described above.
 - Users can use the New Dakota Project wizard to directly import from the Dakota examples repo, thanks to an additional second page added to the wizard.
 
