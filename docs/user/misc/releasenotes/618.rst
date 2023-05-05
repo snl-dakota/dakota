@@ -1,19 +1,13 @@
-:orphan:
-
-.. _releasenotes-template:
-
-.. note::
-
-   This unlinked page is a template with prompts to consider when
-   authoring release notes before promoting to a versioned page.
-   Remove :orphan: above if promoting this page.
+.. _releasenotes-618:
 
 """"""""""""""""""""""""""""""""""""""
 Version 6.18 (2023/05/15)
 """"""""""""""""""""""""""""""""""""""
 
-**Highlight: Ability to search over directed acyclic graphs to identify
- the best model inter-relationships for multifidelity sampling.
+**Highlight: Generalized Approximate Control Variate Method for Multifidelity Sampling**
+
+Dakota can now search over directed acyclic graphs to identify
+the best model inter-relationships for multifidelity sampling.
 
 *Enabling / Accessing:* As part of the :dakkw:`approximate_control_variate`
  (ACV) method for multifidelity sampling, the new
@@ -24,14 +18,18 @@ Version 6.18 (2023/05/15)
 *Documentation:* Refer to DAG recursion types under :dakkw:`search_model_graphs`.
 
 
+**Highlight: Updated User Resources**
 
-**Highlight: Feature A**
+Dakota's website has received a refresh. Documentation has moved to
+GitHub.io and Dakota downloads are now offered as GitHub Releases.
 
-*Enabling / Accessing:* Where available and how to access
+*Enabling / Accessing:* 
 
-*Documentation:* Where to learn more
+Visit:
 
-
+* Website: `https://dakota.sandia.gov <https://dakota.sandia.gov>`_
+* Documentation: `https://snl-dakota.github.io <https://snl-dakota.github.io>`_
+* Downloads: `https://github.com/snl-dakota/dakota/releases/ <https://github.com/snl-dakota/dakota/releases/>`_
 
 
 **Improvements by Category**
@@ -107,6 +105,9 @@ Standardized Regression Coefficients - Russell should add detail.
 
 - Enh: The text of links to Dakota keywords in the Keyword documentation was
   updated to be prettier.
+
+- Enh: Add `find_dependency` call for Boost to DakotaConfig.cmake to aid
+  linking to Dakota library.
 
 - Bug fix: Correlation matrices now receive the correct variable labels
   in studies that include variables from more than one category (e.g. mixture
