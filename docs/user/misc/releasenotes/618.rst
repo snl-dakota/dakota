@@ -15,13 +15,13 @@ Version 6.18 (2023/05/15)
 **Highlight: Ability to search over directed acyclic graphs to identify
  the best model inter-relationships for multifidelity sampling.
 
-*Enabling / Accessing:* As part of the "approximate_control_variate"
+*Enabling / Accessing:* As part of the :dakkw:`approximate_control_variate`
  (ACV) method for multifidelity sampling, the new
- "search_model_graphs" option activates the generalized ACV capability
- [Bomarito et al., 2022] that identifies the most performant set of
- control variate pairings among the model ensemble.
+ :dakkw:`search_model_graphs` option activates the generalized ACV capability
+ (:cite:p:`Bomarito2022`) that identifies the most performant set of
+ control variate pairings among the models in the multifidelity ensemble.
 
-*Documentation:* [Need link to search_model_graphs keyword documentation.]
+*Documentation:* Refer to DAG recursion types under :dakkw:`search_model_graphs`.
 
 
 
@@ -47,7 +47,7 @@ Version 6.18 (2023/05/15)
 - Consolidation of ensemble models: Input specification and underlying
   C++ model classes for hierarchical and non-hierarchical
   multifidelity ensembles have been consolidated into a single
-  "ensemble" specification and C++ class.  This removes previous
+  :dakkw:`ensemble` specification and C++ class.  This removes previous
   iterator-model alignment constraints and allows the retirement of
   the two-model control variate Monte Carlo (CVMC) implementation
   (which previously required a hierarchical model), now subsumed by
@@ -81,11 +81,11 @@ Version 6.18 (2023/05/15)
 
 - See Generalized ACV highlight at top.
 
-- Numerical solves now utilize multiple solves by default, including
-  both SQP and NIP solutions from two analytic initial guesses (MFMC
-  and ensemble of two-model CVMC).  The best of these solutions
-  (highest accuracy or lowest cost, depending on formulation) is
-  carried forward.
+- Numerical solutions now utilize multiple optimizer solves by
+  default, including both SQP and NIP solutions from two analytic
+  initial guesses (MFMC and ensemble of two-model CVMC).  The best of
+  these solutions (highest accuracy or lowest cost, depending on
+  formulation) is carried forward.
 
 - The default analytic solve option for MFMC has been modified in the
   multiple-QoI case to be more consistent with the numerical solve
