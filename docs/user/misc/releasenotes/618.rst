@@ -15,13 +15,16 @@ Version 6.18 (2023/05/15)
 **Highlight: Ability to search over directed acyclic graphs to identify
  the best model inter-relationships for multifidelity sampling.
 
-*Enabling / Accessing:* As part of the :dakkw:`approximate_control_variate`
- (ACV) method for multifidelity sampling, the new
- :dakkw:`search_model_graphs` option activates the generalized ACV capability
+*Enabling / Accessing:* As part of the
+ :dakkw:`method-approximate_control_variate` (ACV) method for
+ multifidelity sampling, the new
+ :dakkw:`method-approximate_control_variate-search_model_graphs`
+ option activates the generalized ACV capability
  (:cite:p:`Bomarito2022`) that identifies the most performant set of
  control variate pairings among the models in the multifidelity ensemble.
 
-*Documentation:* Refer to DAG recursion types under :dakkw:`search_model_graphs`.
+*Documentation:* Refer to DAG recursion types under
+ :dakkw:`method-approximate_control_variate-search_model_graphs`.
 
 
 
@@ -47,12 +50,12 @@ Version 6.18 (2023/05/15)
 - Consolidation of ensemble models: Input specification and underlying
   C++ model classes for hierarchical and non-hierarchical
   multifidelity ensembles have been consolidated into a single
-  :dakkw:`ensemble` specification and C++ class.  This removes previous
-  iterator-model alignment constraints and allows the retirement of
-  the two-model control variate Monte Carlo (CVMC) implementation
-  (which previously required a hierarchical model), now subsumed by
-  multi-model multifidelity Monte Carlo (MFMC) (which previously
-  required a non-hierarchical model).
+  :dakkw:`model-surrogate-ensemble` specification and C++ class.  This
+  removes previous iterator-model alignment constraints and allows the
+  retirement of the two-model control variate Monte Carlo (CVMC)
+  implementation (which previously required a hierarchical model), now
+  subsumed by multi-model multifidelity Monte Carlo (MFMC) (which
+  previously required a non-hierarchical model).
 
 - Model recasting for alternate variable views: Active variable views
   are normally configured for the type of study or by explicit user
