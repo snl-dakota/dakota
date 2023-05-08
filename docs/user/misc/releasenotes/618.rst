@@ -102,7 +102,9 @@ Visit:
 
 *Sensitivity Analysis*
 
-Standardized Regression Coefficients - Russell should add detail.
+
+- :dakkw:`Standardized regression coefficients <method-sampling-std_regression_coeffs>`
+  can be optionally computed as part of a sampling study.
  
 
 **Miscellaneous Enhancements and Bugfixes**
