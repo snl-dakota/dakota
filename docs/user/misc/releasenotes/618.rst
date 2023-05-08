@@ -73,7 +73,8 @@ Visit:
 - These imported emulators can now span both calibration and configuration
   variables through the use of variable view recasting (see Models above).
 
-- Tolerance Intervals - Ernesto should add detail.
+- Tolerance intervals :cite:p:`Jekel20` can now be computed using the
+  :dakkw:`sampling <method-sampling-tolerance_intervals>` method.
 
 *MLMF Sampling*
 
