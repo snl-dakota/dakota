@@ -1,17 +1,15 @@
 Blurb::
+
 The confidence level to be used to determine the standard deviation
 of the equivalent normal distribution.
+
 Description::
+
+The confidence level must be a value between 0 and 1.
 
 *Default Behavior*
 
 A value of 0.90 (90%) is the default value for this parameter.
-
-*Expected Output*
-
-*Usage Tips*
-
-*Additional Discussion*
 
 Topics::
 
