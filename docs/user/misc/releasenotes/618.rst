@@ -102,10 +102,15 @@ Visit:
 
 *Sensitivity Analysis*
 
+- :dakkw:`Standardized regression coefficients
+  <method-sampling-std_regression_coeffs>`
+  can be optionally computed as part of a sampling study.  These are
+  computed from a linear regression model fit to sampling results for each
+  response and requires Dakota to be built with the new surrogates
+  module enabled.  Console and hdf5 output (if enabled) include
+  regression coefficients together with the coefficient of determination
+  (R^2) as an indicator of goodness of fit of the linear regression model.
 
-- :dakkw:`Standardized regression coefficients <method-sampling-std_regression_coeffs>`
-  can be optionally computed as part of a sampling study.
- 
 
 **Miscellaneous Enhancements and Bugfixes**
 
