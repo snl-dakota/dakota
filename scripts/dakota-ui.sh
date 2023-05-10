@@ -60,7 +60,7 @@ if [ `uname` = "Darwin" ]; then
   DYLD_LIBRARY_PATH="${libpaths}:${DYLD_LIBRARY_PATH}"
   export DYLD_LIBRARY_PATH
 
-  gui_path="${execpath}/../gui/Dakota_UI_*.app/Contents/MacOS"
+  gui_path="${execpath}/../gui/Dakota_*.app/Contents/MacOS"
   # The explicit cd is a workaround for DakotaUI to find the JNI
   # surrogates lib. The gui_path isn't quoted here so the wildcard
   # will get evaluated and work across versions:
