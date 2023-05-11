@@ -175,7 +175,7 @@ To persist the PATH to Dakota across terminals/sessions, make the following chan
 
 .. code-block::
 
-   export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test:$INSTALL_DIR/gui/Contents/MacOS:$PATH
+   export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test:$INSTALL_DIR/gui/Dakota_UI_6.19.0.app/Contents/MacOS:$PATH
    export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/share/dakota/Python
 
 3. Save and close file.
@@ -201,7 +201,7 @@ To persist the PATH to Dakota across terminals/sessions, make the following chan
 
 .. code-block::
 
-   set path=($INSTALL_DIR/bin $INSTALL_DIR/share/dakota/test $INSTALL_DIR/gui/Contents/MacOS $path)
+   set path=($INSTALL_DIR/bin $INSTALL_DIR/share/dakota/test $INSTALL_DIR/gui/Dakota_UI_6.19.0.app/Contents/MacOS $path)
    setenv PYTHONPATH "${PYTHONPATH}:${INSTALL_DIR}/share/dakota/Python"
 
 3. Save and close file.
