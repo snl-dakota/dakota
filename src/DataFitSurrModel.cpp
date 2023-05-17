@@ -2172,7 +2172,8 @@ asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
     Surrogate data imports default to active/inactive variables, but
     user can override to active only */
 void DataFitSurrModel::
-import_points(unsigned short tabular_format, bool use_var_labels, bool active_only)
+import_points(unsigned short tabular_format, bool use_var_labels,
+	      bool active_only)
 {
   // Temporary objects to use to read correct size vars/resp; use copies
   // so that read_data_tabular() does not alter state of vars/resp objects

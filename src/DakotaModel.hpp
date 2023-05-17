@@ -618,10 +618,16 @@ public:
   bool recastings() const;
 
   /// employ the model recursion to transform from bottom level
+  /// user-space variables to top level iterator-space variables
+  void user_space_to_iterator_space(Variables& vars);
+  /// employ the model recursion to transform from bottom level
   /// user-space data to top level iterator-space data
   void user_space_to_iterator_space(const Variables& user_vars,
 				    const Response&  user_resp,
 				    Variables& iter_vars, Response& iter_resp);
+  /// employ the model recursion to transform from top level
+  /// iterator-space variables to bottom level user-space variables
+  void iterator_space_to_user_space(Variables& vars);
   /// employ the model recursion to transform from top level
   /// iterator-space data to bottom level user-space data
   void iterator_space_to_user_space(const Variables& iter_vars,

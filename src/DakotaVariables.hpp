@@ -238,6 +238,25 @@ public:
   /// reshape an existing Variables object based on updated sharedVarsData
   void reshape();
 
+  /// copy the active cv/div/dsv/drv variables from vars
+  void active_variables(const Variables& vars);
+  /// copy all cv/div/dsv/drv variables from vars
+  void all_variables(const Variables& vars);
+  /// copy the active cv/div/dsv/drv variables from incoming vars to all
+  /// variables in this instance
+  void active_to_all_variables(const Variables& vars);
+  /// copy all cv/div/dsv/drv variables from incoming vars to active
+  /// variables in this instance
+  void all_to_active_variables(const Variables& vars);
+  /// copy the inactive cv/div/dsv/drv variables from vars
+  void inactive_variables(const Variables& vars);
+  /// copy the active cv/div/dsv/drv variables from vars to inactive on this
+  void active_to_inactive_variables(const Variables& vars);
+  /// insert the inactive cv/div/dsv/drv variables from vars into all arrays
+  void inactive_into_all_variables(const Variables& vars);
+  /// map from vars into the corresponding variables based on active views
+  void map_variables_by_view(const Variables& vars);
+
   // ACTIVE VARIABLES
 
   /// return an active continuous variable
@@ -287,23 +306,6 @@ public:
   void discrete_real_variable(Real dr_var, size_t index);
   /// set the active discrete real variables
   void discrete_real_variables(const RealVector& dr_vars);
-
-  /// copy the active cv/div/dsv/drv variables from vars
-  void active_variables(const Variables& vars);
-  /// copy all cv/div/dsv/drv variables from vars
-  void all_variables(const Variables& vars);
-  /// copy the active cv/div/dsv/drv variables from incoming vars to all
-  /// variables in this instance
-  void active_to_all_variables(const Variables& vars);
-  /// copy all cv/div/dsv/drv variables from incoming vars to active
-  /// variables in this instance
-  void all_to_active_variables(const Variables& vars);
-  /// copy the inactive cv/div/dsv/drv variables from vars
-  void inactive_variables(const Variables& vars);
-  /// copy the active cv/div/dsv/drv variables from vars to inactive on this
-  void active_to_inactive_variables(const Variables& vars);
-  /// insert the inactive cv/div/dsv/drv variables from vars into all arrays
-  void inactive_into_all_variables(const Variables& vars);
 
   /// return a mutable view of the active continuous variables
   RealVector& continuous_variables_view();
@@ -1038,6 +1040,30 @@ inline void Variables::active_to_inactive_variables(const Variables& vars)
     inactive_discrete_int_variables(vars.discrete_int_variables());
     inactive_discrete_string_variables(vars.discrete_string_variables());
     inactive_discrete_real_variables(vars.discrete_real_variables());
+  }
+}
+
+
+inline void Variables::map_variables_by_view(const Variables& vars)
+{
+  // Set inactive from inbound active variables
+  if (variablesRep)
+    variablesRep->map_variables_by_view(vars);
+  else {
+    short active_view = view().first, v_active_view = vars.view().first;
+    if (active_view == v_active_view)
+      active_variables(vars);
+    else if ( (v_active_view == RELAXED_ALL || v_active_view == MIXED_ALL) &&
+	      active_view >= RELAXED_DESIGN )
+      active_to_all_variables(vars);
+    else if ( (active_view == RELAXED_ALL || active_view == MIXED_ALL) &&
+	      v_active_view >= RELAXED_DESIGN )
+      all_to_active_variables(vars);
+    else {
+      Cerr << "Error: unsupported view mapping in Variables::"
+	   << "map_variables_by_view()." << std::endl;
+      abort_handler(VARS_ERROR);
+    }
   }
 }
 
@@ -1990,7 +2016,7 @@ inline void size_and_fill(const SharedVariablesData& svd, size_t array_size,
   vars_array.clear();
   vars_array.reserve(array_size);
   for(size_t i=0; i<array_size; ++i)
-    vars_array.push_back(Variables(svd));
+    vars_array.push_back(Variables(svd)); // shaped but uninitialized
 }
 
 
