@@ -38,7 +38,7 @@ DataTransformModel* DataTransformModel::dtModelInstance(NULL);
     properties of the RecastModel.  Hyper-parameters are assumed to trail the
     active continuous variables when presented to this RecastModel. */
 DataTransformModel::
-DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
+DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
 		   const ShortShortPair& recast_vars_view,
                    size_t num_hyper, unsigned short mult_mode, 
                    short recast_resp_deriv_order):
@@ -144,6 +144,19 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 	      primary_resp_map_indices, secondary_resp_map_indices, 
 	      nonlinear_resp_mapping, primary_resp_map, secondary_resp_map);
 
+  // transform configuration variables in expData from the original
+  // "user space" to the space used by this Model
+  if (manage_data_recastings()) {
+    VariablesArray& exp_vars_array = expData.configuration_variables();
+    size_t i, num_exp_vars = exp_vars_array.size();
+    for (i=0; i<num_exp_vars; ++i) {
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "User-space configuration vars:\n" << exp_vars_array[i];
+      user_space_to_iterator_space(exp_vars_array[i]);
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Iterator-space configuration vars:\n" << exp_vars_array[i];
+    }
+  }
 
   // ---
   // Expand currentVariables values/labels to account for hyper-parameters
@@ -507,16 +520,20 @@ gen_primary_resp_map(const SharedResponseData& srd,
 
 
 void DataTransformModel::
-transform_inactive_variables(const Variables& config_vars,
+transform_inactive_variables(const Variables& exp_config_vars,
 			     Variables& sub_model_vars)
 {
+  // Note: experiment configuration vars are imported in "user space" (i.e.,
+  // the original vars spec) and are transformed to this model's "iterator
+  // space" in the constructor by user_space_to_iterator_space().
+
   // experimental configurations are always stored as inactive vars (refer
   // to ExperimentData ctor).  Thus we alternate only on the subModel view.
   short sm_active_view = sub_model_vars.view().first; 
   if (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL)
-    sub_model_vars.inactive_into_all_variables(config_vars);
+    sub_model_vars.inactive_into_all_variables(exp_config_vars);
   else //if (sm_active_view >= RELAXED_DESIGN)
-    sub_model_vars.inactive_variables(config_vars);
+    sub_model_vars.inactive_variables(exp_config_vars);
 }
 
 
@@ -713,7 +730,8 @@ void DataTransformModel::vars_mapping(const Variables& recast_vars,
 
   // this map only supports continuous variables, but rest need to come along
   submodel_vars.discrete_int_variables(recast_vars.discrete_int_variables());
-  submodel_vars.discrete_string_variables(recast_vars.discrete_string_variables());
+  submodel_vars.discrete_string_variables(
+    recast_vars.discrete_string_variables());
   submodel_vars.discrete_real_variables(recast_vars.discrete_real_variables());
 }
 

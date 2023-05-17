@@ -46,7 +46,7 @@ public:
   //
 
   /// standard constructor
-  DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
+  DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
 		     const ShortShortPair& recast_vars_view,
 		     size_t num_hyper = 0,
                      unsigned short mult_mode = CALIBRATE_NONE, 
@@ -240,7 +240,7 @@ protected:
                               const Real wssr, const int num_points,
                               const int point_index);
   /// Reference to the experiment data used to construct this Model
-  const ExperimentData& expData;
+  ExperimentData& expData;
 
   /// static pointer to this class for use in static callbacks
   static DataTransformModel* dtModelInstance;

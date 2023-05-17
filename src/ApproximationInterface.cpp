@@ -234,27 +234,9 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     // views are compatible and force_rebuild() is responsible for verifying
     // that no unapproximated variables have changed (which would invalidate
     // the approximation).
-    short approx_active_view = vars.view().first,
-          actual_active_view = actualModelVars.view().first;
-    bool am_vars = true;
-    if (approx_active_view == actual_active_view)
-      am_vars = false;
-    else if ( ( actual_active_view == RELAXED_ALL ||
-		actual_active_view == MIXED_ALL ) &&
-	      approx_active_view >= RELAXED_DESIGN ) // Distinct to All
-      actualModelVars.all_to_active_variables(vars);
-    else if ( ( approx_active_view == RELAXED_ALL ||
-		approx_active_view == MIXED_ALL ) &&
-	      actual_active_view >= RELAXED_DESIGN ) // All to Distinct
-      actualModelVars.active_to_all_variables(vars);
-    else { // TO DO: extend for aleatory/epistemic uncertain views
-      Cerr << "Error: unsupported variable view differences in "
-	   << "ApproximationInterface::map()" << std::endl;
-      abort_handler(-1);
-    }
-    // active subsets of actualModelVars are used in surrogate construction
-    // and evaluation
-    const Variables& surf_vars = (am_vars) ? actualModelVars : vars;
+    bool same_view = (vars.view().first == actualModelVars.view().first);
+    if (!same_view) actualModelVars.map_variables_by_view(vars);
+    const Variables& surf_vars = (same_view) ? vars : actualModelVars;
     // precompute DVV mappings once for all grads/hessians
     bool deriv_flag = false;  StSIter it;
     for (it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)

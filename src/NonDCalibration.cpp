@@ -44,9 +44,6 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
 }
 
 
-NonDCalibration::~NonDCalibration()
-{ }
-
 bool NonDCalibration::resize()
 {
   bool parent_reinit_comms = NonD::resize();

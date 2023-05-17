@@ -71,6 +71,10 @@ private:
 
 };
 
+
+inline NonDCalibration::~NonDCalibration()
+{ }
+
 } // namespace Dakota
 
 #endif
