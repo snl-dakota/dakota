@@ -36,7 +36,7 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDACVSampling(problem_db, model),
   dagRecursionType(problem_db.get_short("method.nond.search_model_graphs")),
   dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit")),
-  modelSelectType(NO_MODEL_SELECTION),//(ALL_MODEL_COMBINATIONS)
+  modelSelectType(ALL_MODEL_COMBINATIONS),//(NO_MODEL_SELECTION)
   meritFnStar(DBL_MAX)
 {
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
@@ -481,7 +481,8 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
       // sample set definitions are enabled by reversing the DAG direction:
       const UShortArray& active_dag = *activeDAGIter;
       if (outputLevel >= QUIET_OUTPUT)
-	Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
+	Cout << "Evaluating active DAG:\n" << active_dag << "for node set:\n"
+	     << soln_key.first << std::endl;
       generate_reverse_dag(active_dag);
       // compute the LF/HF evaluation ratios from shared samples and compute
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
