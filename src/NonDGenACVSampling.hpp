@@ -77,7 +77,8 @@ private:
   void generate_sub_trees(unsigned short root, const UShortArray& nodes,
 			  unsigned short depth, UShortArray& dag,
 			  UShortArraySet& model_dags);
-  void generate_reverse_dag(const UShortArray& dag);
+  void generate_reverse_dag(const UShortArray& model_set,
+			    const UShortArray& dag);
   void unroll_reverse_dag_from_root(unsigned short root,
 				    UShortList& ordered_list);
   void unroll_reverse_dag_from_root(unsigned short root,
@@ -115,13 +116,17 @@ private:
 			      size_t N_shared_q, size_t mom, size_t qoi,
 			      RealVector& beta);
 
-  void analytic_initialization_from_ensemble_cvmc(const UShortArray& dag,
+  void analytic_initialization_from_mfmc(const UShortArray& model_set,
+					 Real avg_N_H, DAGSolutionData& soln);
+  void analytic_initialization_from_ensemble_cvmc(const UShortArray& model_set,
+						  const UShortArray& dag,
 						  const UShortList& root_list,
 						  Real avg_N_H,
 						  DAGSolutionData& soln);
   void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
 			       const RealMatrix& cov_LH,
 			       const RealVector& var_H, const RealVector& cost,
+			       const UShortArray& model_set,
 			       const UShortArray& dag,
 			       const UShortList& root_list,
 			       DAGSolutionData& soln);

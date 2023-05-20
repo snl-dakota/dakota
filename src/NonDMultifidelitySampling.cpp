@@ -1312,19 +1312,18 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 			const RealVector& cost,  SizetArray& approx_sequence,
 			DAGSolutionData& soln)
 {
-  size_t qoi, approx, num_am1 = numApprox - 1, hf_form_index, hf_lev_index;
-  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  Real cost_L, cost_H = cost[numApprox], budget = (Real)maxFunctionEvals, r_i,
-    avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX),
-       budget_exhausted   = (equivHFEvals >= budget);
-  //if (budget_exhausted) budget = equivHFEvals;
-
-  RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  Real&       avg_hf_target   = soln.avgHFTarget;
   if (mlmfIter == 0) {
+
+    size_t hf_form_index, hf_lev_index;
+    hf_indices(hf_form_index, hf_lev_index);
+    SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+    size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+    Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+    RealVector& avg_eval_ratios = soln.avgEvalRatios;
+    Real&       avg_hf_target   = soln.avgHFTarget;
+    bool budget_constrained = (maxFunctionEvals != SZ_MAX),
+         budget_exhausted   = (budget_constrained &&
+			       equivHFEvals >= (Real)maxFunctionEvals);
 
     if (budget_exhausted) { // only 1 feasible pt, no need for solve
       avg_eval_ratios.sizeUninitialized(numApprox);

@@ -397,8 +397,6 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
   // related analytic solutions (iter == 0) or warm started from the previous
   // solutions (iter >= 1)
 
-  RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX);
   if (mlmfIter == 0) {
     cache_mc_reference();
 
@@ -406,13 +404,12 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-    Real budget            = (Real)maxFunctionEvals;
-    bool budget_exhausted  = (equivHFEvals >= budget);
-    // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H)
-    // Can happen if shared pilot rolls up to exceed budget spec.
-    //if (budget_exhausted) budget = equivHFEvals;
+    bool budget_constrained = (maxFunctionEvals != SZ_MAX);
+    bool budget_exhausted
+      = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals);
 
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
+      RealVector& avg_eval_ratios = soln.avgEvalRatios;
       if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
       // For r_i = 1, C_F,c_f = 0 --> NUDGE for downstream CV numerics
       avg_eval_ratios = 1. + RATIO_NUDGE;     soln.avgHFTarget = avg_N_H;
