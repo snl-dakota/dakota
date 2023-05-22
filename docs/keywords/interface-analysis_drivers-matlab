@@ -1,11 +1,10 @@
 Blurb::
 Run Matlab through a direct interface - requires special Dakota build
 Description::
-Dakota supports a :ref:`library-linked interface to Matlab <advint:existingdirect>`, but it must be
-explicitly enabled when compiling Dakota from source.  Contact the
-Dakota users mailing list for assistance building and using Dakota
-with these interfaces.
-
+Dakota supports a :ref:`library-linked interface to Matlab <advint:existingdirect>`, which
+may not be available in pre-built downloads of Dakota and must be explicitly enabled when
+compiling Dakota from source.
+ 
 The :dakkw:`interface-analysis_drivers` specifies a Matlab file which
 implements the parameter to response mapping.
 Topics::

@@ -11,7 +11,7 @@ for example, the surrogate-based optimization methods,
 :dakkw:`method-surrogate_based_global` and :dakkw:`method-surrogate_based_local`).
 
 Surrogate models supported in Dakota are
-categorized as Data Fitting or Hierarchical, as shown below.
+categorized as Data Fitting or Ensemble, as shown below.
 Each of these surrogate types provides an approximate representation
 of a "truth" model which is used to perform the parameter to response
 mappings. This approximation is built and updated using results from the
@@ -50,16 +50,16 @@ truth model, called the "training data".
     - Orthogonal polynomials (only supported in PCE/SC for now): :dakkw:`method-polynomial_chaos` and :dakkw:`method-stoch_collocation` Training data is generated using either a design of experiments method applied to the truth model ( specified by :dakkw:`model-surrogate-global-dace_method_pointer`), or from saved data (specified by :dakkw:`model-surrogate-global-reuse_points` ) in a restart database, or an import file.
 
 
-- Multifidelity/hierarchical: Multifidelity modeling involves the use of a low-fidelity physics-based model as a surrogate for the original high-fidelity model. The low-fidelity model typically involves a coarser mesh, looser convergence tolerances, reduced element order, or omitted physics. See :dakkw:`model-surrogate-ensemble`.
+- Multifidelity/ensemble: Multifidelity modeling involves the use of a low-fidelity physics-based model as a surrogate for the original high-fidelity model. The low-fidelity model typically involves a coarser mesh, looser convergence tolerances, reduced element order, or omitted physics. See :dakkw:`model-surrogate-ensemble`.
 
-The global and hierarchal surrogates have a correction feature
+The global and ensemble surrogates have a correction feature
 in order to improve the local accuracy of the surrogate models.
 The correction factors force the surrogate models to match the true
 function values and possibly true function derivatives at the center
 point of each trust region.
 
 Details can be found on global :dakkw:`model-surrogate-global-correction`
-or hierarchical :dakkw:`model-surrogate-ensemble-ordered_model_fidelities-correction`.
+or ensemble :dakkw:`model-surrogate-ensemble-ordered_model_fidelities-correction`.
 Topics::
 
 Examples::
@@ -117,15 +117,15 @@ community.
 
 *Multifidelity Surrogate Models*
 
-A second type of surrogate is the {\em model hierarchy} type (also
+A second type of surrogate is the {\em model ensemble} type (also
 called multifidelity, variable fidelity, variable complexity, etc.).
-In this case, a model that is still physics-based but is of lower
-fidelity (e.g., coarser discretization, reduced element order, looser
-convergence tolerances, omitted physics) is used as the surrogate in
-place of the high-fidelity model. For example, an inviscid,
-incompressible Euler CFD model on a coarse discretization could be
-used as a low-fidelity surrogate for a high-fidelity Navier-Stokes
-model on a fine discretization.
+In this case, one or more models that are still physics-based but are
+of lower fidelity (e.g., coarser discretization, reduced element
+order, looser convergence tolerances, omitted physics) are used as
+surrogates in place of the high-fidelity model. For example, an
+inviscid, incompressible Euler CFD model on a coarse discretization
+could be used as a low-fidelity surrogate for a high-fidelity
+large-eddy simulation model on a fine discretization.
 
 *Surrogate Model Selection*
 

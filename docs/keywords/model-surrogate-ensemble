@@ -1,87 +1,91 @@
 Blurb::
-TEMPLATE See guidelines for blub below.
+Ensemble surrogates employ a collection of lower-fidelity
+models to approximate a truth reference model at reduced cost.
 
 Description::
+Multifidelity modeling involves the use of lower-fidelity
+physics-based models as surrogates for a high-fidelity "truth"
+model. These low-fidelity models can involve variations in model form,
+resolution, or both.  Model form variations for reduced fidelity may
+involve omitted physics or solution of approximated or averaged
+physics.  Resolution variations typically involve coarsened space-time
+discretizations (e.g., h- derefinement), reduced element order (e.g.,
+p- derefinement), or loosened convergence tolerances.  Unlike local,
+global, and multipoint surrogates, these approximations are not
+data-driven (no high-fidelity data required for construction) and are
+stand-alone simulation models in their own right.  As an example from
+computational fluid dynamics (CFD), both model form and resolution are
+varied when an inviscid, incompressible Euler model on a coarse
+discretization is used as a low-fidelity surrogate for a high-fidelity
+large eddy simulation (LES) model on a fine discretization.
 
-For the blurb:
-Keep it short, say 3-10 words.  Some keywords require “arguments” 
-(real number, string, list of reals or strings, etc). For these, blurb should 
-begin with a noun and define the information that the user should provide to 
-Dakota.	 Example--method-sampling-samples: Number of samples for sampling-based
-methods.  Example--method-sampling-model_pointer: Identifier for model block to 
-be used by a method.  For keywords that do not require “arguments”, blurb 
-should be in a verb form that answers the question “What does Dakota do if I 
-specify this keyword?”  Example--method: Begins Dakota method selection and 
-behavioral settings.  Example--method-sampling-sample_type-random: Uses 
-Monte-Carlo sampling.  Try to provide a hint of context…not always easy to do 
-concisely.  Example--method-sampling-variance_based_decomp: Activates global 
-sensitivity analysis based on decomposition of response variance into 
-contributions from variables.  “Anti” example--max_step: Max change in design 
-point (note lack of optimization context).  To the extent possible, avoid 
-using the keyword to define itself.  Note that there are some cases where this 
-doesn’t make sense.  “Anti” example--importance_sampling: Importance sampling.
+There are two specification options for identifying the ensemble of
+models.  First, the ``ordered_model_fidelities`` specification points
+to a sequence of model specifications of varying fidelity, ordered
+from lowest to highest fidelity.  The highest fidelity model in this
+list provides the "truth" model, and each of the lower fidelity
+alternatives provides different levels of approximation at different
+levels of cost.  This specification defines the sequence of all model
+forms, where each model specification identified in this ordered
+listing can additionally identify a set of resolution controls.
+Either or both of these sequences may be specified, and this is
+referred to as a "multilevel hierarchy" in the case of a hierarchy of
+resolutions (one entry in ``ordered_model_fidelities`` that includes
+active resolution control), a "multifidelity hierarchy" in the case of
+a hierarchy of model forms (multiple entries in
+``ordered_model_fidelities`` without active resolution control), or a
+"multilevel-multifidelity hierarchy" in the case of two-dimensional
+hierarchy including both model forms and resolutions (multiple entries
+in ``ordered_model_fidelities`` with one or more including active
+resolution control).  Note that the multilevel-multifidelity case can
+be "ragged" in the sense that not all models need to provide the same
+number of (or any) resolution controls.
 
-For the description:
+Second, an unordered or "non-hierarchical" ensemble of models may be
+specified using ``truth_model_pointer`` in combination with
+``approximation_models``, where the latter defines the set of
+unordered approximations to the high-fidelity reference model.  Note
+that the distinction between ordered and unordered approximations is
+of little consequence within the ensemble surrogate model
+implementation; rather it becomes important when aligning with the
+requirements of multifidelity algorithms that either assume ordered
+hierarchies or provide the flexibility to leverage general
+approximation ensembles.
 
-Insert brief description.  Treat this as an extended blurb.
-It should still be relatively short, say 2-3 sentences that
-expand on what was hinted at in the blurb.  Example--lhs: The
-lhs keyword invokes Latin Hypercube Sampling as the means of
-drawing samples of uncertain variables according to their probability
-distributions. This is a stratified, space-filling approach that
-selects variable values from a set of equi-probable bins.
+The ``correction`` specification identifies what type ( ``additive``,
+``multiplicative``, ``combined``) and order ( ``zeroth_order``,
+``first_order``, ``second_order``) of correction technique will be applied
+to the low fidelity results in order to match high fidelity results
+(value and potentially gradient and Hessian) at one or more points. As
+described below, this is essential in the optimization context.
 
-*Default Behavior*
+*Use cases*
 
-(For keywords with arguments, include the default value.
-For keywords without arguments, include whether it defaults to “on” or “off”.
-Include other keywords that must be used simultaneously.  Include variable 
-types operated on by default.  Include valid response types.  Etc…
-Example--sampling: By default, sampling methods operate on aleatory and 
-epistemic uncertain variables. The types of variables can be restricted 
-or expanded (to include design or state variables) through use of the active 
-keyword in the variables block in the Dakota input file. If continuous design 
-and/or state variables are designated as active, the sampling algorithm will 
-treat them as parameters with uniform probability distributions between their 
-upper and lower bounds.)
+In multifidelity surrogate-based optimization (SBO), the search
+algorithm relies primarily on the lower fidelity models, which are
+corrected for consistency with higher fidelity models.  The higher
+fidelity models are used primarily for verifying candidate steps based
+on solution of low fidelity approximate subproblems and for updating
+low fidelity corrections.  In the hierarchical SBO case (as compared
+to SBO with data fits), the ``correction`` specification is required,
+since the omission of a correction technique would effectively
+eliminate the purpose of the high fidelity model (to use a low
+fidelity model without corrections, then a ``single`` model can be used
+rather than a ``hierarchical`` model). Refer to
+:dakkw:`model-surrogate-global` for additional information on available
+correction approaches.
 
-*Expected Output*
-
-(This should describe what information Dakota will provide as a 
-result of using this keyword and where to find it (e.g., screen, what file).
-This is not valid for all keywords, so omit when appropriate.
-Example--variance_based_decomp: When variance_based_decomp is specified, 
-sensitivity indices for main effects and total effects will be reported. 
-Main effects (roughly) represent the percent contribution of each individual 
-variable to the variance in the model response. Total effects represent the 
-percent contribution of each individual variable in combination with all other 
-variables to the variance in the model response.)
-
-*Usage Tips*
-
-(Include any rules of thumb for when to use the keyword and how to 
-set it.  We don’t necessarily have this for all keywords at this point, so 
-omit as needed.  Example--variance_based_decomp: To obtain sensitivity indices 
-that are reasonably accurate, we recommend that N, the number of samples, be 
-at least one hundred and preferably several hundred or thousands.)
-
-*Additional Discussion*
-
-(Optional.  Put it here or in the Theory block.  If not here, remove 
-header.)
-
+In multifidelity uncertainty quantification (UQ), response differences
+are tracked for purposes of decomposing variance across
+model/resolution levels or for constructing separate discrepancy
+emulators.  In this context, correction specifications are still valid
+for defining discrepancy emulation details but they are optional with
+the most common cases used as defaults.
 Topics::
 
 Examples::
-(Include at least one example, preferably a full Dakota input file.
-Partial file, e.g., a single input block, is OK if syntax is really simple and 
-there’s nothing more to illustrate.  If this is the case, pointers to related 
-examples may be helpful.  If syntax is complicated, add some explanatory text.
-If expected output needs explanation, show it and include explanation pointing 
-out things to look for.)
-
+Theory:
 Theory::
-
 Faq::
 
 See_Also::
