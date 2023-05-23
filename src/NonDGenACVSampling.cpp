@@ -804,13 +804,11 @@ void NonDGenACVSampling::
 analytic_initialization_from_mfmc(const UShortArray& model_set,
 				  Real avg_N_H, DAGSolutionData& soln)
 {
-  /* *** TO DO
-  // > Option 1 is analytic MFMC: differs from ACV due to recursive pairing
   if (ordered_approx_sequence(rho2LH)) // for all QoI across all Approx
-    mfmc_analytic_solution(rho2LH, sequenceCost, soln);
+    mfmc_analytic_solution(model_set, rho2LH, sequenceCost, soln);
   else // compute reordered MFMC for averaged rho; monotonic r not reqd
-    mfmc_reordered_analytic_solution(rho2LH, sequenceCost, approxSequence,
-				     soln, false);
+    mfmc_reordered_analytic_solution(model_set, rho2LH, sequenceCost,
+				     approxSequence, soln);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << soln.avgEvalRatios << std::endl;
@@ -819,11 +817,117 @@ analytic_initialization_from_mfmc(const UShortArray& model_set,
   approxSequence.clear();
 
   if (maxFunctionEvals == SZ_MAX)
-    soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);
+    soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);//*** TO DO
   else
-    scale_to_target(avg_N_H, sequenceCost, soln.avgEvalRatios,soln.avgHFTarget);
-  */
+    scale_to_target(avg_N_H, sequenceCost, soln.avgEvalRatios, soln.avgHFTarget,
+		    orderedRootList); //*** TO DO
 }
+
+
+void NonDGenACVSampling::
+mfmc_analytic_solution(const UShortArray& model_set, const RealMatrix& rho2_LH,
+		       const RealVector& cost, DAGSolutionData& soln)
+{
+  size_t qoi, m, num_models = model_set.size(), num_mm1 = num_models - 1;
+  RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  if (avg_eval_ratios.length() != num_models) avg_eval_ratios.size(num_models);
+  else                                        avg_eval_ratios = 0.;
+
+  unsigned short model, last_model = model_set[num_mm1];
+  Real cost_L, cost_H = cost[numApprox]; // HF cost
+  // standard approach for well-ordered models
+  RealVector factor(numFunctions, false);
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    factor[qoi] = cost_H / (1. - rho2_LH(qoi, last_model));
+  for (m=0; m<num_models; ++m) {
+    model = model_set[m];
+    const Real* rho2_LH_m = rho2_LH[model];  cost_L = cost[model]; // full
+    Real& avg_eval_ratio = avg_eval_ratios[m];               // contracted
+    // NOTE: indexing is reversed from Peherstorfer (HF = 1, MF = 2, LF = 3)
+    if (m)
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L *
+	  (rho2_LH_m[qoi] - rho2_LH(qoi, model_set[m-1])));
+    else // rho2_LH for approx-1 (non-existent model) is zero
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L * rho2_LH_m[qoi]);
+    avg_eval_ratio /= numFunctions;
+  }
+}
+
+
+void NonDGenACVSampling::
+mfmc_reordered_analytic_solution(const UShortArray& model_set,
+				 const RealMatrix& rho2_LH,
+				 const RealVector& cost,
+				 SizetArray& approx_sequence,
+				 DAGSolutionData& soln)
+{
+  size_t qoi, m, num_models = model_set.size(), m_index, num_mm1 = num_models-1;
+  unsigned short model;
+  RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
+
+  // employ a single model reordering that is shared across the QoI
+  RealVector avg_rho2_LH(num_models); // init to 0.
+  for (m=0; m<num_models; ++m)
+    avg_rho2_LH[m] = average(rho2_LH[model_set[m]], numFunctions);
+  bool ordered = ordered_approx_sequence(avg_rho2_LH, approx_sequence);
+  // Note: even if avg_rho2_LH is now ordered, rho2_LH is not for all QoI, so
+  // stick with this alternate formulation, at least for this MFMC iteration.
+  if (ordered)
+    Cout << "MFMC: averaged correlations are well-ordered.\n" << std::endl;
+  else
+    Cout << "MFMC: reordered approximation model sequence (low to high):\n"
+	 << approx_sequence << std::endl;
+
+  // precompute a factor based on most-correlated model
+  size_t most_corr = (ordered) ? num_mm1 : approx_sequence[num_mm1];
+  Real cost_L, cost_H = cost[numApprox], rho2, prev_rho2, rho2_diff,
+    factor = cost_H / (1. - avg_rho2_LH[most_corr]);// most correlated
+  // Compute averaged eval ratios using averaged rho2 for approx_sequence
+  for (m=0; m<num_models; ++m) {
+    m_index = (ordered) ? m : approx_sequence[m];
+    model  = model_set[m_index];
+    cost_L = cost[model]; // full
+    // NOTE: indexing is inverted from Peherstorfer: HF = 1, MF = 2, LF = 3
+    rho2_diff = rho2  = avg_rho2_LH[m_index]; // contracted
+    if (m) rho2_diff -= prev_rho2;
+    avg_eval_ratios[m_index] = std::sqrt(factor / cost_L * rho2_diff);
+    prev_rho2 = rho2;
+  }
+}
+
+
+// bool NonDGenACVSampling::
+// ordered_approx_sequence(const UShortArray& model_set,
+// 			const RealVector& metric, SizetArray& approx_sequence,
+// 			bool descending_keys)
+// {
+//   size_t i, num_m = model_set.length(), metric_order;  bool ordered = true;
+//   std::multimap<Real, size_t>::iterator it;
+//   approx_sequence.resize(num_m);
+//   if (descending_keys) {
+//     std::multimap<Real, size_t, std::greater<Real> > descending_map;
+//     for (i=0; i<num_m; ++i) // keys arranged in decreasing order
+//       descending_map.insert(std::pair<Real, size_t>(metric[i], i));
+//     for (i=0, it=descending_map.begin(); it!=descending_map.end(); ++it, ++i) {
+//       approx_sequence[i] = metric_order = it->second;
+//       if (i != metric_order) ordered = false;
+//     }
+//   }
+//   else {
+//     std::multimap<Real, size_t> ascending_map; // default ascending keys
+//     for (i=0; i<len; ++i) // keys arranged in increasing order
+//       ascending_map.insert(std::pair<Real, size_t>(metric[i], i));
+//     for (i=0, it=ascending_map.begin(); it!=ascending_map.end(); ++it, ++i) {
+//       approx_sequence[i] = metric_order = it->second;
+//       if (i != metric_order) ordered = false;
+//     }
+//   }
+//   if (ordered) approx_sequence.clear();
+//   return ordered;
+// }
 
 
 void NonDGenACVSampling::
@@ -841,13 +945,13 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& model_set,
   if (maxFunctionEvals == SZ_MAX) {
     // scale according to accuracy (convergenceTol * estVarIter0)
     enforce_linear_ineq_constraints(soln.avgEvalRatios, root_list);
-    soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);//***
+    soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);//*** TO DO
   }
   else { // scale according to cost
     scale_to_target(avg_N_H, sequenceCost, soln.avgEvalRatios, soln.avgHFTarget,
 		    root_list); // incorporates lin ineq enforcement ***
     RealVector cd_vars;
-    r_and_N_to_design_vars(soln.avgEvalRatios, soln.avgHFTarget, cd_vars); //***
+    r_and_N_to_design_vars(soln.avgEvalRatios, soln.avgHFTarget, cd_vars); //*** TO DO
     soln.avgEstVar = average_estimator_variance(cd_vars); // ACV or GenACV ***
   }
   if (outputLevel >= NORMAL_OUTPUT)

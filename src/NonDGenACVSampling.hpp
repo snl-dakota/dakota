@@ -118,6 +118,15 @@ private:
 
   void analytic_initialization_from_mfmc(const UShortArray& model_set,
 					 Real avg_N_H, DAGSolutionData& soln);
+  void mfmc_analytic_solution(const UShortArray& model_set,
+			      const RealMatrix& rho2_LH, const RealVector& cost,
+			      DAGSolutionData& soln);
+  void mfmc_reordered_analytic_solution(const UShortArray& model_set,
+					const RealMatrix& rho2_LH,
+					const RealVector& cost,
+					SizetArray& approx_sequence,
+					DAGSolutionData& soln);
+
   void analytic_initialization_from_ensemble_cvmc(const UShortArray& model_set,
 						  const UShortArray& dag,
 						  const UShortList& root_list,

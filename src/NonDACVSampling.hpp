@@ -152,8 +152,6 @@ protected:
 
   void cache_mc_reference();
 
-  void analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln);
-
   void pick_mfmc_cvmc_solution(const DAGSolutionData& mf_soln, size_t mf_samp,
 			       const DAGSolutionData& cv_soln, size_t cv_samp,
 			       DAGSolutionData& soln, size_t& num_samp);
@@ -184,6 +182,7 @@ private:
 			   size_t N_shared_q, size_t mom, size_t qoi,
 			   RealVector& beta);
 
+  void analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln);
   void analytic_initialization_from_ensemble_cvmc(Real avg_N_H,
 						  DAGSolutionData& soln);
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,

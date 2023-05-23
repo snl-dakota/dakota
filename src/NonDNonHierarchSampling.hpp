@@ -664,7 +664,7 @@ update_hf_target(Real avg_estvar, const SizetArray& N_H,
 
 inline bool NonDNonHierarchSampling::
 ordered_approx_sequence(const RealVector& metric, SizetArray& approx_sequence,
-		       bool descending_keys)
+			bool descending_keys)
 {
   size_t i, len = metric.length(), metric_order;  bool ordered = true;
   std::multimap<Real, size_t>::iterator it;
