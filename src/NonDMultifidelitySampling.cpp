@@ -1277,17 +1277,23 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   }
 
   switch (optSubProblemForm) {
-  case ANALYTIC_SOLUTION:
+  case ANALYTIC_SOLUTION: {
     Cout << "MFMC: model sequence provided is ordered in Low-High correlation "
 	 << "for all QoI.\n      Computing standard analytic solution.\n"
 	 << std::endl;
     approx_sequence.clear();
-    mfmc_analytic_solution(rho2_LH, cost, soln);
+    UShortArray model_set(numApprox);
+    for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
+    mfmc_analytic_solution(model_set, rho2_LH, cost, soln);
     break;
-  case REORDERED_ANALYTIC_SOLUTION: // inactive (see above)
-    mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
+  }
+  case REORDERED_ANALYTIC_SOLUTION: { // inactive (see above)
+    UShortArray model_set(numApprox);
+    for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
+    mfmc_reordered_analytic_solution(model_set, rho2_LH, cost, approx_sequence,
 				     soln, true); // monotonic r for seq
     break;
+  }
   default: // any of several numerical optimization formulations
     mfmc_numerical_solution(var_L, rho2_LH, cost, approx_sequence, soln);
     break;
@@ -1332,14 +1338,16 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     }
 
     // Compute approx_sequence and r* initial guess from analytic MFMC
+    UShortArray model_set(numApprox);
+    for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
     if (ordered_approx_sequence(rho2_LH)) {// can happen w/ NUMERICAL_OVERRIDE
       approx_sequence.clear();
-      mfmc_analytic_solution(rho2_LH, cost, soln);
+      mfmc_analytic_solution(model_set, rho2_LH, cost, soln);
     }
     else // If misordered rho, enforce that r increases monotonically across
          // approx_sequence for consistency w/ linear constr in numerical soln
-      mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
-				       soln, true);// monotonic r
+      mfmc_reordered_analytic_solution(model_set, rho2_LH, cost,
+				       approx_sequence, soln, true);//monotonic
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
 	   << avg_eval_ratios << std::endl;

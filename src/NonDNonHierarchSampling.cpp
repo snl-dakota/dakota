@@ -348,33 +348,36 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
 
 
 void NonDNonHierarchSampling::
-mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
-		       DAGSolutionData& soln, bool monotonic_r)
+mfmc_analytic_solution(const UShortArray& model_set, const RealMatrix& rho2_LH,
+		       const RealVector& cost, DAGSolutionData& soln,
+		       bool monotonic_r)
 {
+  size_t qoi, m, num_models = model_set.size(), num_mm1 = num_models - 1;
   RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
-  else                         avg_eval_ratios = 0.;
+  if (avg_eval_ratios.length() != num_models) avg_eval_ratios.size(num_models);
+  else                                        avg_eval_ratios = 0.;
 
-  size_t qoi, approx, num_am1 = numApprox - 1;
+  unsigned short model, prev_model, last_model = model_set[num_mm1];
   Real cost_L, cost_H = cost[numApprox]; // HF cost
   // standard approach for well-ordered models
   RealVector factor(numFunctions, false);
   for (qoi=0; qoi<numFunctions; ++qoi)
-    factor[qoi] = cost_H / (1. - rho2_LH(qoi, num_am1));
-  for (approx=0; approx<numApprox; ++approx) {
-    const Real* rho2_LH_a = rho2_LH[approx];  cost_L = cost[approx];
-    Real&  avg_eval_ratio = avg_eval_ratios[approx];
-    // NOTE: indexing is reversed from Peherstorfer (HF = 1, MF = 2, LF = 3)
-    // > becomes Approx LF = 0 and MF = 1, Truth HF = 2
-    // > i+1 becomes i-1 and most correlated approx is rho2_LH(qoi, num_am1)
-    if (approx)
+    factor[qoi] = cost_H / (1. - rho2_LH(qoi, last_model));
+  for (m=0; m<num_models; ++m) {
+    model = model_set[m]; // model_set is ordered but with omissions
+    const Real* rho2_LH_m = rho2_LH[model];  cost_L = cost[model]; // full
+    Real& avg_eval_ratio = avg_eval_ratios[m];               // contracted
+    // NOTE: indexing is reversed from Peherstorfer
+    // (HF = 1, MF = 2, LF = 3 becomes LF = 0, MF = 1, truth HF = 2)
+    if (m)
       for (qoi=0; qoi<numFunctions; ++qoi)
 	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L *
-	  (rho2_LH_a[qoi] - rho2_LH(qoi, approx-1)));
-    else // rho2_LH for approx-1 (non-existent model) is zero
+	  (rho2_LH_m[qoi] - rho2_LH(qoi, prev_model)));
+    else // rho2_LH for m-1 (non-existent model) is zero
       for (qoi=0; qoi<numFunctions; ++qoi)
-	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L * rho2_LH_a[qoi]);
+	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L * rho2_LH_m[qoi]);
     avg_eval_ratio /= numFunctions;
+    prev_model = model;
   }
 
   // Note: one_sided_delta(N_H, hf_targets, 1) enforces monotonicity a bit
@@ -383,7 +386,7 @@ mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
   // For now, monotonic_r defaults false since it should be redundant.
   if (monotonic_r) {
     Real r_i, prev_ri = 1.;
-    for (int i=numApprox-1; i>=0; --i) {
+    for (int i=num_models-1; i>=0; --i) {
       r_i = std::max(avg_eval_ratios[i], prev_ri);
       prev_ri = avg_eval_ratios[i] = r_i;
     }
@@ -392,19 +395,21 @@ mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 
 
 void NonDNonHierarchSampling::
-mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
+mfmc_reordered_analytic_solution(const UShortArray& model_set,
+				 const RealMatrix& rho2_LH,
 				 const RealVector& cost,
 				 SizetArray& approx_sequence,
 				 DAGSolutionData& soln, bool monotonic_r)
 {
+  size_t qoi, m, num_models = model_set.size(), m_index, num_mm1 = num_models-1;
   RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
-
-  size_t qoi, approx, num_am1 = numApprox - 1;
-  Real cost_L, cost_H = cost[numApprox]; // HF cost
+  if (avg_eval_ratios.length() != num_models)
+    avg_eval_ratios.sizeUninitialized(num_models);
 
   // employ a single model reordering that is shared across the QoI
-  RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
+  RealVector avg_rho2_LH(num_models); // init to 0.
+  for (m=0; m<num_models; ++m)
+    avg_rho2_LH[m] = average(rho2_LH[model_set[m]], numFunctions);
   bool ordered = ordered_approx_sequence(avg_rho2_LH, approx_sequence);
   // Note: even if avg_rho2_LH is now ordered, rho2_LH is not for all QoI, so
   // stick with this alternate formulation, at least for this MFMC iteration.
@@ -415,22 +420,18 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
 	 << approx_sequence << std::endl;
 
   // precompute a factor based on most-correlated model
-  size_t most_corr = (ordered) ? num_am1 : approx_sequence[num_am1];
-  Real rho2, prev_rho2, rho2_diff, r_i, prev_ri,
+  unsigned short model;
+  size_t most_corr = (ordered) ? num_mm1 : approx_sequence[num_mm1];
+  Real cost_L, cost_H = cost[numApprox], rho2, prev_rho2, rho2_diff,
     factor = cost_H / (1. - avg_rho2_LH[most_corr]);// most correlated
   // Compute averaged eval ratios using averaged rho2 for approx_sequence
-  RealVector r_unconstrained;
-  if (monotonic_r) r_unconstrained.sizeUninitialized(numApprox);
-  for (int i=0; i<numApprox; ++i) {
-    approx = (ordered) ? i : approx_sequence[i];
-    cost_L = cost[approx];
-    // NOTE: indexing is inverted from Peherstorfer: HF = 1, MF = 2, LF = 3
-    // > i+1 becomes i-1 and most correlated is rho2_LH(qoi, most_corr)
-    rho2_diff = rho2  = avg_rho2_LH[approx];
-    if (i) rho2_diff -= prev_rho2;
-    r_i = std::sqrt(factor / cost_L * rho2_diff);
-    if (monotonic_r) r_unconstrained[approx] = r_i;
-    else             avg_eval_ratios[approx] = r_i;
+  for (m=0; m<num_models; ++m) {
+    m_index = (ordered) ? m : approx_sequence[m];
+    model = model_set[m_index];  cost_L = cost[model]; // full
+    // NOTE: indexing is inverted from Peherstorfer (i+1 becomes i-1)
+    rho2_diff = rho2  = avg_rho2_LH[m_index]; // contracted
+    if (m) rho2_diff -= prev_rho2;
+    avg_eval_ratios[m_index] = std::sqrt(factor / cost_L * rho2_diff);
     prev_rho2 = rho2;
   }
 
@@ -439,11 +440,11 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
   //   performed bottom up, so precedence also applied in this direction),
   //   where assigning r_i = prev_ri effectively drops the CV for model i
   if (monotonic_r) {
-    prev_ri = 1.;
-    for (int i=numApprox-1; i>=0; --i) {
-      approx = (ordered) ? i : approx_sequence[i];
-      r_i = std::max(r_unconstrained[approx], prev_ri);
-      prev_ri = avg_eval_ratios[approx] = r_i;
+    Real r_i, prev_ri = 1.;
+    for (int i=num_models-1; i>=0; --i) {
+      m_index = (ordered) ? i : approx_sequence[i];
+      r_i = std::max(avg_eval_ratios[m_index], prev_ri);
+      prev_ri = avg_eval_ratios[m_index] = r_i;
     }
   }
 }

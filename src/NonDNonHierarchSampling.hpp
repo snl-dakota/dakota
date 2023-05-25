@@ -237,13 +237,15 @@ protected:
   void compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2,
 			  size_t N_shared, Real& cov_Q1Q2);
   
-  void mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
+  void mfmc_analytic_solution(const UShortArray& model_set,
+			      const RealMatrix& rho2_LH, const RealVector& cost,
 			      DAGSolutionData& soln, bool monotonic_r = false);
-  void mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
+  void mfmc_reordered_analytic_solution(const UShortArray& model_set,
+					const RealMatrix& rho2_LH,
 					const RealVector& cost,
 					SizetArray& approx_sequence,
 					DAGSolutionData& soln,
-					bool monotonic_r);
+					bool monotonic_r = false);
 
   void ensemble_numerical_solution(const RealVector& cost,
 				   const SizetArray& approx_sequence,
