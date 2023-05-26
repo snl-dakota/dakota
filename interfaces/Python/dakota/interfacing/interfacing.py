@@ -945,12 +945,12 @@ def read_params_from_dict(parameters=None, results_file=None,
     dakota_input.append(str(parameters[key])+" "+key+"\n")
     for i, val in enumerate(parameters["asv"]):
         label = "ASV_"+str(i+1)+":"+parameters["function_labels"][i]
-        dakota_input.append(str(parameters["asv"][i])+" "+label+"\n")
+        dakota_input.append(str(val)+" "+label+"\n")
 
     key = "dvv"
     dakota_input.append(str(len(parameters[key]))+" derivative_variables\n")
     for i, val in enumerate(parameters["dvv"]):
-        label = "DVV_"+str(i)+":"+parameters["cv_labels"][parameters["dvv"][i]-1]
+        label = "DVV_"+str(i)+":"+parameters["variable_labels"][val-1]
         dakota_input.append(str(parameters["dvv"][i])+" "+label+"\n")
 
     key = "analysis_components"
