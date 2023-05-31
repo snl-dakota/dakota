@@ -1,13 +1,1 @@
-Blurb::
-Build a Polynomial Chaos Expansion (PCE) by import coefficients and a multi-index from a file
-Description::
-The coefficients can be specified in an arbitrary order. The multi-index provided is used to generate a sparse expansion that conists only of the indices corresponding to the non-zero coefficients provided in the file.
-Topics::
-
-Examples::
-
-Theory::
-
-Faq::
-
-See_Also::
+DUPLICATE-import_expansion_file

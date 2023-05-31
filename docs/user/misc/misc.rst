@@ -5,7 +5,6 @@ Miscellaneous
    :maxdepth: 1
    
    help
-   faq
    aboutteam
    contributors
    license
@@ -14,3 +13,6 @@ Miscellaneous
    releasenotes
    bibliography
    ../classictoc
+
+.. 
+   faq
