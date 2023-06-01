@@ -109,7 +109,10 @@ void PStudyDACE::print_results(std::ostream& s, short results_state)
     Analyzer::print_results(s, results_state);
 
   if (varBasedDecompFlag)
-    print_sobol_indices(s);
+    pStudyDACESensGlobal.print_sobol_indices(s,
+                                             iteratedModel.ordered_labels(),
+                                             iteratedModel.response_labels(),
+                                             vbdDropTol);
 
   if (pStudyDACESensGlobal.correlations_computed()) {
     if (compactMode) { // FSU, DDACE, PSUADE ignore active discrete vars

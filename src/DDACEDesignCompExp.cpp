@@ -165,7 +165,10 @@ void DDACEDesignCompExp::post_run(std::ostream& s)
   // BMA TODO: always compute all stats, even in VBD mode (stats on
   // first two replicates)
   if (varBasedDecompFlag) {
-    compute_vbd_stats(numSamples, allResponses);
+    pStudyDACESensGlobal.compute_vbd_stats(numFunctions,
+                                           numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
+                                           numSamples,
+                                           allResponses);
   }
   else {
     if (mainEffectsFlag) // need allResponses
