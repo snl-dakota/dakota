@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -520,19 +520,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case MULTILEVEL_SAMPLING:
     return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
   case MULTIFIDELITY_SAMPLING:
-    // Hierarch and NonHierarch SurrModels can both have an open-ended number
-    // of model forms.  Former treats them pairwise and latter as a full group.
-    // > Would be nice to separate ordered/unordered from pairwise/full since
-    //   the former is not a hard constraint (unordered still uses a list) while
-    //   the latter is more critical (implementation uses active model key with
-    //   full batch + ASV blocks versus active key that changes pairs).
-    // > But the Model needs to be instantiated from its spec without knowledge
-    //   of Iterator context --> Iterators like MFMC must adapt to limitations
-    //   of HierarchSurrModel even though it *is* hierarchical/recursive.
-    //   --> collapse the two SurrModel classes to avoid the need for method
-    //       adaptations due to Model specification.
-    return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
-    break;
+    return std::make_shared<NonDMultifidelitySampling>(problem_db,model); break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
     return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
     break;

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -158,15 +158,51 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
        << subSamplingPeriod << "-th sample will be kept in the final chain. "
        << "The \nfinal chain will have length " << num_filtered << ".\n";
 
+  bool ensemble_model = (iteratedModel.model_type()     == "surrogate" &&
+			 iteratedModel.surrogate_type() == "ensemble");
+  short corr_type = iteratedModel.correction_type(),
+    mode = (corr_type) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
+  switch (emulatorType) {
+  case PCE_EMULATOR: case  SC_EMULATOR:
+    standardizedSpace = true; // nataf defined w/i ProbTransformModel
+    break;
+  case MF_PCE_EMULATOR:  case ML_PCE_EMULATOR:  case  MF_SC_EMULATOR:
+    standardizedSpace = true; // nataf defined w/i ProbTransformModel
+    mode = AGGREGATED_MODEL_PAIR;
+    break;
+  default:
+    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
+    // This choice caches RAW_WITH_REDUCTION (overkill for now)
+    //mode = MODEL_DISCREPANCY;
+    //if (!corr_type) iteratedModel.correction_type(ADDITIVE_CORRECTION);
+    break;
+  }
+
+  // Errors if there are correlations and the user hasn't specified
+  // standardized_space, since this is currently unsupported.  Note that gamma
+  // distribution should be supported but currently results in a seg fault.
+  if ( !standardizedSpace &&
+       iteratedModel.multivariate_distribution().correlation() ){
+    Cerr << "Error: correlation is only supported if user specifies "
+	 << "standardized_space.\n    Only the following types of correlated "
+	 << "random variables are supported:\n    unbounded normal, "
+	 << "untruncated lognormal, uniform, exponential, gumbel, \n    "
+	 << "frechet, and weibull." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // update from the default responseMode:
+  if (ensemble_model)
+    iteratedModel.surrogate_response_mode(mode);
+
   if (adaptExpDesign) {
-    // TODO: instead of pulling these models out, change modes on the
-    // iteratedModel
-    if (iteratedModel.model_type() != "surrogate") {
-      Cerr << "\nError: Adaptive Bayesian experiment design requires " 
-	   << "hierarchical surrogate\n       model.\n";
+    if (!ensemble_model) {
+      Cerr << "\nError: Adaptive Bayesian experiment design requires an " 
+	   << "ensemble surrogate model.\n";
       abort_handler(PARSE_ERROR);
     }
-    hifiModel = iteratedModel.truth_model();
+    // TODO: instead of pulling these models out, change modes on iteratedModel
+    hifiModel = iteratedModel.truth_model(); // not dependent on active key
 
     int num_exp = expData.num_experiments();
     int num_lhs_samples = std::max(initHifiSamples - num_exp, 0);
@@ -188,27 +224,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     batchSize = 5;
     if (maxIterations == SZ_MAX) // default
       maxIterations = 25;
-  }
-
-  switch (emulatorType) {
-  case PCE_EMULATOR:  case MF_PCE_EMULATOR:  case ML_PCE_EMULATOR:
-  case  SC_EMULATOR:  case  MF_SC_EMULATOR:
-    standardizedSpace = true; break; // nataf defined w/i ProbTransformModel
-  default:
-    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    break;
-  }
-
-  // Errors if there are correlations and the user hasn't specified standardized_space,
-  // since this is currently unsupported.
-  // Note that gamma distribution should be supported but currently results in a seg fault.
-  if ( !standardizedSpace && iteratedModel.multivariate_distribution().correlation() ){
-    Cerr << "Error: correlation is only supported if user specifies standardized_space.\n"
-      << "    Only the following types of correlated random variables are supported:\n"
-      << "    unbounded normal, untruncated lognormal, uniform, exponential, gumbel, \n" 
-      << "    frechet, and weibull."
-	    << std::endl;
-    abort_handler(METHOD_ERROR);
   }
 
   // Construct emulator objects for raw QoI, prior to data residual recast
@@ -1088,7 +1103,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
   /* TODO:
      - Handling of hyperparameters
      - More efficient resizing/reconstruction
-     - Use hierarchical surrogate eval modes
+     - Use EnsembleSurrModel eval modes
   */
 
   // TODO? Make a struct?

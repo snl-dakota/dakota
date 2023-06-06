@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -505,7 +505,7 @@ void NonDQUESOBayesCalibration::cache_chain()
     // model, but it's type may be a ProbabilityTransform wrapper if
     // standardizedSpace is active.  mcmcModelHasSurrogate controls
     // model re-evals.  This is not sufficiently general, e.g., if the
-    // mcmcModel is a HierarchSurrModel, could perform costly re-eval.
+    // mcmcModel is an EnsembleSurrModel, could perform costly re-eval.
 
     // TODO: Consider doing lookup first, then surrogate re-eval, or
     // querying a more complete eval database when available...

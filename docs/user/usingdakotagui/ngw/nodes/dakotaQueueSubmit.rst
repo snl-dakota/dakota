@@ -12,7 +12,7 @@ used in the context of a workflow that is :ref:`running on a login node belongin
 Most of the dakotaQueueSubmit node's behavior in-queue can be controlled via :ref:`editable control scripts <ngw-queue-scripts>` that are provided with the node:
 
 1. Submit a job into the queue (``submit-dakota.sh``)
-2. Check on the job's overall status in the queue (``status.sh``)
+2. Check on the job’s overall status (``status.sh``)
 3. Drill into a more detailed description of the job state (``checkjob.sh``)
 4. Cancel the job (``cancel.sh``)
 5. Additionally, dakotaQueueSubmit provides a "runner" script for Dakota itself (``runDakotaRemote.sh``) that is actually responsible for launching Dakota.
@@ -67,7 +67,7 @@ Output Ports
 - **stdout**: The stdout stream associated with the submit script, *not* the Dakota process.
 - **stderr**: The stderr stream associated with the submit script, *not* the Dakota process.
 - **exitCode**: The exit code associated with the submit script, *not* the Dakota process.
-- **jobId**: The ID associated with your job. You can use this ID to query the job queue for the status of your job at a later time.
+- **jobId**: The ID associated with your job. You can use this ID to let other nodes query the job queue for the status of your job at a later time.
 
 -------------------------------------
 Usage Notes - Editing Control Scripts

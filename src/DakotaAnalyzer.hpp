@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -138,13 +138,6 @@ protected:
   /// generate replicate parameter sets for use in variance-based decomposition
   void get_vbd_parameter_sets(Model& model, size_t num_samples);
 
-  /// compute VBD-based Sobol indices
-  void compute_vbd_stats(const size_t num_samples, 
-			 const IntResponseMap& resp_samples);
-
-  /// archive VBD-based Sobol indices
-  void archive_sobol_indices() const;
-
   /// archive model evaluation points
   virtual void archive_model_variables(const Model&, size_t idx) const
     { /* no-op */ }
@@ -156,9 +149,6 @@ protected:
   /// convenience function for reading variables/responses (used in
   /// derived classes post_input)
   void read_variables_responses(int num_evals, size_t num_vars);
-
-  /// Printing of VBD results
-  void print_sobol_indices(std::ostream& s) const;
 
   /// convert samples array to variables array; e.g., allSamples to allVariables
   void samples_to_variables_array(const RealMatrix& sample_matrix,
@@ -202,6 +192,9 @@ protected:
   /// map which stores best set of solutions
   RealPairPRPMultiMap bestVarsRespMap;
 
+  /// tolerance for omitting output of small VBD indices
+  Real vbdDropTol;
+
 private:
 
   //
@@ -227,13 +220,6 @@ private:
 
   /// write precision as specified by the user
   int writePrecision;
-
-  /// tolerance for omitting output of small VBD indices
-  Real vbdDropTol;
-  /// VBD main effect indices
-  RealVectorArray S4;
-  /// VBD total effect indices
-  RealVectorArray T4;
 };
 
 

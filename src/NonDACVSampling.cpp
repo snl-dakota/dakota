@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -57,9 +57,6 @@ NonDACVSampling::~NonDACVSampling()
 { }
 
 
-/** The primary run function manages the general case: a hierarchy of model 
-    forms (from the ordered model fidelities within a HierarchSurrModel), 
-    each of which may contain multiple discretization levels. */
 void NonDACVSampling::core_run()
 {
   if (mlmfSubMethod == SUBMETHOD_ACV_RD) {
@@ -388,7 +385,7 @@ acv_approx_increment(const DAGSolutionData& soln,
 			   start, end);
   }
   // the approximation sequence can be managed within one set of jobs using
-  // a composite ASV with NonHierarchSurrModel
+  // a composite ASV with EnsembleSurrModel
   return approx_increment(iter, approx_sequence, start, end);
 }
 

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -46,7 +46,7 @@ public:
   //
 
   /// standard constructor
-  DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
+  DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
 		     const ShortShortPair& recast_vars_view,
 		     size_t num_hyper = 0,
                      unsigned short mult_mode = CALIBRATE_NONE, 
@@ -240,7 +240,7 @@ protected:
                               const Real wssr, const int num_points,
                               const int point_index);
   /// Reference to the experiment data used to construct this Model
-  const ExperimentData& expData;
+  ExperimentData& expData;
 
   /// static pointer to this class for use in static callbacks
   static DataTransformModel* dtModelInstance;

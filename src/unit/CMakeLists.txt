@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022
+#  Copyright 2014-2023
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -205,6 +205,7 @@ if(DAKOTA_H5PY_FOUND)
   dakota_add_h5py_test(mlmc)
   dakota_add_h5py_test(sampling_metadata)
   dakota_add_h5py_test(variable_categories_sampling)
+  dakota_add_h5py_test(pce)
   #dakota_add_h5py_test(calibration_with_data)
   #dakota_add_h5py_test(mutlisolution_opt)
 endif()

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -59,6 +59,10 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   // ignore bounds when finite differencing on data fits, since the bounds are
   // artificial in this case (and reflecting the stencil degrades accuracy)
   ignoreBounds = true;
+
+  // assign default responseMode based on correction specification;
+  // NO_CORRECTION (0) is default
+  responseMode = (corrType) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
 
   // if no user points management spec, assign RECOMMENDED_POINTS as default
   if (pointsManagement == DEFAULT_POINTS)
@@ -249,6 +253,10 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   }
 
   surrogateType = approx_type;
+
+  // assign default responseMode based on correction specification;
+  // NO_CORRECTION (0) is default
+  responseMode = (corrType) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
 
   bool import_pts = !importPointsFile.empty(),
        export_pts = !exportPointsFile.empty() || !exportVarianceFile.empty();
@@ -2164,7 +2172,8 @@ asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
     Surrogate data imports default to active/inactive variables, but
     user can override to active only */
 void DataFitSurrModel::
-import_points(unsigned short tabular_format, bool use_var_labels, bool active_only)
+import_points(unsigned short tabular_format, bool use_var_labels,
+	      bool active_only)
 {
   // Temporary objects to use to read correct size vars/resp; use copies
   // so that read_data_tabular() does not alter state of vars/resp objects

@@ -1,7 +1,7 @@
 Blurb::
 Specification of an unordered ensemble of low-fidelity approximations
 Description::
-A ``non_hierarchical`` surrogate model manages an unordered set of
+An unordered or "non-hierarchical" ensemble surrogate manages an unordered set of
 low-fidelity model approximations, each of which may include hyper-parameter
 resolution controls (in the case of a simulation model) or additional model
 recursions.
@@ -11,7 +11,7 @@ Any corresponding sequence specifications within methods (e.g.,
 ``expansion_order_sequence``, etc. within stochastic expansion methods)
 should be synchronized with the order in the model listing.
 
-Internal to the non-hierarchical model, subsets of the model ensemble
+Internal to the ensemble surrogate model, subsets of the model ensemble
 may be active for any given evaluation, as dictated by the iterative
 algorithm in use.
 Topics::
@@ -22,7 +22,7 @@ Examples::
 
     model,
      id_model = 'NONHIERARCH'
-     surrogate non_hierarchical
+     surrogate ensemble
        unordered_model_fidelities = 'LF1' 'LF2'
        truth_model_pointer = 'HF'
     

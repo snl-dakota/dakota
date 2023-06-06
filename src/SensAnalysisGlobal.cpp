@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -810,6 +810,189 @@ print_std_regress_coeffs(std::ostream& s, StringArray var_labels,
 #endif
 }
 
+void SensAnalysisGlobal::compute_vbd_stats( const size_t           numFunctions
+                                          , const size_t           num_vars
+                                          , const size_t           num_samples
+                                          , const IntResponseMap & resp_samples
+                                          )
+{
+  if (resp_samples.size() != num_samples * (num_vars+2)) {
+    Cerr << "\nError in Analyzer::compute_vbd_stats"
+         << ": expected " << num_samples * (num_vars+2) << " responses"
+         << "; received " << resp_samples.size()
+         << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  
+  // BMA: for now copy the data to previous data structure 
+  //      total_fn_vals[respFn][replicate][sample]
+  // This is making the assumption that the responses are ordered as allSamples
+  // BMA TODO: compute statistics on finite samples only
+  boost::multi_array<Real,3> total_fn_vals(boost::extents[numFunctions][num_vars+2][num_samples]); // [k][i][j]
+  IntRespMCIter r_it = resp_samples.begin();
+  for (size_t i(0); i < (num_vars+2); ++i) {
+    for (size_t j(0); j < num_samples; ++r_it, ++j) {
+      for (size_t k(0); k < numFunctions; ++k) {
+        total_fn_vals[k][i][j] = r_it->second.function_value(k);
+      }
+    }
+  }
+
+#ifdef DEBUG
+  //Cout << "allSamples:\n" << allSamples << '\n';
+  for (size_t k(0); k < numFunctions; ++k) {
+    for (size_t i(0); i < num_vars+2; ++i) {
+      for (size_t j(0); j < num_samples; ++j) {
+        Cout << "Response " << k << " for replicate " << i << ", sample " << j
+             << ": " << total_fn_vals[k][i][j] << '\n';
+      }
+    }
+  }
+#endif
+
+  // We compute variables indexSi and indexTi according to the following paper:
+  // - A. Saltelli, P. Annoni, I. Azzini, F. Campolongo, M. Ratto, S. Tarantola,
+  //   "Variance based sensitivity analysis of model output. Design and estimator
+  //   for the total sensitivity index.", Comp Physics Comm, 181 (2), pp. 259--270,
+  //   Feb. 2010.
+  //
+  // We decided to use formulas indexSi and indexTi based on testing with a shock
+  // physics problem that had significant nonlinearities, interactions, and several
+  // response functions. The results are documented in the paper:
+  // - V. Weirs, J. Kamm, L. Swiler, S. Tarantola, M. Ratto, B. Adams, W. Rider,
+  //   M. Eldred, "Sensitivity analysis techniques applied to a system of
+  //   hyperbolic conservation laws", RESS, 107, pp. 157--170, Nov. 2012.
+
+  indexSi.resize(numFunctions, RealVector(num_vars));
+  indexTi.resize(numFunctions, RealVector(num_vars));
+
+  boost::multi_array<Real,3> total_norm_vals(boost::extents[numFunctions][num_vars+2][num_samples]); // [k][i][j]
+
+  Real dNumSamples( static_cast<Real>(num_samples) );
+
+  // Obtain sensitivity indices for each function
+  for (size_t k(0); k < numFunctions; ++k) {
+    Real mean_C(0.);
+    {
+      Real mean_hatY(0.);
+      for (size_t j(0); j < num_samples; ++j) {
+        mean_hatY += total_fn_vals[k][0][j];
+      }
+      mean_hatY /= dNumSamples;
+
+      Real mean_hatB(0.); 
+      for (size_t j(0); j < num_samples; ++j) {
+        mean_hatB += total_fn_vals[k][1][j];
+      }
+      mean_hatB /= dNumSamples;
+
+      Real overall_mean(0.);
+      for (size_t j(0); j < num_samples; ++j) {
+        for(size_t i(0); i < (num_vars+2); ++i) { 
+          total_norm_vals[k][i][j]  = total_fn_vals[k][i][j];
+          overall_mean             += total_norm_vals[k][i][j];
+        } 
+      }
+      overall_mean /= static_cast<Real>( num_samples * (num_vars+2) );
+      for (size_t j(0); j < num_samples; ++j) {
+        for(size_t i(0); i < (num_vars+2); ++i) {
+          total_norm_vals[k][i][j] -= overall_mean;
+        }
+      }
+
+      mean_C = (mean_hatB + mean_hatY) / 2.;
+    }
+
+    Real var_hatYC(0.);
+    for (size_t j(0); j < num_samples; ++j) {
+      var_hatYC += std::pow(total_fn_vals[k][0][j],2);
+    }
+    for (size_t j(0); j < num_samples; ++j) {
+      var_hatYC += std::pow(total_fn_vals[k][1][j],2);
+    }
+    var_hatYC = var_hatYC / (2. * dNumSamples)
+              - mean_C * mean_C;
+
+    // calculate first order sensitivity indices and first order total indices
+    for (size_t i(0); i < num_vars; ++i) {
+      Real sum_S(0.);
+      Real sum_T(0.);
+      for (size_t j(0); j < num_samples; ++j) {
+        Real diff(total_norm_vals[k][i+2][j] - total_norm_vals[k][1][j]);
+        sum_S += total_norm_vals[k][0][j] * diff;
+        sum_T += std::pow(diff, 2);
+      }
+
+      indexSi[k][i] = (sum_S /       dNumSamples ) / var_hatYC;
+      indexTi[k][i] = (sum_T / (2. * dNumSamples)) / var_hatYC;
+    }
+  } // for k
+}
+
+// Printing of variance based decomposition indices.
+void SensAnalysisGlobal::print_sobol_indices( std::ostream      & s
+                                            , const StringArray & var_labels
+                                            , const StringArray & resp_labels
+                                            , const Real          vbdDropTol
+                                            ) const
+{
+  // output explanatory info
+  //s << "Variance Based Decomposition Sensitivity Indices\n"
+  //  << "These Sobol' indices measure the importance of the uncertain input\n"
+  //  << "variables in determining the uncertainty (variance) of the output.\n"
+  //  << "Si measures the main effect for variable i itself, while Ti\n"
+  //  << "measures the total effect (including the interaction effects\n" 
+  //  << "of variable i with other uncertain variables.)\n";
+  s << std::scientific 
+    << "\nGlobal sensitivity indices for each response function:\n";
+
+  for (size_t k(0); k < resp_labels.size(); ++k) {
+    s << resp_labels[k] << " Sobol' indices:\n"; 
+    s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
+    for (size_t i(0); i < var_labels.size(); ++i) {
+      Real main  = indexSi[k][i];
+      Real total = indexTi[k][i];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        s << "                     " << std::setw(write_precision+7) << main
+	  << ' ' << std::setw(write_precision+7) << total << ' '
+	  << var_labels[i] << '\n';
+      }
+    }
+  }
+}
+
+// Archiving of variance based decomposition indices.
+void SensAnalysisGlobal::archive_sobol_indices( const StrStrSizet & run_identifier
+                                              , ResultsManager    & resultsDB
+                                              , const StringArray & var_labels
+                                              , const StringArray & resp_labels
+                                              , const Real          vbdDropTol
+                                              ) const
+{
+  if(!resultsDB.active())
+    return;
+
+  for (size_t k(0); k < resp_labels.size(); ++k) {
+    RealArray   main_effects;
+    RealArray   total_effects;
+    StringArray scale_labels;
+    for (size_t i(0); i < var_labels.size(); ++i) {
+      Real main  = indexSi[k][i];
+      Real total = indexTi[k][i];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
+        scale_labels.push_back(var_labels[i]);
+      }
+    }
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
+    resultsDB.insert(run_identifier, {String("main_effects"), resp_labels[k]}, 
+                     main_effects, scales);
+    resultsDB.insert(run_identifier, {String("total_effects"), resp_labels[k]}, 
+                     total_effects, scales);
+  }
+}
 
 } // namespace Dakota
 

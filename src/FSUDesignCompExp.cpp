@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -231,7 +231,10 @@ void FSUDesignCompExp::post_run(std::ostream& s)
   // BMA TODO: always compute all stats, even in VBD mode (stats on
   // first two replicates)
   if (varBasedDecompFlag)
-    compute_vbd_stats(numSamples, allResponses);
+    pStudyDACESensGlobal.compute_vbd_stats(numFunctions,
+                                           numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
+                                           numSamples,
+                                           allResponses);
   else {
     // compute correlation statistics if (compute_corr_flag)
     bool compute_corr_flag = (!subIteratorFlag);

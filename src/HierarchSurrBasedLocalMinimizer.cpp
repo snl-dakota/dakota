@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -36,8 +36,10 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
-  if (iteratedModel.surrogate_type() != "ensemble") {
-    Cerr << "Error: HierarchSurrBasedLocalMinimizer requires a hierarchical "
+  if (iteratedModel.surrogate_type() == "ensemble")
+    iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
+  else {
+    Cerr << "Error: HierarchSurrBasedLocalMinimizer requires an ensemble "
          << "surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }

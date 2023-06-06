@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -91,6 +91,28 @@ public:
   void print_std_regress_coeffs(std::ostream& s,
                                 StringArray var_labels,
 			        const StringArray& resp_labels) const;
+
+  /// compute VBD-based Sobol indices
+  void compute_vbd_stats( const size_t           numFunctions
+                        , const size_t           num_vars
+                        , const size_t           num_samples
+			, const IntResponseMap & resp_samples
+                        );
+
+  /// Printing of VBD results
+  void print_sobol_indices( std::ostream      & s
+                          , const StringArray & var_labels
+                          , const StringArray & resp_labels
+                          , const Real          vbdDropTol
+                          ) const;
+
+  /// archive VBD-based Sobol indices
+  void archive_sobol_indices( const StrStrSizet & run_identifier
+                            , ResultsManager    & resultsDB
+                            , const StringArray & var_labels
+                            , const StringArray & resp_labels
+                            , const Real          vbdDropTol
+                            ) const;
 
 private:
 
@@ -194,6 +216,12 @@ void archive_partial_correlations(const StrStrSizet& run_identifier,
 
   /// flag indictaing whether correlations have been computed
   bool corrComputed;
+
+  /// VBD main effect indices
+  RealVectorArray indexSi;
+
+  /// VBD total effect indices
+  RealVectorArray indexTi;
 };
 
 

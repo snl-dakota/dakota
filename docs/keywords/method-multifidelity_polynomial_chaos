@@ -57,14 +57,15 @@ specification can be used to augment scalar specifications for
 quadrature order, sparse grid level, and expansion order.
 
 Multifidelity UQ using PCE requires that the model selected for
-iteration by the method specification is a multifidelity surrogate
-model (see :dakkw:`model-surrogate-hierarchical`), which defines an
-``ordered_model_sequence`` (see :dakkw:`model-surrogate-hierarchical`).
-Two types of hierarchies are supported: (i) a hierarchy of model forms
-composed from more than one model within the ``ordered_model_sequence``,
-or (ii) a hierarchy of discretization levels comprised from a single
-model within the ``ordered_model_sequence`` which in turn specifies a
-``solution_level_control`` (see
+iteration by the method specification is an ensemble surrogate model
+(see :dakkw:`model-surrogate-ensemble`), which defines an ordered
+sequence of model fidelities or resolutions.  Two types of hierarchies are
+supported: (i) a hierarchy of model forms composed from more than one
+model within the ``ordered_model_fidelities`` specification, or (ii) a
+hierarchy of discretization levels comprised from a single model
+(either from a ``truth_model_pointer`` specification or a single entry
+within an ``ordered_model_fidelities`` specification) which in turn
+specifies a ``solution_level_control`` (see
 :dakkw:`model-single-solution_level_control`).
 
 In both cases, an expansion will first be formed for the low fidelity
@@ -121,7 +122,7 @@ Examples::
     
     model,
      id_model = 'HIERARCH'
-     surrogate hierarchical
+     surrogate ensemble
        ordered_model_fidelities = 'LF' 'MF' 'HF'
        correction additive zeroth_order
 

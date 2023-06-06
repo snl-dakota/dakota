@@ -14,4 +14,3 @@ The Developers Manual focuses on documentation of Dakota design principles and c
    writingcode/overview
    writingcode/services
    writingcode/developmentpractices
-   writingcode/additionalresources

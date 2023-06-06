@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -2010,8 +2010,8 @@ print_wilks_stastics(std::ostream& s) const
 void NonDSampling::
 print_tolerance_intervals_statistics(std::ostream& s) const
 {
-  size_t width = write_precision+7;
-
+  const size_t width = write_precision+7;
+  const size_t response_label_width = 14;
   s << "-----------------------------------------------------------------------------"
     << std::endl
     << "Double-sided tolerance interval equivalent normal results"
@@ -2021,7 +2021,7 @@ print_tolerance_intervals_statistics(std::ostream& s) const
     << std::endl
     << "Double-sided tolerance interval equivalent normal statistics for each response function:"
     << std::endl
-    << std::setw(width+14) << "Sample Mean mu"
+    << std::setw(response_label_width + width + 1) << "Sample Mean mu"
     << std::setw(width+1)  << "Sample Stdev s"
     << std::setw(width+1)  << "Stdev Mult. f"
     << std::setw(width+1)  << "LowerEnd=mu-f*s"
@@ -2030,7 +2030,8 @@ print_tolerance_intervals_statistics(std::ostream& s) const
     << std::endl
     << std::scientific << std::setprecision(write_precision);
   for (size_t i = 0; i < numFunctions; ++i) {
-    s << iteratedModel.response_labels()[i]
+    s << std::setw(response_label_width)
+      << iteratedModel.response_labels()[i]
       << ' ' << std::setw(width) << tiDstienMus[i]
       << ' ' << std::setw(width) << tiSampleSigmas[i]
       << ' ' << std::setw(width) << tiDeltaMultiplicativeFactor

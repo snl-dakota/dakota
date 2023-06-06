@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -613,23 +613,8 @@ transform_variables(const Variables& recast_vars, Variables& sub_model_vars)
     assign_instance();
     variablesMapping(recast_vars, sub_model_vars);
   }
-  else {
-    short active_view =    recast_vars.view().first,
-       sm_active_view = sub_model_vars.view().first;
-    if (active_view == sm_active_view)
-      sub_model_vars.active_variables(recast_vars);
-    else if ( (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL) &&
-	      active_view >= RELAXED_DESIGN )
-      sub_model_vars.all_to_active_variables(recast_vars);
-    else if ( (active_view == RELAXED_ALL || active_view == MIXED_ALL) &&
-	      sm_active_view >= RELAXED_DESIGN )
-      sub_model_vars.active_to_all_variables(recast_vars);
-    else {
-      Cerr << "Error: unsupported view mapping in RecastModel::"
-	   << "transform_variables()." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-  }
+  else
+    sub_model_vars.map_variables_by_view(recast_vars);
 }
 
 
@@ -643,23 +628,8 @@ inverse_transform_variables(const Variables& sub_model_vars,
     assign_instance();
     invVarsMapping(sub_model_vars, recast_vars);
   }
-  else {
-    short active_view =    recast_vars.view().first,
-       sm_active_view = sub_model_vars.view().first;
-    if (active_view == sm_active_view)
-      recast_vars.active_variables(sub_model_vars);
-    else if ( (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL) &&
-	      active_view >= RELAXED_DESIGN )
-      recast_vars.active_to_all_variables(sub_model_vars);
-    else if ( (active_view == RELAXED_ALL || active_view == MIXED_ALL) &&
-	      sm_active_view >= RELAXED_DESIGN )
-      recast_vars.all_to_active_variables(sub_model_vars);
-    else {
-      Cerr << "Error: unsupported view mapping in RecastModel::"
-	   << "inverse_transform_variables()." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-  }
+  else
+    recast_vars.map_variables_by_view(sub_model_vars);
 }
 
 
@@ -821,7 +791,7 @@ inverse_transform_set(const Variables& sub_model_vars,
 void RecastModel::
 transform_response(const Variables& recast_vars,
 		   const Variables& sub_model_vars,
-		   const Response& sub_model_resp, Response& recast_resp)
+		   const Response&  sub_model_resp, Response& recast_resp)
 {
   // typical flow: mapping from sub-model response ("user space") into
   // the recast response ("iterator space")

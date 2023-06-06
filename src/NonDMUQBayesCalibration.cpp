@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -376,7 +376,7 @@ print_variables(std::ostream& s, const RealVector& c_vars)
   if (standardizedSpace) {
     RealVector u_rv(Teuchos::View, c_vars.values(), numContinuousVars);
     RealVector x_rv;
-    mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+    mcmcModel.trans_U_to_X(u_rv, x_rv);
     write_data(Cout, x_rv, cv_labels);
   }
   else
@@ -433,7 +433,7 @@ void NonDMUQBayesCalibration::cache_chain()
 
       Real* acc_chain_i = acceptanceChain[i];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
-      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+      mcmcModel.trans_U_to_X(u_rv, x_rv);
       for (int j=numContinuousVars; j<num_params; ++j){
 
         acc_chain_i[j] = chain(j,i); // trailing hyperparams are not transformed

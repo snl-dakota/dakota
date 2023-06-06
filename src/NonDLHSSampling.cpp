@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -66,6 +66,13 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
 
   if (model.primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model.num_primary_fns();
+
+  if ((varBasedDecompFlag    == true) &&
+      (numDiscreteStringVars >  0   )) {
+    Cerr << "\nError: discrete string variables are not supported for "
+         << "variance based decomposition.\n";
+    abort_handler(METHOD_ERROR);
+  }
 
   if (dOptimal) {
     const SharedVariablesData& svd = model.current_variables().shared_data();
@@ -726,8 +733,15 @@ void NonDLHSSampling::post_run(std::ostream& s)
   // redefinition of print_results().
   if (statsFlag) {
     if(varBasedDecompFlag) {
-      compute_vbd_stats(numSamples, allResponses);
-      archive_sobol_indices();
+      nonDSampCorr.compute_vbd_stats(numFunctions,
+                                     numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
+                                     numSamples,
+                                     allResponses);
+      nonDSampCorr.archive_sobol_indices(run_identifier(),
+                                         resultsDB,
+                                         iteratedModel.ordered_labels(),
+                                         iteratedModel.response_labels(),
+                                         vbdDropTol);
     }
     else if(!summaryOutputFlag) {
       // To support incremental reporting of statistics, compute_statistics is 
@@ -1016,7 +1030,10 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
   if (!numResponseFunctions) // DACE mode w/ opt or NLS
     Analyzer::print_results(s, results_state);
   if (varBasedDecompFlag)
-    print_sobol_indices(s);
+    nonDSampCorr.print_sobol_indices(s,
+                                     iteratedModel.ordered_labels(),
+                                     iteratedModel.response_labels(),
+                                     vbdDropTol);
   else if (statsFlag) {
     if(refineSamples.length() == 0) {
       compute_statistics(allSamples, allResponses);

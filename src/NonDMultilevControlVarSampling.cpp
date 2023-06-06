@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -72,7 +72,7 @@ void NonDMultilevControlVarSampling::pre_run()
 
 
 /** The primary run function manages the general case: a hierarchy of model 
-    forms (from the ordered model fidelities within a HierarchSurrModel), 
+    forms (from the ordered model fidelities within an EnsembleSurrModel), 
     each of which may contain multiple discretization levels. */
 void NonDMultilevControlVarSampling::core_run()
 {

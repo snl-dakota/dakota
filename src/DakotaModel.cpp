@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -3164,8 +3164,8 @@ bool Model::manage_data_recastings()
     // detect recasting needs top down
     for (ml_it=sub_models.begin(), i=0; ml_it!=sub_models.end(); ++ml_it, ++i) {
       const String& m_type = ml_it->model_type();
-      if (m_type == "recast" ||
-	  m_type == "probability_transform") // + other Recast types...
+      if (m_type == "recast" || // covers Scaling,Weighting,DataTransform
+	  m_type == "probability_transform")
 	manage_recasting = recastFlags[i] = true;
       else if (m_type == "nested")
 	break;
@@ -3173,6 +3173,37 @@ bool Model::manage_data_recastings()
 
     if (!manage_recasting) recastFlags.clear();
     return manage_recasting;
+  }
+}
+
+
+void Model::user_space_to_iterator_space(Variables& vars)
+{
+  if (modelRep) // fwd to letter
+    return modelRep->user_space_to_iterator_space(vars);
+  else { // letter lacking redefinition of virtual fn.
+
+    // apply recastings bottom up (e.g., for data import)
+    // modelList assigned in manage_data_recastings() -> subordinate_models()
+    // (don't want to incur this overhead for every import/export)
+    Variables prev_vars = vars; // shallow copy / shared rep
+    ModelLRevIter ml_rit; size_t i;
+    for (ml_rit =modelList.rbegin(), i=modelList.size()-1;
+	 ml_rit!=modelList.rend(); ++ml_rit, --i) {
+      if (recastFlags[i]) {
+	Variables recast_vars = ml_rit->current_variables(); // shallow copy
+	// to propagate vars bottom up, inverse of std transform is reqd
+	RecastModel& recast_model_rep =
+	  *std::static_pointer_cast<RecastModel>(ml_rit->model_rep());
+	// mappings handle view differences:
+	recast_model_rep.inverse_transform_variables(prev_vars, recast_vars);
+	prev_vars = recast_vars; // reassign rep (original vars unmodified)
+      }
+    }
+    // Allow update in view from user-space to iterator-space:
+    //vars = prev_vars.copy(); // don't share rep with last recast_vars
+    // Preserve original user-space view:
+    vars.map_variables_by_view(prev_vars);
   }
 }
 
@@ -3187,6 +3218,40 @@ user_space_to_iterator_space(const Variables& user_vars,
 						  iter_vars, iter_resp);
   else { // letter lacking redefinition of virtual fn.
 
+    Variables prev_vars = user_vars; // shallow copy / shared rep
+    Response  prev_resp = user_resp; // shallow copy / shared rep
+
+    // apply recastings bottom up (e.g., for data import)
+    // modelList assigned in manage_data_recastings() -> subordinate_models()
+    ModelLRevIter ml_rit; size_t i;
+    for (ml_rit =modelList.rbegin(), i=modelList.size()-1;
+	 ml_rit!=modelList.rend(); ++ml_rit, --i) {
+      if (recastFlags[i]) {
+	// utilize RecastModel::current{Variables,Response} to xform data
+	Variables recast_vars = ml_rit->current_variables(); // shallow copy
+	Response  recast_resp = ml_rit->current_response();  // shallow copy
+	ActiveSet recast_set  = recast_resp.active_set();    // copy
+	// to propagate vars bottom up, inverse of std transform is reqd
+	RecastModel& recast_model_rep =
+	  *std::static_pointer_cast<RecastModel>(ml_rit->model_rep());
+	recast_model_rep.inverse_transform_variables(prev_vars, recast_vars);
+	recast_model_rep.inverse_transform_set(prev_vars,
+	  prev_resp.active_set(), recast_set);
+	// to propagate response bottom up, std transform is used
+	recast_resp.active_set(recast_set);
+	recast_model_rep.transform_response(recast_vars, prev_vars,
+					    prev_resp, recast_resp);
+	prev_vars = recast_vars; // reassign rep (original user_vars unmodified)
+	prev_resp = recast_resp; // reassign rep (original user_resp unmodified)
+      }
+    }
+    // don't share reps with last recast_{vars,resp}
+    if (iter_vars.is_null()) iter_vars = prev_vars.copy();
+    else                     iter_vars.map_variables_by_view(prev_vars);
+    if (iter_resp.is_null()) iter_resp = prev_resp.copy();
+    else                     iter_resp.update(prev_resp);
+
+    /*
     iter_vars = user_vars.copy(); // deep copy to preserve inactive in source
     iter_resp = user_resp;//.copy(); // shallow copy currently sufficient
 
@@ -3205,19 +3270,51 @@ user_space_to_iterator_space(const Variables& user_vars,
 	RecastModel& recast_model_rep =
 	  *std::static_pointer_cast<RecastModel>(ml_rit->model_rep());
 	recast_model_rep.inverse_transform_variables(iter_vars, recast_vars);
-	recast_model_rep.
-	  inverse_transform_set(iter_vars, iter_resp.active_set(), recast_set);
+	recast_model_rep.inverse_transform_set(iter_vars,
+	  iter_resp.active_set(), recast_set);
 	// to propagate response bottom up, std transform is used
 	recast_resp.active_set(recast_set);
-	recast_model_rep.
-	  transform_response(recast_vars, iter_vars, iter_resp, recast_resp);
+	recast_model_rep.transform_response(recast_vars, iter_vars,
+					     iter_resp, recast_resp);
 	// update active in iter_vars
-	iter_vars.active_variables(recast_vars);
+	iter_vars.map_variables_by_view(recast_vars);
 	// reassign resp rep pointer (no actual data copying)
 	iter_resp = recast_resp; // sufficient for now...
 	//iter_resp.active_set(recast_set);
 	//iter_resp.update(recast_resp);
       }
+    */
+  }
+}
+
+
+void Model::
+iterator_space_to_user_space(Variables& vars)
+{
+  if (modelRep) // fwd to letter
+    return modelRep->iterator_space_to_user_space(vars);
+  else { // letter lacking redefinition of virtual fn.
+
+    // apply recastings top down (e.g., for data export)
+    // modelList assigned in manage_data_recastings() -> subordinate_models()
+    // (don't want to incur this overhead for every import/export)
+    Variables prev_vars = vars; // shallow copy / shared rep
+    ModelLIter ml_it; size_t i;
+    for (ml_it=modelList.begin(), i=0; ml_it!=modelList.end(); ++ml_it, ++i) {
+      if (recastFlags[i]) {
+	// utilize RecastModel::current{Variables,Response} to xform data
+	Variables recast_vars = ml_it->current_variables(); // shallow copy
+	// to propagate vars top down, forward transform is reqd
+	RecastModel& recast_model_rep =
+	  *std::static_pointer_cast<RecastModel>(ml_it->model_rep());
+	recast_model_rep.transform_variables(prev_vars, recast_vars);
+	prev_vars = recast_vars; // reassign rep (original vars unmodified)
+      }
+    }
+    // Allow update in view from iterator-space to user-space:
+    //vars = prev_vars.copy(); // don't share rep with last recast_vars
+    // Preserve original iterator-space view:
+    vars.map_variables_by_view(prev_vars);
   }
 }
 
@@ -3232,6 +3329,40 @@ iterator_space_to_user_space(const Variables& iter_vars,
 						  user_vars, user_resp);
   else { // letter lacking redefinition of virtual fn.
 
+    Variables prev_vars = iter_vars; // shallow copy / shared rep
+    Response  prev_resp = iter_resp; // shallow copy / shared rep
+
+    // apply recastings top down (e.g., for data export)
+    // modelList assigned in manage_data_recastings() -> subordinate_models()
+    ModelLIter ml_it; size_t i;
+    for (ml_it=modelList.begin(), i=0; ml_it!=modelList.end(); ++ml_it, ++i) {
+      if (recastFlags[i]) {
+	// utilize RecastModel::current{Variables,Response} to xform data
+	Variables recast_vars = ml_it->current_variables(); // shallow copy
+	Response  recast_resp = ml_it->current_response();  // shallow copy
+	ActiveSet recast_set  = recast_resp.active_set();   // copy
+	// to propagate vars top down, forward transform is reqd
+	RecastModel& recast_model_rep =
+	  *std::static_pointer_cast<RecastModel>(ml_it->model_rep());
+	recast_model_rep.transform_variables(prev_vars, recast_vars);
+	recast_model_rep.transform_set(prev_vars, prev_resp.active_set(),
+				       recast_set);
+	// to propagate response top down, inverse transform is used.  Note:
+	// derivatives are not currently exported --> a no-op for Nataf.
+	recast_resp.active_set(recast_set);
+	recast_model_rep.inverse_transform_response(recast_vars, prev_vars,
+						    prev_resp, recast_resp);
+	prev_vars = recast_vars; // reassign rep (original user_vars unmodified)
+	prev_resp = recast_resp; // reassign rep (original user_resp unmodified)
+      }
+    }
+    // don't share reps with last recast_{vars,resp}
+    if (user_vars.is_null()) user_vars = prev_vars.copy();
+    else                     user_vars.map_variables_by_view(prev_vars);
+    if (user_resp.is_null()) user_resp = prev_resp.copy();
+    else                     user_resp.update(prev_resp);
+
+    /*
     user_vars = iter_vars.copy(); // deep copy to preserve inactive in source
     user_resp = iter_resp;//.copy(); // shallow copy currently sufficient
 
@@ -3249,20 +3380,21 @@ iterator_space_to_user_space(const Variables& iter_vars,
 	RecastModel& recast_model_rep =
 	  *std::static_pointer_cast<RecastModel>(ml_it->model_rep());
 	recast_model_rep.transform_variables(user_vars, recast_vars);
-	recast_model_rep.
-	  transform_set(user_vars, user_resp.active_set(), recast_set);
+	recast_model_rep.transform_set(user_vars, user_resp.active_set(),
+				       recast_set);
 	// to propagate response top down, inverse transform is used.  Note:
 	// derivatives are not currently exported --> a no-op for Nataf.
 	recast_resp.active_set(recast_set);
 	recast_model_rep.inverse_transform_response(recast_vars, user_vars,
-						     user_resp, recast_resp);
+						    user_resp, recast_resp);
 	// update active in iter_vars
-	user_vars.active_variables(recast_vars);
+	user_vars.map_variables_by_view(recast_vars);
 	// reassign resp rep pointer (no actual data copying)
 	user_resp = recast_resp; // sufficient for now...
 	//user_resp.active_set(recast_set);
 	//user_resp.update(recast_resp);
       }
+    */
   }
 }
 

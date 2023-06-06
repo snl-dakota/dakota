@@ -26,8 +26,11 @@ variables,
 	  upper_bounds    = 4* 1.
 	  descriptors 'pos1' 'pos2' 'pos3' 'size'
 	continuous_state  = 2
-      	  lower_bounds    = 2*-1.
-	  upper_bounds    = 2* 1.
+	  lower_bounds    = 2*-1.	#s0
+	  upper_bounds    = 2* 1.	#s0
+# Exercise the user-space to iterator-space transform for exp config vars:
+#	  lower_bounds    = 2*-2.	#s1
+#	  upper_bounds    = 2* 2.	#s1
 	  descriptors 'view1' 'view2'
 
 interface,

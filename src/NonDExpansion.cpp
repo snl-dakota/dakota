@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -669,7 +669,7 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
     // (goal-oriented) adaptivity.
     exp_sampler_rep = std::make_shared<NonDLHSSampling>
       (uSpaceModel, sample_type, numSamplesOnExpansion,
-       first_seed(), rng, false, ALEATORY_UNCERTAIN);//ALL); *** HACK: ALEATORY_UNCERTAIN needed for aleatory stats but can we adopt the PCE view in cases of approx sample export (potentially resetting after numerical stats eval?)
+       first_seed(), rng, false, ALEATORY_UNCERTAIN);//, ALL); *** HACK: ALEATORY_UNCERTAIN needed for aleatory stats but can we adopt the PCE view in cases of approx sample export (potentially resetting after numerical stats eval?)
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
     // needs to precede exp_sampler_rep->requested_levels()
@@ -1316,7 +1316,7 @@ void NonDExpansion::assign_modes()
 void NonDExpansion::assign_surrogate_response_mode()
 {
   // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // comms for the ordered Models within EnsembleSurrModel::set_communicators(),
   // which precedes mode updates in {multifidelity,multilevel}_expansion().
 
   // ML-MF {PCE,SC,FT} are based on model discrepancies, but multi-index cases
@@ -3590,11 +3590,10 @@ void NonDExpansion::archive_moments()
 	  
     if (exp_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
-
       for (int i = 0; i < numFunctions; ++i) {
         DimScaleMap scales;
-        scales.emplace(0, StringScale("moments", 
-                             {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
+        scales.emplace(0, StringScale("moments",	
+			     {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
                              ScaleScope::SHARED));
         RealVector moments;
         if(finalMomentsType == Pecos::CENTRAL_MOMENTS) {
@@ -3611,13 +3610,11 @@ void NonDExpansion::archive_moments()
     if (num_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_num,
           num_matrix, md_moments);
-      
       for (int i = 0; i < numFunctions; ++i) {
         DimScaleMap scales;
-        scales.emplace(0,
-            StringScale("moments",
-            {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
-            ScaleScope::SHARED));
+        scales.emplace(0, StringScale("moments",
+			     {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
+                             ScaleScope::SHARED));
         RealVector moments;
         if(finalMomentsType == Pecos::CENTRAL_MOMENTS) {
           moments = poly_approxs[i].numerical_integration_moments();
@@ -3692,9 +3689,9 @@ void NonDExpansion::archive_sobol_indices() {
       if (covarianceControl == FULL_COVARIANCE)
         assert(respCovariance(i,i) >= 0.0 );
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
-			    Pecos::is_small(std::sqrt(respVariance[i])),approx_i.mean() ) ||
+			    Pecos::is_small(std::sqrt(respVariance[i]),approx_i.mean()) ) ||
 			  ( covarianceControl   == FULL_COVARIANCE &&
-			    Pecos::is_small(std::sqrt(respCovariance(i,i)),approx_i.mean())) )
+			    Pecos::is_small(std::sqrt(respCovariance(i,i)),approx_i.mean()) ) )
 	              ? false : true;
       if (well_posed) {
 	const RealVector& total_indices = approx_i.total_sobol_indices();

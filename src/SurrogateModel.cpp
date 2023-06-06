@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -31,14 +31,11 @@ namespace Dakota {
 SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   surrogateFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
+  responseMode(DEFAULT_SURROGATE_RESP_MODE),
   corrType(problem_db.get_short("model.surrogate.correction_type")),
   corrOrder(problem_db.get_short("model.surrogate.correction_order")),
   surrModelEvalCntr(0), approxBuilds(0)
 {
-  // assign default responseMode based on correction specification;
-  // NO_CORRECTION (0) is default
-  responseMode = (corrType) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
-
   // process surrogateFnIndices. IntSets are sorted and unique.
   if (surrogateFnIndices.empty()) // default: all fns are approximated
     for (size_t i=0; i<numFns; ++i)
@@ -63,13 +60,10 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   // Allow DFSModel to employ sizing differences (e.g., consuming aggregations)
   Model(LightWtBaseConstructor(), surr_view, svd, share_svd, srd, share_srd,
 	surr_set, output_level, problem_db, parallel_lib),
-  corrType(corr_type), corrOrder(0), surrModelEvalCntr(0), approxBuilds(0)
+  responseMode(DEFAULT_SURROGATE_RESP_MODE), corrType(corr_type), corrOrder(0),
+  surrModelEvalCntr(0), approxBuilds(0)
 {
   modelType = "surrogate";
-
-  // assign default responseMode based on correction specification;
-  // NO_CORRECTION (0) is default
-  responseMode = (corrType) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
 
   // set up surrogateFnIndices to use default (all fns are approximated)
   for (size_t i=0; i<numFns; ++i)
@@ -188,8 +182,8 @@ bool SurrogateModel::check_response_qoi(const Model& sub_model)
 {
   bool error_flag = false;
   // Check for compatible array sizing between sub_model and currentResponse.
-  // NonHierarchSurrModel creates aggregations (and a DataFitSurrModel will
-  // consume them). Aggregations may span truthModel, unorderedModels, or both.
+  // EnsembleSurrModel creates aggregations (and a DataFitSurrModel will
+  // consume them). Aggregations may span truthModel, approxModels, or both.
   // For now, allow any aggregation factor.
   size_t sm_qoi = sub_model.qoi();//, aggregation = numFns / sm_qoi;
   if ( numFns % sm_qoi ) {
