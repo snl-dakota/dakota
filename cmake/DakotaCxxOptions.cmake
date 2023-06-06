@@ -15,12 +15,7 @@ macro(dakota_cxx_standard)
       "Dakota prefers not to use compiler-specific C++ extensions")
   endif()
   set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL
-    "Dakota strictly requires C++11 or better")
-
-  # clumsy setting of flag to prevent issues in boost::serialization for c++17.
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "-fno-new-ttp-matching ${CMAKE_CXX_FLAGS}" CACHE STRING "fix boost::serialization" FORCE)
-  endif()
+    "Dakota strictly requires C++17 or better")
 
 endmacro()
 
