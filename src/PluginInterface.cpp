@@ -12,6 +12,7 @@
 
 #include <boost/dll/import.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/version.hpp>
 
 // Boost 1.76 and newer avoid the C++20 import keyword
 // RATIONALE: Using preprocessor as isolated to this compilation unit
@@ -119,7 +120,11 @@ void PluginInterface::load_plugin()
 {
   if (pluginInterface) return;
   try {
-    pluginInterface = dakota_boost_dll_import<DakotaPlugins::DakotaInterfaceAPI>
+#if BOOST_VERSION <= 107600
+    pluginInterface = boost::dll::import<DakotaPlugins::DakotaInterfaceAPI>
+#else
+    pluginInterface = boost::dll::import_symbol<DakotaPlugins::DakotaInterfaceAPI>
+#endif
       (pluginPath,
 	 "dakota_interface_plugin"  // name of the symbol to import
 	 // TODO: append .dll, .so, .dylib via
