@@ -175,6 +175,17 @@ protected:
 					       RealVector& lin_ineq_lb,
 					       RealVector& lin_ineq_ub) = 0;
 
+  virtual void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
+					 size_t& num_nln_con);
+  virtual void numerical_solution_bounds_constraints(
+    const DAGSolutionData& soln, const RealVector& cost, Real avg_N_H,
+    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
+    RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
+    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+
+  virtual size_t num_approximations() const;
+
   //
   //- Heading: member functions
   //
@@ -250,9 +261,22 @@ protected:
   void ensemble_numerical_solution(const RealVector& cost,
 				   const SizetArray& approx_sequence,
 				   DAGSolutionData& soln, size_t& num_samples);
+  void configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+			    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
+			    RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
+			    RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
+			    RealMatrix& lin_ineq_coeffs,
+			    RealMatrix& lin_eq_coeffs, size_t& num_solvers,
+			    bool& sequenced_minimizers);
+  void run_minimizers(DAGSolutionData& soln, size_t num_solvers,
+		      bool sequenced_minimizers);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
+  Real allocate_budget(const UShortArray& model_set,
+		       const RealVector& avg_eval_ratios,
+		       const RealVector& cost);
+
   void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
 				  const RealVector& cost, Real avg_N_H);
 
@@ -401,6 +425,10 @@ private:
   /// pointer to NonDACV instance used in static member functions
   static NonDNonHierarchSampling* nonHierSampInstance;
 };
+
+
+inline size_t NonDNonHierarchSampling::num_approximations() const
+{ return numApprox; }
 
 
 inline unsigned short NonDNonHierarchSampling::uses_method() const
@@ -605,14 +633,31 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
 }
 
 
+inline Real NonDNonHierarchSampling::
+allocate_budget(const UShortArray& model_set, const RealVector& avg_eval_ratios,
+		const RealVector& cost)
+{
+  // version with scalar HF target (eval_ratios already averaged over QoI
+  // due to formulation of optimization sub-problem)
+
+  Real cost_H = cost[numApprox], inner_prod, budget = (Real)maxFunctionEvals;
+  inner_prod = cost_H; // raw cost (un-normalized)
+  size_t m, num_models = model_set.size();
+  for (m=0; m<num_models; ++m)
+    inner_prod += cost[model_set[m]] * avg_eval_ratios[m];
+  Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
+  return avg_hf_target;
+}
+
+
 inline void NonDNonHierarchSampling::
 r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H, RealVector& N_vec)
 {
-  size_t vec_len = numApprox+1;
+  size_t num_approx = avg_eval_ratios.length(), vec_len = num_approx+1;
   if (N_vec.length() != vec_len) N_vec.sizeUninitialized(vec_len);
-  for (size_t i=0; i<numApprox; ++i)
+  for (size_t i=0; i<num_approx; ++i)
     N_vec[i] = avg_eval_ratios[i] * N_H;
-  N_vec[numApprox] = N_H;
+  N_vec[num_approx] = N_H;
 }
 
 
@@ -622,11 +667,13 @@ r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 {
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: // embed N at end of cd_vars for GenACV usage
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    cd_vars.sizeUninitialized(numApprox+1);
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
+    size_t num_approx = avg_eval_ratios.length();
+    cd_vars.sizeUninitialized(num_approx+1);
     copy_data_partial(avg_eval_ratios, cd_vars, 0);
-    cd_vars[numApprox] = N_H;
+    cd_vars[num_approx] = N_H;
     break;
+  }
   case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
     r_and_N_to_N_vec(avg_eval_ratios, N_H, cd_vars);  break;
   }

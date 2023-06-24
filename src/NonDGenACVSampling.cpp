@@ -106,7 +106,6 @@ void NonDGenACVSampling::generate_dags()
       // Option 1:
       // Pre-compute generate_sub_trees() for each dag_size (0:numApprox)
       std::vector<UShortArraySet> nominal_dags(numApprox+1); // include size 0
-      for (j=0; j<numApprox; ++j) nodes[j] = j;
       for (dag_size=numApprox; dag_size>=1; --dag_size) {
 	nodes.resize(dag_size); // discard trailing node
 	dag.assign(dag_size, USHRT_MAX);
@@ -114,8 +113,7 @@ void NonDGenACVSampling::generate_dags()
 			   dag, nominal_dags[dag_size]);
       }
       // Now map each set of active model nodes through the nominal dags
-      UShortArray mapped_dag;
-      UShortArraySet::const_iterator cit;  unsigned short nom_dag_j;
+      UShortArray mapped_dag;  unsigned short nom_dag_j;
       for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
 	const UShortArray& tp_i = tp[i];
 	nodes.clear();
@@ -125,8 +123,9 @@ void NonDGenACVSampling::generate_dags()
 	mapped_dag.resize(dag_size);
 	const UShortArraySet& nominal_set = nominal_dags[dag_size];
 	UShortArraySet& mapped_set = modelDAGs[nodes];	mapped_set.clear();
-	for (cit=nominal_set.begin(); cit!=nominal_set.end(); ++cit) {
-	  const UShortArray& nominal_dag = *cit;
+	UShortArraySet::const_iterator s_cit;
+	for (s_cit=nominal_set.begin(); s_cit!=nominal_set.end(); ++s_cit) {
+	  const UShortArray& nominal_dag = *s_cit;
 	  for (j=0; j<dag_size; ++j) {
 	    nom_dag_j = nominal_dag[j];
 	    mapped_dag[j] = (nom_dag_j < dag_size) ? nodes[nom_dag_j] : root;
@@ -135,12 +134,7 @@ void NonDGenACVSampling::generate_dags()
 	  //     << "mapped_dag  =\n" << mapped_dag << std::endl;
 	  mapped_set.insert(mapped_dag);
 	}	  
-	Cout << "For model set:\n" << nodes
-	     << "searching array of DAGs of size " << mapped_set.size();
-	if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << mapped_set;//<< '\n';
-	else                             Cout << ".\n";
       }
-      Cout << std::endl;
 
       /* Option 2:
       nodes.resize(numApprox);
@@ -156,31 +150,33 @@ void NonDGenACVSampling::generate_dags()
       }
       */
 
-      //exit(0); // not yet supported downstream
-
       break;
     }
 
     // Rather then enumerating all of the discrete model combinations, this
-    // employs one intgrated continuous solve, which approaches the best
-    // discrete solution as some sample increments --> 0.  This approach will
-    // likely encounter more issues with numerical conditioning
+    // employs one integrated continuous solve, which approaches the best
+    // discrete solution as some sample increments --> 0.  This approach is
+    // more likely to encounter issues with numerical conditioning.
     case NO_MODEL_SELECTION:
       // root node (truth index = numApprox) and set of dependent nodes
       // (approximation model indices 0,numApprox-1) are fixed
-      for (i=0; i<numApprox; ++i) nodes[i] = i;
-      dag.assign(numApprox, USHRT_MAX);
-      // recur for DAG including all approximations:
       UShortArraySet& dag_set = modelDAGs[nodes];  dag_set.clear();
+      dag.assign(numApprox, USHRT_MAX);
       generate_sub_trees(root, nodes, dagDepthLimit, dag, dag_set);
-      Cout << "Searching array of model DAGs of size " << dag_set.size();
-      if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;
-      else                             Cout << ".\n";
-      Cout << std::endl;
       break;
     }
     break;
   }
+
+  std::map<UShortArray, UShortArraySet>::const_iterator d_cit;
+  for (d_cit=modelDAGs.begin(); d_cit!=modelDAGs.end(); ++d_cit) {
+    const UShortArraySet& dag_set = d_cit->second;
+    Cout << "For model set:\n" << d_cit->first
+	 << "searching array of DAGs of size " << dag_set.size();
+    if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;//<< '\n';
+    else                             Cout << ".\n";
+  }
+  Cout << std::endl;
 }
 
 
@@ -259,7 +255,7 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
 
 
 void NonDGenACVSampling::
-generate_reverse_dag(const UShortArray& model_set, const UShortArray& dag)
+generate_reverse_dag(const UShortArray& approx_set, const UShortArray& dag)
 {
   // define an array of source nodes that point to a given target
   size_t i, dag_size = dag.size();
@@ -267,7 +263,7 @@ generate_reverse_dag(const UShortArray& model_set, const UShortArray& dag)
   reverseActiveDAG.resize(numApprox + 1);
   unsigned short dag_curr, dag_next;
   for (i=0; i<dag_size; ++i) { // walk+store path to root
-    dag_curr = model_set[i];  dag_next = dag[dag_curr];
+    dag_curr = approx_set[i];  dag_next = dag[dag_curr];
     reverseActiveDAG[dag_next].insert(dag_curr);
     while (dag_next != numApprox) {
       dag_curr = dag_next;  dag_next = dag[dag_curr];
@@ -405,9 +401,9 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     for (activeModelSetIter  = modelDAGs.begin();
 	 activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
       //  TO DO: create views of covLL,covLH or reuse existing indexing?
-      const UShortArray&  model_set = activeModelSetIter->first;
+      const UShortArray& approx_set = activeModelSetIter->first;
       const UShortArraySet& dag_set = activeModelSetIter->second;
-      soln_key.first = model_set;
+      soln_key.first = approx_set;
       for (activeDAGIter  = dag_set.begin();
 	   activeDAGIter != dag_set.end(); ++activeDAGIter) {
 	// sample set definitions are enabled by reversing the DAG direction:
@@ -415,8 +411,8 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 	soln_key.second  = active_dag;
 	if (outputLevel >= QUIET_OUTPUT)
 	  Cout << "Evaluating active DAG:\n" << active_dag
-	       << "for model set:\n" << model_set << std::endl;
-	generate_reverse_dag(model_set, active_dag);
+	       << "for approximation set:\n" << approx_set << std::endl;
+	generate_reverse_dag(approx_set, active_dag);
 	// compute the LF/HF evaluation ratios from shared samples and compute
 	// ratio of MC and ACV mean sq errors (which incorporates anticipated
 	// variance reduction from application of avg_eval_ratios).
@@ -481,18 +477,18 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   precompute_ratios(); // compute metrics not dependent on active DAG
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
-    const UShortArray&  model_set = activeModelSetIter->first;
+    const UShortArray& approx_set = activeModelSetIter->first;
     const UShortArraySet& dag_set = activeModelSetIter->second;
-    soln_key.first = model_set;
+    soln_key.first = approx_set;
     for (activeDAGIter  = dag_set.begin();
 	 activeDAGIter != dag_set.end(); ++activeDAGIter) {
       // sample set definitions are enabled by reversing the DAG direction:
       const UShortArray& active_dag = *activeDAGIter;
       soln_key.second  = active_dag;
       if (outputLevel >= QUIET_OUTPUT)
-	Cout << "Evaluating active DAG:\n" << active_dag << "for node set:\n"
-	     << soln_key.first << std::endl;
-      generate_reverse_dag(model_set, active_dag);
+	Cout << "Evaluating active DAG:\n" << active_dag
+	     << "for approximation set:\n" << approx_set << std::endl;
+      generate_reverse_dag(approx_set, active_dag);
       // compute the LF/HF evaluation ratios from shared samples and compute
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
@@ -563,9 +559,9 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     //  TO DO: create views of covLL,covLH or reuse existing indexing?
-    const UShortArray&  model_set = activeModelSetIter->first;
+    const UShortArray&  approx_set = activeModelSetIter->first;
     const UShortArraySet& dag_set = activeModelSetIter->second;
-    soln_key.first = model_set;
+    soln_key.first = approx_set;
     for (activeDAGIter  = dag_set.begin();
 	 activeDAGIter != dag_set.end(); ++activeDAGIter) {
       // sample set definitions are enabled by reversing the DAG direction:
@@ -573,7 +569,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
       soln_key.second  = active_dag;
       if (outputLevel >= QUIET_OUTPUT)
 	Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
-      generate_reverse_dag(model_set, active_dag);
+      generate_reverse_dag(approx_set, active_dag);
       // compute the LF/HF evaluation ratios from shared samples and compute
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
@@ -757,6 +753,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     // > sufficient for determination of best DAG, but not for pyramid sample
     //   set ordering in approx_increments()
     unroll_reverse_dag_from_root(numApprox, orderedRootList);
+    const UShortArray& approx_set = activeModelSetIter->first;
 
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       RealVector& avg_eval_ratios = soln.avgEvalRatios;
@@ -768,7 +765,8 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
 	std::numeric_limits<Real>::infinity() :	average(estVarIter0);
       soln.avgEstVarRatio = 1.;
       // For r_i = 1, C_G,c_g = 0 --> enforce constr for downstream CV numerics
-      enforce_linear_ineq_constraints(avg_eval_ratios, orderedRootList);
+      enforce_linear_ineq_constraints(avg_eval_ratios, approx_set,
+				      orderedRootList);
       numSamples = 0;  return;
     }
 
@@ -777,9 +775,8 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     // employ multiple varianceMinimizers in ensemble_numerical_solution()
     covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
     DAGSolutionData mf_soln, cv_soln;  size_t mf_samp, cv_samp;
-    const UShortArray& model_set = activeModelSetIter->first;
-    analytic_initialization_from_mfmc(model_set, avg_N_H, mf_soln);//***
-    analytic_initialization_from_ensemble_cvmc(model_set, *activeDAGIter,
+    analytic_initialization_from_mfmc(approx_set, avg_N_H, mf_soln);
+    analytic_initialization_from_ensemble_cvmc(approx_set, *activeDAGIter,
 					       orderedRootList,avg_N_H,cv_soln);
     ensemble_numerical_solution(sequenceCost, approxSequence, mf_soln, mf_samp);
     ensemble_numerical_solution(sequenceCost, approxSequence, cv_soln, cv_samp);
@@ -801,13 +798,13 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
 
 
 void NonDGenACVSampling::
-analytic_initialization_from_mfmc(const UShortArray& model_set,
+analytic_initialization_from_mfmc(const UShortArray& approx_set,
 				  Real avg_N_H, DAGSolutionData& soln)
 {
   if (ordered_approx_sequence(rho2LH)) // for all QoI across all Approx
-    mfmc_analytic_solution(model_set, rho2LH, sequenceCost, soln);
+    mfmc_analytic_solution(approx_set, rho2LH, sequenceCost, soln);
   else // compute reordered MFMC for averaged rho; monotonic r not reqd
-    mfmc_reordered_analytic_solution(model_set, rho2LH, sequenceCost,
+    mfmc_reordered_analytic_solution(approx_set, rho2LH, sequenceCost,
 				     approxSequence, soln);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
@@ -817,15 +814,15 @@ analytic_initialization_from_mfmc(const UShortArray& model_set,
   approxSequence.clear();
 
   if (maxFunctionEvals == SZ_MAX)
-    soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);//*** TO DO
+    soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);
   else
     scale_to_target(avg_N_H, sequenceCost, soln.avgEvalRatios, soln.avgHFTarget,
-		    orderedRootList); //*** TO DO
+		    approx_set, orderedRootList);
 }
 
 
 void NonDGenACVSampling::
-analytic_initialization_from_ensemble_cvmc(const UShortArray& model_set,
+analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
 					   const UShortArray& dag,
 					   const UShortList& root_list,
 					   Real avg_N_H, DAGSolutionData& soln)
@@ -833,19 +830,19 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& model_set,
   // For general DAG, set initial guess based on pairwise CVMC analytic solns
   // (analytic MFMC soln expected to be less relevant).  Differs from derived
   // ACV approach through use of paired DAG dependencies.
-  cvmc_ensemble_solutions(covLL, covLH, varH, sequenceCost, model_set, dag,
+  cvmc_ensemble_solutions(covLL, covLH, varH, sequenceCost, approx_set, dag,
 			  root_list, soln);
 
   if (maxFunctionEvals == SZ_MAX) {
     // scale according to accuracy (convergenceTol * estVarIter0)
-    enforce_linear_ineq_constraints(soln.avgEvalRatios, root_list);
-    soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);//*** TO DO
+    enforce_linear_ineq_constraints(soln.avgEvalRatios, approx_set, root_list);
+    soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);
   }
   else { // scale according to cost
     scale_to_target(avg_N_H, sequenceCost, soln.avgEvalRatios, soln.avgHFTarget,
-		    root_list); // incorporates lin ineq enforcement ***
+		    approx_set, root_list); // incorporates lin ineq enforcement
     RealVector cd_vars;
-    r_and_N_to_design_vars(soln.avgEvalRatios, soln.avgHFTarget, cd_vars); //*** TO DO
+    r_and_N_to_design_vars(soln.avgEvalRatios, soln.avgHFTarget, cd_vars);
     soln.avgEstVar = average_estimator_variance(cd_vars); // ACV or GenACV ***
   }
   if (outputLevel >= NORMAL_OUTPUT)
@@ -858,7 +855,7 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& model_set,
 void NonDGenACVSampling::
 cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
 			const RealMatrix& cov_LH, const RealVector& var_H,
-			const RealVector& cost,   const UShortArray& model_set,
+			const RealVector& cost,   const UShortArray& approx_set,
 			const UShortArray& dag,   const UShortList& root_list,
 			DAGSolutionData& soln)
 {
@@ -872,7 +869,7 @@ cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
   Real cost_ratio, rho_sq, cost_H = cost[numApprox], var_L_qs, var_L_qt,
     cov_LH_qs, cov_LL_qst;
   for (d=0; d<dag_size; ++d) {
-    source = model_set[d];  target = dag[source];
+    source = approx_set[d];  target = dag[source];
     cost_ratio = cost[target] / cost[source];
     //Cout << "CVMC source " << source << " target " << target
     //     << " cost ratio = " << cost_ratio << ":\n";
@@ -961,6 +958,7 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 
 void NonDGenACVSampling::
 enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
+				const UShortArray& approx_set,
 				const UShortList& root_list)
 {
   // Enforce DAG dependencies (ACV: all point to numApprox)
@@ -970,9 +968,11 @@ enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
   unsigned short source, target;  Real r_tgt;
   for (r_cit=root_list.begin(); r_cit!=root_list.end(); ++r_cit) {
     target = *r_cit;  const UShortSet& reverse_dag = reverseActiveDAG[target];
-    r_tgt = (target == numApprox) ? 1. : avg_eval_ratios[target];
+    r_tgt = (target == numApprox) ? 1. :
+      avg_eval_ratios[find_index(approx_set, target)];
     for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
-      source = *d_cit;  Real& r_src = avg_eval_ratios[source];
+      source = *d_cit;
+      Real& r_src = avg_eval_ratios[find_index(approx_set, source)];
       if (r_src <= r_tgt) {
 	r_src = r_tgt * (1. + RATIO_NUDGE);
 	if (outputLevel >= DEBUG_OUTPUT)
@@ -987,13 +987,13 @@ enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
 void NonDGenACVSampling::
 scale_to_target(Real avg_N_H, const RealVector& cost,
 		RealVector& avg_eval_ratios, Real& avg_hf_target,
-		const UShortList& root_list)
+		const UShortArray& approx_set, const UShortList& root_list)
 {
   // scale to enforce budget constraint.  Since the profile does not emerge
   // from pilot in ACV, don't select an infeasible initial guess:
   // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
   // > if N* > N_pilot, use initial = r*,N*
-  avg_hf_target = allocate_budget(avg_eval_ratios, cost); // r* --> N*
+  avg_hf_target = allocate_budget(approx_set, avg_eval_ratios, cost);//r* --> N*
 
   if (pilotMgmtMode == OFFLINE_PILOT) {
     Real offline_N_lwr = 2.;
@@ -1005,9 +1005,10 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
     // Could create another helper if there are additional clients:
     //scale_to_budget_with_pilot(avg_eval_ratios,cost,avg_hf_target,root_list);
 
-    Real approx_inner_prod = 0.;  size_t approx;
-    for (approx=0; approx<numApprox; ++approx)
-      approx_inner_prod += cost[approx] * avg_eval_ratios[approx];
+    Real approx_inner_prod = 0.;  size_t approx, num_approx = approx_set.size();
+    for (approx=0; approx<num_approx; ++approx)
+      approx_inner_prod += cost[approx_set[approx]] * avg_eval_ratios[approx];
+
     // Apply factor: r_scaled = factor r^* which applies to LF (HF r remains 1)
     // > N_pilot (r_scaled^T w + 1) = budget, where w_i = cost_i / cost_H
     // > factor r*^T w = budget / N_pilot - 1
@@ -1022,10 +1023,12 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
     Real r_tgt, cost_r_src, budget_decr, inner_prod_decr;
     for (r_cit=root_list.begin(); r_cit!=root_list.end(); ++r_cit) {
       target = *r_cit; const UShortSet& reverse_dag = reverseActiveDAG[target];
-      r_tgt = (target == numApprox) ? 1. : avg_eval_ratios[target];
+      r_tgt = (target == numApprox) ? 1. :
+	avg_eval_ratios[find_index(approx_set, target)];
       budget_decr = inner_prod_decr = 0.;
       for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
-	source = *d_cit; Real& r_src = avg_eval_ratios[source];
+	source = *d_cit;
+	Real& r_src = avg_eval_ratios[find_index(approx_set, source)];
 	r_src *= factor;
 	if (r_src <= 1.) {
 	  r_src = r_tgt * (1. + RATIO_NUDGE);
@@ -1044,15 +1047,15 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
     }
     if (outputLevel >= DEBUG_OUTPUT) {
       Real inner_prod = cost_H;
-      for (approx=0; approx<numApprox; ++approx)
-	inner_prod += cost[approx] * avg_eval_ratios[approx];
+      for (approx=0; approx<num_approx; ++approx)
+	inner_prod += cost[approx_set[approx]] * avg_eval_ratios[approx];
       Cout << "Rescale to budget: average evaluation ratios\n"<< avg_eval_ratios
 	   << "avg_hf_target = " << avg_hf_target << " budget = "
 	   << avg_N_H * inner_prod / cost_H << std::endl;
     }
   }
   else
-    enforce_linear_ineq_constraints(avg_eval_ratios, root_list);
+    enforce_linear_ineq_constraints(avg_eval_ratios, approx_set, root_list);
 }
 
 
@@ -1061,44 +1064,23 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 {
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
 
-  // *** TO DO: INFLATE cd_vars[dag_size+1] TO N_vec[numApprox+1] FOR CONVENIENCE --> allows (compressed) DAG source/target to be used as indices in N_vec/z1/z2
+  // Note: cd_vars is the dimension of the numerical optimization whereas N_vec
+  //       is inflated to full dimension for convenience/efficiency --> avoids
+  //       find_index() lookups to map DAG values to sample count indices
+  //       (DAG source/target can be used directly as indices in N_vec/z1/z2)
 
-  RealMatrix C_G_inv;  RealVector c_g;
-  Real R_sq, N_H;
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t num_approx = approx_set.size();
+  RealVector N_vec;  inflate_variables(cd_vars, N_vec, approx_set);
+  Real R_sq, N_H = N_vec[numApprox];
   switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT: {
-    RealVector N_vec(numApprox+1, false);
-    if (cd_vars.length() == numApprox) {
-      copy_data_partial(cd_vars, N_vec, 0);
-      // N_H not provided so pull from latest counter values
-      size_t hf_form_index, hf_lev_index;
-      hf_indices(hf_form_index, hf_lev_index);
-      // estimator variance uses actual (not alloc) so use same for defining G,g
-      // *** TO DO: but avg_hf_target defines delta relative to actual||alloc
-      N_vec[numApprox] = N_H = //(backfillFailures) ?
-	average(NLevActual[hf_form_index][hf_lev_index]);// :
-	//NLevAlloc[hf_form_index][hf_lev_index];
-    }
-    else { // N_H appended for convenience or rescaling to updated HF target
-      copy_data(cd_vars, N_vec);
-      N_H = N_vec[numApprox];
-    }
+  case R_ONLY_LINEAR_CONSTRAINT:  case R_AND_N_NONLINEAR_CONSTRAINT:
     for (size_t i=0; i<numApprox; ++i)
       N_vec[i] *= N_H; // N_i = r_i * N
     compute_parameterized_G_g(N_vec);
     break;
-  }
-  case R_AND_N_NONLINEAR_CONSTRAINT: { // convert r_and_N to N_vec:
-    RealVector N_vec;  copy_data(cd_vars, N_vec);
-    N_H = N_vec[numApprox];
-    for (size_t i=0; i<numApprox; ++i)
-      N_vec[i] *= N_H; // N_i = r_i * N
-    compute_parameterized_G_g(N_vec);
-    break;
-  }
   case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
-    compute_parameterized_G_g(cd_vars);
-    N_H = cd_vars[numApprox];
+    compute_parameterized_G_g(N_vec);
     break;
   }
 
@@ -1113,7 +1095,8 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     // 	     << " Rsq[" << qoi << "] via invert() = " << R_sq
     // 	     << "\n-----------------------------\n" << std::endl;
 
-    R_sq = compute_R_sq(covLL[qoi], GMat, covLH, gVec, qoi, varH[qoi], N_H);
+    R_sq = compute_R_sq(covLL[qoi], GMat, covLH, gVec, qoi, approx_set,
+			varH[qoi], N_H);
     //if (outputLevel >= DEBUG_OUTPUT)
     //  Cout << "R_sq[" << qoi << "] via solve()  = " << R_sq
     //       << "\n-----------------------------\n" << std::endl;
@@ -1131,6 +1114,156 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     }
     estvar_ratios[qoi] = (1. - R_sq);
   }
+}
+
+
+void NonDGenACVSampling::
+numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
+			  size_t& num_nln_con)
+{
+  size_t num_approx = activeModelSetIter->first.size();
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT:
+    num_cdv = num_approx;  num_nln_con = 0;
+    num_lin_con = 1;
+    if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con += num_approx;
+    break;
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    num_cdv = num_approx + 1;  num_nln_con = 1;
+    num_lin_con = (mlmfSubMethod == SUBMETHOD_MFMC) ? num_approx : 0;
+    break;
+  case N_VECTOR_LINEAR_CONSTRAINT:
+    num_lin_con = num_cdv = num_approx + 1;  num_nln_con = 0;
+    break;
+  case N_VECTOR_LINEAR_OBJECTIVE:
+    num_cdv = num_approx + 1;  num_nln_con = 1;  num_lin_con = num_approx;
+    break;
+  }
+}
+
+
+void NonDGenACVSampling::
+numerical_solution_bounds_constraints(const DAGSolutionData& soln,
+				      const RealVector& cost, Real avg_N_H,
+				      RealVector& x0, RealVector& x_lb,
+				      RealVector& x_ub, RealVector& lin_ineq_lb,
+				      RealVector& lin_ineq_ub,
+				      RealVector& lin_eq_tgt,
+				      RealVector& nln_ineq_lb,
+				      RealVector& nln_ineq_ub,
+				      RealVector& nln_eq_tgt,
+				      RealMatrix& lin_ineq_coeffs,
+				      RealMatrix& lin_eq_coeffs)
+{
+  const RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  Real              avg_hf_target   = soln.avgHFTarget;
+  //Real                 avg_estvar = soln.avgEstVar;
+  //Real           avg_estvar_ratio = soln.avgEstVarRatio;
+  //Real              equiv_hf_cost = soln.equivHFAlloc;
+
+  // For offline mode, online allocations must be lower bounded for numerics:
+  // > for QOI_STATISTICS, unbiased moments / CV beta require min of 2 samples
+  // > for ESTIMATOR_PERF, a lower bnd of 1 sample is allowable (MC reference)
+  //   >> 1 line of thinking: an offline oracle should by as optimal as possible
+  //      and we will use for apples-to-apples estimator performance comparisons
+  //   >> another line of thinking: be consistent at 2 samples for possible
+  //      switch from estimator_perf (selection) to qoi_statistics (execution);
+  //      moreover, don't select an estimator based on inconsistent formulation
+  // Nonzero lower bound ensures replacement of allSamples after offline pilot.
+  Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
+
+  // --------------------------------------
+  // Formulate the optimization sub-problem: initial pt, bnds, constraints
+  // --------------------------------------
+
+  // > MFMC analytic requires ordered rho2LH to avoid FPE (approxSequence defn)
+  //   followed by ordered r_i for {pyramid sampling, R_sq contribution > 0}
+  // > MFMC numerical needs ordered r_i to retain pyramid sampling/recursion
+  //   >> estvar objective requires an ordering fixed a priori --> makes sense
+  //      to optimize w.r.t. this ordering constraint, similar to std::max()
+  //      use in mfmc_reordered_analytic_solution()
+  // > ACV-MF use of min() in F_ij supports mis-ordering in that C_ij * F_ij
+  //   produces same contribution to R_sq independent of i,j order
+  //   >> Rather than constraining N_i > N_{i+1} based on a priori ordering,
+  //      retain N_i > N and then compute an approx sequence for sampling
+  //   >> No need for a priori model sequence, only for post-proc of opt result
+  // > ACV-IS is unconstrained in model order --> retain N_i > N
+
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t i, num_cdv = x0.length(), approx, num_approx = approx_set.size();
+  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals;
+
+  x_ub        =  DBL_MAX; // no upper bounds on x
+  lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
+
+  // Note: ACV paper suggests additional linear constraints for r_i ordering
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT:
+    x0   = avg_eval_ratios;
+    x_lb = 1.; // r_i
+    // set linear inequality constraint for fixed N:
+    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
+    //   \Sum_i w_i   r_i <= equivHF * w / N - w
+    //   \Sum_i w_i/w r_i <= equivHF / N - 1
+    lin_ineq_ub[0] = (avg_N_H > 1.) ? // protect N_H==0 for offline pilot
+      budget / avg_N_H - 1. : // normal case
+      budget - 1.;            // bound N_H at 1 (TO DO: need to perform sample)
+    for (approx=0; approx<num_approx; ++approx)
+      lin_ineq_coeffs(0,approx) = cost[approx_set[approx]] / cost_H;
+    break;
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    copy_data_partial(avg_eval_ratios, x0, 0);          // r_i
+    x0[num_approx] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
+    // Could allow optimal profile to emerge from pilot by allowing N* less than
+    // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
+    // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
+    x_lb = 1.; // r_i
+    x_lb[num_approx] = (pilotMgmtMode == OFFLINE_PILOT) ?
+      offline_N_lwr : avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
+
+    nln_ineq_lb[0] = -DBL_MAX; // no low bnd
+    nln_ineq_ub[0] = budget;
+    break;
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
+    r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
+    if (pilotMgmtMode == OFFLINE_PILOT) {
+      x_lb = offline_N_lwr;
+      for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
+	if (x0[i] < x_lb[i])
+	  x0[i]   = x_lb[i];
+    }
+    else x_lb = avg_N_H;
+    
+    // linear inequality constraint on budget:
+    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
+    //   N w + \Sum_i w_i N_i <= equivHF * w
+    //   N + \Sum_i w_i/w N_i <= equivHF
+    lin_ineq_ub[0] = budget; // remaining ub initialized to 0
+    for (approx=0; approx<num_approx; ++approx)
+      lin_ineq_coeffs(0, approx) = cost[approx_set[approx]] / cost_H;
+    lin_ineq_coeffs(0, num_approx) = 1.;
+    break;
+  }
+  case N_VECTOR_LINEAR_OBJECTIVE: {
+    Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
+    r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
+    if (pilotMgmtMode == OFFLINE_PILOT) {
+      x_lb = offline_N_lwr;
+      for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
+	if (x0[i] < x_lb[i])
+	  x0[i]   = x_lb[i];
+    }
+    else x_lb = avg_N_H;
+
+    // nonlinear constraint on estvar
+    nln_ineq_lb = -DBL_MAX;  // no lower bnd
+    nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
+    break;
+  }
+  }
+  // virtual augmentation of linear ineq (differs among MFMC, ACV, GenACV)
+  augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 }
 
 
@@ -1227,6 +1360,7 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 
   size_t approx, qoi, N_H_q;  Real sum_H_mq;
   RealVector beta(numApprox);
+  const UShortArray& approx_set = activeModelSetIter->first;
   for (int mom=1; mom<=4; ++mom) {
     RealMatrix&     sum_L_base_m = sum_L_baseline[mom];
     RealMatrix&       sum_L_sh_m =   sum_L_shared[mom];
@@ -1239,7 +1373,7 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
     for (qoi=0; qoi<numFunctions; ++qoi) {
       sum_H_mq = sum_H_m[qoi];  N_H_q = N_H[qoi];
       compute_genacv_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
-			     N_H_q, mom, qoi, beta);
+			     N_H_q, mom, qoi, approx_set, beta);
       // *** TO DO: support shared_approx_increment() --> baselineL
 
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);
@@ -1273,9 +1407,10 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
   // (more resolved "control variate mean").  Mapping from GenACV notation:
   // "z^*_i" --> z^1_i, "z_i" --> z^2_i, "z_{i* U i}" --> z_i
 
-  // *** FOR NOW, ASSUMING N_vec IN FULL DIMENSION IS CONVENIENT ***
+  // Note: N_vec,z1,z2 are inflated to full dimension, avoiding the need for
+  //       find_index() lookups to map DAG values to sample count indices
 
-  const UShortArray& model_set  = activeModelSetIter->first;
+  const UShortArray& approx_set = activeModelSetIter->first;
   const UShortArray& active_dag = *activeDAGIter;
   size_t i, j, dag_size = activeDAGIter->size();
   if (GMat.empty()) GMat.shapeUninitialized(dag_size);
@@ -1288,11 +1423,11 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
     RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
     Real z_i, z_j, zi_zj;
     for (i=0; i<dag_size; ++i) {
-      src_i = model_set[i];  tgt_i = active_dag[i];
+      src_i = approx_set[i];  tgt_i = active_dag[i];
       z_i = N_vec[src_i];  z1_i = z1[src_i];  z2_i = z2[src_i];
       gVec[i] = (tgt_i == numApprox) ? 1./z1_i - 1./z_i : 0.;
       for (j=0; j<=i; ++j) {
-	src_j = model_set[j];  tgt_j = active_dag[j]; //bj = active_dag[j];
+	src_j = approx_set[j];  tgt_j = active_dag[j]; //bj = active_dag[j];
 	z_j = N_vec[src_j];  z1_j = z1[src_j];  //z2_j = z2[src_j];
 	GMat(i,j) = 0.;  zi_zj = z_i * z_j;
 	if (tgt_i == tgt_j) GMat(i,j) += 1./z1_i - 1./z_i - 1./z_j + z1_i/zi_zj;
@@ -1320,11 +1455,11 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
   case SUBMETHOD_ACV_MF: { // Bomarito Eqs. 16-17
     Real z2_j, z_H = N_vec[dag_size]; // active LF approx followed by HF
     for (i=0; i<dag_size; ++i) {
-      src_i = model_set[i];  tgt_i = active_dag[i]; // *** This indexing would be out of bounds if N_vec was collapsed
+      src_i = approx_set[i];  tgt_i = active_dag[i];
       z1_i = /*z2_bi = z_bi =*/ N_vec[tgt_i];  z2_i = /*z_i =*/ N_vec[src_i];
       gVec[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i) / z_H;
       for (j=0; j<=i; ++j) {
-	src_j = model_set[j];  tgt_j = active_dag[j];
+	src_j = approx_set[j];  tgt_j = active_dag[j];
 	z1_j = /*z2_bj = z_bj =*/ N_vec[tgt_j];  z2_j = /*z_j =*/ N_vec[src_j];
 	GMat(i,j)
 	  = (std::min(z1_i, z1_j)/z1_j - std::min(z1_i, z2_j)/z2_j)/z1_i
@@ -1336,7 +1471,7 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
     //for (i=0; i<numApprox; ++i) {
     //  bi = active_dag[i];
     //  z1_i = /*z2_bi = z_bi =*/ N_vec[bi];  z2_i = /*z_i =*/ N_vec[i];
-    //  gVec[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i) / z_H;
+    //  gVec[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i)/z_H;
     //  for (j=0; j<=i; ++j) {
     //     bj = active_dag[j];
     // 	   z1_j = /*z2_bj = z_bj =*/ N_vec[bj];  z2_j = /*z_j =*/ N_vec[j];
@@ -1350,11 +1485,11 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
   case SUBMETHOD_ACV_RD: { // Bomarito Eqs. 19-20
     RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
     for (i=0; i<numApprox; ++i) {
-      src_i = model_set[i];  tgt_i = active_dag[i];
+      src_i = approx_set[i];  tgt_i = active_dag[i];
       z1_i  = z1[src_i];     z2_i  = z2[src_i];
       gVec[i] = (tgt_i == numApprox) ? 1./z1_i : 0.;
       for (j=0; j<=i; ++j) {
-	src_j = model_set[j];  tgt_j = active_dag[j];
+	src_j = approx_set[j];  tgt_j = active_dag[j];
 	z1_j = z1[src_j];      GMat(i,j) = 0.;
 	if (tgt_i == tgt_j) GMat(i,j) += 1./z1_i;
 	if (tgt_i == src_j) GMat(i,j) -= 1./z1_i; // always false for dag = M
@@ -1393,7 +1528,8 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
 void NonDGenACVSampling::
 unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
 {
-  // *** FOR NOW, INFLATING N_vec,z1,z2 TO FULL DIMENSION IS CONVENIENT ***
+  // Note: N_vec,z1,z2 are inflated to full dimension, avoiding the need for
+  //       find_index() lookups to map DAG values to sample count indices
 
   //Real z_H = N_vec[numApprox];
   z1.size(numApprox);  z2.size(numApprox+1);  z2[numApprox] = N_vec[numApprox];
@@ -1436,11 +1572,11 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
     break;
   }
   case SUBMETHOD_ACV_MF: { // not used (special unroll logic not required)
-    const UShortArray& model_set  = activeModelSetIter->first;
+    const UShortArray& approx_set = activeModelSetIter->first;
     const UShortArray& active_dag = *activeDAGIter;
     unsigned short i, source, target;  size_t dag_size = active_dag.size();
     for (i=0; i<dag_size; ++i) {
-      source = model_set[i];  target = active_dag[i];
+      source = approx_set[i];  target = active_dag[i];
       //z1[i] = N_vec[target];  z2[i] = N_vec[source]; // COMPACTED z1,z2
       z1[source] = N_vec[target];  z2[source] = N_vec[source]; // FULL z1,z2
     }

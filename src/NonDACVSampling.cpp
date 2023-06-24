@@ -627,7 +627,7 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
     //NLevAlloc[hf_form_index][hf_lev_index];
   RealVector cd_vars, estvar_ratios;
   r_and_N_to_design_vars(avg_eval_ratios, N_H, cd_vars);
-  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual for ACV,GenACV
+  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual for ACV,GenACV // *** TO DO
 
   RealVector hf_targets(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
