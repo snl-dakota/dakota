@@ -184,6 +184,16 @@ protected:
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
 
+  /// constraint helper function shared by NPSOL/OPT++ static evaluators
+  virtual Real linear_cost(const RealVector& N_vec);
+  /// constraint helper function shared by NPSOL/OPT++ static evaluators
+  virtual Real nonlinear_cost(const RealVector& r_and_N);
+  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
+  virtual void linear_cost_gradient(const RealVector& N_vec,RealVector& grad_c);
+  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
+  virtual void nonlinear_cost_gradient(const RealVector& r_and_N,
+				       RealVector& grad_c);
+
   virtual size_t num_approximations() const;
 
   //
@@ -376,15 +386,6 @@ private:
 
   /// flattens contours of average_estimator_variance() using std::log
   Real log_average_estvar(const RealVector& cd_vars);
-
-  /// constraint helper function shared by NPSOL/OPT++ static evaluators
-  Real linear_cost(const RealVector& N_vec);
-  /// constraint helper function shared by NPSOL/OPT++ static evaluators
-  Real nonlinear_cost(const RealVector& r_and_N);
-  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
-  void linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c);
-  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
-  void nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c);
 
   /// compute a penalty merit function from objective, constraint, and
   /// constaint bound

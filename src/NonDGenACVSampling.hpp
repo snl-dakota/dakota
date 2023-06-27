@@ -62,6 +62,12 @@ protected:
     RealVector& nln_eq_tgt, RealMatrix& lin_ineq_coeffs,
     RealMatrix& lin_eq_coeffs);
 
+  Real linear_cost(const RealVector& N_vec);
+  Real nonlinear_cost(const RealVector& r_and_N);
+  void linear_cost_gradient(const RealVector& N_vec,RealVector& grad_c);
+  void nonlinear_cost_gradient(const RealVector& r_and_N,
+				       RealVector& grad_c);
+
   size_t num_approximations() const;
 
   Real estimator_accuracy_metric();
@@ -203,6 +209,7 @@ private:
 
   bool valid_variance(Real var) const;
 
+  void inflate_approx_set(const UShortArray& approx_set, SizetArray& index_map);
   void inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
 			 const UShortArray& approx_set);
 
@@ -379,6 +386,17 @@ compute_C_G_c_g(const RealSymMatrix& C, const RealSymMatrix& G,
   }
 }
 */
+
+
+inline void NonDGenACVSampling::
+inflate_approx_set(const UShortArray& approx_set, SizetArray& index_map)
+{
+  // inflate from compact approx_set to index_map[0,numApprox)
+  size_t i, num_approx_set = approx_set.size();
+  index_map.assign(numApprox, _NPOS);
+  for (i=0; i<num_approx_set; ++i)
+    index_map[approx_set[i]] = i; // maps src/tgt from inflated to compact
+}
 
 
 inline void NonDGenACVSampling::

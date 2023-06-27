@@ -456,6 +456,7 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 {
   // retain the shape of an r* profile, but scale to budget constrained by
   // incurred pilot cost
+  // > for full model set only (not used by GenACV)
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nRescale to budget: incoming average evaluation ratios:\n"
@@ -1204,13 +1205,13 @@ linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
   // linear objective: N + Sum(w_i N_i) / w
   // > grad w.r.t. N_i = w_i / w
   // > grad w.r.t. N   = w   / w = 1
-  size_t i, len = N_vec.length(), r_len = len-1;
+  //size_t i, len = N_vec.length(), r_len = len-1;
   //if (grad_c.length() != len) grad_c.sizeUninitialized(len); // don't own
 
-  Real cost_H = sequenceCost[r_len];
-  for (i=0; i<r_len; ++i)
+  Real cost_H = sequenceCost[numApprox];
+  for (size_t i=0; i<numApprox; ++i)
     grad_c[i] = sequenceCost[i] / cost_H;
-  grad_c[r_len] = 1.;
+  grad_c[numApprox] = 1.;
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "linear cost gradient:\n" << grad_c << std::endl;
 }
@@ -1222,17 +1223,17 @@ nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c)
   // nonlinear inequality constraint: N ( 1 + Sum(w_i r_i) / w ) <= equivHF
   // > grad w.r.t. r_i = N w_i / w
   // > grad w.r.t. N   = 1 + Sum(w_i r_i) / w
-  size_t i, len = r_and_N.length(), r_len = len-1;
+  //size_t i, len = r_and_N.length(), r_len = len-1;
   //if (grad_c.length() != len) grad_c.sizeUninitialized(len); // don't own
 
-  Real cost_H = sequenceCost[r_len], N_over_w = r_and_N[r_len] / cost_H;
-  for (i=0; i<r_len; ++i)
-    grad_c[i] = N_over_w * sequenceCost[i];
-
-  Real approx_inner_prod = 0.;
-  for (i=0; i<numApprox; ++i)
-    approx_inner_prod += sequenceCost[i] * r_and_N[i]; //     Sum(c_i r_i)
-  grad_c[r_len] = 1. + approx_inner_prod / cost_H;     // 1 + Sum(w_i r_i)
+  Real cost_H = sequenceCost[numApprox], cost_i,
+    N_over_w = r_and_N[numApprox] / cost_H, approx_inner_prod = 0.;
+  for (size_t i=0; i<numApprox; ++i) {
+    cost_i = sequenceCost[i];
+    grad_c[i]          = cost_i * N_over_w;
+    approx_inner_prod += cost_i * r_and_N[i]; //     Sum(c_i r_i)
+  }
+  grad_c[numApprox] = 1. + approx_inner_prod / cost_H;     // 1 + Sum(w_i r_i)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "nonlinear cost gradient:\n" << grad_c << std::endl;
 }
@@ -1431,6 +1432,7 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
       abort_handler(METHOD_ERROR);
     }
 
+    // R_ONLY_LINEAR_CONSTRAINT has nln_con = 0, so c_vars ends in N_H
     if (nln_con && (asv[1] & 1))
       response.function_value(nonHierSampInstance->nonlinear_cost(c_vars), 1);
     if (nln_con && (asv[1] & 2)) {

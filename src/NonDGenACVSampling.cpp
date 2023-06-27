@@ -443,7 +443,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   else
     // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
     update_projected_lf_samples(soln.avgHFTarget, soln.avgEvalRatios,
-				N_H_actual, N_H_alloc, deltaEquivHF);
+				N_H_actual, N_H_alloc, deltaEquivHF); // *** TO DO ***
 }
 
 
@@ -528,7 +528,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   }
   else // project online profile including both shared samples and LF increment
     update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, N_H_actual,
-			     N_H_alloc, deltaNActualHF, deltaEquivHF);
+			     N_H_alloc, deltaNActualHF, deltaEquivHF); // *** TO DO
 }
 
 
@@ -587,7 +587,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   soln_key.second = *activeDAGIter;
   DAGSolutionData& soln = dagSolns[soln_key];
   update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, N_H_actual,
-			   N_H_alloc, deltaNActualHF, deltaEquivHF);
+			   N_H_alloc, deltaNActualHF, deltaEquivHF);// *** TO DO
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected avgEstVar{,Ratio}
@@ -619,7 +619,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
     ordered_approx_sequence(avg_eval_ratios, approx_sequence, descending);
 
     size_t start = 0, end;
-    for (end=numApprox; end>0; --end) {
+    for (end=numApprox; end>0; --end) { // *** TO DO
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined
       // ACV_MF samples on [0, approx)       --> sum_L_refined
       //start = (mlmfSubMethod == SUBMETHOD_ACV_MF) ? 0 : end - 1;
@@ -757,7 +757,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
 
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       RealVector& avg_eval_ratios = soln.avgEvalRatios;
-      if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
+      if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox); // *** TO DO
       avg_eval_ratios = 1.;  soln.avgHFTarget = avg_N_H;
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
@@ -966,13 +966,14 @@ enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
   // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
   UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
   unsigned short source, target;  Real r_tgt;
+  SizetArray index_map;  inflate_approx_set(approx_set, index_map);
   for (r_cit=root_list.begin(); r_cit!=root_list.end(); ++r_cit) {
     target = *r_cit;  const UShortSet& reverse_dag = reverseActiveDAG[target];
     r_tgt = (target == numApprox) ? 1. :
-      avg_eval_ratios[find_index(approx_set, target)];
+      avg_eval_ratios[index_map[target]];
     for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
       source = *d_cit;
-      Real& r_src = avg_eval_ratios[find_index(approx_set, source)];
+      Real& r_src = avg_eval_ratios[index_map[source]];
       if (r_src <= r_tgt) {
 	r_src = r_tgt * (1. + RATIO_NUDGE);
 	if (outputLevel >= DEBUG_OUTPUT)
@@ -1021,14 +1022,13 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
     UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
     unsigned short source, target;
     Real r_tgt, cost_r_src, budget_decr, inner_prod_decr;
+    SizetArray index_map;  inflate_approx_set(approx_set, index_map);
     for (r_cit=root_list.begin(); r_cit!=root_list.end(); ++r_cit) {
       target = *r_cit; const UShortSet& reverse_dag = reverseActiveDAG[target];
-      r_tgt = (target == numApprox) ? 1. :
-	avg_eval_ratios[find_index(approx_set, target)];
+      r_tgt = (target == numApprox) ? 1. : avg_eval_ratios[index_map[target]];
       budget_decr = inner_prod_decr = 0.;
       for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
-	source = *d_cit;
-	Real& r_src = avg_eval_ratios[find_index(approx_set, source)];
+	source = *d_cit;  Real& r_src = avg_eval_ratios[index_map[source]];
 	r_src *= factor;
 	if (r_src <= 1.) {
 	  r_src = r_tgt * (1. + RATIO_NUDGE);
@@ -1066,8 +1066,8 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 
   // Note: cd_vars is the dimension of the numerical optimization whereas N_vec
   //       is inflated to full dimension for convenience/efficiency --> avoids
-  //       find_index() lookups to map DAG values to sample count indices
-  //       (DAG source/target can be used directly as indices in N_vec/z1/z2)
+  //       the need to map indices (DAG values to sample count indices) as DAG
+  //       source/target can be used directly as indices in N_vec/z1/z2)
 
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t num_approx = approx_set.size();
@@ -1267,6 +1267,92 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
 }
 
 
+Real NonDGenACVSampling::linear_cost(const RealVector& N_vec)
+{
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t i, num_approx = approx_set.size();
+  Real cost_H = sequenceCost[numApprox], cost_i,
+    N_H = N_vec[num_approx], sum = 0.;
+
+  // linear objective: N + Sum(w_i N_i) / w
+  for (i=0; i<num_approx; ++i) {
+    cost_i = sequenceCost[approx_set[i]];
+    sum += cost_i * N_vec[i]; // Sum(w_i N_i)
+  }
+  Real lin_obj = N_H + sum / cost_H; // N + sum / w
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "linear cost = " << lin_obj << std::endl;
+  return lin_obj;
+}
+
+
+Real NonDGenACVSampling::nonlinear_cost(const RealVector& r_and_N)
+{
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t i, num_approx = approx_set.size();
+  Real cost_H = sequenceCost[numApprox], cost_i,
+    N_H = r_and_N[num_approx], approx_inner_prod = 0.;
+
+  // nln ineq constraint: N ( w + Sum(w_i r_i) ) <= C, where C = equivHF * w
+  // -->  N ( 1 + Sum(w_i r_i) / w ) <= equivHF
+  for (i=0; i<num_approx; ++i) {
+    cost_i = sequenceCost[approx_set[i]];
+    approx_inner_prod += cost_i * r_and_N[i]; // Sum(c_i r_i)
+  }
+  approx_inner_prod /= cost_H;                // Sum(w_i r_i)
+
+  Real nln_cost = N_H * (1. + approx_inner_prod); // N ( 1 + Sum(w_i r_i) )
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "nonlinear cost: design vars:\n" << r_and_N
+	 << "cost = " << nln_cost << std::endl;
+  return nln_cost;
+}
+
+
+void NonDGenACVSampling::
+linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
+{
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t i, num_approx = approx_set.size();  unsigned short inflate_i;
+  Real cost_H = sequenceCost[numApprox], cost_i;
+
+  // linear objective: N + Sum(w_i N_i) / w
+  // > grad w.r.t. N_i = w_i / w
+  // > grad w.r.t. N   = w   / w = 1
+
+  for (i=0; i<num_approx; ++i) {
+    cost_i    = sequenceCost[approx_set[i]];
+    grad_c[i] = cost_i / cost_H;
+  }
+  grad_c[num_approx] = 1.;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "linear cost gradient:\n" << grad_c << std::endl;
+}
+
+
+void NonDGenACVSampling::
+nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c)
+{
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t i, num_approx = approx_set.size();
+
+  // nonlinear inequality constraint: N ( 1 + Sum(w_i r_i) / w ) <= equivHF
+  // > grad w.r.t. r_i = N w_i / w
+  // > grad w.r.t. N   = 1 + Sum(w_i r_i) / w
+
+  Real cost_H = sequenceCost[numApprox], cost_i,
+    N_over_w = r_and_N[num_approx] / cost_H, approx_inner_prod = 0.;
+  for (i=0; i<num_approx; ++i) {
+    cost_i = sequenceCost[approx_set[i]];
+    grad_c[i]          = cost_i * N_over_w;
+    approx_inner_prod += cost_i * r_and_N[i]; // Sum(c_i r_i)
+  }
+  grad_c[num_approx] = 1. + approx_inner_prod / cost_H;     // 1 + Sum(w_i r_i)
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "nonlinear cost gradient:\n" << grad_c << std::endl;
+}
+
+
 void NonDGenACVSampling::
 accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
 		       IntRealMatrixMap& sum_L_refined,
@@ -1359,7 +1445,7 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
   precompute_genacv_control(avg_eval_ratios, N_H);
 
   size_t approx, qoi, N_H_q;  Real sum_H_mq;
-  RealVector beta(numApprox);
+  RealVector beta(numApprox); // *** TO DO
   const UShortArray& approx_set = activeModelSetIter->first;
   for (int mom=1; mom<=4; ++mom) {
     RealMatrix&     sum_L_base_m = sum_L_baseline[mom];
@@ -1378,7 +1464,7 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);
       H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
-      for (approx=0; approx<numApprox; ++approx) {
+      for (approx=0; approx<numApprox; ++approx) { // *** TO DO
 	if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
 	       << "variate beta = " << std::setw(9) << beta[approx] << '\n';
@@ -1407,8 +1493,8 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
   // (more resolved "control variate mean").  Mapping from GenACV notation:
   // "z^*_i" --> z^1_i, "z_i" --> z^2_i, "z_{i* U i}" --> z_i
 
-  // Note: N_vec,z1,z2 are inflated to full dimension, avoiding the need for
-  //       find_index() lookups to map DAG values to sample count indices
+  // Note: N_vec,z1,z2 are inflated to full dimension, avoiding the need to
+  //       map indices (DAG values to sample count indices)
 
   const UShortArray& approx_set = activeModelSetIter->first;
   const UShortArray& active_dag = *activeDAGIter;
@@ -1528,8 +1614,8 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
 void NonDGenACVSampling::
 unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
 {
-  // Note: N_vec,z1,z2 are inflated to full dimension, avoiding the need for
-  //       find_index() lookups to map DAG values to sample count indices
+  // Note: N_vec,z1,z2 are inflated to full dimension, avoiding the need to
+  //       map indices (DAG values to sample count indices) 
 
   //Real z_H = N_vec[numApprox];
   z1.size(numApprox);  z2.size(numApprox+1);  z2[numApprox] = N_vec[numApprox];
