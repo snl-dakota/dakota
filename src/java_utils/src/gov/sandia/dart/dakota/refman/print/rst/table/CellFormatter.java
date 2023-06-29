@@ -137,7 +137,14 @@ public class CellFormatter {
 		int paddedWidth = width - rightPadding;
 		String thisLine = nextWord.substring(0, paddedWidth);
 		String nextLine = nextWord.substring(paddedWidth, nextWord.length());
-		thisLineWords.add(thisLine);
-		nextLineWords.add(nextLine);
+		
+		String proposedString = String.join(" ", thisLineWords) + " " + thisLine;
+		if(proposedString.length() > paddedWidth && !thisLineWords.isEmpty()) {
+			nextLineWords.add(thisLine);
+			nextLineWords.add(nextLine);
+		} else {
+			thisLineWords.add(thisLine);
+			nextLineWords.add(nextLine);
+		}
 	}
 }
