@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import unittest
+import copy
 import os
+import unittest
 
 __author__ = 'J. Adam Stephens'
 __copyright__ = 'Copyright 2014-2023 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
@@ -361,6 +362,22 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertIsInstance(r, di.interfacing.BatchResults)
         self.assertEqual(len(r), 1)
 
+    def test_batch_getitem(self):
+        """Verify that Results objects are returned correctly by getitem"""
+        sio = StringIO.StringIO(dakotaBatchParams)
+        batch_params, batch_results = di.interfacing._read_parameters_stream(sio, False, True, None)
+        temp_results = batch_results[0]
+        self.assertTrue(temp_results is batch_results[0])
+
+    def test_batch_setitem(self):
+        """Verify that Results objects are not copied by BatchParameters setter"""
+       
+        sio = StringIO.StringIO(dakotaBatchParams)
+        batch_params, batch_results = di.interfacing._read_parameters_stream(sio, False, True, None)
+        temp_results = batch_results[0]
+        batch_results[0] = temp_results
+        self.assertTrue(temp_results is batch_results[0])  
+
     def test_batch_setting_exception(self):
         """Ensure BatchSettingError is raised when batch=True"""
         pio = StringIO.StringIO(dakotaParams % 1)
@@ -704,6 +721,42 @@ class PythonDirectInterfaceTest(unittest.TestCase):
         results[0].function = 0.0
         results.return_direct_results_dict()
         
+class TestDeepCopy(unittest.TestCase):
+    def test_results(self):
+        """Results objects are correctly deepcopied"""
+        pio = StringIO.StringIO(dakotaParams % 3)
+        _, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
+        r["response_fn_1"].gradient = [1.0, 2.0]
+        cr = copy.deepcopy(r)
+        self.assertFalse(r is cr)
+        self.assertFalse(r._responses is cr._responses)
+        self.assertFalse(r["response_fn_1"]._gradient is cr["response_fn_1"]._gradient)
+        self.assertListEqual(r["response_fn_1"].gradient, cr["response_fn_1"].gradient)
+
+    def test_parameters(self):
+        """Results objects are correctly deepcopied"""
+        pio = StringIO.StringIO(dakotaParams % 3)
+        p, _ = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
+        cp = copy.deepcopy(p)
+        self.assertFalse(p is cp)
+        self.assertFalse(p._variables is cp._variables)
+        self.assertFalse(p.metadata is cp.metadata)
+        self.assertListEqual(p.metadata, cp.metadata)
+
+    def test_batch_parameters(self):
+        sio = StringIO.StringIO(dakotaBatchParams)
+        p, _ = di.interfacing._read_parameters_stream(sio, False, True, None)
+        cp = copy.deepcopy(p)
+        self.assertFalse(cp is p)
+        self.assertFalse(cp[0] is p[0])
+
+    def test_batch_results(self):
+        sio = StringIO.StringIO(dakotaBatchParams)
+        _, r = di.interfacing._read_parameters_stream(sio, False, True, None)
+        cr = copy.deepcopy(r)
+        self.assertFalse(cr is r)
+        self.assertFalse(cr[0] is r[0])
+        self.assertTrue(cr[0].format_matches(r[0]))
 
 # todo: test iteration, integer access
 

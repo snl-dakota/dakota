@@ -3,6 +3,7 @@ from __future__ import print_function, unicode_literals
 from io import open
 import io
 import collections
+import copy
 import functools
 import re
 import sys
@@ -185,6 +186,14 @@ class Parameters(object):
     def batch(self):
         return self._batch
 
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
+ 
 # Datatype to hold ASV element for a single response. function, gradient,
 # and hession are set to True or False. 
 _ASVType = collections.namedtuple("_ASVType",["function","gradient","hessian"])
@@ -232,14 +241,12 @@ class Response(object):
 
            Shape includes the descriptor, derivative variables, asv,
            ignore_asv flag, and batch flag"""
-        if self._descriptor == other._descriptor and \
+        return self._descriptor == other._descriptor and \
            self._num_deriv_vars == other._num_deriv_vars and \
            self.asv == other.asv and \
            self._ignore_asv == other._ignore_asv and \
-           self._batch == other._batch:
-             return True
-        else:
-            return False
+           self._batch == other._batch
+    
 
     @property
     def function(self):
@@ -306,7 +313,14 @@ class Response(object):
                 row.append(float(c))
             self._hessian.append(row)
     
-
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
+ 
 class IndexableOrderedDict(collections.OrderedDict):
     """Specialization of OrderedDict that allows access via key or index."""
 
@@ -376,59 +390,28 @@ class Results(object):
         else:
             return self._responses[key]
 
-    def update(self, other, check=False):
-        """Copy a Results object.
-
-        check: If True, verify that other Results is consistent with self.
+    def format_matches(self, other):
+        matches = True
+        matches = matches and (self.aprepro_format == other.aprepro_format)
+        matches = matches and (self.ignore_asv == other.ignore_asv)
+        matches = matches and all(s == o for s, o in 
+                                  zip_longest(self._deriv_vars, other._deriv_vars))
+        matches = matches and all(s[1].shape_matches(o[1]) for s, o in
+                                  zip_longest(self._responses.items(), other._responses.items()))
+        matches = matches and (self.results_file == other.results_file)
+        matches = matches and (self.eval_id == other.eval_id)
+        matches = matches and (self.eval_num == other.eval_num)
+        matches = matches and (self._batch == other._batch)
+        return matches
+ 
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
         
-        raises: ResultsUpdateError if consistency check fails
-        """
-        if not check:
-            self.aprepro_format = other.aprepro_format
-            self.ignore_asv = other.ignore_asv
-            self._deriv_vars = other._deriv_vars[:]
-            num_deriv_vars = len(self._deriv_vars)        
-            self._responses.clear()
-            self._responses = copy.deepcopy(other._responses)
-            self.metadata.clear()
-            self.metadata = copy.deepcopy(other.metadata)
-            self.results_file = other.results_file
-            self.eval_id = other.eval_id
-            self.eval_num = other.eval_num
-            self._failed = other._failed
-            self._batch = other._batch
-        else:
-            if self.aprepro_format != other.aprepro_format:
-                raise ResultsUpdateError("Mismatch between aprepro_format flag")
-            if self.ignore_asv != other.ignore_asv:
-                raise ResultsUpdateError("Mismatch between ignore_asv flag")
-            if not all(s == o for s, o in 
-                    zip_longest(self._deriv_vars, other._deriv_vars)):
-                raise ResultsUpdateError("Mismatch between derivative " + \
-                        "variables")
-            try:
-                if not all(s[1].shape_matches(o[1]) for s, o in 
-                        zip_longest(self._responses.items(), 
-                                    other._responses.items())):
-                    raise ResultsUpdateError("Mismatch between expected " + \
-                            "responses") 
-            except AttributeError: # Happens when responses are different 
-                                   # lengths, and None.shape_matches() is called
-                raise ResultsUpdateError("Mismatch between expected responses")           
-            self._responses.clear()
-            self._responses = copy.deepcopy(other._responses)
-            self.metadata.clear()
-            self.metadata = copy.deepcopy(other.metadata)
-            if self.results_file != other.results_file:
-                raise ResultsUpdateError("Mismatch between results file name")
-            if self.eval_id != other.eval_id:
-                raise ResultsUpdateError("Mismatch between evaluation ids")
-            if self.eval_num != other.eval_num:
-                raise ResultsUpdateError("Mismatch between evaluation nums")
-            self._failed = other._failed
-            if self._batch != other._batch:
-                raise ResultsUpdateError("Mismatch between batch flags")
-           
     @property
     def num_deriv_vars(self):
         return len(self._deriv_vars)
@@ -652,6 +635,14 @@ class BatchParameters(object):
         for p in self._eval_params:
             yield p
 
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
+ 
 class BatchResults(object):
     """Collect response data and write to results file for a batch evaluation.
 
@@ -691,7 +682,7 @@ class BatchResults(object):
         return self._eval_results[index]
 
     def __setitem__(self, index, other):
-        self._eval_results[index].update(other)
+        self._eval_results[index] = other
 
     def _toggle_batch_write(self, results, stream, ignore_asv):
         results._set_batch(False)
@@ -724,6 +715,14 @@ class BatchResults(object):
         for r in self._eval_results:
             yield r
 
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
+ 
 
 ### Free functions and their helpers for constructing objects
 
@@ -946,12 +945,12 @@ def read_params_from_dict(parameters=None, results_file=None,
     dakota_input.append(str(parameters[key])+" "+key+"\n")
     for i, val in enumerate(parameters["asv"]):
         label = "ASV_"+str(i+1)+":"+parameters["function_labels"][i]
-        dakota_input.append(str(parameters["asv"][i])+" "+label+"\n")
+        dakota_input.append(str(val)+" "+label+"\n")
 
     key = "dvv"
     dakota_input.append(str(len(parameters[key]))+" derivative_variables\n")
     for i, val in enumerate(parameters["dvv"]):
-        label = "DVV_"+str(i)+":"+parameters["cv_labels"][parameters["dvv"][i]-1]
+        label = "DVV_"+str(i)+":"+parameters["variable_labels"][val-1]
         dakota_input.append(str(parameters["dvv"][i])+" "+label+"\n")
 
     key = "analysis_components"
