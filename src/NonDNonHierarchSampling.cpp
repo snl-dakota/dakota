@@ -212,6 +212,34 @@ void NonDNonHierarchSampling::shared_increment(size_t iter)
 }
 
 
+void NonDNonHierarchSampling::
+shared_increment(size_t iter, const UShortArray& approx_set)
+{
+  if (iter == 0) Cout << "\nNon-hierarchical pilot sample: ";
+  else Cout << "\nNon-hierarchical sampling iteration " << iter
+	    << ": shared sample increment = ";
+  Cout << numSamples << '\n';
+
+  if (numSamples) {
+    //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+    //iteratedModel.active_model_key(agg_key);
+    //resize_active_set();
+
+    activeSet.request_values(0);
+    // truth
+    size_t start = numApprox * numFunctions, i, num_approx = approx_set.size();
+    activeSet.request_values(1, start, start + numFunctions);
+    // active approximations
+    for (i=0; i<num_approx; ++i) {
+      start = approx_set[i] * numFunctions;
+      activeSet.request_values(1, start, start + numFunctions);
+    }
+
+    ensemble_sample_increment(iter, numApprox+1); // BLOCK if not shared_approx_increment()  *** TO DO: step value
+  }
+}
+
+
 void NonDNonHierarchSampling::shared_approx_increment(size_t iter)
 {
   if (iter == 0) Cout << "\nNon-hierarchical approx pilot sample: ";
@@ -249,6 +277,35 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
     for (size_t i=start; i<end; ++i) { // [start,end)
       approx = (ordered) ? i : approx_sequence[i];
       start_qoi = approx * numFunctions;
+      activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
+    }
+
+    ensemble_sample_increment(iter, start); // NON-BLOCK
+    return true;
+  }
+  else {
+    Cout << "\nNo approx sample increment for approximation sequence ["
+	 << start+1 << ", " << end << ']' << std::endl;
+    return false;
+  }
+}
+
+
+bool NonDNonHierarchSampling::
+approx_increment(size_t iter, const SizetArray& approx_sequence,
+		 size_t start, size_t end, const UShortArray& approx_set)
+{
+  if (numSamples && start < end) {
+    Cout << "\nApprox sample increment = " << numSamples << " for approximation"
+	 << " sequence [" << start+1 << ", " << end << ']' << std::endl;
+
+    bool ordered = approx_sequence.empty();
+    size_t i, approx, start_qoi;
+
+    activeSet.request_values(0);
+    for (size_t i=start; i<end; ++i) { // [start,end)
+      approx = (ordered) ? i : approx_sequence[i];    // compact indexing
+      start_qoi = approx_set[approx] * numFunctions; // inflated indexing
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 

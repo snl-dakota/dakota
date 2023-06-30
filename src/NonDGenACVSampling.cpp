@@ -443,7 +443,8 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   else
     // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
     update_projected_lf_samples(soln.avgHFTarget, soln.avgEvalRatios,
-				N_H_actual, N_H_alloc, deltaEquivHF); // *** TO DO ***
+				soln_key.first, N_H_actual, N_H_alloc,
+				deltaEquivHF);
 }
 
 
@@ -506,8 +507,8 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   // -----------------------------------
   // Only QOI_STATISTICS requires online shared/approx profile evaluation for
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  soln_key.first  = activeModelSetIter->first;
-  soln_key.second = *activeDAGIter;
+  const UShortArray& approx_set = activeModelSetIter->first;
+  soln_key.first = approx_set;  soln_key.second = *activeDAGIter;
   DAGSolutionData& soln = dagSolns[soln_key];
   if (finalStatsType == QOI_STATISTICS) {
     if (truthFixedByPilot) numSamples = 0;
@@ -516,19 +517,20 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
       numSamples = one_sided_delta(avg_N_H, soln.avgHFTarget);
     }
     // perform the shared increment for the online sample profile
-    shared_increment(mlmfIter); // spans ALL models, blocking
+    // > utilize ASV for active approx subset
+    shared_increment(mlmfIter, approx_set); // spans ACTIVE models, blocking
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, N_H_actual);//, N_LL);
     N_H_alloc += numSamples;
-    increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,
+    increment_equivalent_cost(numSamples, sequenceCost, numApprox, approx_set,
 			      equivHFEvals);
     // perform LF increments for the online sample profile
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
 		      N_H_alloc, soln);
   }
   else // project online profile including both shared samples and LF increment
-    update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, N_H_actual,
-			     N_H_alloc, deltaNActualHF, deltaEquivHF); // *** TO DO
+    update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, approx_set,
+			     N_H_actual, N_H_alloc,deltaNActualHF,deltaEquivHF);
 }
 
 
@@ -586,8 +588,8 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   soln_key.first  = activeModelSetIter->first;
   soln_key.second = *activeDAGIter;
   DAGSolutionData& soln = dagSolns[soln_key];
-  update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, N_H_actual,
-			   N_H_alloc, deltaNActualHF, deltaEquivHF);// *** TO DO
+  update_projected_samples(soln.avgHFTarget, soln.avgEvalRatios, soln_key.first,
+			   N_H_actual, N_H_alloc, deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected avgEstVar{,Ratio}
@@ -618,20 +620,19 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
     const RealVector& avg_eval_ratios = soln.avgEvalRatios;
     ordered_approx_sequence(avg_eval_ratios, approx_sequence, descending);
 
-    size_t start = 0, end;
-    for (end=numApprox; end>0; --end) { // *** TO DO
+    const UShortArray& approx_set = activeModelSetIter->first;
+    size_t start = 0, end, num_approx = approx_set.size();
+    for (end=num_approx; end>0; --end) {
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined
       // ACV_MF samples on [0, approx)       --> sum_L_refined
       //start = (mlmfSubMethod == SUBMETHOD_ACV_MF) ? 0 : end - 1;
       // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER PASS 1 LAUNCH
-      if (acv_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
-			       mlmfIter, approx_sequence, start, end)) {
+      if (genacv_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
+				  mlmfIter, approx_sequence, start, end)) {
+	accumulate_genacv_sums(sum_L_shared, sum_L_refined, N_L_actual_shared,
+			       N_L_actual_refined, approx_sequence, start, end);
 	increment_equivalent_cost(numSamples, sequenceCost, approx_sequence,
-				  start, end, equivHFEvals);
-	accumulate_acv_sums(sum_L_refined, N_L_actual_refined,
-			    approx_sequence, start, end);
-	accumulate_genacv_sums(sum_L_shared, N_L_actual_shared,
-			       approx_sequence, start, end); // added rel to ACV
+				  start, end, approx_set, equivHFEvals);
       }
     }
     break;
@@ -681,6 +682,54 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   convert_moments(H_raw_mom, momentStats);
   // post final sample counts into format for final results reporting
   finalize_counts(N_L_actual_refined, N_L_alloc_refined);
+}
+
+
+bool NonDGenACVSampling::
+genacv_approx_increment(const DAGSolutionData& soln,
+			const Sizet2DArray& N_L_actual_refined,
+			SizetArray& N_L_alloc_refined,
+			size_t iter, const SizetArray& approx_sequence,
+			size_t start, size_t end)
+{
+  // Update LF samples based on evaluation ratio
+  //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
+  // Notes:
+  // > the sample increment for the approx range is determined by approx[end-1]
+  //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
+  // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
+  //   allowing use of one_sided_delta() with latest counts
+  const UShortArray& approx_set = activeModelSetIter->first;
+
+  bool   ordered = approx_sequence.empty();
+  size_t approx = (ordered) ? end-1 : approx_sequence[end-1],
+    inflate_approx = approx_set[approx];
+  Real lf_target = soln.avgEvalRatios[approx] * soln.avgHFTarget;
+  if (backfillFailures) {
+    Real lf_curr = average(N_L_actual_refined[inflate_approx]);
+    numSamples = one_sided_delta(lf_curr, lf_target); // average
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Approx samples = " << numSamples
+	   << " computed from delta between LF target = " << lf_target
+	   << " and current average count = " << lf_curr << std::endl;
+    size_t N_alloc
+      = one_sided_delta(N_L_alloc_refined[inflate_approx], lf_target);
+    increment_sample_range(N_L_alloc_refined, N_alloc, approx_sequence,
+			   start, end, approx_set);
+  }
+  else {
+    size_t lf_curr = N_L_alloc_refined[inflate_approx];
+    numSamples = one_sided_delta((Real)lf_curr, lf_target);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Approx samples = " << numSamples
+	   << " computed from delta between LF target = " << lf_target
+	   << " and current allocation = " << lf_curr << std::endl;
+    increment_sample_range(N_L_alloc_refined, numSamples, approx_sequence,
+			   start, end, approx_set);
+  }
+  // the approximation sequence can be managed within one set of jobs using
+  // a composite ASV with EnsembleSurrModel
+  return approx_increment(iter, approx_sequence, start, end, approx_set);
 }
 
 
@@ -741,6 +790,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
   // Set initial guess based either on related analytic solutions (iter == 0)
   // or warm started from previous solution (iter >= 1)
 
+  const UShortArray& approx_set = activeModelSetIter->first;
   if (mlmfIter == 0) {
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
@@ -753,11 +803,12 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     // > sufficient for determination of best DAG, but not for pyramid sample
     //   set ordering in approx_increments()
     unroll_reverse_dag_from_root(numApprox, orderedRootList);
-    const UShortArray& approx_set = activeModelSetIter->first;
 
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       RealVector& avg_eval_ratios = soln.avgEvalRatios;
-      if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox); // *** TO DO
+      size_t num_approx = approx_set.size();
+      if (avg_eval_ratios.length() != num_approx)
+	avg_eval_ratios.sizeUninitialized(num_approx);
       avg_eval_ratios = 1.;  soln.avgHFTarget = avg_N_H;
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
@@ -793,7 +844,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    print_computed_solution(Cout, soln);
+    print_computed_solution(Cout, soln, approx_set);
 }
 
 
@@ -869,7 +920,7 @@ cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
   Real cost_ratio, rho_sq, cost_H = cost[numApprox], var_L_qs, var_L_qt,
     cov_LH_qs, cov_LL_qst;
   for (d=0; d<dag_size; ++d) {
-    source = approx_set[d];  target = dag[source];
+    source = approx_set[d];  target = dag[d];
     cost_ratio = cost[target] / cost[source];
     //Cout << "CVMC source " << source << " target " << target
     //     << " cost ratio = " << cost_ratio << ":\n";
@@ -921,17 +972,21 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   switch (optSubProblemForm) {
   case N_VECTOR_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
   case N_VECTOR_LINEAR_OBJECTIVE: { // no other lin ineq
-    size_t source, target, lin_ineq_offset
+    size_t src, tgt, deflate_tgt, lin_ineq_offset
       = (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT) ? 1 : 0;
 
     // Enforce DAG dependencies (ACV: all point to numApprox)
     // > N for each source model > N for model it targets
     // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
     const UShortArray& dag = *activeDAGIter;
-    for (source=0; source<numApprox; ++source) {
-      target = dag[source];
-      lin_ineq_coeffs(source+lin_ineq_offset, source) = -1.;
-      lin_ineq_coeffs(source+lin_ineq_offset, target) =  1. + RATIO_NUDGE;
+    const UShortArray& approx_set = activeModelSetIter->first;
+    size_t i, num_approx = approx_set.size();
+    SizetArray index_map;  inflate_approx_set(approx_set, index_map);
+    for (i=0; i<num_approx; ++i) {
+      src = approx_set[i];  tgt = dag[i];
+      deflate_tgt = (tgt == numApprox) ? num_approx : index_map[tgt];
+      lin_ineq_coeffs(i+lin_ineq_offset, i) = -1.;
+      lin_ineq_coeffs(i+lin_ineq_offset, deflate_tgt) =  1. + RATIO_NUDGE;
       //Cout << "lin ineq: source = " << source
       //     << " target = " << target << std::endl;
     }
@@ -1367,25 +1422,27 @@ accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const Response&   resp    = r_it->second;
     const RealVector& fn_vals = resp.function_values();
-    //const ShortArray& asv   = resp.active_set_request_vector();
+    const ShortArray& asv     = resp.active_set_request_vector();
 
     // the  "shared" accumulations define the z_i^1 sample sets
     // the "refined" accumulations define the z_i^2 sample sets
 
     // refined only at root node:
-    accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, root);
+    accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, asv, root);
     // refined + shared at dependent nodes:
     for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
       node = *d_cit;
-      accumulate_acv_sums(sum_L_shared,  N_L_shared,  fn_vals, node);
-      accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, node);
+      accumulate_acv_sums(sum_L_shared,  N_L_shared,  fn_vals, asv, node);
+      accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, asv, node);
     }
   }
 }
 
 
 void NonDGenACVSampling::
-accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared, Sizet2DArray& N_L_shared,
+accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
+		       IntRealMatrixMap& sum_L_refined,
+		       Sizet2DArray& N_L_shared, Sizet2DArray& N_L_refined,
 		       const SizetArray& approx_sequence, size_t sequence_start,
 		       size_t sequence_end)
 {
@@ -1395,21 +1452,27 @@ accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared, Sizet2DArray& N_L_shared,
   // > the "refined" accumulations define the z^2_s sample sets (other fns)
   UShortSet accum_z1_sets;  size_t s;  unsigned short source, target;
   const UShortArray& active_dag = *activeDAGIter;
-  if (approx_sequence.empty())
-    for (s=sequence_start; s<sequence_end; ++s) {
-      source = s; target = active_dag[s];
+  const UShortArray& approx_set = activeModelSetIter->first;
+  bool ordered = approx_sequence.empty();
+  if (ordered)
+    for (s=sequence_start; s<sequence_end; ++s) {      // compact
+      source = approx_set[s];  target = active_dag[s]; // inflated
       // if the CV target for model s is part of the models being sampled,
       // then we will increment its z^1 "shared" accumulators
-      if (target >= sequence_start && target < sequence_end)
+      if (target >= approx_set[sequence_start] &&
+	  target <  approx_set[sequence_end])
 	accum_z1_sets.insert(source);
     }
   else {
-    UShortSet approx_set;
-    for (s=sequence_start; s<sequence_end; ++s)
-      approx_set.insert(approx_sequence[s]);
+    UShortSet seq_approx_set;  size_t seq_s;
     for (s=sequence_start; s<sequence_end; ++s) {
-      source = approx_sequence[s]; target = active_dag[source];
-      if (approx_set.find(target) != approx_set.end())
+      seq_s = approx_sequence[s];               // compact
+      seq_approx_set.insert(approx_set[seq_s]); // inflated
+    }
+    for (s=sequence_start; s<sequence_end; ++s) {
+      seq_s  = approx_sequence[s];
+      source = approx_set[seq_s];  target = active_dag[seq_s];
+      if (seq_approx_set.find(target) != seq_approx_set.end())
 	accum_z1_sets.insert(source);
     }
   }
@@ -1418,14 +1481,27 @@ accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared, Sizet2DArray& N_L_shared,
 
   // uses one set of allResponses with QoI aggregation across all Models,
   // led by the approx Model responses of interest
-  IntRespMCIter r_it;  UShortSet::iterator z1_it;
+  IntRespMCIter r_it; UShortSet::iterator z1_it; size_t approx, inflate_approx;
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
-    const RealVector& fn_vals = r_it->second.function_values();
-    // shared z^1 at dependent nodes:
+    const Response&   resp    = r_it->second;
+    const RealVector& fn_vals = resp.function_values();
+    const ShortArray& asv     = resp.active_set_request_vector();
+
+    // "shared" z^1 at target nodes:
     for (z1_it=accum_z1_sets.begin(); z1_it!=accum_z1_sets.end(); ++z1_it)
-      accumulate_acv_sums(sum_L_shared, N_L_shared, fn_vals, *z1_it);
-    // *** TO DO: these accumulations are redundant --> prefer to accumulate
+      accumulate_acv_sums(sum_L_shared, N_L_shared, fn_vals, asv, *z1_it);
+
+    // *** TO DO: z1 & z2 accumulations overlap --> prefer to accumulate
     // ***        once and then add contribution to multiple roll-ups
+
+    // "refined" z^2 at source nodes:
+    // Adapted from accumulate_acv_sums({sum_L,N_L}_refined, seq, start, end)
+    for (s=sequence_start; s<sequence_end; ++s) {
+      approx = (ordered) ? s : approx_sequence[s];
+      inflate_approx = approx_set[approx];
+      accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, asv,
+			  inflate_approx);
+    }
   }
 }
 
@@ -1444,9 +1520,9 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 
   precompute_genacv_control(avg_eval_ratios, N_H);
 
-  size_t approx, qoi, N_H_q;  Real sum_H_mq;
-  RealVector beta(numApprox); // *** TO DO
   const UShortArray& approx_set = activeModelSetIter->first;
+  size_t approx, inflate_approx, num_approx = approx_set.size(), qoi, N_H_q;
+  Real sum_H_mq;  RealVector beta(num_approx);
   for (int mom=1; mom<=4; ++mom) {
     RealMatrix&     sum_L_base_m = sum_L_baseline[mom];
     RealMatrix&       sum_L_sh_m =   sum_L_shared[mom];
@@ -1464,14 +1540,17 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);
       H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
-      for (approx=0; approx<numApprox; ++approx) { // *** TO DO
+      for (approx=0; approx<num_approx; ++approx) {
+	inflate_approx = approx_set[approx];
 	if (outputLevel >= NORMAL_OUTPUT)
-	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
-	       << "variate beta = " << std::setw(9) << beta[approx] << '\n';
+	  Cout << "   QoI " << qoi+1 << " Approx " << inflate_approx+1
+	       << ": control variate beta = " << std::setw(9) << beta[approx]
+	       << '\n';
 	// For ACV, shared counts are fixed at N_H for all approx
-	apply_control(sum_L_sh_m(qoi,approx),  N_L_shared[approx][qoi],
-		      sum_L_ref_m(qoi,approx), N_L_refined[approx][qoi],
-		      beta[approx], H_raw_mq);
+	apply_control(sum_L_sh_m(qoi,inflate_approx),
+		      N_L_shared[inflate_approx][qoi],
+		      sum_L_ref_m(qoi,inflate_approx),
+		      N_L_refined[inflate_approx][qoi], beta[approx], H_raw_mq);
       }
     }
   }

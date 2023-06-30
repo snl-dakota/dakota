@@ -72,6 +72,7 @@ protected:
 
   Real estimator_accuracy_metric();
   //Real estimator_cost_metric();
+
   void print_variance_reduction(std::ostream& s);
 
   void estimator_variance_ratios(const RealVector& N_vec,
@@ -179,10 +180,17 @@ private:
 			      Sizet2DArray& N_L_refined, unsigned short root,
 			      const UShortSet& reverse_dag);
   void accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
+			      IntRealMatrixMap& sum_L_refined,
 			      Sizet2DArray& N_L_shared,
+			      Sizet2DArray& N_L_refined,
 			      const SizetArray& approx_sequence,
-			      size_t start, size_t end);
+			      size_t sequence_start, size_t sequence_end);
 
+  bool genacv_approx_increment(const DAGSolutionData& soln,
+			       const Sizet2DArray& N_L_actual_refined,
+			       SizetArray& N_L_alloc_refined,
+			       size_t iter, const SizetArray& approx_sequence,
+			       size_t start, size_t end);
   bool genacv_approx_increment(const DAGSolutionData& soln,
 			       const Sizet2DArray& N_L_actual_refined,
 			       SizetArray& N_L_alloc_refined,
@@ -393,7 +401,7 @@ inflate_approx_set(const UShortArray& approx_set, SizetArray& index_map)
 {
   // inflate from compact approx_set to index_map[0,numApprox)
   size_t i, num_approx_set = approx_set.size();
-  index_map.assign(numApprox, _NPOS);
+  index_map.assign(numApprox, SZ_MAX);
   for (i=0; i<num_approx_set; ++i)
     index_map[approx_set[i]] = i; // maps src/tgt from inflated to compact
 }
@@ -514,8 +522,9 @@ precompute_genacv_control(const RealVector& avg_eval_ratios,
 {
   // Note: while G,g have a more explicit dependence on N_shared[qoi] than F,
   // we mirror the averaged sample allocations and compute G,g once
-  RealVector N_vec; //, g;  RealSymMatrix G;
+  RealVector N_vec, inflate_N_vec;
   r_and_N_to_N_vec(avg_eval_ratios, average(N_shared), N_vec);
+  inflate_variables(N_vec, inflate_N_vec, activeModelSetIter->first);
   compute_parameterized_G_g(N_vec);
 }
 

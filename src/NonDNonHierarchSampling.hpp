@@ -201,9 +201,13 @@ protected:
   //
 
   void shared_increment(size_t iter);
+  void shared_increment(size_t iter, const UShortArray& approx_set);
   void shared_approx_increment(size_t iter);
   bool approx_increment(size_t iter, const SizetArray& approx_sequence,
 			size_t start, size_t end);
+  bool approx_increment(size_t iter, const SizetArray& approx_sequence,
+			size_t start, size_t end,
+			const UShortArray& approx_set);
   bool approx_increment(size_t iter, unsigned short root,
 			const UShortSet& reverse_dag);
   void ensemble_sample_increment(size_t iter, size_t step);
@@ -235,8 +239,17 @@ protected:
 				 const SizetArray& approx_sequence,
 				 size_t start, size_t end,Real& equiv_hf_evals);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+				 const SizetArray& approx_sequence,
+				 size_t start, size_t end,
+				 const UShortArray& approx_set,
+				 Real& equiv_hf_evals);
+  void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 unsigned short root,
 				 const UShortSet& reverse_dag,
+				 Real& equiv_hf_evals);
+  void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+				 unsigned short root,
+				 const UShortArray& approx_set,
 				 Real& equiv_hf_evals);
 
   void increment_sample_range(SizetArray& N_L, size_t incr,
@@ -244,6 +257,10 @@ protected:
 			      size_t start, size_t end);
   void increment_sample_range(SizetArray& N_L, size_t incr, unsigned short root,
 			      const UShortSet& reverse_dag);
+  void increment_sample_range(SizetArray& N_L, size_t incr,
+			      const SizetArray& approx_sequence,
+			      size_t start, size_t end,
+			      const UShortArray& approx_set);
 
   /// define model form and resolution level indices
   void hf_indices(size_t& hf_form_index, size_t& hf_lev_index);
@@ -313,8 +330,13 @@ protected:
 
   /// promote scalar to 1D array
   void inflate(size_t N_0D, SizetArray& N_1D);
+  /// promote scalar to portion of 1D array
+  void inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& approx_set);
   /// promote 1D array to 2D array
   void inflate(const SizetArray& N_1D, Sizet2DArray& N_2D);
+  /// promote 1D array to active portion of 2D array
+  void inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
+	       const UShortArray& approx_set);
   /// promote vector of averaged values to full matrix
   void inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios);
   /// promote scalar to column vector
@@ -568,12 +590,31 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
   else {
     size_t i, len = cost.length(), hf_index = len-1, approx;
     if (end == len) // truth is always last
-      { equiv_hf_evals += new_samp; --end; }
+      { equiv_hf_evals += new_samp;  if (end) --end; }
     Real sum_cost = 0.;
     for (i=start; i<end; ++i)
       { approx = approx_sequence[i]; sum_cost += cost[approx]; }
     equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
   }
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+			  const SizetArray& approx_sequence,
+			  size_t start, size_t end,
+			  const UShortArray& approx_set, Real& equiv_hf_evals)
+{
+  size_t i, approx, num_approx = approx_set.size(), hf_index = cost.length()-1;
+  bool ordered = approx_sequence.empty();
+  if (end == num_approx) // truth is always last
+    { equiv_hf_evals += new_samp;  if (end) --end; }
+  Real sum_cost = 0.;
+  for (i=start; i<end; ++i) {
+    approx = (ordered) ? i : approx_sequence[i]; // compact indexing
+    sum_cost += cost[approx_set[approx]];       // inflated indexing
+  }
+  equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
 }
 
 
@@ -592,6 +633,21 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 
 
 inline void NonDNonHierarchSampling::
+increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+			  unsigned short root, const UShortArray& approx_set,
+			  Real& equiv_hf_evals)
+{
+  Real sum_cost = 0;
+  if (root != USHRT_MAX) sum_cost += cost[root];
+  size_t i, num_approx = approx_set.size();
+  for (i=0; i<num_approx; ++i)
+    sum_cost += cost[approx_set[i]];
+  size_t hf_index = cost.length() - 1;
+  equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
+}
+
+
+inline void NonDNonHierarchSampling::
 increment_sample_range(SizetArray& N_L, size_t incr,
 		       const SizetArray& approx_sequence,
 		       size_t start, size_t end)
@@ -601,6 +657,20 @@ increment_sample_range(SizetArray& N_L, size_t incr,
   for (i=start; i<end; ++i) {
     approx = (ordered) ? i : approx_sequence[i];
     N_L[approx] += incr;
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_sample_range(SizetArray& N_L, size_t incr,
+		       const SizetArray& approx_sequence,
+		       size_t start, size_t end, const UShortArray& approx_set)
+{
+  if (!incr) return;
+  bool ordered = approx_sequence.empty();  size_t i, approx;
+  for (i=start; i<end; ++i) {
+    approx = (ordered) ? i : approx_sequence[i]; // compact indexing
+    N_L[approx_set[approx]] += incr;            // inflated indexing
   }
 }
 
@@ -922,11 +992,33 @@ inline void NonDNonHierarchSampling::inflate(size_t N_0D, SizetArray& N_1D)
 
 
 inline void NonDNonHierarchSampling::
+inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& approx_set)
+{
+  N_1D.assign(numApprox, USHRT_MAX);
+  size_t i, num_approx = approx_set.size();
+  for (i=0; i<num_approx; ++i)
+    N_1D[approx_set[i]] = N_0D;
+}
+
+
+inline void NonDNonHierarchSampling::
 inflate(const SizetArray& N_1D, Sizet2DArray& N_2D)
 {
   N_2D.resize(numApprox);
   for (size_t approx=0; approx<numApprox; ++approx)
     N_2D[approx] = N_1D;
+}
+
+
+inline void NonDNonHierarchSampling::
+inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
+	const UShortArray& approx_set)
+{
+  N_2D.clear();
+  N_2D.resize(numApprox);
+  size_t i, num_approx = approx_set.size();
+  for (i=0; i<num_approx; ++i)
+    N_2D[approx_set[i]] = N_1D;
 }
 
 
