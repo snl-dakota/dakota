@@ -129,11 +129,11 @@ public:
 					const ShortArray& di_target2,
 					const ShortArray& ds_target2,
 					const ShortArray& dr_target2);
-
   /// set primaryResponseCoefficients, secondaryResponseCoefficients
   /// within derived Iterators; Necessary for scalarization case in 
   /// MLMC NonDMultilevelSampling to map scalarization in nested context
-  virtual void nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs);
+  virtual void nested_response_mappings(const RealMatrix& primary_coeffs,
+					const RealMatrix& secondary_coeffs);
 
   /// used by IteratorScheduler to set the starting data for a run
   virtual void initialize_iterator(int job_index);
@@ -180,6 +180,9 @@ public:
   /// return is false.  Override to return true if appropriate.
   virtual bool returns_multiple_points() const;
 
+  /// set inherited data attributes based on extractions from incoming model
+  virtual void update_from_model(const Model& model);
+
   /// sets the initial point for this iterator (user-functions mode
   /// for which Model updating is not used)
   virtual void initial_point(const Variables& pt);
@@ -190,22 +193,14 @@ public:
   /// only be used if accepts_multiple_points() returns true.
   virtual void initial_points(const VariablesArray& pts);
 
-  /// assign nonlinear inequality and equality constraint allowables for this
-  /// iterator (user-functions mode for which Model updating is not used)
-  virtual void variable_bounds(const RealVector& cv_lower_bnds,
-			       const RealVector& cv_upper_bnds);
-  /// assign linear inequality and linear equality constraints for this
-  /// iterator (user-functions mode for which Model updating is not used)
-  virtual void linear_constraints(const RealMatrix& lin_ineq_coeffs,
-				  const RealVector& lin_ineq_lb,
-				  const RealVector& lin_ineq_ub,
-				  const RealMatrix& lin_eq_coeffs,
-				  const RealVector& lin_eq_tgt);
-  /// assign nonlinear inequality and equality constraint allowables for this
-  /// iterator (user-functions mode for which Model updating is not used)
-  virtual void nonlinear_constraints(const RealVector& nln_ineq_lb,
-				     const RealVector& nln_ineq_ub,
-				     const RealVector& nln_eq_tgt);
+  /// assign variable values and bounds and constraint coefficients and bounds
+  /// for this iterator (user-functions mode for which iteratedModel is null)
+  virtual void update_callback_data(const RealVector& cv_initial,
+    const RealVector& cv_lower_bnds,   const RealVector& cv_upper_bnds,
+    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lb,
+    const RealVector& lin_ineq_ub,     const RealMatrix& lin_eq_coeffs,
+    const RealVector& lin_eq_tgt,      const RealVector& nln_ineq_lb,
+    const RealVector& nln_ineq_ub,     const RealVector& nln_eq_tgt);
 
   /// initialize the 2D graphics window and the tabular graphics data
   virtual void initialize_graphics(int iterator_server_id = 1);
@@ -435,9 +430,6 @@ protected:
   /// derived class contributions to initializing the communicators
   /// associated with this Iterator instance
   virtual void derived_init_communicators(ParLevLIter pl_iter);
-
-  /// set inherited data attributes based on extractions from incoming model
-  virtual void update_from_model(const Model& model);
 
   /// gets the multiple initial points for this iterator.  This will only
   /// be meaningful after a call to initial_points mutator.

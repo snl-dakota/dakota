@@ -148,8 +148,6 @@ NPSOLOptimizer(const RealVector& initial_point,
   // invoke SOLBase allocate/set functions (shared with NLSSOLLeastSq)
   allocate_arrays(numContinuousVars, numNonlinearConstraints, lin_ineq_coeffs,
 		  lin_eq_coeffs);
-  allocate_workspace(numContinuousVars, numNonlinearConstraints,
-		     numLinearConstraints, 0);
   augment_bounds(lowerBounds, upperBounds, lin_ineq_lower_bnds,
                  lin_ineq_upper_bnds, lin_eq_targets, nonlin_ineq_lower_bnds,
                  nonlin_ineq_upper_bnds, nonlin_eq_targets);
@@ -480,6 +478,9 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
   int num_cv = numContinuousVars;
   int num_linear_constraints = numLinearConstraints;
   int num_nonlinear_constraints = numNonlinearConstraints;
+
+  allocate_workspace(num_cv, num_nonlinear_constraints,
+		     num_linear_constraints, 0);
 
   double     local_f_val = 0.;
   RealVector local_f_grad(numContinuousVars, true);

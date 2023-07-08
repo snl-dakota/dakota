@@ -947,6 +947,7 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_QUESO,             "queso")
   (SUBMETHOD_OPTPP,             "nip")
   (SUBMETHOD_NPSOL,             "sqp")
+  (SUBMETHOD_NPSOL_OPTPP,       "sqp_nip")
   (SUBMETHOD_EA,                "ea")
   (SUBMETHOD_EGO,               "ego")
   (SUBMETHOD_SBGO,              "sbgo")
@@ -1515,45 +1516,26 @@ const VariablesArray& Iterator::initial_points() const
 
 
 void Iterator::
-variable_bounds(const RealVector& cv_lower_bnds,
-		const RealVector& cv_upper_bnds)
+update_callback_data(const RealVector& cv_initial,
+		     const RealVector& cv_lower_bnds,
+		     const RealVector& cv_upper_bnds,
+		     const RealMatrix& lin_ineq_coeffs,
+		     const RealVector& lin_ineq_lb,
+		     const RealVector& lin_ineq_ub,
+		     const RealMatrix& lin_eq_coeffs,
+		     const RealVector& lin_eq_tgt,
+		     const RealVector& nln_ineq_lb,
+		     const RealVector& nln_ineq_ub,
+		     const RealVector& nln_eq_tgt)
 {
   if (iteratorRep) // envelope fwd to letter
-    iteratorRep->variable_bounds(cv_lower_bnds, cv_upper_bnds);
+    iteratorRep->
+      update_callback_data(cv_initial, cv_lower_bnds, cv_upper_bnds,
+			   lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
+			   lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb,
+			   nln_ineq_ub, nln_eq_tgt);
   else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine variable_bounds() virtual "
-	 << "fn.\n       No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-}
-
-
-void Iterator::
-linear_constraints(const RealMatrix& lin_ineq_coeffs,
-		   const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
-		   const RealMatrix& lin_eq_coeffs,
-		   const RealVector& lin_eq_tgt)
-{
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->linear_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
-				    lin_eq_coeffs, lin_eq_tgt);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine linear_constraints() virtual"
-	 << " fn.\n       No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-}
-
-
-void Iterator::
-nonlinear_constraints(const RealVector& nln_ineq_lb,
-		      const RealVector& nln_ineq_ub,
-		      const RealVector& nln_eq_tgt)
-{
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine nonlinear_constraints() "
+    Cerr << "Error: letter class does not redefine update_callback_data() "
 	 << "virtual fn.\n       No default defined at base class."<< std::endl;
     abort_handler(METHOD_ERROR);
   }

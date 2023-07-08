@@ -184,6 +184,12 @@ protected:
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
 
+  /// post-process optimization final results to recover solution data
+  virtual void recover_results(const RealVector& cv_star,
+			       const RealVector& fn_star, Real& avg_estvar,
+			       RealVector& avg_eval_ratios,
+			       Real& avg_hf_target, Real& equiv_hf_cost);
+
   /// constraint helper function shared by NPSOL/OPT++ static evaluators
   virtual Real linear_cost(const RealVector& N_vec);
   /// constraint helper function shared by NPSOL/OPT++ static evaluators
@@ -231,6 +237,11 @@ protected:
   Real compute_equivalent_cost(Real avg_hf_target,
 			       const RealVector& avg_eval_ratios,
 			       const RealVector& cost);
+  Real compute_equivalent_cost(Real avg_hf_target,
+			       const RealVector& avg_eval_ratios,
+			       const RealVector& cost,
+			       const UShortArray& approx_set);
+
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t index, Real& equiv_hf_evals);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
@@ -275,10 +286,10 @@ protected:
   void compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2,
 			  size_t N_shared, Real& cov_Q1Q2);
   
-  void mfmc_analytic_solution(const UShortArray& model_set,
+  void mfmc_analytic_solution(const UShortArray& approx_set,
 			      const RealMatrix& rho2_LH, const RealVector& cost,
 			      DAGSolutionData& soln, bool monotonic_r = false);
-  void mfmc_reordered_analytic_solution(const UShortArray& model_set,
+  void mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 					const RealMatrix& rho2_LH,
 					const RealVector& cost,
 					SizetArray& approx_sequence,
@@ -300,7 +311,7 @@ protected:
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
-  Real allocate_budget(const UShortArray& model_set,
+  Real allocate_budget(const UShortArray& approx_set,
 		       const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
 
@@ -322,8 +333,12 @@ protected:
   bool ordered_approx_sequence(const RealVector& metric,
 			       SizetArray& approx_sequence,
 			       bool descending_keys = false);
-  /// determine whether metric is in increasing order for all columns
+  /// determine whether metric is in increasing order by columns for all rows
   bool ordered_approx_sequence(const RealMatrix& metric);
+  /// determine whether metric is in increasing order by active columns for
+  /// all rows
+  bool ordered_approx_sequence(const RealMatrix& metric,
+			       const UShortArray& approx_set);
 
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);
@@ -400,11 +415,6 @@ private:
 			const RealVector& estvar0);
   Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
 			const RealVector& estvar0);
-
-  /// post-process optimization final results to recover solution data
-  void recover_results(const RealVector& cv_star, const RealVector& fn_star,
-		       Real& avg_estvar, RealVector& avg_eval_ratios,
-		       Real& avg_hf_target, Real& equiv_hf_cost);
 
   /// flattens contours of average_estimator_variance() using std::log
   Real log_average_estvar(const RealVector& cd_vars);
@@ -547,12 +557,23 @@ inline Real NonDNonHierarchSampling::
 compute_equivalent_cost(Real avg_hf_target, const RealVector& avg_eval_ratios,
 			const RealVector& cost)
 {
-  size_t approx, len = cost.length(), hf_index = len-1;
-  Real cost_ref = cost[hf_index];
-  Real equiv_hf_ratio = 1.; // apply avg_hf_target at end
-  for (approx=0; approx<hf_index; ++approx)
-    equiv_hf_ratio += avg_eval_ratios[approx] * cost[approx] / cost_ref;
-  return equiv_hf_ratio * avg_hf_target;
+  size_t a, hf_index = cost.length() - 1;
+  Real cost_ref = cost[hf_index], rc_sum = 0.;
+  for (a=0; a<numApprox; ++a)
+    rc_sum += avg_eval_ratios[a] * cost[a];
+  return avg_hf_target * (rc_sum / cost_ref + 1.);
+}
+
+
+inline Real NonDNonHierarchSampling::
+compute_equivalent_cost(Real avg_hf_target, const RealVector& avg_eval_ratios,
+			const RealVector& cost, const UShortArray& approx_set)
+{
+  size_t a, num_approx = approx_set.size(), hf_index = cost.length() - 1;
+  Real cost_ref = cost[hf_index], rc_sum = 0.;
+  for (a=0; a<num_approx; ++a)
+    rc_sum += avg_eval_ratios[a] * cost[approx_set[a]];
+  return avg_hf_target * (rc_sum / cost_ref + 1.);
 }
 
 
@@ -705,17 +726,17 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
 
 
 inline Real NonDNonHierarchSampling::
-allocate_budget(const UShortArray& model_set, const RealVector& avg_eval_ratios,
-		const RealVector& cost)
+allocate_budget(const UShortArray& approx_set,
+		const RealVector& avg_eval_ratios, const RealVector& cost)
 {
   // version with scalar HF target (eval_ratios already averaged over QoI
   // due to formulation of optimization sub-problem)
 
   Real cost_H = cost[numApprox], inner_prod, budget = (Real)maxFunctionEvals;
   inner_prod = cost_H; // raw cost (un-normalized)
-  size_t m, num_models = model_set.size();
-  for (m=0; m<num_models; ++m)
-    inner_prod += cost[model_set[m]] * avg_eval_ratios[m];
+  size_t a, num_approx = approx_set.size();
+  for (a=0; a<num_approx; ++a)
+    inner_prod += cost[approx_set[a]] * avg_eval_ratios[a];
   Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
   return avg_hf_target;
 }
@@ -813,16 +834,37 @@ ordered_approx_sequence(const RealVector& metric, SizetArray& approx_sequence,
 
 
 inline bool NonDNonHierarchSampling::
-ordered_approx_sequence(const RealMatrix& metric)//, bool descending_keys)
+ordered_approx_sequence(const RealMatrix& metric)
 {
+  // this checks for metric ordering for each QoI (not averaged QoI)
   size_t r, c, nr = metric.numRows(), nc = metric.numCols(), metric_order;
   std::multimap<Real, size_t> metric_map;
   std::multimap<Real, size_t>::iterator it;
   bool ordered = true;
-  for (r=0; r<nr; ++r) {  // numFunctions
+  for (r=0; r<nr; ++r) { // numFunctions
     metric_map.clear();
     for (c=0; c<nc; ++c) // numApprox
       metric_map.insert(std::pair<Real, size_t>(metric(r,c), c));
+    for (c=0, it=metric_map.begin(); it!=metric_map.end(); ++it, ++c)
+      if (c != it->second) { ordered = false; break; }
+    if (!ordered) break;
+  }
+  return ordered;
+}
+
+
+inline bool NonDNonHierarchSampling::
+ordered_approx_sequence(const RealMatrix& metric, const UShortArray& approx_set)
+{
+  // this checks for metric ordering for each QoI (not averaged QoI)
+  size_t r, c, nr = metric.numRows(), nc = approx_set.size(), metric_order;
+  std::multimap<Real, size_t> metric_map;
+  std::multimap<Real, size_t>::iterator it;
+  bool ordered = true;
+  for (r=0; r<nr; ++r) { // numFunctions
+    metric_map.clear();
+    for (c=0; c<nc; ++c) // num_approx
+      metric_map.insert(std::pair<Real, size_t>(metric(r,approx_set[c]), c));
     for (c=0, it=metric_map.begin(); it!=metric_map.end(); ++it, ++c)
       if (c != it->second) { ordered = false; break; }
     if (!ordered) break;

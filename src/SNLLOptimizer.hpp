@@ -195,16 +195,17 @@ public:
   void declare_sources();
 
   void initial_point(const RealVector& pt);
-  void variable_bounds(const RealVector& cv_lower_bnds,
-		       const RealVector& cv_upper_bnds);
-  void linear_constraints(const RealMatrix& lin_ineq_coeffs,
-			  const RealVector& lin_ineq_l_bnds,
-			  const RealVector& lin_ineq_u_bnds,
-			  const RealMatrix& lin_eq_coeffs,
-			  const RealVector& lin_eq_targets);
-  void nonlinear_constraints(const RealVector& nln_ineq_l_bnds,
-			     const RealVector& nln_ineq_u_bnds,
-			     const RealVector& nln_eq_targets);
+  void update_callback_data(const RealVector& cv_initial,
+			    const RealVector& cv_lower_bnds,
+			    const RealVector& cv_upper_bnds,
+			    const RealMatrix& lin_ineq_coeffs,
+			    const RealVector& lin_ineq_l_bnds,
+			    const RealVector& lin_ineq_u_bnds,
+			    const RealMatrix& lin_eq_coeffs,
+			    const RealVector& lin_eq_targets,
+			    const RealVector& nln_ineq_l_bnds,
+			    const RealVector& nln_ineq_u_bnds,
+			    const RealVector& nln_eq_targets);
 
 protected:
 
@@ -377,34 +378,38 @@ inline void SNLLOptimizer::initial_point(const RealVector& pt)
 
 
 inline void SNLLOptimizer::
-variable_bounds(const RealVector& cv_lower_bnds,
-		const RealVector& cv_upper_bnds)
+update_callback_data(const RealVector& cv_initial,
+		     const RealVector& cv_lower_bnds,
+		     const RealVector& cv_upper_bnds,
+		     const RealMatrix& lin_ineq_coeffs,
+		     const RealVector& lin_ineq_l_bnds,
+		     const RealVector& lin_ineq_u_bnds,
+		     const RealMatrix& lin_eq_coeffs,
+		     const RealVector& lin_eq_targets,
+		     const RealVector& nln_ineq_l_bnds,
+		     const RealVector& nln_ineq_u_bnds,
+		     const RealVector& nln_eq_targets)
 {
+  check_null_model();
+
+  numContinuousVars = cv_initial.length();
+  numLinearIneqConstraints = lin_ineq_coeffs.numRows();
+  numLinearEqConstraints   =   lin_eq_coeffs.numRows();
+  numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;
+  numNonlinearIneqConstraints = nln_ineq_l_bnds.length();
+  numNonlinearEqConstraints   =  nln_eq_targets.length();
+  numNonlinearConstraints
+    = numNonlinearIneqConstraints + numNonlinearEqConstraints;
+
+  initial_point(cv_initial);
   copy_data(cv_lower_bnds, lowerBounds); // protect from incoming view
   copy_data(cv_upper_bnds, upperBounds); // protect from incoming view
-}
 
-
-inline void SNLLOptimizer::
-linear_constraints(const RealMatrix& lin_ineq_coeffs,
-		   const RealVector& lin_ineq_l_bnds,
-		   const RealVector& lin_ineq_u_bnds,
-		   const RealMatrix& lin_eq_coeffs,
-		   const RealVector& lin_eq_targets)
-{
   linIneqCoeffs    = lin_ineq_coeffs;  linEqCoeffs      = lin_eq_coeffs;
   linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
   linEqTargets     = lin_eq_targets;
-}
 
-
-inline void SNLLOptimizer::
-nonlinear_constraints(const RealVector& nln_ineq_l_bnds,
-		      const RealVector& nln_ineq_u_bnds,
-		      const RealVector& nln_eq_targets)
-{
-  nlnIneqLowerBnds = nln_ineq_l_bnds;
-  nlnIneqUpperBnds = nln_ineq_u_bnds;
+  nlnIneqLowerBnds = nln_ineq_l_bnds;  nlnIneqUpperBnds = nln_ineq_u_bnds;
   nlnEqTargets     = nln_eq_targets;
 }
 

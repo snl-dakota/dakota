@@ -62,6 +62,10 @@ protected:
     RealVector& nln_eq_tgt, RealMatrix& lin_ineq_coeffs,
     RealMatrix& lin_eq_coeffs);
 
+  void recover_results(const RealVector& cv_star, const RealVector& fn_star,
+		       Real& avg_estvar, RealVector& avg_eval_ratios,
+		       Real& avg_hf_target, Real& equiv_hf_cost);
+
   Real linear_cost(const RealVector& N_vec);
   Real nonlinear_cost(const RealVector& r_and_N);
   void linear_cost_gradient(const RealVector& N_vec,RealVector& grad_c);
