@@ -390,7 +390,7 @@ update_callback_data(const RealVector& cv_initial,
 		     const RealVector& nln_ineq_u_bnds,
 		     const RealVector& nln_eq_targets)
 {
-  check_null_model();
+  enforce_null_model();
 
   numContinuousVars = cv_initial.length();
   numLinearIneqConstraints = lin_ineq_coeffs.numRows();
@@ -400,8 +400,9 @@ update_callback_data(const RealVector& cv_initial,
   numNonlinearEqConstraints   =  nln_eq_targets.length();
   numNonlinearConstraints
     = numNonlinearIneqConstraints + numNonlinearEqConstraints;
+  numFunctions = numObjectiveFns + numNonlinearConstraints;
 
-  initial_point(cv_initial);
+  initial_point(cv_initial);             // protect from incoming view
   copy_data(cv_lower_bnds, lowerBounds); // protect from incoming view
   copy_data(cv_upper_bnds, upperBounds); // protect from incoming view
 
@@ -411,6 +412,8 @@ update_callback_data(const RealVector& cv_initial,
 
   nlnIneqLowerBnds = nln_ineq_l_bnds;  nlnIneqUpperBnds = nln_ineq_u_bnds;
   nlnEqTargets     = nln_eq_targets;
+
+  reshape_best(numContinuousVars, numFunctions);
 }
 
 } // namespace Dakota

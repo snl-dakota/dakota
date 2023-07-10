@@ -105,9 +105,9 @@ public:
   NPSOLOptimizer(Model& model, int derivative_level, Real conv_tol);
 
   /// alternate constructor for instantiations "on the fly"
-  NPSOLOptimizer(const RealVector& initial_point,
-		 const RealVector& var_lower_bnds,
-		 const RealVector& var_upper_bnds,
+  NPSOLOptimizer(const RealVector& cv_initial,
+		 const RealVector& cv_lower_bnds,
+		 const RealVector& cv_upper_bnds,
 		 const RealMatrix& lin_ineq_coeffs,
 		 const RealVector& lin_ineq_lower_bnds,
 		 const RealVector& lin_ineq_upper_bnds,
@@ -198,6 +198,12 @@ private:
   RealVector lowerBounds;
   /// holds variable upper bounds passed in for "user_functions" mode.
   RealVector upperBounds;
+  /// cache the linear inequality constraint coefficients in
+  /// update_callback_data() for use in find_optimum_on_user_functions()
+  RealMatrix linIneqCoeffs;
+  /// cache the linear equality constraint coefficients in
+  /// update_callback_data() for use in find_optimum_on_user_functions()
+  RealMatrix linEqCoeffs;
   /// holds function pointer for objective function evaluator passed in for
   /// "user_functions" mode.
   void (*userObjectiveEval)  (int&, int&, double*, double&, double*, int&);
@@ -225,9 +231,12 @@ update_callback_data(const RealVector& cv_initial,
 		     const RealVector& nln_ineq_ub,
 		     const RealVector& nln_eq_tgt)
 {
-  check_null_model();
+  enforce_null_model();
 
-  numContinuousVars = cv_initial.length();
+  bool reshape = false;
+  size_t num_cv = cv_initial.length();
+  if (numContinuousVars != num_cv)
+    { numContinuousVars  = num_cv; reshape = true; }
 
   numLinearIneqConstraints = lin_ineq_coeffs.numRows();
   numLinearEqConstraints   =   lin_eq_coeffs.numRows();
@@ -237,21 +246,23 @@ update_callback_data(const RealVector& cv_initial,
   numNonlinearEqConstraints   =  nln_eq_tgt.length();
   numNonlinearConstraints
     = numNonlinearIneqConstraints + numNonlinearEqConstraints;
+  size_t num_fns = numObjectiveFns + numNonlinearConstraints;
+  if (numFunctions != num_fns)
+    { numFunctions  = num_fns; reshape = true; }
+
+  linIneqCoeffs = lin_ineq_coeffs;  linEqCoeffs = lin_eq_coeffs;
+  //linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
+  //linEqTargets     = lin_eq_targets;
+
+  //nlnIneqLowerBnds = nln_ineq_l_bnds;  nlnIneqUpperBnds = nln_ineq_u_bnds;
+  //nlnEqTargets     = nln_eq_targets;
 
   initial_point(cv_initial);
-  replace_variable_bounds(numLinearConstraints, numNonlinearConstraints,
-			  lowerBounds, upperBounds, cv_lower_bnds, // ***
-			  cv_upper_bnds);
-
-  replace_linear_arrays(numContinuousVars, numNonlinearConstraints,
-			lin_ineq_coeffs, lin_eq_coeffs);
-  replace_linear_bounds(numContinuousVars, numNonlinearConstraints, lowerBounds,
-			upperBounds, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt); // ***
-
-  replace_nonlinear_arrays(numContinuousVars, numLinearConstraints,
-			   nln_ineq_lb.length() + nln_eq_tgt.length());
-  replace_nonlinear_bounds(numContinuousVars, numLinearConstraints, lowerBounds,
-			   upperBounds, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt); // ***
+  aggregate_bounds(cv_lower_bnds, cv_upper_bnds, lin_ineq_lb, lin_ineq_ub,
+		   lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+		   lowerBounds, upperBounds);
+  if (reshape)
+    reshape_best(numContinuousVars, numFunctions);
 }
 
 
@@ -263,9 +274,9 @@ update_callback_data(const RealVector& cv_initial,
 NPSOLOptimizer* new_NPSOLOptimizer(ProblemDescDB& problem_db, Model& model);
 NPSOLOptimizer* new_NPSOLOptimizer(Model& model);
 NPSOLOptimizer* new_NPSOLOptimizer(Model& model, int, Real);
-NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& initial_point,
-    const RealVector& var_lower_bnds,
-    const RealVector& var_upper_bnds,
+NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& cv_initial,
+    const RealVector& cv_lower_bnds,
+    const RealVector& cv_upper_bnds,
     const RealMatrix& lin_ineq_coeffs,
     const RealVector& lin_ineq_lower_bnds,
     const RealVector& lin_ineq_upper_bnds,

@@ -1650,8 +1650,8 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
   const UShortArray& approx_set = activeModelSetIter->first;
   const UShortArray& active_dag = *activeDAGIter;
   size_t i, j, dag_size = active_dag.size();
-  if (GMat.empty()) GMat.shapeUninitialized(dag_size);
-  if (gVec.empty()) gVec.sizeUninitialized(dag_size);
+  if (GMat.numRows() != dag_size) GMat.shapeUninitialized(dag_size);
+  if (gVec.length()  != dag_size) gVec.sizeUninitialized(dag_size);
 
   // define sample recursion sets backwards (from z_H down to lowest fid)
   Real src_i, src_j, tgt_i, tgt_j, z1_i, z2_i, z1_j;

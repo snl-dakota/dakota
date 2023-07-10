@@ -330,7 +330,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
   nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
 {
-  copy_data(initial_pt, initialPoint); // protect from incoming view
+  initial_point(initial_pt); // protect from incoming view
   copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
   copy_data(var_u_bnds, upperBounds);  // protect from incoming view
 
@@ -383,7 +383,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
   nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
 {
-  copy_data(initial_pt, initialPoint); // protect from incoming view
+  initial_point(initial_pt); // protect from incoming view
   copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
   copy_data(var_u_bnds, upperBounds);  // protect from incoming view
 
@@ -436,7 +436,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
   nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
 {
-  copy_data(initial_pt, initialPoint); // protect from incoming view
+  initial_point(initial_pt); // protect from incoming view
   copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
   copy_data(var_u_bnds, upperBounds);  // protect from incoming view
 
@@ -488,7 +488,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
   nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
 {
-  copy_data(initial_pt, initialPoint); // protect from incoming view
+  initial_point(initial_pt); // protect from incoming view
   copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
   copy_data(var_u_bnds, upperBounds);  // protect from incoming view
 

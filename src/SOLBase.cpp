@@ -324,6 +324,51 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
 
 
 void SOLBase::
+aggregate_bounds(const RealVector& cv_l_bnds, const RealVector& cv_u_bnds,
+		 const RealVector& lin_ineq_l_bnds,
+		 const RealVector& lin_ineq_u_bnds,
+		 const RealVector& lin_eq_targets,
+		 const RealVector& nln_ineq_l_bnds,
+		 const RealVector& nln_ineq_u_bnds,
+		 const RealVector& nln_eq_targets,
+		 RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds)
+{
+  // Construct aggregate_l_bnds & aggregate_u_bnds from variable bounds,
+  // linear inequality bounds and equality targets, and nonlinear inequality
+  // bounds and equality targets.
+
+  size_t num_cv       = cv_l_bnds.length(),
+         num_lin_ineq = lin_ineq_l_bnds.length(),
+         num_lin_eq   = lin_eq_targets.length(),
+         num_nln_ineq = nln_ineq_l_bnds.length(),
+         num_nln_eq   = nln_eq_targets.length(),
+         bnds_size    = num_cv + num_lin_ineq + num_lin_eq
+                      + num_nln_ineq + num_nln_eq;
+  if (aggregate_l_bnds.length() != bnds_size ||
+      aggregate_u_bnds.length() != bnds_size) {
+    aggregate_l_bnds.sizeUninitialized(bnds_size);
+    aggregate_u_bnds.sizeUninitialized(bnds_size);
+  }
+  size_t cntr = 0;
+  copy_data_partial(cv_l_bnds,       0, aggregate_l_bnds, cntr, num_cv );
+  copy_data_partial(cv_u_bnds,       0, aggregate_u_bnds, cntr, num_cv );
+  cntr += num_cv;
+  copy_data_partial(lin_ineq_l_bnds, 0, aggregate_l_bnds, cntr, num_lin_ineq );
+  copy_data_partial(lin_ineq_u_bnds, 0, aggregate_u_bnds, cntr, num_lin_ineq );
+  cntr += num_lin_ineq;
+  copy_data_partial(lin_eq_targets,  0, aggregate_l_bnds, cntr, num_lin_eq );
+  copy_data_partial(lin_eq_targets,  0, aggregate_u_bnds, cntr, num_lin_eq );
+  cntr += num_lin_eq;
+  copy_data_partial(nln_ineq_l_bnds, 0, aggregate_l_bnds, cntr, num_nln_ineq );
+  copy_data_partial(nln_ineq_u_bnds, 0, aggregate_u_bnds, cntr, num_nln_ineq );
+  cntr += num_nln_ineq;
+  copy_data_partial(nln_eq_targets,  0, aggregate_l_bnds, cntr, num_nln_eq );
+  copy_data_partial(nln_eq_targets,  0, aggregate_u_bnds, cntr, num_nln_eq );
+}
+
+
+/*
+void SOLBase::
 augment_bounds(RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds,
 	       const RealVector& lin_ineq_l_bnds,
 	       const RealVector& lin_ineq_u_bnds,
@@ -467,6 +512,7 @@ replace_nonlinear_bounds(size_t num_cv, size_t num_lin_con,
   copy_data_partial(nln_eq_targets,  0, aggregate_l_bnds, offset, num_nln_eq);
   copy_data_partial(nln_eq_targets,  0, aggregate_u_bnds, offset, num_nln_eq);
 }
+*/
 
 
 void SOLBase::
