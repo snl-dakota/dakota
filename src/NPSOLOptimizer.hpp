@@ -144,13 +144,13 @@ public:
 			    const RealVector& cv_lower_bnds,
 			    const RealVector& cv_upper_bnds,
 			    const RealMatrix& lin_ineq_coeffs,
-			    const RealVector& lin_ineq_lb,
-			    const RealVector& lin_ineq_ub,
+			    const RealVector& lin_ineq_l_bnds,
+			    const RealVector& lin_ineq_u_bnds,
 			    const RealMatrix& lin_eq_coeffs,
-			    const RealVector& lin_eq_tgt,
-			    const RealVector& nln_ineq_lb,
-			    const RealVector& nln_ineq_ub,
-			    const RealVector& nln_eq_tgt);
+			    const RealVector& lin_eq_targets,
+			    const RealVector& nln_ineq_l_bnds,
+			    const RealVector& nln_ineq_u_bnds,
+			    const RealVector& nln_eq_targets);
 
 protected:
 
@@ -216,54 +216,6 @@ private:
 
 inline void NPSOLOptimizer::initial_point(const RealVector& pt)
 { copy_data(pt, initialPoint); } // protect from incoming view
-
-
-inline void NPSOLOptimizer::
-update_callback_data(const RealVector& cv_initial,
-		     const RealVector& cv_lower_bnds,
-		     const RealVector& cv_upper_bnds,
-		     const RealMatrix& lin_ineq_coeffs,
-		     const RealVector& lin_ineq_lb,
-		     const RealVector& lin_ineq_ub,
-		     const RealMatrix& lin_eq_coeffs,
-		     const RealVector& lin_eq_tgt,
-		     const RealVector& nln_ineq_lb,
-		     const RealVector& nln_ineq_ub,
-		     const RealVector& nln_eq_tgt)
-{
-  enforce_null_model();
-
-  bool reshape = false;
-  size_t num_cv = cv_initial.length();
-  if (numContinuousVars != num_cv)
-    { numContinuousVars  = num_cv; reshape = true; }
-
-  numLinearIneqConstraints = lin_ineq_coeffs.numRows();
-  numLinearEqConstraints   =   lin_eq_coeffs.numRows();
-  numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;
-
-  numNonlinearIneqConstraints = nln_ineq_lb.length();
-  numNonlinearEqConstraints   =  nln_eq_tgt.length();
-  numNonlinearConstraints
-    = numNonlinearIneqConstraints + numNonlinearEqConstraints;
-  size_t num_fns = numObjectiveFns + numNonlinearConstraints;
-  if (numFunctions != num_fns)
-    { numFunctions  = num_fns; reshape = true; }
-
-  linIneqCoeffs = lin_ineq_coeffs;  linEqCoeffs = lin_eq_coeffs;
-  //linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
-  //linEqTargets     = lin_eq_targets;
-
-  //nlnIneqLowerBnds = nln_ineq_l_bnds;  nlnIneqUpperBnds = nln_ineq_u_bnds;
-  //nlnEqTargets     = nln_eq_targets;
-
-  initial_point(cv_initial);
-  aggregate_bounds(cv_lower_bnds, cv_upper_bnds, lin_ineq_lb, lin_ineq_ub,
-		   lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-		   lowerBounds, upperBounds);
-  if (reshape)
-    reshape_best(numContinuousVars, numFunctions);
-}
 
 
 #ifdef HAVE_DYNLIB_FACTORIES

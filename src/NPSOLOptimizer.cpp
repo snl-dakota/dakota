@@ -260,6 +260,59 @@ NPSOLOptimizer* new_NPSOLOptimizer3(const RealVector& cv_initial,
 
 
 void NPSOLOptimizer::
+update_callback_data(const RealVector& cv_initial,
+		     const RealVector& cv_lower_bnds,
+		     const RealVector& cv_upper_bnds,
+		     const RealMatrix& lin_ineq_coeffs,
+		     const RealVector& lin_ineq_l_bnds,
+		     const RealVector& lin_ineq_u_bnds,
+		     const RealMatrix& lin_eq_coeffs,
+		     const RealVector& lin_eq_targets,
+		     const RealVector& nln_ineq_l_bnds,
+		     const RealVector& nln_ineq_u_bnds,
+		     const RealVector& nln_eq_targets)
+{
+  enforce_null_model();
+
+  bool reshape = false;
+  size_t num_cv  = cv_initial.length(),
+    num_lin_ineq = lin_ineq_coeffs.numRows(),
+    num_lin_eq   = lin_eq_coeffs.numRows(),
+    num_nln_ineq = nln_ineq_l_bnds.length(),
+    num_nln_eq   = nln_eq_targets.length();
+  if (numContinuousVars != num_cv)
+    { numContinuousVars  = num_cv; reshape = true; }
+  if (numLinearIneqConstraints != num_lin_ineq ||
+      numLinearEqConstraints   != num_lin_eq)
+    { numLinearIneqConstraints  = num_lin_ineq;
+      numLinearEqConstraints    = num_lin_eq; reshape = true; }
+  if (numNonlinearIneqConstraints != num_nln_ineq ||
+      numNonlinearEqConstraints   != num_nln_eq)
+    { numNonlinearIneqConstraints  = num_nln_ineq;
+      numNonlinearEqConstraints    = num_nln_eq; reshape = true; }
+  numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;
+  numNonlinearConstraints
+    = numNonlinearIneqConstraints + numNonlinearEqConstraints;
+  numConstraints = numNonlinearConstraints + numLinearConstraints;
+  numFunctions = numObjectiveFns + numNonlinearConstraints;
+
+  linIneqCoeffs = lin_ineq_coeffs;  linEqCoeffs = lin_eq_coeffs;
+  //linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
+  //linEqTargets     = lin_eq_targets;
+
+  //nlnIneqLowerBnds = nln_ineq_l_bnds;  nlnIneqUpperBnds = nln_ineq_u_bnds;
+  //nlnEqTargets     = nln_eq_targets;
+
+  initial_point(cv_initial);
+  aggregate_bounds(cv_lower_bnds, cv_upper_bnds, lin_ineq_l_bnds,
+		   lin_ineq_u_bnds, lin_eq_targets, nln_ineq_l_bnds,
+		   nln_ineq_u_bnds, nln_eq_targets, lowerBounds, upperBounds);
+  if (reshape)
+    reshape_best(numContinuousVars, numFunctions);
+}
+
+
+void NPSOLOptimizer::
 objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
 	       int& nstate)
 {

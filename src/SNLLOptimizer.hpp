@@ -229,6 +229,9 @@ private:
   //- Heading: Helper functions
   //
 
+  /// deallocate any pointer allocations
+  void deallocate();
+
   /// instantiate an OPTPP_Q_NEWTON solver using standard settings
   void default_instantiate_q_newton(
     void (*obj_eval) (int mode, int n, const RealVector& x, double& f,
@@ -348,6 +351,10 @@ private:
   /// (user-supplied functions mode for "on the fly" instantiations).
   /// NonDReliability currently uses the user_functions mode.
   String setUpType;
+
+  // cache inputs for user-functions mode for use when reallocating due to
+  // size change
+
   /// initial point used in "user_functions" mode
   RealVector initialPoint;
   /// variable lower bounds used in "user_functions" mode
@@ -370,51 +377,31 @@ private:
   RealVector nlnIneqUpperBnds;
   /// nonlinear equality constraint targets used in "user_functions" mode
   RealVector nlnEqTargets;
+
+  /// cache zeroth-order objective call-back function
+  void (*userObjective0) (int n, const RealVector& x, double& f,
+			  int& result_mode);
+  /// cache first-order objective call-back function
+  void (*userObjective1) (int mode, int n, const RealVector& x, double& f,
+			  RealVector& grad_f, int& result_mode);
+  //void (*userObjective2) (int mode, int n, const RealVector& x, double& f,
+  //                        RealVector& grad_f, RealSymMatrix& hess_f,
+  //                        int& result_mode);
+  /// cache zeroth-order constraint call-back function
+  void (*userConstraint0) (int n, const RealVector& x, RealVector& g,
+			   int& result_mode);
+  /// cache first-order constraint call-back function
+  void (*userConstraint1) (int mode, int n, const RealVector& x, RealVector& g,
+			   RealMatrix& grad_g, int& result_mode);
+  //void (*userConstraint2) (int mode, int n, const RealVector& x,RealVector& g,
+  //                         RealMatrix& grad_g,
+  //                         OPTPP::OptppArray<RealSymMatrix >& hess_g,
+  //                         int& result_mode);
 };
 
 
 inline void SNLLOptimizer::initial_point(const RealVector& pt)
 { copy_data(pt, initialPoint); } // protect from incoming view
-
-
-inline void SNLLOptimizer::
-update_callback_data(const RealVector& cv_initial,
-		     const RealVector& cv_lower_bnds,
-		     const RealVector& cv_upper_bnds,
-		     const RealMatrix& lin_ineq_coeffs,
-		     const RealVector& lin_ineq_l_bnds,
-		     const RealVector& lin_ineq_u_bnds,
-		     const RealMatrix& lin_eq_coeffs,
-		     const RealVector& lin_eq_targets,
-		     const RealVector& nln_ineq_l_bnds,
-		     const RealVector& nln_ineq_u_bnds,
-		     const RealVector& nln_eq_targets)
-{
-  enforce_null_model();
-
-  numContinuousVars = cv_initial.length();
-  numLinearIneqConstraints = lin_ineq_coeffs.numRows();
-  numLinearEqConstraints   =   lin_eq_coeffs.numRows();
-  numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;
-  numNonlinearIneqConstraints = nln_ineq_l_bnds.length();
-  numNonlinearEqConstraints   =  nln_eq_targets.length();
-  numNonlinearConstraints
-    = numNonlinearIneqConstraints + numNonlinearEqConstraints;
-  numFunctions = numObjectiveFns + numNonlinearConstraints;
-
-  initial_point(cv_initial);             // protect from incoming view
-  copy_data(cv_lower_bnds, lowerBounds); // protect from incoming view
-  copy_data(cv_upper_bnds, upperBounds); // protect from incoming view
-
-  linIneqCoeffs    = lin_ineq_coeffs;  linEqCoeffs      = lin_eq_coeffs;
-  linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
-  linEqTargets     = lin_eq_targets;
-
-  nlnIneqLowerBnds = nln_ineq_l_bnds;  nlnIneqUpperBnds = nln_ineq_u_bnds;
-  nlnEqTargets     = nln_eq_targets;
-
-  reshape_best(numContinuousVars, numFunctions);
-}
 
 } // namespace Dakota
 
