@@ -34,9 +34,11 @@ namespace Dakota {
 NonDGenACVSampling::
 NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDACVSampling(problem_db, model),
-  dagRecursionType(problem_db.get_short("method.nond.search_model_graphs")),
+  dagRecursionType(
+    problem_db.get_short("method.nond.search_model_graphs.recursion")),
   dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit")),
-  modelSelectType(ALL_MODEL_COMBINATIONS),//(NO_MODEL_SELECTION)
+  modelSelectType(
+    problem_db.get_short("method.nond.search_model_graphs.selection")),
   meritFnStar(DBL_MAX)
 {
   // Unless the ensemble changes, the set of admissible DAGS is invariant:
@@ -261,13 +263,14 @@ generate_reverse_dag(const UShortArray& approx_set, const UShortArray& dag)
   size_t i, dag_size = dag.size();
   reverseActiveDAG.clear();
   reverseActiveDAG.resize(numApprox + 1);
-  unsigned short dag_curr, dag_next;
+  SizetArray index_map;  inflate_approx_set(approx_set, index_map);
+  unsigned short source, target;
   for (i=0; i<dag_size; ++i) { // walk+store path to root
-    dag_curr = approx_set[i];  dag_next = dag[dag_curr];
-    reverseActiveDAG[dag_next].insert(dag_curr);
-    while (dag_next != numApprox) {
-      dag_curr = dag_next;  dag_next = dag[dag_curr];
-      reverseActiveDAG[dag_next].insert(dag_curr);
+    source = approx_set[i];  target = dag[i];
+    reverseActiveDAG[target].insert(source);
+    while (target != numApprox) {
+      source = target;  target = dag[index_map[source]];
+      reverseActiveDAG[target].insert(source);
     }
   }
 
@@ -312,9 +315,11 @@ unroll_reverse_dag_from_root(unsigned short root,
   std::map<Real, unsigned short> root_ratios;
   UShortList::iterator l_it = default_root_list.begin();
   unsigned short node;  Real r_i;
+  const UShortArray& approx_set = activeModelSetIter->first;
+  SizetArray index_map;  inflate_approx_set(approx_set, index_map);
   for (; l_it != default_root_list.end(); ++l_it) {
     node = *l_it;
-    r_i = (node == root) ? 1. : avg_eval_ratios[node];
+    r_i = (node == root) ? 1. : avg_eval_ratios[index_map[node]];
     root_ratios[r_i] = node;
   }
   // this ordered root_list intermingles dependency paths for purposes of
@@ -498,6 +503,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
       //reset_acv(); // reset state for next ACV execution
     }
   }
+  Cout << "\n>>>>> Approx subset and DAG evaluation completed\n" << std::endl;
   restore_best();
   ++mlmfIter;
 
@@ -837,7 +843,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     // updated avg_N_H now includes allocation from previous solution and
     // should be active on constraint bound (excepting sample count rounding)
 
-    // warm start from previous solns for corresponding DAG
+    // warm start from previous soln for corresponding {approx_set,active_dag}
     ensemble_numerical_solution(sequenceCost, approxSequence, soln, numSamples);
   }
 
@@ -953,12 +959,13 @@ cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
   // Second pass: convert pairwise ratios to root-node ratios by rolling up
   // the oversample factors across the ordered root list.  Skip the first
   // target = numApprox for which r_tgt = 1.
+  SizetArray index_map;  inflate_approx_set(approx_set, index_map);
   UShortList::const_iterator r_cit; UShortSet::const_iterator d_cit; Real r_tgt;
   for (r_cit=++root_list.begin(); r_cit!=root_list.end(); ++r_cit) {
     target = *r_cit;  const UShortSet& reverse_dag = reverseActiveDAG[target];
-    r_tgt = avg_eval_ratios[target];
+    r_tgt = avg_eval_ratios[index_map[target]];
     for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit)
-      { source = *d_cit;  avg_eval_ratios[source] *= r_tgt; }
+      { source = *d_cit;  avg_eval_ratios[index_map[source]] *= r_tgt; }
   }
 }
 

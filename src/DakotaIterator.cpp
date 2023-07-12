@@ -525,7 +525,8 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
     break;
   case APPROXIMATE_CONTROL_VARIATE:
-    if (probDescDB.get_short("method.nond.search_model_graphs"))
+    if (probDescDB.get_short("method.nond.search_model_graphs.recursion") ||
+	probDescDB.get_short("method.nond.search_model_graphs.selection"))
       return std::make_shared<NonDGenACVSampling>(problem_db, model);
     else
       return std::make_shared<NonDACVSampling>(problem_db, model);

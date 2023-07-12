@@ -1045,11 +1045,15 @@ public:
   short ensembleSampSolnMode;
   /// the \c truth_fixed_by_pilot flag for ACV methods
   bool truthPilotConstraint;
-  /// option specified for \c search_model_graphs in generalized ACV methods
+  /// option specified for extent of DAG enumeration within
+  /// \c search_model_graphs for generalized ACV methods
   short dagRecursionType;
   /// option specified for \c depth_limit in generalized ACV methods with
   /// partial graph recursion
   unsigned short dagDepthLimit;
+  /// option specified for \c model_selection within \c search_model_graphs
+  /// for generalized ACV methods
+  short modelSelectType;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC
   short allocationTarget;
   /// the \c allocation_target selection in \ref MethodMultilevelMC
