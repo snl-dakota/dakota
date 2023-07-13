@@ -1539,7 +1539,7 @@ accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
       // if the CV target for model s is part of the models being sampled,
       // then we will increment its z^1 "shared" accumulators
       if (target >= approx_set[sequence_start] &&
-	  target <  approx_set[sequence_end])
+	  target <= approx_set[sequence_end-1])
 	accum_z1_sets.insert(source);
     }
   else {
