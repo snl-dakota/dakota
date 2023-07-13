@@ -121,11 +121,10 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
   // convenience function from SNLLBase
   snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
 			iteratedModel.interval_type(),
-			iteratedModel.fd_gradient_step_size(),
-			maxIterations, maxFunctionEvals, convergenceTol,
-			probDescDB.get_real("method.gradient_tolerance"),
-			maxStep, boundConstraintFlag, numConstraints,
-			outputLevel, theOptimizer, nlfObjective, NULL, NULL);
+			iteratedModel.fd_gradient_step_size(), maxIterations,
+			maxFunctionEvals, convergenceTol, gradientTol, maxStep,
+			boundConstraintFlag, numConstraints, outputLevel,
+			theOptimizer, nlfObjective, NULL, NULL);
 }
 
 

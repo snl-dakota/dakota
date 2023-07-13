@@ -115,9 +115,9 @@ NPSOLOptimizer(Model& model, int derivative_level, Real conv_tol):
 /** This is an alternate constructor for performing an optimization using
     the passed in objective function and constraint function pointers. */
 NPSOLOptimizer::
-NPSOLOptimizer(const RealVector& initial_point,
-	       const RealVector& var_lower_bnds,
-	       const RealVector& var_upper_bnds,
+NPSOLOptimizer(const RealVector& cv_initial,
+	       const RealVector& cv_lower_bnds,
+	       const RealVector& cv_upper_bnds,
 	       const RealMatrix& lin_ineq_coeffs,
 	       const RealVector& lin_ineq_lower_bnds,
 	       const RealVector& lin_ineq_upper_bnds,
@@ -134,25 +134,21 @@ NPSOLOptimizer(const RealVector& initial_point,
 	       Real fn_precision, Real feas_tol, Real lin_feas_tol,
 	       Real nonlin_feas_tol):
   // use SOLBase default ctor
-  Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, 0,
+  Optimizer(NPSOL_SQP, cv_initial.length(), 0, 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length(),
             std::shared_ptr<TraitsBase>(new NPSOLTraits())),
   setUpType("user_functions"), userObjectiveEval(user_obj_eval),
-  userConstraintEval(user_con_eval)
+  userConstraintEval(user_con_eval), linIneqCoeffs(lin_ineq_coeffs),
+  linEqCoeffs(lin_eq_coeffs)
 {
-  copy_data(initial_point, initialPoint); // protect from incoming view
-  copy_data(var_lower_bnds, lowerBounds); // protect from incoming view
-  copy_data(var_upper_bnds, upperBounds); // protect from incoming view
-
-  // invoke SOLBase allocate/set functions (shared with NLSSOLLeastSq)
-  allocate_arrays(numContinuousVars, numNonlinearConstraints, lin_ineq_coeffs,
-		  lin_eq_coeffs);
-  allocate_workspace(numContinuousVars, numNonlinearConstraints,
-		     numLinearConstraints, 0);
-  augment_bounds(lowerBounds, upperBounds, lin_ineq_lower_bnds,
-                 lin_ineq_upper_bnds, lin_eq_targets, nonlin_ineq_lower_bnds,
-                 nonlin_ineq_upper_bnds, nonlin_eq_targets);
+  allocate_arrays(numContinuousVars, numNonlinearConstraints,
+		  lin_ineq_coeffs, lin_eq_coeffs);
+  initial_point(cv_initial);
+  aggregate_bounds(cv_lower_bnds, cv_upper_bnds, lin_ineq_lower_bnds,
+		   lin_ineq_upper_bnds, lin_eq_targets, nonlin_ineq_lower_bnds,
+		   nonlin_ineq_upper_bnds, nonlin_eq_targets,
+		   lowerBounds, upperBounds);
 
   // Set NPSOL options (mostly use defaults)
   send_sol_option(  "Verify Level                = -1");
@@ -233,9 +229,9 @@ NPSOLOptimizer* new_NPSOLOptimizer2(Model& model, int derivative_level,
 #endif
 }
 
-NPSOLOptimizer* new_NPSOLOptimizer3(const RealVector& initial_point,
-  const RealVector& var_lower_bnds,
-  const RealVector& var_upper_bnds,
+NPSOLOptimizer* new_NPSOLOptimizer3(const RealVector& cv_initial,
+  const RealVector& cv_lower_bnds,
+  const RealVector& cv_upper_bnds,
   const RealMatrix& lin_ineq_coeffs,
   const RealVector& lin_ineq_lower_bnds,
   const RealVector& lin_ineq_upper_bnds,
@@ -253,7 +249,7 @@ NPSOLOptimizer* new_NPSOLOptimizer3(const RealVector& initial_point,
   not_available("NPSOL");
   return 0;
 #else
-  return new NPSOLOptimizer(initial_point, var_lower_bnds, var_upper_bnds,
+  return new NPSOLOptimizer(cv_initial, cv_lower_bnds, cv_upper_bnds,
 	       lin_ineq_coeffs, lin_ineq_lower_bnds, lin_ineq_upper_bnds,
 	       lin_eq_coeffs, lin_eq_targets, nonlin_ineq_lower_bnds,
 	       nonlin_ineq_upper_bnds, nonlin_eq_targets, user_obj_eval,
@@ -261,6 +257,59 @@ NPSOLOptimizer* new_NPSOLOptimizer3(const RealVector& initial_point,
 #endif // DAKOTA_DYNLIB
 }
 #endif // HAVE_DYNLIB_FACTORIES
+
+
+void NPSOLOptimizer::
+update_callback_data(const RealVector& cv_initial,
+		     const RealVector& cv_lower_bnds,
+		     const RealVector& cv_upper_bnds,
+		     const RealMatrix& lin_ineq_coeffs,
+		     const RealVector& lin_ineq_l_bnds,
+		     const RealVector& lin_ineq_u_bnds,
+		     const RealMatrix& lin_eq_coeffs,
+		     const RealVector& lin_eq_targets,
+		     const RealVector& nln_ineq_l_bnds,
+		     const RealVector& nln_ineq_u_bnds,
+		     const RealVector& nln_eq_targets)
+{
+  enforce_null_model();
+
+  bool reshape = false;
+  size_t num_cv  = cv_initial.length(),
+    num_lin_ineq = lin_ineq_coeffs.numRows(),
+    num_lin_eq   = lin_eq_coeffs.numRows(),
+    num_nln_ineq = nln_ineq_l_bnds.length(),
+    num_nln_eq   = nln_eq_targets.length();
+  if (numContinuousVars != num_cv)
+    { numContinuousVars  = num_cv; reshape = true; }
+  if (numLinearIneqConstraints != num_lin_ineq ||
+      numLinearEqConstraints   != num_lin_eq)
+    { numLinearIneqConstraints  = num_lin_ineq;
+      numLinearEqConstraints    = num_lin_eq; reshape = true; }
+  if (numNonlinearIneqConstraints != num_nln_ineq ||
+      numNonlinearEqConstraints   != num_nln_eq)
+    { numNonlinearIneqConstraints  = num_nln_ineq;
+      numNonlinearEqConstraints    = num_nln_eq; reshape = true; }
+  numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;
+  numNonlinearConstraints
+    = numNonlinearIneqConstraints + numNonlinearEqConstraints;
+  numConstraints = numNonlinearConstraints + numLinearConstraints;
+  numFunctions = numObjectiveFns + numNonlinearConstraints;
+
+  linIneqCoeffs = lin_ineq_coeffs;  linEqCoeffs = lin_eq_coeffs;
+  //linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
+  //linEqTargets     = lin_eq_targets;
+
+  //nlnIneqLowerBnds = nln_ineq_l_bnds;  nlnIneqUpperBnds = nln_ineq_u_bnds;
+  //nlnEqTargets     = nln_eq_targets;
+
+  initial_point(cv_initial);
+  aggregate_bounds(cv_lower_bnds, cv_upper_bnds, lin_ineq_l_bnds,
+		   lin_ineq_u_bnds, lin_eq_targets, nln_ineq_l_bnds,
+		   nln_ineq_u_bnds, nln_eq_targets, lowerBounds, upperBounds);
+  if (reshape)
+    reshape_best(numContinuousVars, numFunctions);
+}
 
 
 void NPSOLOptimizer::
@@ -405,9 +454,15 @@ void NPSOLOptimizer::find_optimum_on_model()
   // these bounds must be updated from model bounds each time an iterator is
   // run within the B&B minimizer.
   RealVector augmented_l_bnds, augmented_u_bnds;
-  copy_data(iteratedModel.continuous_lower_bounds(), augmented_l_bnds);
-  copy_data(iteratedModel.continuous_upper_bounds(), augmented_u_bnds);
-  augment_bounds(augmented_l_bnds, augmented_u_bnds, iteratedModel);
+  aggregate_bounds(iteratedModel.continuous_lower_bounds(),
+		   iteratedModel.continuous_upper_bounds(),
+		   iteratedModel.linear_ineq_constraint_lower_bounds(),
+		   iteratedModel.linear_ineq_constraint_upper_bounds(),
+		   iteratedModel.linear_eq_constraint_targets(),
+		   iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
+		   iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
+		   iteratedModel.nonlinear_eq_constraint_targets(),
+		   augmented_l_bnds, augmented_u_bnds);
 
   NPSOL_F77( num_cv, num_linear_constraints, num_nonlinear_constraints, 
 	     linConstraintArraySize, nlnConstraintArraySize, num_cv, 
@@ -432,17 +487,16 @@ void NPSOLOptimizer::find_optimum_on_model()
   // prior to exiting (see "Subroutine npsol" section of NPSOL manual).
   bestVariablesArray.front().continuous_variables(local_des_vars);
   RealVector best_fns(bestResponseArray.front().num_functions());
-  if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
-                               // is used in Optimizer::post_run()
+  if (localObjectiveRecast) {
+    // local_objective_recast_retrieve() is used in Optimizer::post_run()
+  }
+  else {
     const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
     best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
       -local_f_val : local_f_val;
   }
-  if (numNonlinearConstraints)
-    //copy_data_partial(local_c_vals, best_fns, 1);
-    std::copy(local_c_vals.values(),
-	      local_c_vals.values() + nlnConstraintArraySize,
-	      best_fns.values() + numUserPrimaryFns);
+  if (numNonlinearConstraints) // numUserPrimaryFns is 1 if no recast
+    copy_data_partial(local_c_vals, best_fns, numUserPrimaryFns);
   bestResponseArray.front().function_values(best_fns);
 
   /*
@@ -474,40 +528,42 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
   //     Solve the problem.
   //------------------------------------------------------------------
 
-  int i;
+  // ints for Fortran interface
+  int i, num_cv = numContinuousVars,
+    num_lin_constraints = numLinearConstraints,
+    num_nln_constraints = numNonlinearConstraints;
 
-  // casts for Fortran interface
-  int num_cv = numContinuousVars;
-  int num_linear_constraints = numLinearConstraints;
-  int num_nonlinear_constraints = numNonlinearConstraints;
+  allocate_arrays(num_cv, num_nln_constraints, linIneqCoeffs, linEqCoeffs);
+  allocate_workspace(num_cv, num_nln_constraints, num_lin_constraints, 0);
 
   double     local_f_val = 0.;
-  RealVector local_f_grad(numContinuousVars, true);
-  RealVector local_c_vals(nlnConstraintArraySize);
+  RealVector local_des_vars, local_f_grad(numContinuousVars, true),
+    local_c_vals(nlnConstraintArraySize);
+  copy_data(initialPoint, local_des_vars); // preserve initialPoint
 
-  NPSOL_F77( num_cv, num_linear_constraints, num_nonlinear_constraints, 
+  NPSOL_F77( num_cv, num_lin_constraints, num_nln_constraints, 
 	     linConstraintArraySize, nlnConstraintArraySize, num_cv, 
 	     linConstraintMatrixF77, lowerBounds.values(), upperBounds.values(),
 	     userConstraintEval, userObjectiveEval, informResult,
 	     numberIterations, &constraintState[0], local_c_vals.values(),
 	     constraintJacMatrixF77, &cLambda[0], local_f_val,
 	     local_f_grad.values(), upperFactorHessianF77,
-	     initialPoint.values(), &intWorkSpace[0], intWorkSpaceSize,
+	     local_des_vars.values(), &intWorkSpace[0], intWorkSpaceSize,
 	     &realWorkSpace[0], realWorkSpaceSize );
 
   // NPSOL completed. Do post-processing/output of final NPSOL info and data:
   Cout << "\nNPSOL exits with INFORM code = " << informResult
        << " (see \"Interpretation of output\" section in NPSOL manual)\n";
 
-  bestVariablesArray.front().continuous_variables(initialPoint);
+  // invoke SOLBase deallocate function (shared with NLSSOLLeastSq)
+  deallocate_arrays();
+
+  bestVariablesArray.front().continuous_variables(local_des_vars);
   // user-functions mode is restricted to single-objective optimization
   RealVector best_fns(numFunctions, false);
   best_fns[0] = local_f_val;
   if (numNonlinearConstraints)
-    //copy_data_partial(local_c_vals, best_fns, 1);
-    std::copy(local_c_vals.values(),
-              local_c_vals.values() + nlnConstraintArraySize,
-              best_fns.values() + 1);
+    copy_data_partial(local_c_vals, best_fns, 1);
   bestResponseArray.front().function_values(best_fns);
 }
 

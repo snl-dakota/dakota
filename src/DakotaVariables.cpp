@@ -915,6 +915,17 @@ void Variables::reshape()
 }
 
 
+void Variables::reshape(const SharedVariablesData& svd)
+{
+  if (variablesRep) // envelope
+    variablesRep->reshape(svd);
+  else { // base class implementation for letters
+    sharedVarsData = svd; // shared rep
+    reshape();
+  }
+}
+
+
 void Variables::inactive_into_all_variables(const Variables& vars)
 {
   // Set inactive variables only, leaving remainder of data unchanged

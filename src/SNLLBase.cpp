@@ -41,7 +41,12 @@ int        SNLLBase::lastEvalMode(0);
 RealVector SNLLBase::lastEvalVars;
 
 
-SNLLBase::SNLLBase(ProblemDescDB& problem_db)
+SNLLBase::SNLLBase(ProblemDescDB& problem_db):
+  searchMethod(problem_db.get_string("method.optpp.search_method")),
+  gradientTol(problem_db.get_real("method.gradient_tolerance")),
+  maxStep(problem_db.get_real("method.optpp.max_step")),
+  stepLenToBndry(problem_db.get_real("method.optpp.steplength_to_boundary")),
+  centeringParam(problem_db.get_real("method.optpp.centering_parameter"))
 {
   // Use constructor only to populate problem_db attributes inherited by 
   // SNLLOptimizer/SNLLLeastSq from SNLLBase.  For attributes inherited by
@@ -49,13 +54,10 @@ SNLLBase::SNLLBase(ProblemDescDB& problem_db)
   // needed in SNLLBase, it's a bit cleaner/more flexible to have them passed
   // through member function parameter lists rather than re-extracted from
   // problem_db.
-  searchMethod    =  problem_db.get_string("method.optpp.search_method");
+
   // active Model specification may not contain an interface spec
   constantASVFlag = (problem_db.interface_locked()) ? false :
     !problem_db.get_bool("interface.active_set_vector");
-  maxStep         =  problem_db.get_real("method.optpp.max_step");
-  stepLenToBndry  =  problem_db.get_real("method.optpp.steplength_to_boundary");
-  centeringParam  =  problem_db.get_real("method.optpp.centering_parameter");
   //meritFn       =  problem_db.get_short("method.optpp.merit_function");//error
   // an indirection is required to convert short to OPTPP::MeritFcn:
   switch (problem_db.get_short("method.optpp.merit_function")) {

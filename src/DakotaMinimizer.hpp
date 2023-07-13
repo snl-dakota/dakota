@@ -166,7 +166,10 @@ protected:
   /// and/or response scaling
   void scale_model();
 
-   /// compute a composite objective value from one or more primary functions
+  /// ensure iteratedModel is null when using function callbacks for evaluation
+  void enforce_null_model();
+
+  /// compute a composite objective value from one or more primary functions
   Real objective(const RealVector& fn_vals, const BoolDeque& max_sense,
 		 const RealVector& primary_wts) const;
 
@@ -229,6 +232,8 @@ protected:
   /// optimizer and returns true if lookup succeeds
   bool local_recast_retrieve(const Variables& vars, Response& response) const;
 
+  /// reshape input/output sizes within best{Variables,Response}Array
+  void reshape_best(size_t num_cv, size_t num_fns);
 
   //
   //- Heading: Data
@@ -346,6 +351,43 @@ inline Real Minimizer::constraint_tolerance() const
 /** default definition that gets redefined in selected derived Minimizers */
 inline const Model& Minimizer::algorithm_space_model() const
 { return iteratedModel; }
+
+
+inline void Minimizer::enforce_null_model()
+{
+  // This function is only for updates in "user functions" mode (NPSOL & OPT++)
+  if (!iteratedModel.is_null()) {
+    Cerr << "Error: callback updaters should not be used when Model data "
+	 << "available." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+inline void Minimizer::reshape_best(size_t num_cv, size_t num_fns)
+{
+  // This function is only for updates in "user functions" mode (NPSOL & OPT++)
+  size_t i, num_best = bestVariablesArray.size();
+  if (bestResponseArray.size() != num_best) {
+    Cerr << "Error: inconsistent best array sizing in Minimizer::"
+	 << "reshape_best()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // assume single SVD shared among all enries in bestVariablesArray
+  const SharedVariablesData& old_svd
+    = bestVariablesArray.front().shared_data();
+  SizetArray vc_totals = old_svd.components_totals(); // copy
+  vc_totals[TOTAL_CDV] = num_cv; // update
+  // SVD has a limited API, so rather than copy+reshape, build a new one
+  SharedVariablesData new_svd(old_svd.view(), vc_totals,
+			      old_svd.all_relaxed_discrete_int(),
+			      old_svd.all_relaxed_discrete_real());
+  for (i=0; i<num_best; ++i) {
+    bestVariablesArray[i].reshape(new_svd); // pulls sizing from new svd
+    bestResponseArray[i].reshape(num_fns, num_cv, false, false);
+  }
+}
 
 
 //inline void Minimizer::initialize_iterator(int job_index)

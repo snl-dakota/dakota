@@ -237,6 +237,8 @@ public:
   void shape();
   /// reshape an existing Variables object based on updated sharedVarsData
   void reshape();
+  /// reshape an existing Variables object based on incoming SVD
+  void reshape(const SharedVariablesData& svd);
 
   /// copy the active cv/div/dsv/drv variables from vars
   void active_variables(const Variables& vars);
