@@ -397,22 +397,22 @@ Sample moment statistics for each response function:
  response_fn_2  1.2928680128284947e-01  1.3678613613632267e-02  6.8108274402556301e-01 -7.0900176613683685e-01
  response_fn_3  2.5294595544667113e-02  6.5837302098322552e-03  7.9216056085694253e-01 -7.1144100435154289e-02
 Test Number 25 succeeded
-<<<<< Function evaluation summary (MF_INT): 5988 total (5988 new, 0 duplicate)
-<<<<< Function evaluation summary (LF_INT): 19607 total (19607 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 6104 total (6104 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 17647 total (17647 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 49 total (49 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.9983984375000000e+02
+<<<<< Online number of equivalent high fidelity evaluations: 4.9943359375000000e+02
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589732e-06
-     Online   MC (   49 HF samples):  1.7333824787000767e-06
-     Online  ACV (sample profile):    1.1605937955702483e-08
-     Online  ACV ratio (1 - R^2):     6.6955435965905087e-03
- Equivalent   MC (  500 HF samples):  1.6992591230639319e-07
- Equivalent  ACV ratio:               6.8299989084512500e-02
+     Online   MC (   49 HF samples):  2.0848977085302345e-06
+     Online  ACV (sample profile):    1.3937476066286810e-08
+     Online  ACV ratio (1 - R^2):     6.6849687681378609e-03
+ Equivalent   MC (  499 HF samples):  2.0455169415199450e-07
+ Equivalent  ACV ratio:               6.8136693387298025e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5277285925195007e-02  6.5670247436807995e-03  7.7773786771824871e-01 -2.2879229710409943e-01
- response_fn_2  1.2923206308757987e-01  1.3643850613244862e-02  6.9582502392252799e-01 -7.8955197980243597e-01
- response_fn_3  2.5277285925590406e-02  6.5670247438580657e-03  7.7773786799960976e-01 -2.2879229649096677e-01
+ response_fn_1  2.5267483391427120e-02  6.6309245985296528e-03  8.1646269871974486e-01 -3.2688223906945257e-02
+ response_fn_2  1.2923761569964856e-01  1.3709458473030685e-02  6.7769639363423539e-01 -6.2428237628237371e-01
+ response_fn_3  2.5267483391539815e-02  6.6309245987060282e-03  8.1646269855974452e-01 -3.2688224530769361e-02
 Test Number 26 succeeded
 <<<<< Function evaluation summary (LF_INT): 37 total (37 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 23610 total (23610 new, 0 duplicate)
