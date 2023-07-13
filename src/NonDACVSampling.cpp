@@ -493,12 +493,10 @@ void NonDACVSampling::
 analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln)
 {
   // > Option 1 is analytic MFMC: differs from ACV due to recursive pairing
-  UShortArray model_set(numApprox);
-  for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
   if (ordered_approx_sequence(rho2LH)) // for all QoI across all Approx
-    mfmc_analytic_solution(model_set,rho2LH, sequenceCost, soln);
+    mfmc_analytic_solution(approxSet, rho2LH, sequenceCost, soln);
   else // compute reordered MFMC for averaged rho; monotonic r not reqd
-    mfmc_reordered_analytic_solution(model_set, rho2LH, sequenceCost,
+    mfmc_reordered_analytic_solution(approxSet, rho2LH, sequenceCost,
 				     approxSequence, soln);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
