@@ -520,6 +520,7 @@ protected:
 
   /// reference to the global iterator results database
   ResultsManager& resultsDB;
+
   /// reference to the global evaluation database
   EvaluationStore& evaluationsDB;
 

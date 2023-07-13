@@ -2,7 +2,10 @@
 # DAKOTA INPUT FILE : dakota_vbd.in
 
 environment,
-	  tabular_data
+        tabular_data
+        results_output
+          hdf5
+            results_output_file = 'dakota_vbd_output'
 
 method,
 	fsu_quasi_mc halton			#s0
