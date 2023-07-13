@@ -43,7 +43,7 @@ RealVector SNLLBase::lastEvalVars;
 
 SNLLBase::SNLLBase(ProblemDescDB& problem_db):
   searchMethod(problem_db.get_string("method.optpp.search_method")),
-  gradientTol(problem_db.get_real("method.optpp.gradient_tolerance")),
+  gradientTol(problem_db.get_real("method.gradient_tolerance")),
   maxStep(problem_db.get_real("method.optpp.max_step")),
   stepLenToBndry(problem_db.get_real("method.optpp.steplength_to_boundary")),
   centeringParam(problem_db.get_real("method.optpp.centering_parameter"))
