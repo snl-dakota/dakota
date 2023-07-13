@@ -529,7 +529,7 @@ precompute_genacv_control(const RealVector& avg_eval_ratios,
   RealVector N_vec, inflate_N_vec;
   r_and_N_to_N_vec(avg_eval_ratios, average(N_shared), N_vec);
   inflate_variables(N_vec, inflate_N_vec, activeModelSetIter->first);
-  compute_parameterized_G_g(N_vec);
+  compute_parameterized_G_g(inflate_N_vec);
 }
 
 
