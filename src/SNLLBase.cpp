@@ -135,22 +135,25 @@ snll_post_instantiate(int num_cv, bool vendor_num_grad_flag,
     // OPT++'s internal finite differencing in use.
     Real fcn_acc, mcheps = DBL_EPSILON, fd_step_size = fdss[0]; // first entry
     if (finite_diff_type == "central") {
-      fd_nlf1->setDerivOption(OPTPP::CentralDiff); // See libopt/globals.h
-      if (num_constr)
+      if (fd_nlf1)
+	fd_nlf1->setDerivOption(OPTPP::CentralDiff); // See libopt/globals.h
+      if (fd_nlf1_con && num_constr)
         fd_nlf1_con->setDerivOption(OPTPP::CentralDiff);
       fcn_acc = std::pow(fd_step_size, 3);
     }
     else {
-      fd_nlf1->setDerivOption(OPTPP::ForwardDiff); // See libopt/globals.h
-      if (num_constr)
+      if (fd_nlf1)
+	fd_nlf1->setDerivOption(OPTPP::ForwardDiff); // See libopt/globals.h
+      if (fd_nlf1_con && num_constr)
         fd_nlf1_con->setDerivOption(OPTPP::ForwardDiff);
       fcn_acc = std::pow(fd_step_size, 2);
     }
     fcn_acc = std::max(mcheps,fcn_acc);
     RealVector fcn_accrcy(num_cv);
     fcn_accrcy = fcn_acc;
-    fd_nlf1->setFcnAccrcy(fcn_accrcy);
-    if (num_constr)
+    if (fd_nlf1)
+      fd_nlf1->setFcnAccrcy(fcn_accrcy);
+    if (fd_nlf1_con && num_constr)
       fd_nlf1_con->setFcnAccrcy(fcn_accrcy);
   }
 

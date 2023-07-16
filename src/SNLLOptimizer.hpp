@@ -380,6 +380,10 @@ private:
   RealVector nlnIneqUpperBnds;
   /// nonlinear equality constraint targets used in "user_functions" mode
   RealVector nlnEqTargets;
+  /// finite difference step sizes, either scalar or one per variable
+  RealVector fdStepSize;
+  /// type of finite difference interval: forward or central
+  String fdIntervalType;
 
   /// cache zeroth-order objective call-back function
   void (*userObjective0) (int n, const RealVector& x, double& f,
