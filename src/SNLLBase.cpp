@@ -148,9 +148,9 @@ snll_post_instantiate(int num_cv, bool vendor_num_grad_flag,
         fd_nlf1_con->setDerivOption(OPTPP::ForwardDiff);
       fcn_acc = std::pow(fd_step_size, 2);
     }
-    fcn_acc = std::max(mcheps,fcn_acc);
+    // enforces a lower bound on FDSS: ~6e-6 for central, ~1.5e-8 for forward
     RealVector fcn_accrcy(num_cv);
-    fcn_accrcy = fcn_acc;
+    fcn_accrcy = std::max(mcheps, fcn_acc);
     if (fd_nlf1)
       fd_nlf1->setFcnAccrcy(fcn_accrcy);
     if (fd_nlf1_con && num_constr)
