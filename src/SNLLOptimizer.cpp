@@ -320,6 +320,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      void (*nlf1_con_eval) (int mode, int n, const RealVector& x,
 				     RealVector& g, RealMatrix& grad_g,
 				     int& result_mode),
+              //const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -356,10 +357,11 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf1_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
-			conv_tol, grad_tol, max_step, boundConstraintFlag,
-			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+  snll_post_instantiate(numContinuousVars, false, "", RealVector(),
+			//true, interval_type, fdss,
+			max_iter, max_eval, conv_tol, grad_tol, max_step,
+			boundConstraintFlag, numConstraints, outputLevel,
+			theOptimizer, nlfObjective, NULL, NULL);
 }
 
 
@@ -378,6 +380,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      void (*nlf1_con_eval) (int mode, int n, const RealVector& x,
 				     RealVector& g, RealMatrix& grad_g,
 				     int& result_mode),
+	      const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -414,10 +417,10 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf1_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
-			conv_tol, grad_tol, max_step, boundConstraintFlag,
-			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+  snll_post_instantiate(numContinuousVars, true, interval_type, fdss,
+			max_iter, max_eval, conv_tol, grad_tol, max_step,
+			boundConstraintFlag, numConstraints, outputLevel,
+			theOptimizer, nlfObjective, NULL, NULL);
 }
 
 
@@ -436,6 +439,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 				     int& result_mode),
 	      void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
 				     int& result_mode),
+	      const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -472,10 +476,10 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf0_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
-			conv_tol, grad_tol, max_step, boundConstraintFlag,
-			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+  snll_post_instantiate(numContinuousVars, true, interval_type, fdss,
+			max_iter, max_eval, conv_tol, grad_tol, max_step,
+			boundConstraintFlag, numConstraints, outputLevel,
+			theOptimizer, nlfObjective, NULL, NULL);
 }
 
 
@@ -492,7 +496,8 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      void (*nlf0_obj_eval) (int n, const RealVector& x, double& f,
 				     int& result_mode),
 	      void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
-			   int& result_mode),
+				     int& result_mode),
+	      const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -529,10 +534,10 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf0_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
-			conv_tol, grad_tol, max_step, boundConstraintFlag,
-			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+  snll_post_instantiate(numContinuousVars, true, interval_type, fdss,
+			max_iter, max_eval, conv_tol, grad_tol, max_step,
+			boundConstraintFlag, numConstraints, outputLevel,
+			theOptimizer, nlfObjective, NULL, NULL);
 }
 
 

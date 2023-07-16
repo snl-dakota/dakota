@@ -150,6 +150,7 @@ public:
 			   int& result_mode),
     void (*nlf1_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
 			   RealMatrix& grad_g, int& result_mode),
+    const RealVector& fdss, const String& interval_type,
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
@@ -164,6 +165,7 @@ public:
 			   RealVector& grad_f, int& result_mode),
     void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
 			   int& result_mode),
+    const RealVector& fdss, const String& interval_type,
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
@@ -178,6 +180,7 @@ public:
 			   int& result_mode),
     void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
 			   int& result_mode),
+    const RealVector& fdss, const String& interval_type,
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
 

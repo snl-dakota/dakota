@@ -897,7 +897,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
       break;
     }
     /*
-    case SUBMETHOD_CPS: { // may need to be combined with local refinement
+    case SUBMETHOD_CPS: { // to be combined with local refinement
       break;
     }
     case SUBMETHOD_SBGO: { // for NonDGlobalInterval, was EAminlp + GP ...
@@ -906,7 +906,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	                                           max_eval, conv_tol));
       break;
     }
-    case SUBMETHOD_EA: { // may need to be combined with local refinement
+    case SUBMETHOD_EA: { // to be combined with local refinement
       varianceMinimizers[0].assign_rep(std::make_shared<COLINOptimizer>(
         sub_prob_model, max_iter, max_eval, conv_tol));
       break;
@@ -946,22 +946,23 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  break;
 	}
 	case SUBMETHOD_OPTPP: {
-	  Real max_step = 100000.;
+	  Real max_step = 100000.;    String interval_type = "central";
+	  RealVector fdss(1, false);  fdss[0] = 1.e-6;
 #ifdef HAVE_OPTPP
 	  switch (optSubProblemForm) {
 	  case N_VECTOR_LINEAR_OBJECTIVE:
 	    varianceMinimizers[i].assign_rep(std::make_shared<SNLLOptimizer>(x0,
 	      x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
 	      lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	      optpp_nlf1_objective, optpp_fdnlf1_constraint, max_iter, max_eval,
-	      conv_tol, conv_tol, max_step));
+	      optpp_nlf1_objective, optpp_fdnlf1_constraint, fdss,
+	      interval_type, max_iter, max_eval, conv_tol, conv_tol, max_step));
 	    break;
 	  default:
 	    varianceMinimizers[i].assign_rep(std::make_shared<SNLLOptimizer>(x0,
 	      x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
 	      lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	      optpp_fdnlf1_objective, optpp_nlf1_constraint, max_iter, max_eval,
-	      conv_tol, conv_tol, max_step));
+	      optpp_fdnlf1_objective, optpp_nlf1_constraint, fdss,
+	      interval_type, max_iter, max_eval, conv_tol, conv_tol, max_step));
 	    break;
 	  }
 #endif
