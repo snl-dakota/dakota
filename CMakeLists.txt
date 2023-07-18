@@ -186,10 +186,12 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
-# clumsy setting of flag to prevent issues in boost::serialization for c++17.
+# set compiler flag to prevent issues in boost::serialization for c++17.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "-fno-new-ttp-matching ${CMAKE_CXX_FLAGS}"
-      CACHE STRING "fix boost::serialization" FORCE)
+  if(CMAKE_CXX_STANDARD GREATER 11)
+    set(CMAKE_CXX_FLAGS "-fno-new-ttp-matching ${CMAKE_CXX_FLAGS}"
+        CACHE STRING "fix boost::serialization" FORCE)
+  endif()
 endif()
 
 include(DakotaFindSystemTPLs)
