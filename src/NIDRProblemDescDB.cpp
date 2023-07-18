@@ -7079,6 +7079,7 @@ static Method_mp_type
 	MP2s(methodOutput,QUIET_OUTPUT),
 	MP2s(methodOutput,SILENT_OUTPUT),
 	MP2s(methodOutput,VERBOSE_OUTPUT),
+        MP2s(modelSelectType,ALL_MODEL_COMBINATIONS),
 	MP2s(multilevAllocControl,ESTIMATOR_VARIANCE),
 	MP2s(multilevAllocControl,GREEDY_REFINEMENT),
 	MP2s(multilevAllocControl,RANK_SAMPLING),

@@ -76,7 +76,7 @@ allocate_linear_arrays(int num_cv, const RealMatrix& lin_ineq_coeffs,
 {
   // NPSOL directly handles equality constraints and 1- or 2-sided inequalities
   size_t num_lin_ineq_con = lin_ineq_coeffs.numRows(),
-         num_lin_eq_con   = lin_eq_coeffs.numRows(),
+         num_lin_eq_con   =   lin_eq_coeffs.numRows(),
          num_lin_con      = num_lin_ineq_con + num_lin_eq_con;
 
   // The Fortran optimizers' need for a nonzero array size is handled with 
@@ -324,6 +324,51 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
 
 
 void SOLBase::
+aggregate_bounds(const RealVector& cv_l_bnds, const RealVector& cv_u_bnds,
+		 const RealVector& lin_ineq_l_bnds,
+		 const RealVector& lin_ineq_u_bnds,
+		 const RealVector& lin_eq_targets,
+		 const RealVector& nln_ineq_l_bnds,
+		 const RealVector& nln_ineq_u_bnds,
+		 const RealVector& nln_eq_targets,
+		 RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds)
+{
+  // Construct aggregate_l_bnds & aggregate_u_bnds from variable bounds,
+  // linear inequality bounds and equality targets, and nonlinear inequality
+  // bounds and equality targets.
+
+  size_t num_cv       = cv_l_bnds.length(),
+         num_lin_ineq = lin_ineq_l_bnds.length(),
+         num_lin_eq   = lin_eq_targets.length(),
+         num_nln_ineq = nln_ineq_l_bnds.length(),
+         num_nln_eq   = nln_eq_targets.length(),
+         bnds_size    = num_cv + num_lin_ineq + num_lin_eq
+                      + num_nln_ineq + num_nln_eq;
+  if (aggregate_l_bnds.length() != bnds_size ||
+      aggregate_u_bnds.length() != bnds_size) {
+    aggregate_l_bnds.sizeUninitialized(bnds_size);
+    aggregate_u_bnds.sizeUninitialized(bnds_size);
+  }
+  size_t cntr = 0;
+  copy_data_partial(cv_l_bnds,       0, aggregate_l_bnds, cntr, num_cv );
+  copy_data_partial(cv_u_bnds,       0, aggregate_u_bnds, cntr, num_cv );
+  cntr += num_cv;
+  copy_data_partial(lin_ineq_l_bnds, 0, aggregate_l_bnds, cntr, num_lin_ineq );
+  copy_data_partial(lin_ineq_u_bnds, 0, aggregate_u_bnds, cntr, num_lin_ineq );
+  cntr += num_lin_ineq;
+  copy_data_partial(lin_eq_targets,  0, aggregate_l_bnds, cntr, num_lin_eq );
+  copy_data_partial(lin_eq_targets,  0, aggregate_u_bnds, cntr, num_lin_eq );
+  cntr += num_lin_eq;
+  copy_data_partial(nln_ineq_l_bnds, 0, aggregate_l_bnds, cntr, num_nln_ineq );
+  copy_data_partial(nln_ineq_u_bnds, 0, aggregate_u_bnds, cntr, num_nln_ineq );
+  cntr += num_nln_ineq;
+  copy_data_partial(nln_eq_targets,  0, aggregate_l_bnds, cntr, num_nln_eq );
+  copy_data_partial(nln_eq_targets,  0, aggregate_u_bnds, cntr, num_nln_eq );
+}
+
+
+/*
+void SOLBase::
 augment_bounds(RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds,
 	       const RealVector& lin_ineq_l_bnds,
 	       const RealVector& lin_ineq_u_bnds,
@@ -379,17 +424,17 @@ replace_variable_bounds(size_t num_lin_con, size_t num_nln_con,
 			const RealVector& cv_lower_bnds,
 			const RealVector& cv_upper_bnds)
 {
-  size_t num_cv = cv_lower_bnds.length(), old_cv,
-    num_con = num_lin_con + num_nln_con, new_bnds_size = num_cv + num_con;
+  size_t num_cv = cv_lower_bnds.length(), num_con = num_lin_con + num_nln_con,
+    old_cv, old_bnds_size = aggregate_l_bnds.length(),
+    new_bnds_size = num_cv + num_con;
 
-  if (boundsArraySize != new_bnds_size) {
-    size_bounds_array(new_bnds_size);
-
+  size_bounds_array(new_bnds_size);
+  if (old_bnds_size != new_bnds_size) {
     RealVector old_l_bnds(aggregate_l_bnds), old_u_bnds(aggregate_u_bnds);
     aggregate_l_bnds.resize(new_bnds_size);
     aggregate_u_bnds.resize(new_bnds_size);
     // migrate linear/nonlinear bnds/targets:
-    old_cv = old_l_bnds.length() - num_con;
+    old_cv = old_bnds_size - num_con;
     copy_data_partial(old_l_bnds, old_cv, aggregate_l_bnds, num_cv, num_con);
     copy_data_partial(old_u_bnds, old_cv, aggregate_u_bnds, num_cv, num_con);
   }
@@ -410,16 +455,16 @@ replace_linear_bounds(size_t num_cv, size_t num_nln_con,
   size_t num_lin_ineq  = lin_ineq_l_bnds.length(),
          num_lin_eq    = lin_eq_targets.length(),
          num_lin_con   = num_lin_ineq + num_lin_eq, new_offset, old_offset,
+         old_bnds_size = aggregate_l_bnds.length(),
          new_bnds_size = num_cv + num_lin_con + num_nln_con;
 
-  if (boundsArraySize != new_bnds_size) {
-    size_bounds_array(new_bnds_size);
-
+  size_bounds_array(new_bnds_size);
+  if (old_bnds_size != new_bnds_size) {
     RealVector old_l_bnds(aggregate_l_bnds), old_u_bnds(aggregate_u_bnds);
     aggregate_l_bnds.resize(new_bnds_size); // retains variables data
     aggregate_u_bnds.resize(new_bnds_size); // retains variables data
     // migrate nonlinear bnds/targets:
-    old_offset = old_l_bnds.length() - num_nln_con;
+    old_offset = old_bnds_size - num_nln_con;
     new_offset = num_cv + num_lin_con;
     copy_data_partial(old_l_bnds, old_offset, aggregate_l_bnds,
 		      new_offset, num_nln_con);
@@ -451,10 +496,11 @@ replace_nonlinear_bounds(size_t num_cv, size_t num_lin_con,
   size_t num_nln_ineq  = nln_ineq_l_bnds.length(),
          num_nln_eq    = nln_eq_targets.length(),
          num_nln_con   = num_nln_ineq + num_nln_eq, offset,
+         old_bnds_size = aggregate_l_bnds.length(),
          new_bnds_size = num_cv + num_lin_con + num_nln_con;
 
-  if (boundsArraySize != new_bnds_size) {
-    size_bounds_array(new_bnds_size);
+  size_bounds_array(new_bnds_size);
+  if (old_bnds_size != new_bnds_size) {
     aggregate_l_bnds.resize(new_bnds_size); // retains vars, lin cons data
     aggregate_u_bnds.resize(new_bnds_size); // retains vars, lin cons data
   }
@@ -466,6 +512,7 @@ replace_nonlinear_bounds(size_t num_cv, size_t num_lin_con,
   copy_data_partial(nln_eq_targets,  0, aggregate_l_bnds, offset, num_nln_eq);
   copy_data_partial(nln_eq_targets,  0, aggregate_u_bnds, offset, num_nln_eq);
 }
+*/
 
 
 void SOLBase::

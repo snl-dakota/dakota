@@ -212,6 +212,34 @@ void NonDNonHierarchSampling::shared_increment(size_t iter)
 }
 
 
+void NonDNonHierarchSampling::
+shared_increment(size_t iter, const UShortArray& approx_set)
+{
+  if (iter == 0) Cout << "\nNon-hierarchical pilot sample: ";
+  else Cout << "\nNon-hierarchical sampling iteration " << iter
+	    << ": shared sample increment = ";
+  Cout << numSamples << '\n';
+
+  if (numSamples) {
+    //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+    //iteratedModel.active_model_key(agg_key);
+    //resize_active_set();
+
+    activeSet.request_values(0);
+    // truth
+    size_t start = numApprox * numFunctions, i, num_approx = approx_set.size();
+    activeSet.request_values(1, start, start + numFunctions);
+    // active approximations
+    for (i=0; i<num_approx; ++i) {
+      start = approx_set[i] * numFunctions;
+      activeSet.request_values(1, start, start + numFunctions);
+    }
+
+    ensemble_sample_increment(iter, numApprox+1); // BLOCK if not shared_approx_increment()  *** TO DO: step value
+  }
+}
+
+
 void NonDNonHierarchSampling::shared_approx_increment(size_t iter)
 {
   if (iter == 0) Cout << "\nNon-hierarchical approx pilot sample: ";
@@ -249,6 +277,35 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
     for (size_t i=start; i<end; ++i) { // [start,end)
       approx = (ordered) ? i : approx_sequence[i];
       start_qoi = approx * numFunctions;
+      activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
+    }
+
+    ensemble_sample_increment(iter, start); // NON-BLOCK
+    return true;
+  }
+  else {
+    Cout << "\nNo approx sample increment for approximation sequence ["
+	 << start+1 << ", " << end << ']' << std::endl;
+    return false;
+  }
+}
+
+
+bool NonDNonHierarchSampling::
+approx_increment(size_t iter, const SizetArray& approx_sequence,
+		 size_t start, size_t end, const UShortArray& approx_set)
+{
+  if (numSamples && start < end) {
+    Cout << "\nApprox sample increment = " << numSamples << " for approximation"
+	 << " sequence [" << start+1 << ", " << end << ']' << std::endl;
+
+    bool ordered = approx_sequence.empty();
+    size_t i, approx, start_qoi;
+
+    activeSet.request_values(0);
+    for (size_t i=start; i<end; ++i) { // [start,end)
+      approx = (ordered) ? i : approx_sequence[i];    // compact indexing
+      start_qoi = approx_set[approx] * numFunctions; // inflated indexing
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 
@@ -348,33 +405,36 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
 
 
 void NonDNonHierarchSampling::
-mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
-		       DAGSolutionData& soln, bool monotonic_r)
+mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
+		       const RealVector& cost, DAGSolutionData& soln,
+		       bool monotonic_r)
 {
+  size_t qoi, a, num_approx = approx_set.size(), num_am1 = num_approx - 1;
   RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
-  else                         avg_eval_ratios = 0.;
+  if (avg_eval_ratios.length() != num_approx) avg_eval_ratios.size(num_approx);
+  else                                        avg_eval_ratios = 0.;
 
-  size_t qoi, approx, num_am1 = numApprox - 1;
+  unsigned short approx, prev_approx, last_approx = approx_set[num_am1];
   Real cost_L, cost_H = cost[numApprox]; // HF cost
-  // standard approach for well-ordered models
+  // standard approach for well-ordered approxs
   RealVector factor(numFunctions, false);
   for (qoi=0; qoi<numFunctions; ++qoi)
-    factor[qoi] = cost_H / (1. - rho2_LH(qoi, num_am1));
-  for (approx=0; approx<numApprox; ++approx) {
-    const Real* rho2_LH_a = rho2_LH[approx];  cost_L = cost[approx];
-    Real&  avg_eval_ratio = avg_eval_ratios[approx];
-    // NOTE: indexing is reversed from Peherstorfer (HF = 1, MF = 2, LF = 3)
-    // > becomes Approx LF = 0 and MF = 1, Truth HF = 2
-    // > i+1 becomes i-1 and most correlated approx is rho2_LH(qoi, num_am1)
-    if (approx)
+    factor[qoi] = cost_H / (1. - rho2_LH(qoi, last_approx));
+  for (a=0; a<num_approx; ++a) {
+    approx = approx_set[a]; // approx_set is ordered but with omissions
+    const Real* rho2_LH_m = rho2_LH[approx];  cost_L = cost[approx]; // full
+    Real& avg_eval_ratio = avg_eval_ratios[a];               // contracted
+    // NOTE: indexing is reversed from Peherstorfer
+    // (HF = 1, MF = 2, LF = 3 becomes LF = 0, MF = 1, truth HF = 2)
+    if (a)
       for (qoi=0; qoi<numFunctions; ++qoi)
 	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L *
-	  (rho2_LH_a[qoi] - rho2_LH(qoi, approx-1)));
-    else // rho2_LH for approx-1 (non-existent model) is zero
+	  (rho2_LH_m[qoi] - rho2_LH(qoi, prev_approx)));
+    else // rho2_LH for m-1 (non-existent approx) is zero
       for (qoi=0; qoi<numFunctions; ++qoi)
-	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L * rho2_LH_a[qoi]);
+	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L * rho2_LH_m[qoi]);
     avg_eval_ratio /= numFunctions;
+    prev_approx = approx;
   }
 
   // Note: one_sided_delta(N_H, hf_targets, 1) enforces monotonicity a bit
@@ -383,7 +443,7 @@ mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
   // For now, monotonic_r defaults false since it should be redundant.
   if (monotonic_r) {
     Real r_i, prev_ri = 1.;
-    for (int i=numApprox-1; i>=0; --i) {
+    for (int i=num_approx-1; i>=0; --i) {
       r_i = std::max(avg_eval_ratios[i], prev_ri);
       prev_ri = avg_eval_ratios[i] = r_i;
     }
@@ -392,19 +452,21 @@ mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 
 
 void NonDNonHierarchSampling::
-mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
+mfmc_reordered_analytic_solution(const UShortArray& approx_set,
+				 const RealMatrix& rho2_LH,
 				 const RealVector& cost,
 				 SizetArray& approx_sequence,
 				 DAGSolutionData& soln, bool monotonic_r)
 {
+  size_t qoi, a, num_approx = approx_set.size(), num_am1 = num_approx-1;
   RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
+  if (avg_eval_ratios.length() != num_approx)
+    avg_eval_ratios.sizeUninitialized(num_approx);
 
-  size_t qoi, approx, num_am1 = numApprox - 1;
-  Real cost_L, cost_H = cost[numApprox]; // HF cost
-
-  // employ a single model reordering that is shared across the QoI
-  RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
+  // employ a single approx reordering that is shared across the QoI
+  RealVector avg_rho2_LH(num_approx); // init to 0.
+  for (a=0; a<num_approx; ++a)
+    avg_rho2_LH[a] = average(rho2_LH[approx_set[a]], numFunctions);
   bool ordered = ordered_approx_sequence(avg_rho2_LH, approx_sequence);
   // Note: even if avg_rho2_LH is now ordered, rho2_LH is not for all QoI, so
   // stick with this alternate formulation, at least for this MFMC iteration.
@@ -414,35 +476,31 @@ mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
     Cout << "MFMC: reordered approximation model sequence (low to high):\n"
 	 << approx_sequence << std::endl;
 
-  // precompute a factor based on most-correlated model
+  // precompute a factor based on most-correlated approx
+  unsigned short approx, inflate_approx;
   size_t most_corr = (ordered) ? num_am1 : approx_sequence[num_am1];
-  Real rho2, prev_rho2, rho2_diff, r_i, prev_ri,
+  Real cost_L, cost_H = cost[numApprox], rho2, prev_rho2, rho2_diff,
     factor = cost_H / (1. - avg_rho2_LH[most_corr]);// most correlated
   // Compute averaged eval ratios using averaged rho2 for approx_sequence
-  RealVector r_unconstrained;
-  if (monotonic_r) r_unconstrained.sizeUninitialized(numApprox);
-  for (int i=0; i<numApprox; ++i) {
-    approx = (ordered) ? i : approx_sequence[i];
-    cost_L = cost[approx];
-    // NOTE: indexing is inverted from Peherstorfer: HF = 1, MF = 2, LF = 3
-    // > i+1 becomes i-1 and most correlated is rho2_LH(qoi, most_corr)
-    rho2_diff = rho2  = avg_rho2_LH[approx];
-    if (i) rho2_diff -= prev_rho2;
-    r_i = std::sqrt(factor / cost_L * rho2_diff);
-    if (monotonic_r) r_unconstrained[approx] = r_i;
-    else             avg_eval_ratios[approx] = r_i;
+  for (a=0; a<num_approx; ++a) {
+    approx = (ordered) ? a : approx_sequence[a];
+    inflate_approx = approx_set[approx];  cost_L = cost[inflate_approx];// full
+    // NOTE: indexing is inverted from Peherstorfer (i+1 becomes i-1)
+    rho2_diff = rho2  = avg_rho2_LH[approx]; // contracted
+    if (a) rho2_diff -= prev_rho2;
+    avg_eval_ratios[approx] = std::sqrt(factor / cost_L * rho2_diff);
     prev_rho2 = rho2;
   }
 
   // Reverse loop order and enforce monotonicity in reordered r_i
   // > max() is applied bottom-up from the base of the pyramid (samples
   //   performed bottom up, so precedence also applied in this direction),
-  //   where assigning r_i = prev_ri effectively drops the CV for model i
+  //   where assigning r_i = prev_ri effectively drops the CV for approx i
   if (monotonic_r) {
-    prev_ri = 1.;
-    for (int i=numApprox-1; i>=0; --i) {
+    Real r_i, prev_ri = 1.;
+    for (int i=num_approx-1; i>=0; --i) {
       approx = (ordered) ? i : approx_sequence[i];
-      r_i = std::max(r_unconstrained[approx], prev_ri);
+      r_i = std::max(avg_eval_ratios[approx], prev_ri);
       prev_ri = avg_eval_ratios[approx] = r_i;
     }
   }
@@ -455,6 +513,7 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 {
   // retain the shape of an r* profile, but scale to budget constrained by
   // incurred pilot cost
+  // > for full model set only (not used by GenACV)
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nRescale to budget: incoming average evaluation ratios:\n"
@@ -498,6 +557,107 @@ ensemble_numerical_solution(const RealVector& cost,
 			    const SizetArray& approx_sequence,
 			    DAGSolutionData& soln, size_t& num_samples)
 {
+  size_t i, num_cdv, num_lin_con, num_nln_con, approx, approx_im1, approx_ip1,
+    hf_form_index, hf_lev_index;
+  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+  bool ordered = approx_sequence.empty();
+  numerical_solution_counts(num_cdv, num_lin_con, num_nln_con); // virtual
+
+  RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false),
+    lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con), lin_eq_tgt,
+    nln_ineq_lb(num_nln_con, false), nln_ineq_ub(num_nln_con, false),nln_eq_tgt;
+  RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
+  numerical_solution_bounds_constraints(soln, cost, avg_N_H, x0, x_lb, x_ub,
+					lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
+					nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+					lin_ineq_coeffs, lin_eq_coeffs);
+
+  // Perform the numerical solve(s) and recover the solution:
+  size_t num_solvers;  bool sequenced_minimizers;
+  configure_minimizers(x0, x_lb, x_ub, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
+		       nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, lin_ineq_coeffs,
+		       lin_eq_coeffs, num_solvers, sequenced_minimizers);
+  run_minimizers(soln, num_solvers, sequenced_minimizers);
+  // compute sample increment for HF from current to target:
+  num_samples = (truthFixedByPilot) ? 0 :
+    one_sided_delta(avg_N_H, soln.avgHFTarget);
+
+  //if (!num_samples) { // metrics not needed unless print_variance_reduction()
+
+  // All cases employ a projected MC estvar to match the projected ACV estvar
+  // from N* (where N* may include a num_samples increment not yet performed)
+  RealVector mc_estvar;
+  project_mc_estimator_variance(varH, N_H_actual, num_samples, mc_estvar);
+
+  // Report ratio of averages rather that average of ratios (see notes in
+  // print_variance_reduction())
+  soln.avgEstVarRatio = soln.avgEstVar / average(mc_estvar); // (1 - R^2)
+  //RealVector estvar_ratio(numFunctions, false);
+  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
+  //  estvar_ratio[qoi] = 1. - R_sq[qoi];// compute from CF_inv,A->compute_Rsq()
+  //avg_estvar_ratio = average(estvar_ratio);
+
+  //}
+}
+
+
+void NonDNonHierarchSampling::
+numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
+			  size_t& num_nln_con)
+{
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT:
+    num_cdv = numApprox;  num_nln_con = 0;
+    num_lin_con = 1;
+    if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con += numApprox;
+    break;
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    num_cdv = numApprox + 1;  num_nln_con = 1;
+    num_lin_con = (mlmfSubMethod == SUBMETHOD_MFMC) ? numApprox : 0;
+    break;
+  case N_VECTOR_LINEAR_CONSTRAINT:
+    num_lin_con = num_cdv = numApprox + 1;  num_nln_con = 0;
+    break;
+  case N_VECTOR_LINEAR_OBJECTIVE:
+    num_cdv = numApprox + 1;  num_nln_con = 1;  num_lin_con = numApprox;
+    break;
+  }
+}
+
+
+void NonDNonHierarchSampling::
+numerical_solution_bounds_constraints(const DAGSolutionData& soln,
+				      const RealVector& cost, Real avg_N_H,
+				      RealVector& x0, RealVector& x_lb,
+				      RealVector& x_ub, RealVector& lin_ineq_lb,
+				      RealVector& lin_ineq_ub,
+				      RealVector& lin_eq_tgt,
+				      RealVector& nln_ineq_lb,
+				      RealVector& nln_ineq_ub,
+				      RealVector& nln_eq_tgt,
+				      RealMatrix& lin_ineq_coeffs,
+				      RealMatrix& lin_eq_coeffs)
+{
+  const RealVector& avg_eval_ratios = soln.avgEvalRatios;
+  Real              avg_hf_target   = soln.avgHFTarget;
+  //Real                 avg_estvar = soln.avgEstVar;
+  //Real           avg_estvar_ratio = soln.avgEstVarRatio;
+  //Real              equiv_hf_cost = soln.equivHFAlloc;
+
+  // For offline mode, online allocations must be lower bounded for numerics:
+  // > for QOI_STATISTICS, unbiased moments / CV beta require min of 2 samples
+  // > for ESTIMATOR_PERF, a lower bnd of 1 sample is allowable (MC reference)
+  //   >> 1 line of thinking: an offline oracle should by as optimal as possible
+  //      and we will use for apples-to-apples estimator performance comparisons
+  //   >> another line of thinking: be consistent at 2 samples for possible
+  //      switch from estimator_perf (selection) to qoi_statistics (execution);
+  //      moreover, don't select an estimator based on inconsistent formulation
+  // Nonzero lower bound ensures replacement of allSamples after offline pilot.
+  Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
+
   // --------------------------------------
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
   // --------------------------------------
@@ -515,55 +675,11 @@ ensemble_numerical_solution(const RealVector& cost,
   //   >> No need for a priori model sequence, only for post-proc of opt result
   // > ACV-IS is unconstrained in model order --> retain N_i > N
 
-  size_t i, num_cdv, num_lin_con = 0, num_nln_con = 0, approx, approx_im1,
-    approx_ip1, max_iter=100000, max_eval=500000, hf_form_index, hf_lev_index;
-  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
-    conv_tol = 1.e-8, // tight convergence
-    avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-  bool ordered = approx_sequence.empty();
-  switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT:
-    num_cdv = numApprox;
-    num_lin_con = (mlmfSubMethod == SUBMETHOD_MFMC) ? numApprox + 1 : 1;
-    break;
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    num_cdv = numApprox + 1;  num_nln_con = 1;
-    if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con = numApprox;
-    break;
-  case N_VECTOR_LINEAR_CONSTRAINT:
-    num_lin_con = num_cdv = numApprox + 1;
-    break;
-  case N_VECTOR_LINEAR_OBJECTIVE:
-    num_cdv = numApprox + 1;  num_nln_con = 1;  num_lin_con = numApprox;
-    break;
-  }
-  RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false);
-  RealVector lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con),
-    lin_eq_tgt, nln_ineq_lb(num_nln_con, false),
-    nln_ineq_ub(num_nln_con, false), nln_eq_tgt;
-  RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
+  size_t i, num_cdv = x0.length(), approx;
+  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals;
+
   x_ub        =  DBL_MAX; // no upper bounds on x
   lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
-
-  RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  Real&         avg_hf_target = soln.avgHFTarget;
-  Real&            avg_estvar = soln.avgEstVar;
-  Real&      avg_estvar_ratio = soln.avgEstVarRatio;
-  Real&         equiv_hf_cost = soln.equivHFAlloc;
-
-  // For offline mode, online allocations must be lower bounded for numerics:
-  // > for QOI_STATISTICS, unbiased moments / CV beta require min of 2 samples
-  // > for ESTIMATOR_PERF, a lower bnd of 1 sample is allowable (MC reference)
-  //   >> 1 line of thinking: an offline oracle should by as optimal as possible
-  //      and we will use for apples-to-apples estimator performance comparisons
-  //   >> another line of thinking: be consistent at 2 samples for possible
-  //      switch from estimator_perf (selection) to qoi_statistics (execution);
-  //      moreover, don't select an estimator based on inconsistent formulation
-  // Nonzero lower bound ensures replacement of allSamples after offline pilot.
-  Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
   // Note: ACV paper suggests additional linear constraints for r_i ordering
   switch (optSubProblemForm) {
@@ -633,166 +749,170 @@ ensemble_numerical_solution(const RealVector& cost,
   }
   // virtual augmentation of linear ineq (differs among MFMC, ACV, GenACV)
   augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
+}
 
+
+void NonDNonHierarchSampling::
+configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+		     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
+		     RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
+		     RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
+		     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs,
+		     size_t& num_solvers, bool& sequenced_minimizers)
+{
+  bool use_adapter = (optSubProblemSolver != SUBMETHOD_NPSOL &&
+		      optSubProblemSolver != SUBMETHOD_OPTPP &&
+		      optSubProblemSolver != SUBMETHOD_NPSOL_OPTPP);
+  bool use_dfs     = (optSubProblemSolver == SUBMETHOD_SBLO ||
+		      optSubProblemSolver == SUBMETHOD_SBGO);
+  Model adapt_model, sub_prob_model;
+  if (use_adapter) {
+    // configure the minimization sub-problem
+    adapt_model.assign_rep(std::make_shared<MinimizerAdapterModel>(x0, x_lb,
+      x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, response_evaluator));
+
+    //////////////////////////////////////////////////////////////////////////
+    // For nested optimization, we emulate EstVar*(hp) at the top level,
+    // eliminating all lower level quantities through the lower level solve.
+    // > Conceptually simple but repeated optim's required --> top level is
+    //   noisy if lower-level is numerical; less efficient than 1 solve
+    // > Best option for analytic cases like MLMC, ordered MFMC, et al.
+    //   >> numerical opt still relevant for misordered models or
+    //      over-estimated pilots
+    // > Want to support this in any case, so start with this as lower risk
+    //   option --> main needs are recovering cost(hp) from metadata, ...
+    //////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////
+    // For integrated optimization, pilot computed for each model at each hp.
+    // Main loop:
+    // > shared incr --> counts, sums --> varL, covLL, covLH
+    // > Solve r*,N* from min EstVar = varH/N (1-Rsq) where Rsq defined:
+    //   >> MFMC: R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, i)
+    //   >> ACV: form F(r), A(F,c), invert CF, triple product --> R_sq
+    // > Apply delta-N* and continue
+    // Post-process: apply r*, compute LF incr, roll up final stats
+
+    // response_evaluator():
+    //   --> objective = min_{N,r_i} Estvar(corr(hp),cost(hp))
+    //   --> constraints = lin/nln budget = fn(N,r_i,cost(hp))
+    // > change in hyper-parameters must reset sample counts/accumulators
+    //   >> track high-level metrics over hp, but don't retain low level
+    // > Costs for each model = ensemble average over pilot for each hp
+
+    // Solution of approx sub-problem uses DataFitSurrModel::approxInterface
+    // to query either the low-level (cost, corr) or high-level (estvar)
+    // surrogates over the hyper-parameters
+    // > low-level: minimal emulated set = cost + {corr/covar terms(N,r)} ?
+    //   >> simplifications can be made for 3 model case, but not in general
+    // > high-level:
+    //   >> EstVar = emulated over (hp,N,r_i) --> surrogate emulation extent
+    //      can be pointwise(N,r_i) for each hp or combined(hp,N,r_i)
+    //   >> EstVar* = emulated only over hp, but requires nested opt
+    // DataFitSurrModel::actualModel evaluations compute corr,cost from
+    // scratch for each hp (initial surrogate build, validation, refinement)
+
+    // TRMM/EGO must solve multiple approx sub-problems and perform multiple
+    // surrogate refinements to converge to EstVar*(hp)
+
+    // Iterated ACV,MFMC would then be outer-loop around this pilot-based
+    // solution --> perform N* increment to update correlations/covariances
+    // > can we integrate this upstream to eliminate this loop? --> would
+    //   require performing N* increment as part of optimization, which would
+    //   not be inconsistent with updating N* after a converged sub-problem
+    //   (both can overshoot).  Key would be doing this at a major iteration
+    //   step (SBLO validation), not during exploration (EGO).
+    // > or restrict to offline pilot mode (no iteration)
+
+    // Then r* over-sampling occurs after all iteration is done -> final stats
+    //////////////////////////////////////////////////////////////////////////
+
+    if (use_dfs) {
+      int samples = 100, seed = 12347;      // TO DO: spec
+      unsigned short sample_type = SUBMETHOD_DEFAULT;
+      String rng; // empty string: use default
+      bool vary_pattern = false, use_derivs = false;
+      short corr_type = ADDITIVE_CORRECTION, corr_order = 1, data_order = 1;
+      if (use_derivs) { // Would also need to verify surrogate support
+	if (adapt_model.gradient_type() != "none") data_order |= 2;
+	if (adapt_model.hessian_type()  != "none") data_order |= 4;
+      }
+      Iterator dace_iterator;
+      dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(adapt_model,
+	sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM));
+      dace_iterator.active_set_request_values(data_order);
+
+      String approx_type("global_kriging"), point_reuse("none");// TO DO: spec
+      UShortArray approx_order; // empty
+      ActiveSet dfs_set = adapt_model.current_response().active_set();// copy
+      dfs_set.request_values(1);
+      const ShortShortPair& dfs_view = adapt_model.current_variables().view();
+      sub_prob_model.assign_rep(std::make_shared<DataFitSurrModel>(
+	dace_iterator, adapt_model, dfs_set, dfs_view, approx_type,approx_order,
+	corr_type, corr_order, data_order, SILENT_OUTPUT, point_reuse));
+    }
+    else
+      sub_prob_model = adapt_model;
+  }
+      
+  // -----------------------------------
+  // Configure the variance minimizer(s)
+  // -----------------------------------
   // lay groundwork for future global-local hybrids while supporting NPSOL+OPTPP
-  size_t num_solvers = 1;  bool sequenced_minimizers = false;
+  num_solvers = 1;  sequenced_minimizers = false;
   switch (optSubProblemSolver) {
   case SUBMETHOD_NPSOL_OPTPP:
     num_solvers = 2; break;
   }
-
-  // -----------------------------------
-  // Configure the variance minimizer(s)
-  // -----------------------------------
   if (varianceMinimizers.empty()) {
     varianceMinimizers.resize(num_solvers);
 
-    bool use_adapter   = (optSubProblemSolver != SUBMETHOD_NPSOL &&
-			  optSubProblemSolver != SUBMETHOD_OPTPP &&
-			  optSubProblemSolver != SUBMETHOD_NPSOL_OPTPP);
-    bool construct_dfs = (optSubProblemSolver == SUBMETHOD_SBLO ||
-			  optSubProblemSolver == SUBMETHOD_SBGO);
-    if (use_adapter) {
-      // configure the minimization sub-problem
-      MinimizerAdapterModel adapt_model(x0, x_lb, x_ub, lin_ineq_coeffs,
-					lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-					lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
-					nln_eq_tgt, response_evaluator);
+    size_t max_iter = 100000, max_eval = 500000;
+    Real   conv_tol = 1.e-8; // tight convergence
 
-      //////////////////////////////////////////////////////////////////////////
-      // For nested optimization, we emulate EstVar*(hp) at the top level,
-      // eliminating all lower level quantities through the lower level solve.
-      // > Conceptually simple but repeated optim's required --> top level is
-      //   noisy if lower-level is numerical; less efficient than 1 solve
-      // > Best option for analytic cases like MLMC, ordered MFMC, et al.
-      //   >> numerical opt still relevant for misordered models or
-      //      over-estimated pilots
-      // > Want to support this in any case, so start with this as lower risk
-      //   option --> main needs are recovering cost(hp) from metadata, ...
-      //////////////////////////////////////////////////////////////////////////
-
-      //////////////////////////////////////////////////////////////////////////
-      // For integrated optimization, pilot computed for each model at each hp.
-      // Main loop:
-      // > shared incr --> counts, sums --> varL, covLL, covLH
-      // > Solve r*,N* from min EstVar = varH/N (1-Rsq) where Rsq defined:
-      //   >> MFMC: R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, i)
-      //   >> ACV: form F(r), A(F,c), invert CF, triple product --> R_sq
-      // > Apply delta-N* and continue
-      // Post-process: apply r*, compute LF incr, roll up final stats
-
-      // response_evaluator():
-      //   --> objective = min_{N,r_i} Estvar(corr(hp),cost(hp))
-      //   --> constraints = lin/nln budget = fn(N,r_i,cost(hp))
-      // > change in hyper-parameters must reset sample counts/accumulators
-      //   >> track high-level metrics over hp, but don't retain low level
-      // > Costs for each model = ensemble average over pilot for each hp
-
-      // Solution of approx sub-problem uses DataFitSurrModel::approxInterface
-      // to query either the low-level (cost, corr) or high-level (estvar)
-      // surrogates over the hyper-parameters
-      // > low-level: minimal emulated set = cost + {corr/covar terms(N,r)} ?
-      //   >> simplifications can be made for 3 model case, but not in general
-      // > high-level:
-      //   >> EstVar = emulated over (hp,N,r_i) --> surrogate emulation extent
-      //      can be pointwise(N,r_i) for each hp or combined(hp,N,r_i)
-      //   >> EstVar* = emulated only over hp, but requires nested opt
-      // DataFitSurrModel::actualModel evaluations compute corr,cost from
-      // scratch for each hp (initial surrogate build, validation, refinement)
-
-      // TRMM/EGO must solve multiple approx sub-problems and perform multiple
-      // surrogate refinements to converge to EstVar*(hp)
-
-      // Iterated ACV,MFMC would then be outer-loop around this pilot-based
-      // solution --> perform N* increment to update correlations/covariances
-      // > can we integrate this upstream to eliminate this loop? --> would
-      //   require performing N* increment as part of optimization, which would
-      //   not be inconsistent with updating N* after a converged sub-problem
-      //   (both can overshoot).  Key would be doing this at a major iteration
-      //   step (SBLO validation), not during exploration (EGO).
-      // > or restrict to offline pilot mode (no iteration)
-
-      // Then r* over-sampling occurs after all iteration is done -> final stats
-      //////////////////////////////////////////////////////////////////////////
-      
-      Model sub_prob_model;
-      if (construct_dfs) {
-	int samples = 100, seed = 12347;      // TO DO: spec
-	unsigned short sample_type = SUBMETHOD_DEFAULT;
-	String rng; // empty string: use default
-	bool vary_pattern = false, use_derivs = false;
-	short corr_type = ADDITIVE_CORRECTION, corr_order = 1, data_order = 1;
-	if (use_derivs) { // Would also need to verify surrogate support
-	  if (adapt_model.gradient_type() != "none") data_order |= 2;
-	  if (adapt_model.hessian_type()  != "none") data_order |= 4;
-	}
-	Iterator dace_iterator;
-	dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(adapt_model,
-	  sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM));
-	dace_iterator.active_set_request_values(data_order);
-
-	String approx_type("global_kriging"), point_reuse("none");// TO DO: spec
-	UShortArray approx_order; // empty
-	ActiveSet dfs_set = adapt_model.current_response().active_set();// copy
-	dfs_set.request_values(1);
-	const ShortShortPair& dfs_view = adapt_model.current_variables().view();
-	sub_prob_model.assign_rep(std::make_shared<DataFitSurrModel>(
-	  dace_iterator, adapt_model, dfs_set, dfs_view, approx_type,
-	  approx_order, corr_type, corr_order, data_order, SILENT_OUTPUT,
-	  point_reuse));
-      }
-      else
-	sub_prob_model = adapt_model;
-
-      // select the sub-problem solver
-      switch (optSubProblemSolver) {
-      case SUBMETHOD_SBLO: {
-	short merit_fn = AUGMENTED_LAGRANGIAN_MERIT, accept_logic = FILTER,
-	  constr_relax = NO_RELAX;
-	unsigned short soft_conv_limit = 5;
-	Real tr_factor = .5;
-	varianceMinimizers[0].assign_rep(
-	  std::make_shared<DataFitSurrBasedLocalMinimizer>(sub_prob_model,
-	  merit_fn, accept_logic, constr_relax, tr_factor, max_iter, max_eval,
-	  conv_tol, soft_conv_limit, false));
-	break;
-      }
-      case SUBMETHOD_EGO: {
-	// EGO builds its own GP in initialize_sub_problem(), so a DFSModel
-	// does not need to be constructed here as for SBLO/SBGO
-	// > TO DO: pure global opt may need subsequent local refinement
-	int samples = 100, seed = 12347;      // TO DO: spec
-	String approx_type("global_kriging"); // TO DO: spec
-	bool use_derivs = false;
-	varianceMinimizers[0].assign_rep(std::make_shared<EffGlobalMinimizer>(
-	  sub_prob_model, approx_type, samples, seed, use_derivs, max_iter,
-	  max_eval, conv_tol));
-	break;
-      }
-      /*
-      case SUBMETHOD_CPS: { // may need to be combined with local refinement
-        break;
-      }
-      case SUBMETHOD_SBGO: { // for NonDGlobalInterval, was EAminlp + GP ...
-        varianceMinimizers[0].assign_rep(
-	  std::make_shared<SurrBasedGlobalMinimizer>(sub_prob_model, max_iter,
-	                                             max_eval, conv_tol));
-        break;
-      }
-      case SUBMETHOD_EA: { // may need to be combined with local refinement
-        varianceMinimizers[0].assign_rep(std::make_shared<COLINOptimizer>(
-	  sub_prob_model, max_iter, max_eval, conv_tol));
-        break;
-      }
-      */
-      default: // SUBMETHOD_NONE, ...
-	Cerr << "Error: sub-problem solver undefined in NonDNonHierarchSampling"
-	     << std::endl;
-	abort_handler(METHOD_ERROR);
-	break;
-      }
+    // select the sub-problem solver
+    switch (optSubProblemSolver) {
+    case SUBMETHOD_SBLO: {
+      short merit_fn = AUGMENTED_LAGRANGIAN_MERIT, accept_logic = FILTER,
+	constr_relax = NO_RELAX;
+      unsigned short soft_conv_limit = 5;
+      Real tr_factor = .5;
+      varianceMinimizers[0].assign_rep(
+	std::make_shared<DataFitSurrBasedLocalMinimizer>(sub_prob_model,
+	merit_fn, accept_logic, constr_relax, tr_factor, max_iter, max_eval,
+	conv_tol, soft_conv_limit, false));
+      break;
     }
-    else { // existing call-back APIs do not require adapter or surrogate
+    case SUBMETHOD_EGO: {
+      // EGO builds its own GP in initialize_sub_problem(), so a DFSModel
+      // does not need to be constructed here as for SBLO/SBGO
+      // > TO DO: pure global opt may need subsequent local refinement
+      int samples = 100, seed = 12347;      // TO DO: spec
+      String approx_type("global_kriging"); // TO DO: spec
+      bool use_derivs = false;
+      varianceMinimizers[0].assign_rep(std::make_shared<EffGlobalMinimizer>(
+	sub_prob_model, approx_type, samples, seed, use_derivs, max_iter,
+	max_eval, conv_tol));
+      break;
+    }
+    /*
+    case SUBMETHOD_CPS: { // may need to be combined with local refinement
+      break;
+    }
+    case SUBMETHOD_SBGO: { // for NonDGlobalInterval, was EAminlp + GP ...
+      varianceMinimizers[0].assign_rep(
+        std::make_shared<SurrBasedGlobalMinimizer>(sub_prob_model, max_iter,
+	                                           max_eval, conv_tol));
+      break;
+    }
+    case SUBMETHOD_EA: { // may need to be combined with local refinement
+      varianceMinimizers[0].assign_rep(std::make_shared<COLINOptimizer>(
+        sub_prob_model, max_iter, max_eval, conv_tol));
+      break;
+    }
+    */
+    default: { // existing call-back APIs do not require adapter or surrogate
       ShortArray solvers(num_solvers);
       switch (optSubProblemSolver) {
       case SUBMETHOD_NPSOL: case SUBMETHOD_OPTPP:
@@ -800,8 +920,15 @@ ensemble_numerical_solution(const RealVector& cost,
       case SUBMETHOD_NPSOL_OPTPP:
 	solvers[0] = SUBMETHOD_NPSOL;
 	solvers[1] = SUBMETHOD_OPTPP;  break;
+      default: // SUBMETHOD_NONE, ...
+	Cerr << "Error: sub-problem solver '"
+	     << submethod_enum_to_string(optSubProblemSolver)
+	     << "' unavailable in NonDNonHierarchSampling::"
+	     << "configure_minimizers()." << std::endl;
+	abort_handler(METHOD_ERROR);
+	break;
       }
-      for (i=0; i<num_solvers; ++i) {
+      for (size_t i=0; i<num_solvers; ++i)
 	switch (solvers[i]) {
 	case SUBMETHOD_NPSOL: {
 	  Real fdss = 1.e-6; int deriv_level;// 0 none, 1 obj, 2 constr, 3 both
@@ -841,27 +968,37 @@ ensemble_numerical_solution(const RealVector& cost,
 	  break;
 	}
 	}
-      }
+      break;
+    }
     }
   }
+  else if (use_adapter) {
+    // *** TO DO: (existing active view accessors don't support size change)
+    //adapt_model.update_active_variables(x0, x_lb, x_ub);
+    //adapt_model.update_active_constraints(lin_ineq_coeffs, lin_ineq_lb,
+    //  lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
+    //  nln_eq_tgt);
+    if (use_dfs) sub_prob_model.update_from_subordinate_model();
+    for (size_t i=0; i<num_solvers; ++i)
+      varianceMinimizers[i].update_from_model(sub_prob_model);
+  }
   else
-    for (i=0; i<num_solvers; ++i) {
-      Iterator& min_i = varianceMinimizers[i];
-      if (i == 0 || !sequenced_minimizers) min_i.initial_point(x0);
-      //if (x_bounds_update)
-        min_i.variable_bounds(x_lb, x_ub);
-      if (num_lin_con)
-	min_i.linear_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
-				 lin_eq_coeffs, lin_eq_tgt);
-      if (num_nln_con)
-	min_i.nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
-    }
+    for (size_t i=0; i<num_solvers; ++i)
+      varianceMinimizers[i].update_callback_data(x0, x_lb, x_ub,
+	lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt,
+	nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
+}
 
+
+void NonDNonHierarchSampling::
+run_minimizers(DAGSolutionData& soln, size_t num_solvers,
+	       bool sequenced_minimizers)
+{
   // ----------------------------------
   // Solve the optimization sub-problem: compute optimal r*,N*
   // ----------------------------------
   Real merit_fn, merit_fn_star = DBL_MAX;
-  size_t last_index = num_solvers - 1, best_min = last_index;
+  size_t i, last_index = num_solvers - 1, best_min = last_index;
   for (i=0; i<num_solvers; ++i) {
     Iterator& min_i = varianceMinimizers[i];
     min_i.run();
@@ -892,30 +1029,8 @@ ensemble_numerical_solution(const RealVector& cost,
     Cout << "ensemble_numerical_solution() best solver = "
 	 << min_s.method_string() << std::endl;
   recover_results(min_s.variables_results().continuous_variables(),
-		  min_s.response_results().function_values(), avg_estvar,
-		  avg_eval_ratios, avg_hf_target, equiv_hf_cost);
-
-  // compute sample increment for HF from current to target:
-  num_samples = (truthFixedByPilot) ? 0 :
-    one_sided_delta(avg_N_H, avg_hf_target);
-
-  //if (!num_samples) { // metrics not needed unless print_variance_reduction()
-
-  // All cases employ a projected MC estvar to match the projected ACV estvar
-  // from N* (where N* may include a num_samples increment not yet performed)
-  RealVector mc_estvar;
-  project_mc_estimator_variance(varH, N_H_actual, num_samples, mc_estvar);
-  Real avg_mc_estvar = average(mc_estvar);
-
-  // Report ratio of averages rather that average of ratios (see notes in
-  // print_variance_reduction())
-  avg_estvar_ratio = avg_estvar / avg_mc_estvar;  // (1 - R^2)
-  //RealVector estvar_ratio(numFunctions, false);
-  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
-  //  estvar_ratio[qoi] = 1. - R_sq[qoi];// compute from CF_inv,A->compute_Rsq()
-  //avg_estvar_ratio = average(estvar_ratio);
-
-  //}
+		  min_s.response_results().function_values(), soln.avgEstVar,
+		  soln.avgEvalRatios, soln.avgHFTarget, soln.equivHFAlloc);
 }
 
 
@@ -1067,10 +1182,11 @@ average_estimator_variance(const RealVector& cd_vars)
   estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
 
   // form estimator variances to pick up dependence on N
-  RealVector est_var(numFunctions, false);  size_t qoi;
+  RealVector est_var(numFunctions, false);
+  size_t qoi, num_approx = num_approximations();
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
-    if (cd_vars.length() == numApprox) {
+    if (cd_vars.length() == num_approx) {
       // N_H not provided so pull from latest counter values
       size_t hf_form_index, hf_lev_index;
       hf_indices(hf_form_index, hf_lev_index);
@@ -1078,15 +1194,15 @@ average_estimator_variance(const RealVector& cd_vars)
       for (qoi=0; qoi<numFunctions; ++qoi)
 	est_var[qoi] = varH[qoi] / N_H_actual[qoi] * estvar_ratios[qoi];
     }
-    else { // N_H appended for convenience or rescaling to updated HF target
-      Real N_H = cd_vars[numApprox];
+    else { // r_and_N_to_design_vars(): N_H appended for convenience
+      Real N_H = cd_vars[num_approx];
       for (qoi=0; qoi<numFunctions; ++qoi)
 	est_var[qoi] = varH[qoi] / N_H * estvar_ratios[qoi];
     }
     break;
   case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
   case R_AND_N_NONLINEAR_CONSTRAINT: {  // N is a scalar optimization variable
-    Real N_H = cd_vars[numApprox];
+    Real N_H = cd_vars[num_approx];
     for (qoi=0; qoi<numFunctions; ++qoi)
       est_var[qoi] = varH[qoi] / N_H * estvar_ratios[qoi];
     break;
@@ -1149,13 +1265,13 @@ linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
   // linear objective: N + Sum(w_i N_i) / w
   // > grad w.r.t. N_i = w_i / w
   // > grad w.r.t. N   = w   / w = 1
-  size_t i, len = N_vec.length(), r_len = len-1;
+  //size_t i, len = N_vec.length(), r_len = len-1;
   //if (grad_c.length() != len) grad_c.sizeUninitialized(len); // don't own
 
-  Real cost_H = sequenceCost[r_len];
-  for (i=0; i<r_len; ++i)
+  Real cost_H = sequenceCost[numApprox];
+  for (size_t i=0; i<numApprox; ++i)
     grad_c[i] = sequenceCost[i] / cost_H;
-  grad_c[r_len] = 1.;
+  grad_c[numApprox] = 1.;
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "linear cost gradient:\n" << grad_c << std::endl;
 }
@@ -1167,17 +1283,17 @@ nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c)
   // nonlinear inequality constraint: N ( 1 + Sum(w_i r_i) / w ) <= equivHF
   // > grad w.r.t. r_i = N w_i / w
   // > grad w.r.t. N   = 1 + Sum(w_i r_i) / w
-  size_t i, len = r_and_N.length(), r_len = len-1;
+  //size_t i, len = r_and_N.length(), r_len = len-1;
   //if (grad_c.length() != len) grad_c.sizeUninitialized(len); // don't own
 
-  Real cost_H = sequenceCost[r_len], N_over_w = r_and_N[r_len] / cost_H;
-  for (i=0; i<r_len; ++i)
-    grad_c[i] = N_over_w * sequenceCost[i];
-
-  Real approx_inner_prod = 0.;
-  for (i=0; i<numApprox; ++i)
-    approx_inner_prod += sequenceCost[i] * r_and_N[i]; //     Sum(c_i r_i)
-  grad_c[r_len] = 1. + approx_inner_prod / cost_H;     // 1 + Sum(w_i r_i)
+  Real cost_H = sequenceCost[numApprox], cost_i,
+    N_over_w = r_and_N[numApprox] / cost_H, approx_inner_prod = 0.;
+  for (size_t i=0; i<numApprox; ++i) {
+    cost_i = sequenceCost[i];
+    grad_c[i]          = cost_i * N_over_w;
+    approx_inner_prod += cost_i * r_and_N[i]; //     Sum(c_i r_i)
+  }
+  grad_c[numApprox] = 1. + approx_inner_prod / cost_H;     // 1 + Sum(w_i r_i)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "nonlinear cost gradient:\n" << grad_c << std::endl;
 }
@@ -1376,6 +1492,7 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
       abort_handler(METHOD_ERROR);
     }
 
+    // R_ONLY_LINEAR_CONSTRAINT has nln_con = 0, so c_vars ends in N_H
     if (nln_con && (asv[1] & 1))
       response.function_value(nonHierSampInstance->nonlinear_cost(c_vars), 1);
     if (nln_con && (asv[1] & 2)) {

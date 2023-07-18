@@ -42,12 +42,6 @@ public:
   /// destructor
   ~NonDACVSampling();
 
-  //
-  //- Heading: Virtual function redefinitions
-  //
-
-  //bool resize();
-
 protected:
 
   //
@@ -105,7 +99,8 @@ protected:
 			   const SizetArray& approx_sequence,
 			   size_t approx_start, size_t approx_end);
   void accumulate_acv_sums(IntRealMatrixMap& sum_L, Sizet2DArray& N_L_actual,
-			   const RealVector& fn_vals, size_t approx);
+			   const RealVector& fn_vals, const ShortArray& asv,
+			   size_t approx);
 
   bool acv_approx_increment(const DAGSolutionData& soln,
 			    const Sizet2DArray& N_L_actual_refined,
@@ -131,12 +126,14 @@ protected:
 
   void update_projected_lf_samples(Real avg_hf_targets,
 				   const RealVector& avg_eval_ratios,
+				   const UShortArray& approx_set,
 				   const SizetArray& N_H_actual,
 				   size_t& N_H_alloc,
 				   //SizetArray& delta_N_L_actual,
 				   Real& delta_equiv_hf);
   void update_projected_samples(Real avg_hf_targets,
 				const RealVector& avg_eval_ratios,
+				const UShortArray& approx_set,
 				const SizetArray& N_H_actual, size_t& N_H_alloc,
 				size_t& delta_N_H_actual,
 				//SizetArray& delta_N_L_actual,
@@ -152,13 +149,12 @@ protected:
 
   void cache_mc_reference();
 
-  void analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln);
-
   void pick_mfmc_cvmc_solution(const DAGSolutionData& mf_soln, size_t mf_samp,
 			       const DAGSolutionData& cv_soln, size_t cv_samp,
 			       DAGSolutionData& soln, size_t& num_samp);
 
-  void print_computed_solution(std::ostream& s, const DAGSolutionData& soln);
+  void print_computed_solution(std::ostream& s, const DAGSolutionData& soln,
+			       const UShortArray& approx_set);
 
 private:
 
@@ -184,6 +180,7 @@ private:
 			   size_t N_shared_q, size_t mom, size_t qoi,
 			   RealVector& beta);
 
+  void analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln);
   void analytic_initialization_from_ensemble_cvmc(Real avg_N_H,
 						  DAGSolutionData& soln);
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
@@ -259,10 +256,14 @@ private:
   // option for performing multiple ACV optimizations and taking the best
   //bool multiStartACV;
 
+  /// ACV uses all approximations with in numApprox; this array supports this
+  /// case for functions that are generalized to support approx subsets
+  UShortArray approxSet;
+
   /// the "F" matrix from Gorodetsky JCP paper
   RealSymMatrix FMat;
 
-  /// final solution data for ACV (default DAG = numApprox,...,numApprox)
+  /// final solution data for ACV (default DAG = {numApprox,...,numApprox})
   DAGSolutionData acvSolnData;
 };
 

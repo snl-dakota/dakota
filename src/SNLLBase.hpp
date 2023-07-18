@@ -146,6 +146,8 @@ protected:
   /// enum: NormFmu, ArgaezTapia, or VanShanno
   OPTPP::MeritFcn meritFn;
 
+  /// value from \c gradient_tolerance specification
+  Real gradientTol;
   /// value from \c max_step specification
   Real maxStep;
   /// value from \c steplength_to_boundary specification

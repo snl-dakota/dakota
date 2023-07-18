@@ -1107,9 +1107,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
   */
 
   // TODO? Make a struct?
-  const RealVector initial_point(Teuchos::Copy, 
-      				 mcmcModel.continuous_variables().values(), 
-				 mcmcModel.continuous_variables().length());
+  const RealVector initial_pt(Teuchos::Copy, 
+			      mcmcModel.continuous_variables().values(), 
+			      mcmcModel.continuous_variables().length());
   int random_seed = randomSeed;  // locally incremented
   int num_exp;
   int max_hifi = (maxHifiEvals >= 0) ? maxHifiEvals : numCandidates;
@@ -1162,7 +1162,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     construct_map_optimizer(); 
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
-    mcmcModel.continuous_variables(initial_point);
+    mcmcModel.continuous_variables(initial_pt);
     // TNP TODO: expose opt_for_map() and run_chain() 
     calibrate();
 

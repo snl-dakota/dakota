@@ -1277,17 +1277,23 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   }
 
   switch (optSubProblemForm) {
-  case ANALYTIC_SOLUTION:
+  case ANALYTIC_SOLUTION: {
     Cout << "MFMC: model sequence provided is ordered in Low-High correlation "
 	 << "for all QoI.\n      Computing standard analytic solution.\n"
 	 << std::endl;
     approx_sequence.clear();
-    mfmc_analytic_solution(rho2_LH, cost, soln);
+    UShortArray model_set(numApprox);
+    for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
+    mfmc_analytic_solution(model_set, rho2_LH, cost, soln);
     break;
-  case REORDERED_ANALYTIC_SOLUTION: // inactive (see above)
-    mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
+  }
+  case REORDERED_ANALYTIC_SOLUTION: { // inactive (see above)
+    UShortArray model_set(numApprox);
+    for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
+    mfmc_reordered_analytic_solution(model_set, rho2_LH, cost, approx_sequence,
 				     soln, true); // monotonic r for seq
     break;
+  }
   default: // any of several numerical optimization formulations
     mfmc_numerical_solution(var_L, rho2_LH, cost, approx_sequence, soln);
     break;
@@ -1312,19 +1318,18 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 			const RealVector& cost,  SizetArray& approx_sequence,
 			DAGSolutionData& soln)
 {
-  size_t qoi, approx, num_am1 = numApprox - 1, hf_form_index, hf_lev_index;
-  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  Real cost_L, cost_H = cost[numApprox], budget = (Real)maxFunctionEvals, r_i,
-    avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX),
-       budget_exhausted   = (equivHFEvals >= budget);
-  //if (budget_exhausted) budget = equivHFEvals;
-
-  RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  Real&       avg_hf_target   = soln.avgHFTarget;
   if (mlmfIter == 0) {
+
+    size_t hf_form_index, hf_lev_index;
+    hf_indices(hf_form_index, hf_lev_index);
+    SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+    size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+    Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+    RealVector& avg_eval_ratios = soln.avgEvalRatios;
+    Real&       avg_hf_target   = soln.avgHFTarget;
+    bool budget_constrained = (maxFunctionEvals != SZ_MAX),
+         budget_exhausted   = (budget_constrained &&
+			       equivHFEvals >= (Real)maxFunctionEvals);
 
     if (budget_exhausted) { // only 1 feasible pt, no need for solve
       avg_eval_ratios.sizeUninitialized(numApprox);
@@ -1333,14 +1338,16 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     }
 
     // Compute approx_sequence and r* initial guess from analytic MFMC
+    UShortArray model_set(numApprox);
+    for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
     if (ordered_approx_sequence(rho2_LH)) {// can happen w/ NUMERICAL_OVERRIDE
       approx_sequence.clear();
-      mfmc_analytic_solution(rho2_LH, cost, soln);
+      mfmc_analytic_solution(model_set, rho2_LH, cost, soln);
     }
     else // If misordered rho, enforce that r increases monotonically across
          // approx_sequence for consistency w/ linear constr in numerical soln
-      mfmc_reordered_analytic_solution(rho2_LH, cost, approx_sequence,
-				       soln, true);// monotonic r
+      mfmc_reordered_analytic_solution(model_set, rho2_LH, cost,
+				       approx_sequence, soln, true);//monotonic
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
 	   << avg_eval_ratios << std::endl;

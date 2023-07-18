@@ -143,8 +143,9 @@ DataMethodRep::DataMethodRep():
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
   expansionSamples(SZ_MAX), truthPilotConstraint(false),
   dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(2),
-  ensembleSampSolnMode(ONLINE_PILOT), allocationTarget(TARGET_MEAN),
-  useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
+  modelSelectType(NO_MODEL_SELECTION), ensembleSampSolnMode(ONLINE_PILOT),
+  allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
+  qoiAggregation(QOI_AGGREGATION_SUM),
   convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
   convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
   //expansionSampleType("lhs"),
@@ -320,11 +321,12 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode
     << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
-    << dagRecursionType << dagDepthLimit << multilevAllocControl
-    << multilevEstimatorRate << multilevDiscrepEmulation << finalStatsType
-    << finalMomentsType << distributionType << responseLevelTarget
-    << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << chainSamples << buildSamples
+    << dagRecursionType << dagDepthLimit << modelSelectType
+    << multilevAllocControl << multilevEstimatorRate
+    << multilevDiscrepEmulation << finalStatsType << finalMomentsType
+    << distributionType << responseLevelTarget << responseLevelTargetReduce
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << chainSamples << buildSamples
     << samplesOnEmulator << emulatorOrder << emulatorType << mcmcType
     << standardizedSpace << adaptPosteriorRefine << logitTransform
     << gpmsaNormalize << posteriorStatsKL << posteriorStatsMutual
@@ -489,11 +491,12 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> optSubProbSolver >> numericalSolveMode
     >> pilotSamples >> ensembleSampSolnMode >> truthPilotConstraint
-    >> dagRecursionType >> dagDepthLimit >> multilevAllocControl
-    >> multilevEstimatorRate >> multilevDiscrepEmulation >> finalStatsType
-    >> finalMomentsType >> distributionType >> responseLevelTarget
-    >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
-    >> reliabilityLevels >> genReliabilityLevels >> chainSamples >> buildSamples
+    >> dagRecursionType >> dagDepthLimit >> modelSelectType
+    >> multilevAllocControl >> multilevEstimatorRate
+    >> multilevDiscrepEmulation >> finalStatsType >> finalMomentsType
+    >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
+    >> responseLevels >> probabilityLevels >> reliabilityLevels
+    >> genReliabilityLevels >> chainSamples >> buildSamples
     >> samplesOnEmulator >> emulatorOrder >> emulatorType >> mcmcType
     >> standardizedSpace >> adaptPosteriorRefine >> logitTransform
     >> gpmsaNormalize >> posteriorStatsKL >> posteriorStatsMutual
@@ -658,11 +661,12 @@ void DataMethodRep::write(std::ostream& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode
     << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
-    << dagRecursionType << dagDepthLimit << multilevAllocControl
-    << multilevEstimatorRate << multilevDiscrepEmulation << finalStatsType
-    << finalMomentsType << distributionType << responseLevelTarget
-    << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << chainSamples << buildSamples
+    << dagRecursionType << dagDepthLimit << modelSelectType
+    << multilevAllocControl << multilevEstimatorRate
+    << multilevDiscrepEmulation << finalStatsType << finalMomentsType
+    << distributionType << responseLevelTarget << responseLevelTargetReduce
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << chainSamples << buildSamples
     << samplesOnEmulator << emulatorOrder << emulatorType << mcmcType
     << standardizedSpace << adaptPosteriorRefine << logitTransform
     << gpmsaNormalize << posteriorStatsKL << posteriorStatsMutual
