@@ -51,8 +51,8 @@ const int LARGE_SCALE = 100;
     the ProblemDescDB. */
 SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
-  SNLLBase(problem_db), nlfObjective(NULL),
-  nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL),
+  SNLLBase(problem_db), nlfObjective(NULL), nlfConstraint(NULL),
+  nlpConstraint(NULL), fdnlf1(NULL), fdnlf1Con(NULL), theOptimizer(NULL),
   setUpType("model"), userObjective0(NULL), userObjective1(NULL),
   userConstraint0(NULL), userConstraint1(NULL)
 {
@@ -268,8 +268,8 @@ SNLLOptimizer::SNLLOptimizer(const String& method_string, Model& model):
   Optimizer(method_string_to_enum(method_string), model,
 	    std::shared_ptr<TraitsBase>(new SNLLTraits())),
   // use default SNLLBase ctor
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("model"), userObjective0(NULL),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL), fdnlf1(NULL),
+  fdnlf1Con(NULL), theOptimizer(NULL), setUpType("model"), userObjective0(NULL),
   userObjective1(NULL), userConstraint0(NULL), userConstraint1(NULL)
 {
   gradientTol = 1.e-4;  maxStep = 1000.;
@@ -300,7 +300,7 @@ SNLLOptimizer::SNLLOptimizer(const String& method_string, Model& model):
 			maxIterations, maxFunctionEvals, convergenceTol,
 			gradientTol, maxStep, boundConstraintFlag,
 			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
@@ -320,6 +320,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      void (*nlf1_con_eval) (int mode, int n, const RealVector& x,
 				     RealVector& g, RealMatrix& grad_g,
 				     int& result_mode),
+              //const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -327,14 +328,15 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
             std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("user_functions"),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL), fdnlf1(NULL),
+  fdnlf1Con(NULL), theOptimizer(NULL), setUpType("user_functions"),
   linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
   linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
   nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts),
   userObjective0(NULL), userObjective1(nlf1_obj_eval),
-  userConstraint0(NULL), userConstraint1(nlf1_con_eval)
+  userConstraint0(NULL), userConstraint1(nlf1_con_eval)//,
+  //fdStepSize(fdss), fdIntervalType(interval_type)
 {
   maxIterations  = max_iter;  maxFunctionEvals = max_eval;
   convergenceTol = conv_tol;  gradientTol = grad_tol;  maxStep = max_step;
@@ -356,10 +358,12 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf1_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+  vendorNumericalGradFlag = false;
+  snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			fdIntervalType, fdStepSize, max_iter, max_eval,
 			conv_tol, grad_tol, max_step, boundConstraintFlag,
 			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
@@ -378,6 +382,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      void (*nlf1_con_eval) (int mode, int n, const RealVector& x,
 				     RealVector& g, RealMatrix& grad_g,
 				     int& result_mode),
+	      const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -385,14 +390,15 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
             std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("user_functions"),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL), fdnlf1(NULL),
+  fdnlf1Con(NULL), theOptimizer(NULL), setUpType("user_functions"),
   linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
   linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
   nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts),
   userObjective0(nlf0_obj_eval), userObjective1(NULL),
-  userConstraint0(NULL), userConstraint1(nlf1_con_eval)
+  userConstraint0(NULL), userConstraint1(nlf1_con_eval),
+  fdStepSize(fdss), fdIntervalType(interval_type)
 {
   maxIterations  = max_iter;  maxFunctionEvals = max_eval;
   convergenceTol = conv_tol;  gradientTol = grad_tol;  maxStep = max_step;
@@ -414,10 +420,12 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf1_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+  vendorNumericalGradFlag = true; // no FD support from Model
+  snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			fdIntervalType, fdStepSize, max_iter, max_eval,
 			conv_tol, grad_tol, max_step, boundConstraintFlag,
 			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
@@ -436,6 +444,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 				     int& result_mode),
 	      void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
 				     int& result_mode),
+	      const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -443,14 +452,15 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
             std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("user_functions"),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL), fdnlf1(NULL),
+  fdnlf1Con(NULL), theOptimizer(NULL), setUpType("user_functions"),
   linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
   linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
   nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts),
   userObjective0(NULL), userObjective1(nlf1_obj_eval),
-  userConstraint0(nlf0_con_eval), userConstraint1(NULL)
+  userConstraint0(nlf0_con_eval), userConstraint1(NULL),
+  fdStepSize(fdss), fdIntervalType(interval_type)
 {
   maxIterations  = max_iter;  maxFunctionEvals = max_eval;
   convergenceTol = conv_tol;  gradientTol = grad_tol;  maxStep = max_step;
@@ -472,10 +482,12 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf0_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+  vendorNumericalGradFlag = true; // no FD support from Model
+  snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			fdIntervalType, fdStepSize, max_iter, max_eval,
 			conv_tol, grad_tol, max_step, boundConstraintFlag,
 			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
@@ -492,7 +504,8 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      void (*nlf0_obj_eval) (int n, const RealVector& x, double& f,
 				     int& result_mode),
 	      void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
-			   int& result_mode),
+				     int& result_mode),
+	      const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -500,14 +513,15 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
             std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("user_functions"),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL), fdnlf1(NULL),
+  fdnlf1Con(NULL), theOptimizer(NULL), setUpType("user_functions"),
   linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
   linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
   nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts),
   userObjective0(nlf0_obj_eval), userObjective1(NULL),
-  userConstraint0(nlf0_con_eval), userConstraint1(NULL)
+  userConstraint0(nlf0_con_eval), userConstraint1(NULL),
+  fdStepSize(fdss), fdIntervalType(interval_type)
 {
   maxIterations  = max_iter;  maxFunctionEvals = max_eval;
   convergenceTol = conv_tol;  gradientTol = grad_tol;  maxStep = max_step;
@@ -529,10 +543,12 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf0_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+  vendorNumericalGradFlag = true; // no FD support from Model
+  snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			fdIntervalType, fdStepSize, max_iter, max_eval,
 			conv_tol, grad_tol, max_step, boundConstraintFlag,
 			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
@@ -622,10 +638,12 @@ update_callback_data(const RealVector& cv_initial,
 	  default_instantiate_constraint(userConstraint1);
       }
     //}
-    snll_post_instantiate(numContinuousVars, false, "", 0., maxIterations,
+    snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			  fdIntervalType, fdStepSize, maxIterations,
 			  maxFunctionEvals, convergenceTol, gradientTol,
 			  maxStep, boundConstraintFlag, numConstraints,
-			  outputLevel, theOptimizer, nlfObjective, NULL, NULL);
+			  outputLevel, theOptimizer, nlfObjective,
+			  fdnlf1, fdnlf1Con);
   }
 }
 
