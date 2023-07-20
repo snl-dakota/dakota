@@ -96,14 +96,27 @@ private:
   //- Heading: Helper functions
   //
 
-  void generate_dags();
+  /// generate sets of DAGs for the relevant combinations of active
+  /// approximations
+  void generate_ensembles_dags();
+  /// generate a set of DAGs for the provided root and subordinate nodes
+  void generate_dags(unsigned short root, const UShortArray& nodes,
+		     UShortArraySet& dag_set);
+  /// recursively generate sub-trees for current root and subordinate nodes
   void generate_sub_trees(unsigned short root, const UShortArray& nodes,
 			  unsigned short depth, UShortArray& dag,
 			  UShortArraySet& model_dags);
+  /// for the given DAG and active approimation set, generate the sets
+  /// of source nodes that point to given targets
   void generate_reverse_dag(const UShortArray& approx_set,
 			    const UShortArray& dag);
+  /// create an ordered list of roots that enable ordered sample increments
+  /// by ensuring that root sample levels are defined
   void unroll_reverse_dag_from_root(unsigned short root,
 				    UShortList& ordered_list);
+  /// create an ordered list of roots that enable ordered sample increments
+  /// by ensuring that root sample levels are defined (overloaded version
+  /// factors in the over-sample ratios)
   void unroll_reverse_dag_from_root(unsigned short root,
 				    const RealVector& avg_eval_ratios,
 				    UShortList& root_list);

@@ -50,7 +50,7 @@ NonDGenACVSampling::~NonDGenACVSampling()
 { }
 
 
-void NonDGenACVSampling::generate_dags()
+void NonDGenACVSampling::generate_ensembles_dags()
 {
   UShortArray nodes(numApprox), dag;  size_t i;
   for (i=0; i<numApprox; ++i) nodes[i] = i;
@@ -63,27 +63,122 @@ void NonDGenACVSampling::generate_dags()
   return;
   */
 
+  switch (modelSelectType) {
+  case ALL_MODEL_COMBINATIONS: {
+    // tensor product of order 1 to enumerate approximation inclusion
+    UShort2DArray tp;  UShortArray tp_orders(numApprox, 1);
+    Pecos::SharedPolyApproxData::tensor_product_multi_index(tp_orders, tp,true);
+    //Cout << "tp mi:\n" << tp;
+    size_t j, num_tp = tp.size();  unsigned short dag_size;
+
+    // We use a map<UShortArray,UShortArraySet> to associate pruned node sets
+    // to DAG sets.  Another option is to consolidate by keeping keep node set
+    // size at numApprox and using USHRT_MAX for omitted models, but this is
+    // expected to make the linear solve numerics more difficult.
+
+    // Pre-compute nominal ordered DAGs for each dag_size (0:numApprox)
+    std::vector<UShortArraySet> nominal_dags(numApprox+1); // include size 0
+    for (dag_size=numApprox; dag_size>=1; --dag_size) {
+      nodes.resize(dag_size); // discard trailing node
+      generate_dags(dag_size, nodes, nominal_dags[dag_size]);
+    }
+    // Now map each set of active model nodes through the nominal dags
+    UShortArray mapped_dag;  unsigned short nom_dag_j;
+    for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
+      const UShortArray& tp_i = tp[i];
+      nodes.clear();
+      for (j=0; j<numApprox; ++j)
+	if (tp_i[j]) nodes.push_back(j);
+      dag_size = nodes.size();
+      mapped_dag.resize(dag_size);
+      const UShortArraySet& nominal_set = nominal_dags[dag_size];
+      UShortArraySet& mapped_set = modelDAGs[nodes];  mapped_set.clear();
+      UShortArraySet::const_iterator s_cit;
+      for (s_cit=nominal_set.begin(); s_cit!=nominal_set.end(); ++s_cit) {
+	const UShortArray& nominal_dag = *s_cit;
+	for (j=0; j<dag_size; ++j) {
+	  nom_dag_j = nominal_dag[j];
+	  mapped_dag[j] = (nom_dag_j < dag_size) ? nodes[nom_dag_j] : root;
+	}
+	//Cout << "nominal_dag =\n" << nominal_dag
+	//     << "mapped_dag  =\n" << mapped_dag << std::endl;
+	mapped_set.insert(mapped_dag);
+      }
+    }
+
+    /* Option 2:
+    nodes.resize(numApprox);
+    for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
+      const UShortArray& tp_i = tp[i];
+      for (j=0; j<numApprox; ++j)
+        nodes[j] = (tp_i[j]) ? j : USHRT_MAX;
+      // recur for dag with a subset of approximations:
+      Cout << "\ngenerate_dags(): depth = " << dagDepthLimit
+	   << " root = " << root << " nodes =\n" << nodes << std::endl;
+      dag.assign(numApprox, USHRT_MAX);
+      generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
+    }
+    */
+    break;
+  }
+  case NO_MODEL_SELECTION:
+    // root node (truth index = numApprox) and set of dependent nodes
+    // (approximation model indices 0,numApprox-1) are fixed
+    generate_dags(root, nodes, modelDAGs[nodes]);  break;
+  }
+
+  std::map<UShortArray, UShortArraySet>::const_iterator d_cit;
+  size_t set_size, total_size = 0;
+  for (d_cit=modelDAGs.begin(); d_cit!=modelDAGs.end(); ++d_cit) {
+    const UShortArraySet& dag_set = d_cit->second;
+    set_size = dag_set.size();  total_size += set_size;
+    Cout << "For model set:\n" << d_cit->first
+	 << "searching array of DAGs of size " << set_size;
+    if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;//<< '\n';
+    else                             Cout << ".\n";
+  }
+  if (modelSelectType)
+    Cout << "Total DAGs across all model sets = " << total_size << '\n';
+  Cout << std::endl;
+}
+
+
+void NonDGenACVSampling::
+generate_dags(unsigned short root, const UShortArray& nodes,
+	      UShortArraySet& dag_set)
+{
+  // Note: This function does not need to manage gaps within the nodes array
+  //       (from compact to inflated approx mappings) since its use is limited
+  //       to NO_MODEL_SELECTION and nominal_dags within ALL_MODEL_COMBINATIONS.
+
+  dag_set.clear();
+  unsigned short num_approx = nodes.size(),
+    limit = std::min(num_approx, dagDepthLimit);
+  UShortArray dag;
+
+  if (limit <= 1) {
+    if (limit == 1) dag.assign(num_approx, root); // ACV
+    dag_set.insert(dag); // empty DAG (Monte Carlo) if limit is 0
+    return;
+  }
+
   // zero root directed acyclic graphs
+  dag.assign(num_approx, USHRT_MAX);
   switch (dagRecursionType) {
   case KL_GRAPH_RECURSION: {
-    // ***
-    // *** TO DO: add model set enumeration for ACV-KL as well...
-    // ***
 
-    size_t K, L, M_minus_K;
+    unsigned short i, K, L, M_minus_K;
     // Dakota low-to-high ordering (enumerate valid KL values and convert)
-    UShortArraySet& dag_set = modelDAGs[nodes];  dag_set.clear();
-    dag.resize(numApprox);
-    for (K=0; K<=numApprox; ++K) {
-      M_minus_K = numApprox - K;
+    for (K=0; K<=num_approx; ++K) {
+      M_minus_K = num_approx - K;
 
-      // K highest fidelity approximations target root (numApprox):
-      for (i=M_minus_K; i<numApprox; ++i) dag[i] = root;
+      // K highest fidelity approximations target root (num_approx):
+      for (i=M_minus_K; i<num_approx; ++i) dag[i] = root;
       // JCP ordering: for (i=0; i<K; ++i) dag[i] = 0; // root = 0
 
       for (L=0; L<=K; ++L) { // ordered single recursion
 	// M-K lowest fidelity approximations target root - L:
-	for (i=0; i<M_minus_K; ++i)       dag[i] = root - L;
+	for (i=0; i<M_minus_K; ++i)        dag[i] = root - L;
 	// JCP ordering: for (i=K; i<numApprox; ++i) dag[i] = L;
 
 	dag_set.insert(dag);
@@ -92,93 +187,9 @@ void NonDGenACVSampling::generate_dags()
     break;
   }
   default:
-    switch (modelSelectType) {
-    case ALL_MODEL_COMBINATIONS: {
-      // tensor product of order 1 to enumerate approximation inclusion
-      UShort2DArray tp;  UShortArray tp_orders(numApprox, 1);
-      Pecos::SharedPolyApproxData::
-	tensor_product_multi_index(tp_orders, tp, true);
-      //Cout << "tp mi:\n" << tp;
-      size_t j, num_tp = tp.size();  unsigned short dag_size;
-
-      // Two enumeration options here:
-      // > map<UShortArray,UShortArraySet> to associate pruned node sets to DAGs
-      // > keep node set size at numApprox and use USHRT_MAX for omitted models
-
-      // Option 1:
-      // Pre-compute generate_sub_trees() for each dag_size (0:numApprox)
-      std::vector<UShortArraySet> nominal_dags(numApprox+1); // include size 0
-      for (dag_size=numApprox; dag_size>=1; --dag_size) {
-	nodes.resize(dag_size); // discard trailing node
-	dag.assign(dag_size, USHRT_MAX);
-	generate_sub_trees(dag_size, nodes, std::min(dag_size, dagDepthLimit),
-			   dag, nominal_dags[dag_size]);
-      }
-      // Now map each set of active model nodes through the nominal dags
-      UShortArray mapped_dag;  unsigned short nom_dag_j;
-      for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
-	const UShortArray& tp_i = tp[i];
-	nodes.clear();
-	for (j=0; j<numApprox; ++j)
-	  if (tp_i[j]) nodes.push_back(j);
-	dag_size = nodes.size();
-	mapped_dag.resize(dag_size);
-	const UShortArraySet& nominal_set = nominal_dags[dag_size];
-	UShortArraySet& mapped_set = modelDAGs[nodes];	mapped_set.clear();
-	UShortArraySet::const_iterator s_cit;
-	for (s_cit=nominal_set.begin(); s_cit!=nominal_set.end(); ++s_cit) {
-	  const UShortArray& nominal_dag = *s_cit;
-	  for (j=0; j<dag_size; ++j) {
-	    nom_dag_j = nominal_dag[j];
-	    mapped_dag[j] = (nom_dag_j < dag_size) ? nodes[nom_dag_j] : root;
-	  }
-	  //Cout << "nominal_dag =\n" << nominal_dag
-	  //     << "mapped_dag  =\n" << mapped_dag << std::endl;
-	  mapped_set.insert(mapped_dag);
-	}	  
-      }
-
-      /* Option 2:
-      nodes.resize(numApprox);
-      for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
-	const UShortArray& tp_i = tp[i];
-	for (j=0; j<numApprox; ++j)
-	  nodes[j] = (tp_i[j]) ? j : USHRT_MAX;
-	// recur for dag with a subset of approximations:
-	Cout << "\ngenerate_dags(): depth = " << dagDepthLimit
-	     << " root = " << root << " nodes =\n" << nodes << std::endl;
-	dag.assign(numApprox, USHRT_MAX);
-	generate_sub_trees(root, nodes, dagDepthLimit, dag, modelDAGs);
-      }
-      */
-
-      break;
-    }
-
-    // Rather then enumerating all of the discrete model combinations, this
-    // employs one integrated continuous solve, which approaches the best
-    // discrete solution as some sample increments --> 0.  This approach is
-    // more likely to encounter issues with numerical conditioning.
-    case NO_MODEL_SELECTION:
-      // root node (truth index = numApprox) and set of dependent nodes
-      // (approximation model indices 0,numApprox-1) are fixed
-      UShortArraySet& dag_set = modelDAGs[nodes];  dag_set.clear();
-      dag.assign(numApprox, USHRT_MAX);
-      generate_sub_trees(root, nodes, dagDepthLimit, dag, dag_set);
-      break;
-    }
+    generate_sub_trees(root, nodes, limit, dag, dag_set);
     break;
   }
-
-  std::map<UShortArray, UShortArraySet>::const_iterator d_cit;
-  for (d_cit=modelDAGs.begin(); d_cit!=modelDAGs.end(); ++d_cit) {
-    const UShortArraySet& dag_set = d_cit->second;
-    Cout << "For model set:\n" << d_cit->first
-	 << "searching array of DAGs of size " << dag_set.size();
-    if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;//<< '\n';
-    else                             Cout << ".\n";
-  }
-  Cout << std::endl;
 }
 
 
@@ -342,7 +353,7 @@ void NonDGenACVSampling::pre_run()
   // For hyper-parameter/design/state changes, can reuse modelDAGs.  Other
   // changes ({dagRecursion,modelSelect}Type) would induce need to regenerate.
   if (modelDAGs.empty())
-    generate_dags();
+    generate_ensembles_dags();
 
   meritFnStar = DBL_MAX;
   bestModelSetIter = modelDAGs.end();
