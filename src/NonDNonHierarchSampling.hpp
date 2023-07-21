@@ -446,6 +446,9 @@ private:
   static void optpp_fdnlf1_constraint(int n, const RealVector& x,
 				      RealVector& c, int& result_mode);
 
+  /// static function used by DIRECT for its objective
+  static Real direct_penalty_merit(const RealVector& cd_vars);
+
   /// static function used by MinimizerAdapterModel for response data
   /// (objective and nonlinear constraint, if present)
   static void response_evaluator(const Variables& vars, const ActiveSet& set,

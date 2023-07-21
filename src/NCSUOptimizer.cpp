@@ -56,7 +56,7 @@ NCSUOptimizer::NCSUOptimizer(ProblemDescDB& problem_db, Model& model):
   volBoxSize(probDescDB.get_real("method.volume_boxsize_limit")),
   solutionTarget(probDescDB.get_real("method.solution_target")),
   userObjectiveEval(NULL)
-{ 
+{
   check_inputs();
 }
 
@@ -70,7 +70,7 @@ NCSUOptimizer(Model& model, size_t max_iter, size_t max_eval,
   setUpType(SETUP_MODEL),
   minBoxSize(min_box_size), volBoxSize(vol_box_size),
   solutionTarget(solution_target), userObjectiveEval(NULL)
-{ 
+{
   maxIterations = max_iter; maxFunctionEvals = max_eval;
   check_inputs();
 }
@@ -82,7 +82,7 @@ NCSUOptimizer::NCSUOptimizer(Model& model):
   Optimizer(NCSU_DIRECT, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
   setUpType(SETUP_MODEL), minBoxSize(-1.),
   volBoxSize(-1.), solutionTarget(-DBL_MAX), userObjectiveEval(NULL)
-{ 
+{
   check_inputs();
 }
 
@@ -98,8 +98,8 @@ NCSUOptimizer(const RealVector& var_l_bnds, const RealVector& var_u_bnds,
   setUpType(SETUP_USERFUNC), minBoxSize(min_box_size), volBoxSize(vol_box_size),
   solutionTarget(solution_target), lowerBounds(var_l_bnds), 
   upperBounds(var_u_bnds), userObjectiveEval(user_obj_eval)
-{ 
-  maxIterations = max_iter; maxFunctionEvals = max_eval; 
+{
+  maxIterations = max_iter; maxFunctionEvals = max_eval;
   check_inputs();
 }
 
@@ -132,18 +132,23 @@ void NCSUOptimizer::check_inputs()
   // Check limits against DIRECT hard-wired parameters. Note that
   // maxIterations could be a problem with constants maxdeep and
   // maxdiv, but there's no way to know a priori.
-  if (numContinuousVars > NCSU_DIRECT_MAXDIM || 
-      maxFunctionEvals > NCSU_DIRECT_MAXFUNC) {
-    if (numContinuousVars > NCSU_DIRECT_MAXDIM) 
-      Cerr << "Error (NCSUOptimizer): " << numContinuousVars << " variables "
-	   << "specified exceeds NCSU DIRECT limit\n                       of "
-	   << NCSU_DIRECT_MAXDIM << " variables.\n";
-    if (maxFunctionEvals > NCSU_DIRECT_MAXFUNC)
-      Cerr << "Error (NCSUOptimizer): max function evaluations " 
-	   << maxFunctionEvals << " specified exceeds\n                       "
-	   << "NCSU DIRECT limit of " << NCSU_DIRECT_MAXFUNC << ".\n";
+  bool err_flag = false;
+  if (numContinuousVars > NCSU_DIRECT_MAXDIM) {
+    Cerr << "Error (NCSUOptimizer): " << numContinuousVars << " variables "
+	 << "specified exceeds NCSU DIRECT limit\n                       of "
+	 << NCSU_DIRECT_MAXDIM << " variables.\n";
+    err_flag = true;
+  }
+  if (maxFunctionEvals > NCSU_DIRECT_MAXFUNC) {
+    Cerr << "Error (NCSUOptimizer): max function evaluations " 
+	 << maxFunctionEvals << " specified exceeds\n                       "
+	 << "NCSU DIRECT limit of " << NCSU_DIRECT_MAXFUNC << ".\n";
+    err_flag = true;
+  }
+
+  if (err_flag) {
     Cerr << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -166,7 +171,7 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 
   int cnt = *start-1; // starting index into fvec
   int nx  = *n;       // dimension of design vector x.
-  
+
   // number of trial points to evaluate
   // if initial point, we have a single point to evaluate
   int np = (*start == 1) ? 1 : *maxI*2;
@@ -339,23 +344,23 @@ void NCSUOptimizer::core_run()
     switch (ierror) {
     case 1:
       Cout << "(maximum function evaluations exceeded)";
-      break;;
+      break;
     case 2:
       Cout << "(maximum iterations reached)";
-      break;;
+      break;
     case 3:
       Cout << "(prescribed global minimum reached within tolerance)";
-      break;;
+      break;
     case 4:
       Cout << "(volume of best hyperrectangle is less than the "
         << "prescribed percentage of the original)"; 
-      break;;
+      break;
     case 5:
       Cout << "(best rectangle measure is less than prescribed min box size)";
-      break;;
+      break;
     default:
       Cout << "(unknown code)";
-      break;;
+      break;
     }
     Cout << std::endl;
   }

@@ -481,6 +481,7 @@ objective(const RealVector& fn_vals, const BoolDeque& max_sense,
   return objective(fn_vals, numUserPrimaryFns, max_sense, primary_wts);
 }
 
+
 /** This "composite" objective is a more general case of the previous
     objective(), but doesn't presume a reduction map from user to
     iterated space.  Used to apply weights and sense in COLIN results
@@ -518,6 +519,7 @@ objective(const RealVector& fn_vals, size_t num_fns,
   return obj_fn;
 }
 
+
 void Minimizer::
 objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads, 
 		   const BoolDeque& max_sense, const RealVector& primary_wts,
@@ -526,6 +528,7 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
   objective_gradient(fn_vals, numUserPrimaryFns, fn_grads, max_sense,
 		     primary_wts, obj_grad);
 }
+
 
 /** The composite objective gradient computation combines the
     contributions from one of more primary function gradients,
@@ -581,6 +584,7 @@ objective_gradient(const RealVector& fn_vals, size_t num_fns,
     }
   }
 }
+
 
 void Minimizer::
 objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads, 
@@ -758,7 +762,8 @@ void Minimizer::print_best_eval_ids(const String& search_interface_id,
 }
 
 
-void Minimizer::archive_best_variables(const bool active_only) const {
+void Minimizer::archive_best_variables(const bool active_only) const
+{
   if(!resultsDB.active()) return;
   // archive the best point in the iterator database
   const StrStrSizet &iterator_id = run_identifier();
@@ -911,7 +916,6 @@ void Minimizer::archive_best_variables(const bool active_only) const {
 void Minimizer::
 archive_best_objective_functions() const
 {
-
   const size_t num_points = bestResponseArray.size();
   StrStrSizet iterator_id = run_identifier();
   // ##  legacy text output ##
@@ -948,9 +952,11 @@ archive_best_objective_functions() const
   }
 } 
 
+
 /// Archive residuals when calibration terms are used
 void Minimizer::
-archive_best_residuals() const {
+archive_best_residuals() const
+{
   if(!resultsDB.active()) return;
   
   const RealVector& lsq_weights 
@@ -1000,6 +1006,7 @@ archive_best_residuals() const {
   }
 }
 
+
 void Minimizer::
 archive_best_constraints() const {
   if(!resultsDB.active() || !numNonlinearConstraints) return;
@@ -1025,6 +1032,7 @@ archive_best_constraints() const {
   }
 }
 
+
 /** Uses data from the innermost model, should any Minimizer recasts be active.
     Called by multipoint return solvers. Do not directly call resize on the 
     bestVariablesArray object unless you intend to share the internal content 
@@ -1049,8 +1057,8 @@ void Minimizer::resize_best_vars_array(size_t newsize)
       bestVariablesArray.push_back(usermodel.current_variables().copy());
   }
   // else no size change
-
 }
+
 
 /** Uses data from the innermost model, should any Minimizer recasts be active.
     Called by multipoint return solvers. Do not directly call resize on the 
@@ -1137,8 +1145,9 @@ void Minimizer::print_residuals(size_t num_terms, const RealVector& best_terms,
     << std::setw(write_precision+7) << 0.5*wssr << '\n';
 }
 
-void Minimizer::archive_best_results() {
 
+void Minimizer::archive_best_results()
+{
   if(!resultsDB.active()) return;
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {
@@ -1209,6 +1218,7 @@ void Minimizer::archive_best_results() {
   }
 }
 
+
 /** Retrieve a MOO/NLS response based on the data returned by a single
     objective optimizer by performing a data_pairs search. This may
     get called even for a single user-specified function, since we may
@@ -1231,6 +1241,5 @@ local_recast_retrieve(const Variables& vars, Response& response) const
   response.update(cache_it->response());
   return true;
 }
-
 
 } // namespace Dakota

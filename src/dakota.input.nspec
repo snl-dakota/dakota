@@ -2874,6 +2874,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
         |
         nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+        |
+        direct {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT)}
        ]
      ]
     [ sample_type {0}
@@ -3012,6 +3014,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
       |
       nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+      |
+      direct {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT)}
      ]
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]

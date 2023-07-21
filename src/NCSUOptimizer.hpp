@@ -48,9 +48,8 @@ class NCSUTraits: public TraitsBase
     State University. It uses a function pointer approach for which passed 
     functions must be either global functions or static member functions.  
     Any attribute used within static member functions must be either local 
-    to that function or accessed through a static pointer.
+    to that function or accessed through a static pointer. */
 
-    The user input mappings are as follows: */
 class NCSUOptimizer: public Optimizer
 {
 public:

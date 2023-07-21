@@ -280,6 +280,16 @@
              </optional>
 	     ' >
 
+    <!ENTITY method_mlmf_sub_problem_solver '
+             <optional>
+	       <oneOf label="Optimization Solver">
+                 <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp" />
+                 <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip" />
+                 <keyword  id="direct" name="direct" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT)}" label="direct" />
+	       </oneOf>
+             </optional>
+	     ' >
+
     <!ENTITY method_local_sub_problem_solver '
              <optional>
 	       <oneOf label="Optimization Solver">
@@ -324,7 +334,7 @@
                    <keyword  id="override" name="override" code="{N_mdm(utype,numericalSolveMode_NUMERICAL_OVERRIDE)}" label="override" />
                  </oneOf>
                </optional>
-               &method_gradient_sub_problem_solver;
+               &method_mlmf_sub_problem_solver;
 	     </keyword>
 	     ' >
 
@@ -3145,7 +3155,7 @@
 	    </oneOf>
 	  </keyword>
 	  -->
-	  &method_gradient_sub_problem_solver;
+	  &method_mlmf_sub_problem_solver;
 	  &method_seed_sequence;
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
