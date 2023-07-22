@@ -1262,6 +1262,14 @@ sub_optimizer_select(unsigned short requested_sub_method,
 	 << "\n       Please select alternate sub-method solver." << std::endl;
 #endif
     break;
+  case SUBMETHOD_DIRECT:
+#ifdef HAVE_NCSU
+    assigned_sub_method = requested_sub_method;
+#else
+    Cerr << "\nError: this executable not configured with NCSU DIRECT."
+	 << "\n       Please select alternate sub-method solver." << std::endl;
+#endif
+    break;
   case SUBMETHOD_DEFAULT:
     switch (default_sub_method) {
     case SUBMETHOD_NPSOL: // use SUBMETHOD_NPSOL if available

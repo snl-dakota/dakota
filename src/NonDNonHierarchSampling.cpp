@@ -955,6 +955,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	//  sub_prob_model, max_iter, max_eval, min_box_size, vol_box_size,
 	//  solution_target));
 	Real min_box_size = -1., vol_box_size = -1., soln_target = -DBL_MAX;
+	max_eval = 89980; // hardwired limit (error from NCSU, tied to bounds?)
 	linearIneqCoeffs    = lin_ineq_coeffs;
 	linearIneqLowerBnds = lin_ineq_lb;
 	linearIneqUpperBnds = lin_ineq_ub;
@@ -1004,22 +1005,32 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
       */
       }
   }
-  else if (use_adapter) {
-    Model& sub_prob_model = varianceMinimizers[0].iterated_model();
-    // *** TO DO: (existing active view accessors don't support size change)
-    //adapt_model.update_active_variables(x0, x_lb, x_ub);
-    //adapt_model.update_active_constraints(lin_ineq_coeffs, lin_ineq_lb,
-    //  lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
-    //  nln_eq_tgt);
-    if (use_dfs) sub_prob_model.update_from_subordinate_model();
-    for (size_t i=0; i<num_solvers; ++i)
-      varianceMinimizers[i].update_from_model(sub_prob_model);
+  else { // update data for existing varianceMinimizers
+    size_t i, last_index = num_solvers - 1;
+    if (use_adapter) {
+      Model& sub_prob_model = varianceMinimizers[last_index].iterated_model();
+      // *** TO DO: (existing active view accessors don't support size change)
+      //adapt_model.update_active_variables(x0, x_lb, x_ub);
+      //adapt_model.update_active_constraints(lin_ineq_coeffs, lin_ineq_lb,
+      //  lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
+      //  nln_eq_tgt);
+      if (use_dfs) sub_prob_model.update_from_subordinate_model();
+      if (sequenced_minimizers && mlmfIter)
+	varianceMinimizers[last_index].update_from_model(sub_prob_model);
+      else
+	for (i=0; i<num_solvers; ++i)
+	  varianceMinimizers[i].update_from_model(sub_prob_model);
+    }
+    else if (sequenced_minimizers && mlmfIter)
+      varianceMinimizers[last_index].update_callback_data(x0, x_lb, x_ub,
+        lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt,
+        nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
+    else
+      for (i=0; i<num_solvers; ++i)
+	varianceMinimizers[i].update_callback_data(x0, x_lb, x_ub,
+	  lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	  lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
   }
-  else
-    for (size_t i=0; i<num_solvers; ++i)
-      varianceMinimizers[i].update_callback_data(x0, x_lb, x_ub,
-	lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt,
-	nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
 }
 
 
@@ -1032,31 +1043,38 @@ run_minimizers(DAGSolutionData& soln, size_t num_solvers,
   // ----------------------------------
   Real merit_fn, merit_fn_star = DBL_MAX;
   size_t i, last_index = num_solvers - 1, best_min = last_index;
-  for (i=0; i<num_solvers; ++i) {
-    Iterator& min_i = varianceMinimizers[i];
-    min_i.run();
-    const Variables& vars_star = min_i.variables_results();
-    const RealVector&  cv_star = vars_star.continuous_variables();
-    const RealVector&  fn_star = min_i.response_results().function_values();
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "ensemble_numerical_solution() results:\ncv_star =\n"
-	   << cv_star << "fn_vals_star =\n" << fn_star;
 
-    if (sequenced_minimizers) { // coordinated optimization
-      if (i < last_index) // propagate final pt to next initial pt
-	varianceMinimizers[i+1].iterated_model().active_variables(vars_star);
+  if (sequenced_minimizers && mlmfIter)  // bypass upstream (global) searches
+    varianceMinimizers[last_index].run();// warm start w/ last (local) minimizer
+  else
+    for (i=0; i<num_solvers; ++i) {
+      Iterator& min_i = varianceMinimizers[i];
+      min_i.run();
+      const Variables& vars_star = min_i.variables_results();
+      const RealVector&  cv_star = vars_star.continuous_variables();
+      const RealVector&  fn_star = min_i.response_results().function_values();
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "ensemble_numerical_solution() results:\ncv_star =\n"
+	     << cv_star << "fn_vals_star =\n" << fn_star;
+
+      if (sequenced_minimizers) { // coordinated optimization
+	if (i < last_index) // propagate final pt to next initial pt
+	  varianceMinimizers[i+1].iterated_model().active_variables(vars_star);
+      }
+      else {                      //    competed optimization
+	// track best using penalty merit fn comprised of accuracy and cost
+	merit_fn = nh_penalty_merit(cv_star, fn_star);
+	if (i == 0 || merit_fn < merit_fn_star)
+	  { merit_fn_star = merit_fn;  best_min = i; }
+      }
     }
-    else {                      //    competed optimization
-      // track best using penalty merit fn comprised of accuracy and cost
-      merit_fn = nh_penalty_merit(cv_star, fn_star);
-      if (i == 0 || merit_fn < merit_fn_star)
-	{ merit_fn_star = merit_fn;  best_min = i; }
-    }
-  }
 
   // -------------------------------------
   // Post-process the optimization results
   // -------------------------------------
+  // Note: issues with more involved recovery for upstream (global) optimizers
+  // that don't support constraints are avoided by always ending with a capable
+  // (local gradient-based) search at the end of the sequence.
   const Iterator& min_s = varianceMinimizers[best_min];
   if (outputLevel >= NORMAL_OUTPUT && num_solvers > 1 && !sequenced_minimizers)
     Cout << "ensemble_numerical_solution() best solver = "

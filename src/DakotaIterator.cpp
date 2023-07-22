@@ -949,6 +949,7 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_OPTPP,             "nip")
   (SUBMETHOD_NPSOL,             "sqp")
   (SUBMETHOD_NPSOL_OPTPP,       "sqp_nip")
+  (SUBMETHOD_DIRECT,            "direct")
   (SUBMETHOD_EA,                "ea")
   (SUBMETHOD_EGO,               "ego")
   (SUBMETHOD_SBGO,              "sbgo")
