@@ -621,6 +621,36 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 
 
 Real NonDACVSampling::
+augmented_linear_ineq_violations(const RealVector& cd_vars)
+{
+  Real quad_viol = 0.;
+  switch (optSubProblemForm) {
+  case N_VECTOR_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
+  case N_VECTOR_LINEAR_OBJECTIVE: { // no other lin ineq
+    size_t lin_ineq_offset
+      = (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT) ? 1 : 0;
+    Real viol, inner_prod, l_bnd, u_bnd, N_H = cd_vars[numApprox];
+    for (size_t approx=0; approx<numApprox; ++approx) {
+      inner_prod
+	= linearIneqCoeffs(approx+lin_ineq_offset, approx) * cd_vars[approx]
+	+ linearIneqCoeffs(approx+lin_ineq_offset, numApprox) * N_H;
+      l_bnd = linearIneqLowerBnds[approx+lin_ineq_offset];
+      u_bnd = linearIneqUpperBnds[approx+lin_ineq_offset];
+      if (inner_prod < l_bnd)
+	{ viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
+      else if (inner_prod > u_bnd)
+	{ viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+    }
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
+    break; // none to add (r lower bounds = 1)
+  }
+  return quad_viol;
+}
+
+
+Real NonDACVSampling::
 update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
 		 const RealVector& estvar0)
 {

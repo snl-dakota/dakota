@@ -54,7 +54,7 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
-					 size_t& num_nln_con);
+				 size_t& num_nln_con);
   void numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     const RealVector& cost, Real avg_N_H, RealVector& x0, RealVector& x_lb,
     RealVector& x_ub, RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
@@ -85,6 +85,7 @@ protected:
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub);
+  Real augmented_linear_ineq_violations(const RealVector& cd_vars);
 
   //
   //- Heading: member functions
@@ -440,8 +441,9 @@ inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
     // N_H not provided so pull from latest counter values
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
-    // estimator variance uses actual (not alloc) so use same for defining G,g
-    // *** TO DO: but avg_hf_target defines delta relative to actual||alloc
+    // average_estimator_variance() uses actual (not alloc) to sync with varH
+    // so use same prior to defining G,g in precompute_genacv_control() and
+    // estimator_variance_ratios()
     N_vec[numApprox] = //(backfillFailures) ?
       average(NLevActual[hf_form_index][hf_lev_index]);// :
       //NLevAlloc[hf_form_index][hf_lev_index];

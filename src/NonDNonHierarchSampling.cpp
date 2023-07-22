@@ -577,6 +577,8 @@ ensemble_numerical_solution(const RealVector& cost,
 					lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
 					nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
 					lin_ineq_coeffs, lin_eq_coeffs);
+  // virtual augmentation of linear ineq (differs among MFMC, ACV, GenACV)
+  augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 
   // Perform the numerical solve(s) and recover the solution:
   size_t num_solvers;  bool sequenced_minimizers;
@@ -750,8 +752,6 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     break;
   }
   }
-  // virtual augmentation of linear ineq (differs among MFMC, ACV, GenACV)
-  augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 }
 
 
@@ -955,6 +955,9 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	//  sub_prob_model, max_iter, max_eval, min_box_size, vol_box_size,
 	//  solution_target));
 	Real min_box_size = -1., vol_box_size = -1., soln_target = -DBL_MAX;
+	linearIneqCoeffs    = lin_ineq_coeffs;
+	linearIneqLowerBnds = lin_ineq_lb;
+	linearIneqUpperBnds = lin_ineq_ub;
 	varianceMinimizers[i].assign_rep(std::make_shared<NCSUOptimizer>(
 	  x_lb, x_ub, max_iter, max_eval, direct_penalty_merit, min_box_size,
 	  vol_box_size, soln_target));
@@ -1140,7 +1143,7 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
 // Minimizer::penalty_merit() uses too many Minimizer attributes, so we
 // use local definitions here
 Real NonDNonHierarchSampling::
-nh_penalty_merit(const RealVector& c_vars, const RealVector& fn_vals)
+nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
 {
   // Assume linear constraints are satisfied (for now)
   // Keep accuracy in log space and normalize both cost and log-accuracy
@@ -1152,13 +1155,16 @@ nh_penalty_merit(const RealVector& c_vars, const RealVector& fn_vals)
 			    std::log(convergenceTol*average(estVarIter0)));
     break;
 
+  case N_VECTOR_LINEAR_CONSTRAINT:
+    return nh_penalty_merit(fn_vals[0], linear_cost(cd_vars), budget);  break;
+
   case R_AND_N_NONLINEAR_CONSTRAINT:
-    return nh_penalty_merit(fn_vals[0], fn_vals[1], budget);  break;
+    return nh_penalty_merit(fn_vals[0], fn_vals[1], budget);            break;
 
   //default: return fn_vals[0]; break; // no nln con, assume linear are enforced
   default:  { // more involved recovery of equiv cost from cv_star
     Real avg_estvar, avg_hf_target, equiv_hf_cost;  RealVector avg_eval_ratios;
-    recover_results(c_vars, fn_vals, avg_estvar, avg_eval_ratios,
+    recover_results(cd_vars, fn_vals, avg_estvar, avg_eval_ratios,
 		    avg_hf_target, equiv_hf_cost);
     return nh_penalty_merit(std::log(avg_estvar), equiv_hf_cost, budget);
     break;
@@ -1481,17 +1487,24 @@ optpp_fdnlf1_constraint(int n, const RealVector& x, RealVector& c,
 
 Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
 {
-  // ***
-  // *** TO DO: LINEAR CONSTRAINTS ARE NOT ENFORCED BY DIRECT AND PENALIZATION
-  // ***        MAY NEED TO OCCUR UPSTREAM TO PROTECT log_average_estvar()
-  // ***
-
-  // Notes:
+  // In addition to accuracy + cost in numerical_solution_bounds_constraints(),
+  // there are linear ineq augmentations in augment_linear_ineq_constraints()
+  // that are required to protect against inf/nan during the numerical solves.
+  // Since DIRECT does not enforce these implicitly during box generation, we
+  // penalize any violation of these constraints upstream of estvar solutions.
+  // > use a variable numerical penalty that provides trend towards feasibility
+  //   --> orders infeasible boxes for further subdivision
+  //   --> avoid FPE by using surrogate estvar (iter0 reference)
+  // Other notes:
   // > estimator_variance_ratios() converts cd_vars as needed
   // > linear_cost() requires N_VECTOR_*
-  Real log_avg_estvar = nonHierSampInstance->log_average_estvar(cd_vars),
-    obj, constr, constr_u_bnd;
-  //RealVector ineq_constr(num_ineq), ineq_constr_l_bnd(num_ineq), ineq_constr_u_bnd(num_ineq);
+  Real lin_ineq_viol
+    = nonHierSampInstance->augmented_linear_ineq_violations(cd_vars);
+  bool protect_numerics = (lin_ineq_viol > 0.); // RATIO_NUDGE reflected in viol
+  Real obj, constr, constr_u_bnd,
+    budget = (Real)nonHierSampInstance->maxFunctionEvals, log_avg_estvar
+    = (protect_numerics) ? std::log(average(nonHierSampInstance->estVarIter0))
+                         : nonHierSampInstance->log_average_estvar(cd_vars);
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_VECTOR_LINEAR_OBJECTIVE:
     obj          = nonHierSampInstance->linear_cost(cd_vars);
@@ -1502,21 +1515,35 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
   case N_VECTOR_LINEAR_CONSTRAINT:
     obj          = log_avg_estvar;
     constr       = nonHierSampInstance->linear_cost(cd_vars);
-    constr_u_bnd = (Real)nonHierSampInstance->maxFunctionEvals;
+    constr_u_bnd = budget;
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
     obj          = log_avg_estvar;
     constr       = nonHierSampInstance->nonlinear_cost(cd_vars);
-    constr_u_bnd = (Real)nonHierSampInstance->maxFunctionEvals;
+    constr_u_bnd = budget;
     break;
-  case R_ONLY_LINEAR_CONSTRAINT: // *** TO DO
-    //RealVector ;  r_and_N_to();
-    obj          = log_avg_estvar; // *** valid without N?
-    //constr     = nonHierSampInstance->nonlinear_cost(cd_vars);
-    constr_u_bnd = (Real)nonHierSampInstance->maxFunctionEvals;
+  case R_ONLY_LINEAR_CONSTRAINT: {
+    // emulate NonDGenACVSampling::inflate_variables():
+    size_t hf_form_index, hf_lev_index;
+    nonHierSampInstance->hf_indices(hf_form_index, hf_lev_index);
+    Real avg_N_H
+      = average(nonHierSampInstance->NLevActual[hf_form_index][hf_lev_index]);
+    RealVector N_vec;
+    nonHierSampInstance->r_and_N_to_N_vec(cd_vars, avg_N_H, N_vec);
+
+    obj          = log_avg_estvar;
+    constr       = nonHierSampInstance->linear_cost(N_vec);
+    constr_u_bnd = budget;
     break;
   }
-  return nonHierSampInstance->nh_penalty_merit(obj, constr, constr_u_bnd);
+  }
+
+  Real merit = nonHierSampInstance->nh_penalty_merit(obj, constr, constr_u_bnd);
+  if (protect_numerics) {
+    Real r_p_sq = 1.e+12; // square of r_p from accuracy/cost constraint
+    merit += r_p_sq  * lin_ineq_viol * lin_ineq_viol;
+  }
+  return merit;
 }
 
 

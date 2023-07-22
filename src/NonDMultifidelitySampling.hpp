@@ -68,6 +68,7 @@ protected:
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub);
+  Real augmented_linear_ineq_violations(const RealVector& cd_vars);
 
   //
   //- Heading: member functions
