@@ -683,7 +683,24 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
   size_t i, num_cdv = x0.length(), approx;
   Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals;
 
-  x_ub        =  DBL_MAX; // no upper bounds on x
+  // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
+  if (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) // *** TO DO ***
+    x_ub = DBL_MAX; // no upper bounds on x
+  else {
+    // set x_ub based on exhausting remaining budget using only approx i
+    // prior to approx increments, equivHFEvals represents the total incurred
+    // cost in shared sample sets
+    Real remaining = budget - equivHFEvals;
+    // remaining = N_i * cost[i] / cost_H
+    for (i=0; i<numApprox; ++i)
+      x_ub[i] = remaining * cost_H / cost[i];
+    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
+      // increments in N_H are shared with cost = \Sum costs
+      Real sum_cost = cost_H;
+      for (i=0; i<numApprox; ++i) sum_cost += cost[i];
+      x_ub[numApprox] = remaining * cost_H / sum_cost;
+    }
+  }
   lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
 
   // Note: ACV paper suggests additional linear constraints for r_i ordering
