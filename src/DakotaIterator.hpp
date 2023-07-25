@@ -201,6 +201,15 @@ public:
     const RealVector& lin_ineq_ub,     const RealMatrix& lin_eq_coeffs,
     const RealVector& lin_eq_tgt,      const RealVector& nln_ineq_lb,
     const RealVector& nln_ineq_ub,     const RealVector& nln_eq_tgt);
+  /// return linear constraint coefficients for this iterator (user-functions
+  /// mode for which iteratedModel is null)
+  virtual const RealMatrix& callback_linear_ineq_coefficients() const;
+  /// return linear constraint lower bounds for this iterator (user-functions
+  /// mode for which iteratedModel is null)
+  virtual const RealVector& callback_linear_ineq_lower_bounds() const;
+  /// return linear constraint upper bounds for this iterator (user-functions
+  /// mode for which iteratedModel is null)
+  virtual const RealVector& callback_linear_ineq_upper_bounds() const;
 
   /// initialize the 2D graphics window and the tabular graphics data
   virtual void initialize_graphics(int iterator_server_id = 1);

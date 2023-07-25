@@ -209,6 +209,9 @@ public:
 			    const RealVector& nln_ineq_l_bnds,
 			    const RealVector& nln_ineq_u_bnds,
 			    const RealVector& nln_eq_targets);
+  const RealMatrix& callback_linear_ineq_coefficients() const;
+  const RealVector& callback_linear_ineq_lower_bounds() const;
+  const RealVector& callback_linear_ineq_upper_bounds() const;
 
 protected:
 
@@ -409,6 +412,21 @@ private:
 
 inline void SNLLOptimizer::initial_point(const RealVector& pt)
 { copy_data(pt, initialPoint); } // protect from incoming view
+
+
+inline const RealMatrix& SNLLOptimizer::
+callback_linear_ineq_coefficients() const
+{ return linIneqCoeffs; }
+
+
+inline const RealVector& SNLLOptimizer::
+callback_linear_ineq_lower_bounds() const
+{ return linIneqLowerBnds; }
+
+
+inline const RealVector& SNLLOptimizer::
+callback_linear_ineq_upper_bounds() const
+{ return linIneqUpperBnds; }
 
 } // namespace Dakota
 

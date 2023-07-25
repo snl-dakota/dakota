@@ -90,14 +90,29 @@ NCSUOptimizer::NCSUOptimizer(Model& model):
 /** This is an alternate constructor for performing an optimization using
     the passed in objective function pointer. */
 NCSUOptimizer::
-NCSUOptimizer(const RealVector& var_l_bnds, const RealVector& var_u_bnds,
+NCSUOptimizer(//const RealVector& initial_pt,
+	      const RealVector& var_l_bnds, const RealVector& var_u_bnds,
+	      const RealMatrix& lin_ineq_coeffs,
+	      const RealVector& lin_ineq_l_bnds,
+	      const RealVector& lin_ineq_u_bnds,
+	      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+	      const RealVector& nln_ineq_l_bnds,
+	      const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
 	      size_t max_iter, size_t max_eval,
 	      double (*user_obj_eval) (const RealVector &x),
 	      double min_box_size, double vol_box_size, double solution_target):
-  Optimizer(NCSU_DIRECT, var_l_bnds.length(), 0, 0, 0, 0, 0, 0, 0, std::shared_ptr<TraitsBase>(new NCSUTraits())),
+  Optimizer(NCSU_DIRECT, var_l_bnds.length(), 0, 0, 0,
+	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
+	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
+	    std::shared_ptr<TraitsBase>(new NCSUTraits())),
   setUpType(SETUP_USERFUNC), minBoxSize(min_box_size), volBoxSize(vol_box_size),
   solutionTarget(solution_target), lowerBounds(var_l_bnds), 
-  upperBounds(var_u_bnds), userObjectiveEval(user_obj_eval)
+  upperBounds(var_u_bnds), linIneqCoeffs(lin_ineq_coeffs),
+  // linear and nonlinear constraints are cached even though not directly used
+  linIneqLowerBnds(lin_ineq_l_bnds), linIneqUpperBnds(lin_ineq_u_bnds),
+  linEqCoeffs(lin_eq_coeffs), linEqTargets(lin_eq_tgts),
+  nlnIneqLowerBnds(nln_ineq_l_bnds), nlnIneqUpperBnds(nln_ineq_u_bnds),
+  nlnEqTargets(nln_eq_tgts), userObjectiveEval(user_obj_eval)
 {
   maxIterations = max_iter; maxFunctionEvals = max_eval;
   check_inputs();
@@ -155,6 +170,58 @@ void NCSUOptimizer::check_inputs()
 
 NCSUOptimizer::~NCSUOptimizer() 
 { }
+
+
+void NCSUOptimizer::
+update_callback_data(const RealVector& cv_initial,
+		     const RealVector& cv_lower_bnds,
+		     const RealVector& cv_upper_bnds,
+		     const RealMatrix& lin_ineq_coeffs,
+		     const RealVector& lin_ineq_l_bnds,
+		     const RealVector& lin_ineq_u_bnds,
+		     const RealMatrix& lin_eq_coeffs,
+		     const RealVector& lin_eq_targets,
+		     const RealVector& nln_ineq_l_bnds,
+		     const RealVector& nln_ineq_u_bnds,
+		     const RealVector& nln_eq_targets)
+{
+  enforce_null_model();
+
+  bool reshape = false;
+  size_t num_cv  = cv_initial.length(),
+    num_lin_ineq = lin_ineq_coeffs.numRows(),
+    num_lin_eq   = lin_eq_coeffs.numRows(),
+    num_nln_ineq = nln_ineq_l_bnds.length(),
+    num_nln_eq   = nln_eq_targets.length();
+  if (numContinuousVars != num_cv)
+    { numContinuousVars  = num_cv; reshape = true; }
+  if (numLinearIneqConstraints != num_lin_ineq ||
+      numLinearEqConstraints   != num_lin_eq)
+    { numLinearIneqConstraints  = num_lin_ineq;
+      numLinearEqConstraints    = num_lin_eq; reshape = true; }
+  if (numNonlinearIneqConstraints != num_nln_ineq ||
+      numNonlinearEqConstraints   != num_nln_eq)
+    { numNonlinearIneqConstraints  = num_nln_ineq;
+      numNonlinearEqConstraints    = num_nln_eq; reshape = true; }
+  numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;
+  numNonlinearConstraints
+    = numNonlinearIneqConstraints + numNonlinearEqConstraints;
+  numConstraints = numNonlinearConstraints + numLinearConstraints;
+  numFunctions = numObjectiveFns + numNonlinearConstraints;
+
+  //initial_point(cv_initial);           // protect from incoming view
+  copy_data(cv_lower_bnds, lowerBounds); // protect from incoming view
+  copy_data(cv_upper_bnds, upperBounds); // protect from incoming view
+
+  linIneqCoeffs    = lin_ineq_coeffs;  linEqCoeffs      = lin_eq_coeffs;
+  linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
+  linEqTargets     = lin_eq_targets;
+
+  nlnIneqLowerBnds = nln_ineq_l_bnds;  nlnIneqUpperBnds = nln_ineq_u_bnds;
+  nlnEqTargets     = nln_eq_targets;
+
+  if (reshape) reshape_best(numContinuousVars, numFunctions);
+}
 
 
 /// Modified batch evaluator that accepts multiple points and returns

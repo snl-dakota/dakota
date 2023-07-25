@@ -298,7 +298,10 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 
 
 Real NonDMultifidelitySampling::
-augmented_linear_ineq_violations(const RealVector& cd_vars)
+augmented_linear_ineq_violations(const RealVector& cd_vars,
+				 const RealMatrix& lin_ineq_coeffs,
+				 const RealVector& lin_ineq_lb,
+				 const RealVector& lin_ineq_ub)
 {
   // linear inequality constraints on sample counts:
   // N_i increases w/ decreasing fidelity
@@ -312,10 +315,10 @@ augmented_linear_ineq_violations(const RealVector& cd_vars)
   for (i=0; i<numApprox; ++i) { // N_im1 >= N_i
     if (i == num_am1) approx_ip1 = numApprox;
     else              approx_ip1 = (ordered) ? i+1 : approxSequence[i+1];
-    inner_prod = linearIneqCoeffs(i+lin_ineq_offset, approx) * cd_vars[approx]
-      + linearIneqCoeffs(i+lin_ineq_offset, approx_ip1) * cd_vars[approx_ip1];
-    l_bnd = linearIneqLowerBnds[i+lin_ineq_offset];
-    u_bnd = linearIneqUpperBnds[i+lin_ineq_offset];
+    inner_prod = lin_ineq_coeffs(i+lin_ineq_offset, approx) * cd_vars[approx]
+      + lin_ineq_coeffs(i+lin_ineq_offset, approx_ip1) * cd_vars[approx_ip1];
+    l_bnd = lin_ineq_lb[i+lin_ineq_offset];
+    u_bnd = lin_ineq_ub[i+lin_ineq_offset];
     if (inner_prod < l_bnd)
       { viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
     else if (inner_prod > u_bnd)

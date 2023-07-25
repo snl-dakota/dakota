@@ -863,11 +863,8 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     // updated avg_N_H now includes allocation from previous solution and
     // should be active on constraint bound (excepting sample count rounding)
 
-    // ***
-    // *** TO DO: for global, global+local, follow up with local only?
-    // ***
-
     // warm start from previous soln for corresponding {approx_set,active_dag}
+    // Note: for sequenced minimizers, only the last is used for refinement
     ensemble_numerical_solution(sequenceCost, approxSequence, soln, numSamples);
   }
 
@@ -1190,7 +1187,10 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 
 
 Real NonDGenACVSampling::
-augmented_linear_ineq_violations(const RealVector& cd_vars)
+augmented_linear_ineq_violations(const RealVector& cd_vars,
+				 const RealMatrix& lin_ineq_coeffs,
+				 const RealVector& lin_ineq_lb,
+				 const RealVector& lin_ineq_ub)
 {
   Real quad_viol = 0.;
   switch (optSubProblemForm) {
@@ -1210,12 +1210,12 @@ augmented_linear_ineq_violations(const RealVector& cd_vars)
     for (i=0; i<num_approx; ++i) {
       src = approx_set[i];  tgt = dag[i];
       deflate_tgt = (tgt == numApprox) ? num_approx : index_map[tgt];
-      // Don't use any constraint tolerance since linearIneqCoeffs already
+      // Don't use any constraint tolerance since lin_ineq_coeffs already
       // has RATIO_NUDGE built in
-      inner_prod = linearIneqCoeffs(i+lin_ineq_offset, i) * cd_vars[i] +
-	linearIneqCoeffs(i+lin_ineq_offset, deflate_tgt) * cd_vars[deflate_tgt];
-      l_bnd = linearIneqLowerBnds[i+lin_ineq_offset];
-      u_bnd = linearIneqUpperBnds[i+lin_ineq_offset];
+      inner_prod = lin_ineq_coeffs(i+lin_ineq_offset, i) * cd_vars[i] +
+	lin_ineq_coeffs(i+lin_ineq_offset, deflate_tgt)  * cd_vars[deflate_tgt];
+      l_bnd = lin_ineq_lb[i+lin_ineq_offset];
+      u_bnd = lin_ineq_ub[i+lin_ineq_offset];
       if (inner_prod < l_bnd)
 	{ viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
       else if (inner_prod > u_bnd)

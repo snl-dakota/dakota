@@ -1473,11 +1473,8 @@ void Iterator::initial_point(const Variables& pt)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->initial_point(pt);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initial_point() virtual fn."
-	 << "\n       No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  else // default falls back to cv-only update
+    initial_point(pt.continuous_variables());
 }
 
 
@@ -1541,6 +1538,45 @@ update_callback_data(const RealVector& cv_initial,
 	 << "virtual fn.\n       No default defined at base class."<< std::endl;
     abort_handler(METHOD_ERROR);
   }
+}
+
+
+const RealMatrix& Iterator::callback_linear_ineq_coefficients() const
+{
+  if (!iteratorRep) { // envelope fwd to letter
+    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+	 << "coefficients() virtual fn.\n       No default defined at base "
+	 << "class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->callback_linear_ineq_coefficients();
+}
+
+
+const RealVector& Iterator::callback_linear_ineq_lower_bounds() const
+{
+  if (!iteratorRep) { // envelope fwd to letter
+    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+	 << "lower_bounds() virtual fn.\n       No default defined at base "
+	 << "class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->callback_linear_ineq_lower_bounds();
+}
+
+
+const RealVector& Iterator::callback_linear_ineq_upper_bounds() const
+{
+  if (!iteratorRep) { // envelope fwd to letter
+    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+	 << "upper_bounds() virtual fn.\n       No default defined at base "
+	 << "class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->callback_linear_ineq_upper_bounds();
 }
 
 

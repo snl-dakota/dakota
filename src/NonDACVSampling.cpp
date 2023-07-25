@@ -425,41 +425,52 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     }
 
     // Run a competition among related analytic approaches (MFMC or pairwise
-    // CVMC) for best initial guess:
-    covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
-    DAGSolutionData mf_soln, cv_soln;
-    analytic_initialization_from_mfmc(avg_N_H, mf_soln);
-    analytic_initialization_from_ensemble_cvmc(avg_N_H, cv_soln);
+    // CVMC) for best initial guess, where each initial gues may additionally
+    // employ multiple varianceMinimizers in ensemble_numerical_solution()
+    switch (optSubProblemSolver) { // no initial guess
+    case SUBMETHOD_DIRECT:  case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:
+    case SUBMETHOD_EA: // global, sequenced global+local methods
+      ensemble_numerical_solution(sequenceCost,approxSequence,soln,numSamples);
+      break;
+    default: { // competed initial guesses with (competed) local methods
+      covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
+      DAGSolutionData mf_soln, cv_soln;
+      analytic_initialization_from_mfmc(avg_N_H, mf_soln);
+      analytic_initialization_from_ensemble_cvmc(avg_N_H, cv_soln);
 
-    //if (multiStartACV) { // Run numerical solns from both starting points
-    size_t mf_samp, cv_samp;
-    ensemble_numerical_solution(sequenceCost, approxSequence, mf_soln, mf_samp);
-    ensemble_numerical_solution(sequenceCost, approxSequence, cv_soln, cv_samp);
-    pick_mfmc_cvmc_solution(mf_soln, mf_samp, cv_soln, cv_samp,soln,numSamples);
-    //}
-    /*
-    else { // Run one numerical soln from best of two starting points
-      bool mfmc_init;
-      if (budget_constrained) { // same cost, compare accuracy
-	RealVector cdv;
-	r_and_N_to_design_vars(mf_soln.avgEvalRatios, mf_soln.avgHFTarget, cdv);
-	mf_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
-	r_and_N_to_design_vars(cv_soln.avgEvalRatios, cv_soln.avgHFTarget, cdv);
-	cv_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
-	mfmc_init = (mf_soln.avgEstVar < cv_soln.avgEstVar);
+      //if (multiStartACV) { // Run numerical solns from both starting points
+      size_t mf_samp, cv_samp;
+      ensemble_numerical_solution(sequenceCost, approxSequence,mf_soln,mf_samp);
+      ensemble_numerical_solution(sequenceCost, approxSequence,cv_soln,cv_samp);
+      pick_mfmc_cvmc_solution(mf_soln,mf_samp,cv_soln,cv_samp,soln,numSamples);
+      //}
+      /*
+      else { // Run one numerical soln from best of two starting points
+        bool mfmc_init;
+        if (budget_constrained) { // same cost, compare accuracy
+	  RealVector cdv;
+	  r_and_N_to_design_vars(mf_soln.avgEvalRatios,mf_soln.avgHFTarget,cdv);
+	  mf_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
+	  r_and_N_to_design_vars(cv_soln.avgEvalRatios,cv_soln.avgHFTarget,cdv);
+	  cv_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
+	  mfmc_init = (mf_soln.avgEstVar < cv_soln.avgEstVar);
+        }
+        else { // same accuracy (convergenceTol * estVarIter0), compare cost 
+	  mf_soln.equivHFAlloc = compute_equivalent_cost(mf_soln.avgHFTarget,
+	    mf_soln.avgEvalRatios, sequenceCost);
+	  cv_soln.equivHFAlloc = compute_equivalent_cost(cv_soln.avgHFTarget,
+	    cv_soln.avgEvalRatios, sequenceCost);
+	  mfmc_init = (mf_soln.equivHFAlloc < cv_soln.equivHFAlloc);
+        }
+        soln = (mfmc_init) ? mf_soln : cv_soln;
+        // Single solve initiated from lowest estvar
+        ensemble_numerical_solution(sequenceCost, approxSequence, soln,
+	                            numSamples);
       }
-      else { // same accuracy (convergenceTol * estVarIter0), compare cost 
-	mf_soln.equivHFAlloc = compute_equivalent_cost(mf_soln.avgHFTarget,
-	  mf_soln.avgEvalRatios, sequenceCost);
-	cv_soln.equivHFAlloc = compute_equivalent_cost(cv_soln.avgHFTarget,
-	  cv_soln.avgEvalRatios, sequenceCost);
-	mfmc_init = (mf_soln.equivHFAlloc < cv_soln.equivHFAlloc);
-      }
-      soln = (mfmc_init) ? mf_soln : cv_soln;
-      // Single solve initiated from lowest estvar
-      ensemble_numerical_solution(sequenceCost, approxSequence,soln,numSamples);
+      */
+      break;
     }
-    */
+    }
   }
   else { // warm start from previous solution (for active or one-and-only DAG)
 
@@ -621,7 +632,10 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 
 
 Real NonDACVSampling::
-augmented_linear_ineq_violations(const RealVector& cd_vars)
+augmented_linear_ineq_violations(const RealVector& cd_vars,
+				 const RealMatrix& lin_ineq_coeffs,
+				 const RealVector& lin_ineq_lb,
+				 const RealVector& lin_ineq_ub)
 {
   Real quad_viol = 0.;
   switch (optSubProblemForm) {
@@ -632,10 +646,10 @@ augmented_linear_ineq_violations(const RealVector& cd_vars)
     Real viol, inner_prod, l_bnd, u_bnd, N_H = cd_vars[numApprox];
     for (size_t approx=0; approx<numApprox; ++approx) {
       inner_prod
-	= linearIneqCoeffs(approx+lin_ineq_offset, approx) * cd_vars[approx]
-	+ linearIneqCoeffs(approx+lin_ineq_offset, numApprox) * N_H;
-      l_bnd = linearIneqLowerBnds[approx+lin_ineq_offset];
-      u_bnd = linearIneqUpperBnds[approx+lin_ineq_offset];
+	= lin_ineq_coeffs(approx+lin_ineq_offset, approx)    * cd_vars[approx]
+	+ lin_ineq_coeffs(approx+lin_ineq_offset, numApprox) * N_H;
+      l_bnd = lin_ineq_lb[approx+lin_ineq_offset];
+      u_bnd = lin_ineq_ub[approx+lin_ineq_offset];
       if (inner_prod < l_bnd)
 	{ viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
       else if (inner_prod > u_bnd)

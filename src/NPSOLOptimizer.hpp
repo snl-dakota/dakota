@@ -151,6 +151,9 @@ public:
 			    const RealVector& nln_ineq_l_bnds,
 			    const RealVector& nln_ineq_u_bnds,
 			    const RealVector& nln_eq_targets);
+  const RealMatrix& callback_linear_ineq_coefficients() const;
+  //const RealVector& callback_linear_ineq_lower_bounds() const;
+  //const RealVector& callback_linear_ineq_upper_bounds() const;
 
 protected:
 
@@ -216,6 +219,29 @@ private:
 
 inline void NPSOLOptimizer::initial_point(const RealVector& pt)
 { copy_data(pt, initialPoint); } // protect from incoming view
+
+
+inline const RealMatrix& NPSOLOptimizer::
+callback_linear_ineq_coefficients() const
+{ return linIneqCoeffs; }
+
+
+/*
+inline const RealVector& NPSOLOptimizer::
+callback_linear_ineq_lower_bounds() const
+{
+  return RealVector(Teuchos::View, &lowerBounds[numContinuousVars],
+		    numLinearIneqConstraints);
+}
+
+
+inline const RealVector& NPSOLOptimizer::
+callback_linear_ineq_upper_bounds() const
+{
+  return RealVector(Teuchos::View, &upperBounds[numContinuousVars],
+		    numLinearIneqConstraints);
+}
+*/
 
 
 #ifdef HAVE_DYNLIB_FACTORIES

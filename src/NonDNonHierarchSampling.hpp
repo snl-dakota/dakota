@@ -176,7 +176,9 @@ protected:
 					       RealVector& lin_ineq_ub) = 0;
   /// return quadratic constraint violation for augment linear
   /// inequality constraints
-  virtual Real augmented_linear_ineq_violations(const RealVector& cd_vars) = 0;
+  virtual Real augmented_linear_ineq_violations(const RealVector& cd_vars,
+    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lb,
+    const RealVector& lin_ineq_ub) = 0;
 
   virtual void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 					 size_t& num_nln_con);
@@ -407,19 +409,6 @@ protected:
 
   /// number of successful pilot evaluations of HF truth model (exclude faults)
   SizetArray numHIter0;
-
-  /// cache the linear inequality constraint coefficients for
-  /// varianceMinimizers that do not enforce them directly; used in
-  /// augmented_linear_ineq_violations()
-  RealMatrix linearIneqCoeffs;
-  /// cache the linear inequality constraint lower bounds for
-  /// varianceMinimizers that do not enforce them directly; used in
-  /// augmented_linear_ineq_violations()
-  RealVector linearIneqLowerBnds;
-  /// cache the linear inequality constraint upper bounds for
-  /// varianceMinimizers that do not enforce them directly; used in
-  /// augmented_linear_ineq_violations()
-  RealVector linearIneqUpperBnds;
 
 private:
 

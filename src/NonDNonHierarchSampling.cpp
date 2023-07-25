@@ -706,8 +706,9 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
   // Note: ACV paper suggests additional linear constraints for r_i ordering
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
-    x0   = avg_eval_ratios;
     x_lb = 1.; // r_i
+    if (avg_eval_ratios.empty()) x0 = x_lb;
+    else                         x0 = avg_eval_ratios;
     // set linear inequality constraint for fixed N:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   \Sum_i w_i   r_i <= equivHF * w / N - w
@@ -719,8 +720,6 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
-    copy_data_partial(avg_eval_ratios, x0, 0);          // r_i
-    x0[numApprox] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
     // Could allow optimal profile to emerge from pilot by allowing N* less than
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
@@ -728,19 +727,24 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     x_lb[numApprox] = (pilotMgmtMode == OFFLINE_PILOT) ?
       offline_N_lwr : avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
 
+    if (avg_eval_ratios.empty()) x0 = 1.;
+    else copy_data_partial(avg_eval_ratios, x0, 0);     // r_i
+    x0[numApprox] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
+
     nln_ineq_lb[0] = -DBL_MAX; // no low bnd
     nln_ineq_ub[0] = budget;
     break;
   case N_VECTOR_LINEAR_CONSTRAINT: {
-    Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
-    r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
-    if (pilotMgmtMode == OFFLINE_PILOT) {
-      x_lb = offline_N_lwr;
-      for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
-	if (x0[i] < x_lb[i])
-	  x0[i]   = x_lb[i];
+    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
+    if (avg_eval_ratios.empty()) x0 = x_lb;
+    else {
+      Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
+      r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
+      //if (pilotMgmtMode == OFFLINE_PILOT)
+	for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
+	  if (x0[i] < x_lb[i])
+	    x0[i]   = x_lb[i];
     }
-    else x_lb = avg_N_H;
     
     // linear inequality constraint on budget:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
@@ -753,15 +757,16 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     break;
   }
   case N_VECTOR_LINEAR_OBJECTIVE: {
-    Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
-    r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
-    if (pilotMgmtMode == OFFLINE_PILOT) {
-      x_lb = offline_N_lwr;
-      for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
-	if (x0[i] < x_lb[i])
-	  x0[i]   = x_lb[i];
+    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
+    if (avg_eval_ratios.empty()) x0 = x_lb;
+    else {
+      Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
+      r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
+      //if (pilotMgmtMode == OFFLINE_PILOT)
+	for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
+	  if (x0[i] < x_lb[i])
+	    x0[i]   = x_lb[i];
     }
-    else x_lb = avg_N_H;
 
     // nonlinear constraint on estvar
     nln_ineq_lb = -DBL_MAX;  // no lower bnd
@@ -973,12 +978,10 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	//  solution_target));
 	Real min_box_size = -1., vol_box_size = -1., soln_target = -DBL_MAX;
 	max_eval = 89980; // hardwired limit (error from NCSU, tied to bounds?)
-	linearIneqCoeffs    = lin_ineq_coeffs;
-	linearIneqLowerBnds = lin_ineq_lb;
-	linearIneqUpperBnds = lin_ineq_ub;
 	varianceMinimizers[i].assign_rep(std::make_shared<NCSUOptimizer>(
-	  x_lb, x_ub, max_iter, max_eval, direct_penalty_merit, min_box_size,
-	  vol_box_size, soln_target));
+	  x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	  lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, max_iter, max_eval,
+	  direct_penalty_merit, min_box_size, vol_box_size, soln_target));
 	break;
       }
       case SUBMETHOD_SBLO: {
@@ -1074,11 +1077,15 @@ run_minimizers(DAGSolutionData& soln, size_t num_solvers,
 	Cout << "ensemble_numerical_solution() results:\ncv_star =\n"
 	     << cv_star << "fn_vals_star =\n" << fn_star;
 
-      if (sequenced_minimizers) { // coordinated optimization
-	if (i < last_index) // propagate final pt to next initial pt
-	  varianceMinimizers[i+1].iterated_model().active_variables(vars_star);
+      if (sequenced_minimizers) { // sequenced optimization
+	if (i < last_index) { // propagate final pt to next initial pt
+	  Iterator& min_ip1 = varianceMinimizers[i+1];
+	  Model&  model_ip1 = min_ip1.iterated_model();
+	  if (model_ip1.is_null())  min_ip1.initial_point(vars_star);
+	  else                 model_ip1.active_variables(vars_star);
+	}
       }
-      else {                      //    competed optimization
+      else {                      //  competed optimization
 	// track best using penalty merit fn comprised of accuracy and cost
 	merit_fn = nh_penalty_merit(cv_star, fn_star);
 	if (i == 0 || merit_fn < merit_fn_star)
@@ -1533,8 +1540,12 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
   // Other notes:
   // > estimator_variance_ratios() converts cd_vars as needed
   // > linear_cost() requires N_VECTOR_*
+  const Iterator& direct_min = nonHierSampInstance->varianceMinimizers[0];// *** TO DO: active minimizer index
   Real lin_ineq_viol
-    = nonHierSampInstance->augmented_linear_ineq_violations(cd_vars);
+    = nonHierSampInstance->augmented_linear_ineq_violations(cd_vars,
+        direct_min.callback_linear_ineq_coefficients(),
+        direct_min.callback_linear_ineq_lower_bounds(),
+        direct_min.callback_linear_ineq_upper_bounds());
   bool protect_numerics = (lin_ineq_viol > 0.); // RATIO_NUDGE reflected in viol
   Real obj, constr, constr_u_bnd,
     budget = (Real)nonHierSampInstance->maxFunctionEvals, log_avg_estvar
