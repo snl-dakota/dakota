@@ -681,33 +681,50 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
   // > ACV-IS is unconstrained in model order --> retain N_i > N
 
   size_t i, num_cdv = x0.length(), approx;
-  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals;
+  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals, remaining;
 
   // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
-  if (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) // *** TO DO ***
-    x_ub = DBL_MAX; // no upper bounds on x
-  else {
-    // set x_ub based on exhausting remaining budget using only approx i
-    // prior to approx increments, equivHFEvals represents the total incurred
-    // cost in shared sample sets
-    Real remaining = budget - equivHFEvals;
-    // remaining = N_i * cost[i] / cost_H
-    for (i=0; i<numApprox; ++i)
-      x_ub[i] = remaining * cost_H / cost[i];
+  bool require_bnds = ( optSubProblemSolver == SUBMETHOD_DIRECT ||
+			optSubProblemSolver == SUBMETHOD_SBGO   ||
+			optSubProblemSolver == SUBMETHOD_SBLO   ||
+			optSubProblemSolver == SUBMETHOD_EGO );
+  if (require_bnds) {
+    switch (optSubProblemForm) {
+    case N_VECTOR_LINEAR_OBJECTIVE: { // accuracy constrained
+      // infer upper bounds from budget reqd to obtain target accuracy via MC:
+      // varH / N = tol * avg_estvar0; for minimizer sequencing, a downstream
+      // refinement can omit this approximated bound
+      RealVector mc_targets(numFunctions, false);
+      for (size_t qoi=0; qoi<numFunctions; ++qoi)
+	mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
+      remaining = average(mc_targets) - equivHFEvals;  break;
+    }
+    default:
+      remaining = budget              - equivHFEvals;  break;
+    }
+    // Set x_ub based on exhausting the remaining budget using only approx i.
+    // Prior to approx increments (when numerical solns are performed),
+    // equivHFEvals represents the total incurred cost in shared sample sets.
+    Real factor = remaining * cost_H;
+    for (i=0; i<numApprox; ++i) // remaining = N_i * cost[i] / cost_H
+      x_ub[i] = factor / cost[i];
     if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
       // increments in N_H are shared with cost = \Sum costs
       Real sum_cost = cost_H;
       for (i=0; i<numApprox; ++i) sum_cost += cost[i];
-      x_ub[numApprox] = remaining * cost_H / sum_cost;
+      x_ub[numApprox] = factor / sum_cost;
     }
   }
+  else
+    x_ub = DBL_MAX; // no upper bounds needed for x
+
   lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
 
   // Note: ACV paper suggests additional linear constraints for r_i ordering
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
     x_lb = 1.; // r_i
-    if (avg_eval_ratios.empty()) x0 = x_lb;
+    if (avg_eval_ratios.empty()) x0 = 1.;
     else                         x0 = avg_eval_ratios;
     // set linear inequality constraint for fixed N:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
@@ -740,10 +757,10 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     else {
       Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
       r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
-      //if (pilotMgmtMode == OFFLINE_PILOT)
+      if (pilotMgmtMode == OFFLINE_PILOT) // x0 could undershoot offline_N_lwr
 	for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
-	  if (x0[i] < x_lb[i])
-	    x0[i]   = x_lb[i];
+	  if (x0[i] < offline_N_lwr)
+	    x0[i]   = offline_N_lwr;
     }
     
     // linear inequality constraint on budget:
@@ -762,10 +779,10 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     else {
       Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
       r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
-      //if (pilotMgmtMode == OFFLINE_PILOT)
+      if (pilotMgmtMode == OFFLINE_PILOT)
 	for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
-	  if (x0[i] < x_lb[i])
-	    x0[i]   = x_lb[i];
+	  if (x0[i] < offline_N_lwr)
+	    x0[i]   = offline_N_lwr;
     }
 
     // nonlinear constraint on estvar
@@ -976,8 +993,11 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	//varianceMinimizers[0].assign_rep(std::make_shared<NCSUOptimizer>(
 	//  sub_prob_model, max_iter, max_eval, min_box_size, vol_box_size,
 	//  solution_target));
-	Real min_box_size = -1., vol_box_size = -1., soln_target = -DBL_MAX;
-	max_eval = 89980; // hardwired limit (error from NCSU, tied to bounds?)
+	// See NCSUOptimizer::core_run() for default tolerance values
+	Real min_box_size = 1.e-6, //-1. activates NCSU default = 1.e-4
+	     vol_box_size = 1.e-9, //-1. activates NCSU default = 1.e-6 
+	     soln_target  = -DBL_MAX; // no target, deactivates convergenceTol
+	max_eval = 89980; // hardwired limit (error from NCSU for 500k)
 	varianceMinimizers[i].assign_rep(std::make_shared<NCSUOptimizer>(
 	  x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
 	  lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, max_iter, max_eval,

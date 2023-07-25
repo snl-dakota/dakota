@@ -1029,6 +1029,8 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
 				      RealMatrix& lin_ineq_coeffs,
 				      RealMatrix& lin_eq_coeffs)
 {
+  // Refer to NonDNonHierarchSampling base implementation for additional notes
+
   const RealVector& avg_eval_ratios = soln.avgEvalRatios;
   Real              avg_hf_target   = soln.avgHFTarget;
   //Real                 avg_estvar = soln.avgEstVar;
@@ -1036,45 +1038,58 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
   //Real              equiv_hf_cost = soln.equivHFAlloc;
 
   // For offline mode, online allocations must be lower bounded for numerics:
-  // > for QOI_STATISTICS, unbiased moments / CV beta require min of 2 samples
-  // > for ESTIMATOR_PERF, a lower bnd of 1 sample is allowable (MC reference)
-  //   >> 1 line of thinking: an offline oracle should by as optimal as possible
-  //      and we will use for apples-to-apples estimator performance comparisons
-  //   >> another line of thinking: be consistent at 2 samples for possible
-  //      switch from estimator_perf (selection) to qoi_statistics (execution);
-  //      moreover, don't select an estimator based on inconsistent formulation
-  // Nonzero lower bound ensures replacement of allSamples after offline pilot.
   Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
   // --------------------------------------
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
   // --------------------------------------
-
-  // > MFMC analytic requires ordered rho2LH to avoid FPE (approxSequence defn)
-  //   followed by ordered r_i for {pyramid sampling, R_sq contribution > 0}
-  // > MFMC numerical needs ordered r_i to retain pyramid sampling/recursion
-  //   >> estvar objective requires an ordering fixed a priori --> makes sense
-  //      to optimize w.r.t. this ordering constraint, similar to std::max()
-  //      use in mfmc_reordered_analytic_solution()
-  // > ACV-MF use of min() in F_ij supports mis-ordering in that C_ij * F_ij
-  //   produces same contribution to R_sq independent of i,j order
-  //   >> Rather than constraining N_i > N_{i+1} based on a priori ordering,
-  //      retain N_i > N and then compute an approx sequence for sampling
-  //   >> No need for a priori model sequence, only for post-proc of opt result
-  // > ACV-IS is unconstrained in model order --> retain N_i > N
-
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t i, num_cdv = x0.length(), approx, num_approx = approx_set.size();
-  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals;
+  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals, remaining;
 
-  x_ub        =  DBL_MAX; // no upper bounds on x
+  // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
+  bool require_bnds = ( optSubProblemSolver == SUBMETHOD_DIRECT ||
+			optSubProblemSolver == SUBMETHOD_SBGO   ||
+			optSubProblemSolver == SUBMETHOD_SBLO   ||
+			optSubProblemSolver == SUBMETHOD_EGO );
+  if (require_bnds) {
+    switch (optSubProblemForm) {
+    case N_VECTOR_LINEAR_OBJECTIVE: { // accuracy constrained
+      // infer upper bounds from budget reqd to obtain target accuracy via MC:
+      // varH / N = tol * avg_estvar0; for minimizer sequencing, a downstream
+      // refinement can omit this approximated bound.
+      RealVector mc_targets(numFunctions, false);
+      for (size_t qoi=0; qoi<numFunctions; ++qoi)
+	mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
+      remaining = average(mc_targets) - equivHFEvals;  break;
+    }
+    default:
+      remaining = budget              - equivHFEvals;  break;
+    }
+    // Set x_ub based on exhausting the remaining budget using only approx i.
+    // Prior to approx increments (when numerical solns are performed),
+    // equivHFEvals represents the total incurred cost in shared sample sets.
+    Real factor = remaining * cost_H;
+    for (i=0; i<num_approx; ++i) // remaining = N_i * cost[i] / cost_H
+      x_ub[i] = factor / cost[approx_set[i]];
+    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
+      // increments in N_H are shared with cost = \Sum costs
+      Real sum_cost = cost_H;
+      for (i=0; i<num_approx; ++i) sum_cost += cost[approx_set[i]];
+      x_ub[num_approx] = factor / sum_cost;
+    }
+  }
+  else
+    x_ub = DBL_MAX; // no upper bounds needed for x
+
   lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
 
   // Note: ACV paper suggests additional linear constraints for r_i ordering
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
-    x0   = avg_eval_ratios;
     x_lb = 1.; // r_i
+    if (avg_eval_ratios.empty()) x0 = 1.;
+    else                         x0 = avg_eval_ratios;
     // set linear inequality constraint for fixed N:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   \Sum_i w_i   r_i <= equivHF * w / N - w
@@ -1086,8 +1101,6 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
       lin_ineq_coeffs(0,approx) = cost[approx_set[approx]] / cost_H;
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
-    copy_data_partial(avg_eval_ratios, x0, 0);          // r_i
-    x0[num_approx] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
     // Could allow optimal profile to emerge from pilot by allowing N* less than
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
@@ -1095,19 +1108,24 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     x_lb[num_approx] = (pilotMgmtMode == OFFLINE_PILOT) ?
       offline_N_lwr : avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
 
+    if (avg_eval_ratios.empty()) x0 = 1.;
+    else copy_data_partial(avg_eval_ratios, x0, 0);     // r_i
+    x0[num_approx] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
+
     nln_ineq_lb[0] = -DBL_MAX; // no low bnd
     nln_ineq_ub[0] = budget;
     break;
   case N_VECTOR_LINEAR_CONSTRAINT: {
-    Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
-    r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
-    if (pilotMgmtMode == OFFLINE_PILOT) {
-      x_lb = offline_N_lwr;
-      for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
-	if (x0[i] < x_lb[i])
-	  x0[i]   = x_lb[i];
+    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
+    if (avg_eval_ratios.empty()) x0 = x_lb;
+    else {
+      Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
+      r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
+      if (pilotMgmtMode == OFFLINE_PILOT)
+	for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
+	  if (x0[i] < offline_N_lwr)
+	    x0[i]   = offline_N_lwr;
     }
-    else x_lb = avg_N_H;
     
     // linear inequality constraint on budget:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
@@ -1120,15 +1138,16 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     break;
   }
   case N_VECTOR_LINEAR_OBJECTIVE: {
-    Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
-    r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
-    if (pilotMgmtMode == OFFLINE_PILOT) {
-      x_lb = offline_N_lwr;
-      for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
-	if (x0[i] < x_lb[i])
-	  x0[i]   = x_lb[i];
+    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
+    if (avg_eval_ratios.empty()) x0 = x_lb;
+    else {
+      Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
+      r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
+      if (pilotMgmtMode == OFFLINE_PILOT)
+	for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
+	  if (x0[i] < offline_N_lwr)
+	    x0[i]   = offline_N_lwr;
     }
-    else x_lb = avg_N_H;
 
     // nonlinear constraint on estvar
     nln_ineq_lb = -DBL_MAX;  // no lower bnd
