@@ -581,11 +581,10 @@ ensemble_numerical_solution(const RealVector& cost,
   augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 
   // Perform the numerical solve(s) and recover the solution:
-  size_t num_solvers;  bool sequenced_minimizers;
   configure_minimizers(x0, x_lb, x_ub, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
 		       nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, lin_ineq_coeffs,
-		       lin_eq_coeffs, num_solvers, sequenced_minimizers);
-  run_minimizers(soln, num_solvers, sequenced_minimizers);
+		       lin_eq_coeffs);
+  run_minimizers(soln);
   // compute sample increment for HF from current to target:
   num_samples = (truthFixedByPilot) ? 0 :
     one_sided_delta(avg_N_H, soln.avgHFTarget);
@@ -799,42 +798,43 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 		     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
 		     RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
 		     RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
-		     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs,
-		     size_t& num_solvers, bool& sequenced_minimizers)
+		     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs)
 {
   // support sequenced (global-local) and competed (NPSOL_OPTPP) configurations:
   // > EGO vs. DIRECT: the former adds efficiency over the latter when the model
   //   evals are expensive (using the latter for solving the EIF subproblem),
   //   but for this case where we are performing a sequence of linear solves
   //   for fixed covariances, it seems that DIRECT should be preferred.
-  bool use_adapter = false, use_dfs = false;  sequenced_minimizers = false;
-  num_solvers = 1;
+  bool use_adapter = false, use_dfs = false;
+  size_t sequence_len = 1, num_solvers;
   switch (optSubProblemSolver) {
-  case SUBMETHOD_NPSOL_OPTPP:
-    num_solvers = 2;  break; // competed, not sequenced
-  case SUBMETHOD_DIRECT:
-    num_solvers = 2;  sequenced_minimizers = true;  break;
   case SUBMETHOD_SBLO: case SUBMETHOD_SBGO:
     use_adapter = use_dfs = true;  break;
   case SUBMETHOD_EGO:  case SUBMETHOD_EA: //case SUBMETHOD_CPS:
-    use_adapter = true;  break;
+    use_adapter = true;            break;
+  case SUBMETHOD_DIRECT:
+    sequence_len = 2;              break;
   }
       
   // -----------------------------------
   // Configure the variance minimizer(s)
   // -----------------------------------
   if (varianceMinimizers.empty()) {
-    varianceMinimizers.resize(num_solvers);
 
     // convert optSubProblemSolver to multiple solvers if needed
-    ShortArray solvers(num_solvers);
+    Short2DArray solvers(sequence_len);
+    ShortArray& solvers_0 = solvers[0];
     switch (optSubProblemSolver) {
-    case SUBMETHOD_NPSOL_OPTPP:
-      solvers[0] = SUBMETHOD_NPSOL;      solvers[1] = SUBMETHOD_OPTPP;  break;
-    case SUBMETHOD_DIRECT: // global + local refinement
-      solvers[0] = optSubProblemSolver;  solvers[1] = SUBMETHOD_OPTPP;  break;
+    case SUBMETHOD_NPSOL_OPTPP: // competed
+      solvers_0.resize(2);
+      solvers_0[0] = SUBMETHOD_NPSOL;  solvers_0[1] = SUBMETHOD_OPTPP;  break;
+    case SUBMETHOD_DIRECT: { // sequenced global-local w/ competed local
+      solvers_0.resize(1);  solvers_0[0] = optSubProblemSolver;
+      ShortArray& solvers_1 = solvers[1];  solvers_1.resize(2);
+      solvers_1[0] = SUBMETHOD_NPSOL;  solvers_1[1] = SUBMETHOD_OPTPP;  break;
+    }
     default:
-      solvers[0] = optSubProblemSolver;  break;
+      solvers_0.resize(1);  solvers_0[0] = optSubProblemSolver;         break;
     }
 
     Model adapt_model, sub_prob_model;
@@ -929,203 +929,214 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	sub_prob_model = adapt_model;
     }
 
-    size_t max_iter = 100000, max_eval = 500000;
-    Real   conv_tol = 1.e-8; // tight convergence
+    size_t i, j, max_iter = 100000, max_eval = 500000;
+    Real conv_tol = 1.e-8; // tight convergence
 
-    for (size_t i=0; i<num_solvers; ++i)
-      switch (solvers[i]) {
-      case SUBMETHOD_NPSOL: {
-	// Keep FDSS smaller than RATIO_NUDGE to avoid FPE
-	// > seems that this can be tight using refined Teuchos solns
-	//   (default is fine for ss_diffusion; leave some gap just in case)
-	Real fdss = 1.e-7; //-1.; (no override of default)
-	int deriv_level;// 0 none, 1 obj, 2 constr, 3 both
-	switch (optSubProblemForm) {
-	case R_AND_N_NONLINEAR_CONSTRAINT: deriv_level = 2;  break;
-	case N_VECTOR_LINEAR_OBJECTIVE:    deriv_level = 1;  break;
-	default:                           deriv_level = 0;  break;
-	}
+    varianceMinimizers.resize(sequence_len);
+    for (i=0; i<sequence_len; ++i) {
+      ShortArray& solvers_i = solvers[i];
+      IteratorArray&  min_i = varianceMinimizers[i];
+      num_solvers = solvers_i.size();
+      min_i.resize(num_solvers);
+      for (j=0; j<num_solvers; ++j)
+	switch (solvers_i[j]) {
+	case SUBMETHOD_NPSOL: {
+	  // Keep FDSS smaller than RATIO_NUDGE to avoid FPE
+	  // > seems that this can be tight using refined Teuchos solns
+	  //   (default is fine for ss_diffusion; leave some gap just in case)
+	  Real fdss = 1.e-7; //-1.; (no override of default)
+	  int deriv_level;// 0 none, 1 obj, 2 constr, 3 both
+	  switch (optSubProblemForm) {
+	  case R_AND_N_NONLINEAR_CONSTRAINT: deriv_level = 2;  break;
+	  case N_VECTOR_LINEAR_OBJECTIVE:    deriv_level = 1;  break;
+	  default:                           deriv_level = 0;  break;
+	  }
 #ifdef HAVE_NPSOL
-	varianceMinimizers[i].assign_rep(std::make_shared<NPSOLOptimizer>(x0,
-	  x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,lin_eq_coeffs,
-          lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, npsol_objective,
-	  npsol_constraint, deriv_level, conv_tol, max_iter, fdss));
+	  min_i[j].assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb, x_ub,
+	    lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	    lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, npsol_objective,
+	    npsol_constraint, deriv_level, conv_tol, max_iter, fdss));
 #endif
-	break;
-      }
-      case SUBMETHOD_OPTPP: {
-	// Keep FDSS smaller than RATIO_NUDGE to avoid FPE
-	// > SNLLBase::snll_post_instantiate() enforces lower bound of
-	//   DBL_EPSILON on pow(fdss,{2,3}) for {forward,central} --> min
-	//   FDSS of ~6e-6 for central, ~1.49e-8 for forward (default FDSS)
-	// > central is not managing bound constr properly (negative offset
-	//   repeats positive); forward seems Ok for current constraints
-	Real max_step = 100000.;    String fd_type = "forward";
-	RealVector fdss(1, false);  fdss[0] = 1.e-7; // ~7x > default
-#ifdef HAVE_OPTPP
-	switch (optSubProblemForm) {
-	case N_VECTOR_LINEAR_OBJECTIVE:
-	  varianceMinimizers[i].assign_rep(std::make_shared<SNLLOptimizer>(x0,
-	    x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
-	    lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	    optpp_nlf1_objective, optpp_fdnlf1_constraint, fdss, fd_type,
-	    max_iter, max_eval, conv_tol, conv_tol, max_step));
-	  break;
-	default:
-	  varianceMinimizers[i].assign_rep(std::make_shared<SNLLOptimizer>(x0,
-	    x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
-	    lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	    optpp_fdnlf1_objective, optpp_nlf1_constraint, fdss, fd_type,
-	    max_iter, max_eval, conv_tol, conv_tol, max_step));
 	  break;
 	}
+	case SUBMETHOD_OPTPP: {
+	  // Keep FDSS smaller than RATIO_NUDGE to avoid FPE
+	  // > SNLLBase::snll_post_instantiate() enforces lower bound of
+	  //   DBL_EPSILON on pow(fdss,{2,3}) for {forward,central} --> min
+	  //   FDSS of ~6e-6 for central, ~1.49e-8 for forward (default FDSS)
+	  // > central is not managing bound constr properly (negative offset
+	  //   repeats positive); forward seems Ok for current constraints
+	  Real max_step = 100000.;    String fd_type = "forward";
+	  RealVector fdss(1, false);  fdss[0] = 1.e-7; // ~7x > default
+#ifdef HAVE_OPTPP
+	  switch (optSubProblemForm) {
+	  case N_VECTOR_LINEAR_OBJECTIVE:
+	    min_i[j].assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb, x_ub,
+	      lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	      optpp_nlf1_objective, optpp_fdnlf1_constraint, fdss, fd_type,
+	      max_iter, max_eval, conv_tol, conv_tol, max_step));
+	    break;
+	  default:
+	    min_i[j].assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb, x_ub,
+	      lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	      optpp_fdnlf1_objective, optpp_nlf1_constraint, fdss, fd_type,
+	      max_iter, max_eval, conv_tol, conv_tol, max_step));
+	    break;
+	  }
 #endif
-	break;
-      }
-      case SUBMETHOD_DIRECT: { // global search + local refinement
-	// > For DIRECT, we have the option of either passing an adapter model
-	//   or passing a fn callback.  Since we don't need parallel or other
-	//   Model features, passing a function callback seems lighter weight.
-	// > We also have the option of forming a merit fn for constraints
-	//   (seems preferred for ordering the search) or passing "infeasible"
-	//   codes intended for implicit constraints.  A merit fn requires
-	//   another wrapper layer, either via model recursion or fn callback.
-	//varianceMinimizers[0].assign_rep(std::make_shared<NCSUOptimizer>(
-	//  sub_prob_model, max_iter, max_eval, min_box_size, vol_box_size,
-	//  solution_target));
-	// See NCSUOptimizer::core_run() for default tolerance values
-	Real min_box_size = 1.e-6, //-1. activates NCSU default = 1.e-4
-	     vol_box_size = 1.e-9, //-1. activates NCSU default = 1.e-6 
-	     soln_target  = -DBL_MAX; // no target, deactivates convergenceTol
-	max_eval = 89980; // hardwired limit (error from NCSU for 500k)
-	varianceMinimizers[i].assign_rep(std::make_shared<NCSUOptimizer>(
-	  x_lb, x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-	  lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, max_iter, max_eval,
-	  direct_penalty_merit, min_box_size, vol_box_size, soln_target));
-	break;
-      }
-      case SUBMETHOD_SBLO: {
-	short merit_fn = AUGMENTED_LAGRANGIAN_MERIT, accept_logic = FILTER,
-	  constr_relax = NO_RELAX;
-	unsigned short soft_conv_limit = 5;
-	Real tr_factor = .5;
-	varianceMinimizers[i].assign_rep(
-	  std::make_shared<DataFitSurrBasedLocalMinimizer>(sub_prob_model,
-	  merit_fn, accept_logic, constr_relax, tr_factor, max_iter, max_eval,
-	  conv_tol, soft_conv_limit, false));
-	break;
-      }
-      case SUBMETHOD_EGO: {
-	// EGO builds its own GP in initialize_sub_problem(), so a DFSModel
-	// does not need to be constructed here as for SBLO/SBGO
-	// > TO DO: pure global opt may need subsequent local refinement
-	int samples = 100, seed = 12347;      // TO DO: spec
-	String approx_type("global_kriging"); // TO DO: spec
-	bool use_derivs = false;
-	varianceMinimizers[i].assign_rep(std::make_shared<EffGlobalMinimizer>(
-	  sub_prob_model, approx_type, samples, seed, use_derivs, max_iter,
-	  max_eval, conv_tol));
-	break;
-      }
-      /*
-      case SUBMETHOD_CPS: { // to be combined with local refinement
-        break;
-      }
-      case SUBMETHOD_SBGO: { // for NonDGlobalInterval, was EAminlp + GP ...
-        varianceMinimizers[i].assign_rep(
-          std::make_shared<SurrBasedGlobalMinimizer>(sub_prob_model, max_iter,
-	                                             max_eval, conv_tol));
-        break;
-      }
-      case SUBMETHOD_EA: { // to be combined with local refinement
-        varianceMinimizers[i].assign_rep(std::make_shared<COLINOptimizer>(
-          sub_prob_model, max_iter, max_eval, conv_tol));
-        break;
-      }
-      */
-      }
+	  break;
+	}
+	case SUBMETHOD_DIRECT: { // global search + local refinement
+	  // > For DIRECT, we have the option of either passing an adapter model
+	  //   or passing a fn callback.  Since we don't need parallel or other
+	  //   Model features, passing a function callback seems lighter weight.
+	  // > We also have the option of forming a merit fn for constraints
+	  //   (seems preferred for ordering the search) or passing "infeasible"
+	  //   codes intended for implicit constraints.  A merit fn requires
+	  //   another wrapper layer, either via model recursion or fn callback.
+	  //min_i[j].assign_rep(std::make_shared<NCSUOptimizer>(sub_prob_model,
+	  //  max_iter, max_eval, min_box_size, vol_box_size, solution_target));
+	  // See NCSUOptimizer::core_run() for default tolerance values
+	  Real min_box_size = 1.e-6, //-1. activates NCSU default = 1.e-4
+	       vol_box_size = 1.e-9, //-1. activates NCSU default = 1.e-6 
+	       soln_target  = -DBL_MAX; // no target, deactivates convergenceTol
+	  max_eval = 89980; // hardwired limit (error from NCSU for 500k)
+	  min_i[j].assign_rep(std::make_shared<NCSUOptimizer>(x_lb, x_ub,
+	    lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,lin_eq_coeffs, lin_eq_tgt,
+	    nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, max_iter, max_eval,
+	    direct_penalty_merit, min_box_size, vol_box_size, soln_target));
+	  break;
+	}
+	case SUBMETHOD_SBLO: {
+	  short merit_fn = AUGMENTED_LAGRANGIAN_MERIT, accept_logic = FILTER,
+	    constr_relax = NO_RELAX;
+	  unsigned short soft_conv_limit = 5;
+	  Real tr_factor = .5;
+	  min_i[j].assign_rep(std::make_shared<DataFitSurrBasedLocalMinimizer>(
+	    sub_prob_model, merit_fn, accept_logic, constr_relax, tr_factor,
+	    max_iter, max_eval, conv_tol, soft_conv_limit, false));
+	  break;
+	}
+	case SUBMETHOD_EGO: {
+	  // EGO builds its own GP in initialize_sub_problem(), so a DFSModel
+	  // does not need to be constructed here as for SBLO/SBGO
+	  // > TO DO: pure global opt may need subsequent local refinement
+	  int samples = 100, seed = 12347;      // TO DO: spec
+	  String approx_type("global_kriging"); // TO DO: spec
+	  bool use_derivs = false;
+	  min_i[j].assign_rep(std::make_shared<EffGlobalMinimizer>(
+	    sub_prob_model, approx_type, samples, seed, use_derivs, max_iter,
+	    max_eval, conv_tol));
+	  break;
+	}
+	/*
+        case SUBMETHOD_CPS: { // to be combined with local refinement
+          break;
+        }
+        case SUBMETHOD_SBGO: { // for NonDGlobalInterval, was EAminlp + GP ...
+          min_i[j].assign_rep(std::make_shared<SurrBasedGlobalMinimizer>(
+	    sub_prob_model, max_iter, max_eval, conv_tol));
+          break;
+        }
+        case SUBMETHOD_EA: { // to be combined with local refinement
+          min_i[j].assign_rep(std::make_shared<COLINOptimizer>(sub_prob_model,
+	    max_iter, max_eval, conv_tol));
+          break;
+        }
+        */
+	}
+    }
   }
-  else { // update data for existing varianceMinimizers
-    size_t i, last_index = num_solvers - 1;
+  else {
+    // update data for the varianceMinimizers when either:
+    // > warm starting for iteration >= 1            (use last in sequence)
+    // > trying another initial guess on iteration 0 (use  all in sequence)
+    size_t i, j, last_seq_index = sequence_len - 1,
+      start = (mlmfIter) ? last_seq_index : 0;
     if (use_adapter) {
-      Model& sub_prob_model = varianceMinimizers[last_index].iterated_model();
       // *** TO DO: (existing active view accessors don't support size change)
       //adapt_model.update_active_variables(x0, x_lb, x_ub);
       //adapt_model.update_active_constraints(lin_ineq_coeffs, lin_ineq_lb,
       //  lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
       //  nln_eq_tgt);
+      Model& sub_prob_model = varianceMinimizers[0][0].iterated_model();
       if (use_dfs) sub_prob_model.update_from_subordinate_model();
-      if (sequenced_minimizers && mlmfIter)
-	varianceMinimizers[last_index].update_from_model(sub_prob_model);
-      else
-	for (i=0; i<num_solvers; ++i)
-	  varianceMinimizers[i].update_from_model(sub_prob_model);
+      for (i=start; i<sequence_len; ++i) {
+	IteratorArray& min_i = varianceMinimizers[i];
+	num_solvers = min_i.size();
+	for (j=0; j<num_solvers; ++j)
+	  min_i[j].update_from_model(sub_prob_model);
+      }
     }
-    else if (sequenced_minimizers && mlmfIter)
-      varianceMinimizers[last_index].update_callback_data(x0, x_lb, x_ub,
-        lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt,
-        nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
     else
-      for (i=0; i<num_solvers; ++i)
-	varianceMinimizers[i].update_callback_data(x0, x_lb, x_ub,
-	  lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-	  lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
+      for (i=start; i<sequence_len; ++i) {
+	IteratorArray& min_i = varianceMinimizers[i];
+	num_solvers = min_i.size();
+	for (j=0; j<num_solvers; ++j)
+	  min_i[j].update_callback_data(x0, x_lb, x_ub, lin_ineq_coeffs,
+	    lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb,
+	    nln_ineq_ub, nln_eq_tgt);
+      }
   }
 }
 
 
-void NonDNonHierarchSampling::
-run_minimizers(DAGSolutionData& soln, size_t num_solvers,
-	       bool sequenced_minimizers)
+void NonDNonHierarchSampling::run_minimizers(DAGSolutionData& soln)
 {
   // ----------------------------------
   // Solve the optimization sub-problem: compute optimal r*,N*
   // ----------------------------------
   Real merit_fn, merit_fn_star = DBL_MAX;
-  size_t i, last_index = num_solvers - 1, best_min = last_index;
-
-  if (sequenced_minimizers && mlmfIter)  // bypass upstream (global) searches
-    varianceMinimizers[last_index].run();// warm start w/ last (local) minimizer
-  else
-    for (i=0; i<num_solvers; ++i) {
-      Iterator& min_i = varianceMinimizers[i];
-      min_i.run();
-      const Variables& vars_star = min_i.variables_results();
+  size_t i, j, sequence_len = varianceMinimizers.size(), best_min, num_solvers,
+    last_seq_index = sequence_len - 1, start = (mlmfIter) ? last_seq_index : 0;
+  for (i=start; i<sequence_len; ++i) {
+    IteratorArray& min_i = varianceMinimizers[i];
+    num_solvers = min_i.size();
+    for (j=0; j<num_solvers; ++j) {
+      Iterator& min_ij = min_i[j];
+      min_ij.run();
+      const Variables& vars_star = min_ij.variables_results();
       const RealVector&  cv_star = vars_star.continuous_variables();
-      const RealVector&  fn_star = min_i.response_results().function_values();
+      const RealVector&  fn_star = min_ij.response_results().function_values();
       if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "ensemble_numerical_solution() results:\ncv_star =\n"
-	     << cv_star << "fn_vals_star =\n" << fn_star;
+	Cout << "ensemble_numerical_solution() results for (i,j) = (" << i
+	     << "," << j << "):\ncv_star =\n" << cv_star
+	     << "fn_vals_star =\n" << fn_star;
+      // track best using penalty merit fn comprised of accuracy and cost
+      merit_fn = nh_penalty_merit(cv_star, fn_star);
+      if (j == 0 || merit_fn < merit_fn_star)
+	{ merit_fn_star = merit_fn;  best_min = j; }
+    }
+    if (outputLevel >= NORMAL_OUTPUT && num_solvers > 1)
+      Cout << "ensemble_numerical_solution() best solver at step " << i
+	   << " = " << min_i[best_min].method_string() << std::endl;
 
-      if (sequenced_minimizers) { // sequenced optimization
-	if (i < last_index) { // propagate final pt to next initial pt
-	  Iterator& min_ip1 = varianceMinimizers[i+1];
-	  Model&  model_ip1 = min_ip1.iterated_model();
-	  if (model_ip1.is_null())  min_ip1.initial_point(vars_star);
-	  else                 model_ip1.active_variables(vars_star);
-	}
-      }
-      else {                      //  competed optimization
-	// track best using penalty merit fn comprised of accuracy and cost
-	merit_fn = nh_penalty_merit(cv_star, fn_star);
-	if (i == 0 || merit_fn < merit_fn_star)
-	  { merit_fn_star = merit_fn;  best_min = i; }
+    if (i < last_seq_index) { // propagate best final pt to next initial pt(s)
+      const Variables& vars_star = min_i[best_min].variables_results();
+      IteratorArray& min_ip1 = varianceMinimizers[i+1];
+      num_solvers = min_ip1.size();
+      for (j=0; j<num_solvers; ++j) {
+	Iterator& min_ij = min_ip1[j];
+	Model&  model_ij = min_ij.iterated_model();
+	if (model_ij.is_null())  min_ij.initial_point(vars_star);
+	else                model_ij.active_variables(vars_star);
       }
     }
+  }
 
   // -------------------------------------
   // Post-process the optimization results
   // -------------------------------------
   // Note: issues with more involved recovery for upstream (global) optimizers
-  // that don't support constraints are avoided by always ending with a capable
-  // (local gradient-based) search at the end of the sequence.
-  const Iterator& min_s = varianceMinimizers[best_min];
-  if (outputLevel >= NORMAL_OUTPUT && num_solvers > 1 && !sequenced_minimizers)
-    Cout << "ensemble_numerical_solution() best solver = "
-	 << min_s.method_string() << std::endl;
-  recover_results(min_s.variables_results().continuous_variables(),
-		  min_s.response_results().function_values(), soln.avgEstVar,
-		  soln.avgEvalRatios, soln.avgHFTarget, soln.equivHFAlloc);
+  // that don't support linear/nonlinear constraints can be avoided by always
+  // ending with capable (local gradient-based) minimizers at sequence end.
+  Iterator& min_last_best = varianceMinimizers[last_seq_index][best_min];
+  recover_results(min_last_best.variables_results().continuous_variables(),
+		  min_last_best.response_results().function_values(),
+		  soln.avgEstVar, soln.avgEvalRatios, soln.avgHFTarget,
+		  soln.equivHFAlloc);
 }
 
 
@@ -1560,7 +1571,7 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
   // Other notes:
   // > estimator_variance_ratios() converts cd_vars as needed
   // > linear_cost() requires N_VECTOR_*
-  const Iterator& direct_min = nonHierSampInstance->varianceMinimizers[0];// *** TO DO: active minimizer index
+  const Iterator& direct_min = nonHierSampInstance->varianceMinimizers[0][0];// *** TO DO: active minimizer index
   Real lin_ineq_viol
     = nonHierSampInstance->augmented_linear_ineq_violations(cd_vars,
         direct_min.callback_linear_ineq_coefficients(),

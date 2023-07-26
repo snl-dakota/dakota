@@ -309,10 +309,8 @@ protected:
 			    RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
 			    RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
 			    RealMatrix& lin_ineq_coeffs,
-			    RealMatrix& lin_eq_coeffs, size_t& num_solvers,
-			    bool& sequenced_minimizers);
-  void run_minimizers(DAGSolutionData& soln, size_t num_solvers,
-		      bool sequenced_minimizers);
+			    RealMatrix& lin_eq_coeffs);
+  void run_minimizers(DAGSolutionData& soln);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
@@ -371,9 +369,11 @@ protected:
   //- Heading: Data
   //
 
-  /// the minimizer used to minimize the estimator variance over parameters
-  /// of number of truth model samples and approximation eval_ratios
-  IteratorArray varianceMinimizers;
+  /// the minimizer(s) used to optimize the estimator variance over the number
+  /// of truth model samples and approximation eval_ratios.  Minimizers are
+  /// arranged in a sequence (first dimension) where each step in the sequence
+  /// may have multiple competitors (second dimension)
+  Iterator2DArray varianceMinimizers;
   /// variance minimization algorithm selection: SUBMETHOD_MFMC or
   /// SUBMETHOD_ACV_{IS,MF,KL}
   unsigned short mlmfSubMethod;
