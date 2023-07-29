@@ -55,7 +55,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   // default solver to OPT++ NIP based on numerical experience
   optSubProblemSolver = sub_optimizer_select(
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
-    SUBMETHOD_NPSOL_OPTPP); // default: compete SQP vs. NIP if both available
+    SUBMETHOD_DIRECT); // default is sequenced: DIRECT global + competed local
 
   // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -929,7 +929,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	sub_prob_model = adapt_model;
     }
 
-    size_t i, j, max_iter = 100000, max_eval = 500000;
+    size_t i, j, max_iter = 50000, max_eval = 250000;
     Real conv_tol = 1.e-8; // tight convergence
 
     varianceMinimizers.resize(sequence_len);
@@ -1002,11 +1002,12 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  Real min_box_size = 1.e-6, //-1. activates NCSU default = 1.e-4
 	       vol_box_size = 1.e-9, //-1. activates NCSU default = 1.e-6 
 	       soln_target  = -DBL_MAX; // no target, deactivates convergenceTol
-	  max_eval = 89980; // hardwired limit (error from NCSU for 500k)
+#ifdef HAVE_NCSU
 	  min_i[j].assign_rep(std::make_shared<NCSUOptimizer>(x_lb, x_ub,
 	    lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,lin_eq_coeffs, lin_eq_tgt,
 	    nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, max_iter, max_eval,
 	    direct_penalty_merit, min_box_size, vol_box_size, soln_target));
+#endif
 	  break;
 	}
 	case SUBMETHOD_SBLO: {
@@ -1056,28 +1057,35 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     size_t i, j, last_seq_index = sequence_len - 1,
       start = (mlmfIter) ? last_seq_index : 0;
     if (use_adapter) {
+      //Model& adapt_model = (use_dfs) ?
+      //  subProbModel.subordinate_model() : subProbModel;
       // *** TO DO: (existing active view accessors don't support size change)
       //adapt_model.update_active_variables(x0, x_lb, x_ub);
       //adapt_model.update_active_constraints(lin_ineq_coeffs, lin_ineq_lb,
       //  lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
       //  nln_eq_tgt);
-      Model& sub_prob_model = varianceMinimizers[0][0].iterated_model();
-      if (use_dfs) sub_prob_model.update_from_subordinate_model();
+      //if (use_dfs) subProbModel.update_from_subordinate_model();
       for (i=start; i<sequence_len; ++i) {
 	IteratorArray& min_i = varianceMinimizers[i];
 	num_solvers = min_i.size();
-	for (j=0; j<num_solvers; ++j)
-	  min_i[j].update_from_model(sub_prob_model);
+	for (j=0; j<num_solvers; ++j) {
+	  Iterator& min_ij = min_i[j];
+	  //if (!min_ij.is_null())
+	  //  min_i[j].update_from_model(sub_prob_model);
+	}
       }
     }
     else
       for (i=start; i<sequence_len; ++i) {
 	IteratorArray& min_i = varianceMinimizers[i];
 	num_solvers = min_i.size();
-	for (j=0; j<num_solvers; ++j)
-	  min_i[j].update_callback_data(x0, x_lb, x_ub, lin_ineq_coeffs,
-	    lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb,
-	    nln_ineq_ub, nln_eq_tgt);
+	for (j=0; j<num_solvers; ++j) {
+	  Iterator& min_ij = min_i[j];
+	  if (!min_ij.is_null())
+	    min_ij.update_callback_data(x0, x_lb, x_ub, lin_ineq_coeffs,
+	      lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb,
+	      nln_ineq_ub, nln_eq_tgt);
+	}
       }
   }
 }
@@ -1096,6 +1104,7 @@ void NonDNonHierarchSampling::run_minimizers(DAGSolutionData& soln)
     num_solvers = min_i.size();
     for (j=0; j<num_solvers; ++j) {
       Iterator& min_ij = min_i[j];
+      if (min_ij.is_null()) continue;
       min_ij.run();
       const Variables& vars_star = min_ij.variables_results();
       const RealVector&  cv_star = vars_star.continuous_variables();

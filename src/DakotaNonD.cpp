@@ -1294,6 +1294,10 @@ sub_optimizer_select(unsigned short requested_sub_method,
 #elif HAVE_OPTPP
       assigned_sub_method = SUBMETHOD_OPTPP;
 #endif
+    case SUBMETHOD_DIRECT:
+#ifdef HAVE_NCSU
+      assigned_sub_method = default_sub_method;
+#endif
       break;
     }
     if (assigned_sub_method == SUBMETHOD_NONE)

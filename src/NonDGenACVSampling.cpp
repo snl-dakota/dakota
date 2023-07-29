@@ -41,8 +41,12 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
     problem_db.get_short("method.nond.search_model_graphs.selection")),
   meritFnStar(DBL_MAX)
 {
-  // Unless the ensemble changes, the set of admissible DAGS is invariant:
-  if (dagRecursionType == FULL_GRAPH_RECURSION) dagDepthLimit = numApprox;
+  // assign appropriate throttle for cases other than PARTIAL_GRAPH_RECURSION
+  switch (dagRecursionType) {
+  case   NO_GRAPH_RECURSION:  dagDepthLimit = 1;          break;
+  case   KL_GRAPH_RECURSION:  dagDepthLimit = 2;          break;
+  case FULL_GRAPH_RECURSION:  dagDepthLimit = numApprox;  break;
+  }
 }
 
 

@@ -285,7 +285,8 @@
 	       <oneOf label="Optimization Solver">
                  <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp" />
                  <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip" />
-                 <keyword  id="direct" name="direct" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT)}" label="direct" />
+                 <keyword  id="global_local" name="global_local" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT)}" label="global_local" />
+                 <keyword  id="competed_local" name="competed_local" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}" label="competed_local" />
 	       </oneOf>
              </optional>
 	     ' >
@@ -3132,8 +3133,9 @@
 	  </oneOf>
 	  <keyword  id="search_model_graphs" name="search_model_graphs" code="{0}" label="search_model_graph" minOccurs="0" default="NO_GRAPH_RECURSION" >
 	    <keyword  id="model_selection" name="model_selection" code="{N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)}" label="model_selection" minOccurs="0" />
-	    <optional>
+	    <!-- <optional> -->
 	      <oneOf label="DAG Ensemble Generation Option">
+		<keyword  id="no_recursion" name="no_recursion" code="{N_mdm(type,dagRecursionType_NO_GRAPH_RECURSION)}" label="no_recursion" />
 		<keyword  id="kl_recursion" name="kl_recursion" code="{N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}" label="kl_recursion" />
 		<keyword  id="partial_recursion" name="partial_recursion" code="{N_mdm(type,dagRecursionType_PARTIAL_GRAPH_RECURSION)}" label="partial_recursion" >
 		  <keyword  id="depth_limit" name="depth_limit" code="{N_mdm(ushint,dagDepthLimit)}" label="depth_limit" >
@@ -3142,7 +3144,7 @@
 		</keyword>
 		<keyword  id="full_recursion" name="full_recursion" code="{N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}" label="full_recursion" />
 	      </oneOf>
-	    </optional>
+	    <!-- </optional> -->
 	  </keyword>
 	  &mc_pilot_samples;
 	  &mc_solution_mode;
