@@ -1057,6 +1057,8 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
 			optSubProblemSolver == SUBMETHOD_SBLO   ||
 			optSubProblemSolver == SUBMETHOD_EGO );
   if (require_bnds) {
+    // Prior to approx increments (when numerical solns are performed),
+    // equivHFEvals represents the total incurred cost in shared sample sets.
     switch (optSubProblemForm) {
     case N_VECTOR_LINEAR_OBJECTIVE: { // accuracy constrained
       // infer upper bounds from budget reqd to obtain target accuracy via MC:
@@ -1070,17 +1072,16 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     default:
       remaining = budget              - equivHFEvals;  break;
     }
-    // Set x_ub based on exhausting the remaining budget using only approx i.
-    // Prior to approx increments (when numerical solns are performed),
-    // equivHFEvals represents the total incurred cost in shared sample sets.
+    // Set delta x_ub based on exhausting the remaining budget using only
+    // approx i.  Then x_ub = avg_N_H + delta x_ub
     Real factor = remaining * cost_H;
     for (i=0; i<num_approx; ++i) // remaining = N_i * cost[i] / cost_H
-      x_ub[i] = factor / cost[approx_set[i]];
+      x_ub[i] = avg_N_H + factor / cost[approx_set[i]];
     if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
       // increments in N_H are shared with cost = \Sum costs
       Real sum_cost = cost_H;
       for (i=0; i<num_approx; ++i) sum_cost += cost[approx_set[i]];
-      x_ub[num_approx] = factor / sum_cost;
+      x_ub[num_approx] = avg_N_H + factor / sum_cost;
     }
   }
   else
