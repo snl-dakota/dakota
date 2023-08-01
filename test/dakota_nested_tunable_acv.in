@@ -100,7 +100,7 @@ method,
 	multilevel_sampling			#s0,#s5,#s10
 #	multifidelity_sampling			#s1,#s3,#s6,#s8,#s11,#s13,#s21
 #	multilevel_multifidelity_sampling	#s2,#s7,#s12
-#	approximate_control_variate acv_mf sqp	#s4,#s9,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s22,#s23
+#	approximate_control_variate acv_mf	#s4,#s9,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s22,#s23
 	  pilot_samples = 25	     		#s0,#s1,#s2,#s3,#s4,#s17
 #	  pilot_samples = 100			#s5,#s6,#s7,#s8,#s9,#s15,#s16,#s18,#s21,#s22,#s23
 #	  pilot_samples = 250			#s19,#s20

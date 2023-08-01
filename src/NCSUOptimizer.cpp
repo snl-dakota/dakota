@@ -43,7 +43,7 @@ enum { SETUP_MODEL, SETUP_USERFUNC };
 // maxdim (same as maxor)
 #define NCSU_DIRECT_MAXDIM 64
 // BMA: maxfunc = 90000-20; MSE: increased for use with cheap evals by GenACV
-#define NCSU_DIRECT_MAXFUNC 500000
+#define NCSU_DIRECT_MAXFUNC 255000
 
 NCSUOptimizer* NCSUOptimizer::ncsudirectInstance(NULL);
 
