@@ -6826,7 +6826,8 @@ static unsigned short
 	MP_(sparseGridLevel),
         MP_(startOrder),
 	MP_(vbdOrder),
-	MP_(wilksOrder);
+	MP_(wilksOrder),
+        MP_(vbdViaSamplingMethod);
 
 static SizetArray
 	MP_(collocationPointsSeq),
@@ -6991,7 +6992,8 @@ static int
 	MP_(searchSchemeSize),
 	MP_(subSamplingPeriod),
 	MP_(totalPatternSize),
-	MP_(verifyLevel);
+	MP_(verifyLevel),
+	MP_(vbdViaSamplingNumBins);
 
 static size_t
 	MP_(collocationPoints),
@@ -7284,6 +7286,8 @@ static Method_mp_utype
         MP2s(pstudyFileFormat,TABULAR_ANNOTATED),
 	MP2s(sampleType,SUBMETHOD_LHS),
 	MP2s(sampleType,SUBMETHOD_RANDOM),
+	MP2s(vbdViaSamplingMethod,VBD_MAHADEVAN),
+	MP2s(vbdViaSamplingMethod,VBD_SALTELLI),
 	MP2s(subMethod,SUBMETHOD_AMV_PLUS_U),
 	MP2s(subMethod,SUBMETHOD_AMV_PLUS_X),
 	MP2s(subMethod,SUBMETHOD_AMV_U),

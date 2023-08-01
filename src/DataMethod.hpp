@@ -119,6 +119,9 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_CONVERGE_ORDER,  SUBMETHOD_CONVERGE_QOI,
        SUBMETHOD_ESTIMATE_ORDER };
 
+/// Sampling method for variance based decomposition (VBD)
+enum { VBD_MAHADEVAN=0, VBD_SALTELLI };
+
 /// Graph recursion options for generalized ACV
 enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, PARTIAL_GRAPH_RECURSION,
        FULL_GRAPH_RECURSION };
@@ -858,10 +861,16 @@ public:
   /// sample sets.  This results in the use of the same sampling
   /// stencil/pattern throughout an execution with repeated sampling.
   bool fixedSequenceFlag;
-  /// the \c var_based_decomp specification for a variety of sampling methods
+  /// the \c var_based_decomp specification for computing Sobol' indices
+  /// via either PCE or sampling
   bool vbdFlag;
-  /// the \c var_based_decomp tolerance for omitting index output
+  /// the \c var_based_decomp tolerance for omitting Sobol' indices computed
+  /// via either PCE or sampling
   Real vbdDropTolerance;
+  /// Sampling method for computing Sobol indices: Mahadevan (default) or Saltelli
+  unsigned short vbdViaSamplingMethod;
+  /// Number of bins to use in case the Mahadevan method is selected (default is the square root of the number of samples)
+  int vbdViaSamplingNumBins;
   /// the \c backfill option allows one to augment in LHS sample
   /// by enforcing the addition of unique discrete variables to the sample
   bool backfillFlag;

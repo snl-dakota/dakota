@@ -36,6 +36,7 @@ Analyzer::
 Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
+  vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
   writePrecision(problem_db.get_int("environment.output_precision"))
 {
   // set_db_list_nodes() is set by a higher context
@@ -56,7 +57,7 @@ Analyzer(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
   
-  if (probDescDB.get_bool("method.variance_based_decomp")) 
+  if (vbdFlag) 
     vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
 
   if (!numFinalSolutions)  // default is zero
@@ -68,6 +69,7 @@ Analyzer::
 Analyzer(unsigned short method_name, Model& model):
   Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
+  vbdFlag(false), vbdDropTol(-1.),
   writePrecision(0)
 {
   update_from_model(iteratedModel); // variable/response counts & checks

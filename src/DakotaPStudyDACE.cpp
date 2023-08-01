@@ -30,7 +30,8 @@ namespace Dakota {
 PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, Model& model):
   Analyzer(problem_db, model),
   volQualityFlag(probDescDB.get_bool("method.quality_metrics")),
-  varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp"))
+  vbdViaSamplingMethod(probDescDB.get_ushort("method.vbd_via_sampling_method")),
+  vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins"))
 {
   // Check for discrete variable types
   if ( (numDiscreteIntVars || numDiscreteRealVars) &&
@@ -50,7 +51,9 @@ PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, Model& model):
 
 
 PStudyDACE::PStudyDACE(unsigned short method_name, Model& model):
-  Analyzer(method_name, model), volQualityFlag(false), varBasedDecompFlag(false)
+  Analyzer(method_name, model), volQualityFlag(false),
+  vbdViaSamplingMethod(VBD_MAHADEVAN),
+  vbdViaSamplingNumBins(-1)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
   if (iteratedModel.gradient_type() == "numerical" &&
@@ -108,11 +111,11 @@ void PStudyDACE::print_results(std::ostream& s, short results_state)
   if (numObjFns || numLSqTerms) // DACE usage
     Analyzer::print_results(s, results_state);
 
-  if (varBasedDecompFlag)
+  if (vbdFlag)
     pStudyDACESensGlobal.print_sobol_indices(s,
                                              iteratedModel.ordered_labels(),
                                              iteratedModel.response_labels(),
-                                             vbdDropTol);
+                                             vbdDropTol); // set in DakotaAnalyzer constructor
 
   if (pStudyDACESensGlobal.correlations_computed()) {
     if (compactMode) { // FSU, DDACE, PSUADE ignore active discrete vars

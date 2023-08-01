@@ -618,13 +618,8 @@ private:
   /// of maxIterations)
   size_t maxSolverIterations;
   
-  /// flag indicating the activation of variance-bsaed decomposition
-  /// for computing Sobol' indices
-  bool vbdFlag;
   /// limits the order of interactions within the component Sobol' indices
   unsigned short vbdOrderLimit;
-  /// tolerance for omitting output of small VBD indices
-  Real vbdDropTol;
 
   // sample type for \c expansion_samples approach to estimating PCE
   // coefficients (supports construct_incremental_lhs())

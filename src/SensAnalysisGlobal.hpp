@@ -93,17 +93,19 @@ public:
 			        const StringArray& resp_labels) const;
 
   /// compute VBD-based Sobol indices
-  void compute_vbd_stats( const size_t           numFunctions
-                        , const size_t           num_vars
-                        , const size_t           num_samples
-			, const IntResponseMap & resp_samples
-                        );
+  void compute_vbd_stats_via_sampling( const unsigned short   method
+                                     , const int              numBins
+                                     , const size_t           numFunctions
+                                     , const size_t           num_vars
+                                     , const size_t           num_samples
+                                     , const IntResponseMap & resp_samples
+                                     );
 
   /// Printing of VBD results
   void print_sobol_indices( std::ostream      & s
                           , const StringArray & var_labels
                           , const StringArray & resp_labels
-                          , const Real          vbdDropTol
+                          , const Real          dropTol
                           ) const;
 
   /// archive VBD-based Sobol indices
@@ -111,7 +113,7 @@ public:
                             , ResultsManager    & resultsDB
                             , const StringArray & var_labels
                             , const StringArray & resp_labels
-                            , const Real          vbdDropTol
+                            , const Real          dropTol
                             ) const;
 
 private:
@@ -176,14 +178,26 @@ private:
          const size_t &inc_id,
          bool rank) const;
 
-/// archive partial (rank = false) or partial rank (rank = true) correlations
-void archive_partial_correlations(const StrStrSizet& run_identifier,  
+  /// archive partial (rank = false) or partial rank (rank = true) correlations
+  void archive_partial_correlations(const StrStrSizet& run_identifier,  
 		     ResultsManager& iterator_results,
 		     const StringArray& var_labels,
 		     const StringArray& resp_labels,
          const size_t &inc_id,
          bool rank) const;
 
+  void compute_vbd_stats_with_Saltelli( const size_t           numFunctions
+                                      , const size_t           num_vars
+                                      , const size_t           num_samples
+                                      , const IntResponseMap & resp_samples
+                                      );
+
+  void compute_vbd_stats_with_Mahadevan( const int              numBins
+                                       , const size_t           numFunctions
+                                       , const size_t           num_vars
+                                       , const size_t           num_samples
+                                       , const IntResponseMap & resp_samples
+                                       );
   //- Heading: Data
   //
 
