@@ -7278,7 +7278,7 @@ static Method_mp_utype
 	MP2s(optSubProbSolver,SUBMETHOD_EA),
 	MP2s(optSubProbSolver,SUBMETHOD_EGO),
 	MP2s(optSubProbSolver,SUBMETHOD_SBGO),
-	MP2s(optSubProbSolver,SUBMETHOD_DIRECT),
+	MP2s(optSubProbSolver,SUBMETHOD_DIRECT_NPSOL_OPTPP),
 	MP2s(optSubProbSolver,SUBMETHOD_LHS),
 	MP2s(pstudyFileFormat,TABULAR_NONE),
         MP2s(pstudyFileFormat,TABULAR_HEADER),

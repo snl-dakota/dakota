@@ -246,7 +246,7 @@ void CONMINOptimizer::check_sub_iterator_conflict()
        ( sub_iterator.method_name() == CONMIN_FRCG ||
 	 sub_iterator.method_name() == CONMIN_MFD  ||
 	 sub_iterator.uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
-    sub_iterator.method_recourse();
+    sub_iterator.method_recourse(methodName);
   ModelList& sub_models = iteratedModel.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
@@ -255,7 +255,7 @@ void CONMINOptimizer::check_sub_iterator_conflict()
 	 ( sub_iterator.method_name() == CONMIN_FRCG ||
 	   sub_iterator.method_name() == CONMIN_MFD  ||
 	   sub_iterator.uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
-      sub_iterator.method_recourse();
+      sub_iterator.method_recourse(methodName);
   }
 }
 

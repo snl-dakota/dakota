@@ -55,7 +55,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   // default solver to OPT++ NIP based on numerical experience
   optSubProblemSolver = sub_optimizer_select(
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
-    SUBMETHOD_DIRECT); // default is sequenced: DIRECT global + competed local
+    SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
 
   // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -112,24 +112,20 @@ void NonDNonHierarchSampling::pre_run()
   // Prevent nesting of an instance of a Fortran iterator within another
   // instance of the same iterator.  Run-time check since NestedModel::
   // subIterator is constructed in init_communicators().
-  if (optSubProblemSolver == SUBMETHOD_NPSOL) {
+  if (optSubProblemSolver == SUBMETHOD_...) {
     Iterator sub_iterator = iteratedModel.subordinate_iterator();
     if (!sub_iterator.is_null() && 
-	( sub_iterator.method_name() ==     NPSOL_SQP ||
-	  sub_iterator.method_name() ==    NLSSOL_SQP ||
-	  sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-	  sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-      sub_iterator.method_recourse();
+	( sub_iterator.method_name() == ... ||
+	  sub_iterator.uses_method() == ... ) )
+      sub_iterator.method_recourse(methodName);
     ModelList& sub_models = iteratedModel.subordinate_models();
     for (ModelLIter ml_iter = sub_models.begin();
 	 ml_iter != sub_models.end(); ml_iter++) {
       sub_iterator = ml_iter->subordinate_iterator();
       if (!sub_iterator.is_null() && 
-	  ( sub_iterator.method_name() ==     NPSOL_SQP ||
-	    sub_iterator.method_name() ==    NLSSOL_SQP ||
-	    sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-	    sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-	sub_iterator.method_recourse();
+	  ( sub_iterator.method_name() == ... ||
+	    sub_iterator.uses_method() == ... ) )
+	sub_iterator.method_recourse(methodName);
     }
   }
   */
@@ -684,6 +680,9 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
 
   // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
   bool require_bnds = ( optSubProblemSolver == SUBMETHOD_DIRECT ||
+			optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL ||
+			optSubProblemSolver == SUBMETHOD_DIRECT_OPTPP ||
+			optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL_OPTPP ||
 			optSubProblemSolver == SUBMETHOD_SBGO   ||
 			optSubProblemSolver == SUBMETHOD_SBLO   ||
 			optSubProblemSolver == SUBMETHOD_EGO );
@@ -813,7 +812,8 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     use_adapter = use_dfs = true;  break;
   case SUBMETHOD_EGO:  case SUBMETHOD_EA: //case SUBMETHOD_CPS:
     use_adapter = true;            break;
-  case SUBMETHOD_DIRECT:
+  case SUBMETHOD_DIRECT_NPSOL: case SUBMETHOD_DIRECT_OPTPP:
+  case SUBMETHOD_DIRECT_NPSOL_OPTPP:
     sequence_len = 2;              break;
   }
       
@@ -822,15 +822,23 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
   // -----------------------------------
   if (varianceMinimizers.empty()) {
 
-    // convert optSubProblemSolver to multiple solvers if needed
+    // separate optSubProblemSolver into array of single solvers where needed
     Short2DArray solvers(sequence_len);
     ShortArray& solvers_0 = solvers[0];
     switch (optSubProblemSolver) {
     case SUBMETHOD_NPSOL_OPTPP: // competed
       solvers_0.resize(2);
       solvers_0[0] = SUBMETHOD_NPSOL;  solvers_0[1] = SUBMETHOD_OPTPP;  break;
-    case SUBMETHOD_DIRECT: { // sequenced global-local w/ competed local
-      solvers_0.resize(1);  solvers_0[0] = optSubProblemSolver;
+    case SUBMETHOD_DIRECT_NPSOL: { // sequenced global-local
+      solvers_0.resize(1);   solvers_0[0] = SUBMETHOD_DIRECT;
+      solvers[1].resize(1); solvers[1][0] = SUBMETHOD_NPSOL;  break;
+    }
+    case SUBMETHOD_DIRECT_OPTPP: { // sequenced global-local
+      solvers_0.resize(1);   solvers_0[0] = SUBMETHOD_DIRECT;
+      solvers[1].resize(1); solvers[1][0] = SUBMETHOD_OPTPP;  break;
+    }
+    case SUBMETHOD_DIRECT_NPSOL_OPTPP: {// sequenced global-local+competed local
+      solvers_0.resize(1);  solvers_0[0] = SUBMETHOD_DIRECT;
       ShortArray& solvers_1 = solvers[1];  solvers_1.resize(2);
       solvers_1[0] = SUBMETHOD_NPSOL;  solvers_1[1] = SUBMETHOD_OPTPP;  break;
     }
@@ -1220,6 +1228,89 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
       = compute_equivalent_cost(avg_hf_target, avg_eval_ratios, sequenceCost);
     break;
   }
+}
+
+
+void NonDNonHierarchSampling::method_recourse(unsigned short method_name)
+{
+  // NonDNonHierarchSampling numerical solves must protect use of Fortran
+  // solvers at this level from conflicting with use at a higher level.
+  // However, it is not necessary to check the other direction by defining
+  // check_sub_iterator_conflict(), since solver execution does not span
+  // any Model evaluations.
+
+  bool sol_conflict = (method_name == NPSOL_SQP || method_name == NLSSOL_SQP),
+    ncsu_conflict = (method_name == NCSU_DIRECT), have_npsol = false,
+    have_optpp = false, have_ncsu = false, err_flag = false;
+#ifdef HAVE_NPSOL
+  have_npsol = true;
+#endif
+#ifdef HAVE_OPTPP
+  have_optpp = true;
+#endif
+#ifdef HAVE_NCSU
+  have_ncsu = true;
+#endif
+
+  // Note: multiple simultaneous conflicts not currently supported; rather
+  // multiple invocations of recourse could further trim the method list
+  if (sol_conflict)
+    switch (optSubProblemSolver) {
+    case SUBMETHOD_NPSOL: case SUBMETHOD_NPSOL_OPTPP:
+      if (have_optpp) optSubProblemSolver = SUBMETHOD_OPTPP;
+      else            err_flag = true;
+      break;
+    case SUBMETHOD_DIRECT_NPSOL: // TO DO: check for DIRECT
+      if (have_ncsu) {
+	if (have_optpp)	optSubProblemSolver = SUBMETHOD_DIRECT_OPTPP;
+	else            optSubProblemSolver = SUBMETHOD_DIRECT;
+      }
+      else {
+	if (have_optpp)	optSubProblemSolver = SUBMETHOD_OPTPP;
+	else            err_flag = true;
+      }
+      break;
+    case SUBMETHOD_DIRECT_NPSOL_OPTPP: // TO DO: check for OPT++
+      if (have_ncsu) {
+	if (have_optpp)	optSubProblemSolver = SUBMETHOD_DIRECT_OPTPP;
+	else            optSubProblemSolver = SUBMETHOD_DIRECT;
+      }
+      else {
+	if (have_optpp)	optSubProblemSolver = SUBMETHOD_OPTPP;
+	else            err_flag = true;
+      }
+      break;
+    }
+  else if (ncsu_conflict)
+    switch (optSubProblemSolver) {
+    case SUBMETHOD_DIRECT:
+      err_flag = true; break;
+    case SUBMETHOD_DIRECT_NPSOL: // TO DO: check for NPSOL
+      if      (have_npsol) optSubProblemSolver = SUBMETHOD_NPSOL;
+      else if (have_optpp) optSubProblemSolver = SUBMETHOD_OPTPP;
+      else                 err_flag = true;
+      break;
+    case SUBMETHOD_DIRECT_OPTPP: // TO DO: check for OPT++
+      if      (have_optpp) optSubProblemSolver = SUBMETHOD_OPTPP;
+      else if (have_npsol) optSubProblemSolver = SUBMETHOD_NPSOL;
+      else                 err_flag = true;
+      break;
+    case SUBMETHOD_DIRECT_NPSOL_OPTPP:// TO DO: check for NPSOL & OPT++
+      if (have_optpp && have_npsol) optSubProblemSolver = SUBMETHOD_NPSOL_OPTPP;
+      else if (have_npsol) optSubProblemSolver = SUBMETHOD_NPSOL;
+      else if (have_optpp) optSubProblemSolver = SUBMETHOD_OPTPP;
+      else                 err_flag = true;
+      break;
+    }
+
+  if (err_flag) {
+    Cerr << "\nError: method conflict detected in NonDNonHierarchSampling but "
+	 << "no alternate solver available." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  else
+    Cerr << "\nWarning: method recourse invoked in NonDNonHierarchSampling due "
+	 << "to detected method conflict.\n\n";
 }
 
 

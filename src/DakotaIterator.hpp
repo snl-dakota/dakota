@@ -226,8 +226,9 @@ public:
   virtual void check_sub_iterator_conflict();
   /// return name of any enabling iterator used by this iterator
   virtual unsigned short uses_method() const;
-  /// perform a method switch, if possible, due to a detected conflict
-  virtual void method_recourse();
+  /// perform a method switch, if possible, due to a detected conflict with
+  /// the simultaneous use of method_name at an higher-level
+  virtual void method_recourse(unsigned short method_name);
 
   /// return the complete set of evaluated variables
   virtual const VariablesArray& all_variables();

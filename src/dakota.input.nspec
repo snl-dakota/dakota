@@ -2875,7 +2875,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         |
         nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
         |
-        global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT)}
+        global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
         |
         competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
        ]
@@ -3017,7 +3017,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
       |
-      global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT)}
+      global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
       |
       competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
      ]

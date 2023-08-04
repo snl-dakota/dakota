@@ -285,7 +285,7 @@
 	       <oneOf label="Optimization Solver">
                  <keyword  id="sqp" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp" />
                  <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip" />
-                 <keyword  id="global_local" name="global_local" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT)}" label="global_local" />
+                 <keyword  id="global_local" name="global_local" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}" label="global_local" />
                  <keyword  id="competed_local" name="competed_local" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}" label="competed_local" />
 	       </oneOf>
              </optional>

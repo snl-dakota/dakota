@@ -128,16 +128,22 @@ void NCSUOptimizer::check_sub_iterator_conflict()
   Iterator sub_iterator = iteratedModel.subordinate_iterator();
   if (!sub_iterator.is_null() && 
        ( sub_iterator.method_name() == NCSU_DIRECT ||
-	 sub_iterator.uses_method() == SUBMETHOD_DIRECT ) )
-    sub_iterator.method_recourse();
+	 sub_iterator.uses_method() == SUBMETHOD_DIRECT ||
+	 sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL ||
+	 sub_iterator.uses_method() == SUBMETHOD_DIRECT_OPTPP ||
+	 sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
+    sub_iterator.method_recourse(methodName);
   ModelList& sub_models = iteratedModel.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
     if (!sub_iterator.is_null() && 
 	 ( sub_iterator.method_name() == NCSU_DIRECT ||
-	   sub_iterator.uses_method() == SUBMETHOD_DIRECT ) )
-      sub_iterator.method_recourse();
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT ||
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL ||
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT_OPTPP ||
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
+      sub_iterator.method_recourse(methodName);
   }
 }
 

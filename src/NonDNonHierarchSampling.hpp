@@ -161,7 +161,7 @@ protected:
   /// return name of active optimizer method
   unsigned short uses_method() const;
   /// perform a numerical solver method switch due to a detected conflict
-  void method_recourse();
+  void method_recourse(unsigned short method_name);
 
   //
   //- Heading: New virtual functions
@@ -474,43 +474,6 @@ inline size_t NonDNonHierarchSampling::num_approximations() const
 
 inline unsigned short NonDNonHierarchSampling::uses_method() const
 { return optSubProblemSolver; }
-
-
-inline void NonDNonHierarchSampling::method_recourse()
-{
-  // NonDNonHierarchSampling numerical solves must protect use of Fortran
-  // solvers at this level from conflicting with use at a higher level.
-  // However, it is not necessary to check the other direction by defining
-  // check_sub_iterator_conflict(), since solver execution does not span
-  // any Model evaluations.
-
-  bool err_flag = false;
-  switch (optSubProblemSolver) {
-  case SUBMETHOD_NPSOL: case SUBMETHOD_NPSOL_OPTPP:
-#ifdef HAVE_OPTPP
-    optSubProblemSolver = SUBMETHOD_OPTPP;
-#else
-    err_flag = true;
-#endif
-    break;
-  case SUBMETHOD_OPTPP: // for completeness (OPT++ nesting is not an issue)
-#ifdef HAVE_NPSOL
-    optSubProblemSolver = SUBMETHOD_NPSOL;
-#else
-    err_flag = true;
-#endif
-    break;
-  }
-
-  if (err_flag) {
-    Cerr << "\nError: method conflict detected in NonDNonHierarchSampling but "
-	 << "no alternate solver available." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  else
-    Cerr << "\nWarning: method recourse invoked in NonDNonHierarchSampling due "
-	 << "to detected method conflict.\n\n";
-}
 
 
 inline void NonDNonHierarchSampling::

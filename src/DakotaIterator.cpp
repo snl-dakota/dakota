@@ -1758,10 +1758,10 @@ unsigned short Iterator::uses_method() const
 }
 
 
-void Iterator::method_recourse()
+void Iterator::method_recourse(unsigned short method_name)
 {
   if (iteratorRep) // envelope fwd to letter
-    iteratorRep->method_recourse();
+    iteratorRep->method_recourse(method_name);
   else { // default definition (letter lacking redefinition of virtual fn.)
     Cerr << "Error: no method recourse defined for detected method conflict.\n"
 	 << "       Please revise method selections." << std::endl;
