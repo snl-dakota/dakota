@@ -1310,7 +1310,8 @@ void NonDNonHierarchSampling::method_recourse(unsigned short method_name)
   }
   else
     Cerr << "\nWarning: method recourse invoked in NonDNonHierarchSampling due "
-	 << "to detected method conflict.\n\n";
+	 << "to detected method conflict.\n         New solver = "
+	 << optSubProblemSolver << "\n\n";
 }
 
 

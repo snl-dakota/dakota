@@ -1360,6 +1360,9 @@ sub_optimizer_select(unsigned short requested_sub_method,
 	 << " not recognized in NonD::sub_optimizer_select()." << std::endl;
     break;
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nSub-method " << assigned_sub_method
+	 << " assigned in NonD::sub_optimizer_select()." << std::endl;
 
   return assigned_sub_method;
 }
