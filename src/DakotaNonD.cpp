@@ -1322,19 +1322,18 @@ sub_optimizer_select(unsigned short requested_sub_method,
       if (have_ncsu) assigned_sub_method = default_sub_method;
       break;
     case SUBMETHOD_DIRECT_NPSOL:
-      if (have_ncsu && have_npsol) assigned_sub_method = requested_sub_method;
+      if (have_ncsu && have_npsol) assigned_sub_method = default_sub_method;
       else if (have_ncsu)  assigned_sub_method = SUBMETHOD_DIRECT;
       else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
       break;
     case SUBMETHOD_DIRECT_OPTPP:
-      if (have_ncsu && have_optpp) assigned_sub_method = requested_sub_method;
+      if (have_ncsu && have_optpp) assigned_sub_method = default_sub_method;
       else if (have_ncsu)  assigned_sub_method = SUBMETHOD_DIRECT;
       else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
       break;
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:
       if (have_ncsu) {
-	if (have_npsol && have_optpp)
-	  assigned_sub_method = requested_sub_method;
+	if (have_npsol && have_optpp) assigned_sub_method = default_sub_method;
 	else if (have_npsol) assigned_sub_method = SUBMETHOD_DIRECT_NPSOL;
 	else if (have_optpp) assigned_sub_method = SUBMETHOD_DIRECT_OPTPP;
       }
