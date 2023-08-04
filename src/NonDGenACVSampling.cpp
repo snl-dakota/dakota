@@ -844,8 +844,10 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     // CVMC) for best initial guess, where each initial gues may additionally
     // employ multiple varianceMinimizers in ensemble_numerical_solution()
     switch (optSubProblemSolver) { // no initial guess
-    case SUBMETHOD_DIRECT:  case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:
-    case SUBMETHOD_EA: // global, sequenced global+local methods
+    // global and sequenced global+local methods:
+    case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
+    case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
+    case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
       ensemble_numerical_solution(sequenceCost,approxSequence,soln,numSamples);
       break;
     default: { // competed initial guesses with (competed) local methods
@@ -1053,8 +1055,11 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
 
   // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
   bool require_bnds = ( optSubProblemSolver == SUBMETHOD_DIRECT ||
-			optSubProblemSolver == SUBMETHOD_SBGO   ||
-			optSubProblemSolver == SUBMETHOD_SBLO   ||
+			optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL ||
+			optSubProblemSolver == SUBMETHOD_DIRECT_OPTPP ||
+			optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL_OPTPP ||
+			optSubProblemSolver == SUBMETHOD_SBGO ||
+			optSubProblemSolver == SUBMETHOD_SBLO ||
 			optSubProblemSolver == SUBMETHOD_EGO );
   if (require_bnds) {
     // Prior to approx increments (when numerical solns are performed),

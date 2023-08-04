@@ -683,8 +683,8 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
 			optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL ||
 			optSubProblemSolver == SUBMETHOD_DIRECT_OPTPP ||
 			optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL_OPTPP ||
-			optSubProblemSolver == SUBMETHOD_SBGO   ||
-			optSubProblemSolver == SUBMETHOD_SBLO   ||
+			optSubProblemSolver == SUBMETHOD_SBGO ||
+			optSubProblemSolver == SUBMETHOD_SBLO ||
 			optSubProblemSolver == SUBMETHOD_EGO );
   if (require_bnds) {
     // Prior to approx increments (when numerical solns are performed),
