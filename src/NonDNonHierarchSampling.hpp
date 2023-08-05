@@ -188,6 +188,12 @@ protected:
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+  /// When looping through a minimizer sequence/competition, this
+  /// function enables per-minimizer updates to the parameter bounds,
+  /// e.g. for providing a bounded domain for methods that require it,
+  /// while removing it for those that don't
+  virtual void finite_solution_bounds(const RealVector& cost, Real avg_N_H,
+				      RealVector& x_lb, RealVector& x_ub);
 
   /// post-process optimization final results to recover solution data
   virtual void recover_results(const RealVector& cv_star,
@@ -304,7 +310,8 @@ protected:
   void ensemble_numerical_solution(const RealVector& cost,
 				   const SizetArray& approx_sequence,
 				   DAGSolutionData& soln, size_t& num_samples);
-  void configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+  void configure_minimizers(const RealVector& cost, Real avg_N_H,
+			    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 			    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
 			    RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
 			    RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
@@ -374,6 +381,9 @@ protected:
   /// arranged in a sequence (first dimension) where each step in the sequence
   /// may have multiple competitors (second dimension)
   Iterator2DArray varianceMinimizers;
+  /// active indices for numerical solutions: varianceMinimizers[first][second]
+  SizetSizetPair varMinIndices;
+
   /// variance minimization algorithm selection: SUBMETHOD_MFMC or
   /// SUBMETHOD_ACV_{IS,MF,KL}
   unsigned short mlmfSubMethod;

@@ -61,6 +61,8 @@ protected:
     RealVector& lin_eq_tgt, RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
     RealVector& nln_eq_tgt, RealMatrix& lin_ineq_coeffs,
     RealMatrix& lin_eq_coeffs);
+  void finite_solution_bounds(const RealVector& cost, Real avg_N_H,
+			      RealVector& x_lb, RealVector& x_ub);
 
   void recover_results(const RealVector& cv_star, const RealVector& fn_star,
 		       Real& avg_estvar, RealVector& avg_eval_ratios,

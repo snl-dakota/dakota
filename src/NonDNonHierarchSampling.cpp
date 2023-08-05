@@ -577,9 +577,9 @@ ensemble_numerical_solution(const RealVector& cost,
   augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 
   // Perform the numerical solve(s) and recover the solution:
-  configure_minimizers(x0, x_lb, x_ub, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
-		       nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, lin_ineq_coeffs,
-		       lin_eq_coeffs);
+  configure_minimizers(cost, avg_N_H, x0, x_lb, x_ub, lin_ineq_lb, lin_ineq_ub,
+		       lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+		       lin_ineq_coeffs, lin_eq_coeffs);
   run_minimizers(soln);
   // compute sample increment for HF from current to target:
   num_samples = (truthFixedByPilot) ? 0 :
@@ -676,47 +676,10 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
   // > ACV-IS is unconstrained in model order --> retain N_i > N
 
   size_t i, num_cdv = x0.length(), approx;
-  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals, remaining;
+  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals;
 
-  // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
-  bool require_bnds = ( optSubProblemSolver == SUBMETHOD_DIRECT ||
-			optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL ||
-			optSubProblemSolver == SUBMETHOD_DIRECT_OPTPP ||
-			optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL_OPTPP ||
-			optSubProblemSolver == SUBMETHOD_SBGO ||
-			optSubProblemSolver == SUBMETHOD_SBLO ||
-			optSubProblemSolver == SUBMETHOD_EGO );
-  if (require_bnds) {
-    // Prior to approx increments (when numerical solns are performed),
-    // equivHFEvals represents the total incurred cost in shared sample sets
-    switch (optSubProblemForm) {
-    case N_VECTOR_LINEAR_OBJECTIVE: { // accuracy constrained
-      // infer upper bounds from budget reqd to obtain target accuracy via MC:
-      // varH / N = tol * avg_estvar0; for minimizer sequencing, a downstream
-      // refinement can omit this approximated bound
-      RealVector mc_targets(numFunctions, false);
-      for (size_t qoi=0; qoi<numFunctions; ++qoi)
-	mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
-      remaining = average(mc_targets) - equivHFEvals;  break;
-    }
-    default:
-      remaining = budget              - equivHFEvals;  break;
-    }
-    // Set delta x_ub based on exhausting the remaining budget using only
-    // approx i.  Then x_ub = avg_N_H + delta x_ub
-    Real factor = remaining * cost_H;
-    for (i=0; i<numApprox; ++i) // remaining = N_i * cost[i] / cost_H
-      x_ub[i] = avg_N_H + factor / cost[i];
-    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
-      // increments in N_H are shared with cost = \Sum costs
-      Real sum_cost = cost_H;
-      for (i=0; i<numApprox; ++i) sum_cost += cost[i];
-      x_ub[numApprox] = avg_N_H + factor / sum_cost;
-    }
-  }
-  else
-    x_ub = DBL_MAX; // no upper bounds needed for x
-
+  // minimizer-specific updates (x bounds) performed in finite_solution_bounds()
+  x_ub = DBL_MAX; // no upper bounds needed for x
   lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
 
   // Note: ACV paper suggests additional linear constraints for r_i ordering
@@ -790,14 +753,69 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     break;
   }
   }
+
+  //if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Numerical solve (initial, lb, ub):\n" << x0 << x_lb << x_ub
+	 << "Numerical solve (lin ineq lb, ub):\n" << lin_ineq_lb << lin_ineq_ub
+      //<< lin_eq_tgt
+	 << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb << nln_ineq_ub
+      //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
+	 << std::endl;
 }
 
 
 void NonDNonHierarchSampling::
-configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
-		     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
-		     RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
-		     RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
+finite_solution_bounds(const RealVector& cost, Real avg_N_H,
+		       RealVector& x_lb, RealVector& x_ub)
+{
+  // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
+  if ( varMinIndices.first == 0 &&
+       ( optSubProblemSolver == SUBMETHOD_DIRECT ||
+	 optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL ||
+	 optSubProblemSolver == SUBMETHOD_DIRECT_OPTPP ||
+	 optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL_OPTPP ||
+	 optSubProblemSolver == SUBMETHOD_SBGO ||
+	 optSubProblemSolver == SUBMETHOD_SBLO ||
+	 optSubProblemSolver == SUBMETHOD_EGO ) ) {
+    // Prior to approx increments (when numerical solns are performed),
+    // equivHFEvals represents the total incurred cost in shared sample sets
+    Real remaining;  size_t i, qoi;
+    switch (optSubProblemForm) {
+    case N_VECTOR_LINEAR_OBJECTIVE: { // accuracy constrained
+      // infer upper bounds from budget reqd to obtain target accuracy via MC:
+      // varH / N = tol * avg_estvar0; for minimizer sequencing, a downstream
+      // refinement can omit this approximated bound
+      RealVector mc_targets(numFunctions, false);
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
+      remaining = average(mc_targets)    - equivHFEvals;  break;
+    }
+    default:
+      remaining = (Real)maxFunctionEvals - equivHFEvals;  break;
+    }
+    // Set delta x_ub based on exhausting the remaining budget using only
+    // approx i.  Then x_ub = avg_N_H + delta x_ub
+    Real cost_H = cost[numApprox], factor = remaining * cost_H;
+    for (i=0; i<numApprox; ++i) // remaining = N_i * cost[i] / cost_H
+      x_ub[i] = avg_N_H + factor / cost[i];
+    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
+      // increments in N_H are shared with cost = \Sum costs
+      Real sum_cost = cost_H;
+      for (i=0; i<numApprox; ++i) sum_cost += cost[i];
+      x_ub[numApprox] = avg_N_H + factor / sum_cost;
+    }
+  }
+  else
+    x_ub = DBL_MAX; // no upper bounds needed for x
+}
+
+
+void NonDNonHierarchSampling::
+configure_minimizers(const RealVector& cost, Real avg_N_H,
+		     RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+		     RealVector& lin_ineq_lb,     RealVector& lin_ineq_ub,
+		     RealVector& lin_eq_tgt,      RealVector& nln_ineq_lb,
+		     RealVector& nln_ineq_ub,     RealVector& nln_eq_tgt,
 		     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs)
 {
   // support sequenced (global-local) and competed (NPSOL_OPTPP) configurations:
@@ -816,7 +834,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
   case SUBMETHOD_DIRECT_NPSOL_OPTPP:
     sequence_len = 2;              break;
   }
-      
+
   // -----------------------------------
   // Configure the variance minimizer(s)
   // -----------------------------------
@@ -945,9 +963,13 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     for (i=0; i<sequence_len; ++i) {
       ShortArray& solvers_i = solvers[i];
       IteratorArray&  min_i = varianceMinimizers[i];
+      varMinIndices.first = i;
       num_solvers = solvers_i.size();
       min_i.resize(num_solvers);
-      for (j=0; j<num_solvers; ++j)
+      for (j=0; j<num_solvers; ++j) {
+	varMinIndices.second = j;
+	// *** TO DO: per-minimizer x_lb,x_ub updates for use_adapter case
+	finite_solution_bounds(cost, avg_N_H, x_lb, x_ub);
 	switch (solvers_i[j]) {
 	case SUBMETHOD_NPSOL: {
 	  // Keep FDSS smaller than RATIO_NUDGE to avoid FPE
@@ -1024,6 +1046,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	    constr_relax = NO_RELAX;
 	  unsigned short soft_conv_limit = 5;
 	  Real tr_factor = .5;
+	  // TO DO: push updated solution bounds into model(s)
 	  min_i[j].assign_rep(std::make_shared<DataFitSurrBasedLocalMinimizer>(
 	    sub_prob_model, merit_fn, accept_logic, constr_relax, tr_factor,
 	    max_iter, max_eval, conv_tol, soft_conv_limit, false));
@@ -1036,6 +1059,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  int samples = 100, seed = 12347;      // TO DO: spec
 	  String approx_type("global_kriging"); // TO DO: spec
 	  bool use_derivs = false;
+	  // TO DO: push updated solution bounds into model(s)
 	  min_i[j].assign_rep(std::make_shared<EffGlobalMinimizer>(
 	    sub_prob_model, approx_type, samples, seed, use_derivs, max_iter,
 	    max_eval, conv_tol));
@@ -1046,17 +1070,20 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
           break;
         }
         case SUBMETHOD_SBGO: { // for NonDGlobalInterval, was EAminlp + GP ...
+	  // TO DO: push updated solution bounds into model(s)
           min_i[j].assign_rep(std::make_shared<SurrBasedGlobalMinimizer>(
 	    sub_prob_model, max_iter, max_eval, conv_tol));
           break;
         }
         case SUBMETHOD_EA: { // to be combined with local refinement
+	  // TO DO: push updated solution bounds into model(s)
           min_i[j].assign_rep(std::make_shared<COLINOptimizer>(sub_prob_model,
 	    max_iter, max_eval, conv_tol));
           break;
         }
         */
 	}
+      }
     }
   }
   else {
@@ -1069,31 +1096,39 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
       //Model& adapt_model = (use_dfs) ?
       //  subProbModel.subordinate_model() : subProbModel;
       // *** TO DO: (existing active view accessors don't support size change)
-      //adapt_model.update_active_variables(x0, x_lb, x_ub);
       //adapt_model.update_active_constraints(lin_ineq_coeffs, lin_ineq_lb,
       //  lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
       //  nln_eq_tgt);
-      //if (use_dfs) subProbModel.update_from_subordinate_model();
       for (i=start; i<sequence_len; ++i) {
 	IteratorArray& min_i = varianceMinimizers[i];
+	varMinIndices.first = i;
 	num_solvers = min_i.size();
 	for (j=0; j<num_solvers; ++j) {
 	  Iterator& min_ij = min_i[j];
-	  //if (!min_ij.is_null())
+	  //if (!min_ij.is_null()) {
+	  //  finite_solution_bounds(cost, avg_N_H, x_lb, x_ub);
+	  //  adapt_model.update_active_variables(x0, x_lb, x_ub);
+	  //  if (use_dfs) subProbModel.update_from_subordinate_model();
+	  //  varMinIndices.second = j;
 	  //  min_i[j].update_from_model(sub_prob_model);
+	  //}
 	}
       }
     }
     else
       for (i=start; i<sequence_len; ++i) {
 	IteratorArray& min_i = varianceMinimizers[i];
+	varMinIndices.first = i;
 	num_solvers = min_i.size();
 	for (j=0; j<num_solvers; ++j) {
 	  Iterator& min_ij = min_i[j];
-	  if (!min_ij.is_null())
+	  if (!min_ij.is_null()) {
+	    varMinIndices.second = j;
+	    finite_solution_bounds(cost, avg_N_H, x_lb, x_ub);
 	    min_ij.update_callback_data(x0, x_lb, x_ub, lin_ineq_coeffs,
 	      lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb,
 	      nln_ineq_ub, nln_eq_tgt);
+	  }
 	}
       }
   }
@@ -1110,10 +1145,12 @@ void NonDNonHierarchSampling::run_minimizers(DAGSolutionData& soln)
     last_seq_index = sequence_len - 1, start = (mlmfIter) ? last_seq_index : 0;
   for (i=start; i<sequence_len; ++i) {
     IteratorArray& min_i = varianceMinimizers[i];
+    varMinIndices.first = i;
     num_solvers = min_i.size();
     for (j=0; j<num_solvers; ++j) {
       Iterator& min_ij = min_i[j];
       if (min_ij.is_null()) continue;
+      varMinIndices.second = j;
       min_ij.run();
       const Variables& vars_star = min_ij.variables_results();
       const RealVector&  cv_star = vars_star.continuous_variables();
@@ -1674,7 +1711,9 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
   // Other notes:
   // > estimator_variance_ratios() converts cd_vars as needed
   // > linear_cost() requires N_VECTOR_*
-  const Iterator& direct_min = nonHierSampInstance->varianceMinimizers[0][0];// *** TO DO: active minimizer index
+  const SizetSizetPair& vm_ind = nonHierSampInstance->varMinIndices;
+  const Iterator& direct_min
+    = nonHierSampInstance->varianceMinimizers[vm_ind.first][vm_ind.second];
   Real lin_ineq_viol
     = nonHierSampInstance->augmented_linear_ineq_violations(cd_vars,
         direct_min.callback_linear_ineq_coefficients(),

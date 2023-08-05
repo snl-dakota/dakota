@@ -1051,47 +1051,10 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
   // --------------------------------------
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t i, num_cdv = x0.length(), approx, num_approx = approx_set.size();
-  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals, remaining;
+  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals;
 
-  // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
-  bool require_bnds = ( optSubProblemSolver == SUBMETHOD_DIRECT ||
-			optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL ||
-			optSubProblemSolver == SUBMETHOD_DIRECT_OPTPP ||
-			optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL_OPTPP ||
-			optSubProblemSolver == SUBMETHOD_SBGO ||
-			optSubProblemSolver == SUBMETHOD_SBLO ||
-			optSubProblemSolver == SUBMETHOD_EGO );
-  if (require_bnds) {
-    // Prior to approx increments (when numerical solns are performed),
-    // equivHFEvals represents the total incurred cost in shared sample sets.
-    switch (optSubProblemForm) {
-    case N_VECTOR_LINEAR_OBJECTIVE: { // accuracy constrained
-      // infer upper bounds from budget reqd to obtain target accuracy via MC:
-      // varH / N = tol * avg_estvar0; for minimizer sequencing, a downstream
-      // refinement can omit this approximated bound.
-      RealVector mc_targets(numFunctions, false);
-      for (size_t qoi=0; qoi<numFunctions; ++qoi)
-	mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
-      remaining = average(mc_targets) - equivHFEvals;  break;
-    }
-    default:
-      remaining = budget              - equivHFEvals;  break;
-    }
-    // Set delta x_ub based on exhausting the remaining budget using only
-    // approx i.  Then x_ub = avg_N_H + delta x_ub
-    Real factor = remaining * cost_H;
-    for (i=0; i<num_approx; ++i) // remaining = N_i * cost[i] / cost_H
-      x_ub[i] = avg_N_H + factor / cost[approx_set[i]];
-    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
-      // increments in N_H are shared with cost = \Sum costs
-      Real sum_cost = cost_H;
-      for (i=0; i<num_approx; ++i) sum_cost += cost[approx_set[i]];
-      x_ub[num_approx] = avg_N_H + factor / sum_cost;
-    }
-  }
-  else
-    x_ub = DBL_MAX; // no upper bounds needed for x
-
+  // minimizer-specific updates (x bounds) performed in finite_solution_bounds()
+  x_ub = DBL_MAX; // no upper bounds needed for x
   lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
 
   // Note: ACV paper suggests additional linear constraints for r_i ordering
@@ -1165,6 +1128,62 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     break;
   }
   }
+
+  //if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Numerical solve (initial, lb, ub):\n" << x0 << x_lb << x_ub
+	 << "Numerical solve (lin ineq lb, ub):\n" << lin_ineq_lb << lin_ineq_ub
+      //<< lin_eq_tgt
+	 << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb << nln_ineq_ub
+      //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
+	 << std::endl;
+}
+
+
+void NonDGenACVSampling::
+finite_solution_bounds(const RealVector& cost, Real avg_N_H,
+		       RealVector& x_lb, RealVector& x_ub)
+{
+  // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
+  if ( varMinIndices.first == 0 &&
+       ( optSubProblemSolver == SUBMETHOD_DIRECT ||
+	 optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL ||
+	 optSubProblemSolver == SUBMETHOD_DIRECT_OPTPP ||
+	 optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL_OPTPP ||
+	 optSubProblemSolver == SUBMETHOD_SBGO ||
+	 optSubProblemSolver == SUBMETHOD_SBLO ||
+	 optSubProblemSolver == SUBMETHOD_EGO ) ) {
+    // Prior to approx increments (when numerical solns are performed),
+    // equivHFEvals represents the total incurred cost in shared sample sets.
+    Real remaining;
+    switch (optSubProblemForm) {
+    case N_VECTOR_LINEAR_OBJECTIVE: { // accuracy constrained
+      // infer upper bounds from budget reqd to obtain target accuracy via MC:
+      // varH / N = tol * avg_estvar0; for minimizer sequencing, a downstream
+      // refinement can omit this approximated bound.
+      RealVector mc_targets(numFunctions, false);
+      for (size_t qoi=0; qoi<numFunctions; ++qoi)
+	mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
+      remaining = average(mc_targets)    - equivHFEvals;  break;
+    }
+    default:
+      remaining = (Real)maxFunctionEvals - equivHFEvals;  break;
+    }
+    // Set delta x_ub based on exhausting the remaining budget using only
+    // approx i.  Then x_ub = avg_N_H + delta x_ub
+    const UShortArray& approx_set = activeModelSetIter->first;
+    size_t i, num_approx = approx_set.size();
+    Real cost_H = cost[numApprox], factor = remaining * cost_H;
+    for (i=0; i<num_approx; ++i) // remaining = N_i * cost[i] / cost_H
+      x_ub[i] = avg_N_H + factor / cost[approx_set[i]];
+    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
+      // increments in N_H are shared with cost = \Sum costs
+      Real sum_cost = cost_H;
+      for (i=0; i<num_approx; ++i) sum_cost += cost[approx_set[i]];
+      x_ub[num_approx] = avg_N_H + factor / sum_cost;
+    }
+  }
+  else
+    x_ub = DBL_MAX; // no upper bounds needed for x
 }
 
 
