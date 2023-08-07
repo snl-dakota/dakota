@@ -754,12 +754,12 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
   }
   }
 
-  //if (outputLevel >= DEBUG_OUTPUT)
+  if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Numerical solve (initial, lb, ub):\n" << x0 << x_lb << x_ub
 	 << "Numerical solve (lin ineq lb, ub):\n" << lin_ineq_lb << lin_ineq_ub
-      //<< lin_eq_tgt
+       //<< lin_eq_tgt
 	 << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb << nln_ineq_ub
-      //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
+       //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
 	 << std::endl;
 }
 
@@ -793,20 +793,29 @@ finite_solution_bounds(const RealVector& cost, Real avg_N_H,
     default:
       remaining = (Real)maxFunctionEvals - equivHFEvals;  break;
     }
-    // Set delta x_ub based on exhausting the remaining budget using only
-    // approx i.  Then x_ub = avg_N_H + delta x_ub
-    Real cost_H = cost[numApprox], factor = remaining * cost_H;
-    for (i=0; i<numApprox; ++i) // remaining = N_i * cost[i] / cost_H
-      x_ub[i] = avg_N_H + factor / cost[i];
-    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
-      // increments in N_H are shared with cost = \Sum costs
-      Real sum_cost = cost_H;
-      for (i=0; i<numApprox; ++i) sum_cost += cost[i];
-      x_ub[numApprox] = avg_N_H + factor / sum_cost;
+
+    //Cout << "Remaining budget = " << remaining << std::endl;
+    if (remaining > 0.) {
+      // Set delta x_ub based on exhausting the remaining budget using only
+      // approx i.  Then x_ub = avg_N_H + delta x_ub
+      Real cost_H = cost[numApprox], factor = remaining * cost_H;
+      for (i=0; i<numApprox; ++i) // remaining = N_i * cost[i] / cost_H
+	x_ub[i] = avg_N_H + factor / cost[i];
+      if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
+	// increments in N_H are shared with cost = \Sum costs
+	Real sum_cost = cost_H;
+	for (i=0; i<numApprox; ++i) sum_cost += cost[i];
+	x_ub[numApprox] = avg_N_H + factor / sum_cost;
+      }
     }
+    else // can happen for accuracy-constrained using mc_targets estimation
+      x_ub = avg_N_H; // same as x_lb
   }
   else
     x_ub = DBL_MAX; // no upper bounds needed for x
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Finite bounds (lb, ub):\n" << x_lb << x_ub << std::endl;
 }
 
 
