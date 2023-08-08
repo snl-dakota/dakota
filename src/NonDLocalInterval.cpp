@@ -35,7 +35,7 @@ NonDLocalInterval* NonDLocalInterval::nondLIInstance(NULL);
 
 
 NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
-  NonDInterval(problem_db, model)
+  NonDInterval(problem_db, model), npsolFlag(false)
 {
   bool err_flag = false;
 
@@ -71,17 +71,20 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
     int deriv_level = 3;
     minMaxOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
 			       (minMaxModel, deriv_level, convergenceTol));
+    npsolFlag = true;
+//#elif // handled within NonD::sub_optimizer_select()
 #endif // HAVE_NPSOL
-    npsolFlag =  true; break;
+    break;
   }
   case SUBMETHOD_OPTPP:
 #ifdef HAVE_OPTPP
     minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
 			       ("optpp_q_newton", minMaxModel));
+//#elif // handled within NonD::sub_optimizer_select()
 #endif // HAVE_OPTPP
-    npsolFlag = false; break;
+    break;
   default:
-    npsolFlag = false; err_flag = true; break;
+    err_flag = true;  break;
   }
 
   if (err_flag)
@@ -105,7 +108,7 @@ void NonDLocalInterval::check_sub_iterator_conflict()
 	   sub_iterator.method_name() == NLSSOL_SQP ||
 	   sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
 	   sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-      sub_iterator.method_recourse();
+      sub_iterator.method_recourse(methodName);
     ModelList& sub_models = iteratedModel.subordinate_models();
     for (ModelLIter ml_iter = sub_models.begin();
 	 ml_iter != sub_models.end(); ml_iter++) {
@@ -115,7 +118,7 @@ void NonDLocalInterval::check_sub_iterator_conflict()
 	     sub_iterator.method_name() == NLSSOL_SQP ||
 	     sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
 	     sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-	sub_iterator.method_recourse();
+	sub_iterator.method_recourse(methodName);
     }
   }
 }
@@ -288,7 +291,7 @@ extract_objective(const Variables& sub_model_vars, const Variables& recast_vars,
 }
 
 
-void NonDLocalInterval::method_recourse()
+void NonDLocalInterval::method_recourse(unsigned short method_name)
 {
   // see notes in NonDLocalReliability::method_recourse()
 
@@ -306,7 +309,7 @@ void NonDLocalInterval::method_recourse()
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalInterval "
 	 << "(OPT++ NIP unavailable).\n";
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 #endif
     npsolFlag = false;
   }

@@ -589,6 +589,15 @@ update_callback_data(const RealVector& cv_initial,
 {
   enforce_null_model();
 
+  //Cout << "SNLLOptimizer::update_callback_data():\n"
+  //     << "  cv_initial:\n" << cv_initial
+  //     << "  cv_lower_bnds:\n" << cv_lower_bnds
+  //     << "  cv_upper_bnds:\n" << cv_upper_bnds
+  //     << "  lin_ineq_l_bnds:\n" << lin_ineq_l_bnds
+  //     << "  lin_ineq_u_bnds:\n" << lin_ineq_u_bnds
+  //     << "  nln_ineq_l_bnds:\n" << nln_ineq_l_bnds
+  //     << "  nln_ineq_u_bnds:\n" << nln_ineq_u_bnds << std::endl;
+
   bool reshape = false;
   size_t num_cv  = cv_initial.length(),
     num_lin_ineq = lin_ineq_coeffs.numRows(),

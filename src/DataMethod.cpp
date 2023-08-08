@@ -143,7 +143,7 @@ DataMethodRep::DataMethodRep():
   quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
   expansionSamples(SZ_MAX), truthPilotConstraint(false),
-  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(2),
+  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(1),
   modelSelectType(NO_MODEL_SELECTION), ensembleSampSolnMode(ONLINE_PILOT),
   allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
   qoiAggregation(QOI_AGGREGATION_SUM),

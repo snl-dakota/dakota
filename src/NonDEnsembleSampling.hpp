@@ -142,16 +142,16 @@ protected:
   static void check_negative(Real& cm);
 
   /// compute sum of a set of observations
-  Real sum(const Real* vec, size_t vec_len) const;
+  static Real sum(const Real* vec, size_t vec_len);
   /// compute average of a set of observations
-  Real average(const Real* vec, size_t vec_len) const;
+  static Real average(const Real* vec, size_t vec_len);
   /// compute average of a set of observations
-  Real average(const RealVector& vec) const;
+  static Real average(const RealVector& vec);
   /// compute average of a set of observations
-  Real average(const SizetArray& sa) const;
+  static Real average(const SizetArray& sa);
   /// compute row-averages for each column or column-averages for each row
-  void average(const RealMatrix& mat, size_t avg_index,
-	       RealVector& avg_vec) const;
+  static void average(const RealMatrix& mat, size_t avg_index,
+		      RealVector& avg_vec);
 
   //
   //- Heading: Data
@@ -496,7 +496,7 @@ inline void NonDEnsembleSampling::check_negative(Real& cm)
 }
 
 
-inline Real NonDEnsembleSampling::sum(const Real* vec, size_t vec_len) const
+inline Real NonDEnsembleSampling::sum(const Real* vec, size_t vec_len)
 {
   Real sum = 0.;
   for (size_t i=0; i<vec_len; ++i)
@@ -506,16 +506,16 @@ inline Real NonDEnsembleSampling::sum(const Real* vec, size_t vec_len) const
 
 
 inline Real NonDEnsembleSampling::
-average(const Real* vec, size_t vec_len) const
+average(const Real* vec, size_t vec_len)
 { return (vec_len == 1) ? vec[0] : sum(vec, vec_len) / (Real)vec_len; }
 
 
-inline Real NonDEnsembleSampling::average(const RealVector& vec) const
+inline Real NonDEnsembleSampling::average(const RealVector& vec)
 { return average(vec.values(), vec.length()); }
 
 
 inline void NonDEnsembleSampling::
-average(const RealMatrix& mat, size_t avg_index, RealVector& avg_vec) const
+average(const RealMatrix& mat, size_t avg_index, RealVector& avg_vec)
 {
   size_t i, j, nr = mat.numRows(), nc = mat.numCols();
   switch (avg_index) {
@@ -545,7 +545,7 @@ average(const RealMatrix& mat, size_t avg_index, RealVector& avg_vec) const
 }
 
 
-inline Real NonDEnsembleSampling::average(const SizetArray& sa) const
+inline Real NonDEnsembleSampling::average(const SizetArray& sa)
 {
   size_t len = sa.size();
   if (len == 1)

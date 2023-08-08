@@ -118,6 +118,7 @@ typedef std::vector<ParamResponsePair> PRPArray;
 typedef std::vector<PRPArray>          PRP2DArray;
 typedef std::vector<Model>             ModelArray;
 typedef std::vector<Iterator>          IteratorArray;
+typedef std::vector<IteratorArray>     Iterator2DArray;
 typedef std::vector<RealMultiArray>    BoostMAArray;
 typedef std::vector<RealMulti2DArray>  BoostMA2DArray;
 typedef std::vector<RealMulti3DArray>  BoostMA3DArray;

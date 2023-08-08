@@ -291,9 +291,41 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
     lin_ineq_coeffs(i+lin_ineq_offset, approx_ip1) =  1.; // *** TO DO ***: check this --> would RATIO_NUDGE be helpful?
     approx = approx_ip1;
   }
-  // N_im1 > N
-  lin_ineq_coeffs(num_am1+lin_ineq_offset,   num_am1) = -1.;
+  // N_am1 > N
+  lin_ineq_coeffs(num_am1+lin_ineq_offset,    approx) = -1.;
   lin_ineq_coeffs(num_am1+lin_ineq_offset, numApprox) =  1. + RATIO_NUDGE;
+}
+
+
+Real NonDMultifidelitySampling::
+augmented_linear_ineq_violations(const RealVector& cd_vars,
+				 const RealMatrix& lin_ineq_coeffs,
+				 const RealVector& lin_ineq_lb,
+				 const RealVector& lin_ineq_ub)
+{
+  // linear inequality constraints on sample counts:
+  // N_i increases w/ decreasing fidelity
+
+  bool ordered = approxSequence.empty();
+  size_t i, num_am1 = numApprox - 1, approx_ip1,
+    approx = (ordered) ? 0 : approxSequence[0],
+    lin_ineq_offset = ( optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT  ||
+			optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
+  Real inner_prod, l_bnd, u_bnd, viol, quad_viol = 0.;
+  for (i=0; i<numApprox; ++i) { // N_im1 >= N_i
+    if (i == num_am1) approx_ip1 = numApprox;
+    else              approx_ip1 = (ordered) ? i+1 : approxSequence[i+1];
+    inner_prod = lin_ineq_coeffs(i+lin_ineq_offset, approx) * cd_vars[approx]
+      + lin_ineq_coeffs(i+lin_ineq_offset, approx_ip1) * cd_vars[approx_ip1];
+    l_bnd = lin_ineq_lb[i+lin_ineq_offset];
+    u_bnd = lin_ineq_ub[i+lin_ineq_offset];
+    if (inner_prod < l_bnd)
+      { viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
+    else if (inner_prod > u_bnd)
+      { viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+    approx = approx_ip1;
+  }
+  return quad_viol;
 }
 
 

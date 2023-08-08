@@ -75,7 +75,7 @@ public:
 
   void check_sub_iterator_conflict();
   unsigned short uses_method() const;
-  void method_recourse();
+  void method_recourse(unsigned short method_name);
 
 private:
 

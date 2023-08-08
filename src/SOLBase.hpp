@@ -60,7 +60,7 @@ protected:
   //
 
   /// check for clash with nested use of Fortran code
-  void check_sub_iterator_conflict(Model& model);
+  void check_sub_iterator_conflict(Model& model, unsigned short method_name);
 
   /// Allocates F77 linear constraint arrays for the SOL algorithms
   void allocate_linear_arrays(int num_cv, const RealMatrix& lin_ineq_coeffs,

@@ -2880,6 +2880,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
         sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
         |
         nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+        |
+        global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
+        |
+        competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
        ]
      ]
     [ sample_type {0}
@@ -2995,15 +2999,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
     acv_recursive_diff ALIAS acv_rd {N_mdm(utype,subMethod_SUBMETHOD_ACV_RD)}
     [ search_model_graphs {0}
       [ model_selection {N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)} ]
-      [ 
-        kl_recursion {N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}
-        |
-        ( partial_recursion {N_mdm(type,dagRecursionType_PARTIAL_GRAPH_RECURSION)}
-          depth_limit INTEGER {N_mdm(ushint,dagDepthLimit)}
-         )
-        |
-        full_recursion {N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}
-       ]
+      no_recursion {N_mdm(type,dagRecursionType_NO_GRAPH_RECURSION)}
+      |
+      kl_recursion {N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}
+      |
+      ( partial_recursion {N_mdm(type,dagRecursionType_PARTIAL_GRAPH_RECURSION)}
+        depth_limit INTEGER {N_mdm(ushint,dagDepthLimit)}
+       )
+      |
+      full_recursion {N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}
      ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
@@ -3018,6 +3022,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
       |
       nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+      |
+      global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
+      |
+      competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
      ]
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]

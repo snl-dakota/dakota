@@ -77,7 +77,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     default:
       Cerr << "\nError: invalid MPP optimizer selection in NonDLocalReliability"
 	   << std::endl;
-      err_flag = true; break; //npsolFlag = false;
+      err_flag = true; break;
     }
 
     // Error check for a specification of at least 1 level for MPP methods
@@ -491,7 +491,7 @@ void NonDLocalReliability::check_sub_iterator_conflict()
 	  sub_iterator.method_name() == NLSSOL_SQP ||
 	  sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
 	  sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-      sub_iterator.method_recourse();
+      sub_iterator.method_recourse(methodName);
     ModelList& sub_models = iteratedModel.subordinate_models();
     for (ModelLIter ml_iter = sub_models.begin();
 	 ml_iter != sub_models.end(); ml_iter++) {
@@ -501,7 +501,7 @@ void NonDLocalReliability::check_sub_iterator_conflict()
 	    sub_iterator.method_name() == NLSSOL_SQP ||
 	    sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
 	    sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-	sub_iterator.method_recourse();
+	sub_iterator.method_recourse(methodName);
     }
   }
 }
@@ -2849,7 +2849,7 @@ void NonDLocalReliability::print_results(std::ostream& s, short results_state)
 }
 
 
-void NonDLocalReliability::method_recourse()
+void NonDLocalReliability::method_recourse(unsigned short method_name)
 {
   // This must now occur at runtime, due to introduction of IteratorScheduler
   // within NestedModel (there is a circular dependency that is managed within

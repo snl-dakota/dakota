@@ -40,7 +40,8 @@ SOLBase::SOLBase(Model& model):
 }
 
 
-void SOLBase::check_sub_iterator_conflict(Model& model)
+void SOLBase::
+check_sub_iterator_conflict(Model& model, unsigned short method_name)
 {
   // Prevent nesting of an instance of a Fortran iterator within another
   // instance of the same iterator (which would result in data clashes since
@@ -51,21 +52,25 @@ void SOLBase::check_sub_iterator_conflict(Model& model)
   //       user-functions mode (since there is no model in this case).
   Iterator sub_iterator = model.subordinate_iterator();
   if (!sub_iterator.is_null() && 
-      ( sub_iterator.method_name() ==     NPSOL_SQP ||
-	sub_iterator.method_name() ==    NLSSOL_SQP ||
+      ( sub_iterator.method_name() ==     NPSOL_SQP   ||
+	sub_iterator.method_name() ==    NLSSOL_SQP   ||
 	sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-	sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-    sub_iterator.method_recourse();
+	sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP  ||
+	sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL ||
+	sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
+    sub_iterator.method_recourse(method_name);
   ModelList& sub_models = model.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
     if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() ==     NPSOL_SQP ||
-	   sub_iterator.method_name() ==    NLSSOL_SQP ||
+	 ( sub_iterator.method_name() ==     NPSOL_SQP   ||
+	   sub_iterator.method_name() ==    NLSSOL_SQP   ||
 	   sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-	   sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-      sub_iterator.method_recourse();
+	   sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP  ||
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL ||
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
+      sub_iterator.method_recourse(method_name);
   }
 }
 
