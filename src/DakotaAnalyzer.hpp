@@ -192,7 +192,12 @@ protected:
   /// map which stores best set of solutions
   RealPairPRPMultiMap bestVarsRespMap;
 
-  /// tolerance for omitting output of small VBD indices
+  /// flag indicating the activation of variance-bsaed decomposition
+  /// for computing Sobol' indices, via either PCE or sampling
+  bool vbdFlag;
+
+  /// tolerance for omitting output of small VBD indices computed via
+  /// either PCE or sampling
   Real vbdDropTol;
 
 private:
