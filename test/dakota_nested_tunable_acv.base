@@ -280,3 +280,15 @@ Test Number 23 succeeded
 <<<<< Best constraint values   =
                       4.9998216973254955e+02
 <<<<< Best evaluation ID: 27
+Test Number 24 succeeded
+<<<<< Function evaluation summary: 52137 total (38245 new, 13892 duplicate)
+<<<<< Function evaluation summary: 52137 total (38245 new, 13892 duplicate)
+<<<<< Function evaluation summary: 52137 total (38245 new, 13892 duplicate)
+<<<<< Best parameters          =
+                      1.0700000000000001e+00 outer_theta1
+                      5.2359877559830004e-01 outer_theta2
+<<<<< Best objective function  =
+                      5.0999903351371678e-04
+<<<<< Best constraint values   =
+                      4.9998216973254955e+02
+<<<<< Best evaluation ID: 27
