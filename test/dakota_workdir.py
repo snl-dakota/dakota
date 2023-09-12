@@ -34,14 +34,14 @@ if mode in set(("tag","tag_save","saved_params")):
         print("Error: Unexpected directory tag!")
         sys.exit(1)
 
-if mode is "tag_save":
+if mode == "tag_save":
     # if the eval is 2 or greater, the previous dir should be around
     if mytag > 1:
         lastdir = workdir_basename + ".%d" % (mytag - 1,)
         if not os.path.isdir(lastdir):
             print("Error: Failed to find saved directory",lastdir)
             sys.exit(1)
-elif mode is "templatefiles":
+elif mode == "templatefiles":
     # template files will include dakota_workdir.root.dat
     # and they will be symlinked by default
     if not os.path.islink("dakota_workdir.root.dat"):
@@ -50,7 +50,7 @@ elif mode is "templatefiles":
         else:
             print("Error: Failed to find template file dakota_workdir.root.dat")
         sys.exit(1)
-elif mode is "templatefiles_copy":
+elif mode == "templatefiles_copy":
     # template files will include dakota_workdir.root.dat
     # and they will be copied to pwd
     if os.path.islink("dakota_workdir.root.dat"):
@@ -59,7 +59,7 @@ elif mode is "templatefiles_copy":
     if not os.isfile("dakota_workdir.root.dat"):
         print("Error: Failed to find template file dakota_workdir.root.dat")
         sys.exit(1)
-elif mode is "templatedir":
+elif mode == "templatedir":
     # template files will include dakota_workdir.templatedir.dat
     # and they will be symlinked by default
      if not os.path.islink("dakota_workdir.templatedir.dat"):
@@ -68,7 +68,7 @@ elif mode is "templatedir":
         else:
             print("Error: Failed to find template file dakota_workdir.templatedir.dat")
         sys.exit(1)
-elif mode is "templatedir_copy":
+elif mode == "templatedir_copy":
     # template files will include dakota_workdir.templatedir.dat
     # and they will be copied to pwd
     if os.path.islink("dakota_workdir.templatedir.dat"):
@@ -77,11 +77,11 @@ elif mode is "templatedir_copy":
     if not os.isfile("dakota_workdir.templatedir.dat"):
         print("Error: Failed to find template file dakota_workdir.templatedir.dat")
         sys.exit(1)
-elif mode is "named_params":
+elif mode == "named_params":
     if not os.path.isfile("params.in"):
         print("Error: named parameters file params.in does not exist in trydir")
         sys.exit(1)
-elif mode is "saved_params":
+elif mode == "saved_params":
     # if the eval is 2 or greater, the previous dir should be around
     # with a saved params file
     if mytag > 1:
