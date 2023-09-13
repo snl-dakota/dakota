@@ -110,7 +110,13 @@ or other canonical problems.  In brief, these tests:
 - Are usually wrappers to the native Dakota ``test/dakota_test.perl``
   utility, e.g. use the option ``--man`` for supported options
 
-If a regression test fails, steps to disgnose the failure include the
+Regression tests run the cases specified in the source/test/dakota_*.in
+files. The outputs for each of the cases are compared to the outputs 
+extracted in the associated dakota_*.base gold standard. Any differences
+from the dakota_*.base file will be detected and the test will fail with
+a diff. If the Dakota execution fails for a case, it will fail outright.
+
+If a regression test fails, steps to diagnose the failure include the
 following which are performed in the Dakota build directory:
 
 #. Remove previous test artifacts related to detailed differences and
@@ -128,6 +134,92 @@ following which are performed in the Dakota build directory:
    to determine which values have changed, if there was a catastrophic
    failure of the executable, etc.
 
+Creating a New Regression Test
+------------------------------
+Different cases are specified in the source/test/dakota_*.in input file.  
+Lines required for all test cases should be left uncommented. Lines 
+that should only be activated for specific test cases should be commented
+out, with tags in the following format at the end of the lines: ``#sN`` or 
+``#pN`` for serial and parallel tests, respectively, where N is the integer 
+associated with a test case. The test utility will uncomment the lines 
+associated with each test case to run the tests. 
+
+Test cases start from index 0. Test Case 0 will run all uncommented lines 
+in the input file. If there are lines in Test Case 0 that should not be 
+included in other test cases, the line should be ended with ``#s0``.
+
+If a line in the input file applies to multiple test cases (but not all),
+all relevant test case tags should be appended to the end of the line. 
+For example, if a line in the input file is relevant for serial test cases 
+1 and 2, the line should be ended with ``#s1,#s2``. 
+
+You can label tests so that they are categorized into different groups 
+of tests (e.g., FastTest, AcceptanceTest). This is done by adding a 
+comment to the top of the input file of the form ``#@ sN: Label=FastTest``, 
+where N is the integer associated with the test case. Individual test 
+cases can be labeled, or the same label can be applied to all cases 
+using the * regular expression: ``#@ s*: Label=FastTest``. 
+
+If certain test cases should only be run for specific Dakota 
+configurations, e.g., if Dakota is built with external library QUESO,
+this can be specified by adding a comment at the top of the input file 
+of the form ``#@ sN: DakotaConfig=HAVE_QUESO`` (these config flags should 
+coincide with those from CMake configuration). As with the label, the 
+config information can be applied to all text cases using the * regex:
+``#@ s*: DakotaConfig=HAVE_QUESO``.
+
+An example input test file demonstrating these differences is shown here.
+
+.. code-block::
+
+   #@ s*: Label=FastTest
+   #@ s0: DakotaConfig=HAVE_QUESO
+
+   method
+     bayes_calibration queso #s0
+       chain_samples = 100 seed = 100 #s0
+   #  sampling #s1,#s2
+   #    sample_type lhs #s1
+   #   sample_type random #s2
+   #    samples = 100 #s1,#s2
+   #   seed = 17 #s1,#s2
+   
+   variables
+     uniform_uncertain 2
+       lower_bounds -2. -2. 
+	   upper_bounds  2.  2.
+   
+   interface
+    analysis_driver = 'rosenbrock'
+     direct
+
+   responses
+    objective_functions = 1
+    no_gradients
+    no_hessians
+
+This input file has three test cases: the first is Bayesian 
+calibration using QUESO, the second is LHS sampling, and the 
+third is random sampling. All the input file lines that are 
+shared between the test cases are uncommented. Note that the
+lines specific to Test Case 0 that should not appear in the 
+input files for Test Cases 1 and 2 have ``#s0`` appended to
+them. 
+
+To create a new gold standard dakota_*.base file for serial
+regression tests, call 
+
+.. code-block::
+
+	dakota_test.perl --base name_of_new_input_file.in
+   
+This will create a file with extension .base.new with the same
+basename as the input file. Check the results, then change 
+the extension to .base to incorporate it into the test suite.
+
+More advanced options for generating gold standard (baseline)
+files (e.g., for parallel tests) and more details about creating 
+baselines are available in ``dakota_test.perl --man``. 
 
 =============================
 Unit Test-driven System Tests
@@ -138,7 +230,7 @@ the objects needed for testing, e.g., Dakota Model, Variables, Interface,
 Responses, and yet finer-grained control over results verification is
 desired compared with that of regression tests.  One way to view these
 types of unit tests are those that construct most of a complete Dakota
-study as a mock and which then do fine grained testing of selected
+study as a mock and which then do fine-grained testing of selected
 functionality from the instantiated objects.  In brief, these tests:
 
 - Are registered as unit tests
