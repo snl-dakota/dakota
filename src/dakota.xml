@@ -2993,6 +2993,15 @@
 	    <keyword  id="drop_tolerance2" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="drop_tolerance"  minOccurs="0" default="All VBD indices displayed" >
 	      <param type="REAL" />
 	    </keyword>
+	    <keyword  id="vbd_via_sampling_method" name="sampling_method" code="{N_mdm(utype,vbdViaSamplingMethod)}" label="Sampling method for computing Sobol' indices"  minOccurs="0" default="mahadevan" >
+	      <oneOf label="Sampling Method">
+		<keyword  id="mahadevan" name="mahadevan" code="{N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}" label="mahadevan"   />
+		<keyword  id="saltelli" name="saltelli" code="{N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}" label="saltelli"   />
+	      </oneOf>
+	    </keyword>
+	    <keyword  id="vbd_via_sampling_numBins" name="num_bins" code="{N_mdm(int,vbdViaSamplingNumBins)}" label="Number of bins for the Mahadevan sampling method for computing Sobol' indices"  minOccurs="0" default="-1" >
+	      <param type="INTEGER" />
+	    </keyword>
 	  </keyword>
 	  <keyword  id="backfill1" name="backfill" code="{N_mdm(true,backfillFlag)}" label="backfill"  minOccurs="0" >
 	  </keyword>
@@ -3696,6 +3705,15 @@
 	    <keyword  id="drop_tolerance3" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="drop_tolerance"  minOccurs="0" default="All VBD indices displayed" >
 	      <param type="REAL" />
 	    </keyword>
+	    <keyword  id="vbd_via_sampling_method3" name="sampling_method" code="{N_mdm(utype,vbdViaSamplingMethod)}" label="Sampling method for computing Sobol' indices"  minOccurs="0" default="mahadevan" >
+	      <oneOf label="Sampling Method">
+	        <keyword  id="mahadevan" name="mahadevan" code="{N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}" label="mahadevan"   />
+	        <keyword  id="saltelli" name="saltelli" code="{N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}" label="saltelli"   />
+	      </oneOf>
+	    </keyword>
+	    <keyword  id="vbd_via_sampling_numBins3" name="num_bins" code="{N_mdm(int,vbdViaSamplingNumBins)}" label="Number of bins for the Mahadevan sampling method for computing Sobol' indices"  minOccurs="0" default="-1" >
+	      <param type="INTEGER" />
+	    </keyword>
 	  </keyword>
 	  <keyword  id="symbols" name="symbols" code="{N_mdm(int,numSymbols)}" label="Number of symbols"  minOccurs="0" default="default for sampling algorithm" >
 	    <param type="INTEGER" />
@@ -3713,6 +3731,15 @@
 	  <keyword  id="variance_based_decomp4" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="Variance based decomposition"  minOccurs="0" default="no variance-based decomposition" >
 	    <keyword  id="drop_tolerance4" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="drop_tolerance"  minOccurs="0" default="All VBD indices displayed" >
 	      <param type="REAL" />
+	    </keyword>
+	    <keyword  id="vbd_via_sampling_method4" name="sampling_method" code="{N_mdm(utype,vbdViaSamplingMethod)}" label="Sampling method for computing Sobol' indices"  minOccurs="0" default="mahadevan" >
+	      <oneOf label="Sampling Method">
+	        <keyword  id="mahadevan" name="mahadevan" code="{N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}" label="mahadevan"   />
+	        <keyword  id="saltelli" name="saltelli" code="{N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}" label="saltelli"   />
+	      </oneOf>
+	    </keyword>
+	    <keyword  id="vbd_via_sampling_numBins4" name="num_bins" code="{N_mdm(int,vbdViaSamplingNumBins)}" label="Number of bins for the Mahadevan sampling method for computing Sobol' indices"  minOccurs="0" default="-1" >
+	      <param type="INTEGER" />
 	    </keyword>
 	  </keyword>
 	  <keyword  id="trial_type" name="trial_type" code="{0}" label="Trial type"  minOccurs="0" default="random" >
@@ -3862,6 +3889,15 @@
             <keyword  id="drop_tolerance5" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="drop_tolerance"  minOccurs="0" default="All VBD indices displayed" >
               <param type="REAL" />
             </keyword>
+	    <keyword  id="vbd_via_sampling_method5" name="sampling_method" code="{N_mdm(utype,vbdViaSamplingMethod)}" label="Sampling method for computing Sobol' indices"  minOccurs="0" default="mahadevan" >
+	      <oneOf label="Sampling Method">
+	        <keyword  id="mahadevan" name="mahadevan" code="{N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}" label="mahadevan"   />
+	        <keyword  id="saltelli" name="saltelli" code="{N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}" label="saltelli"   />
+	      </oneOf>
+	    </keyword>
+	    <keyword  id="vbd_via_sampling_numBins5" name="num_bins" code="{N_mdm(int,vbdViaSamplingNumBins)}" label="Number of bins for the Mahadevan sampling method for computing Sobol' indices"  minOccurs="0" default="-1" >
+	      <param type="INTEGER" />
+	    </keyword>
           </keyword>
 	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" default="0">
 	    <param type="INTEGER" />

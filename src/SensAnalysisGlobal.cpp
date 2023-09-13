@@ -20,6 +20,7 @@
 #include "dakota_stat_util.hpp"
 #include <algorithm>
 #include <boost/iterator/counting_iterator.hpp>
+#include "DataMethod.hpp"
 
 static const char rcsId[]="@(#) $Id: SensAnalysisGlobal.cpp 6170 2009-10-06 22:42:15Z lpswile $";
 
@@ -810,14 +811,47 @@ print_std_regress_coeffs(std::ostream& s, StringArray var_labels,
 #endif
 }
 
-void SensAnalysisGlobal::compute_vbd_stats( const size_t           numFunctions
-                                          , const size_t           num_vars
-                                          , const size_t           num_samples
-                                          , const IntResponseMap & resp_samples
-                                          )
+void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   method
+                                                       , const int              numBins
+                                                       , const size_t           numFunctions
+                                                       , const size_t           num_vars
+                                                       , const size_t           num_samples
+                                                       , const IntResponseMap & resp_samples
+                                                       )
+{
+  //Cout << "Entering SensAnalysisGlobal::compute_vbd_stats_via_sampling()"
+  //     << ": method = " << method
+  //     << ", numBins = " << numBins
+  //     << std::endl;
+  //sleep(10);
+
+  // TODO for Teresa: it shall be 'if ("Saltelli") {...} else {...}',
+  // since the new method "Mahadevan" shall be the default one.
+  if (method == VBD_MAHADEVAN) {
+    this->compute_vbd_stats_with_Mahadevan( numBins
+                                          , numFunctions
+                                          , num_vars
+                                          , num_samples
+                                          , resp_samples
+                                          );
+  }
+  else {
+    this->compute_vbd_stats_with_Saltelli( numFunctions
+                                         , num_vars
+                                         , num_samples
+                                         , resp_samples
+                                         );
+  }
+}
+
+void SensAnalysisGlobal::compute_vbd_stats_with_Saltelli( const size_t           numFunctions
+                                                        , const size_t           num_vars
+                                                        , const size_t           num_samples
+                                                        , const IntResponseMap & resp_samples
+                                                        )
 {
   if (resp_samples.size() != num_samples * (num_vars+2)) {
-    Cerr << "\nError in Analyzer::compute_vbd_stats"
+    Cerr << "\nError in Analyzer::compute_vbd_stats_with_Saltelli()"
          << ": expected " << num_samples * (num_vars+2) << " responses"
          << "; received " << resp_samples.size()
          << std::endl;
@@ -929,11 +963,24 @@ void SensAnalysisGlobal::compute_vbd_stats( const size_t           numFunctions
   } // for k
 }
 
+void SensAnalysisGlobal::compute_vbd_stats_with_Mahadevan( const int              numBins
+                                                         , const size_t           numFunctions
+                                                         , const size_t           num_vars
+                                                         , const size_t           num_samples
+                                                         , const IntResponseMap & resp_samples
+                                                         )
+{
+    Cerr << "\nError in Analyzer::compute_vbd_stats_with_Mahadevan()"
+         << ": not implemented yet"
+         << std::endl;
+    abort_handler(METHOD_ERROR);
+}
+
 // Printing of variance based decomposition indices.
 void SensAnalysisGlobal::print_sobol_indices( std::ostream      & s
                                             , const StringArray & var_labels
                                             , const StringArray & resp_labels
-                                            , const Real          vbdDropTol
+                                            , const Real          dropTol
                                             ) const
 {
   // output explanatory info
@@ -952,10 +999,10 @@ void SensAnalysisGlobal::print_sobol_indices( std::ostream      & s
     for (size_t i(0); i < var_labels.size(); ++i) {
       Real main  = indexSi[k][i];
       Real total = indexTi[k][i];
-      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+      if (std::abs(main) > dropTol || std::abs(total) > dropTol) {
         s << "                     " << std::setw(write_precision+7) << main
-	  << ' ' << std::setw(write_precision+7) << total << ' '
-	  << var_labels[i] << '\n';
+          << ' ' << std::setw(write_precision+7) << total << ' '
+          << var_labels[i] << '\n';
       }
     }
   }
@@ -966,7 +1013,7 @@ void SensAnalysisGlobal::archive_sobol_indices( const StrStrSizet & run_identifi
                                               , ResultsManager    & resultsDB
                                               , const StringArray & var_labels
                                               , const StringArray & resp_labels
-                                              , const Real          vbdDropTol
+                                              , const Real          dropTol
                                               ) const
 {
   if(!resultsDB.active())
@@ -979,7 +1026,7 @@ void SensAnalysisGlobal::archive_sobol_indices( const StrStrSizet & run_identifi
     for (size_t i(0); i < var_labels.size(); ++i) {
       Real main  = indexSi[k][i];
       Real total = indexTi[k][i];
-      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+      if (std::abs(main) > dropTol || std::abs(total) > dropTol) {
         main_effects.push_back(main);
         total_effects.push_back(total);
         scale_labels.push_back(var_labels[i]);

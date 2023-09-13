@@ -2293,7 +2293,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
       {"random_seed", P_MET randomSeed},
       {"samples", P_MET numSamples},
       {"sub_sampling_period", P_MET subSamplingPeriod},
-      {"symbols", P_MET numSymbols}
+      {"symbols", P_MET numSymbols},
+      {"vbd_via_sampling_num_bins", P_MET vbdViaSamplingNumBins}
     },
     { /* model */
       {"active_subspace.bootstrap_samples", P_MOD numReplicates},
@@ -2452,7 +2453,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"pstudy.import_format", P_MET pstudyFileFormat},
       {"sample_type", P_MET sampleType},
       {"soft_convergence_limit", P_MET softConvLimit},
-      {"sub_method", P_MET subMethod}
+      {"sub_method", P_MET subMethod},
+      {"vbd_via_sampling_method", P_MET vbdViaSamplingMethod}
     },
     { /* model */
       {"active_subspace.cv.id_method", P_MOD subspaceIdCVMethod},

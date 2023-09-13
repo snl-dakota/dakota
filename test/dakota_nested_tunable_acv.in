@@ -1,3 +1,5 @@
+#@ s*: TimeoutAbsolute=3600
+#@ s*: TimeoutDelay=3600
 #@ s4: DakotaConfig=HAVE_NPSOL
 #@ s9: DakotaConfig=HAVE_NPSOL
 #@ s14: DakotaConfig=HAVE_NPSOL
@@ -36,8 +38,10 @@ method,
 	id_method = 'TUNER'
 	model_pointer = 'TUNER_M'
         vector_parameter_study			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s21,#s22,#s23,#s24
-	  step_vector = .02 0.  num_steps = 50	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s21,#s22,#s23,#s24
+	  step_vector = .02  0. num_steps = 50	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s21,#s22
 #	  step_vector = .01 .01 num_steps = 50		#s17
+# .02 x 50 used for figures, but too expensive for test harness:
+#	  step_vector =  .2  0. num_steps = 5		#s23,#s24
 #	efficient_global				#s18
 #	  seed = 1234567				#s18
 #	  max_iterations = 50				#s18

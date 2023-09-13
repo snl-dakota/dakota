@@ -173,8 +173,11 @@ private:
   /// static data used by static rank_sort() fn
   static RealArray rawData;
 
-  /// flags computation of variance-based decomposition indices
-  bool varBasedDecompFlag;
+  /// sampling method for computing variance-based decomposition indices
+  unsigned short vbdViaSamplingMethod;
+
+  /// number of bins for using with the Mahadevan sampling method for computing variance-based decomposition indices
+  int vbdViaSamplingNumBins;
 
   /// flag to specify the calculation of principal components
   bool pcaFlag;

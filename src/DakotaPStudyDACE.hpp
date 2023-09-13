@@ -73,9 +73,12 @@ protected:
 
   /// flag which specifies evaluation of volumetric quality measures
   bool volQualityFlag;
-  /// flag which specifies calculating variance based decomposition 
-  /// sensitivity analysis metrics
-  bool varBasedDecompFlag;
+
+  /// sampling method for computing variance-based decomposition indices
+  unsigned short vbdViaSamplingMethod;
+
+  /// number of bins for using with the Mahadevan sampling method for computing variance-based decomposition indices
+  int vbdViaSamplingNumBins;
 
 private:
 

@@ -943,7 +943,7 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
     //r_and_N_to_design_vars(soln.avgEvalRatios, soln.avgHFTarget, cd_vars);
     //soln.avgEstVar = average_estimator_variance(cd_vars);
   }
-  if (outputLevel >= NORMAL_OUTPUT)
+  if (outputLevel >= DEBUG_OUTPUT)
     Cout << "GenACV scaled initial guess from ensemble CVMC:\n"
 	 << "  average eval ratios:\n" << soln.avgEvalRatios
 	 << "  average HF target = " << soln.avgHFTarget << std::endl;
