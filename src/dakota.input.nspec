@@ -2880,6 +2880,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
         competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
        ]
      ]
+    [ search_model_graphs {0}
+      [ model_selection {N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)} ]
+     ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
       |

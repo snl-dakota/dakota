@@ -43,9 +43,17 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
 {
   // assign appropriate throttle for cases other than PARTIAL_GRAPH_RECURSION
   switch (dagRecursionType) {
-  case   NO_GRAPH_RECURSION:  dagDepthLimit = 1;          break;
-  case   KL_GRAPH_RECURSION:  dagDepthLimit = 2;          break;
-  case FULL_GRAPH_RECURSION:  dagDepthLimit = numApprox;  break;
+  case   NO_GRAPH_RECURSION:    dagDepthLimit = 1;          break;
+  case   KL_GRAPH_RECURSION:    dagDepthLimit = 2;          break;
+  case FULL_GRAPH_RECURSION:    dagDepthLimit = numApprox;  break;
+  }
+
+  // also support DAG for MFMC for access to model selection
+  switch (methodName) {
+  case MULTIFIDELITY_SAMPLING:
+    dagWidthLimit = 1;  mlmfSubMethod = SUBMETHOD_ACV_MF;   break;
+  default:
+    dagWidthLimit = numApprox;                              break;
   }
 }
 
@@ -157,12 +165,19 @@ generate_dags(unsigned short root, const UShortArray& nodes,
 
   dag_set.clear();
   unsigned short num_approx = nodes.size(),
-    limit = std::min(num_approx, dagDepthLimit);
+    d_limit = std::min(num_approx, dagDepthLimit),
+    w_limit = std::min(num_approx, dagWidthLimit);
   UShortArray dag;
 
-  if (limit <= 1) {
-    if (limit == 1) dag.assign(num_approx, root); // ACV
-    dag_set.insert(dag); // empty DAG (Monte Carlo) if limit is 0
+  if (d_limit <= 1) {
+    if (d_limit == 1) dag.assign(num_approx, root); // ACV
+    dag_set.insert(dag); // empty DAG (Monte Carlo) if d_limit is 0
+    return;
+  }
+  else if (w_limit == 1) {
+    dag.resize(num_approx);
+    for (unsigned short i=0; i<num_approx; ++i) dag[i] = i+1; // MFMC
+    dag_set.insert(dag);
     return;
   }
 
@@ -191,7 +206,7 @@ generate_dags(unsigned short root, const UShortArray& nodes,
     break;
   }
   default:
-    generate_sub_trees(root, nodes, limit, dag, dag_set);
+    generate_sub_trees(root, nodes, d_limit, dag, dag_set);
     break;
   }
 }

@@ -255,8 +255,11 @@ private:
 
   /// type of tunable recursion for defining set of DAGs: KL, partial, or full
   short dagRecursionType;
-  /// depth throttle for partial recursion in generate_dags()
+  /// depth throttle for constraining set from generate_dags()
   unsigned short dagDepthLimit;
+  /// width throttle for constraining set from generate_dags()
+  /// (used only for MFMC with width = 1)
+  unsigned short dagWidthLimit;
   /// option to enumerate combinations of approximation models
   short modelSelectType;
 
