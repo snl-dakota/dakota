@@ -1285,8 +1285,15 @@ update_projected_lf_samples(Real avg_hf_target,
 			    Real& delta_equiv_hf)
 {
   // pilot+iterated samples shared by all approx, not just final best set
-  Sizet2DArray N_L_actual;  inflate(N_H_actual, N_L_actual);//, approx_set);
-  SizetArray   N_L_alloc;   inflate(N_H_alloc,  N_L_alloc); //, approx_set);
+  Sizet2DArray N_L_actual;  SizetArray N_L_alloc;
+  if (pilotMgmtMode == OFFLINE_PILOT) {
+    // shared online sampling spans selected models from processing of
+    // covariance data assembled offline
+    inflate(N_H_actual, N_L_actual, approx_set);
+    inflate(N_H_alloc,  N_L_alloc,  approx_set);
+  }
+  else // shared sampling spans all models as covariance data is assembled
+    { inflate(N_H_actual, N_L_actual);  inflate(N_H_alloc, N_L_alloc); }
 
   size_t i, num_approx = approx_set.size(), alloc_incr, actual_incr;
   unsigned short inflate_i;  Real lf_target;
