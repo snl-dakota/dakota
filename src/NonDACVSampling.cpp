@@ -1284,8 +1284,10 @@ update_projected_lf_samples(Real avg_hf_target,
 			    //SizetArray& delta_N_L_actual,
 			    Real& delta_equiv_hf)
 {
-  Sizet2DArray N_L_actual;  inflate(N_H_actual, N_L_actual, approx_set);
-  SizetArray   N_L_alloc;   inflate(N_H_alloc,  N_L_alloc,  approx_set);
+  // pilot+iterated samples shared by all approx, not just final best set
+  Sizet2DArray N_L_actual;  inflate(N_H_actual, N_L_actual);//, approx_set);
+  SizetArray   N_L_alloc;   inflate(N_H_alloc,  N_L_alloc); //, approx_set);
+
   size_t i, num_approx = approx_set.size(), alloc_incr, actual_incr;
   unsigned short inflate_i;  Real lf_target;
   for (i=0; i<num_approx; ++i) {
