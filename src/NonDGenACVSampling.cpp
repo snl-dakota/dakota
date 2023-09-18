@@ -500,15 +500,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
-  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;
-  initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
-  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   std::pair<UShortArray, UShortArray> soln_key;
-
   precompute_ratios(); // compute metrics not dependent on active DAG
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
@@ -540,11 +532,18 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   // -----------------------------------
   // Perform "online" sample increments:
   // -----------------------------------
-  // Only QOI_STATISTICS requires online shared/approx profile evaluation for
-  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
+  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;
+  initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   const UShortArray& approx_set = activeModelSetIter->first;
   soln_key.first = approx_set;  soln_key.second = *activeDAGIter;
   DAGSolutionData& soln = dagSolns[soln_key];
+  // Only QOI_STATISTICS requires online shared/approx profile evaluation for
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     if (truthFixedByPilot) numSamples = 0;
     else {
@@ -642,11 +641,13 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // Note: for consistency with MFMC/ACV, r* is always defined relative to N_H,
   // even though an oversample may target a different model based on active DAG
 
+  const UShortArray& approx_set = activeModelSetIter->first;
   IntRealMatrixMap sum_L_shared  = sum_L_baselineH,//baselineL;
                    sum_L_refined = sum_L_baselineH;//baselineL;
-  Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
+  Sizet2DArray N_L_actual_shared;  SizetArray N_L_alloc_refined;
+  inflate(N_H_actual, N_L_actual_shared, approx_set);
+  inflate(N_H_alloc,  N_L_alloc_refined, approx_set);
   Sizet2DArray N_L_actual_refined = N_L_actual_shared;
-  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc,  N_L_alloc_refined);
 
   switch (mlmfSubMethod) {
   case SUBMETHOD_ACV_MF: { // special handling for nested pyramid sampling
@@ -654,7 +655,6 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
     const RealVector& avg_eval_ratios = soln.avgEvalRatios;
     ordered_approx_sequence(avg_eval_ratios, approx_sequence, descending);
 
-    const UShortArray& approx_set = activeModelSetIter->first;
     size_t start = 0, end, num_approx = approx_set.size();
     for (end=num_approx; end>0; --end) {
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined

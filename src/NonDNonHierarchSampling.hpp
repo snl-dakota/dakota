@@ -1017,7 +1017,7 @@ inline void NonDNonHierarchSampling::inflate(size_t N_0D, SizetArray& N_1D)
 inline void NonDNonHierarchSampling::
 inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& approx_set)
 {
-  N_1D.assign(numApprox, USHRT_MAX);
+  N_1D.assign(numApprox, 0);
   size_t i, num_approx = approx_set.size();
   for (i=0; i<num_approx; ++i)
     N_1D[approx_set[i]] = N_0D;
@@ -1042,6 +1042,10 @@ inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
   size_t i, num_approx = approx_set.size();
   for (i=0; i<num_approx; ++i)
     N_2D[approx_set[i]] = N_1D;
+  // Not needed so long as empty 1D arrays are allowed:
+  //for (i=0; i<numApprox; ++i)
+  //  if (N_2D[i].empty())
+  //    N_2D[i].assign(numFunctions, 0);
 }
 
 
