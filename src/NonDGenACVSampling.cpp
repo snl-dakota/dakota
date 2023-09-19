@@ -500,8 +500,12 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  std::pair<UShortArray, UShortArray> soln_key;
+  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   precompute_ratios(); // compute metrics not dependent on active DAG
+  std::pair<UShortArray, UShortArray> soln_key;
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     const UShortArray& approx_set = activeModelSetIter->first;
@@ -535,10 +539,6 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
   IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
-  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   const UShortArray& approx_set = activeModelSetIter->first;
   soln_key.first = approx_set;  soln_key.second = *activeDAGIter;
   DAGSolutionData& soln = dagSolns[soln_key];
@@ -810,8 +810,8 @@ genacv_approx_increment(const DAGSolutionData& soln,
 
 void NonDGenACVSampling::precompute_ratios()
 {
-  if (pilotMgmtMode != OFFLINE_PILOT) cache_mc_reference();// {estVar,numH}Iter0
-  approxSequence.clear(); // rho2LH re-ordering from MFMC is not relevant here
+  if (pilotMgmtMode != OFFLINE_PILOT)
+    cache_mc_reference();// {estVar,numH}Iter0
 }
 
 
@@ -863,7 +863,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
     case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
     case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
-      ensemble_numerical_solution(sequenceCost,approxSequence,soln,numSamples);
+      ensemble_numerical_solution(sequenceCost, soln, numSamples);
       break;
     default: { // competed initial guesses with (competed) local methods
       covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
@@ -871,8 +871,8 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
       analytic_initialization_from_mfmc(approx_set, avg_N_H, mf_soln);
       analytic_initialization_from_ensemble_cvmc(approx_set, *activeDAGIter,
 	orderedRootList, avg_N_H, cv_soln);
-      ensemble_numerical_solution(sequenceCost,approxSequence,mf_soln,mf_samp);
-      ensemble_numerical_solution(sequenceCost,approxSequence,cv_soln,cv_samp);
+      ensemble_numerical_solution(sequenceCost, mf_soln, mf_samp);
+      ensemble_numerical_solution(sequenceCost, cv_soln, cv_samp);
       pick_mfmc_cvmc_solution(mf_soln,mf_samp,cv_soln,cv_samp,soln,numSamples);
       break;
     }
@@ -886,7 +886,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
 
     // warm start from previous soln for corresponding {approx_set,active_dag}
     // Note: for sequenced minimizers, only the last is used for refinement
-    ensemble_numerical_solution(sequenceCost, approxSequence, soln, numSamples);
+    ensemble_numerical_solution(sequenceCost, soln, numSamples);
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
@@ -901,15 +901,17 @@ analytic_initialization_from_mfmc(const UShortArray& approx_set,
   // check ordering for each QoI across active set of approx
   if (ordered_approx_sequence(rho2LH, approx_set))
     mfmc_analytic_solution(approx_set, rho2LH, sequenceCost, soln);
-  else // compute reordered MFMC for averaged rho; monotonic r not reqd
+  else {
+    // compute reordered MFMC for averaged rho; monotonic r not required
+    // > any rho2_LH re-ordering from MFMC initial guess can be ignored (later
+    //   gets replaced with r_i ordering for approx_increments() sampling)
+    SizetArray approx_sequence;
     mfmc_reordered_analytic_solution(approx_set, rho2LH, sequenceCost,
-				     approxSequence, soln);
+				     approx_sequence, soln);
+  }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << soln.avgEvalRatios << std::endl;
-  // any rho2_LH re-ordering from MFMC initial guess can be ignored (later
-  // gets replaced with r_i ordering for approx_increments() sampling)
-  approxSequence.clear();
 
   if (maxFunctionEvals == SZ_MAX)
     soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);

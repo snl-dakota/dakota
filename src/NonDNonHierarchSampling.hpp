@@ -308,7 +308,6 @@ protected:
 					bool monotonic_r = false);
 
   void ensemble_numerical_solution(const RealVector& cost,
-				   const SizetArray& approx_sequence,
 				   DAGSolutionData& soln, size_t& num_samples);
   void configure_minimizers(const RealVector& cost, Real avg_N_H,
 			    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
@@ -399,10 +398,6 @@ protected:
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
-
-  /// tracks ordering of a metric (correlations, eval ratios) across set of
-  /// approximations
-  SizetArray approxSequence;
 
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox

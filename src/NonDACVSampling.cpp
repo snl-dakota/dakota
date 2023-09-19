@@ -432,7 +432,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
     case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
     case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
-      ensemble_numerical_solution(sequenceCost,approxSequence,soln,numSamples);
+      ensemble_numerical_solution(sequenceCost, soln, numSamples);
       break;
     default: { // competed initial guesses with (competed) local methods
       covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
@@ -442,8 +442,8 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
 
       //if (multiStartACV) { // Run numerical solns from both starting points
       size_t mf_samp, cv_samp;
-      ensemble_numerical_solution(sequenceCost, approxSequence,mf_soln,mf_samp);
-      ensemble_numerical_solution(sequenceCost, approxSequence,cv_soln,cv_samp);
+      ensemble_numerical_solution(sequenceCost, mf_soln, mf_samp);
+      ensemble_numerical_solution(sequenceCost, cv_soln, cv_samp);
       pick_mfmc_cvmc_solution(mf_soln,mf_samp,cv_soln,cv_samp,soln,numSamples);
       //}
       /*
@@ -466,8 +466,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
         }
         soln = (mfmc_init) ? mf_soln : cv_soln;
         // Single solve initiated from lowest estvar
-        ensemble_numerical_solution(sequenceCost, approxSequence, soln,
-	                            numSamples);
+        ensemble_numerical_solution(sequenceCost, soln, numSamples);
       }
       */
       break;
@@ -480,7 +479,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     // updated avg_N_H now includes allocation from previous solution and
     // should be active on constraint bound (excepting sample count rounding)
 
-    ensemble_numerical_solution(sequenceCost, approxSequence, soln, numSamples);
+    ensemble_numerical_solution(sequenceCost, soln, numSamples);
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
@@ -508,15 +507,17 @@ analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln)
   // > Option 1 is analytic MFMC: differs from ACV due to recursive pairing
   if (ordered_approx_sequence(rho2LH)) // for all QoI across all Approx
     mfmc_analytic_solution(approxSet, rho2LH, sequenceCost, soln);
-  else // compute reordered MFMC for averaged rho; monotonic r not reqd
+  else {
+    // compute reordered MFMC for averaged rho; monotonic r not required
+    // > any rho2_LH re-ordering from MFMC initial guess can be ignored (later
+    //   gets replaced with r_i ordering for approx_increments() sampling)
+    SizetArray approx_sequence;
     mfmc_reordered_analytic_solution(approxSet, rho2LH, sequenceCost,
-				     approxSequence, soln);
+				     approx_sequence, soln);
+  }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << soln.avgEvalRatios << std::endl;
-  // any rho2_LH re-ordering from MFMC initial guess can be ignored (later
-  // gets replaced with r_i ordering for approx_increments() sampling)
-  approxSequence.clear();
 
   if (maxFunctionEvals == SZ_MAX)
     soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);

@@ -552,9 +552,8 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 
 
 void NonDNonHierarchSampling::
-ensemble_numerical_solution(const RealVector& cost,
-			    const SizetArray& approx_sequence,
-			    DAGSolutionData& soln, size_t& num_samples)
+ensemble_numerical_solution(const RealVector& cost, DAGSolutionData& soln,
+			    size_t& num_samples)
 {
   size_t i, num_cdv, num_lin_con, num_nln_con, approx, approx_im1, approx_ip1,
     hf_form_index, hf_lev_index;
@@ -562,7 +561,6 @@ ensemble_numerical_solution(const RealVector& cost,
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-  bool ordered = approx_sequence.empty();
   numerical_solution_counts(num_cdv, num_lin_con, num_nln_con); // virtual
 
   RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false),

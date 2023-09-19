@@ -198,6 +198,10 @@ private:
   //- Heading: Data
   //
 
+  /// tracks ordering of a metric (correlations, eval ratios) across set of
+  /// approximations
+  SizetArray approxSequence;
+
   /// ratio of MFMC to MC estimator variance for the same HF samples,
   /// also known as (1 - R^2)
   RealVector estVarRatios;

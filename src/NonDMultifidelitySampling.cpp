@@ -1412,7 +1412,7 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   matrix_to_diagonal_array(var_L, covLL);
 
   // Base class implementation of numerical solve (shared with ACV,GenACV):
-  ensemble_numerical_solution(cost, approx_sequence, soln, numSamples);
+  ensemble_numerical_solution(cost, soln, numSamples);
 }
 
 
