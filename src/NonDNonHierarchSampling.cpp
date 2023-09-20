@@ -206,7 +206,7 @@ void NonDNonHierarchSampling::shared_increment(size_t iter)
     //resize_active_set();
 
     activeSet.request_values(1);
-    ensemble_sample_increment(iter, numApprox+1); // BLOCK if not shared_approx_increment()  *** TO DO: step value
+    ensemble_sample_increment(iter, numSteps); // BLOCK if not shared_approx_increment()  *** TO DO: step value
   }
 }
 
@@ -234,7 +234,7 @@ shared_increment(size_t iter, const UShortArray& approx_set)
       activeSet.request_values(1, start, start + numFunctions);
     }
 
-    ensemble_sample_increment(iter, numApprox+1); // BLOCK if not shared_approx_increment()  *** TO DO: step value
+    ensemble_sample_increment(iter, numSteps); // BLOCK if not shared_approx_increment()  *** TO DO: step value
   }
 }
 
@@ -376,13 +376,12 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
   // uses one set of allResponses with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
-  size_t cntr, step, num_steps = numApprox+1, num_finite, md_index;
+  size_t cntr, step, num_finite, md_index;  IntRespMCIter r_it;
   Real cost, accum;  bool ml = (costMetadataIndices.size() == 1);
-  IntRespMCIter r_it;
   using std::isfinite;
 
-  seq_cost.size(num_steps); // init to 0
-  for (step=0, cntr=0; step<num_steps; ++step) {
+  seq_cost.size(numSteps); // init to 0
+  for (step=0, cntr=0; step<numSteps; ++step) {
     const SizetSizetPair& cost_mdi = (ml) ? costMetadataIndices[0] :
       costMetadataIndices[step];
     md_index = cntr + cost_mdi.first; // index into aggregated metadata
@@ -552,9 +551,8 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 
 
 void NonDNonHierarchSampling::
-ensemble_numerical_solution(const RealVector& cost,
-			    const SizetArray& approx_sequence,
-			    DAGSolutionData& soln, size_t& num_samples)
+ensemble_numerical_solution(const RealVector& cost, DAGSolutionData& soln,
+			    size_t& num_samples)
 {
   size_t i, num_cdv, num_lin_con, num_nln_con, approx, approx_im1, approx_ip1,
     hf_form_index, hf_lev_index;
@@ -562,7 +560,6 @@ ensemble_numerical_solution(const RealVector& cost,
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-  bool ordered = approx_sequence.empty();
   numerical_solution_counts(num_cdv, num_lin_con, num_nln_con); // virtual
 
   RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false),
@@ -615,14 +612,14 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
     if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con += numApprox;
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
-    num_cdv = numApprox + 1;  num_nln_con = 1;
+    num_cdv = numSteps;  num_nln_con = 1;
     num_lin_con = (mlmfSubMethod == SUBMETHOD_MFMC) ? numApprox : 0;
     break;
   case N_VECTOR_LINEAR_CONSTRAINT:
-    num_lin_con = num_cdv = numApprox + 1;  num_nln_con = 0;
+    num_lin_con = num_cdv = numSteps;  num_nln_con = 0;
     break;
   case N_VECTOR_LINEAR_OBJECTIVE:
-    num_cdv = numApprox + 1;  num_nln_con = 1;  num_lin_con = numApprox;
+    num_cdv = numSteps;  num_nln_con = 1;  num_lin_con = numApprox;
     break;
   }
 }

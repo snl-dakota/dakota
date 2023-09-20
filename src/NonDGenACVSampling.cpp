@@ -43,9 +43,17 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
 {
   // assign appropriate throttle for cases other than PARTIAL_GRAPH_RECURSION
   switch (dagRecursionType) {
-  case   NO_GRAPH_RECURSION:  dagDepthLimit = 1;          break;
-  case   KL_GRAPH_RECURSION:  dagDepthLimit = 2;          break;
-  case FULL_GRAPH_RECURSION:  dagDepthLimit = numApprox;  break;
+  case   NO_GRAPH_RECURSION:    dagDepthLimit = 1;          break;
+  case   KL_GRAPH_RECURSION:    dagDepthLimit = 2;          break;
+  case FULL_GRAPH_RECURSION:    dagDepthLimit = numApprox;  break;
+  }
+
+  // also support DAG for MFMC for access to model selection
+  switch (methodName) {
+  case MULTIFIDELITY_SAMPLING:
+    dagWidthLimit = 1;  mlmfSubMethod = SUBMETHOD_ACV_MF;   break;
+  default:
+    dagWidthLimit = numApprox;                              break;
   }
 }
 
@@ -81,7 +89,7 @@ void NonDGenACVSampling::generate_ensembles_dags()
     // expected to make the linear solve numerics more difficult.
 
     // Pre-compute nominal ordered DAGs for each dag_size (0:numApprox)
-    std::vector<UShortArraySet> nominal_dags(numApprox+1); // include size 0
+    std::vector<UShortArraySet> nominal_dags(numSteps); // include size 0
     for (dag_size=numApprox; dag_size>=1; --dag_size) {
       nodes.resize(dag_size); // discard trailing node
       generate_dags(dag_size, nodes, nominal_dags[dag_size]);
@@ -157,12 +165,19 @@ generate_dags(unsigned short root, const UShortArray& nodes,
 
   dag_set.clear();
   unsigned short num_approx = nodes.size(),
-    limit = std::min(num_approx, dagDepthLimit);
+    d_limit = std::min(num_approx, dagDepthLimit),
+    w_limit = std::min(num_approx, dagWidthLimit);
   UShortArray dag;
 
-  if (limit <= 1) {
-    if (limit == 1) dag.assign(num_approx, root); // ACV
-    dag_set.insert(dag); // empty DAG (Monte Carlo) if limit is 0
+  if (d_limit <= 1) {
+    if (d_limit == 1) dag.assign(num_approx, root); // ACV
+    dag_set.insert(dag); // empty DAG (Monte Carlo) if d_limit is 0
+    return;
+  }
+  else if (w_limit == 1) {
+    dag.resize(num_approx);
+    for (unsigned short i=0; i<num_approx; ++i) dag[i] = i+1; // MFMC
+    dag_set.insert(dag);
     return;
   }
 
@@ -191,7 +206,7 @@ generate_dags(unsigned short root, const UShortArray& nodes,
     break;
   }
   default:
-    generate_sub_trees(root, nodes, limit, dag, dag_set);
+    generate_sub_trees(root, nodes, d_limit, dag, dag_set);
     break;
   }
 }
@@ -277,7 +292,7 @@ generate_reverse_dag(const UShortArray& approx_set, const UShortArray& dag)
   // define an array of source nodes that point to a given target
   size_t i, dag_size = dag.size();
   reverseActiveDAG.clear();
-  reverseActiveDAG.resize(numApprox + 1);
+  reverseActiveDAG.resize(numSteps);
   SizetArray index_map;  inflate_approx_set(approx_set, index_map);
   unsigned short source, target;
   for (i=0; i<dag_size; ++i) { // walk+store path to root
@@ -485,16 +500,12 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
-  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;
-  initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  std::pair<UShortArray, UShortArray> soln_key;
-
   precompute_ratios(); // compute metrics not dependent on active DAG
+  std::pair<UShortArray, UShortArray> soln_key;
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     const UShortArray& approx_set = activeModelSetIter->first;
@@ -525,11 +536,14 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   // -----------------------------------
   // Perform "online" sample increments:
   // -----------------------------------
-  // Only QOI_STATISTICS requires online shared/approx profile evaluation for
-  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
+  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;
+  initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   const UShortArray& approx_set = activeModelSetIter->first;
   soln_key.first = approx_set;  soln_key.second = *activeDAGIter;
   DAGSolutionData& soln = dagSolns[soln_key];
+  // Only QOI_STATISTICS requires online shared/approx profile evaluation for
+  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     if (truthFixedByPilot) numSamples = 0;
     else {
@@ -627,11 +641,13 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // Note: for consistency with MFMC/ACV, r* is always defined relative to N_H,
   // even though an oversample may target a different model based on active DAG
 
+  const UShortArray& approx_set = activeModelSetIter->first;
   IntRealMatrixMap sum_L_shared  = sum_L_baselineH,//baselineL;
                    sum_L_refined = sum_L_baselineH;//baselineL;
-  Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
+  Sizet2DArray N_L_actual_shared;  SizetArray N_L_alloc_refined;
+  inflate(N_H_actual, N_L_actual_shared, approx_set);
+  inflate(N_H_alloc,  N_L_alloc_refined, approx_set);
   Sizet2DArray N_L_actual_refined = N_L_actual_shared;
-  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc,  N_L_alloc_refined);
 
   switch (mlmfSubMethod) {
   case SUBMETHOD_ACV_MF: { // special handling for nested pyramid sampling
@@ -639,7 +655,6 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
     const RealVector& avg_eval_ratios = soln.avgEvalRatios;
     ordered_approx_sequence(avg_eval_ratios, approx_sequence, descending);
 
-    const UShortArray& approx_set = activeModelSetIter->first;
     size_t start = 0, end, num_approx = approx_set.size();
     for (end=num_approx; end>0; --end) {
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined
@@ -795,8 +810,8 @@ genacv_approx_increment(const DAGSolutionData& soln,
 
 void NonDGenACVSampling::precompute_ratios()
 {
-  if (pilotMgmtMode != OFFLINE_PILOT) cache_mc_reference();// {estVar,numH}Iter0
-  approxSequence.clear(); // rho2LH re-ordering from MFMC is not relevant here
+  if (pilotMgmtMode != OFFLINE_PILOT)
+    cache_mc_reference();// {estVar,numH}Iter0
 }
 
 
@@ -848,7 +863,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
     case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
     case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
-      ensemble_numerical_solution(sequenceCost,approxSequence,soln,numSamples);
+      ensemble_numerical_solution(sequenceCost, soln, numSamples);
       break;
     default: { // competed initial guesses with (competed) local methods
       covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
@@ -856,8 +871,8 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
       analytic_initialization_from_mfmc(approx_set, avg_N_H, mf_soln);
       analytic_initialization_from_ensemble_cvmc(approx_set, *activeDAGIter,
 	orderedRootList, avg_N_H, cv_soln);
-      ensemble_numerical_solution(sequenceCost,approxSequence,mf_soln,mf_samp);
-      ensemble_numerical_solution(sequenceCost,approxSequence,cv_soln,cv_samp);
+      ensemble_numerical_solution(sequenceCost, mf_soln, mf_samp);
+      ensemble_numerical_solution(sequenceCost, cv_soln, cv_samp);
       pick_mfmc_cvmc_solution(mf_soln,mf_samp,cv_soln,cv_samp,soln,numSamples);
       break;
     }
@@ -871,7 +886,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
 
     // warm start from previous soln for corresponding {approx_set,active_dag}
     // Note: for sequenced minimizers, only the last is used for refinement
-    ensemble_numerical_solution(sequenceCost, approxSequence, soln, numSamples);
+    ensemble_numerical_solution(sequenceCost, soln, numSamples);
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
@@ -886,15 +901,17 @@ analytic_initialization_from_mfmc(const UShortArray& approx_set,
   // check ordering for each QoI across active set of approx
   if (ordered_approx_sequence(rho2LH, approx_set))
     mfmc_analytic_solution(approx_set, rho2LH, sequenceCost, soln);
-  else // compute reordered MFMC for averaged rho; monotonic r not reqd
+  else {
+    // compute reordered MFMC for averaged rho; monotonic r not required
+    // > any rho2_LH re-ordering from MFMC initial guess can be ignored (later
+    //   gets replaced with r_i ordering for approx_increments() sampling)
+    SizetArray approx_sequence;
     mfmc_reordered_analytic_solution(approx_set, rho2LH, sequenceCost,
-				     approxSequence, soln);
+				     approx_sequence, soln);
+  }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << soln.avgEvalRatios << std::endl;
-  // any rho2_LH re-ordering from MFMC initial guess can be ignored (later
-  // gets replaced with r_i ordering for approx_increments() sampling)
-  approxSequence.clear();
 
   if (maxFunctionEvals == SZ_MAX)
     soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);
@@ -1910,7 +1927,7 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
   //       map indices (DAG values to sample count indices) 
 
   //Real z_H = N_vec[numApprox];
-  z1.size(numApprox);  z2.size(numApprox+1);  z2[numApprox] = N_vec[numApprox];
+  z1.size(numApprox);  z2.size(numSteps);  z2[numApprox] = N_vec[numApprox];
 
   switch (mlmfSubMethod) {
   case SUBMETHOD_ACV_IS: case SUBMETHOD_ACV_RD: {

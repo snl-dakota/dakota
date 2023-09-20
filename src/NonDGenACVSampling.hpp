@@ -255,8 +255,11 @@ private:
 
   /// type of tunable recursion for defining set of DAGs: KL, partial, or full
   short dagRecursionType;
-  /// depth throttle for partial recursion in generate_dags()
+  /// depth throttle for constraining set from generate_dags()
   unsigned short dagDepthLimit;
+  /// width throttle for constraining set from generate_dags()
+  /// (used only for MFMC with width = 1)
+  unsigned short dagWidthLimit;
   /// option to enumerate combinations of approximation models
   short modelSelectType;
 
@@ -434,10 +437,9 @@ inline void NonDGenACVSampling::
 inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
 		  const UShortArray& approx_set)
 {
-  size_t i, num_approx = approx_set.size(), num_cdv = cd_vars.length(),
-    num_N = numApprox+1;
-  if  (N_vec.length() == num_N) N_vec = 0.;
-  else N_vec.size(num_N);
+  size_t i, num_approx = approx_set.size(), num_cdv = cd_vars.length();
+  if  (N_vec.length() == numSteps) N_vec = 0.;
+  else N_vec.size(numSteps);
   for (i=0; i<num_approx; ++i)
     N_vec[approx_set[i]] = cd_vars[i];
   if (num_cdv == num_approx + 1)

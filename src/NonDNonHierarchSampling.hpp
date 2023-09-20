@@ -308,7 +308,6 @@ protected:
 					bool monotonic_r = false);
 
   void ensemble_numerical_solution(const RealVector& cost,
-				   const SizetArray& approx_sequence,
 				   DAGSolutionData& soln, size_t& num_samples);
   void configure_minimizers(const RealVector& cost, Real avg_N_H,
 			    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
@@ -399,10 +398,6 @@ protected:
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
-
-  /// tracks ordering of a metric (correlations, eval ratios) across set of
-  /// approximations
-  SizetArray approxSequence;
 
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
@@ -591,11 +586,15 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     increment_equivalent_cost(new_samp, cost, start, end, equiv_hf_evals);
   else {
     size_t i, len = cost.length(), hf_index = len-1, approx;
-    if (end == len) // truth is always last
-      { equiv_hf_evals += new_samp;  if (end) --end; }
+    bool ordered = approx_sequence.empty();
+    // This fn is only used for LF sample increments:
+    //if (end == len) // truth is always last
+    //  { equiv_hf_evals += new_samp;  if (end) --end; }
     Real sum_cost = 0.;
-    for (i=start; i<end; ++i)
-      { approx = approx_sequence[i]; sum_cost += cost[approx]; }
+    for (i=start; i<end; ++i) {
+      approx = (ordered) ? i : approx_sequence[i];
+      sum_cost += cost[approx];
+    }
     equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
   }
 }
@@ -609,8 +608,9 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 {
   size_t i, approx, num_approx = approx_set.size(), hf_index = cost.length()-1;
   bool ordered = approx_sequence.empty();
-  if (end == num_approx) // truth is always last
-    { equiv_hf_evals += new_samp;  if (end) --end; }
+  // This fn is only used for LF sample increments:
+  //if (end == num_approx+1) // truth is always last
+  //  { equiv_hf_evals += new_samp;  if (end) --end; }
   Real sum_cost = 0.;
   for (i=start; i<end; ++i) {
     approx = (ordered) ? i : approx_sequence[i]; // compact indexing
@@ -625,7 +625,8 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  unsigned short root, const UShortSet& reverse_dag,
 			  Real& equiv_hf_evals)
 {
-  Real sum_cost = cost[root];
+  Real sum_cost = 0;
+  if (root != USHRT_MAX) sum_cost += cost[root];
   UShortSet::const_iterator cit;
   for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
     sum_cost += cost[*cit];
@@ -1017,7 +1018,7 @@ inline void NonDNonHierarchSampling::inflate(size_t N_0D, SizetArray& N_1D)
 inline void NonDNonHierarchSampling::
 inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& approx_set)
 {
-  N_1D.assign(numApprox, USHRT_MAX);
+  N_1D.assign(numApprox, 0);
   size_t i, num_approx = approx_set.size();
   for (i=0; i<num_approx; ++i)
     N_1D[approx_set[i]] = N_0D;
@@ -1042,6 +1043,10 @@ inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
   size_t i, num_approx = approx_set.size();
   for (i=0; i<num_approx; ++i)
     N_2D[approx_set[i]] = N_1D;
+  // Not needed so long as empty 1D arrays are allowed:
+  //for (i=0; i<numApprox; ++i)
+  //  if (N_2D[i].empty())
+  //    N_2D[i].assign(numFunctions, 0);
 }
 
 

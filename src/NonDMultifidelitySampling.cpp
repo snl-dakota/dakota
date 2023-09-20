@@ -195,8 +195,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
     accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
 		       N_H_actual);
     N_H_alloc += numSamples;
-    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
-			      equivHFEvals);
+    increment_equivalent_cost(numSamples,sequenceCost,0,numSteps,equivHFEvals);
     // compute the estimator performance metrics
     mfmc_estimator_variance(rho2LH, varH, N_H_actual, approxSequence,
 			    estVarRatios, mfmcSolnData);
@@ -236,8 +235,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
   N_H_alloc += numSamples;
   if (onlineCost) recover_online_cost(sequenceCost);
-  increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
-			    equivHFEvals);
+  increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,equivHFEvals);
 
   // -------------------------------------------
   // Compute correlations and evaluation ratios:
@@ -1412,7 +1410,7 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   matrix_to_diagonal_array(var_L, covLL);
 
   // Base class implementation of numerical solve (shared with ACV,GenACV):
-  ensemble_numerical_solution(cost, approx_sequence, soln, numSamples);
+  ensemble_numerical_solution(cost, soln, numSamples);
 }
 
 

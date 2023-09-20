@@ -520,7 +520,11 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case MULTILEVEL_SAMPLING:
     return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
   case MULTIFIDELITY_SAMPLING:
-    return std::make_shared<NonDMultifidelitySampling>(problem_db,model); break;
+    if (probDescDB.get_short("method.nond.search_model_graphs.selection"))
+      return std::make_shared<NonDGenACVSampling>(problem_db, model);
+    else
+      return std::make_shared<NonDMultifidelitySampling>(problem_db,model);
+    break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
     return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
     break;
