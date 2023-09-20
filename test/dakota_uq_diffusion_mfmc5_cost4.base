@@ -250,3 +250,50 @@ Sample moment statistics for each response function:
  response_fn_1  2.5283276206048158e-02  6.6001977229121819e-03  7.8787756712446833e-01 -9.8811677205247417e-02
  response_fn_2  1.2905422293081623e-01  1.3511552638727059e-02  7.3028199302635466e-01 -5.6598517313825347e-01
  response_fn_3  2.5283276206090832e-02  6.6001977231105189e-03  7.8787756748269322e-01 -9.8811676554322769e-02
+Test Number 14 succeeded
+<<<<< Function evaluation summary (LF1_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (LF2_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (LF3_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (LF4_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 5.0771875000000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 3.3300781250000000e+01
+<<<<< Variance for mean estimator:
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+  Projected   MC (  136 HF samples):  7.5380326135275244e-07
+  Projected MFMC (sample profile):    6.3437647553314420e-09
+  Projected MFMC ratio (1 - R^2):     8.4156769817460252e-03
+ Equivalent   MC (  508 HF samples):  2.0191738741965768e-07
+ Equivalent MFMC ratio:               3.1417624982175478e-02
+Test Number 15 succeeded
+<<<<< Function evaluation summary (LF1_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (LF2_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (LF3_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (LF4_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 4.9990625000000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
+<<<<< Variance for mean estimator:
+     Online   MC (  136 HF samples):  7.5380326135275244e-07
+     Online MFMC (sample profile):    6.3437647553316223e-09
+     Online MFMC ratio (1 - R^2):     8.4156769817462646e-03
+ Equivalent   MC (  500 HF samples):  2.0507293826387312e-07
+ Equivalent MFMC ratio:               3.0934187655559515e-02
+Test Number 16 succeeded
+<<<<< Function evaluation summary (LF1_INT): 2457 total (2457 new, 0 duplicate)
+<<<<< Function evaluation summary (LF2_INT): 22707 total (22707 new, 0 duplicate)
+<<<<< Function evaluation summary (LF3_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (LF4_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 161 total (161 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 4.9990625000000000e+02
+<<<<< Variance for mean estimator:
+     Online   MC (  136 HF samples):  7.5380326135275244e-07
+     Online MFMC (sample profile):    6.3437647553316223e-09
+     Online MFMC ratio (1 - R^2):     8.4156769817462646e-03
+ Equivalent   MC (  500 HF samples):  2.0507293826387312e-07
+ Equivalent MFMC ratio:               3.0934187655559515e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5298128521020778e-02  6.5915515415175567e-03  7.7669443960929530e-01 -1.8269767448477259e-01
+ response_fn_2  1.2907888008954546e-01  1.3658908647727971e-02  7.2098517345858970e-01 -6.0618494222409236e-01
+ response_fn_3  2.5298128520995753e-02  6.5915515417340007e-03  7.7669443972729779e-01 -1.8269767443388396e-01
