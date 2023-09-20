@@ -275,8 +275,7 @@ evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
     if (onlineCost) recover_online_cost(sequenceCost);
   }
   if (incr_cost)
-    increment_equivalent_cost(numSamples, sequenceCost, 0,
-			      numSteps, equivHFEvals);
+    increment_equivalent_cost(numSamples,sequenceCost,0,numSteps,equivHFEvals);
 }
 
 

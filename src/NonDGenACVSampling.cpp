@@ -89,7 +89,7 @@ void NonDGenACVSampling::generate_ensembles_dags()
     // expected to make the linear solve numerics more difficult.
 
     // Pre-compute nominal ordered DAGs for each dag_size (0:numApprox)
-    std::vector<UShortArraySet> nominal_dags(numApprox+1); // include size 0
+    std::vector<UShortArraySet> nominal_dags(numSteps); // include size 0
     for (dag_size=numApprox; dag_size>=1; --dag_size) {
       nodes.resize(dag_size); // discard trailing node
       generate_dags(dag_size, nodes, nominal_dags[dag_size]);
@@ -292,7 +292,7 @@ generate_reverse_dag(const UShortArray& approx_set, const UShortArray& dag)
   // define an array of source nodes that point to a given target
   size_t i, dag_size = dag.size();
   reverseActiveDAG.clear();
-  reverseActiveDAG.resize(numApprox + 1);
+  reverseActiveDAG.resize(numSteps);
   SizetArray index_map;  inflate_approx_set(approx_set, index_map);
   unsigned short source, target;
   for (i=0; i<dag_size; ++i) { // walk+store path to root
@@ -1927,7 +1927,7 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
   //       map indices (DAG values to sample count indices) 
 
   //Real z_H = N_vec[numApprox];
-  z1.size(numApprox);  z2.size(numApprox+1);  z2[numApprox] = N_vec[numApprox];
+  z1.size(numApprox);  z2.size(numSteps);  z2[numApprox] = N_vec[numApprox];
 
   switch (mlmfSubMethod) {
   case SUBMETHOD_ACV_IS: case SUBMETHOD_ACV_RD: {

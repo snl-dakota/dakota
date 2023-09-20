@@ -586,11 +586,15 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     increment_equivalent_cost(new_samp, cost, start, end, equiv_hf_evals);
   else {
     size_t i, len = cost.length(), hf_index = len-1, approx;
-    if (end == len) // truth is always last
-      { equiv_hf_evals += new_samp;  if (end) --end; }
+    bool ordered = approx_sequence.empty();
+    // This fn is only used for LF sample increments:
+    //if (end == len) // truth is always last
+    //  { equiv_hf_evals += new_samp;  if (end) --end; }
     Real sum_cost = 0.;
-    for (i=start; i<end; ++i)
-      { approx = approx_sequence[i]; sum_cost += cost[approx]; }
+    for (i=start; i<end; ++i) {
+      approx = (ordered) ? i : approx_sequence[i];
+      sum_cost += cost[approx];
+    }
     equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
   }
 }
@@ -604,8 +608,9 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 {
   size_t i, approx, num_approx = approx_set.size(), hf_index = cost.length()-1;
   bool ordered = approx_sequence.empty();
-  if (end == num_approx) // truth is always last
-    { equiv_hf_evals += new_samp;  if (end) --end; }
+  // This fn is only used for LF sample increments:
+  //if (end == num_approx+1) // truth is always last
+  //  { equiv_hf_evals += new_samp;  if (end) --end; }
   Real sum_cost = 0.;
   for (i=start; i<end; ++i) {
     approx = (ordered) ? i : approx_sequence[i]; // compact indexing
@@ -620,7 +625,8 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  unsigned short root, const UShortSet& reverse_dag,
 			  Real& equiv_hf_evals)
 {
-  Real sum_cost = cost[root];
+  Real sum_cost = 0;
+  if (root != USHRT_MAX) sum_cost += cost[root];
   UShortSet::const_iterator cit;
   for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
     sum_cost += cost[*cit];
