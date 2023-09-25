@@ -126,8 +126,9 @@ DataMethodRep::DataMethodRep():
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
-  vbdFlag(false),
-  vbdDropTolerance(-1.),backfillFlag(false), pcaFlag(false),
+  vbdFlag(false),vbdDropTolerance(-1.),
+  vbdViaSamplingMethod(VBD_SALTELLI),vbdViaSamplingNumBins(-1), // TODO for Teresa: should be "VBD_MAHADEVAN" instead of "VBD_SALTELLI"
+  backfillFlag(false), pcaFlag(false),
   percentVarianceExplained(0.95), wilksFlag(false), wilksOrder(1),
   wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED_UPPER),
   // NonD
@@ -142,7 +143,7 @@ DataMethodRep::DataMethodRep():
   quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
   expansionSamples(SZ_MAX), truthPilotConstraint(false),
-  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(2),
+  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(1),
   modelSelectType(NO_MODEL_SELECTION), ensembleSampSolnMode(ONLINE_PILOT),
   allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
   qoiAggregation(QOI_AGGREGATION_SUM),
@@ -297,7 +298,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
-    << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag
+    << vbdFlag << vbdDropTolerance
+    << vbdViaSamplingMethod << vbdViaSamplingNumBins
+    << backfillFlag << pcaFlag
     << percentVarianceExplained << wilksFlag << wilksOrder
     << wilksConfidenceLevel << wilksSidedInterval;
 
@@ -467,7 +470,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
-    >> vbdFlag >> vbdDropTolerance >> backfillFlag >> pcaFlag
+    >> vbdFlag >> vbdDropTolerance
+    >> vbdViaSamplingMethod >> vbdViaSamplingNumBins
+    >> backfillFlag >> pcaFlag
     >> percentVarianceExplained >> wilksFlag >> wilksOrder
     >> wilksConfidenceLevel >> wilksSidedInterval;
 
@@ -637,7 +642,9 @@ void DataMethodRep::write(std::ostream& s) const
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
-    << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag
+    << vbdFlag << vbdDropTolerance
+    << vbdViaSamplingMethod << vbdViaSamplingNumBins
+    << backfillFlag << pcaFlag
     << percentVarianceExplained << wilksFlag << wilksOrder
     << wilksConfidenceLevel << wilksSidedInterval;
 

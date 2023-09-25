@@ -55,7 +55,8 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   numCandidateDesigns(probDescDB.get_sizet("method.num_candidate_designs")),
   oversampleRatio(probDescDB.get_real("method.nond.collocation_ratio")),
   pcaFlag(probDescDB.get_bool("method.principal_components")),
-  varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp")),
+  vbdViaSamplingMethod(probDescDB.get_ushort("method.vbd_via_sampling_method")),
+  vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins")),
   percentVarianceExplained(
     probDescDB.get_real("method.percent_variance_explained"))
 {
@@ -67,7 +68,7 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   if (model.primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model.num_primary_fns();
 
-  if ((varBasedDecompFlag    == true) &&
+  if ((vbdFlag               == true) &&
       (numDiscreteStringVars >  0   )) {
     Cerr << "\nError: discrete string variables are not supported for "
          << "variance based decomposition.\n";
@@ -134,7 +135,9 @@ NonDLHSSampling(Model& model, unsigned short sample_type, int samples,
   NonDSampling(RANDOM_SAMPLING, model, sample_type, samples, seed, rng,
 	       vary_pattern, sampling_vars_mode),
   numResponseFunctions(numFunctions), dOptimal(false), oversampleRatio(0.0),
-  pcaFlag(false), varBasedDecompFlag(false)
+  pcaFlag(false),
+  vbdViaSamplingMethod(VBD_MAHADEVAN),
+  vbdViaSamplingNumBins(-1)
 { }
 
 
@@ -153,7 +156,9 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
 		const RealVector& upper_bnds): 
   NonDSampling(sample_type, samples, seed, rng, lower_bnds, upper_bnds),
   numResponseFunctions(0), dOptimal(false), oversampleRatio(0.0), 
-  pcaFlag(false), varBasedDecompFlag(false)
+  pcaFlag(false),
+  vbdViaSamplingMethod(VBD_MAHADEVAN),
+  vbdViaSamplingNumBins(-1)
 {
   // since there will be no late data updates to capture in this case
   // (no sampling_reset()), go ahead and get the parameter sets.
@@ -175,7 +180,9 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
   NonDSampling(sample_type, samples, seed, rng, means, std_devs,
 	       lower_bnds, upper_bnds, correl),
   numResponseFunctions(0), dOptimal(false), oversampleRatio(0.0),
-  pcaFlag(false), varBasedDecompFlag(false)
+  pcaFlag(false),
+  vbdViaSamplingMethod(VBD_MAHADEVAN),
+  vbdViaSamplingNumBins(-1)
 {
   // since there will be no late data updates to capture in this case
   // (no sampling_reset()), go ahead and get the parameter sets.
@@ -216,7 +223,7 @@ void NonDLHSSampling::pre_run()
   // detect duplicates); probably this means this pre_run code
   // migrates to another get_parameter_sets variant that VBD can call
 
-  if (varBasedDecompFlag) {
+  if (vbdFlag) {
     get_vbd_parameter_sets(iteratedModel, numSamples);
     return;
   }
@@ -732,16 +739,18 @@ void NonDLHSSampling::post_run(std::ostream& s)
   // Statistics are generated here and output in NonDLHSSampling's
   // redefinition of print_results().
   if (statsFlag) {
-    if(varBasedDecompFlag) {
-      nonDSampCorr.compute_vbd_stats(numFunctions,
-                                     numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
-                                     numSamples,
-                                     allResponses);
+    if(vbdFlag) {
+      nonDSampCorr.compute_vbd_stats_via_sampling(vbdViaSamplingMethod,
+                                                  vbdViaSamplingNumBins,
+                                                  numFunctions,
+                                                  numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
+                                                  numSamples,
+                                                  allResponses);
       nonDSampCorr.archive_sobol_indices(run_identifier(),
                                          resultsDB,
                                          iteratedModel.ordered_labels(),
                                          iteratedModel.response_labels(),
-                                         vbdDropTol);
+                                         vbdDropTol); // set in DakotaAnalyzer constructor
     }
     else if(!summaryOutputFlag) {
       // To support incremental reporting of statistics, compute_statistics is 
@@ -1029,11 +1038,11 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 {
   if (!numResponseFunctions) // DACE mode w/ opt or NLS
     Analyzer::print_results(s, results_state);
-  if (varBasedDecompFlag)
+  if (vbdFlag)
     nonDSampCorr.print_sobol_indices(s,
                                      iteratedModel.ordered_labels(),
                                      iteratedModel.response_labels(),
-                                     vbdDropTol);
+                                     vbdDropTol); // set in DakotaAnalyzer constructor
   else if (statsFlag) {
     if(refineSamples.length() == 0) {
       compute_statistics(allSamples, allResponses);

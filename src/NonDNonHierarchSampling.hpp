@@ -161,7 +161,7 @@ protected:
   /// return name of active optimizer method
   unsigned short uses_method() const;
   /// perform a numerical solver method switch due to a detected conflict
-  void method_recourse();
+  void method_recourse(unsigned short method_name);
 
   //
   //- Heading: New virtual functions
@@ -174,6 +174,11 @@ protected:
   virtual void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 					       RealVector& lin_ineq_lb,
 					       RealVector& lin_ineq_ub) = 0;
+  /// return quadratic constraint violation for augment linear
+  /// inequality constraints
+  virtual Real augmented_linear_ineq_violations(const RealVector& cd_vars,
+    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lb,
+    const RealVector& lin_ineq_ub) = 0;
 
   virtual void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 					 size_t& num_nln_con);
@@ -183,6 +188,12 @@ protected:
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+  /// When looping through a minimizer sequence/competition, this
+  /// function enables per-minimizer updates to the parameter bounds,
+  /// e.g. for providing a bounded domain for methods that require it,
+  /// while removing it for those that don't
+  virtual void finite_solution_bounds(const RealVector& cost, Real avg_N_H,
+				      RealVector& x_lb, RealVector& x_ub);
 
   /// post-process optimization final results to recover solution data
   virtual void recover_results(const RealVector& cv_star,
@@ -297,17 +308,15 @@ protected:
 					bool monotonic_r = false);
 
   void ensemble_numerical_solution(const RealVector& cost,
-				   const SizetArray& approx_sequence,
 				   DAGSolutionData& soln, size_t& num_samples);
-  void configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+  void configure_minimizers(const RealVector& cost, Real avg_N_H,
+			    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 			    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
 			    RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
 			    RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
 			    RealMatrix& lin_ineq_coeffs,
-			    RealMatrix& lin_eq_coeffs, size_t& num_solvers,
-			    bool& sequenced_minimizers);
-  void run_minimizers(DAGSolutionData& soln, size_t num_solvers,
-		      bool sequenced_minimizers);
+			    RealMatrix& lin_eq_coeffs);
+  void run_minimizers(DAGSolutionData& soln);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
@@ -366,9 +375,14 @@ protected:
   //- Heading: Data
   //
 
-  /// the minimizer used to minimize the estimator variance over parameters
-  /// of number of truth model samples and approximation eval_ratios
-  IteratorArray varianceMinimizers;
+  /// the minimizer(s) used to optimize the estimator variance over the number
+  /// of truth model samples and approximation eval_ratios.  Minimizers are
+  /// arranged in a sequence (first dimension) where each step in the sequence
+  /// may have multiple competitors (second dimension)
+  Iterator2DArray varianceMinimizers;
+  /// active indices for numerical solutions: varianceMinimizers[first][second]
+  SizetSizetPair varMinIndices;
+
   /// variance minimization algorithm selection: SUBMETHOD_MFMC or
   /// SUBMETHOD_ACV_{IS,MF,KL}
   unsigned short mlmfSubMethod;
@@ -384,10 +398,6 @@ protected:
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
-
-  /// tracks ordering of a metric (correlations, eval ratios) across set of
-  /// approximations
-  SizetArray approxSequence;
 
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
@@ -446,6 +456,9 @@ private:
   static void optpp_fdnlf1_constraint(int n, const RealVector& x,
 				      RealVector& c, int& result_mode);
 
+  /// static function used by DIRECT for its objective
+  static Real direct_penalty_merit(const RealVector& cd_vars);
+
   /// static function used by MinimizerAdapterModel for response data
   /// (objective and nonlinear constraint, if present)
   static void response_evaluator(const Variables& vars, const ActiveSet& set,
@@ -466,43 +479,6 @@ inline size_t NonDNonHierarchSampling::num_approximations() const
 
 inline unsigned short NonDNonHierarchSampling::uses_method() const
 { return optSubProblemSolver; }
-
-
-inline void NonDNonHierarchSampling::method_recourse()
-{
-  // NonDNonHierarchSampling numerical solves must protect use of Fortran
-  // solvers at this level from conflicting with use at a higher level.
-  // However, it is not necessary to check the other direction by defining
-  // check_sub_iterator_conflict(), since solver execution does not span
-  // any Model evaluations.
-
-  bool err_flag = false;
-  switch (optSubProblemSolver) {
-  case SUBMETHOD_NPSOL: case SUBMETHOD_NPSOL_OPTPP:
-#ifdef HAVE_OPTPP
-    optSubProblemSolver = SUBMETHOD_OPTPP;
-#else
-    err_flag = true;
-#endif
-    break;
-  case SUBMETHOD_OPTPP: // for completeness (OPT++ nesting is not an issue)
-#ifdef HAVE_NPSOL
-    optSubProblemSolver = SUBMETHOD_NPSOL;
-#else
-    err_flag = true;
-#endif
-    break;
-  }
-
-  if (err_flag) {
-    Cerr << "\nError: method conflict detected in NonDNonHierarchSampling but "
-	 << "no alternate solver available." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  else
-    Cerr << "\nWarning: method recourse invoked in NonDNonHierarchSampling due "
-	 << "to detected method conflict.\n\n";
-}
 
 
 inline void NonDNonHierarchSampling::
@@ -610,11 +586,15 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     increment_equivalent_cost(new_samp, cost, start, end, equiv_hf_evals);
   else {
     size_t i, len = cost.length(), hf_index = len-1, approx;
-    if (end == len) // truth is always last
-      { equiv_hf_evals += new_samp;  if (end) --end; }
+    bool ordered = approx_sequence.empty();
+    // This fn is only used for LF sample increments:
+    //if (end == len) // truth is always last
+    //  { equiv_hf_evals += new_samp;  if (end) --end; }
     Real sum_cost = 0.;
-    for (i=start; i<end; ++i)
-      { approx = approx_sequence[i]; sum_cost += cost[approx]; }
+    for (i=start; i<end; ++i) {
+      approx = (ordered) ? i : approx_sequence[i];
+      sum_cost += cost[approx];
+    }
     equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
   }
 }
@@ -628,8 +608,9 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 {
   size_t i, approx, num_approx = approx_set.size(), hf_index = cost.length()-1;
   bool ordered = approx_sequence.empty();
-  if (end == num_approx) // truth is always last
-    { equiv_hf_evals += new_samp;  if (end) --end; }
+  // This fn is only used for LF sample increments:
+  //if (end == num_approx+1) // truth is always last
+  //  { equiv_hf_evals += new_samp;  if (end) --end; }
   Real sum_cost = 0.;
   for (i=start; i<end; ++i) {
     approx = (ordered) ? i : approx_sequence[i]; // compact indexing
@@ -644,7 +625,8 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  unsigned short root, const UShortSet& reverse_dag,
 			  Real& equiv_hf_evals)
 {
-  Real sum_cost = cost[root];
+  Real sum_cost = 0;
+  if (root != USHRT_MAX) sum_cost += cost[root];
   UShortSet::const_iterator cit;
   for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
     sum_cost += cost[*cit];
@@ -1036,7 +1018,7 @@ inline void NonDNonHierarchSampling::inflate(size_t N_0D, SizetArray& N_1D)
 inline void NonDNonHierarchSampling::
 inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& approx_set)
 {
-  N_1D.assign(numApprox, USHRT_MAX);
+  N_1D.assign(numApprox, 0);
   size_t i, num_approx = approx_set.size();
   for (i=0; i<num_approx; ++i)
     N_1D[approx_set[i]] = N_0D;
@@ -1061,6 +1043,10 @@ inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
   size_t i, num_approx = approx_set.size();
   for (i=0; i<num_approx; ++i)
     N_2D[approx_set[i]] = N_1D;
+  // Not needed so long as empty 1D arrays are allowed:
+  //for (i=0; i<numApprox; ++i)
+  //  if (N_2D[i].empty())
+  //    N_2D[i].assign(numFunctions, 0);
 }
 
 

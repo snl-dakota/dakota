@@ -197,7 +197,7 @@ void FSUDesignCompExp::pre_run()
 
   // If VBD has been selected, generate a series of replicate parameter sets
   // (each of the size specified by the user) in order to compute VBD metrics.
-  if (varBasedDecompFlag)
+  if (vbdFlag)
     get_vbd_parameter_sets(iteratedModel, numSamples);
   else
     get_parameter_sets(iteratedModel);
@@ -230,11 +230,13 @@ void FSUDesignCompExp::post_run(std::ostream& s)
 
   // BMA TODO: always compute all stats, even in VBD mode (stats on
   // first two replicates)
-  if (varBasedDecompFlag)
-    pStudyDACESensGlobal.compute_vbd_stats(numFunctions,
-                                           numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
-                                           numSamples,
-                                           allResponses);
+  if (vbdFlag)
+    pStudyDACESensGlobal.compute_vbd_stats_via_sampling(vbdViaSamplingMethod,
+                                                        vbdViaSamplingNumBins,
+                                                        numFunctions,
+                                                        numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
+                                                        numSamples,
+                                                        allResponses);
   else {
     // compute correlation statistics if (compute_corr_flag)
     bool compute_corr_flag = (!subIteratorFlag);

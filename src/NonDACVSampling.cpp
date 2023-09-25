@@ -275,8 +275,7 @@ evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
     if (onlineCost) recover_online_cost(sequenceCost);
   }
   if (incr_cost)
-    increment_equivalent_cost(numSamples, sequenceCost, 0,
-			      numSteps, equivHFEvals);
+    increment_equivalent_cost(numSamples,sequenceCost,0,numSteps,equivHFEvals);
 }
 
 
@@ -425,41 +424,53 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     }
 
     // Run a competition among related analytic approaches (MFMC or pairwise
-    // CVMC) for best initial guess:
-    covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
-    DAGSolutionData mf_soln, cv_soln;
-    analytic_initialization_from_mfmc(avg_N_H, mf_soln);
-    analytic_initialization_from_ensemble_cvmc(avg_N_H, cv_soln);
+    // CVMC) for best initial guess, where each initial gues may additionally
+    // employ multiple varianceMinimizers in ensemble_numerical_solution()
+    switch (optSubProblemSolver) { // no initial guess
+    // global and sequenced global+local methods:
+    case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
+    case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
+    case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
+      ensemble_numerical_solution(sequenceCost, soln, numSamples);
+      break;
+    default: { // competed initial guesses with (competed) local methods
+      covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
+      DAGSolutionData mf_soln, cv_soln;
+      analytic_initialization_from_mfmc(avg_N_H, mf_soln);
+      analytic_initialization_from_ensemble_cvmc(avg_N_H, cv_soln);
 
-    //if (multiStartACV) { // Run numerical solns from both starting points
-    size_t mf_samp, cv_samp;
-    ensemble_numerical_solution(sequenceCost, approxSequence, mf_soln, mf_samp);
-    ensemble_numerical_solution(sequenceCost, approxSequence, cv_soln, cv_samp);
-    pick_mfmc_cvmc_solution(mf_soln, mf_samp, cv_soln, cv_samp,soln,numSamples);
-    //}
-    /*
-    else { // Run one numerical soln from best of two starting points
-      bool mfmc_init;
-      if (budget_constrained) { // same cost, compare accuracy
-	RealVector cdv;
-	r_and_N_to_design_vars(mf_soln.avgEvalRatios, mf_soln.avgHFTarget, cdv);
-	mf_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
-	r_and_N_to_design_vars(cv_soln.avgEvalRatios, cv_soln.avgHFTarget, cdv);
-	cv_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
-	mfmc_init = (mf_soln.avgEstVar < cv_soln.avgEstVar);
+      //if (multiStartACV) { // Run numerical solns from both starting points
+      size_t mf_samp, cv_samp;
+      ensemble_numerical_solution(sequenceCost, mf_soln, mf_samp);
+      ensemble_numerical_solution(sequenceCost, cv_soln, cv_samp);
+      pick_mfmc_cvmc_solution(mf_soln,mf_samp,cv_soln,cv_samp,soln,numSamples);
+      //}
+      /*
+      else { // Run one numerical soln from best of two starting points
+        bool mfmc_init;
+        if (budget_constrained) { // same cost, compare accuracy
+	  RealVector cdv;
+	  r_and_N_to_design_vars(mf_soln.avgEvalRatios,mf_soln.avgHFTarget,cdv);
+	  mf_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
+	  r_and_N_to_design_vars(cv_soln.avgEvalRatios,cv_soln.avgHFTarget,cdv);
+	  cv_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
+	  mfmc_init = (mf_soln.avgEstVar < cv_soln.avgEstVar);
+        }
+        else { // same accuracy (convergenceTol * estVarIter0), compare cost 
+	  mf_soln.equivHFAlloc = compute_equivalent_cost(mf_soln.avgHFTarget,
+	    mf_soln.avgEvalRatios, sequenceCost);
+	  cv_soln.equivHFAlloc = compute_equivalent_cost(cv_soln.avgHFTarget,
+	    cv_soln.avgEvalRatios, sequenceCost);
+	  mfmc_init = (mf_soln.equivHFAlloc < cv_soln.equivHFAlloc);
+        }
+        soln = (mfmc_init) ? mf_soln : cv_soln;
+        // Single solve initiated from lowest estvar
+        ensemble_numerical_solution(sequenceCost, soln, numSamples);
       }
-      else { // same accuracy (convergenceTol * estVarIter0), compare cost 
-	mf_soln.equivHFAlloc = compute_equivalent_cost(mf_soln.avgHFTarget,
-	  mf_soln.avgEvalRatios, sequenceCost);
-	cv_soln.equivHFAlloc = compute_equivalent_cost(cv_soln.avgHFTarget,
-	  cv_soln.avgEvalRatios, sequenceCost);
-	mfmc_init = (mf_soln.equivHFAlloc < cv_soln.equivHFAlloc);
-      }
-      soln = (mfmc_init) ? mf_soln : cv_soln;
-      // Single solve initiated from lowest estvar
-      ensemble_numerical_solution(sequenceCost, approxSequence,soln,numSamples);
+      */
+      break;
     }
-    */
+    }
   }
   else { // warm start from previous solution (for active or one-and-only DAG)
 
@@ -467,7 +478,7 @@ compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln)
     // updated avg_N_H now includes allocation from previous solution and
     // should be active on constraint bound (excepting sample count rounding)
 
-    ensemble_numerical_solution(sequenceCost, approxSequence, soln, numSamples);
+    ensemble_numerical_solution(sequenceCost, soln, numSamples);
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
@@ -495,15 +506,17 @@ analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln)
   // > Option 1 is analytic MFMC: differs from ACV due to recursive pairing
   if (ordered_approx_sequence(rho2LH)) // for all QoI across all Approx
     mfmc_analytic_solution(approxSet, rho2LH, sequenceCost, soln);
-  else // compute reordered MFMC for averaged rho; monotonic r not reqd
+  else {
+    // compute reordered MFMC for averaged rho; monotonic r not required
+    // > any rho2_LH re-ordering from MFMC initial guess can be ignored (later
+    //   gets replaced with r_i ordering for approx_increments() sampling)
+    SizetArray approx_sequence;
     mfmc_reordered_analytic_solution(approxSet, rho2LH, sequenceCost,
-				     approxSequence, soln);
+				     approx_sequence, soln);
+  }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << soln.avgEvalRatios << std::endl;
-  // any rho2_LH re-ordering from MFMC initial guess can be ignored (later
-  // gets replaced with r_i ordering for approx_increments() sampling)
-  approxSequence.clear();
 
   if (maxFunctionEvals == SZ_MAX)
     soln.avgHFTarget = update_hf_target(soln.avgEvalRatios, varH, estVarIter0);
@@ -617,6 +630,39 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
     }
     break;
   }
+}
+
+
+Real NonDACVSampling::
+augmented_linear_ineq_violations(const RealVector& cd_vars,
+				 const RealMatrix& lin_ineq_coeffs,
+				 const RealVector& lin_ineq_lb,
+				 const RealVector& lin_ineq_ub)
+{
+  Real quad_viol = 0.;
+  switch (optSubProblemForm) {
+  case N_VECTOR_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
+  case N_VECTOR_LINEAR_OBJECTIVE: { // no other lin ineq
+    size_t lin_ineq_offset
+      = (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT) ? 1 : 0;
+    Real viol, inner_prod, l_bnd, u_bnd, N_H = cd_vars[numApprox];
+    for (size_t approx=0; approx<numApprox; ++approx) {
+      inner_prod
+	= lin_ineq_coeffs(approx+lin_ineq_offset, approx)    * cd_vars[approx]
+	+ lin_ineq_coeffs(approx+lin_ineq_offset, numApprox) * N_H;
+      l_bnd = lin_ineq_lb[approx+lin_ineq_offset];
+      u_bnd = lin_ineq_ub[approx+lin_ineq_offset];
+      if (inner_prod < l_bnd)
+	{ viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
+      else if (inner_prod > u_bnd)
+	{ viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+    }
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
+    break; // none to add (r lower bounds = 1)
+  }
+  return quad_viol;
 }
 
 
@@ -1238,8 +1284,17 @@ update_projected_lf_samples(Real avg_hf_target,
 			    //SizetArray& delta_N_L_actual,
 			    Real& delta_equiv_hf)
 {
-  Sizet2DArray N_L_actual;  inflate(N_H_actual, N_L_actual, approx_set);
-  SizetArray   N_L_alloc;   inflate(N_H_alloc,  N_L_alloc,  approx_set);
+  // pilot+iterated samples shared by all approx, not just final best set
+  Sizet2DArray N_L_actual;  SizetArray N_L_alloc;
+  if (pilotMgmtMode == OFFLINE_PILOT) {
+    // shared online sampling spans active model set after processing of
+    // covariance data assembled offline
+    inflate(N_H_actual, N_L_actual, approx_set);
+    inflate(N_H_alloc,  N_L_alloc,  approx_set);
+  }
+  else // shared sampling spans all models as covariances are assembled online
+    { inflate(N_H_actual, N_L_actual);  inflate(N_H_alloc, N_L_alloc); }
+
   size_t i, num_approx = approx_set.size(), alloc_incr, actual_incr;
   unsigned short inflate_i;  Real lf_target;
   for (i=0; i<num_approx; ++i) {

@@ -1,0 +1,202 @@
+#@ p0: MPIProcs=2
+#@ p1: MPIProcs=3
+#@ s*: TimeoutAbsolute=1200
+#@ s*: TimeoutDelay=1200
+
+#environment,
+
+method,
+	model_pointer = 'HIERARCH'
+        approximate_control_variate
+	  acv_mf #global_local #competed_local #sqp #nip
+	  solution_mode offline_pilot
+	  pilot_samples = 250
+	  seed = 8674132
+	  search_model_graphs
+	    no_recursion				#s0,#s3
+#	    kl_recursion				#s1,#s4
+#	    partial_recursion depth_limit = 2		#s2
+#	    full_recursion
+#	    model_selection				#s3,#s4
+	  max_function_evaluations = 1000
+	  final_statistics estimator_performance
+	  output silent
+
+model,
+	id_model = 'HIERARCH'
+	variables_pointer = 'HF_RES4_VARS'
+	surrogate ensemble
+	  truth_model = 'HF_RES4'
+	  approximation_models = 'LF_RES1' 'LF_RES2' 'LF_RES3' 'LF_RES4'
+	  		       	 'HF_RES1' 'HF_RES2' 'HF_RES3'
+
+model,
+	id_model = 'LF_RES1'
+	variables_pointer = 'LF_RES1_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 375.
+
+model,
+	id_model = 'LF_RES2'
+	variables_pointer = 'LF_RES2_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 10125.
+
+model,
+	id_model = 'LF_RES3'
+	variables_pointer = 'LF_RES3_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 81000.
+
+model,
+	id_model = 'LF_RES4'
+	variables_pointer = 'LF_RES4_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 648000.
+
+model,
+	id_model = 'HF_RES1'
+	variables_pointer = 'HF_RES1_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 5.67e+5
+
+model,
+	id_model = 'HF_RES2'
+	variables_pointer = 'HF_RES2_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 4.536e+6
+
+model,
+	id_model = 'HF_RES3'
+	variables_pointer = 'HF_RES3_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 2.1e+7
+
+model,
+	id_model = 'HF_RES4'
+	variables_pointer = 'HF_RES4_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 1.68e+8
+
+variables,
+	id_variables = 'LF_RES1_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 1 1
+	    set_values = 5 # number of spatial coords
+	    	       	 3 # number of Fourier solution modes
+	    initial_state = 5 3
+	    descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'LF_RES2_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 1 1
+	    set_values = 15 # number of spatial coords
+	    	       	 3  # number of Fourier solution modes
+	    initial_state = 15 3
+	    descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'LF_RES3_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 1 1
+	    set_values = 30 # number of spatial coords
+	    	       	 3  # number of Fourier solution modes
+	    initial_state = 30 3
+	    descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'LF_RES4_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 1 1
+	    set_values = 60 # number of spatial coords
+	    	       	 3  # number of Fourier solution modes
+	    initial_state = 60 3
+	    descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'HF_RES1_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 1 1
+	    set_values = 30 # number of spatial coords
+	    	       	 21 # number of Fourier solution modes
+	    initial_state = 30 21
+	    descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'HF_RES2_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 1 1
+	    set_values = 60 # number of spatial coords
+	    	       	 21 # number of Fourier solution modes
+	    initial_state = 60 21
+	    descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'HF_RES3_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 1 1
+	    set_values = 100 # number of spatial coords
+	    	       	 21  # number of Fourier solution modes
+	    initial_state = 100 21
+	    descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'HF_RES4_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 1 1
+	    set_values = 200 # number of spatial coords
+	    	       	 21  # number of Fourier solution modes
+	    initial_state = 200 21
+	    descriptors 'N_x' 'N_mod'
+
+interface,
+	direct
+	  analysis_driver = 'transient_diffusion_1d'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	response_functions = 1
+	no_gradients
+	no_hessians
+#	metadata 'cost_model'

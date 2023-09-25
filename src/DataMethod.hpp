@@ -105,8 +105,10 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_CONMIN, SUBMETHOD_DOT, SUBMETHOD_NLPQL, SUBMETHOD_NPSOL,
-       SUBMETHOD_OPTPP, SUBMETHOD_NPSOL_OPTPP, SUBMETHOD_EA, SUBMETHOD_DIRECT,
-       SUBMETHOD_EGO, SUBMETHOD_SBLO, SUBMETHOD_SBGO,
+       SUBMETHOD_OPTPP, SUBMETHOD_NPSOL_OPTPP,
+       SUBMETHOD_DIRECT, SUBMETHOD_DIRECT_NPSOL_OPTPP,
+       SUBMETHOD_DIRECT_NPSOL, SUBMETHOD_DIRECT_OPTPP, 
+       SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBLO, SUBMETHOD_SBGO,
        // Local reliability sub-method selections: (MV is 0)
        SUBMETHOD_AMV_X,       SUBMETHOD_AMV_U,
        SUBMETHOD_AMV_PLUS_X,  SUBMETHOD_AMV_PLUS_U,
@@ -118,6 +120,9 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        // verification approaches:
        SUBMETHOD_CONVERGE_ORDER,  SUBMETHOD_CONVERGE_QOI,
        SUBMETHOD_ESTIMATE_ORDER };
+
+/// Sampling method for variance based decomposition (VBD)
+enum { VBD_MAHADEVAN=0, VBD_SALTELLI };
 
 /// Graph recursion options for generalized ACV
 enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, PARTIAL_GRAPH_RECURSION,
@@ -858,10 +863,16 @@ public:
   /// sample sets.  This results in the use of the same sampling
   /// stencil/pattern throughout an execution with repeated sampling.
   bool fixedSequenceFlag;
-  /// the \c var_based_decomp specification for a variety of sampling methods
+  /// the \c var_based_decomp specification for computing Sobol' indices
+  /// via either PCE or sampling
   bool vbdFlag;
-  /// the \c var_based_decomp tolerance for omitting index output
+  /// the \c var_based_decomp tolerance for omitting Sobol' indices computed
+  /// via either PCE or sampling
   Real vbdDropTolerance;
+  /// Sampling method for computing Sobol indices: Mahadevan (default) or Saltelli
+  unsigned short vbdViaSamplingMethod;
+  /// Number of bins to use in case the Mahadevan method is selected (default is the square root of the number of samples)
+  int vbdViaSamplingNumBins;
   /// the \c backfill option allows one to augment in LHS sample
   /// by enforcing the addition of unique discrete variables to the sample
   bool backfillFlag;

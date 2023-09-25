@@ -77,11 +77,9 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
     problem_db.get_sizet("method.nond.max_solver_iterations")),
   ruleNestingOverride(problem_db.get_short("method.nond.nesting_override")),
   ruleGrowthOverride(problem_db.get_short("method.nond.growth_override")),
-  vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
   // Note: minimum VBD order for variance-controlled refinement is enforced
   //       in NonDExpansion::construct_{quadrature,sparse_grid}
   vbdOrderLimit(problem_db.get_ushort("method.nond.vbd_interaction_order")),
-  vbdDropTol(problem_db.get_real("method.vbd_drop_tolerance")),
   covarianceControl(problem_db.get_short("method.nond.covariance_control"))
   // For supporting construct_incremental_lhs():
   //expansionSampleType(problem_db.get_string("method.expansion_sample_type"))
@@ -114,7 +112,7 @@ NonDExpansion(unsigned short method_name, Model& model,
   refineMetric(Pecos::NO_METRIC), softConvLimit(3), numUncertainQuant(0),
   maxRefineIterations(SZ_MAX), maxSolverIterations(SZ_MAX),
   ruleNestingOverride(rule_nest), ruleGrowthOverride(rule_growth),
-  vbdFlag(false), vbdOrderLimit(0), vbdDropTol(-1.),
+  vbdOrderLimit(0),
   covarianceControl(covar_control)
 {
   check_dimension_preference(dimPrefSpec);

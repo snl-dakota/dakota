@@ -150,6 +150,7 @@ public:
 			   int& result_mode),
     void (*nlf1_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
 			   RealMatrix& grad_g, int& result_mode),
+    const RealVector& fdss, const String& interval_type,
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
@@ -164,6 +165,7 @@ public:
 			   RealVector& grad_f, int& result_mode),
     void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
 			   int& result_mode),
+    const RealVector& fdss, const String& interval_type,
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
@@ -178,6 +180,7 @@ public:
 			   int& result_mode),
     void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
 			   int& result_mode),
+    const RealVector& fdss, const String& interval_type,
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
 
@@ -206,6 +209,9 @@ public:
 			    const RealVector& nln_ineq_l_bnds,
 			    const RealVector& nln_ineq_u_bnds,
 			    const RealVector& nln_eq_targets);
+  const RealMatrix& callback_linear_ineq_coefficients() const;
+  const RealVector& callback_linear_ineq_lower_bounds() const;
+  const RealVector& callback_linear_ineq_upper_bounds() const;
 
 protected:
 
@@ -377,6 +383,10 @@ private:
   RealVector nlnIneqUpperBnds;
   /// nonlinear equality constraint targets used in "user_functions" mode
   RealVector nlnEqTargets;
+  /// finite difference step sizes, either scalar or one per variable
+  RealVector fdStepSize;
+  /// type of finite difference interval: forward or central
+  String fdIntervalType;
 
   /// cache zeroth-order objective call-back function
   void (*userObjective0) (int n, const RealVector& x, double& f,
@@ -402,6 +412,21 @@ private:
 
 inline void SNLLOptimizer::initial_point(const RealVector& pt)
 { copy_data(pt, initialPoint); } // protect from incoming view
+
+
+inline const RealMatrix& SNLLOptimizer::
+callback_linear_ineq_coefficients() const
+{ return linIneqCoeffs; }
+
+
+inline const RealVector& SNLLOptimizer::
+callback_linear_ineq_lower_bounds() const
+{ return linIneqLowerBnds; }
+
+
+inline const RealVector& SNLLOptimizer::
+callback_linear_ineq_upper_bounds() const
+{ return linIneqUpperBnds; }
 
 } // namespace Dakota
 

@@ -54,13 +54,15 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
-					 size_t& num_nln_con);
+				 size_t& num_nln_con);
   void numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     const RealVector& cost, Real avg_N_H, RealVector& x0, RealVector& x_lb,
     RealVector& x_ub, RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
     RealVector& lin_eq_tgt, RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
     RealVector& nln_eq_tgt, RealMatrix& lin_ineq_coeffs,
     RealMatrix& lin_eq_coeffs);
+  void finite_solution_bounds(const RealVector& cost, Real avg_N_H,
+			      RealVector& x_lb, RealVector& x_ub);
 
   void recover_results(const RealVector& cv_star, const RealVector& fn_star,
 		       Real& avg_estvar, RealVector& avg_eval_ratios,
@@ -85,6 +87,10 @@ protected:
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub);
+  Real augmented_linear_ineq_violations(const RealVector& cd_vars,
+					const RealMatrix& lin_ineq_coeffs,
+					const RealVector& lin_ineq_lb,
+					const RealVector& lin_ineq_ub);
 
   //
   //- Heading: member functions
@@ -96,14 +102,27 @@ private:
   //- Heading: Helper functions
   //
 
-  void generate_dags();
+  /// generate sets of DAGs for the relevant combinations of active
+  /// approximations
+  void generate_ensembles_dags();
+  /// generate a set of DAGs for the provided root and subordinate nodes
+  void generate_dags(unsigned short root, const UShortArray& nodes,
+		     UShortArraySet& dag_set);
+  /// recursively generate sub-trees for current root and subordinate nodes
   void generate_sub_trees(unsigned short root, const UShortArray& nodes,
 			  unsigned short depth, UShortArray& dag,
 			  UShortArraySet& model_dags);
+  /// for the given DAG and active approimation set, generate the sets
+  /// of source nodes that point to given targets
   void generate_reverse_dag(const UShortArray& approx_set,
 			    const UShortArray& dag);
+  /// create an ordered list of roots that enable ordered sample increments
+  /// by ensuring that root sample levels are defined
   void unroll_reverse_dag_from_root(unsigned short root,
 				    UShortList& ordered_list);
+  /// create an ordered list of roots that enable ordered sample increments
+  /// by ensuring that root sample levels are defined (overloaded version
+  /// factors in the over-sample ratios)
   void unroll_reverse_dag_from_root(unsigned short root,
 				    const RealVector& avg_eval_ratios,
 				    UShortList& root_list);
@@ -236,8 +255,11 @@ private:
 
   /// type of tunable recursion for defining set of DAGs: KL, partial, or full
   short dagRecursionType;
-  /// depth throttle for partial recursion in generate_dags()
+  /// depth throttle for constraining set from generate_dags()
   unsigned short dagDepthLimit;
+  /// width throttle for constraining set from generate_dags()
+  /// (used only for MFMC with width = 1)
+  unsigned short dagWidthLimit;
   /// option to enumerate combinations of approximation models
   short modelSelectType;
 
@@ -415,10 +437,9 @@ inline void NonDGenACVSampling::
 inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
 		  const UShortArray& approx_set)
 {
-  size_t i, num_approx = approx_set.size(), num_cdv = cd_vars.length(),
-    num_N = numApprox+1;
-  if  (N_vec.length() == num_N) N_vec = 0.;
-  else N_vec.size(num_N);
+  size_t i, num_approx = approx_set.size(), num_cdv = cd_vars.length();
+  if  (N_vec.length() == numSteps) N_vec = 0.;
+  else N_vec.size(numSteps);
   for (i=0; i<num_approx; ++i)
     N_vec[approx_set[i]] = cd_vars[i];
   if (num_cdv == num_approx + 1)
@@ -427,8 +448,9 @@ inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
     // N_H not provided so pull from latest counter values
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
-    // estimator variance uses actual (not alloc) so use same for defining G,g
-    // *** TO DO: but avg_hf_target defines delta relative to actual||alloc
+    // average_estimator_variance() uses actual (not alloc) to sync with varH
+    // so use same prior to defining G,g in precompute_genacv_control() and
+    // estimator_variance_ratios()
     N_vec[numApprox] = //(backfillFailures) ?
       average(NLevActual[hf_form_index][hf_lev_index]);// :
       //NLevAlloc[hf_form_index][hf_lev_index];

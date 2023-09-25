@@ -201,6 +201,15 @@ public:
     const RealVector& lin_ineq_ub,     const RealMatrix& lin_eq_coeffs,
     const RealVector& lin_eq_tgt,      const RealVector& nln_ineq_lb,
     const RealVector& nln_ineq_ub,     const RealVector& nln_eq_tgt);
+  /// return linear constraint coefficients for this iterator (user-functions
+  /// mode for which iteratedModel is null)
+  virtual const RealMatrix& callback_linear_ineq_coefficients() const;
+  /// return linear constraint lower bounds for this iterator (user-functions
+  /// mode for which iteratedModel is null)
+  virtual const RealVector& callback_linear_ineq_lower_bounds() const;
+  /// return linear constraint upper bounds for this iterator (user-functions
+  /// mode for which iteratedModel is null)
+  virtual const RealVector& callback_linear_ineq_upper_bounds() const;
 
   /// initialize the 2D graphics window and the tabular graphics data
   virtual void initialize_graphics(int iterator_server_id = 1);
@@ -217,8 +226,9 @@ public:
   virtual void check_sub_iterator_conflict();
   /// return name of any enabling iterator used by this iterator
   virtual unsigned short uses_method() const;
-  /// perform a method switch, if possible, due to a detected conflict
-  virtual void method_recourse();
+  /// perform a method switch, if possible, due to a detected conflict with
+  /// the simultaneous use of method_name at an higher-level
+  virtual void method_recourse(unsigned short method_name);
 
   /// return the complete set of evaluated variables
   virtual const VariablesArray& all_variables();

@@ -2703,6 +2703,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+      [ sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        mahadevan {N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}
+        |
+        saltelli {N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}
+       ]
+      [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
      ]
     [ backfill {N_mdm(true,backfillFlag)} ]
     [ principal_components {N_mdm(true,pcaFlag)}
@@ -2874,7 +2880,14 @@ KEYWORD method {N_mdm3(start,0,stop)}
         sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
         |
         nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+        |
+        global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
+        |
+        competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
        ]
+     ]
+    [ search_model_graphs {0}
+      [ model_selection {N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)} ]
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -2989,6 +3002,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
     acv_recursive_diff ALIAS acv_rd {N_mdm(utype,subMethod_SUBMETHOD_ACV_RD)}
     [ search_model_graphs {0}
       [ model_selection {N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)} ]
+      no_recursion {N_mdm(type,dagRecursionType_NO_GRAPH_RECURSION)}
+      |
       kl_recursion {N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}
       |
       ( partial_recursion {N_mdm(type,dagRecursionType_PARTIAL_GRAPH_RECURSION)}
@@ -3010,6 +3025,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
       |
       nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+      |
+      global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
+      |
+      competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
      ]
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
@@ -5816,6 +5835,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+      [ sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        mahadevan {N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}
+        |
+        saltelli {N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}
+       ]
+      [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
      ]
     [ symbols INTEGER {N_mdm(int,numSymbols)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
@@ -5829,6 +5854,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+      [ sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        mahadevan {N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}
+        |
+        saltelli {N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}
+       ]
+      [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
      ]
     [ trial_type {0}
       grid {N_mdm(lit,trialType_grid)}
@@ -6072,6 +6103,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+      [ sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        mahadevan {N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}
+        |
+        saltelli {N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}
+       ]
+      [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
      ]
     [ samples INTEGER {N_mdm(int,numSamples)} ]
     [ fixed_sequence {N_mdm(true,fixedSequenceFlag)} ]

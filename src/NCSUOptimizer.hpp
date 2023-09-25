@@ -48,9 +48,8 @@ class NCSUTraits: public TraitsBase
     State University. It uses a function pointer approach for which passed 
     functions must be either global functions or static member functions.  
     Any attribute used within static member functions must be either local 
-    to that function or accessed through a static pointer.
+    to that function or accessed through a static pointer. */
 
-    The user input mappings are as follows: */
 class NCSUOptimizer: public Optimizer
 {
 public:
@@ -71,8 +70,15 @@ public:
   NCSUOptimizer(Model& model);
 
   /// alternate constructor for instantiations "on the fly"
-  NCSUOptimizer(const RealVector& var_l_bnds, const RealVector& var_u_bnds,
-		size_t max_iter, size_t max_eval,
+  NCSUOptimizer(//const RealVector& initial_pt,
+		const RealVector& var_l_bnds, const RealVector& var_u_bnds,
+		const RealMatrix& lin_ineq_coeffs,
+		const RealVector& lin_ineq_l_bnds,
+		const RealVector& lin_ineq_u_bnds,
+		const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+		const RealVector& nln_ineq_l_bnds,
+		const RealVector& nln_ineq_u_bnds,
+		const RealVector& nln_eq_tgts, size_t max_iter, size_t max_eval,
   	        double (*user_obj_eval) (const RealVector &x),
 		double min_box_size = -1., double vol_box_size = -1.,
 		double solution_target = -DBL_MAX);
@@ -89,6 +95,22 @@ public:
   void declare_sources();
 
   void check_sub_iterator_conflict();
+
+  //void initial_point(const RealVector& pt);
+  void update_callback_data(const RealVector& cv_initial,
+			    const RealVector& cv_lower_bnds,
+			    const RealVector& cv_upper_bnds,
+			    const RealMatrix& lin_ineq_coeffs,
+			    const RealVector& lin_ineq_l_bnds,
+			    const RealVector& lin_ineq_u_bnds,
+			    const RealMatrix& lin_eq_coeffs,
+			    const RealVector& lin_eq_targets,
+			    const RealVector& nln_ineq_l_bnds,
+			    const RealVector& nln_ineq_u_bnds,
+			    const RealVector& nln_eq_targets);
+  const RealMatrix& callback_linear_ineq_coefficients() const;
+  const RealVector& callback_linear_ineq_lower_bounds() const;
+  const RealVector& callback_linear_ineq_upper_bounds() const;
 
 private:
 
@@ -133,15 +155,49 @@ private:
   Real volBoxSize;
   /// holds the solution target minimum to drive towards
   Real solutionTarget; 
-  /// holds variable lower bounds passed in for "user_functions" mode.
-  RealVector lowerBounds;
-  /// holds variable upper bounds passed in for "user_functions" mode.
-  RealVector upperBounds;
   /// holds function pointer for objective function evaluator passed in for
   /// "user_functions" mode.
   double (*userObjectiveEval) (const RealVector &x);
+
+  // initial point used in "user_functions" mode (no starting point for DIRECT)
+  //RealVector initialPoint;
+  /// variable lower bounds used in "user_functions" mode
+  RealVector lowerBounds;
+  /// variable upper bounds used in "user_functions" mode
+  RealVector upperBounds;
+  /// linear inequality constraint coefficients used in "user_functions" mode
+  RealMatrix linIneqCoeffs;
+  /// linear inequality constraint lower bounds used in "user_functions" mode
+  RealVector linIneqLowerBnds;
+  /// linear inequality constraint upper bounds used in "user_functions" mode
+  RealVector linIneqUpperBnds;
+  /// linear equality constraint coefficients used in "user_functions" mode
+  RealMatrix linEqCoeffs;
+  /// linear equality constraint targets used in "user_functions" mode
+  RealVector linEqTargets;
+  /// nonlinear inequality constraint lower bounds used in "user_functions" mode
+  RealVector nlnIneqLowerBnds;
+  /// nonlinear inequality constraint upper bounds used in "user_functions" mode
+  RealVector nlnIneqUpperBnds;
+  /// nonlinear equality constraint targets used in "user_functions" mode
+  RealVector nlnEqTargets;
 };
-		      
+
+
+inline const RealMatrix& NCSUOptimizer::
+callback_linear_ineq_coefficients() const
+{ return linIneqCoeffs; }
+
+
+inline const RealVector& NCSUOptimizer::
+callback_linear_ineq_lower_bounds() const
+{ return linIneqLowerBnds; }
+
+
+inline const RealVector& NCSUOptimizer::
+callback_linear_ineq_upper_bounds() const
+{ return linIneqUpperBnds; }
+
 } // namespace Dakota
 
 #endif

@@ -520,7 +520,11 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case MULTILEVEL_SAMPLING:
     return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
   case MULTIFIDELITY_SAMPLING:
-    return std::make_shared<NonDMultifidelitySampling>(problem_db,model); break;
+    if (probDescDB.get_short("method.nond.search_model_graphs.selection"))
+      return std::make_shared<NonDGenACVSampling>(problem_db, model);
+    else
+      return std::make_shared<NonDMultifidelitySampling>(problem_db,model);
+    break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
     return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
     break;
@@ -949,6 +953,7 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_OPTPP,             "nip")
   (SUBMETHOD_NPSOL,             "sqp")
   (SUBMETHOD_NPSOL_OPTPP,       "sqp_nip")
+  (SUBMETHOD_DIRECT,            "direct")
   (SUBMETHOD_EA,                "ea")
   (SUBMETHOD_EGO,               "ego")
   (SUBMETHOD_SBGO,              "sbgo")
@@ -1472,11 +1477,8 @@ void Iterator::initial_point(const Variables& pt)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->initial_point(pt);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initial_point() virtual fn."
-	 << "\n       No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  else // default falls back to cv-only update
+    initial_point(pt.continuous_variables());
 }
 
 
@@ -1540,6 +1542,45 @@ update_callback_data(const RealVector& cv_initial,
 	 << "virtual fn.\n       No default defined at base class."<< std::endl;
     abort_handler(METHOD_ERROR);
   }
+}
+
+
+const RealMatrix& Iterator::callback_linear_ineq_coefficients() const
+{
+  if (!iteratorRep) { // envelope fwd to letter
+    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+	 << "coefficients() virtual fn.\n       No default defined at base "
+	 << "class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->callback_linear_ineq_coefficients();
+}
+
+
+const RealVector& Iterator::callback_linear_ineq_lower_bounds() const
+{
+  if (!iteratorRep) { // envelope fwd to letter
+    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+	 << "lower_bounds() virtual fn.\n       No default defined at base "
+	 << "class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->callback_linear_ineq_lower_bounds();
+}
+
+
+const RealVector& Iterator::callback_linear_ineq_upper_bounds() const
+{
+  if (!iteratorRep) { // envelope fwd to letter
+    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+	 << "upper_bounds() virtual fn.\n       No default defined at base "
+	 << "class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->callback_linear_ineq_upper_bounds();
 }
 
 
@@ -1721,10 +1762,10 @@ unsigned short Iterator::uses_method() const
 }
 
 
-void Iterator::method_recourse()
+void Iterator::method_recourse(unsigned short method_name)
 {
   if (iteratorRep) // envelope fwd to letter
-    iteratorRep->method_recourse();
+    iteratorRep->method_recourse(method_name);
   else { // default definition (letter lacking redefinition of virtual fn.)
     Cerr << "Error: no method recourse defined for detected method conflict.\n"
 	 << "       Please revise method selections." << std::endl;
